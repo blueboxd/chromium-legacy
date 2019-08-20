@@ -42,7 +42,7 @@ class CupsProxyServiceDelegate {
                             SetupPrinterCallback cb) = 0;
 
  private:
-  base::WeakPtrFactory<CupsProxyServiceDelegate> weak_factory_;
+  base::WeakPtrFactory<CupsProxyServiceDelegate> weak_factory_{this};
 };
 
 }  // namespace cups_proxy

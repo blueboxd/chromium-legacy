@@ -34,7 +34,7 @@ class AcceleratorConfirmationDialog : public views::DialogDelegateView {
   const base::string16 window_title_;
   base::OnceClosure on_accept_callback_;
 
-  base::WeakPtrFactory<AcceleratorConfirmationDialog> weak_ptr_factory_;
+  base::WeakPtrFactory<AcceleratorConfirmationDialog> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratorConfirmationDialog);
 };

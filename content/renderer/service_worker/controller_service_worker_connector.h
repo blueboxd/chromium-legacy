@@ -63,11 +63,12 @@ class CONTENT_EXPORT ControllerServiceWorkerConnector
   // |remote_controller| may be nullptr if the caller does not yet have a Mojo
   // connection to the controller. |state_| is set to kDisconnected in that
   // case.
-  // Creates and holds the ownership of |container_host_ptr_| (as |this|
+  // Creates and holds the ownership of |container_host_| (as |this|
   // will be created on a different thread from the thread that has the
-  // original |container_host|).
+  // original |remote_container_host|).
   ControllerServiceWorkerConnector(
-      blink::mojom::ServiceWorkerContainerHostPtrInfo container_host_info,
+      mojo::PendingRemote<blink::mojom::ServiceWorkerContainerHost>
+          remote_container_host,
       mojo::PendingRemote<blink::mojom::ControllerServiceWorker>
           remote_controller,
       const std::string& client_id);
@@ -108,7 +109,7 @@ class CONTENT_EXPORT ControllerServiceWorkerConnector
   mojo::ReceiverSet<blink::mojom::ControllerServiceWorkerConnector> receivers_;
 
   // Connection to the container host in the browser process.
-  blink::mojom::ServiceWorkerContainerHostPtr container_host_ptr_;
+  mojo::Remote<blink::mojom::ServiceWorkerContainerHost> container_host_;
 
   // Connection to the controller service worker, which lives in a renderer
   // process that's not necessarily the same as this connector.

@@ -90,8 +90,7 @@ HostBackendDelegateImpl::HostBackendDelegateImpl(
       eligible_host_devices_provider_(eligible_host_devices_provider),
       pref_service_(pref_service),
       device_sync_client_(device_sync_client),
-      timer_(std::move(timer)),
-      weak_ptr_factory_(this) {
+      timer_(std::move(timer)) {
   device_sync_client_->AddObserver(this);
 
   host_from_last_sync_ = GetHostFromDeviceSync();

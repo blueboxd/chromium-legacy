@@ -64,7 +64,7 @@ void SetSystemTrayVisibility(SystemTrayVisibility visibility) {
 
 LoginScreenController::LoginScreenController(
     SystemTrayNotifier* system_tray_notifier)
-    : system_tray_notifier_(system_tray_notifier), weak_factory_(this) {
+    : system_tray_notifier_(system_tray_notifier) {
   system_tray_notifier_->AddSystemTrayFocusObserver(this);
 }
 

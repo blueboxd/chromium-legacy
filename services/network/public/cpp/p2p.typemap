@@ -14,10 +14,10 @@ public_deps = [
 ]
 
 type_mappings = [
-  "network.mojom.P2PPacketInfo=network::P2PPacketInfo",
-  "network.mojom.P2PSendPacketMetrics=network::P2PSendPacketMetrics",
-  "network.mojom.P2PPortRange=network::P2PPortRange",
-  "network.mojom.P2PHostAndIPEndPoint=network::P2PHostAndIPEndPoint",
-  "network.mojom.P2PSocketOption=network::P2PSocketOption",
-  "network.mojom.P2PSocketType=network::P2PSocketType",
+  "network.mojom.P2PPacketInfo=::network::P2PPacketInfo",
+  "network.mojom.P2PSendPacketMetrics=::network::P2PSendPacketMetrics",
+  "network.mojom.P2PPortRange=::network::P2PPortRange",
+  "network.mojom.P2PHostAndIPEndPoint=::network::P2PHostAndIPEndPoint",
+  "network.mojom.P2PSocketOption=::network::P2PSocketOption",
+  "network.mojom.P2PSocketType=::network::P2PSocketType",
 ]

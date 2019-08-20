@@ -66,6 +66,7 @@
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/public/platform/web_url_loader_factory.h"
+#include "ui/base/resource/scale_factor.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -408,7 +409,23 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Resources -----------------------------------------------------------
 
   // Returns a blob of data corresponding to the named resource.
+  // This is deprecated.  Use GetDataResource(int, ...) or
+  // UncompressDataResource(int).
+  // TODO(crbug.com/983396): Remove this.
   virtual WebData GetDataResource(const char* name) { return WebData(); }
+
+  // Returns a blob of data corresponding to |resource_id|. This should not be
+  // used for resources which have compress="gzip" in *.grd.
+  virtual WebData GetDataResource(
+      int resource_id,
+      ui::ScaleFactor scale_factor = ui::SCALE_FACTOR_NONE) {
+    return WebData();
+  }
+
+  // Gets a blob of data resource corresponding to |resource_id|, then
+  // uncompresses it. This should be used for resources which have
+  // compress="gzip" in *.grd.
+  virtual WebData UncompressDataResource(int resource_id) { return WebData(); }
 
   // Decodes the in-memory audio file data and returns the linear PCM audio data
   // in the |destination_bus|.

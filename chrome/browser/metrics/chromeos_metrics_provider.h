@@ -140,7 +140,7 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
   // ARC release version obtained from build properties.
   base::Optional<std::string> arc_release_ = base::nullopt;
 
-  base::WeakPtrFactory<ChromeOSMetricsProvider> weak_ptr_factory_;
+  base::WeakPtrFactory<ChromeOSMetricsProvider> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ChromeOSMetricsProvider);
 };

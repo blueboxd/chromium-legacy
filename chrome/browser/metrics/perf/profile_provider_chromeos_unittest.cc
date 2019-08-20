@@ -64,8 +64,7 @@ class TestMetricCollector : public internal::MetricCollector {
  public:
   TestMetricCollector() : TestMetricCollector(CollectionParams()) {}
   explicit TestMetricCollector(const CollectionParams& collection_params)
-      : internal::MetricCollector("UMA.CWP.TestData", collection_params),
-        weak_factory_(this) {}
+      : internal::MetricCollector("UMA.CWP.TestData", collection_params) {}
 
   const char* ToolName() const override { return "test"; }
   base::WeakPtr<internal::MetricCollector> GetWeakPtr() override {
@@ -85,7 +84,7 @@ class TestMetricCollector : public internal::MetricCollector {
   }
 
  private:
-  base::WeakPtrFactory<TestMetricCollector> weak_factory_;
+  base::WeakPtrFactory<TestMetricCollector> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestMetricCollector);
 };

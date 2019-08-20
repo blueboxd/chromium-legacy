@@ -51,8 +51,7 @@ WelcomeScreen::WelcomeScreen(WelcomeView* view,
                              const base::RepeatingClosure& exit_callback)
     : BaseScreen(WelcomeView::kScreenId),
       view_(view),
-      exit_callback_(exit_callback),
-      weak_factory_(this) {
+      exit_callback_(exit_callback) {
   if (view_)
     view_->Bind(this);
 

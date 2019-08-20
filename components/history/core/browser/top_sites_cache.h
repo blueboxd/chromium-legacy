@@ -42,7 +42,7 @@ class TopSitesCache {
  private:
   // The entries in CanonicalURLs, see CanonicalURLs for details. The second
   // argument gives the index of the URL into MostVisitedURLs redirects.
-  typedef std::pair<MostVisitedURL*, size_t> CanonicalURLEntry;
+  using CanonicalURLEntry = std::pair<MostVisitedURL*, size_t>;
 
   // Comparator used for CanonicalURLs.
   class CanonicalURLComparator {
@@ -74,8 +74,8 @@ class TopSitesCache {
   // index of the redirect as the key, and the index into top_sites_ as the
   // value. This way we aren't duplicating GURLs. CanonicalURLComparator
   // enforces the ordering as if we were using GURLs.
-  typedef std::map<CanonicalURLEntry, size_t,
-                   CanonicalURLComparator> CanonicalURLs;
+  using CanonicalURLs =
+      std::map<CanonicalURLEntry, size_t, CanonicalURLComparator>;
 
   // Generates the set of canonical urls from |top_sites_|.
   void GenerateCanonicalURLs();
@@ -93,7 +93,7 @@ class TopSitesCache {
   MostVisitedURLList top_sites_;
 
   // Generated from the redirects to and from the most visited pages. See
-  // description above typedef for details.
+  // description above CanonicalURLs for details.
   CanonicalURLs canonical_urls_;
 
   DISALLOW_COPY_AND_ASSIGN(TopSitesCache);

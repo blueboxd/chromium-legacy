@@ -195,7 +195,7 @@ void OnError(const ShillClientHelper::ErrorCallback& error_callback,
 }  // namespace
 
 ShillClientHelper::ShillClientHelper(dbus::ObjectProxy* proxy)
-    : proxy_(proxy), active_refs_(0), weak_ptr_factory_(this) {}
+    : proxy_(proxy), active_refs_(0) {}
 
 ShillClientHelper::~ShillClientHelper() {
   if (observer_list_.might_have_observers())

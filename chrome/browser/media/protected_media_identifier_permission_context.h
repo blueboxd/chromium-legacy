@@ -85,7 +85,8 @@ class ProtectedMediaIdentifierPermissionContext
 
   // Must be the last member, to ensure that it will be
   // destroyed first, which will invalidate weak pointers
-  base::WeakPtrFactory<ProtectedMediaIdentifierPermissionContext> weak_factory_;
+  base::WeakPtrFactory<ProtectedMediaIdentifierPermissionContext> weak_factory_{
+      this};
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ProtectedMediaIdentifierPermissionContext);

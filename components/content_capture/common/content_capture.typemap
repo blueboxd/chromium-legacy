@@ -17,4 +17,4 @@ deps = [
   "//ui/gfx/geometry/mojom:mojom_traits",
 ]
 
-type_mappings = [ "content_capture.mojom.ContentCaptureData=content_capture::ContentCaptureData" ]
+type_mappings = [ "content_capture.mojom.ContentCaptureData=::content_capture::ContentCaptureData" ]

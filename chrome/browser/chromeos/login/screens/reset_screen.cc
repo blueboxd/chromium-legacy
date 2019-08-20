@@ -155,8 +155,7 @@ ResetScreen::ResetScreen(ResetView* view,
           g_tpm_firmware_update_checker
               ? *g_tpm_firmware_update_checker
               : base::BindRepeating(
-                    &tpm_firmware_update::GetAvailableUpdateModes)),
-      weak_ptr_factory_(this) {
+                    &tpm_firmware_update::GetAvailableUpdateModes)) {
   DCHECK(view_);
   if (view_) {
     view_->Bind(this);

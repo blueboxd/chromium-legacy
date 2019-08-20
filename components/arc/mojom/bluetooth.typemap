@@ -14,8 +14,8 @@ deps = [
   "//device/bluetooth/public/cpp",
 ]
 type_mappings = [
-  "arc.mojom.BluetoothDeviceType=device::BluetoothTransport",
-  "arc.mojom.BluetoothSdpAttributeType=bluez::BluetoothServiceAttributeValueBlueZ::Type",
-  "arc.mojom.BluetoothUUID=device::BluetoothUUID",
-  "arc.mojom.BluetoothAdvertisement=std::unique_ptr<device::BluetoothAdvertisement::Data>[move_only]",
+  "arc.mojom.BluetoothDeviceType=::device::BluetoothTransport",
+  "arc.mojom.BluetoothSdpAttributeType=::bluez::BluetoothServiceAttributeValueBlueZ::Type",
+  "arc.mojom.BluetoothUUID=::device::BluetoothUUID",
+  "arc.mojom.BluetoothAdvertisement=::std::unique_ptr<::device::BluetoothAdvertisement::Data>[move_only]",
 ]

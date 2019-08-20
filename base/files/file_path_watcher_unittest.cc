@@ -501,6 +501,16 @@ TEST_F(FilePathWatcherTest, RecursiveWatch) {
   ASSERT_TRUE(base::CreateDirectory(subdir));
   ASSERT_TRUE(WaitForEvents());
 
+// Mac and Win don't generate events for Touch.
+// Android TouchFile returns false.
+#if !(defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_ANDROID))
+  // Touch "$dir".
+  Time access_time;
+  ASSERT_TRUE(Time::FromString("Wed, 16 Nov 1994, 00:00:00", &access_time));
+  ASSERT_TRUE(base::TouchFile(dir, access_time, access_time));
+  ASSERT_TRUE(WaitForEvents());
+#endif  // !(defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_ANDROID))
+
   // Create "$dir/subdir/subdir_file1".
   FilePath subdir_file1(subdir.AppendASCII("subdir_file1"));
   ASSERT_TRUE(WriteFile(subdir_file1, "content"));

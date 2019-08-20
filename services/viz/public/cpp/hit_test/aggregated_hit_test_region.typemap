@@ -13,4 +13,4 @@ sources = [
   "//services/viz/public/cpp/hit_test/aggregated_hit_test_region_mojom_traits.cc",
 ]
 type_mappings =
-    [ "viz.mojom.AggregatedHitTestRegion=viz::AggregatedHitTestRegion" ]
+    [ "viz.mojom.AggregatedHitTestRegion=::viz::AggregatedHitTestRegion" ]

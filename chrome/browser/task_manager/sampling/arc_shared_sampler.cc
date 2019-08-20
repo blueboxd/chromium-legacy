@@ -25,7 +25,7 @@ constexpr base::TimeDelta kSystemThrottleLimit =
     base::TimeDelta::FromSeconds(3);
 }  // namespace
 
-ArcSharedSampler::ArcSharedSampler() : weak_ptr_factory_(this) {}
+ArcSharedSampler::ArcSharedSampler() {}
 
 ArcSharedSampler::~ArcSharedSampler() = default;
 

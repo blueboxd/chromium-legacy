@@ -76,7 +76,7 @@ class DisplayInfoProviderChromeOS : public DisplayInfoProvider,
 
   ash::mojom::CrosDisplayConfigControllerPtr cros_display_config_;
   std::string touch_calibration_target_id_;
-  base::WeakPtrFactory<DisplayInfoProviderChromeOS> weak_ptr_factory_;
+  base::WeakPtrFactory<DisplayInfoProviderChromeOS> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DisplayInfoProviderChromeOS);
 };

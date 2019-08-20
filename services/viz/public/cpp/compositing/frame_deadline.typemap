@@ -11,4 +11,4 @@ deps = [
 sources = [
   "//services/viz/public/cpp/compositing/frame_deadline_mojom_traits.cc",
 ]
-type_mappings = [ "viz.mojom.FrameDeadline=viz::FrameDeadline" ]
+type_mappings = [ "viz.mojom.FrameDeadline=::viz::FrameDeadline" ]

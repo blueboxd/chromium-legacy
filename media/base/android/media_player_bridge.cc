@@ -65,6 +65,7 @@ void RecordWatchTimeUMA(bool is_hls, bool has_video) {
 
 MediaPlayerBridge::MediaPlayerBridge(const GURL& url,
                                      const GURL& site_for_cookies,
+                                     const url::Origin& top_frame_origin,
                                      const std::string& user_agent,
                                      bool hide_url_log,
                                      Client* client,
@@ -75,6 +76,7 @@ MediaPlayerBridge::MediaPlayerBridge(const GURL& url,
       should_seek_on_prepare_(false),
       url_(url),
       site_for_cookies_(site_for_cookies),
+      top_frame_origin_(top_frame_origin),
       user_agent_(user_agent),
       hide_url_log_(hide_url_log),
       width_(0),
@@ -123,7 +125,7 @@ void MediaPlayerBridge::Initialize() {
         client_->GetMediaResourceGetter();
 
     resource_getter->GetCookies(
-        url_, site_for_cookies_,
+        url_, site_for_cookies_, top_frame_origin_,
         base::BindOnce(&MediaPlayerBridge::OnCookiesRetrieved,
                        weak_factory_.GetWeakPtr()));
   }

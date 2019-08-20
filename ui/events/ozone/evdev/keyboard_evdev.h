@@ -97,7 +97,7 @@ class EVENTS_OZONE_EVDEV_EXPORT KeyboardEvdev
   // Key repeat handler.
   EventAutoRepeatHandler auto_repeat_handler_;
 
-  base::WeakPtrFactory<KeyboardEvdev> weak_ptr_factory_;
+  base::WeakPtrFactory<KeyboardEvdev> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardEvdev);
 };

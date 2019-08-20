@@ -102,7 +102,7 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
   void SelectCache(const GURL& document_url,
                    const int64_t cache_document_was_loaded_from,
                    const GURL& manifest_url) override;
-  void SelectCacheForSharedWorker(int64_t appcache_id) override;
+  void SelectCacheForWorker(int64_t appcache_id) override;
   void MarkAsForeignEntry(const GURL& document_url,
                           int64_t cache_document_was_loaded_from) override;
   void GetStatus(GetStatusCallback callback) override;

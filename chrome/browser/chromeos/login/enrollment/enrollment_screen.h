@@ -205,7 +205,7 @@ class EnrollmentScreen
   // Active Directory domain.
   std::unique_ptr<AuthPolicyHelper> authpolicy_login_helper_;
 
-  base::WeakPtrFactory<EnrollmentScreen> weak_ptr_factory_;
+  base::WeakPtrFactory<EnrollmentScreen> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(EnrollmentScreen);
 };
 

@@ -63,7 +63,7 @@ class UserBoardScreenHandler : public BaseScreenHandler, public UserBoardView {
   base::WeakPtr<UserBoardView> GetWeakPtr() override;
 
   UserSelectionScreen* screen_ = nullptr;
-  base::WeakPtrFactory<UserBoardScreenHandler> weak_factory_;
+  base::WeakPtrFactory<UserBoardScreenHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UserBoardScreenHandler);
 };

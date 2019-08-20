@@ -95,7 +95,7 @@ class AndroidManagementClient {
 
   StatusCallback callback_;
 
-  base::WeakPtrFactory<AndroidManagementClient> weak_ptr_factory_;
+  base::WeakPtrFactory<AndroidManagementClient> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AndroidManagementClient);
 };

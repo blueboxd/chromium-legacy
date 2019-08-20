@@ -13,8 +13,7 @@ FakeClientConnectionParameters::FakeClientConnectionParameters(
     const std::string& feature,
     base::OnceCallback<void(const base::UnguessableToken&)> destructor_callback)
     : ClientConnectionParameters(feature),
-      destructor_callback_(std::move(destructor_callback)),
-      weak_ptr_factory_(this) {}
+      destructor_callback_(std::move(destructor_callback)) {}
 
 FakeClientConnectionParameters::~FakeClientConnectionParameters() {
   if (destructor_callback_)

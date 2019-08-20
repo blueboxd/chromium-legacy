@@ -15,8 +15,7 @@ namespace chromeos {
 
 MachineLearningDecisionServiceProvider::MachineLearningDecisionServiceProvider()
     : user_activity_controller_(
-          std::make_unique<power::ml::UserActivityController>()),
-      weak_ptr_factory_(this) {}
+          std::make_unique<power::ml::UserActivityController>()) {}
 
 MachineLearningDecisionServiceProvider::
     ~MachineLearningDecisionServiceProvider() = default;

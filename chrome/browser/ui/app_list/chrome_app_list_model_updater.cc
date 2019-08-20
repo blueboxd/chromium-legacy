@@ -19,7 +19,7 @@
 #include "ui/base/models/menu_model.h"
 
 ChromeAppListModelUpdater::ChromeAppListModelUpdater(Profile* profile)
-    : profile_(profile), weak_ptr_factory_(this) {}
+    : profile_(profile) {}
 
 ChromeAppListModelUpdater::~ChromeAppListModelUpdater() = default;
 

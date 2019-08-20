@@ -112,7 +112,7 @@ class FileStreamReader : public storage::FileStreamReader {
   scoped_refptr<OperationRunner> runner_;
   State state_;
 
-  base::WeakPtrFactory<FileStreamReader> weak_ptr_factory_;
+  base::WeakPtrFactory<FileStreamReader> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(FileStreamReader);
 };
 

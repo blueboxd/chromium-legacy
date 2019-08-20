@@ -51,7 +51,7 @@ std::unique_ptr<message_center::Notification> CreateNotification(
 
 EasyUnlockNotificationController::EasyUnlockNotificationController(
     Profile* profile)
-    : profile_(profile), weak_ptr_factory_(this) {}
+    : profile_(profile) {}
 
 EasyUnlockNotificationController::~EasyUnlockNotificationController() {}
 

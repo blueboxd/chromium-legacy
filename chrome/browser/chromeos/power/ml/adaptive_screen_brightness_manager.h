@@ -156,7 +156,7 @@ class AdaptiveScreenBrightnessManager
   base::Optional<bool> is_video_playing_;
   base::Optional<ScreenBrightnessEvent_Event_Reason> reason_;
 
-  base::WeakPtrFactory<AdaptiveScreenBrightnessManager> weak_ptr_factory_;
+  base::WeakPtrFactory<AdaptiveScreenBrightnessManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AdaptiveScreenBrightnessManager);
 };

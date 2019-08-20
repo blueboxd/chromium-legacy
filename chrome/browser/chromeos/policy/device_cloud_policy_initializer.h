@@ -149,7 +149,8 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
     cryptohome::AsyncMethodCaller* async_method_caller_;
 
     // Used to create tasks which run delayed on the UI thread.
-    base::WeakPtrFactory<TpmEnrollmentKeySigningService> weak_ptr_factory_;
+    base::WeakPtrFactory<TpmEnrollmentKeySigningService> weak_ptr_factory_{
+        this};
   };
 
   // Handles completion signaled by |enrollment_handler_|.

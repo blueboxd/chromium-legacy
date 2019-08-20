@@ -75,7 +75,7 @@ bool DemoExtensionsExternalLoader::SupportedForProfile(Profile* profile) {
 
 DemoExtensionsExternalLoader::DemoExtensionsExternalLoader(
     const base::FilePath& cache_dir)
-    : cache_dir_(cache_dir), weak_ptr_factory_(this) {
+    : cache_dir_(cache_dir) {
   DCHECK(DemoSession::Get() && DemoSession::Get()->started());
 }
 

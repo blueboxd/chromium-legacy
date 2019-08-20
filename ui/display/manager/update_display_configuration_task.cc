@@ -28,8 +28,7 @@ UpdateDisplayConfigurationTask::UpdateDisplayConfigurationTask(
       power_flags_(power_flags),
       force_configure_(force_configure),
       callback_(callback),
-      requesting_displays_(false),
-      weak_ptr_factory_(this) {
+      requesting_displays_(false) {
   delegate_->AddObserver(this);
 }
 

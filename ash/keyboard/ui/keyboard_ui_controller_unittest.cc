@@ -112,7 +112,7 @@ class KeyboardContainerObserver : public aura::WindowObserver {
 
 class SetModeCallbackInvocationCounter {
  public:
-  SetModeCallbackInvocationCounter() : weak_factory_invoke_(this) {}
+  SetModeCallbackInvocationCounter() {}
 
   void Invoke(bool status) {
     if (status)
@@ -133,7 +133,8 @@ class SetModeCallbackInvocationCounter {
  private:
   int invocation_count_success_ = 0;
   int invocation_count_failure_ = 0;
-  base::WeakPtrFactory<SetModeCallbackInvocationCounter> weak_factory_invoke_;
+  base::WeakPtrFactory<SetModeCallbackInvocationCounter> weak_factory_invoke_{
+      this};
 };
 
 }  // namespace

@@ -13,4 +13,4 @@ public_deps = [
   "//base:testfidl",
   "//fuchsia/mojom:traits",
 ]
-type_mappings = [ "fuchsia.test.mojom.TestInterfaceRequest=fidl::InterfaceRequest<base::fuchsia::testfidl::TestInterface>[move_only]" ]
+type_mappings = [ "fuchsia.test.mojom.TestInterfaceRequest=::fidl::InterfaceRequest<::base::fuchsia::testfidl::TestInterface>[move_only]" ]

@@ -17,9 +17,9 @@ public_deps = [
   "//third_party/webrtc/api:libjingle_peerconnection_api",
 ]
 type_mappings = [
-  "audio.mojom.AudioProcessingSettings=media::AudioProcessingSettings",
-  "audio.mojom.AudioProcessingStats=webrtc::AudioProcessorInterface::AudioProcessorStatistics",
-  "audio.mojom.AutomaticGainControlType=media::AutomaticGainControlType",
-  "audio.mojom.EchoCancellationType=media::EchoCancellationType",
-  "audio.mojom.NoiseSuppressionType=media::NoiseSuppressionType",
+  "audio.mojom.AudioProcessingSettings=::media::AudioProcessingSettings",
+  "audio.mojom.AudioProcessingStats=::webrtc::AudioProcessorInterface::AudioProcessorStatistics",
+  "audio.mojom.AutomaticGainControlType=::media::AutomaticGainControlType",
+  "audio.mojom.EchoCancellationType=::media::EchoCancellationType",
+  "audio.mojom.NoiseSuppressionType=::media::NoiseSuppressionType",
 ]

@@ -52,7 +52,7 @@ class DemoSetupScreen : public BaseScreen {
   DemoSetupScreenView* view_;
   ScreenExitCallback exit_callback_;
 
-  base::WeakPtrFactory<DemoSetupScreen> weak_ptr_factory_;
+  base::WeakPtrFactory<DemoSetupScreen> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DemoSetupScreen);
 };

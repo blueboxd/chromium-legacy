@@ -463,8 +463,8 @@ TEST_F(ServiceWorkerProviderHostTest, RemoveProvider) {
   EXPECT_TRUE(context_->GetProviderHost(provider_id));
 
   // Disconnect the mojo pipe from the renderer side.
-  ASSERT_TRUE(remote_endpoints_.back().host_ptr()->is_bound());
-  remote_endpoints_.back().host_ptr()->reset();
+  ASSERT_TRUE(remote_endpoints_.back().host_remote()->is_bound());
+  remote_endpoints_.back().host_remote()->reset();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(context_->GetProviderHost(provider_id));
 }
@@ -472,8 +472,9 @@ TEST_F(ServiceWorkerProviderHostTest, RemoveProvider) {
 class MockServiceWorkerContainer : public blink::mojom::ServiceWorkerContainer {
  public:
   explicit MockServiceWorkerContainer(
-      blink::mojom::ServiceWorkerContainerAssociatedRequest request)
-      : binding_(this, std::move(request)) {}
+      mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainer>
+          receiver)
+      : receiver_(this, std::move(receiver)) {}
 
   ~MockServiceWorkerContainer() override = default;
 
@@ -490,7 +491,7 @@ class MockServiceWorkerContainer : public blink::mojom::ServiceWorkerContainer {
 
  private:
   bool was_set_controller_called_ = false;
-  mojo::AssociatedBinding<blink::mojom::ServiceWorkerContainer> binding_;
+  mojo::AssociatedReceiver<blink::mojom::ServiceWorkerContainer> receiver_;
 };
 
 TEST_F(ServiceWorkerProviderHostTest, Controller) {
@@ -503,7 +504,7 @@ TEST_F(ServiceWorkerProviderHostTest, Controller) {
   remote_endpoints_.emplace_back();
   remote_endpoints_.back().BindForWindow(std::move(host_and_info->info));
   auto container = std::make_unique<MockServiceWorkerContainer>(
-      std::move(*remote_endpoints_.back().client_request()));
+      std::move(*remote_endpoints_.back().client_receiver()));
 
   // Create an active version and then start the navigation.
   scoped_refptr<ServiceWorkerVersion> version = new ServiceWorkerVersion(
@@ -519,7 +520,7 @@ TEST_F(ServiceWorkerProviderHostTest, Controller) {
   FinishNavigation(host.get());
   host->SetControllerRegistration(registration1_,
                                   false /* notify_controllerchange */);
-  remote_endpoints_.back().host_ptr()->get()->OnExecutionReady();
+  remote_endpoints_.back().host_remote()->get()->OnExecutionReady();
   base::RunLoop().RunUntilIdle();
 
   // The page should be controlled since there was an active version at the
@@ -539,7 +540,7 @@ TEST_F(ServiceWorkerProviderHostTest, UncontrolledWithMatchingRegistration) {
   remote_endpoints_.emplace_back();
   remote_endpoints_.back().BindForWindow(std::move(host_and_info->info));
   auto container = std::make_unique<MockServiceWorkerContainer>(
-      std::move(*remote_endpoints_.back().client_request()));
+      std::move(*remote_endpoints_.back().client_receiver()));
 
   // Create an installing version and then start the navigation.
   scoped_refptr<ServiceWorkerVersion> version = new ServiceWorkerVersion(
@@ -576,7 +577,7 @@ TEST_F(ServiceWorkerProviderHostTest,
           GURL("https://www.example.com/top"));
 
   EXPECT_EQ(blink::mojom::ServiceWorkerErrorType::kDisabled,
-            Register(remote_endpoint.host_ptr()->get(),
+            Register(remote_endpoint.host_remote()->get(),
                      GURL("https://www.example.com/scope"),
                      GURL("https://www.example.com/bar")));
   ASSERT_EQ(1ul, test_browser_client.logs().size());
@@ -588,7 +589,7 @@ TEST_F(ServiceWorkerProviderHostTest,
             test_browser_client.logs()[0].script_url);
 
   EXPECT_EQ(blink::mojom::ServiceWorkerErrorType::kDisabled,
-            GetRegistration(remote_endpoint.host_ptr()->get(),
+            GetRegistration(remote_endpoint.host_remote()->get(),
                             GURL("https://www.example.com/")));
   ASSERT_EQ(2ul, test_browser_client.logs().size());
   EXPECT_EQ(GURL("https://www.example.com/foo"),
@@ -598,7 +599,7 @@ TEST_F(ServiceWorkerProviderHostTest,
   EXPECT_EQ(GURL(), test_browser_client.logs()[1].script_url);
 
   EXPECT_EQ(blink::mojom::ServiceWorkerErrorType::kDisabled,
-            GetRegistrations(remote_endpoint.host_ptr()->get()));
+            GetRegistrations(remote_endpoint.host_remote()->get()));
   ASSERT_EQ(3ul, test_browser_client.logs().size());
   EXPECT_EQ(GURL("https://www.example.com/foo"),
             test_browser_client.logs()[2].scope);
@@ -645,7 +646,7 @@ TEST_F(ServiceWorkerProviderHostTest, Register_HTTPS) {
       PrepareServiceWorkerProviderHost(GURL("https://www.example.com/foo"));
 
   EXPECT_EQ(blink::mojom::ServiceWorkerErrorType::kNone,
-            Register(remote_endpoint.host_ptr()->get(),
+            Register(remote_endpoint.host_remote()->get(),
                      GURL("https://www.example.com/"),
                      GURL("https://www.example.com/bar")));
 }
@@ -655,7 +656,7 @@ TEST_F(ServiceWorkerProviderHostTest, Register_NonSecureTransportLocalhost) {
       PrepareServiceWorkerProviderHost(GURL("http://127.0.0.3:81/foo"));
 
   EXPECT_EQ(blink::mojom::ServiceWorkerErrorType::kNone,
-            Register(remote_endpoint.host_ptr()->get(),
+            Register(remote_endpoint.host_remote()->get(),
                      GURL("http://127.0.0.3:81/bar"),
                      GURL("http://127.0.0.3:81/baz")));
 }
@@ -665,7 +666,7 @@ TEST_F(ServiceWorkerProviderHostTest, Register_InvalidScopeShouldFail) {
       PrepareServiceWorkerProviderHost(GURL("https://www.example.com/foo"));
 
   ASSERT_TRUE(bad_messages_.empty());
-  Register(remote_endpoint.host_ptr()->get(), GURL(""),
+  Register(remote_endpoint.host_remote()->get(), GURL(""),
            GURL("https://www.example.com/bar/hoge.js"));
   EXPECT_EQ(1u, bad_messages_.size());
 }
@@ -675,7 +676,7 @@ TEST_F(ServiceWorkerProviderHostTest, Register_InvalidScriptShouldFail) {
       PrepareServiceWorkerProviderHost(GURL("https://www.example.com/foo"));
 
   ASSERT_TRUE(bad_messages_.empty());
-  Register(remote_endpoint.host_ptr()->get(),
+  Register(remote_endpoint.host_remote()->get(),
            GURL("https://www.example.com/bar/"), GURL(""));
   EXPECT_EQ(1u, bad_messages_.size());
 }
@@ -685,8 +686,8 @@ TEST_F(ServiceWorkerProviderHostTest, Register_NonSecureOriginShouldFail) {
       PrepareServiceWorkerProviderHost(GURL("http://www.example.com/foo"));
 
   ASSERT_TRUE(bad_messages_.empty());
-  Register(remote_endpoint.host_ptr()->get(), GURL("http://www.example.com/"),
-           GURL("http://www.example.com/bar"));
+  Register(remote_endpoint.host_remote()->get(),
+           GURL("http://www.example.com/"), GURL("http://www.example.com/bar"));
   EXPECT_EQ(1u, bad_messages_.size());
 }
 
@@ -696,32 +697,36 @@ TEST_F(ServiceWorkerProviderHostTest, Register_CrossOriginShouldFail) {
 
   ASSERT_TRUE(bad_messages_.empty());
   // Script has a different host
-  Register(remote_endpoint.host_ptr()->get(), GURL("https://www.example.com/"),
+  Register(remote_endpoint.host_remote()->get(),
+           GURL("https://www.example.com/"),
            GURL("https://foo.example.com/bar"));
   EXPECT_EQ(1u, bad_messages_.size());
 
   // Scope has a different host
-  Register(remote_endpoint.host_ptr()->get(), GURL("https://foo.example.com/"),
+  Register(remote_endpoint.host_remote()->get(),
+           GURL("https://foo.example.com/"),
            GURL("https://www.example.com/bar"));
   EXPECT_EQ(2u, bad_messages_.size());
 
   // Script has a different port
-  Register(remote_endpoint.host_ptr()->get(), GURL("https://www.example.com/"),
+  Register(remote_endpoint.host_remote()->get(),
+           GURL("https://www.example.com/"),
            GURL("https://www.example.com:8080/bar"));
   EXPECT_EQ(3u, bad_messages_.size());
 
   // Scope has a different transport
-  Register(remote_endpoint.host_ptr()->get(), GURL("wss://www.example.com/"),
+  Register(remote_endpoint.host_remote()->get(), GURL("wss://www.example.com/"),
            GURL("https://www.example.com/bar"));
   EXPECT_EQ(4u, bad_messages_.size());
 
   // Script and scope have a different host but match each other
-  Register(remote_endpoint.host_ptr()->get(), GURL("https://foo.example.com/"),
+  Register(remote_endpoint.host_remote()->get(),
+           GURL("https://foo.example.com/"),
            GURL("https://foo.example.com/bar"));
   EXPECT_EQ(5u, bad_messages_.size());
 
   // Script and scope URLs are invalid
-  Register(remote_endpoint.host_ptr()->get(), GURL(), GURL("h@ttps://@"));
+  Register(remote_endpoint.host_remote()->get(), GURL(), GURL("h@ttps://@"));
   EXPECT_EQ(6u, bad_messages_.size());
 }
 
@@ -730,30 +735,33 @@ TEST_F(ServiceWorkerProviderHostTest, Register_BadCharactersShouldFail) {
       PrepareServiceWorkerProviderHost(GURL("https://www.example.com"));
 
   ASSERT_TRUE(bad_messages_.empty());
-  Register(remote_endpoint.host_ptr()->get(),
+  Register(remote_endpoint.host_remote()->get(),
            GURL("https://www.example.com/%2f"),
            GURL("https://www.example.com/"));
   EXPECT_EQ(1u, bad_messages_.size());
 
-  Register(remote_endpoint.host_ptr()->get(),
+  Register(remote_endpoint.host_remote()->get(),
            GURL("https://www.example.com/%2F"),
            GURL("https://www.example.com/"));
   EXPECT_EQ(2u, bad_messages_.size());
 
-  Register(remote_endpoint.host_ptr()->get(), GURL("https://www.example.com/"),
+  Register(remote_endpoint.host_remote()->get(),
+           GURL("https://www.example.com/"),
            GURL("https://www.example.com/%2f"));
   EXPECT_EQ(3u, bad_messages_.size());
 
-  Register(remote_endpoint.host_ptr()->get(),
+  Register(remote_endpoint.host_remote()->get(),
            GURL("https://www.example.com/%5c"),
            GURL("https://www.example.com/"));
   EXPECT_EQ(4u, bad_messages_.size());
 
-  Register(remote_endpoint.host_ptr()->get(), GURL("https://www.example.com/"),
+  Register(remote_endpoint.host_remote()->get(),
+           GURL("https://www.example.com/"),
            GURL("https://www.example.com/%5c"));
   EXPECT_EQ(5u, bad_messages_.size());
 
-  Register(remote_endpoint.host_ptr()->get(), GURL("https://www.example.com/"),
+  Register(remote_endpoint.host_remote()->get(),
+           GURL("https://www.example.com/"),
            GURL("https://www.example.com/%5C"));
   EXPECT_EQ(6u, bad_messages_.size());
 }
@@ -764,17 +772,17 @@ TEST_F(ServiceWorkerProviderHostTest, Register_FileSystemDocumentShouldFail) {
           GURL("filesystem:https://www.example.com/temporary/a"));
 
   ASSERT_TRUE(bad_messages_.empty());
-  Register(remote_endpoint.host_ptr()->get(),
+  Register(remote_endpoint.host_remote()->get(),
            GURL("filesystem:https://www.example.com/temporary/"),
            GURL("https://www.example.com/temporary/bar"));
   EXPECT_EQ(1u, bad_messages_.size());
 
-  Register(remote_endpoint.host_ptr()->get(),
+  Register(remote_endpoint.host_remote()->get(),
            GURL("https://www.example.com/temporary/"),
            GURL("filesystem:https://www.example.com/temporary/bar"));
   EXPECT_EQ(2u, bad_messages_.size());
 
-  Register(remote_endpoint.host_ptr()->get(),
+  Register(remote_endpoint.host_remote()->get(),
            GURL("filesystem:https://www.example.com/temporary/"),
            GURL("filesystem:https://www.example.com/temporary/bar"));
   EXPECT_EQ(3u, bad_messages_.size());
@@ -787,17 +795,17 @@ TEST_F(ServiceWorkerProviderHostTest,
           GURL("https://www.example.com/temporary/"));
 
   ASSERT_TRUE(bad_messages_.empty());
-  Register(remote_endpoint.host_ptr()->get(),
+  Register(remote_endpoint.host_remote()->get(),
            GURL("filesystem:https://www.example.com/temporary/"),
            GURL("https://www.example.com/temporary/bar"));
   EXPECT_EQ(1u, bad_messages_.size());
 
-  Register(remote_endpoint.host_ptr()->get(),
+  Register(remote_endpoint.host_remote()->get(),
            GURL("https://www.example.com/temporary/"),
            GURL("filesystem:https://www.example.com/temporary/bar"));
   EXPECT_EQ(2u, bad_messages_.size());
 
-  Register(remote_endpoint.host_ptr()->get(),
+  Register(remote_endpoint.host_remote()->get(),
            GURL("filesystem:https://www.example.com/temporary/"),
            GURL("filesystem:https://www.example.com/temporary/bar"));
   EXPECT_EQ(3u, bad_messages_.size());
@@ -814,7 +822,7 @@ TEST_F(ServiceWorkerProviderHostTest, EarlyContextDeletion) {
 
   // Because ServiceWorkerContextCore owns ServiceWorkerProviderHost, our
   // ServiceWorkerProviderHost instance has destroyed.
-  EXPECT_TRUE(remote_endpoint.host_ptr()->encountered_error());
+  EXPECT_FALSE(remote_endpoint.host_remote()->is_connected());
 }
 
 TEST_F(ServiceWorkerProviderHostTest, GetRegistration_Success) {
@@ -823,11 +831,12 @@ TEST_F(ServiceWorkerProviderHostTest, GetRegistration_Success) {
 
   const GURL kScope("https://www.example.com/");
   EXPECT_EQ(blink::mojom::ServiceWorkerErrorType::kNone,
-            Register(remote_endpoint.host_ptr()->get(), kScope,
+            Register(remote_endpoint.host_remote()->get(), kScope,
                      GURL("https://www.example.com/sw.js")));
   blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info;
-  EXPECT_EQ(blink::mojom::ServiceWorkerErrorType::kNone,
-            GetRegistration(remote_endpoint.host_ptr()->get(), kScope, &info));
+  EXPECT_EQ(
+      blink::mojom::ServiceWorkerErrorType::kNone,
+      GetRegistration(remote_endpoint.host_remote()->get(), kScope, &info));
   ASSERT_TRUE(info);
   EXPECT_EQ(kScope, info->scope);
 }
@@ -839,7 +848,7 @@ TEST_F(ServiceWorkerProviderHostTest,
 
   blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info;
   EXPECT_EQ(blink::mojom::ServiceWorkerErrorType::kNone,
-            GetRegistration(remote_endpoint.host_ptr()->get(),
+            GetRegistration(remote_endpoint.host_remote()->get(),
                             GURL("https://www.example.com/"), &info));
   EXPECT_FALSE(info);
 }
@@ -849,7 +858,7 @@ TEST_F(ServiceWorkerProviderHostTest, GetRegistration_CrossOriginShouldFail) {
       PrepareServiceWorkerProviderHost(GURL("https://www.example.com/foo"));
 
   ASSERT_TRUE(bad_messages_.empty());
-  GetRegistration(remote_endpoint.host_ptr()->get(),
+  GetRegistration(remote_endpoint.host_remote()->get(),
                   GURL("https://foo.example.com/"));
   EXPECT_EQ(1u, bad_messages_.size());
 }
@@ -859,7 +868,7 @@ TEST_F(ServiceWorkerProviderHostTest, GetRegistration_InvalidScopeShouldFail) {
       PrepareServiceWorkerProviderHost(GURL("https://www.example.com/foo"));
 
   ASSERT_TRUE(bad_messages_.empty());
-  GetRegistration(remote_endpoint.host_ptr()->get(), GURL(""));
+  GetRegistration(remote_endpoint.host_remote()->get(), GURL(""));
   EXPECT_EQ(1u, bad_messages_.size());
 }
 
@@ -869,7 +878,7 @@ TEST_F(ServiceWorkerProviderHostTest,
       PrepareServiceWorkerProviderHost(GURL("http://www.example.com/foo"));
 
   ASSERT_TRUE(bad_messages_.empty());
-  GetRegistration(remote_endpoint.host_ptr()->get(),
+  GetRegistration(remote_endpoint.host_remote()->get(),
                   GURL("http://www.example.com/"));
   EXPECT_EQ(1u, bad_messages_.size());
 }
@@ -879,7 +888,7 @@ TEST_F(ServiceWorkerProviderHostTest, GetRegistrations_SecureOrigin) {
       PrepareServiceWorkerProviderHost(GURL("https://www.example.com/foo"));
 
   EXPECT_EQ(blink::mojom::ServiceWorkerErrorType::kNone,
-            GetRegistrations(remote_endpoint.host_ptr()->get()));
+            GetRegistrations(remote_endpoint.host_remote()->get()));
 }
 
 TEST_F(ServiceWorkerProviderHostTest,
@@ -888,7 +897,7 @@ TEST_F(ServiceWorkerProviderHostTest,
       PrepareServiceWorkerProviderHost(GURL("http://www.example.com/foo"));
 
   ASSERT_TRUE(bad_messages_.empty());
-  GetRegistrations(remote_endpoint.host_ptr()->get());
+  GetRegistrations(remote_endpoint.host_remote()->get());
   EXPECT_EQ(1u, bad_messages_.size());
 }
 
@@ -899,16 +908,20 @@ void ServiceWorkerProviderHostTest::TestReservedClientsAreNotExposed(
     blink::mojom::ServiceWorkerProviderType provider_type,
     const GURL url) {
   {
-    blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info;
-    blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request;
+    mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
+        client_remote;
+    mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
+        host_receiver;
     auto provider_info =
         blink::mojom::ServiceWorkerProviderInfoForClient::New();
-    provider_info->client_request = mojo::MakeRequest(&client_ptr_info);
-    host_request = mojo::MakeRequest(&provider_info->host_ptr_info);
+    provider_info->client_receiver =
+        client_remote.InitWithNewEndpointAndPassReceiver();
+    host_receiver =
+        provider_info->host_remote.InitWithNewEndpointAndPassReceiver();
     base::WeakPtr<ServiceWorkerProviderHost> host =
         ServiceWorkerProviderHost::PreCreateForWebWorker(
             context_->AsWeakPtr(), helper_->mock_render_process_id(),
-            provider_type, std::move(host_request), std::move(client_ptr_info));
+            provider_type, std::move(host_receiver), std::move(client_remote));
     host->UpdateUrls(url, url);
     EXPECT_FALSE(CanFindClientProviderHost(host.get()));
     host->CompleteWebWorkerPreparation();
@@ -929,7 +942,7 @@ void ServiceWorkerProviderHostTest::TestReservedClientsAreNotExposed(
 
     base::RunLoop run_loop;
     host->AddExecutionReadyCallback(run_loop.QuitClosure());
-    remote_endpoint.host_ptr()->get()->OnExecutionReady();
+    remote_endpoint.host_remote()->get()->OnExecutionReady();
     run_loop.Run();
     EXPECT_TRUE(CanFindClientProviderHost(host.get()));
   }
@@ -968,7 +981,7 @@ TEST_F(ServiceWorkerProviderHostTest, ClientPhaseForWindow) {
 
   base::RunLoop run_loop;
   host->AddExecutionReadyCallback(run_loop.QuitClosure());
-  remote_endpoint.host_ptr()->get()->OnExecutionReady();
+  remote_endpoint.host_remote()->get()->OnExecutionReady();
   run_loop.Run();
   EXPECT_TRUE(host->is_response_committed());
   EXPECT_TRUE(host->is_execution_ready());
@@ -978,15 +991,19 @@ TEST_F(ServiceWorkerProviderHostTest, ClientPhaseForWindow) {
 void ServiceWorkerProviderHostTest::TestClientPhaseTransition(
     blink::mojom::ServiceWorkerProviderType provider_type,
     const GURL url) {
-  blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info;
-  blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request;
+  mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
+      client_remote;
+  mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
+      host_receiver;
   auto provider_info = blink::mojom::ServiceWorkerProviderInfoForClient::New();
-  provider_info->client_request = mojo::MakeRequest(&client_ptr_info);
-  host_request = mojo::MakeRequest(&provider_info->host_ptr_info);
+  provider_info->client_receiver =
+      client_remote.InitWithNewEndpointAndPassReceiver();
+  host_receiver =
+      provider_info->host_remote.InitWithNewEndpointAndPassReceiver();
   base::WeakPtr<ServiceWorkerProviderHost> host =
       ServiceWorkerProviderHost::PreCreateForWebWorker(
           helper_->context()->AsWeakPtr(), helper_->mock_render_process_id(),
-          provider_type, std::move(host_request), std::move(client_ptr_info));
+          provider_type, std::move(host_receiver), std::move(client_remote));
   EXPECT_FALSE(host->is_response_committed());
   EXPECT_FALSE(host->is_execution_ready());
 
@@ -1044,8 +1061,8 @@ TEST_F(ServiceWorkerProviderHostTest, UpdateServiceWorkerOnDestruction) {
   ExpectUpdateIsNotScheduled(version2.get());
 
   // Destroy the provider host.
-  ASSERT_TRUE(remote_endpoints_.back().host_ptr()->is_bound());
-  remote_endpoints_.back().host_ptr()->reset();
+  ASSERT_TRUE(remote_endpoints_.back().host_remote()->is_bound());
+  remote_endpoints_.back().host_remote()->reset();
   base::RunLoop().RunUntilIdle();
 
   // The provider host's destructor should have scheduled the update.
@@ -1077,9 +1094,9 @@ TEST_F(ServiceWorkerProviderHostTest, HintToUpdateServiceWorker) {
   EXPECT_TRUE(HasVersionToUpdate(host));
 
   // Send the hint from the renderer. Update should be scheduled.
-  blink::mojom::ServiceWorkerContainerHostAssociatedPtr* host_ptr =
-      remote_endpoints_.back().host_ptr();
-  (*host_ptr)->HintToUpdateServiceWorker();
+  mojo::AssociatedRemote<blink::mojom::ServiceWorkerContainerHost>*
+      host_remote = remote_endpoints_.back().host_remote();
+  (*host_remote)->HintToUpdateServiceWorker();
   base::RunLoop().RunUntilIdle();
   ExpectUpdateIsScheduled(version1.get());
   EXPECT_FALSE(HasVersionToUpdate(host));
@@ -1112,9 +1129,9 @@ TEST_F(ServiceWorkerProviderHostTest,
 
   // Send the hint from the renderer. Update should not be scheduled, since
   // AddServiceWorkerToUpdate() was not called.
-  blink::mojom::ServiceWorkerContainerHostAssociatedPtr* host_ptr =
-      remote_endpoints_.back().host_ptr();
-  (*host_ptr)->HintToUpdateServiceWorker();
+  mojo::AssociatedRemote<blink::mojom::ServiceWorkerContainerHost>*
+      host_remote = remote_endpoints_.back().host_remote();
+  (*host_remote)->HintToUpdateServiceWorker();
   base::RunLoop().RunUntilIdle();
   ExpectUpdateIsNotScheduled(version1.get());
   EXPECT_FALSE(HasVersionToUpdate(host));
@@ -1168,9 +1185,9 @@ TEST_F(ServiceWorkerProviderHostTest, HintToUpdateServiceWorkerMultiple) {
 
   // Send the hint from the renderer. Update should be scheduled except for
   // |version3| as it's being used by another page.
-  blink::mojom::ServiceWorkerContainerHostAssociatedPtr* host_ptr =
-      remote_endpoints_.back().host_ptr();
-  (*host_ptr)->HintToUpdateServiceWorker();
+  mojo::AssociatedRemote<blink::mojom::ServiceWorkerContainerHost>*
+      host_remote = remote_endpoints_.back().host_remote();
+  (*host_remote)->HintToUpdateServiceWorker();
   base::RunLoop().RunUntilIdle();
   ExpectUpdateIsScheduled(version1.get());
   ExpectUpdateIsScheduled(version2.get());

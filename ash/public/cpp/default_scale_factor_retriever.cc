@@ -8,8 +8,7 @@
 
 namespace ash {
 
-DefaultScaleFactorRetriever::DefaultScaleFactorRetriever()
-    : weak_ptr_factory_(this) {}
+DefaultScaleFactorRetriever::DefaultScaleFactorRetriever() {}
 
 void DefaultScaleFactorRetriever::Start(
     ash::mojom::CrosDisplayConfigControllerPtr cros_display_config) {

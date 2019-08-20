@@ -173,10 +173,7 @@ class NetworkCertMigrator::MigrationTask
   base::WeakPtr<NetworkCertMigrator> cert_migrator_;
 };
 
-NetworkCertMigrator::NetworkCertMigrator()
-    : network_state_handler_(nullptr),
-      weak_ptr_factory_(this) {
-}
+NetworkCertMigrator::NetworkCertMigrator() : network_state_handler_(nullptr) {}
 
 NetworkCertMigrator::~NetworkCertMigrator() {
   network_state_handler_->RemoveObserver(this, FROM_HERE);

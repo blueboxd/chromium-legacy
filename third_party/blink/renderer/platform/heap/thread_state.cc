@@ -185,12 +185,10 @@ void ThreadState::DetachCurrentThread() {
 void ThreadState::AttachToIsolate(
     v8::Isolate* isolate,
     V8TraceRootsCallback v8_trace_roots,
-    V8VisitHandleSlotsCallback v8_visit_handle_slots,
     V8BuildEmbedderGraphCallback v8_build_embedder_graph) {
   DCHECK(isolate);
   isolate_ = isolate;
   v8_trace_roots_ = v8_trace_roots;
-  v8_visit_handle_slots_ = v8_visit_handle_slots;
   v8_build_embedder_graph_ = v8_build_embedder_graph;
   unified_heap_controller_.reset(new UnifiedHeapController(this));
   isolate_->SetEmbedderHeapTracer(unified_heap_controller_.get());
@@ -209,7 +207,6 @@ void ThreadState::DetachFromIsolate() {
   }
   isolate_ = nullptr;
   v8_trace_roots_ = nullptr;
-  v8_visit_handle_slots_ = nullptr;
   v8_build_embedder_graph_ = nullptr;
   unified_heap_controller_.reset();
 }
@@ -1428,6 +1425,42 @@ void ThreadState::AtomicPauseMarkEpilogue(BlinkGC::MarkingType marking_type) {
   LeaveGCForbiddenScope();
 }
 
+namespace {
+
+class ClearReferencesInDeadObjectsVisitor final
+    : public v8::PersistentHandleVisitor,
+      public v8::EmbedderHeapTracer::TracedGlobalHandleVisitor {
+ public:
+  explicit ClearReferencesInDeadObjectsVisitor(ThreadHeap* heap)
+      : heap_(heap) {}
+
+  void VisitPersistentHandle(v8::Persistent<v8::Value>* value,
+                             uint16_t class_id) final {
+    if (InDeadObject(value))
+      value->Reset();
+  }
+
+  void VisitTracedGlobalHandle(const v8::TracedGlobal<v8::Value>& value) final {
+    // TODO(mlippautz): Avoid const_cast after changing the API to allow
+    // modificaton of the TracedGlobal handle.
+    if (InDeadObject(&const_cast<v8::TracedGlobal<v8::Value>&>(value)))
+      const_cast<v8::TracedGlobal<v8::Value>&>(value).Reset();
+  }
+
+ private:
+  bool InDeadObject(void* address) {
+    // Filter slots not on the heap.
+    if (!heap_->LookupPageForAddress(reinterpret_cast<Address>(address)))
+      return false;
+
+    return !HeapObjectHeader::FromInnerAddress(address)->IsMarked();
+  }
+
+  ThreadHeap* const heap_;
+};
+
+}  // namespace
+
 void ThreadState::AtomicPauseSweepAndCompact(
     BlinkGC::MarkingType marking_type,
     BlinkGC::SweepingType sweeping_type) {
@@ -1461,6 +1494,15 @@ void ThreadState::AtomicPauseSweepAndCompact(
   // We have to set the GCPhase to Sweeping before calling pre-finalizers
   // to disallow a GC during the pre-finalizers.
   SetGCPhase(GCPhase::kSweeping);
+
+  if (!IsUnifiedHeapGC() && GetIsolate()) {
+    // Clear any Blink->V8 references in dead objects in case of a stand-alone
+    // garbage collection. This is necessary to avoid calling destructors on the
+    // references.
+    ClearReferencesInDeadObjectsVisitor visitor(&Heap());
+    GetIsolate()->VisitHandlesWithClassIds(&visitor);
+    unified_heap_controller()->IterateTracedGlobalHandles(&visitor);
+  }
 
   // Allocation is allowed during the pre-finalizers and destructors.
   // However, they must not mutate an object graph in a way in which
@@ -1519,11 +1561,26 @@ namespace {
 // b. Running a stand-alone V8 GC (e.g. Scavenger) that clears the handle.
 //
 // Both operations run on the main thread and not concurrent.
-class UnpoisonHandlesVisitor final : public DOMWrapperSlotsVisitor {
+class UnpoisonHandlesVisitor final
+    : public v8::PersistentHandleVisitor,
+      public v8::EmbedderHeapTracer::TracedGlobalHandleVisitor {
  public:
   explicit UnpoisonHandlesVisitor(ThreadHeap* heap) : heap_(heap) {}
 
-  void VisitSlot(void* address, size_t size) final {
+  void VisitPersistentHandle(v8::Persistent<v8::Value>* value,
+                             uint16_t class_id) final {
+    VisitSlot(value, sizeof(v8::Persistent<v8::Value>));
+  }
+
+  void VisitTracedGlobalHandle(const v8::TracedGlobal<v8::Value>& value) final {
+    // TODO(mlippautz): Avoid const_cast after changing the API to allow
+    // modificaton of the TracedGlobal handle.
+    VisitSlot(&const_cast<v8::TracedGlobal<v8::Value>&>(value),
+              sizeof(v8::TracedGlobal<v8::Value>));
+  }
+
+ private:
+  void VisitSlot(void* address, size_t size) {
     // Filter slots not on the heap.
     if (!heap_->LookupPageForAddress(reinterpret_cast<Address>(address)))
       return;
@@ -1535,7 +1592,6 @@ class UnpoisonHandlesVisitor final : public DOMWrapperSlotsVisitor {
     }
   }
 
- private:
   ThreadHeap* const heap_;
 };
 
@@ -1562,7 +1618,8 @@ void ThreadState::PoisonUnmarkedObjects() {
   // (cleared) until the destructors are run.
   if (GetIsolate()) {
     UnpoisonHandlesVisitor visitor(&Heap());
-    v8_visit_handle_slots_(GetIsolate(), &visitor);
+    GetIsolate()->VisitHandlesWithClassIds(&visitor);
+    unified_heap_controller()->IterateTracedGlobalHandles(&visitor);
   }
 }
 #endif  // ADDRESS_SANITIZER

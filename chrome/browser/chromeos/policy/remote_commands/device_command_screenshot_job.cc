@@ -90,8 +90,7 @@ std::unique_ptr<std::string> DeviceCommandScreenshotJob::Payload::Serialize() {
 DeviceCommandScreenshotJob::DeviceCommandScreenshotJob(
     std::unique_ptr<Delegate> screenshot_delegate)
     : num_pending_screenshots_(0),
-      screenshot_delegate_(std::move(screenshot_delegate)),
-      weak_ptr_factory_(this) {
+      screenshot_delegate_(std::move(screenshot_delegate)) {
   DCHECK(screenshot_delegate_);
 }
 

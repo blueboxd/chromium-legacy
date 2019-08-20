@@ -24,7 +24,7 @@ namespace arc {
 
 class ArcVmClientAdapter : public ArcClientAdapter {
  public:
-  ArcVmClientAdapter() : weak_factory_(this) {}
+  ArcVmClientAdapter() {}
   ~ArcVmClientAdapter() override = default;
 
   // ArcClientAdapter overrides:
@@ -99,7 +99,7 @@ class ArcVmClientAdapter : public ArcClientAdapter {
   base::Optional<bool> play_store_auto_update_;
 
   // For callbacks.
-  base::WeakPtrFactory<ArcVmClientAdapter> weak_factory_;
+  base::WeakPtrFactory<ArcVmClientAdapter> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcVmClientAdapter);
 };

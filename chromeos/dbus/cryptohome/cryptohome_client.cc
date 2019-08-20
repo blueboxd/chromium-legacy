@@ -112,7 +112,7 @@ class DbusObjectProxyWithUma {
 // The CryptohomeClient implementation.
 class CryptohomeClientImpl : public CryptohomeClient {
  public:
-  CryptohomeClientImpl() : weak_ptr_factory_(this) {}
+  CryptohomeClientImpl() {}
 
   // CryptohomeClient override.
   void AddObserver(Observer* observer) override {
@@ -1401,7 +1401,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<CryptohomeClientImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<CryptohomeClientImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CryptohomeClientImpl);
 };

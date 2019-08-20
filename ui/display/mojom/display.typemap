@@ -17,8 +17,8 @@ deps = [
 ]
 
 type_mappings = [
-  "display.mojom.Display=display::Display",
-  "display.mojom.Rotation=display::Display::Rotation",
-  "display.mojom.TouchSupport=display::Display::TouchSupport",
-  "display.mojom.AccelerometerSupport=display::Display::AccelerometerSupport",
+  "display.mojom.Display=::display::Display",
+  "display.mojom.Rotation=::display::Display::Rotation",
+  "display.mojom.TouchSupport=::display::Display::TouchSupport",
+  "display.mojom.AccelerometerSupport=::display::Display::AccelerometerSupport",
 ]

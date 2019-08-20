@@ -123,6 +123,7 @@ class TestPendingAppManagerImpl : public PendingAppManagerImpl {
         ExternalInstallOptions install_options)
         : PendingAppInstallTask(profile,
                                 pending_app_manager_impl->registrar(),
+                                pending_app_manager_impl->ui_manager(),
                                 pending_app_manager_impl->finalizer(),
                                 install_options),
           pending_app_manager_impl_(pending_app_manager_impl),

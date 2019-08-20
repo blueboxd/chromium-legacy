@@ -200,7 +200,7 @@ class HardwareDisplayController {
 
   bool is_disabled_;
 
-  base::WeakPtrFactory<HardwareDisplayController> weak_ptr_factory_;
+  base::WeakPtrFactory<HardwareDisplayController> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HardwareDisplayController);
 };

@@ -100,7 +100,7 @@ class VerifyTrustAPI : public BrowserContextKeyedAPI,
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       registry_observer_;
 
-  base::WeakPtrFactory<VerifyTrustAPI> weak_factory_;
+  base::WeakPtrFactory<VerifyTrustAPI> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VerifyTrustAPI);
 };

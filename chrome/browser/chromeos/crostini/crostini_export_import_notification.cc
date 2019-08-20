@@ -36,8 +36,7 @@ CrostiniExportImportNotification::CrostiniExportImportNotification(
     : profile_(profile),
       type_(type),
       path_(std::move(path)),
-      container_id_(std::move(container_id)),
-      weak_ptr_factory_(this) {
+      container_id_(std::move(container_id)) {
   DCHECK(type == ExportImportType::EXPORT || type == ExportImportType::IMPORT);
 
   message_center::RichNotificationData rich_notification_data;

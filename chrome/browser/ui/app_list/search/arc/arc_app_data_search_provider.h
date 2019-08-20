@@ -31,7 +31,7 @@ class ArcAppDataSearchProvider : public SearchProvider {
 
   const int max_results_;
   AppListControllerDelegate* const list_controller_;  // Owned by AppListClient.
-  base::WeakPtrFactory<ArcAppDataSearchProvider> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcAppDataSearchProvider> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppDataSearchProvider);
 };

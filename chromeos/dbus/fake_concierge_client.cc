@@ -13,7 +13,7 @@
 
 namespace chromeos {
 
-FakeConciergeClient::FakeConciergeClient() : weak_ptr_factory_(this) {
+FakeConciergeClient::FakeConciergeClient() {
   InitializeProtoResponses();
 }
 FakeConciergeClient::~FakeConciergeClient() = default;

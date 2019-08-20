@@ -107,7 +107,7 @@ class ArcAppIcon {
   // Contains pending image decode requests.
   std::vector<std::unique_ptr<DecodeRequest>> decode_requests_;
 
-  base::WeakPtrFactory<ArcAppIcon> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcAppIcon> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppIcon);
 };

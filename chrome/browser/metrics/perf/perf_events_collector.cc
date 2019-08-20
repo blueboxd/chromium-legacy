@@ -248,8 +248,7 @@ std::vector<RandomSelector::WeightAndValue> GetDefaultCommandsForCpu(
 }  // namespace internal
 
 PerfCollector::PerfCollector()
-    : internal::MetricCollector(kPerfCollectorName, CollectionParams()),
-      weak_factory_(this) {}
+    : internal::MetricCollector(kPerfCollectorName, CollectionParams()) {}
 
 PerfCollector::~PerfCollector() = default;
 

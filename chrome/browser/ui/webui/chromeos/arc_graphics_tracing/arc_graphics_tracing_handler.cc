@@ -211,8 +211,7 @@ std::pair<base::Value, std::string> LoadGraphicsModel(
 
 ArcGraphicsTracingHandler::ArcGraphicsTracingHandler()
     : wm_helper_(exo::WMHelper::HasInstance() ? exo::WMHelper::GetInstance()
-                                              : nullptr),
-      weak_ptr_factory_(this) {
+                                              : nullptr) {
   DCHECK(wm_helper_);
 
   aura::Window* const current_active = wm_helper_->GetActiveWindow();

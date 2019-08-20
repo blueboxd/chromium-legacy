@@ -31,6 +31,7 @@
 #include "chrome/browser/web_applications/test/test_data_retriever.h"
 #include "chrome/browser/web_applications/test/test_install_finalizer.h"
 #include "chrome/browser/web_applications/test/test_web_app_provider.h"
+#include "chrome/browser/web_applications/test/test_web_app_ui_manager.h"
 #include "chrome/browser/web_applications/test/test_web_app_url_loader.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/common/chrome_features.h"
@@ -286,21 +287,22 @@ class PendingAppInstallTaskTest : public ChromeRenderViewHostTestHarness {
         std::make_unique<TestPendingAppInstallFinalizer>(registrar.get());
     install_finalizer_ = install_finalizer.get();
 
-    auto data_retriever = std::make_unique<TestDataRetriever>();
-    data_retriever_ = data_retriever.get();
-
     auto install_manager = std::make_unique<WebAppInstallManager>(profile());
-    install_manager->SetDataRetrieverFactoryForTesting(
-        GetFactoryForRetriever(std::move(data_retriever)));
+    install_manager_ = install_manager.get();
+
+    auto ui_manager = std::make_unique<TestWebAppUiManager>();
+    ui_manager_ = ui_manager.get();
 
     provider->SetRegistrar(std::move(registrar));
     provider->SetInstallManager(std::move(install_manager));
     provider->SetInstallFinalizer(std::move(install_finalizer));
+    provider->SetWebAppUiManager(std::move(ui_manager));
 
     provider->Start();
   }
 
  protected:
+  TestWebAppUiManager* ui_manager() { return ui_manager_; }
   TestAppRegistrar* registrar() { return registrar_; }
   TestPendingAppInstallFinalizer* finalizer() { return install_finalizer_; }
 
@@ -318,6 +320,11 @@ class PendingAppInstallTaskTest : public ChromeRenderViewHostTestHarness {
 
   std::unique_ptr<PendingAppInstallTask> GetInstallationTaskWithTestMocks(
       ExternalInstallOptions options) {
+    auto data_retriever = std::make_unique<TestDataRetriever>();
+    data_retriever_ = data_retriever.get();
+
+    install_manager_->SetDataRetrieverFactoryForTesting(
+        GetFactoryForRetriever(std::move(data_retriever)));
     auto manifest = std::make_unique<blink::Manifest>();
     manifest->start_url = options.url;
 
@@ -335,16 +342,19 @@ class PendingAppInstallTaskTest : public ChromeRenderViewHostTestHarness {
         install_finalizer_->GetAppIdForUrl(options.url), true);
 
     auto task = std::make_unique<PendingAppInstallTask>(
-        profile(), registrar_, install_finalizer_, std::move(options));
+        profile(), registrar_, ui_manager_, install_finalizer_,
+        std::move(options));
     return task;
   }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 
+  WebAppInstallManager* install_manager_ = nullptr;
   TestAppRegistrar* registrar_ = nullptr;
   TestDataRetriever* data_retriever_ = nullptr;
   TestPendingAppInstallFinalizer* install_finalizer_ = nullptr;
+  TestWebAppUiManager* ui_manager_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(PendingAppInstallTaskTest);
 };
@@ -746,6 +756,53 @@ TEST_F(PendingAppInstallTaskTest, ReinstallPlaceholderFails) {
         run_loop.Quit();
       }));
   run_loop.Run();
+}
+
+TEST_F(PendingAppInstallTaskTest, UninstallAndReplace) {
+  ExternalInstallOptions options = {kWebAppUrl, LaunchContainer::kDefault,
+                                    ExternalInstallSource::kInternalDefault};
+  AppId app_id;
+  {
+    // Migrate app1 and app2.
+    options.uninstall_and_replace = {"app1", "app2"};
+
+    base::RunLoop run_loop;
+    auto task = GetInstallationTaskWithTestMocks(options);
+    task->Install(
+        web_contents(), WebAppUrlLoader::Result::kUrlLoaded,
+        base::BindLambdaForTesting([&](PendingAppInstallTask::Result result) {
+          app_id = *result.app_id;
+
+          EXPECT_EQ(InstallResultCode::kSuccess, result.code);
+          EXPECT_EQ(app_id,
+                    *ExternallyInstalledWebAppPrefs(profile()->GetPrefs())
+                         .LookupAppId(kWebAppUrl));
+
+          EXPECT_TRUE(ui_manager()->DidUninstallAndReplace("app1", app_id));
+          EXPECT_TRUE(ui_manager()->DidUninstallAndReplace("app2", app_id));
+
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+  }
+  {
+    // Migration shouldn't run on subsequent installs of the same app.
+    options.uninstall_and_replace = {"app3"};
+
+    base::RunLoop run_loop;
+    auto task = GetInstallationTaskWithTestMocks(options);
+    task->Install(
+        web_contents(), WebAppUrlLoader::Result::kUrlLoaded,
+        base::BindLambdaForTesting([&](PendingAppInstallTask::Result result) {
+          EXPECT_EQ(InstallResultCode::kSuccess, result.code);
+          EXPECT_EQ(app_id, *result.app_id);
+
+          EXPECT_FALSE(ui_manager()->DidUninstallAndReplace("app3", app_id));
+
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+  }
 }
 
 }  // namespace web_app

@@ -22,6 +22,11 @@ void TestWebAppUiManager::SetNumWindowsForApp(const AppId& app_id,
   app_id_to_num_windows_map_[app_id] = num_windows_for_app;
 }
 
+bool TestWebAppUiManager::DidUninstallAndReplace(const AppId& from_app,
+                                                 const AppId& to_app) {
+  return uninstall_and_replace_map_[from_app] == to_app;
+}
+
 WebAppUiManagerImpl* TestWebAppUiManager::AsImpl() {
   return nullptr;
 }
@@ -42,8 +47,13 @@ void TestWebAppUiManager::NotifyOnAllAppWindowsClosed(
                      }));
 }
 
-void TestWebAppUiManager::MigrateOSAttributes(const AppId& from,
-                                              const AppId& to) {}
+void TestWebAppUiManager::UninstallAndReplace(
+    const std::vector<AppId>& from_apps,
+    const AppId& to_app) {
+  for (const AppId& from_app : from_apps) {
+    uninstall_and_replace_map_[from_app] = to_app;
+  }
+}
 
 bool TestWebAppUiManager::CanAddAppToQuickLaunchBar() const {
   return false;

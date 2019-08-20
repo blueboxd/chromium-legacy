@@ -140,7 +140,7 @@ class NetworkingConfigService : public ExtensionRegistryObserver,
   // This map associates a given hex encoded SSID to an extension entry.
   std::map<std::string, std::string> hex_ssid_to_extension_id_;
 
-  base::WeakPtrFactory<NetworkingConfigService> weak_factory_;
+  base::WeakPtrFactory<NetworkingConfigService> weak_factory_{this};
 };
 
 }  // namespace extensions

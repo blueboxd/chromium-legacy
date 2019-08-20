@@ -179,7 +179,7 @@ ScreenLocker::Delegate::~Delegate() = default;
 // ScreenLocker, public:
 
 ScreenLocker::ScreenLocker(const user_manager::UserList& users)
-    : users_(users), fingerprint_observer_binding_(this), weak_factory_(this) {
+    : users_(users), fingerprint_observer_binding_(this) {
   DCHECK(!screen_locker_);
   screen_locker_ = this;
 

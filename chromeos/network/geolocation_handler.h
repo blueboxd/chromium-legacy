@@ -95,7 +95,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) GeolocationHandler
   base::Time geolocation_received_time_;
 
   // For Shill client callbacks
-  base::WeakPtrFactory<GeolocationHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<GeolocationHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationHandler);
 };

@@ -83,8 +83,7 @@ LockStateController::LockStateController(
     ShutdownController* shutdown_controller)
     : animator_(new SessionStateAnimatorImpl()),
       shutdown_controller_(shutdown_controller),
-      scoped_session_observer_(this),
-      weak_ptr_factory_(this) {
+      scoped_session_observer_(this) {
   DCHECK(shutdown_controller_);
   Shell::GetPrimaryRootWindow()->GetHost()->AddObserver(this);
 }

@@ -251,8 +251,7 @@ HeapCollector::HeapCollector(HeapCollectionMode mode)
     : internal::MetricCollector(kHeapCollectorName, CollectionParams()),
       mode_(mode),
       is_enabled_(false),
-      sampling_period_bytes_(kHeapSamplingIntervalBytes),
-      weak_factory_(this) {
+      sampling_period_bytes_(kHeapSamplingIntervalBytes) {
   if (mode_ == HeapCollectionMode::kShimLayer) {
     base::SamplingHeapProfiler::Init();
   }

@@ -210,7 +210,8 @@ interface Renderer {
   // TODO(shimazu): Send all params for starting service worker to reduce the
   // number of IPCs.
   SetUpEmbeddedWorkerChannelForServiceWorker(
-      blink.mojom.EmbeddedWorkerInstanceClient& client_request);
+      pending_receiver<blink.mojom.EmbeddedWorkerInstanceClient>
+          client_receiver);
 
   // Tells the renderer that the network type has changed so that
   // navigator.onLine and navigator.connection can be updated.

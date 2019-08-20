@@ -130,7 +130,7 @@ class SessionManagerOperation {
   std::unique_ptr<enterprise_management::ChromeDeviceSettingsProto>
       device_settings_;
 
-  base::WeakPtrFactory<SessionManagerOperation> weak_factory_;
+  base::WeakPtrFactory<SessionManagerOperation> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SessionManagerOperation);
 };
@@ -177,7 +177,7 @@ class StoreSettingsOperation : public SessionManagerOperation {
 
   std::unique_ptr<enterprise_management::PolicyFetchResponse> policy_;
 
-  base::WeakPtrFactory<StoreSettingsOperation> weak_factory_;
+  base::WeakPtrFactory<StoreSettingsOperation> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(StoreSettingsOperation);
 };

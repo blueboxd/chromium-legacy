@@ -439,7 +439,7 @@ class BluetoothLowEnergyWeaveClientConnection
   base::queue<std::unique_ptr<WireMessage>> queued_wire_messages_;
 
   base::WeakPtrFactory<BluetoothLowEnergyWeaveClientConnection>
-      weak_ptr_factory_;
+      weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothLowEnergyWeaveClientConnection);
 };

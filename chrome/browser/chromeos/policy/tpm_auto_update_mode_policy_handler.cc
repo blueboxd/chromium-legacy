@@ -82,9 +82,7 @@ namespace policy {
 TPMAutoUpdateModePolicyHandler::TPMAutoUpdateModePolicyHandler(
     chromeos::CrosSettings* cros_settings,
     PrefService* local_state)
-    : cros_settings_(cros_settings),
-      local_state_(local_state),
-      weak_factory_(this) {
+    : cros_settings_(cros_settings), local_state_(local_state) {
   DCHECK(local_state_);
   policy_subscription_ = cros_settings_->AddSettingsObserver(
       chromeos::kTPMFirmwareUpdateSettings,

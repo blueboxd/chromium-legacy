@@ -49,7 +49,7 @@ class StreamingConnectionEstablisher : public ConnectionEstablisher {
   base::Clock* clock_;
   bool is_connected_ = false;
   base::Time start_connection_message_time_;
-  base::WeakPtrFactory<StreamingConnectionEstablisher> weak_ptr_factory_;
+  base::WeakPtrFactory<StreamingConnectionEstablisher> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(StreamingConnectionEstablisher);
 };

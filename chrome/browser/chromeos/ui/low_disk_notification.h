@@ -63,7 +63,7 @@ class LowDiskNotification : public CryptohomeClient::Observer {
   Severity last_notification_severity_ = NONE;
   base::TimeDelta notification_interval_;
   base::ThreadChecker thread_checker_;
-  base::WeakPtrFactory<LowDiskNotification> weak_ptr_factory_;
+  base::WeakPtrFactory<LowDiskNotification> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LowDiskNotification);
 };

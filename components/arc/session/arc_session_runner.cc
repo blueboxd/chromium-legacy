@@ -120,8 +120,7 @@ bool IsRequestAllowed(const base::Optional<ArcInstanceMode>& current_mode,
 ArcSessionRunner::ArcSessionRunner(const ArcSessionFactory& factory)
     : restart_delay_(kDefaultRestartDelay),
       restart_after_crash_count_(0),
-      factory_(factory),
-      weak_ptr_factory_(this) {}
+      factory_(factory) {}
 
 ArcSessionRunner::~ArcSessionRunner() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

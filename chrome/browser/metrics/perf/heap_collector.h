@@ -100,7 +100,7 @@ class HeapCollector : public internal::MetricCollector {
   // Heap sampling period.
   size_t sampling_period_bytes_;
 
-  base::WeakPtrFactory<HeapCollector> weak_factory_;
+  base::WeakPtrFactory<HeapCollector> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HeapCollector);
 };

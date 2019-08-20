@@ -10,16 +10,37 @@ VideoFrameConverter::VideoFrameConverter() = default;
 
 VideoFrameConverter::~VideoFrameConverter() = default;
 
-void VideoFrameConverter::set_parent_task_runner(
-    scoped_refptr<base::SequencedTaskRunner> task_runner) {
-  parent_task_runner_ = std::move(task_runner);
+void VideoFrameConverter::Destroy() {
+  delete this;
 }
 
-scoped_refptr<VideoFrame> VideoFrameConverter::ConvertFrame(
-    scoped_refptr<VideoFrame> frame) {
-  DCHECK(parent_task_runner_->RunsTasksInCurrentSequence());
+void VideoFrameConverter::Initialize(
+    scoped_refptr<base::SequencedTaskRunner> parent_task_runner,
+    OutputCB output_cb) {
+  parent_task_runner_ = std::move(parent_task_runner);
+  output_cb_ = std::move(output_cb);
+}
 
-  return frame;
+void VideoFrameConverter::ConvertFrame(scoped_refptr<VideoFrame> frame) {
+  DCHECK(parent_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(output_cb_);
+
+  output_cb_.Run(std::move(frame));
+}
+
+void VideoFrameConverter::AbortPendingFrames() {}
+
+bool VideoFrameConverter::HasPendingFrames() const {
+  return false;
 }
 
 }  // namespace media
+
+namespace std {
+
+void default_delete<media::VideoFrameConverter>::operator()(
+    media::VideoFrameConverter* ptr) const {
+  ptr->Destroy();
+}
+
+}  // namespace std

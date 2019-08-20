@@ -77,7 +77,7 @@ class InternalAppResult : public AppResult {
   // Used to fetch the favicon of the website |url_for_continuous_reading_|.
   favicon::LargeIconService* large_icon_service_ = nullptr;
 
-  base::WeakPtrFactory<InternalAppResult> weak_factory_;
+  base::WeakPtrFactory<InternalAppResult> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InternalAppResult);
 };

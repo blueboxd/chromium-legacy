@@ -250,8 +250,7 @@ ArcAppIcon::ArcAppIcon(content::BrowserContext* context,
       app_id_(app_id),
       mapped_app_id_(GetAppFromAppOrGroupId(context, app_id)),
       resource_size_in_dip_(resource_size_in_dip),
-      observer_(observer),
-      weak_ptr_factory_(this) {
+      observer_(observer) {
   CHECK(observer_ != nullptr);
   auto source = std::make_unique<Source>(weak_ptr_factory_.GetWeakPtr(),
                                          resource_size_in_dip);

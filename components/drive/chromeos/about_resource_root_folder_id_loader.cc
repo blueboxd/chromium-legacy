@@ -15,7 +15,7 @@ namespace internal {
 
 AboutResourceRootFolderIdLoader::AboutResourceRootFolderIdLoader(
     AboutResourceLoader* about_resource_loader)
-    : about_resource_loader_(about_resource_loader), weak_ptr_factory_(this) {}
+    : about_resource_loader_(about_resource_loader) {}
 
 AboutResourceRootFolderIdLoader::~AboutResourceRootFolderIdLoader() = default;
 

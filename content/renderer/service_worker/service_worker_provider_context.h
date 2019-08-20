@@ -15,8 +15,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -76,9 +79,8 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
       public blink::mojom::ServiceWorkerContainer,
       public blink::mojom::ServiceWorkerWorkerClientRegistry {
  public:
-  // |request| is an endpoint which is connected to the
-  // content::ServiceWorkerProviderHost that notifies of changes to the
-  // registration's and workers' status. |request| is bound with |binding_|.
+  // |receiver_| is connected to the content::ServiceWorkerProviderHost that
+  // notifies of changes to the registration's and workers' status.
   //
   // |controller_info| contains the endpoint and object info that is needed to
   // set up the controller service worker for the context.
@@ -89,8 +91,10 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // the loading context, e.g. a frame, provides it.
   ServiceWorkerProviderContext(
       blink::mojom::ServiceWorkerProviderType provider_type,
-      blink::mojom::ServiceWorkerContainerAssociatedRequest request,
-      blink::mojom::ServiceWorkerContainerHostAssociatedPtrInfo host_ptr_info,
+      mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainer>
+          receiver,
+      mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainerHost>
+          host_remote,
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
       scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory);
 
@@ -141,10 +145,11 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   void CloneWorkerClientRegistry(
       blink::mojom::ServiceWorkerWorkerClientRegistryRequest request) override;
 
-  // Returns a ServiceWorkerContainerHostPtrInfo to this context's container
-  // host. This can return null after OnNetworkProviderDestroyed() is called
-  // (in which case |this| will be destroyed soon).
-  blink::mojom::ServiceWorkerContainerHostPtrInfo CloneContainerHostPtrInfo();
+  // Returns a remote to this context's container host. This can return null
+  // after OnNetworkProviderDestroyed() is called (in which case |this| will be
+  // destroyed soon).
+  mojo::PendingRemote<blink::mojom::ServiceWorkerContainerHost>
+  CloneRemoteContainerHost();
 
   // Called when WebServiceWorkerNetworkProvider is destructed. This function
   // severs the Mojo binding to the browser-side ServiceWorkerProviderHost. The
@@ -216,23 +221,23 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   const blink::mojom::ServiceWorkerProviderType provider_type_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
-  // Mojo binding for the |request| passed to the constructor. This keeps the
-  // connection to the content::ServiceWorkerProviderHost in the browser process
-  // alive.
-  mojo::AssociatedBinding<blink::mojom::ServiceWorkerContainer> binding_;
+  // This keeps the connection to the content::ServiceWorkerProviderHost in the
+  // browser process alive.
+  mojo::AssociatedReceiver<blink::mojom::ServiceWorkerContainer> receiver_;
 
-  // The |container_host_| interface represents the connection to the
+  // The |container_host_| remote represents the connection to the
   // browser-side ServiceWorkerProviderHost, whose lifetime is bound to
   // |container_host_| via the Mojo connection. This may be nullptr if the Mojo
   // connection was broken in OnNetworkProviderDestroyed().
   //
-  // The |container_host_| interface also implements functions for
+  // The |container_host_| remote also implements functions for
   // navigator.serviceWorker, but all the methods that correspond to
   // navigator.serviceWorker.* can be used only if |this| is a provider
   // for a Document, as navigator.serviceWorker is currently only implemented
   // for Document (https://crbug.com/371690).
   // Note: Currently this is always bound on main thread.
-  blink::mojom::ServiceWorkerContainerHostAssociatedPtr container_host_;
+  mojo::AssociatedRemote<blink::mojom::ServiceWorkerContainerHost>
+      container_host_;
 
   // |controller_| will be set by SetController() and taken by TakeController().
   blink::mojom::ServiceWorkerObjectInfoPtr controller_;

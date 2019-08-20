@@ -163,7 +163,7 @@ class AssistantOptInFlowScreenHandler
 
   mojo::Binding<assistant::mojom::SpeakerIdEnrollmentClient> client_binding_;
   assistant::mojom::AssistantSettingsManagerPtr settings_manager_;
-  base::WeakPtrFactory<AssistantOptInFlowScreenHandler> weak_factory_;
+  base::WeakPtrFactory<AssistantOptInFlowScreenHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AssistantOptInFlowScreenHandler);
 };

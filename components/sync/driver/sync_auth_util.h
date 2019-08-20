@@ -26,8 +26,8 @@ struct SyncAccountInfo {
 // Determines which account should be used for Sync and returns the
 // corresponding SyncAccountInfo. This is exposed so that autofill metrics
 // code can use it.
-SyncAccountInfo DetermineAccountToUse(signin::IdentityManager* identity_manager,
-                                      bool allow_secondary_accounts);
+SyncAccountInfo DetermineAccountToUse(
+    signin::IdentityManager* identity_manager);
 
 // Returns whether |auth_error| indicates the user has locally signed out of
 // content area, rejecting credentials.

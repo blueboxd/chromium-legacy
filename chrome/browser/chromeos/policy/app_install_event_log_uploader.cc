@@ -32,9 +32,7 @@ AppInstallEventLogUploader::Delegate::~Delegate() {}
 
 AppInstallEventLogUploader::AppInstallEventLogUploader(
     CloudPolicyClient* client)
-    : client_(client),
-      retry_backoff_ms_(kMinRetryBackoffMs),
-      weak_factory_(this) {
+    : client_(client), retry_backoff_ms_(kMinRetryBackoffMs) {
   client_->AddObserver(this);
 }
 

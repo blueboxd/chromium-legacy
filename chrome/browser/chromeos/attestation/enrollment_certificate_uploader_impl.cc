@@ -63,8 +63,7 @@ EnrollmentCertificateUploaderImpl::EnrollmentCertificateUploaderImpl(
       cryptohome_client_(cryptohome_client),
       attestation_flow_(attestation_flow),
       retry_limit_(kRetryLimit),
-      retry_delay_(kRetryDelay),
-      weak_factory_(this) {
+      retry_delay_(kRetryDelay) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 

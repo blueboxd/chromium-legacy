@@ -51,7 +51,7 @@ class CrostiniProcessTaskProvider : public TaskProvider {
 
   // Always keep this the last member of this class to make sure it's the
   // first thing to be destructed.
-  base::WeakPtrFactory<CrostiniProcessTaskProvider> weak_ptr_factory_;
+  base::WeakPtrFactory<CrostiniProcessTaskProvider> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CrostiniProcessTaskProvider);
 };

@@ -125,7 +125,7 @@ class WallpaperControllerClient : public ash::WallpaperControllerClient {
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       show_user_names_on_signin_subscription_;
 
-  base::WeakPtrFactory<WallpaperControllerClient> weak_factory_;
+  base::WeakPtrFactory<WallpaperControllerClient> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperControllerClient);
 };

@@ -178,7 +178,7 @@ ScopedDataOffer::~ScopedDataOffer() {
 }
 
 DataOffer::DataOffer(DataOfferDelegate* delegate, Purpose purpose)
-    : delegate_(delegate), purpose_(purpose), weak_ptr_factory_(this) {}
+    : delegate_(delegate), purpose_(purpose) {}
 
 DataOffer::~DataOffer() {
   delegate_->OnDataOfferDestroying(this);

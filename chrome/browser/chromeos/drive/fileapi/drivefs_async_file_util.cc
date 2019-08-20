@@ -205,9 +205,7 @@ class DeleteOperation {
 }  // namespace
 
 DriveFsAsyncFileUtil::DriveFsAsyncFileUtil(Profile* profile)
-    : AsyncFileUtilAdapter(new DriveFsFileUtil),
-      profile_(profile),
-      weak_factory_(this) {}
+    : AsyncFileUtilAdapter(new DriveFsFileUtil), profile_(profile) {}
 
 DriveFsAsyncFileUtil::~DriveFsAsyncFileUtil() = default;
 

@@ -826,9 +826,7 @@ AppSearchProvider::AppSearchProvider(Profile* profile,
     : profile_(profile),
       list_controller_(list_controller),
       model_updater_(model_updater),
-      clock_(clock),
-      refresh_apps_factory_(this),
-      update_results_factory_(this) {
+      clock_(clock) {
   bool app_service_enabled =
       base::FeatureList::IsEnabled(features::kAppServiceAsh);
   if (app_service_enabled) {

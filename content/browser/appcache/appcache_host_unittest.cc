@@ -588,8 +588,8 @@ TEST_F(AppCacheHostTest, SelectCacheTwice) {
   }
   {
     mojo::test::BadMessageObserver bad_message_observer;
-    host_remote->SelectCacheForSharedWorker(blink::mojom::kAppCacheNoCacheId);
-    EXPECT_EQ("ACH_SELECT_CACHE_FOR_SHARED_WORKER",
+    host_remote->SelectCacheForWorker(blink::mojom::kAppCacheNoCacheId);
+    EXPECT_EQ("ACH_SELECT_CACHE_FOR_WORKER",
               bad_message_observer.WaitForBadMessage());
   }
   {

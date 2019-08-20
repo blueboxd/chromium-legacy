@@ -43,8 +43,7 @@ LocalExtensionCache::LocalExtensionCache(
       min_cache_age_(base::Time::Now() - max_cache_age),
       backend_task_runner_(backend_task_runner),
       state_(kUninitialized),
-      cache_status_polling_delay_(kCacheStatusPollingDelay),
-      weak_ptr_factory_(this) {}
+      cache_status_polling_delay_(kCacheStatusPollingDelay) {}
 
 LocalExtensionCache::~LocalExtensionCache() {
   if (state_ == kReady)

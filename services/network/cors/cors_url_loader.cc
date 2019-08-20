@@ -363,7 +363,6 @@ void CorsURLLoader::OnUploadProgress(int64_t current_position,
                                      OnUploadProgressCallback ack_callback) {
   DCHECK(network_loader_);
   DCHECK(forwarding_client_);
-  DCHECK(!deferred_redirect_url_);
   forwarding_client_->OnUploadProgress(current_position, total_size,
                                        std::move(ack_callback));
 }

@@ -704,7 +704,7 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // first) when focused.
   bool default_last_focusable_child_ = false;
 
-  base::WeakPtrFactory<ShelfView> weak_factory_;
+  base::WeakPtrFactory<ShelfView> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ShelfView);
 };

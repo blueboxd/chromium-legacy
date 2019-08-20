@@ -55,8 +55,7 @@ bool IsTabletMode() {
 AssistantInteractionController::AssistantInteractionController(
     AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller),
-      assistant_interaction_subscriber_binding_(this),
-      weak_factory_(this) {
+      assistant_interaction_subscriber_binding_(this) {
   AddModelObserver(this);
   assistant_controller_->AddObserver(this);
   Shell::Get()->highlighter_controller()->AddObserver(this);

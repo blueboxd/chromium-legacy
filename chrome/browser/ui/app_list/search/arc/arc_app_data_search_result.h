@@ -50,7 +50,7 @@ class ArcAppDataSearchResult : public ChromeSearchResult {
 
   AppListControllerDelegate* const list_controller_;  // Owned by AppListClient.
 
-  base::WeakPtrFactory<ArcAppDataSearchResult> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcAppDataSearchResult> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppDataSearchResult);
 };

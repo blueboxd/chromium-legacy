@@ -108,7 +108,7 @@ class CAPTURE_EXPORT VideoCaptureJpegDecoderImpl
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<VideoCaptureJpegDecoderImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<VideoCaptureJpegDecoderImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureJpegDecoderImpl);
 };

@@ -57,12 +57,11 @@ class MockExternalPolicyProviderVisitor
     provider_.reset(new ExternalProviderImpl(
         this,
         new ExternalPolicyLoader(
+            profile_.get(),
             ExtensionManagementFactory::GetForBrowserContext(profile_.get()),
             ExternalPolicyLoader::FORCED),
-        profile_.get(),
-        Manifest::INVALID_LOCATION,
-        Manifest::EXTERNAL_POLICY_DOWNLOAD,
-        Extension::NO_FLAGS));
+        profile_.get(), Manifest::INVALID_LOCATION,
+        Manifest::EXTERNAL_POLICY_DOWNLOAD, Extension::NO_FLAGS));
 
     // Extensions will be removed from this list as they visited,
     // so it should be emptied by the end.

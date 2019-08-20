@@ -43,7 +43,7 @@ class DesktopMediaListAsh : public DesktopMediaListBase {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<DesktopMediaListAsh> weak_factory_;
+  base::WeakPtrFactory<DesktopMediaListAsh> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DesktopMediaListAsh);
 };

@@ -21,8 +21,7 @@ AccessibilityExtensionLoader::AccessibilityExtensionLoader(
       extension_id_(extension_id),
       extension_path_(extension_path),
       loaded_(false),
-      unload_callback_(unload_callback),
-      weak_ptr_factory_(this) {}
+      unload_callback_(unload_callback) {}
 
 AccessibilityExtensionLoader::~AccessibilityExtensionLoader() {}
 

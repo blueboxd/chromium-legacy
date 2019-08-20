@@ -56,8 +56,7 @@ StartupAppLauncher::StartupAppLauncher(Profile* profile,
       diagnostic_mode_(diagnostic_mode),
       delegate_(delegate),
       kiosk_app_manager_observer_(this),
-      install_observer_(this),
-      weak_ptr_factory_(this) {
+      install_observer_(this) {
   DCHECK(profile_);
   DCHECK(crx_file::id_util::IdIsValid(app_id_));
   kiosk_app_manager_observer_.Add(KioskAppManager::Get());

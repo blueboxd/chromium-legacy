@@ -618,8 +618,7 @@ AppListView::AppListView(AppListViewDelegate* delegate)
       bounds_animation_observer_(
           std::make_unique<BoundsAnimationObserver>(this)),
       state_animation_metrics_reporter_(
-          std::make_unique<StateAnimationMetricsReporter>(this)),
-      weak_ptr_factory_(this) {
+          std::make_unique<StateAnimationMetricsReporter>(this)) {
   CHECK(delegate);
 }
 

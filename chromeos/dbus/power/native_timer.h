@@ -92,7 +92,7 @@ class COMPONENT_EXPORT(DBUS_POWER) NativeTimer {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<NativeTimer> weak_factory_;
+  base::WeakPtrFactory<NativeTimer> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NativeTimer);
 };

@@ -111,8 +111,7 @@ AttestationFlow::AttestationFlow(cryptohome::AsyncMethodCaller* async_caller,
       server_proxy_(std::move(server_proxy)),
       ready_timeout_(base::TimeDelta::FromSeconds(kReadyTimeoutInSeconds)),
       retry_delay_(
-          base::TimeDelta::FromMilliseconds(kRetryDelayInMilliseconds)),
-      weak_factory_(this) {}
+          base::TimeDelta::FromMilliseconds(kRetryDelayInMilliseconds)) {}
 
 AttestationFlow::~AttestationFlow() = default;
 

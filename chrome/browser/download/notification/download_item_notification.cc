@@ -188,7 +188,7 @@ bool IsExtensionDownload(DownloadUIModel* item) {
 DownloadItemNotification::DownloadItemNotification(
     Profile* profile,
     DownloadUIModel::DownloadUIModelPtr item)
-    : profile_(profile), item_(std::move(item)), weak_factory_(this) {
+    : profile_(profile), item_(std::move(item)) {
   item_->AddObserver(this);
   // Creates the notification instance. |title|, |body| and |icon| will be
   // overridden by UpdateNotificationData() below.

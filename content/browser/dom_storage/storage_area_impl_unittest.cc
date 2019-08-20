@@ -123,13 +123,13 @@ class StorageAreaImplTest : public testing::Test,
   };
 
   StorageAreaImplTest() : db_(&mock_data_) {
-    auto request = mojo::MakeRequest(&level_db_database_ptr_);
+    auto request = level_db_database_remote_.BindNewPipeAndPassReceiver();
     db_.Bind(std::move(request));
 
     StorageAreaImpl::Options options =
         GetDefaultTestingOptions(CacheMode::KEYS_ONLY_WHEN_POSSIBLE);
     storage_area_ = std::make_unique<StorageAreaImpl>(
-        level_db_database_ptr_.get(), test_prefix_, &delegate_, options);
+        level_db_database_remote_.get(), test_prefix_, &delegate_, options);
 
     set_mock_data(test_prefix_ + test_key1_, test_value1_);
     set_mock_data(test_prefix_ + test_key2_, test_value2_);
@@ -241,7 +241,7 @@ class StorageAreaImplTest : public testing::Test,
 
   MockDelegate* delegate() { return &delegate_; }
   leveldb::mojom::LevelDBDatabase* database() const {
-    return level_db_database_ptr_.get();
+    return level_db_database_remote_.get();
   }
 
   void should_record_send_old_value_observations(bool value) {
@@ -264,7 +264,7 @@ class StorageAreaImplTest : public testing::Test,
   const std::vector<uint8_t> test_key2_bytes_ = ToBytes(test_key2_);
   const std::vector<uint8_t> test_value1_bytes_ = ToBytes(test_value1_);
   const std::vector<uint8_t> test_value2_bytes_ = ToBytes(test_value2_);
-  leveldb::mojom::LevelDBDatabasePtr level_db_database_ptr_;
+  mojo::Remote<leveldb::mojom::LevelDBDatabase> level_db_database_remote_;
 
  private:
   // LevelDBObserver:
@@ -1312,7 +1312,7 @@ TEST_P(StorageAreaImplParamTest, EmptyMapIgnoresDisk) {
   StorageAreaImpl::Options options =
       GetDefaultTestingOptions(CacheMode::KEYS_ONLY_WHEN_POSSIBLE);
   auto empty_storage_area = std::make_unique<StorageAreaImpl>(
-      level_db_database_ptr_.get(), test_copy_prefix1_, delegate(), options);
+      level_db_database_remote_.get(), test_copy_prefix1_, delegate(), options);
   empty_storage_area->InitializeAsEmpty();
 
   // Check the forked state, which should be empty.
@@ -1330,7 +1330,7 @@ TEST_P(StorageAreaImplParamTest, ForkFromEmptyMap) {
   StorageAreaImpl::Options options =
       GetDefaultTestingOptions(CacheMode::KEYS_ONLY_WHEN_POSSIBLE);
   auto empty_storage_area = std::make_unique<StorageAreaImpl>(
-      level_db_database_ptr_.get(), test_copy_prefix1_, delegate(), options);
+      level_db_database_remote_.get(), test_copy_prefix1_, delegate(), options);
   empty_storage_area->InitializeAsEmpty();
 
   // Execute the fork, which should shortcut disk and just be empty.

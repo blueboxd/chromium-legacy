@@ -43,6 +43,9 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
   void RecordAction(const blink::UserMetricsAction&) override;
 
   blink::WebData GetDataResource(const char* name) override;
+  blink::WebData GetDataResource(int resource_id,
+                                 ui::ScaleFactor scale_factor) override;
+  blink::WebData UncompressDataResource(int resource_id) override;
   blink::WebString QueryLocalizedString(
       blink::WebLocalizedString::Name name) override;
   blink::WebString QueryLocalizedString(blink::WebLocalizedString::Name name,

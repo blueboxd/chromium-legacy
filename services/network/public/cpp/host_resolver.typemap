@@ -19,9 +19,9 @@ public_deps = [
   "//net",
 ]
 type_mappings = [
-  "network.mojom.DnsConfigOverrides=net::DnsConfigOverrides",
-  "network.mojom.DnsQueryType=net::DnsQueryType",
-  "network.mojom.ResolveHostParameters.Source=net::HostResolverSource",
-  "network.mojom.MdnsListenClient.UpdateType=net::HostResolver::MdnsListener::Delegate::UpdateType",
-  "network.mojom.SecureDnsMode=net::DnsConfig::SecureDnsMode",
+  "network.mojom.DnsConfigOverrides=::net::DnsConfigOverrides",
+  "network.mojom.DnsQueryType=::net::DnsQueryType",
+  "network.mojom.ResolveHostParameters.Source=::net::HostResolverSource",
+  "network.mojom.MdnsListenClient.UpdateType=::net::HostResolver::MdnsListener::Delegate::UpdateType",
+  "network.mojom.SecureDnsMode=::net::DnsConfig::SecureDnsMode",
 ]

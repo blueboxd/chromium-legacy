@@ -6146,9 +6146,10 @@ void RenderFrameHostImpl::CreateWebSocketConnector(
 
 void RenderFrameHostImpl::CreateDedicatedWorkerHostFactory(
     blink::mojom::DedicatedWorkerHostFactoryRequest request) {
-  content::CreateDedicatedWorkerHostFactory(process_->GetID(), routing_id_,
-                                            last_committed_origin_,
-                                            std::move(request));
+  content::CreateDedicatedWorkerHostFactory(
+      process_->GetID(), /*ancestor_render_frame_id=*/routing_id_,
+      /*creator_render_frame_id=*/routing_id_, last_committed_origin_,
+      std::move(request));
 }
 
 void RenderFrameHostImpl::OnMediaInterfaceFactoryConnectionError() {

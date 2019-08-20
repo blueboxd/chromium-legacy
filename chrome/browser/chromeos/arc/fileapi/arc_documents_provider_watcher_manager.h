@@ -40,7 +40,8 @@ class ArcDocumentsProviderWatcherManager : public storage::WatcherManager {
   void OnNotification(const NotificationCallback& notification_callback,
                       ChangeType change_type);
 
-  base::WeakPtrFactory<ArcDocumentsProviderWatcherManager> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcDocumentsProviderWatcherManager> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcDocumentsProviderWatcherManager);
 };

@@ -133,7 +133,7 @@ class LameWindowCapturerChromeOS : public viz::mojom::FrameSinkVideoCapturer,
 
   // Used for cancelling any outstanding activities' results, once Stop() is
   // called and there is no longer a consumer to receive another frame.
-  base::WeakPtrFactory<LameWindowCapturerChromeOS> weak_factory_;
+  base::WeakPtrFactory<LameWindowCapturerChromeOS> weak_factory_{this};
 
   // Enforce a very low maximum frame rate (5 FPS), due to the lack of
   // design optimizations. See top-level class comments.

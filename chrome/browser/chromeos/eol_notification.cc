@@ -94,9 +94,7 @@ bool EolNotification::ShouldShowEolNotification() {
 }
 
 EolNotification::EolNotification(Profile* profile)
-    : profile_(profile),
-      status_(update_engine::EndOfLifeStatus::kSupported),
-      weak_factory_(this) {}
+    : profile_(profile), status_(update_engine::EndOfLifeStatus::kSupported) {}
 
 EolNotification::~EolNotification() {}
 

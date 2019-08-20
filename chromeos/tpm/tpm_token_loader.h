@@ -135,7 +135,7 @@ class COMPONENT_EXPORT(CHROMEOS_TPM) TPMTokenLoader
   // TaskRunner for crypto calls.
   scoped_refptr<base::SequencedTaskRunner> crypto_task_runner_;
 
-  base::WeakPtrFactory<TPMTokenLoader> weak_factory_;
+  base::WeakPtrFactory<TPMTokenLoader> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TPMTokenLoader);
 };

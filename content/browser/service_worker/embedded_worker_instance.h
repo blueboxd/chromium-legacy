@@ -24,7 +24,7 @@
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
@@ -334,10 +334,11 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // |client_| is used to send messages to the renderer process. The browser
   // process should not disconnect the pipe because associated interfaces may be
   // using it. The renderer process will disconnect the pipe when appropriate.
-  blink::mojom::EmbeddedWorkerInstanceClientPtr client_;
+  mojo::Remote<blink::mojom::EmbeddedWorkerInstanceClient> client_;
 
-  // Binding for EmbeddedWorkerInstanceHost, runs on core thread.
-  mojo::AssociatedBinding<EmbeddedWorkerInstanceHost> instance_host_binding_;
+  // Receiver for EmbeddedWorkerInstanceHost, runs on core thread.
+  mojo::AssociatedReceiver<EmbeddedWorkerInstanceHost> instance_host_receiver_{
+      this};
 
   // Whether devtools is attached or not.
   bool devtools_attached_;

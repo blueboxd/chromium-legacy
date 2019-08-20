@@ -32,13 +32,14 @@ OpenFileOperation::OpenFileOperation(
     : blocking_task_runner_(blocking_task_runner),
       delegate_(delegate),
       cache_(cache),
-      create_file_operation_(new CreateFileOperation(
-          blocking_task_runner, delegate, metadata)),
-      download_operation_(new DownloadOperation(
-          blocking_task_runner, delegate, scheduler,
-          metadata, cache, temporary_file_directory)),
-      weak_ptr_factory_(this) {
-}
+      create_file_operation_(
+          new CreateFileOperation(blocking_task_runner, delegate, metadata)),
+      download_operation_(new DownloadOperation(blocking_task_runner,
+                                                delegate,
+                                                scheduler,
+                                                metadata,
+                                                cache,
+                                                temporary_file_directory)) {}
 
 OpenFileOperation::~OpenFileOperation() = default;
 

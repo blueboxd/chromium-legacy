@@ -42,7 +42,7 @@ constexpr base::TimeDelta kNotificationInterval =
 namespace chromeos {
 
 LowDiskNotification::LowDiskNotification()
-    : notification_interval_(kNotificationInterval), weak_ptr_factory_(this) {
+    : notification_interval_(kNotificationInterval) {
   DCHECK(CryptohomeClient::Get());
   CryptohomeClient::Get()->AddObserver(this);
 }

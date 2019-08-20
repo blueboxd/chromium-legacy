@@ -31,8 +31,7 @@ VideoDetector::VideoDetector()
       window_observer_manager_(this),
       scoped_session_observer_(this),
       is_shutting_down_(false),
-      binding_(this),
-      weak_factory_(this) {
+      binding_(this) {
   aura::Env::GetInstance()->AddObserver(this);
   Shell::Get()->AddShellObserver(this);
   EstablishConnectionToViz();

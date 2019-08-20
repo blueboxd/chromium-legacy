@@ -37,8 +37,7 @@ class DriveBackgroundOperationQueue {
         token_count_(desired_qps),
         per_token_time_delta_(
             base::TimeDelta::FromMilliseconds(1000 / desired_qps)),
-        desired_qps_(desired_qps),
-        weak_ptr_factory_(this) {}
+        desired_qps_(desired_qps) {}
 
   ~DriveBackgroundOperationQueue() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -168,7 +167,7 @@ class DriveBackgroundOperationQueue {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<DriveBackgroundOperationQueue> weak_ptr_factory_;
+  base::WeakPtrFactory<DriveBackgroundOperationQueue> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DriveBackgroundOperationQueue<T>);
 };

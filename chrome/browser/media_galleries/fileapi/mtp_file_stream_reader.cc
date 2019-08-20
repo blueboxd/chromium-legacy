@@ -33,8 +33,7 @@ MTPFileStreamReader::MTPFileStreamReader(
       url_(url),
       current_offset_(initial_offset),
       expected_modification_time_(expected_modification_time),
-      media_header_validated_(!do_media_header_validation),
-      weak_factory_(this) {}
+      media_header_validated_(!do_media_header_validation) {}
 
 MTPFileStreamReader::~MTPFileStreamReader() {
 }

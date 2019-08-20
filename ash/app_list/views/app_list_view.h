@@ -527,7 +527,7 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // expensive. So it is only applied in the limited scenarios.
   bool update_childview_each_frame_ = false;
 
-  base::WeakPtrFactory<AppListView> weak_ptr_factory_;
+  base::WeakPtrFactory<AppListView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppListView);
 };

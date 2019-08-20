@@ -89,7 +89,7 @@ class ASH_EXPORT PowerButtonDisplayController
   // order to force the backlights off.
   std::unique_ptr<ScopedBacklightsForcedOff> backlights_forced_off_;
 
-  base::WeakPtrFactory<PowerButtonDisplayController> weak_ptr_factory_;
+  base::WeakPtrFactory<PowerButtonDisplayController> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PowerButtonDisplayController);
 };

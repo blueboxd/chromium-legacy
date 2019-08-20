@@ -6,7 +6,7 @@
 
 namespace chromeos {
 
-FakeGnubbyClient::FakeGnubbyClient() : weak_ptr_factory_(this) {}
+FakeGnubbyClient::FakeGnubbyClient() {}
 
 FakeGnubbyClient::~FakeGnubbyClient() = default;
 

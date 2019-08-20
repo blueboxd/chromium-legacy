@@ -519,7 +519,7 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
   FileInfoCache file_info_cache_;
 
   // For callbacks that may run after destruction.
-  base::WeakPtrFactory<MTPDeviceDelegateImplLinux> weak_ptr_factory_;
+  base::WeakPtrFactory<MTPDeviceDelegateImplLinux> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MTPDeviceDelegateImplLinux);
 };

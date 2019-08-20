@@ -226,9 +226,9 @@ void AppCacheHost::SelectCache(const GURL& document_url,
   FinishCacheSelection(nullptr, nullptr, mojo::ReportBadMessageCallback());
 }
 
-void AppCacheHost::SelectCacheForSharedWorker(int64_t appcache_id) {
+void AppCacheHost::SelectCacheForWorker(int64_t appcache_id) {
   if (was_select_cache_called_) {
-    mojo::ReportBadMessage("ACH_SELECT_CACHE_FOR_SHARED_WORKER");
+    mojo::ReportBadMessage("ACH_SELECT_CACHE_FOR_WORKER");
     return;
   }
 

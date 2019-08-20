@@ -22,8 +22,7 @@ DeviceCommandRefreshMachineCertificateJob::
     DeviceCommandRefreshMachineCertificateJob(
         chromeos::attestation::MachineCertificateUploader*
             machine_certificate_uploader)
-    : machine_certificate_uploader_(machine_certificate_uploader),
-      weak_ptr_factory_(this) {}
+    : machine_certificate_uploader_(machine_certificate_uploader) {}
 
 DeviceCommandRefreshMachineCertificateJob::
     ~DeviceCommandRefreshMachineCertificateJob() = default;

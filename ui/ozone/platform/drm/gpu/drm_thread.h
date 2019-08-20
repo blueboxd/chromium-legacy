@@ -204,7 +204,7 @@ class DrmThread : public base::Thread,
   // on to DrmDeviceManager after the thread starts.
   std::unique_ptr<DrmDeviceGenerator> device_generator_;
 
-  base::WeakPtrFactory<DrmThread> weak_ptr_factory_;
+  base::WeakPtrFactory<DrmThread> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DrmThread);
 };

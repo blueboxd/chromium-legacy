@@ -30,9 +30,7 @@ const int kTooltipAppearanceDelay = 250;  // msec
 }  // namespace
 
 ShelfTooltipManager::ShelfTooltipManager(ShelfView* shelf_view)
-    : timer_delay_(kTooltipAppearanceDelay),
-      shelf_view_(shelf_view),
-      weak_factory_(this) {
+    : timer_delay_(kTooltipAppearanceDelay), shelf_view_(shelf_view) {
   shelf_view_->shelf()->AddObserver(this);
   Shell::Get()->AddPreTargetHandler(this);
 }

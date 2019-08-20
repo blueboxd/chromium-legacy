@@ -160,9 +160,7 @@ std::unique_ptr<ui::LayerTreeOwner> CreateLayerForAssistantSnapshot(
 
 AssistantScreenContextController::AssistantScreenContextController(
     AssistantController* assistant_controller)
-    : assistant_controller_(assistant_controller),
-      binding_(this),
-      screen_context_request_factory_(this) {
+    : assistant_controller_(assistant_controller), binding_(this) {
   assistant_controller_->AddObserver(this);
 }
 

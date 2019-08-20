@@ -255,7 +255,7 @@ TEST_F(SystemPerfettoTest, SystemTraceEndToEnd) {
   system_no_more_packets_runloop.Run();
   system_consumer.WaitForAllDataSourcesStopped();
 
-  EXPECT_EQ(1u, system_consumer.received_packets());
+  EXPECT_EQ(1u, system_consumer.received_test_packets());
   PerfettoProducer::DeleteSoonForTesting(std::move(system_producer));
 }
 
@@ -395,8 +395,8 @@ TEST_F(SystemPerfettoTest, OneSystemSourceWithMultipleLocalSources) {
   // |local_consumer| should have seen one |send_packet_count_| from each data
   // source, whereas |system_consumer| should see 2 packets from the first data
   // source having been started twice.
-  EXPECT_EQ(1u + 3u + 7u, local_consumer.received_packets());
-  EXPECT_EQ(2u, system_consumer.received_packets());
+  EXPECT_EQ(1u + 3u + 7u, local_consumer.received_test_packets());
+  EXPECT_EQ(2u, system_consumer.received_test_packets());
 
   PerfettoProducer::DeleteSoonForTesting(std::move(local_producer_client));
   PerfettoProducer::DeleteSoonForTesting(std::move(system_producer));
@@ -435,7 +435,7 @@ TEST_F(SystemPerfettoTest, MultipleSystemSourceWithOneLocalSourcesLocalFirst) {
   local_data_source_disabled_runloop.Run();
   local_consumer->WaitForAllDataSourcesStopped();
   local_no_more_packets_runloop.Run();
-  EXPECT_EQ(7u, local_consumer->received_packets());
+  EXPECT_EQ(7u, local_consumer->received_test_packets());
 
   // Because we can't just use |system_data_source_enabled| because they might
   // attempt to enable but be queued until the local trace has fully finished.
@@ -509,8 +509,8 @@ TEST_F(SystemPerfettoTest, MultipleSystemSourceWithOneLocalSourcesLocalFirst) {
   // |local_consumer| should have seen one |send_packet_count_| from each data
   // source, whereas |system_consumer| should see 2 packets from the first data
   // source having been started twice.
-  EXPECT_EQ(14u, local_consumer->received_packets());
-  EXPECT_EQ(1u + 3u + 7u, system_consumer.received_packets());
+  EXPECT_EQ(14u, local_consumer->received_test_packets());
+  EXPECT_EQ(1u + 3u + 7u, system_consumer.received_test_packets());
 
   PerfettoProducer::DeleteSoonForTesting(std::move(local_producer_client));
   PerfettoProducer::DeleteSoonForTesting(std::move(system_producer));
@@ -605,8 +605,8 @@ TEST_F(SystemPerfettoTest, MultipleSystemAndLocalSources) {
   // |local_consumer| should have seen one |send_packet_count_| from each data
   // source, whereas |system_consumer| should see 2 packets from each since it
   // got started twice.
-  EXPECT_EQ(1u + 3u + 7u, local_consumer.received_packets());
-  EXPECT_EQ((1u + 3u + 7u) * 2, system_consumer.received_packets());
+  EXPECT_EQ(1u + 3u + 7u, local_consumer.received_test_packets());
+  EXPECT_EQ((1u + 3u + 7u) * 2, system_consumer.received_test_packets());
 
   PerfettoProducer::DeleteSoonForTesting(std::move(local_producer_client));
   PerfettoProducer::DeleteSoonForTesting(std::move(system_producer));
@@ -710,8 +710,8 @@ TEST_F(SystemPerfettoTest, MultipleSystemAndLocalSourcesLocalFirst) {
 
   // |local_consumer| & |system_consumer| should have seen one
   // |send_packet_count_| from each data source.
-  EXPECT_EQ(1u + 3u + 7u, local_consumer.received_packets());
-  EXPECT_EQ(1u + 3u + 7u, system_consumer.received_packets());
+  EXPECT_EQ(1u + 3u + 7u, local_consumer.received_test_packets());
+  EXPECT_EQ(1u + 3u + 7u, system_consumer.received_test_packets());
 
   PerfettoProducer::DeleteSoonForTesting(std::move(local_producer_client));
   PerfettoProducer::DeleteSoonForTesting(std::move(system_producer));
@@ -781,7 +781,7 @@ TEST_F(SystemPerfettoTest, SystemToLowAPILevel) {
     system_no_more_packets_runloop.Run();
 
     PerfettoProducer::DeleteSoonForTesting(std::move(system_producer));
-    return system_consumer.received_packets();
+    return system_consumer.received_test_packets();
   };
 
   // If |check_sdk_level| == true, the |system_producer| will not even attempt

@@ -84,13 +84,12 @@ class MlServiceClientImpl : public MlServiceClient {
   ::chromeos::machine_learning::mojom::ModelPtr model_;
   ::chromeos::machine_learning::mojom::GraphExecutorPtr executor_;
 
-  base::WeakPtrFactory<MlServiceClientImpl> weak_factory_;
+  base::WeakPtrFactory<MlServiceClientImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MlServiceClientImpl);
 };
 
-MlServiceClientImpl::MlServiceClientImpl()
-    : MlServiceClient(), weak_factory_(this) {}
+MlServiceClientImpl::MlServiceClientImpl() : MlServiceClient() {}
 
 void MlServiceClientImpl::LoadModelCallback(LoadModelResult result) {
   if (result != LoadModelResult::OK) {

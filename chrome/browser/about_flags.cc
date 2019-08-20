@@ -4346,6 +4346,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kProfileMenuRevamp)},
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
+    {"password-leak-detection", flag_descriptions::kPasswordLeakDetectionName,
+     flag_descriptions::kPasswordLeakDetectionDescription, kOsAll,
+     FEATURE_VALUE_TYPE(password_manager::features::kLeakDetection)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

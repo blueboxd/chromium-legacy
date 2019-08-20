@@ -20,10 +20,10 @@ deps = [
 ]
 
 type_mappings = [
-  "media.mojom.CdmConfig=media::CdmConfig",
-  "media.mojom.CdmPromiseResult.Exception=media::CdmPromise::Exception",
-  "media.mojom.CdmSessionType=media::CdmSessionType",
-  "media.mojom.CdmMessageType=media::CdmMessageType",
-  "media.mojom.EmeInitDataType=media::EmeInitDataType",
-  "media.mojom.HdcpVersion=media::HdcpVersion",
+  "media.mojom.CdmConfig=::media::CdmConfig",
+  "media.mojom.CdmPromiseResult.Exception=::media::CdmPromise::Exception",
+  "media.mojom.CdmSessionType=::media::CdmSessionType",
+  "media.mojom.CdmMessageType=::media::CdmMessageType",
+  "media.mojom.EmeInitDataType=::media::EmeInitDataType",
+  "media.mojom.HdcpVersion=::media::HdcpVersion",
 ]

@@ -104,7 +104,7 @@ class MockComponentActiveDirectoryPolicyDelegate
 
 class ComponentActiveDirectoryPolicyServiceTest : public testing::Test {
  protected:
-  ComponentActiveDirectoryPolicyServiceTest() : weak_ptr_factory_(this) {
+  ComponentActiveDirectoryPolicyServiceTest() {
     builder_.policy_data().set_policy_type(
         dm_protocol::kChromeExtensionPolicyType);
     builder_.policy_data().set_settings_entity_id(kTestExtensionId);
@@ -215,7 +215,7 @@ class ComponentActiveDirectoryPolicyServiceTest : public testing::Test {
   int store_policy_call_count_ = 0;
   int store_policy_succeeded_count_ = 0;
   base::WeakPtrFactory<ComponentActiveDirectoryPolicyServiceTest>
-      weak_ptr_factory_;
+      weak_ptr_factory_{this};
 };
 
 // Before registry is ready, RetrievePolicies() should be a no-op.

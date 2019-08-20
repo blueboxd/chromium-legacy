@@ -9,6 +9,6 @@ public_deps = [
   "//ui/gfx",
 ]
 type_mappings = [
-  "gfx.mojom.Hinting=gfx::FontRenderParams::Hinting",
-  "gfx.mojom.SubpixelRendering=gfx::FontRenderParams::SubpixelRendering",
+  "gfx.mojom.Hinting=::gfx::FontRenderParams::Hinting",
+  "gfx.mojom.SubpixelRendering=::gfx::FontRenderParams::SubpixelRendering",
 ]

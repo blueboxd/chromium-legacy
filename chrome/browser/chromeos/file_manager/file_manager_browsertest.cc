@@ -491,6 +491,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .EnableDriveFs(),
         TestCase("checkPasteIntoFolderDisabledForReadOnlyFolder")
             .EnableDriveFs(),
+        TestCase("checkInstallWithLinuxDisabledForDebianFile").EnableDriveFs(),
+        TestCase("checkInstallWithLinuxEnabledForDebianFile").EnableDriveFs(),
         TestCase("checkNewFolderEnabledInsideReadWriteFolder").EnableDriveFs(),
         TestCase("checkNewFolderDisabledInsideReadOnlyFolder").EnableDriveFs(),
         TestCase("checkPasteEnabledInsideReadWriteFolder").EnableDriveFs(),

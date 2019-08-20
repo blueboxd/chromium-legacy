@@ -261,8 +261,7 @@ void BluetoothAdapterBlueZ::Shutdown() {
 BluetoothAdapterBlueZ::BluetoothAdapterBlueZ(InitCallback init_callback)
     : init_callback_(std::move(init_callback)),
       initialized_(false),
-      dbus_is_shutdown_(false),
-      weak_ptr_factory_(this) {
+      dbus_is_shutdown_(false) {
   ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   socket_thread_ = device::BluetoothSocketThread::Get();
 

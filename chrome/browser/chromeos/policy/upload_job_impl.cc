@@ -168,8 +168,7 @@ UploadJobImpl::UploadJobImpl(
       traffic_annotation_(traffic_annotation),
       state_(IDLE),
       retry_(0),
-      task_runner_(task_runner),
-      weak_factory_(this) {
+      task_runner_(task_runner) {
   DCHECK(access_token_manager_);
   DCHECK(url_loader_factory_);
   DCHECK(delegate_);

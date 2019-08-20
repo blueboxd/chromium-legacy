@@ -53,20 +53,16 @@ REPOSITORY_ROOT = os.path.abspath(os.path.join(
     os.path.dirname(__file__), '..', '..', '..', '..', '..'))
 
 sys.path.append(os.path.join(REPOSITORY_ROOT, 'tools', 'perf'))
-from core import path_util  # pylint: disable=wrong-import-position
-from core import benchmark_runner  # pylint: disable=wrong-import-position
-sys.path.append(path_util.GetTelemetryDir())
 sys.path.append(os.path.join(REPOSITORY_ROOT, 'build', 'android'))
-sys.path.append(os.path.join(
-    REPOSITORY_ROOT, 'third_party', 'catapult', 'devil'))
 sys.path.append(os.path.join(REPOSITORY_ROOT, 'components'))
 
 # pylint: disable=wrong-import-position
-from cronet.tools import android_rndis_forwarder
-from cronet.tools import perf_test_utils
 from chrome_telemetry_build import chromium_config
 from devil.android import device_utils
 from devil.android.sdk import intent
+from core import benchmark_runner
+from cronet.tools import android_rndis_forwarder
+from cronet.tools import perf_test_utils
 import lighttpd_server
 from pylib import constants
 from telemetry import android

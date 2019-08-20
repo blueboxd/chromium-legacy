@@ -6,4 +6,4 @@ mojom = "//skia/public/mojom/blur_image_filter_tile_mode.mojom"
 public_headers = [ "//third_party/skia/include/effects/SkBlurImageFilter.h" ]
 traits_headers =
     [ "//skia/public/mojom/blur_image_filter_tile_mode_mojom_traits.h" ]
-type_mappings = [ "skia.mojom.BlurTileMode=SkBlurImageFilter::TileMode" ]
+type_mappings = [ "skia.mojom.BlurTileMode=::SkBlurImageFilter::TileMode" ]

@@ -18,24 +18,25 @@ import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 /**
- * The coordinator for the password manager onboarding modal dialog. Manages the sub-component
+ * The coordinator for the password manager illustration modal dialog. Manages the sub-component
  * objects.
  */
-public class OnboardingDialogCoordinator {
-    private final OnboardingDialogMediator mMediator;
+public class PasswordManagerDialogCoordinator {
+    private final PasswordManagerDialogMediator mMediator;
 
-    OnboardingDialogCoordinator(@NonNull ChromeActivity activity) {
-        PropertyModel mModel = OnboardingDialogProperties.defaultModelBuilder().build();
-        View customView = LayoutInflater.from(activity).inflate(
-                R.layout.password_manager_onboarding_dialog, null);
-        mMediator = new OnboardingDialogMediator(
+    PasswordManagerDialogCoordinator(@NonNull ChromeActivity activity) {
+        PropertyModel mModel = PasswordManagerDialogProperties.defaultModelBuilder().build();
+        View customView =
+                LayoutInflater.from(activity).inflate(R.layout.password_manager_dialog, null);
+        mMediator = new PasswordManagerDialogMediator(
                 mModel, activity.getModalDialogManager(), createDialogModelBuilder(customView));
-        PropertyModelChangeProcessor.create(mModel, customView, OnboardingDialogViewBinder::bind);
+        PropertyModelChangeProcessor.create(
+                mModel, customView, PasswordManagerDialogViewBinder::bind);
     }
 
     public void showDialog(
-            String onboardingTitle, String onboardingDetails, Callback<Boolean> onClick) {
-        mMediator.setContents(onboardingTitle, onboardingDetails);
+            String title, String details, int drawableId, Callback<Boolean> onClick) {
+        mMediator.setContents(title, details, drawableId);
         mMediator.showDialog(onClick);
     }
 

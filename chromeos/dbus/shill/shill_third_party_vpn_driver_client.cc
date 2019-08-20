@@ -92,7 +92,7 @@ class ShillThirdPartyVpnDriverClientImpl
     ShillClientHelper helper_;
     ShillThirdPartyVpnObserver* observer_;
 
-    base::WeakPtrFactory<HelperInfo> weak_ptr_factory_;
+    base::WeakPtrFactory<HelperInfo> weak_ptr_factory_{this};
   };
   using HelperMap = std::map<std::string, HelperInfo*>;
 
@@ -128,7 +128,7 @@ class ShillThirdPartyVpnDriverClientImpl
 
 ShillThirdPartyVpnDriverClientImpl::HelperInfo::HelperInfo(
     dbus::ObjectProxy* object_proxy)
-    : helper_(object_proxy), observer_(nullptr), weak_ptr_factory_(this) {}
+    : helper_(object_proxy), observer_(nullptr) {}
 
 ShillThirdPartyVpnDriverClientImpl::ShillThirdPartyVpnDriverClientImpl(
     dbus::Bus* bus)

@@ -34,9 +34,7 @@ ProximityMonitorImpl::ProximityMonitorImpl(
     : remote_device_(remote_device),
       channel_(channel),
       remote_device_is_in_proximity_(false),
-      is_active_(false),
-      polling_weak_ptr_factory_(this),
-      weak_ptr_factory_(this) {
+      is_active_(false) {
   if (device::BluetoothAdapterFactory::IsBluetoothSupported()) {
     device::BluetoothAdapterFactory::GetAdapter(
         base::BindOnce(&ProximityMonitorImpl::OnAdapterInitialized,

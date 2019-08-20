@@ -123,8 +123,7 @@ ChromeOsAppsNavigationThrottle::ChromeOsAppsNavigationThrottle(
     content::NavigationHandle* navigation_handle,
     bool arc_enabled)
     : apps::AppsNavigationThrottle(navigation_handle),
-      arc_enabled_(arc_enabled),
-      weak_factory_(this) {}
+      arc_enabled_(arc_enabled) {}
 
 ChromeOsAppsNavigationThrottle::~ChromeOsAppsNavigationThrottle() = default;
 

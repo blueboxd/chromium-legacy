@@ -66,7 +66,7 @@ class CrostiniHandler : public ::settings::SettingsPageUIHandler,
 
   Profile* profile_;
   // weak_ptr_factory_ should always be last member.
-  base::WeakPtrFactory<CrostiniHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<CrostiniHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CrostiniHandler);
 };

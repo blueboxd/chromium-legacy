@@ -178,8 +178,7 @@ PaletteTray::PaletteTray(Shelf* shelf)
       palette_tool_manager_(std::make_unique<PaletteToolManager>(this)),
       welcome_bubble_(std::make_unique<PaletteWelcomeBubble>(this)),
       stylus_event_handler_(std::make_unique<StylusEventHandler>(this)),
-      scoped_session_observer_(this),
-      weak_factory_(this) {
+      scoped_session_observer_(this) {
   PaletteTool::RegisterToolInstances(palette_tool_manager_.get());
 
   SetInkDropMode(InkDropMode::ON);

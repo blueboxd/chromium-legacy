@@ -271,7 +271,7 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
   // The shadow margins added to the app list item title.
   gfx::Insets title_shadow_margins_;
 
-  base::WeakPtrFactory<AppListItemView> weak_ptr_factory_;
+  base::WeakPtrFactory<AppListItemView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppListItemView);
 };

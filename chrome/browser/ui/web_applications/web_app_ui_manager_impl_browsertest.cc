@@ -180,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(WebAppUiManagerImplBrowserTest,
 }
 
 #if defined(OS_CHROMEOS)
-class WebAppUiServiceMigrationBrowserTest
+class WebAppUiManagerMigrationBrowserTest
     : public WebAppUiManagerImplBrowserTest {
  public:
   void SetUp() override {
@@ -204,7 +204,7 @@ class WebAppUiServiceMigrationBrowserTest
 
 // Tests that the Settings app migrates the launcher and app list details from
 // the Settings internal app.
-IN_PROC_BROWSER_TEST_F(WebAppUiServiceMigrationBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebAppUiManagerMigrationBrowserTest,
                        SettingsSystemWebAppMigration) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kSystemWebApps);

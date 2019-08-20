@@ -118,7 +118,7 @@ class UserNetworkConfigurationUpdater : public NetworkConfigurationUpdater,
 
   content::NotificationRegistrar registrar_;
 
-  base::WeakPtrFactory<UserNetworkConfigurationUpdater> weak_factory_;
+  base::WeakPtrFactory<UserNetworkConfigurationUpdater> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UserNetworkConfigurationUpdater);
 };

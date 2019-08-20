@@ -29,8 +29,7 @@ const char kProfilePathUser[] = "user_profile_path";
 }  // namespace
 
 NetworkStateTestHelper::NetworkStateTestHelper(
-    bool use_default_devices_and_services)
-    : weak_ptr_factory_(this) {
+    bool use_default_devices_and_services) {
   if (!ShillManagerClient::Get()) {
     shill_clients::InitializeFakes();
     shill_clients_initialized_ = true;

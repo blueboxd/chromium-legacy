@@ -31,8 +31,7 @@ AutomaticUsbPrinterConfigurer::AutomaticUsbPrinterConfigurer(
     UsbPrinterNotificationController* notification_controller)
     : printer_configurer_(std::move(printer_configurer)),
       installation_manager_(installation_manager),
-      notification_controller_(notification_controller),
-      weak_factory_(this) {
+      notification_controller_(notification_controller) {
   DCHECK(installation_manager);
 }
 

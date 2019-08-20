@@ -346,8 +346,7 @@ NoteTakingHelper::NoteTakingHelper()
           base::Bind(&apps::LaunchPlatformAppWithAction)),
       extension_registry_observer_(this),
       note_taking_controller_client_(
-          std::make_unique<NoteTakingControllerClient>(this)),
-      weak_ptr_factory_(this) {
+          std::make_unique<NoteTakingControllerClient>(this)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   const std::string switch_value =

@@ -10,4 +10,4 @@ deps = [
 public_deps = [
   "//skia",
 ]
-type_mappings = [ "arc.mojom.ArcBitmap=SkBitmap" ]
+type_mappings = [ "arc.mojom.ArcBitmap=::SkBitmap" ]

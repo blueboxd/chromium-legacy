@@ -52,8 +52,7 @@ const extensions::Extension* GetExtension(Profile* profile,
 
 }  // namespace
 
-AppListControllerDelegate::AppListControllerDelegate()
-    : weak_ptr_factory_(this) {}
+AppListControllerDelegate::AppListControllerDelegate() {}
 
 AppListControllerDelegate::~AppListControllerDelegate() {}
 

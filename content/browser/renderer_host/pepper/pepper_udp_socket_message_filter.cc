@@ -95,8 +95,7 @@ PepperUDPSocketMessageFilter::PepperUDPSocketMessageFilter(
           host->IsPotentiallySecurePluginContext(instance)),
       binding_(this)
 #if defined(OS_CHROMEOS)
-      ,
-      firewall_hole_weak_ptr_factory_(this)
+
 #endif  //  defined(OS_CHROMEOS)
 {
   ++g_num_udp_filter_instances;

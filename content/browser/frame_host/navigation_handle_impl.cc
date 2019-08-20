@@ -36,8 +36,7 @@ NavigationHandleImpl::NavigationHandleImpl(
     : navigation_request_(navigation_request) {
   const GURL& url = navigation_request_->common_params().url;
   TRACE_EVENT_ASYNC_BEGIN2("navigation", "NavigationHandle", this,
-                           "frame_tree_node",
-                           frame_tree_node()->frame_tree_node_id(), "url",
+                           "frame_tree_node", GetFrameTreeNodeId(), "url",
                            url.possibly_invalid_spec());
   DCHECK(!navigation_request_->common_params().navigation_start.is_null());
   DCHECK(!IsRendererDebugURL(url));
@@ -56,9 +55,6 @@ NavigationHandleImpl::NavigationHandleImpl(
 }
 
 NavigationHandleImpl::~NavigationHandleImpl() {
-
-  GetDelegate()->DidFinishNavigation(this);
-
   if (IsInMainFrame()) {
     TRACE_EVENT_ASYNC_END2("navigation", "Navigation StartToCommit", this,
                            "URL",
@@ -85,14 +81,11 @@ SiteInstanceImpl* NavigationHandleImpl::GetStartingSiteInstance() {
 }
 
 bool NavigationHandleImpl::IsInMainFrame() {
-  return frame_tree_node()->IsMainFrame();
+  return navigation_request_->IsInMainFrame();
 }
 
 bool NavigationHandleImpl::IsParentMainFrame() {
-  if (frame_tree_node()->parent())
-    return frame_tree_node()->parent()->IsMainFrame();
-
-  return false;
+  return navigation_request_->IsParentMainFrame();
 }
 
 bool NavigationHandleImpl::IsRendererInitiated() {
@@ -108,14 +101,11 @@ const std::vector<GURL>& NavigationHandleImpl::GetRedirectChain() {
 }
 
 int NavigationHandleImpl::GetFrameTreeNodeId() {
-  return frame_tree_node()->frame_tree_node_id();
+  return navigation_request_->GetFrameTreeNodeId();
 }
 
 RenderFrameHostImpl* NavigationHandleImpl::GetParentFrame() {
-  if (IsInMainFrame())
-    return nullptr;
-
-  return frame_tree_node()->parent()->current_frame_host();
+  return navigation_request_->GetParentFrame();
 }
 
 base::TimeTicks NavigationHandleImpl::NavigationStart() {
@@ -152,7 +142,7 @@ NavigationUIData* NavigationHandleImpl::GetNavigationUIData() {
 }
 
 bool NavigationHandleImpl::IsExternalProtocol() {
-  return !GetContentClient()->browser()->IsHandledURL(GetURL());
+  return navigation_request_->IsExternalProtocol();
 }
 
 net::Error NavigationHandleImpl::GetNetErrorCode() {
@@ -186,9 +176,7 @@ const net::HttpResponseHeaders* NavigationHandleImpl::GetResponseHeaders() {
 
 net::HttpResponseInfo::ConnectionInfo
 NavigationHandleImpl::GetConnectionInfo() {
-  return navigation_request_->response()
-             ? navigation_request_->response()->head.connection_info
-             : net::HttpResponseInfo::ConnectionInfo();
+  return navigation_request_->GetConnectionInfo();
 }
 
 const base::Optional<net::SSLInfo>& NavigationHandleImpl::GetSSLInfo() {
@@ -201,12 +189,11 @@ NavigationHandleImpl::GetAuthChallengeInfo() {
 }
 
 bool NavigationHandleImpl::HasCommitted() {
-  return state() == NavigationRequest::DID_COMMIT ||
-         state() == NavigationRequest::DID_COMMIT_ERROR_PAGE;
+  return navigation_request_->HasCommitted();
 }
 
 bool NavigationHandleImpl::IsErrorPage() {
-  return state() == NavigationRequest::DID_COMMIT_ERROR_PAGE;
+  return navigation_request_->IsErrorPage();
 }
 
 bool NavigationHandleImpl::HasSubframeNavigationEntryCommitted() {
@@ -226,13 +213,7 @@ const GURL& NavigationHandleImpl::GetPreviousURL() {
 }
 
 net::IPEndPoint NavigationHandleImpl::GetSocketAddress() {
-  // This is CANCELING because although the data comes in after
-  // WILL_PROCESS_RESPONSE, it's possible for the navigation to be cancelled
-  // after and the caller might want this value.
-  DCHECK_GE(state(), NavigationRequest::CANCELING);
-  return navigation_request_->response()
-             ? navigation_request_->response()->head.remote_endpoint
-             : net::IPEndPoint();
+  return navigation_request_->GetSocketAddress();
 }
 
 void NavigationHandleImpl::RegisterThrottleForTesting(
@@ -271,15 +252,11 @@ const GURL& NavigationHandleImpl::GetBaseURLForDataURL() {
 
 void NavigationHandleImpl::RegisterSubresourceOverride(
     mojom::TransferrableURLLoaderPtr transferrable_loader) {
-  if (!transferrable_loader)
-    return;
-
   navigation_request_->RegisterSubresourceOverride(
       std::move(transferrable_loader));
 }
 
 const GlobalRequestID& NavigationHandleImpl::GetGlobalRequestID() {
-  DCHECK_GE(state(), NavigationRequest::PROCESSING_WILL_PROCESS_RESPONSE);
   return navigation_request_->request_id();
 }
 
@@ -320,21 +297,16 @@ bool NavigationHandleImpl::FromDownloadCrossOriginRedirect() {
 }
 
 bool NavigationHandleImpl::IsSignedExchangeInnerResponse() {
-  return navigation_request_->response()
-             ? navigation_request_->response()
-                   ->head.is_signed_exchange_inner_response
-             : false;
+  return navigation_request_->IsSignedExchangeInnerResponse();
 }
 
 bool NavigationHandleImpl::HasPrefetchedAlternativeSubresourceSignedExchange() {
-  return !navigation_request_->commit_params()
-              .prefetched_signed_exchanges.empty();
+  return navigation_request_
+      ->HasPrefetchedAlternativeSubresourceSignedExchange();
 }
 
 bool NavigationHandleImpl::WasResponseCached() {
-  return navigation_request_->response()
-             ? navigation_request_->response()->head.was_fetched_via_cache
-             : false;
+  return navigation_request_->WasResponseCached();
 }
 
 const net::ProxyServer& NavigationHandleImpl::GetProxyServer() {

@@ -136,7 +136,7 @@ class APP_LIST_EXPORT SearchResultTileItemView
 
   std::unique_ptr<AppListMenuModelAdapter> context_menu_;
 
-  base::WeakPtrFactory<SearchResultTileItemView> weak_ptr_factory_;
+  base::WeakPtrFactory<SearchResultTileItemView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultTileItemView);
 };

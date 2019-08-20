@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var lastChanged = null;
+var lastFocused = null;
+var restartButton = $('experiment-restart-button');
+
 /**
  * This variable structure is here to document the structure that the template
  * expects to correctly populate the page.
@@ -41,8 +45,10 @@ function renderTemplate(experimentalFeaturesData) {
   for (var i = 0; i < elements.length; ++i) {
     elements[i].onchange = function() {
       handleSelectExperimentalFeatureChoice(this, this.selectedIndex);
+      lastChanged = this;
       return false;
     };
+    registerFocusEvents(elements[i]);
   }
 
   elements = document.getElementsByClassName('experiment-enable-disable');
@@ -50,8 +56,10 @@ function renderTemplate(experimentalFeaturesData) {
     elements[i].onchange = function() {
       handleEnableExperimentalFeature(this,
           this.options[this.selectedIndex].value == 'enabled');
+      lastChanged = this;
       return false;
     };
+    registerFocusEvents(elements[i]);
   }
 
   elements = document.getElementsByClassName('experiment-origin-list-value');
@@ -62,10 +70,9 @@ function renderTemplate(experimentalFeaturesData) {
     };
   }
 
-  var element = $('experiment-restart-button');
-  assert(element || cr.isIOS);
-  if (element) {
-    element.onclick = restartBrowser;
+  assert(restartButton || cr.isIOS);
+  if (restartButton) {
+    restartButton.onclick = restartBrowser;
   }
 
   // Tab panel selection.
@@ -96,6 +103,25 @@ function renderTemplate(experimentalFeaturesData) {
   highlightReferencedFlag();
   var search = FlagSearch.getInstance();
   search.init();
+}
+
+/**
+ * Add events to an element in order to keep track of the last focused element.
+ * Focus restart button if a previous focus target has been set and tab key
+ * pressed.
+ * @param {Element} el Element to bind events to.
+ */
+function registerFocusEvents(el) {
+  el.addEventListener('keydown', function(e) {
+    if (lastChanged && e.key == 'Tab' && !e.shiftKey) {
+      lastFocused = lastChanged;
+      e.preventDefault();
+      restartButton.focus();
+    }
+  });
+  el.addEventListener('blur', function() {
+    lastChanged = null;
+  });
 }
 
 /**
@@ -497,10 +523,26 @@ FlagSearch.prototype = {
   }
 };
 
+/**
+ * Allows the restart button to jump back to the previously focused experiment
+ * in the list instead of going to the top of the page.
+ */
+function setupRestartButton() {
+  restartButton.addEventListener('keydown', function(e) {
+    if (e.shiftKey && e.key == 'Tab' && lastFocused) {
+      e.preventDefault();
+      lastFocused.focus();
+    }
+  });
+  restartButton.addEventListener('blur', () => {
+    lastFocused = null;
+  });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   // Get and display the data upon loading.
   requestExperimentalFeaturesData();
-
+  setupRestartButton();
   cr.ui.FocusOutlineManager.forDocument(document);
 });
 

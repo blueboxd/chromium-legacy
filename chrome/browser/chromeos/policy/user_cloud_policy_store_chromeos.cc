@@ -52,8 +52,7 @@ UserCloudPolicyStoreChromeOS::UserCloudPolicyStoreChromeOS(
           cryptohome_client,
           background_task_runner,
           account_id,
-          user_policy_key_dir)),
-      weak_factory_(this) {}
+          user_policy_key_dir)) {}
 
 UserCloudPolicyStoreChromeOS::~UserCloudPolicyStoreChromeOS() {}
 

@@ -86,7 +86,7 @@ class APP_LIST_EXPORT ExpandArrowView : public views::Button,
   // The y position offset of the arrow in this view.
   int arrow_y_offset_;
 
-  base::WeakPtrFactory<ExpandArrowView> weak_ptr_factory_;
+  base::WeakPtrFactory<ExpandArrowView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExpandArrowView);
 };

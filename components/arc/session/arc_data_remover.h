@@ -65,7 +65,7 @@ class ArcDataRemover {
   // TODO(yusukes): Remove the member variable.
   std::string user_id_hash_;
 
-  base::WeakPtrFactory<ArcDataRemover> weak_factory_;
+  base::WeakPtrFactory<ArcDataRemover> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(ArcDataRemover);
 };
 

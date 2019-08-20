@@ -18,8 +18,7 @@ FakeMediaAnalyticsClient* g_instance = nullptr;
 
 }  // namespace
 
-FakeMediaAnalyticsClient::FakeMediaAnalyticsClient()
-    : process_running_(false), weak_ptr_factory_(this) {
+FakeMediaAnalyticsClient::FakeMediaAnalyticsClient() : process_running_(false) {
   current_state_.set_status(mri::State::UNINITIALIZED);
   DCHECK(!g_instance);
   g_instance = this;

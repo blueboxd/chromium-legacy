@@ -21,7 +21,7 @@
 
 namespace chromeos {
 
-PluginVmServiceProvider::PluginVmServiceProvider() : weak_ptr_factory_(this) {}
+PluginVmServiceProvider::PluginVmServiceProvider() {}
 
 PluginVmServiceProvider::~PluginVmServiceProvider() = default;
 

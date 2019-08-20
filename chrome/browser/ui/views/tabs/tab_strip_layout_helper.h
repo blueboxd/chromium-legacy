@@ -57,7 +57,6 @@ class TabStripLayoutHelper {
   void InsertTabAtNoAnimation(int model_index,
                               Tab* tab,
                               base::OnceClosure tab_removed_callback,
-                              TabAnimationState::TabActiveness active,
                               TabAnimationState::TabPinnedness pinned);
 
   // Inserts a new tab at |index|, with animation. |tab_removed_callback| will
@@ -65,7 +64,6 @@ class TabStripLayoutHelper {
   void InsertTabAt(int model_index,
                    Tab* tab,
                    base::OnceClosure tab_removed_callback,
-                   TabAnimationState::TabActiveness active,
                    TabAnimationState::TabPinnedness pinned);
 
   // Marks the tab at |model_index| as closed without animating it. Use when

@@ -110,8 +110,7 @@ class AppLaunchController::AppWindowWatcher
       : controller_(controller),
         app_id_(app_id),
         window_registry_(
-            extensions::AppWindowRegistry::Get(controller->profile_)),
-        weak_factory_(this) {
+            extensions::AppWindowRegistry::Get(controller->profile_)) {
     if (!window_registry_->GetAppWindowsForApp(app_id).empty()) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&AppWindowWatcher::NotifyAppWindowCreated,
@@ -137,7 +136,7 @@ class AppLaunchController::AppWindowWatcher
   AppLaunchController* controller_;
   std::string app_id_;
   extensions::AppWindowRegistry* window_registry_;
-  base::WeakPtrFactory<AppWindowWatcher> weak_factory_;
+  base::WeakPtrFactory<AppWindowWatcher> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppWindowWatcher);
 };

@@ -289,7 +289,7 @@ class ScreenLocker : public AuthStatusConsumer,
 
   SecurityTokenPinDialogHostAshImpl security_token_pin_dialog_host_ash_impl_;
 
-  base::WeakPtrFactory<ScreenLocker> weak_factory_;
+  base::WeakPtrFactory<ScreenLocker> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ScreenLocker);
 };

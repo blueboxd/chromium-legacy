@@ -93,7 +93,8 @@ class COMPONENT_EXPORT(ASSISTANT_UI) SuggestionContainerView
   bool has_received_response_ = false;
 
   // Weak pointer factory used for image downloading requests.
-  base::WeakPtrFactory<SuggestionContainerView> download_request_weak_factory_;
+  base::WeakPtrFactory<SuggestionContainerView> download_request_weak_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionContainerView);
 };

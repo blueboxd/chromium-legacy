@@ -59,9 +59,7 @@ ui::IMEInputContextHandlerInterface* GetInputContext() {
 }  // namespace
 
 DictationChromeos::DictationChromeos(Profile* profile)
-    : composition_(std::make_unique<ui::CompositionText>()),
-      profile_(profile),
-      weak_ptr_factory_(this) {
+    : composition_(std::make_unique<ui::CompositionText>()), profile_(profile) {
   if (GetInputContext() && GetInputContext()->GetInputMethod())
     GetInputContext()->GetInputMethod()->AddObserver(this);
 }

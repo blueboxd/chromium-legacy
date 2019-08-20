@@ -123,7 +123,8 @@ void MediaPlayerRenderer::CreateMediaPlayer(
                                base::android::SDK_VERSION_KITKAT;
 
   media_player_.reset(new media::MediaPlayerBridge(
-      url_params.media_url, url_params.site_for_cookies, user_agent,
+      url_params.media_url, url_params.site_for_cookies,
+      url_params.top_frame_origin, user_agent,
       false,  // hide_url_log
       this,   // MediaPlayerBridge::Client
       allow_credentials, url_params.is_hls));

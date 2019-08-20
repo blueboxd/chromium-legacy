@@ -192,7 +192,7 @@ class CrostiniExportImport : public KeyedService,
   int next_notification_id_;
   base::ObserverList<Observer> observers_;
   // weak_ptr_factory_ should always be last member.
-  base::WeakPtrFactory<CrostiniExportImport> weak_ptr_factory_;
+  base::WeakPtrFactory<CrostiniExportImport> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CrostiniExportImport);
 };

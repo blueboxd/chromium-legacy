@@ -41,7 +41,7 @@ bool IsTrayIcon(network_icon::IconType icon_type) {
 }  // namespace
 
 ActiveNetworkIcon::ActiveNetworkIcon(TrayNetworkStateModel* model)
-    : model_(model), weak_ptr_factory_(this) {
+    : model_(model) {
   model_->AddObserver(this);
   GetNetworkConfigService(
       remote_cros_network_config_.BindNewPipeAndPassReceiver());

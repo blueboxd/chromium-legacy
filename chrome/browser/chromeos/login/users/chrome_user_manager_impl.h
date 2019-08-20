@@ -281,7 +281,7 @@ class ChromeUserManagerImpl
   std::vector<std::unique_ptr<policy::CloudExternalDataPolicyHandler>>
       cloud_external_data_policy_handlers_;
 
-  base::WeakPtrFactory<ChromeUserManagerImpl> weak_factory_;
+  base::WeakPtrFactory<ChromeUserManagerImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ChromeUserManagerImpl);
 };

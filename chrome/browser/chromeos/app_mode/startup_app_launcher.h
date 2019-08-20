@@ -144,7 +144,7 @@ class StartupAppLauncher : public extensions::InstallObserver,
   ScopedObserver<extensions::InstallTracker, extensions::InstallObserver>
       install_observer_;
 
-  base::WeakPtrFactory<StartupAppLauncher> weak_ptr_factory_;
+  base::WeakPtrFactory<StartupAppLauncher> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(StartupAppLauncher);
 };

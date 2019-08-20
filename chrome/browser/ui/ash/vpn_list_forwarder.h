@@ -82,7 +82,7 @@ class VpnListForwarder : public app_list::ArcVpnProviderManager::Observer,
 
   content::NotificationRegistrar registrar_;
 
-  base::WeakPtrFactory<VpnListForwarder> weak_factory_;
+  base::WeakPtrFactory<VpnListForwarder> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VpnListForwarder);
 };

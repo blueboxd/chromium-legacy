@@ -164,9 +164,7 @@ class CallbackAnimationObserver : public ui::ImplicitAnimationObserver {
 KeyboardUIController::KeyboardUIController()
     : input_method_keyboard_controller_(
           std::make_unique<InputMethodKeyboardController>(this)),
-      ime_observer_(this),
-      weak_factory_report_lingering_state_(this),
-      weak_factory_will_hide_(this) {
+      ime_observer_(this) {
   DCHECK_EQ(g_keyboard_controller, nullptr);
   g_keyboard_controller = this;
 }

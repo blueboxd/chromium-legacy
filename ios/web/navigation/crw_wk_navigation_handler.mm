@@ -1726,7 +1726,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
           net::GURLWithNSURL(webView.URL), errorURL);
     } else {
       command = item->error_retry_state_machine().DidFailNavigation(
-          net::GURLWithNSURL(webView.URL), errorURL);
+          net::GURLWithNSURL(webView.URL));
     }
     [self handleErrorRetryCommand:command
                    navigationItem:item

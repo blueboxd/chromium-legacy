@@ -70,8 +70,7 @@ DeviceNetworkConfigurationUpdater::DeviceNetworkConfigurationUpdater(
                                   network_config_handler),
       network_device_handler_(network_device_handler),
       cros_settings_(cros_settings),
-      device_asset_id_fetcher_(device_asset_id_fetcher),
-      weak_factory_(this) {
+      device_asset_id_fetcher_(device_asset_id_fetcher) {
   DCHECK(network_device_handler_);
   data_roaming_setting_subscription_ = cros_settings->AddSettingsObserver(
       chromeos::kSignedDataRoamingEnabled,

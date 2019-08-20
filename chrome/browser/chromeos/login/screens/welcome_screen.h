@@ -129,7 +129,7 @@ class WelcomeScreen : public BaseScreen,
 
   base::ObserverList<Observer>::Unchecked observers_;
 
-  base::WeakPtrFactory<WelcomeScreen> weak_factory_;
+  base::WeakPtrFactory<WelcomeScreen> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WelcomeScreen);
 };

@@ -78,6 +78,8 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   struct ClipData;
   struct PrewalkResult;
   struct RoundedCornerInfo;
+  struct ChildSurfaceInfo;
+  struct RenderPassMapEntry;
 
   struct RenderPassInfo {
     // This is the id the pass is mapped to.
@@ -85,6 +87,12 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
     // This is true if the pass was used in the last aggregated frame.
     bool in_use = true;
   };
+
+  // Helper function that gets a list of render passes and returns a map from
+  // render pass ids to render passes.
+  static base::flat_map<RenderPassId, RenderPassMapEntry> GenerateRenderPassMap(
+      const RenderPassList& render_pass_list,
+      bool is_root_surface);
 
   ClipData CalculateClipRect(const ClipData& surface_clip,
                              const ClipData& quad_clip,
@@ -168,6 +176,33 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
       const RoundedCornerInfo& rounded_corner_info,
       const gfx::Rect& occluding_damage_rect,
       bool occluding_damage_rect_valid);
+
+  // Helper function that uses backtracking on the render pass tree of a surface
+  // to find all surfaces embedded in it. If a surface is embedded multiple
+  // times (due to use of a MirrorLayer), it will be reachable via multiple
+  // paths from the root render pass. For each such a path the appropriate
+  // transform is calculated.
+  //  - |surface_id| specifies the surface to find all child surfaces of.
+  //  - |render_pass_map| is a pre-computed map from render pass id to some info
+  //    about the render pass, including the render pass itself and whether it
+  //    has pixel moving backdrop filter.
+  //  - |current_pass_entry| is the info about the current render pass to
+  //    process.
+  //  - |transform_to_root_target| is the accumulated transform of all render
+  //    passes along the way to the current render pass.
+  //  - |child_surfaces| is the main output of the function containing all child
+  //    surfaces found in the process.
+  //  - |pixel_moving_backdrop_filters_rect| is another output that is union of
+  //    bounds of render passes that have a pixel moving backdrop filter.
+  // TODO(mohsen): Consider refactoring this backtracking algorithm into a
+  // self-contained class.
+  void FindChildSurfaces(
+      SurfaceId surface_id,
+      base::flat_map<RenderPassId, RenderPassMapEntry>* render_pass_map,
+      RenderPassMapEntry* current_pass_entry,
+      const gfx::Transform& transform_to_root_target,
+      base::flat_map<SurfaceRange, ChildSurfaceInfo>* child_surfaces,
+      gfx::Rect* pixel_moving_backdrop_filters_rect);
 
   gfx::Rect PrewalkTree(Surface* surface,
                         bool in_moved_pixel_surface,

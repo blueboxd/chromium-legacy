@@ -1296,7 +1296,11 @@ crbug.com/591099 [ Mac10.13 ] virtual/gpu-rasterization/images/imagemap-overflow
 #crbug.com/591099 [ Mac ] virtual/mouseevent_fractional/fast/events/before-unload-return-value-from-listener.html [ Crash Timeout ]
 crbug.com/591099 [ Mac10.13 ] virtual/scroll_customization/fast/events/touch/compositor-touch-hit-rects-continuation.html [ Failure ]
 
+crbug.com/992920 [ Mac10.10 ] fast/dom/collection-item-should-be-overridden-by-own-property.html [ Crash Pass ]
+crbug.com/992920 [ Mac10.12 ] fast/dom/collection-item-should-be-overridden-by-own-property.html [ Crash Pass ]
 crbug.com/992920 [ Mac10.13 ] fast/dom/collection-item-should-be-overridden-by-own-property.html [ Crash Pass ]
+crbug.com/992920 [ Mac10.10 ] fast/text/forced-break-before-close-tag.html [ Crash Pass ]
+crbug.com/992920 [ Mac10.12 ] fast/text/forced-break-before-close-tag.html [ Crash Pass ]
 crbug.com/992920 [ Mac10.13 ] fast/text/forced-break-before-close-tag.html [ Crash Pass ]
 
 #crbug.com/974725 [ Win7 ] fast/events/before-unload-return-value-from-listener.html [ Pass Crash ]
@@ -1622,8 +1626,6 @@ crbug.com/829028 virtual/layout_ng_experimental/fast/multicol/nested-balanced-in
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-balanced-inner-with-many-breaks-2.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-balanced-inner-with-many-breaks.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-balanced-with-strut-before-first-line.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-balancing-with-line-at-exact-top.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-balancing-with-lines-and-space-left-in-previous-row.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-columns.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-fixed-height-with-struts.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-one-line-in-inner.html [ Failure ]
@@ -1631,13 +1633,13 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-outer-fixed
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-short-first-row-extra-tall-line.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-short-first-row-unsplittable-block.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-uneven-inner-column-height.html [ Failure ]
+crbug.com/829028 virtual/layout_ng_experimental/fast/multicol/nested-very-tall-inside-short-crash.html [ Skip ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-with-clipped-first-column.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-with-forced-breaks-in-eariler-rows.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-with-padding.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-with-single-empty-block.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-with-single-tall-line.html [ Failure ]
 crbug.com/994172 virtual/layout_ng_experimental/fast/multicol/nested-with-spanner-inside-margins-crash.html [ Crash ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-with-tall-block.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/newmulticol/avoid-column-break-inside.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/newmulticol/balance2.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/newmulticol/balance3.html [ Failure ]
@@ -3257,9 +3259,6 @@ crbug.com/626703 [ Win ] external/wpt/css/css-text-decor/text-decoration-skip-in
 crbug.com/626703 [ Linux ] external/wpt/css/css-text-decor/text-decoration-skip-ink-vertical-001.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-text-decor/text-decoration-skip-ink-vertical-001.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-text-decor/text-decoration-skip-ink-vertical-001.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-display/display-flow-root-list-item-001.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-display/display-flow-root-list-item-001.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-display/display-flow-root-list-item-001.html [ Failure ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/html/cross-origin-opener-policy/popup-same-site-unsafe-allow-outgoing.https.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.13 ] wpt_internal/display-lock/rendersubtree/activation/selection.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-lists/li-value-reversed-005.html [ Failure ]
@@ -4907,6 +4906,12 @@ crbug.com/181374 external/wpt/css/css-display/display-contents-dynamic-table-001
 
 # ====== End of display: contents tests ======
 
+# ====== Begin of other css-display tests ======
+
+crbug.com/995106 external/wpt/css/css-display/display-flow-root-list-item-001.html [ Failure ]
+
+# ====== End of other css-display tests ======
+
 crbug.com/676229 plugins/mouse-click-plugin-clears-selection.html [ Failure Pass ]
 crbug.com/742670 plugins/iframe-plugin-bgcolor.html [ Failure Pass ]
 crbug.com/780398 [ Mac ] plugins/mouse-capture-inside-shadow.html [ Failure Pass ]
@@ -5247,6 +5252,10 @@ crbug.com/766404 [ Mac ] plugins/keyboard-events.html [ Pass Failure ]
 # Layout test corrupted after Skia rect tessellation change due to apparent SwiftShader bug.
 # This was previously skipped on Windows in the section for crbug.com/757165
 crbug.com/775957 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ Skip ]
+
+# Canvas tests that are affected by change to Skia GPU rect shadow rendering.
+crbug.com/990918 virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ Pass Failure ]
+crbug.com/990918 virtual/gpu/fast/canvas/canvas-composite-shadow.html [ Pass Failure ]
 
 # Sheriff failures 2017-09-21
 crbug.com/767469 http/tests/navigation/start-load-during-provisional-loader-detach.html [ Pass Failure ]
@@ -6281,7 +6290,6 @@ crbug.com/971319 [ Mac ] media/audio-garbage-collect.html [ Pass Timeout ]
 crbug.com/971319 [ Mac ] virtual/audio-service/media/audio-garbage-collect.html [ Pass Timeout ]
 
 # Sheriff 2019-06-06
-crbug.com/971590 [ Mac ] fast/dom/timer-throttling-hidden-page.html [ Pass Failure ]
 crbug.com/971612 fast/canvas/OffscreenCanvas-MessageChannel-transfer.html [ Pass Failure ]
 
 # Sheriff 2019-06-13
@@ -6492,3 +6500,18 @@ crbug.com/979298 [ Mac ] virtual/audio-service/media/video-persistence.html [ Pa
 crbug.com/979298 [ Mac ] virtual/audio-service/media/video-zoom.html [ Pass Failure ]
 
 crbug.com/986019 virtual/threaded/animations/play-state.html [ Pass Failure ]
+
+crbug.com/914134 [ Mac ] vr/events_vrdisplayactivate.html [ Failure ]
+crbug.com/914134 [ Mac ] vr/events_vrdisplaypresentchange.html [ Failure ]
+crbug.com/914134 [ Mac ] vr/exitPresent_resolve.html [ Failure ]
+crbug.com/914134 [ Mac ] vr/getLayers_notpresenting.html [ Failure ]
+crbug.com/914134 [ Mac ] vr/getLayers_presenting.html [ Failure ]
+crbug.com/914134 [ Mac ] vr/getLayers_presenting_nondefaultbounds.html [ Failure ]
+crbug.com/914134 [ Mac ] vr/getLayers_update.html [ Failure ]
+crbug.com/914134 [ Mac ] vr/requestAnimationFrame_consistentTimestamps.html [ Failure ]
+crbug.com/914134 [ Mac ] vr/requestAnimationFrame_handoff.html [ Failure ]
+crbug.com/914134 [ Mac ] vr/requestAnimationFrame_submitFrame_combinations.html [ Failure ]
+crbug.com/914134 [ Mac ] vr/requestPresent_resolve.html [ Failure ]
+crbug.com/914134 [ Mac ] vr/requestPresent_resolve_repeatwithgesture.html [ Failure ]
+crbug.com/914134 [ Mac ] vr/requestPresent_resolve_repeatwithoutgesture.html [ Failure ]
+crbug.com/914134 [ Mac ] vr/requestPresent_resolve_then_reject.html [ Failure ]

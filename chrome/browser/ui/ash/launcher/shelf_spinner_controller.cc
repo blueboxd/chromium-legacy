@@ -61,7 +61,7 @@ class SpinningEffectSource : public gfx::CanvasImageSource {
 }  // namespace
 
 ShelfSpinnerController::ShelfSpinnerController(ChromeLauncherController* owner)
-    : owner_(owner), weak_ptr_factory_(this) {
+    : owner_(owner) {
   owner->shelf_model()->AddObserver(this);
   if (user_manager::UserManager::IsInitialized()) {
     if (auto* active_user = user_manager::UserManager::Get()->GetActiveUser())

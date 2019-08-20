@@ -981,7 +981,6 @@ unsigned NGInlineLayoutAlgorithm::PositionLeadingFloats(
     NGExclusionSpace* exclusion_space,
     NGPositionedFloatVector* positioned_floats) {
   bool is_empty_inline = Node().IsEmptyInline();
-  bool should_ignore_floats = BreakToken() && BreakToken()->IgnoreFloats();
 
   const Vector<NGInlineItem>& items =
       Node().ItemsData(/* is_first_line */ false).items;
@@ -996,7 +995,7 @@ unsigned NGInlineLayoutAlgorithm::PositionLeadingFloats(
       break;
     }
 
-    if (item.Type() != NGInlineItem::kFloating || should_ignore_floats)
+    if (item.Type() != NGInlineItem::kFloating)
       continue;
 
     container_builder_.AddAdjoiningObjectTypes(

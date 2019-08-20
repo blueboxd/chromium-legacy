@@ -318,8 +318,7 @@ AppListSyncableService::AppListSyncableService(Profile* profile)
       initial_sync_data_processed_(false),
       first_app_list_sync_(true),
       is_app_service_enabled_(
-          base::FeatureList::IsEnabled(features::kAppServiceAsh)),
-      weak_ptr_factory_(this) {
+          base::FeatureList::IsEnabled(features::kAppServiceAsh)) {
   // This log message helps us gather better manual bug reports, as we
   // gradually roll out enabling the AppList + AppService integration across
   // Chrome OS' various release channels.
@@ -1184,10 +1183,7 @@ void AppListSyncableService::SendSyncChange(
 
 AppListSyncableService::SyncItem* AppListSyncableService::FindSyncItem(
     const std::string& item_id) {
-  auto iter = sync_items_.find(item_id);
-  if (iter == sync_items_.end())
-    return NULL;
-  return iter->second.get();
+  return const_cast<SyncItem*>(GetSyncItem(item_id));
 }
 
 AppListSyncableService::SyncItem* AppListSyncableService::CreateSyncItem(

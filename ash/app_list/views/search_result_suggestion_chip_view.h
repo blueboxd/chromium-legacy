@@ -83,7 +83,7 @@ class APP_LIST_EXPORT SearchResultSuggestionChipView
 
   views::BoxLayout* layout_manager_;  // Owned by view hierarchy.
 
-  base::WeakPtrFactory<SearchResultSuggestionChipView> weak_ptr_factory_;
+  base::WeakPtrFactory<SearchResultSuggestionChipView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultSuggestionChipView);
 };

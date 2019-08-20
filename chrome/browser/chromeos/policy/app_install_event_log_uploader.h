@@ -113,7 +113,7 @@ class AppInstallEventLogUploader : public CloudPolicyClient::Observer {
   // Weak pointer factory for invalidating callbacks passed to the delegate and
   // scheduled retries when the upload request is canceled or |this| is
   // destroyed.
-  base::WeakPtrFactory<AppInstallEventLogUploader> weak_factory_;
+  base::WeakPtrFactory<AppInstallEventLogUploader> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppInstallEventLogUploader);
 };

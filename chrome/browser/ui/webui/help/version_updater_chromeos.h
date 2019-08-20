@@ -73,7 +73,7 @@ class VersionUpdaterCros : public VersionUpdater,
   // True if an update check should be scheduled when the update engine is idle.
   bool check_for_update_when_idle_;
 
-  base::WeakPtrFactory<VersionUpdaterCros> weak_ptr_factory_;
+  base::WeakPtrFactory<VersionUpdaterCros> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VersionUpdaterCros);
 };

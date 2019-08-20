@@ -29,7 +29,7 @@ using content::BrowserThread;
 namespace chromeos {
 
 SupervisedUserLoginFlow::SupervisedUserLoginFlow(const AccountId& account_id)
-    : ExtendedUserFlow(account_id), weak_factory_(this) {}
+    : ExtendedUserFlow(account_id) {}
 
 SupervisedUserLoginFlow::~SupervisedUserLoginFlow() {}
 

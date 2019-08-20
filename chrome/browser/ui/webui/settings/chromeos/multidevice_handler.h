@@ -126,7 +126,7 @@ class MultideviceHandler
       android_sms_app_manager_observer_;
 
   // Used to cancel callbacks when JavaScript becomes disallowed.
-  base::WeakPtrFactory<MultideviceHandler> callback_weak_ptr_factory_;
+  base::WeakPtrFactory<MultideviceHandler> callback_weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MultideviceHandler);
 };

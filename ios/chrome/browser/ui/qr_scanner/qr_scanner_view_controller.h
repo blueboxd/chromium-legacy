@@ -5,12 +5,14 @@
 #ifndef IOS_CHROME_BROWSER_UI_QR_SCANNER_QR_SCANNER_VIEW_CONTROLLER_H_
 #define IOS_CHROME_BROWSER_UI_QR_SCANNER_QR_SCANNER_VIEW_CONTROLLER_H_
 
+#include "ios/chrome/browser/ui/qr_scanner/qr_scanner_camera_controller.h"
 #import "ios/chrome/browser/ui/scanner/scanner_view_controller.h"
 
 @protocol LoadQueryCommands;
 
 // View controller for the QR Scanner.
-@interface QRScannerViewController : ScannerViewController
+@interface QRScannerViewController
+    : ScannerViewController <QRScannerCameraControllerDelegate>
 
 - (instancetype)initWithPresentationProvider:
                     (id<ScannerPresenting>)presentationProvider
@@ -18,9 +20,7 @@
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithPresentationProvider:
-                    (id<ScannerPresenting>)presentationProvider
-                            cameraController:(CameraController*)cameraController
-    NS_UNAVAILABLE;
+    (id<ScannerPresenting>)presentationProvider NS_UNAVAILABLE;
 
 - (instancetype)initWithNibName:(NSString*)name
                          bundle:(NSBundle*)bundle NS_UNAVAILABLE;

@@ -172,7 +172,7 @@ class ErrorScreen : public BaseScreen,
   // Callbacks to be invoked when a connection attempt is requested.
   base::CallbackList<void()> connect_request_callbacks_;
 
-  base::WeakPtrFactory<ErrorScreen> weak_factory_;
+  base::WeakPtrFactory<ErrorScreen> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ErrorScreen);
 };

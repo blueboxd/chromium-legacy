@@ -37,8 +37,7 @@ InputMethodChromeOS::InputMethodChromeOS(
     : InputMethodBase(delegate),
       composing_text_(false),
       composition_changed_(false),
-      handling_key_event_(false),
-      weak_ptr_factory_(this) {
+      handling_key_event_(false) {
   ResetContext();
 }
 

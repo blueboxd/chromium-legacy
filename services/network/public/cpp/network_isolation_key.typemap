@@ -9,4 +9,5 @@ traits_headers =
 public_deps = [
   "//net",
 ]
-type_mappings = [ "network.mojom.NetworkIsolationKey=net::NetworkIsolationKey" ]
+type_mappings =
+    [ "network.mojom.NetworkIsolationKey=::net::NetworkIsolationKey" ]

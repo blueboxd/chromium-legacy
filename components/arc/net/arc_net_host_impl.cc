@@ -458,7 +458,7 @@ ArcNetHostImpl* ArcNetHostImpl::GetForBrowserContextForTesting(
 
 ArcNetHostImpl::ArcNetHostImpl(content::BrowserContext* context,
                                ArcBridgeService* bridge_service)
-    : arc_bridge_service_(bridge_service), weak_factory_(this) {
+    : arc_bridge_service_(bridge_service) {
   arc_bridge_service_->net()->SetHost(this);
   arc_bridge_service_->net()->AddObserver(this);
 }

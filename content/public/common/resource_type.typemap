@@ -14,4 +14,4 @@ public_deps = [
 deps = [
   "//content:export",
 ]
-type_mappings = [ "content.mojom.ResourceType=content::ResourceType" ]
+type_mappings = [ "content.mojom.ResourceType=::content::ResourceType" ]

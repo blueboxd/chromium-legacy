@@ -8,6 +8,4 @@ traits_headers = [ "//ui/gfx/mojom/accelerated_widget_mojom_traits.h" ]
 public_deps = [
   "//ui/gfx",
 ]
-type_mappings = [
-  "gfx.mojom.AcceleratedWidget=gfx::AcceleratedWidget[copyable_pass_by_value]",
-]
+type_mappings = [ "gfx.mojom.AcceleratedWidget=::gfx::AcceleratedWidget[copyable_pass_by_value]" ]

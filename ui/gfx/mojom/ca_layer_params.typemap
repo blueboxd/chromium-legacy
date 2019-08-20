@@ -14,4 +14,4 @@ public_deps = [
 deps = [
   "//ui/gfx/geometry/mojom:mojom_traits",
 ]
-type_mappings = [ "gfx.mojom.CALayerParams=gfx::CALayerParams" ]
+type_mappings = [ "gfx.mojom.CALayerParams=::gfx::CALayerParams" ]

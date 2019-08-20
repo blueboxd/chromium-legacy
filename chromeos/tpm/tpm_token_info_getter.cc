@@ -79,8 +79,7 @@ TPMTokenInfoGetter::TPMTokenInfoGetter(
       account_id_(account_id),
       tpm_request_delay_(
           base::TimeDelta::FromMilliseconds(kInitialRequestDelayMs)),
-      cryptohome_client_(cryptohome_client),
-      weak_factory_(this) {}
+      cryptohome_client_(cryptohome_client) {}
 
 void TPMTokenInfoGetter::Continue() {
   switch (state_) {

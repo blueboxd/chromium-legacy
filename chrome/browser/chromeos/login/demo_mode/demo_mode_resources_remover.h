@@ -194,7 +194,7 @@ class DemoModeResourcesRemover
   ScopedObserver<ui::UserActivityDetector, DemoModeResourcesRemover>
       user_activity_observer_;
 
-  base::WeakPtrFactory<DemoModeResourcesRemover> weak_ptr_factory_;
+  base::WeakPtrFactory<DemoModeResourcesRemover> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DemoModeResourcesRemover);
 };

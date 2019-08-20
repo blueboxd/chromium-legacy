@@ -60,8 +60,7 @@ HIDDetectionScreen::HIDDetectionScreen(
     : BaseScreen(HIDDetectionView::kScreenId),
       view_(view),
       exit_callback_(exit_callback),
-      binding_(this),
-      weak_ptr_factory_(this) {
+      binding_(this) {
   if (view_)
     view_->Bind(this);
 

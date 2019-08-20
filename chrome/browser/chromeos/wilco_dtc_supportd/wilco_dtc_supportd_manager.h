@@ -82,11 +82,12 @@ class WilcoDtcSupportdManager final
 
   // |callback_weak_factory_ptr_| is used only in Stop/StartWilcoDtc to be able
   // to discard the callbacks for the older requests.
-  base::WeakPtrFactory<WilcoDtcSupportdManager> callback_weak_ptr_factory_;
+  base::WeakPtrFactory<WilcoDtcSupportdManager> callback_weak_ptr_factory_{
+      this};
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<WilcoDtcSupportdManager> weak_ptr_factory_;
+  base::WeakPtrFactory<WilcoDtcSupportdManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WilcoDtcSupportdManager);
 };

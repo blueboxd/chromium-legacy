@@ -86,7 +86,8 @@ class ArcContentFileSystemFileStreamReader : public storage::FileStreamReader {
 
   std::unique_ptr<base::File> file_;
 
-  base::WeakPtrFactory<ArcContentFileSystemFileStreamReader> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcContentFileSystemFileStreamReader> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcContentFileSystemFileStreamReader);
 };

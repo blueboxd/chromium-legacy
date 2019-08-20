@@ -53,7 +53,7 @@ class TtsPlatformImplChromeOs : public content::TtsPlatform {
 
   std::string error_;
 
-  base::WeakPtrFactory<TtsPlatformImplChromeOs> weak_factory_;
+  base::WeakPtrFactory<TtsPlatformImplChromeOs> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TtsPlatformImplChromeOs);
 };

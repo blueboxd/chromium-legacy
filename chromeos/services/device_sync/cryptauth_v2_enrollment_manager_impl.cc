@@ -236,9 +236,7 @@ CryptAuthV2EnrollmentManagerImpl::CryptAuthV2EnrollmentManagerImpl(
       scheduler_(scheduler),
       pref_service_(pref_service),
       clock_(clock),
-      timer_(std::move(timer)),
-      callback_weak_ptr_factory_(this),
-      scheduler_weak_ptr_factory_(this) {
+      timer_(std::move(timer)) {
   // TODO(nohle): Remove when v1 Enrollment is deprecated.
   AddV1UserKeyPairToRegistryIfNecessary();
 

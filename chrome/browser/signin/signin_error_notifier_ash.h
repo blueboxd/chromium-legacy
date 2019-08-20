@@ -73,7 +73,7 @@ class SigninErrorNotifier : public SigninErrorController::Observer,
   std::string device_account_notification_id_;
   std::string secondary_account_notification_id_;
 
-  base::WeakPtrFactory<SigninErrorNotifier> weak_factory_;
+  base::WeakPtrFactory<SigninErrorNotifier> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(SigninErrorNotifier);
 };
 

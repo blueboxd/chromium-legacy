@@ -72,7 +72,7 @@ class ArcSelectFilesHandlersManager {
   // Map of Task ID -> ArcSelectFilesHandler.
   std::map<int, std::unique_ptr<ArcSelectFilesHandler>> handlers_by_task_id_;
 
-  base::WeakPtrFactory<ArcSelectFilesHandlersManager> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcSelectFilesHandlersManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcSelectFilesHandlersManager);
 };

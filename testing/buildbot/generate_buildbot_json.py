@@ -1068,6 +1068,8 @@ class BBJSONGenerator(object):
             # These waterfalls have their bot configs in a different repo.
             # so we don't know about their bot names.
             continue  # pragma: no cover
+          if waterfall['name'] in ['client.devtools-frontend.integration']:
+            continue  # pragma: no cover
           raise self.unknown_bot(bot_name, waterfall['name'])
 
     # All test suites must be referenced.

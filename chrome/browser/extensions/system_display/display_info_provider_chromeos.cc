@@ -272,8 +272,7 @@ void LogErrorResult(ash::mojom::DisplayConfigResult result) {
 }  // namespace
 
 DisplayInfoProviderChromeOS::DisplayInfoProviderChromeOS(
-    service_manager::Connector* connector)
-    : weak_ptr_factory_(this) {
+    service_manager::Connector* connector) {
   CHECK(connector);
   connector->BindInterface(ash::mojom::kServiceName, &cros_display_config_);
 }

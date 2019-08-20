@@ -521,38 +521,9 @@ void ProfileMetrics::LogProfileAuthResult(ProfileAuth metric) {
                             NUM_PROFILE_AUTH_METRICS);
 }
 
-void ProfileMetrics::LogProfileDesktopMenu(
-    ProfileDesktopMenu metric,
-    signin::GAIAServiceType gaia_service) {
-  // The first parameter to the histogram needs to be literal, because of the
-  // optimized implementation of |UMA_HISTOGRAM_ENUMERATION|. Do not attempt
-  // to refactor.
-  switch (gaia_service) {
-    case signin::GAIA_SERVICE_TYPE_NONE:
-      UMA_HISTOGRAM_ENUMERATION("Profile.DesktopMenu.NonGAIA", metric,
-                                NUM_PROFILE_DESKTOP_MENU_METRICS);
-      break;
-    case signin::GAIA_SERVICE_TYPE_SIGNOUT:
-      UMA_HISTOGRAM_ENUMERATION("Profile.DesktopMenu.GAIASignout", metric,
-                                NUM_PROFILE_DESKTOP_MENU_METRICS);
-      break;
-    case signin::GAIA_SERVICE_TYPE_INCOGNITO:
-      UMA_HISTOGRAM_ENUMERATION("Profile.DesktopMenu.GAIAIncognito",
-                                metric, NUM_PROFILE_DESKTOP_MENU_METRICS);
-      break;
-    case signin::GAIA_SERVICE_TYPE_ADDSESSION:
-      UMA_HISTOGRAM_ENUMERATION("Profile.DesktopMenu.GAIAAddSession", metric,
-                                NUM_PROFILE_DESKTOP_MENU_METRICS);
-      break;
-    case signin::GAIA_SERVICE_TYPE_SIGNUP:
-      UMA_HISTOGRAM_ENUMERATION("Profile.DesktopMenu.GAIASignup", metric,
-                                NUM_PROFILE_DESKTOP_MENU_METRICS);
-      break;
-    case signin::GAIA_SERVICE_TYPE_DEFAULT:
-      UMA_HISTOGRAM_ENUMERATION("Profile.DesktopMenu.GAIADefault", metric,
-                                NUM_PROFILE_DESKTOP_MENU_METRICS);
-      break;
-  }
+void ProfileMetrics::LogProfileDesktopMenu(ProfileDesktopMenu metric) {
+  UMA_HISTOGRAM_ENUMERATION("Profile.DesktopMenu.NonGAIA", metric,
+                            NUM_PROFILE_DESKTOP_MENU_METRICS);
 }
 
 void ProfileMetrics::LogProfileDelete(bool profile_was_signed_in) {

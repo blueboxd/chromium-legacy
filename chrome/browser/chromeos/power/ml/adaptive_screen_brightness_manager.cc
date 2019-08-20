@@ -128,8 +128,7 @@ AdaptiveScreenBrightnessManager::AdaptiveScreenBrightnessManager(
                                                 kNumUserInputEventsBuckets)),
       touch_counter_(
           std::make_unique<RecentEventsCounter>(kUserInputEventsDuration,
-                                                kNumUserInputEventsBuckets)),
-      weak_ptr_factory_(this) {
+                                                kNumUserInputEventsBuckets)) {
   DCHECK(ukm_logger_);
   DCHECK(detector);
   user_activity_observer_.Add(detector);

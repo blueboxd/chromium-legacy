@@ -259,7 +259,7 @@ class BrowserPolicyConnectorChromeOS
   // added here, and then pushed to the super class in BuildPolicyProviders().
   std::vector<std::unique_ptr<ConfigurationPolicyProvider>> providers_for_init_;
 
-  base::WeakPtrFactory<BrowserPolicyConnectorChromeOS> weak_ptr_factory_;
+  base::WeakPtrFactory<BrowserPolicyConnectorChromeOS> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPolicyConnectorChromeOS);
 };

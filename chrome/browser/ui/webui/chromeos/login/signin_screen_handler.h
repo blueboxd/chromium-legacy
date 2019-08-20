@@ -506,7 +506,7 @@ class SigninScreenHandler
 
   std::unique_ptr<AccountId> focused_pod_account_id_;
 
-  base::WeakPtrFactory<SigninScreenHandler> weak_factory_;
+  base::WeakPtrFactory<SigninScreenHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SigninScreenHandler);
 };

@@ -91,7 +91,8 @@ class ClientAppMetadataProviderService
   base::Optional<std::string> pending_gcm_registration_id_;
   base::Optional<cryptauthv2::ClientAppMetadata> client_app_metadata_;
   std::list<GetMetadataCallback> pending_callbacks_;
-  base::WeakPtrFactory<ClientAppMetadataProviderService> weak_ptr_factory_;
+  base::WeakPtrFactory<ClientAppMetadataProviderService> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(ClientAppMetadataProviderService);
 };

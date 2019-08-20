@@ -68,7 +68,7 @@ class MtpManagerClientChromeOS : public device::mojom::MtpManagerClient {
   // Guaranteed to outlive this class.
   StorageMonitor::Receiver* const notifications_;
 
-  base::WeakPtrFactory<MtpManagerClientChromeOS> weak_ptr_factory_;
+  base::WeakPtrFactory<MtpManagerClientChromeOS> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MtpManagerClientChromeOS);
 };

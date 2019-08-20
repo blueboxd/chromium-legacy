@@ -66,10 +66,6 @@ namespace gfx {
 class Size;
 }
 
-namespace signin {
-struct ManageAccountsParams;
-}
-
 namespace signin_metrics {
 enum class AccessPoint;
 }
@@ -455,7 +451,6 @@ class BrowserWindow : public ui::BaseWindow {
   };
   virtual void ShowAvatarBubbleFromAvatarButton(
       AvatarBubbleMode mode,
-      const signin::ManageAccountsParams& manage_accounts_params,
       signin_metrics::AccessPoint access_point,
       bool is_source_keyboard) = 0;
 

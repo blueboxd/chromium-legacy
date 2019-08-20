@@ -491,9 +491,7 @@ void CrostiniInstallerView::SetGetFreeDiskSpaceCallbackForTesting(
 }
 
 CrostiniInstallerView::CrostiniInstallerView(Profile* profile)
-    : profile_(profile),
-      free_disk_space_(kUninitializedDiskSpace),
-      weak_ptr_factory_(this) {
+    : profile_(profile), free_disk_space_(kUninitializedDiskSpace) {
   // Layout constants from the spec.
   constexpr gfx::Insets kDialogInsets(60, 64, 0, 64);
   constexpr int kDialogSpacingVertical = 32;

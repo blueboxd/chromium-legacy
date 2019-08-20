@@ -20,8 +20,9 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_listener.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/shared_associated_remote.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
@@ -93,7 +94,8 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       blink::mojom::ServiceWorkerRequest service_worker_request,
       mojo::PendingReceiver<blink::mojom::ControllerServiceWorker>
           controller_receiver,
-      blink::mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
+      mojo::PendingAssociatedRemote<blink::mojom::EmbeddedWorkerInstanceHost>
+          instance_host,
       blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       EmbeddedWorkerInstanceClientImpl* owner,
       blink::mojom::EmbeddedWorkerStartTimingPtr start_timing,
@@ -225,7 +227,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       pending_subresource_loader_updater_;
 
   // This is bound on the initiator thread.
-  scoped_refptr<blink::mojom::ThreadSafeEmbeddedWorkerInstanceHostAssociatedPtr>
+  mojo::SharedAssociatedRemote<blink::mojom::EmbeddedWorkerInstanceHost>
       instance_host_;
 
   // This holds blink.mojom.ServiceWorkerContainer(Host) connections to the

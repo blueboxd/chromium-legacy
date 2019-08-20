@@ -82,8 +82,7 @@ SingleLogFileLogSource::SingleLogFileLogSource(SupportedSource source_type)
       source_type_(source_type),
       log_file_dir_path_(kDefaultSystemLogDirPath),
       num_bytes_read_(0),
-      file_inode_(0),
-      weak_ptr_factory_(this) {}
+      file_inode_(0) {}
 
 SingleLogFileLogSource::~SingleLogFileLogSource() {}
 

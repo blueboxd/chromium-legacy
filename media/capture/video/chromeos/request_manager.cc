@@ -54,8 +54,7 @@ RequestManager::RequestManager(
       ipc_task_runner_(std::move(ipc_task_runner)),
       capturing_(false),
       partial_result_count_(1),
-      first_frame_shutter_time_(base::TimeTicks()),
-      weak_ptr_factory_(this) {
+      first_frame_shutter_time_(base::TimeTicks()) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   DCHECK(callback_ops_.is_bound());
   DCHECK(device_context_);

@@ -21,6 +21,7 @@ GPU_EXPORT extern const char kDisableGpuProcessForDX12VulkanInfoCollection[];
 GPU_EXPORT extern const char kEnableUnsafeWebGPU[];
 GPU_EXPORT extern const char kEnableWebGLSwapChain[];
 GPU_EXPORT extern const char kUseHighGPUThreadPriorityForPerfTests[];
+GPU_EXPORT extern const char kNoDelayForDX12VulkanInfoCollection[];
 
 }  // namespace switches
 

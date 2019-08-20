@@ -4,18 +4,20 @@
 
 package org.chromium.chrome.browser.password_manager;
 
-import static org.chromium.chrome.browser.password_manager.OnboardingDialogProperties.DETAILS;
-import static org.chromium.chrome.browser.password_manager.OnboardingDialogProperties.ILLUSTRATION;
-import static org.chromium.chrome.browser.password_manager.OnboardingDialogProperties.TITLE;
+import static org.chromium.chrome.browser.password_manager.PasswordManagerDialogProperties.DETAILS;
+import static org.chromium.chrome.browser.password_manager.PasswordManagerDialogProperties.ILLUSTRATION;
+import static org.chromium.chrome.browser.password_manager.PasswordManagerDialogProperties.TITLE;
 
 import org.chromium.base.Callback;
-import org.chromium.chrome.R;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyModel;
 
-/** Mediator class responsible for the logic of showing the onboarding dialog. */
-class OnboardingDialogMediator {
+/**
+ * Mediator class responsible for the logic of showing the password manager dialog (e.g. onboarding
+ * dialog).
+ */
+class PasswordManagerDialogMediator {
     private final PropertyModel mModel;
     private final ModalDialogManager mDialogManager;
     private PropertyModel.Builder mModalDialogBuilder;
@@ -48,18 +50,17 @@ class OnboardingDialogMediator {
         }
     }
 
-    OnboardingDialogMediator(
+    PasswordManagerDialogMediator(
             PropertyModel model, ModalDialogManager manager, PropertyModel.Builder dialogBuilder) {
         mModel = model;
         mDialogManager = manager;
         mModalDialogBuilder = dialogBuilder;
     }
 
-    void setContents(String onboardingTitle, String onboardingDetails) {
-        // TODO(crbug.com/983445): Replace once real image is available.
-        mModel.set(ILLUSTRATION, R.drawable.data_reduction_illustration);
-        mModel.set(TITLE, onboardingTitle);
-        mModel.set(DETAILS, onboardingDetails);
+    void setContents(String title, String details, int drawableId) {
+        mModel.set(ILLUSTRATION, drawableId);
+        mModel.set(TITLE, title);
+        mModel.set(DETAILS, details);
     }
 
     void showDialog(Callback<Boolean> onClick) {

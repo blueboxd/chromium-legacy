@@ -5,4 +5,4 @@
 mojom = "//ui/gfx/mojom/swap_result.mojom"
 public_headers = [ "//ui/gfx/swap_result.h" ]
 traits_headers = [ "//ui/gfx/mojom/swap_result_mojom_traits.h" ]
-type_mappings = [ "gfx.mojom.SwapResult=gfx::SwapResult" ]
+type_mappings = [ "gfx.mojom.SwapResult=::gfx::SwapResult" ]

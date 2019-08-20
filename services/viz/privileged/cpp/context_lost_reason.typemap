@@ -10,4 +10,5 @@ public_deps = [
   "//gpu/command_buffer/common",
 ]
 
-type_mappings = [ "viz.mojom.ContextLostReason=gpu::error::ContextLostReason" ]
+type_mappings =
+    [ "viz.mojom.ContextLostReason=::gpu::error::ContextLostReason" ]

@@ -165,8 +165,7 @@ CameraDeviceDelegate::CameraDeviceDelegate(
     : device_descriptor_(device_descriptor),
       camera_hal_delegate_(std::move(camera_hal_delegate)),
       ipc_task_runner_(std::move(ipc_task_runner)),
-      camera_app_device_(camera_app_device),
-      weak_ptr_factory_(this) {}
+      camera_app_device_(camera_app_device) {}
 
 CameraDeviceDelegate::~CameraDeviceDelegate() = default;
 

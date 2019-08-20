@@ -164,8 +164,7 @@ BluetoothDeviceInfoPtr GetBluetoothDeviceInfo(device::BluetoothDevice* device) {
 
 }  // namespace
 
-TrayBluetoothHelperLegacy::TrayBluetoothHelperLegacy()
-    : weak_ptr_factory_(this) {}
+TrayBluetoothHelperLegacy::TrayBluetoothHelperLegacy() {}
 
 TrayBluetoothHelperLegacy::~TrayBluetoothHelperLegacy() {
   if (adapter_)

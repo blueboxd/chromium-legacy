@@ -232,7 +232,7 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   ScopedObserver<CupsPrintersManager, CupsPrintersManager::Observer>
       printers_manager_observer_;
 
-  base::WeakPtrFactory<CupsPrintersHandler> weak_factory_;
+  base::WeakPtrFactory<CupsPrintersHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CupsPrintersHandler);
 };

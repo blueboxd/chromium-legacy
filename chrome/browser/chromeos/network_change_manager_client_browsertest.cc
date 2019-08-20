@@ -56,7 +56,7 @@ class NetObserver : public net::NetworkChangeNotifier::NetworkChangeObserver {
 class NetworkServiceObserver
     : public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
-  NetworkServiceObserver() : weak_factory_(this) {
+  NetworkServiceObserver() {
     content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
     content::GetNetworkConnectionTracker()->GetConnectionType(
         &last_connection_type_,
@@ -90,7 +90,7 @@ class NetworkServiceObserver
 
  private:
   std::unique_ptr<base::RunLoop> run_loop_;
-  base::WeakPtrFactory<NetworkServiceObserver> weak_factory_;
+  base::WeakPtrFactory<NetworkServiceObserver> weak_factory_{this};
 };
 
 }  // namespace

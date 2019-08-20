@@ -243,13 +243,11 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
       policy_may_need_update_(&any_thread_lock_) {
   // Compositor task queue and default task queue should be managed by
   // WebThreadScheduler. Control task queue should not.
-  task_runners_.insert(
-      std::make_pair(helper_.DefaultMainThreadTaskQueue(), nullptr));
-  task_runners_.insert(
-      std::make_pair(compositor_task_queue_,
-                     compositor_task_queue_->CreateQueueEnabledVoter()));
-  task_runners_.insert(std::make_pair(
-      input_task_queue_, input_task_queue_->CreateQueueEnabledVoter()));
+  task_runners_.emplace(helper_.DefaultMainThreadTaskQueue(), nullptr);
+  task_runners_.emplace(compositor_task_queue_,
+                        compositor_task_queue_->CreateQueueEnabledVoter());
+  task_runners_.emplace(input_task_queue_,
+                        input_task_queue_->CreateQueueEnabledVoter());
 
   v8_task_queue_ = NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
       MainThreadTaskQueue::QueueType::kV8));
@@ -738,8 +736,7 @@ scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerImpl::NewTaskQueue(
     voter = task_queue->CreateQueueEnabledVoter();
   }
 
-  auto insert_result =
-      task_runners_.insert(std::make_pair(task_queue, std::move(voter)));
+  auto insert_result = task_runners_.emplace(task_queue, std::move(voter));
   auto queue_class = task_queue->queue_class();
 
   ApplyTaskQueuePolicy(

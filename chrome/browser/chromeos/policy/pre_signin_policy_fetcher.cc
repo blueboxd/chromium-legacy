@@ -54,8 +54,7 @@ PreSigninPolicyFetcher::PreSigninPolicyFetcher(
       is_active_directory_managed_(is_active_directory_managed),
       account_id_(account_id),
       auth_key_(auth_key),
-      task_runner_(base::CreateSequencedTaskRunner(kTaskTraits)),
-      weak_ptr_factory_(this) {
+      task_runner_(base::CreateSequencedTaskRunner(kTaskTraits)) {
   DCHECK(account_id_.GetAccountType() != AccountType::ACTIVE_DIRECTORY ||
          is_active_directory_managed_);
 }

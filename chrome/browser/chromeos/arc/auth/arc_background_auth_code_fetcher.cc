@@ -59,8 +59,7 @@ ArcBackgroundAuthCodeFetcher::ArcBackgroundAuthCodeFetcher(
       profile_(profile),
       context_(profile_, account_id),
       initial_signin_(initial_signin),
-      is_primary_account_(is_primary_account),
-      weak_ptr_factory_(this) {}
+      is_primary_account_(is_primary_account) {}
 
 ArcBackgroundAuthCodeFetcher::~ArcBackgroundAuthCodeFetcher() = default;
 

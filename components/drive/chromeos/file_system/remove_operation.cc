@@ -66,9 +66,7 @@ RemoveOperation::RemoveOperation(
     : blocking_task_runner_(blocking_task_runner),
       delegate_(delegate),
       metadata_(metadata),
-      cache_(cache),
-      weak_ptr_factory_(this) {
-}
+      cache_(cache) {}
 
 RemoveOperation::~RemoveOperation() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

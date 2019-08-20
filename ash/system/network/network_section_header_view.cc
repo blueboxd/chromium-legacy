@@ -141,8 +141,7 @@ void NetworkSectionHeaderView::AddToggleButton(bool enabled) {
 }
 
 MobileSectionHeaderView::MobileSectionHeaderView()
-    : NetworkSectionHeaderView(IDS_ASH_STATUS_TRAY_NETWORK_MOBILE),
-      weak_ptr_factory_(this) {
+    : NetworkSectionHeaderView(IDS_ASH_STATUS_TRAY_NETWORK_MOBILE) {
   NetworkSectionHeaderView::Init(false /* enabled */);
 }
 

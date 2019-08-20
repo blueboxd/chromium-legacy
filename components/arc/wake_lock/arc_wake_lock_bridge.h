@@ -80,7 +80,7 @@ class ArcWakeLockBridge : public KeyedService,
 
   mojo::Binding<mojom::WakeLockHost> binding_;
 
-  base::WeakPtrFactory<ArcWakeLockBridge> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcWakeLockBridge> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcWakeLockBridge);
 };

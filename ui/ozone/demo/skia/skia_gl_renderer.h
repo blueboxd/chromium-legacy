@@ -84,7 +84,7 @@ class SkiaGlRenderer : public RendererBase,
   SkSurfaceCharacterization surface_charaterization_;
   base::queue<std::unique_ptr<SkDeferredDisplayList>> ddls_;
 
-  base::WeakPtrFactory<SkiaGlRenderer> weak_ptr_factory_;
+  base::WeakPtrFactory<SkiaGlRenderer> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SkiaGlRenderer);
 };

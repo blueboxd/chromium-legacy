@@ -47,7 +47,7 @@ class MergeSessionLoaderThrottle
   bool is_xhr_ = false;
   scoped_refptr<ChromeRenderThreadObserver::ChromeOSListener>
       chromeos_listener_;
-  base::WeakPtrFactory<MergeSessionLoaderThrottle> weak_ptr_factory_;
+  base::WeakPtrFactory<MergeSessionLoaderThrottle> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MergeSessionLoaderThrottle);
 };

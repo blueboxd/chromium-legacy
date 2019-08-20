@@ -389,7 +389,7 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   // TaskRunner for UI thread.
   scoped_refptr<base::TaskRunner> task_runner_;
 
-  base::WeakPtrFactory<UserManagerBase> weak_factory_;
+  base::WeakPtrFactory<UserManagerBase> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UserManagerBase);
 };

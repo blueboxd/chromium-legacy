@@ -88,8 +88,7 @@ ArcPlayStoreSearchProvider::ArcPlayStoreSearchProvider(
     AppListControllerDelegate* list_controller)
     : max_results_(max_results),
       profile_(profile),
-      list_controller_(list_controller),
-      weak_ptr_factory_(this) {
+      list_controller_(list_controller) {
   DCHECK_EQ(kHistogramBuckets, max_results + 1);
 }
 

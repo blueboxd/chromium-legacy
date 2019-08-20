@@ -200,7 +200,7 @@ class ArcPolicyBridge : public KeyedService,
   base::OnceClosure on_arc_instance_ready_callback_;
 
   // Must be the last member.
-  base::WeakPtrFactory<ArcPolicyBridge> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcPolicyBridge> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcPolicyBridge);
 };

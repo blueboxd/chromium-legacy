@@ -66,8 +66,7 @@ AndroidSmsAppManagerImpl::AndroidSmsAppManagerImpl(
       app_list_syncable_service_(app_list_syncable_service),
       pref_service_(pref_service),
       installed_url_at_last_notify_(GetCurrentAppUrl()),
-      pwa_delegate_(std::make_unique<PwaDelegate>()),
-      weak_ptr_factory_(this) {
+      pwa_delegate_(std::make_unique<PwaDelegate>()) {
   // Post a task to complete initialization. This portion of the flow must be
   // posted asynchronously because it accesses the networking stack, which is
   // not completely loaded until after this class is instantiated.

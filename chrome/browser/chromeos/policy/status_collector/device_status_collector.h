@@ -453,7 +453,7 @@ class DeviceStatusCollector : public StatusCollector,
   // Stores and filters activity periods used for reporting.
   std::unique_ptr<EnterpriseActivityStorage> activity_storage_;
 
-  base::WeakPtrFactory<DeviceStatusCollector> weak_factory_;
+  base::WeakPtrFactory<DeviceStatusCollector> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DeviceStatusCollector);
 };

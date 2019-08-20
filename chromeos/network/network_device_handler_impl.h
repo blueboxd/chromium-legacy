@@ -165,7 +165,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandlerImpl
   MACAddressRandomizationSupport mac_addr_randomization_supported_ =
       MACAddressRandomizationSupport::NOT_REQUESTED;
   bool mac_addr_randomization_enabled_ = false;
-  base::WeakPtrFactory<NetworkDeviceHandlerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<NetworkDeviceHandlerImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NetworkDeviceHandlerImpl);
 };

@@ -110,7 +110,7 @@ class DeviceSyncClientImpl : public DeviceSyncClient,
 
   base::Optional<std::string> local_device_id_;
 
-  base::WeakPtrFactory<DeviceSyncClientImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<DeviceSyncClientImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DeviceSyncClientImpl);
 };

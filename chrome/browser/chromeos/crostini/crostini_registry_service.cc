@@ -487,8 +487,7 @@ CrostiniRegistryService::CrostiniRegistryService(Profile* profile)
     : profile_(profile),
       prefs_(profile->GetPrefs()),
       base_icon_path_(profile->GetPath().AppendASCII(kCrostiniIconFolder)),
-      clock_(base::DefaultClock::GetInstance()),
-      weak_ptr_factory_(this) {
+      clock_(base::DefaultClock::GetInstance()) {
   RecordStartupMetrics();
 }
 

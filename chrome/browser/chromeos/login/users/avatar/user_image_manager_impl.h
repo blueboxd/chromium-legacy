@@ -213,7 +213,7 @@ class UserImageManagerImpl : public UserImageManager,
 
   bool has_managed_image_;
 
-  base::WeakPtrFactory<UserImageManagerImpl> weak_factory_;
+  base::WeakPtrFactory<UserImageManagerImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UserImageManagerImpl);
 };

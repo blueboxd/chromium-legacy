@@ -341,7 +341,7 @@ ProcessDataCollector::ProcessStoredData::ProcessStoredData(
 ProcessDataCollector::ProcessStoredData::~ProcessStoredData() = default;
 
 ProcessDataCollector::ProcessDataCollector(const Config& config)
-    : config_(config), weak_ptr_factory_(this) {}
+    : config_(config) {}
 
 ProcessDataCollector::~ProcessDataCollector() = default;
 

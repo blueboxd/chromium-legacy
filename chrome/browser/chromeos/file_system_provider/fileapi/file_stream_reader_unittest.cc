@@ -47,7 +47,7 @@ const ProviderId kProviderId = ProviderId::CreateFromExtensionId(kExtensionId);
 // Logs callbacks invocations on the file stream reader.
 class EventLogger {
  public:
-  EventLogger() : weak_ptr_factory_(this) {}
+  EventLogger() {}
   virtual ~EventLogger() {}
 
   void OnRead(int result) { results_.push_back(result); }
@@ -61,7 +61,7 @@ class EventLogger {
 
  private:
   std::vector<int64_t> results_;
-  base::WeakPtrFactory<EventLogger> weak_ptr_factory_;
+  base::WeakPtrFactory<EventLogger> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(EventLogger);
 };

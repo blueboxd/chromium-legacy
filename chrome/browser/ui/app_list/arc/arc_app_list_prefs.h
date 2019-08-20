@@ -572,7 +572,7 @@ class ArcAppListPrefs : public KeyedService,
   // Keeps all pending resize requests used to support legacy icons.
   std::vector<std::unique_ptr<ResizeRequest>> resize_requests_;
 
-  base::WeakPtrFactory<ArcAppListPrefs> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcAppListPrefs> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppListPrefs);
 };

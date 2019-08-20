@@ -6,8 +6,7 @@ mojom = "//media/mojo/mojom/media_types.mojom"
 
 public_headers = [ "//media/base/video_decoder_config.h" ]
 
-traits_headers =
-    [ "//media/mojo/mojom/video_decoder_config_mojom_traits.h" ]
+traits_headers = [ "//media/mojo/mojom/video_decoder_config_mojom_traits.h" ]
 
 sources = [
   "video_decoder_config_mojom_traits.cc",
@@ -24,4 +23,4 @@ deps = [
 ]
 
 # See media_types.typemap for enum mappings.
-type_mappings = [ "media.mojom.VideoDecoderConfig=media::VideoDecoderConfig" ]
+type_mappings = [ "media.mojom.VideoDecoderConfig=::media::VideoDecoderConfig" ]

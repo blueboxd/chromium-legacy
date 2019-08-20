@@ -89,8 +89,7 @@ DragWindowResizer::DragWindowResizer(
     std::unique_ptr<WindowResizer> next_window_resizer,
     WindowState* window_state)
     : WindowResizer(window_state),
-      next_window_resizer_(std::move(next_window_resizer)),
-      weak_ptr_factory_(this) {
+      next_window_resizer_(std::move(next_window_resizer)) {
   // The pointer should be confined in one display during resizing a window
   // because the window cannot span two displays at the same time anyway. The
   // exception is window/tab dragging operation. During that operation,

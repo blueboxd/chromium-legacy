@@ -123,15 +123,14 @@ class AudioServiceImpl : public AudioService,
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<AudioServiceImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<AudioServiceImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AudioServiceImpl);
 };
 
 AudioServiceImpl::AudioServiceImpl(AudioDeviceIdCalculator* id_calculator)
     : cras_audio_handler_(chromeos::CrasAudioHandler::Get()),
-      id_calculator_(id_calculator),
-      weak_ptr_factory_(this) {
+      id_calculator_(id_calculator) {
   CHECK(id_calculator_);
 
   if (cras_audio_handler_)

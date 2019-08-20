@@ -9,4 +9,4 @@ sources = [
   "//chrome/chrome_cleaner/mojom/typemaps/string16_embedded_nulls_mojom_traits.cc",
 ]
 
-type_mappings = [ "chrome_cleaner.mojom.String16EmbeddedNulls=chrome_cleaner::String16EmbeddedNulls" ]
+type_mappings = [ "chrome_cleaner.mojom.String16EmbeddedNulls=::chrome_cleaner::String16EmbeddedNulls" ]

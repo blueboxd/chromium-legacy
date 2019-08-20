@@ -302,8 +302,7 @@ ShelfView::ShelfView(ShelfModel* model, Shelf* shelf)
       view_model_(std::make_unique<views::ViewModel>()),
       bounds_animator_(std::make_unique<views::BoundsAnimator>(this)),
       tooltip_(this),
-      focus_search_(std::make_unique<ShelfFocusSearch>(this)),
-      weak_factory_(this) {
+      focus_search_(std::make_unique<ShelfFocusSearch>(this)) {
   DCHECK(model_);
   DCHECK(shelf_);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);

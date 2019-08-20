@@ -158,7 +158,7 @@ class EasyUnlockServiceSignin
   std::unique_ptr<proximity_auth::ProximityAuthLocalStatePrefManager>
       pref_manager_;
 
-  base::WeakPtrFactory<EasyUnlockServiceSignin> weak_ptr_factory_;
+  base::WeakPtrFactory<EasyUnlockServiceSignin> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockServiceSignin);
 };

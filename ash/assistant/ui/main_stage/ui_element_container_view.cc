@@ -73,7 +73,7 @@ float GetTextElementAnimationFadeOutOpacity() {
 // UiElementContainerView ------------------------------------------------------
 
 UiElementContainerView::UiElementContainerView(AssistantViewDelegate* delegate)
-    : delegate_(delegate), weak_factory_(this) {
+    : delegate_(delegate) {
   InitLayout();
 
   // The AssistantViewDelegate should outlive UiElementContainerView.

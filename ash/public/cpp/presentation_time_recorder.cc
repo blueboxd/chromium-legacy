@@ -38,7 +38,7 @@ class PresentationTimeRecorder::PresentationTimeRecorderInternal
     : public ui::CompositorObserver {
  public:
   explicit PresentationTimeRecorderInternal(ui::Compositor* compositor)
-      : compositor_(compositor), weak_ptr_factory_(this) {
+      : compositor_(compositor) {
     compositor_->AddObserver(this);
     VLOG(1) << "Start Recording Frame Time";
   }
@@ -119,7 +119,8 @@ class PresentationTimeRecorder::PresentationTimeRecorderInternal
   ui::Compositor* compositor_ = nullptr;
   bool recording_ = true;
 
-  base::WeakPtrFactory<PresentationTimeRecorderInternal> weak_ptr_factory_;
+  base::WeakPtrFactory<PresentationTimeRecorderInternal> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(PresentationTimeRecorderInternal);
 };

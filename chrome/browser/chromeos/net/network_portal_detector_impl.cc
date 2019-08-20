@@ -209,8 +209,7 @@ NetworkPortalDetectorImpl::NetworkPortalDetectorImpl(
     network::mojom::URLLoaderFactory* loader_factory_for_testing)
     : strategy_(PortalDetectorStrategy::CreateById(
           PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN,
-          this)),
-      weak_factory_(this) {
+          this)) {
   NET_LOG(EVENT) << "NetworkPortalDetectorImpl::NetworkPortalDetectorImpl()";
   network::mojom::URLLoaderFactory* loader_factory;
   if (loader_factory_for_testing) {

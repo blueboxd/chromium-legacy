@@ -224,7 +224,7 @@ class CoreOobeHandler : public BaseWebUIHandler,
 
   ash::mojom::CrosDisplayConfigControllerPtr cros_display_config_ptr_;
 
-  base::WeakPtrFactory<CoreOobeHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<CoreOobeHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CoreOobeHandler);
 };

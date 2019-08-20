@@ -49,7 +49,7 @@ void JankMonitor::SetUp() {
   metric_source_ = CreateMetricSource();
   metric_source_->SetUp();
 
-  monitor_task_runner_ = CreateMonitorTaskRunner();
+  monitor_task_runner_ = base::CreateSequencedTaskRunner({base::ThreadPool()});
   ui_thread_exec_state_ = std::make_unique<ThreadExecutionState>();
 }
 
@@ -61,12 +61,6 @@ void JankMonitor::Destroy() {
   base::ScopedClosureRunner finish_destroy_metric_source(base::BindOnce(
       &JankMonitor::FinishDestroyMetricSource, base::RetainedRef(this)));
   metric_source_->Destroy(std::move(finish_destroy_metric_source));
-
-  // This holds another reference to |this| until the monitor thread finishes
-  // shutdown.
-  monitor_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&JankMonitor::DestroyOnMonitorThread,
-                                base::RetainedRef(this)));
 }
 
 void JankMonitor::FinishDestroyMetricSource() {
@@ -74,6 +68,12 @@ void JankMonitor::FinishDestroyMetricSource() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   metric_source_ = nullptr;
+
+  // We won't receive any RullRun* or DidRun* callbacks. Now shut down the
+  // monitor thread.
+  monitor_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&JankMonitor::DestroyOnMonitorThread,
+                                base::RetainedRef(this)));
 }
 
 void JankMonitor::SetUpOnIOThread() {
@@ -168,11 +168,6 @@ void JankMonitor::StopTimerIfIdle() {
 
   timer_.Stop();
   timer_running_ = false;
-}
-
-scoped_refptr<base::SequencedTaskRunner>
-JankMonitor::CreateMonitorTaskRunner() {
-  return base::CreateSequencedTaskRunner({base::ThreadPool()});
 }
 
 std::unique_ptr<MetricSource> JankMonitor::CreateMetricSource () {

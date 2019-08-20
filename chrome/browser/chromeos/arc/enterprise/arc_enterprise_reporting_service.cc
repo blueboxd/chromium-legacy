@@ -48,8 +48,7 @@ ArcEnterpriseReportingService::GetForBrowserContext(
 ArcEnterpriseReportingService::ArcEnterpriseReportingService(
     content::BrowserContext* context,
     ArcBridgeService* bridge_service)
-    : arc_bridge_service_(bridge_service),
-      weak_ptr_factory_(this) {
+    : arc_bridge_service_(bridge_service) {
   arc_bridge_service_->enterprise_reporting()->SetHost(this);
 }
 

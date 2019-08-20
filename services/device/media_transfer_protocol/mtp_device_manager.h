@@ -201,7 +201,7 @@ class MtpDeviceManager : public mojom::MtpManager {
 
   base::ThreadChecker thread_checker_;
 
-  base::WeakPtrFactory<MtpDeviceManager> weak_ptr_factory_;
+  base::WeakPtrFactory<MtpDeviceManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MtpDeviceManager);
 };

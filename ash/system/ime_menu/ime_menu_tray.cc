@@ -338,8 +338,7 @@ ImeMenuTray::ImeMenuTray(Shelf* shelf)
       show_bubble_after_keyboard_hidden_(false),
       is_emoji_enabled_(false),
       is_handwriting_enabled_(false),
-      is_voice_enabled_(false),
-      weak_ptr_factory_(this) {
+      is_voice_enabled_(false) {
   DCHECK(ime_controller_);
   SetInkDropMode(InkDropMode::ON);
   CreateLabel();

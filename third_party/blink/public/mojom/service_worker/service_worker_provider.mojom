@@ -23,8 +23,8 @@ const string kNavigation_ServiceWorkerSpec = "navigation:service_worker";
 // for a service worker client (window or web worker) to talk with the
 // ServiceWorkerContainerHost in the browser process.
 struct ServiceWorkerProviderInfoForClient {
-  associated ServiceWorkerContainerHost host_ptr_info;
-  associated ServiceWorkerContainer& client_request;
+  pending_associated_remote<ServiceWorkerContainerHost> host_remote;
+  pending_associated_receiver<ServiceWorkerContainer> client_receiver;
 };
 
 // Sent from the browser process to the renderer. Contains parameters used for
@@ -33,10 +33,10 @@ struct ServiceWorkerProviderInfoForClient {
 // TODO(falken): Merge this with EmbeddedWorkerStartParams, there is no logical
 // grouping between the two.
 struct ServiceWorkerProviderInfoForStartWorker {
-  // No methods on |host_ptr_info| are called, but it's needed to keep the host
+  // No methods on |host_remote| are called, but it's needed to keep the host
   // implementation in the browser process alive.
   // TODO(https://crbug.com/931087): Use a separate interface.
-  associated ServiceWorkerContainerHost host_ptr_info;
+  pending_associated_remote<ServiceWorkerContainerHost> host_remote;
 
   // The loader to use for loading the worker's main script and
   // importScripts().

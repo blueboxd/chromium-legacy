@@ -27,6 +27,7 @@ namespace web_app {
 
 enum class InstallResultCode;
 class InstallFinalizer;
+class WebAppUiManager;
 
 // Class to install WebApp from a WebContents. A queue of such tasks is owned by
 // PendingAppManager. Can only be called from the UI thread.
@@ -55,6 +56,7 @@ class PendingAppInstallTask {
   // policy, etc.
   explicit PendingAppInstallTask(Profile* profile,
                                  AppRegistrar* registrar,
+                                 WebAppUiManager* ui_manager,
                                  InstallFinalizer* install_finalizer,
                                  ExternalInstallOptions install_options);
 
@@ -87,6 +89,7 @@ class PendingAppInstallTask {
   Profile* profile_;
   AppRegistrar* registrar_;
   InstallFinalizer* install_finalizer_;
+  WebAppUiManager* ui_manager_;
 
   ExternallyInstalledWebAppPrefs externally_installed_app_prefs_;
 

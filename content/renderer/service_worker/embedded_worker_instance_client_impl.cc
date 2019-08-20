@@ -27,14 +27,14 @@ namespace content {
 
 // static
 void EmbeddedWorkerInstanceClientImpl::Create(
-    blink::mojom::EmbeddedWorkerInstanceClientRequest request,
+    mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient> receiver,
     scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner) {
   // This won't be leaked because the lifetime will be managed internally.
   // See the class documentation for detail.
   // We can't use MakeStrongBinding because must give the worker thread
   // a chance to stop by calling TerminateWorkerContext() and waiting
   // before destructing.
-  new EmbeddedWorkerInstanceClientImpl(std::move(request),
+  new EmbeddedWorkerInstanceClientImpl(std::move(receiver),
                                        std::move(initiator_thread_task_runner));
 }
 
@@ -135,12 +135,12 @@ void EmbeddedWorkerInstanceClientImpl::AddMessageToConsole(
 }
 
 EmbeddedWorkerInstanceClientImpl::EmbeddedWorkerInstanceClientImpl(
-    blink::mojom::EmbeddedWorkerInstanceClientRequest request,
+    mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient> receiver,
     scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner)
-    : binding_(this, std::move(request)),
+    : receiver_(this, std::move(receiver)),
       initiator_thread_task_runner_(std::move(initiator_thread_task_runner)) {
   DCHECK(initiator_thread_task_runner_->BelongsToCurrentThread());
-  binding_.set_connection_error_handler(base::BindOnce(
+  receiver_.set_disconnect_handler(base::BindOnce(
       &EmbeddedWorkerInstanceClientImpl::OnError, base::Unretained(this)));
 }
 

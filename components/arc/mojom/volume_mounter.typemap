@@ -15,6 +15,6 @@ sources = [
   "//components/arc/volume_mounter/volume_mounter_mojom_traits.cc",
 ]
 type_mappings = [
-  "arc.mojom.DeviceType=chromeos::DeviceType",
-  "arc.mojom.MountEvent=chromeos::disks::DiskMountManager::MountEvent",
+  "arc.mojom.DeviceType=::chromeos::DeviceType",
+  "arc.mojom.MountEvent=::chromeos::disks::DiskMountManager::MountEvent",
 ]

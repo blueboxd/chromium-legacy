@@ -50,8 +50,7 @@ void DetachableBaseHandler::RegisterPrefs(PrefRegistrySimple* registry) {
 DetachableBaseHandler::DetachableBaseHandler(PrefService* local_state)
     : local_state_(local_state),
       hammerd_observer_(this),
-      power_manager_observer_(this),
-      weak_ptr_factory_(this) {
+      power_manager_observer_(this) {
   if (chromeos::HammerdClient::Get())  // May be null in tests
     hammerd_observer_.Add(chromeos::HammerdClient::Get());
   chromeos::PowerManagerClient* power_manager_client =

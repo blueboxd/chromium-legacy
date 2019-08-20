@@ -112,7 +112,7 @@ class ActivityIconLoader {
   THREAD_CHECKER(thread_checker_);
 
   // This must come last to make sure weak pointers are invalidated first.
-  base::WeakPtrFactory<ActivityIconLoader> weak_ptr_factory_;
+  base::WeakPtrFactory<ActivityIconLoader> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ActivityIconLoader);
 };

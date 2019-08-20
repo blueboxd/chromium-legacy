@@ -25,6 +25,6 @@ deps = [
 
 # See media_types.typemap for enum mappings.
 type_mappings = [
-  "media.mojom.EncryptionPattern=media::EncryptionPattern",
-  "media.mojom.EncryptionScheme=media::EncryptionScheme",
+  "media.mojom.EncryptionPattern=::media::EncryptionPattern",
+  "media.mojom.EncryptionScheme=::media::EncryptionScheme",
 ]

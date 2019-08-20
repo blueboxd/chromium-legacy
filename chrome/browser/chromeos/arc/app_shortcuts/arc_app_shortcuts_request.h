@@ -56,7 +56,7 @@ class ArcAppShortcutsRequest {
   // Icon decode request for each item.
   std::vector<std::unique_ptr<IconDecodeRequest>> icon_decode_requests_;
 
-  base::WeakPtrFactory<ArcAppShortcutsRequest> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcAppShortcutsRequest> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppShortcutsRequest);
 };

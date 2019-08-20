@@ -40,7 +40,7 @@ class ScreenshotDelegate : public DeviceCommandScreenshotJob::Delegate {
   void StoreScreenshot(const ui::GrabWindowSnapshotAsyncPNGCallback& callback,
                        scoped_refptr<base::RefCountedMemory> png_data);
 
-  base::WeakPtrFactory<ScreenshotDelegate> weak_ptr_factory_;
+  base::WeakPtrFactory<ScreenshotDelegate> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ScreenshotDelegate);
 };

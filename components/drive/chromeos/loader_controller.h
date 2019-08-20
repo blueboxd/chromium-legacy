@@ -51,7 +51,7 @@ class LoaderController {
 
   THREAD_CHECKER(thread_checker_);
 
-  base::WeakPtrFactory<LoaderController> weak_ptr_factory_;
+  base::WeakPtrFactory<LoaderController> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(LoaderController);
 };
 

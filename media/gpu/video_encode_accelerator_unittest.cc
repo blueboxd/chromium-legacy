@@ -64,6 +64,7 @@
 #include "media/gpu/gpu_video_encode_accelerator_factory.h"
 #include "media/gpu/h264_decoder.h"
 #include "media/gpu/h264_dpb.h"
+#include "media/gpu/macros.h"
 #include "media/gpu/test/video_accelerator_unittest_helpers.h"
 #include "media/gpu/test/video_frame_helpers.h"
 #include "media/parsers/vp8_parser.h"
@@ -121,16 +122,12 @@ const double kBitrateTolerance = 0.1;
 const unsigned int kMinFramesForBitrateTests = 300;
 // The percentiles to measure for encode latency.
 const unsigned int kLoggedLatencyPercentiles[] = {50, 75, 95};
-// Timeout for the flush is completed. The period starts from passing the last
-// frame to the encoder, to the flush callback is called. There might be many
-// pending frames in the encoder, so the timeout might be larger than a frame
-// period.
+// Timeout between each BitstreamBufferReady() call and flush callback.
 // In the multiple encoder test case, the FPS might be lower than expected.
 // Currently the largest resolution we run at lab is 4K. The FPS of the slowest
-// device in single encoder is about 10. In MultipleEncoders test case, the
-// measured time period on the slowest device is about 5 seconds. Here we set
-// the timeout 2x of the measured period.
-const unsigned int kFlushTimeoutMs = 10000;
+// device in MultipleEncoders test case is 3. Here we set the timeout 10x of the
+// expected period for margin.
+const unsigned int kBitstreamBufferReadyTimeoutMs = 3000;
 
 // The syntax of multiple test streams is:
 //  test-stream1;test-stream2;test-stream3
@@ -1586,9 +1583,9 @@ class VEAClient : public VEAClientBase {
   void FlushEncoderDone(bool success);
   void FlushEncoderSuccessfully();
 
-  // Timeout function to check the flush callback function is called in the
-  // short period.
-  void FlushTimeout();
+  // Timeout function to check BitstreamBufferReady() and flush callback is
+  // called in the short period.
+  void BitstreamBufferReadyTimeout(int32_t bitstream_buffer_id);
 
   // Verify that stream bitrate has been close to current_requested_bitrate_,
   // assuming current_framerate_ since the last time VerifyStreamProperties()
@@ -1631,6 +1628,9 @@ class VEAClient : public VEAClientBase {
 
   // Verify that the output timestamp matches input timestamp.
   void VerifyOutputTimestamp(base::TimeDelta timestamp);
+
+  // Cancel and reset |buffer_ready_timeout_|.
+  void UpdateBitstreamBufferReadyTimeout(int32_t bitstream_buffer_id);
 
   ClientState state_;
 
@@ -1726,8 +1726,10 @@ class VEAClient : public VEAClientBase {
   // The timer used to feed the encoder with the input frames.
   std::unique_ptr<base::RepeatingTimer> input_timer_;
 
-  // The FlushTimeout closure. It is cancelled when flush is finished.
-  base::CancelableClosure flush_timeout_;
+  // The BitstreamBufferReadyTimeout closure. It is set at each
+  // BitstreamBufferReady() call, and cancelled at the next
+  // BitstreamBufferReady() or flush callback is called.
+  base::CancelableClosure buffer_ready_timeout_;
 
   // The timestamps for each frame in the order of CreateFrame() invocation.
   base::queue<base::TimeDelta> frame_timestamps_;
@@ -2000,6 +2002,8 @@ void VEAClient::BitstreamBufferReady(
   DCHECK(thread_checker_.CalledOnValidThread());
   ASSERT_LE(metadata.payload_size_bytes, output_buffer_size_);
 
+  UpdateBitstreamBufferReadyTimeout(bitstream_buffer_id);
+
   IdToSHM::iterator it = output_buffers_at_client_.find(bitstream_buffer_id);
   ASSERT_NE(it, output_buffers_at_client_.end());
   base::UnsafeSharedMemoryRegion* shm = it->second;
@@ -2057,6 +2061,18 @@ void VEAClient::BitstreamBufferReady(
   }
 
   FeedEncoderWithOutput(shm);
+}
+
+void VEAClient::UpdateBitstreamBufferReadyTimeout(int32_t bitstream_buffer_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DVLOGF(4);
+
+  buffer_ready_timeout_.Reset(
+      base::BindRepeating(&VEAClient::BitstreamBufferReadyTimeout,
+                          base::Unretained(this), bitstream_buffer_id));
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, buffer_ready_timeout_.callback(),
+      base::TimeDelta::FromMilliseconds(kBitstreamBufferReadyTimeoutMs));
 }
 
 void VEAClient::SetState(ClientState new_state) {
@@ -2348,18 +2364,15 @@ void VEAClient::FlushEncoder() {
   // the state to CS_FLUSHING when receiving the last frame.
   if (state_ != CS_FINISHED)
     SetState(CS_FLUSHING);
-
-  flush_timeout_.Reset(
-      base::BindRepeating(&VEAClient::FlushTimeout, base::Unretained(this)));
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, flush_timeout_.callback(),
-      base::TimeDelta::FromMilliseconds(kFlushTimeoutMs));
 }
 
 void VEAClient::FlushEncoderDone(bool success) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  flush_timeout_.Cancel();
+  DVLOGF(3);
   LOG_ASSERT(num_frames_submitted_to_encoder_ == num_frames_to_encode_);
+
+  // Stop the timeout callback.
+  buffer_ready_timeout_.Cancel();
 
   if (!success || num_encoded_frames_ != num_frames_to_encode_) {
     SetState(CS_ERROR);
@@ -2380,9 +2393,10 @@ void VEAClient::FlushEncoderSuccessfully() {
   }
 }
 
-void VEAClient::FlushTimeout() {
+void VEAClient::BitstreamBufferReadyTimeout(int32_t bitstream_buffer_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  LOG(ERROR) << "Flush timeout.";
+  LOG(ERROR) << "Timeout getting next bitstream after BitstreamBufferReady("
+             << bitstream_buffer_id << ").";
   SetState(CS_ERROR);
 }
 

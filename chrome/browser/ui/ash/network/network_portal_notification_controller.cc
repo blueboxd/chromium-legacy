@@ -210,7 +210,7 @@ const char NetworkPortalNotificationController::kUserActionMetric[] =
 
 NetworkPortalNotificationController::NetworkPortalNotificationController(
     NetworkPortalDetector* network_portal_detector)
-    : network_portal_detector_(network_portal_detector), weak_factory_(this) {
+    : network_portal_detector_(network_portal_detector) {
   if (NetworkHandler::IsInitialized()) {  // May be false in tests.
     NetworkHandler::Get()->network_state_handler()->AddObserver(this,
                                                                 FROM_HERE);

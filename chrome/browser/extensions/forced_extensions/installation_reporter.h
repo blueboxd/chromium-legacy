@@ -31,6 +31,26 @@ class InstallationReporter {
     // ExtensionManagement::settings_by_id_.
     CREATED = 0,
 
+    // TODO(crbug.com/989526): stages from NOTIFIED_FROM_MANAGEMENT to
+    // SEEN_BY_EXTERNAL_PROVIDER are temporary ones for investigation. Remove
+    // then after investigation will complete and we'll be confident in
+    // extension handling between CREATED and PENDING.
+
+    // ExtensionManagement class is about to pass extension with
+    // INSTALLATION_FORCED mode to its observers.
+    NOTIFIED_FROM_MANAGEMENT = 5,
+
+    // ExtensionManagement class is about to pass extension with other mode to
+    // its observers.
+    NOTIFIED_FROM_MANAGEMENT_NOT_FORCED = 6,
+
+    // ExternalPolicyLoader with FORCED type fetches extension from
+    // ExtensionManagement.
+    SEEN_BY_POLICY_LOADER = 7,
+
+    // ExternalProviderImpl receives extension.
+    SEEN_BY_EXTERNAL_PROVIDER = 8,
+
     // Extension added to PendingExtensionManager.
     PENDING = 1,
 
@@ -45,7 +65,7 @@ class InstallationReporter {
 
     // Magic constant used by the histogram macros.
     // Always update it to the max value.
-    kMaxValue = COMPLETE,
+    kMaxValue = SEEN_BY_EXTERNAL_PROVIDER,
   };
 
   // Enum used for UMA. Do NOT reorder or remove entries. Don't forget to

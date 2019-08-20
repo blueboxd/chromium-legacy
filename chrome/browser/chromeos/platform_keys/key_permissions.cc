@@ -404,8 +404,7 @@ KeyPermissions::KeyPermissions(bool profile_is_managed,
     : profile_is_managed_(profile_is_managed),
       profile_prefs_(profile_prefs),
       profile_policies_(profile_policies),
-      extensions_state_store_(extensions_state_store),
-      weak_factory_(this) {
+      extensions_state_store_(extensions_state_store) {
   DCHECK(profile_prefs_);
   DCHECK(extensions_state_store_);
   DCHECK(!profile_is_managed_ || profile_policies_);

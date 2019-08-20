@@ -191,6 +191,7 @@ jumbo_source_set("base") {
     "media_types.h",
     "media_url_demuxer.cc",
     "media_url_demuxer.h",
+    "media_url_params.cc",
     "media_url_params.h",
     "media_util.cc",
     "media_util.h",

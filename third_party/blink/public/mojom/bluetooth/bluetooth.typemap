@@ -11,6 +11,6 @@ deps = [
   "//device/bluetooth",
 ]
 type_mappings = [
-  "blink.mojom.WebBluetoothDeviceId=WTF::String",
-  "bluetooth.mojom.UUID=WTF::String[nullable_is_same_type]",
+  "blink.mojom.WebBluetoothDeviceId=::WTF::String",
+  "bluetooth.mojom.UUID=::WTF::String[nullable_is_same_type]",
 ]

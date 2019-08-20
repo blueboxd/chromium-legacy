@@ -51,27 +51,21 @@ enum CameraState {
 - (void)torchStateChanged:(BOOL)torchIsOn;
 // Called on the main queue when the torch availability changes.
 - (void)torchAvailabilityChanged:(BOOL)torchIsAvailable;
-// Called when the scanner detects a valid code. The camera controller stops
-// recording when a result is scanned. A valid code is any non-empty string. If
-// |load| is YES, the result should be loaded immediately without requiring
-// additional user input. The value of |load| will only be YES for barcodes
-// which can only encode digits.
-- (void)receiveQRScannerResult:(NSString*)result loadImmediately:(BOOL)load;
 
 @end
 
 // The CameraController manages the AVCaptureSession, its inputs, outputs, and
-// notifications for the QRScannerViewController.
+// notifications for the ScannerViewController.
 @interface CameraController : NSObject
 
 // The current state of the torch.
 @property(nonatomic, readonly, assign, getter=isTorchActive) BOOL torchActive;
 
-- (instancetype)init NS_UNAVAILABLE;
+// Initializes the controller with the |delegate|.
+- (instancetype)initWithDelegate:(id<CameraControllerDelegate>)delegate
+    NS_DESIGNATED_INITIALIZER;
 
-// Returns a new controller with the |delegate|.
-+ (instancetype)cameraControllerWithDelegate:
-    (id<CameraControllerDelegate>)delegate;
+- (instancetype)init NS_UNAVAILABLE;
 
 // Returns the app's authorization in regards to the camera.
 - (AVAuthorizationStatus)getAuthorizationStatus;
@@ -106,6 +100,27 @@ enum CameraState {
 // Sets the camera's torch mode to |mode|. Does nothing if the camera is not
 // available or the torch mode is not supported.
 - (void)setTorchMode:(AVCaptureTorchMode)mode;
+
+@end
+
+@interface CameraController (Subclassing)
+
+// The queue for dispatching calls to |_captureSession|.
+@property(nonatomic, readonly) dispatch_queue_t sessionQueue;
+
+// The capture session for recording video and detecting QR codes or credit
+// cards.
+@property(nonatomic, readwrite) AVCaptureSession* captureSession;
+
+// The metadata output attached to the capture session.
+@property(nonatomic, readwrite) AVCaptureMetadataOutput* metadataOutput;
+
+// Set camera state.
+- (void)setCameraState:(scanner::CameraState)state;
+
+// Configures the scanner specific capture session elements, i.e. either QR code
+// or credit card scanner. Must be overridden in the subclass.
+- (void)configureScannerWithSession:(AVCaptureSession*)session;
 
 @end
 

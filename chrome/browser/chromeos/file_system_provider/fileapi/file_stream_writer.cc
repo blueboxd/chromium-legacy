@@ -141,8 +141,7 @@ FileStreamWriter::FileStreamWriter(const storage::FileSystemURL& url,
     : url_(url),
       current_offset_(initial_offset),
       runner_(new OperationRunner),
-      state_(NOT_INITIALIZED),
-      weak_ptr_factory_(this) {}
+      state_(NOT_INITIALIZED) {}
 
 FileStreamWriter::~FileStreamWriter() {
   // Close the runner explicitly if the file streamer is

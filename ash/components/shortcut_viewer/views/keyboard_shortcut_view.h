@@ -129,7 +129,7 @@ class KeyboardShortcutView : public views::WidgetDelegateView,
   // initialization of background panes in the following frame.
   bool did_first_paint_ = false;
 
-  base::WeakPtrFactory<KeyboardShortcutView> weak_factory_;
+  base::WeakPtrFactory<KeyboardShortcutView> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardShortcutView);
 };

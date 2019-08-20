@@ -21,7 +21,7 @@ constexpr base::TimeDelta kTokenRefreshRate =
 
 class FakeDriveOperation {
  public:
-  FakeDriveOperation() : weak_ptr_factory_(this) {}
+  FakeDriveOperation() {}
 
   base::WeakPtr<FakeDriveOperation> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
@@ -41,7 +41,7 @@ class FakeDriveOperation {
   bool task_has_executed = false;
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<FakeDriveOperation> weak_ptr_factory_;
+  base::WeakPtrFactory<FakeDriveOperation> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeDriveOperation);
 };

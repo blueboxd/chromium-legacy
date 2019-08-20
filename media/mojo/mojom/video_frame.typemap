@@ -33,4 +33,4 @@ deps = [
   "//ui/gfx/geometry/mojom:mojom_traits",
 ]
 
-type_mappings = [ "media.mojom.VideoFrame=scoped_refptr<media::VideoFrame>[nullable_is_same_type]" ]
+type_mappings = [ "media.mojom.VideoFrame=::scoped_refptr<::media::VideoFrame>[nullable_is_same_type]" ]

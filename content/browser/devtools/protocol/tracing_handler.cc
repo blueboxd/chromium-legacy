@@ -764,7 +764,8 @@ void TracingHandler::Start(Maybe<std::string> categories,
       gzip_compression_ = gzip_compression;
       proto_format_ = proto_format;
     }
-    callback->sendFailure(Response::Error("Tracing is already started"));
+    callback->sendFailure(Response::Error(
+        "Tracing has already been started (possibly in another tab)."));
     return;
   }
 

@@ -377,7 +377,7 @@ void EnsureLocalDirectoryExists(
 }  // namespace
 
 ChromeScreenshotGrabber::ChromeScreenshotGrabber()
-    : screenshot_grabber_(new ui::ScreenshotGrabber), weak_factory_(this) {
+    : screenshot_grabber_(new ui::ScreenshotGrabber) {
   DCHECK(!g_chrome_screenshot_grabber_instance);
   g_chrome_screenshot_grabber_instance = this;
 }

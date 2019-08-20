@@ -37,8 +37,7 @@ UsbPrinterNotification::UsbPrinterNotification(
     : printer_(printer),
       notification_id_(notification_id),
       type_(type),
-      profile_(profile),
-      weak_factory_(this) {
+      profile_(profile) {
   message_center::RichNotificationData rich_notification_data;
   rich_notification_data.vector_small_image = &kNotificationPrintingIcon;
   rich_notification_data.accent_color = ash::kSystemNotificationColorNormal;

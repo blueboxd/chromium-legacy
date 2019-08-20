@@ -78,8 +78,7 @@ ExternalCacheImpl::ExternalCacheImpl(
       delegate_(delegate),
       always_check_updates_(always_check_updates),
       wait_for_cache_initialization_(wait_for_cache_initialization),
-      cached_extensions_(new base::DictionaryValue()),
-      weak_ptr_factory_(this) {
+      cached_extensions_(new base::DictionaryValue()) {
   notification_registrar_.Add(
       this, extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR,
       content::NotificationService::AllBrowserContextsAndSources());

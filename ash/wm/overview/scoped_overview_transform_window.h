@@ -229,7 +229,7 @@ class ASH_EXPORT ScopedOverviewTransformWindow
 
   std::unique_ptr<ScopedOverviewHideWindows> hidden_transient_children_;
 
-  base::WeakPtrFactory<ScopedOverviewTransformWindow> weak_ptr_factory_;
+  base::WeakPtrFactory<ScopedOverviewTransformWindow> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ScopedOverviewTransformWindow);
 };

@@ -118,8 +118,7 @@ TetherNotificationPresenter::TetherNotificationPresenter(
     NetworkConnect* network_connect)
     : profile_(profile),
       network_connect_(network_connect),
-      settings_ui_delegate_(base::WrapUnique(new SettingsUiDelegateImpl())),
-      weak_ptr_factory_(this) {}
+      settings_ui_delegate_(base::WrapUnique(new SettingsUiDelegateImpl())) {}
 
 TetherNotificationPresenter::~TetherNotificationPresenter() = default;
 

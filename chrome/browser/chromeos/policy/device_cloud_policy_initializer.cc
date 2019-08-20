@@ -373,7 +373,7 @@ bool DeviceCloudPolicyInitializer::GetMachineFlag(const std::string& key,
 DeviceCloudPolicyInitializer::TpmEnrollmentKeySigningService::
     TpmEnrollmentKeySigningService(
         cryptohome::AsyncMethodCaller* async_method_caller)
-    : async_method_caller_(async_method_caller), weak_ptr_factory_(this) {}
+    : async_method_caller_(async_method_caller) {}
 
 DeviceCloudPolicyInitializer::TpmEnrollmentKeySigningService::
     ~TpmEnrollmentKeySigningService() {}

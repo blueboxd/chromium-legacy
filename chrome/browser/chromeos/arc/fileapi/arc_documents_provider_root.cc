@@ -84,8 +84,7 @@ ArcDocumentsProviderRoot::ArcDocumentsProviderRoot(
       root_document_id_(root_document_id),
       root_id_(root_id),
       read_only_(read_only),
-      mime_types_(mime_types),
-      weak_ptr_factory_(this) {
+      mime_types_(mime_types) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   runner_->AddObserver(this);
 }

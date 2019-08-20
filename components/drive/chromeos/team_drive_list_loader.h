@@ -97,7 +97,7 @@ class TeamDriveListLoader {
 
   THREAD_CHECKER(thread_checker_);
 
-  base::WeakPtrFactory<TeamDriveListLoader> weak_ptr_factory_;
+  base::WeakPtrFactory<TeamDriveListLoader> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(TeamDriveListLoader);
 };
 

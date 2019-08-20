@@ -27,7 +27,7 @@ const char StreamingConnectionEstablisher::kResumeStreamingMessage[] =
 
 StreamingConnectionEstablisher::StreamingConnectionEstablisher(
     base::Clock* clock)
-    : clock_(clock), weak_ptr_factory_(this) {}
+    : clock_(clock) {}
 StreamingConnectionEstablisher::~StreamingConnectionEstablisher() = default;
 
 void StreamingConnectionEstablisher::EstablishConnection(

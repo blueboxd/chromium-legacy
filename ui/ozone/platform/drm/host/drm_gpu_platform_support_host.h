@@ -137,7 +137,7 @@ class DrmGpuPlatformSupportHost : public GpuPlatformSupportHost,
   base::ObserverList<GpuThreadObserver>::Unchecked gpu_thread_observers_;
 
   base::WeakPtr<DrmGpuPlatformSupportHost> weak_ptr_;
-  base::WeakPtrFactory<DrmGpuPlatformSupportHost> weak_ptr_factory_;
+  base::WeakPtrFactory<DrmGpuPlatformSupportHost> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(DrmGpuPlatformSupportHost);
 };
 

@@ -14,4 +14,4 @@ public_deps = [
 sources = [
   "renderer_settings_mojom_traits.cc",
 ]
-type_mappings = [ "viz.mojom.RendererSettings=viz::RendererSettings" ]
+type_mappings = [ "viz.mojom.RendererSettings=::viz::RendererSettings" ]

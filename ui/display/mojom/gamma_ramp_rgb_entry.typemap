@@ -11,4 +11,5 @@ sources = [
 public_deps = [
   "//ui/display",
 ]
-type_mappings = [ "display.mojom.GammaRampRGBEntry=display::GammaRampRGBEntry" ]
+type_mappings =
+    [ "display.mojom.GammaRampRGBEntry=::display::GammaRampRGBEntry" ]

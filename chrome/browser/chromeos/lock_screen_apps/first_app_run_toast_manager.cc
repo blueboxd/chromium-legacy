@@ -65,8 +65,7 @@ class FirstAppRunToastManager::AppWidgetObserver
 FirstAppRunToastManager::FirstAppRunToastManager(Profile* profile)
     : profile_(profile),
       toast_widget_observer_(this),
-      app_window_observer_(this),
-      weak_ptr_factory_(this) {}
+      app_window_observer_(this) {}
 
 FirstAppRunToastManager::~FirstAppRunToastManager() {
   Reset();

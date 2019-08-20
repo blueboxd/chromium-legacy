@@ -71,7 +71,7 @@ class RecentDriveSource : public RecentSource {
 
   drivefs::mojom::SearchQueryPtr search_query_;
 
-  base::WeakPtrFactory<RecentDriveSource> weak_ptr_factory_;
+  base::WeakPtrFactory<RecentDriveSource> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RecentDriveSource);
 };

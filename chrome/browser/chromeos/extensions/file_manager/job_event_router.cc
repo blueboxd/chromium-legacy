@@ -20,11 +20,7 @@ namespace file_manager_private = extensions::api::file_manager_private;
 namespace file_manager {
 
 JobEventRouter::JobEventRouter(const base::TimeDelta& event_delay)
-    : event_delay_(event_delay),
-      num_completed_bytes_(0),
-      num_total_bytes_(0),
-      weak_factory_(this) {
-}
+    : event_delay_(event_delay), num_completed_bytes_(0), num_total_bytes_(0) {}
 
 JobEventRouter::~JobEventRouter() = default;
 

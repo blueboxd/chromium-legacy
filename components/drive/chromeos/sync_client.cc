@@ -150,13 +150,13 @@ SyncClient::SyncClient(base::SequencedTaskRunner* blocking_task_runner,
       operation_delegate_(delegate),
       metadata_(metadata),
       cache_(cache),
-      download_operation_(new file_system::DownloadOperation(
-          blocking_task_runner,
-          delegate,
-          scheduler,
-          metadata,
-          cache,
-          temporary_file_directory)),
+      download_operation_(
+          new file_system::DownloadOperation(blocking_task_runner,
+                                             delegate,
+                                             scheduler,
+                                             metadata,
+                                             cache,
+                                             temporary_file_directory)),
       entry_update_performer_(new EntryUpdatePerformer(blocking_task_runner,
                                                        delegate,
                                                        scheduler,
@@ -164,9 +164,7 @@ SyncClient::SyncClient(base::SequencedTaskRunner* blocking_task_runner,
                                                        cache,
                                                        loader_controller)),
       delay_(base::TimeDelta::FromSeconds(kDelaySeconds)),
-      long_delay_(base::TimeDelta::FromSeconds(kLongDelaySeconds)),
-      weak_ptr_factory_(this) {
-}
+      long_delay_(base::TimeDelta::FromSeconds(kLongDelaySeconds)) {}
 
 SyncClient::~SyncClient() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

@@ -43,10 +43,4 @@ struct CompositorFrameMetadata {
   // If unspecified, or set to BeginFrameArgs::MinInterval, it is assumed that
   // the client can animate at the maximum frame rate supported by the Display.
   mojo_base.mojom.TimeDelta? preferred_frame_interval;
-
-  // Union of visible rects of MirrorLayers in the frame, used to force damage
-  // on the surface.
-  // TODO(crbug/987725): This is a workaround and should be removed when proper
-  // damage calculation is implemented in SurfaceAggregator.
-  gfx.mojom.Rect mirror_rect;
 };

@@ -41,8 +41,7 @@ GbmSurfaceless::GbmSurfaceless(GbmSurfaceFactory* surface_factory,
       has_implicit_external_sync_(
           HasEGLExtension("EGL_ARM_implicit_external_sync")),
       has_image_flush_external_(
-          HasEGLExtension("EGL_EXT_image_flush_external")),
-      weak_factory_(this) {
+          HasEGLExtension("EGL_EXT_image_flush_external")) {
   surface_factory_->RegisterSurface(window_->widget(), this);
   supports_plane_gpu_fences_ = window_->SupportsGpuFences();
   unsubmitted_frames_.push_back(std::make_unique<PendingFrame>());

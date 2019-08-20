@@ -9,7 +9,8 @@
 
 #include "content/child/child_thread_impl.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/common/privacy_preferences.h"
 #include "third_party/blink/public/mojom/service_worker/embedded_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom.h"
@@ -40,12 +41,13 @@ class CONTENT_EXPORT EmbeddedWorkerInstanceClientImpl
   };
 
   // Creates a new EmbeddedWorkerInstanceClientImpl instance bound to
-  // |request|. The instance destroys itself when needed, see the class
+  // |receiver|. The instance destroys itself when needed, see the class
   // documentation.
   // TODO(shimazu): Create a service worker's execution context by this method
   // instead of just creating an instance of EmbeddedWorkerInstanceClient.
   static void Create(
-      blink::mojom::EmbeddedWorkerInstanceClientRequest request,
+      mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>
+          receiver,
       scoped_refptr<base::SingleThreadTaskRunner> initiator_task_runner);
 
   ~EmbeddedWorkerInstanceClientImpl() override;
@@ -61,7 +63,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstanceClientImpl
   friend class ServiceWorkerContextClientTest;
 
   EmbeddedWorkerInstanceClientImpl(
-      blink::mojom::EmbeddedWorkerInstanceClientRequest request,
+      mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>
+          receiver,
       scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner);
 
   // blink::mojom::EmbeddedWorkerInstanceClient implementation
@@ -70,13 +73,13 @@ class CONTENT_EXPORT EmbeddedWorkerInstanceClientImpl
   void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                            const std::string& message) override;
 
-  // Handler of connection error bound to |binding_|.
+  // Handler of connection error bound to |receiver_|.
   void OnError();
 
   blink::WebEmbeddedWorkerStartData BuildStartData(
       const blink::mojom::EmbeddedWorkerStartParams& params);
 
-  mojo::Binding<blink::mojom::EmbeddedWorkerInstanceClient> binding_;
+  mojo::Receiver<blink::mojom::EmbeddedWorkerInstanceClient> receiver_;
 
   // A copy of this runner is also passed to ServiceWorkerContextClient in
   // StartWorker().

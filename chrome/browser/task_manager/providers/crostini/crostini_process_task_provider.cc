@@ -121,8 +121,7 @@ CrostiniProcessTaskProvider::CrostiniProcessTaskProvider()
                      kRefreshProcessListDelay,
                      base::BindRepeating(
                          &CrostiniProcessTaskProvider::RequestVmProcessList,
-                         base::Unretained(this))),
-      weak_ptr_factory_(this) {}
+                         base::Unretained(this))) {}
 
 CrostiniProcessTaskProvider::~CrostiniProcessTaskProvider() = default;
 

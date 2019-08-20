@@ -139,7 +139,7 @@ class StructuredHeaderParser {
           return base::nullopt;
         value = *item;
       }
-      if (!parameters.insert(std::make_pair(*name, value)).second) {
+      if (!parameters.emplace(*name, value).second) {
         DVLOG(1) << "ReadParameterisedIdentifier: duplicated parameter: "
                  << *name;
         return base::nullopt;

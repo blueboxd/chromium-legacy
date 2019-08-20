@@ -55,7 +55,7 @@ class UsbPrinterNotification : public message_center::NotificationObserver {
   std::unique_ptr<message_center::Notification> notification_;
   bool visible_;
 
-  base::WeakPtrFactory<UsbPrinterNotification> weak_factory_;
+  base::WeakPtrFactory<UsbPrinterNotification> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UsbPrinterNotification);
 };

@@ -74,7 +74,7 @@ class PrintersSyncBridge::StoreProxy {
  public:
   StoreProxy(PrintersSyncBridge* owner,
              syncer::OnceModelTypeStoreFactory callback)
-      : owner_(owner), weak_ptr_factory_(this) {
+      : owner_(owner) {
     std::move(callback).Run(syncer::PRINTERS,
                             base::BindOnce(&StoreProxy::OnStoreCreated,
                                            weak_ptr_factory_.GetWeakPtr()));
@@ -168,7 +168,7 @@ class PrintersSyncBridge::StoreProxy {
   PrintersSyncBridge* owner_;
 
   std::unique_ptr<ModelTypeStore> store_;
-  base::WeakPtrFactory<StoreProxy> weak_ptr_factory_;
+  base::WeakPtrFactory<StoreProxy> weak_ptr_factory_{this};
 };
 
 PrintersSyncBridge::PrintersSyncBridge(

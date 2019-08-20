@@ -18,7 +18,7 @@
 namespace ui {
 
 GbmOverlaySurface::GbmOverlaySurface(std::unique_ptr<DrmWindowProxy> window)
-    : window_(std::move(window)), weak_ptr_factory_(this) {}
+    : window_(std::move(window)) {}
 
 GbmOverlaySurface::~GbmOverlaySurface() {}
 

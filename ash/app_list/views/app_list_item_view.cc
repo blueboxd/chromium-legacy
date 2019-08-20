@@ -229,8 +229,7 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
       apps_grid_view_(apps_grid_view),
       icon_(new IconImageView),
       title_(new views::Label),
-      progress_bar_(new views::ProgressBar),
-      weak_ptr_factory_(this) {
+      progress_bar_(new views::ProgressBar) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
 
   if (is_folder_) {

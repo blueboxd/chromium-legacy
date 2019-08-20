@@ -60,9 +60,7 @@ void DrawCursor(DrmDumbBuffer* cursor, const SkBitmap& image) {
 HardwareDisplayController::HardwareDisplayController(
     std::unique_ptr<CrtcController> controller,
     const gfx::Point& origin)
-    : origin_(origin),
-      is_disabled_(controller->is_disabled()),
-      weak_ptr_factory_(this) {
+    : origin_(origin), is_disabled_(controller->is_disabled()) {
   AddCrtc(std::move(controller));
   AllocateCursorBuffers();
 }

@@ -76,7 +76,7 @@ class CONTENT_EXPORT SharedWorkerHost
       network::mojom::URLLoaderFactoryRequest request,
       int worker_process_id,
       network::mojom::URLLoaderFactoryPtrInfo original_factory)>;
-  static void SetNetworkFactoryForTesting(
+  static void SetNetworkFactoryForSubresourcesForTesting(
       const CreateNetworkFactoryCallback& url_loader_factory_callback);
 
   // Starts the SharedWorker in the renderer process.
@@ -175,7 +175,10 @@ class CONTENT_EXPORT SharedWorkerHost
   void GetInterface(const std::string& interface_name,
                     mojo::ScopedMessagePipeHandle interface_pipe) override;
 
-  void CreateNetworkFactory(network::mojom::URLLoaderFactoryRequest request);
+  // Creates a network factory for subresource requests from this worker. The
+  // network factory is meant to be passed to the renderer.
+  mojo::PendingRemote<network::mojom::URLLoaderFactory>
+  CreateNetworkFactoryForSubresources(bool* bypass_redirect_checks);
 
   void AdvanceTo(Phase phase);
 

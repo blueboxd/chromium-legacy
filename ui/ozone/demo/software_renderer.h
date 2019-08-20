@@ -48,7 +48,7 @@ class SoftwareRenderer : public RendererBase {
 
   base::TimeDelta vsync_period_;
 
-  base::WeakPtrFactory<SoftwareRenderer> weak_ptr_factory_;
+  base::WeakPtrFactory<SoftwareRenderer> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SoftwareRenderer);
 };

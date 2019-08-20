@@ -207,7 +207,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnectionHandler {
  private:
   // Only to be used by NetworkConnectionHandler implementation (and not by
   // derived classes).
-  base::WeakPtrFactory<NetworkConnectionHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<NetworkConnectionHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NetworkConnectionHandler);
 };

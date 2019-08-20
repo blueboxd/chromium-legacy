@@ -36,9 +36,7 @@ constexpr StaticOobeScreenId EnableDebuggingScreenView::kScreenId;
 
 EnableDebuggingScreenHandler::EnableDebuggingScreenHandler(
     JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container),
-      weak_ptr_factory_(this) {
-}
+    : BaseScreenHandler(kScreenId, js_calls_container) {}
 
 EnableDebuggingScreenHandler::~EnableDebuggingScreenHandler() {
   if (screen_)

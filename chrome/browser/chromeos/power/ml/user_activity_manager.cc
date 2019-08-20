@@ -117,8 +117,7 @@ UserActivityManager::UserActivityManager(
       session_manager_(session_manager),
       binding_(this, std::move(request)),
       user_manager_(user_manager),
-      power_manager_client_(power_manager_client),
-      weak_ptr_factory_(this) {
+      power_manager_client_(power_manager_client) {
   DCHECK(ukm_logger_);
 
   DCHECK(detector);

@@ -274,7 +274,7 @@ void GetMultiProfilePolicy(const user_manager::User* user,
 class UserSelectionScreen::DircryptoMigrationChecker {
  public:
   explicit DircryptoMigrationChecker(UserSelectionScreen* owner)
-      : owner_(owner), weak_ptr_factory_(this) {}
+      : owner_(owner) {}
   ~DircryptoMigrationChecker() = default;
 
   // Start to check whether the given user needs dircrypto migration.
@@ -360,15 +360,13 @@ class UserSelectionScreen::DircryptoMigrationChecker {
   // and false means dircrypto migration is done.
   std::map<AccountId, bool> needs_dircrypto_migration_cache_;
 
-  base::WeakPtrFactory<DircryptoMigrationChecker> weak_ptr_factory_;
+  base::WeakPtrFactory<DircryptoMigrationChecker> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DircryptoMigrationChecker);
 };
 
 UserSelectionScreen::UserSelectionScreen(const std::string& display_type)
-    : BaseScreen(UserBoardView::kScreenId),
-      display_type_(display_type),
-      weak_factory_(this) {}
+    : BaseScreen(UserBoardView::kScreenId), display_type_(display_type) {}
 
 UserSelectionScreen::~UserSelectionScreen() {
   proximity_auth::ScreenlockBridge::Get()->SetLockHandler(nullptr);

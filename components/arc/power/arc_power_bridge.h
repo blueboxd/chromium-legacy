@@ -105,7 +105,7 @@ class ArcPowerBridge : public KeyedService,
   // about brightness changes.
   base::OneShotTimer notify_brightness_timer_;
 
-  base::WeakPtrFactory<ArcPowerBridge> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcPowerBridge> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcPowerBridge);
 };

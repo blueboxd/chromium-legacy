@@ -1529,6 +1529,8 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
   std::vector<base::Feature> enabled_features;
   std::vector<base::Feature> disabled_features;
 
+  enabled_features.emplace_back(features::kCrostiniAdvancedAccessControls);
+
   if (!IsGuestModeTest()) {
     enabled_features.emplace_back(features::kCrostini);
   }
@@ -1632,6 +1634,8 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
     // for testing without such tight coupling.
     crostini_volume_ = std::make_unique<CrostiniTestVolume>();
     profile()->GetPrefs()->SetBoolean(crostini::prefs::kCrostiniEnabled, true);
+    profile()->GetPrefs()->SetBoolean(
+        crostini::prefs::kUserCrostiniRootAccessAllowedByPolicy, true);
     crostini::CrostiniManager* crostini_manager =
         crostini::CrostiniManager::GetForProfile(
             profile()->GetOriginalProfile());
@@ -2115,6 +2119,14 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     ASSERT_TRUE(value.GetBoolean("enabled", &enabled));
     profile()->GetPrefs()->SetBoolean(crostini::prefs::kCrostiniEnabled,
                                       enabled);
+    return;
+  }
+
+  if (name == "setCrostiniRootAccessAllowed") {
+    bool enabled;
+    ASSERT_TRUE(value.GetBoolean("enabled", &enabled));
+    profile()->GetPrefs()->SetBoolean(
+        crostini::prefs::kUserCrostiniRootAccessAllowedByPolicy, enabled);
     return;
   }
 

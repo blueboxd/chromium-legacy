@@ -68,8 +68,7 @@ TPMTokenLoader::TPMTokenLoader(bool for_test)
           CryptohomeClient::Get(),
           base::ThreadTaskRunnerHandle::Get())),
       tpm_token_slot_id_(-1),
-      can_start_before_login_(false),
-      weak_factory_(this) {
+      can_start_before_login_(false) {
   if (!initialized_for_test_ && LoginState::IsInitialized())
     LoginState::Get()->AddObserver(this);
 

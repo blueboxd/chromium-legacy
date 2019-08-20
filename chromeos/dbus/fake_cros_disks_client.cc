@@ -54,7 +54,7 @@ MountError PerformFakeMount(const std::string& source_path,
 
 }  // namespace
 
-FakeCrosDisksClient::FakeCrosDisksClient() : weak_ptr_factory_(this) {}
+FakeCrosDisksClient::FakeCrosDisksClient() = default;
 
 FakeCrosDisksClient::~FakeCrosDisksClient() = default;
 

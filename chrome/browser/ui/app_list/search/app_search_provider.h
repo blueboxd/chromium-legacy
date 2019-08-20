@@ -93,8 +93,8 @@ class AppSearchProvider : public SearchProvider {
   std::vector<std::unique_ptr<DataSource>> data_sources_;
   sync_sessions::OpenTabsUIDelegate* open_tabs_ui_delegate_for_testing_ =
       nullptr;
-  base::WeakPtrFactory<AppSearchProvider> refresh_apps_factory_;
-  base::WeakPtrFactory<AppSearchProvider> update_results_factory_;
+  base::WeakPtrFactory<AppSearchProvider> refresh_apps_factory_{this};
+  base::WeakPtrFactory<AppSearchProvider> update_results_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppSearchProvider);
 };

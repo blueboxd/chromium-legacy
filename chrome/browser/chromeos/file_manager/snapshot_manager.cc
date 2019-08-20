@@ -184,9 +184,7 @@ void SnapshotManager::FileRefsHolder::OnCreateSnapshotFile(
 }
 
 SnapshotManager::SnapshotManager(Profile* profile)
-    : profile_(profile),
-      holder_(base::MakeRefCounted<FileRefsHolder>()),
-      weak_ptr_factory_(this) {}
+    : profile_(profile), holder_(base::MakeRefCounted<FileRefsHolder>()) {}
 
 SnapshotManager::~SnapshotManager() = default;
 

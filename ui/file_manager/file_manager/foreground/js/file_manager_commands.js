@@ -862,7 +862,7 @@ CommandHandler.COMMANDS_['new-folder'] = new class extends Command {
  */
 CommandHandler.COMMANDS_['new-window'] = new class extends Command {
   execute(event, fileManager) {
-    fileManager.backgroundPage.launcher.launchFileManager({
+    fileManager.launchFileManager({
       currentDirectoryURL: fileManager.getCurrentDirectoryEntry() &&
           fileManager.getCurrentDirectoryEntry().toURL()
     });

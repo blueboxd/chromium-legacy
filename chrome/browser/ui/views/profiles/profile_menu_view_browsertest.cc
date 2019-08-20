@@ -214,10 +214,6 @@ class ProfileMenuViewExtensionsTest
         ProfileMenuView::GetBubbleForTesting());
   }
 
-  views::Button* signin_current_profile_button() {
-    return current_profile_bubble()->signin_current_profile_button_;
-  }
-
   int GetDiceSigninPromoShowCount() {
     return current_profile_bubble()->GetDiceSigninPromoShowCount();
   }
@@ -251,20 +247,6 @@ class ProfileMenuViewExtensionsParamTest
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-// TODO(https://crbug.com/855867): This test is flaky on Windows.
-#if defined(OS_WIN)
-#define MAYBE_SigninButtonHasFocus DISABLED_SigninButtonHasFocus
-#else
-#define MAYBE_SigninButtonHasFocus SigninButtonHasFocus
-#endif
-IN_PROC_BROWSER_TEST_F(ProfileMenuViewExtensionsTest,
-                       MAYBE_SigninButtonHasFocus) {
-  ASSERT_TRUE(profiles::IsMultipleProfilesEnabled());
-  ASSERT_NO_FATAL_FAILURE(OpenProfileMenuView(browser()));
-
-  EXPECT_TRUE(signin_current_profile_button()->HasFocus());
-}
-
 IN_PROC_BROWSER_TEST_F(ProfileMenuViewExtensionsTest, ClickSigninButton) {
   ASSERT_NO_FATAL_FAILURE(OpenProfileMenuView(browser()));
 
@@ -272,7 +254,15 @@ IN_PROC_BROWSER_TEST_F(ProfileMenuViewExtensionsTest, ClickSigninButton) {
   const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                              ui::EventTimeForNow(), 0, 0);
   base::UserActionTester tester;
-  bubble->ButtonPressed(signin_current_profile_button(), event);
+  views::FocusManager* focus_manager =
+      current_profile_bubble()->GetFocusManager();
+
+  // Advance the focus to the first button in the menu, i.e. the signin button.
+  focus_manager->AdvanceFocus(/*reverse=*/false);
+  views::Button* signin_button =
+      static_cast<views::Button*>(focus_manager->GetFocusedView());
+  // Click the button.
+  bubble->ButtonPressed(signin_button, event);
   EXPECT_EQ(1, tester.GetActionCount("Signin_Signin_FromAvatarBubbleSignin"));
 }
 

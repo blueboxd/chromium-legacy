@@ -60,7 +60,7 @@ class DemoWindow : public PlatformWindowDelegate {
   std::unique_ptr<PlatformWindow> platform_window_;
   gfx::AcceleratedWidget widget_ = gfx::kNullAcceleratedWidget;
 
-  base::WeakPtrFactory<DemoWindow> weak_ptr_factory_;
+  base::WeakPtrFactory<DemoWindow> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DemoWindow);
 };

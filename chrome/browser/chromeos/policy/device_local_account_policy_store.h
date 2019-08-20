@@ -101,7 +101,7 @@ class DeviceLocalAccountPolicyStore : public UserCloudPolicyStoreBase {
 
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
-  base::WeakPtrFactory<DeviceLocalAccountPolicyStore> weak_factory_;
+  base::WeakPtrFactory<DeviceLocalAccountPolicyStore> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DeviceLocalAccountPolicyStore);
 };

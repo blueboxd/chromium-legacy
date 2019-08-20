@@ -72,8 +72,7 @@ UserNetworkConfigurationUpdater::UserNetworkConfigurationUpdater(
                                   key::kOpenNetworkConfiguration,
                                   policy_service,
                                   network_config_handler),
-      user_(&user),
-      weak_factory_(this) {
+      user_(&user) {
   // The updater is created with |client_certificate_importer_| unset and is
   // responsible for creating it. This requires |GetNSSCertDatabaseForProfile|
   // call, which is not safe before the profile initialization is finalized.

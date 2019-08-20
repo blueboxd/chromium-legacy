@@ -83,9 +83,7 @@ class AccountManager::GaiaTokenRevocationRequest : public GaiaAuthConsumer {
       AccountManager::DelayNetworkCallRunner delay_network_call_runner,
       const std::string& refresh_token,
       base::WeakPtr<AccountManager> account_manager)
-      : account_manager_(account_manager),
-        refresh_token_(refresh_token),
-        weak_factory_(this) {
+      : account_manager_(account_manager), refresh_token_(refresh_token) {
     DCHECK(!refresh_token_.empty());
     gaia_auth_fetcher_ = std::make_unique<GaiaAuthFetcher>(
         this, gaia::GaiaSource::kChromeOS, url_loader_factory);
@@ -123,7 +121,7 @@ class AccountManager::GaiaTokenRevocationRequest : public GaiaAuthConsumer {
   // Refresh token to be revoked from GAIA.
   std::string refresh_token_;
 
-  base::WeakPtrFactory<GaiaTokenRevocationRequest> weak_factory_;
+  base::WeakPtrFactory<GaiaTokenRevocationRequest> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(GaiaTokenRevocationRequest);
 };
 
@@ -152,7 +150,7 @@ AccountManager::Observer::Observer() = default;
 
 AccountManager::Observer::~Observer() = default;
 
-AccountManager::AccountManager() : weak_factory_(this) {}
+AccountManager::AccountManager() {}
 
 // static
 void AccountManager::RegisterPrefs(PrefRegistrySimple* registry) {

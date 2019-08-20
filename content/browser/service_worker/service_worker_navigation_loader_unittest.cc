@@ -937,7 +937,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, CancelNavigationDuringFetchEvent) {
 
   // Delete the provider host during the request. The load should abort without
   // crashing.
-  *provider_endpoints_.host_ptr() = nullptr;
+  provider_endpoints_.host_remote()->reset();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(provider_host_);
 

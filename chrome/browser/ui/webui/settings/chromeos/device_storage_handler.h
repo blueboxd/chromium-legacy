@@ -164,7 +164,7 @@ class StorageHandler
   ScopedObserver<arc::ArcSessionManager, arc::ArcSessionManager::Observer>
       arc_observer_;
 
-  base::WeakPtrFactory<StorageHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<StorageHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(StorageHandler);
 };

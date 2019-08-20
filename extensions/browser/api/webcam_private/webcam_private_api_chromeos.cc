@@ -42,8 +42,7 @@ WebcamPrivateAPI* WebcamPrivateAPI::Get(content::BrowserContext* context) {
 }
 
 WebcamPrivateAPI::WebcamPrivateAPI(content::BrowserContext* context)
-    : browser_context_(context),
-      weak_ptr_factory_(this) {
+    : browser_context_(context) {
   webcam_resource_manager_.reset(
       new ApiResourceManager<WebcamResource>(context));
 }

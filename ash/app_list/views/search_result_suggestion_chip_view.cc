@@ -58,8 +58,7 @@ SearchResultSuggestionChipView::SearchResultSuggestionChipView(
     AppListViewDelegate* view_delegate)
     : view_delegate_(view_delegate),
       icon_view_(new views::ImageView()),
-      text_view_(new views::Label()),
-      weak_ptr_factory_(this) {
+      text_view_(new views::Label()) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
 
   SetInstallFocusRingOnFocus(true);

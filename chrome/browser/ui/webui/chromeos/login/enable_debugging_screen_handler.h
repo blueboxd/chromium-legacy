@@ -97,7 +97,7 @@ class EnableDebuggingScreenHandler : public EnableDebuggingScreenView,
   // Keeps whether screen should be shown right after initialization.
   bool show_on_init_ = false;
 
-  base::WeakPtrFactory<EnableDebuggingScreenHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<EnableDebuggingScreenHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(EnableDebuggingScreenHandler);
 };

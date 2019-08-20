@@ -85,7 +85,7 @@ class ServerBackedStateKeysBroker {
   // List of pending one-shot state key request callbacks.
   std::vector<StateKeysCallback> request_callbacks_;
 
-  base::WeakPtrFactory<ServerBackedStateKeysBroker> weak_factory_;
+  base::WeakPtrFactory<ServerBackedStateKeysBroker> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServerBackedStateKeysBroker);
 };

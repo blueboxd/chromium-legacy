@@ -145,6 +145,12 @@ void ExternalProviderImpl::SetPrefs(
   // away while |loader_| was working on the FILE thread.
   if (!service_) return;
 
+  for (const auto& it : prefs->DictItems()) {
+    InstallationReporter::ReportInstallationStage(
+        profile_, it.first,
+        InstallationReporter::Stage::SEEN_BY_EXTERNAL_PROVIDER);
+  }
+
   prefs_ = std::move(prefs);
   ready_ = true;  // Queries for extensions are allowed from this point.
 
@@ -588,7 +594,7 @@ void ExternalProviderImpl::CreateExternalProviders(
     // path will have type |TYPE_LOGIN_SCREE_EXTENSION| with limited API
     // capabilities.
     external_loader = new ExternalPolicyLoader(
-        ExtensionManagementFactory::GetForBrowserContext(profile),
+        profile, ExtensionManagementFactory::GetForBrowserContext(profile),
         ExternalPolicyLoader::FORCED);
     auto signin_profile_provider = std::make_unique<ExternalProviderImpl>(
         service, external_loader, profile, crx_location,
@@ -622,18 +628,18 @@ void ExternalProviderImpl::CreateExternalProviders(
     }
   } else {
     external_loader = new ExternalPolicyLoader(
-        ExtensionManagementFactory::GetForBrowserContext(profile),
+        profile, ExtensionManagementFactory::GetForBrowserContext(profile),
         ExternalPolicyLoader::FORCED);
     external_recommended_loader = new ExternalPolicyLoader(
-        ExtensionManagementFactory::GetForBrowserContext(profile),
+        profile, ExtensionManagementFactory::GetForBrowserContext(profile),
         ExternalPolicyLoader::RECOMMENDED);
   }
 #else
   external_loader = new ExternalPolicyLoader(
-      ExtensionManagementFactory::GetForBrowserContext(profile),
+      profile, ExtensionManagementFactory::GetForBrowserContext(profile),
       ExternalPolicyLoader::FORCED);
   external_recommended_loader = new ExternalPolicyLoader(
-      ExtensionManagementFactory::GetForBrowserContext(profile),
+      profile, ExtensionManagementFactory::GetForBrowserContext(profile),
       ExternalPolicyLoader::RECOMMENDED);
 #endif
 

@@ -128,9 +128,7 @@ DeviceCommandStartCRDSessionJob::ResultPayload::Serialize() {
 
 DeviceCommandStartCRDSessionJob::DeviceCommandStartCRDSessionJob(
     Delegate* crd_host_delegate)
-    : delegate_(crd_host_delegate),
-      terminate_session_attemtpted_(false),
-      weak_factory_(this) {}
+    : delegate_(crd_host_delegate), terminate_session_attemtpted_(false) {}
 
 DeviceCommandStartCRDSessionJob::~DeviceCommandStartCRDSessionJob() {}
 

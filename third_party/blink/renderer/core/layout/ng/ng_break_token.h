@@ -71,7 +71,6 @@ class CORE_EXPORT NGBreakToken : public RefCounted<NGBreakToken> {
         type_(type),
         status_(status),
         flags_(0),
-        ignore_floats_(false),
         is_break_before_(false),
         is_forced_break_(false),
         has_last_resort_break_(false),
@@ -92,7 +91,6 @@ class CORE_EXPORT NGBreakToken : public RefCounted<NGBreakToken> {
   // defined here to save memory, since that class has no bitfields).
 
   unsigned flags_ : 2;  // NGInlineBreakTokenFlags
-  unsigned ignore_floats_ : 1;
 
   // The following bitfields are only to be used by NGBlockBreakToken (it's
   // defined here to save memory, since that class has no bitfields).

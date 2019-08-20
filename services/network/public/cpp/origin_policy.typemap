@@ -8,4 +8,4 @@ traits_headers = [ "//services/network/public/cpp/network_ipc_param_traits.h" ]
 deps = [
   "//url/mojom:url_mojom_gurl",
 ]
-type_mappings = [ "network.mojom.OriginPolicy=network::OriginPolicy" ]
+type_mappings = [ "network.mojom.OriginPolicy=::network::OriginPolicy" ]

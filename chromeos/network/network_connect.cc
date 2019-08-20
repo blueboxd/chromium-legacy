@@ -90,13 +90,13 @@ class NetworkConnectImpl : public NetworkConnect {
       std::unique_ptr<base::DictionaryValue> properties_to_set);
 
   Delegate* delegate_;
-  base::WeakPtrFactory<NetworkConnectImpl> weak_factory_;
+  base::WeakPtrFactory<NetworkConnectImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NetworkConnectImpl);
 };
 
 NetworkConnectImpl::NetworkConnectImpl(Delegate* delegate)
-    : delegate_(delegate), weak_factory_(this) {}
+    : delegate_(delegate) {}
 
 NetworkConnectImpl::~NetworkConnectImpl() = default;
 

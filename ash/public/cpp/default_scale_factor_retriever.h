@@ -49,7 +49,7 @@ class ASH_PUBLIC_EXPORT DefaultScaleFactorRetriever {
   GetDefaultScaleFactorCallback callback_;
 
   // WeakPtrFactory to use callbacks.
-  base::WeakPtrFactory<DefaultScaleFactorRetriever> weak_ptr_factory_;
+  base::WeakPtrFactory<DefaultScaleFactorRetriever> weak_ptr_factory_{this};
 };
 
 }  // namespace ash

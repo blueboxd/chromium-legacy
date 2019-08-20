@@ -8,4 +8,4 @@ traits_headers = [ "//ui/gfx/mojom/overlay_transform_mojom_traits.h" ]
 public_deps = [
   "//ui/gfx",
 ]
-type_mappings = [ "gfx.mojom.OverlayTransform=gfx::OverlayTransform" ]
+type_mappings = [ "gfx.mojom.OverlayTransform=::gfx::OverlayTransform" ]

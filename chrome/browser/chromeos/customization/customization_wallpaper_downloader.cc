@@ -72,8 +72,7 @@ CustomizationWallpaperDownloader::CustomizationWallpaperDownloader(
                                 kTemporarySuffix),
       retries_(0),
       retry_delay_(base::TimeDelta::FromSeconds(kRetrySleepSeconds)),
-      on_wallpaper_fetch_completed_(on_wallpaper_fetch_completed),
-      weak_factory_(this) {
+      on_wallpaper_fetch_completed_(on_wallpaper_fetch_completed) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 

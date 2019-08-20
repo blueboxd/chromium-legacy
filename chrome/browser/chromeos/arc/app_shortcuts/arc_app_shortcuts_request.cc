@@ -18,7 +18,7 @@ namespace arc {
 
 ArcAppShortcutsRequest::ArcAppShortcutsRequest(
     GetAppShortcutItemsCallback callback)
-    : callback_(std::move(callback)), weak_ptr_factory_(this) {
+    : callback_(std::move(callback)) {
   DCHECK(callback_);
 }
 

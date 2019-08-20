@@ -8,4 +8,4 @@ traits_headers = [ "//components/sync/mojom/syncer_mojom_traits.h" ]
 deps = [
   "//components/sync:sync",
 ]
-type_mappings = [ "syncer.mojom.StringOrdinal=syncer::StringOrdinal" ]
+type_mappings = [ "syncer.mojom.StringOrdinal=::syncer::StringOrdinal" ]

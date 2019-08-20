@@ -644,8 +644,7 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
       total_initial_size_(0),
       snap_type_(SNAP_NONE),
       num_mouse_moves_since_bounds_change_(0),
-      magnetism_window_(NULL),
-      weak_ptr_factory_(this) {
+      magnetism_window_(nullptr) {
   DCHECK(details().is_resizable);
 
   // A mousemove should still show the cursor even if the window is

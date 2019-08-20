@@ -243,7 +243,7 @@ void SharedWorkerServiceImpl::CreateWorker(
 
   WorkerScriptFetchInitiator::Start(
       weak_host->worker_process_id(), weak_host->instance().url(),
-      weak_host->instance().constructor_origin(),
+      render_frame_host, weak_host->instance().constructor_origin(),
       net::NetworkIsolationKey(origin, origin), credentials_mode,
       std::move(outside_fetch_client_settings_object),
       ResourceType::kSharedWorker, service_worker_context_,

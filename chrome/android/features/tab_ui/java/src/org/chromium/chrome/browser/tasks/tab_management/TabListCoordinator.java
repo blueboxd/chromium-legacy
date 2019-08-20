@@ -229,18 +229,18 @@ public class TabListCoordinator implements Destroyable {
     }
 
     /**
-     * @see TabListMediator#resetWithListOfTabs(List, boolean)
+     * @see TabListMediator#resetWithListOfTabs(List, boolean, boolean)
      */
-    boolean resetWithListOfTabs(@Nullable List<Tab> tabs, boolean quickMode) {
+    boolean resetWithListOfTabs(@Nullable List<Tab> tabs, boolean quickMode, boolean mruMode) {
         if (mMode == TabListMode.STRIP && tabs != null && tabs.size() > 1) {
             TabGroupUtils.maybeShowIPH(
                     FeatureConstants.TAB_GROUPS_TAP_TO_SEE_ANOTHER_TAB_FEATURE, mRecyclerView);
         }
-        return mMediator.resetWithListOfTabs(tabs, quickMode);
+        return mMediator.resetWithListOfTabs(tabs, quickMode, mruMode);
     }
 
     boolean resetWithListOfTabs(@Nullable List<Tab> tabs) {
-        return resetWithListOfTabs(tabs, false);
+        return resetWithListOfTabs(tabs, false, false);
     }
 
     void softCleanup() {

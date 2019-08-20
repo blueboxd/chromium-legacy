@@ -116,7 +116,7 @@ constexpr int ArcSystemStatCollector::kGemInfoColumns[];
 // static
 constexpr int ArcSystemStatCollector::kCpuTempInfoColumns[];
 
-ArcSystemStatCollector::ArcSystemStatCollector() : weak_ptr_factory_(this) {}
+ArcSystemStatCollector::ArcSystemStatCollector() {}
 
 ArcSystemStatCollector::~ArcSystemStatCollector() = default;
 

@@ -147,7 +147,7 @@ class ASH_EXPORT BluetoothPowerController
 
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
 
-  base::WeakPtrFactory<BluetoothPowerController> weak_ptr_factory_;
+  base::WeakPtrFactory<BluetoothPowerController> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothPowerController);
 };

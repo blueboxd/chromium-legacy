@@ -51,7 +51,7 @@ class LibvdaServiceProvider : public CrosDBusService::ServiceProviderInterface {
 
   // Keep this last so that all weak pointers will be invalidated at the
   // beginning of destruction.
-  base::WeakPtrFactory<LibvdaServiceProvider> weak_ptr_factory_;
+  base::WeakPtrFactory<LibvdaServiceProvider> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LibvdaServiceProvider);
 };

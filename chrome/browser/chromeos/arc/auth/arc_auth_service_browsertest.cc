@@ -86,7 +86,7 @@ namespace arc {
 
 class FakeAuthInstance : public mojom::AuthInstance {
  public:
-  FakeAuthInstance() : weak_ptr_factory_(this) {}
+  FakeAuthInstance() {}
   ~FakeAuthInstance() override = default;
 
   // mojom::AuthInstance:
@@ -176,7 +176,7 @@ class FakeAuthInstance : public mojom::AuthInstance {
   int num_account_removed_calls_ = 0;
   std::string last_removed_account_;
 
-  base::WeakPtrFactory<FakeAuthInstance> weak_ptr_factory_;
+  base::WeakPtrFactory<FakeAuthInstance> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(FakeAuthInstance);
 };
 

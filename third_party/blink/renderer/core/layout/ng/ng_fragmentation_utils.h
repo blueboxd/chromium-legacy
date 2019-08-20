@@ -47,6 +47,13 @@ void SetupFragmentation(const NGConstraintSpace& parent_space,
                         LayoutUnit new_bfc_block_offset,
                         NGConstraintSpaceBuilder*);
 
+// Write fragmentation information to the fragment builder after layout.
+void FinishFragmentation(NGBoxFragmentBuilder*,
+                         LayoutUnit block_size,
+                         LayoutUnit intrinsic_block_size,
+                         LayoutUnit previously_consumed_block_size,
+                         LayoutUnit space_left);
+
 }  // namespace blink
 
 #endif  // NGFragmentationUtils_h

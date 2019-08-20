@@ -131,8 +131,7 @@ MemoryPressureMonitor::MemoryPressureMonitor(
           base::BindRepeating(&MemoryPressureListener::NotifyMemoryPressure)),
       kernel_waiting_callback_(
           base::BindRepeating(std::move(kernel_waiting_callback),
-                              available_mem_file_.get())),
-      weak_ptr_factory_(this) {
+                              available_mem_file_.get())) {
   DCHECK(g_monitor_notifying == nullptr);
   g_monitor_notifying = this;
 

@@ -33,8 +33,7 @@ AndroidManagementClient::AndroidManagementClient(
     : device_management_service_(device_management_service),
       url_loader_factory_(url_loader_factory),
       account_id_(account_id),
-      identity_manager_(identity_manager),
-      weak_ptr_factory_(this) {}
+      identity_manager_(identity_manager) {}
 
 AndroidManagementClient::~AndroidManagementClient() {}
 

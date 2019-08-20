@@ -115,7 +115,7 @@ class Buffer::Texture : public viz::ContextLostObserver {
   const base::TimeDelta wait_for_release_delay_;
   base::TimeTicks wait_for_release_time_;
   bool wait_for_release_pending_ = false;
-  base::WeakPtrFactory<Texture> weak_ptr_factory_;
+  base::WeakPtrFactory<Texture> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Texture);
 };
@@ -127,8 +127,7 @@ Buffer::Texture::Texture(
       size_(size),
       context_provider_(std::move(context_provider)),
       texture_target_(GL_TEXTURE_2D),
-      query_type_(GL_COMMANDS_COMPLETED_CHROMIUM),
-      weak_ptr_factory_(this) {
+      query_type_(GL_COMMANDS_COMPLETED_CHROMIUM) {
   gpu::SharedImageInterface* sii = context_provider_->SharedImageInterface();
   const uint32_t usage =
       gpu::SHARED_IMAGE_USAGE_RASTER | gpu::SHARED_IMAGE_USAGE_DISPLAY;
@@ -155,8 +154,7 @@ Buffer::Texture::Texture(
       context_provider_(std::move(context_provider)),
       texture_target_(texture_target),
       query_type_(query_type),
-      wait_for_release_delay_(wait_for_release_delay),
-      weak_ptr_factory_(this) {
+      wait_for_release_delay_(wait_for_release_delay) {
   gpu::SharedImageInterface* sii = context_provider_->SharedImageInterface();
   const uint32_t usage = gpu::SHARED_IMAGE_USAGE_RASTER |
                          gpu::SHARED_IMAGE_USAGE_DISPLAY |

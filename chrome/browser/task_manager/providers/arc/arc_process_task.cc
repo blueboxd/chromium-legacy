@@ -77,8 +77,7 @@ ArcProcessTask::ArcProcessTask(arc::ArcProcess arc_process)
            arc_process.process_name(),
            nullptr /* icon */,
            arc_process.pid()),
-      arc_process_(std::move(arc_process)),
-      weak_ptr_factory_(this) {
+      arc_process_(std::move(arc_process)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   StartIconLoading();
 }

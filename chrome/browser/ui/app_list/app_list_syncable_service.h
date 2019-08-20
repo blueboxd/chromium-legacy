@@ -341,7 +341,7 @@ class AppListSyncableService : public syncer::SyncableService,
   // List of observers.
   base::ObserverList<Observer>::Unchecked observer_list_;
 
-  base::WeakPtrFactory<AppListSyncableService> weak_ptr_factory_;
+  base::WeakPtrFactory<AppListSyncableService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppListSyncableService);
 };

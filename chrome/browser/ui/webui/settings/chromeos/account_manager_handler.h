@@ -85,7 +85,7 @@ class AccountManagerUIHandler : public ::settings::SettingsPageUIHandler,
   ScopedObserver<signin::IdentityManager, signin::IdentityManager::Observer>
       identity_manager_observer_;
 
-  base::WeakPtrFactory<AccountManagerUIHandler> weak_factory_;
+  base::WeakPtrFactory<AccountManagerUIHandler> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(AccountManagerUIHandler);
 };
 

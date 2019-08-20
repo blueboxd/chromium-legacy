@@ -67,8 +67,7 @@ void ApkWebAppService::RegisterProfilePrefs(
 ApkWebAppService::ApkWebAppService(Profile* profile)
     : profile_(profile),
       arc_app_list_prefs_(ArcAppListPrefs::Get(profile)),
-      observer_(this),
-      weak_ptr_factory_(this) {
+      observer_(this) {
   // Can be null in tests.
   if (arc_app_list_prefs_)
     arc_app_list_prefs_->AddObserver(this);

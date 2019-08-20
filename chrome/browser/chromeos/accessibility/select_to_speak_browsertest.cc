@@ -56,7 +56,7 @@ class SelectToSpeakTest : public InProcessBrowserTest {
   }
 
  protected:
-  SelectToSpeakTest() : weak_ptr_factory_(this) {}
+  SelectToSpeakTest() {}
   ~SelectToSpeakTest() override {}
 
   void SetUpOnMainThread() override {
@@ -154,7 +154,7 @@ class SelectToSpeakTest : public InProcessBrowserTest {
   ash::mojom::StatusAreaWidgetTestApiPtr status_area_widget_test_api_;
   scoped_refptr<content::MessageLoopRunner> loop_runner_;
   scoped_refptr<content::MessageLoopRunner> tray_loop_runner_;
-  base::WeakPtrFactory<SelectToSpeakTest> weak_ptr_factory_;
+  base::WeakPtrFactory<SelectToSpeakTest> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(SelectToSpeakTest);
 };
 

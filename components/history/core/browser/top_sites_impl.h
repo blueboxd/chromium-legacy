@@ -127,12 +127,6 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
                               const MostVisitedURLList& new_list,
                               TopSitesDelta* delta);
 
-  // Finds the given URL in the redirect chain for the given TopSite, and
-  // returns the distance from the destination in hops that the given URL is.
-  // The URL is assumed to be in the list. The destination is 0.
-  static int GetRedirectDistanceForURL(const MostVisitedURL& most_visited,
-                                       const GURL& url);
-
   // Adds prepopulated pages to TopSites. Returns true if any pages were added.
   bool AddPrepopulatedPages(MostVisitedURLList* urls) const;
 

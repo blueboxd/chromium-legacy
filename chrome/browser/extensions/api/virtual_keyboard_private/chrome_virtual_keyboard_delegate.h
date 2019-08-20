@@ -65,7 +65,7 @@ class ChromeVirtualKeyboardDelegate : public VirtualKeyboardDelegate {
   content::BrowserContext* browser_context_;
   std::unique_ptr<media::AudioSystem> audio_system_;
   base::WeakPtr<ChromeVirtualKeyboardDelegate> weak_this_;
-  base::WeakPtrFactory<ChromeVirtualKeyboardDelegate> weak_factory_;
+  base::WeakPtrFactory<ChromeVirtualKeyboardDelegate> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(ChromeVirtualKeyboardDelegate);
 };
 

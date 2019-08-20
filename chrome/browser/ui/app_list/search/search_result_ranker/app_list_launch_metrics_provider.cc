@@ -156,8 +156,7 @@ AppListLaunchMetricsProvider::AppListLaunchMetricsProvider(
     : get_profile_dir_callback_(get_profile_dir_callback),
       init_state_(InitState::DISABLED),
       secret_(base::nullopt),
-      user_id_(base::nullopt),
-      weak_factory_(this) {}
+      user_id_(base::nullopt) {}
 
 AppListLaunchMetricsProvider::AppListLaunchMetricsProvider()
     : AppListLaunchMetricsProvider(base::BindRepeating(GetProfileDir)) {}

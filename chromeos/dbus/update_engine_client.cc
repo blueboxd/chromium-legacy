@@ -92,8 +92,7 @@ bool IsValidChannel(const std::string& channel) {
 // The UpdateEngineClient implementation used in production.
 class UpdateEngineClientImpl : public UpdateEngineClient {
  public:
-  UpdateEngineClientImpl()
-      : update_engine_proxy_(NULL), last_status_(), weak_ptr_factory_(this) {}
+  UpdateEngineClientImpl() : update_engine_proxy_(nullptr), last_status_() {}
 
   ~UpdateEngineClientImpl() override = default;
 
@@ -557,7 +556,7 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<UpdateEngineClientImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<UpdateEngineClientImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UpdateEngineClientImpl);
 };
@@ -568,8 +567,7 @@ class UpdateEngineClientStubImpl : public UpdateEngineClient {
  public:
   UpdateEngineClientStubImpl()
       : current_channel_(kReleaseChannelBeta),
-        target_channel_(kReleaseChannelBeta),
-        weak_factory_(this) {}
+        target_channel_(kReleaseChannelBeta) {}
 
   // UpdateEngineClient implementation:
   void Init(dbus::Bus* bus) override {}
@@ -701,7 +699,7 @@ class UpdateEngineClientStubImpl : public UpdateEngineClient {
 
   Status last_status_;
 
-  base::WeakPtrFactory<UpdateEngineClientStubImpl> weak_factory_;
+  base::WeakPtrFactory<UpdateEngineClientStubImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UpdateEngineClientStubImpl);
 };

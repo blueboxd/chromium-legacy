@@ -11588,6 +11588,12 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Success"/>
 </enum>
 
+<enum name="CrostiniUnsupportedNotificationReason">
+  <int value="0" label="TabletMode"/>
+  <int value="1" label="VirtualKeyboard"/>
+  <int value="2" label="UnsupportedIME"/>
+</enum>
+
 <enum name="CrosTPMDictionaryAttackResetStatusEnum">
   <int value="0" label="Reset not necessary"/>
   <int value="1" label="Reset attempt succeeded"/>
@@ -20385,6 +20391,10 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="DOWNLOADING"/>
   <int value="3" label="INSTALLING"/>
   <int value="4" label="COMPLETE"/>
+  <int value="5" label="NOTIFIED_FROM_MANAGEMENT"/>
+  <int value="6" label="NOTIFIED_FROM_MANAGEMENT_NOT_FORCED"/>
+  <int value="7" label="SEEN_BY_POLICY_LOADER"/>
+  <int value="8" label="SEEN_BY_EXTERNAL_PROVIDER"/>
 </enum>
 
 <enum name="ExtensionInstallCause">
@@ -34678,6 +34688,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
       label="OmniboxUIExperimentShowPlaceholderWhenCaretShowing:disabled"/>
   <int value="-1454479680" label="FileHandlingAPI:enabled"/>
   <int value="-1454397907" label="OptimizationHints:disabled"/>
+  <int value="-1453647118" label="PasswordLeakDetection:disabled"/>
   <int value="-1451644187" label="OverviewSwipeToClose:enabled"/>
   <int value="-1450576851" label="OmniboxUIExperimentVerticalLayout:enabled"/>
   <int value="-1448511207" label="UseMessagesStagingUrl:disabled"/>
@@ -36845,6 +36856,7 @@ from previous Chrome versions.
   <int value="1567839560"
       label="ChromeHomePersonalizedOmniboxSuggestions:disabled"/>
   <int value="1571998166" label="DetectingHeavyPages:disabled"/>
+  <int value="1575978252" label="PasswordLeakDetection:enabled"/>
   <int value="1577205328"
       label="DataReductionProxyEnabledWithNetworkService:enabled"/>
   <int value="1579461102" label="MemoryCoordinator:disabled"/>
@@ -51425,6 +51437,10 @@ Called by update_net_trust_anchors.py.-->
       label="IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE"/>
   <int value="107"
       label="IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_MULTIPLE_DEVICES"/>
+  <int value="108"
+      label="IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_SINGLE_DEVICE"/>
+  <int value="109"
+      label="IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_MULTIPLE_DEVICES"/>
 </enum>
 
 <enum name="ReopenTabPromoStepAtDismissal">

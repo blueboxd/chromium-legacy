@@ -13,7 +13,7 @@ public_deps = [
   "//printing:printing",
 ]
 type_mappings = [
-  "arc.mojom.PrintPageRange=printing::PageRange",
-  "arc.mojom.PrintResolution=gfx::Size",
-  "arc.mojom.PrinterCapabilities=printing::PrinterSemanticCapsAndDefaults",
+  "arc.mojom.PrintPageRange=::printing::PageRange",
+  "arc.mojom.PrintResolution=::gfx::Size",
+  "arc.mojom.PrinterCapabilities=::printing::PrinterSemanticCapsAndDefaults",
 ]

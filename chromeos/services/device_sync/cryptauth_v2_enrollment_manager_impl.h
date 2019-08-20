@@ -185,12 +185,12 @@ class CryptAuthV2EnrollmentManagerImpl
   // when the current enrollment attempt finishes in order to cancel outstanding
   // callbacks.
   base::WeakPtrFactory<CryptAuthV2EnrollmentManagerImpl>
-      callback_weak_ptr_factory_;
+      callback_weak_ptr_factory_{this};
 
   // For sending a weak pointer to the scheduler, whose lifetime exceeds that of
   // CryptAuthV2EnrollmentManagerImpl.
   base::WeakPtrFactory<CryptAuthV2EnrollmentManagerImpl>
-      scheduler_weak_ptr_factory_;
+      scheduler_weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CryptAuthV2EnrollmentManagerImpl);
 };

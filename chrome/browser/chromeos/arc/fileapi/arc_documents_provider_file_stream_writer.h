@@ -51,7 +51,8 @@ class ArcDocumentsProviderFileStreamWriter : public storage::FileStreamWriter {
   std::unique_ptr<storage::FileStreamWriter> underlying_writer_;
   std::vector<base::OnceClosure> pending_operations_;
 
-  base::WeakPtrFactory<ArcDocumentsProviderFileStreamWriter> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcDocumentsProviderFileStreamWriter> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcDocumentsProviderFileStreamWriter);
 };

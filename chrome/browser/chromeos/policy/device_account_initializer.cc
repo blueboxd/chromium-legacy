@@ -48,10 +48,7 @@ namespace policy {
 
 DeviceAccountInitializer::DeviceAccountInitializer(CloudPolicyClient* client,
                                                    Delegate* delegate)
-    : client_(client),
-      delegate_(delegate),
-      handling_request_(false),
-      weak_ptr_factory_(this) {
+    : client_(client), delegate_(delegate), handling_request_(false) {
   client_->AddObserver(this);
 }
 

@@ -62,8 +62,7 @@ MultideviceHandler::MultideviceHandler(
       android_sms_app_manager_(android_sms_app_manager),
       multidevice_setup_observer_(this),
       android_sms_pairing_state_tracker_observer_(this),
-      android_sms_app_manager_observer_(this),
-      callback_weak_ptr_factory_(this) {
+      android_sms_app_manager_observer_(this) {
   RegisterPrefChangeListeners();
 }
 

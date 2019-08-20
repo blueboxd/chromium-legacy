@@ -122,7 +122,7 @@ class FakeNfcService : public device::mojom::blink::NFC {
   void Watch(device::mojom::blink::NFCReaderOptionsPtr options,
              uint32_t id,
              WatchCallback callback) override {
-    watches_.insert(std::make_pair(id, std::move(options)));
+    watches_.emplace(id, std::move(options));
     std::move(callback).Run(nullptr);
   }
   void CancelWatch(uint32_t id, CancelWatchCallback callback) override {

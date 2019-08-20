@@ -79,9 +79,7 @@ class AvatarImageSource : public gfx::CanvasImageSource {
 ArcAppDataSearchResult::ArcAppDataSearchResult(
     arc::mojom::AppDataResultPtr data,
     AppListControllerDelegate* list_controller)
-    : data_(std::move(data)),
-      list_controller_(list_controller),
-      weak_ptr_factory_(this) {
+    : data_(std::move(data)), list_controller_(list_controller) {
   SetTitle(base::UTF8ToUTF16(data_->label));
   set_id(kAppDataSearchPrefix + launch_intent_uri());
   if (data_->type == arc::mojom::AppDataResultType::PERSON) {

@@ -62,8 +62,7 @@ LoginScreenExtensionUiHandler::LoginScreenExtensionUiHandler(
     std::unique_ptr<LoginScreenExtensionUiWindowFactory> window_factory)
     : window_factory_(std::move(window_factory)),
       session_manager_observer_(this),
-      extension_registry_observer_(this),
-      weak_ptr_factory_(this) {
+      extension_registry_observer_(this) {
   UpdateSessionState();
   session_manager_observer_.Add(session_manager::SessionManager::Get());
   extension_registry_observer_.Add(

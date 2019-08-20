@@ -120,7 +120,7 @@ CrostiniUninstallerView* CrostiniUninstallerView::GetActiveViewForTesting() {
 }
 
 CrostiniUninstallerView::CrostiniUninstallerView(Profile* profile)
-    : profile_(profile), weak_ptr_factory_(this) {
+    : profile_(profile) {
   views::LayoutProvider* provider = views::LayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,

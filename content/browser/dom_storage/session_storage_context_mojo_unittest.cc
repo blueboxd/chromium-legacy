@@ -29,9 +29,11 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_utils.h"
 #include "mojo/core/embedder/embedder.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 #include "services/file/public/mojom/constants.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
@@ -668,9 +670,9 @@ TEST_F(SessionStorageContextMojoTest, RecreateOnCommitFailure) {
   ASSERT_EQ(1u, fake_leveldb_service.open_requests().size());
   auto& open_request = fake_leveldb_service.open_requests()[0];
   std::map<std::vector<uint8_t>, std::vector<uint8_t>> test_data;
-  auto mock_db = mojo::MakeStrongAssociatedBinding(
+  auto mock_db = mojo::MakeSelfOwnedAssociatedReceiver(
       std::make_unique<test::FakeLevelDBDatabaseErrorOnWrite>(&test_data),
-      std::move(open_request.request));
+      std::move(open_request.receiver));
   std::move(open_request.callback).Run(leveldb::mojom::DatabaseError::OK);
   fake_leveldb_service.open_requests().clear();
 
@@ -751,9 +753,9 @@ TEST_F(SessionStorageContextMojoTest, RecreateOnCommitFailure) {
   reopen_loop.Run();
   ASSERT_EQ(1u, fake_leveldb_service.open_requests().size());
   auto& reopen_request = fake_leveldb_service.open_requests()[0];
-  mock_db = mojo::MakeStrongAssociatedBinding(
+  mock_db = mojo::MakeSelfOwnedAssociatedReceiver(
       std::make_unique<FakeLevelDBDatabase>(&test_data),
-      std::move(reopen_request.request));
+      std::move(reopen_request.receiver));
   std::move(reopen_request.callback).Run(leveldb::mojom::DatabaseError::OK);
   fake_leveldb_service.open_requests().clear();
 
@@ -803,9 +805,9 @@ TEST_F(SessionStorageContextMojoTest, DontRecreateOnRepeatedCommitFailure) {
   // with a database implementation that always fails on write.
   ASSERT_EQ(1u, fake_leveldb_service.open_requests().size());
   auto& open_request = fake_leveldb_service.open_requests()[0];
-  auto mock_db = mojo::MakeStrongAssociatedBinding(
+  auto mock_db = mojo::MakeSelfOwnedAssociatedReceiver(
       std::make_unique<test::FakeLevelDBDatabaseErrorOnWrite>(&test_data),
-      std::move(open_request.request));
+      std::move(open_request.receiver));
   std::move(open_request.callback).Run(leveldb::mojom::DatabaseError::OK);
   fake_leveldb_service.open_requests().clear();
 
@@ -854,9 +856,9 @@ TEST_F(SessionStorageContextMojoTest, DontRecreateOnRepeatedCommitFailure) {
   reopen_loop.Run();
   ASSERT_EQ(1u, fake_leveldb_service.open_requests().size());
   auto& reopen_request = fake_leveldb_service.open_requests()[0];
-  mock_db = mojo::MakeStrongAssociatedBinding(
+  mock_db = mojo::MakeSelfOwnedAssociatedReceiver(
       std::make_unique<test::FakeLevelDBDatabaseErrorOnWrite>(&test_data),
-      std::move(reopen_request.request));
+      std::move(reopen_request.receiver));
   std::move(reopen_request.callback).Run(leveldb::mojom::DatabaseError::OK);
   fake_leveldb_service.open_requests().clear();
 
@@ -939,12 +941,13 @@ TEST_F(SessionStorageContextMojoTest, MojoConnectionDisconnects) {
 
   std::map<std::vector<uint8_t>, std::vector<uint8_t>> test_data;
   FakeLevelDBDatabase db(&test_data);
-  mojo::AssociatedBinding<leveldb::mojom::LevelDBDatabase> db_binding(&db);
-  leveldb::mojom::LevelDBDatabaseAssociatedPtr database_ptr;
-  leveldb::mojom::LevelDBDatabaseAssociatedRequest request =
-      MakeRequestAssociatedWithDedicatedPipe(&database_ptr);
-  context()->SetDatabaseForTesting(std::move(database_ptr));
-  db_binding.Bind(std::move(request));
+
+  mojo::AssociatedReceiver<leveldb::mojom::LevelDBDatabase> db_receiver(&db);
+  mojo::AssociatedRemote<leveldb::mojom::LevelDBDatabase> database_remote;
+  auto receiver =
+      database_remote.BindNewEndpointAndPassDedicatedReceiverForTesting();
+  context()->SetDatabaseForTesting(database_remote.Unbind());
+  db_receiver.Bind(std::move(receiver));
 
   // Put some data.
   context()->CreateSessionNamespace(namespace_id);
@@ -964,7 +967,7 @@ TEST_F(SessionStorageContextMojoTest, MojoConnectionDisconnects) {
   ss_namespace.reset();
 
   // Close the database connection.
-  db_binding.Close();
+  db_receiver.reset();
   base::RunLoop().RunUntilIdle();
 
   context()->CreateSessionNamespace(namespace_id);

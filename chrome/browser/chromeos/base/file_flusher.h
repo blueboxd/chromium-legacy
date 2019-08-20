@@ -59,7 +59,7 @@ class FileFlusher {
 
   bool paused_for_test_ = false;
 
-  base::WeakPtrFactory<FileFlusher> weak_factory_;
+  base::WeakPtrFactory<FileFlusher> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FileFlusher);
 };

@@ -134,7 +134,7 @@ class ArcIntentPickerAppFetcher : content::WebContentsObserver {
   void WebContentsDestroyed() override;
 
   // This has to be the last member of the class.
-  base::WeakPtrFactory<ArcIntentPickerAppFetcher> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcIntentPickerAppFetcher> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcIntentPickerAppFetcher);
 };

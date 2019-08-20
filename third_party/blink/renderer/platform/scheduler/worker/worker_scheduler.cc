@@ -32,12 +32,11 @@ WorkerScheduler::WorkerScheduler(WorkerThreadScheduler* worker_thread_scheduler,
       unpausable_task_queue_(
           worker_thread_scheduler->CreateTaskQueue("worker_unpausable_tq")),
       thread_scheduler_(worker_thread_scheduler) {
-  task_runners_.insert(
-      std::make_pair(throttleable_task_queue_,
-                     throttleable_task_queue_->CreateQueueEnabledVoter()));
-  task_runners_.insert(std::make_pair(
-      pausable_task_queue_, pausable_task_queue_->CreateQueueEnabledVoter()));
-  task_runners_.insert(std::make_pair(unpausable_task_queue_, nullptr));
+  task_runners_.emplace(throttleable_task_queue_,
+                        throttleable_task_queue_->CreateQueueEnabledVoter());
+  task_runners_.emplace(pausable_task_queue_,
+                        pausable_task_queue_->CreateQueueEnabledVoter());
+  task_runners_.emplace(unpausable_task_queue_, nullptr);
 
   thread_scheduler_->RegisterWorkerScheduler(this);
 

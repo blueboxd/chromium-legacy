@@ -143,9 +143,7 @@ ScopedDataSource::~ScopedDataSource() {
 }
 
 DataSource::DataSource(DataSourceDelegate* delegate)
-    : delegate_(delegate),
-      finished_(false),
-      read_data_weak_ptr_factory_(this) {}
+    : delegate_(delegate), finished_(false) {}
 
 DataSource::~DataSource() {
   delegate_->OnDataSourceDestroying(this);

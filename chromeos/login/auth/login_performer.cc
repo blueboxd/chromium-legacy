@@ -36,8 +36,7 @@ LoginPerformer::LoginPerformer(scoped_refptr<base::TaskRunner> task_runner,
       last_login_failure_(AuthFailure::AuthFailureNone()),
       password_changed_(false),
       password_changed_callback_count_(0),
-      auth_mode_(AUTH_MODE_INTERNAL),
-      weak_factory_(this) {}
+      auth_mode_(AUTH_MODE_INTERNAL) {}
 
 LoginPerformer::~LoginPerformer() {
   DVLOG(1) << "Deleting LoginPerformer";

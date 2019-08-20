@@ -119,7 +119,7 @@ ServiceConfiguration GetServiceConfigurationForSigninScreen() {
 
 }  // anonymous namespace.
 
-TimeZoneResolverManager::TimeZoneResolverManager() : weak_factory_(this) {
+TimeZoneResolverManager::TimeZoneResolverManager() {
   local_state_initialized_ =
       g_browser_process->local_state()->GetInitializationStatus() ==
       PrefService::INITIALIZATION_STATUS_SUCCESS;

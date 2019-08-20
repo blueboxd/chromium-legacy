@@ -151,7 +151,7 @@ class ASH_EXPORT DragDropController : public aura::client::DragDropClient,
   base::ObserverList<aura::client::DragDropClientObserver>::Unchecked
       observers_;
 
-  base::WeakPtrFactory<DragDropController> weak_factory_;
+  base::WeakPtrFactory<DragDropController> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DragDropController);
 };

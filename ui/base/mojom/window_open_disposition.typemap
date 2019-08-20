@@ -9,4 +9,4 @@ public_deps = [
   "//ui/base",
 ]
 traits_headers = [ "//ui/base/mojom/window_open_disposition_mojom_traits.h" ]
-type_mappings = [ "ui.mojom.WindowOpenDisposition=WindowOpenDisposition" ]
+type_mappings = [ "ui.mojom.WindowOpenDisposition=::WindowOpenDisposition" ]

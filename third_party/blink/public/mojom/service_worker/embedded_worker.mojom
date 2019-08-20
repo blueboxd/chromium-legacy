@@ -93,7 +93,7 @@ struct EmbeddedWorkerStartParams {
   ServiceWorkerInstalledScriptsInfo? installed_scripts_info;
 
   // Interface for the renderer to send the status updates to the browser.
-  associated EmbeddedWorkerInstanceHost instance_host;
+  pending_associated_remote<EmbeddedWorkerInstanceHost> instance_host;
 
   // Information for talking to the ServiceWorkerContainerHost, and other
   // params.

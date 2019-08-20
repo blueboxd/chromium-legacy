@@ -36,7 +36,7 @@ const PowerManagerClient::TimerId kErrorId = -2;
 }  // namespace
 
 NativeTimer::NativeTimer(const std::string& tag)
-    : timer_id_(kNotCreatedId), tag_(tag), weak_factory_(this) {
+    : timer_id_(kNotCreatedId), tag_(tag) {
   // Create a socket pair, one end will be sent to the power daemon the other
   // socket will be used to listen for the timer firing.
   base::ScopedFD powerd_fd;

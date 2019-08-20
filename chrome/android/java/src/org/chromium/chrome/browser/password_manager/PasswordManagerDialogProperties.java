@@ -9,19 +9,19 @@ import org.chromium.ui.modelutil.PropertyModel.WritableIntPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
 
 /**
- * Data properties for the password manager onboarding modal dialog.
+ * Data properties for the password manager illustration modal dialog.
  */
-class OnboardingDialogProperties {
+class PasswordManagerDialogProperties {
     // Illustration drawable resource id for the password manager.
     static final WritableIntPropertyKey ILLUSTRATION = new WritableIntPropertyKey();
 
     // Title that appears below the illustration.
     static final WritableObjectPropertyKey<String> TITLE = new WritableObjectPropertyKey<>();
 
-    // Explanation text for how the password manager works.
+    // Multiline explanation text displayed under the illustration.
     static final WritableObjectPropertyKey<String> DETAILS = new WritableObjectPropertyKey<>();
 
-    private OnboardingDialogProperties() {}
+    private PasswordManagerDialogProperties() {}
 
     static PropertyModel.Builder defaultModelBuilder() {
         return new PropertyModel.Builder(ILLUSTRATION, TITLE, DETAILS);

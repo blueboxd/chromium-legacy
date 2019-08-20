@@ -1885,45 +1885,23 @@ void NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
     return;
   }
 
-  if (container_builder_.DidBreak()) {
-    // One of our children broke. Even if we fit within the remaining space we
-    // need to prepare a break token.
-    container_builder_.SetConsumedBlockSize(std::min(space_left, block_size) +
-                                            consumed_block_size);
-    container_builder_.SetBlockSize(std::min(space_left, block_size));
-    container_builder_.SetIntrinsicBlockSize(space_left);
-
-    if (first_overflowing_line_) {
-      int line_number;
-      if (fit_all_lines_) {
-        line_number = first_overflowing_line_;
-      } else {
-        // We managed to finish layout of all the lines for the node, which
-        // means that we won't have enough widows, unless we break earlier than
-        // where we overflowed.
-        int line_count = container_builder_.LineCount();
-        line_number = std::max(line_count - Style().Widows(),
-                               std::min(line_count, int(Style().Orphans())));
-      }
-      container_builder_.AddBreakBeforeLine(line_number);
+  if (container_builder_.DidBreak() && first_overflowing_line_) {
+    int line_number;
+    if (fit_all_lines_) {
+      line_number = first_overflowing_line_;
+    } else {
+      // We managed to finish layout of all the lines for the node, which means
+      // that we won't have enough widows, unless we break earlier than where we
+      // overflowed.
+      int line_count = container_builder_.LineCount();
+      line_number = std::max(line_count - Style().Widows(),
+                             std::min(line_count, int(Style().Orphans())));
     }
-    return;
+    container_builder_.AddBreakBeforeLine(line_number);
   }
 
-  if (block_size > space_left) {
-    // Need a break inside this block.
-    container_builder_.SetConsumedBlockSize(space_left + consumed_block_size);
-    container_builder_.SetDidBreak();
-    container_builder_.SetBlockSize(space_left);
-    container_builder_.SetIntrinsicBlockSize(space_left);
-    container_builder_.PropagateSpaceShortage(block_size - space_left);
-    return;
-  }
-
-  // The end of the block fits in the current fragmentainer.
-  container_builder_.SetConsumedBlockSize(consumed_block_size + block_size);
-  container_builder_.SetBlockSize(block_size);
-  container_builder_.SetIntrinsicBlockSize(intrinsic_block_size_);
+  FinishFragmentation(&container_builder_, block_size, intrinsic_block_size_,
+                      consumed_block_size, space_left);
 }
 
 bool NGBlockLayoutAlgorithm::BreakBeforeChild(

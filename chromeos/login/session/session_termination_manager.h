@@ -42,7 +42,7 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_SESSION) SessionTerminationManager {
       base::Optional<cryptohome::BaseReply> reply);
 
   bool is_locked_to_single_user_ = false;
-  base::WeakPtrFactory<SessionTerminationManager> weak_factory_;
+  base::WeakPtrFactory<SessionTerminationManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SessionTerminationManager);
 };

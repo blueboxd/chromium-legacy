@@ -61,7 +61,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) DhcpPacFileFetcherChromeos
 
   GURL pac_url_;
 
-  base::WeakPtrFactory<DhcpPacFileFetcherChromeos> weak_ptr_factory_;
+  base::WeakPtrFactory<DhcpPacFileFetcherChromeos> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DhcpPacFileFetcherChromeos);
 };

@@ -153,7 +153,7 @@ class KioskAppData : public KioskAppDataBase,
 
   base::FilePath crx_file_;
 
-  base::WeakPtrFactory<KioskAppData> weak_factory_;
+  base::WeakPtrFactory<KioskAppData> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(KioskAppData);
 };

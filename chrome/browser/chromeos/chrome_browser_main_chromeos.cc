@@ -465,7 +465,7 @@ class DBusServices {
 // NetworkCertLoader is initialized.
 class SystemTokenCertDBInitializer {
  public:
-  SystemTokenCertDBInitializer() : weak_ptr_factory_(this) {}
+  SystemTokenCertDBInitializer() {}
   ~SystemTokenCertDBInitializer() {}
 
   // Entry point, called on UI thread.
@@ -546,7 +546,7 @@ class SystemTokenCertDBInitializer {
   // Global NSSCertDatabase which sees the system token.
   std::unique_ptr<net::NSSCertDatabase> system_token_cert_database_;
 
-  base::WeakPtrFactory<SystemTokenCertDBInitializer> weak_ptr_factory_;
+  base::WeakPtrFactory<SystemTokenCertDBInitializer> weak_ptr_factory_{this};
 };
 
 }  // namespace internal

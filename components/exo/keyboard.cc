@@ -166,8 +166,7 @@ Keyboard::Keyboard(KeyboardDelegate* delegate, Seat* seat)
     : delegate_(delegate),
       seat_(seat),
       expiration_delay_for_pending_key_acks_(base::TimeDelta::FromMilliseconds(
-          kExpirationDelayForPendingKeyAcksMs)),
-      weak_ptr_factory_(this) {
+          kExpirationDelayForPendingKeyAcksMs)) {
   AddEventHandler();
   seat_->AddObserver(this);
   keyboard::KeyboardUIController::Get()->AddObserver(this);

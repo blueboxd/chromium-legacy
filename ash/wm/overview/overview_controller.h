@@ -164,7 +164,7 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
 
   base::ObserverList<OverviewObserver> observers_;
 
-  base::WeakPtrFactory<OverviewController> weak_ptr_factory_;
+  base::WeakPtrFactory<OverviewController> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OverviewController);
 };

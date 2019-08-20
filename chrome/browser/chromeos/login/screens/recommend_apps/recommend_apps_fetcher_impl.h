@@ -154,7 +154,7 @@ class RecommendAppsFetcherImpl : public RecommendAppsFetcher {
   ArcFeaturesGetter arc_features_getter_;
 
   ash::mojom::CrosDisplayConfigControllerPtr cros_display_config_;
-  base::WeakPtrFactory<RecommendAppsFetcherImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<RecommendAppsFetcherImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RecommendAppsFetcherImpl);
 };

@@ -59,7 +59,13 @@ class TabSpinnerTest : public UIPerformanceTest {
   DISALLOW_COPY_AND_ASSIGN(TabSpinnerTest);
 };
 
-IN_PROC_BROWSER_TEST_F(TabSpinnerTest, LoadTabsOneByOne) {
+// TODO(974349) This test is timeout on linux-chromeos-dbg.
+#if defined(OS_CHROMEOS) && !defined(NDEBUG)
+#define MAYBE_LoadTabsOneByOne DISABLED_LoadTabsOneByOne
+#else
+#define MAYBE_LoadTabsOneByOne LoadTabsOneByOne
+#endif
+IN_PROC_BROWSER_TEST_F(TabSpinnerTest, MAYBE_LoadTabsOneByOne) {
   IgnorePriorHistogramSamples();
 
   // Navigate to a custom page that takes 10 seconds to load. Wait for the

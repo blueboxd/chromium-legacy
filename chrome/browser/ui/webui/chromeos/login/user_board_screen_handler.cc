@@ -13,7 +13,7 @@ constexpr StaticOobeScreenId UserBoardView::kScreenId;
 
 UserBoardScreenHandler::UserBoardScreenHandler(
     JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container), weak_factory_(this) {}
+    : BaseScreenHandler(kScreenId, js_calls_container) {}
 
 UserBoardScreenHandler::~UserBoardScreenHandler() {
 }

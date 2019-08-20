@@ -83,7 +83,7 @@ class LoginDisplayMojo : public LoginDisplay,
   LoginDisplayHostMojo* const host_ = nullptr;  // Unowned.
   LoginDisplayWebUIHandler* webui_handler_ = nullptr;
 
-  base::WeakPtrFactory<LoginDisplayMojo> weak_factory_;
+  base::WeakPtrFactory<LoginDisplayMojo> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LoginDisplayMojo);
 };

@@ -256,7 +256,7 @@ class ArcSessionImpl : public ArcSession, public ArcClientAdapter::Observer {
   std::unique_ptr<mojom::ArcBridgeHost> arc_bridge_host_;
 
   // WeakPtrFactory to use callbacks.
-  base::WeakPtrFactory<ArcSessionImpl> weak_factory_;
+  base::WeakPtrFactory<ArcSessionImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcSessionImpl);
 };

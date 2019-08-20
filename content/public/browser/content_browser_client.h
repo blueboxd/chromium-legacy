@@ -1174,20 +1174,22 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Allows the embedder to intercept URLLoaderFactory interfaces used for
   // navigation or being brokered on behalf of a renderer fetching subresources.
   //
-  // |frame| is nullptr for kServiceWorkerSubResource. For kNavigation type,
-  // it's the RenderFrameHost the navigation might commit in. ELse it's the
-  // initiating frame.
+  // |frame| is nullptr for kWorkerSubResource and kServiceWorkerSubResource.
+  // For kNavigation type, it's the RenderFrameHost the navigation might commit
+  // in. Else it's the initiating frame.
   //
   // |render_process_id| is the id of a render process host in which the
   // URLLoaderFactory will be used.
   //
   // |request_initiator| indicates which origin will be the initiator of
   // requests that will use the URLLoaderFactory (see also
-  // |network::ResourceRequest::requests|).  |request_initiator| is set when
-  // it's a request for a renderer fetching subresources. It's not set when
-  // creating a factory for navigation requests, because navigation requests are
-  // made on behalf of the browser, rather than on behalf of any particular
-  // origin.
+  // |network::ResourceRequest::requests|). It's set when this factory is
+  // created a) for a renderer to use to fetch subresources
+  // (kDocumentSubResource, kWorkerSubResource, kServiceWorkerSubResource), or
+  // b) for the browser to use to fetch a worker (kWorkerMainResource). It's not
+  // set when creating a factory for navigation requests, because navigation
+  // requests are made on behalf of the browser, rather than on behalf of any
+  // particular origin.
   //
   // |*factory_request| is always valid upon entry and MUST be valid upon
   // return. The embedder may swap out the value of |*factory_request| for its
@@ -1206,6 +1208,11 @@ class CONTENT_EXPORT ContentBrowserClient {
     kNavigation,
     kDownload,
     kDocumentSubResource,
+
+    // For dedicated workers and shared workers.
+    kWorkerMainResource,
+    kWorkerSubResource,
+
     kServiceWorkerSubResource,
   };
   virtual bool WillCreateURLLoaderFactory(

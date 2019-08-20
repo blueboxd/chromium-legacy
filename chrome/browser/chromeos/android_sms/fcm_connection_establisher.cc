@@ -55,7 +55,7 @@ FcmConnectionEstablisher::InFlightMessage::InFlightMessage(
 
 FcmConnectionEstablisher::FcmConnectionEstablisher(
     std::unique_ptr<base::OneShotTimer> retry_timer)
-    : retry_timer_(std::move(retry_timer)), weak_ptr_factory_(this) {}
+    : retry_timer_(std::move(retry_timer)) {}
 FcmConnectionEstablisher::~FcmConnectionEstablisher() = default;
 
 void FcmConnectionEstablisher::EstablishConnection(

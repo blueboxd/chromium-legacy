@@ -69,9 +69,7 @@ std::string FormatFileSystemTypeToString(FormatFileSystemType filesystem) {
 class DiskMountManagerImpl : public DiskMountManager,
                              public CrosDisksClient::Observer {
  public:
-  DiskMountManagerImpl() :
-    already_refreshed_(false),
-    weak_ptr_factory_(this) {
+  DiskMountManagerImpl() : already_refreshed_(false) {
     DBusThreadManager* dbus_thread_manager = DBusThreadManager::Get();
     cros_disks_client_ = dbus_thread_manager->GetCrosDisksClient();
     suspend_unmount_manager_.reset(new SuspendUnmountManager(this));
@@ -851,7 +849,7 @@ class DiskMountManagerImpl : public DiskMountManager,
   typedef std::map<std::string, chromeos::MountAccessMode> AccessModeMap;
   AccessModeMap access_modes_;
 
-  base::WeakPtrFactory<DiskMountManagerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<DiskMountManagerImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DiskMountManagerImpl);
 };

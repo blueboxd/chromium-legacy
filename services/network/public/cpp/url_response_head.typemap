@@ -13,4 +13,4 @@ public_deps = [
   "//services/network/public/cpp:cpp_base",
 ]
 type_mappings =
-    [ "network.mojom.URLResponseHead=network::ResourceResponseHead" ]
+    [ "network.mojom.URLResponseHead=::network::ResourceResponseHead" ]

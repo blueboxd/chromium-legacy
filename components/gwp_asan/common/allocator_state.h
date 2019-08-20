@@ -39,14 +39,14 @@ class GuardedPageAllocator;
 
 class AllocatorState {
  public:
-  using MetadataIdx = uint8_t;
+  using MetadataIdx = uint16_t;
   using SlotIdx = uint16_t;
 
   // Maximum number of virtual memory slots (guard-page buffered pages) this
   // class can allocate.
   static constexpr size_t kMaxSlots = 4096;
   // Maximum number of concurrent allocations/metadata this class can allocate.
-  static constexpr size_t kMaxMetadata = 255;
+  static constexpr size_t kMaxMetadata = 2048;
   // Invalid metadata index.
   static constexpr MetadataIdx kInvalidMetadataIdx = kMaxMetadata;
 

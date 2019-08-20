@@ -172,7 +172,7 @@ class CrostiniInstallerView
   base::OnceClosure quit_closure_for_testing_;
   base::OnceClosure free_disk_space_callback_for_testing_;
 
-  base::WeakPtrFactory<CrostiniInstallerView> weak_ptr_factory_;
+  base::WeakPtrFactory<CrostiniInstallerView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CrostiniInstallerView);
 };

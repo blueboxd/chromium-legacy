@@ -194,7 +194,7 @@ class Pointer : public SurfaceTreeHost,
   ui::EventType last_event_type_ = ui::ET_UNKNOWN;
 
   // Weak pointer factory used for cursor capture callbacks.
-  base::WeakPtrFactory<Pointer> cursor_capture_weak_ptr_factory_;
+  base::WeakPtrFactory<Pointer> cursor_capture_weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Pointer);
 };

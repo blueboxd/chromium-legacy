@@ -94,7 +94,7 @@ class ApkWebAppService : public KeyedService,
       observer_;
 
   // Must go last.
-  base::WeakPtrFactory<ApkWebAppService> weak_ptr_factory_;
+  base::WeakPtrFactory<ApkWebAppService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ApkWebAppService);
 };

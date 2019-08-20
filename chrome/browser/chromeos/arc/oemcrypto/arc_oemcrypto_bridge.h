@@ -50,7 +50,7 @@ class ArcOemCryptoBridge : public KeyedService,
   arc_oemcrypto::mojom::OemCryptoHostDaemonPtr oemcrypto_host_daemon_ptr_;
 
   // WeakPtrFactory to use for callbacks.
-  base::WeakPtrFactory<ArcOemCryptoBridge> weak_factory_;
+  base::WeakPtrFactory<ArcOemCryptoBridge> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcOemCryptoBridge);
 };

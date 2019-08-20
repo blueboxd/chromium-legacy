@@ -11,4 +11,4 @@ traits_headers = [ "//components/arc/file_system/file_system_mojom_traits.h" ]
 sources = [
   "//components/arc/file_system/file_system_mojom_traits.cc",
 ]
-type_mappings = [ "arc.mojom.ChangeType=storage::WatcherManager::ChangeType" ]
+type_mappings = [ "arc.mojom.ChangeType=::storage::WatcherManager::ChangeType" ]

@@ -106,7 +106,7 @@ CrostiniPackageService* CrostiniPackageService::GetForProfile(
 }
 
 CrostiniPackageService::CrostiniPackageService(Profile* profile)
-    : profile_(profile), weak_ptr_factory_(this) {
+    : profile_(profile) {
   CrostiniManager* manager = CrostiniManager::GetForProfile(profile);
 
   manager->AddLinuxPackageOperationProgressObserver(this);

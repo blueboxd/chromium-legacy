@@ -34,8 +34,7 @@ DeviceCloudPolicyStoreChromeOS::DeviceCloudPolicyStoreChromeOS(
     scoped_refptr<base::SequencedTaskRunner> background_task_runner)
     : device_settings_service_(device_settings_service),
       install_attributes_(install_attributes),
-      background_task_runner_(background_task_runner),
-      weak_factory_(this) {
+      background_task_runner_(background_task_runner) {
   device_settings_service_->AddObserver(this);
   device_settings_service_->SetDeviceMode(install_attributes_->GetMode());
 }

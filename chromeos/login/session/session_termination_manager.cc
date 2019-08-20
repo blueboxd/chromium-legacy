@@ -19,7 +19,7 @@ SessionTerminationManager* g_instance = nullptr;
 
 }  // namespace
 
-SessionTerminationManager::SessionTerminationManager() : weak_factory_(this) {
+SessionTerminationManager::SessionTerminationManager() {
   DCHECK(!g_instance);
   g_instance = this;
 }

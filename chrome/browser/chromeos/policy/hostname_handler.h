@@ -47,7 +47,7 @@ class HostnameHandler : public chromeos::NetworkStateHandlerObserver {
   chromeos::CrosSettings* cros_settings_;
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       policy_subscription_;
-  base::WeakPtrFactory<HostnameHandler> weak_factory_;
+  base::WeakPtrFactory<HostnameHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HostnameHandler);
 };

@@ -14,8 +14,7 @@ namespace ash {
 MockArcNotificationItem::MockArcNotificationItem(
     const std::string& notification_key)
     : notification_key_(notification_key),
-      notification_id_(kArcNotificationIdPrefix + notification_key),
-      weak_factory_(this) {}
+      notification_id_(kArcNotificationIdPrefix + notification_key) {}
 
 MockArcNotificationItem::~MockArcNotificationItem() {
   for (auto& observer : observers_)

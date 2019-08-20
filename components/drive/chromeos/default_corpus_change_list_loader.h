@@ -80,7 +80,7 @@ class DefaultCorpusChangeListLoader : public DriveChangeListLoader {
 
   THREAD_CHECKER(thread_checker_);
 
-  base::WeakPtrFactory<DefaultCorpusChangeListLoader> weak_ptr_factory_;
+  base::WeakPtrFactory<DefaultCorpusChangeListLoader> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(DefaultCorpusChangeListLoader);
 };
 

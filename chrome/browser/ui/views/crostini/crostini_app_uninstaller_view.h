@@ -35,7 +35,7 @@ class CrostiniAppUninstallerView : public views::DialogDelegateView {
   Profile* profile_;
   std::string app_id_;
 
-  base::WeakPtrFactory<CrostiniAppUninstallerView> weak_ptr_factory_;
+  base::WeakPtrFactory<CrostiniAppUninstallerView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CrostiniAppUninstallerView);
 };

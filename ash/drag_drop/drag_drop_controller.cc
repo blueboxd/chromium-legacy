@@ -132,8 +132,7 @@ DragDropController::DragDropController()
       drag_source_window_(NULL),
       should_block_during_drag_drop_(true),
       drag_drop_window_delegate_(new DragDropTrackerDelegate(this)),
-      current_drag_event_source_(ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE),
-      weak_factory_(this) {
+      current_drag_event_source_(ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE) {
   Shell::Get()->AddPreTargetHandler(this, ui::EventTarget::Priority::kSystem);
   Shell::Get()->window_tree_host_manager()->AddObserver(this);
 }

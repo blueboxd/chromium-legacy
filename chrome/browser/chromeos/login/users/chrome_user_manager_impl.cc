@@ -360,8 +360,7 @@ ChromeUserManagerImpl::ChromeUserManagerImpl()
                             : scoped_refptr<base::TaskRunner>()),
       cros_settings_(CrosSettings::Get()),
       device_local_account_policy_service_(NULL),
-      supervised_user_manager_(new SupervisedUserManagerImpl(this)),
-      weak_factory_(this) {
+      supervised_user_manager_(new SupervisedUserManagerImpl(this)) {
   UpdateNumberOfUsers();
 
   // UserManager instance should be used only on UI thread.

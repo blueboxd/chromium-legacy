@@ -160,7 +160,7 @@ class MediaPerceptionAPIManager
 
   ScopedObserver<chromeos::MediaAnalyticsClient, MediaPerceptionAPIManager>
       scoped_observer_;
-  base::WeakPtrFactory<MediaPerceptionAPIManager> weak_ptr_factory_;
+  base::WeakPtrFactory<MediaPerceptionAPIManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaPerceptionAPIManager);
 };

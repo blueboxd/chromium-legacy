@@ -433,8 +433,7 @@ bool CpuDataCollector::ReadCpuFreqAllTimeInState(
 
 // Set |cpu_count_| to -1 and let SampleCpuStateAsync discover the
 // correct number of CPUs.
-CpuDataCollector::CpuDataCollector() : cpu_count_(-1), weak_ptr_factory_(this) {
-}
+CpuDataCollector::CpuDataCollector() : cpu_count_(-1) {}
 
 CpuDataCollector::~CpuDataCollector() {
 }

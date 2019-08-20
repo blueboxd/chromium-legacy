@@ -18,8 +18,7 @@
 namespace chromeos {
 namespace settings {
 
-CrostiniHandler::CrostiniHandler(Profile* profile)
-    : profile_(profile), weak_ptr_factory_(this) {}
+CrostiniHandler::CrostiniHandler(Profile* profile) : profile_(profile) {}
 
 CrostiniHandler::~CrostiniHandler() {
   DisallowJavascript();

@@ -79,10 +79,7 @@ AppInstallEventLogManager::AppInstallEventLogManager(
     AppInstallEventLogUploader* uploader,
     Profile* profile)
     : log_task_runner_(log_task_runner_wrapper->GetTaskRunner()),
-      uploader_(uploader),
-      store_weak_factory_(this),
-      upload_weak_factory_(this),
-      log_weak_factory_(this) {
+      uploader_(uploader) {
   uploader_->SetDelegate(this);
   log_ = std::make_unique<Log>();
   base::PostTaskAndReplyWithResult(

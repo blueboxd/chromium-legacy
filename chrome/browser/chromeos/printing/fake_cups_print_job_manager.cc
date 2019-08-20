@@ -19,7 +19,7 @@ namespace chromeos {
 int FakeCupsPrintJobManager::next_job_id_ = 0;
 
 FakeCupsPrintJobManager::FakeCupsPrintJobManager(Profile* profile)
-    : CupsPrintJobManager(profile), weak_ptr_factory_(this) {
+    : CupsPrintJobManager(profile) {
   VLOG(1) << "Using Fake Print Job Manager";
 }
 

@@ -260,8 +260,7 @@ CupsPrintersHandler::CupsPrintersHandler(
       printer_configurer_(std::move(printer_configurer)),
       printers_manager_(printers_manager),
       endpoint_resolver_(std::make_unique<local_discovery::EndpointResolver>()),
-      printers_manager_observer_(this),
-      weak_factory_(this) {}
+      printers_manager_observer_(this) {}
 
 // static
 std::unique_ptr<CupsPrintersHandler> CupsPrintersHandler::Create(

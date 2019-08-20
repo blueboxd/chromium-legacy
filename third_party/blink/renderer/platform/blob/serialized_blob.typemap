@@ -11,4 +11,4 @@ traits_headers = [
 deps = [
   "//mojo/public/cpp/bindings",
 ]
-type_mappings = [ "blink.mojom.SerializedBlob=scoped_refptr<::blink::BlobDataHandle>[nullable_is_same_type]" ]
+type_mappings = [ "blink.mojom.SerializedBlob=::scoped_refptr<::blink::BlobDataHandle>[nullable_is_same_type]" ]

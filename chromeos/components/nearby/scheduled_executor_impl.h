@@ -78,7 +78,7 @@ class ScheduledExecutorImpl : public location::nearby::ScheduledExecutor {
   base::flat_map<base::UnguessableToken, std::unique_ptr<PendingTaskWithTimer>>
       id_to_task_map_;
   SEQUENCE_CHECKER(timer_sequence_checker_);
-  base::WeakPtrFactory<ScheduledExecutorImpl> weak_factory_;
+  base::WeakPtrFactory<ScheduledExecutorImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ScheduledExecutorImpl);
 };

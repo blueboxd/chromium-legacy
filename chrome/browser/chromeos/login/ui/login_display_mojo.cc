@@ -35,8 +35,7 @@
 
 namespace chromeos {
 
-LoginDisplayMojo::LoginDisplayMojo(LoginDisplayHostMojo* host)
-    : host_(host), weak_factory_(this) {
+LoginDisplayMojo::LoginDisplayMojo(LoginDisplayHostMojo* host) : host_(host) {
   user_manager::UserManager::Get()->AddObserver(this);
 }
 

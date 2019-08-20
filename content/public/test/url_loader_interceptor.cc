@@ -448,9 +448,10 @@ URLLoaderInterceptor::URLLoaderInterceptor(
   RenderFrameHostImpl::SetNetworkFactoryForTesting(base::BindRepeating(
       &URLLoaderInterceptor::CreateURLLoaderFactoryForSubresources,
       base::Unretained(this)));
-  SharedWorkerHost::SetNetworkFactoryForTesting(base::BindRepeating(
-      &URLLoaderInterceptor::CreateURLLoaderFactoryForSubresources,
-      base::Unretained(this)));
+  SharedWorkerHost::SetNetworkFactoryForSubresourcesForTesting(
+      base::BindRepeating(
+          &URLLoaderInterceptor::CreateURLLoaderFactoryForSubresources,
+          base::Unretained(this)));
   // Note: This URLLoaderFactory creation callback will be used not only for
   // subresource loading from service workers (i.e., fetch()), but also for
   // loading non-installed service worker scripts.
@@ -503,7 +504,7 @@ URLLoaderInterceptor::~URLLoaderInterceptor() {
 
   RenderFrameHostImpl::SetNetworkFactoryForTesting(
       RenderFrameHostImpl::CreateNetworkFactoryCallback());
-  SharedWorkerHost::SetNetworkFactoryForTesting(
+  SharedWorkerHost::SetNetworkFactoryForSubresourcesForTesting(
       RenderFrameHostImpl::CreateNetworkFactoryCallback());
   EmbeddedWorkerInstance::SetNetworkFactoryForTesting(
       RenderFrameHostImpl::CreateNetworkFactoryCallback());

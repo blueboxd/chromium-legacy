@@ -45,8 +45,7 @@ NetworkConnectionHandlerTetherDelegate::NetworkConnectionHandlerTetherDelegate(
     : network_connection_handler_(network_connection_handler),
       active_host_(active_host),
       tether_connector_(tether_connector),
-      tether_disconnector_(tether_disconnector),
-      weak_ptr_factory_(this) {
+      tether_disconnector_(tether_disconnector) {
   network_connection_handler_->SetTetherDelegate(this);
 }
 

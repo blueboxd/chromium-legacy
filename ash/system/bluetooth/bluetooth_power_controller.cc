@@ -24,7 +24,7 @@ namespace ash {
 const int kBluetoothInitializationDelay = 1000;
 
 BluetoothPowerController::BluetoothPowerController(PrefService* local_state)
-    : local_state_(local_state), weak_ptr_factory_(this) {
+    : local_state_(local_state) {
   device::BluetoothAdapterFactory::GetAdapter(
       base::BindOnce(&BluetoothPowerController::InitializeOnAdapterReady,
                      weak_ptr_factory_.GetWeakPtr()));

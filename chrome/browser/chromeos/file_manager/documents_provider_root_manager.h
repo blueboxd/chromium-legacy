@@ -127,7 +127,7 @@ class DocumentsProviderRootManager : public arc::ArcFileSystemBridge::Observer {
   base::ObserverList<Observer>::Unchecked observer_list_;
   std::vector<RootInfo> current_roots_;
 
-  base::WeakPtrFactory<DocumentsProviderRootManager> weak_ptr_factory_;
+  base::WeakPtrFactory<DocumentsProviderRootManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DocumentsProviderRootManager);
 };

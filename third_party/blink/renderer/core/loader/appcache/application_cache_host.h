@@ -92,8 +92,8 @@ class CORE_EXPORT ApplicationCacheHost
   const base::UnguessableToken& GetHostID() const;
   void SetHostID(const base::UnguessableToken& host_id);
 
-  void SelectCacheForSharedWorker(int64_t app_cache_id,
-                                  base::OnceClosure completion_callback);
+  void SelectCacheForWorker(int64_t app_cache_id,
+                            base::OnceClosure completion_callback);
 
   // mojom::blink::AppCacheFrontend
   void CacheSelected(mojom::blink::AppCacheInfoPtr info) override;
@@ -137,7 +137,7 @@ class CORE_EXPORT ApplicationCacheHost
   mojom::blink::DocumentInterfaceBroker* interface_broker_;
 
   // Invoked when CacheSelected() is called.
-  base::OnceClosure select_cache_for_shared_worker_completion_callback_;
+  base::OnceClosure select_cache_for_worker_completion_callback_;
 
   FRIEND_TEST_ALL_PREFIXES(DocumentTest, SandboxDisablesAppCache);
 

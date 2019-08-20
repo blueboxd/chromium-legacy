@@ -47,8 +47,7 @@ BluetoothLowEnergyCharacteristicsFinder::
       success_callback_(success_callback),
       error_callback_(error_callback),
       remote_device_(remote_device),
-      background_eid_generator_(std::move(background_eid_generator)),
-      weak_ptr_factory_(this) {
+      background_eid_generator_(std::move(background_eid_generator)) {
   adapter_->AddObserver(this);
   if (device->IsGattServicesDiscoveryComplete())
     ScanRemoteCharacteristics();
@@ -57,7 +56,7 @@ BluetoothLowEnergyCharacteristicsFinder::
 BluetoothLowEnergyCharacteristicsFinder::
     BluetoothLowEnergyCharacteristicsFinder(
         const multidevice::RemoteDeviceRef& remote_device)
-    : remote_device_(remote_device), weak_ptr_factory_(this) {}
+    : remote_device_(remote_device) {}
 
 BluetoothLowEnergyCharacteristicsFinder::
     ~BluetoothLowEnergyCharacteristicsFinder() {

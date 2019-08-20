@@ -115,14 +115,15 @@ void MojoRenderer::InitializeRendererFromUrl(media::RendererClient* client) {
   mojom::RendererClientAssociatedPtrInfo client_ptr_info;
   client_binding_.Bind(mojo::MakeRequest(&client_ptr_info));
 
-  MediaUrlParams url_params = media_resource_->GetMediaUrlParams();
+  const MediaUrlParams& url_params = media_resource_->GetMediaUrlParams();
 
   // Using base::Unretained(this) is safe because |this| owns
   // |remote_renderer_|, and the callback won't be dispatched if
   // |remote_renderer_| is destroyed.
   mojom::MediaUrlParamsPtr media_url_params = mojom::MediaUrlParams::New(
       url_params.media_url, url_params.site_for_cookies,
-      url_params.allow_credentials, url_params.is_hls);
+      url_params.top_frame_origin, url_params.allow_credentials,
+      url_params.is_hls);
   remote_renderer_->Initialize(
       std::move(client_ptr_info), base::nullopt, std::move(media_url_params),
       base::Bind(&MojoRenderer::OnInitialized, base::Unretained(this), client));

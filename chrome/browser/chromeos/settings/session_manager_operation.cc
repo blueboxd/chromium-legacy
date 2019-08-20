@@ -31,7 +31,7 @@ namespace em = enterprise_management;
 namespace chromeos {
 
 SessionManagerOperation::SessionManagerOperation(const Callback& callback)
-    : callback_(callback), weak_factory_(this) {}
+    : callback_(callback) {}
 
 SessionManagerOperation::~SessionManagerOperation() {}
 
@@ -242,9 +242,7 @@ void LoadSettingsOperation::Run() {
 StoreSettingsOperation::StoreSettingsOperation(
     const Callback& callback,
     std::unique_ptr<em::PolicyFetchResponse> policy)
-    : SessionManagerOperation(callback),
-      policy_(std::move(policy)),
-      weak_factory_(this) {
+    : SessionManagerOperation(callback), policy_(std::move(policy)) {
   if (policy_->has_new_public_key())
     force_key_load_ = true;
 }

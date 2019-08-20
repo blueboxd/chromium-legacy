@@ -206,8 +206,7 @@ class ArcSessionManager::ScopedOptInFlowTracker {
 ArcSessionManager::ArcSessionManager(
     std::unique_ptr<ArcSessionRunner> arc_session_runner)
     : arc_session_runner_(std::move(arc_session_runner)),
-      attempt_user_exit_callback_(base::Bind(chrome::AttemptUserExit)),
-      weak_ptr_factory_(this) {
+      attempt_user_exit_callback_(base::Bind(chrome::AttemptUserExit)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!g_arc_session_manager);
   g_arc_session_manager = this;

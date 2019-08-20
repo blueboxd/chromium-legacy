@@ -87,7 +87,7 @@ class Queue {
   base::circular_deque<Task> pending_;
   std::map<int, Task> executed_;
 
-  base::WeakPtrFactory<Queue> weak_ptr_factory_;
+  base::WeakPtrFactory<Queue> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(Queue);
 };
 

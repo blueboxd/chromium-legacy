@@ -90,7 +90,7 @@ class StorageMonitorCros : public StorageMonitor,
 
   std::unique_ptr<MtpManagerClientChromeOS> mtp_manager_client_;
 
-  base::WeakPtrFactory<StorageMonitorCros> weak_ptr_factory_;
+  base::WeakPtrFactory<StorageMonitorCros> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(StorageMonitorCros);
 };

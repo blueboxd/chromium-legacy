@@ -7,4 +7,4 @@ public_headers =
     [ "//third_party/blink/renderer/platform/network/encoded_form_data.h" ]
 traits_headers = [ "//third_party/blink/renderer/platform/network/encoded_form_data_mojom_traits.h" ]
 
-type_mappings = [ "blink.mojom.FetchAPIRequestBody=scoped_refptr<::blink::EncodedFormData>[nullable_is_same_type,copyable_pass_by_value]" ]
+type_mappings = [ "blink.mojom.FetchAPIRequestBody=::scoped_refptr<::blink::EncodedFormData>[nullable_is_same_type,copyable_pass_by_value]" ]

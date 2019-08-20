@@ -122,8 +122,7 @@ VideoCaptureDeviceChromeOSHalv3::VideoCaptureDeviceChromeOSHalv3(
       camera_app_device_(camera_app_device),
       cleanup_callback_(std::move(cleanup_callback)),
       power_manager_client_proxy_(
-          base::MakeRefCounted<PowerManagerClientProxy>()),
-      weak_ptr_factory_(this) {
+          base::MakeRefCounted<PowerManagerClientProxy>()) {
   power_manager_client_proxy_->Init(weak_ptr_factory_.GetWeakPtr(),
                                     capture_task_runner_,
                                     std::move(ui_task_runner));

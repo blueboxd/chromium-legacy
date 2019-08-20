@@ -453,8 +453,8 @@ class KEYBOARD_EXPORT KeyboardUIController
   base::Time keyboard_load_time_start_;
 
   base::WeakPtrFactory<KeyboardUIController>
-      weak_factory_report_lingering_state_;
-  base::WeakPtrFactory<KeyboardUIController> weak_factory_will_hide_;
+      weak_factory_report_lingering_state_{this};
+  base::WeakPtrFactory<KeyboardUIController> weak_factory_will_hide_{this};
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardUIController);
 };

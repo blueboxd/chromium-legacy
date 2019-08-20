@@ -25,8 +25,7 @@ KeyboardEvdev::KeyboardEvdev(EventModifiers* modifiers,
     : callback_(callback),
       modifiers_(modifiers),
       keyboard_layout_engine_(keyboard_layout_engine),
-      auto_repeat_handler_(this),
-      weak_ptr_factory_(this) {}
+      auto_repeat_handler_(this) {}
 
 KeyboardEvdev::~KeyboardEvdev() {
 }

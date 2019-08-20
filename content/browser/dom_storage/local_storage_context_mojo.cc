@@ -204,7 +204,7 @@ class LocalStorageContextMojo::StorageAreaHolder final
     }
 #endif
     area_ = std::make_unique<StorageAreaImpl>(
-        context_->database_.get(),
+        context_->database_ ? context_->database_.get() : nullptr,
         kDataPrefix + origin_.Serialize() + kOriginSeparator, this, options);
     area_ptr_ = area_.get();
   }
@@ -596,10 +596,11 @@ void LocalStorageContextMojo::PurgeUnusedAreasIfNeeded() {
 }
 
 void LocalStorageContextMojo::SetDatabaseForTesting(
-    leveldb::mojom::LevelDBDatabaseAssociatedPtr database) {
+    mojo::PendingAssociatedRemote<leveldb::mojom::LevelDBDatabase> database) {
   DCHECK_EQ(connection_state_, NO_CONNECTION);
   connection_state_ = CONNECTION_IN_PROGRESS;
-  database_ = std::move(database);
+  database_.reset();
+  database_.Bind(std::move(database));
   OnDatabaseOpened(true, leveldb::mojom::DatabaseError::OK);
 }
 
@@ -718,9 +719,14 @@ void LocalStorageContextMojo::InitiateConnection(bool in_memory_only) {
                        weak_ptr_factory_.GetWeakPtr()));
   } else {
     // We were not given a subdirectory. Use a memory backed database.
-    connector_->BindInterface(file::mojom::kServiceName, &leveldb_service_);
+    leveldb_service_.reset();
+    connector_->Connect(file::mojom::kServiceName,
+                        leveldb_service_.BindNewPipeAndPassReceiver());
+
+    database_.reset();
     leveldb_service_->OpenInMemory(
-        memory_dump_id_, "local-storage", MakeRequest(&database_),
+        memory_dump_id_, "local-storage",
+        database_.BindNewEndpointAndPassReceiver(),
         base::BindOnce(&LocalStorageContextMojo::OnDatabaseOpened,
                        weak_ptr_factory_.GetWeakPtr(), true));
   }
@@ -734,7 +740,7 @@ void LocalStorageContextMojo::OnMojoConnectionDestroyed() {
   for (const auto& it : areas_)
     it.second->storage_area()->CancelAllPendingRequests();
   areas_.clear();
-  database_ = nullptr;
+  database_.reset();
   // TODO(dullweber): Should we try to recover? E.g. try to reopen and if this
   // fails, call DeleteAndRecreateDatabase().
 }
@@ -752,7 +758,9 @@ void LocalStorageContextMojo::OnDirectoryOpened(base::File::Error err) {
 
   // Now that we have a directory, connect to the LevelDB service and get our
   // database.
-  connector_->BindInterface(file::mojom::kServiceName, &leveldb_service_);
+  leveldb_service_.reset();
+  connector_->Connect(file::mojom::kServiceName,
+                      leveldb_service_.BindNewPipeAndPassReceiver());
 
   // We might still need to use the directory, so create a clone.
   filesystem::mojom::DirectoryPtr directory_clone;
@@ -765,9 +773,11 @@ void LocalStorageContextMojo::OnDirectoryOpened(base::File::Error err) {
   // memory allocation in RAM from a log file recovery.
   options.write_buffer_size = 64 * 1024;
   options.block_cache = leveldb_chrome::GetSharedWebBlockCache();
+
+  database_.reset();
   leveldb_service_->OpenWithOptions(
       std::move(options), std::move(directory_clone), "leveldb",
-      memory_dump_id_, MakeRequest(&database_),
+      memory_dump_id_, database_.BindNewEndpointAndPassReceiver(),
       base::BindOnce(&LocalStorageContextMojo::OnDatabaseOpened,
                      weak_ptr_factory_.GetWeakPtr(), false));
 }
@@ -797,7 +807,7 @@ void LocalStorageContextMojo::OnDatabaseOpened(
 
   // Verify DB schema version.
   if (database_) {
-    database_.set_connection_error_handler(
+    database_.set_disconnect_handler(
         base::BindOnce(&LocalStorageContextMojo::OnMojoConnectionDestroyed,
                        weak_ptr_factory_.GetWeakPtr()));
     database_->Get(
@@ -881,7 +891,7 @@ void LocalStorageContextMojo::DeleteAndRecreateDatabase(
   // StorageAreas to be queued until the connection is complete.
   connection_state_ = CONNECTION_IN_PROGRESS;
   commit_error_count_ = 0;
-  database_ = nullptr;
+  database_.reset();
   open_result_histogram_ = histogram_name;
 
   bool recreate_in_memory = false;

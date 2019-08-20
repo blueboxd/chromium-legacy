@@ -121,6 +121,18 @@ WebData TestingPlatformSupport::GetDataResource(const char* name) {
   return old_platform_ ? old_platform_->GetDataResource(name) : WebData();
 }
 
+WebData TestingPlatformSupport::GetDataResource(int resource_id,
+                                                ui::ScaleFactor scale_factor) {
+  return old_platform_
+             ? old_platform_->GetDataResource(resource_id, scale_factor)
+             : WebData();
+}
+
+WebData TestingPlatformSupport::UncompressDataResource(int resource_id) {
+  return old_platform_ ? old_platform_->UncompressDataResource(resource_id)
+                       : WebData();
+}
+
 InterfaceProvider* TestingPlatformSupport::GetInterfaceProvider() {
   return interface_provider_.get();
 }

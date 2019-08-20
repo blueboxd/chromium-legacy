@@ -45,7 +45,7 @@ class VideoSource : public content::URLDataSource {
   // The background task runner on which file I/O is performed.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
-  base::WeakPtrFactory<VideoSource> weak_factory_;
+  base::WeakPtrFactory<VideoSource> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VideoSource);
 };

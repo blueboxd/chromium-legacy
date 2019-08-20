@@ -377,8 +377,7 @@ ArcAppListPrefs::ArcAppListPrefs(
       file_task_runner_(base::CreateSequencedTaskRunner(
           {base::ThreadPool(), base::MayBlock(),
            base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
-      weak_ptr_factory_(this) {
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
   VLOG(1) << "ARC app list prefs created";
   DCHECK(profile);
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));

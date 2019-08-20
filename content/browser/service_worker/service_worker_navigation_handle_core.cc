@@ -35,8 +35,8 @@ void ServiceWorkerNavigationHandleCore::OnCreatedProviderHost(
   DCHECK(provider_host);
   provider_host_ = std::move(provider_host);
 
-  DCHECK(provider_info->host_ptr_info.is_valid() &&
-         provider_info->client_request.is_pending());
+  DCHECK(provider_info->host_remote.is_valid() &&
+         provider_info->client_receiver.is_valid());
   RunOrPostTaskOnThread(
       FROM_HERE, BrowserThread::UI,
       base::BindOnce(&ServiceWorkerNavigationHandle::OnCreatedProviderHost,

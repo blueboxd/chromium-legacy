@@ -74,7 +74,7 @@ class PluginVmManager : public KeyedService,
   // delay until an in progress operation finishes.
   bool pending_start_vm_ = false;
 
-  base::WeakPtrFactory<PluginVmManager> weak_ptr_factory_;
+  base::WeakPtrFactory<PluginVmManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PluginVmManager);
 };

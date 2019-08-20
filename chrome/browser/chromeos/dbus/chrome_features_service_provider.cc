@@ -59,8 +59,7 @@ Profile* GetSenderProfile(
 
 namespace chromeos {
 
-ChromeFeaturesServiceProvider::ChromeFeaturesServiceProvider()
-    : weak_ptr_factory_(this) {}
+ChromeFeaturesServiceProvider::ChromeFeaturesServiceProvider() {}
 
 ChromeFeaturesServiceProvider::~ChromeFeaturesServiceProvider() = default;
 

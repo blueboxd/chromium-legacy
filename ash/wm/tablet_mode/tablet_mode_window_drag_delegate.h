@@ -163,7 +163,7 @@ class TabletModeWindowDragDelegate {
   // in tablet mode.
   std::unique_ptr<PresentationTimeRecorder> presentation_time_recorder_;
 
-  base::WeakPtrFactory<TabletModeWindowDragDelegate> weak_ptr_factory_;
+  base::WeakPtrFactory<TabletModeWindowDragDelegate> weak_ptr_factory_{this};
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TabletModeWindowDragDelegate);

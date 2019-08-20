@@ -74,8 +74,7 @@ MobileActivator::MobileActivator()
       initial_OTASP_attempts_(0),
       trying_OTASP_attempts_(0),
       final_OTASP_attempts_(0),
-      payment_reconnect_count_(0),
-      weak_ptr_factory_(this) {}
+      payment_reconnect_count_(0) {}
 
 MobileActivator::~MobileActivator() {
   TerminateActivation();

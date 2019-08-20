@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/ui/location_bar/location_bar_coordinator.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_url_loader.h"
 #include "ios/chrome/browser/ui/omnibox/location_bar_delegate.h"
+#include "ios/chrome/browser/ui/qr_scanner/qr_scanner_camera_controller.h"
 #include "ios/chrome/browser/ui/qr_scanner/qr_scanner_view.h"
 #include "ios/chrome/browser/ui/qr_scanner/qr_scanner_view_controller.h"
 #include "ios/chrome/browser/ui/scanner/camera_controller.h"
@@ -394,16 +395,17 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 #pragma mark -
 #pragma mark Helpers for mocks
 
-// Swizzles the CameraController method cameraControllerWithDelegate: to return
+// Swizzles the QRScannerViewController property cameraController: to return
 // |cameraControllerMock| instead of a new instance of CameraController.
 - (void)swizzleCameraController:(id)cameraControllerMock {
-  CameraController* (^swizzleCameraControllerBlock)(
-      id<CameraControllerDelegate>) = ^(id<CameraControllerDelegate> delegate) {
-    return cameraControllerMock;
-  };
+  QRScannerCameraController* (^swizzleCameraControllerBlock)(
+      id<QRScannerCameraControllerDelegate>) =
+      ^(id<QRScannerCameraControllerDelegate> delegate) {
+        return cameraControllerMock;
+      };
 
   camera_controller_swizzler_.reset(new ScopedBlockSwizzler(
-      [CameraController class], @selector(cameraControllerWithDelegate:),
+      [QRScannerViewController class], @selector(cameraController),
       swizzleCameraControllerBlock));
 }
 
@@ -435,7 +437,7 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 // |granted| is set to YES.
 - (id)getCameraControllerMockWithAuthorizationStatus:
     (AVAuthorizationStatus)authorizationStatus {
-  id mock = [OCMockObject mockForClass:[CameraController class]];
+  id mock = [OCMockObject mockForClass:[QRScannerCameraController class]];
   [[[mock stub] andReturnValue:OCMOCK_VALUE(authorizationStatus)]
       getAuthorizationStatus];
   return mock;

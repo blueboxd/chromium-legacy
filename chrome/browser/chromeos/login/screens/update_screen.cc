@@ -101,8 +101,7 @@ UpdateScreen::UpdateScreen(UpdateView* view,
       view_(view),
       error_screen_(error_screen),
       exit_callback_(exit_callback),
-      histogram_helper_(new ErrorScreensHistogramHelper("Update")),
-      weak_factory_(this) {
+      histogram_helper_(new ErrorScreensHistogramHelper("Update")) {
   if (view_)
     view_->Bind(this);
 }

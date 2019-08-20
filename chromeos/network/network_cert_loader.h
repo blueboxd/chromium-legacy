@@ -230,7 +230,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkCertLoader
 
   THREAD_CHECKER(thread_checker_);
 
-  base::WeakPtrFactory<NetworkCertLoader> weak_factory_;
+  base::WeakPtrFactory<NetworkCertLoader> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NetworkCertLoader);
 };

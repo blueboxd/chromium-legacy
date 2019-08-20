@@ -72,7 +72,7 @@ class AutomaticUsbPrinterConfigurer : public CupsPrintersManager::Observer {
   base::flat_set<std::string> configured_printers_;
   base::flat_set<std::string> unconfigured_printers_;
 
-  base::WeakPtrFactory<AutomaticUsbPrinterConfigurer> weak_factory_;
+  base::WeakPtrFactory<AutomaticUsbPrinterConfigurer> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AutomaticUsbPrinterConfigurer);
 };

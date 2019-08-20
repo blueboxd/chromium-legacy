@@ -772,8 +772,7 @@ DeviceStatusCollector::DeviceStatusCollector(
       emmc_lifetime_fetcher_(emmc_lifetime_fetcher),
       runtime_probe_(
           chromeos::DBusThreadManager::Get()->GetRuntimeProbeClient()),
-      is_enterprise_reporting_(is_enterprise_reporting),
-      weak_factory_(this) {
+      is_enterprise_reporting_(is_enterprise_reporting) {
   // protected fields of `StatusCollector`.
   max_stored_past_activity_interval_ = kMaxStoredPastActivityInterval;
   max_stored_future_activity_interval_ = kMaxStoredFutureActivityInterval;

@@ -22,8 +22,7 @@ ExternalFileURLRequestJob::ExternalFileURLRequestJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate)
     : net::URLRequestJob(request, network_delegate),
-      resolver_(std::make_unique<ExternalFileResolver>(profile_id)),
-      weak_ptr_factory_(this) {}
+      resolver_(std::make_unique<ExternalFileResolver>(profile_id)) {}
 
 void ExternalFileURLRequestJob::SetExtraRequestHeaders(
     const net::HttpRequestHeaders& headers) {

@@ -58,10 +58,7 @@ std::unique_ptr<base::DictionaryValue> GetFingerprintsInfo(
 }  // namespace
 
 FingerprintHandler::FingerprintHandler(Profile* profile)
-    : profile_(profile),
-      binding_(this),
-      session_observer_(this),
-      weak_ptr_factory_(this) {
+    : profile_(profile), binding_(this), session_observer_(this) {
   content::GetSystemConnector()->BindInterface(device::mojom::kServiceName,
                                                &fp_service_);
   user_id_ = ProfileHelper::Get()->GetUserIdHashFromProfile(profile);

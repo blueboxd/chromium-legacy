@@ -12,7 +12,8 @@
 #include "components/services/leveldb/env_mojo.h"
 #include "components/services/leveldb/leveldb_database_impl.h"
 #include "components/services/leveldb/public/cpp/util.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/filter_policy.h"
@@ -21,15 +22,16 @@
 namespace leveldb {
 
 namespace {
-void CreateBinding(std::unique_ptr<LevelDBDatabaseImpl> db,
-                   leveldb::mojom::LevelDBDatabaseAssociatedRequest request) {
+void CreateReceiver(
+    std::unique_ptr<LevelDBDatabaseImpl> db,
+    mojo::PendingAssociatedReceiver<leveldb::mojom::LevelDBDatabase> receiver) {
   // The database should be able to close the binding if it gets into an
   // error condition that can't be recovered.
   LevelDBDatabaseImpl* impl = db.get();
-  auto binding =
-      mojo::MakeStrongAssociatedBinding(std::move(db), std::move(request));
   impl->SetCloseBindingClosure(base::BindOnce(
-      &mojo::StrongAssociatedBinding<mojom::LevelDBDatabase>::Close, binding));
+      &mojo::StrongAssociatedBinding<mojom::LevelDBDatabase>::Close,
+      mojo::MakeSelfOwnedAssociatedReceiver(std::move(db),
+                                            std::move(receiver))));
 }
 
 }  // namespace
@@ -45,7 +47,7 @@ void LevelDBServiceImpl::Open(
     const std::string& dbname,
     const base::Optional<base::trace_event::MemoryAllocatorDumpGuid>&
         memory_dump_id,
-    leveldb::mojom::LevelDBDatabaseAssociatedRequest database,
+    mojo::PendingAssociatedReceiver<leveldb::mojom::LevelDBDatabase> database,
     OpenCallback callback) {
   leveldb_env::Options options;
   // the default here to 80 instead of leveldb's default 1000 because we don't
@@ -64,7 +66,7 @@ void LevelDBServiceImpl::OpenWithOptions(
     const std::string& dbname,
     const base::Optional<base::trace_event::MemoryAllocatorDumpGuid>&
         memory_dump_id,
-    leveldb::mojom::LevelDBDatabaseAssociatedRequest database,
+    mojo::PendingAssociatedReceiver<leveldb::mojom::LevelDBDatabase> database,
     OpenCallback callback) {
   // Register our directory with the file thread.
   LevelDBMojoProxy::OpaqueDir* dir =
@@ -78,10 +80,10 @@ void LevelDBServiceImpl::OpenWithOptions(
   leveldb::Status s = leveldb_env::OpenDB(open_options, dbname, &db);
 
   if (s.ok()) {
-    CreateBinding(std::make_unique<LevelDBDatabaseImpl>(
-                      std::move(env_mojo), std::move(db), nullptr, open_options,
-                      dbname, memory_dump_id),
-                  std::move(database));
+    CreateReceiver(std::make_unique<LevelDBDatabaseImpl>(
+                       std::move(env_mojo), std::move(db), nullptr,
+                       open_options, dbname, memory_dump_id),
+                   std::move(database));
   }
 
   std::move(callback).Run(LeveldbStatusToError(s));
@@ -91,7 +93,7 @@ void LevelDBServiceImpl::OpenInMemory(
     const base::Optional<base::trace_event::MemoryAllocatorDumpGuid>&
         memory_dump_id,
     const std::string& tracking_name,
-    leveldb::mojom::LevelDBDatabaseAssociatedRequest database,
+    mojo::PendingAssociatedReceiver<leveldb::mojom::LevelDBDatabase> database,
     OpenCallback callback) {
   leveldb_env::Options options;
   options.create_if_missing = true;
@@ -104,10 +106,10 @@ void LevelDBServiceImpl::OpenInMemory(
   leveldb::Status s = leveldb_env::OpenDB(options, "", &db);
 
   if (s.ok()) {
-    CreateBinding(std::make_unique<LevelDBDatabaseImpl>(
-                      std::move(env), std::move(db), nullptr, options,
-                      tracking_name, memory_dump_id),
-                  std::move(database));
+    CreateReceiver(std::make_unique<LevelDBDatabaseImpl>(
+                       std::move(env), std::move(db), nullptr, options,
+                       tracking_name, memory_dump_id),
+                   std::move(database));
   }
 
   std::move(callback).Run(LeveldbStatusToError(s));

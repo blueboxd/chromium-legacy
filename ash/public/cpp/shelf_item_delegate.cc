@@ -10,7 +10,7 @@
 namespace ash {
 
 ShelfItemDelegate::ShelfItemDelegate(const ShelfID& shelf_id)
-    : shelf_id_(shelf_id), weak_ptr_factory_(this) {}
+    : shelf_id_(shelf_id) {}
 
 ShelfItemDelegate::~ShelfItemDelegate() = default;
 

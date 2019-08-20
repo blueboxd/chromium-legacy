@@ -25,9 +25,6 @@ IntersectionObserverController::~IntersectionObserverController() = default;
 
 void IntersectionObserverController::PostTaskToDeliverObservations() {
   DCHECK(GetExecutionContext());
-  // TODO(ojan): These tasks decide whether to throttle a subframe, so they
-  // need to be unthrottled, but we should throttle all the other tasks
-  // (e.g. ones coming from the web page).
   GetExecutionContext()
       ->GetTaskRunner(TaskType::kInternalIntersectionObserver)
       ->PostTask(
@@ -53,18 +50,15 @@ void IntersectionObserverController::DeliverIntersectionObservations(
     pending_intersection_observers_.clear();
     return;
   }
-  // TODO(yukishiino): Remove this CHECK once https://crbug.com/809784 gets
-  // resolved.
-  CHECK(!context->IsContextDestroyed());
+  HeapVector<Member<IntersectionObserver>> intersection_observers_being_invoked;
   for (auto& observer : pending_intersection_observers_) {
     if (observer->GetDeliveryBehavior() == behavior)
-      intersection_observers_being_invoked_.push_back(observer);
+      intersection_observers_being_invoked.push_back(observer);
   }
-  for (auto& observer : intersection_observers_being_invoked_) {
+  for (auto& observer : intersection_observers_being_invoked) {
     pending_intersection_observers_.erase(observer);
     observer->Deliver();
   }
-  intersection_observers_being_invoked_.clear();
 }
 
 bool IntersectionObserverController::ComputeTrackedIntersectionObservations(
@@ -111,7 +105,6 @@ void IntersectionObserverController::RemoveTrackedTarget(Element& target) {
 void IntersectionObserverController::Trace(blink::Visitor* visitor) {
   visitor->Trace(tracked_observation_targets_);
   visitor->Trace(pending_intersection_observers_);
-  visitor->Trace(intersection_observers_being_invoked_);
   ContextClient::Trace(visitor);
 }
 

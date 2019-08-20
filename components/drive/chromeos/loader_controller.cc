@@ -12,8 +12,7 @@
 namespace drive {
 namespace internal {
 
-LoaderController::LoaderController()
-    : lock_count_(0), weak_ptr_factory_(this) {}
+LoaderController::LoaderController() : lock_count_(0) {}
 
 LoaderController::~LoaderController() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

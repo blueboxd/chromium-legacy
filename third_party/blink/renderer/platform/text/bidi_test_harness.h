@@ -164,30 +164,29 @@ static std::basic_string<UChar> ParseTestString(const std::string& line) {
   static std::map<std::string, UChar> char_class_examples;
   if (char_class_examples.empty()) {
     // FIXME: Explicit make_pair is ugly, but required for C++98 compat.
-    char_class_examples.insert(std::make_pair("L", 0x6c));     // 'l' for L
-    char_class_examples.insert(std::make_pair("R", 0x05D0));   // HEBREW ALEF
-    char_class_examples.insert(std::make_pair("EN", 0x33));    // '3' for EN
-    char_class_examples.insert(std::make_pair("ES", 0x2d));    // '-' for ES
-    char_class_examples.insert(std::make_pair("ET", 0x25));    // '%' for ET
-    char_class_examples.insert(std::make_pair("AN", 0x0660));  // arabic 0
-    char_class_examples.insert(std::make_pair("CS", 0x2c));    // ',' for CS
-    char_class_examples.insert(std::make_pair("B", 0x0A));     // <control-000A>
-    char_class_examples.insert(std::make_pair("S", 0x09));     // <control-0009>
-    char_class_examples.insert(std::make_pair("WS", 0x20));    // ' ' for WS
-    char_class_examples.insert(std::make_pair("ON", 0x3d));    // '=' for ON
-    char_class_examples.insert(
-        std::make_pair("NSM", 0x05BF));  // HEBREW POINT RAFE
-    char_class_examples.insert(std::make_pair("AL", 0x0608));  // ARABIC RAY
-    char_class_examples.insert(std::make_pair("BN", 0x00AD));  // SOFT HYPHEN
-    char_class_examples.insert(std::make_pair("LRE", 0x202A));
-    char_class_examples.insert(std::make_pair("RLE", 0x202B));
-    char_class_examples.insert(std::make_pair("PDF", 0x202C));
-    char_class_examples.insert(std::make_pair("LRO", 0x202D));
-    char_class_examples.insert(std::make_pair("RLO", 0x202E));
-    char_class_examples.insert(std::make_pair("LRI", 0x2066));
-    char_class_examples.insert(std::make_pair("RLI", 0x2067));
-    char_class_examples.insert(std::make_pair("FSI", 0x2068));
-    char_class_examples.insert(std::make_pair("PDI", 0x2069));
+    char_class_examples.emplace("L", 0x6c);      // 'l' for L
+    char_class_examples.emplace("R", 0x05D0);    // HEBREW ALEF
+    char_class_examples.emplace("EN", 0x33);     // '3' for EN
+    char_class_examples.emplace("ES", 0x2d);     // '-' for ES
+    char_class_examples.emplace("ET", 0x25);     // '%' for ET
+    char_class_examples.emplace("AN", 0x0660);   // arabic 0
+    char_class_examples.emplace("CS", 0x2c);     // ',' for CS
+    char_class_examples.emplace("B", 0x0A);      // <control-000A>
+    char_class_examples.emplace("S", 0x09);      // <control-0009>
+    char_class_examples.emplace("WS", 0x20);     // ' ' for WS
+    char_class_examples.emplace("ON", 0x3d);     // '=' for ON
+    char_class_examples.emplace("NSM", 0x05BF);  // HEBREW POINT RAFE
+    char_class_examples.emplace("AL", 0x0608);   // ARABIC RAY
+    char_class_examples.emplace("BN", 0x00AD);   // SOFT HYPHEN
+    char_class_examples.emplace("LRE", 0x202A);
+    char_class_examples.emplace("RLE", 0x202B);
+    char_class_examples.emplace("PDF", 0x202C);
+    char_class_examples.emplace("LRO", 0x202D);
+    char_class_examples.emplace("RLO", 0x202E);
+    char_class_examples.emplace("LRI", 0x2066);
+    char_class_examples.emplace("RLI", 0x2067);
+    char_class_examples.emplace("FSI", 0x2068);
+    char_class_examples.emplace("PDI", 0x2069);
   }
 
   Vector<std::string> char_classes = ParseStringList(line);

@@ -40,7 +40,7 @@ void ImageLoaded(
 
 }  // namespace
 
-ImageSource::ImageSource() : weak_factory_(this) {
+ImageSource::ImageSource() {
   task_runner_ = base::CreateSequencedTaskRunner(
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});

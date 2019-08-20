@@ -99,7 +99,7 @@ class DrmThreadMessageProxy : public IPC::MessageFilter,
 
   IPC::Sender* sender_ = nullptr;
 
-  base::WeakPtrFactory<DrmThreadMessageProxy> weak_ptr_factory_;
+  base::WeakPtrFactory<DrmThreadMessageProxy> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DrmThreadMessageProxy);
 };

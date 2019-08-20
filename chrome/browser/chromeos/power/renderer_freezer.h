@@ -97,7 +97,7 @@ class RendererFreezer : public PowerManagerClient::RenderProcessManagerDelegate,
   // Manages notification registrations.
   content::NotificationRegistrar registrar_;
 
-  base::WeakPtrFactory<RendererFreezer> weak_factory_;
+  base::WeakPtrFactory<RendererFreezer> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RendererFreezer);
 };

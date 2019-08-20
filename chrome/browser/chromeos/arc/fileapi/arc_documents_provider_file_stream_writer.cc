@@ -61,10 +61,7 @@ void ResolveToContentUrlOnUIThread(
 ArcDocumentsProviderFileStreamWriter::ArcDocumentsProviderFileStreamWriter(
     const storage::FileSystemURL& url,
     int64_t offset)
-    : offset_(offset),
-      content_url_resolved_(false),
-      arc_url_(url),
-      weak_ptr_factory_(this) {
+    : offset_(offset), content_url_resolved_(false), arc_url_(url) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 

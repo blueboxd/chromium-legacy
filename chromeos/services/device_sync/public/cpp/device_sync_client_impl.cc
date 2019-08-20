@@ -53,8 +53,7 @@ DeviceSyncClientImpl::DeviceSyncClientImpl(
     scoped_refptr<base::TaskRunner> task_runner)
     : binding_(this),
       expiring_device_cache_(
-          std::make_unique<multidevice::ExpiringRemoteDeviceCache>()),
-      weak_ptr_factory_(this) {
+          std::make_unique<multidevice::ExpiringRemoteDeviceCache>()) {
   service->BindDeviceSync(mojo::MakeRequest(&device_sync_ptr_));
   device_sync_ptr_->AddObserver(GenerateInterfacePtr(), base::OnceClosure());
 

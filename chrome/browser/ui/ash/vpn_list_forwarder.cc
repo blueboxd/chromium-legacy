@@ -67,7 +67,7 @@ ash::mojom::VpnListPtr ConnectToVpnList() {
 
 }  // namespace
 
-VpnListForwarder::VpnListForwarder() : weak_factory_(this) {
+VpnListForwarder::VpnListForwarder() {
   if (user_manager::UserManager::Get()->GetPrimaryUser()) {
     // If a user is logged in, start observing the primary user's extension
     // registry immediately.

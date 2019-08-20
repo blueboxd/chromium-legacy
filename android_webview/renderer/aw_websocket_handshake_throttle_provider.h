@@ -12,6 +12,10 @@
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "content/public/renderer/websocket_handshake_throttle_provider.h"
 
+namespace service_manager {
+class Connector;
+}
+
 namespace android_webview {
 
 // This must be constructed on the render thread, and then used and destructed
@@ -19,7 +23,7 @@ namespace android_webview {
 class AwWebSocketHandshakeThrottleProvider final
     : public content::WebSocketHandshakeThrottleProvider {
  public:
-  AwWebSocketHandshakeThrottleProvider();
+  AwWebSocketHandshakeThrottleProvider(service_manager::Connector* connector);
   ~AwWebSocketHandshakeThrottleProvider() override;
 
   // Implements content::WebSocketHandshakeThrottleProvider.

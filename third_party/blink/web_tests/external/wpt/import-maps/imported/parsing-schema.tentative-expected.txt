@@ -4,7 +4,7 @@ FAIL Mismatching the top-level schema / should throw for top-level non-objects a
 FAIL Mismatching the top-level schema / should throw if imports is a non-object assert_throws: function "() => parseFromString(input, baseURL)" did not throw
 FAIL Mismatching the top-level schema / should throw if scopes is a non-object assert_throws: function "() => parseFromString(input, baseURL)" did not throw
 FAIL Mismatching the top-level schema / should ignore unspecified top-level entries assert_object_equals: expected property "0" missing
-FAIL Mismatching the specifier map schema / should ignore entries where the address is not a string, array, or null assert_equals: expected "{\"bar\":[\"https://example.com/\"]}" but got "{\"bar\":[\"https://example.com/\"],\"foo\":[]}"
+PASS Mismatching the specifier map schema / should ignore entries where the address is not a string, array, or null
 PASS Mismatching the specifier map schema / should ignore entries where the specifier key is an empty string
 PASS Mismatching the specifier map schema / should ignore members of an address array that are not strings
 FAIL Mismatching the specifier map schema / should throw if a scope's value is not an object assert_throws: function "() => parseFromString(input, baseURL)" did not throw

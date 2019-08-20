@@ -85,7 +85,7 @@ class ComponentActiveDirectoryPolicyRetriever {
   bool start_was_called_ = false;
 
   base::WeakPtrFactory<ComponentActiveDirectoryPolicyRetriever>
-      weak_ptr_factory_;
+      weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(ComponentActiveDirectoryPolicyRetriever);
 };
 

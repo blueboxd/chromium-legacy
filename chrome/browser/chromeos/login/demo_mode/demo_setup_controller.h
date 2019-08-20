@@ -294,7 +294,7 @@ class DemoSetupController
   // The Demo Mode Resources CrOS Component downloaded for online Demo Mode.
   std::unique_ptr<DemoResources> demo_resources_;
 
-  base::WeakPtrFactory<DemoSetupController> weak_ptr_factory_;
+  base::WeakPtrFactory<DemoSetupController> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DemoSetupController);
 };

@@ -109,7 +109,7 @@ class TPMAutoUpdateModePolicyHandler {
 
   ShowNotificationCallback show_notification_callback_;
 
-  base::WeakPtrFactory<TPMAutoUpdateModePolicyHandler> weak_factory_;
+  base::WeakPtrFactory<TPMAutoUpdateModePolicyHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TPMAutoUpdateModePolicyHandler);
 };

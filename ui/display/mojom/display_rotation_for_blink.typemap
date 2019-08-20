@@ -9,4 +9,4 @@ public_deps = [
   "//ui/display",
   "//ui/display/mojom:mojom",
 ]
-type_mappings = [ "display.mojom.Rotation=display::Display::Rotation" ]
+type_mappings = [ "display.mojom.Rotation=::display::Display::Rotation" ]

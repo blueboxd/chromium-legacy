@@ -136,7 +136,7 @@ class BluetoothLowEnergyCharacteristicsFinder
   base::flat_set<std::string> service_ids_pending_eid_read_;
 
   base::WeakPtrFactory<BluetoothLowEnergyCharacteristicsFinder>
-      weak_ptr_factory_;
+      weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothLowEnergyCharacteristicsFinder);
 };

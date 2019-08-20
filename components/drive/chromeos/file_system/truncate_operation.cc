@@ -67,9 +67,7 @@ TruncateOperation::TruncateOperation(
                                                 scheduler,
                                                 metadata,
                                                 cache,
-                                                temporary_file_directory)),
-      weak_ptr_factory_(this) {
-}
+                                                temporary_file_directory)) {}
 
 TruncateOperation::~TruncateOperation() = default;
 

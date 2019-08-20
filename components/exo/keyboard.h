@@ -129,7 +129,7 @@ class Keyboard : public ui::EventHandler,
 
   base::ObserverList<KeyboardObserver>::Unchecked observer_list_;
 
-  base::WeakPtrFactory<Keyboard> weak_ptr_factory_;
+  base::WeakPtrFactory<Keyboard> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Keyboard);
 };

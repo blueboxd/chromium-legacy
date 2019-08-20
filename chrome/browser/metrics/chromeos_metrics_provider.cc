@@ -133,8 +133,7 @@ ChromeOSMetricsProvider::ChromeOSMetricsProvider(
     metrics::MetricsLogUploader::MetricServiceType service_type)
     : cached_profile_(std::make_unique<metrics::CachedMetricsProfile>()),
       registered_user_count_at_log_initialization_(false),
-      user_count_at_log_initialization_(0),
-      weak_ptr_factory_(this) {
+      user_count_at_log_initialization_(0) {
   if (service_type == metrics::MetricsLogUploader::UMA)
     profile_provider_ = std::make_unique<metrics::ProfileProvider>();
 }

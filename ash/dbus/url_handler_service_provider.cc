@@ -34,8 +34,7 @@ void OnExported(const std::string& interface_name,
 }  // namespace
 
 UrlHandlerServiceProvider::UrlHandlerServiceProvider()
-    : allowed_url_schemes_(std::cbegin(kUrlSchemes), std::cend(kUrlSchemes)),
-      weak_ptr_factory_(this) {}
+    : allowed_url_schemes_(std::cbegin(kUrlSchemes), std::cend(kUrlSchemes)) {}
 
 UrlHandlerServiceProvider::~UrlHandlerServiceProvider() = default;
 

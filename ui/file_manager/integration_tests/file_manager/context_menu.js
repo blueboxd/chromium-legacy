@@ -31,6 +31,36 @@ async function maybeCopyToClipboard(appId, commandId, file = 'hello.txt') {
 }
 
 /**
+ * Selects a file in the file list.
+ *
+ * @param {string} appId ID of the app window.
+ * @param {string} path Path to the file to be selected.
+ */
+async function selectFile(appId, path) {
+  // Select the file |path|.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil('selectFile', appId, [path]));
+
+  // Wait for the file to be selected.
+  await remoteCall.waitForElement(appId, '.table-row[selected]');
+}
+
+/**
+ * Right clicks the currently selected file in the file list and waits for its
+ * context menu to appear.
+ *
+ * @param {string} appId ID of the app window.
+ */
+async function rightClickSelectedFile(appId) {
+  // Right-click the selected file.
+  chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
+      'fakeMouseRightClick', appId, ['.table-row[selected]']));
+
+  // Wait for the file context menu to appear.
+  await remoteCall.waitForElement(appId, '#file-context-menu:not([hidden])');
+}
+
+/**
  * Tests that the specified menu item is in |expectedEnabledState| when the
  * entry at |path| is selected.
  *
@@ -251,6 +281,78 @@ testcase.checkPasteIntoFolderEnabledForReadWriteFolder = () => {
  */
 testcase.checkPasteIntoFolderDisabledForReadOnlyFolder = () => {
   return checkContextMenu('paste-into-folder', 'Read-Only Folder', false);
+};
+
+/**
+ * Tests that the "Install with Linux" file context menu item is hidden for a
+ * Debian file if Crostini root access is disabled.
+ */
+testcase.checkInstallWithLinuxDisabledForDebianFile = async () => {
+  const optionHidden = '#file-context-menu:not([hidden]) ' +
+      '[command="#default-task"][hidden]';
+
+  // Open FilesApp on Downloads with deb file.
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, [ENTRIES.debPackage], []);
+
+  // Check: the default Crostini root access allowed value should be true.
+  const caller = getCaller();
+  await repeatUntil(async () => {
+    const allowed = await remoteCall.callRemoteTestUtil(
+        'getCrostiniRootAccessAllowed', appId, ['termina']);
+    if (!allowed) {
+      return pending(caller, 'Waiting for Crostini root-access-allowed true');
+    }
+  });
+
+  // Disallow root access.
+  await sendTestMessage({name: 'setCrostiniRootAccessAllowed', enabled: false});
+
+  // Wait for the preference to propagate to the FilesApp background page.
+  await repeatUntil(async () => {
+    const allowed = await remoteCall.callRemoteTestUtil(
+        'getCrostiniRootAccessAllowed', appId, ['termina']);
+    if (allowed) {
+      return pending(caller, 'Waiting for Crostini root-access-allowed false');
+    }
+  });
+
+  // Select and right click the deb file to show its context menu.
+  await selectFile(appId, 'package.deb');
+  await rightClickSelectedFile(appId);
+
+  // Check: the "Install with Linux" context menu item should be hidden.
+  await remoteCall.waitForElement(appId, optionHidden);
+};
+
+/**
+ * Tests that the "Install with Linux" file context menu item is shown for a
+ * Debian file if Crostini root access is enabled.
+ */
+testcase.checkInstallWithLinuxEnabledForDebianFile = async () => {
+  const optionShown = '#file-context-menu:not([hidden]) ' +
+      '[command="#default-task"]:not([hidden])';
+
+  // Open FilesApp on Downloads with deb file.
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, [ENTRIES.debPackage], []);
+
+  // Check: the default Crostini root access allowed value should be true.
+  const caller = getCaller();
+  await repeatUntil(async () => {
+    const allowed = await remoteCall.callRemoteTestUtil(
+        'getCrostiniRootAccessAllowed', appId, ['termina']);
+    if (!allowed) {
+      return pending(caller, 'Waiting for Crostini root-access-allowed true');
+    }
+  });
+
+  // Select and right click the deb file to show its context menu.
+  await selectFile(appId, 'package.deb');
+  await rightClickSelectedFile(appId);
+
+  // Check: the "Install with Linux" context menu item should be shown.
+  await remoteCall.waitForElement(appId, optionShown);
 };
 
 /**

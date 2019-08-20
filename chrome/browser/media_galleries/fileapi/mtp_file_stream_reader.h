@@ -68,7 +68,7 @@ class MTPFileStreamReader : public storage::FileStreamReader {
 
   bool media_header_validated_;
 
-  base::WeakPtrFactory<MTPFileStreamReader> weak_factory_;
+  base::WeakPtrFactory<MTPFileStreamReader> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MTPFileStreamReader);
 };

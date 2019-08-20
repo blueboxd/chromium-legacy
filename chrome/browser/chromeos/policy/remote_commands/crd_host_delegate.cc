@@ -134,8 +134,7 @@ net::NetworkTrafficAnnotationTag CreateIceConfigRequestAnnotation() {
 }  // namespace
 
 CRDHostDelegate::CRDHostDelegate()
-    : OAuth2AccessTokenManager::Consumer("crd_host_delegate"),
-      weak_factory_(this) {}
+    : OAuth2AccessTokenManager::Consumer("crd_host_delegate") {}
 
 CRDHostDelegate::~CRDHostDelegate() {
 }

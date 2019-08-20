@@ -35,9 +35,11 @@ class WebAppUiManager {
   virtual void NotifyOnAllAppWindowsClosed(const AppId& app_id,
                                            base::OnceClosure callback) = 0;
 
-  // Migrates an app's OS attributes (e.g pin position, app list
-  // folder/position, shortcuts).
-  virtual void MigrateOSAttributes(const AppId& from, const AppId& to) = 0;
+  // Uninstalls the the apps in |from_apps| and migrates an |to_app|'s OS
+  // attributes (e.g pin position, app list folder/position, shortcuts) to the
+  // first |from_app| found.
+  virtual void UninstallAndReplace(const std::vector<AppId>& from_apps,
+                                   const AppId& to_app) = 0;
 
   virtual bool CanAddAppToQuickLaunchBar() const = 0;
   virtual void AddAppToQuickLaunchBar(const AppId& app_id) = 0;

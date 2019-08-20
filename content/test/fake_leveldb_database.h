@@ -7,7 +7,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "components/services/leveldb/public/mojom/leveldb.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 
 namespace content {
 
@@ -22,7 +23,7 @@ class FakeLevelDBDatabase : public leveldb::mojom::LevelDBDatabase {
       std::map<std::vector<uint8_t>, std::vector<uint8_t>>* mock_data);
   ~FakeLevelDBDatabase() override;
 
-  void Bind(leveldb::mojom::LevelDBDatabaseRequest request);
+  void Bind(mojo::PendingReceiver<leveldb::mojom::LevelDBDatabase> receiver);
 
   // LevelDBDatabase:
   void Put(const std::vector<uint8_t>& key,
@@ -72,7 +73,7 @@ class FakeLevelDBDatabase : public leveldb::mojom::LevelDBDatabase {
   CopyPrefixedHelper(const std::vector<uint8_t>& source_key_prefix,
                      const std::vector<uint8_t>& destination_key_prefix);
 
-  mojo::BindingSet<leveldb::mojom::LevelDBDatabase> bindings_;
+  mojo::ReceiverSet<leveldb::mojom::LevelDBDatabase> receivers_;
 
   std::map<std::vector<uint8_t>, std::vector<uint8_t>>& mock_data_;
 };

@@ -145,8 +145,8 @@ void DedicatedWorkerHostFactoryClient::OnScriptLoadStarted(
     service_worker_provider_context_ =
         base::MakeRefCounted<ServiceWorkerProviderContext>(
             blink::mojom::ServiceWorkerProviderType::kForDedicatedWorker,
-            std::move(service_worker_provider_info->client_request),
-            std::move(service_worker_provider_info->host_ptr_info),
+            std::move(service_worker_provider_info->client_receiver),
+            std::move(service_worker_provider_info->host_remote),
             std::move(controller_info), subresource_loader_factory_bundle_);
   }
 

@@ -103,7 +103,7 @@ class FakeDriveFs : public drivefs::mojom::DriveFs,
   mojo::Binding<drivefs::mojom::DriveFsBootstrap> bootstrap_binding_;
   drivefs::mojom::DriveFsDelegateRequest pending_delegate_request_;
 
-  base::WeakPtrFactory<FakeDriveFs> weak_factory_;
+  base::WeakPtrFactory<FakeDriveFs> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeDriveFs);
 };

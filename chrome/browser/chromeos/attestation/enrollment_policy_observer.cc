@@ -69,8 +69,7 @@ EnrollmentPolicyObserver::EnrollmentPolicyObserver(
       cryptohome_client_(nullptr),
       num_retries_(0),
       retry_limit_(kRetryLimit),
-      retry_delay_(kRetryDelay),
-      weak_factory_(this) {
+      retry_delay_(kRetryDelay) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   device_settings_service_->AddObserver(this);
   Start();
@@ -84,8 +83,7 @@ EnrollmentPolicyObserver::EnrollmentPolicyObserver(
       policy_client_(policy_client),
       cryptohome_client_(cryptohome_client),
       num_retries_(0),
-      retry_delay_(kRetryDelay),
-      weak_factory_(this) {
+      retry_delay_(kRetryDelay) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   device_settings_service_->AddObserver(this);
   Start();

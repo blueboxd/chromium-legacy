@@ -10,4 +10,4 @@ public_deps = [
 ]
 
 type_mappings =
-    [ "chrome.mojom.BrowserControlsState=content::BrowserControlsState" ]
+    [ "chrome.mojom.BrowserControlsState=::content::BrowserControlsState" ]

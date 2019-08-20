@@ -76,7 +76,7 @@ ArcScreenCaptureBridge::GrantedCaptureParams::~GrantedCaptureParams() {}
 
 ArcScreenCaptureBridge::ArcScreenCaptureBridge(content::BrowserContext* context,
                                                ArcBridgeService* bridge_service)
-    : arc_bridge_service_(bridge_service), weak_factory_(this) {
+    : arc_bridge_service_(bridge_service) {
   arc_bridge_service_->screen_capture()->SetHost(this);
 }
 

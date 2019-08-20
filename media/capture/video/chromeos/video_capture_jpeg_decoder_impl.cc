@@ -25,8 +25,7 @@ VideoCaptureJpegDecoderImpl::VideoCaptureJpegDecoderImpl(
       next_bitstream_buffer_id_(0),
       in_buffer_id_(
           chromeos_camera::MjpegDecodeAccelerator::kInvalidBitstreamBufferId),
-      decoder_status_(INIT_PENDING),
-      weak_ptr_factory_(this) {}
+      decoder_status_(INIT_PENDING) {}
 
 VideoCaptureJpegDecoderImpl::~VideoCaptureJpegDecoderImpl() {
   DCHECK(decoder_task_runner_->RunsTasksInCurrentSequence());

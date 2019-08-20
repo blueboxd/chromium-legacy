@@ -76,10 +76,7 @@ MultiDeviceNotificationPresenter::GetMetricValueForNotification(
 MultiDeviceNotificationPresenter::MultiDeviceNotificationPresenter(
     message_center::MessageCenter* message_center,
     service_manager::Connector* connector)
-    : message_center_(message_center),
-      connector_(connector),
-      binding_(this),
-      weak_ptr_factory_(this) {
+    : message_center_(message_center), connector_(connector), binding_(this) {
   DCHECK(message_center_);
   DCHECK(connector_);
 

@@ -38,8 +38,7 @@ ConnectionAttemptImpl::Factory::BuildInstance() {
   return base::WrapUnique(new ConnectionAttemptImpl());
 }
 
-ConnectionAttemptImpl::ConnectionAttemptImpl()
-    : binding_(this), weak_ptr_factory_(this) {}
+ConnectionAttemptImpl::ConnectionAttemptImpl() : binding_(this) {}
 
 ConnectionAttemptImpl::~ConnectionAttemptImpl() = default;
 

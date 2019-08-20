@@ -18,6 +18,7 @@
 
 namespace {
 
+#if !defined(OS_CHROMEOS)
 syncer::ModelTypeSet AllowedTypesInStandaloneTransportMode() {
   // Only some special whitelisted types (and control types) are allowed in
   // standalone transport mode.
@@ -26,12 +27,11 @@ syncer::ModelTypeSet AllowedTypesInStandaloneTransportMode() {
   allowed_types.PutAll(syncer::ControlTypes());
   return allowed_types;
 }
+#endif
 
 class SingleClientSecondaryAccountSyncTest : public SyncTest {
  public:
-  SingleClientSecondaryAccountSyncTest() : SyncTest(SINGLE_CLIENT) {
-    features_.InitAndEnableFeature(switches::kSyncSupportSecondaryAccount);
-  }
+  SingleClientSecondaryAccountSyncTest() : SyncTest(SINGLE_CLIENT) {}
   ~SingleClientSecondaryAccountSyncTest() override {}
 
   void SetUpInProcessBrowserTestFixture() override {
@@ -57,31 +57,9 @@ class SingleClientSecondaryAccountSyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(SingleClientSecondaryAccountSyncTest);
 };
 
-class SingleClientSecondaryAccountWithoutSecondaryAccountSupportSyncTest
-    : public SingleClientSecondaryAccountSyncTest {
- public:
-  SingleClientSecondaryAccountWithoutSecondaryAccountSupportSyncTest() {
-    features_.InitAndDisableFeature(switches::kSyncSupportSecondaryAccount);
-  }
-
- private:
-  base::test::ScopedFeatureList features_;
-};
-
-IN_PROC_BROWSER_TEST_F(
-    SingleClientSecondaryAccountWithoutSecondaryAccountSupportSyncTest,
-    DoesNotStartSyncWithSecondaryAccountSupportDisabled) {
-  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
-
-  // Since secondary account support is disabled, just signing in (without
-  // making the account Chrome's primary one) should *not* start the Sync
-  // machinery.
-  secondary_account_helper::SignInSecondaryAccount(
-      profile(), &test_url_loader_factory_, "user@email.com");
-  EXPECT_EQ(syncer::SyncService::TransportState::DISABLED,
-            GetSyncService(0)->GetTransportState());
-}
-
+// The unconsented primary account (aka secondary account) isn't supported on
+// ChromeOS, see IdentityManager::ComputeUnconsentedPrimaryAccountInfo().
+#if !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(SingleClientSecondaryAccountSyncTest,
                        StartsSyncTransportOnSignin) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
@@ -118,6 +96,20 @@ IN_PROC_BROWSER_TEST_F(SingleClientSecondaryAccountSyncTest,
                          AllowedTypesInStandaloneTransportMode());
   EXPECT_TRUE(bad_types.Empty()) << syncer::ModelTypeSetToString(bad_types);
 }
+#else
+IN_PROC_BROWSER_TEST_F(SingleClientSecondaryAccountSyncTest,
+                       DoesNotStartSyncTransportOnSignin) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  // Signing in (without making the account Chrome's primary one or explicitly
+  // setting up Sync) should do nothing here, since we're on a platform where
+  // the unconsented primary account (aka secondary account) is not supported.
+  secondary_account_helper::SignInSecondaryAccount(
+      profile(), &test_url_loader_factory_, "user@email.com");
+  EXPECT_EQ(syncer::SyncService::TransportState::DISABLED,
+            GetSyncService(0)->GetTransportState());
+}
+#endif  // !defined(OS_CHROMEOS)
 
 // ChromeOS doesn't support changes to the primary account after startup, so
 // this test doesn't apply.

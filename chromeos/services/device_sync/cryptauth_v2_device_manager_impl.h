@@ -97,7 +97,7 @@ class CryptAuthV2DeviceManagerImpl
   // For sending a weak pointer to the scheduler, whose lifetime exceeds that of
   // CryptAuthV2DeviceManagerImpl.
   base::WeakPtrFactory<CryptAuthV2DeviceManagerImpl>
-      scheduler_weak_ptr_factory_;
+      scheduler_weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CryptAuthV2DeviceManagerImpl);
 };

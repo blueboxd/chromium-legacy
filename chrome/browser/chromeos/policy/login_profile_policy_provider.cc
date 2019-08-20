@@ -95,9 +95,7 @@ void ApplyDevicePolicyAsMandatoryPolicy(const std::string& device_policy,
 LoginProfilePolicyProvider::LoginProfilePolicyProvider(
     PolicyService* device_policy_service)
     : device_policy_service_(device_policy_service),
-      waiting_for_device_policy_refresh_(false),
-      weak_factory_(this) {
-}
+      waiting_for_device_policy_refresh_(false) {}
 
 LoginProfilePolicyProvider::~LoginProfilePolicyProvider() {
 }

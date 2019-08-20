@@ -57,8 +57,7 @@ ProxyConfigServiceImpl::ProxyConfigServiceImpl(
           profile_prefs ? profile_prefs : local_state_prefs,
           io_task_runner),
       profile_prefs_(profile_prefs),
-      local_state_prefs_(local_state_prefs),
-      pointer_factory_(this) {
+      local_state_prefs_(local_state_prefs) {
   const base::Closure proxy_change_callback = base::Bind(
       &ProxyConfigServiceImpl::OnProxyPrefChanged, base::Unretained(this));
 

@@ -41,7 +41,7 @@ class DeviceCommandRefreshMachineCertificateJob : public RemoteCommandJob {
                              bool success);
 
   base::WeakPtrFactory<DeviceCommandRefreshMachineCertificateJob>
-      weak_ptr_factory_;
+      weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DeviceCommandRefreshMachineCertificateJob);
 };

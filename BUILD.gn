@@ -806,6 +806,7 @@ if ((is_linux || is_win) && enable_remoting && !use_ozone) {
     deps = [
       "//chrome:chrome",
       "//remoting/host:host",
+      "//tools/traffic_annotation/summary:annotations_xml",
     ]
   }
 }

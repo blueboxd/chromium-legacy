@@ -170,7 +170,7 @@ void FileFlusher::Job::FinishOnUIThread() {
 ////////////////////////////////////////////////////////////////////////////////
 // FileFlusher
 
-FileFlusher::FileFlusher() : weak_factory_(this) {}
+FileFlusher::FileFlusher() {}
 
 FileFlusher::~FileFlusher() {
   for (auto* job : jobs_)

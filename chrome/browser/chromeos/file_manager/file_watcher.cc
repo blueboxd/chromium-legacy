@@ -39,8 +39,7 @@ FileWatcher::FileWatcher(const base::FilePath& virtual_path)
           base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
                                            base::TaskPriority::USER_VISIBLE})),
       local_file_watcher_(nullptr),
-      virtual_path_(virtual_path),
-      weak_ptr_factory_(this) {
+      virtual_path_(virtual_path) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 

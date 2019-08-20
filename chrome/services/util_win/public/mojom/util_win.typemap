@@ -29,9 +29,9 @@ deps = [
 ]
 
 type_mappings = [
-  "chrome.mojom.AntiVirusProduct=metrics::SystemProfileProto_AntiVirusProduct",
-  "chrome.mojom.CertificateType=CertificateInfo::Type",
-  "chrome.mojom.FileFilterSpec=ui::FileFilterSpec",
-  "chrome.mojom.InspectionResult=ModuleInspectionResult[move_only]",
-  "chrome.mojom.SelectFileDialogType=ui::SelectFileDialog::Type",
+  "chrome.mojom.AntiVirusProduct=::metrics::SystemProfileProto_AntiVirusProduct",
+  "chrome.mojom.CertificateType=::CertificateInfo::Type",
+  "chrome.mojom.FileFilterSpec=::ui::FileFilterSpec",
+  "chrome.mojom.InspectionResult=::ModuleInspectionResult[move_only]",
+  "chrome.mojom.SelectFileDialogType=::ui::SelectFileDialog::Type",
 ]

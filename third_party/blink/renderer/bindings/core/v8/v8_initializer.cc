@@ -609,7 +609,6 @@ static void InitializeV8Common(v8::Isolate* isolate) {
   isolate->AddGCEpilogueCallback(V8GCController::GcEpilogue);
   ThreadState::Current()->AttachToIsolate(
       isolate, V8GCController::TraceDOMWrappers,
-      V8GCController::TraceDOMWrapperSlots,
       EmbedderGraphBuilder::BuildEmbedderGraphCallback);
 
   isolate->SetMicrotasksPolicy(v8::MicrotasksPolicy::kScoped);

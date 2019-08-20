@@ -188,8 +188,7 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
       client_id_(client_id),
       sub_organization_(sub_organization),
       completion_callback_(completion_callback),
-      enrollment_step_(STEP_PENDING),
-      weak_ptr_factory_(this) {
+      enrollment_step_(STEP_PENDING) {
   dm_auth_ = std::move(dm_auth);
   CHECK(!client_->is_registered());
   CHECK_EQ(DM_STATUS_SUCCESS, client_->status());

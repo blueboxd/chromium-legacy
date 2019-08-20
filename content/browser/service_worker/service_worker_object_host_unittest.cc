@@ -221,7 +221,7 @@ TEST_F(ServiceWorkerObjectHostTest, OnVersionStateChanged) {
           helper_->context()->AsWeakPtr(), &remote_endpoint);
   provider_host->UpdateUrls(scope, scope);
   blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info =
-      GetRegistrationFromRemote(remote_endpoint.host_ptr()->get(), scope);
+      GetRegistrationFromRemote(remote_endpoint.host_remote()->get(), scope);
   // |version_| is the installing version of |registration_| now.
   EXPECT_TRUE(registration_info->installing);
   EXPECT_EQ(version_->version_id(), registration_info->installing->version_id);

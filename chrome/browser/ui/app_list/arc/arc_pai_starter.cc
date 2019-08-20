@@ -32,8 +32,7 @@ constexpr base::TimeDelta kMaxRetryTime = base::TimeDelta::FromMinutes(30);
 ArcPaiStarter::ArcPaiStarter(Profile* profile)
     : profile_(profile),
       pref_service_(profile->GetPrefs()),
-      retry_interval_(kMinRetryTime),
-      weak_ptr_factory_(this) {
+      retry_interval_(kMinRetryTime) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
   // Prefs may not available in some unit tests.
   if (!prefs)

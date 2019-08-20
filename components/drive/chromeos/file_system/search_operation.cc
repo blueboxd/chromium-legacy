@@ -88,9 +88,7 @@ SearchOperation::SearchOperation(
     : blocking_task_runner_(blocking_task_runner),
       scheduler_(scheduler),
       metadata_(metadata),
-      loader_controller_(loader_controller),
-      weak_ptr_factory_(this) {
-}
+      loader_controller_(loader_controller) {}
 
 SearchOperation::~SearchOperation() = default;
 

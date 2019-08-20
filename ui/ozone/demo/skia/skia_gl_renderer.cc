@@ -49,8 +49,7 @@ SkiaGlRenderer::SkiaGlRenderer(
       window_surface_(std::move(window_surface)),
       gl_surface_(surface),
       use_ddl_(base::CommandLine::ForCurrentProcess()->HasSwitch(kUseDDL)),
-      condition_variable_(&lock_),
-      weak_ptr_factory_(this) {}
+      condition_variable_(&lock_) {}
 
 SkiaGlRenderer::~SkiaGlRenderer() {
   if (use_ddl_)

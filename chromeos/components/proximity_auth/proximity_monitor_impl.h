@@ -106,10 +106,10 @@ class ProximityMonitorImpl : public ProximityMonitor {
   // Used to vend weak pointers for polling. Using a separate factory for these
   // weak pointers allows the weak pointers to be invalidated when polling
   // stops, which effectively cancels the scheduled tasks.
-  base::WeakPtrFactory<ProximityMonitorImpl> polling_weak_ptr_factory_;
+  base::WeakPtrFactory<ProximityMonitorImpl> polling_weak_ptr_factory_{this};
 
   // Used to vend all other weak pointers.
-  base::WeakPtrFactory<ProximityMonitorImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<ProximityMonitorImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ProximityMonitorImpl);
 };

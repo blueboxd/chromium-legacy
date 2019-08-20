@@ -43,8 +43,7 @@ AssistantController::AssistantController()
       assistant_setup_controller_(this),
       assistant_suggestions_controller_(this),
       assistant_ui_controller_(this),
-      view_delegate_(this),
-      weak_factory_(this) {
+      view_delegate_(this) {
   VoiceInteractionController::Get()->AddLocalObserver(this);
   chromeos::CrasAudioHandler::Get()->AddAudioObserver(this);
   AddObserver(this);

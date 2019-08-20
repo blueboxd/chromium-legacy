@@ -73,7 +73,7 @@ class ArcCustomTabView : public ArcCustomTab,
 
   bool reorder_scheduled_ = false;
 
-  base::WeakPtrFactory<ArcCustomTabView> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcCustomTabView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcCustomTabView);
 };

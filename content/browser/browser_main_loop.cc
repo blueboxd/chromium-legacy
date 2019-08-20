@@ -1400,7 +1400,11 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 #if defined(OS_WIN)
   if (!parsed_command_line_.HasSwitch(
           switches::kDisableGpuProcessForDX12VulkanInfoCollection)) {
-    GpuDataManagerImpl::GetInstance()->RequestGpuSupportedRuntimeVersion();
+    // The default is to delay the secondary GPU process for 15 seconds.
+    bool delayed = !parsed_command_line_.HasSwitch(
+        switches::kNoDelayForDX12VulkanInfoCollection);
+    GpuDataManagerImpl::GetInstance()->RequestGpuSupportedRuntimeVersion(
+        delayed);
   }
 
   if (base::FeatureList::IsEnabled(features::kFontSrcLocalMatching)) {

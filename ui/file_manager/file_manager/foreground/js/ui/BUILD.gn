@@ -65,6 +65,7 @@ js_library("closure_compile_externs") {
   externs_list = [
     "$externs_path/metrics_private.js",
     "$externs_path/web_animations.js",
+    "../../../../externs/background/crostini.js",
     "../../../../externs/background/drive_sync_handler.js",
     "../../../../externs/background/file_browser_background.js",
     "../../../../externs/background/file_operation_manager.js",

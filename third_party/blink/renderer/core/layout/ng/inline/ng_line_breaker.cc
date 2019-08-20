@@ -203,7 +203,6 @@ NGLineBreaker::NGLineBreaker(NGInlineNode node,
     break_iterator_.SetStartOffset(offset_);
     is_after_forced_break_ = break_token->IsForcedBreak();
     items_data_.AssertOffset(item_index_, offset_);
-    ignore_floats_ = break_token->IgnoreFloats();
   }
 
   // There's a special intrinsic size measure quirk for images that are direct
@@ -1304,9 +1303,6 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item,
     out_floats_for_min_max->push_back(item.GetLayoutObject());
     return;
   }
-
-  if (ignore_floats_)
-    return;
 
   // Make sure we populate the positioned_float inside the |item_result|.
   if (item_index_ <= handled_leading_floats_index_ &&

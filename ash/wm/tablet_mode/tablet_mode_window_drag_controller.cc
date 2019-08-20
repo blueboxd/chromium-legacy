@@ -17,9 +17,7 @@ namespace ash {
 TabletModeWindowDragController::TabletModeWindowDragController(
     WindowState* window_state,
     std::unique_ptr<TabletModeWindowDragDelegate> drag_delegate)
-    : WindowResizer(window_state),
-      drag_delegate_(std::move(drag_delegate)),
-      weak_ptr_factory_(this) {
+    : WindowResizer(window_state), drag_delegate_(std::move(drag_delegate)) {
   if (details().source != ::wm::WINDOW_MOVE_SOURCE_TOUCH) {
     Shell::Get()->cursor_manager()->LockCursor();
     did_lock_cursor_ = true;

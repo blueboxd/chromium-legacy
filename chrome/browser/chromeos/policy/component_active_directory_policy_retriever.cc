@@ -43,8 +43,7 @@ ComponentActiveDirectoryPolicyRetriever::
     : account_type_(account_type),
       account_id_(std::move(account_id)),
       namespaces_(std::move(namespaces)),
-      callback_(std::move(callback)),
-      weak_ptr_factory_(this) {}
+      callback_(std::move(callback)) {}
 
 ComponentActiveDirectoryPolicyRetriever::
     ~ComponentActiveDirectoryPolicyRetriever() = default;

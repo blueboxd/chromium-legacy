@@ -15,8 +15,7 @@ CupsPrintJob::CupsPrintJob(const Printer& printer,
     : printer_(printer),
       job_id_(job_id),
       document_title_(document_title),
-      total_page_number_(total_page_number),
-      weak_factory_(this) {}
+      total_page_number_(total_page_number) {}
 
 CupsPrintJob::~CupsPrintJob() = default;
 

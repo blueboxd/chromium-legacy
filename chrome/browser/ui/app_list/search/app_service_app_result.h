@@ -55,7 +55,7 @@ class AppServiceAppResult : public AppResult {
 
   std::unique_ptr<AppContextMenu> context_menu_;
 
-  base::WeakPtrFactory<AppServiceAppResult> weak_ptr_factory_;
+  base::WeakPtrFactory<AppServiceAppResult> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppServiceAppResult);
 };

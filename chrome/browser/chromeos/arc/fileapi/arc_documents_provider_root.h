@@ -375,7 +375,7 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
 
   uint64_t next_watcher_request_id_ = 1;
 
-  base::WeakPtrFactory<ArcDocumentsProviderRoot> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcDocumentsProviderRoot> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcDocumentsProviderRoot);
 };

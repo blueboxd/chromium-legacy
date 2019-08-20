@@ -85,7 +85,7 @@ class EasyUnlockCreateKeysOperation::ChallengeCreator {
   // Owned by DBusThreadManager
   EasyUnlockClient* easy_unlock_client_;
 
-  base::WeakPtrFactory<ChallengeCreator> weak_ptr_factory_;
+  base::WeakPtrFactory<ChallengeCreator> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ChallengeCreator);
 };
@@ -101,8 +101,7 @@ EasyUnlockCreateKeysOperation::ChallengeCreator::ChallengeCreator(
       tpm_pub_key_(tpm_pub_key),
       device_(device),
       callback_(callback),
-      easy_unlock_client_(DBusThreadManager::Get()->GetEasyUnlockClient()),
-      weak_ptr_factory_(this) {}
+      easy_unlock_client_(DBusThreadManager::Get()->GetEasyUnlockClient()) {}
 
 EasyUnlockCreateKeysOperation::ChallengeCreator::~ChallengeCreator() {}
 
@@ -237,8 +236,7 @@ EasyUnlockCreateKeysOperation::EasyUnlockCreateKeysOperation(
       tpm_public_key_(tpm_public_key),
       devices_(devices),
       callback_(callback),
-      key_creation_index_(0),
-      weak_ptr_factory_(this) {
+      key_creation_index_(0) {
   // Must have the secret and callback.
   DCHECK(!user_context_.GetKey()->GetSecret().empty());
   DCHECK(!callback_.is_null());

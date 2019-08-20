@@ -135,7 +135,7 @@ class DeviceCommandStartCRDSessionJob : public RemoteCommandJob {
 
   bool terminate_session_attemtpted_;
 
-  base::WeakPtrFactory<DeviceCommandStartCRDSessionJob> weak_factory_;
+  base::WeakPtrFactory<DeviceCommandStartCRDSessionJob> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DeviceCommandStartCRDSessionJob);
 };

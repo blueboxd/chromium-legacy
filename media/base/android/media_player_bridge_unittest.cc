@@ -31,7 +31,14 @@ class MockMediaPlayerBridgeClient : public MediaPlayerBridge::Client {
 class MediaPlayerBridgeTest : public testing::Test {
  public:
   MediaPlayerBridgeTest()
-      : bridge_(GURL(), GURL(), "", false, &client_, false, false) {}
+      : bridge_(GURL(),
+                GURL(),
+                url::Origin(),
+                "",
+                false,
+                &client_,
+                false,
+                false) {}
 
  protected:
   void SimulateDurationChange(base::TimeDelta duration) {

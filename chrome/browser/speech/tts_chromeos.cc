@@ -11,7 +11,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/tts_platform.h"
 
-TtsPlatformImplChromeOs::TtsPlatformImplChromeOs() : weak_factory_(this) {}
+TtsPlatformImplChromeOs::TtsPlatformImplChromeOs() {}
 TtsPlatformImplChromeOs::~TtsPlatformImplChromeOs() {}
 
 bool TtsPlatformImplChromeOs::PlatformImplAvailable() {

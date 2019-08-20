@@ -41,7 +41,7 @@ class ArcPlayStoreSearchProvider : public SearchProvider {
   Profile* const profile_;                            // Owned by ProfileInfo.
   AppListControllerDelegate* const list_controller_;  // Owned by AppListClient.
   base::string16 last_query_;  // Most recent query issued.
-  base::WeakPtrFactory<ArcPlayStoreSearchProvider> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcPlayStoreSearchProvider> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcPlayStoreSearchProvider);
 };

@@ -42,8 +42,7 @@ bool IsWhiteListedVendorId(uint16_t vendor_id) {
 
 }  // namespace
 
-OobeDisplayChooser::OobeDisplayChooser()
-    : scoped_observer_(this), weak_ptr_factory_(this) {
+OobeDisplayChooser::OobeDisplayChooser() : scoped_observer_(this) {
   // |connector| may be null in tests.
   auto* connector = content::GetSystemConnector();
   if (connector) {

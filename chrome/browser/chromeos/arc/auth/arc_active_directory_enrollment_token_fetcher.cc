@@ -50,7 +50,7 @@ namespace arc {
 
 ArcActiveDirectoryEnrollmentTokenFetcher::
     ArcActiveDirectoryEnrollmentTokenFetcher(ArcSupportHost* support_host)
-    : support_host_(support_host), weak_ptr_factory_(this) {
+    : support_host_(support_host) {
   DCHECK(support_host_);
   support_host_->SetAuthDelegate(this);
 }

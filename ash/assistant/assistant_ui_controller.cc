@@ -55,7 +55,7 @@ void ShowToast(const std::string& id, int message_id) {
 
 AssistantUiController::AssistantUiController(
     AssistantController* assistant_controller)
-    : assistant_controller_(assistant_controller), weak_factory_(this) {
+    : assistant_controller_(assistant_controller) {
   AddModelObserver(this);
   assistant_controller_->AddObserver(this);
   Shell::Get()->highlighter_controller()->AddObserver(this);

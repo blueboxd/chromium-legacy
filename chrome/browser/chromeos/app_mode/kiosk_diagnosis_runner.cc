@@ -66,8 +66,7 @@ void KioskDiagnosisRunner::Run(Profile* profile,
 }
 
 KioskDiagnosisRunner::KioskDiagnosisRunner(Profile* profile)
-    : profile_(profile),
-      weak_factory_(this) {}
+    : profile_(profile) {}
 
 KioskDiagnosisRunner::~KioskDiagnosisRunner() {}
 

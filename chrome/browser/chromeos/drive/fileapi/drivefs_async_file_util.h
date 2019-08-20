@@ -39,7 +39,7 @@ class DriveFsAsyncFileUtil : public storage::AsyncFileUtilAdapter {
  private:
   Profile* const profile_;
 
-  base::WeakPtrFactory<DriveFsAsyncFileUtil> weak_factory_;
+  base::WeakPtrFactory<DriveFsAsyncFileUtil> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DriveFsAsyncFileUtil);
 };

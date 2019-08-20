@@ -5,4 +5,4 @@
 mojom = "//ui/gfx/mojom/transform.mojom"
 public_headers = [ "//ui/gfx/transform.h" ]
 traits_headers = [ "//ui/gfx/mojom/transform_mojom_traits.h" ]
-type_mappings = [ "gfx.mojom.Transform=gfx::Transform" ]
+type_mappings = [ "gfx.mojom.Transform=::gfx::Transform" ]

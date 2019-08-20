@@ -11,7 +11,7 @@
 
 namespace cups_proxy {
 
-CupsProxyServiceDelegate::CupsProxyServiceDelegate() : weak_factory_(this) {}
+CupsProxyServiceDelegate::CupsProxyServiceDelegate() {}
 CupsProxyServiceDelegate::~CupsProxyServiceDelegate() = default;
 
 base::WeakPtr<CupsProxyServiceDelegate> CupsProxyServiceDelegate::GetWeakPtr() {

@@ -142,7 +142,7 @@ bool ReadMountEntryFromDbus(dbus::MessageReader* reader, MountEntry* entry) {
 // The CrosDisksClient implementation.
 class CrosDisksClientImpl : public CrosDisksClient {
  public:
-  CrosDisksClientImpl() : proxy_(nullptr), weak_ptr_factory_(this) {}
+  CrosDisksClientImpl() : proxy_(nullptr) {}
 
   // CrosDisksClient override.
   void AddObserver(Observer* observer) override {
@@ -531,7 +531,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<CrosDisksClientImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<CrosDisksClientImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CrosDisksClientImpl);
 };

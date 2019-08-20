@@ -76,7 +76,7 @@ class AboutResourceLoader {
 
   THREAD_CHECKER(thread_checker_);
 
-  base::WeakPtrFactory<AboutResourceLoader> weak_ptr_factory_;
+  base::WeakPtrFactory<AboutResourceLoader> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(AboutResourceLoader);
 };
 

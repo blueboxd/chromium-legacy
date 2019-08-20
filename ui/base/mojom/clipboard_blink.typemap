@@ -8,4 +8,4 @@ traits_headers = [ "//ui/base/mojom/clipboard_blink_mojom_traits.h" ]
 public_deps = [
   "//ui/base/clipboard:clipboard_types",
 ]
-type_mappings = [ "blink.mojom.ClipboardBuffer=ui::ClipboardType" ]
+type_mappings = [ "blink.mojom.ClipboardBuffer=::ui::ClipboardType" ]

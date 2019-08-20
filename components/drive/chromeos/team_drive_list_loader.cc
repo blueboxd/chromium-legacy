@@ -114,8 +114,7 @@ TeamDriveListLoader::TeamDriveListLoader(
       pending_load_callbacks_(),
       resource_metadata_(resource_metadata),
       scheduler_(scheduler),
-      loader_controller_(apply_task_controller),
-      weak_ptr_factory_(this) {}
+      loader_controller_(apply_task_controller) {}
 
 TeamDriveListLoader::~TeamDriveListLoader() {
   in_shutdown_->Set();

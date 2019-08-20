@@ -44,8 +44,7 @@ UserCloudPolicyTokenForwarder::UserCloudPolicyTokenForwarder(
       refresh_oauth_token_timer_(std::make_unique<base::RepeatingTimer>()),
       retry_backoff_(
           std::make_unique<net::BackoffEntry>(&kFetchTokenRetryBackoffPolicy)),
-      clock_(base::DefaultClock::GetInstance()),
-      weak_ptr_factory_(this) {
+      clock_(base::DefaultClock::GetInstance()) {
   // Start by waiting for the CloudPolicyService to be initialized, so that
   // we can check if it already has a DMToken or not.
   if (manager_->core()->service()->IsInitializationComplete()) {

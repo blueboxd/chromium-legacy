@@ -52,8 +52,7 @@ CrostiniPackageNotification::CrostiniPackageNotification(
           GetNotificationSettingsForTypeAndAppName(notification_type,
                                                    app_name)),
       visible_(true),
-      container_id_(container_id),
-      weak_ptr_factory_(this) {
+      container_id_(container_id) {
   if (status == PackageOperationStatus::RUNNING) {
     running_start_time_ = base::TimeTicks::Now();
     CrostiniRegistryServiceFactory::GetForProfile(profile_)->AddObserver(this);

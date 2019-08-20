@@ -218,7 +218,7 @@ class COMPONENT_EXPORT(CHROMEOS_TPM) InstallAttributes {
 
   CryptohomeClient* cryptohome_client_;
 
-  base::WeakPtrFactory<InstallAttributes> weak_ptr_factory_;
+  base::WeakPtrFactory<InstallAttributes> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InstallAttributes);
 };

@@ -250,7 +250,7 @@ public class TabGridDialogMediatorUnitTest {
         // Current tab ID should not update.
         assertThat(mMediator.getCurrentTabIdForTest(), equalTo(TAB1_ID));
         assertThat(mModel.get(TabGridSheetProperties.HEADER_TITLE), equalTo(DIALOG_TITLE1));
-        verify(mTabSwitcherResetHandler).resetWithTabList(mTabGroupModelFilter, false);
+        verify(mTabSwitcherResetHandler).resetWithTabList(mTabGroupModelFilter, false, false);
     }
 
     @Test
@@ -270,7 +270,7 @@ public class TabGridDialogMediatorUnitTest {
         // Current tab ID should be updated to TAB1_ID now.
         assertThat(mMediator.getCurrentTabIdForTest(), equalTo(TAB1_ID));
         assertThat(mModel.get(TabGridSheetProperties.HEADER_TITLE), equalTo(DIALOG_TITLE1));
-        verify(mTabSwitcherResetHandler).resetWithTabList(mTabGroupModelFilter, false);
+        verify(mTabSwitcherResetHandler).resetWithTabList(mTabGroupModelFilter, false, false);
     }
 
     @Test
@@ -288,7 +288,8 @@ public class TabGridDialogMediatorUnitTest {
         assertThat(mMediator.getCurrentTabIdForTest(), equalTo(Tab.INVALID_TAB_ID));
         assertThat(mModel.get(TabGridSheetProperties.ANIMATION_SOURCE_RECT), equalTo(null));
         verify(mDialogResetHandler).resetWithListOfTabs(null);
-        verify(mTabSwitcherResetHandler, never()).resetWithTabList(mTabGroupModelFilter, false);
+        verify(mTabSwitcherResetHandler, never())
+                .resetWithTabList(mTabGroupModelFilter, false, false);
     }
 
     @Test
@@ -310,7 +311,8 @@ public class TabGridDialogMediatorUnitTest {
         assertThat(mModel.get(TabGridSheetProperties.HEADER_TITLE), equalTo(DIALOG_TITLE1));
         // Dialog should still be hidden.
         assertThat(mModel.get(TabGridSheetProperties.IS_DIALOG_VISIBLE), equalTo(false));
-        verify(mTabSwitcherResetHandler, never()).resetWithTabList(mTabGroupModelFilter, false);
+        verify(mTabSwitcherResetHandler, never())
+                .resetWithTabList(mTabGroupModelFilter, false, false);
     }
 
     @Test
@@ -323,7 +325,7 @@ public class TabGridDialogMediatorUnitTest {
         mTabModelObserverCaptor.getValue().tabClosureUndone(mTab1);
 
         assertThat(mModel.get(TabGridSheetProperties.HEADER_TITLE), equalTo(DIALOG_TITLE1));
-        verify(mTabSwitcherResetHandler).resetWithTabList(mTabGroupModelFilter, false);
+        verify(mTabSwitcherResetHandler).resetWithTabList(mTabGroupModelFilter, false, false);
     }
 
     @Test
@@ -338,7 +340,8 @@ public class TabGridDialogMediatorUnitTest {
         assertThat(mModel.get(TabGridSheetProperties.HEADER_TITLE), equalTo(DIALOG_TITLE1));
         // Dialog should still be hidden.
         assertThat(mModel.get(TabGridSheetProperties.IS_DIALOG_VISIBLE), equalTo(false));
-        verify(mTabSwitcherResetHandler, never()).resetWithTabList(mTabGroupModelFilter, false);
+        verify(mTabSwitcherResetHandler, never())
+                .resetWithTabList(mTabGroupModelFilter, false, false);
     }
 
     @Test

@@ -238,7 +238,7 @@ class CrostiniRegistryService : public KeyedService {
   std::map<std::string, uint32_t> active_icon_requests_;
   std::map<std::string, uint32_t> retry_icon_requests_;
 
-  base::WeakPtrFactory<CrostiniRegistryService> weak_ptr_factory_;
+  base::WeakPtrFactory<CrostiniRegistryService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CrostiniRegistryService);
 };

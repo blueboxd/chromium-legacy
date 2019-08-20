@@ -126,7 +126,7 @@ class AutoEnrollmentCheckScreen
 
   ErrorScreen::ConnectRequestCallbackSubscription connect_request_subscription_;
 
-  base::WeakPtrFactory<AutoEnrollmentCheckScreen> weak_ptr_factory_;
+  base::WeakPtrFactory<AutoEnrollmentCheckScreen> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AutoEnrollmentCheckScreen);
 };

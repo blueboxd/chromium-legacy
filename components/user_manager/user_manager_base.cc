@@ -112,7 +112,7 @@ void UserManagerBase::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 UserManagerBase::UserManagerBase(scoped_refptr<base::TaskRunner> task_runner)
-    : task_runner_(task_runner), weak_factory_(this) {}
+    : task_runner_(task_runner) {}
 
 UserManagerBase::~UserManagerBase() {
   // Can't use STLDeleteElements because of the private destructor of User.

@@ -127,7 +127,7 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
   app_list::AppListController* app_list_controller_ = nullptr;
   bool search_engine_is_google_ = false;
 
-  base::WeakPtrFactory<ChromeAppListModelUpdater> weak_ptr_factory_;
+  base::WeakPtrFactory<ChromeAppListModelUpdater> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAppListModelUpdater);
 };

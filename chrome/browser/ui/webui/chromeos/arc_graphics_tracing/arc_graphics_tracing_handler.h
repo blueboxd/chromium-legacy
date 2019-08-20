@@ -119,7 +119,7 @@ class ArcGraphicsTracingHandler : public content::WebUIMessageHandler,
   // Information about tasks, title and icon.
   base::DictionaryValue tasks_info_;
 
-  base::WeakPtrFactory<ArcGraphicsTracingHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcGraphicsTracingHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcGraphicsTracingHandler);
 };

@@ -106,7 +106,7 @@ class PerfCollector : public internal::MetricCollector {
   // asynchronously at start.
   std::vector<uint32_t> max_frequencies_mhz_;
 
-  base::WeakPtrFactory<PerfCollector> weak_factory_;
+  base::WeakPtrFactory<PerfCollector> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PerfCollector);
 };

@@ -46,7 +46,7 @@ class ConnectionAttemptImpl : public ConnectionAttempt,
  private:
   mojo::Binding<mojom::ConnectionDelegate> binding_;
 
-  base::WeakPtrFactory<ConnectionAttemptImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<ConnectionAttemptImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionAttemptImpl);
 };

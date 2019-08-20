@@ -82,8 +82,7 @@ bool WakeOnWifiManager::IsWakeOnPacketEnabled(WakeOnWifiFeature feature) {
 WakeOnWifiManager::WakeOnWifiManager()
     : current_feature_(WakeOnWifiManager::INVALID),
       wifi_properties_received_(false),
-      extension_event_observer_(new ExtensionEventObserver()),
-      weak_ptr_factory_(this) {
+      extension_event_observer_(new ExtensionEventObserver()) {
   // This class must be constructed before any users are logged in, i.e., before
   // any profiles are created or added to the ProfileManager.  Additionally,
   // IsUserLoggedIn always returns true when we are not running on a Chrome OS

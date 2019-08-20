@@ -402,9 +402,7 @@ class DriveIntegrationService::PreferenceWatcher
       public chromeos::NetworkPortalDetector::Observer {
  public:
   explicit PreferenceWatcher(PrefService* pref_service)
-      : pref_service_(pref_service),
-        integration_service_(nullptr),
-        weak_ptr_factory_(this) {
+      : pref_service_(pref_service), integration_service_(nullptr) {
     DCHECK(pref_service);
     pref_change_registrar_.Init(pref_service);
     pref_change_registrar_.Add(
@@ -502,7 +500,7 @@ class DriveIntegrationService::PreferenceWatcher
   chromeos::NetworkPortalDetector::CaptivePortalStatus last_portal_status_ =
       chromeos::NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN;
 
-  base::WeakPtrFactory<PreferenceWatcher> weak_ptr_factory_;
+  base::WeakPtrFactory<PreferenceWatcher> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(PreferenceWatcher);
 };
 
@@ -659,8 +657,7 @@ DriveIntegrationService::DriveIntegrationService(
                                 std::move(test_drivefs_mojo_listener_factory))
                           : nullptr),
       preference_watcher_(preference_watcher),
-      power_manager_observer_(this),
-      weak_ptr_factory_(this) {
+      power_manager_observer_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(profile && !profile->IsOffTheRecord());
 

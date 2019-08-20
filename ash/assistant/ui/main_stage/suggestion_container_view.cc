@@ -30,7 +30,7 @@ constexpr int kPreferredHeightDip = 48;
 
 SuggestionContainerView::SuggestionContainerView(
     AssistantViewDelegate* delegate)
-    : delegate_(delegate), download_request_weak_factory_(this) {
+    : delegate_(delegate) {
   InitLayout();
 
   // The AssistantViewDelegate should outlive SuggestionContainerView.

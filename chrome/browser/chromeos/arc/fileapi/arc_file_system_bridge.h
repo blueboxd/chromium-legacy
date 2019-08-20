@@ -130,7 +130,7 @@ class ArcFileSystemBridge
 
   std::unique_ptr<ArcSelectFilesHandlersManager> select_files_handlers_manager_;
 
-  base::WeakPtrFactory<ArcFileSystemBridge> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcFileSystemBridge> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcFileSystemBridge);
 };

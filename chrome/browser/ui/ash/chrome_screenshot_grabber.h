@@ -156,7 +156,7 @@ class ChromeScreenshotGrabber : public ash::ScreenshotDelegate {
   // Flag used to disallow screenshots, set in some special modes.
   bool screenshots_allowed_ = true;
 
-  base::WeakPtrFactory<ChromeScreenshotGrabber> weak_factory_;
+  base::WeakPtrFactory<ChromeScreenshotGrabber> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ChromeScreenshotGrabber);
 };

@@ -492,8 +492,7 @@ void NetworkDeviceHandlerImpl::DeviceListChanged() {
   ApplyMACAddressRandomizationToShill();
 }
 
-NetworkDeviceHandlerImpl::NetworkDeviceHandlerImpl()
-    : weak_ptr_factory_(this) {}
+NetworkDeviceHandlerImpl::NetworkDeviceHandlerImpl() {}
 
 void NetworkDeviceHandlerImpl::Init(
     NetworkStateHandler* network_state_handler) {

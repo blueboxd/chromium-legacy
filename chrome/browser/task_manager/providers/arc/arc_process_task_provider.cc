@@ -34,8 +34,7 @@ using arc::ArcProcess;
 using base::Process;
 using base::ProcessId;
 
-ArcProcessTaskProvider::ArcProcessTaskProvider()
-    : is_updating_(false), weak_ptr_factory_(this) {}
+ArcProcessTaskProvider::ArcProcessTaskProvider() : is_updating_(false) {}
 
 ArcProcessTaskProvider::~ArcProcessTaskProvider() {}
 

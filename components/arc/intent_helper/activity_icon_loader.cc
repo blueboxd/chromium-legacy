@@ -165,7 +165,7 @@ bool ActivityIconLoader::ActivityName::operator<(
 }
 
 ActivityIconLoader::ActivityIconLoader()
-    : scale_factor_(GetSupportedScaleFactor()), weak_ptr_factory_(this) {}
+    : scale_factor_(GetSupportedScaleFactor()) {}
 
 ActivityIconLoader::~ActivityIconLoader() = default;
 

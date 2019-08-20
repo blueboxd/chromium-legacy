@@ -112,60 +112,6 @@ TEST(ModuleRecordTest, compileFail) {
   EXPECT_TRUE(scope.GetExceptionState().HadException());
 }
 
-TEST(ModuleRecordTest, equalAndHash) {
-  V8TestingScope scope;
-  const KURL js_url_a("https://example.com/a.js");
-  const KURL js_url_b("https://example.com/b.js");
-
-  ModuleRecord module_null;
-  v8::Local<v8::Module> local_module_a = ModuleRecord::Compile(
-      scope.GetIsolate(), "export const a = 'a';", js_url_a, js_url_a,
-      ScriptFetchOptions(), TextPosition::MinimumPosition(),
-      ASSERT_NO_EXCEPTION);
-  ModuleRecord module_a =
-      ModuleRecord(scope.GetIsolate(), local_module_a, js_url_a);
-  ASSERT_FALSE(module_a.IsNull());
-  v8::Local<v8::Module> local_module_b = ModuleRecord::Compile(
-      scope.GetIsolate(), "export const b = 'b';", js_url_b, js_url_b,
-      ScriptFetchOptions(), TextPosition::MinimumPosition(),
-      ASSERT_NO_EXCEPTION);
-  ModuleRecord module_b =
-      ModuleRecord(scope.GetIsolate(), local_module_b, js_url_b);
-  ASSERT_FALSE(module_b.IsNull());
-  Vector<char> module_deleted_buffer(sizeof(ModuleRecord));
-  ModuleRecord& module_deleted =
-      *reinterpret_cast<ModuleRecord*>(module_deleted_buffer.data());
-  HashTraits<ModuleRecord>::ConstructDeletedValue(module_deleted, true);
-
-  EXPECT_EQ(module_null, module_null);
-  EXPECT_EQ(module_a, module_a);
-  EXPECT_EQ(module_b, module_b);
-  EXPECT_EQ(module_deleted, module_deleted);
-
-  EXPECT_NE(module_null, module_a);
-  EXPECT_NE(module_null, module_b);
-  EXPECT_NE(module_null, module_deleted);
-
-  EXPECT_NE(module_a, module_null);
-  EXPECT_NE(module_a, module_b);
-  EXPECT_NE(module_a, module_deleted);
-
-  EXPECT_NE(module_b, module_null);
-  EXPECT_NE(module_b, module_a);
-  EXPECT_NE(module_b, module_deleted);
-
-  EXPECT_NE(module_deleted, module_null);
-  EXPECT_NE(module_deleted, module_a);
-  EXPECT_NE(module_deleted, module_b);
-
-  EXPECT_NE(DefaultHash<ModuleRecord>::Hash::GetHash(module_a),
-            DefaultHash<ModuleRecord>::Hash::GetHash(module_b));
-  EXPECT_NE(DefaultHash<ModuleRecord>::Hash::GetHash(module_null),
-            DefaultHash<ModuleRecord>::Hash::GetHash(module_a));
-  EXPECT_NE(DefaultHash<ModuleRecord>::Hash::GetHash(module_null),
-            DefaultHash<ModuleRecord>::Hash::GetHash(module_b));
-}
-
 TEST(ModuleRecordTest, moduleRequests) {
   V8TestingScope scope;
   const KURL js_url("https://example.com/foo.js");

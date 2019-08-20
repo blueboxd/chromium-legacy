@@ -83,7 +83,7 @@ class WebkitFileStreamReaderImpl : public storage::FileStreamReader {
 
   // This should remain the last member so it'll be destroyed first and
   // invalidate its weak pointers before other members are destroyed.
-  base::WeakPtrFactory<WebkitFileStreamReaderImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<WebkitFileStreamReaderImpl> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(WebkitFileStreamReaderImpl);
 };
 

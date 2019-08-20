@@ -97,8 +97,7 @@ EnrollmentScreen::EnrollmentScreen(EnrollmentScreenView* view,
                                    const ScreenExitCallback& exit_callback)
     : BaseScreen(EnrollmentScreenView::kScreenId),
       view_(view),
-      exit_callback_(exit_callback),
-      weak_ptr_factory_(this) {
+      exit_callback_(exit_callback) {
   retry_policy_.num_errors_to_ignore = 0;
   retry_policy_.initial_delay_ms = kInitialDelayMS;
   retry_policy_.multiply_factor = kMultiplyFactor;

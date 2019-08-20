@@ -576,7 +576,7 @@ class ArcBluetoothBridge
   THREAD_CHECKER(thread_checker_);
 
   // WeakPtrFactory to use for callbacks.
-  base::WeakPtrFactory<ArcBluetoothBridge> weak_factory_;
+  base::WeakPtrFactory<ArcBluetoothBridge> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcBluetoothBridge);
 };

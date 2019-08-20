@@ -25,8 +25,7 @@
 namespace chromeos {
 
 ChromeLoginPerformer::ChromeLoginPerformer(Delegate* delegate)
-    : LoginPerformer(base::ThreadTaskRunnerHandle::Get(), delegate),
-      weak_factory_(this) {}
+    : LoginPerformer(base::ThreadTaskRunnerHandle::Get(), delegate) {}
 
 ChromeLoginPerformer::~ChromeLoginPerformer() {}
 

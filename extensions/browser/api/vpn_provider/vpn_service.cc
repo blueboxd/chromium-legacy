@@ -229,8 +229,7 @@ VpnService::VpnService(
       network_configuration_handler_(network_configuration_handler),
       network_profile_handler_(network_profile_handler),
       network_state_handler_(network_state_handler),
-      active_configuration_(nullptr),
-      weak_factory_(this) {
+      active_configuration_(nullptr) {
   extension_registry_->AddObserver(this);
   network_state_handler_->AddObserver(this, FROM_HERE);
   network_configuration_handler_->AddObserver(this);

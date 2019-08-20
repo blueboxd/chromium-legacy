@@ -31,6 +31,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/fake_leveldb_database.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_store.h"
@@ -193,7 +194,7 @@ class RemoveLocalStorageTester {
   explicit RemoveLocalStorageTester(TestBrowserContext* profile)
       : dom_storage_context_(nullptr),
         mock_db_(&mock_data_),
-        db_binding_(&mock_db_) {
+        db_receiver_(&mock_db_) {
     dom_storage_context_ =
         content::BrowserContext::GetDefaultStoragePartition(profile)->
             GetDOMStorageContext();
@@ -213,12 +214,13 @@ class RemoveLocalStorageTester {
   void AddDOMStorageTestData() {
     // Note: This test depends on details of how the dom_storage library
     // stores data in the database.
-    leveldb::mojom::LevelDBDatabaseAssociatedPtr database_ptr;
-    leveldb::mojom::LevelDBDatabaseAssociatedRequest request =
-        MakeRequestAssociatedWithDedicatedPipe(&database_ptr);
+
+    mojo::AssociatedRemote<leveldb::mojom::LevelDBDatabase> database_remote;
+    auto receiver =
+        database_remote.BindNewEndpointAndPassDedicatedReceiverForTesting();
     static_cast<DOMStorageContextWrapper*>(dom_storage_context_)
-        ->SetLocalStorageDatabaseForTesting(std::move(database_ptr));
-    db_binding_.Bind(std::move(request));
+        ->SetLocalStorageDatabaseForTesting(database_remote.Unbind());
+    db_receiver_.Bind(std::move(receiver));
 
     LocalStorageOriginMetaData data;
 
@@ -281,7 +283,7 @@ class RemoveLocalStorageTester {
 
   std::map<std::vector<uint8_t>, std::vector<uint8_t>> mock_data_;
   FakeLevelDBDatabase mock_db_;
-  mojo::AssociatedBinding<leveldb::mojom::LevelDBDatabase> db_binding_;
+  mojo::AssociatedReceiver<leveldb::mojom::LevelDBDatabase> db_receiver_;
 
   std::vector<content::StorageUsageInfo> infos_;
 

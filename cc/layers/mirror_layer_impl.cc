@@ -4,7 +4,6 @@
 
 #include "cc/layers/mirror_layer_impl.h"
 
-#include "cc/layers/append_quads_data.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/occlusion.h"
@@ -37,8 +36,6 @@ void MirrorLayerImpl::AppendQuads(viz::RenderPass* render_pass,
           content_rect);
   if (unoccluded_content_rect.IsEmpty())
     return;
-
-  append_quads_data->mirror_rect = drawable_content_rect();
 
   const bool contents_opaque = false;
   viz::SharedQuadState* shared_quad_state =

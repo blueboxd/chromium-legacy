@@ -140,8 +140,7 @@ DownloadHandler::DownloadHandler(FileSystemInterface* file_system)
     : file_system_(file_system),
       has_pending_free_disk_space_(false),
       free_disk_space_delay_(
-          base::TimeDelta::FromSeconds(kFreeDiskSpaceDelayInSeconds)),
-      weak_ptr_factory_(this) {}
+          base::TimeDelta::FromSeconds(kFreeDiskSpaceDelayInSeconds)) {}
 
 DownloadHandler::~DownloadHandler() = default;
 

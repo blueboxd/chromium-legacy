@@ -176,8 +176,7 @@ ArcFileSystemBridge::ArcFileSystemBridge(content::BrowserContext* context,
     : profile_(Profile::FromBrowserContext(context)),
       bridge_service_(bridge_service),
       select_files_handlers_manager_(
-          std::make_unique<ArcSelectFilesHandlersManager>(context)),
-      weak_ptr_factory_(this) {
+          std::make_unique<ArcSelectFilesHandlersManager>(context)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   bridge_service_->file_system()->SetHost(this);
   bridge_service_->file_system()->AddObserver(this);

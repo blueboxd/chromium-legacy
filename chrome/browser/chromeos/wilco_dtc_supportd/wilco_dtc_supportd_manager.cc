@@ -80,9 +80,7 @@ WilcoDtcSupportdManager::WilcoDtcSupportdManager()
 
 WilcoDtcSupportdManager::WilcoDtcSupportdManager(
     std::unique_ptr<Delegate> delegate)
-    : delegate_(std::move(delegate)),
-      callback_weak_ptr_factory_(this),
-      weak_ptr_factory_(this) {
+    : delegate_(std::move(delegate)) {
   DCHECK(delegate_);
   DCHECK(!g_wilco_dtc_supportd_manager_instance);
   g_wilco_dtc_supportd_manager_instance = this;

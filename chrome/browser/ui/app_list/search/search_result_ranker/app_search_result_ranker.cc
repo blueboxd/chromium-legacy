@@ -92,8 +92,7 @@ std::unique_ptr<AppLaunchPredictor> LoadPredictorFromDiskOnWorkerThread(
 AppSearchResultRanker::AppSearchResultRanker(const base::FilePath& profile_path,
                                              bool is_ephemeral_user)
     : predictor_filename_(
-          profile_path.AppendASCII(kAppLaunchPredictorFilename)),
-      weak_factory_(this) {
+          profile_path.AppendASCII(kAppLaunchPredictorFilename)) {
   if (!app_list_features::IsZeroStateAppsRankerEnabled()) {
     LOG(ERROR) << "AppSearchResultRanker: ZeroStateAppsRanker is not enabled.";
     return;

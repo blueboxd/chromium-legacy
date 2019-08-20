@@ -235,7 +235,7 @@ class ProfileHelper
 
   std::unique_ptr<FileFlusher> profile_flusher_;
 
-  base::WeakPtrFactory<ProfileHelper> weak_factory_;
+  base::WeakPtrFactory<ProfileHelper> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ProfileHelper);
 };

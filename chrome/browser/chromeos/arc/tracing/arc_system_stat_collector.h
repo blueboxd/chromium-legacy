@@ -121,7 +121,7 @@ class ArcSystemStatCollector {
   // Used to calculate delta.
   RuntimeFrame previous_frame_;
 
-  base::WeakPtrFactory<ArcSystemStatCollector> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcSystemStatCollector> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcSystemStatCollector);
 };

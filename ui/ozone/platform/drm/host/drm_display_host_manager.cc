@@ -118,8 +118,7 @@ DrmDisplayHostManager::DrmDisplayHostManager(
       device_manager_(device_manager),
       overlay_manager_(overlay_manager),
       input_controller_(input_controller),
-      primary_graphics_card_path_(GetPrimaryDisplayCardPath()),
-      weak_ptr_factory_(this) {
+      primary_graphics_card_path_(GetPrimaryDisplayCardPath()) {
   {
     // First device needs to be treated specially. We need to open this
     // synchronously since the GPU process will need it to initialize the

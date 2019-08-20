@@ -470,8 +470,7 @@ EventRouter::EventRouter(Profile* profile)
           std::make_unique<DriveFsEventRouterImpl>(profile, &file_watchers_)),
       dispatch_directory_change_event_impl_(
           base::Bind(&EventRouter::DispatchDirectoryChangeEventImpl,
-                     base::Unretained(this))),
-      weak_factory_(this) {
+                     base::Unretained(this))) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ObserveEvents();
 }

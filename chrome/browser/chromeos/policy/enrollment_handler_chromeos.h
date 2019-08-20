@@ -263,7 +263,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   // initialization.
   int lockbox_init_duration_ = 0;
 
-  base::WeakPtrFactory<EnrollmentHandlerChromeOS> weak_ptr_factory_;
+  base::WeakPtrFactory<EnrollmentHandlerChromeOS> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(EnrollmentHandlerChromeOS);
 };

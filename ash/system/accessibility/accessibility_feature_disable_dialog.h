@@ -42,7 +42,8 @@ class AccessibilityFeatureDisableDialog : public views::DialogDelegateView {
   base::OnceClosure on_accept_callback_;
   base::OnceClosure on_cancel_callback_;
 
-  base::WeakPtrFactory<AccessibilityFeatureDisableDialog> weak_ptr_factory_;
+  base::WeakPtrFactory<AccessibilityFeatureDisableDialog> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityFeatureDisableDialog);
 };

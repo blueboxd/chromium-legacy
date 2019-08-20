@@ -40,7 +40,6 @@
 namespace blink {
 
 class Node;
-class DOMWrapperSlotsVisitor;
 
 class CORE_EXPORT V8GCController {
   STATIC_ONLY(V8GCController);
@@ -70,10 +69,6 @@ class CORE_EXPORT V8GCController {
   // Called upon terminating a thread when Oilpan clears references from V8
   // wrappers to DOM wrappables.
   static void ClearDOMWrappers(v8::Isolate*);
-
-  // Called for iterating wrapper slots in Oilpan object. This is e.g. used for
-  // unpoisoning memory.
-  static void TraceDOMWrapperSlots(v8::Isolate*, DOMWrapperSlotsVisitor*);
 };
 
 }  // namespace blink

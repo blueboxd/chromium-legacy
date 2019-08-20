@@ -74,7 +74,7 @@ class COMPONENT_EXPORT(MEDIA_ANALYTICS_CLIENT) FakeMediaAnalyticsClient
   // upstart client) - If not set, all requests to this client will fail.
   bool process_running_;
 
-  base::WeakPtrFactory<FakeMediaAnalyticsClient> weak_ptr_factory_;
+  base::WeakPtrFactory<FakeMediaAnalyticsClient> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeMediaAnalyticsClient);
 };

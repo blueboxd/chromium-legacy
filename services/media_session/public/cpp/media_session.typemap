@@ -19,10 +19,10 @@ deps = [
   "//ui/gfx/geometry/mojom:mojom_traits",
 ]
 type_mappings = [
-  "media_session.mojom.MediaImage=media_session::MediaImage",
-  "media_session.mojom.MediaImageBitmap=SkBitmap[nullable_is_same_type]",
-  "media_session.mojom.MediaMetadata=media_session::MediaMetadata",
-  "media_session.mojom.MediaPosition=media_session::MediaPosition",
+  "media_session.mojom.MediaImage=::media_session::MediaImage",
+  "media_session.mojom.MediaImageBitmap=::SkBitmap[nullable_is_same_type]",
+  "media_session.mojom.MediaMetadata=::media_session::MediaMetadata",
+  "media_session.mojom.MediaPosition=::media_session::MediaPosition",
 ]
 sources = [
   "//services/media_session/public/cpp/media_session_mojom_traits.cc",

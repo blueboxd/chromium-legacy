@@ -56,7 +56,8 @@ class AndroidSmsPairingStateTrackerImpl
 
   mojo::Binding<network::mojom::CookieChangeListener> cookie_listener_binding_;
   bool was_paired_on_last_update_ = false;
-  base::WeakPtrFactory<AndroidSmsPairingStateTrackerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<AndroidSmsPairingStateTrackerImpl> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(AndroidSmsPairingStateTrackerImpl);
 };

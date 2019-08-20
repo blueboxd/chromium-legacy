@@ -86,7 +86,7 @@ class FakeApkWebAppInstaller : public ApkWebAppInstaller {
 class ApkWebAppInstallerTest : public ChromeRenderViewHostTestHarness,
                                public ApkWebAppInstaller::Owner {
  public:
-  ApkWebAppInstallerTest() : weak_ptr_factory_(this) {}
+  ApkWebAppInstallerTest() {}
   ~ApkWebAppInstallerTest() override = default;
 
  protected:
@@ -97,7 +97,7 @@ class ApkWebAppInstallerTest : public ChromeRenderViewHostTestHarness,
   data_decoder::TestDataDecoderService test_data_decoder_service_;
 
   // Must stay as last member.
-  base::WeakPtrFactory<ApkWebAppInstallerTest> weak_ptr_factory_;
+  base::WeakPtrFactory<ApkWebAppInstallerTest> weak_ptr_factory_{this};
 };
 
 TEST_F(ApkWebAppInstallerTest, IconDecodeCallsWebAppInstallManager) {

@@ -102,7 +102,7 @@ class ArcBootPhaseMonitorBridge : public KeyedService,
   bool boot_completed_ = false;
 
   // This has to be the last member variable in the class.
-  base::WeakPtrFactory<ArcBootPhaseMonitorBridge> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcBootPhaseMonitorBridge> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcBootPhaseMonitorBridge);
 };

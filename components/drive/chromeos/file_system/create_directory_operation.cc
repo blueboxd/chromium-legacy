@@ -129,9 +129,7 @@ CreateDirectoryOperation::CreateDirectoryOperation(
     internal::ResourceMetadata* metadata)
     : blocking_task_runner_(blocking_task_runner),
       delegate_(delegate),
-      metadata_(metadata),
-      weak_ptr_factory_(this) {
-}
+      metadata_(metadata) {}
 
 CreateDirectoryOperation::~CreateDirectoryOperation() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

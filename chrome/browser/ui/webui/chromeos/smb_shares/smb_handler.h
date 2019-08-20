@@ -52,7 +52,7 @@ class SmbHandler : public content::WebUIMessageHandler {
   bool host_discovery_done_ = false;
   base::OnceClosure stored_mount_call_;
   Profile* const profile_;
-  base::WeakPtrFactory<SmbHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<SmbHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SmbHandler);
 };

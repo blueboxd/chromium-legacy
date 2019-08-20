@@ -157,9 +157,9 @@
     <!-- Password generation dialog dimensions -->
     <dimen name="password_generation_dialog_padding">24dp</dimen>
 
-    <!-- Password manager onboarding experience -->
-    <dimen name="onboarding_dialog_padding">16dp</dimen>
-    <dimen name="onboarding_illustration_margin">24dp</dimen>
+    <!-- Password manager illustration dialogs -->
+    <dimen name="password_manager_dialog_padding">16dp</dimen>
+    <dimen name="password_manager_illustration_margin">24dp</dimen>
 
     <!-- Promo dialogs -->
     <dimen name="promo_dialog_illustration_margin">24dp</dimen>

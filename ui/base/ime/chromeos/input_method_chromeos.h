@@ -168,7 +168,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) InputMethodChromeOS
   bool handling_key_event_;
 
   // Used for making callbacks.
-  base::WeakPtrFactory<InputMethodChromeOS> weak_ptr_factory_;
+  base::WeakPtrFactory<InputMethodChromeOS> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodChromeOS);
 };

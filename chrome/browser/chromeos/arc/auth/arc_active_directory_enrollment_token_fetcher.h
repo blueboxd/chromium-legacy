@@ -96,7 +96,7 @@ class ArcActiveDirectoryEnrollmentTokenFetcher
   std::string auth_session_id_;
 
   base::WeakPtrFactory<ArcActiveDirectoryEnrollmentTokenFetcher>
-      weak_ptr_factory_;
+      weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcActiveDirectoryEnrollmentTokenFetcher);
 };

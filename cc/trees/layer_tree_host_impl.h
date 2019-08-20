@@ -213,10 +213,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
     // The original BeginFrameArgs that triggered the latest update from the
     // main thread.
     viz::BeginFrameArgs origin_begin_main_frame_args;
-
-    // Union of visible rects of MirrorLayers in the frame, used to force damage
-    // on the surface.
-    gfx::Rect mirror_rect;
   };
 
   // A struct of data for a single UIResource, including the backing

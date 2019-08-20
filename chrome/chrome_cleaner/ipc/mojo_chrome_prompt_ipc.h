@@ -1,6 +1,7 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #ifndef CHROME_CHROME_CLEANER_IPC_MOJO_CHROME_PROMPT_IPC_H_
 #define CHROME_CHROME_CLEANER_IPC_MOJO_CHROME_PROMPT_IPC_H_
 
@@ -86,40 +87,41 @@ class MojoChromePromptIPC : public ChromePromptIPC {
 
   // Runs |chrome_prompt_service_->PromptUser()|. Must be called on the IPC
   // thread.
-  void RunPromptUserTask(const std::vector<base::FilePath>& files_to_delete,
-                         const std::vector<base::string16>& registry_keys,
-                         const std::vector<base::string16>& extension_ids,
-                         mojom::ChromePrompt::PromptUserCallback callback);
+  void RunPromptUserTask(
+      const std::vector<base::FilePath>& files_to_delete,
+      const std::vector<base::string16>& registry_keys,
+      const std::vector<base::string16>& extension_ids,
+      mojom::ChromePrompt::PromptUserCallback callback) override;
 
   void RunDisableExtensionsTask(
       const std::vector<base::string16>& extension_ids,
-      mojom::ChromePrompt::DisableExtensionsCallback callback);
+      mojom::ChromePrompt::DisableExtensionsCallback callback) override;
 
   // Callback for ChromePrompt::PromptUser, internal state must be
   // State::kWaitingForResponseFromChrome. Invokes callback(prompt_acceptance)
   // and transitions to state State::kDoneInteraction.
   void OnChromeResponseReceived(
       mojom::ChromePrompt::PromptUserCallback callback,
-      mojom::PromptAcceptance prompt_acceptance);
+      mojom::PromptAcceptance prompt_acceptance) override;
 
   // Callback for ChromePrompt::DisableExtensions, internal state must be
   // State::kDoneInteraction. Invokes callback(extensions_deleted_callback).
   void OnChromeResponseReceivedExtensions(
       mojom::ChromePrompt::DisableExtensionsCallback callback,
-      bool extensions_deleted_callback);
+      bool extensions_deleted_callback) override;
 
   // Connection error handler. Invokes either
   // error_handler_->OnConnectionClosed() or
   // error_handler_->OnConnectionClosedAfterDone(), depending on the internal
   // state.
-  void OnConnectionError();
+  void OnConnectionError() override;
 
   void PromptUserCheckVersion(
       const std::vector<base::FilePath>& files_to_delete,
       const std::vector<base::string16>& registry_keys,
       const std::vector<base::string16>& extension_ids,
       mojom::ChromePrompt::PromptUserCallback callback,
-      uint32_t version);
+      uint32_t version) override;
 
  private:
   scoped_refptr<MojoTaskRunner> task_runner_;

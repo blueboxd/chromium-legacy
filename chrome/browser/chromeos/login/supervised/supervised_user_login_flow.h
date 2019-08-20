@@ -54,7 +54,7 @@ class SupervisedUserLoginFlow
   bool data_loaded_ = false;
   UserContext context_;
   Profile* profile_ = nullptr;
-  base::WeakPtrFactory<SupervisedUserLoginFlow> weak_factory_;
+  base::WeakPtrFactory<SupervisedUserLoginFlow> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserLoginFlow);
 };

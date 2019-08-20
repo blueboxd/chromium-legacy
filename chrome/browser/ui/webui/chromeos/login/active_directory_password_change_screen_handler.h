@@ -65,7 +65,7 @@ class ActiveDirectoryPasswordChangeScreenHandler : public BaseScreenHandler {
   CoreOobeView* core_oobe_view_ = nullptr;
 
   base::WeakPtrFactory<ActiveDirectoryPasswordChangeScreenHandler>
-      weak_factory_;
+      weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ActiveDirectoryPasswordChangeScreenHandler);
 };

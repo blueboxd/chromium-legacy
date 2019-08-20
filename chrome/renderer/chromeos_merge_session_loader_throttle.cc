@@ -25,8 +25,7 @@ base::TimeDelta MergeSessionLoaderThrottle::GetMergeSessionTimeout() {
 MergeSessionLoaderThrottle::MergeSessionLoaderThrottle(
     scoped_refptr<ChromeRenderThreadObserver::ChromeOSListener>
         chromeos_listener)
-    : chromeos_listener_(std::move(chromeos_listener)),
-      weak_ptr_factory_(this) {}
+    : chromeos_listener_(std::move(chromeos_listener)) {}
 
 MergeSessionLoaderThrottle::~MergeSessionLoaderThrottle() = default;
 

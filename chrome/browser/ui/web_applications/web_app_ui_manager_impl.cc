@@ -8,6 +8,8 @@
 
 #include "base/callback.h"
 #include "build/build_config.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -83,12 +85,28 @@ void WebAppUiManagerImpl::NotifyOnAllAppWindowsClosed(
   windows_closed_requests_map_[app_id].push_back(std::move(callback));
 }
 
-void WebAppUiManagerImpl::MigrateOSAttributes(const AppId& from,
-                                              const AppId& to) {
+void WebAppUiManagerImpl::UninstallAndReplace(
+    const std::vector<AppId>& from_apps,
+    const AppId& to_app) {
+  bool has_migrated = false;
+  for (const AppId& from_app : from_apps) {
+    if (!has_migrated) {
 #if defined(OS_CHROMEOS)
-  app_list::AppListSyncableServiceFactory::GetForProfile(profile_)
-      ->TransferItemAttributes(from, to);
+      auto* app_list_syncable_service =
+          app_list::AppListSyncableServiceFactory::GetForProfile(profile_);
+      if (app_list_syncable_service->GetSyncItem(from_app)) {
+        app_list_syncable_service->TransferItemAttributes(from_app, to_app);
+        has_migrated = true;
+      }
 #endif
+    }
+
+    if (apps::AppServiceProxyFactory::IsEnabled()) {
+      apps::AppServiceProxy* proxy =
+          apps::AppServiceProxyFactory::GetForProfile(profile_);
+      proxy->Uninstall(from_app);
+    }
+  }
 }
 
 bool WebAppUiManagerImpl::CanAddAppToQuickLaunchBar() const {

@@ -46,12 +46,12 @@ void SingleThreadIdleTaskRunner::PostDelayedIdleTask(
     const base::TimeDelta delay,
     IdleTask idle_task) {
   base::TimeTicks first_run_time = delegate_->NowTicks() + delay;
-  delayed_idle_tasks_.insert(std::make_pair(
+  delayed_idle_tasks_.emplace(
       first_run_time,
       std::make_pair(
           from_here,
           base::BindOnce(&SingleThreadIdleTaskRunner::RunTask,
-                         weak_scheduler_ptr_, std::move(idle_task)))));
+                         weak_scheduler_ptr_, std::move(idle_task))));
 }
 
 void SingleThreadIdleTaskRunner::PostNonNestableIdleTask(

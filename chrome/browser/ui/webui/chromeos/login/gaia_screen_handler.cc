@@ -317,8 +317,7 @@ GaiaScreenHandler::GaiaScreenHandler(
       network_state_informer_(network_state_informer),
       core_oobe_view_(core_oobe_view),
       active_directory_password_change_screen_handler_(
-          active_directory_password_change_screen_handler),
-      weak_factory_(this) {
+          active_directory_password_change_screen_handler) {
   DCHECK(network_state_informer_.get());
 }
 

@@ -291,7 +291,7 @@ class MTPDeviceTaskHelper {
   std::unique_ptr<MTPReadFileWorker> read_file_worker_;
 
   // For callbacks that may run after destruction.
-  base::WeakPtrFactory<MTPDeviceTaskHelper> weak_ptr_factory_;
+  base::WeakPtrFactory<MTPDeviceTaskHelper> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MTPDeviceTaskHelper);
 };

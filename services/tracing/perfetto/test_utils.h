@@ -114,7 +114,7 @@ class MockConsumer : public perfetto::Consumer {
 
   void FreeBuffers();
 
-  size_t received_packets() const { return received_packets_; }
+  size_t received_test_packets() const { return received_test_packets_; }
 
   // perfetto::Consumer implementation
   void OnConnect() override;
@@ -132,18 +132,19 @@ class MockConsumer : public perfetto::Consumer {
   void WaitForAllDataSourcesStopped();
 
  private:
-  void CheckForAllDataSourcesStarted();
-  void CheckForAllDataSourcesStopped();
-
-  std::unique_ptr<perfetto::TracingService::ConsumerEndpoint>
-      consumer_endpoint_;
-  size_t received_packets_ = 0;
-  PacketReceivedCallback packet_received_callback_;
   struct DataSourceStatus {
     std::string name;
     perfetto::ObservableEvents::DataSourceInstanceStateChange::
         DataSourceInstanceState state;
   };
+
+  void CheckForAllDataSourcesStarted();
+  void CheckForAllDataSourcesStopped();
+
+  std::unique_ptr<perfetto::TracingService::ConsumerEndpoint>
+      consumer_endpoint_;
+  size_t received_test_packets_ = 0;
+  PacketReceivedCallback packet_received_callback_;
   std::vector<DataSourceStatus> data_sources_;
   base::RunLoop* on_started_runloop_ = nullptr;
   base::RunLoop* on_stopped_runloop_ = nullptr;

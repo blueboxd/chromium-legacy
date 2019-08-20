@@ -37,8 +37,7 @@ UpstartClient* g_instance = nullptr;
 
 class UpstartClientImpl : public UpstartClient {
  public:
-  explicit UpstartClientImpl(dbus::Bus* bus)
-      : bus_(bus), weak_ptr_factory_(this) {
+  explicit UpstartClientImpl(dbus::Bus* bus) : bus_(bus) {
     dbus::ObjectProxy* arc_proxy = bus_->GetObjectProxy(
         arc::kArcServiceName, dbus::ObjectPath(arc::kArcServicePath));
     arc_proxy->ConnectToSignal(
@@ -147,7 +146,7 @@ class UpstartClientImpl : public UpstartClient {
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<UpstartClientImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<UpstartClientImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UpstartClientImpl);
 };

@@ -55,7 +55,7 @@ class AccountManagerMigrator : public KeyedService {
   // migration flow to be a no-op, in which case this will be |false|.
   bool ran_migration_steps_ = false;
 
-  base::WeakPtrFactory<AccountManagerMigrator> weak_factory_;
+  base::WeakPtrFactory<AccountManagerMigrator> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(AccountManagerMigrator);
 };
 

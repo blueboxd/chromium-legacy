@@ -18,6 +18,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "mojo/public/cpp/bindings/message.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom.h"
 #include "third_party/blink/public/mojom/dom_storage/storage_area.mojom.h"
@@ -109,7 +110,7 @@ class CONTENT_EXPORT DOMStorageContextWrapper
       mojo::PendingReceiver<blink::mojom::SessionStorageNamespace> receiver);
 
   void SetLocalStorageDatabaseForTesting(
-      leveldb::mojom::LevelDBDatabaseAssociatedPtr database);
+      mojo::PendingAssociatedRemote<leveldb::mojom::LevelDBDatabase> database);
 
   SessionStorageContextMojo* mojo_session_state() {
     return mojo_session_state_;

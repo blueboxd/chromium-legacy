@@ -49,7 +49,7 @@ class GoogleAssistantHandler : public ::settings::SettingsPageUIHandler,
 
   bool pending_hotword_update_ = false;
 
-  base::WeakPtrFactory<GoogleAssistantHandler> weak_factory_;
+  base::WeakPtrFactory<GoogleAssistantHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GoogleAssistantHandler);
 };

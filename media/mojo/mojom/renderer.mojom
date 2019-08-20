@@ -10,11 +10,13 @@ import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "url/mojom/url.mojom";
+import "url/mojom/origin.mojom";
 
 // See media/base/media_url_params.h for descriptions.
 struct MediaUrlParams {
   url.mojom.Url media_url;
   url.mojom.Url site_for_cookies;
+  url.mojom.Origin top_frame_origin;
   bool allow_credentials;
   bool is_hls;
 };

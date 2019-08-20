@@ -124,8 +124,7 @@ ClientAppMetadataProviderService::ClientAppMetadataProviderService(
     : pref_service_(pref_service),
       network_state_handler_(network_state_handler),
       instance_id_(instance_id_profile_service->driver()->GetInstanceID(
-          device_sync::kCryptAuthGcmAppId)),
-      weak_ptr_factory_(this) {}
+          device_sync::kCryptAuthGcmAppId)) {}
 
 ClientAppMetadataProviderService::~ClientAppMetadataProviderService() {
   // If there are any pending callbacks, invoke them before this object is

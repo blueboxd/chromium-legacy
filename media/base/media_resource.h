@@ -55,7 +55,7 @@ class MEDIA_EXPORT MediaResource {
   //   and should be handled appropriately by the caller.
   // Other types:
   //   Should not be called.
-  virtual MediaUrlParams GetMediaUrlParams() const;
+  virtual const MediaUrlParams& GetMediaUrlParams() const;
 
   // This method is only used with the MediaUrlDemuxer, to propagate duration
   // changes coming from the MediaPlayerRendereClient.

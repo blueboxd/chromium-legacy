@@ -163,7 +163,7 @@ class ExternalCacheImpl : public ExternalCache,
   content::NotificationRegistrar notification_registrar_;
 
   // Weak factory for callbacks.
-  base::WeakPtrFactory<ExternalCacheImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<ExternalCacheImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExternalCacheImpl);
 };

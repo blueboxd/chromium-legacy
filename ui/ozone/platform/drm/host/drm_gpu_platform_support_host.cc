@@ -90,8 +90,7 @@ DrmGpuPlatformSupportHost::DrmGpuPlatformSupportHost(DrmCursor* cursor)
     : ui_runner_(base::ThreadTaskRunnerHandle::IsSet()
                      ? base::ThreadTaskRunnerHandle::Get()
                      : nullptr),
-      cursor_(cursor),
-      weak_ptr_factory_(this) {
+      cursor_(cursor) {
   if (ui_runner_)
     weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
 }

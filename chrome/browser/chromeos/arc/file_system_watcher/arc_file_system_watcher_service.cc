@@ -295,7 +295,7 @@ class ArcFileSystemWatcherService::FileSystemWatcher {
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<FileSystemWatcher> weak_ptr_factory_;
+  base::WeakPtrFactory<FileSystemWatcher> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemWatcher);
 };
@@ -309,8 +309,7 @@ ArcFileSystemWatcherService::FileSystemWatcher::FileSystemWatcher(
       cros_dir_(cros_dir),
       android_dir_(android_dir),
       last_notify_time_(base::TimeTicks()),
-      outstanding_task_(false),
-      weak_ptr_factory_(this) {
+      outstanding_task_(false) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
@@ -398,8 +397,7 @@ ArcFileSystemWatcherService::ArcFileSystemWatcherService(
     : context_(context),
       arc_bridge_service_(bridge_service),
       file_task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock()})),
-      weak_ptr_factory_(this) {
+          {base::ThreadPool(), base::MayBlock()})) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   arc_bridge_service_->file_system()->AddObserver(this);
 }

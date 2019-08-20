@@ -106,7 +106,7 @@ class CRDHostDelegate : public DeviceCommandStartCRDSessionJob::Delegate,
   // True if remote session was established.
   bool remote_connected_;
 
-  base::WeakPtrFactory<CRDHostDelegate> weak_factory_;
+  base::WeakPtrFactory<CRDHostDelegate> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CRDHostDelegate);
 };

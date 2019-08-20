@@ -31,8 +31,9 @@ class ServiceWorkerObjectHost;
 // Creates a host factory for a dedicated worker. This must be called on the UI
 // thread.
 void CreateDedicatedWorkerHostFactory(
-    int process_id,
-    int parent_render_frame_id,
+    int creator_process_id,
+    int ancestor_render_frame_id,
+    int creator_render_frame_id,
     const url::Origin& origin,
     mojo::PendingReceiver<blink::mojom::DedicatedWorkerHostFactory> receiver);
 
@@ -44,6 +45,7 @@ class DedicatedWorkerHost final
  public:
   DedicatedWorkerHost(int worker_process_id,
                       int ancestor_render_frame_id,
+                      int creator_render_frame_id,
                       const url::Origin& origin);
   ~DedicatedWorkerHost() final;
 
@@ -96,15 +98,19 @@ class DedicatedWorkerHost final
           controller_service_worker_object_host,
       bool success);
 
-  void CreateNetworkFactory(network::mojom::URLLoaderFactoryRequest request,
-                            RenderFrameHostImpl* render_frame_host);
+  // Creates a network factory for subresource requests from this worker. The
+  // network factory is meant to be passed to the renderer.
+  mojo::PendingRemote<network::mojom::URLLoaderFactory>
+  CreateNetworkFactoryForSubresources(RenderProcessHost* worker_process_host,
+                                      RenderFrameHostImpl* render_frame_host,
+                                      bool* bypass_redirect_checks);
 
   void CreateWebUsbService(blink::mojom::WebUsbServiceRequest request);
 
   void CreateWebSocketConnector(
       blink::mojom::WebSocketConnectorRequest request);
 
-  void CreateDedicatedWorker(
+  void CreateNestedDedicatedWorker(
       blink::mojom::DedicatedWorkerHostFactoryRequest request);
 
   void CreateIdleManager(blink::mojom::IdleManagerRequest request);
@@ -118,6 +124,10 @@ class DedicatedWorkerHost final
   // The ID of the frame that owns this worker, either directly, or (in the case
   // of nested workers) indirectly via a tree of dedicated workers.
   const int ancestor_render_frame_id_;
+
+  // The ID of the frame that directly starts this worker. This is
+  // MSG_ROUTING_NONE when this worker is nested.
+  const int creator_render_frame_id_;
 
   const url::Origin origin_;
 

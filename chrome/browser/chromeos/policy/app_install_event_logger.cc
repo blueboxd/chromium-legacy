@@ -107,7 +107,7 @@ std::unique_ptr<em::AppInstallReportLogEvent> CreateEvent(
 
 AppInstallEventLogger::AppInstallEventLogger(Delegate* delegate,
                                              Profile* profile)
-    : delegate_(delegate), profile_(profile), weak_factory_(this) {
+    : delegate_(delegate), profile_(profile) {
   if (!arc::IsArcAllowedForProfile(profile_)) {
     AddForSetOfPackages(
         GetPackagesFromPref(arc::prefs::kArcPushInstallAppsPending),

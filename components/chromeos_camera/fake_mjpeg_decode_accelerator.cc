@@ -15,8 +15,7 @@ FakeMjpegDecodeAccelerator::FakeMjpegDecodeAccelerator(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
     : client_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       io_task_runner_(std::move(io_task_runner)),
-      decoder_thread_("FakeMjpegDecoderThread"),
-      weak_factory_(this) {}
+      decoder_thread_("FakeMjpegDecoderThread") {}
 
 FakeMjpegDecodeAccelerator::~FakeMjpegDecodeAccelerator() {
   DCHECK(client_task_runner_->BelongsToCurrentThread());

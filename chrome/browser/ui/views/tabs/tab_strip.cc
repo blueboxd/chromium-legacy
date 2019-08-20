@@ -999,20 +999,17 @@ void TabStrip::AddTabAt(int model_index, TabRendererData data, bool is_active) {
 
   // Don't animate the first tab, it looks weird, and don't animate anything
   // if the containing window isn't visible yet.
-  TabAnimationState::TabActiveness activeness =
-      is_active ? TabAnimationState::TabActiveness::kActive
-                : TabAnimationState::TabActiveness::kInactive;
   TabAnimationState::TabPinnedness pinnedness =
       pinned ? TabAnimationState::TabPinnedness::kPinned
              : TabAnimationState::TabPinnedness::kUnpinned;
   if (tab_count() > 1 && GetWidget() && GetWidget()->IsVisible()) {
-    StartInsertTabAnimation(model_index, activeness, pinnedness);
+    StartInsertTabAnimation(model_index, pinnedness);
   } else {
     layout_helper_->InsertTabAtNoAnimation(
         model_index, tab,
         base::BindOnce(&TabStrip::OnTabCloseAnimationCompleted,
                        base::Unretained(this), base::Unretained(tab)),
-        activeness, pinnedness);
+        pinnedness);
     CompleteAnimationAndLayout();
   }
 
@@ -2077,7 +2074,6 @@ std::map<TabGroupId, TabGroupHeader*> TabStrip::GetGroupHeaders() {
 
 void TabStrip::StartInsertTabAnimation(
     int model_index,
-    TabAnimationState::TabActiveness activeness,
     TabAnimationState::TabPinnedness pinnedness) {
   if (!bounds_animator_.IsAnimating() && !in_tab_close_) {
     layout_helper_->InsertTabAt(
@@ -2085,7 +2081,7 @@ void TabStrip::StartInsertTabAnimation(
         base::BindOnce(&TabStrip::OnTabCloseAnimationCompleted,
                        base::Unretained(this),
                        base::Unretained(tab_at(model_index))),
-        activeness, pinnedness);
+        pinnedness);
   } else {
     // TODO(958173): Delete this branch once |TabStripLayoutHelper::animator_|
     // has taken over all animation responsibilities.
@@ -2094,7 +2090,7 @@ void TabStrip::StartInsertTabAnimation(
         base::BindOnce(&TabStrip::OnTabCloseAnimationCompleted,
                        base::Unretained(this),
                        base::Unretained(tab_at(model_index))),
-        activeness, pinnedness);
+        pinnedness);
 
     PrepareForAnimation();
 

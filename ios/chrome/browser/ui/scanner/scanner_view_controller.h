@@ -33,14 +33,16 @@ enum DismissalReason {
 // Stores the camera controller for the scanner.
 @property(nonatomic, readwrite, strong) CameraController* cameraController;
 
+// Stores the view for the scanner. Can be subclassed as a QR code or Credit
+// Card scanner view.
+@property(nonatomic, readwrite) ScannerView* scannerView;
+
 // Stores the presentation provider.
 @property(nonatomic, readwrite, weak) id<ScannerPresenting>
     presentationProvider;
 
 - (instancetype)initWithPresentationProvider:
-                    (id<ScannerPresenting>)presentationProvider
-                            cameraController:(CameraController*)cameraController
-    NS_DESIGNATED_INITIALIZER;
+    (id<ScannerPresenting>)presentationProvider NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithNibName:(NSString*)name
                          bundle:(NSBundle*)bundle NS_UNAVAILABLE;
@@ -54,6 +56,9 @@ enum DismissalReason {
 
 // Builds the scanner view. Must be overridden in the subclass.
 - (ScannerView*)buildScannerView;
+
+// Builds the camera controller. Must be overridden in the subclass.
+- (CameraController*)buildCameraController;
 
 // Dismiss scanner. Subclass can override to update metrics.
 // implementation.

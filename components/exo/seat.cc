@@ -50,9 +50,7 @@ Surface* GetEffectiveFocus(aura::Window* window) {
 
 }  // namespace
 
-Seat::Seat()
-    : changing_clipboard_data_to_selection_source_(false),
-      weak_ptr_factory_(this) {
+Seat::Seat() : changing_clipboard_data_to_selection_source_(false) {
   WMHelper::GetInstance()->AddFocusObserver(this);
   // Prepend handler as it's critical that we see all events.
   WMHelper::GetInstance()->PrependPreTargetHandler(this);

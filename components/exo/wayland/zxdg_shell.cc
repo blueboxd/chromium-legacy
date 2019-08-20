@@ -185,8 +185,8 @@ class WaylandToplevel : public aura::WindowObserver {
  public:
   WaylandToplevel(wl_resource* resource, wl_resource* surface_resource)
       : resource_(resource),
-        shell_surface_data_(GetUserDataAs<WaylandXdgSurface>(surface_resource)),
-        weak_ptr_factory_(this) {
+        shell_surface_data_(
+            GetUserDataAs<WaylandXdgSurface>(surface_resource)) {
     shell_surface_data_->shell_surface->host_window()->AddObserver(this);
     shell_surface_data_->shell_surface->set_close_callback(
         base::Bind(&WaylandToplevel::OnClose, weak_ptr_factory_.GetWeakPtr()));
@@ -309,7 +309,7 @@ class WaylandToplevel : public aura::WindowObserver {
 
   wl_resource* const resource_;
   WaylandXdgSurface* shell_surface_data_;
-  base::WeakPtrFactory<WaylandToplevel> weak_ptr_factory_;
+  base::WeakPtrFactory<WaylandToplevel> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WaylandToplevel);
 };
@@ -423,8 +423,8 @@ class WaylandPopup : aura::WindowObserver {
  public:
   WaylandPopup(wl_resource* resource, wl_resource* surface_resource)
       : resource_(resource),
-        shell_surface_data_(GetUserDataAs<WaylandXdgSurface>(surface_resource)),
-        weak_ptr_factory_(this) {
+        shell_surface_data_(
+            GetUserDataAs<WaylandXdgSurface>(surface_resource)) {
     shell_surface_data_->shell_surface->host_window()->AddObserver(this);
     shell_surface_data_->shell_surface->set_close_callback(
         base::Bind(&WaylandPopup::OnClose, weak_ptr_factory_.GetWeakPtr()));
@@ -473,7 +473,7 @@ class WaylandPopup : aura::WindowObserver {
 
   wl_resource* const resource_;
   WaylandXdgSurface* shell_surface_data_;
-  base::WeakPtrFactory<WaylandPopup> weak_ptr_factory_;
+  base::WeakPtrFactory<WaylandPopup> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WaylandPopup);
 };

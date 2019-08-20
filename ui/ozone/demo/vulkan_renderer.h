@@ -84,7 +84,7 @@ class VulkanRenderer : public RendererBase {
 
   VkRenderPass render_pass_ = VK_NULL_HANDLE;
 
-  base::WeakPtrFactory<VulkanRenderer> weak_ptr_factory_;
+  base::WeakPtrFactory<VulkanRenderer> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VulkanRenderer);
 };

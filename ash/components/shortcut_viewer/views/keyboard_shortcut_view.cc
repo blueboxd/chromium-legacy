@@ -320,7 +320,7 @@ void KeyboardShortcutView::ActiveChanged(
   UpdateViewsLayout(is_search_box_active);
 }
 
-KeyboardShortcutView::KeyboardShortcutView() : weak_factory_(this) {
+KeyboardShortcutView::KeyboardShortcutView() {
   DCHECK_EQ(g_ksv_view, nullptr);
   g_ksv_view = this;
 

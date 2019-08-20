@@ -100,7 +100,7 @@ class ResetScreen : public BaseScreen, public UpdateEngineClient::Observer {
 
   std::unique_ptr<ash::ScopedGuestButtonBlocker> scoped_guest_button_blocker_;
 
-  base::WeakPtrFactory<ResetScreen> weak_ptr_factory_;
+  base::WeakPtrFactory<ResetScreen> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ResetScreen);
 };

@@ -94,7 +94,7 @@ class NetworkStateTestHelper {
 
   std::unique_ptr<NetworkStateHandler> network_state_handler_;
 
-  base::WeakPtrFactory<NetworkStateTestHelper> weak_ptr_factory_;
+  base::WeakPtrFactory<NetworkStateTestHelper> weak_ptr_factory_{this};
 };
 
 }  // namespace chromeos

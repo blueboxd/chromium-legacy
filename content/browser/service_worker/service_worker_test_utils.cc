@@ -25,6 +25,7 @@
 #include "content/common/throttling_url_loader.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/transferrable_url_loader.mojom.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
@@ -193,8 +194,8 @@ ServiceWorkerRemoteProviderEndpoint::ServiceWorkerRemoteProviderEndpoint() {}
 ServiceWorkerRemoteProviderEndpoint::ServiceWorkerRemoteProviderEndpoint(
     ServiceWorkerRemoteProviderEndpoint&& other)
     : navigation_client_(std::move(other.navigation_client_)),
-      host_ptr_(std::move(other.host_ptr_)),
-      client_request_(std::move(other.client_request_)) {}
+      host_remote_(std::move(other.host_remote_)),
+      client_receiver_(std::move(other.client_receiver_)) {}
 
 ServiceWorkerRemoteProviderEndpoint::~ServiceWorkerRemoteProviderEndpoint() {}
 
@@ -203,7 +204,7 @@ void ServiceWorkerRemoteProviderEndpoint::BindForWindow(
   // We establish a message pipe for connecting |navigation_client_| to a fake
   // navigation client, then simulate sending the navigation commit IPC which
   // carries a service worker provider info over it, then the provider info
-  // received there gets its |host_ptr_info| and |client_request| associated
+  // received there gets its |host_remote| and |client_receiver| associated
   // with a message pipe so that their users later can make Mojo calls without
   // crash.
   blink::mojom::ServiceWorkerProviderInfoForClientPtr received_info;
@@ -230,13 +231,13 @@ void ServiceWorkerRemoteProviderEndpoint::BindForWindow(
                  interface_params) {}));
   loop.Run();
 
-  client_request_ = std::move(received_info->client_request);
-  host_ptr_.Bind(std::move(received_info->host_ptr_info));
+  client_receiver_ = std::move(received_info->client_receiver);
+  host_remote_.Bind(std::move(received_info->host_remote));
 }
 
 void ServiceWorkerRemoteProviderEndpoint::BindForServiceWorker(
     blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr info) {
-  host_ptr_.Bind(std::move(info->host_ptr_info));
+  host_remote_.Bind(std::move(info->host_remote));
 }
 
 ServiceWorkerProviderHostAndInfo::ServiceWorkerProviderHostAndInfo(
@@ -267,15 +268,17 @@ std::unique_ptr<ServiceWorkerProviderHostAndInfo>
 CreateProviderHostAndInfoForWindow(
     base::WeakPtr<ServiceWorkerContextCore> context,
     bool are_ancestors_secure) {
-  blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info;
-  blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request;
+  mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
+      client_remote;
+  mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
+      host_receiver;
   auto info = blink::mojom::ServiceWorkerProviderInfoForClient::New();
-  info->client_request = mojo::MakeRequest(&client_ptr_info);
-  host_request = mojo::MakeRequest(&(info->host_ptr_info));
+  info->client_receiver = client_remote.InitWithNewEndpointAndPassReceiver();
+  host_receiver = info->host_remote.InitWithNewEndpointAndPassReceiver();
   return std::make_unique<ServiceWorkerProviderHostAndInfo>(
       ServiceWorkerProviderHost::PreCreateNavigationHost(
           context, are_ancestors_secure, FrameTreeNode::kFrameTreeNodeInvalidId,
-          std::move(host_request), std::move(client_ptr_info)),
+          std::move(host_receiver), std::move(client_remote)),
       std::move(info));
 }
 

@@ -102,7 +102,7 @@ class EVENTS_OZONE_EVDEV_EXPORT InputControllerEvdev : public InputController {
   // LED state.
   bool caps_lock_led_state_ = false;
 
-  base::WeakPtrFactory<InputControllerEvdev> weak_ptr_factory_;
+  base::WeakPtrFactory<InputControllerEvdev> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InputControllerEvdev);
 };

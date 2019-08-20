@@ -93,8 +93,7 @@ VulkanRenderer::VulkanRenderer(
       window_surface_(std::move(window_surface)),
       vulkan_implementation_(vulkan_implementation),
       vulkan_surface_(std::move(vulkan_surface)),
-      size_(size),
-      weak_ptr_factory_(this) {}
+      size_(size) {}
 
 VulkanRenderer::~VulkanRenderer() {
   DestroyFramebuffers();

@@ -198,8 +198,7 @@ DeviceEmulatorMessageHandler::DeviceEmulatorMessageHandler()
     : fake_bluetooth_device_client_(
           static_cast<bluez::FakeBluetoothDeviceClient*>(
               bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient())),
-      fake_power_manager_client_(chromeos::FakePowerManagerClient::Get()),
-      weak_ptr_factory_(this) {
+      fake_power_manager_client_(chromeos::FakePowerManagerClient::Get()) {
   device::BluetoothAdapterFactory::GetAdapter(
       base::BindOnce(&DeviceEmulatorMessageHandler::BluetoothDeviceAdapterReady,
                      weak_ptr_factory_.GetWeakPtr()));

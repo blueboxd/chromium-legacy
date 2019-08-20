@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.password_manager;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
@@ -32,12 +33,12 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
-/** Test for the password manager onboarding modal dialog. */
+/** Test for the password manager illustration modal dialog. */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-public class OnboardingDialogTest {
-    private OnboardingDialogCoordinator mDialog;
-    private static final String TITLE = "Onboarding title!";
+public class PasswordManagerDialogTest {
+    private PasswordManagerDialogCoordinator mDialog;
+    private static final String TITLE = "Title";
     private static final String DETAILS = "Explanation text.";
 
     @Mock
@@ -53,15 +54,18 @@ public class OnboardingDialogTest {
     @Before
     public void setUp() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
-        mDialog = new OnboardingDialogCoordinator(mActivityTestRule.getActivity());
-        TestThreadUtils.runOnUiThreadBlocking(() -> mDialog.showDialog(TITLE, DETAILS, mOnClick));
+        mDialog = new PasswordManagerDialogCoordinator(mActivityTestRule.getActivity());
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mDialog.showDialog(TITLE, DETAILS, R.drawable.data_reduction_illustration, mOnClick);
+        });
     }
 
     @Test
     @SmallTest
     public void testDialogSubviewsData() {
-        onView(withId(R.id.onboarding_title)).check(matches(withText(TITLE)));
-        onView(withId(R.id.onboarding_details)).check(matches(withText(DETAILS)));
+        onView(withId(R.id.password_manager_dialog_title)).check(matches(withText(TITLE)));
+        onView(withId(R.id.password_manager_dialog_details)).check(matches(withText(DETAILS)));
+        onView(withId(R.id.password_manager_dialog_illustration)).check(matches(isDisplayed()));
     }
 
     @Test

@@ -23,8 +23,7 @@ SystemSaltGetter* g_system_salt_getter = NULL;
 
 }  // namespace
 
-SystemSaltGetter::SystemSaltGetter() : weak_ptr_factory_(this) {
-}
+SystemSaltGetter::SystemSaltGetter() {}
 
 SystemSaltGetter::~SystemSaltGetter() = default;
 

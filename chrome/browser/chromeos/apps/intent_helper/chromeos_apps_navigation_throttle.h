@@ -125,7 +125,7 @@ class ChromeOsAppsNavigationThrottle : public apps::AppsNavigationThrottle {
   // True if ARC is enabled, false otherwise.
   const bool arc_enabled_;
 
-  base::WeakPtrFactory<ChromeOsAppsNavigationThrottle> weak_factory_;
+  base::WeakPtrFactory<ChromeOsAppsNavigationThrottle> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ChromeOsAppsNavigationThrottle);
 };

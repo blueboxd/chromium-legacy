@@ -55,8 +55,7 @@ CryptAuthV2DeviceManagerImpl::CryptAuthV2DeviceManagerImpl(
     CryptAuthScheduler* scheduler)
     : device_registry_(device_registry),
       gcm_manager_(gcm_manager),
-      scheduler_(scheduler),
-      scheduler_weak_ptr_factory_(this) {
+      scheduler_(scheduler) {
   gcm_manager_->AddObserver(this);
 }
 

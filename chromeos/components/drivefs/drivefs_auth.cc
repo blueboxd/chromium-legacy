@@ -23,8 +23,7 @@ DriveFsAuth::DriveFsAuth(const base::Clock* clock,
     : clock_(clock),
       profile_path_(profile_path),
       timer_(std::move(timer)),
-      delegate_(delegate),
-      weak_ptr_factory_(this) {}
+      delegate_(delegate) {}
 
 DriveFsAuth::~DriveFsAuth() {}
 

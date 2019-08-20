@@ -232,7 +232,7 @@ class HIDDetectionScreen : public BaseScreen,
 
   bool showing_ = false;
 
-  base::WeakPtrFactory<HIDDetectionScreen> weak_ptr_factory_;
+  base::WeakPtrFactory<HIDDetectionScreen> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HIDDetectionScreen);
 };

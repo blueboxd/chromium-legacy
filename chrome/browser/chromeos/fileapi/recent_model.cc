@@ -75,7 +75,7 @@ RecentModel::RecentModel(Profile* profile)
     : RecentModel(CreateDefaultSources(profile)) {}
 
 RecentModel::RecentModel(std::vector<std::unique_ptr<RecentSource>> sources)
-    : sources_(std::move(sources)), weak_ptr_factory_(this) {
+    : sources_(std::move(sources)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 

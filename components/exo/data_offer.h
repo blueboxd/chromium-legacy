@@ -105,7 +105,7 @@ class DataOffer final : public ui::PropertyHandler {
   base::ObserverList<DataOfferObserver>::Unchecked observers_;
   Purpose purpose_;
 
-  base::WeakPtrFactory<DataOffer> weak_ptr_factory_;
+  base::WeakPtrFactory<DataOffer> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DataOffer);
 };

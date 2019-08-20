@@ -3013,7 +3013,6 @@ void BrowserView::UpdateAcceleratorMetrics(const ui::Accelerator& accelerator,
 
 void BrowserView::ShowAvatarBubbleFromAvatarButton(
     AvatarBubbleMode mode,
-    const signin::ManageAccountsParams& manage_accounts_params,
     signin_metrics::AccessPoint access_point,
     bool focus_first_profile_button) {
   // Do not show avatar bubble if there is no avatar menu button.
@@ -3031,9 +3030,8 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
     return;
   }
 #endif
-  ProfileMenuViewBase::ShowBubble(bubble_view_mode, manage_accounts_params,
-                                  access_point, avatar_button, browser(),
-                                  focus_first_profile_button);
+  ProfileMenuViewBase::ShowBubble(bubble_view_mode, access_point, avatar_button,
+                                  browser(), focus_first_profile_button);
   ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ICON_AVATAR_BUBBLE);
 }
 

@@ -59,7 +59,7 @@ class ArcSharedSampler {
   base::Time last_system_refresh = base::Time();
   base::Time last_app_refresh = base::Time();
 
-  base::WeakPtrFactory<ArcSharedSampler> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcSharedSampler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcSharedSampler);
 };

@@ -284,7 +284,7 @@ class ASH_EXPORT PowerButtonController
   std::unique_ptr<views::Widget::PaintAsActiveLock>
       active_window_paint_as_active_lock_;
 
-  base::WeakPtrFactory<PowerButtonController> weak_factory_;
+  base::WeakPtrFactory<PowerButtonController> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PowerButtonController);
 };

@@ -131,8 +131,7 @@ ModelConfigLoaderImpl::ModelConfigLoaderImpl(
     bool is_testing)
     : model_params_path_(model_params_path),
       blocking_task_runner_(blocking_task_runner),
-      is_testing_(is_testing),
-      weak_ptr_factory_(this) {
+      is_testing_(is_testing) {
   Init();
 }
 

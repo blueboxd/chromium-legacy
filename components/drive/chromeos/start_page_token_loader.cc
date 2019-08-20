@@ -20,8 +20,7 @@ StartPageTokenLoader::StartPageTokenLoader(const std::string& team_drive_id,
       scheduler_(scheduler),
       current_update_task_id_(-1),
       pending_update_callbacks_(),
-      cached_start_page_token_(),
-      weak_ptr_factory_(this) {}
+      cached_start_page_token_() {}
 
 StartPageTokenLoader::~StartPageTokenLoader() = default;
 

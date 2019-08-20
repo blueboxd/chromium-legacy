@@ -20,6 +20,6 @@ deps = [
   "//ui/gl",
 ]
 type_mappings = [
-  "viz.mojom.RenderPass=std::unique_ptr<viz::RenderPass>[move_only,nullable_is_same_type]",
-  "viz::mojom::ProtectedVideoState=gfx::ProtectedVideoType",
+  "viz.mojom.RenderPass=::std::unique_ptr<::viz::RenderPass>[move_only,nullable_is_same_type]",
+  "viz::mojom::ProtectedVideoState=::gfx::ProtectedVideoType",
 ]

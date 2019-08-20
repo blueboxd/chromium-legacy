@@ -62,9 +62,7 @@ struct ExtensionEventObserver::KeepaliveSources {
 };
 
 ExtensionEventObserver::ExtensionEventObserver()
-    : should_delay_suspend_(true),
-      suspend_keepalive_count_(0),
-      weak_factory_(this) {
+    : should_delay_suspend_(true), suspend_keepalive_count_(0) {
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_ADDED,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,

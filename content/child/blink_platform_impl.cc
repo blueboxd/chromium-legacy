@@ -461,6 +461,23 @@ WebData BlinkPlatformImpl::GetDataResource(const char* name) {
   return WebData();
 }
 
+WebData BlinkPlatformImpl::GetDataResource(int resource_id,
+                                           ui::ScaleFactor scale_factor) {
+  base::StringPiece resource =
+      GetContentClient()->GetDataResource(resource_id, scale_factor);
+  return WebData(resource.data(), resource.size());
+}
+
+WebData BlinkPlatformImpl::UncompressDataResource(int resource_id) {
+  base::StringPiece resource =
+      GetContentClient()->GetDataResource(resource_id, ui::SCALE_FACTOR_NONE);
+  if (resource.empty())
+    return WebData(resource.data(), resource.size());
+  std::string uncompressed;
+  CHECK(compression::GzipUncompress(resource.as_string(), &uncompressed));
+  return WebData(uncompressed.data(), uncompressed.size());
+}
+
 WebString BlinkPlatformImpl::QueryLocalizedString(
     WebLocalizedString::Name name) {
   int message_id = ToMessageID(name);

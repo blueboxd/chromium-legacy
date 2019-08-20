@@ -103,9 +103,9 @@ class EmbeddedWorkerTestHelper {
   void SetNetworkFactory(network::mojom::URLLoaderFactory* factory);
 
   // Adds the given client to the pending queue. The next time this helper
-  // receives a blink::mojom::EmbeddedWorkerInstanceClientRequest request (i.e.,
-  // on the next start worker attempt), it uses the first client from this
-  // queue.
+  // receives a
+  // mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient> (i.e., on
+  // the next start worker attempt), it uses the first client from this queue.
   void AddPendingInstanceClient(
       std::unique_ptr<FakeEmbeddedWorkerInstanceClient> instance_client);
 
@@ -131,10 +131,11 @@ class EmbeddedWorkerTestHelper {
   // The following are exposed to public so the fake embedded worker and service
   // worker implementations and their subclasses can call them.
 
-  // Called when |request| is received. It takes the object from a previous
+  // Called when |receiver| is received. It takes the object from a previous
   // AddPending*() call if any and calls Create*() otherwise.
-  void OnInstanceClientRequest(
-      blink::mojom::EmbeddedWorkerInstanceClientRequest request);
+  void OnInstanceClientReceiver(
+      mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>
+          receiver);
   void OnServiceWorkerRequest(blink::mojom::ServiceWorkerRequest request);
 
   // Called by the fakes to destroy themselves.

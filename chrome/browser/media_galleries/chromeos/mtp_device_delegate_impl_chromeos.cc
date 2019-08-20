@@ -527,8 +527,7 @@ MTPDeviceDelegateImplLinux::MTPDeviceDelegateImplLinux(
       root_node_(std::make_unique<MTPFileNode>(mtpd::kRootFileId,
                                                "",  // Root node has no name.
                                                nullptr,  // And no parent node.
-                                               &file_id_to_node_map_)),
-      weak_ptr_factory_(this) {
+                                               &file_id_to_node_map_)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!device_path_.empty());
   DCHECK(!storage_name_.empty());

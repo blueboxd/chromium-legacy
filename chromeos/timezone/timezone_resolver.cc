@@ -144,7 +144,7 @@ class TimeZoneResolver::TimeZoneResolverImpl : public base::PowerObserver {
   std::unique_ptr<TZRequest> request_;
 
   base::WeakPtrFactory<TimeZoneResolver::TimeZoneResolverImpl>
-      weak_ptr_factory_;
+      weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TimeZoneResolverImpl);
 };
@@ -155,7 +155,7 @@ namespace {
 class TZRequest {
  public:
   explicit TZRequest(TimeZoneResolver::TimeZoneResolverImpl* resolver)
-      : resolver_(resolver), weak_ptr_factory_(this) {}
+      : resolver_(resolver) {}
 
   ~TZRequest();
 
@@ -179,7 +179,7 @@ class TZRequest {
 
   TimeZoneResolver::TimeZoneResolverImpl* const resolver_;
 
-  base::WeakPtrFactory<TZRequest> weak_ptr_factory_;
+  base::WeakPtrFactory<TZRequest> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TZRequest);
 };
@@ -266,8 +266,7 @@ TimeZoneResolver::TimeZoneResolverImpl::TimeZoneResolverImpl(
           SimpleGeolocationProvider::DefaultGeolocationProviderURL()),
       timezone_provider_(resolver->shared_url_loader_factory(),
                          DefaultTimezoneProviderURL()),
-      requests_count_(0),
-      weak_ptr_factory_(this) {
+      requests_count_(0) {
   DCHECK(!resolver_->apply_timezone().is_null());
   DCHECK(!resolver_->delay_network_call().is_null());
 

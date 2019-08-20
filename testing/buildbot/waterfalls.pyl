@@ -4096,6 +4096,20 @@
     },
   },
   {
+    'name': 'client.devtools-frontend.integration',
+    'machines': {
+      'DevTools Linux': {
+        'mixins': [
+          'linux-xenial',
+        ],
+        'test_suites': {
+          'gtest_tests': 'layout_ng_gtests',
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
+      },
+    },
+  },
+  {
     'name': 'client.openscreen.chromium',
     'machines': {},
   },

@@ -131,8 +131,7 @@ MediaPerceptionAPIManager::MediaPerceptionAPIManager(
     content::BrowserContext* context)
     : browser_context_(context),
       analytics_process_state_(AnalyticsProcessState::IDLE),
-      scoped_observer_(this),
-      weak_ptr_factory_(this) {
+      scoped_observer_(this) {
   scoped_observer_.Add(chromeos::MediaAnalyticsClient::Get());
 }
 

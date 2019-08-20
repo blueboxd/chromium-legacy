@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
+#include "base/util/type_safety/pass_key.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/bytes_consumer.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -46,8 +47,8 @@ class PLATFORM_EXPORT BufferingBytesConsumer final
   static BufferingBytesConsumer* Create(BytesConsumer* bytes_consumer);
 
   // Use the Create*() factory methods instead of direct instantiation.
-  // TODO(crbug/954442): Use util::PassKey to prevent external callers.
   BufferingBytesConsumer(
+      util::PassKey<BufferingBytesConsumer> key,
       BytesConsumer* bytes_consumer,
       scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner,
       base::TimeDelta buffering_start_delay);

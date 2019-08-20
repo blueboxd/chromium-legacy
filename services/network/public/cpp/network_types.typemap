@@ -16,7 +16,7 @@ deps = [
   "//services/network/public/cpp:cpp_base",
 ]
 type_mappings = [
-  "network.mojom.ConnectionInfo=net::HttpResponseInfo::ConnectionInfo",
-  "network.mojom.CTPolicyCompliance=net::ct::CTPolicyCompliance",
-  "network.mojom.EffectiveConnectionType=net::EffectiveConnectionType",
+  "network.mojom.ConnectionInfo=::net::HttpResponseInfo::ConnectionInfo",
+  "network.mojom.CTPolicyCompliance=::net::ct::CTPolicyCompliance",
+  "network.mojom.EffectiveConnectionType=::net::EffectiveConnectionType",
 ]

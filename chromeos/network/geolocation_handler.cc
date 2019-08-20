@@ -27,7 +27,7 @@ std::string HexToDecimal(std::string hex_str) {
 }  // namespace
 
 GeolocationHandler::GeolocationHandler()
-    : cellular_enabled_(false), wifi_enabled_(false), weak_ptr_factory_(this) {}
+    : cellular_enabled_(false), wifi_enabled_(false) {}
 
 GeolocationHandler::~GeolocationHandler() {
   if (ShillManagerClient::Get())

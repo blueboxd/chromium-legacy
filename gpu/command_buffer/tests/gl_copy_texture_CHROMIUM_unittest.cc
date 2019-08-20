@@ -535,9 +535,21 @@ class GLCopyTextureCHROMIUMTest
                    width_, height_, 0, dest_format_type.format,
                    dest_format_type.type, nullptr);
 
-      glCopySubTextureCHROMIUM(textures_[0], source_level, dest_target,
-                               textures_[1], dest_level, 0, 0, 0, 0, width_,
-                               height_, false, false, false);
+      // Split large blits into two in order to expose bugs at lower levels.
+      constexpr int sub_rect_width = 8;
+      if (width_ <= sub_rect_width) {
+        glCopySubTextureCHROMIUM(textures_[0], source_level, dest_target,
+                                 textures_[1], dest_level, 0, 0, 0, 0, width_,
+                                 height_, false, false, false);
+      } else {
+        glCopySubTextureCHROMIUM(
+            textures_[0], source_level, dest_target, textures_[1], dest_level,
+            0, 0, 0, 0, width_ - sub_rect_width, height_, false, false, false);
+        glCopySubTextureCHROMIUM(
+            textures_[0], source_level, dest_target, textures_[1], dest_level,
+            width_ - sub_rect_width, 0, width_ - sub_rect_width, 0,
+            sub_rect_width, height_, false, false, false);
+      }
     }
     const GLenum last_error = glGetError();
     EXPECT_TRUE(last_error == GL_NO_ERROR)
@@ -694,6 +706,17 @@ TEST_P(GLCopyTextureCHROMIUMTest, Basic) {
 
   GLTestHelper::CheckPixels(0, 0, 1, 1, 0, pixels, nullptr);
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
+}
+
+TEST_P(GLCopyTextureCHROMIUMES3Test, BigTexture) {
+  if (ShouldSkipBGRA())
+    return;
+  width_ = 1080;
+  height_ = 1080;
+  const CopyType copy_type = GetParam();
+  FormatType src_format{GL_BGRA_EXT, GL_BGRA_EXT, GL_UNSIGNED_BYTE};
+  FormatType dest_format{GL_RGB, GL_RGB, GL_UNSIGNED_BYTE};
+  RunCopyTexture(GL_TEXTURE_2D, copy_type, src_format, 0, dest_format, 0, true);
 }
 
 TEST_P(GLCopyTextureCHROMIUMES3Test, FormatCombinations) {

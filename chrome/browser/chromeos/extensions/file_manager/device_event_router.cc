@@ -20,17 +20,13 @@ DeviceEventRouter::DeviceEventRouter()
     : resume_time_delta_(base::TimeDelta::FromSeconds(10)),
       startup_time_delta_(base::TimeDelta::FromSeconds(10)),
       is_starting_up_(false),
-      is_resuming_(false),
-      weak_factory_(this) {
-}
+      is_resuming_(false) {}
 
 DeviceEventRouter::DeviceEventRouter(base::TimeDelta overriding_time_delta)
     : resume_time_delta_(overriding_time_delta),
       startup_time_delta_(overriding_time_delta),
       is_starting_up_(false),
-      is_resuming_(false),
-      weak_factory_(this) {
-}
+      is_resuming_(false) {}
 
 DeviceEventRouter::~DeviceEventRouter() = default;
 

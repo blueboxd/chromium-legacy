@@ -41,8 +41,7 @@ NetworkScreen::NetworkScreen(NetworkScreenView* view,
     : BaseScreen(NetworkScreenView::kScreenId),
       view_(view),
       exit_callback_(exit_callback),
-      network_state_helper_(std::make_unique<login::NetworkStateHelper>()),
-      weak_ptr_factory_(this) {
+      network_state_helper_(std::make_unique<login::NetworkStateHelper>()) {
   if (view_)
     view_->Bind(this);
 }

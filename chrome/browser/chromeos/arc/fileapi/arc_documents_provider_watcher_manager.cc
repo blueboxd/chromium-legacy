@@ -95,8 +95,7 @@ void RemoveWatcherOnUIThread(
 
 }  // namespace
 
-ArcDocumentsProviderWatcherManager::ArcDocumentsProviderWatcherManager()
-    : weak_ptr_factory_(this) {}
+ArcDocumentsProviderWatcherManager::ArcDocumentsProviderWatcherManager() {}
 
 ArcDocumentsProviderWatcherManager::~ArcDocumentsProviderWatcherManager() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);

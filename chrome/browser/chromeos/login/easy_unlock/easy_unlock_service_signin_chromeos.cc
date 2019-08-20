@@ -177,8 +177,7 @@ EasyUnlockServiceSignin::EasyUnlockServiceSignin(
       account_id_(EmptyAccountId()),
       user_pod_last_focused_timestamp_(base::TimeTicks::Now()),
       remote_device_cache_(
-          multidevice::RemoteDeviceCache::Factory::Get()->BuildInstance()),
-      weak_ptr_factory_(this) {}
+          multidevice::RemoteDeviceCache::Factory::Get()->BuildInstance()) {}
 
 EasyUnlockServiceSignin::~EasyUnlockServiceSignin() {}
 

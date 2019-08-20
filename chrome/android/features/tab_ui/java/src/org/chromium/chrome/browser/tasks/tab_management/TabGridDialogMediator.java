@@ -190,7 +190,8 @@ public class TabGridDialogMediator {
     private void updateGridTabSwitcher() {
         if (!isVisible() || mTabSwitcherResetHandler == null) return;
         mTabSwitcherResetHandler.resetWithTabList(
-                mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter(), false);
+                mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter(), false,
+                false);
     }
 
     private void updateDialog() {

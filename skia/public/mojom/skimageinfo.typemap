@@ -14,4 +14,4 @@ deps = [
 public_deps = [
   "//skia",
 ]
-type_mappings = [ "skia.mojom.ImageInfo=SkImageInfo" ]
+type_mappings = [ "skia.mojom.ImageInfo=::SkImageInfo" ]

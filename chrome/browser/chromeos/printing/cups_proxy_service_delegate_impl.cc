@@ -19,8 +19,7 @@ namespace chromeos {
 CupsProxyServiceDelegateImpl::CupsProxyServiceDelegateImpl()
     : profile_(ProfileManager::GetPrimaryUserProfile()),
       printers_manager_(
-          CupsPrintersManagerFactory::GetForBrowserContext(profile_)),
-      weak_factory_(this) {
+          CupsPrintersManagerFactory::GetForBrowserContext(profile_)) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 

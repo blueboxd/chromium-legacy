@@ -95,8 +95,7 @@ RemoteDeviceLoader::RemoteDeviceLoader(
     : remaining_devices_(device_info_list),
       user_id_(user_id),
       user_private_key_(user_private_key),
-      secure_message_delegate_(std::move(secure_message_delegate)),
-      weak_ptr_factory_(this) {}
+      secure_message_delegate_(std::move(secure_message_delegate)) {}
 
 RemoteDeviceLoader::~RemoteDeviceLoader() {}
 

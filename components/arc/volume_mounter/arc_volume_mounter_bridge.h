@@ -77,7 +77,7 @@ class ArcVolumeMounterBridge
   // current user session.
   bool files_app_toast_shown_ = false;
 
-  base::WeakPtrFactory<ArcVolumeMounterBridge> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcVolumeMounterBridge> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcVolumeMounterBridge);
 };

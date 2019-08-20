@@ -77,7 +77,7 @@ class ExtensionCacheImpl : public ExtensionCache,
   content::NotificationRegistrar notification_registrar_;
 
   // Weak factory for callbacks.
-  base::WeakPtrFactory<ExtensionCacheImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<ExtensionCacheImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionCacheImpl);
 };

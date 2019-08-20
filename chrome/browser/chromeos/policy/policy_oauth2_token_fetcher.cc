@@ -117,13 +117,12 @@ class PolicyOAuth2TokenFetcherImpl : public PolicyOAuth2TokenFetcher,
   // The callback to invoke when done.
   TokenCallback callback_;
 
-  base::WeakPtrFactory<PolicyOAuth2TokenFetcherImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<PolicyOAuth2TokenFetcherImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PolicyOAuth2TokenFetcherImpl);
 };
 
-PolicyOAuth2TokenFetcherImpl::PolicyOAuth2TokenFetcherImpl()
-    : weak_ptr_factory_(this) {}
+PolicyOAuth2TokenFetcherImpl::PolicyOAuth2TokenFetcherImpl() {}
 
 PolicyOAuth2TokenFetcherImpl::~PolicyOAuth2TokenFetcherImpl() {}
 

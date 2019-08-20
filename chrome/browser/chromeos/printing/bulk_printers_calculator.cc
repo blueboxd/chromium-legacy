@@ -224,8 +224,8 @@ class BulkPrintersCalculatorImpl : public BulkPrintersCalculator {
       : restrictions_(base::MakeRefCounted<Restrictions>()),
         restrictions_runner_(base::CreateSequencedTaskRunner(
             {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
-             base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
-        weak_ptr_factory_(this) {}
+             base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
+  }
 
   void AddObserver(Observer* observer) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -361,7 +361,7 @@ class BulkPrintersCalculatorImpl : public BulkPrintersCalculator {
   base::ObserverList<BulkPrintersCalculator::Observer>::Unchecked observers_;
   SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(BulkPrintersCalculatorImpl);
-  base::WeakPtrFactory<BulkPrintersCalculatorImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<BulkPrintersCalculatorImpl> weak_ptr_factory_{this};
 };
 
 }  // namespace

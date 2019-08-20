@@ -23,10 +23,7 @@ namespace chromeos {
 EasyUnlockGetKeysOperation::EasyUnlockGetKeysOperation(
     const UserContext& user_context,
     const GetKeysCallback& callback)
-    : user_context_(user_context),
-      callback_(callback),
-      key_index_(0),
-      weak_ptr_factory_(this) {}
+    : user_context_(user_context), callback_(callback), key_index_(0) {}
 
 EasyUnlockGetKeysOperation::~EasyUnlockGetKeysOperation() {}
 

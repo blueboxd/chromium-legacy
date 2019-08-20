@@ -93,8 +93,7 @@ bool ProfileHelper::always_return_primary_user_for_testing = false;
 ////////////////////////////////////////////////////////////////////////////////
 // ProfileHelper, public
 
-ProfileHelper::ProfileHelper()
-    : browsing_data_remover_(nullptr), weak_factory_(this) {}
+ProfileHelper::ProfileHelper() : browsing_data_remover_(nullptr) {}
 
 ProfileHelper::~ProfileHelper() {
   // Checking whether UserManager is initialized covers case

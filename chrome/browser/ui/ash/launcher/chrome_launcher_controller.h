@@ -427,7 +427,7 @@ class ChromeLauncherController
   using RunningAppListIdMap = std::map<std::string, RunningAppListIds>;
   RunningAppListIdMap last_used_running_application_order_;
 
-  base::WeakPtrFactory<ChromeLauncherController> weak_ptr_factory_;
+  base::WeakPtrFactory<ChromeLauncherController> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherController);
 };

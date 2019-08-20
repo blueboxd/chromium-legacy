@@ -35,9 +35,7 @@ const int kMaxStrokeGapWhenWritingMs = 1000;
 
 }  // namespace
 
-MetalayerMode::MetalayerMode(Delegate* delegate)
-    : CommonPaletteTool(delegate),
-      weak_factory_(this) {
+MetalayerMode::MetalayerMode(Delegate* delegate) : CommonPaletteTool(delegate) {
   Shell::Get()->AddPreTargetHandler(this);
   VoiceInteractionController::Get()->AddLocalObserver(this);
   Shell::Get()->highlighter_controller()->AddObserver(this);

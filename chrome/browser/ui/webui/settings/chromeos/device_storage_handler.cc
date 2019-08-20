@@ -89,8 +89,7 @@ StorageHandler::StorageHandler(Profile* profile,
       is_android_running_(false),
       profile_(profile),
       source_name_(html_source->GetSource()),
-      arc_observer_(this),
-      weak_ptr_factory_(this) {
+      arc_observer_(this) {
   html_source->AddBoolean(
       kAndroidEnabled,
       base::FeatureList::IsEnabled(arc::kUsbStorageUIFeature) &&

@@ -4,14 +4,13 @@
 
 mojom = "//chrome/chrome_cleaner/mojom/windows_handle.mojom"
 public_headers = []
-traits_headers = [
-  "//chrome/chrome_cleaner/mojom/typemaps/windows_handle_mojom_traits.h",
-]
+traits_headers =
+    [ "//chrome/chrome_cleaner/mojom/typemaps/windows_handle_mojom_traits.h" ]
 sources = [
   "//chrome/chrome_cleaner/mojom/typemaps/windows_handle_mojom_traits.cc",
 ]
 
 type_mappings = [
-  "chrome_cleaner.mojom.PredefinedHandle=HANDLE[copyable_pass_by_value]",
-  "chrome_cleaner.mojom.WindowsHandle=HANDLE[copyable_pass_by_value]",
+  "chrome_cleaner.mojom.PredefinedHandle=::HANDLE[copyable_pass_by_value]",
+  "chrome_cleaner.mojom.WindowsHandle=::HANDLE[copyable_pass_by_value]",
 ]

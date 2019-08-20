@@ -5,6 +5,7 @@
 #include "content/browser/scheduler/responsiveness/jank_monitor.h"
 
 #include "base/callback.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "content/browser/scheduler/responsiveness/native_event_observer.h"
@@ -52,16 +53,9 @@ class TestJankMonitor : public JankMonitor {
     on_destroyed_ = std::move(on_destroyed);
   }
 
-  void RunMonitorThreadUntilIdle() { mock_task_runner_->RunUntilIdle(); }
-  void FastForwardMonitorThreadBy(base::TimeDelta delta) {
-    mock_task_runner_->FastForwardBy(delta);
-  }
-
   using JankMonitor::timer_running;
 
  protected:
-  friend class base::RefCounted<TestJankMonitor>;
-
   ~TestJankMonitor() override {
     if (on_destroyed_)
       std::move(on_destroyed_).Run();
@@ -74,11 +68,6 @@ class TestJankMonitor : public JankMonitor {
   void DestroyOnMonitorThread() override {
     destroy_on_monitor_thread_called_ = true;
     JankMonitor::DestroyOnMonitorThread();
-  }
-
-  scoped_refptr<base::SequencedTaskRunner> CreateMonitorTaskRunner() override {
-    mock_task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
-    return mock_task_runner_;
   }
 
  private:
@@ -98,29 +87,18 @@ class JankMonitorTest : public testing::Test {
     monitor_ = base::MakeRefCounted<TestJankMonitor>();
     monitor_->SetUp();
     monitor_->AddObserver(&test_observer_);
-    RunAllThreadsUntilIdle();
+    test_browser_thread_bundle_.RunUntilIdle();
   }
 
   void TearDown() override {
     if (!monitor_)  // Already teared down.
       return;
     monitor_->Destroy();
-    RunAllThreadsUntilIdle();
+    test_browser_thread_bundle_.RunUntilIdle();
     monitor_ = nullptr;
   }
 
  protected:
-  void RunAllThreadsUntilIdle() {
-    test_browser_thread_bundle_.RunUntilIdle();
-    monitor_->RunMonitorThreadUntilIdle();
-    test_browser_thread_bundle_.RunUntilIdle();
-  }
-
-  void FastForwardAllThreadsByMs(int time_delta_ms) {
-    auto delta = base::TimeDelta::FromMilliseconds(time_delta_ms);
-    test_browser_thread_bundle_.FastForwardBy(delta);
-    monitor_->FastForwardMonitorThreadBy(delta);
-  }
 
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
   scoped_refptr<TestJankMonitor> monitor_;
@@ -141,7 +119,7 @@ TEST_F(JankMonitorTest, LifeCycle) {
 
   // Test that the monitor thread is destroyed.
   monitor_->Destroy();
-  RunAllThreadsUntilIdle();
+  test_browser_thread_bundle_.RunUntilIdle();
   EXPECT_TRUE(monitor_->destroy_on_monitor_thread_called());
 
   // Release the last reference to TestJankMonitor. Check that it doesn't leak.
@@ -161,8 +139,8 @@ TEST_F(JankMonitorTest, JankUIThread) {
     VALIDATE_TEST_OBSERVER_CALLS();
     // This is a janky task that runs for 1.5 seconds.
     expected_jank_started_++;
-    FastForwardAllThreadsByMs(1500);
-    RunAllThreadsUntilIdle();
+    test_browser_thread_bundle_.FastForwardBy(
+        base::TimeDelta::FromMilliseconds(1500));
 
     // Monitor should observe that the jank has started.
     VALIDATE_TEST_OBSERVER_CALLS();
@@ -173,19 +151,19 @@ TEST_F(JankMonitorTest, JankUIThread) {
   // incremented by 1.
   base::PostTask(FROM_HERE, {content::BrowserThread::UI},
                  base::BindLambdaForTesting(janky_task));
-  RunAllThreadsUntilIdle();
+  test_browser_thread_bundle_.RunUntilIdle();
   VALIDATE_TEST_OBSERVER_CALLS();
 
   // Post a non janky task. Number of callback calls should remain the same.
   base::PostTask(FROM_HERE, {content::BrowserThread::UI}, base::DoNothing());
-  RunAllThreadsUntilIdle();
+  test_browser_thread_bundle_.RunUntilIdle();
   VALIDATE_TEST_OBSERVER_CALLS();
 
   // Post a janky task again. Monitor thread timer should fire again. Number of
   // callback calls should be incremented by 1 again.
   base::PostTask(FROM_HERE, {content::BrowserThread::UI},
                  base::BindLambdaForTesting(janky_task));
-  RunAllThreadsUntilIdle();
+  test_browser_thread_bundle_.RunUntilIdle();
   VALIDATE_TEST_OBSERVER_CALLS();
 }
 
@@ -196,8 +174,8 @@ TEST_F(JankMonitorTest, JankIOThread) {
 
     // This is a janky task that runs for 1.5 seconds.
     expected_jank_started_++;
-    FastForwardAllThreadsByMs(1500);
-    RunAllThreadsUntilIdle();
+    test_browser_thread_bundle_.FastForwardBy(
+        base::TimeDelta::FromMilliseconds(1500));
 
     // Monitor should observe that the jank has started.
     VALIDATE_TEST_OBSERVER_CALLS();
@@ -209,7 +187,7 @@ TEST_F(JankMonitorTest, JankIOThread) {
   // callback calls by 1.
   base::PostTask(FROM_HERE, {content::BrowserThread::IO},
                  base::BindLambdaForTesting(janky_task));
-  RunAllThreadsUntilIdle();
+  test_browser_thread_bundle_.RunUntilIdle();
   VALIDATE_TEST_OBSERVER_CALLS();
 }
 
@@ -221,15 +199,16 @@ TEST_F(JankMonitorTest, JankUIThreadReentrant) {
 
     // This is a janky task that runs for 1.5 seconds.
     expected_jank_started_++;
-    FastForwardAllThreadsByMs(1500);
-    RunAllThreadsUntilIdle();
+    test_browser_thread_bundle_.FastForwardBy(
+        base::TimeDelta::FromMilliseconds(1500));
 
     // Monitor should observe that the jank has started.
     VALIDATE_TEST_OBSERVER_CALLS();
 
     auto nested_janky_task = [&]() {
       // This also janks the current thread.
-      FastForwardAllThreadsByMs(1500);
+      test_browser_thread_bundle_.FastForwardBy(
+          base::TimeDelta::FromMilliseconds(1500));
 
       // The callback shouldn't be called.
       VALIDATE_TEST_OBSERVER_CALLS();
@@ -245,7 +224,7 @@ TEST_F(JankMonitorTest, JankUIThreadReentrant) {
   // incremented by 1.
   base::PostTask(FROM_HERE, {content::BrowserThread::UI},
                  base::BindLambdaForTesting(janky_task));
-  RunAllThreadsUntilIdle();
+  test_browser_thread_bundle_.RunUntilIdle();
   VALIDATE_TEST_OBSERVER_CALLS();
 }
 
@@ -257,32 +236,33 @@ TEST_F(JankMonitorTest, JankUIAndIOThread) {
 
     // This should trigger the monitor. TestJankMonitor::OnJankStarted() should
     // be called once.
-    FastForwardAllThreadsByMs(1500);
-    RunAllThreadsUntilIdle();
+    test_browser_thread_bundle_.FastForwardBy(
+        base::TimeDelta::FromMilliseconds(1500));
     VALIDATE_TEST_OBSERVER_CALLS();
 
     // The IO thread is also janky.
     auto janky_task_io = [&]() {
       // This is a janky task that runs for 1.5 seconds, but shouldn't trigger
       // the monitor.
-      FastForwardAllThreadsByMs(1500);
-      RunAllThreadsUntilIdle();
+      test_browser_thread_bundle_.FastForwardBy(
+          base::TimeDelta::FromMilliseconds(1500));
       VALIDATE_TEST_OBSERVER_CALLS();
 
       // Monitor should observe that the jank has started.
     };
     base::PostTask(FROM_HERE, {content::BrowserThread::IO},
                    base::BindLambdaForTesting(janky_task_io));
-    RunAllThreadsUntilIdle();
+    test_browser_thread_bundle_.RunUntilIdle();
     // TestJankMonitor::OnJankStopped() shouldn't be called.
     VALIDATE_TEST_OBSERVER_CALLS();
 
-    FastForwardAllThreadsByMs(500);
+    test_browser_thread_bundle_.FastForwardBy(
+        base::TimeDelta::FromMilliseconds(500));
     expected_jank_stopped_++;
   };
   base::PostTask(FROM_HERE, {content::BrowserThread::UI},
                  base::BindLambdaForTesting(janky_task_ui));
-  RunAllThreadsUntilIdle();
+  test_browser_thread_bundle_.RunUntilIdle();
   // Expect that TestJankMonitor::OnJankStopped() was called.
   VALIDATE_TEST_OBSERVER_CALLS();
 }
@@ -293,24 +273,92 @@ TEST_F(JankMonitorTest, StartStopTimer) {
   // Activity on the UI thread - timer should be running.
   base::PostTask(FROM_HERE, {content::BrowserThread::UI},
                  base::BindOnce(base::DoNothing::Once()));
-  RunAllThreadsUntilIdle();
+  test_browser_thread_bundle_.RunUntilIdle();
   EXPECT_TRUE(monitor_->timer_running());
 
   // 11 seconds passed with no activity - timer should be stopped.
-  FastForwardAllThreadsByMs(11 * 1000);
-  RunAllThreadsUntilIdle();
+  test_browser_thread_bundle_.FastForwardBy(
+      base::TimeDelta::FromMilliseconds(11 * 1000));
   EXPECT_FALSE(monitor_->timer_running());
 
   // Activity on IO thread - timer should be restarted.
   base::PostTask(FROM_HERE, {content::BrowserThread::IO},
                  base::BindOnce(base::DoNothing::Once()));
-  RunAllThreadsUntilIdle();
+  test_browser_thread_bundle_.RunUntilIdle();
   EXPECT_TRUE(monitor_->timer_running());
 
   // 11 seconds passed with no activity - timer should be stopped.
-  FastForwardAllThreadsByMs(11 * 1000);
-  RunAllThreadsUntilIdle();
+  test_browser_thread_bundle_.FastForwardBy(
+      base::TimeDelta::FromMilliseconds(11 * 1000));
   EXPECT_FALSE(monitor_->timer_running());
+}
+
+class TestJankMonitorShutdownRace : public JankMonitor {
+ public:
+  TestJankMonitorShutdownRace(base::WaitableEvent* shutdown_on_monitor_thread,
+                              base::WaitableEvent* shutdown_on_ui_thread)
+      : shutdown_on_monitor_thread_(shutdown_on_monitor_thread),
+        shutdown_on_ui_thread_(shutdown_on_ui_thread) {}
+
+  using JankMonitor::timer_running;
+
+ protected:
+  ~TestJankMonitorShutdownRace() override = default;
+
+  std::unique_ptr<MetricSource> CreateMetricSource() override {
+    return std::make_unique<TestMetricSource>(this);
+  }
+
+  void DestroyOnMonitorThread() override {
+    JankMonitor::DestroyOnMonitorThread();
+
+    // Posts a task to the UI thread. If MetricSource is still active, this
+    // will restart the timer and fail the test.
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(base::DoNothing::Once()));
+
+    shutdown_on_monitor_thread_->Signal();
+  }
+
+  void FinishDestroyMetricSource() override {
+    JankMonitor::FinishDestroyMetricSource();
+
+    shutdown_on_ui_thread_->Signal();
+  }
+
+ private:
+  base::WaitableEvent* shutdown_on_monitor_thread_;
+  base::WaitableEvent* shutdown_on_ui_thread_;
+};
+
+// Test that shutdown race with the monitor timer doesn't happen.
+TEST(JankMonitorShutdownTest, ShutdownRace) {
+  content::TestBrowserThreadBundle test_browser_thread_bundle;
+
+  // Use WaitableEvent to control the progress of shutdown sequence.
+  base::WaitableEvent shutdown_on_monitor_thread;
+  base::WaitableEvent shutdown_on_ui_thread;
+
+  scoped_refptr<TestJankMonitorShutdownRace> jank_monitor =
+      base::MakeRefCounted<TestJankMonitorShutdownRace>(
+          &shutdown_on_monitor_thread, &shutdown_on_ui_thread);
+  jank_monitor->SetUp();
+  test_browser_thread_bundle.RunUntilIdle();
+
+  jank_monitor->Destroy();
+  test_browser_thread_bundle.RunUntilIdle();
+
+  if (!shutdown_on_monitor_thread.IsSignaled())
+    shutdown_on_monitor_thread.Wait();
+  test_browser_thread_bundle.RunUntilIdle();
+
+  if (!shutdown_on_ui_thread.IsSignaled())
+    shutdown_on_ui_thread.Wait();
+  test_browser_thread_bundle.RunUntilIdle();
+
+  // The monitor thread should be shut down with MetricSource destroyed, i.e.
+  // the monitor timer shouldn't be restarted.
+  EXPECT_FALSE(jank_monitor->timer_running());
 }
 
 #undef VALIDATE_TEST_OBSERVER_CALLS

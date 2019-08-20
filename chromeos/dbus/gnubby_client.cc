@@ -19,7 +19,7 @@ namespace {
 
 class GnubbyClientImpl : public GnubbyClient {
  public:
-  GnubbyClientImpl() : weak_ptr_factory_(this) {}
+  GnubbyClientImpl() {}
 
   // GnubbyClient override.
   void AddObserver(Observer* observer) override {
@@ -60,7 +60,7 @@ class GnubbyClientImpl : public GnubbyClient {
 
   base::ObserverList<Observer>::Unchecked observer_list_;
 
-  base::WeakPtrFactory<GnubbyClientImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<GnubbyClientImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GnubbyClientImpl);
 };

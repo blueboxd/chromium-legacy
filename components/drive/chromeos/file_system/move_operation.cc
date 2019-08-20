@@ -71,9 +71,7 @@ MoveOperation::MoveOperation(base::SequencedTaskRunner* blocking_task_runner,
                              internal::ResourceMetadata* metadata)
     : blocking_task_runner_(blocking_task_runner),
       delegate_(delegate),
-      metadata_(metadata),
-      weak_ptr_factory_(this) {
-}
+      metadata_(metadata) {}
 
 MoveOperation::~MoveOperation() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

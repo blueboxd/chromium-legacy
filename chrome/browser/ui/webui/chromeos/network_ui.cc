@@ -87,7 +87,7 @@ void SetDeviceProperties(base::DictionaryValue* dictionary) {
 
 class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
  public:
-  NetworkConfigMessageHandler() : weak_ptr_factory_(this) {}
+  NetworkConfigMessageHandler() {}
   ~NetworkConfigMessageHandler() override {}
 
   // WebUIMessageHandler implementation.
@@ -272,7 +272,7 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
     InternetConfigDialog::ShowDialogForNetworkType(onc_type);
   }
 
-  base::WeakPtrFactory<NetworkConfigMessageHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<NetworkConfigMessageHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NetworkConfigMessageHandler);
 };

@@ -82,8 +82,7 @@ SearchResultTileItemView::SearchResultTileItemView(
           app_list_features::IsPlayStoreAppSearchEnabled()),
       is_app_reinstall_recommendation_enabled_(
           app_list_features::IsAppReinstallZeroStateEnabled()),
-      show_in_apps_page_(show_in_apps_page),
-      weak_ptr_factory_(this) {
+      show_in_apps_page_(show_in_apps_page) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
 
   // When |result_| is null, the tile is invisible. Calling SetSearchResult with

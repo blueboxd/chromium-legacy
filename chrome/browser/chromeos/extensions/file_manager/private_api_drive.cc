@@ -297,8 +297,7 @@ class SingleEntryPropertiesGetterForDrive {
         local_path_(local_path),
         running_profile_(profile),
         properties_(new EntryProperties),
-        file_owner_profile_(nullptr),
-        weak_ptr_factory_(this) {
+        file_owner_profile_(nullptr) {
     DCHECK(!callback_.is_null());
     DCHECK(profile);
   }
@@ -443,7 +442,8 @@ class SingleEntryPropertiesGetterForDrive {
   base::FilePath file_path_;
   std::unique_ptr<drive::ResourceEntry> owner_resource_entry_;
 
-  base::WeakPtrFactory<SingleEntryPropertiesGetterForDrive> weak_ptr_factory_;
+  base::WeakPtrFactory<SingleEntryPropertiesGetterForDrive> weak_ptr_factory_{
+      this};
 };  // class SingleEntryPropertiesGetterForDrive
 
 class SingleEntryPropertiesGetterForFileSystemProvider {
@@ -476,8 +476,7 @@ class SingleEntryPropertiesGetterForFileSystemProvider {
       : callback_(std::move(callback)),
         file_system_url_(file_system_url),
         names_(names),
-        properties_(new EntryProperties),
-        weak_ptr_factory_(this) {
+        properties_(new EntryProperties) {
     DCHECK(!callback_.is_null());
   }
 
@@ -581,7 +580,7 @@ class SingleEntryPropertiesGetterForFileSystemProvider {
   std::unique_ptr<EntryProperties> properties_;
 
   base::WeakPtrFactory<SingleEntryPropertiesGetterForFileSystemProvider>
-      weak_ptr_factory_;
+      weak_ptr_factory_{this};
 };  // class SingleEntryPropertiesGetterForDrive
 
 class SingleEntryPropertiesGetterForDriveFs {
@@ -612,8 +611,7 @@ class SingleEntryPropertiesGetterForDriveFs {
       : callback_(std::move(callback)),
         file_system_url_(file_system_url),
         running_profile_(profile),
-        properties_(std::make_unique<EntryProperties>()),
-        weak_ptr_factory_(this) {
+        properties_(std::make_unique<EntryProperties>()) {
     DCHECK(callback_);
     DCHECK(profile);
   }
@@ -757,7 +755,8 @@ class SingleEntryPropertiesGetterForDriveFs {
   // Values used in the process.
   std::unique_ptr<EntryProperties> properties_;
 
-  base::WeakPtrFactory<SingleEntryPropertiesGetterForDriveFs> weak_ptr_factory_;
+  base::WeakPtrFactory<SingleEntryPropertiesGetterForDriveFs> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(SingleEntryPropertiesGetterForDriveFs);
 };
@@ -790,8 +789,7 @@ class SingleEntryPropertiesGetterForDocumentsProvider {
       : callback_(std::move(callback)),
         file_system_url_(file_system_url),
         profile_(profile),
-        properties_(new EntryProperties),
-        weak_ptr_factory_(this) {
+        properties_(new EntryProperties) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(!callback_.is_null());
   }
@@ -847,7 +845,7 @@ class SingleEntryPropertiesGetterForDocumentsProvider {
   std::unique_ptr<EntryProperties> properties_;
 
   base::WeakPtrFactory<SingleEntryPropertiesGetterForDocumentsProvider>
-      weak_ptr_factory_;
+      weak_ptr_factory_{this};
 };  // class SingleEntryPropertiesGetterForDocumentsProvider
 
 std::string MakeThumbnailDataUrlOnSequence(

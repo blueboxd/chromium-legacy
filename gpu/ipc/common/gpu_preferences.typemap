@@ -17,4 +17,4 @@ deps = [
 sources = [
   "//gpu/ipc/common/gpu_preferences_mojom_traits.h",
 ]
-type_mappings = [ "gpu.mojom.GpuPreferences=gpu::GpuPreferences" ]
+type_mappings = [ "gpu.mojom.GpuPreferences=::gpu::GpuPreferences" ]

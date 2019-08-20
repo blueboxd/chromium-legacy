@@ -27,8 +27,7 @@ DefaultCorpusChangeListLoader::DefaultCorpusChangeListLoader(
       blocking_task_runner_(blocking_task_runner),
       resource_metadata_(resource_metadata),
       scheduler_(scheduler),
-      loader_controller_(apply_task_controller),
-      weak_ptr_factory_(this) {
+      loader_controller_(apply_task_controller) {
   DCHECK(clock);
 
   root_folder_id_loader_ =

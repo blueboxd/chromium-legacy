@@ -7,6 +7,7 @@
 #include <ostream>
 #include <tuple>
 
+#include "base/strings/string_util.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 
 namespace web_app {
@@ -37,14 +38,15 @@ bool ExternalInstallOptions::operator==(
                   add_to_quick_launch_bar, override_previous_user_uninstall,
                   bypass_service_worker_check, require_manifest,
                   force_reinstall, wait_for_windows_closed, install_placeholder,
-                  reinstall_placeholder) ==
+                  reinstall_placeholder, uninstall_and_replace) ==
          std::tie(other.url, other.launch_container, other.install_source,
                   other.add_to_applications_menu, other.add_to_desktop,
                   other.add_to_quick_launch_bar,
                   other.override_previous_user_uninstall,
                   other.bypass_service_worker_check, other.require_manifest,
                   other.force_reinstall, other.wait_for_windows_closed,
-                  other.install_placeholder, other.reinstall_placeholder);
+                  other.install_placeholder, other.reinstall_placeholder,
+                  other.uninstall_and_replace);
 }
 
 std::ostream& operator<<(std::ostream& out,
@@ -69,7 +71,9 @@ std::ostream& operator<<(std::ostream& out,
              << "\n install_placeholder: "
              << install_options.install_placeholder
              << "\n reinstall_placeholder: "
-             << install_options.reinstall_placeholder;
+             << install_options.reinstall_placeholder
+             << "\n uninstall_and_replace:\n  "
+             << base::JoinString(install_options.uninstall_and_replace, "\n  ");
 }
 
 InstallManager::InstallParams ConvertExternalInstallOptionsToParams(

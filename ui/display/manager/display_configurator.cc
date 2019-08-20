@@ -581,8 +581,7 @@ DisplayConfigurator::DisplayConfigurator()
           layout_manager_.get(),
           base::BindRepeating(&DisplayConfigurator::configurator_disabled,
                               base::Unretained(this)))),
-      has_unassociated_display_(false),
-      weak_ptr_factory_(this) {
+      has_unassociated_display_(false) {
   AddObserver(content_protection_manager_.get());
 }
 

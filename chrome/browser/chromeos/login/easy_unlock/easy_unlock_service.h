@@ -299,7 +299,7 @@ class EasyUnlockService : public KeyedService {
 
   bool tpm_key_checked_;
 
-  base::WeakPtrFactory<EasyUnlockService> weak_ptr_factory_;
+  base::WeakPtrFactory<EasyUnlockService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockService);
 };

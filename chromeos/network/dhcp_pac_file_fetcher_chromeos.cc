@@ -33,8 +33,7 @@ std::string GetPacUrlFromDefaultNetwork() {
 }  // namespace
 
 DhcpPacFileFetcherChromeos::DhcpPacFileFetcherChromeos(
-    net::URLRequestContext* url_request_context)
-    : weak_ptr_factory_(this) {
+    net::URLRequestContext* url_request_context) {
   DCHECK(url_request_context);
   pac_file_fetcher_ = net::PacFileFetcherImpl::Create(url_request_context);
   if (NetworkHandler::IsInitialized())

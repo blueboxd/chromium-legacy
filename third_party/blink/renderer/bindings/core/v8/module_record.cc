@@ -42,19 +42,6 @@ void ModuleRecordProduceCacheData::Trace(blink::Visitor* visitor) {
   visitor->Trace(unbound_script_.UnsafeCast<v8::Value>());
 }
 
-ModuleRecord::ModuleRecord() = default;
-
-ModuleRecord::ModuleRecord(v8::Isolate* isolate,
-                           v8::Local<v8::Module> module,
-                           const KURL& source_url)
-    : module_(SharedPersistent<v8::Module>::Create(module, isolate)),
-      identity_hash_(static_cast<unsigned>(module->GetIdentityHash())),
-      source_url_(source_url.GetString()) {
-  DCHECK(!module_->IsEmpty());
-}
-
-ModuleRecord::~ModuleRecord() = default;
-
 v8::Local<v8::Module> ModuleRecord::Compile(
     v8::Isolate* isolate,
     const String& source,
@@ -204,8 +191,6 @@ v8::MaybeLocal<v8::Module> ModuleRecord::ResolveModuleCallback(
   Modulator* modulator = Modulator::From(ScriptState::From(context));
   DCHECK(modulator);
 
-  // TODO(shivanisha): Can a valid source url be passed to the constructor.
-  ModuleRecord referrer_record(isolate, referrer, KURL());
   ExceptionState exception_state(isolate, ExceptionState::kExecutionContext,
                                  "ModuleRecord", "resolveModuleCallback");
   v8::Local<v8::Module> resolved =

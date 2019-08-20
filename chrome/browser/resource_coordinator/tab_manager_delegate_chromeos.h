@@ -227,7 +227,7 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
   std::unique_ptr<TabManagerDelegate::MemoryStat> mem_stat_;
 
   // Weak pointer factory used for posting tasks to other threads.
-  base::WeakPtrFactory<TabManagerDelegate> weak_ptr_factory_;
+  base::WeakPtrFactory<TabManagerDelegate> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TabManagerDelegate);
 };

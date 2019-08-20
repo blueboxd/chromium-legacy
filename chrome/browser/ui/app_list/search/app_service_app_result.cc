@@ -25,8 +25,7 @@ AppServiceAppResult::AppServiceAppResult(Profile* profile,
       icon_loader_(icon_loader),
       app_type_(apps::mojom::AppType::kUnknown),
       is_platform_app_(false),
-      show_in_launcher_(false),
-      weak_ptr_factory_(this) {
+      show_in_launcher_(false) {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
 

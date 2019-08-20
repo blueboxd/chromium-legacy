@@ -14,6 +14,6 @@ sources = [
   "//services/viz/public/cpp/compositing/resource_settings_mojom_traits.cc",
 ]
 type_mappings = [
-  "viz.mojom.BufferUsageAndFormat=std::pair<gfx::BufferUsage, gfx::BufferFormat>",
-  "viz.mojom.ResourceSettings=viz::ResourceSettings",
+  "viz.mojom.BufferUsageAndFormat=::std::pair<::gfx::BufferUsage, gfx::BufferFormat>",
+  "viz.mojom.ResourceSettings=::viz::ResourceSettings",
 ]

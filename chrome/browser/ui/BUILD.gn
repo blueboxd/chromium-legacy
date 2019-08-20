@@ -3432,6 +3432,8 @@ jumbo_split_static_library("ui") {
       "app_list/search/arc/arc_playstore_search_result.h",
       "app_list/search/chrome_search_result.cc",
       "app_list/search/chrome_search_result.h",
+      "app_list/search/common/file_icon_util.cc",
+      "app_list/search/common/file_icon_util.h",
       "app_list/search/common/url_icon_source.cc",
       "app_list/search/common/url_icon_source.h",
       "app_list/search/extension_app_result.cc",
@@ -3500,6 +3502,7 @@ jumbo_split_static_library("ui") {
       "//chrome/browser/ui/app_list/search/search_result_ranker:app_launch_predictor_proto",
       "//chrome/browser/ui/app_list/search/search_result_ranker:app_list_launch_recorder_proto",
       "//chrome/browser/ui/app_list/search/search_result_ranker:recurrence_ranker_proto",
+      "//ui/file_manager:file_manager",
     ]
 
     if (is_chromeos) {

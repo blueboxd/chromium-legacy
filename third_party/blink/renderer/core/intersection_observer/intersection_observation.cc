@@ -46,9 +46,6 @@ void IntersectionObservation::Compute(unsigned flags) {
     return;
   if (!(flags & kIgnoreDelay) &&
       timestamp - last_run_time_ < observer_->GetEffectiveDelay()) {
-    // TODO(crbug.com/915495): Need to eventually notify the observer of the
-    // updated intersection because there's currently nothing to guarantee this
-    // Compute() method will be called again after the delay period has passed.
     return;
   }
   if (target_->isConnected() && Observer()->trackVisibility()) {

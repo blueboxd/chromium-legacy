@@ -81,7 +81,7 @@ class ASH_EXPORT TrayBluetoothHelperLegacy
   base::Time discovery_start_timestamp_;
 
   // Object could be deleted during a prolonged Bluetooth operation.
-  base::WeakPtrFactory<TrayBluetoothHelperLegacy> weak_ptr_factory_;
+  base::WeakPtrFactory<TrayBluetoothHelperLegacy> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TrayBluetoothHelperLegacy);
 };

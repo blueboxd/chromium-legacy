@@ -233,8 +233,8 @@ void RTCRtpTransceiver::setCodecPreferences(
         }
         auto parameter_name = parameter.Left(equal_position);
         auto parameter_value = parameter.Substring(equal_position + 1);
-        webrtc_codec.parameters.insert(std::make_pair<std::string, std::string>(
-            parameter_name.Ascii(), parameter_value.Ascii()));
+        webrtc_codec.parameters.emplace(parameter_name.Ascii(),
+                                        parameter_value.Ascii());
       }
     }
   }

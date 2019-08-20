@@ -61,7 +61,7 @@ namespace content {
 PepperVpnProviderMessageFilter::PepperVpnProviderMessageFilter(
     BrowserPpapiHostImpl* host,
     PP_Instance instance)
-    : browser_context_(nullptr), bound_(false), weak_factory_(this) {
+    : browser_context_(nullptr), bound_(false) {
   DCHECK(host);
 
   document_url_ = host->GetDocumentURLForInstance(instance);

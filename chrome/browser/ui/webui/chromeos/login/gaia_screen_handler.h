@@ -433,7 +433,7 @@ class GaiaScreenHandler : public BaseScreenHandler,
   SecurityTokenPinDialogClosedCallback
       security_token_pin_dialog_closed_callback_;
 
-  base::WeakPtrFactory<GaiaScreenHandler> weak_factory_;
+  base::WeakPtrFactory<GaiaScreenHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GaiaScreenHandler);
 };

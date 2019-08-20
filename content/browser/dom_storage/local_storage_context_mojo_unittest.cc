@@ -29,9 +29,10 @@
 #include "content/test/fake_leveldb_database.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
-#include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 #include "services/file/public/mojom/constants.mojom.h"
 #include "services/file/user_id_map.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
@@ -109,7 +110,7 @@ class LocalStorageContextMojoTest : public testing::Test {
  public:
   LocalStorageContextMojoTest()
       : db_(&mock_data_),
-        db_binding_(&db_),
+        db_receiver_(&db_),
         task_runner_(new MockDOMStorageTaskRunner(
             base::ThreadTaskRunnerHandle::Get().get())),
         mock_special_storage_policy_(new MockSpecialStoragePolicy()) {
@@ -127,11 +128,11 @@ class LocalStorageContextMojoTest : public testing::Test {
           base::ThreadTaskRunnerHandle::Get(), nullptr, task_runner_,
           temp_path_.GetPath(), base::FilePath(FILE_PATH_LITERAL("leveldb")),
           special_storage_policy());
-      leveldb::mojom::LevelDBDatabaseAssociatedPtr database_ptr;
-      leveldb::mojom::LevelDBDatabaseAssociatedRequest request =
-          MakeRequestAssociatedWithDedicatedPipe(&database_ptr);
-      context_->SetDatabaseForTesting(std::move(database_ptr));
-      db_binding_.Bind(std::move(request));
+      mojo::AssociatedRemote<leveldb::mojom::LevelDBDatabase> database_remote;
+      auto receiver =
+          database_remote.BindNewEndpointAndPassDedicatedReceiverForTesting();
+      context_->SetDatabaseForTesting(database_remote.Unbind());
+      db_receiver_.Bind(std::move(receiver));
     }
     return context_;
   }
@@ -180,7 +181,7 @@ class LocalStorageContextMojoTest : public testing::Test {
                    : base::nullopt;
   }
 
-  void CloseBinding() { db_binding_.Close(); }
+  void CloseBinding() { db_receiver_.reset(); }
 
   base::FilePath TempPath() { return temp_path_.GetPath(); }
 
@@ -189,7 +190,7 @@ class LocalStorageContextMojoTest : public testing::Test {
   base::ScopedTempDir temp_path_;
   std::map<std::vector<uint8_t>, std::vector<uint8_t>> mock_data_;
   FakeLevelDBDatabase db_;
-  mojo::AssociatedBinding<leveldb::mojom::LevelDBDatabase> db_binding_;
+  mojo::AssociatedReceiver<leveldb::mojom::LevelDBDatabase> db_receiver_;
 
   scoped_refptr<MockDOMStorageTaskRunner> task_runner_;
 
@@ -1067,9 +1068,9 @@ TEST_F(LocalStorageContextMojoTestWithService, RecreateOnCommitFailure) {
   // with a database implementation that always fails on write.
   ASSERT_EQ(1u, mock_leveldb_service.open_requests().size());
   auto& open_request = mock_leveldb_service.open_requests()[0];
-  auto mock_db = mojo::MakeStrongAssociatedBinding(
+  auto mock_db = mojo::MakeSelfOwnedAssociatedReceiver(
       std::make_unique<FakeLevelDBDatabaseErrorOnWrite>(&test_data),
-      std::move(open_request.request));
+      std::move(open_request.receiver));
   std::move(open_request.callback).Run(leveldb::mojom::DatabaseError::OK);
   mock_leveldb_service.open_requests().clear();
 
@@ -1141,9 +1142,9 @@ TEST_F(LocalStorageContextMojoTestWithService, RecreateOnCommitFailure) {
   reopen_loop.Run();
   ASSERT_EQ(1u, mock_leveldb_service.open_requests().size());
   auto& reopen_request = mock_leveldb_service.open_requests()[0];
-  mock_db = mojo::MakeStrongAssociatedBinding(
+  mock_db = mojo::MakeSelfOwnedAssociatedReceiver(
       std::make_unique<FakeLevelDBDatabase>(&test_data),
-      std::move(reopen_request.request));
+      std::move(reopen_request.receiver));
   std::move(reopen_request.callback).Run(leveldb::mojom::DatabaseError::OK);
   mock_leveldb_service.open_requests().clear();
 
@@ -1204,9 +1205,9 @@ TEST_F(LocalStorageContextMojoTestWithService,
   // with a database implementation that always fails on write.
   ASSERT_EQ(1u, mock_leveldb_service.open_requests().size());
   auto& open_request = mock_leveldb_service.open_requests()[0];
-  auto mock_db = mojo::MakeStrongAssociatedBinding(
+  auto mock_db = mojo::MakeSelfOwnedAssociatedReceiver(
       std::make_unique<FakeLevelDBDatabaseErrorOnWrite>(&test_data),
-      std::move(open_request.request));
+      std::move(open_request.receiver));
   std::move(open_request.callback).Run(leveldb::mojom::DatabaseError::OK);
   mock_leveldb_service.open_requests().clear();
 
@@ -1253,9 +1254,9 @@ TEST_F(LocalStorageContextMojoTestWithService,
   reopen_loop.Run();
   ASSERT_EQ(1u, mock_leveldb_service.open_requests().size());
   auto& reopen_request = mock_leveldb_service.open_requests()[0];
-  mock_db = mojo::MakeStrongAssociatedBinding(
+  mock_db = mojo::MakeSelfOwnedAssociatedReceiver(
       std::make_unique<FakeLevelDBDatabaseErrorOnWrite>(&test_data),
-      std::move(reopen_request.request));
+      std::move(reopen_request.receiver));
   std::move(reopen_request.callback).Run(leveldb::mojom::DatabaseError::OK);
   mock_leveldb_service.open_requests().clear();
 

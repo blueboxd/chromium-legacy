@@ -8,7 +8,9 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/service_worker/embedded_worker.mojom.h"
 
 namespace content {
@@ -30,11 +32,12 @@ class FakeEmbeddedWorkerInstanceClient
 
   base::WeakPtr<FakeEmbeddedWorkerInstanceClient> GetWeakPtr();
 
-  blink::mojom::EmbeddedWorkerInstanceHostAssociatedPtr& host() {
+  mojo::AssociatedRemote<blink::mojom::EmbeddedWorkerInstanceHost>& host() {
     return host_;
   }
 
-  void Bind(blink::mojom::EmbeddedWorkerInstanceClientRequest request);
+  void Bind(mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>
+                receiver);
   void RunUntilBound();
 
   // Closes the binding and deletes |this|.
@@ -63,9 +66,9 @@ class FakeEmbeddedWorkerInstanceClient
   EmbeddedWorkerTestHelper* const helper_;
 
   blink::mojom::EmbeddedWorkerStartParamsPtr start_params_;
-  blink::mojom::EmbeddedWorkerInstanceHostAssociatedPtr host_;
+  mojo::AssociatedRemote<blink::mojom::EmbeddedWorkerInstanceHost> host_;
 
-  mojo::Binding<blink::mojom::EmbeddedWorkerInstanceClient> binding_;
+  mojo::Receiver<blink::mojom::EmbeddedWorkerInstanceClient> receiver_{this};
   base::OnceClosure quit_closure_for_bind_;
 
   base::WeakPtrFactory<FakeEmbeddedWorkerInstanceClient> weak_factory_{this};

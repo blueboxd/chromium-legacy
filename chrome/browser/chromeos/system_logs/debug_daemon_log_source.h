@@ -62,7 +62,7 @@ class DebugDaemonLogSource : public SystemLogsSource {
   SysLogsSourceCallback callback_;
   int num_pending_requests_;
   bool scrub_;
-  base::WeakPtrFactory<DebugDaemonLogSource> weak_ptr_factory_;
+  base::WeakPtrFactory<DebugDaemonLogSource> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DebugDaemonLogSource);
 };

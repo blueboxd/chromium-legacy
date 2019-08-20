@@ -254,7 +254,7 @@ class CertificateProviderService : public KeyedService {
   certificate_provider::ThreadSafeCertificateMap certificate_map_;
 
   base::ThreadChecker thread_checker_;
-  base::WeakPtrFactory<CertificateProviderService> weak_factory_;
+  base::WeakPtrFactory<CertificateProviderService> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CertificateProviderService);
 };

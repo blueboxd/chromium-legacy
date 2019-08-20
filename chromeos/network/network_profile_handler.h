@@ -85,7 +85,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkProfileHandler
   base::ObserverList<NetworkProfileObserver, true>::Unchecked observers_;
 
   // For Shill client callbacks
-  base::WeakPtrFactory<NetworkProfileHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<NetworkProfileHandler> weak_ptr_factory_{this};
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkProfileHandler);

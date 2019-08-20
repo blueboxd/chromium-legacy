@@ -71,7 +71,7 @@ class WebcamPrivateAPI : public BrowserContextKeyedAPI {
   content::BrowserContext* const browser_context_;
   std::unique_ptr<ApiResourceManager<WebcamResource>> webcam_resource_manager_;
 
-  base::WeakPtrFactory<WebcamPrivateAPI> weak_ptr_factory_;
+  base::WeakPtrFactory<WebcamPrivateAPI> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebcamPrivateAPI);
 };

@@ -8,6 +8,7 @@
 #include <iosfwd>
 
 #include "chrome/browser/web_applications/components/install_manager.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "url/gurl.h"
 
 namespace web_app {
@@ -78,6 +79,10 @@ struct ExternalInstallOptions {
   // Whether we should try to reinstall the app if there is a placeholder for
   // it.
   bool reinstall_placeholder = false;
+
+  // A list of app_ids that the Web App System should attempt to uninstall and
+  // replace with this app (e.g maintain shelf pins, app list positions).
+  std::vector<AppId> uninstall_and_replace;
 };
 
 std::ostream& operator<<(std::ostream& out,

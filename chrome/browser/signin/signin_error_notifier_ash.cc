@@ -75,8 +75,7 @@ SigninErrorNotifier::SigninErrorNotifier(SigninErrorController* controller,
       identity_manager_(IdentityManagerFactory::GetForProfile(profile_)),
       account_manager_(g_browser_process->platform_part()
                            ->GetAccountManagerFactory()
-                           ->GetAccountManager(profile_->GetPath().value())),
-      weak_factory_(this) {
+                           ->GetAccountManager(profile_->GetPath().value())) {
   DCHECK(account_manager_);
   // Create a unique notification ID for this profile.
   device_account_notification_id_ =

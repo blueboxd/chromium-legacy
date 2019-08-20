@@ -111,8 +111,7 @@ WallpaperColorCalculator::WallpaperColorCalculator(
     scoped_refptr<base::TaskRunner> task_runner)
     : image_(image),
       color_profiles_(color_profiles),
-      task_runner_(std::move(task_runner)),
-      weak_ptr_factory_(this) {
+      task_runner_(std::move(task_runner)) {
   prominent_colors_ =
       std::vector<SkColor>(color_profiles_.size(), SK_ColorTRANSPARENT);
 }

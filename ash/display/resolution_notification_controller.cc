@@ -100,8 +100,7 @@ ResolutionNotificationController::ResolutionChangeInfo::ResolutionChangeInfo(
 ResolutionNotificationController::ResolutionChangeInfo::
     ~ResolutionChangeInfo() = default;
 
-ResolutionNotificationController::ResolutionNotificationController()
-    : weak_factory_(this) {
+ResolutionNotificationController::ResolutionNotificationController() {
   Shell::Get()->window_tree_host_manager()->AddObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
 }

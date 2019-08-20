@@ -318,7 +318,7 @@ class ServicesCustomizationDocument : public CustomizationDocument {
   size_t apply_tasks_success_;
 
   // Weak factory for callbacks.
-  base::WeakPtrFactory<ServicesCustomizationDocument> weak_ptr_factory_;
+  base::WeakPtrFactory<ServicesCustomizationDocument> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServicesCustomizationDocument);
 };

@@ -253,8 +253,7 @@ DemoModeResourcesRemover::DemoModeResourcesRemover(PrefService* local_state)
     : local_state_(local_state),
       tick_clock_(base::DefaultTickClock::GetInstance()),
       cryptohome_observer_(this),
-      user_activity_observer_(this),
-      weak_ptr_factory_(this) {
+      user_activity_observer_(this) {
   CHECK(!g_instance);
   g_instance = this;
 

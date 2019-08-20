@@ -9,4 +9,4 @@ deps = [
 public_headers = [ "//cc/paint/filter_operation.h" ]
 traits_headers =
     [ "//services/viz/public/cpp/compositing/filter_operation_mojom_traits.h" ]
-type_mappings = [ "viz.mojom.FilterOperation=cc::FilterOperation" ]
+type_mappings = [ "viz.mojom.FilterOperation=::cc::FilterOperation" ]

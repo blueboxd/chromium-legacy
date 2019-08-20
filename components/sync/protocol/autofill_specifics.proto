@@ -95,6 +95,10 @@ message CloudTokenData {
 
   // URL of the card art to be displayed for CPAN.
   optional string art_fife_url = 4;
+
+  // Opaque identifier for the cloud token associated with the payment
+  // instrument.
+  optional string instrument_token = 5;
 }
 
 message WalletMaskedCreditCard {

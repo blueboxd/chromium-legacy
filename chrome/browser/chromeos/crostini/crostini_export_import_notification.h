@@ -97,7 +97,8 @@ class CrostiniExportImportNotification
   base::TimeTicks started_ = base::TimeTicks::Now();
   std::unique_ptr<message_center::Notification> notification_;
   bool hidden_ = false;
-  base::WeakPtrFactory<CrostiniExportImportNotification> weak_ptr_factory_;
+  base::WeakPtrFactory<CrostiniExportImportNotification> weak_ptr_factory_{
+      this};
   DISALLOW_COPY_AND_ASSIGN(CrostiniExportImportNotification);
 };
 

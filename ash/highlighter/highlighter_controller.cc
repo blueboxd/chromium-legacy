@@ -44,7 +44,7 @@ gfx::RectF AdjustHorizontalStroke(const gfx::RectF& box,
 
 }  // namespace
 
-HighlighterController::HighlighterController() : weak_factory_(this) {
+HighlighterController::HighlighterController() {
   Shell::Get()->AddPreTargetHandler(this);
 }
 

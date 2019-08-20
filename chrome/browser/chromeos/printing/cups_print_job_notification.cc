@@ -75,8 +75,7 @@ CupsPrintJobNotification::CupsPrintJobNotification(
       notification_id_(print_job->GetUniqueId()),
       print_job_(print_job),
       profile_(profile),
-      success_timer_(std::make_unique<base::OneShotTimer>()),
-      weak_factory_(this) {
+      success_timer_(std::make_unique<base::OneShotTimer>()) {
   // Create a notification for the print job. The title, body, icon and buttons
   // of the notification will be updated in UpdateNotification().
   notification_ = std::make_unique<message_center::Notification>(

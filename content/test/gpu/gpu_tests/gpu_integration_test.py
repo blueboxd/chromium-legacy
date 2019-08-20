@@ -85,7 +85,7 @@ class GpuIntegrationTest(
     # skip this gpu process for all gpu integration tests to prevent any
     # interference with the test results.
     browser_args.append(
-      '--disable-gpu-process-for-dx12-vulkan-info-collection')
+      '--no-delay-for-dx12-vulkan-info-collection')
 
     # Append the new arguments.
     browser_options.AppendExtraBrowserArgs(browser_args)

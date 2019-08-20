@@ -87,7 +87,7 @@ interface ServiceWorkerContainerHost {
       ControllerServiceWorkerPurpose purpose);
 
   // Makes a new endpoint to this ServiceWorkerContainerHost.
-  CloneContainerHost(ServiceWorkerContainerHost& container_host);
+  CloneContainerHost(pending_receiver<ServiceWorkerContainerHost> container_host);
 
   // Gives a hint to the browser process to update the service worker after a
   // controlled page load. This message is meant to be sent at a time when page

@@ -117,7 +117,7 @@ ServiceWorkerUnregisterJob::UnregistrationCallback SaveUnregistration(
 }
 
 void RequestTermination(
-    blink::mojom::EmbeddedWorkerInstanceHostAssociatedPtr* host) {
+    mojo::AssociatedRemote<blink::mojom::EmbeddedWorkerInstanceHost>* host) {
   // We can't wait for the callback since StopWorker() arrives before it which
   // severs the Mojo connection.
   (*host)->RequestTermination(base::DoNothing());

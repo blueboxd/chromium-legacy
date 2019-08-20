@@ -14,4 +14,4 @@ deps = [
   "//media",
 ]
 
-type_mappings = [ "media.mojom.SessionData.KeyType=media::MediaDrmKeyType" ]
+type_mappings = [ "media.mojom.SessionData.KeyType=::media::MediaDrmKeyType" ]

@@ -69,7 +69,7 @@ class FakeClientConnectionParameters : public ClientConnectionParameters {
 
   base::OnceCallback<void(const base::UnguessableToken&)> destructor_callback_;
 
-  base::WeakPtrFactory<FakeClientConnectionParameters> weak_ptr_factory_;
+  base::WeakPtrFactory<FakeClientConnectionParameters> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeClientConnectionParameters);
 };

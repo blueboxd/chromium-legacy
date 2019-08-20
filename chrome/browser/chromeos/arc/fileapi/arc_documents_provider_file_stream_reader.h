@@ -51,7 +51,8 @@ class ArcDocumentsProviderFileStreamReader : public storage::FileStreamReader {
   std::unique_ptr<storage::FileStreamReader> underlying_reader_;
   std::vector<base::OnceClosure> pending_operations_;
 
-  base::WeakPtrFactory<ArcDocumentsProviderFileStreamReader> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcDocumentsProviderFileStreamReader> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcDocumentsProviderFileStreamReader);
 };

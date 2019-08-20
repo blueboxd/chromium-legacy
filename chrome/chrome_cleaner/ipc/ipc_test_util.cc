@@ -63,14 +63,6 @@ class MojoSandboxSetupHooks : public SandboxSetupHooks {
   SandboxedParentProcess* parent_process_;
 };
 
-}  // namespace
-
-namespace internal {
-
-base::FilePath::StringPieceType GetLogPathSuffix() {
-  return kIPCTestUtilLogSuffix;
-}
-
 base::FilePath GetLogPath() {
   return ScopedLogging::GetLogFilePath(kIPCTestUtilLogSuffix);
 }
@@ -115,7 +107,7 @@ void PrintChildProcessLogs() {
   }
 }
 
-}  // namespace internal
+}  // namespace
 
 ParentProcess::ParentProcess(scoped_refptr<MojoTaskRunner> mojo_task_runner)
     : command_line_(base::GetMultiProcessTestChildBaseCommandLine()),
@@ -174,7 +166,7 @@ bool ParentProcess::LaunchConnectedChildProcess(
     const std::string& child_main_function,
     base::TimeDelta timeout,
     int32_t* exit_code) {
-  if (!internal::DeleteChildProcessLogs())
+  if (!DeleteChildProcessLogs())
     return false;
 
   if (!PrepareAndLaunchTestChildProcess(child_main_function))
@@ -190,7 +182,7 @@ bool ParentProcess::LaunchConnectedChildProcess(
   DestroyImplOnIPCThread();
 
   if (!success || *exit_code != 0)
-    internal::PrintChildProcessLogs();
+    PrintChildProcessLogs();
 
   return success;
 }
@@ -295,22 +287,6 @@ mojo::ScopedMessagePipeHandle ChildProcess::CreateMessagePipeFromCommandLine() {
 
 std::string ChildProcess::mojo_pipe_token() const {
   return command_line_->GetSwitchValueASCII(kMojoPipeTokenSwitch);
-}
-
-ChromePromptIPCTestErrorHandler::ChromePromptIPCTestErrorHandler(
-    base::OnceClosure on_closed,
-    base::OnceClosure on_closed_after_done)
-    : on_closed_(std::move(on_closed)),
-      on_closed_after_done_(std::move(on_closed_after_done)) {}
-
-ChromePromptIPCTestErrorHandler::~ChromePromptIPCTestErrorHandler() = default;
-
-void ChromePromptIPCTestErrorHandler::OnConnectionClosed() {
-  std::move(on_closed_).Run();
-}
-
-void ChromePromptIPCTestErrorHandler::OnConnectionClosedAfterDone() {
-  std::move(on_closed_after_done_).Run();
 }
 
 }  // namespace chrome_cleaner

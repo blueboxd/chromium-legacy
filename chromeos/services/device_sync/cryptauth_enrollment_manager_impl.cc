@@ -147,8 +147,7 @@ CryptAuthEnrollmentManagerImpl::CryptAuthEnrollmentManagerImpl(
       device_info_(device_info),
       gcm_manager_(gcm_manager),
       pref_service_(pref_service),
-      scheduler_(CreateSyncScheduler(this /* delegate */)),
-      weak_ptr_factory_(this) {}
+      scheduler_(CreateSyncScheduler(this /* delegate */)) {}
 
 CryptAuthEnrollmentManagerImpl::~CryptAuthEnrollmentManagerImpl() {
   gcm_manager_->RemoveObserver(this);

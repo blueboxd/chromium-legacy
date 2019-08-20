@@ -24,9 +24,7 @@ constexpr StaticOobeScreenId KioskEnableScreenView::kScreenId;
 
 KioskEnableScreenHandler::KioskEnableScreenHandler(
     JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container),
-      weak_ptr_factory_(this) {
-}
+    : BaseScreenHandler(kScreenId, js_calls_container) {}
 
 KioskEnableScreenHandler::~KioskEnableScreenHandler() {
   if (delegate_)

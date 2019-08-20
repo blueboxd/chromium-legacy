@@ -3062,8 +3062,8 @@ TEST_F(NGColumnLayoutAlgorithmTest, Nested) {
           offset:55,0 size:44x50
             offset:0,0 size:50x20
             offset:0,20 size:60x20
-      offset:220,0 size:100x23
-        offset:0,0 size:100x23
+      offset:220,0 size:100x22
+        offset:0,0 size:100x22
           offset:1,0 size:44x20
             offset:0,0 size:70x20
 )DUMP";
@@ -3103,6 +3103,44 @@ TEST_F(NGColumnLayoutAlgorithmTest, NestedWithEdibleMargin) {
         offset:0,0 size:100x50
           offset:0,0 size:45x10
             offset:0,0 size:10x10
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, NestedNoInnerContent) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .outer { columns:3; height:50px; column-fill:auto; width:320px; }
+      .inner { columns:2; height:100px; column-fill:auto; padding:1px; }
+      .outer, .inner { column-gap:10px; }
+      .content { break-inside:avoid; height:20px; }
+    </style>
+    <div id="container">
+      <div class="outer">
+        <div class="content" style="width:5px;"></div>
+        <div class="inner"></div>
+      </div>
+    </div>
+  )HTML");
+
+  // TODO(mstensho): Note about the expectation here: There'll be one
+  // zero-height inner column for each outer column. We should probably not have
+  // created those.
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x50
+    offset:0,0 size:320x50
+      offset:0,0 size:100x50
+        offset:0,0 size:5x20
+        offset:0,20 size:100x30
+          offset:1,1 size:44x0
+      offset:110,0 size:100x50
+        offset:0,0 size:100x50
+          offset:1,0 size:44x0
+      offset:220,0 size:100x22
+        offset:0,0 size:100x22
+          offset:1,0 size:44x0
 )DUMP";
   EXPECT_EQ(expectation, dump);
 }

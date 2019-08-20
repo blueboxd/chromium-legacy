@@ -189,8 +189,7 @@ FileCache::FileCache(ResourceMetadataStorage* storage,
       blocking_task_runner_(blocking_task_runner),
       storage_(storage),
       free_disk_space_getter_(free_disk_space_getter),
-      max_num_of_evicted_cache_files_(kMaxNumOfEvictedCacheFiles),
-      weak_ptr_factory_(this) {
+      max_num_of_evicted_cache_files_(kMaxNumOfEvictedCacheFiles) {
   DCHECK(blocking_task_runner_.get());
 }
 

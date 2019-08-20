@@ -27,8 +27,7 @@ DriveFsSearch::DriveFsSearch(
     const base::Clock* clock)
     : drivefs_(drivefs),
       network_connection_tracker_(network_connection_tracker),
-      clock_(clock),
-      weak_ptr_factory_(this) {}
+      clock_(clock) {}
 
 DriveFsSearch::~DriveFsSearch() = default;
 

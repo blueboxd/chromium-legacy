@@ -72,8 +72,7 @@ ArcVolumeMounterBridge* ArcVolumeMounterBridge::GetForBrowserContextForTesting(
 ArcVolumeMounterBridge::ArcVolumeMounterBridge(content::BrowserContext* context,
                                                ArcBridgeService* bridge_service)
     : arc_bridge_service_(bridge_service),
-      pref_service_(user_prefs::UserPrefs::Get(context)),
-      weak_ptr_factory_(this) {
+      pref_service_(user_prefs::UserPrefs::Get(context)) {
   DCHECK(pref_service_);
   arc_bridge_service_->volume_mounter()->AddObserver(this);
   arc_bridge_service_->volume_mounter()->SetHost(this);

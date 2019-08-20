@@ -48,7 +48,7 @@ std::unique_ptr<SimpleAlarmTimer> SimpleAlarmTimer::CreateInternal(
 }
 
 SimpleAlarmTimer::SimpleAlarmTimer(base::ScopedFD alarm_fd)
-    : alarm_fd_(std::move(alarm_fd)), weak_factory_(this) {}
+    : alarm_fd_(std::move(alarm_fd)) {}
 
 SimpleAlarmTimer::~SimpleAlarmTimer() {
   DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());

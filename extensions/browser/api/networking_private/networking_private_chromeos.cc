@@ -245,7 +245,7 @@ namespace extensions {
 
 NetworkingPrivateChromeOS::NetworkingPrivateChromeOS(
     content::BrowserContext* browser_context)
-    : browser_context_(browser_context), weak_ptr_factory_(this) {}
+    : browser_context_(browser_context) {}
 
 NetworkingPrivateChromeOS::~NetworkingPrivateChromeOS() {}
 

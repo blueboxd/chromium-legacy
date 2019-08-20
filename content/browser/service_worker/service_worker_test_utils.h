@@ -21,6 +21,8 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
@@ -74,28 +76,32 @@ class ServiceWorkerRemoteProviderEndpoint {
   void BindForServiceWorker(
       blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr info);
 
-  blink::mojom::ServiceWorkerContainerHostAssociatedPtr* host_ptr() {
-    return &host_ptr_;
+  mojo::AssociatedRemote<blink::mojom::ServiceWorkerContainerHost>*
+  host_remote() {
+    return &host_remote_;
   }
 
-  blink::mojom::ServiceWorkerContainerAssociatedRequest* client_request() {
-    return &client_request_;
+  mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainer>*
+  client_receiver() {
+    return &client_receiver_;
   }
 
  private:
   // Connects to a fake navigation client and keeps alive the message pipe on
-  // which |host_ptr_info_| and |client_request_| are associated so that they
+  // which |host_remote_| and |client_receiver_| are associated so that they
   // are usable. This is only for navigations. For service workers we can also
   // do the same thing by establishing a
   // blink::mojom::EmbeddedWorkerInstanceClient connection if in the future we
-  // really need to make |host_ptr_info_| and |client_request_| usable for it.
+  // really need to make |host_remote_| and |client_receiver_| usable for it.
   mojom::NavigationClientPtr navigation_client_;
   // Bound with content::ServiceWorkerProviderHost. The provider host will be
-  // removed asynchronously when this pointer is closed.
-  blink::mojom::ServiceWorkerContainerHostAssociatedPtr host_ptr_;
-  // This is the other end of ServiceWorkerContainerAssociatedPtr owned by
+  // removed asynchronously when this remote is closed.
+  mojo::AssociatedRemote<blink::mojom::ServiceWorkerContainerHost> host_remote_;
+  // This is the other end of
+  // mojo::PendingAssociatedRemote<ServiceWorkerContainer> owned by
   // content::ServiceWorkerProviderHost.
-  blink::mojom::ServiceWorkerContainerAssociatedRequest client_request_;
+  mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainer>
+      client_receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRemoteProviderEndpoint);
 };

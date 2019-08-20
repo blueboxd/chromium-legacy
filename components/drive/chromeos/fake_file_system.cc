@@ -31,8 +31,7 @@ namespace test_util {
 using content::BrowserThread;
 
 FakeFileSystem::FakeFileSystem(DriveServiceInterface* drive_service)
-    : drive_service_(drive_service),
-      weak_ptr_factory_(this) {
+    : drive_service_(drive_service) {
   CHECK(cache_dir_.CreateUniqueTempDir());
 }
 

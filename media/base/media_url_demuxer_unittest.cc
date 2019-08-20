@@ -24,9 +24,9 @@ class MediaUrlDemuxerTest : public testing::Test {
   void InitializeTest(const GURL& media_url,
                       const GURL& first_party,
                       bool allow_credentials) {
-    demuxer_.reset(new MediaUrlDemuxer(base::ThreadTaskRunnerHandle::Get(),
-                                       media_url, first_party,
-                                       allow_credentials, false));
+    demuxer_.reset(new MediaUrlDemuxer(
+        base::ThreadTaskRunnerHandle::Get(), media_url, first_party,
+        url::Origin::Create(first_party), allow_credentials, false));
   }
 
   void InitializeTest() {
@@ -53,7 +53,7 @@ TEST_F(MediaUrlDemuxerTest, BaseCase) {
 
   EXPECT_EQ(MediaResource::Type::URL, demuxer_->GetType());
 
-  MediaUrlParams params = demuxer_->GetMediaUrlParams();
+  const MediaUrlParams& params = demuxer_->GetMediaUrlParams();
   EXPECT_EQ(default_media_url_, params.media_url);
   EXPECT_EQ(default_first_party_url_, params.site_for_cookies);
   EXPECT_EQ(true, params.allow_credentials);
@@ -62,7 +62,7 @@ TEST_F(MediaUrlDemuxerTest, BaseCase) {
 TEST_F(MediaUrlDemuxerTest, AcceptsEmptyStrings) {
   InitializeTest(GURL(), GURL(), false);
 
-  MediaUrlParams params = demuxer_->GetMediaUrlParams();
+  const MediaUrlParams& params = demuxer_->GetMediaUrlParams();
   EXPECT_EQ(GURL::EmptyGURL(), params.media_url);
   EXPECT_EQ(GURL::EmptyGURL(), params.site_for_cookies);
   EXPECT_EQ(false, params.allow_credentials);

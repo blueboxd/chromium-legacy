@@ -58,8 +58,7 @@ GetFileForSavingOperation::GetFileForSavingOperation(
       blocking_task_runner_(blocking_task_runner),
       delegate_(delegate),
       metadata_(metadata),
-      cache_(cache),
-      weak_ptr_factory_(this) {}
+      cache_(cache) {}
 
 GetFileForSavingOperation::~GetFileForSavingOperation() = default;
 

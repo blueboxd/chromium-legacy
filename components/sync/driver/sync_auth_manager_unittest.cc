@@ -72,8 +72,6 @@ TEST_F(SyncAuthManagerTest, ProvidesNothingInLocalSyncMode) {
   // methods is illegal in local Sync mode, so we don't test that.
 }
 
-// ChromeOS doesn't support sign-in/sign-out.
-#if !defined(OS_CHROMEOS)
 TEST_F(SyncAuthManagerTest, IgnoresEventsIfNotRegistered) {
   base::MockCallback<AccountStateChangedCallback> account_state_changed;
   base::MockCallback<CredentialsChangedCallback> credentials_changed;
@@ -93,11 +91,17 @@ TEST_F(SyncAuthManagerTest, IgnoresEventsIfNotRegistered) {
   identity_env()->SetRefreshTokenForPrimaryAccount();
   EXPECT_TRUE(
       auth_manager->GetActiveAccountInfo().account_info.account_id.empty());
+
+// ChromeOS doesn't support sign-out.
+#if !defined(OS_CHROMEOS)
   identity_env()->ClearPrimaryAccount();
   EXPECT_TRUE(
       auth_manager->GetActiveAccountInfo().account_info.account_id.empty());
+#endif  // !defined(OS_CHROMEOS)
 }
 
+// ChromeOS doesn't support sign-out.
+#if !defined(OS_CHROMEOS)
 TEST_F(SyncAuthManagerTest, ForwardsPrimaryAccountEvents) {
   // Start out already signed in before the SyncAuthManager is created.
   std::string account_id =
@@ -132,11 +136,12 @@ TEST_F(SyncAuthManagerTest, ForwardsPrimaryAccountEvents) {
   EXPECT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
             second_account_id);
 }
+#endif  // !defined(OS_CHROMEOS)
 
+// Unconsented primary accounts (aka secondary accounts) are only supported on
+// Win/Mac/Linux.
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
 TEST_F(SyncAuthManagerTest, ForwardsSecondaryAccountEvents) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(switches::kSyncSupportSecondaryAccount);
-
   base::MockCallback<AccountStateChangedCallback> account_state_changed;
   base::MockCallback<CredentialsChangedCallback> credentials_changed;
   EXPECT_CALL(account_state_changed, Run()).Times(0);
@@ -166,7 +171,10 @@ TEST_F(SyncAuthManagerTest, ForwardsSecondaryAccountEvents) {
 
   EXPECT_TRUE(auth_manager->GetActiveAccountInfo().is_primary);
 }
+#endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
 
+// ChromeOS doesn't support sign-out.
+#if !defined(OS_CHROMEOS)
 TEST_F(SyncAuthManagerTest, ClearsAuthErrorOnSignout) {
   // Start out already signed in before the SyncAuthManager is created.
   std::string account_id =
@@ -196,6 +204,7 @@ TEST_F(SyncAuthManagerTest, ClearsAuthErrorOnSignout) {
   EXPECT_EQ(auth_manager->GetLastAuthError().state(),
             GoogleServiceAuthError::NONE);
 }
+#endif  // !defined(OS_CHROMEOS)
 
 TEST_F(SyncAuthManagerTest, DoesNotClearAuthErrorOnSyncDisable) {
   // Start out already signed in before the SyncAuthManager is created.
@@ -225,7 +234,6 @@ TEST_F(SyncAuthManagerTest, DoesNotClearAuthErrorOnSyncDisable) {
   EXPECT_NE(auth_manager->GetLastAuthError().state(),
             GoogleServiceAuthError::NONE);
 }
-#endif  // !OS_CHROMEOS
 
 TEST_F(SyncAuthManagerTest, ForwardsCredentialsEvents) {
   // Start out already signed in before the SyncAuthManager is created.
@@ -644,10 +652,10 @@ TEST_F(SyncAuthManagerTest, DoesNotRequestAccessTokenIfSyncInactive) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(SyncAuthManagerTest, IgnoresCookieJarIfFeatureDisabled) {
-  base::test::ScopedFeatureList features;
-  features.InitAndDisableFeature(switches::kSyncSupportSecondaryAccount);
-
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID) || defined(OS_IOS)
+// On platforms that don't support unconsented primary accounts, the contents of
+// the cookie jar should make no difference.
+TEST_F(SyncAuthManagerTest, IgnoresCookieJar) {
   auto auth_manager = CreateAuthManager();
   auth_manager->RegisterForAuthNotifications();
 
@@ -664,10 +672,9 @@ TEST_F(SyncAuthManagerTest, IgnoresCookieJarIfFeatureDisabled) {
       auth_manager->GetActiveAccountInfo().account_info.account_id.empty());
 }
 
-TEST_F(SyncAuthManagerTest, UsesCookieJarIfFeatureEnabled) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(switches::kSyncSupportSecondaryAccount);
+#else   // defined(OS_CHROMEOS) || defined(OS_ANDROID) || defined(OS_IOS)
 
+TEST_F(SyncAuthManagerTest, UsesCookieJar) {
   auto auth_manager = CreateAuthManager();
   auth_manager->RegisterForAuthNotifications();
 
@@ -686,9 +693,6 @@ TEST_F(SyncAuthManagerTest, UsesCookieJarIfFeatureEnabled) {
 }
 
 TEST_F(SyncAuthManagerTest, DropsAccountWhenCookieGoesAway) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(switches::kSyncSupportSecondaryAccount);
-
   auto auth_manager = CreateAuthManager();
   auth_manager->RegisterForAuthNotifications();
 
@@ -712,9 +716,6 @@ TEST_F(SyncAuthManagerTest, DropsAccountWhenCookieGoesAway) {
 }
 
 TEST_F(SyncAuthManagerTest, DropsAccountWhenRefreshTokenGoesAway) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(switches::kSyncSupportSecondaryAccount);
-
   auto auth_manager = CreateAuthManager();
   auth_manager->RegisterForAuthNotifications();
 
@@ -738,9 +739,6 @@ TEST_F(SyncAuthManagerTest, DropsAccountWhenRefreshTokenGoesAway) {
 }
 
 TEST_F(SyncAuthManagerTest, PrefersPrimaryAccountOverCookie) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(switches::kSyncSupportSecondaryAccount);
-
   auto auth_manager = CreateAuthManager();
   auth_manager->RegisterForAuthNotifications();
 
@@ -764,9 +762,6 @@ TEST_F(SyncAuthManagerTest, PrefersPrimaryAccountOverCookie) {
 }
 
 TEST_F(SyncAuthManagerTest, OnlyUsesFirstCookieAccount) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(switches::kSyncSupportSecondaryAccount);
-
   auto auth_manager = CreateAuthManager();
   auth_manager->RegisterForAuthNotifications();
 
@@ -800,6 +795,7 @@ TEST_F(SyncAuthManagerTest, OnlyUsesFirstCookieAccount) {
   EXPECT_TRUE(
       auth_manager->GetActiveAccountInfo().account_info.account_id.empty());
 }
+#endif  // defined(OS_CHROMEOS) || defined(OS_ANDROID) || defined(OS_IOS)
 
 }  // namespace
 

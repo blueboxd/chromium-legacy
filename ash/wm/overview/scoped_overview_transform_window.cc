@@ -105,8 +105,7 @@ ScopedOverviewTransformWindow::ScopedOverviewTransformWindow(
       window_(window),
       original_opacity_(window->layer()->GetTargetOpacity()),
       original_mask_layer_(window_->layer()->layer_mask_layer()),
-      original_clip_rect_(window_->layer()->clip_rect()),
-      weak_ptr_factory_(this) {
+      original_clip_rect_(window_->layer()->clip_rect()) {
   type_ = GetWindowDimensionsType(window);
 
   std::vector<aura::Window*> transient_children_to_hide;

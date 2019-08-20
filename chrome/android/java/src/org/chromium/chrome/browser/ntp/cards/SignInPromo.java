@@ -46,6 +46,13 @@ public class SignInPromo extends OptionalLeaf {
     private boolean mCanSignIn;
 
     /**
+     * Whether the list of accounts is ready to be displayed. An attempt to display SignInPromo
+     * while accounts are not ready may cause ANR since the UI thread would be synchronously waiting
+     * for the accounts list.
+     */
+    private boolean mAccountsReady;
+
+    /**
      * Whether personalized suggestions can be shown. If it's not the case, we have no reason to
      * offer the user to sign in.
      */
@@ -59,6 +66,7 @@ public class SignInPromo extends OptionalLeaf {
         Context context = ContextUtils.getApplicationContext();
 
         mCanSignIn = signinManager.isSignInAllowed() && !signinManager.isSignedInOnNative();
+        mAccountsReady = AccountManagerFacade.get().isCachePopulated();
         updateVisibility();
 
         int imageSize = context.getResources().getDimensionPixelSize(R.dimen.user_picture_size);
@@ -97,7 +105,7 @@ public class SignInPromo extends OptionalLeaf {
     public static boolean shouldCreatePromo() {
         return !sDisablePromoForTests
                 && !ChromePreferenceManager.getInstance().readBoolean(
-                           ChromePreferenceManager.NTP_SIGNIN_PROMO_DISMISSED, false)
+                        ChromePreferenceManager.NTP_SIGNIN_PROMO_DISMISSED, false)
                 && !getSuppressionStatus();
     }
 
@@ -137,7 +145,8 @@ public class SignInPromo extends OptionalLeaf {
     }
 
     private void updateVisibility() {
-        setVisibilityInternal(!mDismissed && mCanSignIn && mCanShowPersonalizedSuggestions);
+        setVisibilityInternal(
+                !mDismissed && mCanSignIn && mCanShowPersonalizedSuggestions && mAccountsReady);
     }
 
     @Override
@@ -170,6 +179,9 @@ public class SignInPromo extends OptionalLeaf {
         return mSigninObserver;
     }
 
+    /**
+     * Observer to get notifications about various sign-in events.
+     */
     @VisibleForTesting
     public class SigninObserver implements SignInStateObserver, SignInAllowedObserver,
                                            ProfileDataCache.Observer, AccountsChangeObserver {
@@ -223,6 +235,9 @@ public class SignInPromo extends OptionalLeaf {
         // AccountsChangeObserver implementation.
         @Override
         public void onAccountsChanged() {
+            mAccountsReady = AccountManagerFacade.get().isCachePopulated();
+            // We don't change the visibility here to avoid the promo popping up in the feed
+            // unexpectedly. If accounts are ready, the promo will be shown up on the next reload.
             notifyDataChanged();
         }
 

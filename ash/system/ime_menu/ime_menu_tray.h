@@ -104,7 +104,7 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
   bool is_handwriting_enabled_;
   bool is_voice_enabled_;
 
-  base::WeakPtrFactory<ImeMenuTray> weak_ptr_factory_;
+  base::WeakPtrFactory<ImeMenuTray> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ImeMenuTray);
 };

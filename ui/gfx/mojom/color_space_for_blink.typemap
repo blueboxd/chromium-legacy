@@ -9,4 +9,4 @@ traits_headers = [ "//ui/gfx/mojom/color_space_mojom_traits.h" ]
 public_deps = [
   "//ui/gfx",
 ]
-type_mappings = [ "gfx.mojom.ColorSpace=gfx::ColorSpace" ]
+type_mappings = [ "gfx.mojom.ColorSpace=::gfx::ColorSpace" ]

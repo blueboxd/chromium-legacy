@@ -131,7 +131,8 @@ class ASH_EXPORT MultiDeviceNotificationPresenter
   mojo::Binding<chromeos::multidevice_setup::mojom::AccountStatusChangeDelegate>
       binding_;
 
-  base::WeakPtrFactory<MultiDeviceNotificationPresenter> weak_ptr_factory_;
+  base::WeakPtrFactory<MultiDeviceNotificationPresenter> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(MultiDeviceNotificationPresenter);
 };

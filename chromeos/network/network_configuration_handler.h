@@ -235,7 +235,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConfigurationHandler
 
   base::ObserverList<NetworkConfigurationObserver, true>::Unchecked observers_;
 
-  base::WeakPtrFactory<NetworkConfigurationHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<NetworkConfigurationHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NetworkConfigurationHandler);
 };

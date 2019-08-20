@@ -26,7 +26,7 @@ HomedirMethods* g_homedir_methods = NULL;
 // The implementation of HomedirMethods
 class HomedirMethodsImpl : public HomedirMethods {
  public:
-  HomedirMethodsImpl() : weak_ptr_factory_(this) {}
+  HomedirMethodsImpl() {}
 
   ~HomedirMethodsImpl() override = default;
 
@@ -94,7 +94,7 @@ class HomedirMethodsImpl : public HomedirMethods {
     callback.Run(true, MOUNT_ERROR_NONE);
   }
 
-  base::WeakPtrFactory<HomedirMethodsImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<HomedirMethodsImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HomedirMethodsImpl);
 };

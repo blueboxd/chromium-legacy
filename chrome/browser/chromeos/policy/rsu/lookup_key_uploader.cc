@@ -30,8 +30,7 @@ LookupKeyUploader::LookupKeyUploader(
       prefs_(pref_service),
       certificate_uploader_(certificate_uploader),
       cryptohome_client_(chromeos::CryptohomeClient::Get()),
-      clock_(base::DefaultClock::GetInstance()),
-      weak_factory_(this) {
+      clock_(base::DefaultClock::GetInstance()) {
   // Can be null in tests.
   if (policy_store_)
     policy_store_->AddObserver(this);

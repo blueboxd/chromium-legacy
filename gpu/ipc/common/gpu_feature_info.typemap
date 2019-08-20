@@ -13,6 +13,6 @@ public_deps = [
   "//ui/gfx/geometry/mojom",
 ]
 type_mappings = [
-  "gpu.mojom.GpuFeatureStatus=gpu::GpuFeatureStatus",
-  "gpu.mojom.GpuFeatureInfo=gpu::GpuFeatureInfo",
+  "gpu.mojom.GpuFeatureStatus=::gpu::GpuFeatureStatus",
+  "gpu.mojom.GpuFeatureInfo=::gpu::GpuFeatureInfo",
 ]

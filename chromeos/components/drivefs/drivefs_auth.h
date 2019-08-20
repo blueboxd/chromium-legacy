@@ -104,7 +104,7 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsAuth {
   std::string last_token_;
   base::Time last_token_expiry_;
 
-  base::WeakPtrFactory<DriveFsAuth> weak_ptr_factory_;
+  base::WeakPtrFactory<DriveFsAuth> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(DriveFsAuth);
 };
 

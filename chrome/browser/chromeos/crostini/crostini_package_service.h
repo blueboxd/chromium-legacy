@@ -196,7 +196,7 @@ class CrostiniPackageService : public KeyedService,
 
   int next_notification_id_ = 0;
 
-  base::WeakPtrFactory<CrostiniPackageService> weak_ptr_factory_;
+  base::WeakPtrFactory<CrostiniPackageService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CrostiniPackageService);
 };

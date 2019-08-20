@@ -62,7 +62,6 @@ class SigninUiUtilTestBrowserWindow : public TestBrowserWindow {
 
   void ShowAvatarBubbleFromAvatarButton(
       AvatarBubbleMode mode,
-      const signin::ManageAccountsParams& manage_accounts_params,
       signin_metrics::AccessPoint access_point,
       bool is_source_keyboard) override {
     ASSERT_TRUE(browser_);

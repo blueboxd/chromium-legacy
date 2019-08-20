@@ -60,7 +60,7 @@ class ChannelImpl : public mojom::Channel {
   Delegate* delegate_;
   mojo::Binding<mojom::Channel> binding_;
 
-  base::WeakPtrFactory<ChannelImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<ChannelImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ChannelImpl);
 };

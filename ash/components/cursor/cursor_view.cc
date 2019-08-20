@@ -72,8 +72,7 @@ CursorView::CursorView(aura::Window* container,
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(kStationaryDelayMs),
           base::BindRepeating(&CursorView::StationaryOnPaintThread,
-                              base::Unretained(this))),
-      weak_ptr_factory_(this) {
+                              base::Unretained(this))) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(ui_sequence_checker_);
 
   // Detach sequence checker for future usage on paint thread.

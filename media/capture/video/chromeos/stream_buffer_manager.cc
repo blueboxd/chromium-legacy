@@ -29,8 +29,7 @@ StreamBufferManager::StreamBufferManager(
     std::unique_ptr<CameraBufferFactory> camera_buffer_factory)
     : device_context_(device_context),
       video_capture_use_gmb_(video_capture_use_gmb),
-      camera_buffer_factory_(std::move(camera_buffer_factory)),
-      weak_ptr_factory_(this) {
+      camera_buffer_factory_(std::move(camera_buffer_factory)) {
   if (video_capture_use_gmb_) {
     gmb_support_ = std::make_unique<gpu::GpuMemoryBufferSupport>();
   }

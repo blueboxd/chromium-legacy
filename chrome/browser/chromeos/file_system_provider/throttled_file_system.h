@@ -146,7 +146,7 @@ class ThrottledFileSystem : public ProvidedFileSystemInterface {
   // Map from file handles to open queue tokens.
   std::map<int, int> opened_files_;
 
-  base::WeakPtrFactory<ThrottledFileSystem> weak_ptr_factory_;
+  base::WeakPtrFactory<ThrottledFileSystem> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(ThrottledFileSystem);
 };
 

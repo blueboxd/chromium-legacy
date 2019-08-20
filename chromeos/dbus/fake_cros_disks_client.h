@@ -184,7 +184,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCrosDisksClient
   const DiskInfo* next_get_device_properties_disk_info_ = nullptr;
   int get_device_properties_success_count_ = 0;
 
-  base::WeakPtrFactory<FakeCrosDisksClient> weak_ptr_factory_;
+  base::WeakPtrFactory<FakeCrosDisksClient> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeCrosDisksClient);
 };

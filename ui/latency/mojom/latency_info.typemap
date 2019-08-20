@@ -16,6 +16,6 @@ deps = [
   "//ipc:param_traits",
 ]
 type_mappings = [
-  "ui.mojom.LatencyComponentType=ui::LatencyComponentType",
-  "ui.mojom.LatencyInfo=ui::LatencyInfo",
+  "ui.mojom.LatencyComponentType=::ui::LatencyComponentType",
+  "ui.mojom.LatencyInfo=::ui::LatencyInfo",
 ]

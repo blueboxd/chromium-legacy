@@ -91,8 +91,7 @@ class AccountMigrationBaseStep : public AccountMigrationRunner::Step {
                            signin::IdentityManager* identity_manager)
       : AccountMigrationRunner::Step(id),
         account_manager_(account_manager),
-        identity_manager_(identity_manager),
-        weak_factory_(this) {}
+        identity_manager_(identity_manager) {}
   ~AccountMigrationBaseStep() override = default;
 
  protected:
@@ -160,7 +159,7 @@ class AccountMigrationBaseStep : public AccountMigrationRunner::Step {
   // up-to-date when |StartMigration| is called.
   std::vector<AccountManager::AccountKey> account_manager_accounts_;
 
-  base::WeakPtrFactory<AccountMigrationBaseStep> weak_factory_;
+  base::WeakPtrFactory<AccountMigrationBaseStep> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(AccountMigrationBaseStep);
 };
 
@@ -348,8 +347,7 @@ class ArcAccountsMigration : public AccountMigrationBaseStep,
       : AccountMigrationBaseStep(kArcAccountsMigration,
                                  account_manager,
                                  identity_manager),
-        arc_auth_service_(arc_auth_service),
-        weak_factory_(this) {}
+        arc_auth_service_(arc_auth_service) {}
   ~ArcAccountsMigration() override { Reset(); }
 
  private:
@@ -428,7 +426,7 @@ class ArcAccountsMigration : public AccountMigrationBaseStep,
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<ArcAccountsMigration> weak_factory_;
+  base::WeakPtrFactory<ArcAccountsMigration> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcAccountsMigration);
 };
@@ -464,7 +462,7 @@ class SuccessStorage : public AccountMigrationRunner::Step {
 }  // namespace
 
 AccountManagerMigrator::AccountManagerMigrator(Profile* profile)
-    : profile_(profile), weak_factory_(this) {}
+    : profile_(profile) {}
 
 AccountManagerMigrator::~AccountManagerMigrator() = default;
 

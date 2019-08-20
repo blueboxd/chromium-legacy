@@ -11,6 +11,7 @@
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/toast_manager.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/generated_resources.h"
@@ -18,6 +19,28 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
 #include "ui/base/l10n/l10n_util.h"
+
+namespace {
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// This class must be kept in sync with CrostiniUnsupportedNotificationReason in
+// enums.xml
+enum class NotificationReason {
+  kTabletMode = 0,
+  kVirtualKeyboard = 1,
+  kUnsupportedIME = 2,
+  kMaxValue = kUnsupportedIME,
+};
+
+void EmitMetricReasonTriggered(NotificationReason reason) {
+  UMA_HISTOGRAM_ENUMERATION("Crostini.UnsupportedNotification.Reason.Triggered",
+                            reason);
+}
+void EmitMetricReasonShown(NotificationReason reason) {
+  UMA_HISTOGRAM_ENUMERATION("Crostini.UnsupportedNotification.Reason.Shown",
+                            reason);
+}
+}  // namespace
 
 namespace crostini {
 
@@ -74,11 +97,19 @@ void CrostiniUnsupportedActionNotifier::OnKeyboardVisibilityChanged(
 
 void CrostiniUnsupportedActionNotifier::
     ShowVirtualKeyboardUnsupportedNotifictionIfNeeded() {
-  if (virtual_keyboard_unsupported_message_shown_) {
+  if (!delegate_->IsFocusedWindowCrostini()) {
     return;
   }
-  if ((delegate_->IsInTabletMode() || delegate_->IsVirtualKeyboardVisible()) &&
-      delegate_->IsFocusedWindowCrostini()) {
+  NotificationReason reason;
+  if (delegate_->IsVirtualKeyboardVisible()) {
+    reason = NotificationReason::kVirtualKeyboard;
+  } else if (delegate_->IsInTabletMode()) {
+    reason = NotificationReason::kTabletMode;
+  } else {
+    return;
+  }
+  EmitMetricReasonTriggered(reason);
+  if (!virtual_keyboard_unsupported_message_shown_) {
     ash::ToastData data = {
         /*id=*/"VKUnsupportedInCrostini",
         /*text=*/
@@ -87,17 +118,19 @@ void CrostiniUnsupportedActionNotifier::
         /*dismiss_text=*/base::nullopt};
     delegate_->ShowToast(data);
     virtual_keyboard_unsupported_message_shown_ = true;
+    EmitMetricReasonShown(reason);
   }
 }
 
 void CrostiniUnsupportedActionNotifier::
     ShowIMEUnsupportedNotifictionIfNeeded() {
-  if (ime_unsupported_message_shown_) {
+  auto method = delegate_->GetCurrentInputMethod();
+  if (IsIMESupportedByCrostini(method) ||
+      !delegate_->IsFocusedWindowCrostini()) {
     return;
   }
-  auto method = delegate_->GetCurrentInputMethod();
-  if (!IsIMESupportedByCrostini(method) &&
-      delegate_->IsFocusedWindowCrostini()) {
+  EmitMetricReasonTriggered(NotificationReason::kUnsupportedIME);
+  if (!ime_unsupported_message_shown_) {
     auto ime_name =
         base::UTF8ToUTF16(delegate_->GetLocalizedDisplayName(method));
     ash::ToastData data = {
@@ -108,8 +141,9 @@ void CrostiniUnsupportedActionNotifier::
         /*dismiss_text=*/base::nullopt};
     delegate_->ShowToast(data);
     ime_unsupported_message_shown_ = true;
+    EmitMetricReasonShown(NotificationReason::kUnsupportedIME);
   }
-}
+}  // namespace crostini
 
 CrostiniUnsupportedActionNotifier::Delegate::Delegate() = default;
 

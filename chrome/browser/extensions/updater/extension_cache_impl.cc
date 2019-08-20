@@ -35,8 +35,7 @@ ExtensionCacheImpl::ExtensionCacheImpl(
           delegate->GetMaximumCacheAge(),
           base::CreateSequencedTaskRunner(
               {base::ThreadPool(), base::MayBlock(), task_priority,
-               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}))),
-      weak_ptr_factory_(this) {
+               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}))) {
   notification_registrar_.Add(
       this, extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR,
       content::NotificationService::AllBrowserContextsAndSources());

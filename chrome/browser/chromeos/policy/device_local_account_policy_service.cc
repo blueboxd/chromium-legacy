@@ -291,8 +291,7 @@ DeviceLocalAccountPolicyService::DeviceLocalAccountPolicyService(
           chromeos::kAccountsPrefDeviceLocalAccounts,
           base::Bind(
               &DeviceLocalAccountPolicyService::UpdateAccountListIfNonePending,
-              base::Unretained(this)))),
-      weak_factory_(this) {
+              base::Unretained(this)))) {
   CHECK(base::PathService::Get(
       chromeos::DIR_DEVICE_LOCAL_ACCOUNT_COMPONENT_POLICY,
       &component_policy_cache_root_));

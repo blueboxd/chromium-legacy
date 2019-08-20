@@ -74,9 +74,7 @@ SetPropertyOperation::SetPropertyOperation(
     internal::ResourceMetadata* metadata)
     : blocking_task_runner_(blocking_task_runner),
       delegate_(delegate),
-      metadata_(metadata),
-      weak_ptr_factory_(this) {
-}
+      metadata_(metadata) {}
 
 SetPropertyOperation::~SetPropertyOperation() = default;
 

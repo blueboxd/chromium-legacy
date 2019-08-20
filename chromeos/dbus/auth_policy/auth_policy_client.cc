@@ -62,7 +62,7 @@ authpolicy::ErrorType GetErrorAndProto(
 
 class AuthPolicyClientImpl : public AuthPolicyClient {
  public:
-  AuthPolicyClientImpl() : weak_ptr_factory_(this) {}
+  AuthPolicyClientImpl() {}
 
   ~AuthPolicyClientImpl() override = default;
 
@@ -227,7 +227,7 @@ class AuthPolicyClientImpl : public AuthPolicyClient {
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<AuthPolicyClientImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<AuthPolicyClientImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AuthPolicyClientImpl);
 };

@@ -57,7 +57,7 @@ class ASH_EXPORT UrlHandlerServiceProvider
 
   // Keep this last so that all weak pointers will be invalidated at the
   // beginning of destruction.
-  base::WeakPtrFactory<UrlHandlerServiceProvider> weak_ptr_factory_;
+  base::WeakPtrFactory<UrlHandlerServiceProvider> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UrlHandlerServiceProvider);
 };

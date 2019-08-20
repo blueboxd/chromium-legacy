@@ -249,8 +249,7 @@ AccessibilityManager::AccessibilityManager()
       braille_ime_current_(false),
       chromevox_panel_(nullptr),
       switch_access_panel_(nullptr),
-      extension_registry_observer_(this),
-      weak_ptr_factory_(this) {
+      extension_registry_observer_(this) {
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
                               content::NotificationService::AllSources());

@@ -30,7 +30,7 @@ class CupsProxyServiceManager : public KeyedService {
  private:
   void OnDaemonAvailable(bool daemon_available);
 
-  base::WeakPtrFactory<CupsProxyServiceManager> weak_factory_;
+  base::WeakPtrFactory<CupsProxyServiceManager> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(CupsProxyServiceManager);
 };
 

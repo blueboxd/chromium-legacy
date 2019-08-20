@@ -104,8 +104,7 @@ size_t FakeCryptAuthScheduler::GetNumConsecutiveDeviceSyncFailures() const {
 }
 
 FakeCryptAuthSchedulerEnrollmentDelegate::
-    FakeCryptAuthSchedulerEnrollmentDelegate()
-    : weak_ptr_factory_(this) {}
+    FakeCryptAuthSchedulerEnrollmentDelegate() {}
 
 FakeCryptAuthSchedulerEnrollmentDelegate::
     ~FakeCryptAuthSchedulerEnrollmentDelegate() = default;
@@ -125,8 +124,7 @@ void FakeCryptAuthSchedulerEnrollmentDelegate::OnEnrollmentRequested(
 }
 
 FakeCryptAuthSchedulerDeviceSyncDelegate::
-    FakeCryptAuthSchedulerDeviceSyncDelegate()
-    : weak_ptr_factory_(this) {}
+    FakeCryptAuthSchedulerDeviceSyncDelegate() {}
 
 FakeCryptAuthSchedulerDeviceSyncDelegate::
     ~FakeCryptAuthSchedulerDeviceSyncDelegate() = default;

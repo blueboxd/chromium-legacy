@@ -842,13 +842,7 @@ TEST_P(SimpleURLLoaderTest, UploadShortStringWithRedirect) {
   EXPECT_EQ(1, num_redirects);
 }
 
-#if defined(OS_FUCHSIA)
-// TODO(crbug.com/994007): The test crashes on Fuchsia.
-#define MAYBE_UploadLongStringWithRedirect DISABLED_UploadLongStringWithRedirect
-#else
-#define MAYBE_UploadLongStringWithRedirect UploadLongStringWithRedirect
-#endif
-TEST_P(SimpleURLLoaderTest, MAYBE_UploadLongStringWithRedirect) {
+TEST_P(SimpleURLLoaderTest, UploadLongStringWithRedirect) {
   // Use a 307 redirect to preserve the body across the redirect.
   std::unique_ptr<SimpleLoaderTestHelper> test_helper = CreateHelperForURL(
       test_server_.GetURL("/server-redirect-307?" +

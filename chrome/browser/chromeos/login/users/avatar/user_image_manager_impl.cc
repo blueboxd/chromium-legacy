@@ -302,13 +302,13 @@ class UserImageManagerImpl::Job {
   GURL image_url_;
   base::FilePath image_path_;
 
-  base::WeakPtrFactory<Job> weak_factory_;
+  base::WeakPtrFactory<Job> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Job);
 };
 
 UserImageManagerImpl::Job::Job(UserImageManagerImpl* parent)
-    : parent_(parent), run_(false), weak_factory_(this) {}
+    : parent_(parent), run_(false) {}
 
 UserImageManagerImpl::Job::~Job() {}
 
@@ -562,8 +562,7 @@ UserImageManagerImpl::UserImageManagerImpl(
       user_manager_(user_manager),
       downloading_profile_image_(false),
       profile_image_requested_(false),
-      has_managed_image_(false),
-      weak_factory_(this) {
+      has_managed_image_(false) {
   background_task_runner_ = base::CreateSequencedTaskRunner(
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});

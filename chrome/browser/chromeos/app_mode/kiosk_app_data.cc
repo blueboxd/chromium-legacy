@@ -281,8 +281,7 @@ KioskAppData::KioskAppData(KioskAppDataDelegate* delegate,
       delegate_(delegate),
       status_(STATUS_INIT),
       update_url_(update_url),
-      crx_file_(cached_crx),
-      weak_factory_(this) {
+      crx_file_(cached_crx) {
   if (ignore_kiosk_app_data_load_failures_for_testing) {
     LOG(WARNING) << "Force KioskAppData loaded for testing.";
     SetStatus(STATUS_LOADED);

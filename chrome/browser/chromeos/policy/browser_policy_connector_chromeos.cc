@@ -107,8 +107,7 @@ MarketSegment TranslateMarketSegment(
 
 }  // namespace
 
-BrowserPolicyConnectorChromeOS::BrowserPolicyConnectorChromeOS()
-    : weak_ptr_factory_(this) {
+BrowserPolicyConnectorChromeOS::BrowserPolicyConnectorChromeOS() {
   DCHECK(chromeos::InstallAttributes::IsInitialized());
 
   // DBusThreadManager or DeviceSettingsService may be

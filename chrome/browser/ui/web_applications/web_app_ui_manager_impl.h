@@ -25,6 +25,8 @@ class WebAppProvider;
 class WebAppDialogManager;
 
 // This KeyedService is a UI counterpart for WebAppProvider.
+// TODO(calamity): Rename this to WebAppProviderDelegate to better reflect that
+// this class serves a wide range of Web Applications <-> Browser purposes.
 class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
  public:
   static WebAppUiManagerImpl* Get(Profile* profile);
@@ -39,7 +41,8 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
   size_t GetNumWindowsForApp(const AppId& app_id) override;
   void NotifyOnAllAppWindowsClosed(const AppId& app_id,
                                    base::OnceClosure callback) override;
-  void MigrateOSAttributes(const AppId& from, const AppId& to) override;
+  void UninstallAndReplace(const std::vector<AppId>& from_apps,
+                           const AppId& to_app) override;
   bool CanAddAppToQuickLaunchBar() const override;
   void AddAppToQuickLaunchBar(const AppId& app_id) override;
   bool IsInAppWindow(content::WebContents* web_contents) const override;

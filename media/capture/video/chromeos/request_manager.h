@@ -369,7 +369,7 @@ class CAPTURE_EXPORT RequestManager final
   // duplicate or out of order of frames.
   std::map<StreamType, uint32_t> last_received_frame_number_map_;
 
-  base::WeakPtrFactory<RequestManager> weak_ptr_factory_;
+  base::WeakPtrFactory<RequestManager> weak_ptr_factory_{this};
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(RequestManager);
 };

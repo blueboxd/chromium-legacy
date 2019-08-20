@@ -115,8 +115,7 @@ ArcMetricsService::ArcMetricsService(content::BrowserContext* context,
       pref_service_(user_prefs::UserPrefs::Get(context)),
       clock_(base::DefaultClock::GetInstance()),
       tick_clock_(base::DefaultTickClock::GetInstance()),
-      last_update_ticks_(tick_clock_->NowTicks()),
-      weak_ptr_factory_(this) {
+      last_update_ticks_(tick_clock_->NowTicks()) {
   arc_bridge_service_->metrics()->SetHost(this);
   arc_bridge_service_->process()->AddObserver(&process_observer_);
   // If WMHelper doesn't exist, do nothing. This occurs in tests.

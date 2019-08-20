@@ -45,8 +45,7 @@ PairingLostNotifier::PairingLostNotifier(
     : profile_(profile),
       multidevice_setup_client_(multidevice_setup_client),
       pref_service_(pref_service),
-      android_sms_app_helper_delegate_(android_sms_app_helper_delegate),
-      weak_ptr_factory_(this) {
+      android_sms_app_helper_delegate_(android_sms_app_helper_delegate) {
   multidevice_setup_client_->AddObserver(this);
   HandleMessagesFeatureState();
 }

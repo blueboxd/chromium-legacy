@@ -146,12 +146,14 @@ ServiceWorkerProviderHost::PreCreateNavigationHost(
     base::WeakPtr<ServiceWorkerContextCore> context,
     bool are_ancestors_secure,
     int frame_tree_node_id,
-    blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request,
-    blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info) {
+    mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
+        host_receiver,
+    mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
+        client_remote) {
   DCHECK(context);
   auto host = base::WrapUnique(new ServiceWorkerProviderHost(
       blink::mojom::ServiceWorkerProviderType::kForWindow, are_ancestors_secure,
-      frame_tree_node_id, std::move(host_request), std::move(client_ptr_info),
+      frame_tree_node_id, std::move(host_receiver), std::move(client_remote),
       context));
   auto weak_ptr = host->AsWeakPtr();
   RegisterToContextCore(context, std::move(host));
@@ -168,8 +170,8 @@ ServiceWorkerProviderHost::PreCreateForController(
   auto host = base::WrapUnique(new ServiceWorkerProviderHost(
       blink::mojom::ServiceWorkerProviderType::kForServiceWorker,
       /*is_parent_frame_secure=*/true, FrameTreeNode::kFrameTreeNodeInvalidId,
-      mojo::MakeRequest(&((*out_provider_info)->host_ptr_info)),
-      /*client_ptr_info=*/nullptr, context));
+      (*out_provider_info)->host_remote.InitWithNewEndpointAndPassReceiver(),
+      /*client_remote=*/mojo::NullAssociatedRemote(), context));
   host->running_hosted_version_ = std::move(version);
 
   auto weak_ptr = host->AsWeakPtr();
@@ -183,16 +185,18 @@ ServiceWorkerProviderHost::PreCreateForWebWorker(
     base::WeakPtr<ServiceWorkerContextCore> context,
     int process_id,
     blink::mojom::ServiceWorkerProviderType provider_type,
-    blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request,
-    blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info) {
+    mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
+        host_receiver,
+    mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
+        client_remote) {
   using ServiceWorkerProviderType = blink::mojom::ServiceWorkerProviderType;
   DCHECK((blink::features::IsPlzDedicatedWorkerEnabled() &&
           provider_type == ServiceWorkerProviderType::kForDedicatedWorker) ||
          provider_type == ServiceWorkerProviderType::kForSharedWorker);
   auto host = base::WrapUnique(new ServiceWorkerProviderHost(
       provider_type, true /* is_parent_frame_secure */,
-      FrameTreeNode::kFrameTreeNodeInvalidId, std::move(host_request),
-      std::move(client_ptr_info), context));
+      FrameTreeNode::kFrameTreeNodeInvalidId, std::move(host_receiver),
+      std::move(client_remote), context));
   host->SetRenderProcessId(process_id);
 
   auto weak_ptr = host->AsWeakPtr();
@@ -204,8 +208,8 @@ ServiceWorkerProviderHost::PreCreateForWebWorker(
 void ServiceWorkerProviderHost::RegisterToContextCore(
     base::WeakPtr<ServiceWorkerContextCore> context,
     std::unique_ptr<ServiceWorkerProviderHost> host) {
-  DCHECK(host->binding_.is_bound());
-  host->binding_.set_connection_error_handler(
+  DCHECK(host->receiver_.is_bound());
+  host->receiver_.set_disconnect_handler(
       base::BindOnce(&ServiceWorkerContextCore::RemoveProviderHost, context,
                      host->provider_id()));
   context->AddProviderHost(std::move(host));
@@ -215,8 +219,10 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
     blink::mojom::ServiceWorkerProviderType type,
     bool is_parent_frame_secure,
     int frame_tree_node_id,
-    blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request,
-    blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info,
+    mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
+        host_receiver,
+    mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
+        client_remote,
     base::WeakPtr<ServiceWorkerContextCore> context)
     : provider_id_(NextProviderId()),
       type_(type),
@@ -232,23 +238,21 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
               : base::BindRepeating(&WebContents::FromFrameTreeNodeId,
                                     frame_tree_node_id_)),
       context_(context),
-      binding_(this),
       interface_provider_binding_(this) {
   DCHECK_NE(blink::mojom::ServiceWorkerProviderType::kUnknown, type_);
 
   if (type_ == blink::mojom::ServiceWorkerProviderType::kForServiceWorker) {
-    // Actual |render_process_id_| will be set after choosing a process for the
-    // controller.
-    DCHECK(!client_ptr_info);
+    DCHECK(!client_remote);
   } else {
-    DCHECK(client_ptr_info.is_valid());
+    DCHECK(client_remote.is_valid());
   }
 
   context_->RegisterProviderHostByClientID(client_uuid_, this);
 
-  DCHECK(host_request.is_pending());
-  container_.Bind(std::move(client_ptr_info));
-  binding_.Bind(std::move(host_request));
+  DCHECK(host_receiver.is_valid());
+  if (client_remote.is_valid())
+    container_.Bind(std::move(client_remote));
+  receiver_.Bind(std::move(host_receiver));
 }
 
 ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
@@ -748,7 +752,7 @@ void ServiceWorkerProviderHost::ReturnRegistrationForReadyIfNeeded() {
                          this, "Registration ID", registration->id());
   if (!IsContextAlive()) {
     // Here no need to run or destroy |get_ready_callback_|, which will destroy
-    // together with |binding_| when |this| destroys.
+    // together with |receiver_| when |this| destroys.
     return;
   }
 
@@ -1172,8 +1176,8 @@ void ServiceWorkerProviderHost::EnsureControllerServiceWorker(
 }
 
 void ServiceWorkerProviderHost::CloneContainerHost(
-    blink::mojom::ServiceWorkerContainerHostRequest container_host_request) {
-  additional_bindings_.AddBinding(this, std::move(container_host_request));
+    mojo::PendingReceiver<blink::mojom::ServiceWorkerContainerHost> receiver) {
+  additional_receivers_.Add(this, std::move(receiver));
 }
 
 void ServiceWorkerProviderHost::HintToUpdateServiceWorker() {

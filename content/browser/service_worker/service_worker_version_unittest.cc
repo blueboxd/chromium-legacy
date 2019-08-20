@@ -1212,7 +1212,7 @@ TEST_F(ServiceWorkerVersionTest,
       helper_->mock_render_process_host()->foreground_service_worker_count());
 
   // Remove the controllee.
-  remote_endpoint.host_ptr()->reset();
+  remote_endpoint.host_remote()->reset();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(version_->HasControllee());
 

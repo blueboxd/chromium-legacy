@@ -142,9 +142,7 @@ ArcWakeLockBridge* ArcWakeLockBridge::GetForBrowserContextForTesting(
 
 ArcWakeLockBridge::ArcWakeLockBridge(content::BrowserContext* context,
                                      ArcBridgeService* bridge_service)
-    : arc_bridge_service_(bridge_service),
-      binding_(this),
-      weak_ptr_factory_(this) {
+    : arc_bridge_service_(bridge_service), binding_(this) {
   arc_bridge_service_->wake_lock()->SetHost(this);
   arc_bridge_service_->wake_lock()->AddObserver(this);
 }

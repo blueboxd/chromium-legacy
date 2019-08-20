@@ -89,10 +89,7 @@ NetworkStateInformer::State GetStateForDefaultNetwork() {
 
 }  // namespace
 
-NetworkStateInformer::NetworkStateInformer()
-    : state_(OFFLINE),
-      weak_ptr_factory_(this) {
-}
+NetworkStateInformer::NetworkStateInformer() : state_(OFFLINE) {}
 
 NetworkStateInformer::~NetworkStateInformer() {
   if (NetworkHandler::IsInitialized()) {

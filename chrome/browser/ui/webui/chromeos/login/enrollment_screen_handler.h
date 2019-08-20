@@ -191,8 +191,7 @@ class EnrollmentScreenHandler
   // Help application used for help dialogs.
   scoped_refptr<HelpAppLauncher> help_app_;
 
-
-  base::WeakPtrFactory<EnrollmentScreenHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<EnrollmentScreenHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(EnrollmentScreenHandler);
 };

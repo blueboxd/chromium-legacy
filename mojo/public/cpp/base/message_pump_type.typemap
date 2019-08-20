@@ -12,4 +12,4 @@ sources = [
 public_deps = [
   "//base",
 ]
-type_mappings = [ "mojo_base.mojom.MessagePumpType=base::MessagePumpType" ]
+type_mappings = [ "mojo_base.mojom.MessagePumpType=::base::MessagePumpType" ]

@@ -22,7 +22,7 @@ namespace chromeos {
 namespace settings {
 
 KerberosAccountsHandler::KerberosAccountsHandler()
-    : credentials_manager_observer_(this), weak_factory_(this) {}
+    : credentials_manager_observer_(this) {}
 
 KerberosAccountsHandler::~KerberosAccountsHandler() = default;
 

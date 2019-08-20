@@ -51,8 +51,7 @@ class SystemClockClientImpl : public SystemClockClient {
   explicit SystemClockClientImpl(dbus::Bus* bus)
       : can_set_time_(false),
         can_set_time_initialized_(false),
-        system_clock_proxy_(nullptr),
-        weak_ptr_factory_(this) {
+        system_clock_proxy_(nullptr) {
     CHECK(bus);
     InitDBus(bus);
   }
@@ -186,7 +185,7 @@ class SystemClockClientImpl : public SystemClockClient {
   dbus::ObjectProxy* system_clock_proxy_;
   base::ObserverList<Observer>::Unchecked observers_;
 
-  base::WeakPtrFactory<SystemClockClientImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<SystemClockClientImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SystemClockClientImpl);
 };

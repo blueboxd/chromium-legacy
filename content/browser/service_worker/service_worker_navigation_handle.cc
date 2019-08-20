@@ -34,8 +34,8 @@ ServiceWorkerNavigationHandle::~ServiceWorkerNavigationHandle() {
 void ServiceWorkerNavigationHandle::OnCreatedProviderHost(
     blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(provider_info->host_ptr_info.is_valid() &&
-         provider_info->client_request.is_pending());
+  DCHECK(provider_info->host_remote.is_valid() &&
+         provider_info->client_receiver.is_valid());
 
   provider_info_ = std::move(provider_info);
 }

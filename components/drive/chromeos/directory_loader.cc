@@ -125,9 +125,7 @@ class DirectoryLoader::FeedFetcher {
               const std::string& root_folder_id)
       : loader_(loader),
         directory_fetch_info_(directory_fetch_info),
-        root_folder_id_(root_folder_id),
-        weak_ptr_factory_(this) {
-  }
+        root_folder_id_(root_folder_id) {}
 
   ~FeedFetcher() = default;
 
@@ -216,7 +214,7 @@ class DirectoryLoader::FeedFetcher {
   std::string root_folder_id_;
   base::TimeTicks start_time_;
   THREAD_CHECKER(thread_checker_);
-  base::WeakPtrFactory<FeedFetcher> weak_ptr_factory_;
+  base::WeakPtrFactory<FeedFetcher> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(FeedFetcher);
 };
 
@@ -240,8 +238,7 @@ DirectoryLoader::DirectoryLoader(
       loader_controller_(loader_controller),
       root_entry_path_(root_entry_path),
       team_drive_id_(team_drive_id),
-      clock_(clock),
-      weak_ptr_factory_(this) {}
+      clock_(clock) {}
 
 DirectoryLoader::~DirectoryLoader() = default;
 

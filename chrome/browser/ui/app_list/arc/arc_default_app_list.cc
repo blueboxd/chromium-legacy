@@ -139,9 +139,7 @@ void ArcDefaultAppList::RegisterProfilePrefs(
 
 ArcDefaultAppList::ArcDefaultAppList(Profile* profile,
                                      base::OnceClosure ready_callback)
-    : profile_(profile),
-      ready_callback_(std::move(ready_callback)),
-      weak_ptr_factory_(this) {
+    : profile_(profile), ready_callback_(std::move(ready_callback)) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   // Load default apps from two sources.

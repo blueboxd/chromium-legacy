@@ -30,8 +30,8 @@ SoftwareRenderer::SoftwareRenderer(
     const gfx::Size& size)
     : RendererBase(widget, size),
       window_surface_(std::move(window_surface)),
-      vsync_period_(base::TimeDelta::FromMilliseconds(kFrameDelayMilliseconds)),
-      weak_ptr_factory_(this) {}
+      vsync_period_(
+          base::TimeDelta::FromMilliseconds(kFrameDelayMilliseconds)) {}
 
 SoftwareRenderer::~SoftwareRenderer() {
 }

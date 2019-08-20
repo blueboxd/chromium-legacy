@@ -7,4 +7,4 @@ traits_headers = [ "//components/arc/timer/arc_timer_mojom_traits.h" ]
 sources = [
   "//components/arc/timer/arc_timer_mojom_traits.cc",
 ]
-type_mappings = [ "arc.mojom.ClockId=clockid_t" ]
+type_mappings = [ "arc.mojom.ClockId=::clockid_t" ]

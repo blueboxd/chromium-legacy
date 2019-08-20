@@ -134,7 +134,7 @@ class CAPTURE_EXPORT Camera3AController
 
   base::CancelableOnceClosure delayed_ae_unlock_callback_;
 
-  base::WeakPtrFactory<Camera3AController> weak_ptr_factory_;
+  base::WeakPtrFactory<Camera3AController> weak_ptr_factory_{this};
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(Camera3AController);
 };

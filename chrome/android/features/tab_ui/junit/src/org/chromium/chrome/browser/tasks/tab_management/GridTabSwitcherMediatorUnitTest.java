@@ -346,7 +346,7 @@ public class GridTabSwitcherMediatorUnitTest {
         mMediator.setCleanupDelayForTesting(0);
         mMediator.postHiding();
         verify(mResetHandler).softCleanup();
-        verify(mResetHandler).resetWithTabList(eq(null), eq(false));
+        verify(mResetHandler).resetWithTabList(eq(null), eq(false), eq(false));
     }
 
     @Test
@@ -357,7 +357,7 @@ public class GridTabSwitcherMediatorUnitTest {
 
         doReturn(true).when(mTabModelFilter).isIncognito();
         mTabModelSelectorObserverCaptor.getValue().onTabModelSelected(mTabModel, null);
-        verify(mResetHandler).resetWithTabList(eq(mTabModelFilter), eq(false));
+        verify(mResetHandler).resetWithTabList(eq(mTabModelFilter), eq(false), eq(false));
         verify(mTabGridDialogResetHandler).hideDialog(eq(false));
         assertThat(mModel.get(TabListContainerProperties.IS_INCOGNITO), equalTo(true));
 
@@ -371,7 +371,7 @@ public class GridTabSwitcherMediatorUnitTest {
 
         doReturn(true).when(mTabModelFilter).isIncognito();
         mTabModelSelectorObserverCaptor.getValue().onTabModelSelected(mTabModel, null);
-        verify(mResetHandler).resetWithTabList(eq(mTabModelFilter), eq(false));
+        verify(mResetHandler).resetWithTabList(eq(mTabModelFilter), eq(false), eq(false));
         verify(mTabGridDialogResetHandler, never()).hideDialog(eq(false));
         assertThat(mModel.get(TabListContainerProperties.IS_INCOGNITO), equalTo(true));
 

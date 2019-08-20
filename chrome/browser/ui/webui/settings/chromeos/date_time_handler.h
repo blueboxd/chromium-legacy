@@ -75,7 +75,7 @@ class DateTimeHandler : public ::settings::SettingsPageUIHandler,
 
   ScopedObserver<SystemClockClient, SystemClockClient::Observer>
       scoped_observer_;
-  base::WeakPtrFactory<DateTimeHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<DateTimeHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DateTimeHandler);
 };

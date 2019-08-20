@@ -9,6 +9,6 @@ deps = [
   "//ui/base/accelerators/mojom:mojom_traits",
 ]
 type_mappings = [
-  "ui.mojom.Accelerator=ui::Accelerator",
-  "ui.mojom.AcceleratorKeyState=ui::Accelerator::KeyState",
+  "ui.mojom.Accelerator=::ui::Accelerator",
+  "ui.mojom.AcceleratorKeyState=::ui::Accelerator::KeyState",
 ]

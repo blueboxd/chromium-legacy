@@ -688,7 +688,11 @@ ChannelState WebSocketChannel::OnWriteDone(bool synchronous, int result) {
 }
 
 ChannelState WebSocketChannel::ReadFrames() {
+  // TODO(crbug.com/994000) Remove this CHECK.
+  CHECK(stream_);
   while (current_receive_quota_ > 0) {
+    // TODO(crbug.com/994000) Remove this CHECK.
+    CHECK(stream_);
     // This use of base::Unretained is safe because this object owns the
     // WebSocketStream, and any pending reads will be cancelled when it is
     // destroyed.
@@ -703,6 +707,8 @@ ChannelState WebSocketChannel::ReadFrames() {
       return CHANNEL_DELETED;
     }
     DCHECK_NE(CLOSED, state_);
+    // TODO(crbug.com/994000) Remove this CHECK.
+    CHECK_EQ(result, net::OK);
   }
   return CHANNEL_ALIVE;
 }

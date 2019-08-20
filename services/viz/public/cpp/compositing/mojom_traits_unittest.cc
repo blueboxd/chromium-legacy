@@ -640,7 +640,6 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   const float top_bar_shown_ratio(1.0f);
   const base::TimeTicks local_surface_id_allocation_time =
       base::TimeTicks::Now();
-  const gfx::Rect mirror_rect(10, 10, 50, 50);
 
   CompositorFrameMetadata input;
   input.device_scale_factor = device_scale_factor;
@@ -661,7 +660,6 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   input.top_controls_height = top_bar_height;
   input.top_controls_shown_ratio = top_bar_shown_ratio;
   input.local_surface_id_allocation_time = local_surface_id_allocation_time;
-  input.mirror_rect = mirror_rect;
 
   CompositorFrameMetadata output;
   mojo::test::SerializeAndDeserialize<mojom::CompositorFrameMetadata>(&input,
@@ -693,7 +691,6 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   EXPECT_EQ(top_bar_shown_ratio, output.top_controls_shown_ratio);
   EXPECT_EQ(local_surface_id_allocation_time,
             output.local_surface_id_allocation_time);
-  EXPECT_EQ(mirror_rect, output.mirror_rect);
 }
 
 TEST_F(StructTraitsTest, RenderPass) {

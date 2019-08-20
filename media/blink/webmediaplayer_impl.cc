@@ -2662,6 +2662,7 @@ void WebMediaPlayerImpl::StartPipeline() {
 
     demuxer_.reset(new MediaUrlDemuxer(
         media_task_runner_, loaded_url_, frame_->GetDocument().SiteForCookies(),
+        frame_->GetDocument().TopFrameOrigin(),
         allow_media_player_renderer_credentials_, demuxer_found_hls_));
     pipeline_controller_->Start(Pipeline::StartType::kNormal, demuxer_.get(),
                                 this, false, false);

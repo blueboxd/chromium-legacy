@@ -26,8 +26,7 @@ VideoCaptureDeviceFactoryChromeOS::VideoCaptureDeviceFactoryChromeOS(
     : task_runner_for_screen_observer_(task_runner_for_screen_observer),
       camera_hal_ipc_thread_("CameraHalIpcThread"),
       camera_app_device_bridge_(camera_app_device_bridge),
-      initialized_(Init()),
-      weak_ptr_factory_(this) {}
+      initialized_(Init()) {}
 
 VideoCaptureDeviceFactoryChromeOS::~VideoCaptureDeviceFactoryChromeOS() {
   if (camera_app_device_bridge_) {

@@ -295,9 +295,7 @@ ArcProcessService* ArcProcessService::GetForBrowserContext(
 
 ArcProcessService::ArcProcessService(content::BrowserContext* context,
                                      ArcBridgeService* bridge_service)
-    : arc_bridge_service_(bridge_service),
-      nspid_to_pid_(new NSPidToPidMap()),
-      weak_ptr_factory_(this) {
+    : arc_bridge_service_(bridge_service), nspid_to_pid_(new NSPidToPidMap()) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   task_runner_ = base::CreateSequencedTaskRunner(
       {base::ThreadPool(), base::MayBlock(),

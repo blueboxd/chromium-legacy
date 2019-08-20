@@ -80,8 +80,7 @@ TEST_F(ErrorRetryStateMachineTest, OfflineThenReload) {
   // Reload fails after navigation is committed.
   {
     ErrorRetryStateMachine clone(machine);
-    ASSERT_EQ(ErrorRetryCommand::kLoadError,
-              clone.DidFailNavigation(test_url, test_url));
+    ASSERT_EQ(ErrorRetryCommand::kLoadError, clone.DidFailNavigation(test_url));
     ASSERT_EQ(ErrorRetryState::kReadyToDisplayError, clone.state());
   }
 }
@@ -145,8 +144,7 @@ TEST_F(ErrorRetryStateMachineTest, WebErrorPageThenReload) {
   // Reload fails after navigation is committed.
   {
     ErrorRetryStateMachine clone(machine);
-    ASSERT_EQ(ErrorRetryCommand::kLoadError,
-              clone.DidFailNavigation(test_url, test_url));
+    ASSERT_EQ(ErrorRetryCommand::kLoadError, clone.DidFailNavigation(test_url));
     ASSERT_EQ(ErrorRetryState::kReadyToDisplayError, clone.state());
   }
 
@@ -169,7 +167,7 @@ TEST_F(ErrorRetryStateMachineTest, LoadFailedAfterCommit) {
   machine.SetURL(test_url);
 
   ASSERT_EQ(ErrorRetryCommand::kLoadError,
-            machine.DidFailNavigation(GURL::EmptyGURL(), test_url));
+            machine.DidFailNavigation(GURL::EmptyGURL()));
   ASSERT_EQ(ErrorRetryState::kReadyToDisplayError, machine.state());
 }
 
@@ -211,8 +209,7 @@ TEST_F(ErrorRetryStateMachineTest, SuccessThenReloadOffline) {
   // Reload fails after commit.
   {
     ErrorRetryStateMachine clone(machine);
-    ASSERT_EQ(ErrorRetryCommand::kLoadError,
-              clone.DidFailNavigation(test_url, test_url));
+    ASSERT_EQ(ErrorRetryCommand::kLoadError, clone.DidFailNavigation(test_url));
     ASSERT_EQ(ErrorRetryState::kReadyToDisplayError, clone.state());
   }
 }

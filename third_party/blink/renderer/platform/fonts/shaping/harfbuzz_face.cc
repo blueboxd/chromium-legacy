@@ -415,7 +415,13 @@ hb_font_t* HarfBuzzFace::GetScaledFont(
 
   int scale = SkiaScalarToHarfBuzzPosition(platform_data_->size());
   hb_font_set_scale(unscaled_font_, scale, scale);
-  hb_font_set_ptem(unscaled_font_, platform_data_->size() / kCssPixelsPerPoint);
+  // See contended discussion in https://github.com/harfbuzz/harfbuzz/pull/1484
+  // Setting ptem here is critical for HarfBuzz to know where to lookup spacing
+  // offset in the AAT trak table, the unit pt in ptem here means "CoreText"
+  // points. After discussion on the pull request and with Apple developers, the
+  // meaning of HarfBuzz' hb_font_set_ptem API was changed to expect the
+  // equivalent of CSS pixels here.
+  hb_font_set_ptem(unscaled_font_, platform_data_->size());
 
   SkTypeface* typeface = harfbuzz_font_data_->font_.getTypeface();
   int axis_count = typeface->getVariationDesignPosition(nullptr, 0);

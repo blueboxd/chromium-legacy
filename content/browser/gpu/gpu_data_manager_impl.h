@@ -65,7 +65,7 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   void AppendGpuCommandLine(base::CommandLine* command_line,
                             GpuProcessKind kind) override;
 
-  void RequestGpuSupportedRuntimeVersion() const;
+  void RequestGpuSupportedRuntimeVersion(bool delayed) const;
   bool GpuProcessStartAllowed() const;
 
   bool IsGpuFeatureInfoAvailable() const;

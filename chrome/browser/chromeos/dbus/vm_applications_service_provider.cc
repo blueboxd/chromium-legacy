@@ -23,8 +23,7 @@
 
 namespace chromeos {
 
-VmApplicationsServiceProvider::VmApplicationsServiceProvider()
-    : weak_ptr_factory_(this) {}
+VmApplicationsServiceProvider::VmApplicationsServiceProvider() {}
 
 VmApplicationsServiceProvider::~VmApplicationsServiceProvider() = default;
 

@@ -34,9 +34,7 @@ gfx::Size AdjustSizeForI420Format(const gfx::Size& raw_size) {
 constexpr base::TimeDelta LameWindowCapturerChromeOS::kAbsoluteMinCapturePeriod;
 
 LameWindowCapturerChromeOS::LameWindowCapturerChromeOS(aura::Window* target)
-    : target_(target),
-      copy_request_source_(base::UnguessableToken::Create()),
-      weak_factory_(this) {
+    : target_(target), copy_request_source_(base::UnguessableToken::Create()) {
   if (target_) {
     target_->AddObserver(this);
   }

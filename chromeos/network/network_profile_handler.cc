@@ -203,9 +203,7 @@ const NetworkProfile* NetworkProfileHandler::GetDefaultUserProfile() const {
   return NULL;
 }
 
-NetworkProfileHandler::NetworkProfileHandler()
-    : weak_ptr_factory_(this) {
-}
+NetworkProfileHandler::NetworkProfileHandler() {}
 
 void NetworkProfileHandler::Init() {
   ShillManagerClient::Get()->AddPropertyChangedObserver(this);

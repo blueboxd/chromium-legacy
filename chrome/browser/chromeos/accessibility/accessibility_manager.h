@@ -492,7 +492,7 @@ class AccessibilityManager
   // Used to set the audio focus enforcement type for ChromeVox.
   media_session::mojom::AudioFocusManagerPtr audio_focus_manager_ptr_;
 
-  base::WeakPtrFactory<AccessibilityManager> weak_ptr_factory_;
+  base::WeakPtrFactory<AccessibilityManager> weak_ptr_factory_{this};
 
   friend class DictationTest;
   friend class SwitchAccessTest;

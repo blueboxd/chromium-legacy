@@ -102,7 +102,7 @@ class UserCloudPolicyTokenForwarder : public KeyedService,
   // Points to the base::DefaultClock by default.
   const base::Clock* clock_;
 
-  base::WeakPtrFactory<UserCloudPolicyTokenForwarder> weak_ptr_factory_;
+  base::WeakPtrFactory<UserCloudPolicyTokenForwarder> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyTokenForwarder);
 };

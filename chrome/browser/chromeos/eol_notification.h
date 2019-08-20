@@ -41,7 +41,7 @@ class EolNotification final {
   update_engine::EndOfLifeStatus status_;
 
   // Factory of callbacks.
-  base::WeakPtrFactory<EolNotification> weak_factory_;
+  base::WeakPtrFactory<EolNotification> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(EolNotification);
 };

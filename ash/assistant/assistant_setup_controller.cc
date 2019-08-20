@@ -27,7 +27,7 @@ namespace ash {
 
 AssistantSetupController::AssistantSetupController(
     AssistantController* assistant_controller)
-    : assistant_controller_(assistant_controller), weak_ptr_factory_(this) {
+    : assistant_controller_(assistant_controller) {
   assistant_controller_->AddObserver(this);
 }
 

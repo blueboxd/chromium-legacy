@@ -68,8 +68,7 @@ NetworkingConfigService::NetworkingConfigService(
     ExtensionRegistry* extension_registry)
     : browser_context_(browser_context),
       registry_observer_(this),
-      event_delegate_(std::move(event_delegate)),
-      weak_factory_(this) {
+      event_delegate_(std::move(event_delegate)) {
   registry_observer_.Add(extension_registry);
 }
 

@@ -53,8 +53,7 @@ class PendingConnectionRequestBase
       : PendingConnectionRequest<FailureDetailType>(delegate,
                                                     connection_priority),
         client_connection_parameters_(std::move(client_connection_parameters)),
-        readable_request_type_for_logging_(readable_request_type_for_logging),
-        weak_ptr_factory_(this) {
+        readable_request_type_for_logging_(readable_request_type_for_logging) {
     client_connection_parameters_->AddObserver(this);
   }
 
@@ -113,7 +112,7 @@ class PendingConnectionRequestBase
 
   bool has_finished_without_connection_ = false;
 
-  base::WeakPtrFactory<PendingConnectionRequestBase> weak_ptr_factory_;
+  base::WeakPtrFactory<PendingConnectionRequestBase> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PendingConnectionRequestBase);
 };

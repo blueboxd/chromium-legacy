@@ -22,8 +22,7 @@ const int32_t kMinimumDurationMs = 200;
 }  // anonymous namespace
 
 ToastManagerImpl::ToastManagerImpl()
-    : locked_(Shell::Get()->session_controller()->IsScreenLocked()),
-      weak_ptr_factory_(this) {}
+    : locked_(Shell::Get()->session_controller()->IsScreenLocked()) {}
 
 ToastManagerImpl::~ToastManagerImpl() = default;
 

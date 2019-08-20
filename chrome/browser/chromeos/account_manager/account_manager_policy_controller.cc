@@ -22,8 +22,7 @@ AccountManagerPolicyController::AccountManagerPolicyController(
     const AccountId& device_account_id)
     : profile_(profile),
       account_manager_(account_manager),
-      device_account_id_(device_account_id),
-      weak_factory_(this) {}
+      device_account_id_(device_account_id) {}
 
 AccountManagerPolicyController::~AccountManagerPolicyController() {
   pref_change_registrar_.RemoveAll();

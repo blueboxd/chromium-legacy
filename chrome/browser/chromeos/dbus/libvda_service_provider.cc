@@ -18,7 +18,7 @@
 
 namespace chromeos {
 
-LibvdaServiceProvider::LibvdaServiceProvider() : weak_ptr_factory_(this) {}
+LibvdaServiceProvider::LibvdaServiceProvider() {}
 
 LibvdaServiceProvider::~LibvdaServiceProvider() = default;
 

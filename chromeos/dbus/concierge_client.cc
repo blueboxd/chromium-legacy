@@ -20,7 +20,7 @@ namespace chromeos {
 
 class ConciergeClientImpl : public ConciergeClient {
  public:
-  ConciergeClientImpl() : weak_ptr_factory_(this) {}
+  ConciergeClientImpl() {}
 
   ~ConciergeClientImpl() override = default;
 
@@ -522,7 +522,7 @@ class ConciergeClientImpl : public ConciergeClient {
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<ConciergeClientImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<ConciergeClientImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ConciergeClientImpl);
 };

@@ -151,7 +151,7 @@ class AppListControllerDelegate {
   void OnSearchStarted();
 
  private:
-  base::WeakPtrFactory<AppListControllerDelegate> weak_ptr_factory_;
+  base::WeakPtrFactory<AppListControllerDelegate> weak_ptr_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_UI_APP_LIST_APP_LIST_CONTROLLER_DELEGATE_H_

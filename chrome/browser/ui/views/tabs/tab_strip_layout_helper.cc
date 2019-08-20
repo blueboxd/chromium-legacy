@@ -123,7 +123,6 @@ void TabStripLayoutHelper::InsertTabAtNoAnimation(
     int model_index,
     Tab* tab,
     base::OnceClosure tab_removed_callback,
-    TabAnimationState::TabActiveness active,
     TabAnimationState::TabPinnedness pinned) {
   const int slot_index = GetSlotIndexForTabModelIndex(model_index);
   slots_.insert(
@@ -136,7 +135,6 @@ void TabStripLayoutHelper::InsertTabAt(
     int model_index,
     Tab* tab,
     base::OnceClosure tab_removed_callback,
-    TabAnimationState::TabActiveness active,
     TabAnimationState::TabPinnedness pinned) {
   const int slot_index = GetSlotIndexForTabModelIndex(model_index);
   slots_.insert(

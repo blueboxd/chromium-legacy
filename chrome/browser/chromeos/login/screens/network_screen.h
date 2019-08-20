@@ -133,7 +133,7 @@ class NetworkScreen : public BaseScreen, public NetworkStateHandlerObserver {
   ScreenExitCallback exit_callback_;
   std::unique_ptr<login::NetworkStateHelper> network_state_helper_;
 
-  base::WeakPtrFactory<NetworkScreen> weak_ptr_factory_;
+  base::WeakPtrFactory<NetworkScreen> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NetworkScreen);
 };

@@ -24,6 +24,7 @@
 #include "media/base/simple_watch_timer.h"
 #include "ui/gl/android/scoped_java_surface.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace media {
 
@@ -78,6 +79,7 @@ class MEDIA_EXPORT MediaPlayerBridge {
   // the |manager| when needed.
   MediaPlayerBridge(const GURL& url,
                     const GURL& site_for_cookies,
+                    const url::Origin& top_frame_origin,
                     const std::string& user_agent,
                     bool hide_url_log,
                     Client* client,
@@ -209,8 +211,11 @@ class MEDIA_EXPORT MediaPlayerBridge {
   // Url for playback.
   GURL url_;
 
-  // First party url for cookies.
+  // Used to determine if cookies are accessed in a third-party context.
   GURL site_for_cookies_;
+
+  // Used to check for cookie content settings.
+  url::Origin top_frame_origin_;
 
   // User agent string to be used for media player.
   const std::string user_agent_;

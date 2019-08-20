@@ -27,7 +27,7 @@ bool IsNormalUserLoggedIn() {
 
 }  // namespace
 
-ProfileProvider::ProfileProvider() : weak_factory_(this) {
+ProfileProvider::ProfileProvider() {
   // Initialize the WindowedIncognitoMonitor on the UI thread.
   WindowedIncognitoMonitor::Init();
   // Register a perf events collector.

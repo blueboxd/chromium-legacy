@@ -33,8 +33,7 @@ WebkitFileStreamReaderImpl::WebkitFileStreamReaderImpl(
       drive_file_path_(drive_file_path),
       offset_(offset),
       expected_modification_time_(expected_modification_time),
-      file_size_(-1),
-      weak_ptr_factory_(this) {
+      file_size_(-1) {
   DCHECK_GE(offset, 0);
 }
 

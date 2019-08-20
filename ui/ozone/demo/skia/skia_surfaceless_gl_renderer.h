@@ -45,7 +45,7 @@ class SurfacelessSkiaGlRenderer : public SkiaGlRenderer {
 
   int back_buffer_ = 0;
 
-  base::WeakPtrFactory<SurfacelessSkiaGlRenderer> weak_ptr_factory_;
+  base::WeakPtrFactory<SurfacelessSkiaGlRenderer> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SurfacelessSkiaGlRenderer);
 };

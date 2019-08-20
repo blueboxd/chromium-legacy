@@ -130,6 +130,7 @@ void MediaResourceGetterImpl::GetAuthCredentials(
 
 void MediaResourceGetterImpl::GetCookies(const GURL& url,
                                          const GURL& site_for_cookies,
+                                         const url::Origin& top_frame_origin,
                                          GetCookieCB callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -147,11 +148,8 @@ void MediaResourceGetterImpl::GetCookies(const GURL& url,
           browser_context_, url, render_process_id_, render_frame_id_);
   network::mojom::RestrictedCookieManager* cookie_manager_ptr =
       cookie_manager.get();
-  // TODO(crbug.com/988398): Same check as in mojo_renderer_service.cc. Is this
-  // correct?
-  DCHECK(!site_for_cookies.is_empty());
   cookie_manager_ptr->GetCookiesString(
-      url, site_for_cookies, url::Origin::Create(site_for_cookies),
+      url, site_for_cookies, top_frame_origin,
       base::BindOnce(&ReturnResultOnUIThreadAndClosePipe,
                      std::move(cookie_manager), std::move(callback)));
 }

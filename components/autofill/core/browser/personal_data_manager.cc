@@ -554,9 +554,7 @@ void PersonalDataManager::OnAccountsCookieDeletedByUserAction() {
 AutofillSyncSigninState PersonalDataManager::GetSyncSigninState() const {
   // Check if the user is signed out.
   if (!sync_service_ || !identity_manager_ ||
-      syncer::DetermineAccountToUse(identity_manager_,
-                                    /*allow_secondary_accounts=*/true)
-          .account_info.IsEmpty()) {
+      syncer::DetermineAccountToUse(identity_manager_).account_info.IsEmpty()) {
     return AutofillSyncSigninState::kSignedOut;
   }
 

@@ -84,8 +84,7 @@ StateController::StateController()
       app_window_observer_(this),
       session_observer_(this),
       input_devices_observer_(this),
-      power_manager_client_observer_(this),
-      weak_ptr_factory_(this) {
+      power_manager_client_observer_(this) {
   DCHECK(!g_state_controller_instance);
 
   g_state_controller_instance = this;

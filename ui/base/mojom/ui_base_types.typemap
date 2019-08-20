@@ -10,6 +10,6 @@ public_deps = [
 ]
 traits_headers = [ "//ui/base/mojom/ui_base_types_mojom_traits.h" ]
 type_mappings = [
-  "ui.mojom.DialogButton=ui::DialogButton",
-  "ui.mojom.ModalType=ui::ModalType",
+  "ui.mojom.DialogButton=::ui::DialogButton",
+  "ui.mojom.ModalType=::ui::ModalType",
 ]

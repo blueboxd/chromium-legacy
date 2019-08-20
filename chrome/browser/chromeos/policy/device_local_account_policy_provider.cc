@@ -30,8 +30,7 @@ DeviceLocalAccountPolicyProvider::DeviceLocalAccountPolicyProvider(
       service_(service),
       chrome_policy_overrides_(std::move(chrome_policy_overrides)),
       store_initialized_(false),
-      waiting_for_policy_refresh_(false),
-      weak_factory_(this) {
+      waiting_for_policy_refresh_(false) {
   service_->AddObserver(this);
   UpdateFromBroker();
 }

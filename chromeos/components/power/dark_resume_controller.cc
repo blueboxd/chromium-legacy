@@ -27,8 +27,7 @@ DarkResumeController::DarkResumeController(
     service_manager::Connector* connector)
     : connector_(connector),
       wake_lock_observer_binding_(this),
-      dark_resume_hard_timeout_(kDefaultDarkResumeHardTimeout),
-      weak_ptr_factory_(this) {
+      dark_resume_hard_timeout_(kDefaultDarkResumeHardTimeout) {
   DCHECK(!dark_resume_hard_timeout_.is_zero());
   connector_->BindInterface(device::mojom::kServiceName,
                             mojo::MakeRequest(&wake_lock_provider_));

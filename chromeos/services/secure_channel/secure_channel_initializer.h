@@ -88,7 +88,7 @@ class SecureChannelInitializer : public SecureChannelBase {
   std::queue<std::unique_ptr<ConnectionRequestArgs>> pending_args_;
   std::unique_ptr<mojom::SecureChannel> secure_channel_impl_;
 
-  base::WeakPtrFactory<SecureChannelInitializer> weak_ptr_factory_;
+  base::WeakPtrFactory<SecureChannelInitializer> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SecureChannelInitializer);
 };

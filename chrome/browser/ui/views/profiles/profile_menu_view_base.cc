@@ -66,7 +66,6 @@ ProfileMenuViewBase::MenuItems::~MenuItems() = default;
 // static
 void ProfileMenuViewBase::ShowBubble(
     profiles::BubbleViewMode view_mode,
-    const signin::ManageAccountsParams& manage_accounts_params,
     signin_metrics::AccessPoint access_point,
     views::Button* anchor_button,
     Browser* browser,
@@ -81,9 +80,7 @@ void ProfileMenuViewBase::ShowBubble(
   } else {
     DCHECK_EQ(profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER, view_mode);
 #if !defined(OS_CHROMEOS)
-    bubble =
-        new ProfileMenuView(anchor_button, browser,
-                            manage_accounts_params.service_type, access_point);
+    bubble = new ProfileMenuView(anchor_button, browser, access_point);
 #else
     NOTREACHED();
     return;
@@ -470,16 +467,4 @@ gfx::ImageSkia ProfileMenuViewBase::CreateVectorIcon(
 
 int ProfileMenuViewBase::GetDefaultIconSize() {
   return kIconSize;
-}
-
-bool ProfileMenuViewBase::ShouldProvideInitiallyFocusedView() const {
-#if defined(OS_MACOSX)
-  // On Mac, buttons are not focusable when full keyboard access is turned off,
-  // causing views::Widget to fall back to focusing the first focusable View.
-  // This behavior is not desired in profile menus because of the menu-like
-  // design using |HoverButtons|.
-  if (!GetFocusManager() || !GetFocusManager()->keyboard_accessible())
-    return false;
-#endif
-  return true;
 }

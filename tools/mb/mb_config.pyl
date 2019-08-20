@@ -508,6 +508,10 @@
       'windows-sdk-multirel': 'release_bot_x86_minimal_symbols',
     },
 
+    'client.devtools-frontend.integration': {
+      'DevTools Linux': 'release_bot',
+    },
+
     'client.openscreen.chromium': {
       'chromium_linux64_debug': 'debug_bot',
       'chromium_mac_debug': 'debug_bot',

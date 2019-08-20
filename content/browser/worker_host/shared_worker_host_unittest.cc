@@ -24,7 +24,8 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/not_implemented_network_url_loader_factory.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
@@ -98,17 +99,21 @@ class SharedWorkerHostTest : public testing::Test {
     auto service_worker_handle =
         std::make_unique<ServiceWorkerNavigationHandle>(
             helper_->context_wrapper());
-    blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info;
-    blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request;
+    mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
+        client_remote;
+    mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
+        host_receiver;
     auto provider_info =
         blink::mojom::ServiceWorkerProviderInfoForClient::New();
-    provider_info->client_request = mojo::MakeRequest(&client_ptr_info);
-    host_request = mojo::MakeRequest(&provider_info->host_ptr_info);
+    provider_info->client_receiver =
+        client_remote.InitWithNewEndpointAndPassReceiver();
+    host_receiver =
+        provider_info->host_remote.InitWithNewEndpointAndPassReceiver();
     base::WeakPtr<ServiceWorkerProviderHost> service_worker_host =
         ServiceWorkerProviderHost::PreCreateForWebWorker(
             helper_->context()->AsWeakPtr(), mock_render_process_host_.GetID(),
             blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
-            std::move(host_request), std::move(client_ptr_info));
+            std::move(host_receiver), std::move(client_remote));
     service_worker_handle->OnCreatedProviderHost(std::move(provider_info));
     host->SetServiceWorkerHandle(std::move(service_worker_handle));
 

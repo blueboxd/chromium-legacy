@@ -79,7 +79,7 @@ class RecentDiskSource : public RecentSource {
   std::priority_queue<RecentFile, std::vector<RecentFile>, RecentFileComparator>
       recent_files_;
 
-  base::WeakPtrFactory<RecentDiskSource> weak_ptr_factory_;
+  base::WeakPtrFactory<RecentDiskSource> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RecentDiskSource);
 };

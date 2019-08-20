@@ -128,7 +128,7 @@ class COMPONENT_EXPORT(CHROMEOS_POWER) DarkResumeController
   // resume state machine related tasks via other means. In the future if other
   // tasks or callbacks need to be added separate from the dark resume state
   // machine lifetime then a separate factory needs to be created and used.
-  base::WeakPtrFactory<DarkResumeController> weak_ptr_factory_;
+  base::WeakPtrFactory<DarkResumeController> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DarkResumeController);
 };

@@ -13,5 +13,6 @@ sources = [
 public_deps = [
   "//device/fido",
 ]
-type_mappings =
-    [ "blink.test.mojom.ClientToAuthenticatorProtocol=device::ProtocolVersion" ]
+type_mappings = [
+  "blink.test.mojom.ClientToAuthenticatorProtocol=::device::ProtocolVersion",
+]

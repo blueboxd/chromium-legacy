@@ -203,8 +203,7 @@ FileStreamReader::FileStreamReader(storage::FileSystemContext* context,
       current_length_(0),
       expected_modification_time_(expected_modification_time),
       runner_(new OperationRunner),
-      state_(NOT_INITIALIZED),
-      weak_ptr_factory_(this) {}
+      state_(NOT_INITIALIZED) {}
 
 FileStreamReader::~FileStreamReader() {
   // FileStreamReader doesn't have a Cancel() method like in FileStreamWriter.

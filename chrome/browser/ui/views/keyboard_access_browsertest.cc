@@ -49,9 +49,7 @@ class ViewFocusChangeWaiter : public views::FocusChangeListener {
  public:
   ViewFocusChangeWaiter(views::FocusManager* focus_manager,
                         int previous_view_id)
-      : focus_manager_(focus_manager),
-        previous_view_id_(previous_view_id),
-        weak_factory_(this) {
+      : focus_manager_(focus_manager), previous_view_id_(previous_view_id) {
     focus_manager_->AddFocusChangeListener(this);
     // Call the focus change notification once in case the focus has
     // already changed.
@@ -81,7 +79,7 @@ class ViewFocusChangeWaiter : public views::FocusChangeListener {
 
   views::FocusManager* focus_manager_;
   int previous_view_id_;
-  base::WeakPtrFactory<ViewFocusChangeWaiter> weak_factory_;
+  base::WeakPtrFactory<ViewFocusChangeWaiter> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ViewFocusChangeWaiter);
 };

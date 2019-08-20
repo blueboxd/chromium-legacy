@@ -89,7 +89,7 @@ class ArcNotificationItemImpl : public ArcNotificationItem {
   bool manually_expanded_or_collapsed_ = false;
 
   THREAD_CHECKER(thread_checker_);
-  base::WeakPtrFactory<ArcNotificationItemImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcNotificationItemImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcNotificationItemImpl);
 };

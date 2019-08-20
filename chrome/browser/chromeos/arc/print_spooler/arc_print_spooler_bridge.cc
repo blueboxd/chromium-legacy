@@ -44,8 +44,7 @@ ArcPrintSpoolerBridge* ArcPrintSpoolerBridge::GetForBrowserContext(
 ArcPrintSpoolerBridge::ArcPrintSpoolerBridge(content::BrowserContext* context,
                                              ArcBridgeService* bridge_service)
     : profile_(Profile::FromBrowserContext(context)),
-      arc_bridge_service_(bridge_service),
-      weak_ptr_factory_(this) {
+      arc_bridge_service_(bridge_service) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   arc_bridge_service_->print_spooler()->SetHost(this);
 }

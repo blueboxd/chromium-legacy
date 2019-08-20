@@ -164,7 +164,7 @@ class ASH_EXPORT AssistantUiController
   // session. We delay this behavior to allow the user an opportunity to resume.
   base::OneShotTimer auto_close_timer_;
 
-  base::WeakPtrFactory<AssistantUiController> weak_factory_;
+  base::WeakPtrFactory<AssistantUiController> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AssistantUiController);
 };

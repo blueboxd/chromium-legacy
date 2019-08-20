@@ -9,11 +9,11 @@
 
 namespace web {
 
-// Defines the states of a NavigationItem that failed to load. This is used by
-// CRWWebController to coordinate the display of native error views such that
-// back/forward navigation to a native error view automatically triggers a
-// reload of the original URL. This is achieved in four steps:
-// 1) A NavigationItem is set to kDisplayingError when it first failed to load
+// Defines the states of a NavigationItem that failed to load. This is used to
+// coordinate the display of error page such that back/forward/reload navigation
+// to a loaded error page will load the original URL. This is achieved in four
+// steps:
+// 1) A NavigationItem is set to gkDisplayingError when it first failed to load
 //    and a web error is displayed. If the failure occurred during provisional
 //    navigation, a placeholder entry is inserted into WKBackForwardList for
 //    this item.
@@ -25,7 +25,8 @@ namespace web {
 //    kRetryFailedNavigationItem.
 // 4) Upon completion of the reload, if successful, the item state is changed to
 //    kNoNavigationError.
-// See https://bit.ly/2sxWJgs for the full state transition diagram.
+// Full state transition diagram:
+// https://docs.google.com/spreadsheets/d/1AdwRIuCShbRy4gEFB-SxaupmPmmO2MO7oLZ4F87XjRE/edit?usp=sharing
 enum class ErrorRetryState {
   // This is a new navigation request.
   kNewRequest,
@@ -97,8 +98,7 @@ class ErrorRetryStateMachine {
                                                  const GURL& error_url);
 
   // Runs state transitions upon a failure after the navigation is committed.
-  ErrorRetryCommand DidFailNavigation(const GURL& web_view_url,
-                                      const GURL& error_url);
+  ErrorRetryCommand DidFailNavigation(const GURL& web_view_url);
 
   // Runs state transitions upon a successful navigation.
   ErrorRetryCommand DidFinishNavigation(const GURL& web_view_url);

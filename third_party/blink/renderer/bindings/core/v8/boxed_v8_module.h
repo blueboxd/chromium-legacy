@@ -39,7 +39,7 @@ class CORE_EXPORT BoxedV8Module
   // needs to be cast.
   GC_PLUGIN_IGNORE("757708")
   TraceWrapperV8Reference<v8::Module> record_;
-  unsigned identity_hash_;
+  const unsigned identity_hash_;
   friend struct BoxedV8ModuleHash;
 };
 

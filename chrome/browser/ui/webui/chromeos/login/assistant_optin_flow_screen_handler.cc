@@ -50,9 +50,7 @@ constexpr StaticOobeScreenId AssistantOptInFlowScreenView::kScreenId;
 
 AssistantOptInFlowScreenHandler::AssistantOptInFlowScreenHandler(
     JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container),
-      client_binding_(this),
-      weak_factory_(this) {
+    : BaseScreenHandler(kScreenId, js_calls_container), client_binding_(this) {
   set_user_acted_method_path("login.AssistantOptInFlowScreen.userActed");
 }
 

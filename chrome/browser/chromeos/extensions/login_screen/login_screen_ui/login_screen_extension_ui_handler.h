@@ -94,7 +94,7 @@ class LoginScreenExtensionUiHandler
                  extensions::ExtensionRegistryObserver>
       extension_registry_observer_;
 
-  base::WeakPtrFactory<LoginScreenExtensionUiHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<LoginScreenExtensionUiHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LoginScreenExtensionUiHandler);
 };

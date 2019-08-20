@@ -205,7 +205,7 @@ class ASH_EXPORT AssistantController
 
   AssistantViewDelegateImpl view_delegate_;
 
-  base::WeakPtrFactory<AssistantController> weak_factory_;
+  base::WeakPtrFactory<AssistantController> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AssistantController);
 };

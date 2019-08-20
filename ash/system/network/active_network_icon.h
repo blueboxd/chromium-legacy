@@ -97,7 +97,7 @@ class ASH_EXPORT ActiveNetworkIcon : public TrayNetworkStateModel::Observer {
   int cellular_uninitialized_msg_ = 0;
   base::Time uninitialized_state_time_;
   base::OneShotTimer purge_timer_;
-  base::WeakPtrFactory<ActiveNetworkIcon> weak_ptr_factory_;
+  base::WeakPtrFactory<ActiveNetworkIcon> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ActiveNetworkIcon);
 };

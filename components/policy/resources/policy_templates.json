@@ -16548,7 +16548,7 @@
 
           Battery starts charging when it depletes the battery charge custom start charging value.
 
-          DeviceBatteryChargeCustomStartCharging must be less than DeviceBatteryChargeCustomStopCharging.
+          DeviceBatteryChargeCustomStartCharging must be at least five percentage points bellow DeviceBatteryChargeCustomStopCharging.
 
           This policy is only used if DeviceBatteryChargeMode is set to custom.
 
@@ -16577,7 +16577,7 @@
 
           Battery stops charging when it reaches the battery charge custom stop charging value.
 
-          DeviceBatteryChargeCustomStartCharging must be less than DeviceBatteryChargeCustomStopCharging.
+          DeviceBatteryChargeCustomStartCharging must be at least five percentage points bellow DeviceBatteryChargeCustomStopCharging.
 
           This policy is only used if DeviceBatteryChargeMode is set to custom.
 

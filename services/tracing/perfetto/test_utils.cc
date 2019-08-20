@@ -220,7 +220,7 @@ void MockConsumer::OnTraceData(std::vector<perfetto::TracePacket> packets,
     perfetto::protos::TracePacket packet;
     EXPECT_TRUE(encoded_packet.Decode(&packet));
     if (packet.for_testing().str() == kPerfettoTestString) {
-      received_packets_++;
+      received_test_packets_++;
     }
   }
 

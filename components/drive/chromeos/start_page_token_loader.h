@@ -73,7 +73,7 @@ class StartPageTokenLoader {
       pending_update_callbacks_;
   std::unique_ptr<google_apis::StartPageToken> cached_start_page_token_;
 
-  base::WeakPtrFactory<StartPageTokenLoader> weak_ptr_factory_;
+  base::WeakPtrFactory<StartPageTokenLoader> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(StartPageTokenLoader);
 };
 

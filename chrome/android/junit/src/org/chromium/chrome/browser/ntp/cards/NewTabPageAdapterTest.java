@@ -275,6 +275,28 @@ public class NewTabPageAdapterTest {
         }
     }
 
+    /**
+     * Shadow implementation of {@link AccountManagerFacade} allowing to mock the cache population
+     * status.
+     * TODO(https://crbug.com/914920): replace this with a mock after a fake implementation for
+     * AccountManagerFacade is available.
+     */
+    @Implements(AccountManagerFacade.class)
+    public static class ShadowAccountManagerFacade {
+        private static boolean sPopulated;
+
+        public ShadowAccountManagerFacade() {}
+
+        @Implementation
+        protected boolean isCachePopulated() {
+            return sPopulated;
+        }
+
+        public static void setCachePopulated() {
+            sPopulated = true;
+        }
+    }
+
     @Before
     public void setUp() {
         // These tests fail on touchless builds, see https://crbug.com/981870.
@@ -1034,6 +1056,22 @@ public class NewTabPageAdapterTest {
                 ChromePreferenceManager.NTP_SIGNIN_PROMO_DISMISSED, false));
         reloadNtp();
         assertFalse(isSignInPromoVisible());
+    }
+
+    @Test
+    @Feature({"Ntp"})
+    @Config(shadows = {ShadowAccountManagerFacade.class})
+    public void testSigninPromoAccountsNotReady() {
+        useArticleCategory();
+        when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
+        when(mMockSigninManager.isSignedInOnNative()).thenReturn(false);
+        resetUiDelegate();
+        reloadNtp();
+        assertFalse(isSignInPromoVisible());
+
+        ShadowAccountManagerFacade.setCachePopulated();
+        reloadNtp();
+        assertTrue(isSignInPromoVisible());
     }
 
     @Test

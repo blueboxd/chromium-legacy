@@ -152,33 +152,8 @@ export function styleSheetFactory() {
 }
 
 /**
- * @param {!Element} element
- */
-function setupTransitionCounter(element) {
-  if (element.runningTransitions !== undefined) {
-    return;
-  }
-  element.runningTransitions = 0;
-  element.addEventListener('transitionrun', e => {
-    if (e.target === element) {
-      ++element.runningTransitions;
-    }
-  });
-  function handleEndOrCancel(e) {
-    // Need to check runningTransitions>0 due to superfluous transitioncancel
-    // events; crbug.com/979556.
-    if (e.target === element && element.runningTransitions > 0) {
-      --element.runningTransitions;
-    }
-  }
-  element.addEventListener('transitionend', handleEndOrCancel);
-  element.addEventListener('transitioncancel', handleEndOrCancel);
-}
-
-/**
- * Add '$part-transitioning' part to the element, and remove it on
- * 'transitionend' event or remove it immediately if the element has no
- * transitions.
+ * Add '$part-transitioning' part to the element if the element already has
+ * a part name.
  *
  * TODO(tkent): We should apply custom state.
  *
@@ -189,37 +164,21 @@ export function markTransition(element) {
   if (!element.hasAttribute('part') || element.part.length < 1) {
     return;
   }
+  element.part.add(element.part[0] + '-transitioning');
+}
 
-  setupTransitionCounter(element);
-
-  const partName = element.part[0] + '-transitioning';
-  if (element.part.contains(partName)) {
+/**
+ * Remove '$part-transitioning' part from the element if the element already has
+ * a part name.
+ *
+ * TODO(tkent): We should apply custom state.
+ *
+ * @param {!Element} element
+ */
+export function unmarkTransition(element) {
+  // Should check hasAttribute() to avoid creating a DOMTokenList instance.
+  if (!element.hasAttribute('part') || element.part.length < 1) {
     return;
   }
-  // The style with partName might have transitions, and might have no
-  // transitions. We need to add partName anyway because we have no other
-  // ways to check existence of transitions.  Then, we need to remove
-  // partName because state change without markTransition() should have
-  // style without partName.
-  //
-  // We add partName in an animation frame, and continue to request
-  // animation frames until runningTransitions becomes 0. If the style with
-  // partName has no transitions, runningTransitions keeps 0, and the second
-  // animation frame removes partName.
-  window.requestAnimationFrame(() => {
-    element.part.add(partName);
-
-    // If the element has a transition, it must start on the rendering just
-    // after this rAF callback. So we check runningTransitions in the next
-    // frame.
-    function removeIfNoTransitions() {
-      // No transitions started, or all transitions were completed.
-      if (element.runningTransitions === 0) {
-        element.part.remove(partName);
-      } else {
-        window.requestAnimationFrame(removeIfNoTransitions);
-      }
-    }
-    window.requestAnimationFrame(removeIfNoTransitions);
-  });
+  element.part.remove(element.part[0] + '-transitioning');
 }

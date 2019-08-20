@@ -51,6 +51,8 @@ import org.chromium.ui.modelutil.PropertyModel;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,6 +64,10 @@ import java.util.Map;
  * TODO(yusufo): Move some of the logic here to a parent component to make the above true.
  */
 class TabListMediator {
+    // Comparator to sort Tabs in descending order of the last shown time.
+    private static final Comparator<Tab> LAST_SHOWN_COMPARATOR =
+            (a, b) -> (Long.compare(b.getTimestampMillis(), a.getTimestampMillis()));
+
     private boolean mVisible;
     private boolean mShownIPH;
 
@@ -742,30 +748,38 @@ class TabListMediator {
      * Initialize the component with a list of tabs to show in a grid.
      * @param tabs The list of tabs to be shown.
      * @param quickMode Whether to skip capturing the selected live tab for the thumbnail.
+     * @param mruMode Whether to sort the Tabs in MRU order.
      * @return Whether the {@link TabListRecyclerView} can be shown quickly.
      */
-    boolean resetWithListOfTabs(@Nullable List<Tab> tabs, boolean quickMode) {
-        mVisible = tabs != null;
-        if (areTabsUnchanged(tabs)) {
-            if (tabs == null) return true;
+    boolean resetWithListOfTabs(@Nullable List<Tab> tabs, boolean quickMode, boolean mruMode) {
+        List<Tab> tabsList = tabs;
+        if (tabs != null && mruMode) {
+            // Make a copy to sort since the input may be unmodifiable.
+            tabsList = new ArrayList<>(tabs);
+            Collections.sort(tabsList, LAST_SHOWN_COMPARATOR);
+        }
 
-            for (int i = 0; i < tabs.size(); i++) {
-                Tab tab = tabs.get(i);
+        mVisible = tabsList != null;
+        if (areTabsUnchanged(tabsList)) {
+            if (tabsList == null) return true;
+
+            for (int i = 0; i < tabsList.size(); i++) {
+                Tab tab = tabsList.get(i);
                 boolean isSelected = mTabModelSelector.getCurrentTab() == tab;
                 updateTab(i, tab, isSelected, false, quickMode);
             }
             return true;
         }
         mModel.set(new ArrayList<>());
-        if (tabs == null) {
+        if (tabsList == null) {
             return true;
         }
         Tab currentTab = mTabModelSelector.getCurrentTab();
         if (currentTab == null) return false;
 
-        for (int i = 0; i < tabs.size(); i++) {
+        for (int i = 0; i < tabsList.size(); i++) {
             addTabInfoToModel(
-                    tabs.get(i), i, isSelectedTab(tabs.get(i).getId(), currentTab.getId()));
+                    tabsList.get(i), i, isSelectedTab(tabsList.get(i).getId(), currentTab.getId()));
         }
         return false;
     }
@@ -976,13 +990,11 @@ class TabListMediator {
         return mTabModelSelector.getCurrentTabId();
     }
 
+    // Find the index of the currently selected tab in the TabListRecyclerView.
+    // Note that Tabs may have different index in TabListModel/TabListRecyclerView and
+    // mTabModelSelector, like when resetWithListOfTabs is called with 'mruMode = true'.
     int indexOfSelected() {
-        Tab nextTab = TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), mNextTabId);
-        if (nextTab != null) {
-            return getIndexOfTab(nextTab, !mActionsOnAllRelatedTabs);
-        }
-
-        return mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter().index();
+        return mModel.indexFromId(selectedTabId());
     }
 
     @VisibleForTesting

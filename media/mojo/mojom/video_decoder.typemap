@@ -24,7 +24,7 @@ deps = [
 ]
 
 type_mappings = [
-  "media.mojom.OverlayInfo=media::OverlayInfo",
-  "media.mojom.SupportedVideoDecoderConfig=media::SupportedVideoDecoderConfig",
-  "media.mojom.VideoDecoderImplementation=media::VideoDecoderImplementation",
+  "media.mojom.OverlayInfo=::media::OverlayInfo",
+  "media.mojom.SupportedVideoDecoderConfig=::media::SupportedVideoDecoderConfig",
+  "media.mojom.VideoDecoderImplementation=::media::VideoDecoderImplementation",
 ]

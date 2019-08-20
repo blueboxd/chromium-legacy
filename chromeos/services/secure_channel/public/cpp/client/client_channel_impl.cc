@@ -42,8 +42,7 @@ ClientChannelImpl::ClientChannelImpl(
     mojom::ChannelPtr channel,
     mojom::MessageReceiverRequest message_receiver_request)
     : channel_(std::move(channel)),
-      binding_(this, std::move(message_receiver_request)),
-      weak_ptr_factory_(this) {
+      binding_(this, std::move(message_receiver_request)) {
   channel_.set_connection_error_with_reason_handler(
       base::BindOnce(&ClientChannelImpl::OnChannelDisconnected,
                      weak_ptr_factory_.GetWeakPtr()));

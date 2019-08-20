@@ -21,9 +21,9 @@ sources = [
 
 # TODO(moshayedi): crbug.com/617167. Map mojom.Event directly to ui::Event.
 type_mappings = [
-  "ui.mojom.Event=std::unique_ptr<ui::Event>[move_only]",
-  "ui.mojom.EventMomentumPhase=ui::EventMomentumPhase",
-  "ui.mojom.PointerDetails=ui::PointerDetails",
-  "ui.mojom.ScrollEventPhase=ui::ScrollEventPhase",
-  "ui.mojom.GestureDeviceType=ui::GestureDeviceType",
+  "ui.mojom.Event=::std::unique_ptr<::ui::Event>[move_only]",
+  "ui.mojom.EventMomentumPhase=::ui::EventMomentumPhase",
+  "ui.mojom.PointerDetails=::ui::PointerDetails",
+  "ui.mojom.ScrollEventPhase=::ui::ScrollEventPhase",
+  "ui.mojom.GestureDeviceType=::ui::GestureDeviceType",
 ]

@@ -32,7 +32,7 @@ std::string DecryptToken(const std::string& system_salt,
 namespace policy {
 
 DMTokenStorage::DMTokenStorage(PrefService* local_state)
-    : local_state_(local_state), weak_ptr_factory_(this) {
+    : local_state_(local_state) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   chromeos::SystemSaltGetter::Get()->GetSystemSalt(base::Bind(
       &DMTokenStorage::OnSystemSaltRecevied, weak_ptr_factory_.GetWeakPtr()));

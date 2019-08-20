@@ -19,7 +19,7 @@ void OnRefreshCompleted(bool success) {}
 
 SuspendUnmountManager::SuspendUnmountManager(
     DiskMountManager* disk_mount_manager)
-    : disk_mount_manager_(disk_mount_manager), weak_ptr_factory_(this) {
+    : disk_mount_manager_(disk_mount_manager) {
   PowerManagerClient::Get()->AddObserver(this);
 }
 

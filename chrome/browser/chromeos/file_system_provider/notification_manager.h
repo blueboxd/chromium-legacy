@@ -73,7 +73,7 @@ class NotificationManager : public NotificationManagerInterface,
   CallbackMap callbacks_;
   std::unique_ptr<AppIconLoader> icon_loader_;
   gfx::Image extension_icon_;
-  base::WeakPtrFactory<NotificationManager> weak_factory_;
+  base::WeakPtrFactory<NotificationManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NotificationManager);
 };

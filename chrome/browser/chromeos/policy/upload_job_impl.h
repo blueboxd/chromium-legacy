@@ -188,7 +188,7 @@ class UploadJobImpl : public UploadJob,
 
   // Should remain the last member so it will be destroyed first and
   // invalidate all weak pointers.
-  base::WeakPtrFactory<UploadJobImpl> weak_factory_;
+  base::WeakPtrFactory<UploadJobImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UploadJobImpl);
 };

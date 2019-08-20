@@ -1240,9 +1240,8 @@ importer.RuntimeControllerEnvironment = class {
    * @private
    */
   revealDirectory_(directory) {
-    this.fileManager_.backgroundPage.launcher.launchFileManager(
-        {currentDirectoryURL: directory.toURL()},
-        /* App ID */ undefined);
+    this.fileManager_.launchFileManager(
+        {currentDirectoryURL: directory.toURL()});
   }
 
   /**

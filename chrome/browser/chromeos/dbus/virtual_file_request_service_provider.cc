@@ -33,8 +33,7 @@ arc::ArcFileSystemBridge* GetArcFileSystemBridge() {
 
 }  // namespace
 
-VirtualFileRequestServiceProvider::VirtualFileRequestServiceProvider()
-    : weak_ptr_factory_(this) {}
+VirtualFileRequestServiceProvider::VirtualFileRequestServiceProvider() {}
 
 VirtualFileRequestServiceProvider::~VirtualFileRequestServiceProvider() =
     default;

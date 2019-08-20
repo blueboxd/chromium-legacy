@@ -114,7 +114,7 @@ class MobileSectionHeaderView : public NetworkSectionHeaderView {
   bool waiting_for_tether_initialize_ = false;
   base::OneShotTimer enable_bluetooth_timer_;
 
-  base::WeakPtrFactory<MobileSectionHeaderView> weak_ptr_factory_;
+  base::WeakPtrFactory<MobileSectionHeaderView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MobileSectionHeaderView);
 };

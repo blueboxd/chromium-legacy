@@ -153,8 +153,8 @@ SystemWebAppManagerBrowserTest::CreateWebAppProvider(Profile* profile) {
   provider->SetSystemWebAppManager(std::move(test_system_web_app_manager));
 
   base::flat_map<SystemAppType, SystemAppInfo> system_apps;
-  system_apps[SystemAppType::SETTINGS] = {
-      content::GetWebUIURL("test-system-app/pwa.html")};
+  system_apps[SystemAppType::SETTINGS] =
+      SystemAppInfo(content::GetWebUIURL("test-system-app/pwa.html"));
   test_system_web_app_manager_->SetSystemApps(std::move(system_apps));
 
   // Start registry and all dependent subsystems:

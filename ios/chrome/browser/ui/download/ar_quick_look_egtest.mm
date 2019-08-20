@@ -44,23 +44,26 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
 
   if (request.GetURL().path() == "/") {
     result->set_content(
-        "<a id='forbidden' href='/forbidden'>Forbidden</a>"
-        "<a id='unauthorized' href='/unauthorized'>Unauthorized</a>"
+        "<a id='forbidden' href='/forbidden'>Forbidden</a> "
+        "<a id='unauthorized' href='/unauthorized'>Unauthorized</a> "
         "<a id='changing-mime-type' href='/changing-mime-type'>Changing Mime "
-        "Type</a>"
+        "Type</a> "
         "<a id='good' href='/good'>Good</a>");
     return result;
   }
-
-  result->AddCustomHeader("Content-Type", kUsdzMimeType);
-  result->set_content(testing::GetTestFileContents(testing::kUsdzFilePath));
 
   if (request.GetURL().path() == "/forbidden") {
     result->set_code(net::HTTP_FORBIDDEN);
   } else if (request.GetURL().path() == "/unauthorized") {
     result->set_code(net::HTTP_UNAUTHORIZED);
   } else if (request.GetURL().path() == "/changing-mime-type") {
-    result->AddCustomHeader("Content-Type", "unkown");
+    result->set_code(net::HTTP_OK);
+    result->AddCustomHeader("Content-Type", "unknown");
+    result->set_content(testing::GetTestFileContents(testing::kUsdzFilePath));
+  } else if (request.GetURL().path() == "/good") {
+    result->set_code(net::HTTP_OK);
+    result->AddCustomHeader("Content-Type", kUsdzMimeType);
+    result->set_content(testing::GetTestFileContents(testing::kUsdzFilePath));
   }
 
   return result;
@@ -103,10 +106,10 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
   });
   GREYAssert(shown, @"QLPreviewController was not shown.");
 #elif defined(CHROME_EARL_GREY_2)
-  // EG2 test can use XCUIApplication API to check for QuickLook dialog UI
+  // EG2 test uses XCUIApplication API to check for Quick Look dialog UI
   // presentation.
   XCUIApplication* app = [[XCUIApplication alloc] init];
-  XCUIElement* goodTitle = app.otherElements[@"good"];
+  XCUIElement* goodTitle = app.staticTexts[@"good"];
   GREYAssert([goodTitle waitForExistenceWithTimeout:kWaitForDownloadTimeout],
              @"AR preview dialog UI was not presented");
 #else
@@ -134,10 +137,10 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
   });
   GREYAssertFalse(shown, @"QLPreviewController should not have shown.");
 #elif defined(CHROME_EARL_GREY_2)
-  // EG2 test can use XCUIApplication API to check for QuickLook dialog UI
+  // EG2 test uses XCUIApplication API to check for Quick Look dialog UI
   // presentation.
   XCUIApplication* app = [[XCUIApplication alloc] init];
-  XCUIElement* goodTitle = app.otherElements[@"good"];
+  XCUIElement* goodTitle = app.staticTexts[@"good"];
   GREYAssertFalse(
       [goodTitle waitForExistenceWithTimeout:kWaitForDownloadTimeout],
       @"AR preview dialog UI was presented");
@@ -166,10 +169,10 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
   });
   GREYAssertFalse(shown, @"QLPreviewController should not have shown.");
 #elif defined(CHROME_EARL_GREY_2)
-  // EG2 test can use XCUIApplication API to check for QuickLook dialog UI
+  // EG2 test uses XCUIApplication API to check for Quick Look dialog UI
   // presentation.
   XCUIApplication* app = [[XCUIApplication alloc] init];
-  XCUIElement* goodTitle = app.otherElements[@"good"];
+  XCUIElement* goodTitle = app.staticTexts[@"good"];
   GREYAssertFalse(
       [goodTitle waitForExistenceWithTimeout:kWaitForDownloadTimeout],
       @"AR preview dialog UI was presented");
@@ -198,10 +201,10 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
   });
   GREYAssertFalse(shown, @"QLPreviewController should not have shown.");
 #elif defined(CHROME_EARL_GREY_2)
-  // EG2 test can use XCUIApplication API to check for QuickLook dialog UI
+  // EG2 test uses XCUIApplication API to check for Quick Look dialog UI
   // presentation.
   XCUIApplication* app = [[XCUIApplication alloc] init];
-  XCUIElement* goodTitle = app.otherElements[@"good"];
+  XCUIElement* goodTitle = app.staticTexts[@"good"];
   GREYAssertFalse(
       [goodTitle waitForExistenceWithTimeout:kWaitForDownloadTimeout],
       @"AR preview dialog UI was presented");

@@ -90,9 +90,9 @@ void GpuDataManagerImpl::AppendGpuCommandLine(base::CommandLine* command_line,
   private_->AppendGpuCommandLine(command_line, kind);
 }
 
-void GpuDataManagerImpl::RequestGpuSupportedRuntimeVersion() const {
+void GpuDataManagerImpl::RequestGpuSupportedRuntimeVersion(bool delayed) const {
   base::AutoLock auto_lock(lock_);
-  private_->RequestGpuSupportedRuntimeVersion();
+  private_->RequestGpuSupportedRuntimeVersion(delayed);
 }
 
 bool GpuDataManagerImpl::GpuProcessStartAllowed() const {

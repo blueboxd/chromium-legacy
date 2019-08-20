@@ -205,7 +205,7 @@ class ArcAuthService : public KeyedService,
 
   bool skip_merge_session_for_testing_ = false;
 
-  base::WeakPtrFactory<ArcAuthService> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcAuthService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcAuthService);
 };

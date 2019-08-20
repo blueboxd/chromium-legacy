@@ -8,6 +8,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "ios/chrome/browser/ui/commands/load_query_commands.h"
+#import "ios/chrome/browser/ui/qr_scanner/qr_scanner_camera_controller.h"
 #include "ios/chrome/browser/ui/qr_scanner/qr_scanner_view.h"
 #include "ios/chrome/browser/ui/scanner/scanner_alerts.h"
 #include "ios/chrome/browser/ui/scanner/scanner_presenting.h"
@@ -43,10 +44,7 @@ using base::UserMetricsAction;
 - (instancetype)
     initWithPresentationProvider:(id<ScannerPresenting>)presentationProvider
                      queryLoader:(id<LoadQueryCommands>)queryLoader {
-  self = [super
-      initWithPresentationProvider:presentationProvider
-                  cameraController:[CameraController
-                                       cameraControllerWithDelegate:self]];
+  self = [super initWithPresentationProvider:presentationProvider];
   if (self) {
     _queryLoader = queryLoader;
   }
@@ -57,6 +55,12 @@ using base::UserMetricsAction;
 
 - (ScannerView*)buildScannerView {
   return [[QRScannerView alloc] initWithFrame:self.view.frame delegate:self];
+}
+
+- (CameraController*)buildCameraController {
+  return
+      [[QRScannerCameraController alloc] initWithCameraControllerDelegate:self
+                                                        qrScannerDelegate:self];
 }
 
 - (void)dismissForReason:(scannerViewController::DismissalReason)reason
@@ -76,6 +80,29 @@ using base::UserMetricsAction;
   }
 
   [super dismissForReason:reason withCompletion:completion];
+}
+
+#pragma mark - QRScannerCameraControllerDelegate
+
+- (void)receiveQRScannerResult:(NSString*)result loadImmediately:(BOOL)load {
+  if (UIAccessibilityIsVoiceOverRunning()) {
+    // Post a notification announcing that a code was scanned. QR scanner will
+    // be dismissed when the UIAccessibilityAnnouncementDidFinishNotification is
+    // received.
+    _result = [result copy];
+    _loadResultImmediately = load;
+    UIAccessibilityPostNotification(
+        UIAccessibilityAnnouncementNotification,
+        l10n_util::GetNSString(
+            IDS_IOS_SCANNER_SCANNED_ACCESSIBILITY_ANNOUNCEMENT));
+  } else {
+    [self.scannerView animateScanningResultWithCompletion:^void(void) {
+      [self dismissForReason:scannerViewController::SCANNED_CODE
+              withCompletion:^{
+                [self.queryLoader loadQuery:result immediately:load];
+              }];
+    }];
+  }
 }
 
 @end

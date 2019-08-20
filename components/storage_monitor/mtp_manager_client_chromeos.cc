@@ -16,10 +16,7 @@ namespace storage_monitor {
 MtpManagerClientChromeOS::MtpManagerClientChromeOS(
     StorageMonitor::Receiver* receiver,
     device::mojom::MtpManager* mtp_manager)
-    : mtp_manager_(mtp_manager),
-      binding_(this),
-      notifications_(receiver),
-      weak_ptr_factory_(this) {
+    : mtp_manager_(mtp_manager), binding_(this), notifications_(receiver) {
   device::mojom::MtpManagerClientAssociatedPtrInfo client;
   binding_.Bind(mojo::MakeRequest(&client));
   mtp_manager_->EnumerateStoragesAndSetClient(

@@ -92,8 +92,7 @@ class CrosUsbNotificationDelegate
       device::mojom::UsbDeviceInfoPtr device_info)
       : notification_id_(notification_id),
         device_info_(std::move(device_info)),
-        disposition_(CrosUsbNotificationClosed::kUnknown),
-        weak_ptr_factory_(this) {}
+        disposition_(CrosUsbNotificationClosed::kUnknown) {}
 
   void Click(const base::Optional<int>& button_index,
              const base::Optional<base::string16>& reply) override {
@@ -133,7 +132,7 @@ class CrosUsbNotificationDelegate
   std::string notification_id_;
   device::mojom::UsbDeviceInfoPtr device_info_;
   CrosUsbNotificationClosed disposition_;
-  base::WeakPtrFactory<CrosUsbNotificationDelegate> weak_ptr_factory_;
+  base::WeakPtrFactory<CrosUsbNotificationDelegate> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CrosUsbNotificationDelegate);
 };
@@ -216,8 +215,7 @@ CrosUsbDetector* CrosUsbDetector::Get() {
   return g_cros_usb_detector;
 }
 
-CrosUsbDetector::CrosUsbDetector()
-    : client_binding_(this), weak_ptr_factory_(this) {
+CrosUsbDetector::CrosUsbDetector() : client_binding_(this) {
   DCHECK(!g_cros_usb_detector);
   g_cros_usb_detector = this;
   guest_os_classes_blocked_.emplace_back(

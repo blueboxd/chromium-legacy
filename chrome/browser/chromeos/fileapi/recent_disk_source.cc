@@ -79,8 +79,7 @@ RecentDiskSource::RecentDiskSource(std::string mount_point_name,
     : mount_point_name_(std::move(mount_point_name)),
       ignore_dotfiles_(ignore_dotfiles),
       max_depth_(max_depth),
-      uma_histogram_name_(std::move(uma_histogram_name)),
-      weak_ptr_factory_(this) {
+      uma_histogram_name_(std::move(uma_histogram_name)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 

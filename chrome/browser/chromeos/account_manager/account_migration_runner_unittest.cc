@@ -67,7 +67,7 @@ class MustNeverRun : public AccountMigrationRunner::Step {
 
 class AccountMigrationRunnerTest : public testing::Test {
  protected:
-  AccountMigrationRunnerTest() : weak_factory_(this) {
+  AccountMigrationRunnerTest() {
     increment_num_steps_executed_ = base::BindRepeating(
         &AccountMigrationRunnerTest::IncrementNumStepsExecuted,
         weak_factory_.GetWeakPtr());
@@ -107,7 +107,7 @@ class AccountMigrationRunnerTest : public testing::Test {
  private:
   void IncrementNumStepsExecuted() { ++num_steps_executed_; }
 
-  base::WeakPtrFactory<AccountMigrationRunnerTest> weak_factory_;
+  base::WeakPtrFactory<AccountMigrationRunnerTest> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(AccountMigrationRunnerTest);
 };
 

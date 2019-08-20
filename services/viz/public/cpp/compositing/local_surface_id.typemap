@@ -9,4 +9,4 @@ deps = [
 ]
 traits_headers =
     [ "//services/viz/public/cpp/compositing/local_surface_id_mojom_traits.h" ]
-type_mappings = [ "viz.mojom.LocalSurfaceId=viz::LocalSurfaceId" ]
+type_mappings = [ "viz.mojom.LocalSurfaceId=::viz::LocalSurfaceId" ]

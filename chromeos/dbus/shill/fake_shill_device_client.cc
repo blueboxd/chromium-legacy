@@ -60,9 +60,7 @@ const char FakeShillDeviceClient::kDefaultSimPin[] = "1111";
 const int FakeShillDeviceClient::kSimPinRetryCount = 3;
 
 FakeShillDeviceClient::FakeShillDeviceClient()
-    : initial_tdls_busy_count_(0),
-      tdls_busy_count_(0),
-      weak_ptr_factory_(this) {}
+    : initial_tdls_busy_count_(0), tdls_busy_count_(0) {}
 
 FakeShillDeviceClient::~FakeShillDeviceClient() = default;
 

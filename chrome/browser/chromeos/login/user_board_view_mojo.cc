@@ -63,7 +63,7 @@ ash::EasyUnlockIconOptions ToEasyUnlockIconOptions(
 
 }  // namespace
 
-UserBoardViewMojo::UserBoardViewMojo() : weak_factory_(this) {}
+UserBoardViewMojo::UserBoardViewMojo() {}
 
 UserBoardViewMojo::~UserBoardViewMojo() = default;
 

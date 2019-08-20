@@ -163,7 +163,7 @@ class TestObserver : public PowerManagerClient::Observer {
 // Stub implementation of PowerManagerClient::RenderProcessManagerDelegate.
 class TestDelegate : public PowerManagerClient::RenderProcessManagerDelegate {
  public:
-  explicit TestDelegate(PowerManagerClient* client) : weak_ptr_factory_(this) {
+  explicit TestDelegate(PowerManagerClient* client) {
     client->SetRenderProcessManagerDelegate(weak_ptr_factory_.GetWeakPtr());
   }
   ~TestDelegate() override = default;
@@ -180,7 +180,7 @@ class TestDelegate : public PowerManagerClient::RenderProcessManagerDelegate {
   int num_suspend_imminent_ = 0;
   int num_suspend_done_ = 0;
 
-  base::WeakPtrFactory<TestDelegate> weak_ptr_factory_;
+  base::WeakPtrFactory<TestDelegate> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestDelegate);
 };

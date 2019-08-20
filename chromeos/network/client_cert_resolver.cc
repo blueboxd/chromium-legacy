@@ -413,8 +413,7 @@ ClientCertResolver::ClientCertResolver()
       network_properties_changed_(false),
       network_state_handler_(nullptr),
       managed_network_config_handler_(nullptr),
-      testing_clock_(nullptr),
-      weak_ptr_factory_(this) {
+      testing_clock_(nullptr) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 

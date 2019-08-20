@@ -106,7 +106,7 @@ class DISPLAY_MANAGER_EXPORT UpdateDisplayConfigurationTask
 
   std::unique_ptr<ConfigureDisplaysTask> configure_task_;
 
-  base::WeakPtrFactory<UpdateDisplayConfigurationTask> weak_ptr_factory_;
+  base::WeakPtrFactory<UpdateDisplayConfigurationTask> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UpdateDisplayConfigurationTask);
 };

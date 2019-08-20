@@ -228,7 +228,7 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) LoginPerformer
   // Authorization mode type.
   AuthorizationMode auth_mode_;
 
-  base::WeakPtrFactory<LoginPerformer> weak_factory_;
+  base::WeakPtrFactory<LoginPerformer> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(LoginPerformer);
 };
 

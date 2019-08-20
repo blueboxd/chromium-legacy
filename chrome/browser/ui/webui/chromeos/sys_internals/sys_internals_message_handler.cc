@@ -198,8 +198,7 @@ base::Value GetSysInfo() {
 
 }  // namespace
 
-SysInternalsMessageHandler::SysInternalsMessageHandler()
-    : weak_ptr_factory_(this) {}
+SysInternalsMessageHandler::SysInternalsMessageHandler() {}
 
 SysInternalsMessageHandler::~SysInternalsMessageHandler() {}
 

@@ -25,7 +25,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace settings {
-TtsHandler::TtsHandler() : weak_factory_(this) {}
+TtsHandler::TtsHandler() {}
 
 TtsHandler::~TtsHandler() {
   content::TtsController::GetInstance()->RemoveVoicesChangedDelegate(this);

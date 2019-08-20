@@ -6,11 +6,11 @@ import optparse
 import sys
 
 from core import path_util
+path_util.AddTelemetryToPath()
+
 from core import benchmark_finders
-
-sys.path.insert(1, path_util.GetTelemetryDir())
-
 from telemetry import decorators
+
 
 def _CreateParser():
   parser = optparse.OptionParser()

@@ -158,8 +158,7 @@ SurfacelessSkiaGlRenderer::SurfacelessSkiaGlRenderer(
                      size),
       overlay_checker_(ui::OzonePlatform::GetInstance()
                            ->GetOverlayManager()
-                           ->CreateOverlayCandidates(widget)),
-      weak_ptr_factory_(this) {}
+                           ->CreateOverlayCandidates(widget)) {}
 
 SurfacelessSkiaGlRenderer::~SurfacelessSkiaGlRenderer() {
   // Need to make current when deleting the framebuffer resources allocated in

@@ -76,7 +76,7 @@ class MobileDataNotifications
 
   base::OneShotTimer one_shot_notification_check_delay_;
 
-  base::WeakPtrFactory<MobileDataNotifications> weak_factory_;
+  base::WeakPtrFactory<MobileDataNotifications> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MobileDataNotifications);
 };

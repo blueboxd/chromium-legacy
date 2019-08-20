@@ -304,8 +304,7 @@ FileSystem::FileSystem(EventLogger* logger,
       resource_metadata_(resource_metadata),
       blocking_task_runner_(blocking_task_runner),
       temporary_file_directory_(temporary_file_directory),
-      clock_(clock),
-      weak_ptr_factory_(this) {
+      clock_(clock) {
   ResetComponents();
 }
 

@@ -188,9 +188,7 @@ OwnerSettingsServiceChromeOS::OwnerSettingsServiceChromeOS(
     const scoped_refptr<OwnerKeyUtil>& owner_key_util)
     : ownership::OwnerSettingsService(owner_key_util),
       device_settings_service_(device_settings_service),
-      profile_(profile),
-      weak_factory_(this),
-      store_settings_factory_(this) {
+      profile_(profile) {
   if (TPMTokenLoader::IsInitialized()) {
     TPMTokenLoader::TPMTokenStatus tpm_token_status =
         TPMTokenLoader::Get()->IsTPMTokenEnabled(

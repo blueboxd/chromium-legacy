@@ -87,7 +87,7 @@ class CupsPrintJobNotification : public message_center::NotificationObserver {
   // Timer to close the notification in case of success.
   std::unique_ptr<base::OneShotTimer> success_timer_;
 
-  base::WeakPtrFactory<CupsPrintJobNotification> weak_factory_;
+  base::WeakPtrFactory<CupsPrintJobNotification> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CupsPrintJobNotification);
 };

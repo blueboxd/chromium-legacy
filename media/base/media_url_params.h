@@ -7,6 +7,7 @@
 
 #include "media/base/media_export.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace media {
 
@@ -14,16 +15,25 @@ namespace media {
 // playback (as opposed to stream based).
 // See MediaUrlDemuxer and MediaPlayerRenderer.
 struct MEDIA_EXPORT MediaUrlParams {
+  MediaUrlParams(GURL media_url,
+                 GURL site_for_cookies,
+                 url::Origin top_frame_origin,
+                 bool allow_credentials,
+                 bool is_hls);
+  MediaUrlParams(const MediaUrlParams& other);
+  ~MediaUrlParams();
+
   // URL of the media to be played.
   GURL media_url;
 
   // Used to play media in authenticated scenarios.
-  // NOTE: This URL is not the first party cookies, but the first party URL
-  // returned by blink::WebDocument::firstPartyForCookies().
   // In the MediaPlayerRenderer case, it will ultimately be used in
   // MediaResourceGetterTask::CheckPolicyForCookies, to limit the scope of the
   // cookies that the MediaPlayerRenderer has access to.
   GURL site_for_cookies;
+
+  // Used to check for cookie content settings.
+  url::Origin top_frame_origin;
 
   // True when the crossorigin mode is unspecified or set to "use-credentials",
   // false when it's "anonymous".

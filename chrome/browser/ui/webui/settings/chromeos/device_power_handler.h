@@ -130,7 +130,7 @@ class PowerHandler : public ::settings::SettingsPageUIHandler,
   bool last_lid_closed_controlled_ = false;
   bool last_has_lid_ = true;
 
-  base::WeakPtrFactory<PowerHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<PowerHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PowerHandler);
 };

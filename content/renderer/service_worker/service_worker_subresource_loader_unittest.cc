@@ -21,6 +21,8 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
 #include "content/test/fake_network_url_loader_factory.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
@@ -403,8 +405,9 @@ class FakeServiceWorkerContainerHost
     fake_controller_->Clone(std::move(receiver));
   }
   void CloneContainerHost(
-      blink::mojom::ServiceWorkerContainerHostRequest request) override {
-    bindings_.AddBinding(this, std::move(request));
+      mojo::PendingReceiver<blink::mojom::ServiceWorkerContainerHost> receiver)
+      override {
+    receivers_.Add(this, std::move(receiver));
   }
   void HintToUpdateServiceWorker() override { NOTIMPLEMENTED(); }
   void OnExecutionReady() override {}
@@ -412,7 +415,7 @@ class FakeServiceWorkerContainerHost
  private:
   int get_controller_service_worker_count_ = 0;
   FakeControllerServiceWorker* fake_controller_;
-  mojo::BindingSet<blink::mojom::ServiceWorkerContainerHost> bindings_;
+  mojo::ReceiverSet<blink::mojom::ServiceWorkerContainerHost> receivers_;
   DISALLOW_COPY_AND_ASSIGN(FakeServiceWorkerContainerHost);
 };
 
@@ -454,12 +457,13 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
 
   network::mojom::URLLoaderFactoryPtr CreateSubresourceLoaderFactory() {
     if (!connector_) {
-      blink::mojom::ServiceWorkerContainerHostPtrInfo host_ptr_info;
+      mojo::PendingRemote<blink::mojom::ServiceWorkerContainerHost>
+          remote_container_host;
       fake_container_host_.CloneContainerHost(
-          mojo::MakeRequest(&host_ptr_info));
+          remote_container_host.InitWithNewPipeAndPassReceiver());
       connector_ = base::MakeRefCounted<ControllerServiceWorkerConnector>(
-          std::move(host_ptr_info), mojo::NullRemote() /*remote_controller*/,
-          "" /*client_id*/);
+          std::move(remote_container_host),
+          mojo::NullRemote() /*remote_controller*/, "" /*client_id*/);
     }
     network::mojom::URLLoaderFactoryPtr service_worker_url_loader_factory;
     ServiceWorkerSubresourceLoaderFactory::Create(

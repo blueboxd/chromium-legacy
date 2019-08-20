@@ -109,7 +109,7 @@ class ArcAppUninstallDialogViewBrowserTest : public InProcessBrowserTest {
 class ArcAppPermissionDialogViewBrowserTest
     : public ArcAppUninstallDialogViewBrowserTest {
  public:
-  ArcAppPermissionDialogViewBrowserTest() : weak_ptr_factory_(this) {}
+  ArcAppPermissionDialogViewBrowserTest() {}
   // InProcessBrowserTest:
   ~ArcAppPermissionDialogViewBrowserTest() override = default;
 
@@ -172,7 +172,8 @@ class ArcAppPermissionDialogViewBrowserTest
   uint16_t vendor_id_ = 123;
   uint16_t product_id_ = 456;
 
-  base::WeakPtrFactory<ArcAppPermissionDialogViewBrowserTest> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcAppPermissionDialogViewBrowserTest> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppPermissionDialogViewBrowserTest);
 };

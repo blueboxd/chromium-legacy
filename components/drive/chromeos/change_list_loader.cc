@@ -56,9 +56,7 @@ constexpr char kDefaultCorpusMsg[] = "default corpus";
 class FullFeedFetcher : public ChangeListLoader::FeedFetcher {
  public:
   FullFeedFetcher(JobScheduler* scheduler, const std::string& team_drive_id)
-      : scheduler_(scheduler),
-        team_drive_id_(team_drive_id),
-        weak_ptr_factory_(this) {}
+      : scheduler_(scheduler), team_drive_id_(team_drive_id) {}
 
   ~FullFeedFetcher() override = default;
 
@@ -120,7 +118,7 @@ class FullFeedFetcher : public ChangeListLoader::FeedFetcher {
   std::vector<std::unique_ptr<ChangeList>> change_lists_;
   base::TimeTicks start_time_;
   THREAD_CHECKER(thread_checker_);
-  base::WeakPtrFactory<FullFeedFetcher> weak_ptr_factory_;
+  base::WeakPtrFactory<FullFeedFetcher> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(FullFeedFetcher);
 };
 
@@ -132,8 +130,7 @@ class DeltaFeedFetcher : public ChangeListLoader::FeedFetcher {
                    const std::string& start_page_token)
       : scheduler_(scheduler),
         team_drive_id_(team_drive_id),
-        start_page_token_(start_page_token),
-        weak_ptr_factory_(this) {}
+        start_page_token_(start_page_token) {}
 
   ~DeltaFeedFetcher() override = default;
 
@@ -195,7 +192,7 @@ class DeltaFeedFetcher : public ChangeListLoader::FeedFetcher {
   std::vector<std::unique_ptr<ChangeList>> change_lists_;
   base::TimeTicks start_time_;
   THREAD_CHECKER(thread_checker_);
-  base::WeakPtrFactory<DeltaFeedFetcher> weak_ptr_factory_;
+  base::WeakPtrFactory<DeltaFeedFetcher> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(DeltaFeedFetcher);
 };
 
@@ -224,8 +221,7 @@ ChangeListLoader::ChangeListLoader(
       team_drive_msg_(team_drive_id_.empty()
                           ? kDefaultCorpusMsg
                           : base::StrCat({"team drive id: ", team_drive_id_})),
-      root_entry_path_(root_entry_path),
-      weak_ptr_factory_(this) {}
+      root_entry_path_(root_entry_path) {}
 
 ChangeListLoader::~ChangeListLoader() {
   in_shutdown_->Set();

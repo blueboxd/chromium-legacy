@@ -228,7 +228,7 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
 
   // Used to determine if this has been deleted during a drag such as when a tab
   // gets dragged into another browser window.
-  base::WeakPtrFactory<WorkspaceWindowResizer> weak_ptr_factory_;
+  base::WeakPtrFactory<WorkspaceWindowResizer> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceWindowResizer);
 };

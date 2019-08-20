@@ -147,7 +147,7 @@ class ArcSessionRunner : public ArcSession::Observer {
   std::string user_id_hash_;
 
   // WeakPtrFactory to use callbacks.
-  base::WeakPtrFactory<ArcSessionRunner> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcSessionRunner> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcSessionRunner);
 };

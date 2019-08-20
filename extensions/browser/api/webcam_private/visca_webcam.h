@@ -145,7 +145,7 @@ class ViscaWebcam : public Webcam {
   int pan_;
   int tilt_;
 
-  base::WeakPtrFactory<ViscaWebcam> weak_ptr_factory_;
+  base::WeakPtrFactory<ViscaWebcam> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ViscaWebcam);
 };

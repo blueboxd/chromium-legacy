@@ -85,8 +85,7 @@ ArcFileSystemOperationRunner::ArcFileSystemOperationRunner(
     bool set_should_defer_by_events)
     : context_(context),
       arc_bridge_service_(bridge_service),
-      set_should_defer_by_events_(set_should_defer_by_events),
-      weak_ptr_factory_(this) {
+      set_should_defer_by_events_(set_should_defer_by_events) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   arc_bridge_service_->file_system()->AddObserver(this);

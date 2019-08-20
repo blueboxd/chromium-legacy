@@ -20,8 +20,7 @@ namespace ui {
 
 InputControllerEvdev::InputControllerEvdev(KeyboardEvdev* keyboard,
                                            MouseButtonMapEvdev* button_map)
-    : keyboard_(keyboard), button_map_(button_map), weak_ptr_factory_(this) {
-}
+    : keyboard_(keyboard), button_map_(button_map) {}
 
 InputControllerEvdev::~InputControllerEvdev() {
 }

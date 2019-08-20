@@ -166,7 +166,7 @@ void LoginFeedback::FeedbackWindowHandler::OnAppWindowRemoved(
 // LoginFeedback
 
 LoginFeedback::LoginFeedback(Profile* signin_profile)
-    : profile_(signin_profile), weak_factory_(this) {}
+    : profile_(signin_profile) {}
 
 LoginFeedback::~LoginFeedback() {}
 

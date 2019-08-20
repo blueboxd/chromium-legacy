@@ -104,8 +104,7 @@ ArcScreenCaptureSession::ArcScreenCaptureSession(
       notifier_(std::move(notifier)),
       size_(size),
       client_native_pixmap_factory_(
-          gfx::CreateClientNativePixmapFactoryDmabuf()),
-      weak_ptr_factory_(this) {}
+          gfx::CreateClientNativePixmapFactoryDmabuf()) {}
 
 mojom::ScreenCaptureSessionPtr ArcScreenCaptureSession::Initialize(
     content::DesktopMediaID desktop_id,

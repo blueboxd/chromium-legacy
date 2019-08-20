@@ -17,7 +17,7 @@
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/linux/dmabuf_video_frame_pool.h"
 #include "media/gpu/macros.h"
-#include "media/gpu/v4l2/v4l2_h264_accelerator.h"
+#include "media/gpu/v4l2/v4l2_h264_accelerator_legacy.h"
 #include "media/gpu/v4l2/v4l2_vp8_accelerator.h"
 #include "media/gpu/v4l2/v4l2_vp9_accelerator.h"
 
@@ -345,7 +345,7 @@ void V4L2SliceVideoDecoder::InitializeTask(const VideoDecoderConfig& config,
   // TODO(akahuang): Check the profile is supported.
   if (profile >= H264PROFILE_MIN && profile <= H264PROFILE_MAX) {
     avd_.reset(new H264Decoder(
-        std::make_unique<V4L2H264Accelerator>(this, device_.get())));
+        std::make_unique<V4L2LegacyH264Accelerator>(this, device_.get())));
   } else if (profile >= VP8PROFILE_MIN && profile <= VP8PROFILE_MAX) {
     avd_.reset(new VP8Decoder(
         std::make_unique<V4L2VP8Accelerator>(this, device_.get())));

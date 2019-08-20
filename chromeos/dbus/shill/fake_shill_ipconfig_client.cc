@@ -23,7 +23,7 @@
 
 namespace chromeos {
 
-FakeShillIPConfigClient::FakeShillIPConfigClient() : weak_ptr_factory_(this) {}
+FakeShillIPConfigClient::FakeShillIPConfigClient() {}
 
 FakeShillIPConfigClient::~FakeShillIPConfigClient() = default;
 

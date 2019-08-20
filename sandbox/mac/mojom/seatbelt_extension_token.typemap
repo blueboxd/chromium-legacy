@@ -12,4 +12,4 @@ sources = [
 deps = [
   "//sandbox/mac:seatbelt_extension",
 ]
-type_mappings = [ "sandbox.mac.mojom.SeatbeltExtensionToken=sandbox::SeatbeltExtensionToken[move_only]" ]
+type_mappings = [ "sandbox.mac.mojom.SeatbeltExtensionToken=::sandbox::SeatbeltExtensionToken[move_only]" ]

@@ -94,7 +94,7 @@ class CryptAuthGCMManagerImpl : public CryptAuthGCMManager,
   // List of observers.
   base::ObserverList<Observer>::Unchecked observers_;
 
-  base::WeakPtrFactory<CryptAuthGCMManagerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<CryptAuthGCMManagerImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CryptAuthGCMManagerImpl);
 };

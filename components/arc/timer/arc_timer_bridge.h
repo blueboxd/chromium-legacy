@@ -87,7 +87,7 @@ class ArcTimerBridge : public KeyedService,
 
   mojo::Binding<mojom::TimerHost> binding_;
 
-  base::WeakPtrFactory<ArcTimerBridge> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcTimerBridge> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcTimerBridge);
 };

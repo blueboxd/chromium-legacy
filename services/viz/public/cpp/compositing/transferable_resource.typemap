@@ -10,7 +10,7 @@ traits_headers = [
 sources = [
   "//services/viz/public/cpp/compositing/transferable_resource_mojom_traits.cc",
 ]
-type_mappings = [ "viz.mojom.TransferableResource=viz::TransferableResource" ]
+type_mappings = [ "viz.mojom.TransferableResource=::viz::TransferableResource" ]
 deps = [
   "//gpu/ipc/common:mojom_traits",
   "//ui/gfx/geometry/mojom:mojom_traits",

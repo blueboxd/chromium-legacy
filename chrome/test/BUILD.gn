@@ -3859,7 +3859,8 @@ test("unit_tests") {
       "//ui/native_theme:test_support",
     ]
     if (is_win) {
-      deps += [ "//components/chrome_cleaner/public/proto:test_only_proto" ]
+      deps +=
+          [ "//chrome/browser/safe_browsing/chrome_cleaner:test_only_proto" ]
     }
     if (is_mac) {
       deps += [ ":firefox_importer_interface" ]
@@ -5017,6 +5018,7 @@ test("unit_tests") {
       "../browser/ui/app_list/search/arc/arc_app_reinstall_search_provider_unittest.cc",
       "../browser/ui/app_list/search/arc/arc_app_shortcuts_search_provider_unittest.cc",
       "../browser/ui/app_list/search/arc/arc_playstore_search_provider_unittest.cc",
+      "../browser/ui/app_list/search/common/file_icon_util_unittest.cc",
       "../browser/ui/app_list/search/launcher_search/launcher_search_icon_image_loader_unittest.cc",
       "../browser/ui/app_list/search/logging/search_ranking_event_logger_unittest.cc",
       "../browser/ui/app_list/search/search_result_ranker/app_launch_event_logger_unittest.cc",

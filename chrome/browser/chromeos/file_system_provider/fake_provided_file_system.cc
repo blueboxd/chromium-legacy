@@ -42,9 +42,7 @@ FakeEntry::~FakeEntry() {
 
 FakeProvidedFileSystem::FakeProvidedFileSystem(
     const ProvidedFileSystemInfo& file_system_info)
-    : file_system_info_(file_system_info),
-      last_file_handle_(0),
-      weak_ptr_factory_(this) {
+    : file_system_info_(file_system_info), last_file_handle_(0) {
   AddEntry(base::FilePath(FILE_PATH_LITERAL("/")), true, "", 0, base::Time(),
            "", "");
 

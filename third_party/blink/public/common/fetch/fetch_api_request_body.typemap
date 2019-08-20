@@ -13,6 +13,6 @@ public_deps = [
   "//services/network/public/cpp:cpp_base",
 ]
 type_mappings = [
-  "blink.mojom.FetchAPIDataElement=network::DataElement[move_only]",
-  "blink.mojom.FetchAPIRequestBody=scoped_refptr<network::ResourceRequestBody>[nullable_is_same_type,copyable_pass_by_value]",
+  "blink.mojom.FetchAPIDataElement=::network::DataElement[move_only]",
+  "blink.mojom.FetchAPIRequestBody=::scoped_refptr<::network::ResourceRequestBody>[nullable_is_same_type,copyable_pass_by_value]",
 ]

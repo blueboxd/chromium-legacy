@@ -15,7 +15,7 @@ sources = [
 ]
 
 type_mappings = [
-  "chrome_cleaner.mojom.FilePath=base::FilePath",
-  "chrome_cleaner.mojom.RegistryKey=base::string16",
-  "chrome_cleaner.mojom.ExtensionId=base::string16",
+  "chrome_cleaner.mojom.FilePath=::base::FilePath",
+  "chrome_cleaner.mojom.RegistryKey=::base::string16",
+  "chrome_cleaner.mojom.ExtensionId=::base::string16",
 ]

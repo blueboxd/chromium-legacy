@@ -408,7 +408,8 @@ void GpuDataManagerImplPrivate::RequestCompleteGpuInfoIfNeeded() {
 #endif
 }
 
-void GpuDataManagerImplPrivate::RequestGpuSupportedRuntimeVersion() {
+void GpuDataManagerImplPrivate::RequestGpuSupportedRuntimeVersion(
+    bool delayed) {
 #if defined(OS_WIN)
   base::OnceClosure task = base::BindOnce([]() {
     GpuProcessHost* host = GpuProcessHost::Get(
@@ -419,8 +420,12 @@ void GpuDataManagerImplPrivate::RequestGpuSupportedRuntimeVersion() {
         base::BindOnce(&UpdateDx12VulkanInfoOnIO));
   });
 
-  base::PostDelayedTask(FROM_HERE, {BrowserThread::IO}, std::move(task),
-                        base::TimeDelta::FromMilliseconds(15000));
+  if (delayed) {
+    base::PostDelayedTask(FROM_HERE, {BrowserThread::IO}, std::move(task),
+                          base::TimeDelta::FromMilliseconds(15000));
+  } else {
+    base::PostTask(FROM_HERE, {BrowserThread::IO}, std::move(task));
+  }
 #else
   NOTREACHED();
 #endif
@@ -531,6 +536,7 @@ void GpuDataManagerImplPrivate::UpdateDxDiagNode(
 void GpuDataManagerImplPrivate::UpdateDx12VulkanInfo(
     const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info) {
   gpu_info_.dx12_vulkan_version_info = dx12_vulkan_version_info;
+
   // No need to call GetContentClient()->SetGpuInfo().
   NotifyGpuInfoUpdate();
 }

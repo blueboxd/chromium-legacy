@@ -187,9 +187,10 @@ class OwnerSettingsServiceChromeOS : public ownership::OwnerSettingsService,
 
   content::NotificationRegistrar registrar_;
 
-  base::WeakPtrFactory<OwnerSettingsServiceChromeOS> weak_factory_;
+  base::WeakPtrFactory<OwnerSettingsServiceChromeOS> weak_factory_{this};
 
-  base::WeakPtrFactory<OwnerSettingsServiceChromeOS> store_settings_factory_;
+  base::WeakPtrFactory<OwnerSettingsServiceChromeOS> store_settings_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(OwnerSettingsServiceChromeOS);
 };

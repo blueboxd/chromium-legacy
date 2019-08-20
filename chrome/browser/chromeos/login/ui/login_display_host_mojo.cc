@@ -63,8 +63,7 @@ LoginDisplayHostMojo::LoginDisplayHostMojo()
       user_board_view_mojo_(std::make_unique<UserBoardViewMojo>()),
       user_selection_screen_(
           std::make_unique<ChromeUserSelectionScreen>(kLoginDisplay)),
-      system_info_updater_(std::make_unique<MojoSystemInfoDispatcher>()),
-      weak_factory_(this) {
+      system_info_updater_(std::make_unique<MojoSystemInfoDispatcher>()) {
   user_selection_screen_->SetView(user_board_view_mojo_.get());
 
   // Preload webui-based OOBE for add user, kiosk apps, etc.

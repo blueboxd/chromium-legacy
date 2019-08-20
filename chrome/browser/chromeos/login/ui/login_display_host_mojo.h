@@ -181,7 +181,7 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
 
   SecurityTokenPinDialogHostAshImpl security_token_pin_dialog_host_ash_impl_;
 
-  base::WeakPtrFactory<LoginDisplayHostMojo> weak_factory_;
+  base::WeakPtrFactory<LoginDisplayHostMojo> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LoginDisplayHostMojo);
 };

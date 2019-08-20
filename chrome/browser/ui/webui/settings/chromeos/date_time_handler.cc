@@ -65,8 +65,7 @@ bool IsTimezoneAutomaticDetectionUserEditable() {
 
 }  // namespace
 
-DateTimeHandler::DateTimeHandler()
-    : scoped_observer_(this), weak_ptr_factory_(this) {}
+DateTimeHandler::DateTimeHandler() : scoped_observer_(this) {}
 
 DateTimeHandler::~DateTimeHandler() = default;
 

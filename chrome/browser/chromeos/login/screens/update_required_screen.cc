@@ -12,9 +12,7 @@
 namespace chromeos {
 
 UpdateRequiredScreen::UpdateRequiredScreen(UpdateRequiredView* view)
-    : BaseScreen(UpdateRequiredView::kScreenId),
-      view_(view),
-      weak_factory_(this) {
+    : BaseScreen(UpdateRequiredView::kScreenId), view_(view) {
   if (view_)
     view_->Bind(this);
 }

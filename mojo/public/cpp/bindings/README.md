@@ -1472,7 +1472,7 @@ sources = [
 ]
 public_deps = [ "//ui/gfx/geometry" ]
 type_mappings = [
-  "gfx.mojom.Rect=gfx::Rect",
+  "gfx.mojom.Rect=::gfx::Rect",
 ]
 ```
 

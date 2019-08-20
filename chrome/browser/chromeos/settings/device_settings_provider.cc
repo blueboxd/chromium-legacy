@@ -860,8 +860,7 @@ DeviceSettingsProvider::DeviceSettingsProvider(
       device_settings_service_(device_settings_service),
       local_state_(local_state),
       trusted_status_(TEMPORARILY_UNTRUSTED),
-      ownership_status_(device_settings_service_->GetOwnershipStatus()),
-      store_callback_factory_(this) {
+      ownership_status_(device_settings_service_->GetOwnershipStatus()) {
   device_settings_service_->AddObserver(this);
   if (!UpdateFromService()) {
     // Make sure we have at least the cache data immediately.

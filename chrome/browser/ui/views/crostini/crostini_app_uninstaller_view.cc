@@ -79,7 +79,7 @@ gfx::Size CrostiniAppUninstallerView::CalculatePreferredSize() const {
 CrostiniAppUninstallerView::CrostiniAppUninstallerView(
     Profile* profile,
     const std::string& app_id)
-    : profile_(profile), app_id_(app_id), weak_ptr_factory_(this) {
+    : profile_(profile), app_id_(app_id) {
   views::LayoutProvider* provider = views::LayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,

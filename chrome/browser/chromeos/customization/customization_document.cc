@@ -431,8 +431,7 @@ ServicesCustomizationDocument::ServicesCustomizationDocument()
           base::TimeDelta::FromMilliseconds(kDefaultNetworkRetryDelayMS)),
       apply_tasks_started_(0),
       apply_tasks_finished_(0),
-      apply_tasks_success_(0),
-      weak_ptr_factory_(this) {}
+      apply_tasks_success_(0) {}
 
 ServicesCustomizationDocument::ServicesCustomizationDocument(
     const std::string& manifest)
@@ -441,8 +440,7 @@ ServicesCustomizationDocument::ServicesCustomizationDocument(
           base::TimeDelta::FromMilliseconds(kDefaultNetworkRetryDelayMS)),
       apply_tasks_started_(0),
       apply_tasks_finished_(0),
-      apply_tasks_success_(0),
-      weak_ptr_factory_(this) {
+      apply_tasks_success_(0) {
   LoadManifestFromString(manifest);
 }
 

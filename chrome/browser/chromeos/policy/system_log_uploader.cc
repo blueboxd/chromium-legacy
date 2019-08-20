@@ -304,8 +304,7 @@ SystemLogUploader::SystemLogUploader(
       upload_frequency_(GetUploadFrequency()),
       task_runner_(task_runner),
       syslog_delegate_(std::move(syslog_delegate)),
-      upload_enabled_(false),
-      weak_factory_(this) {
+      upload_enabled_(false) {
   if (!syslog_delegate_)
     syslog_delegate_ = std::make_unique<SystemLogDelegate>(task_runner);
   DCHECK(syslog_delegate_);

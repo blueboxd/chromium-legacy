@@ -89,7 +89,7 @@ class BufferingFileStreamWriter : public storage::FileStreamWriter {
   scoped_refptr<net::IOBuffer> intermediate_buffer_;
   int buffered_bytes_;
 
-  base::WeakPtrFactory<BufferingFileStreamWriter> weak_ptr_factory_;
+  base::WeakPtrFactory<BufferingFileStreamWriter> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(BufferingFileStreamWriter);
 };
 

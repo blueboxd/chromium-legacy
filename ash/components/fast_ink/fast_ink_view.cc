@@ -283,7 +283,7 @@ class FastInkView::LayerTreeFrameSinkHolder
 
 FastInkView::FastInkView(aura::Window* container,
                          const PresentationCallback& presentation_callback)
-    : presentation_callback_(presentation_callback), weak_ptr_factory_(this) {
+    : presentation_callback_(presentation_callback) {
   widget_.reset(new views::Widget);
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;

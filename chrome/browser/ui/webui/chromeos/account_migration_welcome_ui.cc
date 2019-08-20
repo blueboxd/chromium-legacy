@@ -72,7 +72,7 @@ class MigrationMessageHandler : public content::WebUIMessageHandler {
 }  // namespace
 
 AccountMigrationWelcomeUI::AccountMigrationWelcomeUI(content::WebUI* web_ui)
-    : ui::WebDialogUI(web_ui), weak_factory_(this) {
+    : ui::WebDialogUI(web_ui) {
   content::WebUIDataSource* html_source = content::WebUIDataSource::Create(
       chrome::kChromeUIAccountMigrationWelcomeHost);
 

@@ -95,7 +95,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkSmsHandler
   base::ObserverList<Observer, true>::Unchecked observers_;
   std::vector<std::unique_ptr<NetworkSmsDeviceHandler>> device_handlers_;
   std::vector<std::unique_ptr<base::DictionaryValue>> received_messages_;
-  base::WeakPtrFactory<NetworkSmsHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<NetworkSmsHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NetworkSmsHandler);
 };

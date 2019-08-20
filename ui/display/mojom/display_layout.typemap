@@ -13,8 +13,8 @@ public_deps = [
 ]
 
 type_mappings = [
-  "display.mojom.Position=display::DisplayPlacement::Position",
-  "display.mojom.OffsetReference=display::DisplayPlacement::OffsetReference",
-  "display.mojom.DisplayPlacement=display::DisplayPlacement",
-  "display.mojom.DisplayLayout=std::unique_ptr<display::DisplayLayout>[move_only]",
+  "display.mojom.Position=::display::DisplayPlacement::Position",
+  "display.mojom.OffsetReference=::display::DisplayPlacement::OffsetReference",
+  "display.mojom.DisplayPlacement=::display::DisplayPlacement",
+  "display.mojom.DisplayLayout=::std::unique_ptr<::display::DisplayLayout>[move_only]",
 ]

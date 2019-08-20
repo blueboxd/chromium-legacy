@@ -86,7 +86,7 @@ class BitmapWrapper {
 DocumentsProviderRootManager::DocumentsProviderRootManager(
     Profile* profile,
     arc::ArcFileSystemOperationRunner* runner)
-    : profile_(profile), runner_(runner), weak_ptr_factory_(this) {}
+    : profile_(profile), runner_(runner) {}
 
 DocumentsProviderRootManager::~DocumentsProviderRootManager() {
   arc::ArcFileSystemBridge* bridge =

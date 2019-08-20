@@ -164,7 +164,7 @@ class ASH_EXPORT LoginScreenController : public LoginScreen,
 
   std::unique_ptr<ParentAccessWidget> parent_access_widget_;
 
-  base::WeakPtrFactory<LoginScreenController> weak_factory_;
+  base::WeakPtrFactory<LoginScreenController> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LoginScreenController);
 };

@@ -216,8 +216,7 @@ class PrinterDiscoverySessionHostImpl
         printers_manager_(
             chromeos::CupsPrintersManagerFactory::GetForBrowserContext(
                 profile)),
-        configurer_(chromeos::PrinterConfigurer::Create(profile)),
-        weak_ptr_factory_(this) {
+        configurer_(chromeos::PrinterConfigurer::Create(profile)) {
     printers_manager_->AddObserver(this);
     binding_.set_connection_error_handler(MakeErrorHandler());
     instance_.set_connection_error_handler(MakeErrorHandler());
@@ -339,7 +338,7 @@ class PrinterDiscoverySessionHostImpl
   ArcPrintServiceImpl* const service_;
   chromeos::CupsPrintersManager* printers_manager_;
   std::unique_ptr<chromeos::PrinterConfigurer> configurer_;
-  base::WeakPtrFactory<PrinterDiscoverySessionHostImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<PrinterDiscoverySessionHostImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PrinterDiscoverySessionHostImpl);
 };
@@ -385,8 +384,7 @@ class PrintJobHostImpl : public mojom::PrintJobHost,
       : binding_(this, std::move(request)),
         instance_(std::move(instance)),
         service_(service),
-        job_manager_(job_manager),
-        weak_ptr_factory_(this) {
+        job_manager_(job_manager) {
     // We read printing data from pipe on working thread in parallel with
     // initializing PrinterQuery on IO thread. When both tasks are complete we
     // start printing.
@@ -510,7 +508,7 @@ class PrintJobHostImpl : public mojom::PrintJobHost,
   scoped_refptr<printing::PrintJob> job_;
   chromeos::CupsPrintJob* cups_job_;
   content::NotificationRegistrar registrar_;
-  base::WeakPtrFactory<PrintJobHostImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<PrintJobHostImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PrintJobHostImpl);
 };

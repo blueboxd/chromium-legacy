@@ -641,8 +641,7 @@ void DeviceMediaAsyncFileUtil::RemoveWatcher(
 DeviceMediaAsyncFileUtil::DeviceMediaAsyncFileUtil(
     const base::FilePath& profile_path,
     MediaFileValidationType validation_type)
-    : profile_path_(profile_path),
-      weak_ptr_factory_(this) {
+    : profile_path_(profile_path) {
   if (validation_type == APPLY_MEDIA_FILE_VALIDATION) {
     media_path_filter_wrapper_ = new MediaPathFilterWrapper;
   }

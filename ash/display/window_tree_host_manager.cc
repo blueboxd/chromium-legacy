@@ -173,8 +173,7 @@ WindowTreeHostManager::WindowTreeHostManager()
       focus_activation_store_(new FocusActivationStore()),
       cursor_window_controller_(new CursorWindowController()),
       mirror_window_controller_(new MirrorWindowController()),
-      cursor_display_id_for_restore_(display::kInvalidDisplayId),
-      weak_ptr_factory_(this) {
+      cursor_display_id_for_restore_(display::kInvalidDisplayId) {
   // Reset primary display to make sure that tests don't use
   // stale display info from previous tests.
   primary_display_id = display::kInvalidDisplayId;

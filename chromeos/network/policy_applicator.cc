@@ -67,7 +67,7 @@ PolicyApplicator::PolicyApplicator(
     const base::DictionaryValue& global_network_config,
     ConfigurationHandler* handler,
     std::set<std::string>* modified_policy_guids)
-    : handler_(handler), profile_(profile), weak_ptr_factory_(this) {
+    : handler_(handler), profile_(profile) {
   global_network_config_.MergeDictionary(&global_network_config);
   remaining_policy_guids_.swap(*modified_policy_guids);
   for (const auto& policy_pair : all_policies) {

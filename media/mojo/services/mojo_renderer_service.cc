@@ -83,10 +83,10 @@ void MojoRendererService::Initialize(
   }
 
   DCHECK(!media_url_params->media_url.is_empty());
-  DCHECK(!media_url_params->site_for_cookies.is_empty());
   media_resource_.reset(new MediaUrlDemuxer(
       nullptr, media_url_params->media_url, media_url_params->site_for_cookies,
-      media_url_params->allow_credentials, media_url_params->is_hls));
+      media_url_params->top_frame_origin, media_url_params->allow_credentials,
+      media_url_params->is_hls));
   renderer_->Initialize(
       media_resource_.get(), this,
       base::Bind(&MojoRendererService::OnRendererInitializeDone, weak_this_,

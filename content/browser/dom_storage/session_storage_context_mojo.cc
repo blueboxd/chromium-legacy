@@ -144,7 +144,8 @@ void SessionStorageContextMojo::OpenSessionStorage(
   if (found->second->state() ==
       SessionStorageNamespaceImplMojo::State::kNotPopulated) {
     found->second->PopulateFromMetadata(
-        database_.get(), metadata_.GetOrCreateNamespaceEntry(namespace_id));
+        database_ ? database_.get() : nullptr,
+        metadata_.GetOrCreateNamespaceEntry(namespace_id));
   }
 
   PurgeUnusedAreasIfNeeded();
@@ -519,10 +520,11 @@ bool SessionStorageContextMojo::OnMemoryDump(
 }
 
 void SessionStorageContextMojo::SetDatabaseForTesting(
-    leveldb::mojom::LevelDBDatabaseAssociatedPtr database) {
+    mojo::PendingAssociatedRemote<leveldb::mojom::LevelDBDatabase> database) {
   DCHECK_EQ(connection_state_, NO_CONNECTION);
   connection_state_ = CONNECTION_IN_PROGRESS;
-  database_ = std::move(database);
+  database_.reset();
+  database_.Bind(std::move(database));
   OnDatabaseOpened(true, leveldb::mojom::DatabaseError::OK);
 }
 
@@ -639,14 +641,14 @@ void SessionStorageContextMojo::RegisterShallowClonedNamespace(
   }
 
   if (found) {
-    it->second->PopulateAsClone(database_.get(), namespace_entry,
-                                clone_from_areas);
+    it->second->PopulateAsClone(database_ ? database_.get() : nullptr,
+                                namespace_entry, clone_from_areas);
     return;
   }
 
   auto namespace_impl = CreateSessionStorageNamespaceImplMojo(new_namespace_id);
-  namespace_impl->PopulateAsClone(database_.get(), namespace_entry,
-                                  clone_from_areas);
+  namespace_impl->PopulateAsClone(database_ ? database_.get() : nullptr,
+                                  namespace_entry, clone_from_areas);
   namespaces_.emplace(std::piecewise_construct,
                       std::forward_as_tuple(new_namespace_id),
                       std::forward_as_tuple(std::move(namespace_impl)));
@@ -717,9 +719,14 @@ void SessionStorageContextMojo::InitiateConnection(bool in_memory_only) {
                        weak_ptr_factory_.GetWeakPtr()));
   } else {
     // We were not given a subdirectory. Use a memory backed database.
-    connector_->BindInterface(file::mojom::kServiceName, &leveldb_service_);
+    leveldb_service_.reset();
+    connector_->Connect(file::mojom::kServiceName,
+                        leveldb_service_.BindNewPipeAndPassReceiver());
+
+    database_.reset();
     leveldb_service_->OpenInMemory(
-        memory_dump_id_, "SessionStorageDatabase", MakeRequest(&database_),
+        memory_dump_id_, "SessionStorageDatabase",
+        database_.BindNewEndpointAndPassReceiver(),
         base::BindOnce(&SessionStorageContextMojo::OnDatabaseOpened,
                        weak_ptr_factory_.GetWeakPtr(), true));
   }
@@ -738,7 +745,9 @@ void SessionStorageContextMojo::OnDirectoryOpened(base::File::Error err) {
 
   // Now that we have a directory, connect to the LevelDB service and get our
   // database.
-  connector_->BindInterface(file::mojom::kServiceName, &leveldb_service_);
+  leveldb_service_.reset();
+  connector_->Connect(file::mojom::kServiceName,
+                      leveldb_service_.BindNewPipeAndPassReceiver());
 
   // We might still need to use the directory, so create a clone.
   filesystem::mojom::DirectoryPtr partition_directory_clone;
@@ -759,9 +768,11 @@ void SessionStorageContextMojo::OnDirectoryOpened(base::File::Error err) {
   // memory allocation in RAM from a log file recovery.
   options.write_buffer_size = 64 * 1024;
   options.block_cache = leveldb_chrome::GetSharedWebBlockCache();
+
+  database_.reset();
   leveldb_service_->OpenWithOptions(
       std::move(options), std::move(partition_directory_clone), leveldb_name_,
-      memory_dump_id_, MakeRequest(&database_),
+      memory_dump_id_, database_.BindNewEndpointAndPassReceiver(),
       base::BindOnce(&SessionStorageContextMojo::OnDatabaseOpened,
                      weak_ptr_factory_.GetWeakPtr(), false));
 }
@@ -808,7 +819,7 @@ void SessionStorageContextMojo::OnDatabaseOpened(
     return;
   }
 
-  database_.set_connection_error_handler(
+  database_.set_disconnect_handler(
       base::BindOnce(&SessionStorageContextMojo::OnMojoConnectionDestroyed,
                      weak_ptr_factory_.GetWeakPtr()));
 
@@ -1005,7 +1016,7 @@ void SessionStorageContextMojo::DeleteAndRecreateDatabase(
   // StorageAreas to be queued until the connection is complete.
   connection_state_ = CONNECTION_IN_PROGRESS;
   commit_error_count_ = 0;
-  database_ = nullptr;
+  database_.reset();
   open_result_histogram_ = histogram_name;
 
   bool recreate_in_memory = false;

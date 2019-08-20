@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
@@ -83,6 +84,37 @@ void SetupFragmentation(const NGConstraintSpace& parent_space,
   builder->SetFragmentainerBlockSize(parent_space.FragmentainerBlockSize());
   builder->SetFragmentainerSpaceAtBfcStart(space_available);
   builder->SetFragmentationType(parent_space.BlockFragmentationType());
+}
+
+void FinishFragmentation(NGBoxFragmentBuilder* builder,
+                         LayoutUnit block_size,
+                         LayoutUnit intrinsic_block_size,
+                         LayoutUnit previously_consumed_block_size,
+                         LayoutUnit space_left) {
+  if (builder->DidBreak()) {
+    // One of our children broke. Even if we fit within the remaining space, we
+    // need to prepare a break token.
+    builder->SetConsumedBlockSize(std::min(space_left, block_size) +
+                                  previously_consumed_block_size);
+    builder->SetBlockSize(std::min(space_left, block_size));
+    builder->SetIntrinsicBlockSize(space_left);
+    return;
+  }
+
+  if (block_size > space_left) {
+    // Need a break inside this block.
+    builder->SetConsumedBlockSize(space_left + previously_consumed_block_size);
+    builder->SetDidBreak();
+    builder->SetBlockSize(space_left);
+    builder->SetIntrinsicBlockSize(space_left);
+    builder->PropagateSpaceShortage(block_size - space_left);
+    return;
+  }
+
+  // The end of the block fits in the current fragmentainer.
+  builder->SetConsumedBlockSize(previously_consumed_block_size + block_size);
+  builder->SetBlockSize(block_size);
+  builder->SetIntrinsicBlockSize(intrinsic_block_size);
 }
 
 }  // namespace blink

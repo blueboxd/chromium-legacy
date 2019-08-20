@@ -12,4 +12,4 @@ traits_headers =
 sources = [
   "//services/viz/public/cpp/compositing/filter_operations_mojom_traits.cc",
 ]
-type_mappings = [ "viz.mojom.FilterOperations=cc::FilterOperations" ]
+type_mappings = [ "viz.mojom.FilterOperations=::cc::FilterOperations" ]

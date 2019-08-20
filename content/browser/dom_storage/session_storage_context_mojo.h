@@ -24,8 +24,11 @@
 #include "content/browser/dom_storage/session_storage_namespace_impl_mojo.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/session_storage_usage_info.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/message.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/file/public/mojom/file_system.mojom.h"
 #include "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom.h"
 #include "url/origin.h"
@@ -138,7 +141,7 @@ class CONTENT_EXPORT SessionStorageContextMojo
 
   // Sets the database for testing.
   void SetDatabaseForTesting(
-      leveldb::mojom::LevelDBDatabaseAssociatedPtr database);
+      mojo::PendingAssociatedRemote<leveldb::mojom::LevelDBDatabase> database);
 
   leveldb::mojom::LevelDBDatabase* DatabaseForTesting() {
     return database_.get();
@@ -255,8 +258,8 @@ class CONTENT_EXPORT SessionStorageContextMojo
 
   base::trace_event::MemoryAllocatorDumpGuid memory_dump_id_;
 
-  leveldb::mojom::LevelDBServicePtr leveldb_service_;
-  leveldb::mojom::LevelDBDatabaseAssociatedPtr database_;
+  mojo::Remote<leveldb::mojom::LevelDBService> leveldb_service_;
+  mojo::AssociatedRemote<leveldb::mojom::LevelDBDatabase> database_;
   bool tried_to_recreate_during_open_ = false;
 
   std::vector<base::OnceClosure> on_database_opened_callbacks_;

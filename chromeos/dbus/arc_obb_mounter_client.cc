@@ -20,7 +20,7 @@ namespace {
 
 class ArcObbMounterClientImpl : public ArcObbMounterClient {
  public:
-  ArcObbMounterClientImpl() : weak_ptr_factory_(this) {}
+  ArcObbMounterClientImpl() {}
   ~ArcObbMounterClientImpl() override = default;
 
   // ArcObbMounterClient override:
@@ -69,7 +69,7 @@ class ArcObbMounterClientImpl : public ArcObbMounterClient {
 
   dbus::ObjectProxy* proxy_ = nullptr;
 
-  base::WeakPtrFactory<ArcObbMounterClientImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcObbMounterClientImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcObbMounterClientImpl);
 };

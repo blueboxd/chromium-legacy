@@ -120,8 +120,7 @@ UpgradeDetectorChromeos::UpgradeDetectorChromeos(
     const base::TickClock* tick_clock)
     : UpgradeDetector(clock, tick_clock),
       upgrade_notification_timer_(tick_clock),
-      initialized_(false),
-      weak_factory_(this) {
+      initialized_(false) {
   // Not all tests provide a PrefService for local_state().
   PrefService* local_state = g_browser_process->local_state();
   if (local_state) {

@@ -48,7 +48,7 @@ class GlRenderer : public RendererBase {
   scoped_refptr<gl::GLSurface> gl_surface_;
   scoped_refptr<gl::GLContext> context_;
 
-  base::WeakPtrFactory<GlRenderer> weak_ptr_factory_;
+  base::WeakPtrFactory<GlRenderer> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GlRenderer);
 };

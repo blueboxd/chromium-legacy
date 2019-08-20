@@ -326,7 +326,7 @@ class NoteTakingHelper : public arc::ArcIntentHelperObserver,
 
   std::unique_ptr<NoteTakingControllerClient> note_taking_controller_client_;
 
-  base::WeakPtrFactory<NoteTakingHelper> weak_ptr_factory_;
+  base::WeakPtrFactory<NoteTakingHelper> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NoteTakingHelper);
 };

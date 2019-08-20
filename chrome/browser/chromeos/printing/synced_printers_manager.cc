@@ -41,8 +41,7 @@ class SyncedPrintersManagerImpl : public SyncedPrintersManager,
       : profile_(profile),
         sync_bridge_(std::move(sync_bridge)),
         observers_(new base::ObserverListThreadSafe<
-                   SyncedPrintersManager::Observer>()),
-        weak_factory_(this) {
+                   SyncedPrintersManager::Observer>()) {
     printers_provider_ =
         EnterprisePrintersProvider::Create(CrosSettings::Get(), profile_);
     printers_provider_->AddObserver(this);
@@ -180,7 +179,7 @@ class SyncedPrintersManagerImpl : public SyncedPrintersManager,
 
   scoped_refptr<base::ObserverListThreadSafe<SyncedPrintersManager::Observer>>
       observers_;
-  base::WeakPtrFactory<SyncedPrintersManagerImpl> weak_factory_;
+  base::WeakPtrFactory<SyncedPrintersManagerImpl> weak_factory_{this};
 };
 
 }  // namespace

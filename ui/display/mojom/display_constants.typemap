@@ -12,6 +12,6 @@ public_deps = [
   "//ui/display",
 ]
 type_mappings = [
-  "display.mojom.DisplayConnectionType=display::DisplayConnectionType",
-  "display.mojom.HDCPState=display::HDCPState",
+  "display.mojom.DisplayConnectionType=::display::DisplayConnectionType",
+  "display.mojom.HDCPState=::display::HDCPState",
 ]

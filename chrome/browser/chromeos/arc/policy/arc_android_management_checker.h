@@ -65,7 +65,7 @@ class ArcAndroidManagementChecker : public signin::IdentityManager::Observer {
   // The callback for the inflight operation.
   CheckCallback callback_;
 
-  base::WeakPtrFactory<ArcAndroidManagementChecker> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcAndroidManagementChecker> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcAndroidManagementChecker);
 };

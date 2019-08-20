@@ -48,8 +48,7 @@ StatusUploader::StatusUploader(
       collector_(std::move(collector)),
       task_runner_(task_runner),
       upload_frequency_(default_upload_frequency),
-      has_captured_media_(false),
-      weak_factory_(this) {
+      has_captured_media_(false) {
   // Track whether any media capture devices are in use - this changes what
   // type of information we are allowed to upload.
   MediaCaptureDevicesDispatcher::GetInstance()->AddObserver(this);

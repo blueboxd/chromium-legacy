@@ -433,7 +433,7 @@ void DOMStorageContextWrapper::OpenSessionStorage(
 }
 
 void DOMStorageContextWrapper::SetLocalStorageDatabaseForTesting(
-    leveldb::mojom::LevelDBDatabaseAssociatedPtr database) {
+    mojo::PendingAssociatedRemote<leveldb::mojom::LevelDBDatabase> database) {
   // base::Unretained is safe here, because the mojo_state_ won't be deleted
   // until a ShutdownAndDelete task has been ran on the mojo_task_runner_, and
   // as soon as that task is posted, mojo_state_ is set to null, preventing

@@ -72,7 +72,7 @@ class ASH_EXPORT ShelfTooltipManager : public ui::EventHandler,
   ShelfView* shelf_view_;
   ShelfBubble* bubble_ = nullptr;
 
-  base::WeakPtrFactory<ShelfTooltipManager> weak_factory_;
+  base::WeakPtrFactory<ShelfTooltipManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ShelfTooltipManager);
 };

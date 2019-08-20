@@ -91,7 +91,7 @@ void BrowserContextKeyedAPIFactory<
 }
 
 VerifyTrustAPI::VerifyTrustAPI(content::BrowserContext* context)
-    : io_part_(new IOPart), registry_observer_(this), weak_factory_(this) {
+    : io_part_(new IOPart), registry_observer_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   registry_observer_.Add(ExtensionRegistry::Get(context));
 }

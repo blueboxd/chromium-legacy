@@ -25,7 +25,7 @@ namespace chromeos {
 namespace settings {
 
 GoogleAssistantHandler::GoogleAssistantHandler(Profile* profile)
-    : profile_(profile), weak_factory_(this) {
+    : profile_(profile) {
   chromeos::CrasAudioHandler::Get()->AddAudioObserver(this);
 }
 

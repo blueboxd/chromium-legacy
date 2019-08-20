@@ -14,6 +14,4 @@ public_deps = [
 deps = [
   "//ui/gfx/geometry",
 ]
-type_mappings = [
-  "display.mojom.DisplayMode=std::unique_ptr<display::DisplayMode>[move_only]",
-]
+type_mappings = [ "display.mojom.DisplayMode=::std::unique_ptr<::display::DisplayMode>[move_only]" ]

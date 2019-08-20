@@ -244,9 +244,7 @@ EntryUpdatePerformer::EntryUpdatePerformer(
       entry_revert_performer_(new EntryRevertPerformer(blocking_task_runner,
                                                        delegate,
                                                        scheduler,
-                                                       metadata)),
-      weak_ptr_factory_(this) {
-}
+                                                       metadata)) {}
 
 EntryUpdatePerformer::~EntryUpdatePerformer() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

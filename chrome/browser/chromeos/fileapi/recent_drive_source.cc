@@ -56,8 +56,7 @@ void GetMetadataOnIOThread(
 const char RecentDriveSource::kLoadHistogramName[] =
     "FileBrowser.Recent.LoadDrive";
 
-RecentDriveSource::RecentDriveSource(Profile* profile)
-    : profile_(profile), weak_ptr_factory_(this) {
+RecentDriveSource::RecentDriveSource(Profile* profile) : profile_(profile) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 

@@ -109,7 +109,7 @@ class DeviceAccountInitializer : public CloudPolicyClient::Observer,
   // The robot account refresh token.
   std::string robot_refresh_token_;
 
-  base::WeakPtrFactory<DeviceAccountInitializer> weak_ptr_factory_;
+  base::WeakPtrFactory<DeviceAccountInitializer> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(DeviceAccountInitializer);
 };
 

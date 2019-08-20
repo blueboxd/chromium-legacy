@@ -19,7 +19,7 @@
 
 namespace ui {
 
-DrmThreadMessageProxy::DrmThreadMessageProxy() : weak_ptr_factory_(this) {}
+DrmThreadMessageProxy::DrmThreadMessageProxy() {}
 
 DrmThreadMessageProxy::~DrmThreadMessageProxy() {}
 

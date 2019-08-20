@@ -201,8 +201,7 @@ DisplayColorManager::DisplayColorManager(
            base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       displays_ctm_support_(DisplayCtmSupport::kNone),
-      screen_to_observe_(screen_to_observe),
-      weak_ptr_factory_(this) {
+      screen_to_observe_(screen_to_observe) {
   configurator_->AddObserver(this);
   if (screen_to_observe_)
     screen_to_observe_->AddObserver(this);

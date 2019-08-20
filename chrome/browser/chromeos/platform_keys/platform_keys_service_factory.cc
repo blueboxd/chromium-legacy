@@ -32,7 +32,7 @@ namespace {
 class DefaultSelectDelegate
     : public chromeos::PlatformKeysService::SelectDelegate {
  public:
-  DefaultSelectDelegate() : weak_factory_(this) {}
+  DefaultSelectDelegate() {}
   ~DefaultSelectDelegate() override {}
 
   void Select(const std::string& extension_id,
@@ -63,7 +63,7 @@ class DefaultSelectDelegate
   }
 
  private:
-  base::WeakPtrFactory<DefaultSelectDelegate> weak_factory_;
+  base::WeakPtrFactory<DefaultSelectDelegate> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DefaultSelectDelegate);
 };

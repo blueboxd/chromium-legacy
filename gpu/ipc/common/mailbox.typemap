@@ -16,4 +16,4 @@ public_deps = [
   "//mojo/public/cpp/bindings",
 ]
 
-type_mappings = [ "gpu.mojom.Mailbox=gpu::Mailbox" ]
+type_mappings = [ "gpu.mojom.Mailbox=::gpu::Mailbox" ]

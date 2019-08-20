@@ -143,7 +143,7 @@ class DrmDisplayHostManager : public DeviceEventObserver, GpuThreadObserver {
   // established.
   std::unique_ptr<DrmDeviceHandle> primary_drm_device_handle_;
 
-  base::WeakPtrFactory<DrmDisplayHostManager> weak_ptr_factory_;
+  base::WeakPtrFactory<DrmDisplayHostManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DrmDisplayHostManager);
 };

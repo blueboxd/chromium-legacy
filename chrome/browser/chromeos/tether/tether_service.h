@@ -307,7 +307,7 @@ class TetherService
   scoped_refptr<device::BluetoothAdapter> adapter_;
   std::unique_ptr<base::OneShotTimer> timer_;
 
-  base::WeakPtrFactory<TetherService> weak_ptr_factory_;
+  base::WeakPtrFactory<TetherService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TetherService);
 };

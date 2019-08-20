@@ -88,7 +88,7 @@ class DISPLAY_MANAGER_EXPORT ConfigureDisplaysTask
 
   Status task_status_;
 
-  base::WeakPtrFactory<ConfigureDisplaysTask> weak_ptr_factory_;
+  base::WeakPtrFactory<ConfigureDisplaysTask> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ConfigureDisplaysTask);
 };

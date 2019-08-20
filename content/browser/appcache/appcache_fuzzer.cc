@@ -194,16 +194,14 @@ DEFINE_BINARY_PROTO_FUZZER(const fuzzing::proto::Session& session) {
         host_it->second->SetSpawningHostId(spawning_host_id_token);
         break;
       }
-      case fuzzing::proto::Command::kSelectCacheForSharedWorker: {
-        int32_t host_id = command.select_cache_for_shared_worker().host_id();
+      case fuzzing::proto::Command::kSelectCacheForWorker: {
+        int32_t host_id = command.select_cache_for_worker().host_id();
         auto host_it = registered_hosts.find(host_id);
         if (host_it == registered_hosts.end())
           break;
         int64_t cache_document_was_loaded_from =
-            command.select_cache_for_shared_worker()
-                .cache_document_was_loaded_from();
-        host_it->second->SelectCacheForSharedWorker(
-            cache_document_was_loaded_from);
+            command.select_cache_for_worker().cache_document_was_loaded_from();
+        host_it->second->SelectCacheForWorker(cache_document_was_loaded_from);
         break;
       }
       case fuzzing::proto::Command::kMarkAsForeignEntry: {

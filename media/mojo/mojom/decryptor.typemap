@@ -14,6 +14,6 @@ deps = [
 ]
 
 type_mappings = [
-  "media.mojom.Decryptor.Status=media::Decryptor::Status",
-  "media.mojom.Decryptor.StreamType=media::Decryptor::StreamType",
+  "media.mojom.Decryptor.Status=::media::Decryptor::Status",
+  "media.mojom.Decryptor.StreamType=::media::Decryptor::StreamType",
 ]

@@ -67,7 +67,7 @@ class HatsNotificationController : public message_center::NotificationDelegate,
 
   Profile* const profile_;
   std::unique_ptr<message_center::Notification> notification_;
-  base::WeakPtrFactory<HatsNotificationController> weak_pointer_factory_;
+  base::WeakPtrFactory<HatsNotificationController> weak_pointer_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HatsNotificationController);
 };

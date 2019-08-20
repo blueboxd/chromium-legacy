@@ -10,4 +10,4 @@ deps = [
 traits_headers = [
   "//services/viz/public/cpp/compositing/frame_timing_details_mojom_traits.h",
 ]
-type_mappings = [ "viz.mojom.FrameTimingDetails=viz::FrameTimingDetails" ]
+type_mappings = [ "viz.mojom.FrameTimingDetails=::viz::FrameTimingDetails" ]

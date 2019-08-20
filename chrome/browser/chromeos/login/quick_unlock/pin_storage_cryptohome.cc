@@ -147,7 +147,7 @@ base::Optional<Key> PinStorageCryptohome::TransformKey(
   return result;
 }
 
-PinStorageCryptohome::PinStorageCryptohome() : weak_factory_(this) {
+PinStorageCryptohome::PinStorageCryptohome() {
   SystemSaltGetter::Get()->GetSystemSalt(base::AdaptCallbackForRepeating(
       base::BindOnce(&PinStorageCryptohome::OnSystemSaltObtained,
                      weak_factory_.GetWeakPtr())));

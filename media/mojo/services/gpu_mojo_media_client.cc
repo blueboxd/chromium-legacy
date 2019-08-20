@@ -224,7 +224,7 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
       if (base::FeatureList::IsEnabled(kChromeosVideoDecoder)) {
 #if BUILDFLAG(USE_V4L2_CODEC) || BUILDFLAG(USE_VAAPI)
         auto frame_pool = std::make_unique<PlatformVideoFramePool>();
-        auto frame_converter = std::make_unique<MailboxVideoFrameConverter>(
+        auto frame_converter = MailboxVideoFrameConverter::Create(
             base::BindRepeating(&DmabufVideoFramePool::UnwrapFrame,
                                 base::Unretained(frame_pool.get())),
             gpu_task_runner_,

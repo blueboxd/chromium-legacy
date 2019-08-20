@@ -115,7 +115,7 @@ class GbmSurfaceless : public gl::SurfacelessEGL {
   bool is_on_external_drm_device_ = true;
   bool requires_gl_flush_on_swap_buffers_ = false;
 
-  base::WeakPtrFactory<GbmSurfaceless> weak_factory_;
+  base::WeakPtrFactory<GbmSurfaceless> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GbmSurfaceless);
 };

@@ -129,8 +129,7 @@ CloudExternalDataPolicyObserver::CloudExternalDataPolicyObserver(
     : cros_settings_(cros_settings),
       device_local_account_policy_service_(device_local_account_policy_service),
       policy_(policy),
-      delegate_(delegate),
-      weak_factory_(this) {
+      delegate_(delegate) {
   notification_registrar_.Add(
       this,
       chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,

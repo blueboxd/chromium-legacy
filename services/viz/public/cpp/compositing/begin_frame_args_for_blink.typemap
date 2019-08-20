@@ -10,6 +10,6 @@ public_headers = [ "//components/viz/common/frame_sinks/begin_frame_args.h" ]
 traits_headers =
     [ "//services/viz/public/cpp/compositing/begin_frame_args_mojom_traits.h" ]
 type_mappings = [
-  "viz.mojom.BeginFrameArgs=viz::BeginFrameArgs",
-  "viz.mojom.BeginFrameAck=viz::BeginFrameAck",
+  "viz.mojom.BeginFrameArgs=::viz::BeginFrameArgs",
+  "viz.mojom.BeginFrameAck=::viz::BeginFrameAck",
 ]

@@ -10,7 +10,7 @@
 #include "components/version_info/channel.h"
 #include "content/public/browser/web_ui.h"
 
-VersionHandlerChromeOS::VersionHandlerChromeOS() : weak_factory_(this) {}
+VersionHandlerChromeOS::VersionHandlerChromeOS() {}
 
 VersionHandlerChromeOS::~VersionHandlerChromeOS() {}
 

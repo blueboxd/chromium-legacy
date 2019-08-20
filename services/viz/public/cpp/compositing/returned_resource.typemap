@@ -11,6 +11,6 @@ deps = [
   "//gpu/command_buffer/common",
 ]
 type_mappings = [
-  "viz.mojom.ReturnedResource=viz::ReturnedResource",
-  "viz.mojom.ReturnedResourceArray=viz::ReturnedResourceArray",
+  "viz.mojom.ReturnedResource=::viz::ReturnedResource",
+  "viz.mojom.ReturnedResourceArray=::viz::ReturnedResourceArray",
 ]

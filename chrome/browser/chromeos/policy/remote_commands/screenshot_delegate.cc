@@ -21,7 +21,7 @@
 
 namespace policy {
 
-ScreenshotDelegate::ScreenshotDelegate() : weak_ptr_factory_(this) {}
+ScreenshotDelegate::ScreenshotDelegate() {}
 
 ScreenshotDelegate::~ScreenshotDelegate() {
 }

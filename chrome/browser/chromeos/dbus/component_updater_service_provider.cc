@@ -48,8 +48,7 @@ std::string ErrorToString(
 }  // namespace
 
 ComponentUpdaterServiceProvider::ComponentUpdaterServiceProvider(
-    component_updater::CrOSComponentManager* cros_component_manager)
-    : weak_ptr_factory_(this) {
+    component_updater::CrOSComponentManager* cros_component_manager) {
   DCHECK(cros_component_manager);
 
   cros_component_manager_ = cros_component_manager;

@@ -109,7 +109,7 @@ class EasyUnlockKeyManager {
   std::unique_ptr<EasyUnlockRefreshKeysOperation> pending_write_operation_;
   std::unique_ptr<EasyUnlockGetKeysOperation> pending_read_operation_;
 
-  base::WeakPtrFactory<EasyUnlockKeyManager> weak_ptr_factory_;
+  base::WeakPtrFactory<EasyUnlockKeyManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockKeyManager);
 };

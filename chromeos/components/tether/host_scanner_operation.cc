@@ -153,8 +153,7 @@ HostScannerOperation::HostScannerOperation(
       tether_host_response_recorder_(tether_host_response_recorder),
       connection_preserver_(connection_preserver),
       clock_(base::DefaultClock::GetInstance()),
-      task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      weak_ptr_factory_(this) {}
+      task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
 HostScannerOperation::~HostScannerOperation() = default;
 

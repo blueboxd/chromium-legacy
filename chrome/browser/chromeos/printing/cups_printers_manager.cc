@@ -63,8 +63,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
         auto_usb_printer_configurer_(std::move(printer_configurer),
                                      this,
                                      usb_notification_controller_.get()),
-        event_tracker_(event_tracker),
-        weak_ptr_factory_(this) {
+        event_tracker_(event_tracker) {
     // Add the |auto_usb_printer_configurer_| as an observer.
     AddObserver(&auto_usb_printer_configurer_);
 
@@ -492,7 +491,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   // |PrintingSendUsernameAndFilenameEnabled|.
   BooleanPrefMember send_username_and_filename_;
 
-  base::WeakPtrFactory<CupsPrintersManagerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<CupsPrintersManagerImpl> weak_ptr_factory_{this};
 };
 
 }  // namespace

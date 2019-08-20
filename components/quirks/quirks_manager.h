@@ -137,7 +137,7 @@ class QUIRKS_EXPORT QuirksManager {
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Factory for callbacks.
-  base::WeakPtrFactory<QuirksManager> weak_ptr_factory_;
+  base::WeakPtrFactory<QuirksManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(QuirksManager);
 };

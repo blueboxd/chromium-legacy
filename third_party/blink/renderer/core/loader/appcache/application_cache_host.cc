@@ -44,7 +44,7 @@
 #include "third_party/blink/renderer/core/inspector/inspector_application_cache_agent.h"
 #include "third_party/blink/renderer/core/loader/appcache/application_cache.h"
 #include "third_party/blink/renderer/core/loader/appcache/application_cache_host_for_frame.h"
-#include "third_party/blink/renderer/core/loader/appcache/application_cache_host_for_shared_worker.h"
+#include "third_party/blink/renderer/core/loader/appcache/application_cache_host_for_worker.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
@@ -96,15 +96,14 @@ void ApplicationCacheHost::SetHostID(const base::UnguessableToken& host_id) {
   host_id_ = host_id;
 }
 
-void ApplicationCacheHost::SelectCacheForSharedWorker(
+void ApplicationCacheHost::SelectCacheForWorker(
     int64_t app_cache_id,
     base::OnceClosure completion_callback) {
   if (!backend_host_.is_bound())
     return;
 
-  select_cache_for_shared_worker_completion_callback_ =
-      std::move(completion_callback);
-  backend_host_->SelectCacheForSharedWorker(app_cache_id);
+  select_cache_for_worker_completion_callback_ = std::move(completion_callback);
+  backend_host_->SelectCacheForWorker(app_cache_id);
 }
 
 void ApplicationCacheHost::FillResourceList(
@@ -138,8 +137,8 @@ void ApplicationCacheHost::CacheSelected(mojom::blink::AppCacheInfoPtr info) {
   cache_info_ = *info;
   // FIXME: Prod the inspector to update its notion of what cache the page is
   // using.
-  if (select_cache_for_shared_worker_completion_callback_)
-    std::move(select_cache_for_shared_worker_completion_callback_).Run();
+  if (select_cache_for_worker_completion_callback_)
+    std::move(select_cache_for_worker_completion_callback_).Run();
 }
 
 void ApplicationCacheHost::EventRaised(mojom::blink::AppCacheEventID event_id) {

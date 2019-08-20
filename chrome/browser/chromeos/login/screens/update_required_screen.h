@@ -36,7 +36,7 @@ class UpdateRequiredScreen : public BaseScreen {
   UpdateRequiredView* view_ = nullptr;
   bool is_shown_;
 
-  base::WeakPtrFactory<UpdateRequiredScreen> weak_factory_;
+  base::WeakPtrFactory<UpdateRequiredScreen> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UpdateRequiredScreen);
 };

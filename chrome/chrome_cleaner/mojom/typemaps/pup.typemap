@@ -14,13 +14,12 @@ public_deps = [
   "//mojo/public/cpp/bindings:struct_traits",
 ]
 
-traits_headers =
-    [ "//chrome/chrome_cleaner/mojom/typemaps/pup_mojom_traits.h" ]
+traits_headers = [ "//chrome/chrome_cleaner/mojom/typemaps/pup_mojom_traits.h" ]
 sources = [
   "//chrome/chrome_cleaner/mojom/typemaps/pup_mojom_traits.cc",
 ]
 
 type_mappings = [
-  "chrome_cleaner.mojom.TraceLocation=chrome_cleaner::UwS::TraceLocation",
-  "chrome_cleaner.mojom.PUP=chrome_cleaner::PUPData::PUP",
+  "chrome_cleaner.mojom.TraceLocation=::chrome_cleaner::UwS::TraceLocation",
+  "chrome_cleaner.mojom.PUP=::chrome_cleaner::PUPData::PUP",
 ]

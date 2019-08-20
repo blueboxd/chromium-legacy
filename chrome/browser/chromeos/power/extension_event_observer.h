@@ -133,7 +133,7 @@ class ExtensionEventObserver : public content::NotificationObserver,
 
   content::NotificationRegistrar registrar_;
 
-  base::WeakPtrFactory<ExtensionEventObserver> weak_factory_;
+  base::WeakPtrFactory<ExtensionEventObserver> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionEventObserver);
 };

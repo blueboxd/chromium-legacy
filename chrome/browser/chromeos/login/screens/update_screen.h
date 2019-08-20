@@ -240,7 +240,7 @@ class UpdateScreen : public BaseScreen,
 
   ErrorScreen::ConnectRequestCallbackSubscription connect_request_subscription_;
 
-  base::WeakPtrFactory<UpdateScreen> weak_factory_;
+  base::WeakPtrFactory<UpdateScreen> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UpdateScreen);
 };

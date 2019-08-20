@@ -117,7 +117,7 @@ SharedWorkerHost::~SharedWorkerHost() {
 }
 
 // static
-void SharedWorkerHost::SetNetworkFactoryForTesting(
+void SharedWorkerHost::SetNetworkFactoryForSubresourcesForTesting(
     const CreateNetworkFactoryCallback& create_network_factory_callback) {
   DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -188,11 +188,11 @@ void SharedWorkerHost::Start(
 
   // Set the default factory to the bundle for subresource loading to pass to
   // the renderer.
-  mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_default_factory;
-  CreateNetworkFactory(
-      pending_default_factory.InitWithNewPipeAndPassReceiver());
+  bool bypass_redirect_checks = false;
   subresource_loader_factories->pending_default_factory() =
-      std::move(pending_default_factory);
+      CreateNetworkFactoryForSubresources(&bypass_redirect_checks);
+  subresource_loader_factories->set_bypass_redirect_checks(
+      bypass_redirect_checks);
 
   // Prepare the controller service worker info to pass to the renderer.
   // |object_info| can be nullptr when the service worker context or the service
@@ -244,30 +244,51 @@ void SharedWorkerHost::Start(
 //  RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve, but this
 //  host doesn't observe network service crashes. Instead, the renderer detects
 //  the connection error and terminates the worker.
-void SharedWorkerHost::CreateNetworkFactory(
-    network::mojom::URLLoaderFactoryRequest request) {
+mojo::PendingRemote<network::mojom::URLLoaderFactory>
+SharedWorkerHost::CreateNetworkFactoryForSubresources(
+    bool* bypass_redirect_checks) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(bypass_redirect_checks);
 
   auto* worker_process_host = RenderProcessHost::FromID(worker_process_id_);
+  auto* storage_partition_impl = static_cast<StoragePartitionImpl*>(
+      worker_process_host->GetStoragePartition());
   url::Origin origin = instance_.constructor_origin();
-  network::mojom::TrustedURLLoaderHeaderClientPtrInfo no_header_client;
+
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_default_factory;
+  mojo::PendingReceiver<network::mojom::URLLoaderFactory>
+      default_factory_receiver =
+          pending_default_factory.InitWithNewPipeAndPassReceiver();
+
+  network::mojom::TrustedURLLoaderHeaderClientPtrInfo default_header_client;
+  GetContentClient()->browser()->WillCreateURLLoaderFactory(
+      storage_partition_impl->browser_context(),
+      /*frame=*/nullptr, worker_process_id_,
+      ContentBrowserClient::URLLoaderFactoryType::kWorkerSubResource, origin,
+      &default_factory_receiver, &default_header_client,
+      bypass_redirect_checks);
+
+  // TODO(nhiroki): Call devtools_instrumentation::WillCreateURLLoaderFactory()
+  // here.
 
   // TODO(yhirano): Support COEP.
   if (GetCreateNetworkFactoryCallbackForSharedWorker().is_null()) {
     worker_process_host->CreateURLLoaderFactory(
         origin, network::mojom::CrossOriginEmbedderPolicy::kNone,
         nullptr /* preferences */, net::NetworkIsolationKey(origin, origin),
-        std::move(no_header_client), std::move(request));
+        std::move(default_header_client), std::move(default_factory_receiver));
   } else {
     network::mojom::URLLoaderFactoryPtr original_factory;
     worker_process_host->CreateURLLoaderFactory(
         origin, network::mojom::CrossOriginEmbedderPolicy::kNone,
         nullptr /* preferences */, net::NetworkIsolationKey(origin, origin),
-        std::move(no_header_client), mojo::MakeRequest(&original_factory));
+        std::move(default_header_client), mojo::MakeRequest(&original_factory));
     GetCreateNetworkFactoryCallbackForSharedWorker().Run(
-        std::move(request), worker_process_id_,
+        std::move(default_factory_receiver), worker_process_id_,
         original_factory.PassInterface());
   }
+
+  return pending_default_factory;
 }
 
 void SharedWorkerHost::AllowFileSystem(

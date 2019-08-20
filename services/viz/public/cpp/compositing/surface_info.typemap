@@ -9,4 +9,4 @@ traits_headers =
 deps = [
   "//components/viz/common",
 ]
-type_mappings = [ "viz.mojom.SurfaceInfo=viz::SurfaceInfo" ]
+type_mappings = [ "viz.mojom.SurfaceInfo=::viz::SurfaceInfo" ]

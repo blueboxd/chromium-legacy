@@ -118,7 +118,7 @@ class ASH_EXPORT BacklightsForcedOffSetter
                  chromeos::PowerManagerClient::Observer>
       power_manager_observer_;
 
-  base::WeakPtrFactory<BacklightsForcedOffSetter> weak_ptr_factory_;
+  base::WeakPtrFactory<BacklightsForcedOffSetter> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BacklightsForcedOffSetter);
 };

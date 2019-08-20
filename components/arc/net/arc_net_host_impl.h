@@ -165,7 +165,7 @@ class ArcNetHostImpl : public KeyedService,
   PrefService* pref_service_ = nullptr;
 
   THREAD_CHECKER(thread_checker_);
-  base::WeakPtrFactory<ArcNetHostImpl> weak_factory_;
+  base::WeakPtrFactory<ArcNetHostImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcNetHostImpl);
 };

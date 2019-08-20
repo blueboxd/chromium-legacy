@@ -36,7 +36,6 @@
 #include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/browser/ui/views/profiles/badged_profile_photo.h"
 #include "chrome/browser/ui/views/profiles/user_manager_view.h"
-#include "chrome/browser/ui/views/sync/dice_signin_button_view.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -131,10 +130,8 @@ bool ProfileMenuView::close_on_deactivate_for_testing_ = true;
 
 ProfileMenuView::ProfileMenuView(views::Button* anchor_button,
                                        Browser* browser,
-                                       signin::GAIAServiceType service_type,
                                        signin_metrics::AccessPoint access_point)
     : ProfileMenuViewBase(anchor_button, browser),
-      gaia_service_type_(service_type),
       access_point_(access_point),
       dice_enabled_(AccountConsistencyModeManager::IsDiceEnabledForProfile(
           browser->profile())) {
@@ -147,7 +144,6 @@ ProfileMenuView::~ProfileMenuView() = default;
 
 void ProfileMenuView::Reset() {
   ProfileMenuViewBase::Reset();
-  signin_current_profile_button_ = nullptr;
   first_profile_button_ = nullptr;
   lock_button_ = nullptr;
 }
@@ -190,11 +186,6 @@ void ProfileMenuView::OnWidgetClosing(views::Widget* /*widget*/) {
   // Unsubscribe from everything early so that the updates do not reach the
   // bubble and change its state.
   avatar_menu_.reset();
-}
-
-views::View* ProfileMenuView::GetInitiallyFocusedView() {
-  return ShouldProvideInitiallyFocusedView() ? signin_current_profile_button_
-                                             : nullptr;
 }
 
 base::string16 ProfileMenuView::GetAccessibleWindowTitle() const {
@@ -569,7 +560,7 @@ void ProfileMenuView::AddPreDiceSigninPromo() {
   AddMenuGroup(false /* add_separator */);
   CreateAndAddLabel(l10n_util::GetStringUTF16(IDS_PROFILES_SIGNIN_PROMO));
 
-  signin_current_profile_button_ = CreateAndAddBlueButton(
+  CreateAndAddBlueButton(
       l10n_util::GetStringFUTF16(
           IDS_SYNC_START_SYNC_BUTTON_LABEL,
           l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)),
@@ -599,11 +590,10 @@ void ProfileMenuView::AddDiceSigninPromo() {
   CreateAndAddLabel(l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SYNC_PROMO));
 
   // Create a sign-in button without account information.
-  DiceSigninButtonView* dice_signin_button_view = CreateAndAddDiceSigninButton(
+  CreateAndAddDiceSigninButton(
       /*account_info=*/nullptr, /*account_icon=*/nullptr,
       base::BindRepeating(&ProfileMenuView::OnSigninButtonClicked,
                           base::Unretained(this)));
-  signin_current_profile_button_ = dice_signin_button_view->signin_button();
 }
 
 void ProfileMenuView::AddDiceSigninView() {
@@ -784,8 +774,7 @@ void ProfileMenuView::AddManageGoogleAccountButton() {
 
 void ProfileMenuView::PostActionPerformed(
     ProfileMetrics::ProfileDesktopMenu action_performed) {
-  ProfileMetrics::LogProfileDesktopMenu(action_performed, gaia_service_type_);
-  gaia_service_type_ = signin::GAIA_SERVICE_TYPE_NONE;
+  ProfileMetrics::LogProfileDesktopMenu(action_performed);
 }
 
 int ProfileMenuView::GetDiceSigninPromoShowCount() const {

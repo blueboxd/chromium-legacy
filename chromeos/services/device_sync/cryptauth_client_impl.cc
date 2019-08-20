@@ -115,8 +115,7 @@ CryptAuthClientImpl::CryptAuthClientImpl(
       identity_manager_(identity_manager),
       url_loader_factory_(std::move(url_loader_factory)),
       device_classifier_(device_classifier),
-      has_call_started_(false),
-      weak_ptr_factory_(this) {}
+      has_call_started_(false) {}
 
 CryptAuthClientImpl::~CryptAuthClientImpl() {}
 

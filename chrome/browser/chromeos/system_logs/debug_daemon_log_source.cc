@@ -72,8 +72,7 @@ DebugDaemonLogSource::DebugDaemonLogSource(bool scrub)
     : SystemLogsSource("DebugDemon"),
       response_(new SystemLogsResponse()),
       num_pending_requests_(0),
-      scrub_(scrub),
-      weak_ptr_factory_(this) {}
+      scrub_(scrub) {}
 
 DebugDaemonLogSource::~DebugDaemonLogSource() {}
 

@@ -41,7 +41,7 @@
 #include "third_party/blink/public/mojom/csp/content_security_policy.mojom-blink.h"
 #include "third_party/blink/public/web/web_shared_worker_client.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/loader/appcache/application_cache_host_for_shared_worker.h"
+#include "third_party/blink/renderer/core/loader/appcache/application_cache_host_for_worker.h"
 #include "third_party/blink/renderer/core/workers/shared_worker_reporting_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
@@ -112,7 +112,7 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker {
 
   bool asked_to_terminate_ = false;
 
-  Persistent<ApplicationCacheHostForSharedWorker> appcache_host_;
+  Persistent<ApplicationCacheHostForWorker> appcache_host_;
 
   base::WeakPtrFactory<WebSharedWorkerImpl> weak_ptr_factory_{this};
 };

@@ -66,7 +66,7 @@ class OAuth2LoginVerifier : public signin::IdentityManager::Observer {
   const CoreAccountId primary_account_id_;
   const std::string access_token_;
 
-  base::WeakPtrFactory<OAuth2LoginVerifier> weak_ptr_factory_;
+  base::WeakPtrFactory<OAuth2LoginVerifier> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2LoginVerifier);
 };

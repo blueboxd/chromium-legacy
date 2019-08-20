@@ -39,7 +39,7 @@ std::string GetLogName(SupportedSource source_type) {
 
 SingleDebugDaemonLogSource::SingleDebugDaemonLogSource(
     SupportedSource source_type)
-    : SystemLogsSource(GetLogName(source_type)), weak_ptr_factory_(this) {}
+    : SystemLogsSource(GetLogName(source_type)) {}
 
 SingleDebugDaemonLogSource::~SingleDebugDaemonLogSource() {}
 

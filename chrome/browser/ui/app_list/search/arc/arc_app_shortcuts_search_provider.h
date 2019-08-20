@@ -38,7 +38,7 @@ class ArcAppShortcutsSearchProvider : public SearchProvider {
   Profile* const profile_;                            // Owned by ProfileInfo.
   AppListControllerDelegate* const list_controller_;  // Owned by AppListClient.
 
-  base::WeakPtrFactory<ArcAppShortcutsSearchProvider> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcAppShortcutsSearchProvider> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppShortcutsSearchProvider);
 };

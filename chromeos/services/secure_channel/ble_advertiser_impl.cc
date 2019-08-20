@@ -76,8 +76,7 @@ BleAdvertiserImpl::BleAdvertiserImpl(
       ble_synchronizer_base_(ble_synchronizer_base),
       timer_factory_(timer_factory),
       sequenced_task_runner_(sequenced_task_runner),
-      shared_resource_scheduler_(std::make_unique<SharedResourceScheduler>()),
-      weak_factory_(this) {}
+      shared_resource_scheduler_(std::make_unique<SharedResourceScheduler>()) {}
 
 BleAdvertiserImpl::~BleAdvertiserImpl() = default;
 

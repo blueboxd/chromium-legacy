@@ -163,7 +163,7 @@ class UserSelectionScreen
 
   user_manager::UserList users_to_send_;
 
-  base::WeakPtrFactory<UserSelectionScreen> weak_factory_;
+  base::WeakPtrFactory<UserSelectionScreen> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UserSelectionScreen);
 };

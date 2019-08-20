@@ -181,7 +181,7 @@ class PluginVmImageManager
   void RemoveTemporaryPluginVmImageArchiveIfExists();
   void OnTemporaryPluginVmImageArchiveRemoved(bool success);
 
-  base::WeakPtrFactory<PluginVmImageManager> weak_ptr_factory_;
+  base::WeakPtrFactory<PluginVmImageManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PluginVmImageManager);
 };

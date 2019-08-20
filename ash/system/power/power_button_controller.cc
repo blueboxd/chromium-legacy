@@ -104,8 +104,7 @@ PowerButtonController::PowerButtonController(
     : backlights_forced_off_setter_(backlights_forced_off_setter),
       lock_state_controller_(Shell::Get()->lock_state_controller()),
       tick_clock_(base::DefaultTickClock::GetInstance()),
-      backlights_forced_off_observer_(this),
-      weak_factory_(this) {
+      backlights_forced_off_observer_(this) {
   ProcessCommandLine();
   display_controller_ = std::make_unique<PowerButtonDisplayController>(
       backlights_forced_off_setter_, tick_clock_);

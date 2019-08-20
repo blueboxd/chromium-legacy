@@ -129,11 +129,6 @@ void NGBoxFragmentBuilder::AddBreakBeforeLine(int line_number) {
       }
     }
   }
-
-  // We need to resume at the right inline location in the next fragment, but
-  // broken floats, which are resumed and positioned by the parent block layout
-  // algorithm, need to be ignored by the inline layout algorithm.
-  To<NGInlineBreakToken>(inline_break_tokens_.back().get())->SetIgnoreFloats();
 }
 
 void NGBoxFragmentBuilder::AddResult(const NGLayoutResult& child_layout_result,

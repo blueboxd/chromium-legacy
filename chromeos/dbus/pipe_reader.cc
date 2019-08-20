@@ -17,8 +17,7 @@ namespace chromeos {
 
 PipeReader::PipeReader(const scoped_refptr<base::TaskRunner>& task_runner)
     : io_buffer_(base::MakeRefCounted<net::IOBufferWithSize>(4096)),
-      task_runner_(task_runner),
-      weak_ptr_factory_(this) {}
+      task_runner_(task_runner) {}
 
 PipeReader::~PipeReader() = default;
 

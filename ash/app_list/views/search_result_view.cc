@@ -63,9 +63,7 @@ const char SearchResultView::kViewClassName[] = "ui/app_list/SearchResultView";
 
 SearchResultView::SearchResultView(SearchResultListView* list_view,
                                    AppListViewDelegate* view_delegate)
-    : list_view_(list_view),
-      view_delegate_(view_delegate),
-      weak_ptr_factory_(this) {
+    : list_view_(list_view), view_delegate_(view_delegate) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
 
   icon_ = AddChildView(std::make_unique<views::ImageView>());

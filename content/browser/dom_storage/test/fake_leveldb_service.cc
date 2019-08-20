@@ -13,12 +13,12 @@ FakeLevelDBService::OpenRequest::OpenRequest(
     bool in_memory,
     std::string dbname,
     std::string memenv_tracking_name,
-    leveldb::mojom::LevelDBDatabaseAssociatedRequest request,
+    mojo::PendingAssociatedReceiver<leveldb::mojom::LevelDBDatabase> receiver,
     OpenCallback callback)
     : in_memory(in_memory),
       dbname(std::move(dbname)),
       memenv_tracking_name(std::move(memenv_tracking_name)),
-      request(std::move(request)),
+      receiver(std::move(receiver)),
       callback(std::move(callback)) {}
 FakeLevelDBService::OpenRequest::~OpenRequest() = default;
 
@@ -30,9 +30,9 @@ void FakeLevelDBService::Open(
     const std::string& dbname,
     const base::Optional<base::trace_event::MemoryAllocatorDumpGuid>&
         memory_dump_id,
-    leveldb::mojom::LevelDBDatabaseAssociatedRequest request,
+    mojo::PendingAssociatedReceiver<leveldb::mojom::LevelDBDatabase> receiver,
     OpenCallback callback) {
-  open_requests_.emplace_back(false, dbname, "", std::move(request),
+  open_requests_.emplace_back(false, dbname, "", std::move(receiver),
                               std::move(callback));
   if (on_open_callback_)
     std::move(on_open_callback_).Run();
@@ -44,9 +44,9 @@ void FakeLevelDBService::OpenWithOptions(
     const std::string& dbname,
     const base::Optional<base::trace_event::MemoryAllocatorDumpGuid>&
         memory_dump_id,
-    leveldb::mojom::LevelDBDatabaseAssociatedRequest request,
+    mojo::PendingAssociatedReceiver<leveldb::mojom::LevelDBDatabase> receiver,
     OpenCallback callback) {
-  open_requests_.emplace_back(false, dbname, "", std::move(request),
+  open_requests_.emplace_back(false, dbname, "", std::move(receiver),
                               std::move(callback));
   if (on_open_callback_)
     std::move(on_open_callback_).Run();
@@ -56,9 +56,9 @@ void FakeLevelDBService::OpenInMemory(
     const base::Optional<base::trace_event::MemoryAllocatorDumpGuid>&
         memory_dump_id,
     const std::string& tracking_name,
-    leveldb::mojom::LevelDBDatabaseAssociatedRequest request,
+    mojo::PendingAssociatedReceiver<leveldb::mojom::LevelDBDatabase> receiver,
     OpenCallback callback) {
-  open_requests_.emplace_back(true, "", tracking_name, std::move(request),
+  open_requests_.emplace_back(true, "", tracking_name, std::move(receiver),
                               std::move(callback));
   if (on_open_callback_)
     std::move(on_open_callback_).Run();
@@ -74,11 +74,11 @@ void FakeLevelDBService::Destroy(filesystem::mojom::DirectoryPtr,
 void FakeLevelDBService::Bind(
     const service_manager::Identity& remote_identity,
     mojo::PendingReceiver<leveldb::mojom::LevelDBService> receiver) {
-  bindings_.AddBinding(this, std::move(receiver));
+  receivers_.Add(this, std::move(receiver));
 }
 
 void FakeLevelDBService::FlushBindingsForTesting() {
-  bindings_.FlushForTesting();
+  receivers_.FlushForTesting();
 }
 
 }  // namespace test

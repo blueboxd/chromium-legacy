@@ -38,6 +38,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_message.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom.h"
@@ -122,15 +123,16 @@ using SetupProcessCallback = base::OnceCallback<void(
 // ServiceWorkerScriptLoaderFactory and the other is for passing to the
 // renderer. These bundles include factories for non-network URLs like
 // chrome-extension:// as needed.
-void SetupOnUIThread(int embedded_worker_id,
-                     base::WeakPtr<ServiceWorkerProcessManager> process_manager,
-                     bool can_use_existing_process,
-                     blink::mojom::EmbeddedWorkerStartParamsPtr params,
-                     blink::mojom::EmbeddedWorkerInstanceClientRequest request,
-                     ServiceWorkerContextCore* context,
-                     base::WeakPtr<ServiceWorkerContextCore> weak_context,
-                     const base::Optional<base::Time>& io_post_time,
-                     SetupProcessCallback callback) {
+void SetupOnUIThread(
+    int embedded_worker_id,
+    base::WeakPtr<ServiceWorkerProcessManager> process_manager,
+    bool can_use_existing_process,
+    blink::mojom::EmbeddedWorkerStartParamsPtr params,
+    mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient> receiver,
+    ServiceWorkerContextCore* context,
+    base::WeakPtr<ServiceWorkerContextCore> weak_context,
+    const base::Optional<base::Time>& io_post_time,
+    SetupProcessCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::Optional<base::TimeDelta> thread_hop_time;
   if (!ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled())
@@ -201,12 +203,12 @@ void SetupOnUIThread(int embedded_worker_id,
                           url::Origin::Create(params->script_url));
   }
 
-  // Bind |request|, which is attached to |EmbeddedWorkerInstance::client_|, to
+  // Bind |receiver|, which is attached to |EmbeddedWorkerInstance::client_|, to
   // the process. If the process dies, |client_|'s connection error callback
   // will be called on the core thread.
-  if (request.is_pending()) {
+  if (receiver.is_valid()) {
     rph->GetRendererInterface()->SetUpEmbeddedWorkerChannelForServiceWorker(
-        std::move(request));
+        std::move(receiver));
   }
 
   // Register to DevTools and update params accordingly.
@@ -460,10 +462,11 @@ class EmbeddedWorkerInstance::StartTask {
 
   StartTask(EmbeddedWorkerInstance* instance,
             const GURL& script_url,
-            blink::mojom::EmbeddedWorkerInstanceClientRequest request,
+            mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>
+                receiver,
             base::TimeTicks start_time)
       : instance_(instance),
-        request_(std::move(request)),
+        receiver_(std::move(receiver)),
         state_(ProcessAllocationState::NOT_ALLOCATED),
         is_installed_(false),
         started_during_browser_startup_(false),
@@ -558,7 +561,7 @@ class EmbeddedWorkerInstance::StartTask {
     if (ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled()) {
       SetupOnUIThread(
           instance_->embedded_worker_id(), process_manager,
-          can_use_existing_process, std::move(params), std::move(request_),
+          can_use_existing_process, std::move(params), std::move(receiver_),
           context.get(), context, base::nullopt,
           base::BindOnce(&StartTask::OnSetupCompleted,
                          weak_factory_.GetWeakPtr(), process_manager));
@@ -568,7 +571,7 @@ class EmbeddedWorkerInstance::StartTask {
           base::BindOnce(
               &SetupOnUIThread, instance_->embedded_worker_id(),
               process_manager, can_use_existing_process, std::move(params),
-              std::move(request_), context.get(), context,
+              std::move(receiver_), context.get(), context,
               base::make_optional<base::Time>(base::Time::Now()),
               base::BindOnce(&StartTask::OnSetupCompleted,
                              weak_factory_.GetWeakPtr(), process_manager)));
@@ -671,7 +674,7 @@ class EmbeddedWorkerInstance::StartTask {
   EmbeddedWorkerInstance* instance_;
 
   // Ownership is transferred by a PostTask() call after process allocation.
-  blink::mojom::EmbeddedWorkerInstanceClientRequest request_;
+  mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient> receiver_;
 
   StatusCallback sent_start_callback_;
   bool did_send_start_ = false;
@@ -722,12 +725,16 @@ void EmbeddedWorkerInstance::Start(
   params->subresource_loader_updater =
       subresource_loader_updater_.BindNewPipeAndPassReceiver();
 
-  blink::mojom::EmbeddedWorkerInstanceClientRequest request =
-      mojo::MakeRequest(&client_);
-  client_.set_connection_error_handler(
+  // TODO(https://crbug.com/978694): Consider a reset flow since new mojo types
+  // check is_bound strictly.
+  client_.reset();
+
+  mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient> receiver =
+      client_.BindNewPipeAndPassReceiver();
+  client_.set_disconnect_handler(
       base::BindOnce(&EmbeddedWorkerInstance::Detach, base::Unretained(this)));
   inflight_start_task_.reset(
-      new StartTask(this, params->script_url, std::move(request), start_time));
+      new StartTask(this, params->script_url, std::move(receiver), start_time));
   inflight_start_task_->Start(std::move(params), std::move(callback));
 }
 
@@ -790,7 +797,6 @@ EmbeddedWorkerInstance::EmbeddedWorkerInstance(
       starting_phase_(NOT_STARTING),
       restart_count_(0),
       thread_id_(ServiceWorkerConsts::kInvalidEmbeddedWorkerThreadId),
-      instance_host_binding_(this),
       devtools_attached_(false),
       network_accessed_for_script_(false),
       foreground_notified_(false),
@@ -833,9 +839,10 @@ void EmbeddedWorkerInstance::SendStartWorker(
   DCHECK(context_);
   DCHECK(params->service_worker_request.is_pending());
   DCHECK(params->controller_receiver.is_valid());
-  DCHECK(!instance_host_binding_.is_bound());
+  DCHECK(!instance_host_receiver_.is_bound());
 
-  instance_host_binding_.Bind(mojo::MakeRequest(&params->instance_host));
+  instance_host_receiver_.Bind(
+      params->instance_host.InitWithNewEndpointAndPassReceiver());
 
   content_settings_ =
       base::SequenceBound<ServiceWorkerContentSettingsProxyImpl>(
@@ -1164,7 +1171,7 @@ void EmbeddedWorkerInstance::ReleaseProcess() {
 
   NotifyForegroundServiceWorkerRemoved();
 
-  instance_host_binding_.Close();
+  instance_host_receiver_.reset();
   devtools_proxy_.reset();
   process_handle_.reset();
   lifetime_tracker_.reset();

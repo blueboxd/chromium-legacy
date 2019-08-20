@@ -143,7 +143,7 @@ class ASH_EXPORT HighlighterController
 
   base::ObserverList<Observer>::Unchecked observers_;
 
-  base::WeakPtrFactory<HighlighterController> weak_factory_;
+  base::WeakPtrFactory<HighlighterController> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HighlighterController);
 };

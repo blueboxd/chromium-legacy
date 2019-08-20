@@ -66,7 +66,7 @@ CrostiniExportImport* CrostiniExportImport::GetForProfile(Profile* profile) {
 }
 
 CrostiniExportImport::CrostiniExportImport(Profile* profile)
-    : profile_(profile), weak_ptr_factory_(this) {
+    : profile_(profile) {
   CrostiniManager* manager = CrostiniManager::GetForProfile(profile_);
   manager->AddExportContainerProgressObserver(this);
   manager->AddImportContainerProgressObserver(this);

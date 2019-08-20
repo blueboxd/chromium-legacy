@@ -13,4 +13,4 @@ traits_headers = [
 sources = [
   "//services/viz/public/cpp/compositing/copy_output_request_mojom_traits.cc",
 ]
-type_mappings = [ "viz.mojom.CopyOutputRequest=std::unique_ptr<viz::CopyOutputRequest>[move_only]" ]
+type_mappings = [ "viz.mojom.CopyOutputRequest=::std::unique_ptr<::viz::CopyOutputRequest>[move_only]" ]

@@ -185,8 +185,7 @@ class ImageDecodeAcceleratorStubTest
  public:
   ImageDecodeAcceleratorStubTest()
       : GpuChannelTestCommon(false /* use_stub_bindings */),
-        image_decode_accelerator_worker_(GetParam()),
-        weak_ptr_factory_(this) {}
+        image_decode_accelerator_worker_(GetParam()) {}
   ~ImageDecodeAcceleratorStubTest() override = default;
 
   SyncPointManager* sync_point_manager() const {
@@ -426,7 +425,7 @@ class ImageDecodeAcceleratorStubTest
  private:
   TestImageFactory image_factory_;
   base::test::ScopedFeatureList feature_list_;
-  base::WeakPtrFactory<ImageDecodeAcceleratorStubTest> weak_ptr_factory_;
+  base::WeakPtrFactory<ImageDecodeAcceleratorStubTest> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ImageDecodeAcceleratorStubTest);
 };

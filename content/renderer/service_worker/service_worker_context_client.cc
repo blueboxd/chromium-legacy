@@ -99,7 +99,8 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     blink::mojom::ServiceWorkerRequest service_worker_request,
     mojo::PendingReceiver<blink::mojom::ControllerServiceWorker>
         controller_receiver,
-    blink::mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
+    mojo::PendingAssociatedRemote<blink::mojom::EmbeddedWorkerInstanceHost>
+        instance_host,
     blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
     EmbeddedWorkerInstanceClientImpl* owner,
     blink::mojom::EmbeddedWorkerStartTimingPtr start_timing,
@@ -128,7 +129,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
   DCHECK(owner_);
   DCHECK(subresource_loaders);
   instance_host_ =
-      blink::mojom::ThreadSafeEmbeddedWorkerInstanceHostAssociatedPtr::Create(
+      mojo::SharedAssociatedRemote<blink::mojom::EmbeddedWorkerInstanceHost>(
           std::move(instance_host), initiator_thread_task_runner_);
 
   if (IsOutOfProcessNetworkService()) {
@@ -188,15 +189,15 @@ void ServiceWorkerContextClient::WorkerReadyForInspectionOnInitiatorThread(
       std::move(devtools_agent_remote), blink::mojom::DevToolsAgent::Version_);
   mojo::PendingReceiver<blink::mojom::DevToolsAgentHost> receiver(
       std::move(devtools_agent_host_receiver));
-  (*instance_host_)
-      ->OnReadyForInspection(std::move(agent_remote), std::move(receiver));
+  instance_host_->OnReadyForInspection(std::move(agent_remote),
+                                       std::move(receiver));
 }
 
 void ServiceWorkerContextClient::WorkerContextFailedToStartOnInitiatorThread() {
   DCHECK(initiator_thread_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!proxy_);
 
-  (*instance_host_)->OnStopped();
+  instance_host_->OnStopped();
 
   TRACE_EVENT_NESTABLE_ASYNC_END1(
       "ServiceWorker", "ServiceWorkerContextClient", this, "Status",
@@ -212,7 +213,7 @@ void ServiceWorkerContextClient::FailedToLoadClassicScript() {
   // Cleanly send an OnStopped() message instead of just breaking the
   // Mojo connection on termination, for consistency with the other
   // startup failure paths.
-  (*instance_host_)->OnStopped();
+  instance_host_->OnStopped();
 
   // The caller is responsible for terminating the thread which
   // eventually destroys |this|.
@@ -225,7 +226,7 @@ void ServiceWorkerContextClient::FailedToFetchModuleScript() {
   // Cleanly send an OnStopped() message instead of just breaking the
   // Mojo connection on termination, for consistency with the other
   // startup failure paths.
-  (*instance_host_)->OnStopped();
+  instance_host_->OnStopped();
 
   // The caller is responsible for terminating the thread which
   // eventually destroys |this|.
@@ -234,13 +235,13 @@ void ServiceWorkerContextClient::FailedToFetchModuleScript() {
 void ServiceWorkerContextClient::WorkerScriptLoadedOnInitiatorThread() {
   DCHECK(initiator_thread_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!is_starting_installed_worker_);
-  (*instance_host_)->OnScriptLoaded();
+  instance_host_->OnScriptLoaded();
   TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker", "LOAD_SCRIPT", this);
 }
 
 void ServiceWorkerContextClient::WorkerScriptLoadedOnWorkerThread() {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
-  (*instance_host_)->OnScriptLoaded();
+  instance_host_->OnScriptLoaded();
   TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker", "LOAD_SCRIPT", this);
 }
 
@@ -279,7 +280,7 @@ void ServiceWorkerContextClient::WillEvaluateScript() {
   CHECK_LE(start_timing_->start_worker_received_time,
            start_timing_->script_evaluation_start_time);
 
-  (*instance_host_)->OnScriptEvaluationStart();
+  instance_host_->OnScriptEvaluationStart();
 }
 
 void ServiceWorkerContextClient::DidEvaluateScript(bool success) {
@@ -348,7 +349,7 @@ void ServiceWorkerContextClient::WillDestroyWorkerContext(
 void ServiceWorkerContextClient::WorkerContextDestroyed() {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
 
-  (*instance_host_)->OnStopped();
+  instance_host_->OnStopped();
 
   // base::Unretained is safe because |owner_| does not destroy itself until
   // WorkerContextDestroyed is called.
@@ -360,7 +361,7 @@ void ServiceWorkerContextClient::WorkerContextDestroyed() {
 
 void ServiceWorkerContextClient::CountFeature(
     blink::mojom::WebFeature feature) {
-  (*instance_host_)->CountFeature(feature);
+  instance_host_->CountFeature(feature);
 }
 
 void ServiceWorkerContextClient::ReportException(
@@ -368,9 +369,9 @@ void ServiceWorkerContextClient::ReportException(
     int line_number,
     int column_number,
     const blink::WebString& source_url) {
-  (*instance_host_)
-      ->OnReportException(error_message.Utf16(), line_number, column_number,
-                          blink::WebStringToGURL(source_url));
+  instance_host_->OnReportException(error_message.Utf16(), line_number,
+                                    column_number,
+                                    blink::WebStringToGURL(source_url));
 }
 
 void ServiceWorkerContextClient::ReportConsoleMessage(
@@ -379,9 +380,9 @@ void ServiceWorkerContextClient::ReportConsoleMessage(
     const blink::WebString& message,
     int line_number,
     const blink::WebString& source_url) {
-  (*instance_host_)
-      ->OnReportConsoleMessage(source, level, message.Utf16(), line_number,
-                               blink::WebStringToGURL(source_url));
+  instance_host_->OnReportConsoleMessage(source, level, message.Utf16(),
+                                         line_number,
+                                         blink::WebStringToGURL(source_url));
 }
 
 scoped_refptr<blink::WebWorkerFetchContext>
@@ -484,9 +485,8 @@ void ServiceWorkerContextClient::SendWorkerStarted(
   CHECK_LE(start_timing_->script_evaluation_start_time,
            start_timing_->script_evaluation_end_time);
 
-  (*instance_host_)
-      ->OnStarted(status, WorkerThread::GetCurrentId(),
-                  std::move(start_timing_));
+  instance_host_->OnStarted(status, WorkerThread::GetCurrentId(),
+                            std::move(start_timing_));
 
   TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker", "ServiceWorkerContextClient",
                                   this);
@@ -513,7 +513,7 @@ void ServiceWorkerContextClient::SetupNavigationPreload(
 void ServiceWorkerContextClient::RequestTermination(
     RequestTerminationCallback callback) {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
-  (*instance_host_)->RequestTermination(std::move(callback));
+  instance_host_->RequestTermination(std::move(callback));
 }
 
 void ServiceWorkerContextClient::StopWorkerOnInitiatorThread() {

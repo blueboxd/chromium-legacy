@@ -20,6 +20,7 @@
 #include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -46,11 +47,13 @@ void PendingAppInstallTask::CreateTabHelpers(
 PendingAppInstallTask::PendingAppInstallTask(
     Profile* profile,
     AppRegistrar* registrar,
+    WebAppUiManager* ui_manager,
     InstallFinalizer* install_finalizer,
     ExternalInstallOptions install_options)
     : profile_(profile),
       registrar_(registrar),
       install_finalizer_(install_finalizer),
+      ui_manager_(ui_manager),
       externally_installed_app_prefs_(profile_->GetPrefs()),
       install_options_(std::move(install_options)) {}
 
@@ -186,6 +189,13 @@ void PendingAppInstallTask::OnWebAppInstalled(bool is_placeholder,
   if (code != InstallResultCode::kSuccess) {
     std::move(result_callback).Run(Result(code, base::nullopt));
     return;
+  }
+
+  // If this is the first time the app has been installed, run a migration. This
+  // will not happen again, even if the app is uninstalled and reinstalled.
+  if (!externally_installed_app_prefs_.LookupAppId(install_options_.url)) {
+    ui_manager_->UninstallAndReplace(install_options().uninstall_and_replace,
+                                     app_id);
   }
 
   externally_installed_app_prefs_.Insert(install_options_.url, app_id,

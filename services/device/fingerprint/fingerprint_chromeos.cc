@@ -63,7 +63,7 @@ device::mojom::ScanResult ToMojom(biod::ScanResult type) {
 
 }  // namespace
 
-FingerprintChromeOS::FingerprintChromeOS() : weak_ptr_factory_(this) {
+FingerprintChromeOS::FingerprintChromeOS() {
   CHECK(GetBiodClient());
   GetBiodClient()->AddObserver(this);
 }

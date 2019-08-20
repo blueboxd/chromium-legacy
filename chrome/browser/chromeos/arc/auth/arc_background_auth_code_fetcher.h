@@ -80,7 +80,7 @@ class ArcBackgroundAuthCodeFetcher : public ArcAuthCodeFetcher {
   // Account on Chrome OS.
   const bool is_primary_account_;
 
-  base::WeakPtrFactory<ArcBackgroundAuthCodeFetcher> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcBackgroundAuthCodeFetcher> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcBackgroundAuthCodeFetcher);
 };

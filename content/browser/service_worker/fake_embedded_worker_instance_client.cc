@@ -15,7 +15,7 @@ namespace content {
 
 FakeEmbeddedWorkerInstanceClient::FakeEmbeddedWorkerInstanceClient(
     EmbeddedWorkerTestHelper* helper)
-    : helper_(helper), binding_(this) {}
+    : helper_(helper) {}
 
 FakeEmbeddedWorkerInstanceClient::~FakeEmbeddedWorkerInstanceClient() = default;
 
@@ -25,9 +25,10 @@ FakeEmbeddedWorkerInstanceClient::GetWeakPtr() {
 }
 
 void FakeEmbeddedWorkerInstanceClient::Bind(
-    blink::mojom::EmbeddedWorkerInstanceClientRequest request) {
-  binding_.Bind(std::move(request));
-  binding_.set_connection_error_handler(
+    mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>
+        receiver) {
+  receiver_.Bind(std::move(receiver));
+  receiver_.set_disconnect_handler(
       base::BindOnce(&FakeEmbeddedWorkerInstanceClient::OnConnectionError,
                      base::Unretained(this)));
 
@@ -36,7 +37,7 @@ void FakeEmbeddedWorkerInstanceClient::Bind(
 }
 
 void FakeEmbeddedWorkerInstanceClient::RunUntilBound() {
-  if (binding_)
+  if (receiver_.is_bound())
     return;
   base::RunLoop loop;
   quit_closure_for_bind_ = loop.QuitClosure();
@@ -44,7 +45,7 @@ void FakeEmbeddedWorkerInstanceClient::RunUntilBound() {
 }
 
 void FakeEmbeddedWorkerInstanceClient::Disconnect() {
-  binding_.Close();
+  receiver_.reset();
   OnConnectionError();
 }
 

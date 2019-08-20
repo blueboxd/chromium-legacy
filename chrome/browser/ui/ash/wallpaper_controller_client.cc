@@ -110,7 +110,7 @@ user_manager::User* FindPublicSession(const user_manager::UserList& users) {
 
 }  // namespace
 
-WallpaperControllerClient::WallpaperControllerClient() : weak_factory_(this) {
+WallpaperControllerClient::WallpaperControllerClient() {
   local_state_ = g_browser_process->local_state();
   show_user_names_on_signin_subscription_ =
       chromeos::CrosSettings::Get()->AddSettingsObserver(

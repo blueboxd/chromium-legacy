@@ -8,12 +8,14 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
+#include "chrome/browser/extensions/forced_extensions/installation_reporter.h"
 
 namespace extensions {
 
-ExternalPolicyLoader::ExternalPolicyLoader(ExtensionManagement* settings,
+ExternalPolicyLoader::ExternalPolicyLoader(Profile* profile,
+                                           ExtensionManagement* settings,
                                            InstallationType type)
-    : settings_(settings), type_(type) {
+    : profile_(profile), settings_(settings), type_(type) {
   settings_->AddObserver(this);
 }
 
@@ -39,6 +41,11 @@ void ExternalPolicyLoader::StartLoading() {
   switch (type_) {
     case FORCED:
       prefs = settings_->GetForceInstallList();
+      for (const auto& it : prefs->DictItems()) {
+        InstallationReporter::ReportInstallationStage(
+            profile_, it.first,
+            InstallationReporter::Stage::SEEN_BY_POLICY_LOADER);
+      }
       break;
     case RECOMMENDED:
       prefs = settings_->GetRecommendedInstallList();

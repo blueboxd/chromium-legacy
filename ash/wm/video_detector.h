@@ -114,7 +114,7 @@ class ASH_EXPORT VideoDetector : public aura::EnvObserver,
 
   mojo::Binding<viz::mojom::VideoDetectorObserver> binding_;
 
-  base::WeakPtrFactory<VideoDetector> weak_factory_;
+  base::WeakPtrFactory<VideoDetector> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VideoDetector);
 };

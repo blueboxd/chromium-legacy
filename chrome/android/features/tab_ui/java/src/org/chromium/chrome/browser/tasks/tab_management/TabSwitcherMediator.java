@@ -122,6 +122,8 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     private int mTabIdwhenShown;
     private int mIndexInNewModelWhenSwitched;
 
+    private boolean mShowTabsInMruOrder;
+
     /**
      * Interface to delegate resetting the tab grid.
      */
@@ -130,9 +132,10 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
          * Reset the tab grid with the given {@link TabList}, which can be null.
          * @param tabList The {@link TabList} to show the tabs for in the grid.
          * @param quickMode Whether to skip capturing the selected live tab for the thumbnail.
+         * @param mruMode Whether order the Tabs by MRU.
          * @return Whether the {@link TabListRecyclerView} can be shown quickly.
          */
-        boolean resetWithTabList(@Nullable TabList tabList, boolean quickMode);
+        boolean resetWithTabList(@Nullable TabList tabList, boolean quickMode, boolean mruMode);
 
         /**
          * Release the thumbnail {@link Bitmap} but keep the {@link TabGridViewHolder}.
@@ -175,7 +178,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
 
                 TabList currentTabModelFilter =
                         mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter();
-                mResetHandler.resetWithTabList(currentTabModelFilter, false);
+                mResetHandler.resetWithTabList(currentTabModelFilter, false, mShowTabsInMruOrder);
                 mContainerViewModel.set(IS_INCOGNITO, currentTabModelFilter.isIncognito());
                 if (mTabGridDialogResetHandler != null) {
                     mTabGridDialogResetHandler.hideDialog(false);
@@ -243,9 +246,16 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         mContainerView = containerView;
 
         mSoftClearTabListRunnable = mResetHandler::softCleanup;
-        mClearTabListRunnable = () -> mResetHandler.resetWithTabList(null, false);
+        mClearTabListRunnable =
+                () -> mResetHandler.resetWithTabList(null, false, mShowTabsInMruOrder);
         mHandler = new Handler();
         mTabSelectionEditorController = tabSelectionEditorController;
+
+        // TODO(crbug.com/982018): Let the start surface pass in the parameter and add unit test for
+        // it. This is a temporary solution to keep this change minimum.
+        String feature = ChromeFeatureList.getFieldTrialParamByFeature(
+                ChromeFeatureList.START_SURFACE_ANDROID, "start_surface_variation");
+        mShowTabsInMruOrder = feature.equals("twopanes") || feature.equals("single");
     }
 
     void setBottomControlsHeight(int bottomControlsHeight) {
@@ -388,13 +398,16 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         boolean quick = false;
         if (FeatureUtilities.isTabToGtsAnimationEnabled()) {
             quick = mResetHandler.resetWithTabList(
-                    mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter(),
-                    false);
+                    mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter(), false,
+                    mShowTabsInMruOrder);
         }
+
         int initialPosition = Math.max(
                 mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter().index()
                         - INITIAL_SCROLL_INDEX_OFFSET,
                 0);
+        // In MRU order, selected Tab is always at the first position.
+        if (mShowTabsInMruOrder) initialPosition = 0;
         mContainerViewModel.set(INITIAL_SCROLL_INDEX, initialPosition);
         return quick;
     }
@@ -403,7 +416,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     public void showOverview(boolean animate) {
         mResetHandler.resetWithTabList(
                 mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter(),
-                FeatureUtilities.isTabToGtsAnimationEnabled());
+                FeatureUtilities.isTabToGtsAnimationEnabled(), mShowTabsInMruOrder);
         if (!animate) mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, false);
         setVisibility(true);
         mModelIndexWhenShown = mTabModelSelector.getCurrentModelIndex();

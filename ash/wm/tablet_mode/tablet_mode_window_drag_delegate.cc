@@ -96,8 +96,8 @@ gfx::Rect GetBoundsOfSelectedDropTarget(aura::Window* dragged_window) {
 
 TabletModeWindowDragDelegate::TabletModeWindowDragDelegate()
     : split_view_controller_(Shell::Get()->split_view_controller()),
-      split_view_drag_indicators_(std::make_unique<SplitViewDragIndicators>()),
-      weak_ptr_factory_(this) {}
+      split_view_drag_indicators_(std::make_unique<SplitViewDragIndicators>()) {
+}
 
 TabletModeWindowDragDelegate::~TabletModeWindowDragDelegate() {
   Shell::Get()->UpdateShelfVisibility();

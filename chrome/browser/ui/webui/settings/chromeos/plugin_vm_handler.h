@@ -35,7 +35,7 @@ class PluginVmHandler : public ::settings::SettingsPageUIHandler {
 
   Profile* profile_;
   // weak_ptr_factory_ should always be last member.
-  base::WeakPtrFactory<PluginVmHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<PluginVmHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PluginVmHandler);
 };

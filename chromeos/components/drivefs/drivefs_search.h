@@ -48,7 +48,7 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsSearch {
   const base::Clock* const clock_;
   base::Time last_shared_with_me_response_;
 
-  base::WeakPtrFactory<DriveFsSearch> weak_ptr_factory_;
+  base::WeakPtrFactory<DriveFsSearch> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(DriveFsSearch);
 };
 

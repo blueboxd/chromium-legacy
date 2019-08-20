@@ -28,8 +28,7 @@ LockScreenProfileCreatorImpl::LockScreenProfileCreatorImpl(
     const base::TickClock* tick_clock)
     : primary_profile_(primary_profile),
       tick_clock_(tick_clock),
-      note_taking_helper_observer_(this),
-      weak_ptr_factory_(this) {}
+      note_taking_helper_observer_(this) {}
 
 LockScreenProfileCreatorImpl::~LockScreenProfileCreatorImpl() {}
 

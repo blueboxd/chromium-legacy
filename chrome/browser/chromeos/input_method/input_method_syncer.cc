@@ -116,10 +116,7 @@ void MergeLists(std::vector<base::StringPiece>* dest,
 InputMethodSyncer::InputMethodSyncer(
     sync_preferences::PrefServiceSyncable* prefs,
     scoped_refptr<input_method::InputMethodManager::State> ime_state)
-    : prefs_(prefs),
-      ime_state_(ime_state),
-      merging_(false),
-      weak_factory_(this) {}
+    : prefs_(prefs), ime_state_(ime_state), merging_(false) {}
 
 InputMethodSyncer::~InputMethodSyncer() {
   prefs_->RemoveObserver(this);

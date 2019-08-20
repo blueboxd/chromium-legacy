@@ -13,8 +13,7 @@
 
 namespace chromeos {
 
-DriveFileStreamServiceProvider::DriveFileStreamServiceProvider()
-    : weak_ptr_factory_(this) {}
+DriveFileStreamServiceProvider::DriveFileStreamServiceProvider() {}
 
 DriveFileStreamServiceProvider::~DriveFileStreamServiceProvider() = default;
 

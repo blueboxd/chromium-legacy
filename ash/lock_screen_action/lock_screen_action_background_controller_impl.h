@@ -68,7 +68,7 @@ class ASH_EXPORT LockScreenActionBackgroundControllerImpl
   ScopedObserver<views::Widget, views::WidgetObserver> widget_observer_;
 
   base::WeakPtrFactory<LockScreenActionBackgroundControllerImpl>
-      weak_ptr_factory_;
+      weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LockScreenActionBackgroundControllerImpl);
 };

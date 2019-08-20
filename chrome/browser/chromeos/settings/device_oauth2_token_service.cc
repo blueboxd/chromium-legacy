@@ -61,8 +61,7 @@ DeviceOAuth2TokenService::DeviceOAuth2TokenService(
               kServiceAccountIdentity,
               base::Bind(
                   &DeviceOAuth2TokenService::OnServiceAccountIdentityChanged,
-                  base::Unretained(this)))),
-      weak_ptr_factory_(this) {
+                  base::Unretained(this)))) {
   token_manager_ = std::make_unique<OAuth2AccessTokenManager>(
       this /* OAuth2AccessTokenManager::Delegate* */);
   // Pull in the system salt.

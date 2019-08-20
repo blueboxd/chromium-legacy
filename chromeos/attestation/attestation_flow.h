@@ -290,7 +290,7 @@ class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) AttestationFlow {
   base::TimeDelta ready_timeout_;
   base::TimeDelta retry_delay_;
 
-  base::WeakPtrFactory<AttestationFlow> weak_factory_;
+  base::WeakPtrFactory<AttestationFlow> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AttestationFlow);
 };

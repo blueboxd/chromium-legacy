@@ -139,7 +139,7 @@ class DeviceSettingsProvider
   PrefValueMap values_cache_;
 
   // Weak pointer factory for creating store operation callbacks.
-  base::WeakPtrFactory<DeviceSettingsProvider> store_callback_factory_;
+  base::WeakPtrFactory<DeviceSettingsProvider> store_callback_factory_{this};
 
   friend class DeviceSettingsProviderTest;
   FRIEND_TEST_ALL_PREFIXES(DeviceSettingsProviderTest,

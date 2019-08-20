@@ -106,7 +106,7 @@ class ArcScreenCaptureSession : public mojom::ScreenCaptureSession,
   std::unique_ptr<ScreenCaptureNotificationUI> notification_ui_;
   std::unique_ptr<gfx::ClientNativePixmapFactory> client_native_pixmap_factory_;
 
-  base::WeakPtrFactory<ArcScreenCaptureSession> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcScreenCaptureSession> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcScreenCaptureSession);
 };

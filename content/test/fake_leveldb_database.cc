@@ -55,8 +55,9 @@ FakeLevelDBDatabase::FakeLevelDBDatabase(
 
 FakeLevelDBDatabase::~FakeLevelDBDatabase() {}
 
-void FakeLevelDBDatabase::Bind(leveldb::mojom::LevelDBDatabaseRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void FakeLevelDBDatabase::Bind(
+    mojo::PendingReceiver<leveldb::mojom::LevelDBDatabase> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void FakeLevelDBDatabase::Put(const std::vector<uint8_t>& key,
@@ -274,7 +275,7 @@ void FakeLevelDBDatabase::IteratorPrev(const base::UnguessableToken& iterator,
 }
 
 void FakeLevelDBDatabase::FlushBindingsForTesting() {
-  bindings_.FlushForTesting();
+  receivers_.FlushForTesting();
 }
 
 std::vector<std::pair<std::vector<uint8_t>, std::vector<uint8_t>>>

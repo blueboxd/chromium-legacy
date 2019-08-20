@@ -200,7 +200,7 @@ class FileBrowserHandlerExecutor {
   scoped_refptr<const Extension> extension_;
   const std::string action_id_;
   file_tasks::FileTaskFinishedCallback done_;
-  base::WeakPtrFactory<FileBrowserHandlerExecutor> weak_ptr_factory_;
+  base::WeakPtrFactory<FileBrowserHandlerExecutor> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FileBrowserHandlerExecutor);
 };
@@ -263,11 +263,7 @@ FileBrowserHandlerExecutor::FileBrowserHandlerExecutor(
     Profile* profile,
     const Extension* extension,
     const std::string& action_id)
-    : profile_(profile),
-      extension_(extension),
-      action_id_(action_id),
-      weak_ptr_factory_(this) {
-}
+    : profile_(profile), extension_(extension), action_id_(action_id) {}
 
 FileBrowserHandlerExecutor::~FileBrowserHandlerExecutor() = default;
 

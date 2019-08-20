@@ -186,7 +186,7 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
   base::ObserverList<ProvidedFileSystemObserver>::Unchecked observers_;
   Watchers watchers_;
 
-  base::WeakPtrFactory<FakeProvidedFileSystem> weak_ptr_factory_;
+  base::WeakPtrFactory<FakeProvidedFileSystem> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(FakeProvidedFileSystem);
 };
 

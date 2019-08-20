@@ -903,10 +903,11 @@ NavigationRequest::~NavigationRequest() {
     navigation_handle_proxy_->DidFinish();
 #endif
 
-  // This is done manually here because the NavigationHandle destructor
-  // calls into WebContentsObserver::DidFinishNavigation, some of which need to
-  // then access navigation_request(). This is only possible if the handle is
-  // destroyed before the NavigationRequest.
+  if (navigation_handle())
+    GetDelegate()->DidFinishNavigation(navigation_handle());
+
+  // This is done manually here because the NavigationHandleImpl uses
+  // NavigationRequest in its destructor.
   navigation_handle_.reset();
 }
 
@@ -1146,9 +1147,12 @@ void NavigationRequest::ResetForCrossDocumentRestart() {
     navigation_handle_proxy_->DidFinish();
 #endif
 
-  // The below order of resets is necessary to avoid accessing null pointers.
-  // See https://crbug.com/958396.
-  navigation_handle_.reset();
+  // It is necessary to call DidFinishNavigation before resetting
+  // |navigation_handle_proxy_|. See https://crbug.com/958396.
+  if (navigation_handle()) {
+    GetDelegate()->DidFinishNavigation(navigation_handle());
+    navigation_handle_.reset();
+  }
 
 #if defined(OS_ANDROID)
   if (navigation_handle_proxy_)
@@ -1177,6 +1181,8 @@ void NavigationRequest::ResetForCrossDocumentRestart() {
 
 void NavigationRequest::RegisterSubresourceOverride(
     mojom::TransferrableURLLoaderPtr transferrable_loader) {
+  if (!transferrable_loader)
+    return;
   if (!subresource_overrides_)
     subresource_overrides_.emplace();
 
@@ -3232,6 +3238,61 @@ RenderFrameHostImpl* NavigationRequest::GetFrameHostForNavigation() {
   }
 
   return frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
+}
+
+bool NavigationRequest::IsExternalProtocol() {
+  return !GetContentClient()->browser()->IsHandledURL(common_params_->url);
+}
+
+bool NavigationRequest::IsSignedExchangeInnerResponse() {
+  return response() && response()->head.is_signed_exchange_inner_response;
+}
+
+net::IPEndPoint NavigationRequest::GetSocketAddress() {
+  // This is CANCELING because although the data comes in after
+  // WILL_PROCESS_RESPONSE, it's possible for the navigation to be cancelled
+  // after and the caller might want this value.
+  DCHECK_GE(handle_state_, CANCELING);
+  return response() ? response()->head.remote_endpoint : net::IPEndPoint();
+}
+
+bool NavigationRequest::HasCommitted() {
+  return handle_state_ == DID_COMMIT || handle_state_ == DID_COMMIT_ERROR_PAGE;
+}
+
+bool NavigationRequest::IsErrorPage() {
+  return handle_state_ == DID_COMMIT_ERROR_PAGE;
+}
+
+net::HttpResponseInfo::ConnectionInfo NavigationRequest::GetConnectionInfo() {
+  return response() ? response()->head.connection_info
+                    : net::HttpResponseInfo::ConnectionInfo();
+}
+
+bool NavigationRequest::IsInMainFrame() {
+  return frame_tree_node()->IsMainFrame();
+}
+
+RenderFrameHostImpl* NavigationRequest::GetParentFrame() {
+  return IsInMainFrame() ? nullptr
+                         : frame_tree_node()->parent()->current_frame_host();
+}
+
+bool NavigationRequest::IsParentMainFrame() {
+  FrameTreeNode* parent = frame_tree_node()->parent();
+  return parent && parent->IsMainFrame();
+}
+
+int NavigationRequest::GetFrameTreeNodeId() {
+  return frame_tree_node()->frame_tree_node_id();
+}
+
+bool NavigationRequest::WasResponseCached() {
+  return response() && response()->head.was_fetched_via_cache;
+}
+
+bool NavigationRequest::HasPrefetchedAlternativeSubresourceSignedExchange() {
+  return !commit_params_->prefetched_signed_exchanges.empty();
 }
 
 }  // namespace content

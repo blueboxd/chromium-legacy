@@ -43,8 +43,7 @@ InternalAppResult::InternalAppResult(Profile* profile,
                                      const std::string& app_id,
                                      AppListControllerDelegate* controller,
                                      bool is_recommendation)
-    : AppResult(profile, app_id, controller, is_recommendation),
-      weak_factory_(this) {
+    : AppResult(profile, app_id, controller, is_recommendation) {
   set_id(app_id);
   SetResultType(ResultType::kInternalApp);
   SetIcon(GetIconForResourceId(

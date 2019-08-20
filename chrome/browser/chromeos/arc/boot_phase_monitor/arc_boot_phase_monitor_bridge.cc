@@ -84,8 +84,7 @@ ArcBootPhaseMonitorBridge::ArcBootPhaseMonitorBridge(
       account_id_(multi_user_util::GetAccountIdFromProfile(
           Profile::FromBrowserContext(context))),
       // Set the default delegate. Unit tests may use a different one.
-      delegate_(std::make_unique<DefaultDelegateImpl>()),
-      weak_ptr_factory_(this) {
+      delegate_(std::make_unique<DefaultDelegateImpl>()) {
   arc_bridge_service_->boot_phase_monitor()->SetHost(this);
   auto* arc_session_manager = ArcSessionManager::Get();
   DCHECK(arc_session_manager);

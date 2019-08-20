@@ -324,7 +324,7 @@ class FeedSurfaceMediator
     private class FeedSignInPromo extends SignInPromo {
         FeedSignInPromo(SigninManager signinManager) {
             super(signinManager);
-            updateSignInPromo();
+            maybeUpdateSignInPromo();
         }
 
         @Override
@@ -333,15 +333,20 @@ class FeedSurfaceMediator
 
             super.setVisibilityInternal(visible);
             mCoordinator.updateHeaderViews(visible);
+            maybeUpdateSignInPromo();
         }
 
         @Override
         protected void notifyDataChanged() {
-            updateSignInPromo();
+            maybeUpdateSignInPromo();
         }
 
         /** Update the content displayed in {@link PersonalizedSigninPromoView}. */
-        private void updateSignInPromo() {
+        private void maybeUpdateSignInPromo() {
+            // Only call #setupPromoViewFromCache() if SignInPromo is visible to avoid potentially
+            // blocking the UI thread for several seconds if the accounts cache is not populated
+            // yet.
+            if (!isVisible()) return;
             SigninPromoUtil.setupPromoViewFromCache(mSigninPromoController, mProfileDataCache,
                     mCoordinator.getSigninPromoView(), null);
         }

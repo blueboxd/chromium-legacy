@@ -69,22 +69,21 @@ class NetworkSmsHandler::ModemManager1NetworkSmsDeviceHandler
   bool retrieving_messages_;
   std::vector<dbus::ObjectPath> delete_queue_;
   base::circular_deque<dbus::ObjectPath> retrieval_queue_;
-  base::WeakPtrFactory<ModemManager1NetworkSmsDeviceHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<ModemManager1NetworkSmsDeviceHandler> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(ModemManager1NetworkSmsDeviceHandler);
 };
 
-NetworkSmsHandler::
-ModemManager1NetworkSmsDeviceHandler::ModemManager1NetworkSmsDeviceHandler(
-    NetworkSmsHandler* host,
-    const std::string& service_name,
-    const dbus::ObjectPath& object_path)
+NetworkSmsHandler::ModemManager1NetworkSmsDeviceHandler::
+    ModemManager1NetworkSmsDeviceHandler(NetworkSmsHandler* host,
+                                         const std::string& service_name,
+                                         const dbus::ObjectPath& object_path)
     : host_(host),
       service_name_(service_name),
       object_path_(object_path),
       deleting_messages_(false),
-      retrieving_messages_(false),
-      weak_ptr_factory_(this) {
+      retrieving_messages_(false) {
   // Set the handler for received Sms messaages.
   ModemMessagingClient::Get()->SetSmsReceivedHandler(
       service_name_, object_path_,
@@ -213,9 +212,7 @@ ModemManager1NetworkSmsDeviceHandler::MessageReceived(
 ///////////////////////////////////////////////////////////////////////////////
 // NetworkSmsHandler
 
-NetworkSmsHandler::NetworkSmsHandler()
-    : weak_ptr_factory_(this) {
-}
+NetworkSmsHandler::NetworkSmsHandler() {}
 
 NetworkSmsHandler::~NetworkSmsHandler() {
   ShillManagerClient::Get()->RemovePropertyChangedObserver(this);

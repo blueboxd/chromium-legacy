@@ -210,7 +210,8 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
 
   FreeDiskSpaceFetcher free_disk_space_fetcher_;
 
-  base::WeakPtrFactory<EncryptionMigrationScreenHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<EncryptionMigrationScreenHandler> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(EncryptionMigrationScreenHandler);
 };

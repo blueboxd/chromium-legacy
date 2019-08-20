@@ -74,8 +74,7 @@ BleScannerImpl::BleScannerImpl(Delegate* delegate,
       service_data_helper_(service_data_helper),
       ble_synchronizer_(ble_synchronizer),
       adapter_(adapter),
-      service_data_provider_(std::make_unique<ServiceDataProvider>()),
-      weak_ptr_factory_(this) {
+      service_data_provider_(std::make_unique<ServiceDataProvider>()) {
   adapter_->AddObserver(this);
 }
 

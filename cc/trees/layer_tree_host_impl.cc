@@ -1312,7 +1312,6 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
     }
     frame->use_default_lower_bound_deadline |=
         append_quads_data.use_default_lower_bound_deadline;
-    frame->mirror_rect.Union(append_quads_data.mirror_rect);
   }
 
   // If CommitToActiveTree() is true, then we wait to draw until
@@ -2379,8 +2378,6 @@ viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
   DCHECK_LE(viz::BeginFrameArgs::kStartingFrameNumber,
             frame->begin_frame_ack.sequence_number);
   metadata.begin_frame_ack = frame->begin_frame_ack;
-
-  metadata.mirror_rect = frame->mirror_rect;
 
   viz::CompositorFrame compositor_frame;
   compositor_frame.metadata = std::move(metadata);

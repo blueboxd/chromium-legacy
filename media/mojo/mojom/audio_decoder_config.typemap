@@ -6,8 +6,7 @@ mojom = "//media/mojo/mojom/media_types.mojom"
 
 public_headers = [ "//media/base/audio_decoder_config.h" ]
 
-traits_headers =
-    [ "//media/mojo/mojom/audio_decoder_config_mojom_traits.h" ]
+traits_headers = [ "//media/mojo/mojom/audio_decoder_config_mojom_traits.h" ]
 
 sources = [
   "//media/mojo/mojom/audio_decoder_config_mojom_traits.cc",

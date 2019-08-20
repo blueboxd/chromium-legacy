@@ -74,7 +74,7 @@ void DisplayServiceProvider::Impl::ReleaseDisplayOwnership(
 }
 
 DisplayServiceProvider::DisplayServiceProvider()
-    : impl_(std::make_unique<Impl>()), weak_ptr_factory_(this) {}
+    : impl_(std::make_unique<Impl>()) {}
 
 DisplayServiceProvider::~DisplayServiceProvider() = default;
 

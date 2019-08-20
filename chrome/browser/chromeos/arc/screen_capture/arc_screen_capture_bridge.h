@@ -90,7 +90,7 @@ class ArcScreenCaptureBridge : public KeyedService,
       granted_permissions_map_;
 
   // WeakPtrFactory to use for callbacks.
-  base::WeakPtrFactory<ArcScreenCaptureBridge> weak_factory_;
+  base::WeakPtrFactory<ArcScreenCaptureBridge> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcScreenCaptureBridge);
 };

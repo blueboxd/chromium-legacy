@@ -987,6 +987,16 @@ test.util.sync.setPreferences = preferences => {
 };
 
 /**
+ * Returns the root access allowed state of the Crostini |vmName|.
+ * @param {string} vmName Crostini virtual machine name e.g., 'termina'.
+ * @return {boolean}
+ * @suppress {missingProperties}
+ */
+test.util.sync.getCrostiniRootAccessAllowed = (contentWindow, vmName) => {
+  return contentWindow.fileManager.crostini.isRootAccessAllowed(vmName);
+};
+
+/**
  * Reports an enum metric.
  * @param {string} name The metric name.
  * @param {string} value The metric enumerator to record.

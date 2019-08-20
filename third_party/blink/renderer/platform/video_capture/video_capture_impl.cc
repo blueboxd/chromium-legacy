@@ -337,8 +337,7 @@ void VideoCaptureImpl::OnNewBuffer(
 
   const bool inserted =
       client_buffers_
-          .insert(std::make_pair(buffer_id,
-                                 new BufferContext(std::move(buffer_handle))))
+          .emplace(buffer_id, new BufferContext(std::move(buffer_handle)))
           .second;
   DCHECK(inserted);
 }

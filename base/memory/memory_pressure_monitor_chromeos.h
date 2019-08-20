@@ -115,7 +115,7 @@ class BASE_EXPORT MemoryPressureMonitor : public base::MemoryPressureMonitor {
   // configurable to make testing easier.
   base::RepeatingCallback<bool()> kernel_waiting_callback_;
 
-  base::WeakPtrFactory<MemoryPressureMonitor> weak_ptr_factory_;
+  base::WeakPtrFactory<MemoryPressureMonitor> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MemoryPressureMonitor);
 };

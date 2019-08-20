@@ -329,7 +329,7 @@ class LockScreenItemStorage : public ExtensionRegistryObserver {
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
-  base::WeakPtrFactory<LockScreenItemStorage> weak_ptr_factory_;
+  base::WeakPtrFactory<LockScreenItemStorage> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LockScreenItemStorage);
 };

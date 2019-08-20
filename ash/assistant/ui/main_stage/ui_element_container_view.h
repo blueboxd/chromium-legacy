@@ -82,7 +82,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) UiElementContainerView
   // Assistant response. The first card requires the addition of a top margin.
   bool is_first_card_ = true;
 
-  base::WeakPtrFactory<UiElementContainerView> weak_factory_;
+  base::WeakPtrFactory<UiElementContainerView> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UiElementContainerView);
 };

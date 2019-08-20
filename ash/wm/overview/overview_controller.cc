@@ -258,8 +258,7 @@ OverviewController::OverviewController()
     : occlusion_pause_duration_for_end_ms_(kOcclusionPauseDurationForEndMs),
       overview_wallpaper_controller_(
           std::make_unique<OverviewWallpaperController>()),
-      delayed_animation_task_delay_(kTransition),
-      weak_ptr_factory_(this) {
+      delayed_animation_task_delay_(kTransition) {
   Shell::Get()->activation_client()->AddObserver(this);
 }
 

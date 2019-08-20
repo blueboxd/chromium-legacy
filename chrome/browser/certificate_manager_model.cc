@@ -378,8 +378,8 @@ class CertsSourceExtensions : public CertificateManagerModel::CertsSource {
                         std::unique_ptr<chromeos::CertificateProvider>
                             certificate_provider_service)
       : CertsSource(certs_source_updated_callback),
-        certificate_provider_service_(std::move(certificate_provider_service)),
-        weak_ptr_factory_(this) {}
+        certificate_provider_service_(std::move(certificate_provider_service)) {
+  }
 
   void Refresh() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -433,7 +433,7 @@ class CertsSourceExtensions : public CertificateManagerModel::CertsSource {
 
   std::unique_ptr<chromeos::CertificateProvider> certificate_provider_service_;
 
-  base::WeakPtrFactory<CertsSourceExtensions> weak_ptr_factory_;
+  base::WeakPtrFactory<CertsSourceExtensions> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CertsSourceExtensions);
 };

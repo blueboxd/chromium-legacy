@@ -148,8 +148,7 @@ multidevice::RemoteDeviceRef CreateTestRemoteDevice() {
 
 class SecureChannelConnectionTest : public testing::Test {
  protected:
-  SecureChannelConnectionTest()
-      : test_device_(CreateTestRemoteDevice()), weak_ptr_factory_(this) {}
+  SecureChannelConnectionTest() : test_device_(CreateTestRemoteDevice()) {}
 
   void SetUp() override {
     test_authenticator_factory_ = std::make_unique<TestAuthenticatorFactory>();
@@ -352,7 +351,7 @@ class SecureChannelConnectionTest : public testing::Test {
 
   base::Optional<int32_t> rssi_;
 
-  base::WeakPtrFactory<SecureChannelConnectionTest> weak_ptr_factory_;
+  base::WeakPtrFactory<SecureChannelConnectionTest> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SecureChannelConnectionTest);
 };

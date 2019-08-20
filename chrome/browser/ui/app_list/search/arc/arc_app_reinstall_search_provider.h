@@ -163,7 +163,7 @@ class ArcAppReinstallSearchProvider
   // url to imageskia of icons being loaded.
   std::unordered_map<std::string, gfx::ImageSkia> loading_icon_urls_;
 
-  base::WeakPtrFactory<ArcAppReinstallSearchProvider> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcAppReinstallSearchProvider> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(ArcAppReinstallSearchProvider);
 };
 

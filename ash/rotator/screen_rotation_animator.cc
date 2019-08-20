@@ -194,8 +194,7 @@ ScreenRotationAnimator::ScreenRotationAnimator(aura::Window* root_window)
       rotation_request_id_(0),
       metrics_reporter_(
           std::make_unique<ScreenRotationAnimationMetricsReporter>()),
-      disable_animation_timers_for_test_(false),
-      weak_factory_(this) {}
+      disable_animation_timers_for_test_(false) {}
 
 ScreenRotationAnimator::~ScreenRotationAnimator() {
   // To prevent a call to |AnimationEndedCallback()| from calling a method on

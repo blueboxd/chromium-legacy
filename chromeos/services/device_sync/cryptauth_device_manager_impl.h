@@ -133,7 +133,7 @@ class CryptAuthDeviceManagerImpl : public CryptAuthDeviceManager,
   // instance will be created for each individual attempt.
   std::unique_ptr<CryptAuthClient> cryptauth_client_;
 
-  base::WeakPtrFactory<CryptAuthDeviceManagerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<CryptAuthDeviceManagerImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CryptAuthDeviceManagerImpl);
 };

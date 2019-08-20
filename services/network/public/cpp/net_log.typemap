@@ -8,7 +8,7 @@ traits_headers = [ "/services/network/public/cpp/net_log_mojom_traits.h" ]
 sources = [
   "//services/network/public/cpp/net_log_mojom_traits.cc",
 ]
-type_mappings = [ "network.mojom.NetLogCaptureMode=net::NetLogCaptureMode" ]
+type_mappings = [ "network.mojom.NetLogCaptureMode=::net::NetLogCaptureMode" ]
 public_deps = [
   "//net",
 ]

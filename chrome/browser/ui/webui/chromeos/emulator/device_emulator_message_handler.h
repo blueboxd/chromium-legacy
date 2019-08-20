@@ -137,7 +137,7 @@ class DeviceEmulatorMessageHandler :
 
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
 
-  base::WeakPtrFactory<DeviceEmulatorMessageHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<DeviceEmulatorMessageHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DeviceEmulatorMessageHandler);
 };

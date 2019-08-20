@@ -28,8 +28,8 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_prompt_actions_win.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_prompt_for_tests.pb.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
-#include "components/chrome_cleaner/public/proto/chrome_prompt_for_tests.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -134,7 +134,7 @@ class DeviceCommandScreenshotJob : public RemoteCommandJob,
   // The upload job instance that will upload the screenshots.
   std::unique_ptr<UploadJob> upload_job_;
 
-  base::WeakPtrFactory<DeviceCommandScreenshotJob> weak_ptr_factory_;
+  base::WeakPtrFactory<DeviceCommandScreenshotJob> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DeviceCommandScreenshotJob);
 };

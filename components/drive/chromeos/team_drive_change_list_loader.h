@@ -79,7 +79,7 @@ class TeamDriveChangeListLoader : public DriveChangeListLoader,
 
   THREAD_CHECKER(thread_checker_);
 
-  base::WeakPtrFactory<TeamDriveChangeListLoader> weak_ptr_factory_;
+  base::WeakPtrFactory<TeamDriveChangeListLoader> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TeamDriveChangeListLoader);
 };

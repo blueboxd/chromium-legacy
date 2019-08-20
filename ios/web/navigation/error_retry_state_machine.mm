@@ -13,6 +13,12 @@
 
 namespace web {
 
+using wk_navigation_util::CreatePlaceholderUrlForUrl;
+using wk_navigation_util::CreateRedirectUrl;
+using wk_navigation_util::IsPlaceholderUrl;
+using wk_navigation_util::IsRestoreSessionUrl;
+using wk_navigation_util::ExtractTargetURL;
+
 ErrorRetryStateMachine::ErrorRetryStateMachine()
     : state_(ErrorRetryState::kNewRequest) {}
 
@@ -59,7 +65,7 @@ ErrorRetryCommand ErrorRetryStateMachine::DidFailProvisionalNavigation(
     const GURL& error_url) {
   switch (state_) {
     case ErrorRetryState::kNewRequest:
-      if (web_view_url == wk_navigation_util::CreateRedirectUrl(error_url)) {
+      if (web_view_url == CreateRedirectUrl(error_url)) {
         // Client redirect in restore_session.html failed. A placeholder is not
         // needed here because a back/forward item already exists for
         // restore_session.html.
@@ -100,8 +106,7 @@ ErrorRetryCommand ErrorRetryStateMachine::DidFailProvisionalNavigation(
 }
 
 ErrorRetryCommand ErrorRetryStateMachine::DidFailNavigation(
-    const GURL& web_view_url,
-    const GURL& error_url) {
+    const GURL& web_view_url) {
   switch (state_) {
     case ErrorRetryState::kNewRequest:
       state_ = ErrorRetryState::kReadyToDisplayError;
@@ -130,17 +135,15 @@ ErrorRetryCommand ErrorRetryStateMachine::DidFinishNavigation(
   switch (state_) {
     case ErrorRetryState::kLoadingPlaceholder:
       // (1) Placeholder load for initial failure succeeded.
-      DCHECK_EQ(web_view_url,
-                wk_navigation_util::CreatePlaceholderUrlForUrl(url_));
+      DCHECK_EQ(web_view_url, CreatePlaceholderUrlForUrl(url_));
       state_ = ErrorRetryState::kReadyToDisplayError;
       return ErrorRetryCommand::kLoadError;
 
     case ErrorRetryState::kRetryPlaceholderNavigation:
-      if (wk_navigation_util::IsPlaceholderUrl(web_view_url)) {
+      if (IsPlaceholderUrl(web_view_url)) {
         // (11) Explicitly keep the state the same so after rewriting to the non
         // placeholder url the else block will trigger.
-        DCHECK_EQ(web_view_url,
-                  wk_navigation_util::CreatePlaceholderUrlForUrl(url_));
+        DCHECK_EQ(web_view_url, CreatePlaceholderUrlForUrl(url_));
         state_ = ErrorRetryState::kRetryPlaceholderNavigation;
         return ErrorRetryCommand::kRewriteToWebViewURL;
       } else {
@@ -150,7 +153,7 @@ ErrorRetryCommand ErrorRetryStateMachine::DidFinishNavigation(
         return ErrorRetryCommand::kLoadError;
       }
     case ErrorRetryState::kNewRequest:
-      if (wk_navigation_util::IsRestoreSessionUrl(web_view_url)) {
+      if (IsRestoreSessionUrl(web_view_url)) {
         // (8) Initial load of restore_session.html. Don't change state or
         // issue command. Wait for the client-side redirect.
       } else {
@@ -166,18 +169,16 @@ ErrorRetryCommand ErrorRetryStateMachine::DidFinishNavigation(
       break;
 
     case ErrorRetryState::kDisplayingError:
-      if (web_view_url ==
-          wk_navigation_util::CreatePlaceholderUrlForUrl(url_)) {
+      if (web_view_url == CreatePlaceholderUrlForUrl(url_)) {
         // (4) Back/forward to or reload of placeholder URL. Rewrite WebView URL
         // to prepare for retry.
         state_ = ErrorRetryState::kNavigatingToFailedNavigationItem;
         return ErrorRetryCommand::kRewriteToWebViewURL;
       }
 
-      if (wk_navigation_util::IsRestoreSessionUrl(web_view_url)) {
+      if (IsRestoreSessionUrl(web_view_url)) {
         GURL target_url;
-        if (wk_navigation_util::ExtractTargetURL(web_view_url, &target_url) &&
-            target_url == url_) {
+        if (ExtractTargetURL(web_view_url, &target_url) && target_url == url_) {
           // (10) Back/forward navigation to a restored session entry in offline
           // mode. It is OK to consider this load succeeded for now because the
           // failure delegate will be triggered again if the load fails.

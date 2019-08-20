@@ -100,8 +100,7 @@ NetworkCertLoader::NetworkCertList CombineNetworkCertLists(
 class NetworkCertLoader::CertCache : public net::CertDatabase::Observer {
  public:
   explicit CertCache(base::RepeatingClosure certificates_updated_callback)
-      : certificates_updated_callback_(certificates_updated_callback),
-        weak_factory_(this) {}
+      : certificates_updated_callback_(certificates_updated_callback) {}
 
   ~CertCache() override {
     net::CertDatabase::GetInstance()->RemoveObserver(this);
@@ -233,7 +232,7 @@ class NetworkCertLoader::CertCache : public net::CertDatabase::Observer {
 
   THREAD_CHECKER(thread_checker_);
 
-  base::WeakPtrFactory<CertCache> weak_factory_;
+  base::WeakPtrFactory<CertCache> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CertCache);
 };
@@ -281,7 +280,7 @@ bool NetworkCertLoader::IsInitialized() {
   return g_cert_loader;
 }
 
-NetworkCertLoader::NetworkCertLoader() : weak_factory_(this) {
+NetworkCertLoader::NetworkCertLoader() {
   system_slot_cert_cache_ = std::make_unique<CertCache>(base::BindRepeating(
       &NetworkCertLoader::OnCertCacheUpdated, base::Unretained(this)));
   user_private_slot_cert_cache_ =

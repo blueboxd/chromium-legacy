@@ -81,7 +81,7 @@ bool StoreUserPolicyKey(const base::FilePath& user_policy_dir,
 class FakeSessionManagerClient : public chromeos::FakeSessionManagerClient {
  public:
   explicit FakeSessionManagerClient(const base::FilePath& user_policy_dir)
-      : user_policy_dir_(user_policy_dir), weak_ptr_factory_(this) {}
+      : user_policy_dir_(user_policy_dir) {}
 
   // SessionManagerClient override:
   void StorePolicyForUser(const cryptohome::AccountIdentifier& cryptohome_id,
@@ -114,7 +114,7 @@ class FakeSessionManagerClient : public chromeos::FakeSessionManagerClient {
   const base::FilePath user_policy_dir_;
   std::map<cryptohome::AccountIdentifier, std::string> public_key_map_;
 
-  base::WeakPtrFactory<FakeSessionManagerClient> weak_ptr_factory_;
+  base::WeakPtrFactory<FakeSessionManagerClient> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(FakeSessionManagerClient);
 };
 

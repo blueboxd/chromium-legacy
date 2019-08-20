@@ -175,8 +175,7 @@ InputDeviceFactoryEvdev::InputDeviceFactoryEvdev(
 #if defined(USE_EVDEV_GESTURES)
       gesture_property_provider_(new GesturePropertyProvider),
 #endif
-      dispatcher_(std::move(dispatcher)),
-      weak_ptr_factory_(this) {
+      dispatcher_(std::move(dispatcher)) {
 }
 
 InputDeviceFactoryEvdev::~InputDeviceFactoryEvdev() {

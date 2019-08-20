@@ -417,7 +417,7 @@ class ExistingUserController
   std::unique_ptr<PolicyStoreLoadWaiter> policy_store_waiter_;
 
   // Factory of callbacks.
-  base::WeakPtrFactory<ExistingUserController> weak_factory_;
+  base::WeakPtrFactory<ExistingUserController> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExistingUserController);
 };

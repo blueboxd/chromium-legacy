@@ -163,8 +163,7 @@ BluetoothLowEnergyWeaveClientConnection::
           {device::BluetoothUUID(kRXCharacteristicUUID), std::string()}),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       timer_(std::make_unique<base::OneShotTimer>()),
-      sub_status_(SubStatus::DISCONNECTED),
-      weak_ptr_factory_(this) {
+      sub_status_(SubStatus::DISCONNECTED) {
   DCHECK(!initial_device_address_.empty());
   adapter_->AddObserver(this);
 }

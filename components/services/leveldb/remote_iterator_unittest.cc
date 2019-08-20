@@ -13,6 +13,8 @@
 #include "components/services/leveldb/public/cpp/remote_iterator.h"
 #include "components/services/leveldb/public/cpp/util.h"
 #include "components/services/leveldb/public/mojom/leveldb.mojom.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -57,7 +59,7 @@ class RemoteIteratorTest : public testing::Test {
     mojom::DatabaseError error;
     base::RunLoop run_loop;
     leveldb()->OpenInMemory(base::nullopt, "RemoteIteratorTest",
-                            MakeRequest(&database_),
+                            database_.BindNewEndpointAndPassReceiver(),
                             Capture(&error, run_loop.QuitClosure()));
     run_loop.Run();
     EXPECT_EQ(mojom::DatabaseError::OK, error);
@@ -78,14 +80,16 @@ class RemoteIteratorTest : public testing::Test {
   }
 
   mojo::Remote<mojom::LevelDBService>& leveldb() { return leveldb_remote_; }
-  mojom::LevelDBDatabaseAssociatedPtr& database() { return database_; }
+  mojo::AssociatedRemote<mojom::LevelDBDatabase>& database() {
+    return database_;
+  }
 
  private:
   base::test::TaskEnvironment task_environment_;
   LevelDBServiceImpl leveldb_service_;
   mojo::Remote<mojom::LevelDBService> leveldb_remote_;
   mojo::Receiver<mojom::LevelDBService> leveldb_receiver_;
-  mojom::LevelDBDatabaseAssociatedPtr database_;
+  mojo::AssociatedRemote<mojom::LevelDBDatabase> database_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteIteratorTest);
 };

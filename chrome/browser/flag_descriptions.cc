@@ -1528,6 +1528,10 @@ const char kPasswordImportName[] = "Password import";
 const char kPasswordImportDescription[] =
     "Import functionality in password settings.";
 
+const char kPasswordLeakDetectionName[] = "Password Leak Detection";
+const char kPasswordLeakDetectionDescription[] =
+    "Enables the detection of leaked passwords.";
+
 const char kForceWebContentsDarkModeName[] = "Force Dark Mode for Web Contents";
 const char kForceWebContentsDarkModeDescription[] =
     "Automatically render all web contents using a dark theme.";

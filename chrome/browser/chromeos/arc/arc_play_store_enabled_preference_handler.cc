@@ -34,9 +34,7 @@ namespace arc {
 ArcPlayStoreEnabledPreferenceHandler::ArcPlayStoreEnabledPreferenceHandler(
     Profile* profile,
     ArcSessionManager* arc_session_manager)
-    : profile_(profile),
-      arc_session_manager_(arc_session_manager),
-      weak_ptr_factory_(this) {
+    : profile_(profile), arc_session_manager_(arc_session_manager) {
   DCHECK(profile_);
   DCHECK(arc_session_manager_);
 }

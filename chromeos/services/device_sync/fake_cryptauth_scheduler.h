@@ -154,7 +154,7 @@ class FakeCryptAuthSchedulerEnrollmentDelegate
   std::vector<base::Optional<cryptauthv2::PolicyReference>>
       policy_references_from_enrollment_requests_;
   base::WeakPtrFactory<FakeCryptAuthSchedulerEnrollmentDelegate>
-      weak_ptr_factory_;
+      weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeCryptAuthSchedulerEnrollmentDelegate);
 };
@@ -181,7 +181,7 @@ class FakeCryptAuthSchedulerDeviceSyncDelegate
   std::vector<cryptauthv2::ClientMetadata>
       client_metadata_from_device_sync_requests_;
   base::WeakPtrFactory<FakeCryptAuthSchedulerDeviceSyncDelegate>
-      weak_ptr_factory_;
+      weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeCryptAuthSchedulerDeviceSyncDelegate);
 };

@@ -60,7 +60,7 @@ class AndroidAppsHandler : public ::settings::SettingsPageUIHandler,
   ScopedObserver<arc::ArcSessionManager, arc::ArcSessionManager::Observer>
       arc_session_manager_observer_;
   Profile* profile_;  // unowned
-  base::WeakPtrFactory<AndroidAppsHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<AndroidAppsHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AndroidAppsHandler);
 };

@@ -35,9 +35,11 @@ namespace content {
 
 DedicatedWorkerHost::DedicatedWorkerHost(int worker_process_id,
                                          int ancestor_render_frame_id,
+                                         int creator_render_frame_id,
                                          const url::Origin& origin)
     : worker_process_id_(worker_process_id),
       ancestor_render_frame_id_(ancestor_render_frame_id),
+      creator_render_frame_id_(creator_render_frame_id),
       origin_(origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RegisterMojoInterfaces();
@@ -153,6 +155,19 @@ void DedicatedWorkerHost::StartScriptLoad(
     return;
   }
 
+  // If this is a nested worker, there is no creator frame.
+  RenderFrameHostImpl* creator_render_frame_host = nullptr;
+  if (creator_render_frame_id_ != MSG_ROUTING_NONE) {
+    // Use |worker_process_id_| as the creator render frame's process ID as the
+    // frame surely lives in the same process for dedicated workers.
+    creator_render_frame_host = RenderFrameHostImpl::FromID(
+        worker_process_id_, creator_render_frame_id_);
+    if (!creator_render_frame_host) {
+      client_->OnScriptLoadStartFailed();
+      return;
+    }
+  }
+
   appcache_handle_ = std::make_unique<AppCacheNavigationHandle>(
       storage_partition_impl->GetAppCacheService(), worker_process_id_);
 
@@ -160,8 +175,8 @@ void DedicatedWorkerHost::StartScriptLoad(
       storage_partition_impl->GetServiceWorkerContext());
 
   WorkerScriptFetchInitiator::Start(
-      worker_process_id_, script_url, request_initiator_origin,
-      network_isolation_key_, credentials_mode,
+      worker_process_id_, script_url, creator_render_frame_host,
+      request_initiator_origin, network_isolation_key_, credentials_mode,
       std::move(outside_fetch_client_settings_object), ResourceType::kWorker,
       storage_partition_impl->GetServiceWorkerContext(),
       service_worker_handle_.get(), appcache_handle_->core(),
@@ -177,8 +192,9 @@ void DedicatedWorkerHost::RegisterMojoInterfaces() {
       &DedicatedWorkerHost::CreateWebSocketConnector, base::Unretained(this)));
   registry_.AddInterface(base::BindRepeating(
       &DedicatedWorkerHost::CreateWebUsbService, base::Unretained(this)));
-  registry_.AddInterface(base::BindRepeating(
-      &DedicatedWorkerHost::CreateDedicatedWorker, base::Unretained(this)));
+  registry_.AddInterface(
+      base::BindRepeating(&DedicatedWorkerHost::CreateNestedDedicatedWorker,
+                          base::Unretained(this)));
   registry_.AddInterface(base::BindRepeating(
       &DedicatedWorkerHost::CreateIdleManager, base::Unretained(this)));
 }
@@ -202,6 +218,12 @@ void DedicatedWorkerHost::DidStartScriptLoad(
   // TODO(https://crbug.com/986188): Check if the main script's final response
   // URL is commitable.
 
+  auto* worker_process_host = RenderProcessHost::FromID(worker_process_id_);
+  if (!worker_process_host) {
+    client_->OnScriptLoadStartFailed();
+    return;
+  }
+
   // TODO(cammie): Change this approach when we support shared workers
   // creating dedicated workers, as there might be no ancestor frame.
   RenderFrameHostImpl* ancestor_render_frame_host =
@@ -212,11 +234,13 @@ void DedicatedWorkerHost::DidStartScriptLoad(
   }
 
   // Set up the default network loader factory.
-  mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_default_factory;
-  CreateNetworkFactory(pending_default_factory.InitWithNewPipeAndPassReceiver(),
-                       ancestor_render_frame_host);
+  bool bypass_redirect_checks = false;
   subresource_loader_factories->pending_default_factory() =
-      std::move(pending_default_factory);
+      CreateNetworkFactoryForSubresources(worker_process_host,
+                                          ancestor_render_frame_host,
+                                          &bypass_redirect_checks);
+  subresource_loader_factories->set_bypass_redirect_checks(
+      bypass_redirect_checks);
 
   // Prepare the controller service worker info to pass to the renderer.
   // |object_info| can be nullptr when the service worker context or the
@@ -249,19 +273,41 @@ void DedicatedWorkerHost::DidStartScriptLoad(
   }
 }
 
-void DedicatedWorkerHost::CreateNetworkFactory(
-    network::mojom::URLLoaderFactoryRequest request,
-    RenderFrameHostImpl* render_frame_host) {
+mojo::PendingRemote<network::mojom::URLLoaderFactory>
+DedicatedWorkerHost::CreateNetworkFactoryForSubresources(
+    RenderProcessHost* worker_process_host,
+    RenderFrameHostImpl* ancestor_render_frame_host,
+    bool* bypass_redirect_checks) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(render_frame_host);
-  network::mojom::TrustedURLLoaderHeaderClientPtrInfo no_header_client;
-
-  RenderProcessHost* worker_process_host = render_frame_host->GetProcess();
   DCHECK(worker_process_host);
+  DCHECK(ancestor_render_frame_host);
+  DCHECK(bypass_redirect_checks);
+
+  auto* storage_partition_impl = static_cast<StoragePartitionImpl*>(
+      worker_process_host->GetStoragePartition());
+
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_default_factory;
+  mojo::PendingReceiver<network::mojom::URLLoaderFactory>
+      default_factory_receiver =
+          pending_default_factory.InitWithNewPipeAndPassReceiver();
+
+  network::mojom::TrustedURLLoaderHeaderClientPtrInfo default_header_client;
+  GetContentClient()->browser()->WillCreateURLLoaderFactory(
+      storage_partition_impl->browser_context(),
+      /*frame=*/nullptr, worker_process_id_,
+      ContentBrowserClient::URLLoaderFactoryType::kWorkerSubResource, origin_,
+      &default_factory_receiver, &default_header_client,
+      bypass_redirect_checks);
+
+  // TODO(nhiroki): Call devtools_instrumentation::WillCreateURLLoaderFactory()
+  // here.
+
   worker_process_host->CreateURLLoaderFactory(
-      origin_, render_frame_host->cross_origin_embedder_policy(),
-      nullptr /* preferences */, network_isolation_key_,
-      std::move(no_header_client), std::move(request));
+      origin_, ancestor_render_frame_host->cross_origin_embedder_policy(),
+      /*preferences=*/nullptr, network_isolation_key_,
+      std::move(default_header_client), std::move(default_factory_receiver));
+
+  return pending_default_factory;
 }
 
 void DedicatedWorkerHost::CreateWebUsbService(
@@ -293,12 +339,13 @@ void DedicatedWorkerHost::CreateWebSocketConnector(
       blink::mojom::WebSocketConnectorRequest(std::move(request)));
 }
 
-void DedicatedWorkerHost::CreateDedicatedWorker(
+void DedicatedWorkerHost::CreateNestedDedicatedWorker(
     blink::mojom::DedicatedWorkerHostFactoryRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CreateDedicatedWorkerHostFactory(worker_process_id_,
-                                   ancestor_render_frame_id_, origin_,
-                                   std::move(request));
+                                   ancestor_render_frame_id_,
+                                   /*creator_render_frame_id=*/MSG_ROUTING_NONE,
+                                   origin_, std::move(request));
 }
 
 void DedicatedWorkerHost::CreateIdleManager(
@@ -334,9 +381,11 @@ class DedicatedWorkerHostFactoryImpl
  public:
   DedicatedWorkerHostFactoryImpl(int creator_process_id,
                                  int ancestor_render_frame_id,
+                                 int creator_render_frame_id,
                                  const url::Origin& parent_context_origin)
       : creator_process_id_(creator_process_id),
         ancestor_render_frame_id_(ancestor_render_frame_id),
+        creator_render_frame_id_(creator_render_frame_id),
         parent_context_origin_(parent_context_origin) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
   }
@@ -358,7 +407,8 @@ class DedicatedWorkerHostFactoryImpl
     // the worker's origin either matches the origin of the creating context
     // (Document or DedicatedWorkerGlobalScope), or is unique.
     auto host = std::make_unique<DedicatedWorkerHost>(
-        creator_process_id_, ancestor_render_frame_id_, origin);
+        creator_process_id_, ancestor_render_frame_id_,
+        creator_render_frame_id_, origin);
     host->BindBrowserInterfaceBrokerReceiver(std::move(broker_receiver));
     mojo::MakeStrongBinding(std::move(host),
                             FilterRendererExposedInterfaces(
@@ -389,9 +439,9 @@ class DedicatedWorkerHostFactoryImpl
     // with the request for |DedicatedWorkerHostFactory|, enforce that
     // the worker's origin either matches the origin of the creating context
     // (Document or DedicatedWorkerGlobalScope), or is unique.
-    auto host = std::make_unique<DedicatedWorkerHost>(creator_process_id_,
-                                                      ancestor_render_frame_id_,
-                                                      request_initiator_origin);
+    auto host = std::make_unique<DedicatedWorkerHost>(
+        creator_process_id_, ancestor_render_frame_id_,
+        creator_render_frame_id_, request_initiator_origin);
     mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker> broker;
     host->BindBrowserInterfaceBrokerReceiver(
         broker.InitWithNewPipeAndPassReceiver());
@@ -414,8 +464,11 @@ class DedicatedWorkerHostFactoryImpl
   }
 
  private:
+  // See comments on the corresponding members of DedicatedWorkerHost.
   const int creator_process_id_;
   const int ancestor_render_frame_id_;
+  const int creator_render_frame_id_;
+
   const url::Origin parent_context_origin_;
 
   DISALLOW_COPY_AND_ASSIGN(DedicatedWorkerHostFactoryImpl);
@@ -426,13 +479,14 @@ class DedicatedWorkerHostFactoryImpl
 void CreateDedicatedWorkerHostFactory(
     int creator_process_id,
     int ancestor_render_frame_id,
+    int creator_render_frame_id,
     const url::Origin& origin,
     mojo::PendingReceiver<blink::mojom::DedicatedWorkerHostFactory> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  mojo::MakeSelfOwnedReceiver(
-      std::make_unique<DedicatedWorkerHostFactoryImpl>(
-          creator_process_id, ancestor_render_frame_id, origin),
-      std::move(receiver));
+  mojo::MakeSelfOwnedReceiver(std::make_unique<DedicatedWorkerHostFactoryImpl>(
+                                  creator_process_id, ancestor_render_frame_id,
+                                  creator_render_frame_id, origin),
+                              std::move(receiver));
 }
 
 }  // namespace content

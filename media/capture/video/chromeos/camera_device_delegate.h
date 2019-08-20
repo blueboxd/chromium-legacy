@@ -205,7 +205,7 @@ class CAPTURE_EXPORT CameraDeviceDelegate final {
 
   CameraAppDeviceImpl* camera_app_device_;  // Weak.
 
-  base::WeakPtrFactory<CameraDeviceDelegate> weak_ptr_factory_;
+  base::WeakPtrFactory<CameraDeviceDelegate> weak_ptr_factory_{this};
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(CameraDeviceDelegate);
 };

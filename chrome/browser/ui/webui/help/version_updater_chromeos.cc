@@ -258,9 +258,7 @@ void VersionUpdaterCros::OnGetEolStatus(EolStatusCallback cb,
 VersionUpdaterCros::VersionUpdaterCros(content::WebContents* web_contents)
     : context_(web_contents ? web_contents->GetBrowserContext() : nullptr),
       last_operation_(UpdateEngineClient::UPDATE_STATUS_IDLE),
-      check_for_update_when_idle_(false),
-      weak_ptr_factory_(this) {
-}
+      check_for_update_when_idle_(false) {}
 
 VersionUpdaterCros::~VersionUpdaterCros() {
   UpdateEngineClient* update_engine_client =

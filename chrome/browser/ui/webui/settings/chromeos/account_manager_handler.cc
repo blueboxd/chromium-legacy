@@ -101,8 +101,7 @@ AccountManagerUIHandler::AccountManagerUIHandler(
     : account_manager_(account_manager),
       identity_manager_(identity_manager),
       account_manager_observer_(this),
-      identity_manager_observer_(this),
-      weak_factory_(this) {
+      identity_manager_observer_(this) {
   DCHECK(account_manager_);
   DCHECK(identity_manager_);
 }

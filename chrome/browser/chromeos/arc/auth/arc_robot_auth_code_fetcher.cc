@@ -43,7 +43,7 @@ const policy::CloudPolicyClient* GetCloudPolicyClient() {
 
 namespace arc {
 
-ArcRobotAuthCodeFetcher::ArcRobotAuthCodeFetcher() : weak_ptr_factory_(this) {}
+ArcRobotAuthCodeFetcher::ArcRobotAuthCodeFetcher() {}
 
 ArcRobotAuthCodeFetcher::~ArcRobotAuthCodeFetcher() = default;
 

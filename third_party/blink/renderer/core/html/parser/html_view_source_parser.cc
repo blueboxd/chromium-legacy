@@ -49,10 +49,7 @@ void HTMLViewSourceParser::PumpTokenizer() {
       return;
     source_tracker_.end(input_.Current(), tokenizer_.get(), token_);
 
-    HTMLViewSourceDocument::SourceAnnotation annotation =
-        HTMLViewSourceDocument::kAnnotateSourceAsSafe;
-    GetDocument()->AddSource(source_tracker_.SourceForToken(token_), token_,
-                             annotation);
+    GetDocument()->AddSource(source_tracker_.SourceForToken(token_), token_);
 
     // FIXME: The tokenizer should do this work for us.
     if (token_.GetType() == HTMLToken::kStartTag)

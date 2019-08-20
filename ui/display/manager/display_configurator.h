@@ -426,7 +426,7 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   bool has_unassociated_display_;
 
   // This must be the last variable.
-  base::WeakPtrFactory<DisplayConfigurator> weak_ptr_factory_;
+  base::WeakPtrFactory<DisplayConfigurator> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DisplayConfigurator);
 };

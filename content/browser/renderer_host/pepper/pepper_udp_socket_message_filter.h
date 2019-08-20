@@ -224,7 +224,7 @@ class CONTENT_EXPORT PepperUDPSocketMessageFilter
   // Allows for cancellation of opening a hole in the firewall in the case the
   // network service crashes.
   base::WeakPtrFactory<PepperUDPSocketMessageFilter>
-      firewall_hole_weak_ptr_factory_;
+      firewall_hole_weak_ptr_factory_{this};
 #endif  // defined(OS_CHROMEOS)
 
   DISALLOW_COPY_AND_ASSIGN(PepperUDPSocketMessageFilter);

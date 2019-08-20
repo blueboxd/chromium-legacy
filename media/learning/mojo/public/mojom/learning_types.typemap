@@ -13,8 +13,8 @@ public_deps = [
   "//media/learning/common",
 ]
 type_mappings = [
-  "media.learning.mojom.LabelledExample=media::learning::LabelledExample",
-  "media.learning.mojom.FeatureValue=media::learning::FeatureValue",
-  "media.learning.mojom.TargetValue=media::learning::TargetValue",
-  "media.learning.mojom.ObservationCompletion=media::learning::ObservationCompletion",
+  "media.learning.mojom.LabelledExample=::media::learning::LabelledExample",
+  "media.learning.mojom.FeatureValue=::media::learning::FeatureValue",
+  "media.learning.mojom.TargetValue=::media::learning::TargetValue",
+  "media.learning.mojom.ObservationCompletion=::media::learning::ObservationCompletion",
 ]

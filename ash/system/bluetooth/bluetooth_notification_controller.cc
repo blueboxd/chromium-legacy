@@ -154,7 +154,7 @@ class BluetoothNotificationController::BluetoothPairedNotificationDelegate
 
 BluetoothNotificationController::BluetoothNotificationController(
     message_center::MessageCenter* message_center)
-    : message_center_(message_center), weak_ptr_factory_(this) {
+    : message_center_(message_center) {
   BluetoothAdapterFactory::GetAdapter(
       base::BindOnce(&BluetoothNotificationController::OnGetAdapter,
                      weak_ptr_factory_.GetWeakPtr()));

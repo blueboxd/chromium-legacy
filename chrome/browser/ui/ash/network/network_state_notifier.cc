@@ -134,7 +134,7 @@ const char NetworkStateNotifier::kNetworkActivateNotificationId[] =
 const char NetworkStateNotifier::kNetworkOutOfCreditsNotificationId[] =
     "chrome://settings/internet/out-of-credits";
 
-NetworkStateNotifier::NetworkStateNotifier() : weak_ptr_factory_(this) {
+NetworkStateNotifier::NetworkStateNotifier() {
   if (!NetworkHandler::IsInitialized())
     return;
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();

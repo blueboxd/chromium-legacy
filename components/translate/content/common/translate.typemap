@@ -18,6 +18,6 @@ deps = [
 ]
 
 type_mappings = [
-  "translate.mojom.LanguageDetectionDetails=translate::LanguageDetectionDetails",
-  "translate.mojom.TranslateError=translate::TranslateErrors::Type",
+  "translate.mojom.LanguageDetectionDetails=::translate::LanguageDetectionDetails",
+  "translate.mojom.TranslateError=::translate::TranslateErrors::Type",
 ]

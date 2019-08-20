@@ -114,7 +114,7 @@ class AuthPolicyHelper {
   bool service_is_available_ = false;
   RefreshPolicyCallback device_policy_callback_;
 
-  base::WeakPtrFactory<AuthPolicyHelper> weak_factory_;
+  base::WeakPtrFactory<AuthPolicyHelper> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(AuthPolicyHelper);
 };
 

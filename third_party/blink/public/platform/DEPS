@@ -51,6 +51,7 @@ include_rules = [
     "+ui/base/ime/text_input_action.h",
     "+ui/base/page_transition_types.h",
     "+ui/base/cursor/types",
+    "+ui/base/resource/scale_factor.h",
     "+ui/events/types",
     "+ui/gfx",
     "+url",

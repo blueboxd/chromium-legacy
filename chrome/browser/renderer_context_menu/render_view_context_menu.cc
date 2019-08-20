@@ -59,6 +59,8 @@
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_context_menu_observer.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_utils.h"
+#include "chrome/browser/sharing/shared_clipboard/shared_clipboard_context_menu_observer.h"
+#include "chrome/browser/sharing/shared_clipboard/shared_clipboard_utils.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
@@ -357,13 +359,15 @@ const std::map<int, int>& GetIdcToUmaMap(UmaEnumIdLookupType type) {
        {IDC_CONTENT_LINK_SEND_TAB_TO_SELF_SINGLE_TARGET, 105},
        {IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE, 106},
        {IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_MULTIPLE_DEVICES, 107},
+       {IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_SINGLE_DEVICE, 108},
+       {IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_MULTIPLE_DEVICES, 109},
        // To add new items:
        //   - Add one more line above this comment block, using the UMA value
        //     from the line below this comment block.
        //   - Increment the UMA value in that latter line.
        //   - Add the new item to the RenderViewContextMenuItem enum in
        //     tools/metrics/histograms/enums.xml.
-       {0, 108}});
+       {0, 110}});
 
   // These UMA values are for the the ContextMenuOptionDesktop enum, used for
   // the ContextMenu.SelectedOptionDesktop histograms.
@@ -853,8 +857,10 @@ void RenderViewContextMenu::InitMenu() {
   if (editable)
     AppendEditableItems();
 
+  // Add shared clipboard menu item and copy items.
   if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_COPY)) {
     DCHECK(!editable);
+    AppendSharedClipboardItems();
     AppendCopyItem();
   }
 
@@ -1571,6 +1577,18 @@ void RenderViewContextMenu::AppendCopyItem() {
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPY,
                                   IDS_CONTENT_CONTEXT_COPY);
+}
+
+void RenderViewContextMenu::AppendSharedClipboardItems() {
+  // Context menu item for shared clipboard on selected text.
+  if (ShouldOfferSharedClipboard(browser_context_, params_.selection_text)) {
+    if (!shared_clipboard_context_menu_observer_) {
+      shared_clipboard_context_menu_observer_ =
+          std::make_unique<SharedClipboardContextMenuObserver>(this);
+      observers_.AddObserver(shared_clipboard_context_menu_observer_.get());
+    }
+    shared_clipboard_context_menu_observer_->InitMenu(params_);
+  }
 }
 
 void RenderViewContextMenu::AppendPrintItem() {

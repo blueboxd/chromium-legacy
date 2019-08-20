@@ -92,7 +92,7 @@ DrmThread::TaskInfo::TaskInfo(TaskInfo&& other) = default;
 
 DrmThread::TaskInfo::~TaskInfo() = default;
 
-DrmThread::DrmThread() : base::Thread("DrmThread"), weak_ptr_factory_(this) {}
+DrmThread::DrmThread() : base::Thread("DrmThread") {}
 
 DrmThread::~DrmThread() {
   Stop();

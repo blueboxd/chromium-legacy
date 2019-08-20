@@ -114,10 +114,6 @@ struct StructTraits<viz::mojom::CompositorFrameMetadataDataView,
     return metadata.preferred_frame_interval;
   }
 
-  static gfx::Rect mirror_rect(const viz::CompositorFrameMetadata& metadata) {
-    return metadata.mirror_rect;
-  }
-
   static bool Read(viz::mojom::CompositorFrameMetadataDataView data,
                    viz::CompositorFrameMetadata* out);
 };

@@ -13,4 +13,4 @@ public_deps = [
   "//fuchsia/mojom:traits",
   "//third_party/fuchsia-sdk/sdk:media_drm",
 ]
-type_mappings = [ "media.mojom.CdmRequest=fidl::InterfaceRequest<fuchsia::media::drm::ContentDecryptionModule>[move_only]" ]
+type_mappings = [ "media.mojom.CdmRequest=::fidl::InterfaceRequest<::fuchsia::media::drm::ContentDecryptionModule>[move_only]" ]

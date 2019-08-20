@@ -127,7 +127,7 @@ class EventLogger {
     base::File::Error error_;
   };
 
-  EventLogger() : weak_ptr_factory_(this) {}
+  EventLogger() {}
   virtual ~EventLogger() {}
 
   void OnExecute(int request_id) {
@@ -166,7 +166,7 @@ class EventLogger {
   std::vector<std::unique_ptr<ExecuteEvent>> execute_events_;
   std::vector<std::unique_ptr<SuccessEvent>> success_events_;
   std::vector<std::unique_ptr<ErrorEvent>> error_events_;
-  base::WeakPtrFactory<EventLogger> weak_ptr_factory_;
+  base::WeakPtrFactory<EventLogger> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(EventLogger);
 };

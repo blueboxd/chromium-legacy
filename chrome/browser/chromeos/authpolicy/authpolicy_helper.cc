@@ -121,7 +121,7 @@ std::string DoDecrypt(const std::string& encrypted_data,
 
 }  // namespace
 
-AuthPolicyHelper::AuthPolicyHelper() : weak_factory_(this) {
+AuthPolicyHelper::AuthPolicyHelper() {
   AuthPolicyClient::Get()->WaitForServiceToBeAvailable(base::BindOnce(
       &AuthPolicyHelper::OnServiceAvailable, weak_factory_.GetWeakPtr()));
 }

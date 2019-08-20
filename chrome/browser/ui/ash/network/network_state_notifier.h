@@ -112,7 +112,7 @@ class NetworkStateNotifier : public NetworkConnectionObserver,
   // Tracks GUIDs of activating cellular networks for activation notification.
   std::set<std::string> cellular_activating_guids_;
 
-  base::WeakPtrFactory<NetworkStateNotifier> weak_ptr_factory_;
+  base::WeakPtrFactory<NetworkStateNotifier> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NetworkStateNotifier);
 };

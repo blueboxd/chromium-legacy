@@ -660,7 +660,7 @@ class UserSessionManager
 
   std::unique_ptr<ReleaseNotesNotification> release_notes_notification_;
 
-  base::WeakPtrFactory<UserSessionManager> weak_factory_;
+  base::WeakPtrFactory<UserSessionManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UserSessionManager);
 };

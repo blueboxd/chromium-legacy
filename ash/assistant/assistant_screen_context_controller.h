@@ -81,7 +81,7 @@ class ASH_EXPORT AssistantScreenContextController
 
   // Weak pointer factory used for screen context requests.
   base::WeakPtrFactory<AssistantScreenContextController>
-      screen_context_request_factory_;
+      screen_context_request_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AssistantScreenContextController);
 };

@@ -82,8 +82,7 @@ LogSourceAccessManager::LogSourceAccessManager(content::BrowserContext* context)
       anonymizer_container_(
           base::MakeRefCounted<feedback::AnonymizerToolContainer>(
               task_runner_for_anonymizer_,
-              /* first_party_extension_ids= */ nullptr)),
-      weak_factory_(this) {}
+              /* first_party_extension_ids= */ nullptr)) {}
 
 LogSourceAccessManager::~LogSourceAccessManager() {}
 

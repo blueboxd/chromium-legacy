@@ -70,7 +70,7 @@ class CupsProxyServiceDelegateImpl
   std::unique_ptr<PrinterConfigurer> printer_configurer_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  base::WeakPtrFactory<CupsProxyServiceDelegateImpl> weak_factory_;
+  base::WeakPtrFactory<CupsProxyServiceDelegateImpl> weak_factory_{this};
 };
 
 }  // namespace chromeos

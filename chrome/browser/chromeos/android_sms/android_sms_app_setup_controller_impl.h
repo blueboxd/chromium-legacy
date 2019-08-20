@@ -114,7 +114,8 @@ class AndroidSmsAppSetupControllerImpl : public AndroidSmsAppSetupController {
   HostContentSettingsMap* host_content_settings_map_;
 
   std::unique_ptr<PwaDelegate> pwa_delegate_;
-  base::WeakPtrFactory<AndroidSmsAppSetupControllerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<AndroidSmsAppSetupControllerImpl> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(AndroidSmsAppSetupControllerImpl);
 };

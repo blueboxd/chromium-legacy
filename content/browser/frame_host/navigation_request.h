@@ -264,7 +264,10 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   }
 
   const network::ResourceResponse* response() { return response_head_.get(); }
-  const GlobalRequestID& request_id() const { return request_id_; }
+  const GlobalRequestID& request_id() const {
+    DCHECK_GE(handle_state_, PROCESSING_WILL_PROCESS_RESPONSE);
+    return request_id_;
+  }
   bool is_download() const { return is_download_; }
   const base::Optional<net::SSLInfo>& ssl_info() { return ssl_info_; }
   const base::Optional<net::AuthChallengeInfo>& auth_challenge_info() {
@@ -497,6 +500,22 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   bool is_served_from_back_forward_cache() {
     return is_served_from_back_forward_cache_;
   }
+
+  // NavigationHandle implementation:
+  // TODO(https://crbug.com/995268): Make NavigationRequest inherit from
+  // NavigationHandle, once NavigationHandleImpl is deleted.
+  bool IsExternalProtocol();
+  bool IsSignedExchangeInnerResponse();
+  net::IPEndPoint GetSocketAddress();
+  bool HasCommitted();
+  bool IsErrorPage();
+  net::HttpResponseInfo::ConnectionInfo GetConnectionInfo();
+  bool IsInMainFrame();
+  RenderFrameHostImpl* GetParentFrame();
+  bool IsParentMainFrame();
+  int GetFrameTreeNodeId();
+  bool WasResponseCached();
+  bool HasPrefetchedAlternativeSubresourceSignedExchange();
 
  private:
   friend class NavigationRequestTest;

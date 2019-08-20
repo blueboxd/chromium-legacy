@@ -180,8 +180,7 @@ CryptAuthGCMManagerImpl::CryptAuthGCMManagerImpl(gcm::GCMDriver* gcm_driver,
                                                  PrefService* pref_service)
     : gcm_driver_(gcm_driver),
       pref_service_(pref_service),
-      registration_in_progress_(false),
-      weak_ptr_factory_(this) {}
+      registration_in_progress_(false) {}
 
 CryptAuthGCMManagerImpl::~CryptAuthGCMManagerImpl() {
   if (gcm_driver_->GetAppHandler(kCryptAuthGcmAppId) == this)

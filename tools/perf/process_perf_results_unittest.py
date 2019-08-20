@@ -6,14 +6,11 @@
 import json
 import os
 import shutil
-import sys
 import tempfile
 import unittest
 
 from core import path_util
-sys.path.insert(1, path_util.GetTelemetryDir())
-sys.path.insert(
-    1, os.path.join(path_util.GetTelemetryDir(), 'third_party', 'mock'))
+path_util.AddTelemetryToPath()
 
 from telemetry import decorators
 

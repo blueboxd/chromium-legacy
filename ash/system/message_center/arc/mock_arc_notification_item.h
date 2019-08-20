@@ -63,7 +63,7 @@ class MockArcNotificationItem : public ArcNotificationItem {
   base::ObserverList<Observer>::Unchecked observers_;
   base::OnceClosure close_callback_;
 
-  base::WeakPtrFactory<MockArcNotificationItem> weak_factory_;
+  base::WeakPtrFactory<MockArcNotificationItem> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockArcNotificationItem);
 };

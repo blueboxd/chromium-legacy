@@ -85,7 +85,7 @@ class FingerprintHandler : public ::settings::SettingsPageUIHandler,
                  session_manager::SessionManagerObserver>
       session_observer_;
 
-  base::WeakPtrFactory<FingerprintHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<FingerprintHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FingerprintHandler);
 };

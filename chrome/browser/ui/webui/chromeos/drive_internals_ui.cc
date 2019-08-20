@@ -297,8 +297,7 @@ void ZipLogs(Profile* profile,
 // Class to handle messages from chrome://drive-internals.
 class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
  public:
-  DriveInternalsWebUIHandler()
-      : last_sent_event_id_(-1), weak_ptr_factory_(this) {}
+  DriveInternalsWebUIHandler() : last_sent_event_id_(-1) {}
 
   ~DriveInternalsWebUIHandler() override {}
 
@@ -972,7 +971,7 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   // Service log file is being parsed.
   bool service_log_file_is_processing_ = false;
 
-  base::WeakPtrFactory<DriveInternalsWebUIHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<DriveInternalsWebUIHandler> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(DriveInternalsWebUIHandler);
 };
 

@@ -11,4 +11,4 @@ public_deps = [
   #"//services/viz/privileged/mojom/compositing"
 ]
 
-type_mappings = [ "viz.mojom.OverlayStrategy=viz::OverlayStrategy" ]
+type_mappings = [ "viz.mojom.OverlayStrategy=::viz::OverlayStrategy" ]

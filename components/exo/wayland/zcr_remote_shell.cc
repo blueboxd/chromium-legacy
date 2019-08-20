@@ -632,9 +632,7 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
                            public display::DisplayObserver {
  public:
   WaylandRemoteShell(Display* display, wl_resource* remote_shell_resource)
-      : display_(display),
-        remote_shell_resource_(remote_shell_resource),
-        weak_ptr_factory_(this) {
+      : display_(display), remote_shell_resource_(remote_shell_resource) {
     WMHelperChromeOS* helper = WMHelperChromeOS::GetInstance();
     helper->AddTabletModeObserver(this);
     helper->AddActivationObserver(this);
@@ -882,7 +880,7 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
 
   int layout_mode_ = ZCR_REMOTE_SHELL_V1_LAYOUT_MODE_WINDOWED;
 
-  base::WeakPtrFactory<WaylandRemoteShell> weak_ptr_factory_;
+  base::WeakPtrFactory<WaylandRemoteShell> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WaylandRemoteShell);
 };

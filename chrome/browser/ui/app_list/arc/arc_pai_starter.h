@@ -90,7 +90,7 @@ class ArcPaiStarter : public ArcAppListPrefs::Observer {
   // Used to report PAI flow time uma.
   base::Time request_start_time_;
   // Keep last.
-  base::WeakPtrFactory<ArcPaiStarter> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcPaiStarter> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcPaiStarter);
 };

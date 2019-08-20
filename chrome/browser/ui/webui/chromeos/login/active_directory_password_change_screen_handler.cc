@@ -42,9 +42,7 @@ ActiveDirectoryPasswordChangeScreenHandler::
     : BaseScreenHandler(OobeScreen::SCREEN_ACTIVE_DIRECTORY_PASSWORD_CHANGE,
                         js_calls_container),
       authpolicy_login_helper_(std::make_unique<AuthPolicyHelper>()),
-      core_oobe_view_(core_oobe_view),
-      weak_factory_(this) {
-}
+      core_oobe_view_(core_oobe_view) {}
 
 ActiveDirectoryPasswordChangeScreenHandler::
     ~ActiveDirectoryPasswordChangeScreenHandler() {}

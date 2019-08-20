@@ -32,8 +32,7 @@ AndroidSmsPairingStateTrackerImpl::AndroidSmsPairingStateTrackerImpl(
     AndroidSmsAppManager* android_sms_app_manager)
     : profile_(profile),
       android_sms_app_manager_(android_sms_app_manager),
-      cookie_listener_binding_(this),
-      weak_ptr_factory_(this) {
+      cookie_listener_binding_(this) {
   android_sms_app_manager_->AddObserver(this);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,

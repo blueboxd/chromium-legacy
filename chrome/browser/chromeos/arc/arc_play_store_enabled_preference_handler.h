@@ -47,7 +47,8 @@ class ArcPlayStoreEnabledPreferenceHandler {
   PrefChangeRegistrar pref_change_registrar_;
 
   // Must be the last member.
-  base::WeakPtrFactory<ArcPlayStoreEnabledPreferenceHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcPlayStoreEnabledPreferenceHandler> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcPlayStoreEnabledPreferenceHandler);
 };

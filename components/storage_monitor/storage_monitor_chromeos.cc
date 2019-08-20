@@ -103,7 +103,7 @@ bool GetFixedStorageInfo(const Disk& disk, StorageInfo* info) {
 
 }  // namespace
 
-StorageMonitorCros::StorageMonitorCros() : weak_ptr_factory_(this) {}
+StorageMonitorCros::StorageMonitorCros() {}
 
 StorageMonitorCros::~StorageMonitorCros() {
   DiskMountManager* manager = DiskMountManager::GetInstance();

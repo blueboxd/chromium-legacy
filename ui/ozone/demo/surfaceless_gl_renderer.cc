@@ -127,8 +127,7 @@ SurfacelessGlRenderer::SurfacelessGlRenderer(
                            ->GetOverlayManager()
                            ->CreateOverlayCandidates(widget)),
       window_surface_(std::move(window_surface)),
-      gl_surface_(gl_surface),
-      weak_ptr_factory_(this) {}
+      gl_surface_(gl_surface) {}
 
 SurfacelessGlRenderer::~SurfacelessGlRenderer() {
   // Need to make current when deleting the framebuffer resources allocated in

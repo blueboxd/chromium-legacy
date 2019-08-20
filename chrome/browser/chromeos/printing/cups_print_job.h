@@ -90,7 +90,7 @@ class CupsPrintJob {
   State state_ = State::STATE_NONE;
   ErrorCode error_code_ = ErrorCode::NO_ERROR;
 
-  base::WeakPtrFactory<CupsPrintJob> weak_factory_;
+  base::WeakPtrFactory<CupsPrintJob> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CupsPrintJob);
 };

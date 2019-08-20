@@ -79,7 +79,7 @@ class KerberosAccountsHandler : public ::settings::SettingsPageUIHandler,
                  KerberosCredentialsManager::Observer>
       credentials_manager_observer_;
 
-  base::WeakPtrFactory<KerberosAccountsHandler> weak_factory_;
+  base::WeakPtrFactory<KerberosAccountsHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(KerberosAccountsHandler);
 };

@@ -88,8 +88,7 @@ AlsReaderImpl::AlsReaderImpl()
     : blocking_task_runner_(base::CreateSequencedTaskRunner(
           {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
            base::MayBlock(),
-           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
-      weak_ptr_factory_(this) {}
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})) {}
 
 AlsReaderImpl::~AlsReaderImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

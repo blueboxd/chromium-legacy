@@ -101,7 +101,7 @@ class AndroidSmsAppManagerImpl : public AndroidSmsAppManager {
   base::Optional<GURL> installed_url_at_last_notify_;
 
   std::unique_ptr<PwaDelegate> pwa_delegate_;
-  base::WeakPtrFactory<AndroidSmsAppManagerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<AndroidSmsAppManagerImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AndroidSmsAppManagerImpl);
 };

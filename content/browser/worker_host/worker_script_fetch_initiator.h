@@ -34,6 +34,7 @@ namespace content {
 
 class AppCacheNavigationHandleCore;
 class BrowserContext;
+class RenderFrameHost;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerNavigationHandle;
 class ServiceWorkerObjectHost;
@@ -59,6 +60,7 @@ class WorkerScriptFetchInitiator {
   static void Start(
       int worker_process_id,
       const GURL& script_url,
+      RenderFrameHost* creator_render_frame_host,
       const url::Origin& request_initiator,
       const net::NetworkIsolationKey& trusted_network_isolation_key,
       network::mojom::CredentialsMode credentials_mode,
@@ -92,6 +94,7 @@ class WorkerScriptFetchInitiator {
 
   static void CreateScriptLoader(
       int worker_process_id,
+      RenderFrameHost* creator_render_frame_host,
       std::unique_ptr<network::ResourceRequest> resource_request,
       StoragePartitionImpl* storage_partition,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>

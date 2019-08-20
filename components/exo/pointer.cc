@@ -103,8 +103,7 @@ Pointer::Pointer(PointerDelegate* delegate, Seat* seat)
       cursor_(ui::CursorType::kNull),
       capture_scale_(GetCaptureDisplayInfo().device_scale_factor()),
       capture_ratio_(GetCaptureDisplayInfo().GetDensityRatio()),
-      cursor_capture_source_id_(base::UnguessableToken::Create()),
-      cursor_capture_weak_ptr_factory_(this) {
+      cursor_capture_source_id_(base::UnguessableToken::Create()) {
   WMHelper* helper = WMHelper::GetInstance();
   helper->AddPreTargetHandler(this);
   // TODO(sky): CursorClient does not exist in mash

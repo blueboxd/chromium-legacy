@@ -155,7 +155,7 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
 
   ScopedSessionObserver scoped_session_observer_;
 
-  base::WeakPtrFactory<PaletteTray> weak_factory_;
+  base::WeakPtrFactory<PaletteTray> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PaletteTray);
 };

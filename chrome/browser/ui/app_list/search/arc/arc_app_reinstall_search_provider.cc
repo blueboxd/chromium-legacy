@@ -209,8 +209,7 @@ ArcAppReinstallSearchProvider::ArcAppReinstallSearchProvider(
       icon_dimension_(
           app_list::AppListConfig::instance().GetPreferredIconDimension(
               ash::SearchResultDisplayType::kRecommendation)),
-      app_fetch_timer_(std::make_unique<base::RepeatingTimer>()),
-      weak_ptr_factory_(this) {
+      app_fetch_timer_(std::make_unique<base::RepeatingTimer>()) {
   DCHECK(profile_ != nullptr);
   ArcAppListPrefs::Get(profile_)->AddObserver(this);
   MaybeUpdateFetching();

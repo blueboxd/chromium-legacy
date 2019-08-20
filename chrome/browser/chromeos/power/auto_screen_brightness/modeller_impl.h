@@ -269,7 +269,7 @@ class ModellerImpl : public Modeller,
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<ModellerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<ModellerImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ModellerImpl);
 };

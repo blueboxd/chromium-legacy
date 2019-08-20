@@ -41,9 +41,7 @@ TeamDriveChangeListLoader::TeamDriveChangeListLoader(
     ResourceMetadata* resource_metadata,
     JobScheduler* scheduler,
     LoaderController* apply_task_controller)
-    : team_drive_id_(team_drive_id),
-      root_entry_path_(root_entry_path),
-      weak_ptr_factory_(this) {
+    : team_drive_id_(team_drive_id), root_entry_path_(root_entry_path) {
   root_folder_id_loader_ =
       std::make_unique<ConstantRootFolderIdLoader>(team_drive_id_);
 

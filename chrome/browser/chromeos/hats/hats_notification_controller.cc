@@ -89,7 +89,7 @@ namespace chromeos {
 const char HatsNotificationController::kNotificationId[] = "hats_notification";
 
 HatsNotificationController::HatsNotificationController(Profile* profile)
-    : profile_(profile), weak_pointer_factory_(this) {
+    : profile_(profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   base::PostTaskAndReplyWithResult(

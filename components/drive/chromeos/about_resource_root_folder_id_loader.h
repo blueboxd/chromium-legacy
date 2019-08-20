@@ -45,7 +45,7 @@ class AboutResourceRootFolderIdLoader : public RootFolderIdLoader {
 
   THREAD_CHECKER(thread_checker_);
 
-  base::WeakPtrFactory<AboutResourceRootFolderIdLoader> weak_ptr_factory_;
+  base::WeakPtrFactory<AboutResourceRootFolderIdLoader> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(AboutResourceRootFolderIdLoader);
 };
 

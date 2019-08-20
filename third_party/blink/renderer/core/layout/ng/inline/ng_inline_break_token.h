@@ -69,15 +69,6 @@ class CORE_EXPORT NGInlineBreakToken final : public NGBreakToken {
     return flags_ & kIsForcedBreak;
   }
 
-  // When a previously laid out line box didn't fit in the current
-  // fragmentainer, and we have to lay it out again in the next fragmentainer,
-  // we need to skip floats associated with that line. The parent block layout
-  // algorithm will take care of any floats that broke and need to be resumed in
-  // the next fragmentainer. Dealing with them as part of line layout as well
-  // would result in duplicate fragments for the floats.
-  void SetIgnoreFloats() { ignore_floats_ = true; }
-  bool IgnoreFloats() const { return ignore_floats_; }
-
 #if DCHECK_IS_ON()
   String ToString() const override;
 #endif

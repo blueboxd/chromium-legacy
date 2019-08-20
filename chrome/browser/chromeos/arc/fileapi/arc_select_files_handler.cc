@@ -159,7 +159,7 @@ void BuildFileTypeInfo(const mojom::SelectFilesRequestPtr& request,
 
 ArcSelectFilesHandlersManager::ArcSelectFilesHandlersManager(
     content::BrowserContext* context)
-    : context_(context), weak_ptr_factory_(this) {}
+    : context_(context) {}
 
 ArcSelectFilesHandlersManager::~ArcSelectFilesHandlersManager() = default;
 

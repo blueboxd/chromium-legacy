@@ -54,7 +54,7 @@ void VideoLoaded(
 
 }  // namespace
 
-VideoSource::VideoSource() : weak_factory_(this) {
+VideoSource::VideoSource() {
   task_runner_ = base::CreateSequencedTaskRunner(
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});

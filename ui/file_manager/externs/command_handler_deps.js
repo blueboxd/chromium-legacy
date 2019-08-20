@@ -11,9 +11,6 @@ class CommandHandlerDeps {
     /** @type {ActionsController} */
     this.actionsController;
 
-    /** @type {BackgroundWindow} */
-    this.backgroundPage;
-
     /** @type {DialogType} */
     this.dialogType;
 
@@ -71,4 +68,7 @@ class CommandHandlerDeps {
 
   /** @return {FileSelection} */
   getSelection() {}
+
+  /** @param {Object} appState App state. */
+  launchFileManager(appState) {}
 }

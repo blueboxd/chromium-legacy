@@ -102,7 +102,7 @@ class ShelfSpinnerController : public ash::ShelfModelObserver {
   HiddenAppControllerMap hidden_app_controller_map_;
 
   // Always keep this the last member of this class.
-  base::WeakPtrFactory<ShelfSpinnerController> weak_ptr_factory_;
+  base::WeakPtrFactory<ShelfSpinnerController> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ShelfSpinnerController);
 };

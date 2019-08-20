@@ -211,7 +211,7 @@ class Service : public KeyedService,
   base::ThreadChecker thread_checker_;
   ProviderMap provider_map_;
 
-  base::WeakPtrFactory<Service> weak_ptr_factory_;
+  base::WeakPtrFactory<Service> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(Service);
 };
 

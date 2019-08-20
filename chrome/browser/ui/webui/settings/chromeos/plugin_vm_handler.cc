@@ -18,8 +18,7 @@
 namespace chromeos {
 namespace settings {
 
-PluginVmHandler::PluginVmHandler(Profile* profile)
-    : profile_(profile), weak_ptr_factory_(this) {}
+PluginVmHandler::PluginVmHandler(Profile* profile) : profile_(profile) {}
 
 PluginVmHandler::~PluginVmHandler() = default;
 

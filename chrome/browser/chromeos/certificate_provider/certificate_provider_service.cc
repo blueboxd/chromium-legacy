@@ -117,7 +117,7 @@ class CertificateProviderService::SSLPrivateKey : public net::SSLPrivateKey {
   // Must be dereferenced on |service_task_runner_| only.
   const base::WeakPtr<CertificateProviderService> service_;
   base::ThreadChecker thread_checker_;
-  base::WeakPtrFactory<SSLPrivateKey> weak_factory_;
+  base::WeakPtrFactory<SSLPrivateKey> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SSLPrivateKey);
 };
@@ -227,8 +227,7 @@ CertificateProviderService::SSLPrivateKey::SSLPrivateKey(
     : extension_id_(extension_id),
       cert_info_(cert_info),
       service_task_runner_(service_task_runner),
-      service_(service),
-      weak_factory_(this) {
+      service_(service) {
   // This constructor is called on |service_task_runner|. Only subsequent calls
   // to member functions have to be on a common thread.
   thread_checker_.DetachFromThread();
@@ -314,8 +313,7 @@ void CertificateProviderService::SSLPrivateKey::DidSignDigest(
   std::move(callback).Run(error, signature);
 }
 
-CertificateProviderService::CertificateProviderService()
-    : weak_factory_(this) {}
+CertificateProviderService::CertificateProviderService() {}
 
 CertificateProviderService::~CertificateProviderService() {
   DCHECK(thread_checker_.CalledOnValidThread());

@@ -51,8 +51,7 @@ WebkitFileStreamWriterImpl::WebkitFileStreamWriterImpl(
     : file_system_getter_(file_system_getter),
       file_task_runner_(file_task_runner),
       file_path_(file_path),
-      offset_(offset),
-      weak_ptr_factory_(this) {}
+      offset_(offset) {}
 
 WebkitFileStreamWriterImpl::~WebkitFileStreamWriterImpl() {
   if (local_file_writer_) {

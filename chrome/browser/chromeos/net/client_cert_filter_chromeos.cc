@@ -17,9 +17,7 @@ ClientCertFilterChromeOS::ClientCertFilterChromeOS(
     : init_called_(false),
       use_system_slot_(use_system_slot),
       username_hash_(username_hash),
-      waiting_for_private_slot_(false),
-      weak_ptr_factory_(this) {
-}
+      waiting_for_private_slot_(false) {}
 
 ClientCertFilterChromeOS::~ClientCertFilterChromeOS() {
 }

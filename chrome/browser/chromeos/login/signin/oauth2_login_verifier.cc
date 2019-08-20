@@ -24,8 +24,7 @@ OAuth2LoginVerifier::OAuth2LoginVerifier(
     : delegate_(delegate),
       identity_manager_(identity_manager),
       primary_account_id_(primary_account_id),
-      access_token_(oauthlogin_access_token),
-      weak_ptr_factory_(this) {
+      access_token_(oauthlogin_access_token) {
   DCHECK(delegate);
   identity_manager_->AddObserver(this);
 }

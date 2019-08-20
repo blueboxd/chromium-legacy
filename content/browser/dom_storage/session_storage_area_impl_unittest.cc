@@ -27,7 +27,9 @@
 #include "content/test/gmock_util.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -39,15 +41,15 @@ using leveldb::Uint8VectorToStdString;
 using leveldb::mojom::DatabaseError;
 
 template <typename Interface, typename Impl>
-void CreateStrongBindingOnTaskRunner(
+void CreateSelfOwnedreceiverOnTaskRunner(
     scoped_refptr<base::SequencedTaskRunner> runner,
-    mojo::InterfacePtr<Interface>* interface_ptr,
+    mojo::PendingReceiver<Interface> pending_receiver,
     std::unique_ptr<Impl> interface) {
   runner->PostTask(
       FROM_HERE,
       base::BindOnce(
-          base::IgnoreResult(&mojo::MakeStrongBinding<Interface, Impl>),
-          std::move(interface), mojo::MakeRequest(interface_ptr), runner));
+          base::IgnoreResult(&mojo::MakeSelfOwnedReceiver<Interface, Impl>),
+          std::move(interface), std::move(pending_receiver), runner));
 }
 
 class MockListener : public SessionStorageDataMap::Listener {
@@ -70,14 +72,14 @@ class SessionStorageAreaImplTest : public testing::Test {
         test_origin2_(url::Origin::Create(GURL("https://host2.com:2/"))) {
     auto file_runner =
         base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
-    CreateStrongBindingOnTaskRunner(
+    CreateSelfOwnedreceiverOnTaskRunner(
         base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()}),
-        &leveldb_service_,
+        leveldb_service_.BindNewPipeAndPassReceiver(),
         std::make_unique<leveldb::LevelDBServiceImpl>(std::move(file_runner)));
 
     leveldb_service_->OpenInMemory(
         base::nullopt, "SessionStorageAreaImplTestDatabase",
-        mojo::MakeRequest(&leveldb_database_), base::DoNothing());
+        leveldb_database_.BindNewEndpointAndPassReceiver(), base::DoNothing());
 
     leveldb_database_->Put(StdStringToUint8Vector("map-0-key1"),
                            StdStringToUint8Vector("data1"), base::DoNothing());
@@ -113,8 +115,8 @@ class SessionStorageAreaImplTest : public testing::Test {
   const std::string test_namespace_id2_;
   const url::Origin test_origin1_;
   const url::Origin test_origin2_;
-  leveldb::mojom::LevelDBServicePtr leveldb_service_;
-  leveldb::mojom::LevelDBDatabaseAssociatedPtr leveldb_database_;
+  mojo::Remote<leveldb::mojom::LevelDBService> leveldb_service_;
+  mojo::AssociatedRemote<leveldb::mojom::LevelDBDatabase> leveldb_database_;
   SessionStorageMetadata metadata_;
 
   testing::StrictMock<MockListener> listener_;

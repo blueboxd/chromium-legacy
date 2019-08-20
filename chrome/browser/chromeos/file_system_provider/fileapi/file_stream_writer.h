@@ -80,7 +80,7 @@ class FileStreamWriter : public storage::FileStreamWriter {
   scoped_refptr<OperationRunner> runner_;
   State state_;
 
-  base::WeakPtrFactory<FileStreamWriter> weak_ptr_factory_;
+  base::WeakPtrFactory<FileStreamWriter> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(FileStreamWriter);
 };
 

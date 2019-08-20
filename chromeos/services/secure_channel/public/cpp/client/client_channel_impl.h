@@ -60,7 +60,7 @@ class ClientChannelImpl : public ClientChannel, public mojom::MessageReceiver {
   mojom::ChannelPtr channel_;
   mojo::Binding<mojom::MessageReceiver> binding_;
 
-  base::WeakPtrFactory<ClientChannelImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<ClientChannelImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ClientChannelImpl);
 };

@@ -85,7 +85,7 @@ class FirstAppRunToastManager : public extensions::AppWindowRegistry::Observer,
   class AppWidgetObserver;
   std::unique_ptr<AppWidgetObserver> app_widget_observer_;
 
-  base::WeakPtrFactory<FirstAppRunToastManager> weak_ptr_factory_;
+  base::WeakPtrFactory<FirstAppRunToastManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FirstAppRunToastManager);
 };

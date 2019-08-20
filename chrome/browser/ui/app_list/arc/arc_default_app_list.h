@@ -105,7 +105,7 @@ class ArcDefaultAppList {
   // To wait until all sources with apps are loaded.
   base::RepeatingClosure barrier_closure_;
 
-  base::WeakPtrFactory<ArcDefaultAppList> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcDefaultAppList> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcDefaultAppList);
 };

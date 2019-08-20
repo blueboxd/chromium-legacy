@@ -258,8 +258,7 @@ constexpr StaticOobeScreenId EncryptionMigrationScreenView::kScreenId;
 EncryptionMigrationScreenHandler::EncryptionMigrationScreenHandler(
     JSCallsContainer* js_calls_container)
     : BaseScreenHandler(kScreenId, js_calls_container),
-      tick_clock_(base::DefaultTickClock::GetInstance()),
-      weak_ptr_factory_(this) {
+      tick_clock_(base::DefaultTickClock::GetInstance()) {
   free_disk_space_fetcher_ = base::Bind(&base::SysInfo::AmountOfFreeDiskSpace,
                                         base::FilePath(kCheckStoragePath));
 }

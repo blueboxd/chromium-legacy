@@ -68,7 +68,7 @@ class KioskEnableScreenHandler : public KioskEnableScreenView,
   // True if machine's consumer kiosk mode is in a configurable state.
   bool is_configurable_ = false;
 
-  base::WeakPtrFactory<KioskEnableScreenHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<KioskEnableScreenHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(KioskEnableScreenHandler);
 };

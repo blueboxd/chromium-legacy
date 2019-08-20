@@ -32,8 +32,7 @@ constexpr StaticOobeScreenId EulaView::kScreenId;
 EulaScreenHandler::EulaScreenHandler(JSCallsContainer* js_calls_container,
                                      CoreOobeView* core_oobe_view)
     : BaseScreenHandler(kScreenId, js_calls_container),
-      core_oobe_view_(core_oobe_view),
-      weak_factory_(this) {
+      core_oobe_view_(core_oobe_view) {
   set_user_acted_method_path("login.EulaScreen.userActed");
 }
 

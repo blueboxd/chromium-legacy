@@ -27,16 +27,16 @@ deps = [
 ]
 
 type_mappings = [
-  "autofill.mojom.FormData=autofill::FormData",
-  "autofill.mojom.FormDataPredictions=autofill::FormDataPredictions",
-  "autofill.mojom.FormFieldData=autofill::FormFieldData",
-  "autofill.mojom.FormFieldDataPredictions=autofill::FormFieldDataPredictions",
-  "autofill.mojom.FormsPredictionsMap=autofill::FormsPredictionsMap",
-  "autofill.mojom.PasswordAndRealm=autofill::PasswordAndRealm",
-  "autofill.mojom.PasswordForm=autofill::PasswordForm",
-  "autofill.mojom.PasswordFormFieldPredictionMap=autofill::PasswordFormFieldPredictionMap",
-  "autofill.mojom.PasswordFormFillData=autofill::PasswordFormFillData",
-  "autofill.mojom.PasswordFormGenerationData=autofill::PasswordFormGenerationData",
-  "autofill.mojom.PasswordGenerationUIData=autofill::password_generation::PasswordGenerationUIData",
-  "autofill.mojom.ValueElementPair=autofill::ValueElementPair",
+  "autofill.mojom.FormData=::autofill::FormData",
+  "autofill.mojom.FormDataPredictions=::autofill::FormDataPredictions",
+  "autofill.mojom.FormFieldData=::autofill::FormFieldData",
+  "autofill.mojom.FormFieldDataPredictions=::autofill::FormFieldDataPredictions",
+  "autofill.mojom.FormsPredictionsMap=::autofill::FormsPredictionsMap",
+  "autofill.mojom.PasswordAndRealm=::autofill::PasswordAndRealm",
+  "autofill.mojom.PasswordForm=::autofill::PasswordForm",
+  "autofill.mojom.PasswordFormFieldPredictionMap=::autofill::PasswordFormFieldPredictionMap",
+  "autofill.mojom.PasswordFormFillData=::autofill::PasswordFormFillData",
+  "autofill.mojom.PasswordFormGenerationData=::autofill::PasswordFormGenerationData",
+  "autofill.mojom.PasswordGenerationUIData=::autofill::password_generation::PasswordGenerationUIData",
+  "autofill.mojom.ValueElementPair=::autofill::ValueElementPair",
 ]

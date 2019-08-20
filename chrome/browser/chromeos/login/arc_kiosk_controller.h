@@ -77,7 +77,7 @@ class ArcKioskController : public LoginPerformer::Delegate,
   // A timer to ensure the app splash is shown for a minimum amount of time.
   base::OneShotTimer splash_wait_timer_;
   bool launched_ = false;
-  base::WeakPtrFactory<ArcKioskController> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcKioskController> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcKioskController);
 };

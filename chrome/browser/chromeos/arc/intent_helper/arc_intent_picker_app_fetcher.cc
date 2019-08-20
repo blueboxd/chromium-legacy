@@ -192,7 +192,7 @@ ArcIntentPickerAppFetcher::~ArcIntentPickerAppFetcher() = default;
 
 ArcIntentPickerAppFetcher::ArcIntentPickerAppFetcher(
     content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents), weak_ptr_factory_(this) {}
+    : content::WebContentsObserver(web_contents) {}
 
 void ArcIntentPickerAppFetcher::GetArcAppsForNavigation(
     mojom::IntentHelperInstance* instance,

@@ -1442,7 +1442,7 @@
   {
     "name": "enable-oop-rasterization",
     "owners": [ "enne", "khushalsagar" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 80
   },
   {
     "name": "enable-parallel-downloading",
@@ -1658,7 +1658,7 @@
   {
     "name": "enable-surfacecontrol",
     "owners": [ "khushalsagar" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 80
   },
   {
     "name": "enable-surfaces-for-videos",
@@ -1678,7 +1678,7 @@
   {
     "name": "enable-sync-uss-bookmarks",
     "owners": [ "mamir", "//components/sync/OWNERS" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 80
   },
   {
     "name": "enable-sync-uss-nigori",
@@ -1955,7 +1955,7 @@
   {
     "name": "enforce-tls13-downgrade",
     "owners": [ "davidben", "svaldez" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 82
   },
   {
     "name": "enterprise-reporting-in-browser",
@@ -2361,7 +2361,7 @@
   {
     "name": "network-service-in-process",
     "owners": [ "network-service-dev" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 84
   },
   {
     "name": "new-net-error-page-ui",
@@ -2721,6 +2721,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "password-leak-detection",
+    "owners": [ "jdoerrie", "vasilii" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "password-manager-onboarding-android",
     "owners": ["achulkov", "ioanap"],
     "expiry_milestone": 80
@@ -2998,7 +3003,7 @@
   {
     "name": "sync-support-secondary-account",
     "owners": [ "treib", "//components/sync/OWNERS" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 80
   },
   {
     "name": "sync-wifi-configurations",

@@ -70,7 +70,10 @@ constexpr char kThrottledErrorDescription[] =
 
 AwContentRendererClient::AwContentRendererClient() {}
 
-AwContentRendererClient::~AwContentRendererClient() {}
+AwContentRendererClient::~AwContentRendererClient() {
+  DCHECK(!render_thread_connector_for_io_thread_ ||
+         !render_thread_connector_for_io_thread_->IsBound());
+}
 
 void AwContentRendererClient::RenderThreadStarted() {
   RenderThread* thread = RenderThread::Get();
@@ -78,6 +81,9 @@ void AwContentRendererClient::RenderThreadStarted() {
   thread->AddObserver(aw_render_thread_observer_.get());
 
   visited_link_slave_.reset(new visitedlink::VisitedLinkSlave);
+
+  io_thread_task_runner_ = thread->GetIOTaskRunner();
+  render_thread_connector_for_io_thread_ = thread->GetConnector()->Clone();
 
   auto registry = std::make_unique<service_manager::BinderRegistry>();
   registry->AddInterface(visited_link_slave_->GetBindCallback(),
@@ -265,13 +271,31 @@ void AwContentRendererClient::AddSupportedKeySystems(
 
 std::unique_ptr<content::WebSocketHandshakeThrottleProvider>
 AwContentRendererClient::CreateWebSocketHandshakeThrottleProvider() {
-  return std::make_unique<AwWebSocketHandshakeThrottleProvider>();
+  if (content::RenderThread::Get()) {
+    return std::make_unique<AwWebSocketHandshakeThrottleProvider>(
+        content::RenderThread::Get()->GetConnector());
+  }
+  if (io_thread_task_runner_->BelongsToCurrentThread()) {
+    return std::make_unique<AwWebSocketHandshakeThrottleProvider>(
+        render_thread_connector_for_io_thread_.get());
+  }
+  NOTREACHED();
+  return nullptr;
 }
 
 std::unique_ptr<content::URLLoaderThrottleProvider>
 AwContentRendererClient::CreateURLLoaderThrottleProvider(
     content::URLLoaderThrottleProviderType provider_type) {
-  return std::make_unique<AwURLLoaderThrottleProvider>(provider_type);
+  if (content::RenderThread::Get()) {
+    return std::make_unique<AwURLLoaderThrottleProvider>(
+        content::RenderThread::Get()->GetConnector(), provider_type);
+  }
+  if (io_thread_task_runner_->BelongsToCurrentThread()) {
+    return std::make_unique<AwURLLoaderThrottleProvider>(
+        render_thread_connector_for_io_thread_.get(), provider_type);
+  }
+  NOTREACHED();
+  return nullptr;
 }
 
 void AwContentRendererClient::GetInterface(

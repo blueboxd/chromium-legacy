@@ -44,12 +44,6 @@ namespace blink {
 
 using namespace html_names;
 
-namespace {
-
-const char kXSSDetected[] = "Token contains a reflected XSS vector";
-
-}  // namespace
-
 HTMLViewSourceDocument::HTMLViewSourceDocument(const DocumentInit& initializer,
                                                const String& mime_type)
     : HTMLDocument(initializer, kViewSourceDocumentClass), type_(mime_type) {
@@ -86,9 +80,7 @@ void HTMLViewSourceDocument::CreateContainingTable() {
   line_number_ = 0;
 }
 
-void HTMLViewSourceDocument::AddSource(const String& source,
-                                       HTMLToken& token,
-                                       SourceAnnotation annotation) {
+void HTMLViewSourceDocument::AddSource(const String& source, HTMLToken& token) {
   if (!current_)
     CreateContainingTable();
 
@@ -104,13 +96,13 @@ void HTMLViewSourceDocument::AddSource(const String& source,
       break;
     case HTMLToken::kStartTag:
     case HTMLToken::kEndTag:
-      ProcessTagToken(source, token, annotation);
+      ProcessTagToken(source, token);
       break;
     case HTMLToken::kComment:
       ProcessCommentToken(source, token);
       break;
     case HTMLToken::kCharacter:
-      ProcessCharacterToken(source, token, annotation);
+      ProcessCharacterToken(source, token);
       break;
   }
 }
@@ -130,9 +122,7 @@ void HTMLViewSourceDocument::ProcessEndOfFileToken(const String& source,
 }
 
 void HTMLViewSourceDocument::ProcessTagToken(const String& source,
-                                             HTMLToken& token,
-                                             SourceAnnotation annotation) {
-  MaybeAddSpanForAnnotation(annotation);
+                                             HTMLToken& token) {
   current_ = AddSpanWithClassName("html-tag");
 
   AtomicString tag_name(token.GetName());
@@ -185,11 +175,9 @@ void HTMLViewSourceDocument::ProcessCommentToken(const String& source,
   current_ = td_;
 }
 
-void HTMLViewSourceDocument::ProcessCharacterToken(
-    const String& source,
-    HTMLToken&,
-    SourceAnnotation annotation) {
-  AddText(source, "", annotation);
+void HTMLViewSourceDocument::ProcessCharacterToken(const String& source,
+                                                   HTMLToken&) {
+  AddText(source, "");
 }
 
 Element* HTMLViewSourceDocument::AddSpanWithClassName(
@@ -241,8 +229,7 @@ void HTMLViewSourceDocument::FinishLine() {
 }
 
 void HTMLViewSourceDocument::AddText(const String& text,
-                                     const AtomicString& class_name,
-                                     SourceAnnotation annotation) {
+                                     const AtomicString& class_name) {
   if (text.IsEmpty())
     return;
 
@@ -261,7 +248,6 @@ void HTMLViewSourceDocument::AddText(const String& text,
       continue;
     }
     Element* old_element = current_;
-    MaybeAddSpanForAnnotation(annotation);
     current_->ParserAppendChild(Text::Create(*this, substring));
     current_ = old_element;
     if (i < size - 1)
@@ -345,14 +331,6 @@ int HTMLViewSourceDocument::AddSrcset(const String& source,
       AddText(",", "html-attribute-value");
   }
   return end;
-}
-
-void HTMLViewSourceDocument::MaybeAddSpanForAnnotation(
-    SourceAnnotation annotation) {
-  if (annotation == kAnnotateSourceAsXSS) {
-    current_ = AddSpanWithClassName("highlight");
-    current_->setAttribute(kTitleAttr, kXSSDetected);
-  }
 }
 
 void HTMLViewSourceDocument::Trace(Visitor* visitor) {

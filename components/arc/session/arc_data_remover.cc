@@ -30,7 +30,7 @@ constexpr char kArcRemoveDataUpstartJob[] = "arc_2dremove_2ddata";
 
 ArcDataRemover::ArcDataRemover(PrefService* prefs,
                                const cryptohome::Identification& cryptohome_id)
-    : cryptohome_id_(cryptohome_id), weak_factory_(this) {
+    : cryptohome_id_(cryptohome_id) {
   pref_.Init(prefs::kArcDataRemoveRequested, prefs);
 }
 

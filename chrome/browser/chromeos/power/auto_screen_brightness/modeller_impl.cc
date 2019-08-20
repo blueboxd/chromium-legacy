@@ -383,8 +383,7 @@ ModellerImpl::ModellerImpl(
       trainer_(trainer.release(),
                base::OnTaskRunnerDeleter(blocking_task_runner_)),
       tick_clock_(tick_clock),
-      model_timer_(tick_clock_),
-      weak_ptr_factory_(this) {
+      model_timer_(tick_clock_) {
   DCHECK(als_reader);
   DCHECK(brightness_monitor);
   DCHECK(model_config_loader);

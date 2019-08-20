@@ -88,9 +88,7 @@ void LaunchResetScreen() {
 // Note that show_oobe_ui_ defaults to false because WizardController assumes
 // OOBE UI is not visible by default.
 CoreOobeHandler::CoreOobeHandler(JSCallsContainer* js_calls_container)
-    : BaseWebUIHandler(js_calls_container),
-      version_info_updater_(this),
-      weak_ptr_factory_(this) {
+    : BaseWebUIHandler(js_calls_container), version_info_updater_(this) {
   DCHECK(js_calls_container);
   AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
   CHECK(accessibility_manager);

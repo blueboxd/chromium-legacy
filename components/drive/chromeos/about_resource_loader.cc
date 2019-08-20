@@ -22,9 +22,7 @@ constexpr base::TimeDelta kCacheEvictionTimeout =
 
 AboutResourceLoader::AboutResourceLoader(JobScheduler* scheduler,
                                          const base::TickClock* clock)
-    : scheduler_(scheduler),
-      current_update_task_id_(-1),
-      weak_ptr_factory_(this) {
+    : scheduler_(scheduler), current_update_task_id_(-1) {
   cache_eviction_timer_ = std::make_unique<base::RetainingOneShotTimer>(
       FROM_HERE, kCacheEvictionTimeout,
       base::BindRepeating(&AboutResourceLoader::EvictCachedAboutResource,

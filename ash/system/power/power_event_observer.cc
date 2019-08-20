@@ -61,9 +61,7 @@ class CompositorWatcher : public ui::CompositorObserver {
   //     CompositorWatcher instance is deleted, nor from the CompositorWatcher
   //     destructor.
   explicit CompositorWatcher(base::OnceClosure callback)
-      : callback_(std::move(callback)),
-        compositor_observer_(this),
-        weak_ptr_factory_(this) {
+      : callback_(std::move(callback)), compositor_observer_(this) {
     Start();
   }
   ~CompositorWatcher() override = default;
@@ -204,7 +202,7 @@ class CompositorWatcher : public ui::CompositorObserver {
   std::map<ui::Compositor*, CompositorInfo> pending_compositing_;
   ScopedObserver<ui::Compositor, ui::CompositorObserver> compositor_observer_;
 
-  base::WeakPtrFactory<CompositorWatcher> weak_ptr_factory_;
+  base::WeakPtrFactory<CompositorWatcher> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CompositorWatcher);
 };

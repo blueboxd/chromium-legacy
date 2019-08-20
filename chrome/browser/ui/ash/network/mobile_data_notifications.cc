@@ -49,7 +49,7 @@ constexpr int kNotificationCheckDelayInSeconds = 2;
 ////////////////////////////////////////////////////////////////////////////////
 // MobileDataNotifications
 
-MobileDataNotifications::MobileDataNotifications() : weak_factory_(this) {
+MobileDataNotifications::MobileDataNotifications() {
   NetworkHandler::Get()->network_state_handler()->AddObserver(this, FROM_HERE);
   NetworkHandler::Get()->network_connection_handler()->AddObserver(this);
   UserManager::Get()->AddSessionStateObserver(this);

@@ -31,4 +31,5 @@ public_deps = [
   "//ui/gfx/mojom",
   "//ui/latency/mojom",
 ]
-type_mappings = [ "viz.mojom.CompositorFrame=viz::CompositorFrame[move_only]" ]
+type_mappings =
+    [ "viz.mojom.CompositorFrame=::viz::CompositorFrame[move_only]" ]

@@ -148,7 +148,7 @@ class DownloadItemNotification : public ImageDecoder::ImageRequest,
   // Status of the preview image decode.
   ImageDecodeStatus image_decode_status_ = NOT_STARTED;
 
-  base::WeakPtrFactory<DownloadItemNotification> weak_factory_;
+  base::WeakPtrFactory<DownloadItemNotification> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DownloadItemNotification);
 };

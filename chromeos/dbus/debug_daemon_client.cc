@@ -126,7 +126,7 @@ DbusLibraryError DbusLibraryErrorFromString(
 // The DebugDaemonClient implementation used in production.
 class DebugDaemonClientImpl : public DebugDaemonClient {
  public:
-  DebugDaemonClientImpl() : debugdaemon_proxy_(NULL), weak_ptr_factory_(this) {}
+  DebugDaemonClientImpl() : debugdaemon_proxy_(nullptr) {}
 
   ~DebugDaemonClientImpl() override = default;
 
@@ -866,7 +866,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   std::unique_ptr<PipeReader> pipe_reader_;
   StopAgentTracingCallback callback_;
   scoped_refptr<base::TaskRunner> stop_agent_tracing_task_runner_;
-  base::WeakPtrFactory<DebugDaemonClientImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<DebugDaemonClientImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DebugDaemonClientImpl);
 };

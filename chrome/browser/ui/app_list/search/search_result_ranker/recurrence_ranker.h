@@ -145,7 +145,7 @@ class RecurrenceRanker {
   SEQUENCE_CHECKER(sequence_checker_);
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  base::WeakPtrFactory<RecurrenceRanker> weak_factory_;
+  base::WeakPtrFactory<RecurrenceRanker> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RecurrenceRanker);
 };

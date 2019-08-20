@@ -10,13 +10,14 @@
 namespace content {
 
 ControllerServiceWorkerConnector::ControllerServiceWorkerConnector(
-    blink::mojom::ServiceWorkerContainerHostPtrInfo container_host_info,
+    mojo::PendingRemote<blink::mojom::ServiceWorkerContainerHost>
+        remote_container_host,
     mojo::PendingRemote<blink::mojom::ControllerServiceWorker>
         remote_controller,
     const std::string& client_id)
     : client_id_(client_id) {
-  container_host_ptr_.Bind(std::move(container_host_info));
-  container_host_ptr_.set_connection_error_handler(base::BindOnce(
+  container_host_.Bind(std::move(remote_container_host));
+  container_host_.set_disconnect_handler(base::BindOnce(
       &ControllerServiceWorkerConnector::OnContainerHostConnectionClosed,
       base::Unretained(this)));
   SetControllerServiceWorker(std::move(remote_controller));
@@ -28,11 +29,11 @@ ControllerServiceWorkerConnector::GetControllerServiceWorker(
   switch (state_) {
     case State::kDisconnected: {
       DCHECK(!controller_service_worker_);
-      DCHECK(container_host_ptr_);
+      DCHECK(container_host_);
       mojo::PendingRemote<blink::mojom::ControllerServiceWorker>
           remote_controller;
 
-      container_host_ptr_->EnsureControllerServiceWorker(
+      container_host_->EnsureControllerServiceWorker(
           remote_controller.InitWithNewPipeAndPassReceiver(), purpose);
 
       SetControllerServiceWorker(std::move(remote_controller));
@@ -46,7 +47,7 @@ ControllerServiceWorkerConnector::GetControllerServiceWorker(
       return nullptr;
     case State::kNoContainerHost:
       DCHECK(!controller_service_worker_);
-      DCHECK(!container_host_ptr_);
+      DCHECK(!container_host_);
       return nullptr;
   }
   NOTREACHED();
@@ -63,7 +64,7 @@ void ControllerServiceWorkerConnector::RemoveObserver(Observer* observer) {
 
 void ControllerServiceWorkerConnector::OnContainerHostConnectionClosed() {
   state_ = State::kNoContainerHost;
-  container_host_ptr_.reset();
+  container_host_.reset();
   controller_service_worker_.reset();
 }
 

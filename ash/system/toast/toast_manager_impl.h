@@ -56,7 +56,7 @@ class ASH_EXPORT ToastManagerImpl : public ToastManager,
   std::unique_ptr<ToastOverlay> overlay_;
 
   ScopedSessionObserver scoped_session_observer_{this};
-  base::WeakPtrFactory<ToastManagerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<ToastManagerImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ToastManagerImpl);
 };

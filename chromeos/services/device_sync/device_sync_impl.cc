@@ -319,8 +319,7 @@ DeviceSyncImpl::DeviceSyncImpl(
       clock_(clock),
       pref_connection_delegate_(std::move(pref_connection_delegate)),
       set_software_feature_timer_(std::move(timer)),
-      status_(Status::FETCHING_ACCOUNT_INFO),
-      weak_ptr_factory_(this) {
+      status_(Status::FETCHING_ACCOUNT_INFO) {
   PA_LOG(VERBOSE) << "DeviceSyncImpl: Initializing.";
   ProcessPrimaryAccountInfo(identity_manager_->GetPrimaryAccountInfo());
 }

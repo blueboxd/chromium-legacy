@@ -12,14 +12,13 @@
 #include "base/sequence_checker.h"
 #include "media/base/video_decoder.h"
 #include "media/gpu/media_gpu_export.h"
+#include "media/gpu/video_frame_converter.h"
 
 namespace base {
 class SequencedTaskRunner;
 }
 
 namespace media {
-
-class VideoFrameConverter;
 
 class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder {
  public:
@@ -47,11 +46,10 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder {
 
  private:
   void Destroy() override;
-
-  const scoped_refptr<base::SequencedTaskRunner> client_task_runner_;
-
-  const std::unique_ptr<VideoDecoder> decoder_;
-  const std::unique_ptr<VideoFrameConverter> frame_converter_;
+  void OnDecodeDone(bool eos_buffer, DecodeCB decode_cb, DecodeStatus status);
+  void OnResetDone();
+  void OnFrameConverted(scoped_refptr<VideoFrame> frame);
+  void OnError(const std::string& msg);
 
   static void OnFrameDecodedThunk(
       scoped_refptr<base::SequencedTaskRunner> task_runner,
@@ -59,7 +57,22 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder {
       scoped_refptr<VideoFrame> frame);
   void OnFrameDecoded(scoped_refptr<VideoFrame> frame);
 
+  // Call |client_flush_cb_| with |status| if we need.
+  void CallFlushCbIfNeeded(DecodeStatus status);
+
+  const scoped_refptr<base::SequencedTaskRunner> client_task_runner_;
+
+  const std::unique_ptr<VideoDecoder> decoder_;
+  const std::unique_ptr<VideoFrameConverter> frame_converter_;
+
+  // Callback from the client. These callback are called on
+  // |client_task_runner_|.
   OutputCB client_output_cb_;
+  DecodeCB client_flush_cb_;
+  base::OnceClosure client_reset_cb_;
+
+  // Set to true when any unexpected error occurs.
+  bool has_error_ = false;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -6,7 +6,7 @@
 // contains added fields to validate that they do not break the parsing. This is
 // to simulate an outdated Chrome handling messages from an updated cleaner.
 
-// This file contains minimal comments. For descriptions of non-test
+// This file contains minimal comments for descriptions of non-test
 // fields/messages please refer to the original file.
 
 syntax = "proto2";
@@ -35,7 +35,6 @@ message PromptUserResponse {
     ACCEPTED_WITH_LOGS = 1;
     ACCEPTED_WITHOUT_LOGS = 2;
     DENIED = 3;
-    FOR_TESTS_ONLY = 255;
   };
 
   optional PromptAcceptance prompt_acceptance = 1 [default = UNSPECIFIED];

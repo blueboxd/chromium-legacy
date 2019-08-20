@@ -199,9 +199,9 @@ public class PasswordEntryViewer
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
+    public void onDestroyView() {
         PasswordManagerHandlerProvider.getInstance().removeObserver(this);
+        super.onDestroyView();
     }
 
     private boolean isPasswordSyncingUser() {

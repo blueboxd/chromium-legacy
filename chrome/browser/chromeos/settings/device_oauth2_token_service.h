@@ -224,7 +224,7 @@ class DeviceOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
 
   CoreAccountId robot_account_id_for_testing_;
 
-  base::WeakPtrFactory<DeviceOAuth2TokenService> weak_ptr_factory_;
+  base::WeakPtrFactory<DeviceOAuth2TokenService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DeviceOAuth2TokenService);
 };

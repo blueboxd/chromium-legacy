@@ -198,8 +198,7 @@ CrostiniAppIcon::CrostiniAppIcon(Profile* profile,
               ->GetWeakPtr()),
       app_id_(app_id),
       resource_size_in_dip_(resource_size_in_dip),
-      observer_(observer),
-      weak_ptr_factory_(this) {
+      observer_(observer) {
   DCHECK_NE(observer_, nullptr);
   auto source = std::make_unique<Source>(weak_ptr_factory_.GetWeakPtr(),
                                          resource_size_in_dip);

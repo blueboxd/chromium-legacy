@@ -188,7 +188,7 @@ class CryptAuthEnrollmentManagerImpl : public CryptAuthEnrollmentManager,
   // instance will be created for each individual attempt.
   std::unique_ptr<CryptAuthEnroller> cryptauth_enroller_;
 
-  base::WeakPtrFactory<CryptAuthEnrollmentManagerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<CryptAuthEnrollmentManagerImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CryptAuthEnrollmentManagerImpl);
 };

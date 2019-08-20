@@ -14,8 +14,8 @@ deps = [
 ]
 
 type_mappings = [
-  "media.mojom.CdmProxy.Function=media::CdmProxy::Function",
-  "media.mojom.CdmProxy.KeyType=media::CdmProxy::KeyType",
-  "media.mojom.CdmProxy.Protocol=media::CdmProxy::Protocol",
-  "media.mojom.CdmProxy.Status=media::CdmProxy::Status",
+  "media.mojom.CdmProxy.Function=::media::CdmProxy::Function",
+  "media.mojom.CdmProxy.KeyType=::media::CdmProxy::KeyType",
+  "media.mojom.CdmProxy.Protocol=::media::CdmProxy::Protocol",
+  "media.mojom.CdmProxy.Status=::media::CdmProxy::Status",
 ]

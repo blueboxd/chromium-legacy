@@ -258,7 +258,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   // True if we need to play startup sound when audio device becomes available.
   bool need_to_play_startup_sound_ = false;
 
-  base::WeakPtrFactory<LoginDisplayHostWebUI> weak_factory_;
+  base::WeakPtrFactory<LoginDisplayHostWebUI> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LoginDisplayHostWebUI);
 };

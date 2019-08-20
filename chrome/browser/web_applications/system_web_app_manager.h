@@ -44,12 +44,17 @@ enum class SystemAppType {
 
 // The configuration options for a System App.
 struct SystemAppInfo {
+  SystemAppInfo();
+  explicit SystemAppInfo(const GURL& install_url);
+  SystemAppInfo(const SystemAppInfo& other);
+  ~SystemAppInfo();
+
   // The URL that the System App will be installed from.
   GURL install_url;
 
-  // If specified, the app with AppId |migration_source| will have its data
+  // If specified, the apps in |uninstall_and_replace| will have their data
   // migrated to this System App.
-  AppId migration_source;
+  std::vector<AppId> uninstall_and_replace;
 };
 
 // Installs, uninstalls, and updates System Web Apps.
@@ -112,14 +117,9 @@ class SystemWebAppManager {
   virtual const base::Version& CurrentVersion() const;
 
  private:
-  void OnAppsSynchronized(std::set<SystemAppType> already_installed,
-                          std::map<GURL, InstallResultCode> install_results,
+  void OnAppsSynchronized(std::map<GURL, InstallResultCode> install_results,
                           std::map<GURL, bool> uninstall_results);
   bool NeedsUpdate() const;
-
-  // TODO(calamity): Move migration into the install task once the install task
-  // is able to distinguish between an update install and a fresh install.
-  void MigrateSystemWebApps(std::set<SystemAppType> already_installed);
 
   std::unique_ptr<base::OneShotEvent> on_apps_synchronized_;
 

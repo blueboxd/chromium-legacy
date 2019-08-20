@@ -471,7 +471,7 @@ std::string DemoSetupController::GetSubOrganizationEmail() {
   return std::string();
 }
 
-DemoSetupController::DemoSetupController() : weak_ptr_factory_(this) {}
+DemoSetupController::DemoSetupController() {}
 
 DemoSetupController::~DemoSetupController() {
   if (device_local_account_policy_store_)

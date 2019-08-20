@@ -47,7 +47,7 @@ class OobeDisplayChooser : public ui::InputDeviceEventObserver {
       scoped_observer_;
   ash::mojom::CrosDisplayConfigControllerPtr cros_display_config_ptr_;
 
-  base::WeakPtrFactory<OobeDisplayChooser> weak_ptr_factory_;
+  base::WeakPtrFactory<OobeDisplayChooser> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OobeDisplayChooser);
 };

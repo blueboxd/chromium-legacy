@@ -60,8 +60,7 @@ SecureChannelInitializer::ConnectionRequestArgs::~ConnectionRequestArgs() =
     default;
 
 SecureChannelInitializer::SecureChannelInitializer(
-    scoped_refptr<base::TaskRunner> task_runner)
-    : weak_ptr_factory_(this) {
+    scoped_refptr<base::TaskRunner> task_runner) {
   PA_LOG(VERBOSE) << "SecureChannelInitializer::SecureChannelInitializer(): "
                   << "Fetching Bluetooth adapter. All requests received before "
                   << "the adapter is fetched will be queued.";

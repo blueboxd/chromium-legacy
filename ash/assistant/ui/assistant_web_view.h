@@ -86,7 +86,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantWebView
 
   bool contents_view_initialized_ = false;
 
-  base::WeakPtrFactory<AssistantWebView> weak_factory_;
+  base::WeakPtrFactory<AssistantWebView> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AssistantWebView);
 };

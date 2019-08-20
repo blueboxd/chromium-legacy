@@ -111,7 +111,7 @@ class ASH_EXPORT ResolutionNotificationController
 
   std::unique_ptr<ResolutionChangeInfo> change_info_;
 
-  base::WeakPtrFactory<ResolutionNotificationController> weak_factory_;
+  base::WeakPtrFactory<ResolutionNotificationController> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ResolutionNotificationController);
 };

@@ -100,9 +100,7 @@ ArcTimerBridge* ArcTimerBridge::GetForBrowserContextForTesting(
 
 ArcTimerBridge::ArcTimerBridge(content::BrowserContext* context,
                                ArcBridgeService* bridge_service)
-    : arc_bridge_service_(bridge_service),
-      binding_(this),
-      weak_ptr_factory_(this) {
+    : arc_bridge_service_(bridge_service), binding_(this) {
   arc_bridge_service_->timer()->SetHost(this);
   arc_bridge_service_->timer()->AddObserver(this);
 }

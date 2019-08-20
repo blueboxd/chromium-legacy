@@ -121,7 +121,7 @@ void InstallAttributes::ShutdownForTesting() {
 }
 
 InstallAttributes::InstallAttributes(CryptohomeClient* cryptohome_client)
-    : cryptohome_client_(cryptohome_client), weak_ptr_factory_(this) {}
+    : cryptohome_client_(cryptohome_client) {}
 
 InstallAttributes::~InstallAttributes() {}
 

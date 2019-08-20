@@ -148,7 +148,7 @@ class ASH_EXPORT DetachableBaseHandler
 
   base::ObserverList<DetachableBaseObserver>::Unchecked observers_;
 
-  base::WeakPtrFactory<DetachableBaseHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<DetachableBaseHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DetachableBaseHandler);
 };

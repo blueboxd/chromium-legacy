@@ -126,9 +126,7 @@ class URLHelper {
 }  // namespace
 
 ExternalFileResolver::ExternalFileResolver(void* profile_id)
-    : profile_id_(profile_id),
-      range_parse_result_(net::OK),
-      weak_ptr_factory_(this) {
+    : profile_id_(profile_id), range_parse_result_(net::OK) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 }
 

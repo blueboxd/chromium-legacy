@@ -18,13 +18,15 @@ class TestWebAppUiManager : public WebAppUiManager {
   ~TestWebAppUiManager() override;
 
   void SetNumWindowsForApp(const AppId& app_id, size_t num_windows_for_app);
+  bool DidUninstallAndReplace(const AppId& from_app, const AppId& to_app);
 
   // WebAppUiManager:
   WebAppUiManagerImpl* AsImpl() override;
   size_t GetNumWindowsForApp(const AppId& app_id) override;
   void NotifyOnAllAppWindowsClosed(const AppId& app_id,
                                    base::OnceClosure callback) override;
-  void MigrateOSAttributes(const AppId& from, const AppId& to) override;
+  void UninstallAndReplace(const std::vector<AppId>& from_apps,
+                           const AppId& to_app) override;
   bool CanAddAppToQuickLaunchBar() const override;
   void AddAppToQuickLaunchBar(const AppId& app_id) override;
   bool IsInAppWindow(content::WebContents* web_contents) const override;
@@ -36,6 +38,7 @@ class TestWebAppUiManager : public WebAppUiManager {
 
  private:
   std::map<AppId, size_t> app_id_to_num_windows_map_;
+  std::map<AppId, AppId> uninstall_and_replace_map_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebAppUiManager);
 };

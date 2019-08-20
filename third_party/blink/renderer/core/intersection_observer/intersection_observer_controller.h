@@ -65,10 +65,6 @@ class IntersectionObserverController
   // IntersectionObservers for which this is the execution context of the
   // callback.
   HeapHashSet<Member<IntersectionObserver>> pending_intersection_observers_;
-  // TODO(https://crbug.com/796145): Remove this hack once on-stack objects
-  // get supported by either of wrapper-tracing or unified GC.
-  HeapVector<Member<IntersectionObserver>>
-      intersection_observers_being_invoked_;
   // This is 'true' if any tracked observation target is being tracked by an
   // observer for which observer->trackVisibility() is true.
   bool needs_occlusion_tracking_;

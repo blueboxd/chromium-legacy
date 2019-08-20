@@ -9,8 +9,8 @@ public_headers = [
 ]
 traits_headers = [ "//ui/gfx/range/mojom/range_mojom_traits.h" ]
 type_mappings = [
-  "gfx.mojom.Range=gfx::Range",
-  "gfx.mojom.RangeF=gfx::RangeF",
+  "gfx.mojom.Range=::gfx::Range",
+  "gfx.mojom.RangeF=::gfx::RangeF",
 ]
 sources = [
   "range_mojom_traits.h",

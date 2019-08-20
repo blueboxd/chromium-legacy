@@ -32,8 +32,7 @@ base::Value BuildShareList(const std::vector<smb_client::SmbUrl>& shares) {
 
 }  // namespace
 
-SmbHandler::SmbHandler(Profile* profile)
-    : profile_(profile), weak_ptr_factory_(this) {}
+SmbHandler::SmbHandler(Profile* profile) : profile_(profile) {}
 
 SmbHandler::~SmbHandler() = default;
 

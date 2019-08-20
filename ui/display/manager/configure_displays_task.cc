@@ -52,8 +52,7 @@ ConfigureDisplaysTask::ConfigureDisplaysTask(
       callback_(callback),
       is_configuring_(false),
       num_displays_configured_(0),
-      task_status_(SUCCESS),
-      weak_ptr_factory_(this) {
+      task_status_(SUCCESS) {
   for (size_t i = 0; i < requests_.size(); ++i)
     pending_request_indexes_.push(i);
   delegate_->AddObserver(this);

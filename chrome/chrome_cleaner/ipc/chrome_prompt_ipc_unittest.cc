@@ -87,7 +87,7 @@ struct TestConfig {
   ParentDisconnected expected_parent_disconnected;
 };
 
-// Class that lives in the parent process and handles that side of the IPC.
+// Parent process.
 class MockChromePrompt : public mojom::ChromePrompt {
  public:
   MockChromePrompt(TestConfig test_config, mojom::ChromePromptRequest request)
@@ -151,7 +151,6 @@ class ChromePromptIPCParentProcess : public ParentProcess {
     }
     if (test_config.with_registry_keys)
       AppendSwitch(kIncludeRegistryKeysSwitch);
-
     AppendSwitch(kExpectedPromptResultSwitch,
                  base::NumberToString(
                      static_cast<int>(test_config.expected_prompt_acceptance)));
@@ -179,7 +178,26 @@ class ChromePromptIPCParentProcess : public ParentProcess {
   std::unique_ptr<MockChromePrompt> mock_chrome_prompt_;
 };
 
-// Class that lives in the child process and handles that side of the IPC.
+class ChromePromptIPCTestErrorHandler : public ChromePromptIPC::ErrorHandler {
+ public:
+  ChromePromptIPCTestErrorHandler(base::OnceClosure on_closed,
+                                  base::OnceClosure on_closed_after_done)
+      : on_closed_(std::move(on_closed)),
+        on_closed_after_done_(std::move(on_closed_after_done)) {}
+
+  ~ChromePromptIPCTestErrorHandler() override = default;
+
+  void OnConnectionClosed() override { std::move(on_closed_).Run(); }
+
+  void OnConnectionClosedAfterDone() override {
+    std::move(on_closed_after_done_).Run();
+  }
+
+  base::OnceClosure on_closed_;
+  base::OnceClosure on_closed_after_done_;
+};
+
+// Child process.
 class ChromePromptIPCChildProcess : public ChildProcess {
  public:
   explicit ChromePromptIPCChildProcess(
@@ -279,7 +297,6 @@ MULTIPROCESS_TEST_MAIN(ChromePromptIPCClientMain) {
   auto child_process =
       base::MakeRefCounted<ChromePromptIPCChildProcess>(mojo_task_runner);
   base::RunLoop on_done_run_loop;
-
   // The parent process can disconnect while the pipe is required or after it's
   // no longer needed. In the former case, the child process will immediately
   // exit; in the latter, it will break |on_done_run_loop|, which will be

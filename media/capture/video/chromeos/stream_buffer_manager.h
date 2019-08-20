@@ -152,7 +152,7 @@ class CAPTURE_EXPORT StreamBufferManager final {
 
   std::unique_ptr<CameraBufferFactory> camera_buffer_factory_;
 
-  base::WeakPtrFactory<StreamBufferManager> weak_ptr_factory_;
+  base::WeakPtrFactory<StreamBufferManager> weak_ptr_factory_{this};
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(StreamBufferManager);
 };

@@ -227,7 +227,7 @@ class ArcFileSystemOperationRunner
 
   base::ObserverList<Observer>::Unchecked observer_list_;
 
-  base::WeakPtrFactory<ArcFileSystemOperationRunner> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcFileSystemOperationRunner> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcFileSystemOperationRunner);
 };

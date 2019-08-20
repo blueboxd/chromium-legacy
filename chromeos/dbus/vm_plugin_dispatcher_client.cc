@@ -22,7 +22,7 @@ using namespace vm_tools::plugin_dispatcher;
 
 class VmPluginDispatcherClientImpl : public VmPluginDispatcherClient {
  public:
-  VmPluginDispatcherClientImpl() : weak_ptr_factory_(this) {}
+  VmPluginDispatcherClientImpl() {}
 
   ~VmPluginDispatcherClientImpl() override = default;
 
@@ -156,7 +156,7 @@ class VmPluginDispatcherClientImpl : public VmPluginDispatcherClient {
 
   base::ObserverList<Observer> observer_list_;
 
-  base::WeakPtrFactory<VmPluginDispatcherClientImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<VmPluginDispatcherClientImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VmPluginDispatcherClientImpl);
 };

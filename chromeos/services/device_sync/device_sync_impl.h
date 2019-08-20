@@ -242,7 +242,7 @@ class DeviceSyncImpl : public DeviceSyncBase,
   std::unique_ptr<RemoteDeviceProvider> remote_device_provider_;
   std::unique_ptr<SoftwareFeatureManager> software_feature_manager_;
 
-  base::WeakPtrFactory<DeviceSyncImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<DeviceSyncImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DeviceSyncImpl);
 };

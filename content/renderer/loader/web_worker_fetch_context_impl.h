@@ -13,6 +13,8 @@
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -177,8 +179,8 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
           service_worker_client_request,
       blink::mojom::ServiceWorkerWorkerClientRegistryPtrInfo
           service_worker_worker_client_registry_info,
-      blink::mojom::ServiceWorkerContainerHostPtrInfo
-          service_worker_container_host_info,
+      mojo::PendingRemote<blink::mojom::ServiceWorkerContainerHost>
+          service_worker_container_host,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
           fallback_factory_info,
@@ -195,7 +197,8 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
           service_worker_client_request,
       blink::mojom::ServiceWorkerWorkerClientRegistryPtrInfo
           service_worker_worker_client_registry_ptr_info,
-      blink::mojom::ServiceWorkerContainerHostPtrInfo container_host_ptr_info,
+      mojo::PendingRemote<blink::mojom::ServiceWorkerContainerHost>
+          service_worker_container_host,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
           fallback_factory_info,
@@ -225,8 +228,8 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   blink::mojom::ServiceWorkerWorkerClientRegistryPtrInfo
       service_worker_worker_client_registry_info_;
   // Consumed on the worker thread to create |service_worker_container_host_|.
-  blink::mojom::ServiceWorkerContainerHostPtrInfo
-      service_worker_container_host_info_;
+  mojo::PendingRemote<blink::mojom::ServiceWorkerContainerHost>
+      pending_service_worker_container_host_;
   // Consumed on the worker thread to create |loader_factory_|.
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info_;
   // Consumed on the worker thread to create |fallback_factory_|.
@@ -239,7 +242,8 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   // This can be null if the |provider_context| passed to Create() was null or
   // already being destructed (see
   // ServiceWorkerProviderContext::OnNetworkProviderDestroyed()).
-  blink::mojom::ServiceWorkerContainerHostPtr service_worker_container_host_;
+  mojo::Remote<blink::mojom::ServiceWorkerContainerHost>
+      service_worker_container_host_;
 
   // The Client#id value of the shared worker or dedicated worker (since
   // dedicated workers are not yet service worker clients, it is the parent

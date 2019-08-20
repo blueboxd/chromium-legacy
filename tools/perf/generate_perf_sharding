@@ -11,6 +11,9 @@ import os
 import sys
 import textwrap
 
+from core import path_util
+path_util.AddTelemetryToPath()
+
 from core import benchmark_utils
 from core import bot_platforms
 from core import retrieve_story_timing

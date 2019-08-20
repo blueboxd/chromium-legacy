@@ -43,7 +43,7 @@ class COMPONENT_EXPORT(CHROMEOS_DISKS) SuspendUnmountManager
 
   base::UnguessableToken block_suspend_token_;
 
-  base::WeakPtrFactory<SuspendUnmountManager> weak_ptr_factory_;
+  base::WeakPtrFactory<SuspendUnmountManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SuspendUnmountManager);
 };

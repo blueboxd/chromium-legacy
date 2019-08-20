@@ -60,8 +60,7 @@ CachedPolicyKeyLoaderChromeOS::CachedPolicyKeyLoaderChromeOS(
     : task_runner_(task_runner),
       cryptohome_client_(cryptohome_client),
       account_id_(account_id),
-      user_policy_key_dir_(user_policy_key_dir),
-      weak_factory_(this) {}
+      user_policy_key_dir_(user_policy_key_dir) {}
 
 CachedPolicyKeyLoaderChromeOS::~CachedPolicyKeyLoaderChromeOS() {}
 

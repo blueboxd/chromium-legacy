@@ -128,7 +128,8 @@ TEST_F(SystemWebAppManagerTest, Disabled) {
                                  ExternalInstallSource::kSystemInstalled);
 
   base::flat_map<SystemAppType, SystemAppInfo> system_apps;
-  system_apps[SystemAppType::SETTINGS] = {kAppUrl1};
+
+  system_apps[SystemAppType::SETTINGS] = SystemAppInfo(kAppUrl1);
 
   system_web_app_manager()->SetSystemApps(std::move(system_apps));
   system_web_app_manager()->Start();
@@ -146,8 +147,8 @@ TEST_F(SystemWebAppManagerTest, Disabled) {
 // Test that System Apps do install with the feature enabled.
 TEST_F(SystemWebAppManagerTest, Enabled) {
   base::flat_map<SystemAppType, SystemAppInfo> system_apps;
-  system_apps[SystemAppType::SETTINGS] = {kAppUrl1};
-  system_apps[SystemAppType::DISCOVER] = {kAppUrl2};
+  system_apps[SystemAppType::SETTINGS] = SystemAppInfo(kAppUrl1);
+  system_apps[SystemAppType::DISCOVER] = SystemAppInfo(kAppUrl2);
 
   system_web_app_manager()->SetSystemApps(std::move(system_apps));
   system_web_app_manager()->Start();
@@ -168,7 +169,7 @@ TEST_F(SystemWebAppManagerTest, UninstallAppInstalledInPreviousSession) {
   SimulatePreviouslyInstalledApp(kAppUrl3,
                                  ExternalInstallSource::kInternalDefault);
   base::flat_map<SystemAppType, SystemAppInfo> system_apps;
-  system_apps[SystemAppType::SETTINGS] = {kAppUrl1};
+  system_apps[SystemAppType::SETTINGS] = SystemAppInfo(kAppUrl1);
 
   system_web_app_manager()->SetSystemApps(std::move(system_apps));
   system_web_app_manager()->Start();
@@ -192,7 +193,7 @@ TEST_F(SystemWebAppManagerTest, AlwaysUpdate) {
       SystemWebAppManager::UpdatePolicy::kAlwaysUpdate);
 
   base::flat_map<SystemAppType, SystemAppInfo> system_apps;
-  system_apps[SystemAppType::SETTINGS] = {kAppUrl1};
+  system_apps[SystemAppType::SETTINGS] = SystemAppInfo(kAppUrl1);
   system_web_app_manager()->SetSystemApps(system_apps);
 
   system_web_app_manager()->set_current_version(base::Version("1.0.0.0"));
@@ -203,7 +204,7 @@ TEST_F(SystemWebAppManagerTest, AlwaysUpdate) {
 
   // Create another app. The version hasn't changed but the app should still
   // install.
-  system_apps[SystemAppType::DISCOVER] = {kAppUrl2};
+  system_apps[SystemAppType::DISCOVER] = SystemAppInfo(kAppUrl2);
   system_web_app_manager()->SetSystemApps(system_apps);
   system_web_app_manager()->Start();
 
@@ -236,7 +237,7 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
       SystemWebAppManager::UpdatePolicy::kOnVersionChange);
 
   base::flat_map<SystemAppType, SystemAppInfo> system_apps;
-  system_apps[SystemAppType::SETTINGS] = {kAppUrl1};
+  system_apps[SystemAppType::SETTINGS] = SystemAppInfo(kAppUrl1);
   system_web_app_manager()->SetSystemApps(system_apps);
 
   system_web_app_manager()->set_current_version(base::Version("1.0.0.0"));
@@ -250,7 +251,7 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
   // Create another app. The version hasn't changed, but we should immediately
   // install anyway, as if a user flipped a chrome://flag. The first app won't
   // force reinstall.
-  system_apps[SystemAppType::DISCOVER] = {kAppUrl2};
+  system_apps[SystemAppType::DISCOVER] = SystemAppInfo(kAppUrl2);
   system_web_app_manager()->SetSystemApps(system_apps);
   system_web_app_manager()->Start();
   base::RunLoop().RunUntilIdle();
@@ -298,7 +299,7 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
 
   // Changing the install URL of a system app propagates even without a version
   // change.
-  system_apps[SystemAppType::SETTINGS] = {kAppUrl3};
+  system_apps[SystemAppType::SETTINGS] = SystemAppInfo(kAppUrl3);
   system_web_app_manager()->SetSystemApps(system_apps);
   system_web_app_manager()->Start();
   base::RunLoop().RunUntilIdle();
@@ -315,7 +316,7 @@ TEST_F(SystemWebAppManagerTest, InstallResultHistogram) {
   base::HistogramTester histograms;
   {
     base::flat_map<SystemAppType, SystemAppInfo> system_apps;
-    system_apps[SystemAppType::SETTINGS] = {kAppUrl1};
+    system_apps[SystemAppType::SETTINGS] = SystemAppInfo(kAppUrl1);
     system_web_app_manager()->SetSystemApps(system_apps);
 
     histograms.ExpectTotalCount(
@@ -331,8 +332,8 @@ TEST_F(SystemWebAppManagerTest, InstallResultHistogram) {
   }
   {
     base::flat_map<SystemAppType, SystemAppInfo> system_apps;
-    system_apps[SystemAppType::SETTINGS] = {kAppUrl1};
-    system_apps[SystemAppType::DISCOVER] = {kAppUrl2};
+    system_apps[SystemAppType::SETTINGS] = SystemAppInfo(kAppUrl1);
+    system_apps[SystemAppType::DISCOVER] = SystemAppInfo(kAppUrl2);
     system_web_app_manager()->SetSystemApps(system_apps);
     pending_app_manager()->SetInstallResultCode(
         InstallResultCode::kInstallManagerDestroyed);

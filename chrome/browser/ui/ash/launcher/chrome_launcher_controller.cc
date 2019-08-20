@@ -210,7 +210,7 @@ ChromeLauncherController* ChromeLauncherController::instance_ = nullptr;
 
 ChromeLauncherController::ChromeLauncherController(Profile* profile,
                                                    ash::ShelfModel* model)
-    : model_(model), weak_ptr_factory_(this) {
+    : model_(model) {
   DCHECK(!instance_);
   instance_ = this;
 

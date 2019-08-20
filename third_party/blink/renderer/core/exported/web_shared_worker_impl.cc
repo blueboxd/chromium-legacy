@@ -74,7 +74,7 @@ WebSharedWorkerImpl::WebSharedWorkerImpl(
     WebSharedWorkerClient* client,
     const base::UnguessableToken& appcache_host_id)
     : client_(client),
-      appcache_host_(MakeGarbageCollected<ApplicationCacheHostForSharedWorker>(
+      appcache_host_(MakeGarbageCollected<ApplicationCacheHostForWorker>(
           appcache_host_id,
           Thread::Current()->GetTaskRunner())) {
   DCHECK(IsMainThread());
@@ -111,7 +111,7 @@ void WebSharedWorkerImpl::CountFeature(WebFeature feature) {
 void WebSharedWorkerImpl::DidFetchScript(int64_t app_cache_id) {
   DCHECK(IsMainThread());
   DCHECK(appcache_host_);
-  appcache_host_->SelectCacheForSharedWorker(
+  appcache_host_->SelectCacheForWorker(
       app_cache_id, WTF::Bind(&WebSharedWorkerImpl::OnAppCacheSelected,
                               weak_ptr_factory_.GetWeakPtr()));
 }

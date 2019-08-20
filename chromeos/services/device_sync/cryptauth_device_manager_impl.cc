@@ -574,8 +574,7 @@ CryptAuthDeviceManagerImpl::CryptAuthDeviceManagerImpl(
       cryptauth_client_factory_(cryptauth_client_factory),
       gcm_manager_(gcm_manager),
       pref_service_(pref_service),
-      scheduler_(CreateSyncScheduler(this)),
-      weak_ptr_factory_(this) {
+      scheduler_(CreateSyncScheduler(this)) {
   UpdateUnlockKeysFromPrefs();
 }
 

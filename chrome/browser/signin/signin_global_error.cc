@@ -21,7 +21,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "net/base/url_util.h"
@@ -98,7 +97,7 @@ void SigninGlobalError::ExecuteMenuItem(Browser* browser) {
                             signin_metrics::HISTOGRAM_REAUTH_SHOWN,
                             signin_metrics::HISTOGRAM_REAUTH_MAX);
   browser->window()->ShowAvatarBubbleFromAvatarButton(
-      BrowserWindow::AVATAR_BUBBLE_MODE_REAUTH, signin::ManageAccountsParams(),
+      BrowserWindow::AVATAR_BUBBLE_MODE_REAUTH,
       signin_metrics::AccessPoint::ACCESS_POINT_MENU, false);
 #endif
 }

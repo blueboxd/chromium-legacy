@@ -78,7 +78,7 @@ class FileStreamForwarder {
   scoped_refptr<net::IOBufferWithSize> buf_;
   std::unique_ptr<storage::FileStreamReader> stream_reader_;
 
-  base::WeakPtrFactory<FileStreamForwarder> weak_ptr_factory_;
+  base::WeakPtrFactory<FileStreamForwarder> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FileStreamForwarder);
 };

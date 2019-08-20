@@ -9,4 +9,5 @@ public_headers = [
 ]
 traits_headers =
     [ "//services/viz/public/cpp/compositing/selection_mojom_traits.h" ]
-type_mappings = [ "viz.mojom.Selection=viz::Selection<gfx::SelectionBound>" ]
+type_mappings =
+    [ "viz.mojom.Selection=::viz::Selection<::gfx::SelectionBound>" ]

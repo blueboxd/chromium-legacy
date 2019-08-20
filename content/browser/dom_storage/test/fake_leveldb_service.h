@@ -11,7 +11,8 @@
 #include "base/callback.h"
 #include "base/optional.h"
 #include "components/services/leveldb/public/mojom/leveldb.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/file/public/mojom/file_system.mojom.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 
@@ -29,7 +30,8 @@ class FakeLevelDBService : public leveldb::mojom::LevelDBService {
     OpenRequest(bool in_memory,
                 std::string dbname,
                 std::string memenv_tracking_name,
-                leveldb::mojom::LevelDBDatabaseAssociatedRequest request,
+                mojo::PendingAssociatedReceiver<leveldb::mojom::LevelDBDatabase>
+                    receiver,
                 OpenCallback callback);
     OpenRequest(OpenRequest&&);
     ~OpenRequest();
@@ -37,7 +39,7 @@ class FakeLevelDBService : public leveldb::mojom::LevelDBService {
     bool in_memory = false;
     std::string dbname;
     std::string memenv_tracking_name;
-    leveldb::mojom::LevelDBDatabaseAssociatedRequest request;
+    mojo::PendingAssociatedReceiver<leveldb::mojom::LevelDBDatabase> receiver;
     OpenCallback callback;
   };
 
@@ -47,12 +49,13 @@ class FakeLevelDBService : public leveldb::mojom::LevelDBService {
   FakeLevelDBService();
   ~FakeLevelDBService() override;
 
-  void Open(filesystem::mojom::DirectoryPtr,
-            const std::string& dbname,
-            const base::Optional<base::trace_event::MemoryAllocatorDumpGuid>&
-                memory_dump_id,
-            leveldb::mojom::LevelDBDatabaseAssociatedRequest request,
-            OpenCallback callback) override;
+  void Open(
+      filesystem::mojom::DirectoryPtr,
+      const std::string& dbname,
+      const base::Optional<base::trace_event::MemoryAllocatorDumpGuid>&
+          memory_dump_id,
+      mojo::PendingAssociatedReceiver<leveldb::mojom::LevelDBDatabase> receiver,
+      OpenCallback callback) override;
 
   void OpenWithOptions(
       const leveldb_env::Options& options,
@@ -60,14 +63,14 @@ class FakeLevelDBService : public leveldb::mojom::LevelDBService {
       const std::string& dbname,
       const base::Optional<base::trace_event::MemoryAllocatorDumpGuid>&
           memory_dump_id,
-      leveldb::mojom::LevelDBDatabaseAssociatedRequest request,
+      mojo::PendingAssociatedReceiver<leveldb::mojom::LevelDBDatabase> receiver,
       OpenCallback callback) override;
 
   void OpenInMemory(
       const base::Optional<base::trace_event::MemoryAllocatorDumpGuid>&
           memory_dump_id,
       const std::string& tracking_name,
-      leveldb::mojom::LevelDBDatabaseAssociatedRequest request,
+      mojo::PendingAssociatedReceiver<leveldb::mojom::LevelDBDatabase> receiver,
       OpenCallback callback) override;
 
   void Destroy(filesystem::mojom::DirectoryPtr,
@@ -88,7 +91,7 @@ class FakeLevelDBService : public leveldb::mojom::LevelDBService {
   void FlushBindingsForTesting();
 
  private:
-  mojo::BindingSet<leveldb::mojom::LevelDBService> bindings_;
+  mojo::ReceiverSet<leveldb::mojom::LevelDBService> receivers_;
 
   std::vector<OpenRequest> open_requests_;
   base::OnceClosure on_open_callback_;

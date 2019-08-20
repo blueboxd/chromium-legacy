@@ -64,7 +64,7 @@ class ASH_EXPORT DragWindowResizer : public WindowResizer {
   // Current instance for use by the DragWindowResizerTest.
   static DragWindowResizer* instance_;
 
-  base::WeakPtrFactory<DragWindowResizer> weak_ptr_factory_;
+  base::WeakPtrFactory<DragWindowResizer> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DragWindowResizer);
 };

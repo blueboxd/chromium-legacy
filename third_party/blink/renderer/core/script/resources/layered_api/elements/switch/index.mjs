@@ -28,6 +28,8 @@ export class StdSwitchElement extends HTMLElement {
     return [STATE_ATTR];
   }
 
+  #inUserAction = false;
+
   constructor() {
     super();
     if (new.target !== StdSwitchElement) {
@@ -47,6 +49,11 @@ export class StdSwitchElement extends HTMLElement {
       // TODO(tkent): We should not add aria-checked attribute.
       // https://github.com/WICG/aom/issues/127
       this.setAttribute('aria-checked', newValue !== null ? 'true' : 'false');
+      if (!this.#inUserAction) {
+        for (const element of this[_containerElement].querySelectorAll('*')) {
+          style.unmarkTransition(element);
+        }
+      }
     }
   }
 
@@ -91,7 +98,12 @@ export class StdSwitchElement extends HTMLElement {
     for (const element of this[_containerElement].querySelectorAll('*')) {
       style.markTransition(element);
     }
-    this.on = !this.on;
+    this.#inUserAction = true;
+    try {
+      this.on = !this.on;
+    } finally {
+      this.#inUserAction = false;
+    }
     this.dispatchEvent(new Event('input', {bubbles: true}));
     this.dispatchEvent(new Event('change', {bubbles: true}));
   }

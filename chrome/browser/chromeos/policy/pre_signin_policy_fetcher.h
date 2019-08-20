@@ -154,7 +154,7 @@ class PreSigninPolicyFetcher : public CloudPolicyClient::Observer {
   // Used to load the policy key provided by session manager as a file.
   std::unique_ptr<CachedPolicyKeyLoaderChromeOS> cached_policy_key_loader_;
 
-  base::WeakPtrFactory<PreSigninPolicyFetcher> weak_ptr_factory_;
+  base::WeakPtrFactory<PreSigninPolicyFetcher> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PreSigninPolicyFetcher);
 };

@@ -438,13 +438,6 @@ class FileManager extends cr.EventTarget {
   }
 
   /**
-   * @return {BackgroundWindow}
-   */
-  get backgroundPage() {
-    return this.backgroundPage_;
-  }
-
-  /**
    * @return {FilteredVolumeManager}
    */
   get volumeManager() {
@@ -484,6 +477,14 @@ class FileManager extends cr.EventTarget {
    */
   get ui() {
     return this.ui_;
+  }
+
+  /**
+   * Launch a new File Manager app.
+   * @param {Object=} appState App state.
+   */
+  launchFileManager(appState) {
+    this.backgroundPage_.launcher.launchFileManager(appState);
   }
 
   /**

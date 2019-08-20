@@ -47,7 +47,7 @@ class ImageSource : public content::URLDataSource {
   // The background task runner on which file I/O and image decoding are done.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
-  base::WeakPtrFactory<ImageSource> weak_factory_;
+  base::WeakPtrFactory<ImageSource> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ImageSource);
 };

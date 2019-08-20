@@ -290,8 +290,7 @@ ArcTracingBridge::ArcTracingBridge(content::BrowserContext* context,
                                    ArcBridgeService* bridge_service)
     : arc_bridge_service_(bridge_service),
       agent_(this),
-      reader_(std::make_unique<ArcTracingReader>()),
-      weak_ptr_factory_(this) {
+      reader_(std::make_unique<ArcTracingReader>()) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   arc_bridge_service_->tracing()->AddObserver(this);
   ArcTracingDataSource::GetInstance()->RegisterBridgeOnUI(this);

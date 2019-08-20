@@ -7,11 +7,10 @@ import sys
 
 # Add //tools/perf/ to system path.
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
+from chrome_telemetry_build import chromium_config
+
 from core import benchmark_runner
 from core import path_util
-sys.path.insert(1, path_util.GetTelemetryDir())
-
-from chrome_telemetry_build import chromium_config
 
 
 def main():

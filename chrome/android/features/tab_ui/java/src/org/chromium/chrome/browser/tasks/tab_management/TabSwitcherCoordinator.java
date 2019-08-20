@@ -215,7 +215,7 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
 
     // ResetHandler implementation.
     @Override
-    public boolean resetWithTabList(@Nullable TabList tabList, boolean quickMode) {
+    public boolean resetWithTabList(@Nullable TabList tabList, boolean quickMode, boolean mruMode) {
         List<Tab> tabs = null;
         if (tabList != null) {
             tabs = new ArrayList<>();
@@ -223,7 +223,8 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
                 tabs.add(tabList.getTabAt(i));
             }
         }
-        return mTabListCoordinator.resetWithListOfTabs(tabs, quickMode);
+
+        return mTabListCoordinator.resetWithListOfTabs(tabs, quickMode, mruMode);
     }
 
     private Rect getTabGridCardPosition(int index) {

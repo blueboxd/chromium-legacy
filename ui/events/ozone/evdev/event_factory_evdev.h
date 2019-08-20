@@ -149,7 +149,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
   SequentialIDGenerator touch_id_generator_;
 
   // Support weak pointers for attach & detach callbacks.
-  base::WeakPtrFactory<EventFactoryEvdev> weak_ptr_factory_;
+  base::WeakPtrFactory<EventFactoryEvdev> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(EventFactoryEvdev);
 };

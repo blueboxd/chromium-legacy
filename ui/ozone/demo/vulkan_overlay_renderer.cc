@@ -48,8 +48,7 @@ VulkanOverlayRenderer::VulkanOverlayRenderer(
       window_surface_(std::move(window_surface)),
       surface_factory_ozone_(surface_factory_ozone),
       vulkan_implementation_(vulkan_implementation),
-      overlay_surface_(std::move(overlay_surface)),
-      weak_ptr_factory_(this) {}
+      overlay_surface_(std::move(overlay_surface)) {}
 
 VulkanOverlayRenderer::~VulkanOverlayRenderer() {
   DestroyBuffers();

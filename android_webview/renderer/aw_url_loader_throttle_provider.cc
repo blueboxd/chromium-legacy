@@ -17,13 +17,14 @@
 namespace android_webview {
 
 AwURLLoaderThrottleProvider::AwURLLoaderThrottleProvider(
+    service_manager::Connector* connector,
     content::URLLoaderThrottleProviderType type)
     : type_(type) {
+  DCHECK(connector);
   DETACH_FROM_THREAD(thread_checker_);
 
-  content::RenderThread::Get()->GetConnector()->BindInterface(
-      content::mojom::kBrowserServiceName,
-      mojo::MakeRequest(&safe_browsing_info_));
+  connector->BindInterface(content::mojom::kBrowserServiceName,
+                           mojo::MakeRequest(&safe_browsing_info_));
 }
 
 AwURLLoaderThrottleProvider::AwURLLoaderThrottleProvider(

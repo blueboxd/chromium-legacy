@@ -116,7 +116,7 @@ class CrostiniPackageNotification : public message_center::NotificationObserver,
   std::set<std::string> inserted_apps_;
   int app_count_ = 0;
 
-  base::WeakPtrFactory<CrostiniPackageNotification> weak_ptr_factory_;
+  base::WeakPtrFactory<CrostiniPackageNotification> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CrostiniPackageNotification);
 };

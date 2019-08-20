@@ -25,8 +25,7 @@ const int kDefaultDesktopMediaListUpdatePeriod = 500;
 
 DesktopMediaListAsh::DesktopMediaListAsh(content::DesktopMediaID::Type type)
     : DesktopMediaListBase(base::TimeDelta::FromMilliseconds(
-          kDefaultDesktopMediaListUpdatePeriod)),
-      weak_factory_(this) {
+          kDefaultDesktopMediaListUpdatePeriod)) {
   DCHECK(type == content::DesktopMediaID::TYPE_SCREEN ||
          type == content::DesktopMediaID::TYPE_WINDOW);
   type_ = type;

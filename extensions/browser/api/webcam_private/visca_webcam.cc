@@ -160,7 +160,7 @@ int GetPositiveValue(int value) {
 
 namespace extensions {
 
-ViscaWebcam::ViscaWebcam() : pan_(0), tilt_(0), weak_ptr_factory_(this) {}
+ViscaWebcam::ViscaWebcam() : pan_(0), tilt_(0) {}
 
 ViscaWebcam::~ViscaWebcam() {
 }

@@ -13,11 +13,14 @@
 #error "This file requires ARC support."
 #endif
 
-@interface CameraController () <AVCaptureMetadataOutputObjectsDelegate> {
-  // The queue for dispatching calls to |_captureSession|.
-  dispatch_queue_t _sessionQueue;
-}
+@interface CameraController ()
 
+// The queue for dispatching calls to |_captureSession|.
+@property(nonatomic, readonly) dispatch_queue_t sessionQueue;
+// The capture session for recording video and detecting QR codes.
+@property(nonatomic, readwrite) AVCaptureSession* captureSession;
+// The metadata output attached to the capture session.
+@property(nonatomic, readwrite) AVCaptureMetadataOutput* metadataOutput;
 // The delegate which receives the scanned result. All methods of this
 // delegate should be called on the main queue.
 @property(nonatomic, readwrite, weak) id<CameraControllerDelegate> delegate;
@@ -32,15 +35,7 @@
 // The state of KVO for the camera. Used to stop observing on dealloc.
 @property(nonatomic, readwrite, assign, getter=isObservingCamera)
     BOOL observingCamera;
-// The capture session for recording video and detecting QR codes.
-@property(nonatomic, readwrite) AVCaptureSession* captureSession;
-// The metadata output attached to the capture session.
-@property(nonatomic, readwrite) AVCaptureMetadataOutput* metadataOutput;
 @property(nonatomic, readwrite, assign) CGRect viewportRect;
-
-// Initializes the controller with the |delegate|.
-- (instancetype)initWithDelegate:(id<CameraControllerDelegate>)delegate
-    NS_DESIGNATED_INITIALIZER;
 
 // YES if |cameraState| is CAMERA_AVAILABLE.
 - (BOOL)isCameraAvailable;
@@ -60,13 +55,6 @@
 @implementation CameraController
 
 #pragma mark - Lifecycle
-
-+ (instancetype)cameraControllerWithDelegate:
-    (id<CameraControllerDelegate>)delegate {
-  CameraController* cameraController =
-      [[CameraController alloc] initWithDelegate:delegate];
-  return cameraController;
-}
 
 - (instancetype)initWithDelegate:(id<CameraControllerDelegate>)delegate {
   self = [super init];
@@ -245,25 +233,7 @@
   }
   [session addInput:videoInput];
 
-  // Configure metadata output.
-  AVCaptureMetadataOutput* metadataOutput =
-      [[AVCaptureMetadataOutput alloc] init];
-  [metadataOutput setMetadataObjectsDelegate:self
-                                       queue:dispatch_get_main_queue()];
-  if (![session canAddOutput:metadataOutput]) {
-    [self setCameraState:scanner::CAMERA_UNAVAILABLE];
-    return;
-  }
-  [session addOutput:metadataOutput];
-  NSArray* availableCodeTypes = [metadataOutput availableMetadataObjectTypes];
-
-  // Require QR code recognition to be available.
-  if (![availableCodeTypes containsObject:AVMetadataObjectTypeQRCode]) {
-    [self setCameraState:scanner::CAMERA_UNAVAILABLE];
-    return;
-  }
-  [metadataOutput setMetadataObjectTypes:availableCodeTypes];
-  _metadataOutput = metadataOutput;
+  [self configureScannerWithSession:session];
 
   _captureSession = session;
   [self setCameraState:scanner::CAMERA_AVAILABLE];
@@ -286,6 +256,10 @@
   [self resetVideoOrientation:previewLayer];
   [_delegate captureSessionIsConnected];
   [self startRecording];
+}
+
+- (void)configureScannerWithSession:(AVCaptureSession*)session {
+  NOTREACHED();
 }
 
 - (void)startReceivingNotifications {
@@ -464,45 +438,6 @@
   dispatch_async(dispatch_get_main_queue(), ^{
     [weakSelf.delegate torchStateChanged:active];
   });
-}
-
-#pragma mark - AVCaptureMetadataOutputObjectsDelegate
-
-- (void)captureOutput:(AVCaptureOutput*)captureOutput
-    didOutputMetadataObjects:(NSArray*)metadataObjects
-              fromConnection:(AVCaptureConnection*)connection {
-  AVMetadataObject* metadataResult = [metadataObjects firstObject];
-  if (![metadataResult
-          isKindOfClass:[AVMetadataMachineReadableCodeObject class]]) {
-    return;
-  }
-  NSString* resultString =
-      [base::mac::ObjCCastStrict<AVMetadataMachineReadableCodeObject>(
-          metadataResult) stringValue];
-  if (resultString.length == 0) {
-    return;
-  }
-  __weak CameraController* weakSelf = self;
-  dispatch_async(_sessionQueue, ^{
-    CameraController* strongSelf = weakSelf;
-    if (strongSelf && [strongSelf.captureSession isRunning]) {
-      [strongSelf.captureSession stopRunning];
-    }
-  });
-
-  // Check if the barcode can only contain digits. In this case, the result can
-  // be loaded immediately.
-  NSString* resultType = metadataResult.type;
-  BOOL isAllDigits =
-      [resultType isEqualToString:AVMetadataObjectTypeUPCECode] ||
-      [resultType isEqualToString:AVMetadataObjectTypeEAN8Code] ||
-      [resultType isEqualToString:AVMetadataObjectTypeEAN13Code] ||
-      [resultType isEqualToString:AVMetadataObjectTypeInterleaved2of5Code] ||
-      [resultType isEqualToString:AVMetadataObjectTypeITF14Code];
-
-  // Note: |captureOutput| is called on the main queue. This is specified by
-  // |setMetadataObjectsDelegate:queue:|.
-  [_delegate receiveQRScannerResult:resultString loadImmediately:isAllDigits];
 }
 
 @end

@@ -97,7 +97,7 @@ class FastInkView : public views::View {
   viz::FrameTokenGenerator next_frame_token_;
   std::vector<std::unique_ptr<Resource>> returned_resources_;
   std::unique_ptr<LayerTreeFrameSinkHolder> frame_sink_holder_;
-  base::WeakPtrFactory<FastInkView> weak_ptr_factory_;
+  base::WeakPtrFactory<FastInkView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FastInkView);
 };

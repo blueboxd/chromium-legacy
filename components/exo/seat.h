@@ -159,7 +159,7 @@ class Seat : public aura::client::FocusChangeObserver,
   // True while Seat is updating clipboard data to selection source.
   bool changing_clipboard_data_to_selection_source_;
 
-  base::WeakPtrFactory<Seat> weak_ptr_factory_;
+  base::WeakPtrFactory<Seat> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Seat);
 };

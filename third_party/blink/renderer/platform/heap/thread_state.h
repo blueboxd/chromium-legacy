@@ -127,14 +127,6 @@ class PLATFORM_EXPORT BlinkGCObserver {
   ThreadState* thread_state_;
 };
 
-// Used for visiting slots for DOM wrapper handles.
-class DOMWrapperSlotsVisitor {
- public:
-  // Vistation of a handle at |address| of |size|. It is *not* guaranteed that
-  // |address| is part of the managed heap.
-  virtual void VisitSlot(void* address, size_t size) = 0;
-};
-
 class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   USING_FAST_MALLOC(ThreadState);
 
@@ -194,8 +186,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   class SweepForbiddenScope;
 
   using V8TraceRootsCallback = void (*)(v8::Isolate*, Visitor*);
-  using V8VisitHandleSlotsCallback = void (*)(v8::Isolate*,
-                                              DOMWrapperSlotsVisitor*);
   using V8BuildEmbedderGraphCallback = void (*)(v8::Isolate*,
                                                 v8::EmbedderGraph*,
                                                 void*);
@@ -247,7 +237,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   // there garbage collectors together.
   void AttachToIsolate(v8::Isolate*,
                        V8TraceRootsCallback,
-                       V8VisitHandleSlotsCallback,
                        V8BuildEmbedderGraphCallback);
 
   // Removes the association from a potentially attached |v8::Isolate|.
@@ -279,10 +268,7 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
 
   // Returns true if unified heap marking is in progress.
   bool IsUnifiedGCMarkingInProgress() const {
-    return IsMarkingInProgress() &&
-           (current_gc_data_.reason == BlinkGC::GCReason::kUnifiedHeapGC ||
-            current_gc_data_.reason ==
-                BlinkGC::GCReason::kUnifiedHeapForMemoryReductionGC);
+    return IsMarkingInProgress() && IsUnifiedHeapGC();
   }
 
   // Returns true if sweeping is in progress.
@@ -292,6 +278,12 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   bool IsMemoryReducingGC() const {
     return current_gc_data_.reason ==
            BlinkGC::GCReason::kUnifiedHeapForMemoryReductionGC;
+  }
+
+  bool IsUnifiedHeapGC() const {
+    return current_gc_data_.reason == BlinkGC::GCReason::kUnifiedHeapGC ||
+           current_gc_data_.reason ==
+               BlinkGC::GCReason::kUnifiedHeapForMemoryReductionGC;
   }
 
   void EnableCompactionForNextGCForTesting();
@@ -608,7 +600,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
 
   v8::Isolate* isolate_ = nullptr;
   V8TraceRootsCallback v8_trace_roots_ = nullptr;
-  V8VisitHandleSlotsCallback v8_visit_handle_slots_ = nullptr;
   V8BuildEmbedderGraphCallback v8_build_embedder_graph_ = nullptr;
   std::unique_ptr<UnifiedHeapController> unified_heap_controller_;
 

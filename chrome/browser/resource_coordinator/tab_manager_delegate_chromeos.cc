@@ -275,8 +275,7 @@ TabManagerDelegate::TabManagerDelegate(
     TabManagerDelegate::MemoryStat* mem_stat)
     : tab_manager_(tab_manager),
       focused_process_(new FocusedProcess()),
-      mem_stat_(mem_stat),
-      weak_ptr_factory_(this) {
+      mem_stat_(mem_stat) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,

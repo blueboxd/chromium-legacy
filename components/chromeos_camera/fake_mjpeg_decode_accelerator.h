@@ -56,7 +56,7 @@ class FakeMjpegDecodeAccelerator : public MjpegDecodeAccelerator {
   base::Thread decoder_thread_;
   scoped_refptr<base::SingleThreadTaskRunner> decoder_task_runner_;
 
-  base::WeakPtrFactory<FakeMjpegDecodeAccelerator> weak_factory_;
+  base::WeakPtrFactory<FakeMjpegDecodeAccelerator> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeMjpegDecodeAccelerator);
 };

@@ -347,7 +347,6 @@ class TabStrip : public views::AccessiblePaneView,
 
   // Invoked from |AddTabAt| after the newly created tab has been inserted.
   void StartInsertTabAnimation(int model_index,
-                               TabAnimationState::TabActiveness activeness,
                                TabAnimationState::TabPinnedness pinnedness);
 
   // Animates the removal of the tab at |model_index|. Defers to the old

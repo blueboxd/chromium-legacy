@@ -102,7 +102,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceChromeOSHalv3 final
 
   scoped_refptr<PowerManagerClientProxy> power_manager_client_proxy_;
 
-  base::WeakPtrFactory<VideoCaptureDeviceChromeOSHalv3> weak_ptr_factory_;
+  base::WeakPtrFactory<VideoCaptureDeviceChromeOSHalv3> weak_ptr_factory_{this};
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(VideoCaptureDeviceChromeOSHalv3);
 };

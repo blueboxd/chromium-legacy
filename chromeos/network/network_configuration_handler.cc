@@ -109,8 +109,7 @@ class NetworkConfigurationHandler::ProfileEntryDeleter {
         service_path_(service_path),
         guid_(guid),
         callback_(callback),
-        error_callback_(error_callback),
-        weak_ptr_factory_(this) {}
+        error_callback_(error_callback) {}
 
   void RestrictToProfilePath(const std::string& profile_path) {
     restrict_to_profile_path_ = profile_path;
@@ -220,7 +219,7 @@ class NetworkConfigurationHandler::ProfileEntryDeleter {
   // Map of pending profile entry deletions, indexed by profile path.
   std::map<std::string, std::string> profile_delete_entries_;
 
-  base::WeakPtrFactory<ProfileEntryDeleter> weak_ptr_factory_;
+  base::WeakPtrFactory<ProfileEntryDeleter> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ProfileEntryDeleter);
 };
@@ -481,7 +480,7 @@ void NetworkConfigurationHandler::OnShuttingDown() {
 // NetworkConfigurationHandler Private methods
 
 NetworkConfigurationHandler::NetworkConfigurationHandler()
-    : network_state_handler_(nullptr), weak_ptr_factory_(this) {}
+    : network_state_handler_(nullptr) {}
 
 NetworkConfigurationHandler::~NetworkConfigurationHandler() {
   // Make sure that this has been removed as a NetworkStateHandler observer.

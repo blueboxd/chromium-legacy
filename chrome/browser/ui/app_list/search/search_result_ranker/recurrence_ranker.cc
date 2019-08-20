@@ -164,8 +164,7 @@ RecurrenceRanker::RecurrenceRanker(const std::string& model_identifier,
       is_ephemeral_user_(is_ephemeral_user),
       min_seconds_between_saves_(
           TimeDelta::FromSeconds(config.min_seconds_between_saves())),
-      time_of_last_save_(Time::Now()),
-      weak_factory_(this) {
+      time_of_last_save_(Time::Now()) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   task_runner_ = base::CreateSequencedTaskRunner(
       {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock(),

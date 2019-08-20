@@ -413,8 +413,7 @@ class PpdProviderImpl : public PpdProvider {
             {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
              base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
         version_(current_version),
-        options_(options),
-        weak_factory_(this) {}
+        options_(options) {}
 
   // Resolving manufacturers requires a couple of steps, because of
   // localization.  First we have to figure out what locale to use, which
@@ -1637,7 +1636,7 @@ class PpdProviderImpl : public PpdProvider {
   // Construction-time options, immutable.
   const PpdProvider::Options options_;
 
-  base::WeakPtrFactory<PpdProviderImpl> weak_factory_;
+  base::WeakPtrFactory<PpdProviderImpl> weak_factory_{this};
 
  protected:
   ~PpdProviderImpl() override = default;

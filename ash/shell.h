@@ -803,7 +803,7 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   base::ObserverList<ShellObserver>::Unchecked shell_observers_;
 
-  base::WeakPtrFactory<Shell> weak_factory_;
+  base::WeakPtrFactory<Shell> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Shell);
 };

@@ -25,8 +25,7 @@ ProximityAuthProfilePrefManager::ProximityAuthProfilePrefManager(
     chromeos::multidevice_setup::MultiDeviceSetupClient*
         multidevice_setup_client)
     : pref_service_(pref_service),
-      multidevice_setup_client_(multidevice_setup_client),
-      weak_ptr_factory_(this) {
+      multidevice_setup_client_(multidevice_setup_client) {
   OnFeatureStatesChanged(multidevice_setup_client_->GetFeatureStates());
 
   multidevice_setup_client_->AddObserver(this);

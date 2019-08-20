@@ -24,8 +24,7 @@ ArcAppShortcutsSearchProvider::ArcAppShortcutsSearchProvider(
     AppListControllerDelegate* list_controller)
     : max_results_(max_results),
       profile_(profile),
-      list_controller_(list_controller),
-      weak_ptr_factory_(this) {}
+      list_controller_(list_controller) {}
 
 ArcAppShortcutsSearchProvider::~ArcAppShortcutsSearchProvider() = default;
 

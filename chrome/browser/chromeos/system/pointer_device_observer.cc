@@ -15,9 +15,7 @@ using content::BrowserThread;
 namespace chromeos {
 namespace system {
 
-PointerDeviceObserver::PointerDeviceObserver()
-    : weak_factory_(this) {
-}
+PointerDeviceObserver::PointerDeviceObserver() {}
 
 PointerDeviceObserver::~PointerDeviceObserver() {
   ui::DeviceDataManager::GetInstance()->RemoveObserver(this);

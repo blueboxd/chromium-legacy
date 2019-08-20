@@ -131,7 +131,7 @@ class APP_LIST_EXPORT SearchResultView
   // Whether the removal confirmation dialog is invoked by long press touch.
   bool confirm_remove_by_long_press_ = false;
 
-  base::WeakPtrFactory<SearchResultView> weak_ptr_factory_;
+  base::WeakPtrFactory<SearchResultView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultView);
 };

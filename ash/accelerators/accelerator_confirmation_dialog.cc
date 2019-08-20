@@ -27,8 +27,7 @@ AcceleratorConfirmationDialog::AcceleratorConfirmationDialog(
     int dialog_text_id,
     base::OnceClosure on_accept_callback)
     : window_title_(l10n_util::GetStringUTF16(window_title_text_id)),
-      on_accept_callback_(std::move(on_accept_callback)),
-      weak_ptr_factory_(this) {
+      on_accept_callback_(std::move(on_accept_callback)) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetBorder(views::CreateEmptyBorder(
       views::LayoutProvider::Get()->GetDialogInsetsForContentType(

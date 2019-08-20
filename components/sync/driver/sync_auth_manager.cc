@@ -385,9 +385,7 @@ void SyncAuthManager::ResetRequestAccessTokenBackoffForTest() {
 
 SyncAccountInfo SyncAuthManager::DetermineAccountToUse() const {
   DCHECK(registered_for_auth_notifications_);
-  return syncer::DetermineAccountToUse(
-      identity_manager_,
-      base::FeatureList::IsEnabled(switches::kSyncSupportSecondaryAccount));
+  return syncer::DetermineAccountToUse(identity_manager_);
 }
 
 bool SyncAuthManager::UpdateSyncAccountIfNecessary() {

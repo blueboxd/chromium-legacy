@@ -63,7 +63,7 @@ template <typename InstanceType, typename HostType>
 class ConnectionHolderImpl {
  public:
   explicit ConnectionHolderImpl(ConnectionNotifier* connection_notifier)
-      : connection_notifier_(connection_notifier), weak_ptr_factory_(this) {}
+      : connection_notifier_(connection_notifier) {}
 
   InstanceType* instance() { return IsConnected() ? instance_ : nullptr; }
   uint32_t instance_version() const {
@@ -174,7 +174,7 @@ class ConnectionHolderImpl {
   // Created when both |instance_| and |host_| ptr are set.
   std::unique_ptr<mojo::Binding<HostType>> binding_;
 
-  base::WeakPtrFactory<ConnectionHolderImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<ConnectionHolderImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionHolderImpl);
 };

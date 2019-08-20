@@ -16,12 +16,12 @@ public_deps = [
   "//ui/gfx",
 ]
 type_mappings = [
-  "gfx.mojom.BufferFormat=gfx::BufferFormat",
-  "gfx.mojom.BufferUsage=gfx::BufferUsage",
-  "gfx.mojom.BufferUsageAndFormat=gfx::BufferUsageAndFormat",
-  "gfx.mojom.GpuMemoryBufferHandle=gfx::GpuMemoryBufferHandle[move_only,nullable_is_same_type]",
-  "gfx.mojom.GpuMemoryBufferId=gfx::GpuMemoryBufferId[copyable_pass_by_value]",
-  "gfx.mojom.GpuMemoryBufferType=gfx::GpuMemoryBufferType",
-  "gfx.mojom.NativePixmapHandle=gfx::NativePixmapHandle[move_only]",
-  "gfx.mojom.NativePixmapPlane=gfx::NativePixmapPlane[move_only]",
+  "gfx.mojom.BufferFormat=::gfx::BufferFormat",
+  "gfx.mojom.BufferUsage=::gfx::BufferUsage",
+  "gfx.mojom.BufferUsageAndFormat=::gfx::BufferUsageAndFormat",
+  "gfx.mojom.GpuMemoryBufferHandle=::gfx::GpuMemoryBufferHandle[move_only,nullable_is_same_type]",
+  "gfx.mojom.GpuMemoryBufferId=::gfx::GpuMemoryBufferId[copyable_pass_by_value]",
+  "gfx.mojom.GpuMemoryBufferType=::gfx::GpuMemoryBufferType",
+  "gfx.mojom.NativePixmapHandle=::gfx::NativePixmapHandle[move_only]",
+  "gfx.mojom.NativePixmapPlane=::gfx::NativePixmapPlane[move_only]",
 ]

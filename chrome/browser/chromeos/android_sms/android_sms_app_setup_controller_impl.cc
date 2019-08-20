@@ -85,8 +85,7 @@ AndroidSmsAppSetupControllerImpl::AndroidSmsAppSetupControllerImpl(
     : profile_(profile),
       pending_app_manager_(pending_app_manager),
       host_content_settings_map_(host_content_settings_map),
-      pwa_delegate_(std::make_unique<PwaDelegate>()),
-      weak_ptr_factory_(this) {}
+      pwa_delegate_(std::make_unique<PwaDelegate>()) {}
 
 AndroidSmsAppSetupControllerImpl::~AndroidSmsAppSetupControllerImpl() = default;
 

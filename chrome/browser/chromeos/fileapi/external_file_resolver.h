@@ -80,7 +80,7 @@ class ExternalFileResolver {
   scoped_refptr<storage::FileSystemContext> file_system_context_;
   file_manager::util::FileSystemURLAndHandle isolated_file_system_;
   std::string mime_type_;
-  base::WeakPtrFactory<ExternalFileResolver> weak_ptr_factory_;
+  base::WeakPtrFactory<ExternalFileResolver> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExternalFileResolver);
 };

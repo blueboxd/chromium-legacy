@@ -251,7 +251,7 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
   OpenedFiles opened_files_;
   base::ObserverList<ProvidedFileSystemObserver>::Unchecked observers_;
 
-  base::WeakPtrFactory<ProvidedFileSystem> weak_ptr_factory_;
+  base::WeakPtrFactory<ProvidedFileSystem> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(ProvidedFileSystem);
 };
 

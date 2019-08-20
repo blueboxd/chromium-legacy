@@ -15,7 +15,7 @@ const char kReasonForDisconnection[] = "Remote device disconnected.";
 }  // namespace
 
 ChannelImpl::ChannelImpl(Delegate* delegate)
-    : delegate_(delegate), binding_(this), weak_ptr_factory_(this) {}
+    : delegate_(delegate), binding_(this) {}
 
 ChannelImpl::~ChannelImpl() = default;
 

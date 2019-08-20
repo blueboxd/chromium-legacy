@@ -145,7 +145,7 @@ class ArcSessionDelegateImpl : public ArcSessionImpl::Delegate {
   const version_info::Channel channel_;
 
   // WeakPtrFactory to use callbacks.
-  base::WeakPtrFactory<ArcSessionDelegateImpl> weak_factory_;
+  base::WeakPtrFactory<ArcSessionDelegateImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcSessionDelegateImpl);
 };
@@ -156,8 +156,7 @@ ArcSessionDelegateImpl::ArcSessionDelegateImpl(
     version_info::Channel channel)
     : arc_bridge_service_(arc_bridge_service),
       default_scale_factor_retriever_(retriever),
-      channel_(channel),
-      weak_factory_(this) {}
+      channel_(channel) {}
 
 void ArcSessionDelegateImpl::CreateSocket(CreateSocketCallback callback) {
   base::PostTaskAndReplyWithResult(
@@ -337,9 +336,7 @@ std::unique_ptr<ArcSessionImpl::Delegate> ArcSessionImpl::CreateDelegate(
 }
 
 ArcSessionImpl::ArcSessionImpl(std::unique_ptr<Delegate> delegate)
-    : delegate_(std::move(delegate)),
-      client_(ArcClientAdapter::Create()),
-      weak_factory_(this) {
+    : delegate_(std::move(delegate)), client_(ArcClientAdapter::Create()) {
   DCHECK(client_);
   client_->AddObserver(this);
 }

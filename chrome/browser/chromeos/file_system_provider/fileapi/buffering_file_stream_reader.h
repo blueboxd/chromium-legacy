@@ -71,7 +71,7 @@ class BufferingFileStreamReader : public storage::FileStreamReader {
   int preloading_buffer_offset_;
   int preloaded_bytes_;
 
-  base::WeakPtrFactory<BufferingFileStreamReader> weak_ptr_factory_;
+  base::WeakPtrFactory<BufferingFileStreamReader> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(BufferingFileStreamReader);
 };
 

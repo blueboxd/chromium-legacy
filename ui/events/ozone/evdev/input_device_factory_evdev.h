@@ -152,7 +152,7 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
   std::map<base::FilePath, std::unique_ptr<EventConverterEvdev>> converters_;
 
   // Support weak pointers for attach & detach callbacks.
-  base::WeakPtrFactory<InputDeviceFactoryEvdev> weak_ptr_factory_;
+  base::WeakPtrFactory<InputDeviceFactoryEvdev> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InputDeviceFactoryEvdev);
 };

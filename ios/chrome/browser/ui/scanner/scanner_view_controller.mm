@@ -34,23 +34,17 @@ using base::UserMetricsAction;
 
 @property(nonatomic, readwrite, weak) id<LoadQueryCommands> queryLoader;
 
-// Stores the view for the scanner. Can be subclassed as a QR code or Credit
-// Card scanner view.
-@property(nonatomic, readwrite) ScannerView* scannerView;
-
 @end
 
 @implementation ScannerViewController
 
 #pragma mark - lifecycle
 
-- (instancetype)
-    initWithPresentationProvider:(id<ScannerPresenting>)presentationProvider
-                cameraController:(CameraController*)cameraController {
+- (instancetype)initWithPresentationProvider:
+    (id<ScannerPresenting>)presentationProvider {
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
     _presentationProvider = presentationProvider;
-    _cameraController = cameraController;
   }
   return self;
 }
@@ -67,7 +61,7 @@ using base::UserMetricsAction;
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-  DCHECK(_cameraController);
+  DCHECK(self.cameraController);
 
   [self.view addSubview:self.scannerView];
 
@@ -85,13 +79,13 @@ using base::UserMetricsAction;
   ]];
 
   AVCaptureVideoPreviewLayer* previewLayer = [self.scannerView getPreviewLayer];
-  switch ([_cameraController getAuthorizationStatus]) {
+  switch ([self.cameraController getAuthorizationStatus]) {
     case AVAuthorizationStatusNotDetermined:
-      [_cameraController
+      [self.cameraController
           requestAuthorizationAndLoadCaptureSession:previewLayer];
       break;
     case AVAuthorizationStatusAuthorized:
-      [_cameraController loadCaptureSession:previewLayer];
+      [self.cameraController loadCaptureSession:previewLayer];
       break;
     case AVAuthorizationStatusRestricted:
     case AVAuthorizationStatusDenied:
@@ -108,7 +102,7 @@ using base::UserMetricsAction;
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
   [self startReceivingNotifications];
-  [_cameraController startRecording];
+  [self.cameraController startRecording];
 
   // Reset torch.
   [self setTorchMode:AVCaptureTorchModeOff];
@@ -144,14 +138,14 @@ using base::UserMetricsAction;
     // Reset the size of the preview if the bounds of the view controller
     // changed. This can happen if entering or leaving Split View mode on iPad.
     [self.scannerView resetPreviewFrame:size];
-    [_cameraController
+    [self.cameraController
         resetVideoOrientation:[self.scannerView getPreviewLayer]];
   }
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
   [super viewDidDisappear:animated];
-  [_cameraController stopRecording];
+  [self.cameraController stopRecording];
   [self stopReceivingNotifications];
 
   // Reset torch.
@@ -165,8 +159,8 @@ using base::UserMetricsAction;
 #pragma mark - public methods
 
 - (UIViewController*)getViewControllerToPresent {
-  DCHECK(_cameraController);
-  switch ([_cameraController getAuthorizationStatus]) {
+  DCHECK(self.cameraController);
+  switch ([self.cameraController getAuthorizationStatus]) {
     case AVAuthorizationStatusNotDetermined:
     case AVAuthorizationStatusAuthorized:
       _transitioningDelegate = [[ScannerTransitioningDelegate alloc] init];
@@ -186,6 +180,11 @@ using base::UserMetricsAction;
 }
 
 - (ScannerView*)buildScannerView {
+  NOTIMPLEMENTED();
+  return nil;
+}
+
+- (CameraController*)buildCameraController {
   NOTIMPLEMENTED();
   return nil;
 }
@@ -213,10 +212,10 @@ using base::UserMetricsAction;
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
-// Requests the torch mode to be set to |mode| by the |_cameraController|
+// Requests the torch mode to be set to |mode| by the |self.cameraController|
 // and the icon of the torch button to be changed by the |self.scannerView|.
 - (void)setTorchMode:(AVCaptureTorchMode)mode {
-  [_cameraController setTorchMode:mode];
+  [self.cameraController setTorchMode:mode];
 }
 
 - (ScannerView*)scannerView {
@@ -224,6 +223,13 @@ using base::UserMetricsAction;
     _scannerView = [self buildScannerView];
   }
   return _scannerView;
+}
+
+- (CameraController*)cameraController {
+  if (!_cameraController) {
+    _cameraController = [self buildCameraController];
+  }
+  return _cameraController;
 }
 
 #pragma mark - notification handlers
@@ -252,7 +258,7 @@ using base::UserMetricsAction;
 #pragma mark - CameraControllerDelegate
 
 - (void)captureSessionIsConnected {
-  [_cameraController setViewport:[self.scannerView viewportRectOfInterest]];
+  [self.cameraController setViewport:[self.scannerView viewportRectOfInterest]];
 }
 
 - (void)cameraStateChanged:(scanner::CameraState)state {
@@ -297,27 +303,6 @@ using base::UserMetricsAction;
   [self.scannerView enableTorchButton:torchIsAvailable];
 }
 
-- (void)receiveQRScannerResult:(NSString*)result loadImmediately:(BOOL)load {
-  if (UIAccessibilityIsVoiceOverRunning()) {
-    // Post a notification announcing that a code was scanned. QR scanner will
-    // be dismissed when the UIAccessibilityAnnouncementDidFinishNotification is
-    // received.
-    _result = [result copy];
-    _loadResultImmediately = load;
-    UIAccessibilityPostNotification(
-        UIAccessibilityAnnouncementNotification,
-        l10n_util::GetNSString(
-            IDS_IOS_SCANNER_SCANNED_ACCESSIBILITY_ANNOUNCEMENT));
-  } else {
-    [self.scannerView animateScanningResultWithCompletion:^void(void) {
-      [self dismissForReason:scannerViewController::SCANNED_CODE
-              withCompletion:^{
-                [self.queryLoader loadQuery:result immediately:load];
-              }];
-    }];
-  }
-}
-
 #pragma mark - ScannerViewDelegate
 
 - (void)dismissScannerView:(id)sender {
@@ -326,7 +311,7 @@ using base::UserMetricsAction;
 }
 
 - (void)toggleTorch:(id)sender {
-  if ([_cameraController isTorchActive]) {
+  if ([self.cameraController isTorchActive]) {
     [self setTorchMode:AVCaptureTorchModeOff];
   } else {
     base::RecordAction(UserMetricsAction("MobileQRScannerTorchOn"));

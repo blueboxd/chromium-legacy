@@ -93,7 +93,7 @@ class ProximityAuthProfilePrefManager
   chromeos::multidevice_setup::MultiDeviceSetupClient*
       multidevice_setup_client_ = nullptr;
 
-  base::WeakPtrFactory<ProximityAuthProfilePrefManager> weak_ptr_factory_;
+  base::WeakPtrFactory<ProximityAuthProfilePrefManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ProximityAuthProfilePrefManager);
 };

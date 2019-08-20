@@ -23,8 +23,7 @@ DemoSetupScreen::DemoSetupScreen(DemoSetupScreenView* view,
                                  const ScreenExitCallback& exit_callback)
     : BaseScreen(DemoSetupScreenView::kScreenId),
       view_(view),
-      exit_callback_(exit_callback),
-      weak_ptr_factory_(this) {
+      exit_callback_(exit_callback) {
   DCHECK(view_);
   view_->Bind(this);
 }

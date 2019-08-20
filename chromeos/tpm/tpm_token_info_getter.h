@@ -102,7 +102,7 @@ class COMPONENT_EXPORT(CHROMEOS_TPM) TPMTokenInfoGetter {
 
   CryptohomeClient* cryptohome_client_;
 
-  base::WeakPtrFactory<TPMTokenInfoGetter> weak_factory_;
+  base::WeakPtrFactory<TPMTokenInfoGetter> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TPMTokenInfoGetter);
 };

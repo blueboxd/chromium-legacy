@@ -517,8 +517,8 @@ class CONTENT_EXPORT RenderThreadImpl
       const FrameReplicationState& replicated_state,
       const base::UnguessableToken& devtools_frame_token) override;
   void SetUpEmbeddedWorkerChannelForServiceWorker(
-      blink::mojom::EmbeddedWorkerInstanceClientRequest client_request)
-      override;
+      mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>
+          client_receiver) override;
   void OnNetworkConnectionChanged(
       net::NetworkChangeNotifier::ConnectionType type,
       double max_bandwidth_mbps) override;

@@ -28,7 +28,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeGnubbyClient : public GnubbyClient {
 
   base::ObserverList<Observer>::Unchecked observer_list_;
 
-  base::WeakPtrFactory<FakeGnubbyClient> weak_ptr_factory_;
+  base::WeakPtrFactory<FakeGnubbyClient> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeGnubbyClient);
 };

@@ -111,7 +111,7 @@ class RecentModel : public KeyedService {
   std::priority_queue<RecentFile, std::vector<RecentFile>, RecentFileComparator>
       intermediate_files_;
 
-  base::WeakPtrFactory<RecentModel> weak_ptr_factory_;
+  base::WeakPtrFactory<RecentModel> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RecentModel);
 };

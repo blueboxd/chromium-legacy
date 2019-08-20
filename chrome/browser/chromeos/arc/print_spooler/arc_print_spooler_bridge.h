@@ -43,7 +43,7 @@ class ArcPrintSpoolerBridge
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 
-  base::WeakPtrFactory<ArcPrintSpoolerBridge> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcPrintSpoolerBridge> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcPrintSpoolerBridge);
 };

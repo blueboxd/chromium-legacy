@@ -19,7 +19,7 @@ class AccountMigrationWelcomeUI : public ui::WebDialogUI {
   ~AccountMigrationWelcomeUI() override;
 
  private:
-  base::WeakPtrFactory<AccountMigrationWelcomeUI> weak_factory_;
+  base::WeakPtrFactory<AccountMigrationWelcomeUI> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AccountMigrationWelcomeUI);
 };

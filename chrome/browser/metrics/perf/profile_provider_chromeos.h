@@ -60,7 +60,7 @@ class ProfileProvider : public chromeos::PowerManagerClient::Observer,
       on_session_restored_callback_subscription_;
 
   // To pass around the "this" pointer across threads safely.
-  base::WeakPtrFactory<ProfileProvider> weak_factory_;
+  base::WeakPtrFactory<ProfileProvider> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ProfileProvider);
 };

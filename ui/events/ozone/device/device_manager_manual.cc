@@ -37,8 +37,7 @@ DeviceManagerManual::DeviceManagerManual()
     : blocking_task_runner_(base::CreateSequencedTaskRunner(
           {base::ThreadPool(), base::MayBlock()})),
       watcher_(new base::FilePathWatcher,
-               base::OnTaskRunnerDeleter(blocking_task_runner_)),
-      weak_ptr_factory_(this) {}
+               base::OnTaskRunnerDeleter(blocking_task_runner_)) {}
 
 DeviceManagerManual::~DeviceManagerManual() {}
 

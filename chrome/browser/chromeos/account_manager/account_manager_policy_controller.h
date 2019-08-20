@@ -51,7 +51,7 @@ class AccountManagerPolicyController : public KeyedService {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<AccountManagerPolicyController> weak_factory_;
+  base::WeakPtrFactory<AccountManagerPolicyController> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AccountManagerPolicyController);
 };

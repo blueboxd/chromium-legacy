@@ -42,8 +42,7 @@ Service::Service(Profile* profile,
                  extensions::ExtensionRegistry* extension_registry)
     : profile_(profile),
       extension_registry_(extension_registry),
-      registry_(new Registry(profile)),
-      weak_ptr_factory_(this) {
+      registry_(new Registry(profile)) {
   extension_registry_->AddObserver(this);
 }
 

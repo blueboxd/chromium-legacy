@@ -291,16 +291,13 @@ CopyOperation::CopyOperation(base::SequencedTaskRunner* blocking_task_runner,
                              JobScheduler* scheduler,
                              internal::ResourceMetadata* metadata,
                              internal::FileCache* cache)
-  : blocking_task_runner_(blocking_task_runner),
-    delegate_(delegate),
-    scheduler_(scheduler),
-    metadata_(metadata),
-    cache_(cache),
-    create_file_operation_(new CreateFileOperation(blocking_task_runner,
-                                                   delegate,
-                                                   metadata)),
-    weak_ptr_factory_(this) {
-}
+    : blocking_task_runner_(blocking_task_runner),
+      delegate_(delegate),
+      scheduler_(scheduler),
+      metadata_(metadata),
+      cache_(cache),
+      create_file_operation_(
+          new CreateFileOperation(blocking_task_runner, delegate, metadata)) {}
 
 CopyOperation::~CopyOperation() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

@@ -1071,6 +1071,7 @@ VISIT_PROTO_FIELDS(const sync_pb::CloudTokenData& proto) {
   VISIT(exp_month);
   VISIT(exp_year);
   VISIT(art_fife_url);
+  VISIT(instrument_token);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::WalletMaskedCreditCard& proto) {

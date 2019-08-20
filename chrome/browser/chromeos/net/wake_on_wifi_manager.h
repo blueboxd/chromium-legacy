@@ -101,7 +101,7 @@ class WakeOnWifiManager : public content::NotificationObserver,
 
   content::NotificationRegistrar registrar_;
 
-  base::WeakPtrFactory<WakeOnWifiManager> weak_ptr_factory_;
+  base::WeakPtrFactory<WakeOnWifiManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WakeOnWifiManager);
 };

@@ -192,8 +192,7 @@ EventFactoryEvdev::EventFactoryEvdev(CursorDelegateEvdev* cursor,
                                     base::Unretained(this))),
       cursor_(cursor),
       input_controller_(&keyboard_, &button_map_),
-      touch_id_generator_(0),
-      weak_ptr_factory_(this) {
+      touch_id_generator_(0) {
   DCHECK(device_manager_);
 }
 

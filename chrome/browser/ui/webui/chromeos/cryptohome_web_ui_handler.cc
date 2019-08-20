@@ -18,7 +18,7 @@ using content::BrowserThread;
 
 namespace chromeos {
 
-CryptohomeWebUIHandler::CryptohomeWebUIHandler() : weak_ptr_factory_(this) {}
+CryptohomeWebUIHandler::CryptohomeWebUIHandler() {}
 
 CryptohomeWebUIHandler::~CryptohomeWebUIHandler() {}
 

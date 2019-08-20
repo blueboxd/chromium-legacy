@@ -274,8 +274,7 @@ RecommendAppsFetcherImpl::RecommendAppsFetcherImpl(
       connector_(connector),
       url_loader_factory_(url_loader_factory),
       arc_features_getter_(
-          base::BindRepeating(&arc::ArcFeaturesParser::GetArcFeatures)),
-      weak_ptr_factory_(this) {
+          base::BindRepeating(&arc::ArcFeaturesParser::GetArcFeatures)) {
   connector_->BindInterface(ash::mojom::kServiceName, &cros_display_config_);
 }
 

@@ -8,7 +8,8 @@
 
 namespace chrome_cleaner {
 
-MockChromePromptIPC::MockChromePromptIPC() = default;
+MockChromePromptIPC::MockChromePromptIPC()
+    : MojoChromePromptIPC(std::string(), nullptr) {}
 
 MockChromePromptIPC::~MockChromePromptIPC() = default;
 
@@ -19,12 +20,6 @@ void MockChromePromptIPC::PostPromptUserTask(
     mojom::ChromePrompt::PromptUserCallback callback) {
   MockPostPromptUserTask(files_to_delete, registry_keys, extension_ids,
                          &callback);
-}
-
-void MockChromePromptIPC::PostDisableExtensionsTask(
-    const std::vector<base::string16>& extension_ids,
-    mojom::ChromePrompt::DisableExtensionsCallback callback) {
-  MockPostDisableExtensionsTask(extension_ids, &callback);
 }
 
 }  // namespace chrome_cleaner

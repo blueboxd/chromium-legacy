@@ -85,7 +85,7 @@ class LocalReaderProxy : public ReaderProxy {
 
   // This should remain the last member so it'll be destroyed first and
   // invalidate its weak pointers before other members are destroyed.
-  base::WeakPtrFactory<LocalReaderProxy> weak_ptr_factory_;
+  base::WeakPtrFactory<LocalReaderProxy> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(LocalReaderProxy);
 };
 
@@ -226,7 +226,7 @@ class DriveFileStreamReader {
 
   // This should remain the last member so it'll be destroyed first and
   // invalidate its weak pointers before other members are destroyed.
-  base::WeakPtrFactory<DriveFileStreamReader> weak_ptr_factory_;
+  base::WeakPtrFactory<DriveFileStreamReader> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(DriveFileStreamReader);
 };
 

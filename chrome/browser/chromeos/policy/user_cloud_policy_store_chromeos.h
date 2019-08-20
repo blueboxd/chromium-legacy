@@ -99,7 +99,7 @@ class UserCloudPolicyStoreChromeOS : public UserCloudPolicyStoreBase {
   // Used to load the policy key provided by session manager as a file.
   std::unique_ptr<CachedPolicyKeyLoaderChromeOS> cached_policy_key_loader_;
 
-  base::WeakPtrFactory<UserCloudPolicyStoreChromeOS> weak_factory_;
+  base::WeakPtrFactory<UserCloudPolicyStoreChromeOS> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyStoreChromeOS);
 };

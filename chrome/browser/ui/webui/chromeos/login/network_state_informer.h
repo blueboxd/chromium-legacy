@@ -104,7 +104,7 @@ class NetworkStateInformer
   base::ObserverList<NetworkStateInformerObserver>::Unchecked observers_;
   content::NotificationRegistrar registrar_;
 
-  base::WeakPtrFactory<NetworkStateInformer> weak_ptr_factory_;
+  base::WeakPtrFactory<NetworkStateInformer> weak_ptr_factory_{this};
 };
 
 }  // namespace chromeos

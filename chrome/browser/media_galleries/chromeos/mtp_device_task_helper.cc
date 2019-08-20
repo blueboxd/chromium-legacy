@@ -78,8 +78,7 @@ base::File::Info FileInfoFromMTPFileEntry(
 
 }  // namespace
 
-MTPDeviceTaskHelper::MTPDeviceTaskHelper()
-    : weak_ptr_factory_(this) {
+MTPDeviceTaskHelper::MTPDeviceTaskHelper() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 

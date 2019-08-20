@@ -97,7 +97,7 @@ interface AppCacheHost {
               url.mojom.Url opt_manifest_url);
 
   // Initiates worker specific cache selection algorithm for the given host.
-  SelectCacheForSharedWorker(int64 appcache_id);
+  SelectCacheForWorker(int64 appcache_id);
 
   // Informs the browser of a 'foreign' entry in an appcache.
   MarkAsForeignEntry(url.mojom.Url document_url,

@@ -69,7 +69,7 @@ class ClientCertFilterChromeOS : public ClientCertStoreChromeOS::CertFilter {
   bool waiting_for_private_slot_;
 
   net::NSSProfileFilterChromeOS nss_profile_filter_;
-  base::WeakPtrFactory<ClientCertFilterChromeOS> weak_ptr_factory_;
+  base::WeakPtrFactory<ClientCertFilterChromeOS> weak_ptr_factory_{this};
 };
 
 }  // namespace chromeos

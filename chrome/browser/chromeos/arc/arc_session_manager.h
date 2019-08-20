@@ -385,7 +385,7 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   ArcAppIdProviderImpl app_id_provider_;
 
   // Must be the last member.
-  base::WeakPtrFactory<ArcSessionManager> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcSessionManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcSessionManager);
 };

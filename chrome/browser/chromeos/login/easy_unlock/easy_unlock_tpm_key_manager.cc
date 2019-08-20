@@ -209,9 +209,7 @@ EasyUnlockTpmKeyManager::EasyUnlockTpmKeyManager(
     : account_id_(account_id),
       username_hash_(username_hash),
       local_state_(local_state),
-      create_tpm_key_state_(CREATE_TPM_KEY_NOT_STARTED),
-      get_tpm_slot_weak_ptr_factory_(this),
-      weak_ptr_factory_(this) {}
+      create_tpm_key_state_(CREATE_TPM_KEY_NOT_STARTED) {}
 
 EasyUnlockTpmKeyManager::~EasyUnlockTpmKeyManager() {}
 

@@ -177,7 +177,7 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
   // True if app list search autocomplete is enabled.
   const bool is_app_list_search_autocomplete_enabled_;
 
-  base::WeakPtrFactory<SearchBoxView> weak_ptr_factory_;
+  base::WeakPtrFactory<SearchBoxView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SearchBoxView);
 };

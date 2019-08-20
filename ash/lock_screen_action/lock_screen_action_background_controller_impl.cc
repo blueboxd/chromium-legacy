@@ -20,7 +20,7 @@ constexpr char kLockScreenActionBackgroundWidgetName[] =
 
 LockScreenActionBackgroundControllerImpl::
     LockScreenActionBackgroundControllerImpl()
-    : widget_observer_(this), weak_ptr_factory_(this) {}
+    : widget_observer_(this) {}
 
 LockScreenActionBackgroundControllerImpl::
     ~LockScreenActionBackgroundControllerImpl() {

@@ -270,8 +270,7 @@ class DownloadOperation::DownloadParams {
         get_content_callback_(get_content_callback),
         completion_callback_(std::move(completion_callback)),
         entry_(std::move(entry)),
-        was_cancelled_(false),
-        weak_ptr_factory_(this) {
+        was_cancelled_(false) {
     DCHECK(!completion_callback_.is_null());
     DCHECK(entry_);
   }
@@ -336,7 +335,7 @@ class DownloadOperation::DownloadParams {
   base::Closure cancel_download_closure_;
   bool was_cancelled_;
 
-  base::WeakPtrFactory<DownloadParams> weak_ptr_factory_;
+  base::WeakPtrFactory<DownloadParams> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(DownloadParams);
 };
 
@@ -352,9 +351,7 @@ DownloadOperation::DownloadOperation(
       scheduler_(scheduler),
       metadata_(metadata),
       cache_(cache),
-      temporary_file_directory_(temporary_file_directory),
-      weak_ptr_factory_(this) {
-}
+      temporary_file_directory_(temporary_file_directory) {}
 
 DownloadOperation::~DownloadOperation() = default;
 

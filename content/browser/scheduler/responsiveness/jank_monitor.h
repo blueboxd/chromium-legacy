@@ -99,7 +99,7 @@ class CONTENT_EXPORT JankMonitor
 
   // Exposed for tests
   virtual void DestroyOnMonitorThread();
-  virtual scoped_refptr<base::SequencedTaskRunner> CreateMonitorTaskRunner();
+  virtual void FinishDestroyMetricSource();
   virtual std::unique_ptr<MetricSource> CreateMetricSource();
   bool timer_running() const;
 
@@ -139,8 +139,6 @@ class CONTENT_EXPORT JankMonitor
     // Checks some methods are called on the target thread.
     SEQUENCE_CHECKER(target_sequence_checker_);
   };
-
-  void FinishDestroyMetricSource();
 
   void AddObserverOnMonitorThread(Observer* observer);
   void RemoveObserverOnMonitorThread(Observer* observer);

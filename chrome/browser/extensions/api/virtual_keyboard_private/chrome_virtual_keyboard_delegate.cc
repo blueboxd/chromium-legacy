@@ -163,7 +163,7 @@ namespace extensions {
 
 ChromeVirtualKeyboardDelegate::ChromeVirtualKeyboardDelegate(
     content::BrowserContext* browser_context)
-    : browser_context_(browser_context), weak_factory_(this) {
+    : browser_context_(browser_context) {
   weak_this_ = weak_factory_.GetWeakPtr();
 }
 

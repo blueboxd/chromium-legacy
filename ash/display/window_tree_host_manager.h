@@ -224,7 +224,7 @@ class ASH_EXPORT WindowTreeHostManager
   // should be moved after a display configuration change.
   int64_t cursor_display_id_for_restore_;
 
-  base::WeakPtrFactory<WindowTreeHostManager> weak_ptr_factory_;
+  base::WeakPtrFactory<WindowTreeHostManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostManager);
 };

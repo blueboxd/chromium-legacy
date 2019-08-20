@@ -139,8 +139,7 @@ ProximityAuthWebUIHandler::ProximityAuthWebUIHandler(
     secure_channel::SecureChannelClient* secure_channel_client)
     : device_sync_client_(device_sync_client),
       secure_channel_client_(secure_channel_client),
-      web_contents_initialized_(false),
-      weak_ptr_factory_(this) {}
+      web_contents_initialized_(false) {}
 
 ProximityAuthWebUIHandler::~ProximityAuthWebUIHandler() {
   multidevice::LogBuffer::GetInstance()->RemoveObserver(this);

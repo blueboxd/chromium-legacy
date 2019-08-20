@@ -18,6 +18,8 @@
 #include "content/browser/service_worker/service_worker_navigation_handle_core.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 
 namespace content {
 
@@ -78,8 +80,10 @@ void MaybeCreateLoaderOnCoreThread(
     base::WeakPtr<ServiceWorkerNavigationLoaderInterceptor> interceptor_on_ui,
     ServiceWorkerNavigationHandleCore* handle_core,
     const ServiceWorkerNavigationLoaderInterceptorParams& params,
-    blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request,
-    blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info,
+    mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
+        host_receiver,
+    mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
+        client_remote,
     const network::ResourceRequest& tentative_resource_request,
     BrowserContext* browser_context,
     NavigationLoaderInterceptor::LoaderCallback loader_callback,
@@ -105,16 +109,16 @@ void MaybeCreateLoaderOnCoreThread(
     // Its lifetime is tied to the |provider_info| in the
     // ServiceWorkerNavigationHandle on the UI thread and which will be passed
     // to the renderer when the navigation commits.
-    DCHECK(host_request);
-    DCHECK(client_ptr_info);
+    DCHECK(host_receiver);
+    DCHECK(client_remote);
     base::WeakPtr<ServiceWorkerProviderHost> provider_host;
 
     if (params.resource_type == ResourceType::kMainFrame ||
         params.resource_type == ResourceType::kSubFrame) {
       provider_host = ServiceWorkerProviderHost::PreCreateNavigationHost(
           context_core->AsWeakPtr(), params.are_ancestors_secure,
-          params.frame_tree_node_id, std::move(host_request),
-          std::move(client_ptr_info));
+          params.frame_tree_node_id, std::move(host_receiver),
+          std::move(client_remote));
     } else {
       DCHECK(params.resource_type == ResourceType::kWorker ||
              params.resource_type == ResourceType::kSharedWorker);
@@ -124,7 +128,7 @@ void MaybeCreateLoaderOnCoreThread(
               : blink::mojom::ServiceWorkerProviderType::kForSharedWorker;
       provider_host = ServiceWorkerProviderHost::PreCreateForWebWorker(
           context_core->AsWeakPtr(), params.process_id, provider_type,
-          std::move(host_request), std::move(client_ptr_info));
+          std::move(host_receiver), std::move(client_remote));
     }
     DCHECK(provider_host);
     handle_core->set_provider_host(provider_host);
@@ -186,16 +190,20 @@ void ServiceWorkerNavigationLoaderInterceptor::MaybeCreateLoader(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(handle_);
 
-  blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request;
-  blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info;
+  mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
+      host_receiver;
+  mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
+      client_remote;
 
   // If this is the first request before redirects, a provider info has not yet
   // been created.
   if (!handle_->has_provider_info()) {
     auto provider_info =
         blink::mojom::ServiceWorkerProviderInfoForClient::New();
-    host_request = mojo::MakeRequest(&provider_info->host_ptr_info);
-    provider_info->client_request = mojo::MakeRequest(&client_ptr_info);
+    host_receiver =
+        provider_info->host_remote.InitWithNewEndpointAndPassReceiver();
+    provider_info->client_receiver =
+        client_remote.InitWithNewEndpointAndPassReceiver();
     handle_->OnCreatedProviderHost(std::move(provider_info));
   }
 
@@ -219,8 +227,8 @@ void ServiceWorkerNavigationLoaderInterceptor::MaybeCreateLoader(
   ServiceWorkerContextWrapper::RunOrPostTaskOnCoreThread(
       FROM_HERE,
       base::BindOnce(&MaybeCreateLoaderOnCoreThread, GetWeakPtr(),
-                     handle_->core(), params_, std::move(host_request),
-                     std::move(client_ptr_info), tentative_resource_request,
+                     handle_->core(), params_, std::move(host_receiver),
+                     std::move(client_remote), tentative_resource_request,
                      browser_context, std::move(loader_callback),
                      std::move(fallback_callback), initialize_provider_only));
 

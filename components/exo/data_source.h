@@ -103,7 +103,7 @@ class DataSource {
 
   base::flat_set<DndAction> dnd_actions_;
 
-  base::WeakPtrFactory<DataSource> read_data_weak_ptr_factory_;
+  base::WeakPtrFactory<DataSource> read_data_weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DataSource);
 };

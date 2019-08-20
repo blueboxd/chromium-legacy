@@ -55,6 +55,7 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
 import org.chromium.chrome.test.util.browser.suggestions.mostvisited.FakeMostVisitedSites;
+import org.chromium.components.signin.test.util.AccountManagerTestRule;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
@@ -76,6 +77,9 @@ public class FeedNewTabPageTest {
 
     @Rule
     public SuggestionsDependenciesRule mSuggestionsDeps = new SuggestionsDependenciesRule();
+
+    @Rule
+    public AccountManagerTestRule mAccountManagerTestRule = new AccountManagerTestRule();
 
     private Tab mTab;
     private FeedNewTabPage mNtp;
@@ -113,7 +117,7 @@ public class FeedNewTabPageTest {
     @Test
     @MediumTest
     @Feature({"FeedNewTabPage"})
-    public void testSignInPromo() throws Exception {
+    public void testSignInPromo() {
         SignInPromo.SigninObserver signinObserver = mNtp.getMediatorForTesting()
                                                             .getSignInPromoForTesting()
                                                             .getSigninObserverForTesting();
@@ -190,6 +194,27 @@ public class FeedNewTabPageTest {
         // Reset state.
         ChromePreferenceManager.getInstance().writeBoolean(
                 ChromePreferenceManager.NTP_SIGNIN_PROMO_DISMISSED, dismissed);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"FeedNewTabPage"})
+    @AccountManagerTestRule.BlockGetAccounts
+    public void testSignInPromo_AccountsNotReady() {
+        // Check that the sign-in promo is not shown if accounts are not ready.
+        onView(instanceOf(RecyclerView.class))
+                .perform(RecyclerViewActions.scrollToPosition(SIGNIN_PROMO_POSITION));
+        onView(withId(R.id.signin_promo_view_container)).check(doesNotExist());
+
+        // Wait for accounts cache population to finish and reload ntp.
+        mAccountManagerTestRule.unblockGetAccountsAndWaitForAccountsPopulated();
+        TestThreadUtils.runOnUiThreadBlocking(() -> mTab.reload());
+        NewTabPageTestUtils.waitForNtpLoaded(mTab);
+
+        // Check that the sign-in promo is displayed this time.
+        onView(instanceOf(RecyclerView.class))
+                .perform(RecyclerViewActions.scrollToPosition(SIGNIN_PROMO_POSITION));
+        onView(withId(R.id.signin_promo_view_container)).check(matches(isDisplayed()));
     }
 
     @Test

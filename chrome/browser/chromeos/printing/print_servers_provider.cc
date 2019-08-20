@@ -137,8 +137,7 @@ class PrintServersProviderImpl : public PrintServersProvider {
   PrintServersProviderImpl()
       : task_runner_(base::CreateSequencedTaskRunner(
             {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
-             base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
-        weak_ptr_factory_(this) {
+             base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   }
 
@@ -229,7 +228,7 @@ class PrintServersProviderImpl : public PrintServersProvider {
   std::vector<PrintServer> servers_;
 
   base::ObserverList<PrintServersProvider::Observer>::Unchecked observers_;
-  base::WeakPtrFactory<PrintServersProviderImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<PrintServersProviderImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PrintServersProviderImpl);
 };

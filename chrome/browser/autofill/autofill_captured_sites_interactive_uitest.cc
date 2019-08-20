@@ -110,20 +110,20 @@ class AutofillCapturedSitesInteractiveTest
 
       // Press the down key to highlight the first choice in the autofill
       // suggestion drop down.
-      test_delegate()->Reset();
+      test_delegate()->SetExpectations({ObservedUiEvents::kPreviewFormData},
+                                       autofill_wait_for_action_interval);
       SendKeyToPopup(frame, ui::DomKey::ARROW_DOWN);
-      if (!test_delegate()->Wait({ObservedUiEvents::kPreviewFormData},
-                                 autofill_wait_for_action_interval)) {
+      if (!test_delegate()->Wait()) {
         LOG(WARNING) << "Failed to select an option from the "
                      << "autofill suggestion drop down.";
         continue;
       }
 
       // Press the enter key to invoke autofill using the first suggestion.
-      test_delegate()->Reset();
+      test_delegate()->SetExpectations({ObservedUiEvents::kFormDataFilled},
+                                       autofill_wait_for_action_interval);
       SendKeyToPopup(frame, ui::DomKey::ENTER);
-      if (!test_delegate()->Wait({ObservedUiEvents::kFormDataFilled},
-                                 autofill_wait_for_action_interval)) {
+      if (!test_delegate()->Wait()) {
         LOG(WARNING) << "Failed to fill the form.";
         continue;
       }
@@ -263,13 +263,13 @@ class AutofillCapturedSitesInteractiveTest
                                            frame, &rect))
       return false;
 
-    test_delegate()->Reset();
+    test_delegate()->SetExpectations({ObservedUiEvents::kSuggestionShown},
+                                     autofill_wait_for_action_interval);
     if (!captured_sites_test_utils::TestRecipeReplayer::
             SimulateLeftMouseClickAt(rect.CenterPoint(), frame))
       return false;
 
-    return test_delegate()->Wait({ObservedUiEvents::kSuggestionShown},
-                                 autofill_wait_for_action_interval);
+    return test_delegate()->Wait();
   }
 
   bool StringToFieldType(const std::string& str, ServerFieldType* type) {

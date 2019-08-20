@@ -47,8 +47,8 @@ class AuthenticatedLeakCheck : public LeakDetectionCheck {
 
   // LeakDetectionCheck:
   void Start(const GURL& url,
-             base::StringPiece16 username,
-             base::StringPiece16 password) override;
+             base::string16 username,
+             base::string16 password) override;
 
 #if defined(UNIT_TEST)
   void set_network_factory(
@@ -79,6 +79,10 @@ class AuthenticatedLeakCheck : public LeakDetectionCheck {
   void OnLookupSingleLeakResponse(
       std::unique_ptr<SingleLookupResponse> response);
 
+  // Called when the network response is analazyed on the background thread. The
+  // method is called on the main thread.
+  void OnAnalyzeSingleLeakResponse(bool is_leaked);
+
   // Delegate for the instance. Should outlive |this|.
   LeakDetectionDelegateInterface* const delegate_;
   // Helper class to asynchronously prepare the data for the request.
@@ -91,7 +95,9 @@ class AuthenticatedLeakCheck : public LeakDetectionCheck {
   // |url| passed to Start().
   GURL url_;
   // |username| passed to Start().
-  std::string username_;
+  base::string16 username_;
+  // |password| passed to Start().
+  base::string16 password_;
   // Encryption key used during the request.
   std::string encryption_key_;
   // Weak pointers for different callbacks.

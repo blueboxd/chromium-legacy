@@ -415,7 +415,7 @@ class TrackerImplTest : public ::testing::Test {
 
   virtual bool ShouldAvailabilityStoreBeReady() { return true; }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<TrackerImpl> tracker_;
   TestTrackerInMemoryEventStore* event_store_;
   TestTrackerAvailabilityModel* availability_model_;

@@ -46,7 +46,7 @@ class IOSIOThreadTest : public PlatformTest {
     web::WebThreadImpl::CreateTaskExecutor();
 
     ui_thread_ = std::make_unique<web::TestWebThread>(
-        web::WebThread::UI, scoped_task_environment_.GetMainThreadTaskRunner());
+        web::WebThread::UI, task_environment_.GetMainThreadTaskRunner());
   }
 
   ~IOSIOThreadTest() override {
@@ -54,7 +54,7 @@ class IOSIOThreadTest : public PlatformTest {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   web::ScopedTestingWebClient web_client_;
   std::unique_ptr<web::TestWebThread> ui_thread_;
 };

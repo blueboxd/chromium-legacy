@@ -154,7 +154,7 @@ class DriveApiRequestsTest : public testing::Test {
   void SetUp() override {
     request_sender_ = std::make_unique<RequestSender>(
         std::make_unique<DummyAuthService>(), test_shared_loader_factory_,
-        scoped_task_environment_.GetMainThreadTaskRunner(), kTestUserAgent,
+        task_environment_.GetMainThreadTaskRunner(), kTestUserAgent,
         TRAFFIC_ANNOTATION_FOR_TESTS);
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -212,8 +212,8 @@ class DriveApiRequestsTest : public testing::Test {
     testing_properties_.push_back(public_property);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::IO};
   net::EmbeddedTestServer test_server_;
   std::unique_ptr<RequestSender> request_sender_;
   std::unique_ptr<DriveApiUrlGenerator> url_generator_;

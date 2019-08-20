@@ -1639,6 +1639,9 @@ extern const char kEnterpriseReportingInBrowserDescription[];
 extern const char kHappinessTrackingSurveysForDesktopName[];
 extern const char kHappinessTrackingSurveysForDesktopDescription[];
 
+extern const char kHappinessTrackingSurveysForDesktopDemoName[];
+extern const char kHappinessTrackingSurveysForDesktopDemoDescription[];
+
 extern const char kIntentPickerName[];
 extern const char kIntentPickerDescription[];
 
@@ -2160,6 +2163,9 @@ extern const char kClickToCallContextMenuForSelectedTextDescription[];
 
 extern const char kClickToCallUIName[];
 extern const char kClickToCallUIDescription[];
+
+extern const char kProfileMenuRevampName[];
+extern const char kProfileMenuRevampDescription[];
 
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 

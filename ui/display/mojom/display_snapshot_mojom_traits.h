@@ -39,6 +39,11 @@ struct StructTraits<display::mojom::DisplaySnapshotDataView,
     return snapshot->type();
   }
 
+  static display::PanelOrientation panel_orientation(
+      const std::unique_ptr<display::DisplaySnapshot>& snapshot) {
+    return snapshot->panel_orientation();
+  }
+
   static bool is_aspect_preserving_scaling(
       const std::unique_ptr<display::DisplaySnapshot>& snapshot) {
     return snapshot->is_aspect_preserving_scaling();

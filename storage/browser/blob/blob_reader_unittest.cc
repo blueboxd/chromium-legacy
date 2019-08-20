@@ -270,7 +270,7 @@ class BlobReaderTest : public ::testing::Test {
     return reader_->total_size_calculated();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   BlobStorageContext context_;
   std::unique_ptr<BlobDataHandle> blob_handle_;

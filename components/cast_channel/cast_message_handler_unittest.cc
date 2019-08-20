@@ -73,8 +73,7 @@ MATCHER_P(HasPayloadUtf8, payload, "") {
 class CastMessageHandlerTest : public testing::Test {
  public:
   CastMessageHandlerTest()
-      : thread_bundle_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
+      : thread_bundle_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         cast_socket_service_(new base::TestSimpleTaskRunner()),
         handler_(&cast_socket_service_,
                  /* connector */ nullptr,

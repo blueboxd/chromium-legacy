@@ -214,7 +214,7 @@ class NetworkConnectionTrackerTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<net::test::MockNetworkChangeNotifier>
       mock_network_change_notifier_;
   std::unique_ptr<NetworkService> network_service_;

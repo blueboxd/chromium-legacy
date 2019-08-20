@@ -42,7 +42,7 @@ class QueuedTaskPosterTest : public testing::Test {
   void AssertSequenceNotStarted();
 
   base::Thread target_thread_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   bool sequence_started_ = false;
 };
 

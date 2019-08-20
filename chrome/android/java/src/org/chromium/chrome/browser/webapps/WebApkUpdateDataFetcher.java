@@ -127,7 +127,7 @@ public class WebApkUpdateDataFetcher extends EmptyTabObserver {
                         shareParamsFileNames, shareParamsAccepts);
 
         int defaultBackgroundColor = SplashLayout.getDefaultBackgroundColor(appContext);
-        WebApkInfo info = WebApkInfo.create(mOldInfo.id(), mOldInfo.url(), scopeUrl,
+        WebApkInfo info = WebApkInfo.create(mOldInfo.url(), scopeUrl,
                 new WebApkInfo.Icon(primaryIconBitmap), new WebApkInfo.Icon(badgeIconBitmap), null,
                 name, shortName, displayMode, orientation, mOldInfo.source(), themeColor,
                 backgroundColor, defaultBackgroundColor, isPrimaryIconMaskable,

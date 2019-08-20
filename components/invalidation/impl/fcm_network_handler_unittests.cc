@@ -280,7 +280,7 @@ class FCMNetworkHandlerTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<StrictMock<MockGCMDriver>> mock_gcm_driver_;
   std::unique_ptr<StrictMock<MockInstanceIDDriver>> mock_instance_id_driver_;
   std::unique_ptr<StrictMock<MockInstanceID>> mock_instance_id_;

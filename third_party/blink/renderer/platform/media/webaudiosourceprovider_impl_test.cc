@@ -106,7 +106,7 @@ class WebAudioSourceProviderImplTest : public testing::Test,
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   media::AudioParameters params_;
   media::FakeAudioRenderCallback fake_callback_;

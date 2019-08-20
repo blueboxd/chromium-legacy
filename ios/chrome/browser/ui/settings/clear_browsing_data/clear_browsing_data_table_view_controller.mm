@@ -425,6 +425,14 @@
   [self.alertCoordinator start];
 }
 
+#pragma mark - UIAdaptivePresentationControllerDelegate
+
+- (void)presentationControllerDidDismiss:
+    (UIPresentationController*)presentationController {
+  // Call dismiss to clean up state and  stop the Coordinator.
+  [self dismiss];
+}
+
 #pragma mark - Private Helpers
 
 - (void)showClearBrowsingDataAlertController:(id)sender {

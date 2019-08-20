@@ -19,7 +19,6 @@ extern const base::Feature kGridLayoutForNtpShortcuts;
 extern const base::Feature kNtpCustomizationMenuV2;
 
 extern const base::Feature kFirstRunDefaultSearchShortcut;
-extern const base::Feature kHideShortcutsOnNtp;
 
 }  // namespace features
 

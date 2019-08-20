@@ -89,7 +89,7 @@ class TestAnnotator : public ia_mojom::Annotator {
 TEST(PageAnnotatorTest, ImageTracking) {
   const auto get_pixels = base::BindRepeating([]() { return SkBitmap(); });
 
-  base::test::ScopedTaskEnvironment test_task_env;
+  base::test::TaskEnvironment test_task_env;
 
   PageAnnotator page_annotator((mojo::NullRemote()));
 
@@ -119,7 +119,7 @@ TEST(PageAnnotatorTest, Annotation) {
   // the local ImageProcessor.
   const auto get_pixels = base::BindRepeating([]() { return SkBitmap(); });
 
-  base::test::ScopedTaskEnvironment test_task_env;
+  base::test::TaskEnvironment test_task_env;
 
   TestAnnotator test_annotator;
   PageAnnotator page_annotator(test_annotator.GetRemote());

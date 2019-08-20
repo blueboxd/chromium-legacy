@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -16,7 +17,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 
 class InfoBarService;
-class ThemeService;
 
 // When a user installs a theme, we display it immediately, but provide an
 // infobar allowing them to cancel.
@@ -25,17 +25,19 @@ class ThemeInstalledInfoBarDelegate : public ConfirmInfoBarDelegate,
  public:
   // Creates a theme installed infobar and delegate and adds the infobar to
   // |infobar_service|, replacing any previous theme infobar.
-  static void Create(InfoBarService* infobar_service,
-                     ThemeService* theme_service,
-                     const std::string& theme_name,
-                     const std::string& theme_id,
-                     base::OnceClosure revert_theme_callback);
+  static void Create(
+      InfoBarService* infobar_service,
+      ThemeService* theme_service,
+      const std::string& theme_name,
+      const std::string& theme_id,
+      std::unique_ptr<ThemeService::ThemeReinstaller> prev_theme_reinstaller);
 
  private:
-  ThemeInstalledInfoBarDelegate(ThemeService* theme_service,
-                                const std::string& theme_name,
-                                const std::string& theme_id,
-                                base::OnceClosure revert_theme_callback);
+  ThemeInstalledInfoBarDelegate(
+      ThemeService* theme_service,
+      const std::string& theme_name,
+      const std::string& theme_id,
+      std::unique_ptr<ThemeService::ThemeReinstaller> prev_theme_reinstaller);
   ~ThemeInstalledInfoBarDelegate() override;
 
   // ConfirmInfoBarDelegate:
@@ -61,7 +63,7 @@ class ThemeInstalledInfoBarDelegate : public ConfirmInfoBarDelegate,
   std::string theme_id_;
 
   // Used to undo theme install.
-  base::OnceClosure revert_theme_callback_;
+  std::unique_ptr<ThemeService::ThemeReinstaller> prev_theme_reinstaller_;
 
   // Registers and unregisters us for notifications.
   content::NotificationRegistrar registrar_;

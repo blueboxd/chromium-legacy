@@ -335,8 +335,7 @@ class TestProxyLookupClient : public mojom::ProxyLookupClient {
 class NetworkContextTest : public testing::Test {
  public:
   NetworkContextTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         network_change_notifier_(net::NetworkChangeNotifier::CreateMock()),
         network_service_(NetworkService::CreateForTesting()) {}
   ~NetworkContextTest() override {}
@@ -428,7 +427,7 @@ class NetworkContextTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   std::unique_ptr<NetworkService> network_service_;
   // Stores the NetworkContextPtr of the most recently created NetworkContext.
@@ -840,7 +839,7 @@ TEST_F(NetworkContextTest, HttpServerPropertiesToDisk) {
       CreateContextWithParams(std::move(context_params));
 
   // Wait for properties to load from disk, and sanity check initial state.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(network_context->url_request_context()
                    ->http_server_properties()
                    ->GetSupportsSpdy(kSchemeHostPort));
@@ -852,7 +851,7 @@ TEST_F(NetworkContextTest, HttpServerPropertiesToDisk) {
   // Deleting the context will cause it to flush state. Wait for the pref
   // service to flush to disk.
   network_context.reset();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Create a new NetworkContext using the same path for HTTP server properties.
   context_params = mojom::NetworkContextParams::New();
@@ -860,7 +859,7 @@ TEST_F(NetworkContextTest, HttpServerPropertiesToDisk) {
   network_context = CreateContextWithParams(std::move(context_params));
 
   // Wait for properties to load from disk.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(network_context->url_request_context()
                   ->http_server_properties()
@@ -879,7 +878,7 @@ TEST_F(NetworkContextTest, HttpServerPropertiesToDisk) {
   // Destroy the network context and let any pending writes complete before
   // destroying |temp_dir|, to avoid leaking any files.
   network_context.reset();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_TRUE(temp_dir.Delete());
 }
 
@@ -984,7 +983,7 @@ TEST_F(NetworkContextTest, TransportSecurityStatePersisted) {
     // Destroy the network context, and wait for all tasks to write state to
     // disk to finish running.
     network_context.reset();
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     EXPECT_EQ(on_disk,
               base::PathExists(transport_security_persister_file_path));
 
@@ -997,7 +996,7 @@ TEST_F(NetworkContextTest, TransportSecurityStatePersisted) {
     }
     network_context = CreateContextWithParams(std::move(context_params));
     // Wait for the entry to load.
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     state = network_context->url_request_context()->transport_security_state();
     ASSERT_EQ(on_disk, state->GetDynamicSTSState(kDomain, &sts_state));
     if (on_disk)
@@ -2220,7 +2219,7 @@ TEST_F(NetworkContextTest, ProxyConfig) {
     for (const auto& proxy_config_set : proxy_config_sets) {
       config_client->OnProxyConfigUpdated(net::ProxyConfigWithAnnotation(
           proxy_config_set.proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS));
-      scoped_task_environment_.RunUntilIdle();
+      task_environment_.RunUntilIdle();
 
       TestProxyLookupClient http_proxy_lookup_client2;
       http_proxy_lookup_client2.StartLookUpProxyForURL(GURL("http://foo"),
@@ -2288,7 +2287,7 @@ TEST_F(NetworkContextTest, NoInitialProxyConfig) {
   TestProxyLookupClient ftp_proxy_lookup_client;
   ftp_proxy_lookup_client.StartLookUpProxyForURL(GURL("ftp://foo/"),
                                                  network_context.get());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(proxy_resolution_service->config());
   EXPECT_FALSE(proxy_resolution_service->fetched_config());
   EXPECT_FALSE(http_proxy_lookup_client.is_done());
@@ -2326,7 +2325,7 @@ TEST_F(NetworkContextTest, DestroyedWithoutProxyConfig) {
   TestProxyLookupClient proxy_lookup_client;
   proxy_lookup_client.StartLookUpProxyForURL(GURL("http://foo/"),
                                              network_context.get());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(1u, network_context->pending_proxy_lookup_requests_for_testing());
   EXPECT_FALSE(proxy_lookup_client.is_done());
 
@@ -2353,14 +2352,14 @@ TEST_F(NetworkContextTest, CancelPendingProxyLookup) {
       std::make_unique<TestProxyLookupClient>();
   proxy_lookup_client->StartLookUpProxyForURL(GURL("http://foo/"),
                                               network_context.get());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(proxy_lookup_client->is_done());
   EXPECT_EQ(1u, network_context->pending_proxy_lookup_requests_for_testing());
 
   // Cancelling the proxy lookup should cause the proxy lookup request objects
   // to be deleted.
   proxy_lookup_client.reset();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_EQ(0u, network_context->pending_proxy_lookup_requests_for_testing());
 }
@@ -2625,7 +2624,7 @@ TEST_F(NetworkContextTest, DestroyNetLogExporterWhileCreatingScratchDir) {
   net_log_exporter = nullptr;
   block_mktemp.Signal();
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(base::PathExists(path));
   base::DeleteFile(temp_path, false);
@@ -3130,7 +3129,7 @@ TEST_F(NetworkContextTest, CreateHostResolver_CloseContext) {
   // Run a bit to ensure the resolve request makes it to the resolver. Otherwise
   // the resolver will be destroyed and close its pipe before it even knows
   // about the request to send a failure.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   bool control_handle_closed = false;
   auto connection_error_callback =
@@ -3483,9 +3482,9 @@ TEST_F(NetworkContextTest, PreconnectOne) {
   test_server.SetConnectionListener(&connection_listener);
   ASSERT_TRUE(test_server.Start());
 
-  network_context->PreconnectSockets(
-      1, test_server.base_url(), net::LOAD_NORMAL,
-      true /* privacy_mode_enabled */, net::NetworkIsolationKey());
+  network_context->PreconnectSockets(1, test_server.base_url(),
+                                     /*allow_credentials=*/true,
+                                     net::NetworkIsolationKey());
   connection_listener.WaitForAcceptedConnections(1u);
 }
 
@@ -3499,8 +3498,8 @@ TEST_F(NetworkContextTest, PreconnectHSTS) {
   ASSERT_TRUE(test_server.Start());
 
   const GURL server_http_url = GetHttpUrlFromHttps(test_server.base_url());
-  network_context->PreconnectSockets(1, server_http_url, net::LOAD_NORMAL,
-                                     true /* privacy_mode_enabled */,
+  network_context->PreconnectSockets(1, server_http_url,
+                                     /*allow_credentials=*/false,
                                      net::NetworkIsolationKey());
   connection_listener.WaitForAcceptedConnections(1u);
 
@@ -3513,8 +3512,8 @@ TEST_F(NetworkContextTest, PreconnectHSTS) {
       base::Time::Now() + base::TimeDelta::FromSeconds(1000);
   network_context->url_request_context()->transport_security_state()->AddHSTS(
       server_http_url.host(), expiry, false);
-  network_context->PreconnectSockets(1, server_http_url, net::LOAD_NORMAL,
-                                     true /* privacy_mode_enabled */,
+  network_context->PreconnectSockets(1, server_http_url,
+                                     /*allow_credentials=*/false,
                                      net::NetworkIsolationKey());
   connection_listener.WaitForAcceptedConnections(1u);
 
@@ -3534,9 +3533,9 @@ TEST_F(NetworkContextTest, PreconnectZero) {
   test_server.SetConnectionListener(&connection_listener);
   ASSERT_TRUE(test_server.Start());
 
-  network_context->PreconnectSockets(
-      0, test_server.base_url(), net::LOAD_NORMAL,
-      true /* privacy_mode_enabled */, net::NetworkIsolationKey());
+  network_context->PreconnectSockets(0, test_server.base_url(),
+                                     /*allow_credentials=*/true,
+                                     net::NetworkIsolationKey());
   base::RunLoop().RunUntilIdle();
 
   int num_sockets =
@@ -3556,9 +3555,9 @@ TEST_F(NetworkContextTest, PreconnectTwo) {
   test_server.SetConnectionListener(&connection_listener);
   ASSERT_TRUE(test_server.Start());
 
-  network_context->PreconnectSockets(
-      2, test_server.base_url(), net::LOAD_NORMAL,
-      true /* privacy_mode_enabled */, net::NetworkIsolationKey());
+  network_context->PreconnectSockets(2, test_server.base_url(),
+                                     /*allow_credentials=*/true,
+                                     net::NetworkIsolationKey());
   connection_listener.WaitForAcceptedConnections(2u);
 
   int num_sockets =
@@ -3575,9 +3574,9 @@ TEST_F(NetworkContextTest, PreconnectFour) {
   test_server.SetConnectionListener(&connection_listener);
   ASSERT_TRUE(test_server.Start());
 
-  network_context->PreconnectSockets(
-      4, test_server.base_url(), net::LOAD_NORMAL,
-      true /* privacy_mode_enabled */, net::NetworkIsolationKey());
+  network_context->PreconnectSockets(4, test_server.base_url(),
+                                     /*allow_credentials=*/true,
+                                     net::NetworkIsolationKey());
 
   connection_listener.WaitForAcceptedConnections(4u);
 
@@ -3599,9 +3598,9 @@ TEST_F(NetworkContextTest, PreconnectMax) {
       GetSocketPoolInfo(network_context.get(), "max_sockets_per_group");
   EXPECT_GT(76, max_num_sockets);
 
-  network_context->PreconnectSockets(
-      76, test_server.base_url(), net::LOAD_NORMAL,
-      true /* privacy_mode_enabled */, net::NetworkIsolationKey());
+  network_context->PreconnectSockets(76, test_server.base_url(),
+                                     /*allow_credentials=*/true,
+                                     net::NetworkIsolationKey());
 
   // Wait until |max_num_sockets| have been connected.
   connection_listener.WaitForAcceptedConnections(max_num_sockets);
@@ -3636,11 +3635,9 @@ TEST_F(NetworkContextTest, PreconnectNetworkIsolationKey) {
   const net::NetworkIsolationKey kKey1(kOriginFoo, kOriginFoo);
   const net::NetworkIsolationKey kKey2(kOriginBar, kOriginBar);
   network_context->PreconnectSockets(1, test_server.base_url(),
-                                     net::LOAD_NORMAL,
-                                     true /* privacy_mode_enabled */, kKey1);
+                                     /*allow_credentials=*/false, kKey1);
   network_context->PreconnectSockets(2, test_server.base_url(),
-                                     net::LOAD_NORMAL,
-                                     true /* privacy_mode_enabled */, kKey2);
+                                     /*allow_credentials=*/false, kKey2);
   connection_listener.WaitForAcceptedConnections(3u);
 
   net::ClientSocketPool::GroupId group_id1(
@@ -5007,7 +5004,7 @@ TEST_F(NetworkContextMockHostTest, CustomProxyAddsHeaders) {
   config->pre_cache_headers.SetHeader("pre_foo", "pre_foo_value");
   config->post_cache_headers.SetHeader("post_foo", "post_foo_value");
   proxy_config_client->OnCustomProxyConfigUpdated(std::move(config));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ResourceRequest request;
   request.custom_proxy_pre_cache_headers.SetHeader("pre_bar", "pre_bar_value");
@@ -5061,14 +5058,14 @@ TEST_F(NetworkContextMockHostTest, CanUseProxyOnHttpSelfRedirect) {
   // is a redirect loop.
   config->can_use_proxy_on_http_url_redirect_cycles = false;
   proxy_config_client->OnCustomProxyConfigUpdated(std::move(config));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ResourceRequest request;
   request.url = kUrl;
   request.render_frame_id = kRouteId;
   std::unique_ptr<TestURLLoaderClient> client = FetchRedirectedRequest(
       kRedirectCycle.size(), request, network_context.get());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   std::string response;
   EXPECT_TRUE(
       mojo::BlockingCopyToString(client->response_body_release(), &response));
@@ -5111,14 +5108,14 @@ TEST_F(NetworkContextMockHostTest, CanUseProxyOnHttpRedirectCycles) {
   // is a redirect loop.
   config->can_use_proxy_on_http_url_redirect_cycles = false;
   proxy_config_client->OnCustomProxyConfigUpdated(std::move(config));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ResourceRequest request;
   request.url = kUrl1;
   request.render_frame_id = kRouteId;
   std::unique_ptr<TestURLLoaderClient> client = FetchRedirectedRequest(
       kRedirectCycle.size(), request, network_context.get());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   std::string response;
   EXPECT_TRUE(
       mojo::BlockingCopyToString(client->response_body_release(), &response));
@@ -5146,7 +5143,7 @@ TEST_F(NetworkContextMockHostTest, CustomProxyHeadersAreMerged) {
   config->pre_cache_headers.SetHeader("foo", "first_foo_key=value1");
   config->post_cache_headers.SetHeader("bar", "first_bar_key=value2");
   proxy_config_client->OnCustomProxyConfigUpdated(std::move(config));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ResourceRequest request;
   request.custom_proxy_pre_cache_headers.SetHeader("foo",
@@ -5189,7 +5186,7 @@ TEST_F(NetworkContextMockHostTest, CustomProxyConfigHeadersAddedBeforeCache) {
   config->pre_cache_headers.SetHeader("foo", "foo_value");
   config->post_cache_headers.SetHeader("bar", "bar_value");
   proxy_config_client->OnCustomProxyConfigUpdated(config->Clone());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ResourceRequest request;
   request.url = GetURLWithMockHost(test_server, "/echoheadercache?foo&bar");
@@ -5207,7 +5204,7 @@ TEST_F(NetworkContextMockHostTest, CustomProxyConfigHeadersAddedBeforeCache) {
   // post_cache_headers should not break caching.
   config->post_cache_headers.SetHeader("bar", "new_bar");
   proxy_config_client->OnCustomProxyConfigUpdated(config->Clone());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   client = FetchRequest(request, network_context.get());
   EXPECT_TRUE(
@@ -5219,7 +5216,7 @@ TEST_F(NetworkContextMockHostTest, CustomProxyConfigHeadersAddedBeforeCache) {
   // pre_cache_headers should invalidate cache.
   config->pre_cache_headers.SetHeader("foo", "new_foo");
   proxy_config_client->OnCustomProxyConfigUpdated(config->Clone());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   client = FetchRequest(request, network_context.get());
   EXPECT_TRUE(
@@ -5249,7 +5246,7 @@ TEST_F(NetworkContextMockHostTest, CustomProxyRequestHeadersAddedBeforeCache) {
   net::ProxyServer proxy_server = ConvertToProxyServer(proxy_test_server);
   config->rules.ParseFromString("http=" + proxy_server.ToURI());
   proxy_config_client->OnCustomProxyConfigUpdated(std::move(config));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ResourceRequest request;
   request.url = GetURLWithMockHost(test_server, "/echoheadercache?foo&bar");
@@ -5305,7 +5302,7 @@ TEST_F(NetworkContextMockHostTest,
   config->pre_cache_headers.SetHeader("pre_foo", "bad");
   config->post_cache_headers.SetHeader("post_foo", "bad");
   proxy_config_client->OnCustomProxyConfigUpdated(std::move(config));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ResourceRequest request;
   request.custom_proxy_pre_cache_headers.SetHeader("pre_bar", "bad");
@@ -5351,7 +5348,7 @@ TEST_F(NetworkContextMockHostTest,
   config->pre_cache_headers.SetHeader("pre_foo", "bad");
   config->post_cache_headers.SetHeader("post_foo", "bad");
   proxy_config_client->OnCustomProxyConfigUpdated(std::move(config));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ResourceRequest request;
   request.custom_proxy_pre_cache_headers.SetHeader("pre_bar", "bad");
@@ -5386,7 +5383,7 @@ TEST_F(NetworkContextMockHostTest, CustomProxyUsesSpecifiedProxyList) {
   config->rules.ParseFromString(
       "http=" + ConvertToProxyServer(proxy_test_server).ToURI());
   proxy_config_client->OnCustomProxyConfigUpdated(std::move(config));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ResourceRequest request;
   request.url = GURL("http://does.not.resolve/echo");
@@ -5451,7 +5448,7 @@ TEST_F(NetworkContextMockHostTest,
     // flag is set.
     config->can_use_proxy_on_http_url_redirect_cycles = false;
     proxy_config_client->OnCustomProxyConfigUpdated(std::move(config));
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
     ResourceRequest request;
     request.url = GetURLWithMockHost(test_server, "/echo");
@@ -5459,7 +5456,7 @@ TEST_F(NetworkContextMockHostTest,
     std::unique_ptr<TestURLLoaderClient> client =
         FetchRequest(request, network_context.get(), mojom::kURLLoadOptionNone,
                      test_case.process_id);
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     std::string response;
     EXPECT_TRUE(
         mojo::BlockingCopyToString(client->response_body_release(), &response));

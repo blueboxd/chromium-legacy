@@ -14,8 +14,8 @@ namespace device {
 
 TEST(GeolocationWifiDataProviderWinTest, CreateDestroy) {
   // WifiDataProvider requires a task runner to be present.
-  base::test::ScopedTaskEnvironment scoped_task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::UI);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::UI);
   scoped_refptr<WifiDataProviderWin> instance(new WifiDataProviderWin);
   instance = NULL;
   SUCCEED();

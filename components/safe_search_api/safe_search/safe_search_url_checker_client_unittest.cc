@@ -109,7 +109,7 @@ class SafeSearchURLCheckerClientTest : public testing::Test {
   }
 
   size_t next_url_;
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   std::unique_ptr<SafeSearchURLCheckerClient> checker_;

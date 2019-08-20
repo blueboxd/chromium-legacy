@@ -373,7 +373,7 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
 
   // This sets SequencedTaskRunnerHandle on the current thread, which the type
   // processor will pick up as the sync task runner.
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // The current mock queue, which is owned by |type_processor()|.
   MockModelTypeWorker* worker_;

@@ -33,7 +33,7 @@ class InMemoryEventStoreTest : public ::testing::Test {
   bool load_callback_has_been_invoked_;
   bool last_result_;
   std::unique_ptr<std::vector<Event>> loaded_events_;
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 }  // namespace
 

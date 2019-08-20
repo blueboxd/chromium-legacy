@@ -108,7 +108,7 @@ class ImageDecoderImplTest : public testing::Test {
   ImageDecoderImpl* decoder() { return &decoder_; }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   ImageDecoderImpl decoder_;
 };
 

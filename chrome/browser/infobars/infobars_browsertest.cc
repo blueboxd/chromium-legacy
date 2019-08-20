@@ -269,7 +269,9 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
       ThemeInstalledInfoBarDelegate::Create(
           GetInfoBarService(),
           ThemeServiceFactory::GetForProfile(browser()->profile()), "New Theme",
-          "id", base::OnceClosure());
+          "id",
+          std::make_unique<ThemeService::ThemeReinstaller>(
+              browser()->profile(), base::OnceClosure()));
       break;
 
     case IBD::NACL_INFOBAR_DELEGATE:

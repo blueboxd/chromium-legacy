@@ -72,8 +72,7 @@ class FeedNetworkingHostTest : public testing::Test {
             &test_factory_);
     net_service_ = std::make_unique<FeedNetworkingHost>(
         identity_test_env_.identity_manager(), "dummy_api_key",
-        shared_url_loader_factory_,
-        scoped_task_environment_.GetMockTickClock());
+        shared_url_loader_factory_, task_environment_.GetMockTickClock());
   }
 
   FeedNetworkingHost* service() { return net_service_.get(); }
@@ -96,7 +95,7 @@ class FeedNetworkingHostTest : public testing::Test {
 
     test_factory_.AddResponse(url, head, response_string, status);
 
-    scoped_task_environment_.FastForwardUntilNoTasksRemain();
+    task_environment_.FastForwardUntilNoTasksRemain();
   }
 
   void SendRequestAndRespond(const std::string& url_string,
@@ -136,8 +135,8 @@ class FeedNetworkingHostTest : public testing::Test {
 
   network::TestURLLoaderFactory* test_factory() { return &test_factory_; }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
  private:
   signin::IdentityTestEnvironment identity_test_env_;
@@ -172,7 +171,7 @@ TEST_F(FeedNetworkingHostTest, ShouldSendSuccessfullyMultipleInflight) {
                         &done_callback2);
   SendRequestAndRespond("http://foobar.com/other", "POST", "", "", net::HTTP_OK,
                         network::URLLoaderCompletionStatus(), &done_callback3);
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
 
   EXPECT_TRUE(done_callback1.has_run);
   EXPECT_TRUE(done_callback2.has_run);
@@ -192,7 +191,7 @@ TEST_F(FeedNetworkingHostTest, ShouldSendSuccessfullyDifferentRequestMethods) {
                           net::HTTP_OK, network::URLLoaderCompletionStatus(),
                           &done_callback);
 
-    scoped_task_environment_.FastForwardUntilNoTasksRemain();
+    task_environment_.FastForwardUntilNoTasksRemain();
     EXPECT_TRUE(done_callback.has_run);
     EXPECT_EQ(done_callback.code, 200);
   }
@@ -291,7 +290,7 @@ TEST_F(FeedNetworkingHostTest, CancellationIsSafe) {
   service()->Send(GURL("http://foobar.com/feed2"), "POST", request_body,
                   base::BindOnce(&MockResponseDoneCallback::Done,
                                  base::Unretained(&done_callback2)));
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   service()->CancelRequests();
 }
 
@@ -346,7 +345,7 @@ TEST_F(FeedNetworkingHostTest, TestDurationHistogram) {
   service()->Send(url, "POST", request_body,
                   base::BindOnce(&MockResponseDoneCallback::Done,
                                  base::Unretained(&done_callback)));
-  scoped_task_environment_.FastForwardBy(duration);
+  task_environment_.FastForwardBy(duration);
   Respond(url, "", net::HTTP_OK, network::URLLoaderCompletionStatus());
 
   EXPECT_TRUE(done_callback.has_run);
@@ -363,10 +362,10 @@ TEST_F(FeedNetworkingHostTest, TestDefaultTimeout) {
   service()->Send(url, "POST", request_body,
                   base::BindOnce(&MockResponseDoneCallback::Done,
                                  base::Unretained(&done_callback)));
-  scoped_task_environment_.FastForwardBy(TimeDelta::FromSeconds(29));
+  task_environment_.FastForwardBy(TimeDelta::FromSeconds(29));
   EXPECT_FALSE(done_callback.has_run);
 
-  scoped_task_environment_.FastForwardBy(TimeDelta::FromSeconds(29));
+  task_environment_.FastForwardBy(TimeDelta::FromSeconds(29));
   EXPECT_TRUE(done_callback.has_run);
   histogram_tester.ExpectTimeBucketCount(
       "ContentSuggestions.Feed.Network.Duration", TimeDelta::FromSeconds(30),
@@ -384,10 +383,10 @@ TEST_F(FeedNetworkingHostTest, TestParamTimeout) {
   service()->Send(url, "POST", request_body,
                   base::BindOnce(&MockResponseDoneCallback::Done,
                                  base::Unretained(&done_callback)));
-  scoped_task_environment_.FastForwardBy(TimeDelta::FromSeconds(1));
+  task_environment_.FastForwardBy(TimeDelta::FromSeconds(1));
   EXPECT_FALSE(done_callback.has_run);
 
-  scoped_task_environment_.FastForwardBy(TimeDelta::FromSeconds(1));
+  task_environment_.FastForwardBy(TimeDelta::FromSeconds(1));
   EXPECT_TRUE(done_callback.has_run);
 }
 

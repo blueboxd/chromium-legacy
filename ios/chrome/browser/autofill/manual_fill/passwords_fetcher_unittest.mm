@@ -129,7 +129,7 @@ class PasswordFetcherTest : public PlatformTest {
     GetPasswordStore()->AddLogin(*std::move(form));
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
 };
 

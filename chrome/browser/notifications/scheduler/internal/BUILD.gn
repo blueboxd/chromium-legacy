@@ -82,6 +82,7 @@ source_set("unit_tests") {
     "icon_store_unittest.cc",
     "impression_history_tracker_unittest.cc",
     "impression_store_unittest.cc",
+    "impression_types_unittest.cc",
     "init_aware_scheduler_unittest.cc",
     "notification_scheduler_unittest.cc",
     "notification_store_unittest.cc",

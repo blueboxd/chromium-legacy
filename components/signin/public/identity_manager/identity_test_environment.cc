@@ -127,7 +127,7 @@ void IdentityTestEnvironment::Initialize() {
          "environment. "
          "If your test has an existing one, move it to be initialized before "
          "IdentityTestEnvironment. Otherwise, use "
-         "base::test::ScopedTaskEnvironment.";
+         "base::test::TaskEnvironment.";
   test_identity_manager_observer_ =
       std::make_unique<TestIdentityManagerObserver>(this->identity_manager());
   this->identity_manager()->AddDiagnosticsObserver(this);

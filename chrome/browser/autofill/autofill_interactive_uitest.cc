@@ -1104,9 +1104,9 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillViaClick) {
   ASSERT_NO_FATAL_FAILURE(FocusFirstNameField());
 
   // Now click it.
-  test_delegate()->Reset();
+  test_delegate()->SetExpectations({ObservedUiEvents::kSuggestionShown});
   ASSERT_NO_FATAL_FAILURE(ClickFirstNameField());
-  test_delegate()->Wait({ObservedUiEvents::kSuggestionShown});
+  EXPECT_TRUE(test_delegate()->Wait());
 
   // Press the down arrow to select the suggestion and preview the autofilled
   // form.
@@ -1157,9 +1157,9 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, Click) {
       ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
 
   // This click should activate the autofill popup.
-  test_delegate()->Reset();
+  test_delegate()->SetExpectations({ObservedUiEvents::kSuggestionShown});
   ASSERT_NO_FATAL_FAILURE(ClickFirstNameField());
-  test_delegate()->Wait({ObservedUiEvents::kSuggestionShown});
+  EXPECT_TRUE(test_delegate()->Wait());
 
   // Press the down arrow to select the suggestion and preview the autofilled
   // form.
@@ -1194,9 +1194,9 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DontAutofillForOutsideClick) {
   ASSERT_NO_FATAL_FAILURE(ClickElementWithId("disabled-button"));
   ASSERT_NO_FATAL_FAILURE(MakeSurePopupDoesntAppear());
 
-  test_delegate()->Reset();
+  test_delegate()->SetExpectations({ObservedUiEvents::kSuggestionShown});
   ASSERT_NO_FATAL_FAILURE(ClickFirstNameField());
-  test_delegate()->Wait({ObservedUiEvents::kSuggestionShown});
+  EXPECT_TRUE(test_delegate()->Wait());
 }
 
 // Test that a field is still autofillable after the previously autofilled
@@ -2038,11 +2038,11 @@ IN_PROC_BROWSER_TEST_P(AutofillCompanyInteractiveTest,
   FocusFieldByName("company");
 
   // Now click it.
-  test_delegate()->Reset();
+  test_delegate()->SetExpectations({ObservedUiEvents::kSuggestionShown},
+                                   base::TimeDelta::FromSeconds(3));
   ASSERT_NO_FATAL_FAILURE(ClickElementWithId("company"));
 
-  bool found = test_delegate()->Wait({ObservedUiEvents::kSuggestionShown},
-                                     base::TimeDelta::FromSeconds(3));
+  bool found = test_delegate()->Wait();
 
   if (!company_name_enabled_) {
     EXPECT_FALSE(found);

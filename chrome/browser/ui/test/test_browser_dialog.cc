@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "chrome/test/pixel/browser_skia_gold_pixel_diff.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
@@ -21,6 +22,7 @@
 #endif
 
 #if defined(TOOLKIT_VIEWS)
+#include "base/strings/strcat.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/test/widget_test.h"
@@ -53,15 +55,41 @@ class WidgetCloser {
 
   DISALLOW_COPY_AND_ASSIGN(WidgetCloser);
 };
+
+class CompositorObserverEnd : public ui::CompositorObserver {
+ public:
+  void OnCompositingEnded(ui::Compositor* compositor) override {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  run_loop_.QuitClosure());
+  }
+  void WaitForComplete() { run_loop_.Run(); }
+
+ private:
+  base::RunLoop run_loop_;
+};
+
 #endif  // defined(TOOLKIT_VIEWS)
 
 }  // namespace
 
-TestBrowserDialog::TestBrowserDialog() = default;
+TestBrowserDialog::TestBrowserDialog() : TestBrowserUi() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          "browser-ui-tests-verify-pixels")) {
+    pixel_diff_ = std::make_unique<BrowserSkiaGoldPixelDiff>();
+  }
+}
+
 TestBrowserDialog::~TestBrowserDialog() = default;
 
 void TestBrowserDialog::PreShow() {
   UpdateWidgets();
+}
+
+void CompareAsync(const BrowserSkiaGoldPixelDiff* pixel_diff,
+                  const std::string& name,
+                  const views::View* view,
+                  bool* result) {
+  *result = pixel_diff->CompareScreenshot(name, view);
 }
 
 // This returns true if exactly one views widget was shown that is a dialog or
@@ -87,13 +115,41 @@ bool TestBrowserDialog::VerifyUi() {
   if (added.size() != 1)
     return false;
 
+  views::Widget* dialog_widget = *(added.begin());
+// TODO(https://crbug.com/958242) support Mac for pixel tests.
+#if !defined(OS_MACOSX)
+  if (pixel_diff_) {
+    // Wait for painting complete.
+    auto* compositor = dialog_widget->GetNativeView()->layer()->GetCompositor();
+    CompositorObserverEnd obend;
+    compositor->AddObserver(&obend);
+    obend.WaitForComplete();
+    compositor->RemoveObserver(&obend);
+
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    pixel_diff_->Init(dialog_widget, "BrowserUiDialog");
+    auto* test_info = testing::UnitTest::GetInstance()->current_test_info();
+    const std::string test_name =
+        base::StrCat({test_info->test_case_name(), "_", test_info->name()});
+    bool result = false;
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostTaskAndReply(
+        FROM_HERE,
+        base::BindOnce(CompareAsync, pixel_diff_.get(), test_name,
+                       dialog_widget->GetContentsView(), &result),
+        run_loop.QuitClosure());
+    run_loop.Run();
+    if (!result)
+      return false;
+  }
+#endif  // OS_MACOSX
+
   if (!should_verify_dialog_bounds_)
     return true;
 
   // Verify that the dialog's dimensions do not exceed the display's work area
   // bounds, which may be smaller than its bounds(), e.g. in the case of the
   // docked magnifier or Chromevox being enabled.
-  views::Widget* dialog_widget = *(added.begin());
   const gfx::Rect dialog_bounds = dialog_widget->GetWindowBoundsInScreen();
   gfx::NativeWindow native_window = dialog_widget->GetNativeWindow();
   DCHECK(native_window);

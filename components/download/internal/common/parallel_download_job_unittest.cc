@@ -107,9 +107,9 @@ class ParallelDownloadJobForTest : public ParallelDownloadJob {
 class ParallelDownloadJobTest : public testing::Test {
  public:
   ParallelDownloadJobTest()
-      : task_environment_(base::test::ScopedTaskEnvironment::MainThreadType::UI,
-                          base::test::ScopedTaskEnvironment::
-                              ThreadPoolExecutionMode::QUEUED) {}
+      : task_environment_(
+            base::test::TaskEnvironment::MainThreadType::UI,
+            base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED) {}
 
   void CreateParallelJob(int64_t initial_request_offset,
                          int64_t content_length,
@@ -162,7 +162,7 @@ class ParallelDownloadJobTest : public testing::Test {
     file_initialized_ = true;
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<MockDownloadItem> download_item_;
   std::unique_ptr<ParallelDownloadJobForTest> job_;
   bool file_initialized_;

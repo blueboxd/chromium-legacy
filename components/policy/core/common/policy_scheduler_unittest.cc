@@ -54,7 +54,7 @@ class PolicySchedulerTest : public testing::Test {
 
   PolicyScheduler::TaskCallback slow_callback_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(PolicySchedulerTest, Run) {

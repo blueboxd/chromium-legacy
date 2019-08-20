@@ -73,7 +73,7 @@ class MessageDispatcherTest : public mojom::CastMessageChannel,
         base::BindRepeating(&MessageDispatcherTest::OnStatusResponse,
                             base::Unretained(this)));
   }
-  ~MessageDispatcherTest() override { scoped_task_environment_.RunUntilIdle(); }
+  ~MessageDispatcherTest() override { task_environment_.RunUntilIdle(); }
 
   void OnParsingError(const std::string& error_message) {
     last_error_message_ = error_message;
@@ -103,7 +103,7 @@ class MessageDispatcherTest : public mojom::CastMessageChannel,
     inbound_channel_->Send(message.Clone());
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<MessageDispatcher> message_dispatcher_;
   CastMessage last_outbound_message_;
   std::string last_error_message_;
@@ -120,14 +120,14 @@ TEST_F(MessageDispatcherTest, SendsOutboundMessage) {
   const std::string test1 = "{\"a\": 1, \"b\": 2}";
   const CastMessage message1 = CastMessage{mojom::kWebRtcNamespace, test1};
   message_dispatcher_->SendOutboundMessage(message1.Clone());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(IsEqual(message1, last_outbound_message_));
   EXPECT_TRUE(last_error_message_.empty());
 
   const std::string test2 = "{\"m\": 99, \"i\": 98, \"u\": 97}";
   const CastMessage message2 = CastMessage{mojom::kWebRtcNamespace, test2};
   message_dispatcher_->SendOutboundMessage(message2.Clone());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(IsEqual(message2, last_outbound_message_));
   EXPECT_TRUE(last_error_message_.empty());
 }
@@ -141,7 +141,7 @@ TEST_F(MessageDispatcherTest, DispatchMessageToSubscriber) {
   const CastMessage answer_message =
       CastMessage{mojom::kWebRtcNamespace, answer_response};
   SendInboundMessage(answer_message);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_TRUE(last_answer_response_);
   EXPECT_FALSE(last_status_response_);
   EXPECT_EQ(12345, last_answer_response_->sequence_number);
@@ -160,7 +160,7 @@ TEST_F(MessageDispatcherTest, DispatchMessageToSubscriber) {
   const CastMessage status_message =
       CastMessage{mojom::kWebRtcNamespace, status_response};
   SendInboundMessage(status_message);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(last_answer_response_);
   ASSERT_TRUE(last_status_response_);
   EXPECT_EQ(12345, last_status_response_->sequence_number);
@@ -174,7 +174,7 @@ TEST_F(MessageDispatcherTest, DispatchMessageToSubscriber) {
   // nothing should happen.
   message_dispatcher_->Unsubscribe(ResponseType::ANSWER);
   SendInboundMessage(answer_message);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(last_answer_response_);
   EXPECT_FALSE(last_status_response_);
   EXPECT_FALSE(last_error_message_.empty());  // Expect an error reported.
@@ -183,7 +183,7 @@ TEST_F(MessageDispatcherTest, DispatchMessageToSubscriber) {
   // However, STATUS_RESPONSE messages should still be dispatcher to the
   // remaining subscriber.
   SendInboundMessage(status_message);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(last_answer_response_);
   EXPECT_TRUE(last_status_response_);
   last_status_response_.reset();
@@ -193,13 +193,13 @@ TEST_F(MessageDispatcherTest, DispatchMessageToSubscriber) {
   // either an ANSWER or a STATUS_RESPONSE message, nothing should happen.
   message_dispatcher_->Unsubscribe(ResponseType::STATUS_RESPONSE);
   SendInboundMessage(answer_message);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(last_answer_response_);
   EXPECT_FALSE(last_status_response_);
   EXPECT_FALSE(last_error_message_.empty());
   last_error_message_.clear();
   SendInboundMessage(status_message);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(last_answer_response_);
   EXPECT_FALSE(last_status_response_);
   EXPECT_FALSE(last_error_message_.empty());
@@ -209,7 +209,7 @@ TEST_F(MessageDispatcherTest, IgnoreMalformedMessage) {
   const CastMessage message =
       CastMessage{mojom::kWebRtcNamespace, "MUAHAHAHAHAHAHAHA!"};
   SendInboundMessage(message);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(last_answer_response_);
   EXPECT_FALSE(last_status_response_);
   EXPECT_FALSE(last_error_message_.empty());
@@ -222,7 +222,7 @@ TEST_F(MessageDispatcherTest, IgnoreMessageWithWrongNamespace) {
   const CastMessage answer_message =
       CastMessage{"Wrong_namespace", answer_response};
   SendInboundMessage(answer_message);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(last_answer_response_);
   EXPECT_FALSE(last_status_response_);
   // Messages with different namespace are ignored with no error reported.
@@ -233,7 +233,7 @@ TEST_F(MessageDispatcherTest, RequestReply) {
   EXPECT_FALSE(last_answer_response_);
   EXPECT_FALSE(last_status_response_);
   message_dispatcher_->Unsubscribe(ResponseType::ANSWER);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   const std::string fake_offer = "{\"type\":\"OFFER\",\"seqNum\":45623}";
   const CastMessage offer_message =
       CastMessage{mojom::kWebRtcNamespace, fake_offer};
@@ -242,7 +242,7 @@ TEST_F(MessageDispatcherTest, RequestReply) {
       base::TimeDelta::FromMilliseconds(100),
       base::BindRepeating(&MessageDispatcherTest::OnAnswerResponse,
                           base::Unretained(this)));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   // Received the request to send the outbound message.
   EXPECT_TRUE(IsEqual(offer_message, last_outbound_message_));
 
@@ -252,7 +252,7 @@ TEST_F(MessageDispatcherTest, RequestReply) {
   CastMessage answer_message =
       CastMessage{mojom::kWebRtcNamespace, answer_response};
   SendInboundMessage(answer_message);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   // The answer message with mismatched sequence number is ignored.
   EXPECT_FALSE(last_answer_response_);
   EXPECT_FALSE(last_status_response_);
@@ -263,7 +263,7 @@ TEST_F(MessageDispatcherTest, RequestReply) {
       "\"answer\":{\"udpPort\":50691}}";
   answer_message = CastMessage{mojom::kWebRtcNamespace, answer_response};
   SendInboundMessage(answer_message);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_TRUE(last_answer_response_);
   EXPECT_FALSE(last_status_response_);
   EXPECT_TRUE(last_error_message_.empty());
@@ -275,7 +275,7 @@ TEST_F(MessageDispatcherTest, RequestReply) {
 
   // Expect that the callback for ANSWER message was already unsubscribed.
   SendInboundMessage(answer_message);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(last_answer_response_);
   EXPECT_FALSE(last_status_response_);
   EXPECT_FALSE(last_error_message_.empty());
@@ -288,7 +288,7 @@ TEST_F(MessageDispatcherTest, RequestReply) {
       base::TimeDelta::FromMilliseconds(100),
       base::BindRepeating(&MessageDispatcherTest::OnAnswerResponse,
                           base::Unretained(this)));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   // Received the request to send the outbound message.
   EXPECT_TRUE(IsEqual(fake_message, last_outbound_message_));
   EXPECT_FALSE(last_answer_response_);
@@ -296,7 +296,7 @@ TEST_F(MessageDispatcherTest, RequestReply) {
 
   // Destroy the dispatcher.
   message_dispatcher_.reset();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_FALSE(last_answer_response_);
   EXPECT_FALSE(last_status_response_);
 }

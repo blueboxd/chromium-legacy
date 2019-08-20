@@ -177,7 +177,7 @@ class CdmAdapterTestBase : public testing::Test,
     }
   }
 
-  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
   StrictMock<MockCdmClient> cdm_client_;
   StrictMock<MockCdmAuxiliaryHelper>* cdm_helper_ = nullptr;
@@ -185,7 +185,7 @@ class CdmAdapterTestBase : public testing::Test,
   // Keep track of the loaded CDM.
   scoped_refptr<ContentDecryptionModule> cdm_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CdmAdapterTestBase);

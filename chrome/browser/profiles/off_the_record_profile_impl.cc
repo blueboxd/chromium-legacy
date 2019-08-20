@@ -31,6 +31,8 @@
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
+#include "chrome/browser/native_file_system/chrome_native_file_system_permission_context.h"
+#include "chrome/browser/native_file_system/native_file_system_permission_context_factory.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
@@ -523,6 +525,11 @@ void OffTheRecordProfileImpl::SetCorsOriginAccessListForOrigin(
 content::SharedCorsOriginAccessList*
 OffTheRecordProfileImpl::GetSharedCorsOriginAccessList() {
   return profile_->GetSharedCorsOriginAccessList();
+}
+
+content::NativeFileSystemPermissionContext*
+OffTheRecordProfileImpl::GetNativeFileSystemPermissionContext() {
+  return NativeFileSystemPermissionContextFactory::GetForProfile(this).get();
 }
 
 bool OffTheRecordProfileImpl::IsSameProfile(Profile* profile) {

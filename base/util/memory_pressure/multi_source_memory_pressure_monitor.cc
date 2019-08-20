@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/util/memory_pressure/system_memory_pressure_evaluator.h"
 
 namespace util {
 
@@ -16,6 +17,11 @@ MultiSourceMemoryPressureMonitor::MultiSourceMemoryPressureMonitor()
       dispatch_callback_(base::BindRepeating(
           &base::MemoryPressureListener::NotifyMemoryPressure)),
       aggregator_(this) {
+  // This can't be in the parameter list because |sequence_checker_| wouldn't be
+  // available, which would be needed by the |system_evaluator_|'s constructor's
+  // call to CreateVoter().
+  system_evaluator_ =
+      SystemMemoryPressureEvaluator::CreateDefaultSystemEvaluator(this);
   StartMetricsTimer();
 }
 
@@ -61,6 +67,10 @@ void MultiSourceMemoryPressureMonitor::OnMemoryPressureLevelChanged(
 void MultiSourceMemoryPressureMonitor::OnNotifyListenersRequested() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   dispatch_callback_.Run(current_pressure_level_);
+}
+
+void MultiSourceMemoryPressureMonitor::ResetSystemEvaluatorForTesting() {
+  system_evaluator_.reset();
 }
 
 }  // namespace util

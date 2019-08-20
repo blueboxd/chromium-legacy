@@ -178,7 +178,8 @@ IN_PROC_BROWSER_TEST_F(StubBindingsTest, ApiCoverage) {
         {"*"},
         cr_fuchsia::MemBufferFromString(
             base::StringPrintf("try { cast.__platform__.%s(); } catch {}",
-                               expectation.function_name.c_str())),
+                               expectation.function_name.c_str()),
+            "test"),
         [](fuchsia::web::Frame_ExecuteJavaScriptNoResult_Result result) {
           ASSERT_TRUE(result.is_response());
         });
@@ -194,7 +195,7 @@ IN_PROC_BROWSER_TEST_F(StubBindingsTest, FunctionArgumentsInLogMessage) {
   frame_->ExecuteJavaScriptNoResult(
       {"*"},
       cr_fuchsia::MemBufferFromString(
-          "cast.__platform__.sendAssistantRequest(1,2,'foo');"),
+          "cast.__platform__.sendAssistantRequest(1,2,'foo');", "test"),
       [](fuchsia::web::Frame_ExecuteJavaScriptNoResult_Result result) {
         ASSERT_TRUE(result.is_response());
       });

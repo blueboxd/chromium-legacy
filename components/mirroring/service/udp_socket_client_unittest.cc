@@ -47,7 +47,7 @@ class UdpSocketClientTest : public ::testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   network::mojom::NetworkContextPtr network_context_ptr_;
   std::unique_ptr<MockNetworkContext> network_context_;
   std::unique_ptr<UdpSocketClient> udp_transport_client_;
@@ -70,7 +70,7 @@ TEST_F(UdpSocketClientTest, SendAndReceive) {
         &UdpSocketClientTest::OnReceivedPacket, base::Unretained(this)));
     run_loop.Run();
   }
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   MockUdpSocket* socket = network_context_->udp_socket();
 
@@ -117,7 +117,7 @@ TEST_F(UdpSocketClientTest, SendBeforeConnected) {
     EXPECT_CALL(resume_send_cb, Run()).Times(0);
     EXPECT_FALSE(udp_transport_client_->SendPacket(
         new base::RefCountedData<Packet>(packet), resume_send_cb.Get()));
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
   {
     // Expect the UDPSocket to be created when calling StartReceiving().

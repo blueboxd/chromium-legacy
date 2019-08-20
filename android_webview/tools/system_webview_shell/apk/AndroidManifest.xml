@@ -129,6 +129,12 @@
             android:exported="true">
         </activity>
 
+        <activity
+            android:name="org.chromium.webview_shell.WebPlatformTestsActivity"
+            android:noHistory="true"
+            android:exported="true">
+        </activity>
+
         <uses-library android:name="android.test.runner" />
     </application>
 </manifest>

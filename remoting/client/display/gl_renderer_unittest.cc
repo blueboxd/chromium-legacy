@@ -125,7 +125,7 @@ class GlRendererTest : public testing::Test {
     return on_desktop_frame_processed_call_count_;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<GlRenderer> renderer_;
   FakeGlRendererDelegate delegate_;
 
@@ -160,7 +160,7 @@ void GlRendererTest::SetDesktopFrameWithSize(const webrtc::DesktopSize& size) {
 void GlRendererTest::PostSetDesktopFrameTasks(const webrtc::DesktopSize& size,
                                               int count) {
   for (int i = 0; i < count; i++) {
-    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+    task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&GlRendererTest::SetDesktopFrameWithSize,
                                   base::Unretained(this), size));
   }
@@ -172,8 +172,8 @@ void GlRendererTest::OnDesktopFrameProcessed() {
 
 void GlRendererTest::RunTasksInCurrentQueue() {
   base::RunLoop run_loop;
-  scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
-      FROM_HERE, run_loop.QuitClosure());
+  task_environment_.GetMainThreadTaskRunner()->PostTask(FROM_HERE,
+                                                        run_loop.QuitClosure());
   run_loop.Run();
 }
 

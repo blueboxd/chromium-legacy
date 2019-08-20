@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_INTERNAL_SCHEDULER_UTILS_H_
 #define CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_INTERNAL_SCHEDULER_UTILS_H_
 
-#include <deque>
 #include <map>
 #include <memory>
 #include <string>
@@ -49,14 +48,6 @@ int NotificationsShownToday(
 std::unique_ptr<ClientState> CreateNewClientState(
     SchedulerClientType type,
     const SchedulerConfig& config);
-
-// Converts SkBitmap icon to String.
-void ConvertIconToString(SkBitmap image,
-                         base::OnceCallback<void(std::string)> callback);
-
-// Converts String to SkBitmap icon.
-void ConvertStringToIcon(std::string data,
-                         base::OnceCallback<void(SkBitmap)> callback);
 
 }  // namespace notifications
 

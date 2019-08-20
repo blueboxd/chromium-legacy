@@ -27,7 +27,6 @@
 #include "extensions/browser/extension_prefs.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/views/controls/menu/menu_config.h"
 
 namespace {
 
@@ -160,9 +159,6 @@ void ExtensionLauncherContextMenu::CreateOpenNewSubmenu(
     ui::SimpleMenuModel* menu_model) {
   // Touchable extension context menus use an actionable submenu for
   // MENU_OPEN_NEW.
-  const gfx::VectorIcon& icon =
-      GetCommandIdVectorIcon(ash::MENU_OPEN_NEW, GetLaunchTypeStringId());
-  const views::MenuConfig& menu_config = views::MenuConfig::instance();
   const int kGroupId = 1;
   open_new_submenu_model_ = std::make_unique<ui::SimpleMenuModel>(this);
   open_new_submenu_model_->AddRadioItemWithStringId(
@@ -173,8 +169,7 @@ void ExtensionLauncherContextMenu::CreateOpenNewSubmenu(
   menu_model->AddActionableSubmenuWithStringIdAndIcon(
       ash::MENU_OPEN_NEW, GetLaunchTypeStringId(),
       open_new_submenu_model_.get(),
-      gfx::CreateVectorIcon(icon, menu_config.touchable_icon_size,
-                            menu_config.touchable_icon_color));
+      GetCommandIdVectorIcon(ash::MENU_OPEN_NEW, GetLaunchTypeStringId()));
 }
 
 void ExtensionLauncherContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {

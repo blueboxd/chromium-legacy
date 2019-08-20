@@ -108,6 +108,9 @@ class OptimizationGuideHintsManager
       optimization_guide::proto::OptimizationType optimization_type,
       optimization_guide::OptimizationMetadata* optimization_metadata);
 
+  // Clears fetched hints from |hint_cache_|.
+  void ClearFetchedHints();
+
   // Overrides |hints_fetcher_| for testing.
   void SetHintsFetcherForTesting(
       std::unique_ptr<optimization_guide::HintsFetcher> hints_fetcher);

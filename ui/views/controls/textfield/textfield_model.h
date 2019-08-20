@@ -224,6 +224,8 @@ class VIEWS_EXPORT TextfieldModel {
 
   // Puts the text in the specified range into composition mode.
   // This method should not be called with composition text or an invalid range.
+  // The provided range is checked against the string's length, if |range| is
+  // out of bounds, the composition will be cleared.
   void SetCompositionFromExistingText(const gfx::Range& range);
 
   // Converts current composition text into final content.

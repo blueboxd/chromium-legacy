@@ -45,7 +45,7 @@ class CWVDownloadTaskTest : public PlatformTest {
 
  protected:
   std::string valid_local_file_path_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   web::FakeDownloadTask* fake_internal_task_ = nullptr;
   id<CWVDownloadTaskDelegate> mock_delegate_ = nil;
   CWVDownloadTask* cwv_task_ = nil;
@@ -53,7 +53,7 @@ class CWVDownloadTaskTest : public PlatformTest {
   // Waits until fake_internal_task_->Start() is called.
   bool WaitUntilTaskStarts() WARN_UNUSED_RESULT {
     return WaitUntilConditionOrTimeout(kWaitForFileOperationTimeout, ^{
-      scoped_task_environment_.RunUntilIdle();
+      task_environment_.RunUntilIdle();
       return fake_internal_task_->GetState() ==
              web::DownloadTask::State::kInProgress;
     });
@@ -67,7 +67,7 @@ class CWVDownloadTaskTest : public PlatformTest {
           error_code = block_error_code;
         }));
     return WaitUntilConditionOrTimeout(kWaitForFileOperationTimeout, ^{
-      scoped_task_environment_.RunUntilIdle();
+      task_environment_.RunUntilIdle();
       return error_code == net::OK;
     });
   }
@@ -151,7 +151,7 @@ TEST_F(CWVDownloadTaskTest, WriteFailure) {
   [cwv_task_ startDownloadToLocalFileAtPath:path];
 
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForFileOperationTimeout, ^{
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     return did_finish_called;
   }));
 }

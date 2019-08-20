@@ -131,7 +131,7 @@ class BlobDataHandleTest : public testing::Test {
   }
 
   void TearDown() override {
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     Platform::UnsetMainThreadTaskRunnerForTesting();
   }
 
@@ -220,7 +220,7 @@ class BlobDataHandleTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   FakeBlobRegistry mock_blob_registry_;
   BlobRegistryPtr blob_registry_ptr_;
   mojo::Binding<BlobRegistry> blob_registry_binding_;

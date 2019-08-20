@@ -228,7 +228,7 @@ class UsageTrackerTest : public testing::Test {
     return client_list;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   scoped_refptr<MockSpecialStoragePolicy> storage_policy_;
   MockQuotaClient quota_client_;

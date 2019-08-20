@@ -113,7 +113,7 @@ class MockDelegate : public media::AudioInputIPCDelegate {
 
 class InputIPCTest : public ::testing::Test {
  public:
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   std::unique_ptr<audio::InputIPC> ipc;
   const media::AudioParameters audioParameters =
       media::AudioParameters(media::AudioParameters::AUDIO_PCM_LINEAR,
@@ -123,10 +123,9 @@ class InputIPCTest : public ::testing::Test {
 
  protected:
   InputIPCTest()
-      : scoped_task_environment(
-            base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
-            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::
-                QUEUED) {}
+      : task_environment(
+            base::test::TaskEnvironment::MainThreadType::DEFAULT,
+            base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED) {}
   std::unique_ptr<StrictMock<TestStreamFactory>> factory_;
 
   void SetUp() override {
@@ -142,14 +141,14 @@ TEST_F(InputIPCTest, CreateStreamPropagates) {
   StrictMock<MockDelegate> delegate;
   EXPECT_CALL(delegate, GotOnStreamCreated(_));
   ipc->CreateStream(&delegate, audioParameters, false, 0);
-  scoped_task_environment.RunUntilIdle();
+  task_environment.RunUntilIdle();
 }
 
 TEST_F(InputIPCTest, StreamCreatedAfterCloseIsIgnored) {
   StrictMock<MockDelegate> delegate;
   ipc->CreateStream(&delegate, audioParameters, false, 0);
   ipc->CloseStream();
-  scoped_task_environment.RunUntilIdle();
+  task_environment.RunUntilIdle();
 }
 
 TEST_F(InputIPCTest, CreateStreamPropagatesInitiallyMuted) {
@@ -158,16 +157,16 @@ TEST_F(InputIPCTest, CreateStreamPropagatesInitiallyMuted) {
   factory_->initially_muted_ = true;
   EXPECT_CALL(delegate, GotOnStreamCreated(true));
   ipc->CreateStream(&delegate, audioParameters, false, 0);
-  scoped_task_environment.RunUntilIdle();
+  task_environment.RunUntilIdle();
   ipc->CloseStream();
-  scoped_task_environment.RunUntilIdle();
+  task_environment.RunUntilIdle();
 
   factory_->initially_muted_ = false;
   EXPECT_CALL(delegate, GotOnStreamCreated(false));
   ipc->CreateStream(&delegate, audioParameters, false, 0);
-  scoped_task_environment.RunUntilIdle();
+  task_environment.RunUntilIdle();
   ipc->CloseStream();
-  scoped_task_environment.RunUntilIdle();
+  task_environment.RunUntilIdle();
 }
 
 TEST_F(InputIPCTest, MutedStateChangesPropagates) {
@@ -175,26 +174,26 @@ TEST_F(InputIPCTest, MutedStateChangesPropagates) {
 
   EXPECT_CALL(delegate, GotOnStreamCreated(_));
   ipc->CreateStream(&delegate, audioParameters, false, 0);
-  scoped_task_environment.RunUntilIdle();
+  task_environment.RunUntilIdle();
 
   EXPECT_CALL(delegate, OnMuted(true));
   factory_->client_->OnMutedStateChanged(true);
-  scoped_task_environment.RunUntilIdle();
+  task_environment.RunUntilIdle();
 
   EXPECT_CALL(delegate, OnMuted(false));
   factory_->client_->OnMutedStateChanged(false);
-  scoped_task_environment.RunUntilIdle();
+  task_environment.RunUntilIdle();
 }
 
 TEST_F(InputIPCTest, Record_Records) {
   StrictMock<MockDelegate> delegate;
   EXPECT_CALL(delegate, GotOnStreamCreated(_));
   ipc->CreateStream(&delegate, audioParameters, false, 0);
-  scoped_task_environment.RunUntilIdle();
+  task_environment.RunUntilIdle();
 
   EXPECT_CALL(factory_->stream_, Record());
   ipc->RecordStream();
-  scoped_task_environment.RunUntilIdle();
+  task_environment.RunUntilIdle();
 }
 
 TEST_F(InputIPCTest, IsReusable) {
@@ -202,10 +201,10 @@ TEST_F(InputIPCTest, IsReusable) {
     StrictMock<MockDelegate> delegate;
     EXPECT_CALL(delegate, GotOnStreamCreated(_));
     ipc->CreateStream(&delegate, audioParameters, false, 0);
-    scoped_task_environment.RunUntilIdle();
+    task_environment.RunUntilIdle();
 
     ipc->CloseStream();
-    scoped_task_environment.RunUntilIdle();
+    task_environment.RunUntilIdle();
 
     testing::Mock::VerifyAndClearExpectations(&delegate);
   }
@@ -215,11 +214,11 @@ TEST_F(InputIPCTest, SetVolume_SetsVolume) {
   StrictMock<MockDelegate> delegate;
   EXPECT_CALL(delegate, GotOnStreamCreated(_));
   ipc->CreateStream(&delegate, audioParameters, false, 0);
-  scoped_task_environment.RunUntilIdle();
+  task_environment.RunUntilIdle();
 
   EXPECT_CALL(factory_->stream_, SetVolume(kNewVolume));
   ipc->SetVolume(kNewVolume);
-  scoped_task_environment.RunUntilIdle();
+  task_environment.RunUntilIdle();
 }
 
 TEST_F(InputIPCTest, SetOutputDeviceForAec_AssociatesInputAndOutputForAec) {
@@ -227,11 +226,11 @@ TEST_F(InputIPCTest, SetOutputDeviceForAec_AssociatesInputAndOutputForAec) {
   StrictMock<MockDelegate> delegate;
   EXPECT_CALL(delegate, GotOnStreamCreated(_));
   ipc->CreateStream(&delegate, audioParameters, false, 0);
-  scoped_task_environment.RunUntilIdle();
+  task_environment.RunUntilIdle();
 
   EXPECT_CALL(*factory_, AssociateInputAndOutputForAec(_, kOutputDeviceId));
   ipc->SetOutputDeviceForAec(kOutputDeviceId);
-  scoped_task_environment.RunUntilIdle();
+  task_environment.RunUntilIdle();
 }
 
 TEST_F(InputIPCTest, FailedStreamCreationNullCallback) {
@@ -239,7 +238,7 @@ TEST_F(InputIPCTest, FailedStreamCreationNullCallback) {
   EXPECT_CALL(delegate, OnError()).Times(2);
   factory_->should_fail_ = true;
   ipc->CreateStream(&delegate, audioParameters, false, 0);
-  scoped_task_environment.RunUntilIdle();
+  task_environment.RunUntilIdle();
 }
 
 TEST_F(InputIPCTest, FailedStreamCreationDestuctedFactory) {
@@ -247,7 +246,7 @@ TEST_F(InputIPCTest, FailedStreamCreationDestuctedFactory) {
   EXPECT_CALL(delegate, OnError());
   factory_ = nullptr;
   ipc->CreateStream(&delegate, audioParameters, false, 0);
-  scoped_task_environment.RunUntilIdle();
+  task_environment.RunUntilIdle();
 }
 
 }  // namespace audio

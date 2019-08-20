@@ -27,8 +27,7 @@ namespace bookmarks {
 class BookmarkNodeDataTest : public testing::Test {
  public:
   BookmarkNodeDataTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
     model_ = TestBookmarkClient::CreateModel();
@@ -56,7 +55,7 @@ class BookmarkNodeDataTest : public testing::Test {
  private:
   base::ScopedTempDir profile_dir_;
   std::unique_ptr<BookmarkModel> model_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkNodeDataTest);
 };

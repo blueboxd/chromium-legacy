@@ -46,9 +46,11 @@ void ProxyTabsDataTypeController::LoadModels(
   model_load_callback.Run(type(), syncer::SyncError());
 }
 
-void ProxyTabsDataTypeController::RegisterWithBackend(
-    base::OnceCallback<void(bool)> set_downloaded,
-    syncer::ModelTypeConfigurer* configurer) {}
+syncer::DataTypeController::RegisterWithBackendResult
+ProxyTabsDataTypeController::RegisterWithBackend(
+    syncer::ModelTypeConfigurer* configurer) {
+  return REGISTRATION_IGNORED;
+}
 
 void ProxyTabsDataTypeController::StartAssociating(
     StartCallback start_callback) {

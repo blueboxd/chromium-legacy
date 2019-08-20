@@ -11,7 +11,7 @@
 
 TEST(MenuClosureAnimationMacTest, DestructCancelsCleanly) {
   views::test::DisableMenuClosureAnimations();
-  base::test::ScopedTaskEnvironment environment;
+  base::test::TaskEnvironment environment;
 
   bool called = false;
   auto animation = std::make_unique<views::MenuClosureAnimationMac>(

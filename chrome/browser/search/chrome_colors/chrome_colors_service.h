@@ -83,9 +83,8 @@ class ChromeColorsService : public KeyedService {
   // The first tab that used Apply* and hasn't Confirm/Revert the changes.
   content::WebContents* dialog_tab_ = nullptr;
 
-  // Callback that will revert the theme to the state it was at the time of this
-  // callback's creation.
-  base::OnceClosure revert_theme_changes_;
+  // Used for reverting back to the previously installed theme.
+  std::unique_ptr<ThemeService::ThemeReinstaller> prev_theme_reinstaller_;
 
   // Keeps track of any changes in search engine provider. May be null.
   std::unique_ptr<SearchProviderObserver> search_provider_observer_;

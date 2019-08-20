@@ -14,14 +14,13 @@ namespace remoting {
 // A simple test that starts and stop the context. This tests the context
 // operates properly and all threads and message loops are valid.
 TEST(ChromotingHostContextTest, StartAndStop) {
-  base::test::ScopedTaskEnvironment scoped_task_environment{
-      base::test::ScopedTaskEnvironment::MainThreadType::UI};
+  base::test::TaskEnvironment task_environment{
+      base::test::TaskEnvironment::MainThreadType::UI};
   base::RunLoop run_loop;
 
   std::unique_ptr<ChromotingHostContext> context =
       ChromotingHostContext::Create(new AutoThreadTaskRunner(
-          scoped_task_environment.GetMainThreadTaskRunner(),
-          run_loop.QuitClosure()));
+          task_environment.GetMainThreadTaskRunner(), run_loop.QuitClosure()));
 
   EXPECT_TRUE(context);
   if (!context)

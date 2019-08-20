@@ -137,7 +137,7 @@ class AssociatedInterfaceTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   scoped_refptr<base::SequencedTaskRunner> main_runner_;
 };
 

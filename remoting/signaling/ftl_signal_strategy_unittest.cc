@@ -211,7 +211,7 @@ class FtlSignalStrategyTest : public testing::Test,
   ~FtlSignalStrategyTest() override {
     signal_strategy_->RemoveListener(this);
     signal_strategy_.reset();
-    scoped_task_environment_.FastForwardUntilNoTasksRemain();
+    task_environment_.FastForwardUntilNoTasksRemain();
   }
 
  protected:
@@ -236,8 +236,8 @@ class FtlSignalStrategyTest : public testing::Test,
                     const std::string&,
                     const ftl::ChromotingMessage&));
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
   MockOAuthTokenGetter* token_getter_ = nullptr;
   FakeRegistrationManager* registration_manager_ = nullptr;

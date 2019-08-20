@@ -97,7 +97,7 @@ class CredentialManagerPasswordFormManagerTest : public testing::Test {
   }
 
   // Necessary for callbacks, and for TestAutofillDriver.
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   StubPasswordManagerClient client_;
   MockDelegate delegate_;

@@ -98,7 +98,7 @@ class FakeProcessStatsAgent : public ProcessStatsAgent {
 }  // namespace
 
 TEST(ProcessStatsSenderTest, ReportUsage) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   base::RunLoop run_loop;
   FakeProcessStatsStub stub;
   std::unique_ptr<ProcessStatsSender> stats;
@@ -115,7 +115,7 @@ TEST(ProcessStatsSenderTest, ReportUsage) {
       },
       base::Unretained(&stats), std::cref(stub), std::cref(agent),
       base::Unretained(&run_loop)));
-  scoped_task_environment.GetMainThreadTaskRunner()->PostTask(
+  task_environment.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(
           [](std::unique_ptr<ProcessStatsSender>* stats,
@@ -134,7 +134,7 @@ TEST(ProcessStatsSenderTest, ReportUsage) {
 }
 
 TEST(ProcessStatsSenderTest, MergeUsage) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   base::RunLoop run_loop;
   FakeProcessStatsStub stub;
   std::unique_ptr<ProcessStatsSender> stats;
@@ -154,7 +154,7 @@ TEST(ProcessStatsSenderTest, MergeUsage) {
       },
       base::Unretained(&stats), std::cref(stub), std::cref(agent1),
       std::cref(agent2), base::Unretained(&run_loop)));
-  scoped_task_environment.GetMainThreadTaskRunner()->PostTask(
+  task_environment.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(
           [](std::unique_ptr<ProcessStatsSender>* stats,

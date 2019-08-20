@@ -177,8 +177,10 @@ TEST_F(ThemeServiceTest, DisableUnusedTheme) {
   EXPECT_EQ(extension1_id, theme_service->GetThemeID());
   EXPECT_TRUE(service_->IsExtensionEnabled(extension1_id));
 
-  // Show an infobar to prevent the current theme from being uninstalled.
-  theme_service->OnInfobarDisplayed();
+  // Create theme reinstaller to prevent the current theme from being
+  // uninstalled.
+  std::unique_ptr<ThemeService::ThemeReinstaller> reinstaller =
+      theme_service->BuildReinstallerForCurrentTheme();
 
   const std::string& extension2_id =
       LoadUnpackedMinimalThemeAt(temp_dir2.GetPath());
@@ -225,7 +227,8 @@ TEST_F(ThemeServiceTest, ThemeUpgrade) {
   // Let the ThemeService uninstall unused themes.
   base::RunLoop().RunUntilIdle();
 
-  theme_service->OnInfobarDisplayed();
+  std::unique_ptr<ThemeService::ThemeReinstaller> reinstaller =
+      theme_service->BuildReinstallerForCurrentTheme();
 
   base::ScopedTempDir temp_dir1;
   ASSERT_TRUE(temp_dir1.CreateUniqueTempDir());
@@ -407,39 +410,8 @@ TEST_F(ThemeServiceTest, NTPLogoAlternate) {
   }
 }
 
-namespace {
-
-// NotificationObserver which emulates an infobar getting destroyed when the
-// theme changes.
-class InfobarDestroyerOnThemeChange : public content::NotificationObserver {
- public:
-  explicit InfobarDestroyerOnThemeChange(Profile* profile)
-      : theme_service_(ThemeServiceFactory::GetForProfile(profile)) {
-    registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-        content::Source<ThemeService>(theme_service_));
-  }
-
-  ~InfobarDestroyerOnThemeChange() override {}
-
- private:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    theme_service_->OnInfobarDestroyed();
-  }
-
-  // Not owned.
-  ThemeService* theme_service_;
-
-  content::NotificationRegistrar registrar_;
-
-  DISALLOW_COPY_AND_ASSIGN(InfobarDestroyerOnThemeChange);
-};
-
-}  // namespace
-
 // crbug.com/468280
-TEST_F(ThemeServiceTest, UninstallThemeOnThemeChangeNotification) {
+TEST_F(ThemeServiceTest, UninstallThemeWhenNoReinstallers) {
   // Setup.
   ThemeService* theme_service =
       ThemeServiceFactory::GetForProfile(profile_.get());
@@ -456,24 +428,31 @@ TEST_F(ThemeServiceTest, UninstallThemeOnThemeChangeNotification) {
       LoadUnpackedMinimalThemeAt(temp_dir1.GetPath());
   ASSERT_EQ(extension1_id, theme_service->GetThemeID());
 
-  // Show an infobar.
-  theme_service->OnInfobarDisplayed();
-
-  // Install another theme. The first extension shouldn't be uninstalled yet as
-  // it should be possible to revert to it. Emulate the infobar destroying
-  // itself as a result of the NOTIFICATION_BROWSER_THEME_CHANGED notification.
+  std::string extension2_id = "";
   {
-    InfobarDestroyerOnThemeChange destroyer(profile_.get());
-    const std::string& extension2_id =
-        LoadUnpackedMinimalThemeAt(temp_dir2.GetPath());
+    // Show an infobar.
+    std::unique_ptr<ThemeService::ThemeReinstaller> reinstaller =
+        theme_service->BuildReinstallerForCurrentTheme();
+
+    // Install another theme. The first extension shouldn't be uninstalled yet
+    // as it should be possible to revert to it.
+    extension2_id = LoadUnpackedMinimalThemeAt(temp_dir2.GetPath());
+    EXPECT_TRUE(registry_->GetExtensionById(extension1_id,
+                                            ExtensionRegistry::DISABLED));
     EXPECT_EQ(extension2_id, theme_service->GetThemeID());
+
+    reinstaller->Reinstall();
+    WaitForThemeInstall();
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(registry_->GetExtensionById(extension2_id,
+                                            ExtensionRegistry::DISABLED));
+    EXPECT_EQ(extension1_id, theme_service->GetThemeID());
   }
 
-  // Check that it is possible to reinstall extension1.
-  ThemeServiceFactory::GetForProfile(profile_.get())
-      ->RevertToExtensionTheme(extension1_id);
-  WaitForThemeInstall();
-  EXPECT_EQ(extension1_id, theme_service->GetThemeID());
+  // extension 2 should get uninstalled as no reinstallers are in scope.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(registry_->GetExtensionById(extension2_id,
+                                           ExtensionRegistry::EVERYTHING));
 }
 
 TEST_F(ThemeServiceTest, BuildFromColorTest) {

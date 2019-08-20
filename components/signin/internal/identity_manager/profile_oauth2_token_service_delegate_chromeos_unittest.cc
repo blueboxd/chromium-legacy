@@ -207,7 +207,7 @@ class CrOSOAuthDelegateTest : public testing::Test {
         GetValidTokenResponse("token", 3600));
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   base::ScopedTempDir tmp_dir_;
   AccountInfo account_info_;

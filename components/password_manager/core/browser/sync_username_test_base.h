@@ -43,7 +43,7 @@ class SyncUsernameTestBase : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_env_;
+  base::test::TaskEnvironment scoped_task_env_;
   signin::IdentityTestEnvironment identity_test_env_;
   syncer::TestSyncService sync_service_;
 };

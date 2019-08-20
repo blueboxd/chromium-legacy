@@ -166,8 +166,8 @@ class GCMDriverTest : public testing::Test {
  private:
   base::ScopedTempDir temp_dir_;
   TestingPrefServiceSimple prefs_;
-  base::test::ScopedTaskEnvironment task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::UI};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::UI};
   base::Thread io_thread_;
   network::TestURLLoaderFactory test_url_loader_factory_;
 

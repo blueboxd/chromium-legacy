@@ -43,7 +43,7 @@ class It2MeStandaloneHost {
  private:
   void Connect();
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::RunLoop run_loop_;
   std::unique_ptr<ChromotingHostContext> context_;
   scoped_refptr<AutoThreadTaskRunner> main_task_runner_;

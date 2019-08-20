@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
+#include "third_party/blink/renderer/modules/native_file_system/native_file_system_error.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_file_handle.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -139,9 +140,8 @@ class NativeFileSystemWriter::StreamWriterClient
       return;
     DCHECK(writer_->pending_operation_);
     did_complete_ = true;
-    if (result->error_code != base::File::FILE_OK) {
-      writer_->pending_operation_->Reject(
-          file_error::CreateDOMException(result->error_code));
+    if (result->status != mojom::blink::NativeFileSystemStatus::kOk) {
+      native_file_system_error::Reject(writer_->pending_operation_, *result);
     } else {
       DCHECK(did_finish_writing_to_pipe_);
       writer_->pending_operation_->Resolve();
@@ -238,51 +238,21 @@ void NativeFileSystemWriter::WriteComplete(
     mojom::blink::NativeFileSystemErrorPtr result,
     uint64_t bytes_written) {
   DCHECK(pending_operation_);
-  if (result->error_code == base::File::FILE_OK) {
-    pending_operation_->Resolve();
-  } else if (result->error_code == base::File::FILE_ERROR_INVALID_OPERATION) {
-    // TODO(https://crbug.com/971268): Better error messages that make sense in
-    // JS.
-    pending_operation_->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kInvalidStateError));
-  } else {
-    pending_operation_->Reject(
-        file_error::CreateDOMException(result->error_code));
-  }
+  native_file_system_error::ResolveOrReject(pending_operation_, *result);
   pending_operation_ = nullptr;
 }
 
 void NativeFileSystemWriter::TruncateComplete(
     mojom::blink::NativeFileSystemErrorPtr result) {
   DCHECK(pending_operation_);
-  if (result->error_code == base::File::FILE_OK) {
-    pending_operation_->Resolve();
-  } else if (result->error_code == base::File::FILE_ERROR_INVALID_OPERATION) {
-    // TODO(https://crbug.com/971268): Better error messages that make sense in
-    // JS.
-    pending_operation_->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kInvalidStateError));
-  } else {
-    pending_operation_->Reject(
-        file_error::CreateDOMException(result->error_code));
-  }
+  native_file_system_error::ResolveOrReject(pending_operation_, *result);
   pending_operation_ = nullptr;
 }
 
 void NativeFileSystemWriter::CloseComplete(
     mojom::blink::NativeFileSystemErrorPtr result) {
   DCHECK(pending_operation_);
-  if (result->error_code == base::File::FILE_OK) {
-    pending_operation_->Resolve();
-  } else if (result->error_code == base::File::FILE_ERROR_INVALID_OPERATION) {
-    // TODO(https://crbug.com/971268): Better error messages that make sense in
-    // JS.
-    pending_operation_->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kInvalidStateError));
-  } else {
-    pending_operation_->Reject(
-        file_error::CreateDOMException(result->error_code));
-  }
+  native_file_system_error::ResolveOrReject(pending_operation_, *result);
   file_ = nullptr;
   pending_operation_ = nullptr;
   // We close the mojo pipe because we intend this writer to be discarded after

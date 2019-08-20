@@ -280,7 +280,7 @@ class RequestManagerTest : public ::testing::Test {
  private:
   std::unique_ptr<base::RunLoop> run_loop_;
   bool quit_;
-  base::test::ScopedTaskEnvironment scoped_test_environment_;
+  base::test::TaskEnvironment scoped_test_environment_;
 };
 
 // A basic sanity test to capture one frame with the capture loop.

@@ -30,14 +30,13 @@ class SlideAnimationTest : public testing::Test {
 
  protected:
   SlideAnimationTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {
     slide_animation_.reset(new SlideAnimation(nullptr));
     animation_api_.reset(new AnimationTestApi(slide_animation_.get()));
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 // Tests animation construction.

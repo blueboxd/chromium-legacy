@@ -70,7 +70,7 @@ class AffiliationServiceTest : public testing::Test {
     return &fake_affiliation_api_;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   // testing::Test:
@@ -129,7 +129,7 @@ TEST_F(AffiliationServiceTest, GetAffiliationsAndBranding) {
       testing::Contains(testing::Field(
           &Facet::uri, FacetURI::FromCanonicalSpec(kTestFacetURIAlpha1))));
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   testing::Mock::VerifyAndClearExpectations(mock_consumer());
 
   // The second request should be (and can be) served from cache.
@@ -141,7 +141,7 @@ TEST_F(AffiliationServiceTest, GetAffiliationsAndBranding) {
   ASSERT_FALSE(fake_affiliation_api()->HasPendingRequest());
 
   mock_consumer()->ExpectSuccessWithResult(equivalence_class_alpha);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   testing::Mock::VerifyAndClearExpectations(mock_consumer());
 
   // The third request is also restricted to the cache, but cannot be served
@@ -154,7 +154,7 @@ TEST_F(AffiliationServiceTest, GetAffiliationsAndBranding) {
   ASSERT_FALSE(fake_affiliation_api()->HasPendingRequest());
 
   mock_consumer()->ExpectFailure();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   testing::Mock::VerifyAndClearExpectations(mock_consumer());
 }
 
@@ -169,7 +169,7 @@ TEST_F(AffiliationServiceTest, ShutdownWhileTasksArePosted) {
   background_task_runner()->RunUntilIdle();
 
   mock_consumer()->ExpectFailure();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   testing::Mock::VerifyAndClearExpectations(mock_consumer());
 }
 

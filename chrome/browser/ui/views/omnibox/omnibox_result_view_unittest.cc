@@ -154,8 +154,7 @@ TEST_F(OmniboxResultViewTest, MouseDragWithLeftButtonSelectsThisResult) {
   // Left button drag should select.
   result_view()->OnMouseDragged(
       CreateEvent(ui::ET_MOUSE_DRAGGED, ui::EF_LEFT_MOUSE_BUTTON));
-  EXPECT_EQ(OmniboxPartState::HOVERED_AND_SELECTED,
-            result_view()->GetThemeState());
+  EXPECT_EQ(OmniboxPartState::SELECTED, result_view()->GetThemeState());
   EXPECT_TRUE(popup_view()->IsSelectedIndex(kTestResultViewIndex));
 }
 

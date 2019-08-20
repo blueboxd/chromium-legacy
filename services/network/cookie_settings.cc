@@ -7,6 +7,9 @@
 #include <functional>
 
 #include "base/bind.h"
+#include "net/base/net_errors.h"
+#include "net/base/static_cookie_policy.h"
+#include "net/cookies/cookie_util.h"
 
 namespace network {
 namespace {
@@ -28,12 +31,32 @@ CookieSettings::CreateDeleteCookieOnExitPredicate() const {
                              std::cref(content_settings_));
 }
 
+void CookieSettings::GetSettingForLegacyCookieAccess(
+    const GURL& cookie_domain,
+    ContentSetting* setting) const {
+  DCHECK(setting);
+
+  // Default to match what was registered in the ContentSettingsRegistry.
+  *setting = net::cookie_util::IsSameSiteByDefaultCookiesEnabled()
+                 ? CONTENT_SETTING_BLOCK
+                 : CONTENT_SETTING_ALLOW;
+
+  for (const auto& entry : settings_for_legacy_cookie_access_) {
+    if (entry.primary_pattern.Matches(cookie_domain)) {
+      *setting = entry.GetContentSetting();
+      DCHECK(IsValidSettingForLegacyAccess(*setting));
+      return;
+    }
+  }
+}
+
 void CookieSettings::GetCookieSettingInternal(
     const GURL& url,
     const GURL& first_party_url,
     bool is_third_party_request,
     content_settings::SettingSource* source,
     ContentSetting* cookie_setting) const {
+  DCHECK(cookie_setting);
   if (base::Contains(secure_origin_cookies_allowed_schemes_,
                      first_party_url.scheme()) &&
       url.SchemeIsCryptographic()) {

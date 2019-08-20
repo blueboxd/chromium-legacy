@@ -165,7 +165,7 @@ class FtlMessagingClientTest : public testing::Test {
   MockMessageReceptionChannel* mock_message_reception_channel_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   MockRegistrationManager mock_registration_manager_;
 };
 

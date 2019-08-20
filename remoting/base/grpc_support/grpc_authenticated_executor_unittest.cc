@@ -53,7 +53,7 @@ class GrpcAuthenticatedExecutorTest : public testing::Test {
  private:
   FakeOAuthTokenGetter token_getter_{OAuthTokenGetter::Status::SUCCESS,
                                      "fake_user", "fake_token"};
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 void GrpcAuthenticatedExecutorTest::SetUp() {

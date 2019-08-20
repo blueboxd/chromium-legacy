@@ -77,7 +77,7 @@ class FormSaverImplTest : public testing::Test {
 
  protected:
   // For the MockPasswordStore.
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<StrictMock<MockPasswordStore>> mock_store_;
   FormSaverImpl form_saver_;
 

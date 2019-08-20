@@ -312,7 +312,7 @@ class AutocompleteProviderTest : public testing::Test {
   // platform, flags, etc.) be instantiated.
   void ResetControllerWithType(int type);
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<AutocompleteController> controller_;
   // Owned by |controller_|.
   AutocompleteProviderClientWithClosure* client_;

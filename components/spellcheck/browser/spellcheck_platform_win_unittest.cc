@@ -57,8 +57,8 @@ class SpellcheckPlatformWinTest : public testing::Test {
   std::vector<SpellCheckResult> spell_check_results_;
   base::OnceClosure quit_;
 
-  base::test::ScopedTaskEnvironment task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::UI};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::UI};
 };
 
 TEST_F(SpellcheckPlatformWinTest, SpellCheckSuggestions_EN_US) {

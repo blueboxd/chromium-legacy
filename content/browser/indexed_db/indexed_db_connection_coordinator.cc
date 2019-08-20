@@ -31,6 +31,17 @@ using blink::IndexedDBDatabaseMetadata;
 using leveldb::Status;
 
 namespace content {
+namespace {
+enum class RequestState {
+  kNotStarted,
+  kPendingNoConnections,
+  kPendingLocks,
+  kPendingTransactionComplete,
+  kError,
+  kDone,
+};
+}  // namespace
+
 // This represents what script calls an 'IDBOpenDBRequest' - either a database
 // open or delete call. These may be blocked on other connections. After every
 // callback, the request must call
@@ -40,24 +51,31 @@ class IndexedDBConnectionCoordinator::ConnectionRequest {
  public:
   ConnectionRequest(IndexedDBOriginStateHandle origin_state_handle,
                     IndexedDBDatabase* db,
-                    IndexedDBConnectionCoordinator* connection_coordinator)
+                    IndexedDBConnectionCoordinator* connection_coordinator,
+                    TasksAvailableCallback tasks_available_callback)
       : origin_state_handle_(std::move(origin_state_handle)),
         db_(db),
-        connection_coordinator_(connection_coordinator) {}
+        connection_coordinator_(connection_coordinator),
+        tasks_available_callback_(std::move(tasks_available_callback)) {}
 
   virtual ~ConnectionRequest() {}
 
-  // Called when the request makes it to the front of the queue.
-  virtual void Perform() = 0;
+  // Called when the request makes it to the front of the queue. The state()
+  // will be checked after this call, so there is no need to run the
+  // |tasks_available_callback_|.
+  virtual void Perform(bool has_connections) = 0;
 
   // Called if a front-end signals that it is ignoring a "versionchange"
   // event. This should result in firing a "blocked" event at the request.
   virtual void OnVersionChangeIgnored() const = 0;
 
   // Called when a connection is closed; if it corresponds to this connection,
-  // need to do cleanup. Otherwise, it may unblock further steps.
-  // |connection| can be null if all connections were closed (see ForceClose).
+  // need to do cleanup.
+  // Not called during a force close.
   virtual void OnConnectionClosed(IndexedDBConnection* connection) = 0;
+
+  // Called when there are no connections to the database.
+  virtual void OnNoConnections() = 0;
 
   // Called when the transaction should be bound.
   virtual void CreateAndBindTransaction() = 0;
@@ -68,19 +86,28 @@ class IndexedDBConnectionCoordinator::ConnectionRequest {
   // Called when the upgrade transaction has finished.
   virtual void UpgradeTransactionFinished(bool committed) = 0;
 
-  // Called for pending tasks that we need to clear for a force close. Returns
-  // if the request should still execute after all the connections are
-  // removed. This is not called for the active request - instead,
-  // OnConnectionClosed is called with a nullptr |connection|.
-  virtual bool OnForceClose() = 0;
+  // Called on all pending tasks during a force close. Returns if the task
+  // should be pruned (removed) from the task queue during the force close.
+  virtual bool ShouldPruneForForceClose() = 0;
+
+  RequestState state() const { return state_; }
+
+  // Relevant if state() is kError.
+  leveldb::Status status() const { return saved_leveldb_status_; }
 
  protected:
+  RequestState state_ = RequestState::kNotStarted;
+
   IndexedDBOriginStateHandle origin_state_handle_;
   // This is safe because IndexedDBDatabase owns this object.
   IndexedDBDatabase* db_;
 
   // Rawptr safe because IndexedDBConnectionCoordinator owns this object.
   IndexedDBConnectionCoordinator* connection_coordinator_;
+
+  TasksAvailableCallback tasks_available_callback_;
+
+  leveldb::Status saved_leveldb_status_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ConnectionRequest);
@@ -92,19 +119,26 @@ class IndexedDBConnectionCoordinator::OpenRequest
   OpenRequest(IndexedDBOriginStateHandle origin_state_handle,
               IndexedDBDatabase* db,
               std::unique_ptr<IndexedDBPendingConnection> pending_connection,
-              IndexedDBConnectionCoordinator* connection_coordinator)
+              IndexedDBConnectionCoordinator* connection_coordinator,
+
+              TasksAvailableCallback tasks_available_callback)
       : ConnectionRequest(std::move(origin_state_handle),
                           db,
-                          connection_coordinator),
+                          connection_coordinator,
+
+                          std::move(tasks_available_callback)),
         pending_(std::move(pending_connection)) {
     db_->metadata_.was_cold_open = pending_->was_cold_open;
   }
 
-  void Perform() override {
-    if (db_->metadata_.id == kInvalidId) {
-      // The database was deleted then immediately re-opened; OpenInternal()
+  // Note: the |tasks_available_callback_| is NOT called here because the state
+  // is checked after this method.
+  void Perform(bool has_connections) override {
+    if (db_->metadata().id == kInvalidDatabaseId) {
+      // The database was deleted then immediately re-opened; Open()
       // recreates it in the backing store.
-      if (!db_->OpenInternal().ok()) {
+      saved_leveldb_status_ = db_->OpenInternal();
+      if (!saved_leveldb_status_.ok()) {
         // TODO(jsbell): Consider including sanitized leveldb status message.
         base::string16 message;
         if (pending_->version == IndexedDBDatabaseMetadata::NO_VERSION) {
@@ -117,14 +151,14 @@ class IndexedDBConnectionCoordinator::OpenRequest
         }
         pending_->callbacks->OnError(IndexedDBDatabaseError(
             blink::kWebIDBDatabaseExceptionUnknownError, message));
-        connection_coordinator_->RequestComplete(this);
+        state_ = RequestState::kError;
         return;
       }
 
-      DCHECK_EQ(IndexedDBDatabaseMetadata::NO_VERSION, db_->metadata_.version);
+      DCHECK_EQ(IndexedDBDatabaseMetadata::NO_VERSION, db_->metadata().version);
     }
 
-    const int64_t old_version = db_->metadata_.version;
+    const int64_t old_version = db_->metadata().version;
     int64_t& new_version = pending_->version;
 
     bool is_new_database = old_version == IndexedDBDatabaseMetadata::NO_VERSION;
@@ -138,7 +172,7 @@ class IndexedDBConnectionCoordinator::OpenRequest
                                 pending_->database_callbacks,
                                 pending_->child_process_id),
           db_->metadata_);
-      connection_coordinator_->RequestComplete(this);
+      state_ = RequestState::kDone;
       return;
     }
 
@@ -150,7 +184,7 @@ class IndexedDBConnectionCoordinator::OpenRequest
                                 pending_->database_callbacks,
                                 pending_->child_process_id),
           db_->metadata_);
-      connection_coordinator_->RequestComplete(this);
+      state_ = RequestState::kDone;
       return;
     }
 
@@ -168,17 +202,18 @@ class IndexedDBConnectionCoordinator::OpenRequest
               NumberToString16(pending_->version) +
               ASCIIToUTF16(") is less than the existing version (") +
               NumberToString16(db_->metadata_.version) + ASCIIToUTF16(").")));
-      connection_coordinator_->RequestComplete(this);
+      state_ = RequestState::kDone;
       return;
     }
 
     // Requested version is higher than current version - upgrade needed.
     DCHECK_GT(new_version, old_version);
 
-    if (db_->HasNoConnections()) {
+    if (!has_connections) {
       std::vector<ScopesLockManager::ScopeLockRequest> lock_requests = {
           {kDatabaseRangeLockLevel, GetDatabaseLockRange(db_->metadata_.id),
            ScopesLockManager::LockType::kExclusive}};
+      state_ = RequestState::kPendingLocks;
       db_->lock_manager_->AcquireLocks(
           std::move(lock_requests), lock_receiver_.weak_factory.GetWeakPtr(),
           base::BindOnce(
@@ -194,38 +229,38 @@ class IndexedDBConnectionCoordinator::OpenRequest
     // "versionchange" event was ignored.
     DCHECK_NE(pending_->data_loss_info.status,
               blink::mojom::IDBDataLoss::Total);
+    state_ = RequestState::kPendingNoConnections;
     db_->SendVersionChangeToAllConnections(old_version, new_version);
 
     // When all connections have closed the upgrade can proceed.
   }
 
   void OnVersionChangeIgnored() const override {
+    DCHECK(state_ == RequestState::kPendingNoConnections);
     pending_->callbacks->OnBlocked(db_->metadata_.version);
   }
 
   void OnConnectionClosed(IndexedDBConnection* connection) override {
-    if (!connection) {
-      pending_->callbacks->OnError(
-          IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionAbortError,
-                                 "All connections were closed."));
-      connection_coordinator_->RequestComplete(this);
-      return;
-    }
     // This connection closed prematurely; signal an error and complete.
-    if (connection && connection->callbacks() == pending_->database_callbacks) {
-      pending_->callbacks->OnError(
-          IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionAbortError,
-                                 "The connection was closed."));
-      connection_coordinator_->RequestComplete(this);
+    if (connection == connection_ptr_for_close_comparision_) {
+      connection_ptr_for_close_comparision_ = nullptr;
+      if (!pending_->callbacks->is_complete()) {
+        pending_->callbacks->OnError(
+            IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionAbortError,
+                                   "The connection was closed."));
+      }
+      state_ = RequestState::kDone;
+      tasks_available_callback_.Run();
       return;
     }
+  }
 
-    if (!db_->HasNoConnections())
-      return;
-
+  void OnNoConnections() override {
+    DCHECK(state_ == RequestState::kPendingNoConnections);
     std::vector<ScopesLockManager::ScopeLockRequest> lock_requests = {
-        {kDatabaseRangeLockLevel, GetDatabaseLockRange(db_->metadata_.id),
+        {kDatabaseRangeLockLevel, GetDatabaseLockRange(db_->metadata().id),
          ScopesLockManager::LockType::kExclusive}};
+    state_ = RequestState::kPendingLocks;
     db_->lock_manager_->AcquireLocks(
         std::move(lock_requests), lock_receiver_.weak_factory.GetWeakPtr(),
         base::BindOnce(
@@ -237,20 +272,24 @@ class IndexedDBConnectionCoordinator::OpenRequest
   // IndexedDBConnectionCoordinator::VersionChangeOperation in order to kick the
   // transaction into the correct state.
   void StartUpgrade() {
+    DCHECK(state_ == RequestState::kPendingLocks);
+
     DCHECK(!lock_receiver_.locks.empty());
     connection_ = db_->CreateConnection(std::move(origin_state_handle_),
                                         pending_->database_callbacks,
                                         pending_->child_process_id);
-    DCHECK_EQ(connection_coordinator_->connections_.count(connection_.get()),
-              1UL);
+    DCHECK(!connection_ptr_for_close_comparision_);
+    connection_ptr_for_close_comparision_ = connection_.get();
+    DCHECK_EQ(db_->connections().count(connection_.get()), 1UL);
 
     std::vector<int64_t> object_store_ids;
 
+    state_ = RequestState::kPendingTransactionComplete;
     IndexedDBTransaction* transaction = connection_->CreateTransaction(
         pending_->transaction_id,
         std::set<int64_t>(object_store_ids.begin(), object_store_ids.end()),
         blink::mojom::IDBTransactionMode::VersionChange,
-        new IndexedDBBackingStore::Transaction(db_->backing_store()));
+        db_->backing_store()->CreateTransaction().release());
 
     // Save a WeakPtr<IndexedDBTransaction> for the CreateAndBindTransaction
     // function to use later.
@@ -259,7 +298,8 @@ class IndexedDBConnectionCoordinator::OpenRequest
     transaction->ScheduleTask(BindWeakOperation(
         &IndexedDBDatabase::VersionChangeOperation, db_->AsWeakPtr(),
         pending_->version, pending_->callbacks));
-    transaction->locks_receiver()->locks = std::move(lock_receiver_.locks);
+    transaction->mutable_locks_receiver()->locks =
+        std::move(lock_receiver_.locks);
     transaction->Start();
   }
 
@@ -272,6 +312,7 @@ class IndexedDBConnectionCoordinator::OpenRequest
 
   // Called when the upgrade transaction has started executing.
   void UpgradeTransactionStarted(int64_t old_version) override {
+    DCHECK(state_ == RequestState::kPendingTransactionComplete);
     DCHECK(connection_);
     pending_->callbacks->OnUpgradeNeeded(old_version, std::move(connection_),
                                          db_->metadata_,
@@ -279,6 +320,7 @@ class IndexedDBConnectionCoordinator::OpenRequest
   }
 
   void UpgradeTransactionFinished(bool committed) override {
+    DCHECK(state_ == RequestState::kPendingTransactionComplete);
     // Ownership of connection was already passed along in OnUpgradeNeeded.
     if (committed) {
       DCHECK_EQ(pending_->version, db_->metadata_.version);
@@ -290,14 +332,22 @@ class IndexedDBConnectionCoordinator::OpenRequest
                                  "Version change transaction was aborted in "
                                  "upgradeneeded event handler."));
     }
-    connection_coordinator_->RequestComplete(this);
+    state_ = RequestState::kDone;
+    tasks_available_callback_.Run();
   }
 
-  bool OnForceClose() override {
-    DCHECK(!connection_);
+  bool ShouldPruneForForceClose() override {
+    if (!pending_->callbacks->is_complete()) {
+      pending_->callbacks->OnError(
+          IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionAbortError,
+                                 "The connection was closed."));
+    }
     pending_->database_callbacks->OnForcedClose();
     pending_.reset();
-    return false;
+    state_ = RequestState::kDone;
+    // The tasks_available_callback_ is NOT run here, because we are assuming
+    // the caller is doing their own cleanup & execution for ForceClose.
+    return true;
   }
 
  private:
@@ -308,6 +358,10 @@ class IndexedDBConnectionCoordinator::OpenRequest
   // If an upgrade is needed, holds the pending connection until ownership is
   // transferred to the IndexedDBDispatcherHost via OnUpgradeNeeded.
   std::unique_ptr<IndexedDBConnection> connection_;
+
+  // This raw pointer is stored solely for comparison to the connection in
+  // OnConnectionClosed. It is not guaranteed to be pointing to a live object.
+  IndexedDBConnection* connection_ptr_for_close_comparision_ = nullptr;
 
   base::WeakPtrFactory<OpenRequest> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(OpenRequest);
@@ -320,19 +374,22 @@ class IndexedDBConnectionCoordinator::DeleteRequest
                 IndexedDBDatabase* db,
                 scoped_refptr<IndexedDBCallbacks> callbacks,
                 base::OnceClosure on_database_deleted,
-                IndexedDBConnectionCoordinator* connection_coordinator)
+                IndexedDBConnectionCoordinator* connection_coordinator,
+                TasksAvailableCallback tasks_available_callback)
       : ConnectionRequest(std::move(origin_state_handle),
                           db,
-                          connection_coordinator),
+                          connection_coordinator,
+                          std::move(tasks_available_callback)),
         callbacks_(callbacks),
         on_database_deleted_(std::move(on_database_deleted)) {}
 
-  void Perform() override {
-    if (db_->HasNoConnections()) {
+  void Perform(bool has_connections) override {
+    if (!has_connections) {
       // No connections, so delete immediately.
       std::vector<ScopesLockManager::ScopeLockRequest> lock_requests = {
-          {kDatabaseRangeLockLevel, GetDatabaseLockRange(db_->metadata_.id),
+          {kDatabaseRangeLockLevel, GetDatabaseLockRange(db_->metadata().id),
            ScopesLockManager::LockType::kExclusive}};
+      state_ = RequestState::kPendingLocks;
       db_->lock_manager_->AcquireLocks(
           std::move(lock_requests), lock_receiver_.AsWeakPtr(),
           base::BindOnce(
@@ -343,22 +400,25 @@ class IndexedDBConnectionCoordinator::DeleteRequest
 
     // Front end ensures the event is not fired at connections that have
     // close_pending set.
-    const int64_t old_version = db_->metadata_.version;
+    const int64_t old_version = db_->metadata().version;
     const int64_t new_version = IndexedDBDatabaseMetadata::NO_VERSION;
     db_->SendVersionChangeToAllConnections(old_version, new_version);
+    state_ = RequestState::kPendingNoConnections;
   }
 
   void OnVersionChangeIgnored() const override {
+    DCHECK(state_ == RequestState::kPendingNoConnections);
     callbacks_->OnBlocked(db_->metadata_.version);
   }
 
-  void OnConnectionClosed(IndexedDBConnection* connection) override {
-    if (!db_->HasNoConnections())
-      return;
+  void OnConnectionClosed(IndexedDBConnection* connection) override {}
 
+  void OnNoConnections() override {
+    DCHECK(state_ == RequestState::kPendingNoConnections);
     std::vector<ScopesLockManager::ScopeLockRequest> lock_requests = {
-        {kDatabaseRangeLockLevel, GetDatabaseLockRange(db_->metadata_.id),
+        {kDatabaseRangeLockLevel, GetDatabaseLockRange(db_->metadata().id),
          ScopesLockManager::LockType::kExclusive}};
+    state_ = RequestState::kPendingLocks;
     db_->lock_manager_->AcquireLocks(
         std::move(lock_requests), lock_receiver_.AsWeakPtr(),
         base::BindOnce(&IndexedDBConnectionCoordinator::DeleteRequest::DoDelete,
@@ -366,7 +426,8 @@ class IndexedDBConnectionCoordinator::DeleteRequest
   }
 
   void DoDelete() {
-    Status s;
+    DCHECK(state_ == RequestState::kPendingLocks);
+    state_ = RequestState::kPendingTransactionComplete;
     // This is used to check if this class is still alive after the destruction
     // of the TransactionalLevelDBTransaction, which can synchronously cause the
     // system to be shut down if the disk is really bad.
@@ -380,31 +441,27 @@ class IndexedDBConnectionCoordinator::DeleteRequest
         txn->set_commit_cleanup_complete_callback(
             std::move(on_database_deleted_));
       }
-      s = db_->backing_store_->DeleteDatabase(db_->metadata_.name, txn.get());
+      saved_leveldb_status_ =
+          db_->backing_store_->DeleteDatabase(db_->metadata_.name, txn.get());
     }
     if (!weak_ptr)
       return;
 
-    if (!s.ok()) {
+    if (!saved_leveldb_status_.ok()) {
       // TODO(jsbell): Consider including sanitized leveldb status message.
       IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
                                    "Internal error deleting database.");
       callbacks_->OnError(error);
-
-      // Calling |error_callback_| can destroy the database and connection
-      // coordinator, so keep a WeakPtr to avoid a UAF.
-      base::WeakPtr<IndexedDBConnectionCoordinator> connection_coordinator =
-          connection_coordinator_->AsWeakPtr();
-      db_->error_callback_.Run(s, "Internal error deleting database.");
-      if (connection_coordinator)
-        connection_coordinator->RequestComplete(this);
+      state_ = RequestState::kError;
+      tasks_available_callback_.Run();
       return;
     }
 
     int64_t old_version = db_->metadata_.version;
-    db_->metadata_.id = kInvalidId;
+    db_->metadata_.id = kInvalidDatabaseId;
     db_->metadata_.version = IndexedDBDatabaseMetadata::NO_VERSION;
-    db_->metadata_.max_object_store_id = kInvalidId;
+    db_->metadata_.max_object_store_id =
+        blink::IndexedDBObjectStoreMetadata::kInvalidId;
     db_->metadata_.object_stores.clear();
     // Unittests (specifically the IndexedDBDatabase unittests) can have the
     // backing store be a nullptr, so report deleted here.
@@ -412,7 +469,8 @@ class IndexedDBConnectionCoordinator::DeleteRequest
       std::move(on_database_deleted_).Run();
     callbacks_->OnSuccess(old_version);
 
-    connection_coordinator_->RequestComplete(this);
+    state_ = RequestState::kDone;
+    tasks_available_callback_.Run();
   }
 
   void CreateAndBindTransaction() override { NOTREACHED(); }
@@ -422,7 +480,7 @@ class IndexedDBConnectionCoordinator::DeleteRequest
   void UpgradeTransactionFinished(bool committed) override { NOTREACHED(); }
 
   // The delete requests should always be run during force close.
-  bool OnForceClose() override { return true; }
+  bool ShouldPruneForForceClose() override { return false; }
 
  private:
   ScopesLocksHolder lock_receiver_;
@@ -434,152 +492,141 @@ class IndexedDBConnectionCoordinator::DeleteRequest
 };
 
 IndexedDBConnectionCoordinator::IndexedDBConnectionCoordinator(
-    IndexedDBDatabase* db)
-    : db_(db) {}
+    IndexedDBDatabase* db,
+    TasksAvailableCallback tasks_available_callback)
+    : db_(db), tasks_available_callback_(std::move(tasks_available_callback)) {}
 IndexedDBConnectionCoordinator::~IndexedDBConnectionCoordinator() = default;
 
 void IndexedDBConnectionCoordinator::ScheduleOpenConnection(
     IndexedDBOriginStateHandle origin_state_handle,
     std::unique_ptr<IndexedDBPendingConnection> connection) {
-  AppendRequest(std::make_unique<OpenRequest>(
-      std::move(origin_state_handle), db_, std::move(connection), this));
+  request_queue_.push(std::make_unique<OpenRequest>(
+      std::move(origin_state_handle), db_, std::move(connection), this,
+      tasks_available_callback_));
+  tasks_available_callback_.Run();
 }
 
 void IndexedDBConnectionCoordinator::ScheduleDeleteDatabase(
     IndexedDBOriginStateHandle origin_state_handle,
     scoped_refptr<IndexedDBCallbacks> callbacks,
     base::OnceClosure on_deletion_complete) {
-  AppendRequest(std::make_unique<DeleteRequest>(
+  request_queue_.push(std::make_unique<DeleteRequest>(
       std::move(origin_state_handle), db_, callbacks,
-      std::move(on_deletion_complete), this));
+      std::move(on_deletion_complete), this, tasks_available_callback_));
+  tasks_available_callback_.Run();
 }
 
-void IndexedDBConnectionCoordinator::ForceClose() {
-  force_closing_ = true;
+void IndexedDBConnectionCoordinator::PruneTasksForForceClose() {
   // Remove all pending requests that don't want to execute during force close
   // (open requests).
   base::queue<std::unique_ptr<ConnectionRequest>> requests_to_still_run;
-  while (!pending_requests_.empty()) {
+  while (!request_queue_.empty()) {
     std::unique_ptr<ConnectionRequest> request =
-        std::move(pending_requests_.front());
-    pending_requests_.pop();
-    if (request->OnForceClose())
+        std::move(request_queue_.front());
+    request_queue_.pop();
+    if (!request->ShouldPruneForForceClose())
       requests_to_still_run.push(std::move(request));
   }
 
-  if (!requests_to_still_run.empty())
-    pending_requests_ = std::move(requests_to_still_run);
-
-  // Since |force_closing_| is true, there are no re-entry modifications to
-  // this list by ConnectionClosed().
-  while (!connections_.empty()) {
-    IndexedDBConnection* connection = *connections_.begin();
-    connection->CloseAndReportForceClose();
-    connections_.erase(connection);
-  }
-  force_closing_ = false;
-
-  // OnConnectionClosed usually synchronously calls RequestComplete.
-  if (active_request_)
-    active_request_->OnConnectionClosed(nullptr);
-  else
-    db_->ProcessRequestQueueAndMaybeRelease();
+  request_queue_ = std::move(requests_to_still_run);
 }
 
 void IndexedDBConnectionCoordinator::OnConnectionClosed(
     IndexedDBConnection* connection) {
-  if (force_closing_)
-    return;
-  DCHECK(connections().count(connection));
-  DCHECK(connection->IsConnected());
-  DCHECK(connection->transactions().empty());
   DCHECK(connection->database().get() == db_);
 
-  // Abort transactions before removing the connection; aborting may complete
-  // an upgrade, and thus allow the next open/delete requests to proceed. The
-  // new active_request_ should see the old connection count until explicitly
-  // notified below.
-  connections_.erase(connection);
+  if (!request_queue_.empty())
+    request_queue_.front()->OnConnectionClosed(connection);
+}
 
-  base::WeakPtr<IndexedDBDatabase> database = db_->AsWeakPtr();
-  // Notify the active request, which may need to do cleanup or proceed with
-  // the operation. This may trigger other work, such as more connections or
-  // deletions, so |active_request_| itself may change.
-  if (active_request_)
-    active_request_->OnConnectionClosed(connection);
-
-  if (database)
-    database->ProcessRequestQueueAndMaybeRelease();
+void IndexedDBConnectionCoordinator::OnNoConnections() {
+  if (request_queue_.empty() ||
+      request_queue_.front()->state() != RequestState::kPendingNoConnections) {
+    return;
+  }
+  request_queue_.front()->OnNoConnections();
 }
 
 // TODO(dmurph): Attach an ID to the connection change events to prevent
 // mis-propogation to the wrong connection request.
 void IndexedDBConnectionCoordinator::OnVersionChangeIgnored() {
-  if (active_request_)
-    active_request_->OnVersionChangeIgnored();
+  if (request_queue_.empty() ||
+      request_queue_.front()->state() != RequestState::kPendingNoConnections) {
+    return;
+  }
+  request_queue_.front()->OnVersionChangeIgnored();
 }
 
 void IndexedDBConnectionCoordinator::OnUpgradeTransactionStarted(
     int64_t old_version) {
-  DCHECK(active_request_);
-  active_request_->UpgradeTransactionStarted(old_version);
+  if (request_queue_.empty() || request_queue_.front()->state() !=
+                                    RequestState::kPendingTransactionComplete) {
+    return;
+  }
+  request_queue_.front()->UpgradeTransactionStarted(old_version);
 }
 
 void IndexedDBConnectionCoordinator::CreateAndBindUpgradeTransaction() {
-  DCHECK(active_request_);
-  active_request_->CreateAndBindTransaction();
+  if (request_queue_.empty() || request_queue_.front()->state() !=
+                                    RequestState::kPendingTransactionComplete) {
+    return;
+  }
+  request_queue_.front()->CreateAndBindTransaction();
 }
 
 void IndexedDBConnectionCoordinator::OnUpgradeTransactionFinished(
     bool committed) {
-  if (active_request_ && !force_closing_)
-    active_request_->UpgradeTransactionFinished(committed);
-}
-
-void IndexedDBConnectionCoordinator::ProcessRequestQueue() {
-  // Don't run re-entrantly to avoid exploding call stacks for requests that
-  // complete synchronously. The loop below will process requests until one is
-  // blocked.
-  if (processing_pending_requests_)
+  if (request_queue_.empty() || request_queue_.front()->state() !=
+                                    RequestState::kPendingTransactionComplete) {
     return;
-  processing_pending_requests_ = true;
-  // If the active request completed synchronously, keep going.
-  while (!active_request_ && !pending_requests_.empty()) {
-    active_request_ = std::move(pending_requests_.front());
-    pending_requests_.pop();
-    active_request_->Perform();
   }
-  processing_pending_requests_ = false;
+  request_queue_.front()->UpgradeTransactionFinished(committed);
 }
 
-void IndexedDBConnectionCoordinator::AddConnection(
-    IndexedDBConnection* connection) {
-  connections_.insert(connection);
+std::tuple<IndexedDBConnectionCoordinator::ExecuteTaskResult, leveldb::Status>
+IndexedDBConnectionCoordinator::ExecuteTask(bool has_connections) {
+  if (request_queue_.empty())
+    return {ExecuteTaskResult::kDone, leveldb::Status()};
+
+  auto& request = request_queue_.front();
+  if (request->state() == RequestState::kNotStarted) {
+    request->Perform(has_connections);
+    DCHECK(request->state() != RequestState::kNotStarted);
+  }
+
+  switch (request->state()) {
+    case RequestState::kNotStarted:
+      NOTREACHED();
+      return {ExecuteTaskResult::kError, leveldb::Status::OK()};
+    case RequestState::kPendingNoConnections:
+    case RequestState::kPendingLocks:
+    case RequestState::kPendingTransactionComplete:
+      return {ExecuteTaskResult::kPendingAsyncWork, leveldb::Status()};
+    case RequestState::kDone:
+      request_queue_.pop();
+      return {request_queue_.empty() ? ExecuteTaskResult::kDone
+                                     : ExecuteTaskResult::kMoreTasks,
+              leveldb::Status::OK()};
+    case RequestState::kError: {
+      leveldb::Status status = request->status();
+      request_queue_.pop();
+      return {ExecuteTaskResult::kError, status};
+    }
+  }
+  NOTREACHED();
 }
 
-void IndexedDBConnectionCoordinator::AppendRequest(
-    std::unique_ptr<ConnectionRequest> request) {
-  pending_requests_.push(std::move(request));
-
-  // This may be an unrelated transaction finishing while waiting for
-  // connections to close, or the actual upgrade transaction from an active
-  // request. Notify the active request if it's the latter.
-  if (!active_request_)
-    db_->ProcessRequestQueueAndMaybeRelease();
+size_t IndexedDBConnectionCoordinator::ActiveOpenDeleteCount() const {
+  return request_queue_.empty() ? 0 : 1;
 }
 
-void IndexedDBConnectionCoordinator::RequestComplete(
-    ConnectionRequest* request) {
-  DCHECK_EQ(request, active_request_.get());
-  // Destroying a request can cause this instance to be destroyed (through
-  // ConnectionClosed), so hold a WeakPtr.
-  base::WeakPtr<IndexedDBDatabase> weak_ptr = db_->AsWeakPtr();
-  active_request_.reset();
-
-  if (!weak_ptr)
-    return;
-
-  db_->ProcessRequestQueueAndMaybeRelease();
+// Number of open/delete calls that are waiting their turn.
+size_t IndexedDBConnectionCoordinator::PendingOpenDeleteCount() const {
+  if (request_queue_.empty())
+    return 0;
+  if (request_queue_.front()->state() == RequestState::kNotStarted)
+    return request_queue_.size();
+  return request_queue_.size() - 1;
 }
 
 }  // namespace content

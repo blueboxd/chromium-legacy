@@ -160,7 +160,7 @@ class JpegEncodeAcceleratorTestEnvironment : public ::testing::Environment {
 };
 
 void JpegEncodeAcceleratorTestEnvironment::SetUp() {
-  // Since base::test::ScopedTaskEnvironment will call
+  // Since base::test::TaskEnvironment will call
   // TestTimeouts::action_max_timeout(), TestTimeouts::Initialize() needs to be
   // called in advance.
   TestTimeouts::Initialize();
@@ -680,7 +680,7 @@ class JpegEncodeAcceleratorTest : public ::testing::Test {
 
   // This is needed to allow the usage of methods in post_task.h in
   // JpegEncodeAccelerator implementations.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // The elements of |test_aligned_images_| and |test_images_| are
   // owned by JpegEncodeAcceleratorTestEnvironment.

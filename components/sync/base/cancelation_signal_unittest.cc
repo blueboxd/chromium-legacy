@@ -112,7 +112,7 @@ class CancelationSignalTest : public ::testing::Test {
   bool VerifyTaskNotStarted();
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   CancelationSignal signal_;
   base::WaitableEvent task_start_event_;

@@ -36,7 +36,7 @@ class PasswordImporterTest : public testing::Test {
                              base::Bind(&PasswordImporterTest::OnImportFinished,
                                         base::Unretained(this)));
 
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
     ASSERT_TRUE(callback_called_);
   }
@@ -57,7 +57,7 @@ class PasswordImporterTest : public testing::Test {
   base::ScopedTempDir temp_directory_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   bool callback_called_;
   PasswordImporter::Result result_;

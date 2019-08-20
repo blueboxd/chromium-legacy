@@ -152,7 +152,7 @@ public class BasicSuggestionProcessorTest {
     public void getSuggestionIconTypeForUrl_Default() {
         int[][] testSuites = {
                 {OmniboxSuggestionType.URL_WHAT_YOU_TYPED, SuggestionIcon.GLOBE},
-                {OmniboxSuggestionType.HISTORY_URL, SuggestionIcon.HISTORY},
+                {OmniboxSuggestionType.HISTORY_URL, SuggestionIcon.GLOBE},
                 {OmniboxSuggestionType.HISTORY_TITLE, SuggestionIcon.GLOBE},
                 {OmniboxSuggestionType.HISTORY_BODY, SuggestionIcon.GLOBE},
                 {OmniboxSuggestionType.HISTORY_KEYWORD, SuggestionIcon.GLOBE},

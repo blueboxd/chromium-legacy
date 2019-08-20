@@ -33,6 +33,13 @@ const char kHintsFetcherDataSaverTopHostBlacklist[] =
 const char kHintsFetcherDataSaverTopHostBlacklistState[] =
     "optimization_guide.hintsfetcher.top_host_blacklist_state";
 
+// A dictionary pref that stores hosts that have had hints successfully fetched
+// from the remote Optimization Guide Server. The entry for each host contains
+// the time that the fetch that covered this host expires, i.e., any hints
+// from the fetch would be considered stale.
+const char kHintsFetcherHostsSuccessfullyFetched[] =
+    "optimization_guide.hintsfetcher.hosts_successfully_fetched";
+
 // A string pref that stores the version of the Optimization Hints component
 // that is currently being processed. This pref is cleared once processing
 // completes. It is used for detecting a potential crash loop on processing a
@@ -47,6 +54,8 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
       base::Time().ToDeltaSinceWindowsEpoch().InMicroseconds(),
       PrefRegistry::LOSSY_PREF);
   registry->RegisterDictionaryPref(kHintsFetcherDataSaverTopHostBlacklist,
+                                   PrefRegistry::LOSSY_PREF);
+  registry->RegisterDictionaryPref(kHintsFetcherHostsSuccessfullyFetched,
                                    PrefRegistry::LOSSY_PREF);
   registry->RegisterIntegerPref(
       kHintsFetcherDataSaverTopHostBlacklistState,

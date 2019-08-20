@@ -541,7 +541,7 @@ class FakeSensorFactoryWinrt
 
 class PlatformSensorReaderTestWinrt : public testing::Test {
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::win::ScopedCOMInitializer scoped_com_initializer_;
 };
 

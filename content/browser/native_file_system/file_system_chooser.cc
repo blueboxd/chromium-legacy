@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
+#include "content/browser/native_file_system/native_file_system_error.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/content_browser_client.h"
@@ -175,37 +176,38 @@ void FileSystemChooser::MultiFilesSelected(
                   callback_runner->PostTask(
                       FROM_HERE,
                       base::BindOnce(std::move(callback),
-                                     blink::mojom::NativeFileSystemError::New(
-                                         base::File::FILE_ERROR_FAILED),
+                                     native_file_system_error::FromStatus(
+                                         blink::mojom::NativeFileSystemStatus::
+                                             kOperationFailed,
+                                         "Failed to create file"),
                                      std::vector<base::FilePath>()));
                   return;
                 }
               }
               callback_runner->PostTask(
-                  FROM_HERE,
-                  base::BindOnce(std::move(callback),
-                                 blink::mojom::NativeFileSystemError::New(
-                                     base::File::FILE_OK),
-                                 std::move(files)));
+                  FROM_HERE, base::BindOnce(std::move(callback),
+                                            native_file_system_error::Ok(),
+                                            std::move(files)));
             },
             files, callback_runner_, std::move(callback_)));
     delete this;
     return;
   }
   callback_runner_->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback_),
-                                blink::mojom::NativeFileSystemError::New(
-                                    base::File::FILE_OK),
-                                std::move(files)));
+      FROM_HERE,
+      base::BindOnce(std::move(callback_), native_file_system_error::Ok(),
+                     std::move(files)));
   delete this;
 }
 
 void FileSystemChooser::FileSelectionCanceled(void* params) {
   callback_runner_->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback_),
-                                blink::mojom::NativeFileSystemError::New(
-                                    base::File::FILE_ERROR_ABORT),
-                                std::vector<base::FilePath>()));
+      FROM_HERE,
+      base::BindOnce(
+          std::move(callback_),
+          native_file_system_error::FromStatus(
+              blink::mojom::NativeFileSystemStatus::kOperationAborted),
+          std::vector<base::FilePath>()));
   delete this;
 }
 

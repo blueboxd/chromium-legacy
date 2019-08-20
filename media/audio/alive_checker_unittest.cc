@@ -159,7 +159,7 @@ class AliveCheckerTest : public testing::Test {
   }
 
   // The test task environment.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // The thread the checker is run on.
   base::Thread alive_checker_thread_;

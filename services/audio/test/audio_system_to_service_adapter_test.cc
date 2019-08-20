@@ -69,7 +69,7 @@ class AudioSystemToServiceAdapterTestBase : public testing::Test {
   // AudioSystem conformance tests won't set expecnations.
   NiceMock<MockFunction<void(void)>> system_info_bind_requested_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<media::MockAudioManager> audio_manager_;
   std::unique_ptr<mojom::SystemInfo> system_info_impl_;
   std::unique_ptr<mojo::Receiver<mojom::SystemInfo>> system_info_receiver_;
@@ -433,8 +433,8 @@ class AudioSystemToServiceAdapterDisconnectTest : public testing::Test {
   MOCK_METHOD0(ClientConnected, void(void));
   MOCK_METHOD0(ClientDisconnected, void(void));
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
   const base::Optional<std::string> valid_reply_{kValidReplyId};
   base::MockCallback<media::AudioSystem::OnDeviceIdCallback> response_received_;
@@ -453,10 +453,10 @@ TEST_F(AudioSystemToServiceAdapterDisconnectTest,
     EXPECT_CALL(response_received_, Run(valid_reply_));
     audio_system.GetAssociatedOutputDeviceID(kSomeDeviceId,
                                              response_received_.Get());
-    scoped_task_environment_.FastForwardBy(kResponseDelay);
+    task_environment_.FastForwardBy(kResponseDelay);
   }
   EXPECT_CALL(*this, ClientDisconnected());
-  scoped_task_environment_.FastForwardBy(kDisconnectTimeout);
+  task_environment_.FastForwardBy(kDisconnectTimeout);
 }
 
 TEST_F(AudioSystemToServiceAdapterDisconnectTest,
@@ -469,10 +469,10 @@ TEST_F(AudioSystemToServiceAdapterDisconnectTest,
     EXPECT_CALL(response_received_, Run(valid_reply_));
     audio_system.GetAssociatedOutputDeviceID(kSomeDeviceId,
                                              response_received_.Get());
-    scoped_task_environment_.FastForwardBy(kResponseDelay);
+    task_environment_.FastForwardBy(kResponseDelay);
   }
   EXPECT_CALL(*this, ClientDisconnected());
-  scoped_task_environment_.FastForwardBy(kDisconnectTimeout);
+  task_environment_.FastForwardBy(kDisconnectTimeout);
 }
 
 TEST_F(AudioSystemToServiceAdapterDisconnectTest,
@@ -485,7 +485,7 @@ TEST_F(AudioSystemToServiceAdapterDisconnectTest,
     EXPECT_CALL(response_received_, Run(valid_reply_));
     audio_system.GetAssociatedOutputDeviceID(kSomeDeviceId,
                                              response_received_.Get());
-    scoped_task_environment_.FastForwardBy(kResponseDelay);
+    task_environment_.FastForwardBy(kResponseDelay);
   }
   {
     EXPECT_CALL(*this, ClientConnected()).Times(0);
@@ -493,10 +493,10 @@ TEST_F(AudioSystemToServiceAdapterDisconnectTest,
     EXPECT_CALL(response_received_, Run(valid_reply_));
     audio_system.GetAssociatedOutputDeviceID(kSomeDeviceId,
                                              response_received_.Get());
-    scoped_task_environment_.FastForwardBy(kResponseDelay);
+    task_environment_.FastForwardBy(kResponseDelay);
   }
   EXPECT_CALL(*this, ClientDisconnected());
-  scoped_task_environment_.FastForwardBy(kDisconnectTimeout);
+  task_environment_.FastForwardBy(kDisconnectTimeout);
 }
 
 TEST_F(AudioSystemToServiceAdapterDisconnectTest,
@@ -507,7 +507,7 @@ TEST_F(AudioSystemToServiceAdapterDisconnectTest,
   EXPECT_CALL(response_received_, Run(valid_reply_));
   audio_system.GetAssociatedOutputDeviceID(kSomeDeviceId,
                                            response_received_.Get());
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
 }
 
 }  // namespace audio

@@ -220,6 +220,13 @@ void FontFallback::AddCachedFamily(
     Microsoft::WRL::ComPtr<IDWriteFontFamily> family,
     const wchar_t* base_family_name,
     const wchar_t* locale) {
+  // Note: If the requested locale does not disambiguate Han ideographs, caching
+  // by locale may prime the cache with one CJK font for the first request,
+  // which may be unsuitable for the next request. For example: While specifying
+  // an ambiguous locale, requesting certain Chinese characters first, DWrite
+  // will give us a simplified Chinese font, then requesting a Korean character
+  // later may return a Chinese font for the Korean character. This is prevented
+  // on the Blink side by passing a disambiguating locale.
   std::list<mswr::ComPtr<IDWriteFontFamily>>& family_list =
       fallback_family_cache_[MakeCacheKey(base_family_name, locale)];
   family_list.push_front(std::move(family));

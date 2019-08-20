@@ -1154,10 +1154,6 @@ void InitCrashKeys() {
 void SetCrashLoopBeforeTime(const std::string& process_type,
                             const base::CommandLine& parsed_command_line) {
 #if defined(OS_CHROMEOS)
-  if (!ShouldPassCrashLoopBefore(process_type)) {
-    return;
-  }
-
   std::string crash_loop_before =
       parsed_command_line.GetSwitchValueASCII(switches::kCrashLoopBefore);
   if (crash_loop_before.empty()) {
@@ -2168,21 +2164,6 @@ void SuppressDumpGeneration() {
   g_dumps_suppressed = G_DUMPS_SUPPRESSED_MAGIC;
 }
 #endif  // OS_ANDROID
-
-#if defined(OS_CHROMEOS)
-bool ShouldPassCrashLoopBefore(const std::string& process_type) {
-  if (process_type == ::switches::kRendererProcess ||
-      process_type == ::switches::kUtilityProcess ||
-      process_type == ::switches::kPpapiPluginProcess ||
-      process_type == service_manager::switches::kZygoteProcess) {
-    // These process types never cause a log-out, even if they crash. So the
-    // normal crash handling process should work fine; we shouldn't need to
-    // invoke the special crash-loop mode.
-    return false;
-  }
-  return true;
-}
-#endif  // defined(OS_CHROMEOS)
 
 bool IsCrashReporterEnabled() {
   return g_is_crash_reporter_enabled;

@@ -217,7 +217,7 @@ class OAuthMultiloginHelperTest : public testing::Test {
     result_ = result;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   bool callback_called_ = false;
   SetAccountsInCookieResult result_;

@@ -99,6 +99,11 @@
       status: "experimental",
     },
     {
+      name: "AddressSpace",
+      status: "experimental",
+      implied_by: ["CorsRFC1918"],
+    },
+    {
       name: "AdTagging",
       status: "test",
     },
@@ -309,6 +314,7 @@
     },
     {
       name: "CorsRFC1918",
+      depends_on: ["AddressSpace"],
     },
     {
       name: "CSS3Text",

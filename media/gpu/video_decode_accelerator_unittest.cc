@@ -1714,12 +1714,10 @@ class VDATestSuite : public base::TestSuite {
     // which uses COM. We need the thread to be a UI thread.
     // On Ozone, the backend initializes the event system using a UI
     // thread.
-    scoped_task_environment_ =
-        std::make_unique<base::test::ScopedTaskEnvironment>(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI);
+    task_environment_ = std::make_unique<base::test::TaskEnvironment>(
+        base::test::TaskEnvironment::MainThreadType::UI);
 #else
-    scoped_task_environment_ =
-        std::make_unique<base::test::ScopedTaskEnvironment>();
+    task_environment_ = std::make_unique<base::test::TaskEnvironment>();
 #endif  // OS_WIN || OS_CHROMEOS
 
     media::g_env =
@@ -1742,11 +1740,11 @@ class VDATestSuite : public base::TestSuite {
   }
 
   void Shutdown() override {
-    scoped_task_environment_.reset();
+    task_environment_.reset();
     base::TestSuite::Shutdown();
   }
 
-  std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
+  std::unique_ptr<base::test::TaskEnvironment> task_environment_;
 };
 
 }  // namespace

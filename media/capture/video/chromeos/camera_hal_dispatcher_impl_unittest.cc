@@ -122,7 +122,7 @@ class CameraHalDispatcherImplTest : public ::testing::Test {
   CameraHalDispatcherImpl* dispatcher_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<base::RunLoop> run_loop_;
   DISALLOW_COPY_AND_ASSIGN(CameraHalDispatcherImplTest);
 };

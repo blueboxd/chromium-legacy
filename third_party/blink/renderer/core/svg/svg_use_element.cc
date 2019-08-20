@@ -328,10 +328,8 @@ void SVGUseElement::BuildPendingResource() {
     return;
   auto* target = DynamicTo<SVGElement>(ResolveTargetElement(kAddObserver));
   // TODO(fs): Why would the Element not be "connected" at this point?
-  if (target && target->isConnected()) {
+  if (target && target->isConnected())
     BuildShadowAndInstanceTree(*target);
-    InvalidateDependentShadowTrees();
-  }
 
   DCHECK(!needs_shadow_tree_recreation_);
 }

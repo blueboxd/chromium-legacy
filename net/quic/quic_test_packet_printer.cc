@@ -61,6 +61,12 @@ class QuicPacketPrinter : public QuicFramerVisitorInterface {
   void OnCoalescedPacket(const QuicEncryptedPacket& packet) override {
     *output_ << "OnCoalescedPacket\n";
   }
+  void OnUndecryptablePacket(const QuicEncryptedPacket& packet,
+                             EncryptionLevel decryption_level,
+                             bool has_decryption_key) override {
+    *output_ << "OnUndecryptablePacket, decryption_level: " << decryption_level
+             << "\n";
+  }
   bool OnStreamFrame(const QuicStreamFrame& frame) override {
     *output_ << "OnStreamFrame: " << frame;
     *output_ << "         data: { "

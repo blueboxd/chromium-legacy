@@ -21,6 +21,7 @@
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/password_protection/metrics_util.h"
 #include "components/safe_browsing/password_protection/mock_password_protection_service.h"
+#include "components/safe_browsing/password_protection/password_protection_navigation_throttle.h"
 #include "components/safe_browsing/password_protection/password_protection_request.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "components/safe_browsing/verdict_cache_manager.h"
@@ -190,6 +191,21 @@ class TestPasswordProtectionService : public MockPasswordProtectionService {
   DISALLOW_COPY_AND_ASSIGN(TestPasswordProtectionService);
 };
 
+class MockPasswordProtectionNavigationThrottle
+    : public PasswordProtectionNavigationThrottle {
+ public:
+  MockPasswordProtectionNavigationThrottle(
+      content::NavigationHandle* navigation_handle,
+      scoped_refptr<PasswordProtectionRequest> request,
+      bool is_warning_showing)
+      : PasswordProtectionNavigationThrottle(navigation_handle,
+                                             request,
+                                             is_warning_showing) {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockPasswordProtectionNavigationThrottle);
+};
+
 class PasswordProtectionServiceTest : public ::testing::TestWithParam<bool> {
  public:
   PasswordProtectionServiceTest() {}
@@ -331,6 +347,10 @@ class PasswordProtectionServiceTest : public ::testing::TestWithParam<bool> {
         !password_protection_service_->IsIncognito();
     EXPECT_EQ(should_report_content_size, request.has_content_area_height());
     EXPECT_EQ(should_report_content_size, request.has_content_area_width());
+  }
+
+  size_t GetNumberOfNavigationThrottles() {
+    return request_ ? request_->throttles_.size() : 0u;
   }
 
  protected:
@@ -1261,6 +1281,28 @@ TEST_P(PasswordProtectionServiceTest, TestDomFeaturesPopulated) {
   ASSERT_NE(nullptr, password_protection_service_->GetLatestRequestProto());
   EXPECT_TRUE(password_protection_service_->GetLatestRequestProto()
                   ->has_dom_features());
+}
+
+TEST_P(PasswordProtectionServiceTest, TestRequestCancelOnTimeout) {
+  content::WebContents* web_contents = GetWebContents();
+  InitializeAndStartPasswordOnFocusRequest(
+      true /* match whitelist */, 10000 /* timeout in ms */, web_contents);
+  auto throttle = std::make_unique<MockPasswordProtectionNavigationThrottle>(
+      nullptr, request_, false);
+  EXPECT_EQ(1U, GetNumberOfNavigationThrottles());
+  request_->Cancel(true /* timeout */);
+  EXPECT_EQ(1U, GetNumberOfNavigationThrottles());
+}
+
+TEST_P(PasswordProtectionServiceTest, TestRequestCancelNotOnTimeout) {
+  content::WebContents* web_contents = GetWebContents();
+  InitializeAndStartPasswordOnFocusRequest(
+      true /* match whitelist */, 10000 /* timeout in ms */, web_contents);
+  auto throttle = std::make_unique<MockPasswordProtectionNavigationThrottle>(
+      nullptr, request_, false);
+  EXPECT_EQ(1U, GetNumberOfNavigationThrottles());
+  request_->Cancel(false /* timeout */);
+  EXPECT_EQ(0U, GetNumberOfNavigationThrottles());
 }
 
 INSTANTIATE_TEST_SUITE_P(Regular,

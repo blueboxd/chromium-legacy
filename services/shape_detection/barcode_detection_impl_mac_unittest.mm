@@ -120,7 +120,7 @@ class BarcodeDetectionImplMacTest : public TestWithParam<struct TestParams> {
   MOCK_METHOD0(Detection, void(void));
 
   std::unique_ptr<mojom::BarcodeDetection> impl_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   void* vision_framework_ = nullptr;
 };
 

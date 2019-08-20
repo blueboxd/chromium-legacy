@@ -120,7 +120,6 @@ class ScopedVulkanRenderFrame {
 };
 
 void VulkanClient::Run(const ClientBase::InitParams& params) {
-  params.use_vulkan = true;
   if (!ClientBase::Init(params))
     return;
 
@@ -177,6 +176,7 @@ int main(int argc, char* argv[]) {
   if (!params.FromCommandLine(*command_line))
     return 1;
 
+  params.use_vulkan = true;
   base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
   exo::wayland::clients::VulkanClient client;
   client.Run(params);

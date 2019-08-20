@@ -295,7 +295,7 @@ class SyncMethodTest : public testing::Test {
   ~SyncMethodTest() override = default;
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
 };
 
 template <typename TypeParam>
@@ -409,7 +409,7 @@ class SequencedTaskRunnerTestBase {
 // so gtest can instantiate copies for each |TypeParam|.
 template <typename TypeParam>
 class SequencedTaskRunnerTestLauncher : public testing::Test {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
 };
 
 // Similar to SyncMethodCommonTest, but the test body runs on a

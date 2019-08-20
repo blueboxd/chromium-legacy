@@ -222,7 +222,7 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
   const PolicyNamespace kTestExtensionNS2 =
       PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kTestExtension2);
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   network::TestURLLoaderFactory loader_factory_;
   MockComponentCloudPolicyDelegate delegate_;

@@ -77,8 +77,7 @@ class TestView : public View {
 class BoundsAnimatorTest : public testing::Test {
  public:
   BoundsAnimatorTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
         child_(new TestView()),
         animator_(&parent_) {
     parent_.AddChildView(child_);
@@ -90,7 +89,7 @@ class BoundsAnimatorTest : public testing::Test {
   BoundsAnimator* animator() { return &animator_; }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestView parent_;
   TestView* child_;  // Owned by |parent_|.
   BoundsAnimator animator_;

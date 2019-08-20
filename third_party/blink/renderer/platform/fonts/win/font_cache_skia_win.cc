@@ -31,6 +31,10 @@
 
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 
+#include <ft2build.h>
+#include <freetype/freetype.h>
+#include <unicode/uscript.h>
+
 #include <memory>
 #include <utility>
 
@@ -52,8 +56,6 @@
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/ports/SkTypeface_win.h"
 
-#include <ft2build.h>
-#include <freetype/freetype.h>
 
 namespace blink {
 
@@ -149,6 +151,40 @@ sk_sp<SkTypeface> FindUniqueFontNameFromSideloadedFonts(
   }
   FT_Done_FreeType(library);
   return return_typeface;
+}
+
+static const char kColorEmojiLocale[] = "und-Zsye";
+static const char kChineseSimplified[] = "zh-Hant";
+
+// For Windows out-of-process fallback calls, there is a limiation: only one
+// passed locale is taken into account when requesting a fallback font from the
+// DWrite API via Skia API. If we request fallback for a Han ideograph without a
+// disambiguating locale, results from DWrite are unpredictable and caching such
+// a font under the ambiguous locale leads to returning wrong fonts for
+// subsequent requests in font_fallback_win, hence prioritize a
+// Han-disambiguating locale for CJK characters.
+const LayoutLocale* FallbackLocaleForCharacter(
+    const FontDescription& font_description,
+    const FontFallbackPriority& fallback_priority,
+    const UChar32 codepoint) {
+  if (fallback_priority == FontFallbackPriority::kEmojiEmoji)
+    return LayoutLocale::Get(kColorEmojiLocale);
+
+  UErrorCode error_code = U_ZERO_ERROR;
+  const UScriptCode char_script = uscript_getScript(codepoint, &error_code);
+  if (U_SUCCESS(error_code) && char_script == USCRIPT_HAN) {
+    // If we were unable to disambiguate the requested Han ideograph from the
+    // content locale, the Accept-Language headers or system locale, assume it's
+    // simplified Chinese. It's important to pass a CJK locale to the fallback
+    // call in order to avoid priming the browser side cache incorrectly with an
+    // ambiguous locale for Han fallback requests.
+    const LayoutLocale* han_locale =
+        LayoutLocale::LocaleForHan(font_description.Locale());
+    return han_locale ? han_locale : LayoutLocale::Get(kChineseSimplified);
+  }
+
+  return font_description.Locale() ? font_description.Locale()
+                                   : &LayoutLocale::GetDefault();
 }
 
 }  // namespace
@@ -275,6 +311,10 @@ scoped_refptr<SimpleFontData> FontCache::GetDWriteFallbackFamily(
     const FontDescription& font_description,
     UChar32 codepoint,
     FontFallbackPriority fallback_priority) {
+  const LayoutLocale* fallback_locale = FallbackLocaleForCharacter(
+      font_description, fallback_priority, codepoint);
+  DCHECK(fallback_locale);
+
   // On Pre Windows 8.1 (where use_skia_font_fallback_ is false) we cannot call
   // the Skia version, as there is no IDWriteFontFallback (which is
   // proxyable). If no IDWriteFontFallback API exists in the DWrite Skia
@@ -289,15 +329,15 @@ scoped_refptr<SimpleFontData> FontCache::GetDWriteFallbackFamily(
   // side, where we can do that.
   if (!use_skia_font_fallback_) {
     EnsureServiceConnected();
-    Bcp47Vector bcp_tags =
-        GetBcp47LocaleForRequest(font_description, fallback_priority);
-    // TODO(drott): After Mojo IPC, on the browser side, this ultimately reaches
+
+    // After Mojo IPC, on the browser side, this ultimately reaches
     // Skia's matchFamilyStyleCharacter for Windows, which does not implement
     // traversing the language tag stack but only processes the most important
-    // one, so we only pass the one with highest priority as a string here.
+    // one, so we use FallbackLocaleForCharacter() to determine what locale to
+    // choose to achieve the best possible result.
     AtomicString family(GetOutOfProcessFallbackFamily(
         codepoint, font_description.GenericFamily(),
-        bcp_tags[bcp_tags.size() - 1], fallback_priority, service_));
+        fallback_locale->LocaleForSkFontMgr(), fallback_priority, service_));
 
     if (family.IsEmpty())
       return nullptr;
@@ -310,8 +350,9 @@ scoped_refptr<SimpleFontData> FontCache::GetDWriteFallbackFamily(
     return FontDataFromFontPlatformData(data, kDoNotRetain);
   } else {
     std::string family_name = font_description.Family().Family().Utf8();
-    Bcp47Vector locales =
-        GetBcp47LocaleForRequest(font_description, fallback_priority);
+
+    Bcp47Vector locales;
+    locales.push_back(fallback_locale->LocaleForSkFontMgr());
     SkTypeface* typeface = font_manager_->matchFamilyStyleCharacter(
         family_name.c_str(), font_description.SkiaFontStyle(), locales.data(),
         locales.size(), codepoint);

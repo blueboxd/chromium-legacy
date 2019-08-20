@@ -35,7 +35,7 @@ class AudioSystemImplTestBase : public testing::Test {
   MockAudioManager* audio_manager() { return audio_manager_.get(); }
   AudioSystem* audio_system() { return audio_system_.get(); }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<MockAudioManager> audio_manager_;
   std::unique_ptr<AudioSystem> audio_system_;
   // AudioSystemTester tester_;

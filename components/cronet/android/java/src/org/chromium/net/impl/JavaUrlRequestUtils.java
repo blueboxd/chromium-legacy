@@ -77,14 +77,21 @@ public final class JavaUrlRequestUtils {
             Thread currentThread = Thread.currentThread();
             InlineCheckingRunnable runnable = new InlineCheckingRunnable(command, currentThread);
             mDelegate.execute(runnable);
+            // This next read doesn't require synchronization; only the current thread could have
+            // written to runnable.mExecutedInline.
             if (runnable.mExecutedInline != null) {
                 throw runnable.mExecutedInline;
             } else {
                 // It's possible that this method is being called on an executor, and the runnable
-                // that
-                // was just queued will run on this thread after the current runnable returns. By
-                // nulling out the mCallingThread field, the InlineCheckingRunnable's current thread
-                // comparison will not fire.
+                // that was just queued will run on this thread after the current runnable returns.
+                // By nulling out the mCallingThread field, the InlineCheckingRunnable's current
+                // thread comparison will not fire.
+                //
+                // Java reference assignment is always atomic (no tearing, even on 64-bit VMs, see
+                // JLS 17.7), but other threads aren't guaranteed to ever see updates without
+                // something like locking, volatile, or AtomicReferences. We're ok in
+                // this instance, since this write only needs to be seen in the case that
+                // InlineCheckingRunnable.run() runs on the same thread as this execute() method.
                 runnable.mCallingThread = null;
             }
         }

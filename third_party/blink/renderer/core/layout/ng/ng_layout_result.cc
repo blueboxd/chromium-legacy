@@ -45,6 +45,10 @@ NGLayoutResult::NGLayoutResult(
   intrinsic_block_size_ = builder->intrinsic_block_size_;
   if (builder->minimal_space_shortage_ != LayoutUnit::Max())
     EnsureRareData()->minimal_space_shortage = builder->minimal_space_shortage_;
+  if (builder->custom_layout_data_) {
+    EnsureRareData()->custom_layout_data =
+        std::move(builder->custom_layout_data_);
+  }
   bitfields_.initial_break_before =
       static_cast<unsigned>(builder->initial_break_before_);
   bitfields_.final_break_after =

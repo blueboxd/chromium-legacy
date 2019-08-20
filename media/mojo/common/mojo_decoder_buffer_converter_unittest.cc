@@ -59,7 +59,7 @@ class MojoDecoderBufferConverter {
 }  // namespace
 
 TEST(MojoDecoderBufferConverterTest, ConvertDecoderBuffer_Normal) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   const uint8_t kData[] = "hello, world";
   const uint8_t kSideData[] = "sideshow bob";
   const size_t kDataSize = base::size(kData);
@@ -79,7 +79,7 @@ TEST(MojoDecoderBufferConverterTest, ConvertDecoderBuffer_Normal) {
 }
 
 TEST(MojoDecoderBufferConverterTest, ConvertDecoderBuffer_EOS) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   scoped_refptr<DecoderBuffer> buffer(DecoderBuffer::CreateEOSBuffer());
 
   MojoDecoderBufferConverter converter;
@@ -89,7 +89,7 @@ TEST(MojoDecoderBufferConverterTest, ConvertDecoderBuffer_EOS) {
 // TODO(xhwang): Investigate whether we can get rid of zero-byte-buffer.
 // See http://crbug.com/663438
 TEST(MojoDecoderBufferConverterTest, ConvertDecoderBuffer_ZeroByteBuffer) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   scoped_refptr<DecoderBuffer> buffer(new DecoderBuffer(0));
 
   MojoDecoderBufferConverter converter;
@@ -97,7 +97,7 @@ TEST(MojoDecoderBufferConverterTest, ConvertDecoderBuffer_ZeroByteBuffer) {
 }
 
 TEST(MojoDecoderBufferConverterTest, ConvertDecoderBuffer_KeyFrame) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   const uint8_t kData[] = "hello, world";
   const size_t kDataSize = base::size(kData);
 
@@ -111,7 +111,7 @@ TEST(MojoDecoderBufferConverterTest, ConvertDecoderBuffer_KeyFrame) {
 }
 
 TEST(MojoDecoderBufferConverterTest, ConvertDecoderBuffer_EncryptedBuffer) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   const uint8_t kData[] = "hello, world";
   const size_t kDataSize = base::size(kData);
   const char kKeyId[] = "00112233445566778899aabbccddeeff";
@@ -150,7 +150,7 @@ TEST(MojoDecoderBufferConverterTest, ConvertDecoderBuffer_EncryptedBuffer) {
 // This test verifies that a DecoderBuffer larger than data-pipe capacity
 // can be transmitted properly.
 TEST(MojoDecoderBufferConverterTest, Chunked) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   const uint8_t kData[] = "Lorem ipsum dolor sit amet, consectetur cras amet";
   const size_t kDataSize = base::size(kData);
   scoped_refptr<DecoderBuffer> buffer =
@@ -163,7 +163,7 @@ TEST(MojoDecoderBufferConverterTest, Chunked) {
 // This test verifies that MojoDecoderBufferReader::ReadCB is called with a
 // NULL DecoderBuffer if data pipe is closed during transmission.
 TEST(MojoDecoderBufferConverterTest, WriterSidePipeError) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   const uint8_t kData[] = "Lorem ipsum dolor sit amet, consectetur cras amet";
   const size_t kDataSize = base::size(kData);
   scoped_refptr<DecoderBuffer> media_buffer =
@@ -191,7 +191,7 @@ TEST(MojoDecoderBufferConverterTest, WriterSidePipeError) {
 // This test verifies that MojoDecoderBuffer supports concurrent writes and
 // reads.
 TEST(MojoDecoderBufferConverterTest, ConcurrentDecoderBuffers) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   base::RunLoop run_loop;
 
   // Prevent all of the buffers from fitting at once to exercise the chunking
@@ -237,7 +237,7 @@ TEST(MojoDecoderBufferConverterTest, ConcurrentDecoderBuffers) {
 }
 
 TEST(MojoDecoderBufferConverterTest, FlushWithoutRead) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   base::RunLoop run_loop;
 
   base::MockCallback<base::OnceClosure> mock_flush_cb;
@@ -250,7 +250,7 @@ TEST(MojoDecoderBufferConverterTest, FlushWithoutRead) {
 }
 
 TEST(MojoDecoderBufferConverterTest, FlushAfterRead) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   base::RunLoop run_loop;
 
   const uint8_t kData[] = "Lorem ipsum dolor sit amet, consectetur cras amet";
@@ -271,7 +271,7 @@ TEST(MojoDecoderBufferConverterTest, FlushAfterRead) {
 }
 
 TEST(MojoDecoderBufferConverterTest, FlushBeforeRead) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   base::RunLoop run_loop;
 
   const uint8_t kData[] = "Lorem ipsum dolor sit amet, consectetur cras amet";
@@ -299,7 +299,7 @@ TEST(MojoDecoderBufferConverterTest, FlushBeforeRead) {
 }
 
 TEST(MojoDecoderBufferConverterTest, FlushBeforeChunkedRead) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   base::RunLoop run_loop;
 
   const uint8_t kData[] = "Lorem ipsum dolor sit amet, consectetur cras amet";
@@ -328,7 +328,7 @@ TEST(MojoDecoderBufferConverterTest, FlushBeforeChunkedRead) {
 }
 
 TEST(MojoDecoderBufferConverterTest, FlushDuringChunkedRead) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   base::RunLoop run_loop;
 
   const uint8_t kData[] = "Lorem ipsum dolor sit amet, consectetur cras amet";
@@ -357,7 +357,7 @@ TEST(MojoDecoderBufferConverterTest, FlushDuringChunkedRead) {
 }
 
 TEST(MojoDecoderBufferConverterTest, FlushDuringConcurrentReads) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   base::RunLoop run_loop;
 
   // Prevent all of the buffers from fitting at once to exercise the chunking

@@ -69,8 +69,7 @@ mojom::NetworkContextParamsPtr CreateContextParams() {
 class HttpCacheDataRemoverTest : public testing::Test {
  public:
   HttpCacheDataRemoverTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         network_service_(NetworkService::CreateForTesting()) {}
 
   ~HttpCacheDataRemoverTest() override = default;
@@ -102,7 +101,7 @@ class HttpCacheDataRemoverTest : public testing::Test {
       ASSERT_TRUE(base::Time::FromString(test_entry.date, &time));
       entry->SetLastUsedTimeForTest(time);
       entry->Close();
-      scoped_task_environment_.RunUntilIdle();
+      task_environment_.RunUntilIdle();
     }
     ASSERT_EQ(base::size(kCacheEntries),
               static_cast<size_t>(backend_->GetEntryCount()));
@@ -155,7 +154,7 @@ class HttpCacheDataRemoverTest : public testing::Test {
         std::move(context_params));
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<NetworkService> network_service_;
   std::unique_ptr<NetworkContext> network_context_;
 
@@ -338,7 +337,7 @@ TEST_F(HttpCacheDataRemoverTest, DeleteHttpRemover) {
   // Delete the data remover and make sure after all task have been processed
   // that the callback wasn't invoked.
   data_remover.reset();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(callback_invoked);
 }
 

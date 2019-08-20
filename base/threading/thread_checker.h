@@ -38,7 +38,7 @@
 //       // It's sometimes useful to detach on construction for objects that are
 //       // constructed in one place and forever after used from another
 //       // thread.
-//       DETACH_FROM_THREAD(my_thread_checker_);
+//       DETACH_FROM_THREAD(thread_checker_);
 //     }
 //
 //     ~MyClass() {
@@ -48,16 +48,16 @@
 //       // knows usage on the associated thread is done. If you're not
 //       // detaching in the constructor, you probably want to explicitly check
 //       // in the destructor.
-//       DCHECK_CALLED_ON_VALID_THREAD(my_thread_checker_);
+//       DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 //     }
 //
 //     void MyMethod() {
-//       DCHECK_CALLED_ON_VALID_THREAD(my_thread_checker_);
+//       DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 //       ... (do stuff) ...
 //     }
 //
 //    private:
-//     THREAD_CHECKER(my_thread_checker_);
+//     THREAD_CHECKER(thread_checker_);
 //   }
 
 #if DCHECK_IS_ON()

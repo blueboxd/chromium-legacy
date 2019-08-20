@@ -98,7 +98,7 @@ class KeepAliveDelegateTest : public testing::Test {
     run_loop.RunUntilIdle();
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   MockCastSocket socket_;
   std::unique_ptr<KeepAliveDelegate> keep_alive_;
   scoped_refptr<Logger> logger_;

@@ -118,7 +118,7 @@ class GLHelperBenchmark : public testing::Test {
     base::CloseFile(f);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<gpu::GLInProcessContext> context_;
   gpu::gles2::GLES2Interface* gl_;
   std::unique_ptr<GLHelper> helper_;

@@ -78,7 +78,7 @@ class FontLoaderTest : public testing::Test {
   FontLoader* font_loader() { return &font_loader_; }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   FontLoader font_loader_{ConnectToBackgroundFontService()};
 
   DISALLOW_COPY_AND_ASSIGN(FontLoaderTest);

@@ -24,8 +24,7 @@ namespace ui {
 class OSExchangeDataProviderAuraX11Test : public testing::Test {
  public:
   OSExchangeDataProviderAuraX11Test()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
         event_source(gfx::GetXDisplay()) {}
 
   void AddURLList(const std::string& list_contents) {
@@ -37,7 +36,7 @@ class OSExchangeDataProviderAuraX11Test : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   X11EventSourceGlib event_source;
   ui::OSExchangeDataProviderAuraX11 provider;
 };

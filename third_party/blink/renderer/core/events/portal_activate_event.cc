@@ -107,6 +107,7 @@ ScriptValue PortalActivateEvent::data(ScriptState* script_state) {
 void PortalActivateEvent::Trace(blink::Visitor* visitor) {
   Event::Trace(visitor);
   visitor->Trace(document_);
+  visitor->Trace(adopted_portal_);
   visitor->Trace(data_);
   visitor->Trace(ports_);
   visitor->Trace(data_from_init_);
@@ -127,14 +128,27 @@ HTMLPortalElement* PortalActivateEvent::adoptPredecessor(
     return nullptr;
   }
 
-  HTMLPortalElement* portal = MakeGarbageCollected<HTMLPortalElement>(
+  DCHECK(!adopted_portal_);
+  adopted_portal_ = MakeGarbageCollected<HTMLPortalElement>(
       *document_, predecessor_portal_token_, std::move(predecessor_portal_),
       std::move(predecessor_portal_client_receiver_));
   std::move(on_portal_activated_callback_).Run(true);
-  return portal;
+  return adopted_portal_;
 }
 
-void PortalActivateEvent::DetachPortalIfNotAdopted() {
+void PortalActivateEvent::ExpireAdoptionLifetime() {
+  // End the special privilege associated with any adopted portals.
+  // This may destroy the guest contents.
+  if (adopted_portal_) {
+    adopted_portal_->ExpireAdoptionLifetime();
+
+    // We no longer need to hold the adopted portal, so stop drop the GC
+    // reference.
+    adopted_portal_ = nullptr;
+  }
+
+  // End the special privilege associated with the predecessor contents if it
+  // was not adopted. This may destroy the guest contents.
   if (predecessor_portal_) {
     std::move(on_portal_activated_callback_).Run(false);
     predecessor_portal_.reset();

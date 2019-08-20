@@ -523,6 +523,11 @@ ShellContentBrowserClient::CreateNetworkContext(
   return network_context;
 }
 
+std::vector<base::FilePath>
+ShellContentBrowserClient::GetNetworkContextsParentDirectory() {
+  return {browser_context()->GetPath()};
+}
+
 ShellBrowserContext* ShellContentBrowserClient::browser_context() {
   return shell_browser_main_parts_->browser_context();
 }

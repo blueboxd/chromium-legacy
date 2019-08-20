@@ -53,8 +53,8 @@ class TestChromotingClientTest : public ::testing::Test,
                               protocol::ErrorCode error_code) override;
   void ConnectionReady(bool ready) override;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::IO};
 
   DISALLOW_COPY_AND_ASSIGN(TestChromotingClientTest);
 };

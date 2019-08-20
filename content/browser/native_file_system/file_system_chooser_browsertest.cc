@@ -85,7 +85,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, CancelDialog) {
   ASSERT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
   auto result = EvalJs(shell(), "self.chooseFileSystemEntries()");
-  EXPECT_TRUE(result.error.find("AbortError") != std::string::npos)
+  EXPECT_TRUE(result.error.find("aborted") != std::string::npos)
       << result.error;
 }
 
@@ -241,7 +241,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, OpenDirectory_DenyAccess) {
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
   auto result =
       EvalJs(shell(), "self.chooseFileSystemEntries({type: 'openDirectory'})");
-  EXPECT_TRUE(result.error.find("AbortError") != std::string::npos)
+  EXPECT_TRUE(result.error.find("aborted") != std::string::npos)
       << result.error;
 }
 
@@ -257,7 +257,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, AcceptsOptions) {
                        "  {description: 'foo', extensions: ['txt', 'Js']},"
                        "  {mimeTypes: ['image/jpeg']}"
                        "]})");
-  EXPECT_TRUE(result.error.find("AbortError") != std::string::npos)
+  EXPECT_TRUE(result.error.find("aborted") != std::string::npos)
       << result.error;
 
   ASSERT_TRUE(dialog_params.file_types);

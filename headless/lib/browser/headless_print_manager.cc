@@ -267,7 +267,8 @@ void HeadlessPrintManager::OnPrintingFailed(int cookie) {
 
 void HeadlessPrintManager::OnDidPrintDocument(
     content::RenderFrameHost* render_frame_host,
-    const PrintHostMsg_DidPrintDocument_Params& params) {
+    const PrintHostMsg_DidPrintDocument_Params& params,
+    std::unique_ptr<DelayedFrameDispatchHelper> helper) {
   auto& content = params.content;
   if (!content.metafile_data_region.IsValid()) {
     ReleaseJob(INVALID_MEMORY_HANDLE);
@@ -279,6 +280,7 @@ void HeadlessPrintManager::OnDidPrintDocument(
     return;
   }
   data_ = std::string(static_cast<const char*>(map.memory()), map.size());
+  helper->SendCompleted();
   ReleaseJob(PRINT_SUCCESS);
 }
 

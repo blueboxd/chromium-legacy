@@ -152,7 +152,7 @@ class WebRtcAudioProcessorTest : public ::testing::Test {
     return settings;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   media::AudioParameters params_;
 };
 

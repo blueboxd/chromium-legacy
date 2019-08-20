@@ -197,7 +197,7 @@ class BindTaskRunnerTest : public testing::Test {
     impl_.reset(new ImplType(std::move(receiver), receiver_task_runner_));
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<TestTaskRunner> receiver_task_runner_;
   scoped_refptr<TestTaskRunner> remote_task_runner_;
 
@@ -235,7 +235,7 @@ class AssociatedBindTaskRunnerTest : public testing::Test {
 
   void QuitTaskRunner() { connection_receiver_task_runner_->Quit(); }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<TestTaskRunner> connection_receiver_task_runner_;
   scoped_refptr<TestTaskRunner> connection_remote_task_runner_;
   scoped_refptr<TestTaskRunner> sender_receiver_task_runner_;

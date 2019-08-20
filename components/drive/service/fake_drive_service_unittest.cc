@@ -227,7 +227,7 @@ class FakeDriveServiceTest : public testing::Test {
     return about_resource->largest_change_id();
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   FakeDriveService fake_service_;
 };
 

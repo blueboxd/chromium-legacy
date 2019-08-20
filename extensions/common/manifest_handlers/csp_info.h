@@ -76,6 +76,7 @@ class CSPHandler : public ManifestHandler {
   bool ParseExtensionPagesCSP(Extension* extension,
                               base::string16* error,
                               base::StringPiece manifest_key,
+                              bool secure_only,
                               const base::Value* content_security_policy);
 
   // Parses the content security policy specified in the manifest for isolated
@@ -89,9 +90,11 @@ class CSPHandler : public ManifestHandler {
                        base::StringPiece manifest_key,
                        const base::Value* sandbox_csp);
 
-  // Sets the default CSP value for the extension.
-  bool SetDefaultExtensionPagesCSP(Extension* extension,
-                                   base::StringPiece manifest_key);
+  // Helper to set the extension pages content security policy manifest data.
+  bool SetExtensionPagesCSP(Extension* extension,
+                            base::StringPiece manifest_key,
+                            bool secure_only,
+                            std::string content_security_policy);
 
   // Helper to set the isolated world content security policy manifest data.
   void SetIsolatedWorldCSP(Extension* extension,

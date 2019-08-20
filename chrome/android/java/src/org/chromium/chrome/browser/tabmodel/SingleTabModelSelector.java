@@ -9,65 +9,30 @@ import android.app.Activity;
 import org.chromium.chrome.browser.tab.Tab;
 
 /**
- * Simple TabModelSelector that assumes that only the regular TabModel type exists.
+ * Simple TabModelSelector that assumes that only a single TabModel exists at a time.
  */
 public class SingleTabModelSelector extends TabModelSelectorBase {
-    private final SingleTabModel mTabModel;
-
-    public SingleTabModelSelector(Activity activity, TabCreatorManager tabCreatorManager,
-            boolean incognito, boolean blockNewWindows) {
+    public SingleTabModelSelector(
+            Activity activity, TabCreatorManager tabCreatorManager, boolean incognito) {
         super(tabCreatorManager);
-        mTabModel = new SingleTabModel(activity, incognito, blockNewWindows);
-        initialize(false, mTabModel);
+        initialize(incognito, new SingleTabModel(activity, incognito));
+
+        TabModelObserver tabModelObserver = new EmptyTabModelObserver() {
+            @Override
+            public void didCloseTab(int tabId, boolean incognito) {
+                // TabModelSelectorImpl handles the equivalent case of closing the last tab in
+                // TabModelSelectorImpl#requestToShowTab, which we don't have for this
+                // TabModelSelector, so we do it here instead.
+                if (getCurrentModel().getTabAt(0) == null) notifyChanged();
+            }
+        };
+        for (TabModel model : getModels()) {
+            model.addObserver(tabModelObserver);
+        }
     }
 
     public void setTab(Tab tab) {
-        mTabModel.setTab(tab);
+        ((SingleTabModel) getCurrentModel()).setTab(tab);
         markTabStateInitialized();
-    }
-
-    @Override
-    public void selectModel(boolean incognito) {
-        assert incognito == mTabModel.isIncognito();
-    }
-
-    @Override
-    public TabModel getModel(boolean incognito) {
-        return super.getModel(incognito);
-    }
-
-    @Override
-    public TabModel getCurrentModel() {
-        assert super.getCurrentModel() == mTabModel;
-        return mTabModel;
-    }
-
-    @Override
-    public boolean isIncognitoSelected() {
-        return mTabModel.isIncognito();
-    }
-
-    @Override
-    public void closeAllTabs() {
-        mTabModel.closeAllTabs();
-    }
-
-    @Override
-    public int getTotalTabCount() {
-        assert mTabModel != null;
-        return mTabModel.getCount();
-    }
-
-    @Override
-    public Tab getTabById(int id) {
-        Tab currentTab = getCurrentTab();
-        if (currentTab != null && currentTab.getId() == id) return currentTab;
-        return null;
-    }
-
-    @Override
-    public TabModel getModelAt(int index) {
-        assert index == INCOGNITO_TAB_MODEL_INDEX || index == NORMAL_TAB_MODEL_INDEX;
-        return mTabModel;
     }
 }

@@ -32,8 +32,7 @@ class BookmarkUtilsTest : public testing::Test,
                           public BaseBookmarkModelObserver {
  public:
   BookmarkUtilsTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
         grouped_changes_beginning_count_(0),
         grouped_changes_ended_count_(0) {}
 
@@ -74,7 +73,7 @@ class BookmarkUtilsTest : public testing::Test,
   }
 
   // Clipboard requires a message loop.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   int grouped_changes_beginning_count_;
   int grouped_changes_ended_count_;

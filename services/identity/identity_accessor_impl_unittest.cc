@@ -106,7 +106,7 @@ class IdentityAccessorImplTest : public testing::Test {
     identity_accessor_.set_connection_error_handler(handler);
   }
 
-  base::test::ScopedTaskEnvironment task_environemnt_;
+  base::test::TaskEnvironment task_environemnt_;
 
   mojom::IdentityAccessorPtr identity_accessor_;
   base::Optional<CoreAccountInfo> primary_account_info_;

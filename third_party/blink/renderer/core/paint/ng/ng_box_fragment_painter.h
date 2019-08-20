@@ -99,7 +99,10 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   void PaintTextChild(const NGPaintFragment&,
                       const PaintInfo&,
                       const PhysicalOffset& paint_offset);
-  void PaintFloatingChildren(NGPaintFragment::ChildList, const PaintInfo&);
+  void PaintInlineFloatingChildren(NGPaintFragment::ChildList,
+                                   const PaintInfo&);
+  void PaintBlockFloatingChildren(const NGPhysicalContainerFragment&,
+                                  const PaintInfo&);
   void PaintFloats(const PaintInfo&);
   void PaintMask(const PaintInfo&, const PhysicalOffset& paint_offset);
   void PaintAtomicInline(const PaintInfo&);

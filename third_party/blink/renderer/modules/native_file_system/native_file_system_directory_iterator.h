@@ -39,7 +39,7 @@ class NativeFileSystemDirectoryIterator final
   void OnGotEntries(mojom::blink::NativeFileSystemErrorPtr result,
                     Vector<mojom::blink::NativeFileSystemEntryPtr> entries);
 
-  base::File::Error error_ = base::File::FILE_OK;
+  mojom::blink::NativeFileSystemErrorPtr error_;
   bool waiting_for_more_entries_ = true;
   HeapDeque<Member<NativeFileSystemHandle>> entries_;
   Member<ScriptPromiseResolver> pending_next_;

@@ -16,12 +16,11 @@ namespace {
 class SerialDeviceEnumeratorTest : public testing::Test {
  public:
   SerialDeviceEnumeratorTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
   ~SerialDeviceEnumeratorTest() override = default;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(SerialDeviceEnumeratorTest, GetDevices) {

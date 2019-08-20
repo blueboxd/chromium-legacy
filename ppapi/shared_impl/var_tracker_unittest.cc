@@ -49,8 +49,8 @@ class VarTrackerTest : public testing::Test {
   VarTracker& var_tracker() { return *globals_.GetVarTracker(); }
 
  private:
-  base::test::ScopedTaskEnvironment
-      scoped_task_environment_;  // Required to receive callbacks.
+  base::test::TaskEnvironment
+      task_environment_;  // Required to receive callbacks.
   TestGlobals globals_;
 };
 

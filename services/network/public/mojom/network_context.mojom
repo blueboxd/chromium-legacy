@@ -903,18 +903,14 @@ interface NetworkContext {
 
   // Tries to preconnect to |url|. |num_streams| may be used to request more
   // than one connection be established in parallel.
-  // |load_flags| is passed into the HttpRequestInfo used to make the request.
-  // See |load_flags.h| for possible values.
-  // |privacy_mode_enabled| is also passed into the HttpRequestInfo class: if
-  // it is true, then the request must be sent over a connection that cannot be
-  // tracked by the server.
+  // |allow_credentials| is true if the connection is to be pooled with
+  // credentialed requests and false otherwise.
   // |network_isolation_key| specifies the NetworkIsolationKey to associate
   // with the preconnected sockets. The sockets will only be used for requests
   // associated with the same key.
   PreconnectSockets(uint32 num_streams,
                     url.mojom.Url url,
-                    int32 load_flags,
-                    bool privacy_mode_enabled,
+                    bool allow_credentials,
                     NetworkIsolationKey network_isolation_key);
 
   // Creates a P2PSocketManager instance, used for WebRTC.

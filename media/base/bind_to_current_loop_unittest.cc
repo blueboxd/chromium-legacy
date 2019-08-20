@@ -61,7 +61,7 @@ void ClearReference(base::OnceClosure cb) {}
 // on the message loop, not during the original Run.
 class BindToCurrentLoopTest : public ::testing::Test {
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(BindToCurrentLoopTest, RepeatingClosure) {

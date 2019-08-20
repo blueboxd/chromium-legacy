@@ -32,14 +32,14 @@ namespace {
 const size_t kMaxClipboardSize = 1;
 
 // Clipboard data format used by AuraClipboard.
-enum AuraClipboardFormat {
-  TEXT      = 1 << 0,
-  HTML      = 1 << 1,
-  RTF       = 1 << 2,
-  BOOKMARK  = 1 << 3,
-  BITMAP    = 1 << 4,
-  CUSTOM    = 1 << 5,
-  WEB       = 1 << 6,
+enum class AuraClipboardFormat {
+  kText = 1 << 0,
+  kHtml = 1 << 1,
+  kRtf = 1 << 2,
+  kBookmark = 1 << 3,
+  kBitmap = 1 << 4,
+  kCustom = 1 << 5,
+  kWeb = 1 << 6,
 };
 
 // ClipboardData contains data copied to the Clipboard for a variety of formats.
@@ -58,37 +58,37 @@ class ClipboardData {
   const std::string& text() const { return text_; }
   void set_text(const std::string& text) {
     text_ = text;
-    format_ |= TEXT;
+    format_ |= static_cast<int>(AuraClipboardFormat::kText);
   }
 
   const std::string& markup_data() const { return markup_data_; }
   void set_markup_data(const std::string& markup_data) {
     markup_data_ = markup_data;
-    format_ |= HTML;
+    format_ |= static_cast<int>(AuraClipboardFormat::kHtml);
   }
 
   const std::string& rtf_data() const { return rtf_data_; }
   void SetRTFData(const std::string& rtf_data) {
     rtf_data_ = rtf_data;
-    format_ |= RTF;
+    format_ |= static_cast<int>(AuraClipboardFormat::kRtf);
   }
 
   const std::string& url() const { return url_; }
   void set_url(const std::string& url) {
     url_ = url;
-    format_ |= HTML;
+    format_ |= static_cast<int>(AuraClipboardFormat::kHtml);
   }
 
   const std::string& bookmark_title() const { return bookmark_title_; }
   void set_bookmark_title(const std::string& bookmark_title) {
     bookmark_title_ = bookmark_title;
-    format_ |= BOOKMARK;
+    format_ |= static_cast<int>(AuraClipboardFormat::kBookmark);
   }
 
   const std::string& bookmark_url() const { return bookmark_url_; }
   void set_bookmark_url(const std::string& bookmark_url) {
     bookmark_url_ = bookmark_url;
-    format_ |= BOOKMARK;
+    format_ |= static_cast<int>(AuraClipboardFormat::kBookmark);
   }
 
   const SkBitmap& bitmap() const { return bitmap_; }
@@ -97,7 +97,7 @@ class ClipboardData {
       NOTREACHED() << "Unable to convert bitmap for clipboard";
       return;
     }
-    format_ |= BITMAP;
+    format_ |= static_cast<int>(AuraClipboardFormat::kBitmap);
   }
 
   const std::string& custom_data_format() const { return custom_data_format_; }
@@ -111,13 +111,13 @@ class ClipboardData {
     }
     custom_data_data_ = data_data;
     custom_data_format_ = data_format;
-    format_ |= CUSTOM;
+    format_ |= static_cast<int>(AuraClipboardFormat::kCustom);
   }
 
   bool web_smart_paste() const { return web_smart_paste_; }
   void set_web_smart_paste(bool web_smart_paste) {
     web_smart_paste_ = web_smart_paste;
-    format_ |= WEB;
+    format_ |= static_cast<int>(AuraClipboardFormat::kWeb);
   }
 
  private:
@@ -188,8 +188,9 @@ class AuraClipboard {
   // or another format that can be converted to |format|.
   bool IsFormatAvailable(AuraClipboardFormat format) const {
     switch (format) {
-      case TEXT:
-        return HasFormat(TEXT) || HasFormat(BOOKMARK);
+      case AuraClipboardFormat::kText:
+        return HasFormat(AuraClipboardFormat::kText) ||
+               HasFormat(AuraClipboardFormat::kBookmark);
       default:
         return HasFormat(format);
     }
@@ -208,11 +209,11 @@ class AuraClipboard {
     const ClipboardData* data = GetData();
     if (!data)
       return;
-    if (HasFormat(TEXT))
+    if (HasFormat(AuraClipboardFormat::kText))
       *result = data->text();
-    else if (HasFormat(HTML))
+    else if (HasFormat(AuraClipboardFormat::kHtml))
       *result = data->markup_data();
-    else if (HasFormat(BOOKMARK))
+    else if (HasFormat(AuraClipboardFormat::kBookmark))
       *result = data->bookmark_url();
   }
 
@@ -227,7 +228,7 @@ class AuraClipboard {
     *fragment_start = 0;
     *fragment_end = 0;
 
-    if (!HasFormat(HTML))
+    if (!HasFormat(AuraClipboardFormat::kHtml))
       return;
 
     const ClipboardData* data = GetData();
@@ -243,7 +244,7 @@ class AuraClipboard {
   void ReadRTF(std::string* result) const {
     result->clear();
     const ClipboardData* data = GetData();
-    if (!HasFormat(RTF))
+    if (!HasFormat(AuraClipboardFormat::kRtf))
       return;
 
     *result = data->rtf_data();
@@ -252,7 +253,7 @@ class AuraClipboard {
   // Reads image from the data at the top of clipboard stack.
   SkBitmap ReadImage() const {
     SkBitmap img;
-    if (!HasFormat(BITMAP))
+    if (!HasFormat(AuraClipboardFormat::kBitmap))
       return img;
 
     // A shallow copy should be fine here, but just to be safe...
@@ -269,7 +270,7 @@ class AuraClipboard {
                       base::string16* result) const {
     result->clear();
     const ClipboardData* data = GetData();
-    if (!HasFormat(CUSTOM))
+    if (!HasFormat(AuraClipboardFormat::kCustom))
       return;
 
     ui::ReadCustomDataForType(data->custom_data_data().c_str(),
@@ -283,7 +284,7 @@ class AuraClipboard {
       title->clear();
     if (url)
       url->clear();
-    if (!HasFormat(BOOKMARK))
+    if (!HasFormat(AuraClipboardFormat::kBookmark))
       return;
 
     const ClipboardData* data = GetData();
@@ -296,7 +297,8 @@ class AuraClipboard {
   void ReadData(const std::string& type, std::string* result) const {
     result->clear();
     const ClipboardData* data = GetData();
-    if (!HasFormat(CUSTOM) || type != data->custom_data_format())
+    if (!HasFormat(AuraClipboardFormat::kCustom) ||
+        type != data->custom_data_format())
       return;
 
     *result = data->custom_data_data();
@@ -313,7 +315,7 @@ class AuraClipboard {
   // True if the data on top of the clipboard stack has format |format|.
   bool HasFormat(AuraClipboardFormat format) const {
     const ClipboardData* data = GetData();
-    return data ? data->format() & format : false;
+    return data ? data->format() & static_cast<int>(format) : false;
   }
 
   void AddToListEnsuringSize(std::unique_ptr<ClipboardData> data) {
@@ -436,15 +438,15 @@ bool ClipboardAura::IsFormatAvailable(const ClipboardFormatType& format,
   DCHECK(IsSupportedClipboardType(type));
   if (ClipboardFormatType::GetPlainTextType().Equals(format) ||
       ClipboardFormatType::GetUrlType().Equals(format))
-    return clipboard_internal_->IsFormatAvailable(TEXT);
+    return clipboard_internal_->IsFormatAvailable(AuraClipboardFormat::kText);
   if (ClipboardFormatType::GetHtmlType().Equals(format))
-    return clipboard_internal_->IsFormatAvailable(HTML);
+    return clipboard_internal_->IsFormatAvailable(AuraClipboardFormat::kHtml);
   if (ClipboardFormatType::GetRtfType().Equals(format))
-    return clipboard_internal_->IsFormatAvailable(RTF);
+    return clipboard_internal_->IsFormatAvailable(AuraClipboardFormat::kRtf);
   if (ClipboardFormatType::GetBitmapType().Equals(format))
-    return clipboard_internal_->IsFormatAvailable(BITMAP);
+    return clipboard_internal_->IsFormatAvailable(AuraClipboardFormat::kBitmap);
   if (ClipboardFormatType::GetWebKitSmartPasteType().Equals(format))
-    return clipboard_internal_->IsFormatAvailable(WEB);
+    return clipboard_internal_->IsFormatAvailable(AuraClipboardFormat::kWeb);
   const ClipboardData* data = clipboard_internal_->GetData();
   return data && data->custom_data_format() == format.ToString();
 }
@@ -478,7 +480,7 @@ void ClipboardAura::ReadAvailableTypes(ClipboardType type,
   if (IsFormatAvailable(ClipboardFormatType::GetBitmapType(), type))
     types->push_back(base::UTF8ToUTF16(kMimeTypePNG));
 
-  if (clipboard_internal_->IsFormatAvailable(CUSTOM) &&
+  if (clipboard_internal_->IsFormatAvailable(AuraClipboardFormat::kCustom) &&
       clipboard_internal_->GetData()) {
     ui::ReadCustomDataTypes(
         clipboard_internal_->GetData()->custom_data_data().c_str(),

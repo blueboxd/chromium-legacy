@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/notifications/proto/icon.pb.h"
+#include "chrome/browser/notifications/scheduler/internal/icon_converter.h"
 #include "chrome/browser/notifications/scheduler/internal/icon_entry.h"
 #include "components/leveldb_proto/public/proto_database.h"
 
@@ -74,7 +75,8 @@ class IconStore {
 class IconProtoDbStore : public IconStore {
  public:
   explicit IconProtoDbStore(
-      std::unique_ptr<leveldb_proto::ProtoDatabase<proto::Icon, IconEntry>> db);
+      std::unique_ptr<leveldb_proto::ProtoDatabase<proto::Icon, IconEntry>> db,
+      std::unique_ptr<IconConverter> icon_converter);
   ~IconProtoDbStore() override;
 
  private:
@@ -107,6 +109,9 @@ class IconProtoDbStore : public IconStore {
 
   // The proto database instance that persists data.
   std::unique_ptr<leveldb_proto::ProtoDatabase<proto::Icon, IconEntry>> db_;
+
+  // Help serializing icons to disk and deserializing encoded data to icons.
+  std::unique_ptr<IconConverter> icon_converter_;
 
   base::WeakPtrFactory<IconProtoDbStore> weak_ptr_factory_{this};
 

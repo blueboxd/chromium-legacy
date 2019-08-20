@@ -1,0 +1,2 @@
+# WebGPU tests are only run on GPU bots, so they are skipped by default and run
+# separately from other Web Tests, with this expectations file.

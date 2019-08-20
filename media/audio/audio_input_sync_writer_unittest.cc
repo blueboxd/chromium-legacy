@@ -155,7 +155,7 @@ class AudioInputSyncWriterTest : public testing::Test {
   using MockLogger =
       base::MockCallback<base::RepeatingCallback<void(const std::string&)>>;
 
-  base::test::ScopedTaskEnvironment env_;
+  base::test::TaskEnvironment env_;
   MockLogger mock_logger_;
   std::unique_ptr<AudioInputSyncWriter> writer_;
   MockCancelableSyncSocket* socket_;

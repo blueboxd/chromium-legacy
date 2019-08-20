@@ -37,8 +37,7 @@ void DummyRetrieveOriginPolicyCallback(const network::OriginPolicy& result) {}
 class OriginPolicyManagerTest : public testing::Test {
  public:
   OriginPolicyManagerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {
     network_service_ = NetworkService::CreateForTesting();
 
     auto context_params = mojom::NetworkContextParams::New();
@@ -116,7 +115,7 @@ class OriginPolicyManagerTest : public testing::Test {
     return std::move(response);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<NetworkService> network_service_;
   std::unique_ptr<NetworkContext> network_context_;

@@ -172,7 +172,7 @@ class InMemoryDownloadTest : public testing::Test {
   std::unique_ptr<base::Thread> io_thread_;
 
   // Created before other objects to provide test environment.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<InMemoryDownloadImpl> download_;
   std::unique_ptr<NiceMock<MockDelegate>> mock_delegate_;

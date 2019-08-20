@@ -49,8 +49,7 @@ class TLSClientSocketTestBase {
 
   explicit TLSClientSocketTestBase(Mode mode)
       : mode_(mode),
-        scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+        task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         url_request_context_(true) {}
   virtual ~TLSClientSocketTestBase() {}
 
@@ -279,7 +278,7 @@ class TLSClientSocketTestBase {
 
  private:
   Mode mode_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // Mojo data handles obtained from CreateTCPConnectedSocket.
   mojo::ScopedDataPipeConsumerHandle pre_tls_recv_handle_;

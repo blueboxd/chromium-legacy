@@ -92,7 +92,7 @@ class MouseCursorMonitorProxyTest
                              const webrtc::DesktopVector& position) override;
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::RunLoop run_loop_;
   base::Thread capture_thread_;
   std::unique_ptr<MouseCursorMonitorProxy> proxy_;
@@ -102,8 +102,7 @@ class MouseCursorMonitorProxyTest
 
 void MouseCursorMonitorProxyTest::OnMouseCursor(
     webrtc::MouseCursor* mouse_cursor) {
-  DCHECK(scoped_task_environment_.GetMainThreadTaskRunner()
-             ->BelongsToCurrentThread());
+  DCHECK(task_environment_.GetMainThreadTaskRunner()->BelongsToCurrentThread());
 
   EXPECT_EQ(kCursorWidth, mouse_cursor->image()->size().width());
   EXPECT_EQ(kCursorHeight, mouse_cursor->image()->size().height());

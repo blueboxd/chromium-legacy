@@ -35,7 +35,7 @@ class LeakDetectionCheckFactoryImplTest : public testing::Test {
   LeakDetectionCheckFactoryImpl& request_factory() { return request_factory_; }
 
  private:
-  base::test::ScopedTaskEnvironment task_env_;
+  base::test::TaskEnvironment task_env_;
   signin::IdentityTestEnvironment identity_test_env_;
   StrictMock<MockLeakDetectionDelegateInterface> delegate_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_ =

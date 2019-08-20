@@ -140,7 +140,7 @@ class SyncerProtoUtilTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestDirectorySetterUpper dir_maker_;
   std::unique_ptr<SyncCycleContext> context_;
 };

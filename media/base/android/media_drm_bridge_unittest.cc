@@ -116,7 +116,7 @@ class MediaDrmBridgeTest : public ProvisionFetcher, public testing::Test {
     return std::make_unique<ProvisionFetcherWrapper>(this);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(MediaDrmBridgeTest, IsKeySystemSupported_Widevine) {

@@ -353,7 +353,6 @@ test("android_webview_unittests") {
     "//components/prefs:test_support",
     "//content:content",
     "//content/test:test_support",
-    "//mojo/core/embedder",
     "//net:net",
     "//net:test_support",
     "//ui/base:ui_base_jni_headers",

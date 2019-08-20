@@ -50,8 +50,8 @@ struct MockDisplayObserver : public display::DisplayObserver {
 class X11ScreenOzoneTest : public testing::Test {
  public:
   X11ScreenOzoneTest()
-      : task_env_(std::make_unique<base::test::ScopedTaskEnvironment>(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI)) {}
+      : task_env_(std::make_unique<base::test::TaskEnvironment>(
+            base::test::TaskEnvironment::MainThreadType::UI)) {}
   ~X11ScreenOzoneTest() override = default;
 
   void SetUp() override {
@@ -114,7 +114,7 @@ class X11ScreenOzoneTest : public testing::Test {
   std::unique_ptr<display::Display> primary_display_;
   std::unique_ptr<X11ScreenOzone> screen_;
   std::unique_ptr<X11EventSourceDefault> event_source_;
-  std::unique_ptr<base::test::ScopedTaskEnvironment> task_env_;
+  std::unique_ptr<base::test::TaskEnvironment> task_env_;
 
   DISALLOW_COPY_AND_ASSIGN(X11ScreenOzoneTest);
 };

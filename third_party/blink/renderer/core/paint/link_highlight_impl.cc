@@ -242,14 +242,13 @@ bool LinkHighlightImpl::ComputeHighlightLayerPathAndPosition(
     FloatQuad transformed_quad =
         paint_invalidation_container.AbsoluteToLocalQuad(
             absolute_quad, kTraverseDocumentBoundaries);
-    PhysicalOffset offset_to_backing;
 
-    PaintLayer::MapPointInPaintInvalidationContainerToBacking(
-        paint_invalidation_container, offset_to_backing);
+    PaintLayer::MapQuadInPaintInvalidationContainerToBacking(
+        paint_invalidation_container, transformed_quad);
 
     // Adjust for offset from LayoutObject.
-    offset_to_backing -=
-        PhysicalOffset(current_graphics_layer_->OffsetFromLayoutObject());
+    PhysicalOffset offset_to_backing =
+        PhysicalOffset(-current_graphics_layer_->OffsetFromLayoutObject());
 
     transformed_quad.Move(FloatSize(offset_to_backing));
 

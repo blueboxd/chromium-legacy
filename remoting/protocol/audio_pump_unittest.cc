@@ -71,7 +71,7 @@ class AudioPumpTest : public testing::Test, public protocol::AudioStub {
                           base::OnceClosure done) override;
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // |source_| and |encoder_| are owned by the |pump_|.
   FakeAudioSource* source_;
@@ -89,7 +89,7 @@ class AudioPumpTest : public testing::Test, public protocol::AudioStub {
 void AudioPumpTest::SetUp() {
   source_ = new FakeAudioSource();
   encoder_ = new FakeAudioEncoder();
-  pump_.reset(new AudioPump(scoped_task_environment_.GetMainThreadTaskRunner(),
+  pump_.reset(new AudioPump(task_environment_.GetMainThreadTaskRunner(),
                             base::WrapUnique(source_),
                             base::WrapUnique(encoder_), this));
 }

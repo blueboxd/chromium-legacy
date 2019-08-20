@@ -46,7 +46,7 @@ class LoginDatabaseIOSTest : public PlatformTest {
  protected:
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<LoginDatabase> login_db_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 void LoginDatabaseIOSTest::ClearKeychain() {

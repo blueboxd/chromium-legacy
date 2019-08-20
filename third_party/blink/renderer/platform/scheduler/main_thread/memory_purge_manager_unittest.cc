@@ -23,11 +23,9 @@ constexpr base::TimeDelta kDelayForPurgeAfterFreeze =
 class MemoryPurgeManagerTest : public testing::Test {
  public:
   MemoryPurgeManagerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI,
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
-        memory_purge_manager_(
-            scoped_task_environment_.GetMainThreadTaskRunner()),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI,
+                          base::test::TaskEnvironment::TimeSource::MOCK_TIME),
+        memory_purge_manager_(task_environment_.GetMainThreadTaskRunner()),
         observed_memory_pressure_(false) {}
 
   void SetUp() override {
@@ -39,7 +37,7 @@ class MemoryPurgeManagerTest : public testing::Test {
 
   void TearDown() override {
     memory_pressure_listener_.reset();
-    scoped_task_environment_.FastForwardUntilNoTasksRemain();
+    task_environment_.FastForwardUntilNoTasksRemain();
   }
 
  protected:
@@ -65,11 +63,11 @@ class MemoryPurgeManagerTest : public testing::Test {
   }
 
   void FastForwardBy(base::TimeDelta delta) {
-    scoped_task_environment_.FastForwardBy(delta);
+    task_environment_.FastForwardBy(delta);
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
   MemoryPurgeManager memory_purge_manager_;

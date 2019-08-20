@@ -12,6 +12,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/threading/scoped_blocking_call.h"
 
 namespace device {
@@ -74,25 +75,57 @@ void SerialDeviceEnumeratorLinux::OnDeviceAdded(ScopedUdevDevicePtr device) {
   if (!subsystem || strcmp(subsystem, kSerialSubsystem) != 0)
     return;
 
+  const char* syspath_str = udev_device_get_syspath(device.get());
+  if (!syspath_str)
+    return;
+  std::string syspath(syspath_str);
+
+  // Platform serial ports.
+  if (base::StartsWith(syspath, "/sys/devices/platform/",
+                       base::CompareCase::SENSITIVE)) {
+    CreatePort(std::move(device), syspath);
+    return;
+  }
+
+  // USB serial ports and others that have a proper bus identifier.
+  const char* bus = udev_device_get_property_value(device.get(), kHostBusKey);
+  if (bus) {
+    CreatePort(std::move(device), syspath);
+    return;
+  }
+
+  // Bluetooth ports are virtual TTYs but have an identifiable major number.
+  const char* major = udev_device_get_property_value(device.get(), kMajorKey);
+  if (major && base::StringPiece(major) == kRfcommMajor) {
+    CreatePort(std::move(device), syspath);
+    return;
+  }
+}
+
+void SerialDeviceEnumeratorLinux::OnDeviceChanged(ScopedUdevDevicePtr device) {}
+
+void SerialDeviceEnumeratorLinux::OnDeviceRemoved(ScopedUdevDevicePtr device) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
+
   const char* syspath = udev_device_get_syspath(device.get());
   if (!syspath)
     return;
 
+  auto it = paths_.find(syspath);
+  if (it == paths_.end())
+    return;
+
+  ports_.erase(it->second);
+  paths_.erase(it);
+}
+
+void SerialDeviceEnumeratorLinux::CreatePort(ScopedUdevDevicePtr device,
+                                             const std::string& syspath) {
   const char* path = udev_device_get_property_value(device.get(), kHostPathKey);
   if (!path)
     return;
-
-  // TODO(rockot): There may be a better way to filter serial devices here,
-  // but it's not clear what that would be. Udev will list lots of virtual
-  // devices with no real endpoint to back them anywhere. The presence of
-  // a bus identifier (e.g., "pci" or "usb") seems to be a good heuristic
-  // for detecting actual devices.
-  const char* bus = udev_device_get_property_value(device.get(), kHostBusKey);
-  if (!bus) {
-    const char* major = udev_device_get_property_value(device.get(), kMajorKey);
-    if (!major || strcmp(major, kRfcommMajor) != 0)
-      return;
-  }
 
   auto token = base::UnguessableToken::Create();
   auto info = mojom::SerialPortInfo::New();
@@ -120,25 +153,6 @@ void SerialDeviceEnumeratorLinux::OnDeviceAdded(ScopedUdevDevicePtr device) {
 
   ports_.insert(std::make_pair(token, std::move(info)));
   paths_.insert(std::make_pair(syspath, token));
-}
-
-void SerialDeviceEnumeratorLinux::OnDeviceChanged(ScopedUdevDevicePtr device) {}
-
-void SerialDeviceEnumeratorLinux::OnDeviceRemoved(ScopedUdevDevicePtr device) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
-                                                base::BlockingType::MAY_BLOCK);
-
-  const char* syspath = udev_device_get_syspath(device.get());
-  if (!syspath)
-    return;
-
-  auto it = paths_.find(syspath);
-  if (it == paths_.end())
-    return;
-
-  ports_.erase(it->second);
-  paths_.erase(it);
 }
 
 }  // namespace device

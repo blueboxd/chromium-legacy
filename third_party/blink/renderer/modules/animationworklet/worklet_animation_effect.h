@@ -18,13 +18,6 @@ class MODULES_EXPORT WorkletAnimationEffect : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  // Represents the animation direction from the Web Animations spec, see
-  // https://drafts.csswg.org/web-animations-1/#animation-direction.
-  enum AnimationDirection {
-    kForwards,
-    kBackwards,
-  };
-
   WorkletAnimationEffect(base::Optional<base::TimeDelta> local_time,
                          const Timing& timing);
 
@@ -49,7 +42,6 @@ class MODULES_EXPORT WorkletAnimationEffect : public ScriptWrappable {
   // above function call getTiming() which returns a pointer to an EffectTiming
   // object, as is defined in worklet_animation_effect.idl.
   const Timing specified_timing_;
-
   mutable Timing::CalculatedTiming calculated_;
   mutable double last_update_time_;
 };

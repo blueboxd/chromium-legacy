@@ -91,7 +91,7 @@ class CrxDownloaderTest : public testing::Test {
   static const int kExpectedContext = 0xaabb;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<network::SharedURLLoaderFactory>
       test_shared_url_loader_factory_;
   base::OnceClosure quit_closure_;
@@ -109,8 +109,7 @@ CrxDownloaderTest::CrxDownloaderTest()
       crx_context_(0),
       num_download_complete_calls_(0),
       num_progress_calls_(0),
-      scoped_task_environment_(
-          base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
       test_shared_url_loader_factory_(
           base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
               &test_url_loader_factory_)) {}
@@ -186,7 +185,7 @@ void CrxDownloaderTest::RunThreads() {
 }
 
 void CrxDownloaderTest::RunThreadsUntilIdle() {
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   base::RunLoop().RunUntilIdle();
 }
 

@@ -97,7 +97,7 @@ IN_PROC_BROWSER_TEST_F(NamedMessagePortConnectorTest, EndToEnd) {
   fuchsia::web::MessagePortPtr message_port = message_port_receiver->Bind();
 
   fuchsia::web::WebMessage msg;
-  msg.set_data(cr_fuchsia::MemBufferFromString("ping"));
+  msg.set_data(cr_fuchsia::MemBufferFromString("ping", "test"));
   cr_fuchsia::ResultReceiver<fuchsia::web::MessagePort_PostMessage_Result>
       post_result;
   message_port->PostMessage(
@@ -175,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(NamedMessagePortConnectorTest, MultiplePorts) {
 
   for (fuchsia::web::MessagePortPtr* port : {&port_1, &port_2}) {
     fuchsia::web::WebMessage msg;
-    msg.set_data(cr_fuchsia::MemBufferFromString("ping"));
+    msg.set_data(cr_fuchsia::MemBufferFromString("ping", "test"));
     cr_fuchsia::ResultReceiver<fuchsia::web::MessagePort_PostMessage_Result>
         post_result;
     (*port)->PostMessage(std::move(msg), cr_fuchsia::CallbackToFitFunction(

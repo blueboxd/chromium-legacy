@@ -366,7 +366,7 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
 
   TestInputMethodManager* input_method_manager_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodChromeOSTest);
 };

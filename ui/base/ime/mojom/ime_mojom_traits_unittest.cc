@@ -35,9 +35,8 @@ class IMEStructTraitsTest : public testing::Test,
     std::move(callback).Run(in);
   }
 
-  base::test::ScopedTaskEnvironment
-      scoped_task_environment_;  // A MessageLoop is needed for Mojo IPC to
-                                 // work.
+  base::test::TaskEnvironment task_environment_;  // A MessageLoop is needed for
+                                                  // Mojo IPC to work.
   mojo::BindingSet<mojom::IMEStructTraitsTest> traits_test_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(IMEStructTraitsTest);

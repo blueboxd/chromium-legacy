@@ -157,7 +157,7 @@ class VideoDecodeStatsDBImplTest : public ::testing::Test {
   MOCK_METHOD0(MockClearStatsCb, void());
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   const VideoDescKey kStatsKeyVp9;
   const VideoDescKey kStatsKeyAvc;

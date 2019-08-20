@@ -17,7 +17,7 @@ class AwContentBrowserClientTest : public testing::Test {
     mojo::core::Init();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(AwContentBrowserClientTest, DisableCreatingThreadPool) {

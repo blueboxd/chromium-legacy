@@ -304,7 +304,7 @@ class VideoRendererImplTest : public testing::Test {
   MOCK_METHOD0(OnSimulateDecodeDelay, base::TimeDelta(void));
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   NullMediaLog media_log_;
 
   // Fixture members.

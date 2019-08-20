@@ -28,7 +28,7 @@ const int kMessageLoopWaitMsecs = 150;
 class CertificateWatcherTest : public testing::Test {
  public:
   CertificateWatcherTest()
-      : task_runner_(scoped_task_environment_.GetMainThreadTaskRunner()) {
+      : task_runner_(task_environment_.GetMainThreadTaskRunner()) {
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
     watcher_.reset(new CertificateWatcher(
         base::Bind(&CertificateWatcherTest::OnRestart, base::Unretained(this)),
@@ -93,8 +93,8 @@ class CertificateWatcherTest : public testing::Test {
     }
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::IO};
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<CertificateWatcher> watcher_;

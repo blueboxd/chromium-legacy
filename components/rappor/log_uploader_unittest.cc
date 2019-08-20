@@ -65,12 +65,11 @@ class TestLogUploader : public LogUploader {
 class LogUploaderTest : public testing::Test {
  public:
   LogUploaderTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
 
  protected:
   // Required for base::ThreadTaskRunnerHandle::Get().
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
 
  private:

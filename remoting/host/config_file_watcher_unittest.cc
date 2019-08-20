@@ -52,8 +52,8 @@ class ConfigFileWatcherTest : public testing::Test {
   void StopWatcher();
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::UI};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::UI};
   base::RunLoop run_loop_;
 
   ConfigFileWatcherDelegate delegate_;
@@ -78,8 +78,7 @@ void ConfigFileWatcherTest::SetUp() {
 
   // Arrange to run |message_loop_| until no components depend on it.
   scoped_refptr<AutoThreadTaskRunner> task_runner = new AutoThreadTaskRunner(
-      scoped_task_environment_.GetMainThreadTaskRunner(),
-      run_loop_.QuitClosure());
+      task_environment_.GetMainThreadTaskRunner(), run_loop_.QuitClosure());
 
   scoped_refptr<AutoThreadTaskRunner> io_task_runner =
       AutoThread::CreateWithType("IPC thread", task_runner,

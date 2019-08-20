@@ -46,18 +46,6 @@ PlaybackParams MakeParams(const SkCanvas* canvas) {
   return PlaybackParams(nullptr, canvas->getTotalMatrix());
 }
 
-SkTextBlobCacheDiffCanvas::Settings MakeCanvasSettings(
-    bool context_supports_distance_field_text,
-    int max_texture_size,
-    size_t max_texture_bytes) {
-  SkTextBlobCacheDiffCanvas::Settings settings;
-  settings.fContextSupportsDistanceFieldText =
-      context_supports_distance_field_text;
-  settings.fMaxTextureSize = max_texture_size;
-  settings.fMaxTextureBytes = max_texture_bytes;
-  return settings;
-}
-
 // Use half of the max int as the extent for the SkNoDrawCanvas. The correct
 // clip is applied to the canvas during serialization.
 const int kMaxExtent = std::numeric_limits<int>::max() >> 1;
@@ -91,9 +79,7 @@ PaintOpBufferSerializer::PaintOpBufferSerializer(
                         ComputeSurfaceProps(can_use_lcd_text),
                         strike_server,
                         std::move(color_space),
-                        MakeCanvasSettings(context_supports_distance_field_text,
-                                           max_texture_size,
-                                           max_texture_bytes)) {
+                        context_supports_distance_field_text) {
   DCHECK(serialize_cb_);
 }
 

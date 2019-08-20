@@ -47,7 +47,7 @@ void BoundIntegersSet(int* a_var, int* b_var, int a_val, int b_val) {
 // on the message loop, not during the original Run.
 class BindToTaskRunnerTest : public ::testing::Test {
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(BindToTaskRunnerTest, Closure) {

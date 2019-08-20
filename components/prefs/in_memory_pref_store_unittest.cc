@@ -22,7 +22,7 @@ class InMemoryPrefStoreTest : public testing::Test {
 
   void SetUp() override { store_ = new InMemoryPrefStore(); }
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<InMemoryPrefStore> store_;
   PrefStoreObserverMock observer_;
 };
@@ -107,7 +107,7 @@ TEST_F(InMemoryPrefStoreTest, ReadPrefs) {
 }
 
 TEST_F(InMemoryPrefStoreTest, CommitPendingWriteWithCallback) {
-  TestCommitPendingWriteWithCallback(store_.get(), &scoped_task_environment_);
+  TestCommitPendingWriteWithCallback(store_.get(), &task_environment_);
 }
 
 }  // namespace

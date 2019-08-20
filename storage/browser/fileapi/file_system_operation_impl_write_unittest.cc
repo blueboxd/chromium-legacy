@@ -52,8 +52,7 @@ void AssertStatusEq(base::File::Error expected, base::File::Error actual) {
 class FileSystemOperationImplWriteTest : public testing::Test {
  public:
   FileSystemOperationImplWriteTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         status_(base::File::FILE_OK),
         cancel_status_(base::File::FILE_ERROR_FAILED),
         bytes_written_(0),
@@ -146,7 +145,7 @@ class FileSystemOperationImplWriteTest : public testing::Test {
     return blob_storage_context_.get();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   scoped_refptr<storage::FileSystemContext> file_system_context_;
   scoped_refptr<MockQuotaManager> quota_manager_;

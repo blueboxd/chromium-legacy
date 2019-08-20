@@ -53,8 +53,8 @@ class AudioServiceLifetimeConnectorTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
   StrictMock<base::MockCallback<base::RepeatingClosure>> quit_request_;
   std::unique_ptr<media::MockAudioManager> audio_manager_;
@@ -84,7 +84,7 @@ TEST_F(AudioServiceLifetimeConnectorTest,
       connector_factory.RegisterInstance(mojom::kServiceName));
   service_->set_termination_closure(quit_request_.Get());
   connector_ = connector_factory.CreateConnector();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   mojom::SystemInfoPtr info;
   connector_->BindInterface(mojom::kServiceName, &info);
@@ -101,13 +101,13 @@ TEST_F(AudioServiceLifetimeConnectorTest,
     // Make sure the service does not disconnect before a timeout.
     EXPECT_CALL(quit_request_, Run()).Times(Exactly(0));
     info.reset();
-    scoped_task_environment_.FastForwardBy(default_timeout / 2);
+    task_environment_.FastForwardBy(default_timeout / 2);
   }
 
   // Now wait for what is left from of the timeout: the service should
   // disconnect.
   EXPECT_CALL(quit_request_, Run()).Times(Exactly(1));
-  scoped_task_environment_.FastForwardBy(default_timeout / 2);
+  task_environment_.FastForwardBy(default_timeout / 2);
 
   service_.reset();
 }
@@ -125,7 +125,7 @@ TEST_F(AudioServiceLifetimeConnectorTest,
       connector_factory.RegisterInstance(mojom::kServiceName));
   service_->set_termination_closure(quit_request_.Get());
   connector_ = connector_factory.CreateConnector();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   mojom::SystemInfoPtr info;
   connector_->BindInterface(mojom::kServiceName, &info);
@@ -139,7 +139,7 @@ TEST_F(AudioServiceLifetimeConnectorTest,
 
   info.reset();
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   service_.reset();
 }
@@ -154,7 +154,7 @@ TEST_F(AudioServiceLifetimeConnectorTest,
       connector_factory.RegisterInstance(mojom::kServiceName));
   service_->set_termination_closure(quit_request_.Get());
   connector_ = connector_factory.CreateConnector();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   mojom::SystemInfoPtr info;
   connector_->BindInterface(mojom::kServiceName, &info);
@@ -168,7 +168,7 @@ TEST_F(AudioServiceLifetimeConnectorTest,
 
   info.reset();
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   service_.reset();
 }
@@ -180,7 +180,7 @@ TEST_F(AudioServiceLifetimeConnectorTest, ServiceNotQuitWhenClientConnected) {
   connector_->BindInterface(mojom::kServiceName, &info);
   EXPECT_TRUE(info.is_bound());
 
-  scoped_task_environment_.FastForwardBy(kQuitTimeout * 2);
+  task_environment_.FastForwardBy(kQuitTimeout * 2);
   EXPECT_TRUE(info.is_bound());
 }
 
@@ -193,12 +193,12 @@ TEST_F(AudioServiceLifetimeConnectorTest,
     // Make sure the service does not disconnect before a timeout.
     EXPECT_CALL(quit_request_, Run()).Times(Exactly(0));
     info.reset();
-    scoped_task_environment_.FastForwardBy(kQuitTimeout / 2);
+    task_environment_.FastForwardBy(kQuitTimeout / 2);
   }
   // Now wait for what is left from of the timeout: the service should
   // disconnect.
   EXPECT_CALL(quit_request_, Run()).Times(Exactly(1));
-  scoped_task_environment_.FastForwardBy(kQuitTimeout / 2);
+  task_environment_.FastForwardBy(kQuitTimeout / 2);
 }
 
 TEST_F(AudioServiceLifetimeConnectorTest,
@@ -215,7 +215,7 @@ TEST_F(AudioServiceLifetimeConnectorTest,
   connector_->BindInterface(mojom::kServiceName, &info2);
   EXPECT_TRUE(info2.is_bound());
 
-  scoped_task_environment_.FastForwardBy(kQuitTimeout);
+  task_environment_.FastForwardBy(kQuitTimeout);
   EXPECT_TRUE(info2.is_bound());
 }
 
@@ -231,21 +231,21 @@ TEST_F(AudioServiceLifetimeConnectorTest,
     connector_->BindInterface(mojom::kServiceName, &info2);
     EXPECT_TRUE(info2.is_bound());
 
-    scoped_task_environment_.FastForwardBy(kQuitTimeout);
+    task_environment_.FastForwardBy(kQuitTimeout);
     EXPECT_TRUE(info1.is_bound());
     EXPECT_TRUE(info2.is_bound());
 
     info1.reset();
     EXPECT_TRUE(info2.is_bound());
 
-    scoped_task_environment_.FastForwardBy(kQuitTimeout);
+    task_environment_.FastForwardBy(kQuitTimeout);
     EXPECT_FALSE(info1.is_bound());
     EXPECT_TRUE(info2.is_bound());
   }
   // Now disconnect the last client and wait for service quit request.
   EXPECT_CALL(quit_request_, Run()).Times(Exactly(1));
   info2.reset();
-  scoped_task_environment_.FastForwardBy(kQuitTimeout);
+  task_environment_.FastForwardBy(kQuitTimeout);
 }
 
 TEST_F(AudioServiceLifetimeConnectorTest,
@@ -258,15 +258,15 @@ TEST_F(AudioServiceLifetimeConnectorTest,
     connector_->BindInterface(mojom::kServiceName, &info1);
     EXPECT_TRUE(info1.is_bound());
     info1.reset();
-    scoped_task_environment_.FastForwardBy(kQuitTimeout * 0.75);
+    task_environment_.FastForwardBy(kQuitTimeout * 0.75);
 
     connector_->BindInterface(mojom::kServiceName, &info2);
     EXPECT_TRUE(info2.is_bound());
     info2.reset();
-    scoped_task_environment_.FastForwardBy(kQuitTimeout * 0.75);
+    task_environment_.FastForwardBy(kQuitTimeout * 0.75);
   }
   EXPECT_CALL(quit_request_, Run()).Times(Exactly(1));
-  scoped_task_environment_.FastForwardBy(kQuitTimeout * 0.25);
+  task_environment_.FastForwardBy(kQuitTimeout * 0.25);
 }
 
 }  // namespace audio

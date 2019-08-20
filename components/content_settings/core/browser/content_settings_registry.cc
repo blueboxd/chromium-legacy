@@ -14,6 +14,7 @@
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "net/cookies/cookie_util.h"
 
 #if defined(OS_ANDROID)
 #include "media/base/android/media_drm_bridge.h"
@@ -349,13 +350,16 @@ void ContentSettingsRegistry::Init() {
            ContentSettingsInfo::PERSISTENT,
            ContentSettingsInfo::EXCEPTIONS_ON_SECURE_AND_INSECURE_ORIGINS);
 
+  ContentSetting legacy_cookie_access_initial_default =
+      net::cookie_util::IsSameSiteByDefaultCookiesEnabled()
+          ? CONTENT_SETTING_BLOCK
+          : CONTENT_SETTING_ALLOW;
   Register(CONTENT_SETTINGS_TYPE_LEGACY_COOKIE_ACCESS, "legacy-cookie-access",
-           CONTENT_SETTING_BLOCK, WebsiteSettingsInfo::UNSYNCABLE,
-           WhitelistedSchemes(),
+           legacy_cookie_access_initial_default,
+           WebsiteSettingsInfo::UNSYNCABLE, WhitelistedSchemes(),
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK),
            WebsiteSettingsInfo::SINGLE_ORIGIN_ONLY_SCOPE,
-           WebsiteSettingsRegistry::DESKTOP |
-               WebsiteSettingsRegistry::PLATFORM_ANDROID,
+           WebsiteSettingsRegistry::ALL_PLATFORMS,
            ContentSettingsInfo::INHERIT_IN_INCOGNITO,
            ContentSettingsInfo::PERSISTENT,
            ContentSettingsInfo::EXCEPTIONS_ON_SECURE_AND_INSECURE_ORIGINS);

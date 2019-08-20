@@ -198,7 +198,7 @@ class AudioServiceInputStreamTest : public testing::Test {
   MOCK_METHOD1(BadMessageCallback, void(const std::string&));
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_env_;
+  base::test::TaskEnvironment scoped_task_env_;
   media::MockAudioManager audio_manager_;
   StreamFactory stream_factory_;
   mojo::Remote<mojom::StreamFactory> remote_stream_factory_;

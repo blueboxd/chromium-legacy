@@ -27,6 +27,10 @@ FakePowerManagerClient* g_instance = nullptr;
 // Minimum power for a USB power source to be classified as AC.
 constexpr double kUsbMinAcWatts = 24;
 
+// The time power manager will wait before resuspending from a dark resume.
+constexpr base::TimeDelta kDarkSuspendDelayTimeout =
+    base::TimeDelta::FromSeconds(20);
+
 // Callback fired when timer started through |StartArcTimer| expires. In
 // non-test environments this does a potentially blocking call on the UI
 // thread. However, the clients that exercise this code path don't run in
@@ -97,6 +101,7 @@ FakePowerManagerClient::~FakePowerManagerClient() {
 void FakePowerManagerClient::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
   observer->PowerManagerBecameAvailable(true);
+  observer->PowerManagerInitialized();
 }
 
 void FakePowerManagerClient::RemoveObserver(Observer* observer) {
@@ -359,6 +364,10 @@ void FakePowerManagerClient::DeleteArcTimers(const std::string& tag,
   DeleteArcTimersInternal(tag);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), true));
+}
+
+base::TimeDelta FakePowerManagerClient::GetDarkSuspendDelayTimeout() {
+  return kDarkSuspendDelayTimeout;
 }
 
 bool FakePowerManagerClient::PopVideoActivityReport() {

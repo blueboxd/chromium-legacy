@@ -12,7 +12,7 @@
 
 void TestCommitPendingWriteWithCallback(
     PersistentPrefStore* store,
-    base::test::ScopedTaskEnvironment* scoped_task_environment) {
+    base::test::TaskEnvironment* task_environment) {
   base::RunLoop run_loop;
   base::SequenceCheckerImpl sequence_checker;
   store->CommitPendingWrite(base::BindOnce(
@@ -21,6 +21,6 @@ void TestCommitPendingWriteWithCallback(
         run_loop->Quit();
       },
       base::Unretained(&sequence_checker), base::Unretained(&run_loop)));
-  scoped_task_environment->RunUntilIdle();
+  task_environment->RunUntilIdle();
   run_loop.Run();
 }

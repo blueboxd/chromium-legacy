@@ -20,6 +20,8 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.test.mock.MockPackageManager;
 
+import androidx.browser.customtabs.CustomTabsIntent;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -31,9 +33,9 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.DisableIf;
-import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
@@ -41,6 +43,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.webapps.WebappInfo;
 import org.chromium.chrome.browser.webapps.WebappScopePolicy;
+import org.chromium.chrome.test.util.browser.WebappTestHelper;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.webapk.lib.common.WebApkConstants;
@@ -50,8 +53,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Pattern;
-
-import androidx.browser.customtabs.CustomTabsIntent;
 
 /**
  * Instrumentation tests for {@link ExternalNavigationHandler}.
@@ -1566,8 +1567,9 @@ public class ExternalNavigationHandlerTest {
     }
 
     private static WebappInfo newWebappInfoFromScope(String scope) {
-        return WebappInfo.create("", "", scope, null, null, null, WebDisplayMode.STANDALONE, 0, 0,
-                0, 0, false, false, false);
+        Intent webappIntent = WebappTestHelper.createMinimalWebappIntent("" /* id */, "" /* url */);
+        webappIntent.putExtra(ShortcutHelper.EXTRA_SCOPE, scope);
+        return WebappInfo.create(webappIntent);
     }
 
     private static class IntentActivity {

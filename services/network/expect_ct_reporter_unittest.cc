@@ -291,8 +291,7 @@ class TestExpectCTNetworkDelegate : public net::NetworkDelegateImpl {
 class ExpectCTReporterWaitTest : public ::testing::Test {
  public:
   ExpectCTReporterWaitTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
 
   void SetUp() override {
     // Initializes URLRequestContext after the thread is set up.
@@ -326,7 +325,7 @@ class ExpectCTReporterWaitTest : public ::testing::Test {
  private:
   TestExpectCTNetworkDelegate network_delegate_;
   std::unique_ptr<net::TestURLRequestContext> context_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(ExpectCTReporterWaitTest);
 };
@@ -381,8 +380,7 @@ class ExpectCTReporterTest : public ::testing::Test {
       {"Access-Control-Allow-Headers", "content-type,another-header"}};
 
   ExpectCTReporterTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
   ~ExpectCTReporterTest() override {}
 
  protected:
@@ -443,7 +441,7 @@ class ExpectCTReporterTest : public ::testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   net::EmbeddedTestServer report_server_;
 };
 

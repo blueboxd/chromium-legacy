@@ -71,7 +71,7 @@ class HSTSQueryTest : public testing::Test {
 
  private:
   // Used by request_context_.
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   network::mojom::NetworkContextPtr network_context_pipe_;
   std::unique_ptr<network::NetworkContext> network_context_;

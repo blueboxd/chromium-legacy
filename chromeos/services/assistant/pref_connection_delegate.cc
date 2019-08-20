@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chromeos/services/assistant/pref_connection_delegate.h"
+#include "base/token.h"
 #include "services/preferences/public/cpp/pref_service_factory.h"
 
 #include <utility>
@@ -16,7 +17,7 @@ void PrefConnectionDelegate::ConnectToPrefService(
     prefs::ConnectCallback callback) {
   prefs::mojom::PrefStoreConnectorPtr ptr(std::move(connector));
   ::prefs::ConnectToPrefService(std::move(ptr), std::move(pref_registry),
-                                callback);
+                                base::Token::CreateRandom(), callback);
 }
 
 }  // namespace assistant

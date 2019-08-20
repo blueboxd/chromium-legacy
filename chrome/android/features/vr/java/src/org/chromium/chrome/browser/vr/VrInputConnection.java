@@ -12,7 +12,6 @@ import android.view.inputmethod.InputConnection;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.vr.keyboard.TextEditAction;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.WebContents;
@@ -66,8 +65,7 @@ public class VrInputConnection {
                 mImeThreadResponseHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        VrInputConnectionJni.get().updateTextState(
-                                mNativeVrInputConnection, VrInputConnection.this, textState);
+                        nativeUpdateTextState(mNativeVrInputConnection, textState);
                     }
                 });
             }
@@ -129,8 +127,5 @@ public class VrInputConnection {
         });
     }
 
-    @NativeMethods
-    interface Natives {
-        void updateTextState(long nativeVrInputConnection, VrInputConnection caller, String text);
-    }
+    private native void nativeUpdateTextState(long nativeVrInputConnection, String text);
 }

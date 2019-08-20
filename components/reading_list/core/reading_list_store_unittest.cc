@@ -143,7 +143,7 @@ class ReadingListStoreTest : public testing::Test,
   }
 
   // In memory model type store needs to be able to post tasks.
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   testing::NiceMock<syncer::MockModelTypeChangeProcessor> processor_;
   std::unique_ptr<syncer::ModelTypeStore> store_;

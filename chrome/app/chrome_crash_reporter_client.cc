@@ -46,6 +46,23 @@ void ChromeCrashReporterClient::Create() {
   crash_reporter::SetCrashReporterClient(crash_client.get());
 }
 
+#if defined(OS_CHROMEOS)
+// static
+bool ChromeCrashReporterClient::ShouldPassCrashLoopBefore(
+    const std::string& process_type) {
+  if (process_type == ::switches::kRendererProcess ||
+      process_type == ::switches::kUtilityProcess ||
+      process_type == ::switches::kPpapiPluginProcess ||
+      process_type == service_manager::switches::kZygoteProcess) {
+    // These process types never cause a log-out, even if they crash. So the
+    // normal crash handling process should work fine; we shouldn't need to
+    // invoke the special crash-loop mode.
+    return false;
+  }
+  return true;
+}
+#endif
+
 ChromeCrashReporterClient::ChromeCrashReporterClient() {}
 
 ChromeCrashReporterClient::~ChromeCrashReporterClient() {}

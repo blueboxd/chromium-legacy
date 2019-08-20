@@ -17,10 +17,14 @@ namespace content {
 
 class WebContents;
 
-// A global map of UnguessableToken to FrameTreeNode id. This registry lives
-// and is used only on the IO thread, as it's convenient for the current user
-// of the class (ServiceWorkerProviderHost, which should move to the UI thread
-// eventually).  This is currently used to map a network request to a frame so
+// A global map of UnguessableToken to FrameTreeNode id. This registry lives and
+// is used only on the thread identified by
+// ServiceWorkerContextWrapper::GetCoreThreadId(), as that's the thread the
+// class that adds/removes from this registry is on (ServiceWorkerProviderHost).
+// TODO(crbug.com/824858): Make this live on the UI thread once the service
+// worker core thread moves to the UI thread.
+//
+// This is currently used to map a network request to a frame so
 // that the network service can tell the browser to display tab-level UI
 // required for the request in certain cases, including client certificates and
 // basic HTTP authentication.

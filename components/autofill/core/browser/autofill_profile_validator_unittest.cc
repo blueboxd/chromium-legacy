@@ -105,7 +105,7 @@ class AutofillProfileValidatorTest : public testing::Test {
       expected_validity_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_scheduler;
+  base::test::TaskEnvironment scoped_task_scheduler;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillProfileValidatorTest);
 };

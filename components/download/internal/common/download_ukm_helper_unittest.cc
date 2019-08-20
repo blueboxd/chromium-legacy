@@ -45,7 +45,7 @@ class DownloadUkmHelperTest : public testing::Test {
  protected:
   int download_id_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadUkmHelperTest);

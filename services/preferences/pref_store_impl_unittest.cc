@@ -102,7 +102,7 @@ class PrefStoreImplTest : public testing::Test {
   PrefStore* pref_store() { return pref_store_.get(); }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<PrefStoreImpl> impl_;
 

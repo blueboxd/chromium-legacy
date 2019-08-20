@@ -59,7 +59,8 @@ bool PrintMockRenderThread::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PrintHostMsg_UpdatePrintSettings, OnUpdatePrintSettings)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidGetPrintedPagesCount,
                         OnDidGetPrintedPagesCount)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_DidPrintDocument, OnDidPrintDocument)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(PrintHostMsg_DidPrintDocument,
+                                    OnDidPrintDocument)
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidStartPreview, OnDidStartPreview)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidPreviewPage, OnDidPreviewPage)
@@ -93,8 +94,11 @@ void PrintMockRenderThread::OnDidGetPrintedPagesCount(int cookie,
 }
 
 void PrintMockRenderThread::OnDidPrintDocument(
-    const PrintHostMsg_DidPrintDocument_Params& params) {
+    const PrintHostMsg_DidPrintDocument_Params& params,
+    IPC::Message* reply_msg) {
   printer_->PrintPage(params);
+  PrintHostMsg_DidPrintDocument::WriteReplyParams(reply_msg, true);
+  Send(reply_msg);
 }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)

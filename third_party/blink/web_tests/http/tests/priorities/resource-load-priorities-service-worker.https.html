@@ -11,6 +11,12 @@ function openWindow(url, t) {
   t.add_cleanup(() => win.close());
 }
 
+window.onmessage = function(message) {
+    if (message.data.hasOwnProperty('Status')) {
+      window.onRequestStatusChanged(message.data['Status']);
+    }
+}
+
 // This test creates a window controlled by the server worker, which makes a
 // request for some subresource. The service worker intercepts the request and
 // issues a fetch() for it. The service worker retrieves the priority of the
@@ -24,8 +30,8 @@ function resource_load_priority_service_worker_test(url, expected_priority,
     });
 
     const subresourceFinishedLoading = new Promise(resolve => {
-      window.onmessage = e => {
-        assert_equals(e.data, 'LOADED',
+      window.onRequestStatusChanged = e => {
+        assert_equals(e, 'LOADED',
         `Resources requested in the test window ${url} loaded successfully`);
         resolve();
       }

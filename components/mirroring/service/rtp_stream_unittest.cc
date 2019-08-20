@@ -61,16 +61,16 @@ class RtpStreamTest : public ::testing::Test {
   RtpStreamTest()
       : cast_environment_(new media::cast::CastEnvironment(
             &testing_clock_,
-            scoped_task_environment_.GetMainThreadTaskRunner(),
-            scoped_task_environment_.GetMainThreadTaskRunner(),
-            scoped_task_environment_.GetMainThreadTaskRunner())) {
+            task_environment_.GetMainThreadTaskRunner(),
+            task_environment_.GetMainThreadTaskRunner(),
+            task_environment_.GetMainThreadTaskRunner())) {
     testing_clock_.Advance(base::TimeTicks::Now() - base::TimeTicks());
   }
 
-  ~RtpStreamTest() override { scoped_task_environment_.RunUntilIdle(); }
+  ~RtpStreamTest() override { task_environment_.RunUntilIdle(); }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::SimpleTestTickClock testing_clock_;
   const scoped_refptr<media::cast::CastEnvironment> cast_environment_;
   DummyClient client_;
@@ -105,7 +105,7 @@ TEST_F(RtpStreamTest, VideoStreaming) {
     run_loop.Run();
   }
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 // Test the audio streaming pipeline.
@@ -131,7 +131,7 @@ TEST_F(RtpStreamTest, AudioStreaming) {
     run_loop.Run();
   }
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 }  // namespace mirroring

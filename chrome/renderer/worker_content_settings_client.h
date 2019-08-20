@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace IPC {
 class SyncMessageFilter;
@@ -49,8 +50,9 @@ class WorkerContentSettingsClient : public blink::WebContentSettingsClient {
   // Loading document context for this worker.
   const int routing_id_;
   bool is_unique_origin_;
-  GURL document_origin_url_;
-  GURL top_frame_origin_url_;
+  url::Origin document_origin_;
+  GURL site_for_cookies_;
+  url::Origin top_frame_origin_;
   bool allow_running_insecure_content_;
   scoped_refptr<IPC::SyncMessageFilter> sync_message_filter_;
   const RendererContentSettingRules* content_setting_rules_;

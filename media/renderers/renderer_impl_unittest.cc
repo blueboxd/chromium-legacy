@@ -82,7 +82,7 @@ class RendererImplTest : public ::testing::Test {
         video_renderer_(new StrictMock<MockVideoRenderer>()),
         audio_renderer_(new StrictMock<MockAudioRenderer>()),
         renderer_impl_(
-            new RendererImpl(scoped_task_environment_.GetMainThreadTaskRunner(),
+            new RendererImpl(task_environment_.GetMainThreadTaskRunner(),
                              std::unique_ptr<AudioRenderer>(audio_renderer_),
                              std::unique_ptr<VideoRenderer>(video_renderer_))),
         cdm_context_(new StrictMock<MockCdmContext>()),
@@ -346,7 +346,7 @@ class RendererImplTest : public ::testing::Test {
   }
 
   // Fixture members.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   StrictMock<CallbackHelper> callbacks_;
   base::SimpleTestTickClock test_tick_clock_;
 

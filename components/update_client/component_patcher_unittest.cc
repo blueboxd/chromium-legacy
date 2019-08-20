@@ -64,8 +64,7 @@ base::FilePath test_file(const char* file) {
 namespace update_client {
 
 ComponentPatcherOperationTest::ComponentPatcherOperationTest()
-    : scoped_task_environment_(
-          base::test::ScopedTaskEnvironment::MainThreadType::IO) {
+    : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {
   EXPECT_TRUE(unpack_dir_.CreateUniqueTempDir());
   EXPECT_TRUE(input_dir_.CreateUniqueTempDir());
   EXPECT_TRUE(installed_dir_.CreateUniqueTempDir());
@@ -94,7 +93,7 @@ TEST_F(ComponentPatcherOperationTest, CheckCreateOperation) {
   op->Run(command_args.get(), input_dir_.GetPath(), unpack_dir_.GetPath(),
           nullptr,
           base::BindOnce(&TestCallback::Set, base::Unretained(&callback)));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_EQ(true, callback.called_);
   EXPECT_EQ(UnpackerError::kNone, callback.error_);
@@ -122,7 +121,7 @@ TEST_F(ComponentPatcherOperationTest, CheckCopyOperation) {
   op->Run(command_args.get(), input_dir_.GetPath(), unpack_dir_.GetPath(),
           installer_.get(),
           base::BindOnce(&TestCallback::Set, base::Unretained(&callback)));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_EQ(true, callback.called_);
   EXPECT_EQ(UnpackerError::kNone, callback.error_);
@@ -159,7 +158,7 @@ TEST_F(ComponentPatcherOperationTest, CheckCourgetteOperation) {
   op->Run(command_args.get(), input_dir_.GetPath(), unpack_dir_.GetPath(),
           installer_.get(),
           base::BindOnce(&TestCallback::Set, base::Unretained(&callback)));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_EQ(true, callback.called_);
   EXPECT_EQ(UnpackerError::kNone, callback.error_);
@@ -197,7 +196,7 @@ TEST_F(ComponentPatcherOperationTest, CheckBsdiffOperation) {
   op->Run(command_args.get(), input_dir_.GetPath(), unpack_dir_.GetPath(),
           installer_.get(),
           base::BindOnce(&TestCallback::Set, base::Unretained(&callback)));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_EQ(true, callback.called_);
   EXPECT_EQ(UnpackerError::kNone, callback.error_);

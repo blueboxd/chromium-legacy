@@ -49,8 +49,8 @@ class ModelTypeController : public DataTypeController {
   void BeforeLoadModels(ModelTypeConfigurer* configurer) override;
   void LoadModels(const ConfigureContext& configure_context,
                   const ModelLoadCallback& model_load_callback) override;
-  void RegisterWithBackend(base::OnceCallback<void(bool)> set_downloaded,
-                           ModelTypeConfigurer* configurer) override;
+  RegisterWithBackendResult RegisterWithBackend(
+      ModelTypeConfigurer* configurer) override;
   void StartAssociating(StartCallback start_callback) override;
   void ActivateDataType(ModelTypeConfigurer* configurer) override;
   void DeactivateDataType(ModelTypeConfigurer* configurer) override;

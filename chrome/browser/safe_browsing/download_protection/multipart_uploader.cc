@@ -126,9 +126,6 @@ void MultipartUploadRequest::RetryOrFinish(
 }
 
 // static
-MultipartUploadRequestFactory* MultipartUploadRequest::factory_ = nullptr;
-
-// static
 std::unique_ptr<MultipartUploadRequest> MultipartUploadRequest::Create(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const GURL& base_url,
@@ -136,14 +133,9 @@ std::unique_ptr<MultipartUploadRequest> MultipartUploadRequest::Create(
     const std::string& data,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     MultipartUploadRequest::Callback callback) {
-  if (!factory_) {
-    return std::make_unique<MultipartUploadRequest>(
-        url_loader_factory, base_url, metadata, data, traffic_annotation,
-        std::move(callback));
-  }
-
-  return factory_->Create(url_loader_factory, base_url, metadata, data,
-                          traffic_annotation, std::move(callback));
+  return std::make_unique<MultipartUploadRequest>(
+      url_loader_factory, base_url, metadata, data, traffic_annotation,
+      std::move(callback));
 }
 
 }  // namespace safe_browsing

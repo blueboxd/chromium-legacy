@@ -371,6 +371,7 @@
 #elif defined(OS_CHROMEOS)
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/mojom/constants.mojom.h"
+#include "chrome/app/chrome_crash_reporter_client.h"
 #include "chrome/browser/ash_service_registry.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_backend_delegate.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_backend_delegate.h"
@@ -413,7 +414,6 @@
 #include "chrome/browser/android/service_tab_launcher.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/tab_web_contents_delegate_android.h"
-#include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
 #include "chrome/browser/chrome_browser_main_android.h"
 #include "chrome/browser/offline_pages/android/offline_page_auto_fetcher.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
@@ -1251,6 +1251,8 @@ void ChromeContentBrowserClient::PostAfterStartupTask(
     const scoped_refptr<base::TaskRunner>& task_runner,
     base::OnceClosure task) {
   AfterStartupTaskUtils::PostTask(from_here, task_runner, std::move(task));
+
+  InitNetworkContextsParentDirectory();
 
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   safe_browsing_service_ = g_browser_process->safe_browsing_service();
@@ -2233,7 +2235,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
   }
 
 #if defined(OS_CHROMEOS)
-  if (breakpad::ShouldPassCrashLoopBefore(process_type)) {
+  if (ChromeCrashReporterClient::ShouldPassCrashLoopBefore(process_type)) {
     static const char* const kSwitchNames[] = {
         switches::kCrashLoopBefore,
     };
@@ -2940,17 +2942,6 @@ bool ChromeContentBrowserClient::CanCreateWindow(
                       blocked_params.features())) {
     return false;
   }
-
-#if defined(OS_ANDROID)
-  auto* single_tab_mode_helper =
-      SingleTabModeTabHelper::FromWebContents(web_contents);
-  if (single_tab_mode_helper &&
-      single_tab_mode_helper->block_all_new_windows()) {
-    TabModelList::HandlePopupNavigation(&nav_params);
-    return false;
-  }
-#endif
-
   return true;
 }
 
@@ -4382,6 +4373,30 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
 #endif
 }
 
+void ChromeContentBrowserClient::InitNetworkContextsParentDirectory() {
+  base::FilePath user_data_dir;
+  base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  DCHECK(!user_data_dir.empty());
+  network_contexts_parent_directory_.push_back(user_data_dir);
+
+  base::FilePath cache_dir;
+  chrome::GetUserCacheDirectory(user_data_dir, &cache_dir);
+  DCHECK(!cache_dir.empty());
+  // On some platforms, the cache is a child of the user_data_dir so only
+  // return the one path.
+  if (!user_data_dir.IsParent(cache_dir))
+    network_contexts_parent_directory_.push_back(cache_dir);
+
+  // If the cache location has been overridden by a switch or preference,
+  // include that as well.
+  if (auto* local_state = g_browser_process->local_state()) {
+    base::FilePath pref_cache_dir =
+        local_state->GetFilePath(prefs::kDiskCacheDir);
+    if (!pref_cache_dir.empty() && !user_data_dir.IsParent(cache_dir))
+      network_contexts_parent_directory_.push_back(pref_cache_dir);
+  }
+}
+
 void ChromeContentBrowserClient::MaybeCopyDisableWebRtcEncryptionSwitch(
     base::CommandLine* to_command_line,
     const base::CommandLine& from_command_line,
@@ -4902,20 +4917,8 @@ ChromeContentBrowserClient::CreateNetworkContext(
 
 std::vector<base::FilePath>
 ChromeContentBrowserClient::GetNetworkContextsParentDirectory() {
-  base::FilePath user_data_dir;
-  base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-  DCHECK(!user_data_dir.empty());
-
-  base::FilePath cache_dir;
-  chrome::GetUserCacheDirectory(user_data_dir, &cache_dir);
-  DCHECK(!cache_dir.empty());
-
-  // On some platforms, the cache is a child of the user_data_dir so only
-  // return the one path.
-  if (user_data_dir.IsParent(cache_dir))
-    return {user_data_dir};
-
-  return {user_data_dir, cache_dir};
+  DCHECK(!network_contexts_parent_directory_.empty());
+  return network_contexts_parent_directory_;
 }
 
 bool ChromeContentBrowserClient::AllowRenderingMhtmlOverHttp(

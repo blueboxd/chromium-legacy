@@ -16,7 +16,7 @@ class CanMakePaymentQueryTest : public ::testing::Test {
   CanMakePaymentQuery guard_;
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 // An HTTPS website is not allowed to query all of the networks of the cards in

@@ -113,7 +113,7 @@ class NetMetricsLogUploaderTest : public testing::Test {
   scoped_refptr<network::SharedURLLoaderFactory>
       test_shared_url_loader_factory_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   base::RunLoop loop_;
   std::string upload_data_;

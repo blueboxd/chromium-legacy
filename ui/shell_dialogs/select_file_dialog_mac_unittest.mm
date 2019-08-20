@@ -93,7 +93,7 @@ class SelectFileDialogMacTest : public testing::Test,
                     void* params) override {}
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // Helper method to launch a dialog with the given |args|.
   void SelectFileWithParams(FileDialogArguments args) {

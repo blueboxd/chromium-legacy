@@ -12,7 +12,7 @@
 namespace util {
 
 TEST(MultiSourceMemoryPressureMonitorTest, RunDispatchCallback) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   MultiSourceMemoryPressureMonitor monitor;
   auto* aggregator = monitor.aggregator_for_testing();
 

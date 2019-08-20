@@ -82,7 +82,7 @@ class ChromiumSocketFactoryTest : public testing::Test,
     while (last_packet_.empty() && attempts++ < kMaxAttempts) {
       sender->SendTo(test_packet.data(), test_packet.size(),
                      socket_->GetLocalAddress(), options);
-      scoped_task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
+      task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
           FROM_HERE, run_loop_.QuitClosure(), kAttemptPeriod);
       run_loop_.Run();
     }
@@ -91,8 +91,8 @@ class ChromiumSocketFactoryTest : public testing::Test,
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::IO};
   base::RunLoop run_loop_;
 
   std::unique_ptr<rtc::PacketSocketFactory> socket_factory_;

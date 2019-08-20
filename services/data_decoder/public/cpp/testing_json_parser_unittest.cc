@@ -56,7 +56,7 @@ class TestingJsonParserTest : public testing::Test {
     EXPECT_FALSE(error.empty());
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   TestingJsonParser::ScopedFactoryOverride factory_override_;
   bool did_success_ = false;
   bool did_error_ = false;

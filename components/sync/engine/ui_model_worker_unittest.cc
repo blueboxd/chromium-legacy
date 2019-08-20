@@ -56,8 +56,8 @@ class SyncUIModelWorkerTest : public testing::Test {
   }
 
  protected:
-  std::unique_ptr<base::test::ScopedTaskEnvironment> task_environment_ =
-      std::make_unique<base::test::ScopedTaskEnvironment>();
+  std::unique_ptr<base::test::TaskEnvironment> task_environment_ =
+      std::make_unique<base::test::TaskEnvironment>();
   base::Thread sync_thread_;
   scoped_refptr<UIModelWorker> worker_;
 };

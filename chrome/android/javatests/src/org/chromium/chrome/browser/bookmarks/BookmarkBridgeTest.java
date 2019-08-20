@@ -52,7 +52,7 @@ public class BookmarkBridgeTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Profile profile = Profile.getLastUsedProfile();
             mBookmarkBridge = new BookmarkBridge(profile);
-            mBookmarkBridge.loadEmptyPartnerBookmarkShimForTesting();
+            mBookmarkBridge.loadFakePartnerBookmarkShimForTesting();
         });
 
         BookmarkTestUtil.waitForBookmarkModelLoaded();
@@ -265,5 +265,53 @@ public class BookmarkBridgeTest {
             newOrder[i] = bIds.get(i).getId();
         }
         return newOrder;
+    }
+
+    @Test
+    @SmallTest
+    @UiThreadTest
+    @Feature({"Bookmark"})
+    public void testSearchPartner() {
+        List<BookmarkId> expectedSearchResults = new ArrayList<>();
+        expectedSearchResults.add(new BookmarkId(
+                1, 1)); // Partner bookmark with ID 1: "Partner Bookmark A", http://a.com
+        expectedSearchResults.add(new BookmarkId(
+                2, 1)); // Partner bookmark with ID 2: "Partner Bookmark B", http://b.com
+        List<BookmarkId> searchResults = mBookmarkBridge.searchBookmarks("pArTnER BookMARK", 100);
+        Assert.assertEquals("Expected search results would yield partner bookmark with "
+                        + "case-insensitive title match",
+                expectedSearchResults, searchResults);
+    }
+
+    @Test
+    @SmallTest
+    @UiThreadTest
+    @Feature({"Bookmark"})
+    public void testSearchFolder() {
+        List<BookmarkId> expectedSearchResults = new ArrayList<>();
+        expectedSearchResults.add(mBookmarkBridge.addFolder(mMobileNode, 0, "FooBar"));
+        List<BookmarkId> searchResults = mBookmarkBridge.searchBookmarks("oba", 100);
+        Assert.assertEquals("Expected search results would yield case-insensitive match of "
+                        + "part of title",
+                expectedSearchResults, searchResults);
+    }
+
+    @Test
+    @SmallTest
+    @UiThreadTest
+    @Feature({"Bookmark"})
+    public void testSearch_MaxResults() {
+        List<BookmarkId> expectedSearchResults = new ArrayList<>();
+        expectedSearchResults.add(mBookmarkBridge.addFolder(mMobileNode, 0, "FooBar"));
+        expectedSearchResults.add(mBookmarkBridge.addFolder(mMobileNode, 1, "BazQuux"));
+        expectedSearchResults.add(new BookmarkId(
+                1, 1)); // Partner bookmark with ID 1: "Partner Bookmark A", http://a.com
+
+        List<BookmarkId> searchResults = mBookmarkBridge.searchBookmarks("a", 3);
+        Assert.assertEquals(
+                "Expected search results size to be 3 (maximum size)", 3, searchResults.size());
+        Assert.assertEquals("Expected that user (non-partner) bookmarks would get priority "
+                        + "over partner bookmarks",
+                expectedSearchResults, searchResults);
     }
 }

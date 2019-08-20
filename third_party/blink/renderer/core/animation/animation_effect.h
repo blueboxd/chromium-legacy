@@ -67,13 +67,6 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
   friend class EffectStack;
 
  public:
-  // Represents the animation direction from the Web Animations spec, see
-  // https://drafts.csswg.org/web-animations-1/#animation-direction.
-  enum AnimationDirection {
-    kForwards,
-    kBackwards,
-  };
-
   class EventDelegate : public GarbageCollectedFinalized<EventDelegate> {
    public:
     virtual ~EventDelegate() = default;

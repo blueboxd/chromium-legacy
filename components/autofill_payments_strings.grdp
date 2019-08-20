@@ -428,6 +428,41 @@
     CVC
   </message>
 
+  <!-- WebAuthn fingerprint opt-in dialog -->
+  <!-- Desktop only -->
+  <if expr="not is_ios and not is_android">
+    <if expr="is_macosx">
+      <message name="IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_TITLE" desc="Headline asking the user if they want to use their device's platform authenticator to confirm their cards in the future instead of CVC.">
+        Use Touch ID instead of CVC?
+      </message>
+      <message name="IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_OK_BUTTON_LABEL" desc="Button that allows the user to use their device's platform authenticator to confirm card use in the future.">
+        Use Touch ID
+      </message>
+    </if>
+    <if expr="is_win">
+      <message name="IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_TITLE" desc="Headline asking the user if they want to use their device's platform authenticator to confirm their cards in the future instead of CVC.">
+        Use Windows Hello instead of CVC?
+      </message>
+      <message name="IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_OK_BUTTON_LABEL" desc="Button that allows the user to use their device's platform authenticator to confirm card use in the future.">
+        Use Windows Hello
+      </message>
+    </if>
+    <if expr="not is_win and not is_macosx">
+      <message name="IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_TITLE" desc="Headline asking the user if they want to use their device's platform authenticator to confirm their cards in the future instead of CVC.">
+        Use WebAuthn instead of CVC?
+      </message>
+      <message name="IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_OK_BUTTON_LABEL" desc="Button that allows the user to use their device's platform authenticator to confirm card use in the future.">
+        Use WebAuthn
+      </message>
+    </if>
+    <message name="IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_INSTRUCTION" desc="Subheading that appears below the headline explaining to the user that they won't have to enter their card's security code if they decide to use their device's platform authenticator in the future.">
+      You won't need to enter a card security code from now on
+    </message>
+    <message name="IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_CANCEL_BUTTON_LABEL" desc="Button that allows the user to decline the option of using their device's platform authenticator for card confirmation.">
+      Not now
+    </message>
+  </if>
+
   <message name="IDS_AUTOFILL_WALLET_MANAGEMENT_LINK_TEXT" desc="Text for link that allows users to see and edit their Wallet information." formatter_data="android_java">
     Edit
   </message>

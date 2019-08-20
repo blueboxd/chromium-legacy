@@ -8,6 +8,7 @@
 
 #include "base/allocator/partition_allocator/address_space_randomization.h"
 #include "base/allocator/partition_allocator/page_allocator.h"
+#include "base/allocator/partition_allocator/random.h"
 #include "base/bind.h"
 #include "base/bit_cast.h"
 #include "base/bits.h"

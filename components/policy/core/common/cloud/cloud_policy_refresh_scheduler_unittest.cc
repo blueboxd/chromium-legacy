@@ -168,7 +168,7 @@ class CloudPolicyRefreshSchedulerTest : public testing::Test {
     last_update_ticks_ = base::TimeTicks::Now();
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   MockCloudPolicyClient client_;
   MockCloudPolicyStore store_;
   std::unique_ptr<MockCloudPolicyService> service_;

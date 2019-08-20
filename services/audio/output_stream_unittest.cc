@@ -183,7 +183,7 @@ class TestEnvironment {
   }
 
  private:
-  base::test::ScopedTaskEnvironment tasks_;
+  base::test::TaskEnvironment tasks_;
   media::MockAudioManager audio_manager_;
   StreamFactory stream_factory_;
   mojo::Remote<mojom::StreamFactory> remote_stream_factory_;

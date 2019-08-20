@@ -105,10 +105,8 @@ std::string DebugString(const NotificationEntry* entry) {
            << " : " << static_cast<int>(mapping.second);
   }
 
-  stream << " \n icons_id:";
-  for (const auto& icon_id : entry->icons_uuid)
-    stream << icon_id << "  ";
-
+  stream << " \n small_icons_id:" << entry->small_icon_uuid << "  ";
+  stream << " \n large_icons_id:" << entry->large_icon_uuid << "  ";
   return stream.str();
 }
 

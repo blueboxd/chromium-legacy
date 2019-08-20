@@ -60,7 +60,7 @@ class HistoryNoticeUtilsTest : public ::testing::Test {
   std::unique_ptr<syncer::TestSyncService> sync_service_;
   std::unique_ptr<history::FakeWebHistoryService> history_service_;
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(HistoryNoticeUtilsTest, NotSyncing) {

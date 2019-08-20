@@ -36,7 +36,8 @@ bool RemoveStreamDeviceFromArray(const MediaStreamDevice& device,
 struct MediaStreamDeviceObserver::Stream {
   Stream() {}
   ~Stream() {}
-  base::WeakPtr<UserMediaProcessor> handler;
+  WebMediaStreamDeviceObserver::OnDeviceStoppedCb on_device_stopped_cb;
+  WebMediaStreamDeviceObserver::OnDeviceChangedCb on_device_changed_cb;
   MediaStreamDevices audio_devices;
   MediaStreamDevices video_devices;
 };
@@ -84,8 +85,8 @@ void MediaStreamDeviceObserver::OnDeviceStopped(
   else
     RemoveStreamDeviceFromArray(device, &stream->video_devices);
 
-  if (stream->handler.get())
-    stream->handler->OnDeviceStopped(device);
+  if (stream->on_device_stopped_cb)
+    stream->on_device_stopped_cb.Run(device);
 
   // |it| could have already been invalidated in the function call above. So we
   // need to check if |label| is still in |label_stream_map_| again.
@@ -116,8 +117,8 @@ void MediaStreamDeviceObserver::OnDeviceChanged(
   }
 
   Stream* stream = &it->value;
-  if (stream->handler.get())
-    stream->handler->OnDeviceChanged(old_device, new_device);
+  if (stream->on_device_changed_cb)
+    stream->on_device_changed_cb.Run(old_device, new_device);
 
   // Update device list only for device changing. Removing device will be
   // handled in its own callback.
@@ -140,13 +141,15 @@ void MediaStreamDeviceObserver::BindMediaStreamDeviceObserverRequest(
 
 void MediaStreamDeviceObserver::AddStream(
     const String& label,
-    const MediaStreamDevices& audio_devices,
-    const MediaStreamDevices& video_devices,
-    const base::WeakPtr<UserMediaProcessor>& event_handler) {
+    const blink::MediaStreamDevices& audio_devices,
+    const blink::MediaStreamDevices& video_devices,
+    WebMediaStreamDeviceObserver::OnDeviceStoppedCb on_device_stopped_cb,
+    WebMediaStreamDeviceObserver::OnDeviceChangedCb on_device_changed_cb) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   Stream stream;
-  stream.handler = event_handler;
+  stream.on_device_stopped_cb = std::move(on_device_stopped_cb);
+  stream.on_device_changed_cb = std::move(on_device_changed_cb);
   stream.audio_devices = audio_devices;
   stream.video_devices = video_devices;
 

@@ -153,8 +153,8 @@ class SecurityKeyExtensionSessionTest : public testing::Test {
   void CreateSecurityKeyConnection();
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::IO};
 
   // Object under test.
   std::unique_ptr<SecurityKeyExtensionSession> security_key_extension_session_;

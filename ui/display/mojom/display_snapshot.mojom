@@ -24,6 +24,7 @@ struct DisplaySnapshot {
   string display_name;
   mojo_base.mojom.FilePath sys_path;
   array<display.mojom.DisplayMode> modes;
+  display.mojom.PanelOrientation panel_orientation;
   array<uint8> edid;
   uint64 current_mode_index;
   bool has_current_mode;

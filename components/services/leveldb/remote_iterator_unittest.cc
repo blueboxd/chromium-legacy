@@ -81,7 +81,7 @@ class RemoteIteratorTest : public testing::Test {
   mojom::LevelDBDatabaseAssociatedPtr& database() { return database_; }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   LevelDBServiceImpl leveldb_service_;
   mojo::Remote<mojom::LevelDBService> leveldb_remote_;
   mojo::Receiver<mojom::LevelDBService> leveldb_receiver_;

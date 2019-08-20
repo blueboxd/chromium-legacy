@@ -530,8 +530,19 @@ void TabHoverCardBubbleView::FadeInToShow() {
 }
 
 void TabHoverCardBubbleView::UpdateCardContent(const Tab* tab) {
-  title_label_->SetText(tab->data().title);
-  const GURL& domain_url = tab->data().last_committed_url;
+  base::string16 title;
+  GURL domain_url;
+  // Use committed URL to determine if no page has yet loaded, since the title
+  // can be blank for some web pages.
+  if (tab->data().last_committed_url.is_empty()) {
+    domain_url = tab->data().visible_url;
+    title = tab->data().IsCrashed()
+                ? l10n_util::GetStringUTF16(IDS_HOVER_CARD_CRASHED_TITLE)
+                : l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE);
+  } else {
+    domain_url = tab->data().last_committed_url;
+    title = tab->data().title;
+  }
   base::string16 domain;
   if (domain_url.SchemeIsFile()) {
     title_label_->SetMultiLine(false);
@@ -548,6 +559,7 @@ void TabHoverCardBubbleView::UpdateCardContent(const Tab* tab) {
             url_formatter::kFormatUrlTrimAfterHost,
         net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr);
   }
+  title_label_->SetText(title);
   domain_label_->SetText(domain);
 
   // If the preview image feature is not enabled, |preview_image_| will be null.

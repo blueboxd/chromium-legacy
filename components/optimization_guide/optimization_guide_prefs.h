@@ -16,6 +16,7 @@ extern const char kHintLoadedCounts[];
 extern const char kHintsFetcherLastFetchAttempt[];
 extern const char kHintsFetcherDataSaverTopHostBlacklist[];
 extern const char kHintsFetcherDataSaverTopHostBlacklistState[];
+extern const char kHintsFetcherHostsSuccessfullyFetched[];
 extern const char kPendingHintsProcessingVersion[];
 
 // State of |HintsFetcherTopHostsBlacklist|. The blacklist begins in

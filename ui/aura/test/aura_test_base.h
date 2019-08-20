@@ -66,7 +66,7 @@ class AuraTestBase : public testing::Test {
   client::FocusClient* focus_client() { return helper_->focus_client(); }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
 #if defined(OS_WIN)
   base::win::ScopedCOMInitializer com_initializer_;

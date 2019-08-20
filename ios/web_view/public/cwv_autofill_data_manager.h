@@ -15,8 +15,8 @@ NS_ASSUME_NONNULL_BEGIN
 @class CWVCreditCard;
 @protocol CWVAutofillDataManagerObserver;
 
-CWV_EXPORT
 // Exposes saved autofill data such as address profiles and credit cards.
+CWV_EXPORT
 @interface CWVAutofillDataManager : NSObject
 
 - (instancetype)init NS_UNAVAILABLE;

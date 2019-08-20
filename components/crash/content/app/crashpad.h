@@ -170,6 +170,10 @@ void DumpProcessWithoutCrashing(task_t task_port);
 // success.
 class CrashReporterClient;
 bool DumpWithoutCrashingForClient(CrashReporterClient* client);
+
+// Used under WebView to whitelist a memory range so it's accessible using
+// crashpad's ProcessMemory interface.
+void WhitelistMemoryRange(void* begin, size_t size);
 #endif  // OS_ANDROID
 
 namespace internal {

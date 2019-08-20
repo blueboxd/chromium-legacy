@@ -262,7 +262,7 @@ public class SwipeRefreshHandler extends TabWebContentsUserData
         if (mSwipeType == OverscrollAction.PULL_TO_REFRESH) {
             mSwipeRefreshLayout.pull(yDelta);
         } else if (mSwipeType == OverscrollAction.HISTORY_NAVIGATION) {
-            mNavigationHandler.pull(xDelta);
+            if (mNavigationHandler != null) mNavigationHandler.pull(xDelta);
         }
         TraceEvent.end("SwipeRefreshHandler.pull");
     }
@@ -273,7 +273,7 @@ public class SwipeRefreshHandler extends TabWebContentsUserData
         if (mSwipeType == OverscrollAction.PULL_TO_REFRESH) {
             mSwipeRefreshLayout.release(allowRefresh);
         } else if (mSwipeType == OverscrollAction.HISTORY_NAVIGATION) {
-            mNavigationHandler.release(allowRefresh);
+            if (mNavigationHandler != null) mNavigationHandler.release(allowRefresh);
         }
         TraceEvent.end("SwipeRefreshHandler.release");
     }

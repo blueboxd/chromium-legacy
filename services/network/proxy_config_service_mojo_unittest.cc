@@ -68,8 +68,7 @@ class TestProxyConfigServiceObserver
 class ProxyConfigServiceMojoTest : public testing::Test {
  public:
   ProxyConfigServiceMojoTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         proxy_config_service_(mojo::MakeRequest(&config_client_),
                               base::Optional<net::ProxyConfigWithAnnotation>(),
                               nullptr),
@@ -84,9 +83,9 @@ class ProxyConfigServiceMojoTest : public testing::Test {
  protected:
   // After notifying a new configuration through |config_client_|, waits for the
   // observers to have been notified.
-  void WaitForConfig() { scoped_task_environment_.RunUntilIdle(); }
+  void WaitForConfig() { task_environment_.RunUntilIdle(); }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   mojom::ProxyConfigClientPtr config_client_;
   ProxyConfigServiceMojo proxy_config_service_;
   TestProxyConfigServiceObserver observer_;

@@ -38,7 +38,7 @@ class DeviceServiceTestBase : public testing::Test {
   // by the child test fixture.
   void DestroyDeviceService();
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // Both of these task runners should be deprecated in favor of individual
   // components of the device service creating their own.

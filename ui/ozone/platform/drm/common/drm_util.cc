@@ -189,6 +189,16 @@ bool IsAspectPreserving(int fd, drmModeConnector* connector) {
           "Full aspect");
 }
 
+display::PanelOrientation GetPanelOrientation(int fd,
+                                              drmModeConnector* connector) {
+  ScopedDrmPropertyPtr property;
+  int index = GetDrmProperty(fd, connector, "panel orientation", &property);
+  if (index < 0)
+    return display::PanelOrientation::kNormal;
+  DCHECK_LT(connector->prop_values[index], display::PanelOrientation::kLast);
+  return static_cast<display::PanelOrientation>(connector->prop_values[index]);
+}
+
 int ConnectorIndex(int device_index, int display_index) {
   DCHECK_LT(device_index, 16);
   DCHECK_LT(display_index, 16);
@@ -427,6 +437,8 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
   const display::DisplayConnectionType type = GetDisplayType(info->connector());
   const bool is_aspect_preserving_scaling =
       IsAspectPreserving(fd, info->connector());
+  const display::PanelOrientation panel_orientation =
+      GetPanelOrientation(fd, info->connector());
   const bool has_color_correction_matrix =
       HasColorCorrectionMatrix(fd, info->crtc()) ||
       HasPerPlaneColorCorrectionMatrix(fd, info->crtc());
@@ -478,8 +490,8 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
       display_id, origin, physical_size, type, is_aspect_preserving_scaling,
       has_overscan, has_color_correction_matrix,
       color_correction_in_linear_space, display_color_space, display_name,
-      sys_path, std::move(modes), edid, current_mode, native_mode, product_code,
-      year_of_manufacture, maximum_cursor_size);
+      sys_path, std::move(modes), panel_orientation, edid, current_mode,
+      native_mode, product_code, year_of_manufacture, maximum_cursor_size);
 }
 
 // TODO(rjkroege): Remove in a subsequent CL once Mojo IPC is used everywhere.
@@ -506,6 +518,7 @@ std::vector<DisplaySnapshot_Params> CreateDisplaySnapshotParams(
       mode_params.push_back(GetDisplayModeParams(*m));
     }
     p.modes = mode_params;
+    p.panel_orientation = d->panel_orientation();
     p.edid = d->edid();
 
     p.has_current_mode = d->current_mode();
@@ -543,9 +556,10 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
       params.is_aspect_preserving_scaling, params.has_overscan,
       params.has_color_correction_matrix,
       params.color_correction_in_linear_space, params.color_space,
-      params.display_name, params.sys_path, std::move(modes), params.edid,
-      current_mode, native_mode, params.product_code,
-      params.year_of_manufacture, params.maximum_cursor_size);
+      params.display_name, params.sys_path, std::move(modes),
+      params.panel_orientation, params.edid, current_mode, native_mode,
+      params.product_code, params.year_of_manufacture,
+      params.maximum_cursor_size);
 }
 
 int GetFourCCFormatForOpaqueFramebuffer(gfx::BufferFormat format) {

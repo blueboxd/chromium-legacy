@@ -351,63 +351,6 @@ int ToMessageID(WebLocalizedString::Name name) {
   return -1;
 }
 
-WebData loadAudioSpatializationResource(const char* name) {
-#ifdef IDR_AUDIO_SPATIALIZATION_COMPOSITE
-  if (!strcmp(name, "Composite")) {
-    base::StringPiece resource = GetContentClient()->GetDataResource(
-        IDR_AUDIO_SPATIALIZATION_COMPOSITE, ui::SCALE_FACTOR_NONE);
-    return WebData(resource.data(), resource.size());
-  }
-#endif
-
-#ifdef IDR_AUDIO_SPATIALIZATION_T000_P000
-  const size_t kExpectedSpatializationNameLength = 31;
-  if (strlen(name) != kExpectedSpatializationNameLength) {
-    return WebData();
-  }
-
-  // Extract the azimuth and elevation from the resource name.
-  int azimuth = 0;
-  int elevation = 0;
-  int values_parsed =
-      sscanf(name, "IRC_Composite_C_R0195_T%3d_P%3d", &azimuth, &elevation);
-  if (values_parsed != 2) {
-    return WebData();
-  }
-
-  // The resource index values go through the elevations first, then azimuths.
-  const int kAngleSpacing = 15;
-
-  // 0 <= elevation <= 90 (or 315 <= elevation <= 345)
-  // in increments of 15 degrees.
-  int elevation_index =
-      elevation <= 90 ? elevation / kAngleSpacing :
-      7 + (elevation - 315) / kAngleSpacing;
-  bool is_elevation_index_good = 0 <= elevation_index && elevation_index < 10;
-
-  // 0 <= azimuth < 360 in increments of 15 degrees.
-  int azimuth_index = azimuth / kAngleSpacing;
-  bool is_azimuth_index_good = 0 <= azimuth_index && azimuth_index < 24;
-
-  const int kNumberOfElevations = 10;
-  const int kNumberOfAudioResources = 240;
-  int resource_index = kNumberOfElevations * azimuth_index + elevation_index;
-  bool is_resource_index_good = 0 <= resource_index &&
-      resource_index < kNumberOfAudioResources;
-
-  if (is_azimuth_index_good && is_elevation_index_good &&
-      is_resource_index_good) {
-    const int kFirstAudioResourceIndex = IDR_AUDIO_SPATIALIZATION_T000_P000;
-    base::StringPiece resource = GetContentClient()->GetDataResource(
-        kFirstAudioResourceIndex + resource_index, ui::SCALE_FACTOR_NONE);
-    return WebData(resource.data(), resource.size());
-  }
-#endif  // IDR_AUDIO_SPATIALIZATION_T000_P000
-
-  NOTREACHED();
-  return WebData();
-}
-
 // This must match third_party/WebKit/public/blink_resources.grd.
 // In particular, |is_gzipped| corresponds to compress="gzip".
 struct DataResource {
@@ -434,6 +377,8 @@ const DataResource kDataResources[] = {
     {"placeholderIcon", IDR_PLACEHOLDER_ICON, ui::SCALE_FACTOR_100P, false},
     {"brokenCanvas", IDR_BROKENCANVAS, ui::SCALE_FACTOR_100P, false},
     {"brokenCanvas@2x", IDR_BROKENCANVAS, ui::SCALE_FACTOR_200P, false},
+    {"Composite", IDR_AUDIO_SPATIALIZATION_COMPOSITE, ui::SCALE_FACTOR_NONE,
+     false},
 };
 
 class NestedMessageLoopRunnerImpl
@@ -496,11 +441,6 @@ WebData BlinkPlatformImpl::GetDataResource(const char* name) {
   // for some Autofill items but not for others.
   if (!strlen(name))
     return WebData();
-
-  // Check the name prefix to see if it's an audio resource.
-  if (base::StartsWith(name, "IRC_Composite", base::CompareCase::SENSITIVE) ||
-      base::StartsWith(name, "Composite", base::CompareCase::SENSITIVE))
-    return loadAudioSpatializationResource(name);
 
   // TODO(flackr): We should use a better than linear search here, a trie would
   // be ideal.

@@ -40,8 +40,8 @@
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
-#include "third_party/blink/renderer/core/layout/custom/layout_worklet.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/layout_worklet.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/style/applied_text_decoration.h"
 #include "third_party/blink/renderer/core/style/border_edge.h"
@@ -211,6 +211,16 @@ bool ComputedStyle::NeedsReattachLayoutTree(const ComputedStyle* old_style,
     return true;
   if (old_style->HasTextCombine() != new_style->HasTextCombine())
     return true;
+  // line-clamping is currently only handled by LayoutDeprecatedFlexibleBox,
+  // so that if line-clamping changes then the LayoutObject needs to be
+  // recreated.
+  if (RuntimeEnabledFeatures::WebkitBoxLayoutUsesFlexLayoutEnabled() &&
+      (new_style->Display() == EDisplay::kWebkitBox ||
+       new_style->Display() == EDisplay::kWebkitInlineBox) &&
+      (old_style->HasLineClamp() != new_style->HasLineClamp() &&
+       new_style->BoxOrient() == EBoxOrient::kVertical)) {
+    return true;
+  }
   // We need to perform a reattach if a "display: layout(foo)" has changed to a
   // "display: layout(bar)". This is because one custom layout could be
   // registered and the other may not, affecting the box-tree construction.

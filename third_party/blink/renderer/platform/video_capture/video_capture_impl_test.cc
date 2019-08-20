@@ -210,7 +210,7 @@ class VideoCaptureImplTest : public ::testing::Test {
   }
 
   const base::UnguessableToken session_id_ = base::UnguessableToken::Create();
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   ScopedTestingPlatformSupport<IOTaskRunnerTestingPlatformSupport> platform_;
   const std::unique_ptr<VideoCaptureImpl> video_capture_impl_;
   MockMojoVideoCaptureHost mock_video_capture_host_;

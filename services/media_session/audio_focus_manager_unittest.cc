@@ -264,7 +264,7 @@ class AudioFocusManagerTest
     audio_focus_remote_.FlushForTesting();
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::HistogramTester histogram_tester_;
 
   service_manager::TestConnectorFactory connector_factory_;

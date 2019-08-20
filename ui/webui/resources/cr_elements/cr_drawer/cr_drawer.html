@@ -68,11 +68,13 @@
       .drawer-header {
         align-items: center;
         border-bottom: var(--cr-separator-line);
+        color: var(--cr-drawer-header-color, inherit);
         display: flex;
         font-size: 123.08%;  /* go to 16px from 13px */
+        font-weight: var(--cr-drawer-header-font-weight, inherit);
         min-height: 56px;
         outline: none;
-        padding-inline-start: 24px;
+        padding-inline-start: var(--cr-drawer-header-padding, 24px);
       }
 
       @media (prefers-color-scheme: dark) {

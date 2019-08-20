@@ -445,7 +445,7 @@ class SyncInvalidationListenerTest : public testing::Test {
   ObjectIdSet registered_ids_;
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   notifier::FakePushClient* const fake_push_client_;
 
  protected:

@@ -151,7 +151,7 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
 
  protected:
   NiceMock<MockMediaLog> media_log_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::MD5Context md5_context_;
   bool hashing_enabled_;
   bool clockless_playback_;
@@ -249,7 +249,7 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
  private:
   // Runs |run_loop| until it is explicitly Quit() by some part of the calling
   // test fixture or when an error occurs (by setting |on_error_closure_|). The
-  // |scoped_task_environment_| is RunUntilIdle() after the RunLoop finishes
+  // |task_environment_| is RunUntilIdle() after the RunLoop finishes
   // running, before returning to the caller.
   void RunUntilQuitOrError(base::RunLoop* run_loop);
 

@@ -50,10 +50,9 @@ class AudioDebugFileWriterTest
     : public testing::TestWithParam<AudioDebugFileWriterTestData> {
  public:
   explicit AudioDebugFileWriterTest(
-      base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode execution_mode)
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
-            execution_mode),
+      base::test::TaskEnvironment::ThreadPoolExecutionMode execution_mode)
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::DEFAULT,
+                          execution_mode),
         params_(AudioParameters::Format::AUDIO_PCM_LINEAR,
                 std::get<0>(GetParam()),
                 std::get<1>(GetParam()),
@@ -67,8 +66,7 @@ class AudioDebugFileWriterTest
   }
   AudioDebugFileWriterTest()
       : AudioDebugFileWriterTest(
-            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::ASYNC) {
-  }
+            base::test::TaskEnvironment::ThreadPoolExecutionMode::ASYNC) {}
 
  protected:
   virtual ~AudioDebugFileWriterTest() = default;
@@ -192,7 +190,7 @@ class AudioDebugFileWriterTest
 
     debug_writer_->Stop();
 
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
     VerifyRecording(file_path);
 
@@ -206,7 +204,7 @@ class AudioDebugFileWriterTest
 
  protected:
   // The test task environment.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // Writer under test.
   std::unique_ptr<AudioDebugFileWriter> debug_writer_;
@@ -232,8 +230,8 @@ class AudioDebugFileWriterBehavioralTest : public AudioDebugFileWriterTest {};
 class AudioDebugFileWriterSingleThreadTest : public AudioDebugFileWriterTest {
  public:
   AudioDebugFileWriterSingleThreadTest()
-      : AudioDebugFileWriterTest(base::test::ScopedTaskEnvironment::
-                                     ThreadPoolExecutionMode::QUEUED) {}
+      : AudioDebugFileWriterTest(
+            base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED) {}
 };
 
 TEST_P(AudioDebugFileWriterTest, WaveRecordingTest) {
@@ -256,7 +254,7 @@ TEST_P(AudioDebugFileWriterSingleThreadTest,
 
   debug_writer_.reset();
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   VerifyRecording(file_path);
 

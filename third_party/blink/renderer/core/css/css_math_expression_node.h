@@ -76,6 +76,10 @@ class CORE_EXPORT CSSMathExpressionNode
   virtual bool IsBinaryOperation() const { return false; }
   virtual bool IsVariadicOperation() const { return false; }
 
+  bool IsMathFunction() const {
+    return !IsNumericLiteral() && !IsBinaryOperation();
+  }
+
   virtual bool IsZero() const = 0;
 
   // Resolves the expression into one value *without doing any type conversion*.

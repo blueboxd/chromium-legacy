@@ -57,7 +57,7 @@ class AudioDecodeSchedulerTest : public ::testing::Test {
   void TearDown() override;
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::RunLoop run_loop_;
   scoped_refptr<AutoThreadTaskRunner> audio_decode_task_runner_;
   scoped_refptr<AutoThreadTaskRunner> main_task_runner_;
@@ -66,8 +66,7 @@ class AudioDecodeSchedulerTest : public ::testing::Test {
 
 void AudioDecodeSchedulerTest::SetUp() {
   main_task_runner_ = new AutoThreadTaskRunner(
-      scoped_task_environment_.GetMainThreadTaskRunner(),
-      run_loop_.QuitClosure());
+      task_environment_.GetMainThreadTaskRunner(), run_loop_.QuitClosure());
   audio_decode_task_runner_ = AutoThread::Create("decode", main_task_runner_);
   session_config_ = SessionConfig::ForTestWithAudio();
 }

@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.media.router;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.NativeMethods;
 
 /**
  * A wrapper around a FlingingController that allows the native code to use it
@@ -56,8 +55,7 @@ public class FlingingControllerBridge implements MediaStatusObserver {
     @Override
     public void onMediaStatusUpdate(MediaStatusBridge status) {
         if (mNativeFlingingControllerBridge != 0) {
-            FlingingControllerBridgeJni.get().onMediaStatusUpdated(
-                    mNativeFlingingControllerBridge, FlingingControllerBridge.this, status);
+            nativeOnMediaStatusUpdated(mNativeFlingingControllerBridge, status);
         }
     }
 
@@ -73,9 +71,6 @@ public class FlingingControllerBridge implements MediaStatusObserver {
         mNativeFlingingControllerBridge = 0;
     }
 
-    @NativeMethods
-    interface Natives {
-        void onMediaStatusUpdated(long nativeFlingingControllerBridge,
-                FlingingControllerBridge caller, MediaStatusBridge status);
-    }
+    private native void nativeOnMediaStatusUpdated(
+            long nativeFlingingControllerBridge, MediaStatusBridge status);
 }

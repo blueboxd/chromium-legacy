@@ -479,10 +479,9 @@ public class TabsOpenedFromExternalAppTest {
 
         Assert.assertEquals("Selected tab is not on the right URL.", url1,
                 mActivityTestRule.getActivity().getActivityTab().getUrl());
-        int originalTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
 
         // Launch the same URL without app ID. It should open a new tab.
-        originalTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
+        int originalTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
         launchUrlFromExternalApp(url1, null, false);
         int newTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
         Assert.assertEquals("Incorrect number of tabs open", originalTabCount + 1, newTabCount);

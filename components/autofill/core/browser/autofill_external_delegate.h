@@ -53,10 +53,17 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
                                    base::string16* body) override;
   bool RemoveSuggestion(const base::string16& value, int identifier) override;
   void ClearPreviewedForm() override;
+
   // Returns PopupType::kUnspecified for all popups prior to |onQuery|, or the
   // popup type after call to |onQuery|.
   PopupType GetPopupType() const override;
+
   AutofillDriver* GetAutofillDriver() override;
+
+  // Returns the ax node id associated with the current web contents' element
+  // who has a controller relation to the current autofill popup.
+  int32_t GetWebContentsPopupControllerAxId() const override;
+
   void RegisterDeletionCallback(base::OnceClosure deletion_callback) override;
 
   // Records and associates a query_id with web form data.  Called
@@ -95,10 +102,6 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
   // Returns the delegate to its starting state by removing any page specific
   // values or settings.
   void Reset();
-
-  // Returns the ax node id associated with the current web contents' element
-  // who has a controller relation to the current autofill popup.
-  int32_t GetWebContentsPopupControllerAxId() const;
 
   const FormData& query_form() const { return query_form_; }
 

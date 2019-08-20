@@ -12,7 +12,7 @@
 
 // Tests that DeletePasswordsDirectory() actually deletes the directory.
 TEST(PasswordsDirectoryUtilTest, Deletion) {
-  base::test::ScopedTaskEnvironment environment;
+  base::test::TaskEnvironment environment;
   base::FilePath dir;
   ASSERT_TRUE(password_manager::GetPasswordsDirectory(&dir));
   ASSERT_TRUE(CreateDirectory(dir));

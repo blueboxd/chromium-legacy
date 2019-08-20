@@ -102,6 +102,10 @@ class CookieSettings : public CookieSettingsBase,
   // This method may be called on any thread.
   bool ShouldBlockThirdPartyCookies() const;
 
+  // content_settings::CookieSettingsBase:
+  void GetSettingForLegacyCookieAccess(const GURL& cookie_domain,
+                                       ContentSetting* setting) const override;
+
   // Detaches the |CookieSettings| from |PrefService|. This methods needs to be
   // called before destroying the service. Afterwards, only const methods can be
   // called.

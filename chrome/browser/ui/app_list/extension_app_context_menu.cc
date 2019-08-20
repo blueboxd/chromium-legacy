@@ -53,9 +53,6 @@ void ExtensionAppContextMenu::DisableInstalledExtensionCheckForTesting(
 }
 
 int ExtensionAppContextMenu::GetLaunchStringId() const {
-  // If --enable-new-bookmark-apps is enabled, then only check if
-  // USE_LAUNCH_TYPE_WINDOW is checked, as USE_LAUNCH_TYPE_PINNED (i.e. open
-  // as pinned tab) and fullscreen-by-default windows do not exist.
   bool launch_in_window = IsCommandIdChecked(ash::USE_LAUNCH_TYPE_WINDOW);
   return launch_in_window ? IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW
                           : IDS_APP_LIST_CONTEXT_MENU_NEW_TAB;
@@ -129,26 +126,18 @@ void ExtensionAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
 
 base::string16 ExtensionAppContextMenu::GetLabelForCommandId(
     int command_id) const {
-  if (command_id == ash::TOGGLE_PIN)
-    return AppContextMenu::GetLabelForCommandId(command_id);
+  if (command_id == ash::LAUNCH_NEW)
+    return l10n_util::GetStringUTF16(GetLaunchStringId());
 
-  DCHECK_EQ(ash::LAUNCH_NEW, command_id);
-
-  return l10n_util::GetStringUTF16(GetLaunchStringId());
+  return AppContextMenu::GetLabelForCommandId(command_id);
 }
 
-bool ExtensionAppContextMenu::GetIconForCommandId(int command_id,
-                                                  gfx::Image* icon) const {
-  if (command_id == ash::TOGGLE_PIN)
-    return AppContextMenu::GetIconForCommandId(command_id, icon);
+const gfx::VectorIcon* ExtensionAppContextMenu::GetVectorIconForCommandId(
+    int command_id) const {
+  if (command_id == ash::LAUNCH_NEW)
+    return &GetMenuItemVectorIcon(ash::LAUNCH_NEW, GetLaunchStringId());
 
-  DCHECK_EQ(ash::LAUNCH_NEW, command_id);
-
-  const views::MenuConfig& menu_config = views::MenuConfig::instance();
-  *icon = gfx::Image(gfx::CreateVectorIcon(
-      GetMenuItemVectorIcon(ash::LAUNCH_NEW, GetLaunchStringId()),
-      menu_config.touchable_icon_size, menu_config.touchable_icon_color));
-  return true;
+  return AppContextMenu::GetVectorIconForCommandId(command_id);
 }
 
 bool ExtensionAppContextMenu::IsItemForCommandIdDynamic(int command_id) const {
@@ -233,13 +222,9 @@ void ExtensionAppContextMenu::CreateOpenNewSubmenu(
   open_new_submenu_model_->AddRadioItemWithStringId(
       ash::USE_LAUNCH_TYPE_WINDOW, IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW,
       kGroupId);
-  const views::MenuConfig& menu_config = views::MenuConfig::instance();
-  const gfx::VectorIcon& icon =
-      GetMenuItemVectorIcon(ash::LAUNCH_NEW, GetLaunchStringId());
   menu_model->AddActionableSubmenuWithStringIdAndIcon(
       ash::LAUNCH_NEW, GetLaunchStringId(), open_new_submenu_model_.get(),
-      gfx::CreateVectorIcon(icon, menu_config.touchable_icon_size,
-                            menu_config.touchable_icon_color));
+      GetMenuItemVectorIcon(ash::LAUNCH_NEW, GetLaunchStringId()));
 }
 
 }  // namespace app_list

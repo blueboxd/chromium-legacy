@@ -15,13 +15,15 @@ bool NotificationData::Button::operator==(const Button& other) const {
 
 NotificationData::Button::~Button() = default;
 
+NotificationData::Icon::Icon() = default;
+NotificationData::Icon::~Icon() = default;
+
 NotificationData::NotificationData() = default;
 
 NotificationData::NotificationData(const NotificationData& other) = default;
 
 bool NotificationData::operator==(const NotificationData& other) const {
   return title == other.title && message == other.message &&
-         icons.size() == other.icons.size() &&
          custom_data == other.custom_data && buttons == other.buttons;
 }
 

@@ -82,7 +82,7 @@ class VideoCaptureDeviceFactoryLinuxTest : public ::testing::Test {
                                            std::move(fake_device_provider));
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   FakeV4L2Impl* fake_v4l2_;
   DescriptorDeviceProvider* fake_device_provider_;
   std::unique_ptr<VideoCaptureDeviceFactoryLinux> factory_;

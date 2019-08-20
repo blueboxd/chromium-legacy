@@ -217,7 +217,7 @@ class TraceEventDataSourceTest : public testing::Test {
     PerfettoTracedProcess::ResetTaskRunnerForTesting();
     PerfettoTracedProcess::GetTaskRunner()->GetOrCreateTaskRunner();
     auto perfetto_wrapper = std::make_unique<PerfettoTaskRunner>(
-        scoped_task_environment_.GetMainThreadTaskRunner());
+        task_environment_.GetMainThreadTaskRunner());
     producer_client_ =
         std::make_unique<MockProducerClient>(std::move(perfetto_wrapper));
     base::ThreadIdNameManager::GetInstance()->SetName(kTestThread);
@@ -436,7 +436,7 @@ class TraceEventDataSourceTest : public testing::Test {
 
  protected:
   // Should be the first member.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<MockProducerClient> producer_client_;
   int64_t last_timestamp_ = 0;

@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/fileapi/file.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/modules/native_file_system/file_system_create_writer_options.h"
+#include "third_party/blink/renderer/modules/native_file_system/native_file_system_error.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_writer.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -41,17 +42,14 @@ ScriptPromise NativeFileSystemFileHandle::createWriter(
             ExecutionContext* context = resolver->GetExecutionContext();
             if (!context)
               return;
-            if (result->error_code == base::File::FILE_OK) {
-              resolver->Resolve(MakeGarbageCollected<NativeFileSystemWriter>(
-                  RevocableInterfacePtr<
-                      mojom::blink::NativeFileSystemFileWriter>(
-                      writer.PassInterface(),
-                      context->GetInterfaceInvalidator(),
-                      context->GetTaskRunner(TaskType::kMiscPlatformAPI))));
-            } else {
-              resolver->Reject(
-                  file_error::CreateDOMException(result->error_code));
+            if (result->status != mojom::blink::NativeFileSystemStatus::kOk) {
+              native_file_system_error::Reject(resolver, *result);
+              return;
             }
+            resolver->Resolve(MakeGarbageCollected<NativeFileSystemWriter>(
+                RevocableInterfacePtr<mojom::blink::NativeFileSystemFileWriter>(
+                    writer.PassInterface(), context->GetInterfaceInvalidator(),
+                    context->GetTaskRunner(TaskType::kMiscPlatformAPI))));
           },
           WrapPersistent(resolver)));
 
@@ -66,11 +64,11 @@ ScriptPromise NativeFileSystemFileHandle::getFile(ScriptState* script_state) {
       [](ScriptPromiseResolver* resolver, const String& name,
          NativeFileSystemErrorPtr result,
          const scoped_refptr<BlobDataHandle>& blob) {
-        if (result->error_code == base::File::FILE_OK) {
-          resolver->Resolve(File::Create(name, InvalidFileTime(), blob));
-        } else {
-          resolver->Reject(file_error::CreateDOMException(result->error_code));
+        if (result->status != mojom::blink::NativeFileSystemStatus::kOk) {
+          native_file_system_error::Reject(resolver, *result);
+          return;
         }
+        resolver->Resolve(File::Create(name, InvalidFileTime(), blob));
       },
       WrapPersistent(resolver), name()));
 

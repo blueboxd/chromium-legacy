@@ -59,14 +59,14 @@ class DeviceNotifierTest : public ::testing::Test,
 
   void DestroyDeviceNotifier() {
     remote_device_notifier_.reset();
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     EXPECT_TRUE(service_keepalive_.HasNoRefs());
   }
 
   // service_manager::ServiceKeepalive::Observer:
   void OnIdleTimeout() override { OnNoServiceRefs(); }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   mojo::Remote<mojom::DeviceNotifier> remote_device_notifier_;
 
  private:
@@ -90,20 +90,20 @@ TEST_F(DeviceNotifierTest, DeviceNotifierNotifies) {
   EXPECT_CALL(listener, DevicesChanged()).Times(0);
   base::SystemMonitor::Get()->ProcessDevicesChanged(
       base::SystemMonitor::DEVTYPE_AUDIO);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Register the listener and simulate an audio-device event.
   remote_device_notifier_->RegisterListener(std::move(remote_device_listener));
   EXPECT_CALL(listener, DevicesChanged());
   base::SystemMonitor::Get()->ProcessDevicesChanged(
       base::SystemMonitor::DEVTYPE_AUDIO);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Simulate a video-device event, which should be ignored.
   EXPECT_CALL(listener, DevicesChanged()).Times(0);
   base::SystemMonitor::Get()->ProcessDevicesChanged(
       base::SystemMonitor::DEVTYPE_VIDEO_CAPTURE);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   DestroyDeviceNotifier();
 }

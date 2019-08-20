@@ -201,7 +201,7 @@ class DecoderSelectorTest : public ::testing::Test {
     if (use_decrypting_decoder_) {
       decoders.push_back(
           std::make_unique<typename TypeParam::DecryptingDecoder>(
-              scoped_task_environment_.GetMainThreadTaskRunner(), &media_log_));
+              task_environment_.GetMainThreadTaskRunner(), &media_log_));
     }
 #endif  // !defined(OS_ANDROID)
 
@@ -246,7 +246,7 @@ class DecoderSelectorTest : public ::testing::Test {
   void CreateDecoderSelector() {
     decoder_selector_ =
         std::make_unique<DecoderSelector<TypeParam::kStreamType>>(
-            scoped_task_environment_.GetMainThreadTaskRunner(),
+            task_environment_.GetMainThreadTaskRunner(),
             base::BindRepeating(&Self::CreateDecoders, base::Unretained(this)),
             &media_log_);
     decoder_selector_->Initialize(
@@ -289,9 +289,9 @@ class DecoderSelectorTest : public ::testing::Test {
     RunUntilIdle();
   }
 
-  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   NullMediaLog media_log_;
 
   std::unique_ptr<StreamTraits> traits_;

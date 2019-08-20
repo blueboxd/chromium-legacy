@@ -111,7 +111,7 @@ class FeedImageManagerTest : public testing::Test {
     ASSERT_TRUE(image_database_->IsInitialized());
   }
 
-  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
   FeedImageDatabase* image_database() { return image_database_; }
 
@@ -144,7 +144,7 @@ class FeedImageManagerTest : public testing::Test {
   FeedImageDatabase* image_database_;
   base::ScopedTempDir database_dir_;
   FakeImageDecoder* fake_image_decoder_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   HistogramTester histogram_;
 
   DISALLOW_COPY_AND_ASSIGN(FeedImageManagerTest);

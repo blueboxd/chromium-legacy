@@ -72,11 +72,7 @@ base::string16 SaveCardIconView::GetTextForTooltipAndAccessibleName() const {
 }
 
 SaveCardBubbleController* SaveCardIconView::GetController() const {
-  content::WebContents* web_contents = GetWebContents();
-  if (!web_contents)
-    return nullptr;
-
-  return SaveCardBubbleController::GetOrCreate(web_contents);
+  return SaveCardBubbleController::Get(GetWebContents());
 }
 
 void SaveCardIconView::AnimationEnded(const gfx::Animation* animation) {

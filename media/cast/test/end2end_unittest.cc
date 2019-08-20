@@ -879,7 +879,7 @@ class End2EndTest : public ::testing::Test {
   std::vector<std::pair<base::TimeTicks, base::TimeTicks> > video_ticks_;
 
   // |transport_sender_| has a RepeatingTimer which needs a MessageLoop.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 namespace {

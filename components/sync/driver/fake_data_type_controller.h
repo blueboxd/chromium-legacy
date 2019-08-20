@@ -31,8 +31,8 @@ class FakeDataTypeController : public DirectoryDataTypeController {
   bool ShouldLoadModelBeforeConfigure() const override;
   void LoadModels(const ConfigureContext& configure_context,
                   const ModelLoadCallback& model_load_callback) override;
-  void RegisterWithBackend(base::OnceCallback<void(bool)> set_downloaded,
-                           ModelTypeConfigurer* configurer) override;
+  RegisterWithBackendResult RegisterWithBackend(
+      ModelTypeConfigurer* configurer) override;
   void StartAssociating(StartCallback start_callback) override;
   void Stop(ShutdownReason shutdown_reason) override;
   ChangeProcessor* GetChangeProcessor() const override;

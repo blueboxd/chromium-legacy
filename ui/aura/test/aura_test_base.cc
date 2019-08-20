@@ -24,8 +24,7 @@ namespace aura {
 namespace test {
 
 AuraTestBase::AuraTestBase()
-    : scoped_task_environment_(
-          base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+    : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
 
 AuraTestBase::~AuraTestBase() {
   CHECK(setup_called_)

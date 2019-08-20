@@ -149,8 +149,7 @@ class TestIoCallback {
 class HidConnectionTest : public testing::Test {
  public:
   HidConnectionTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
         io_thread_(base::TestIOThread::kAutoStart) {}
 
  protected:
@@ -173,7 +172,7 @@ class HidConnectionTest : public testing::Test {
     ASSERT_FALSE(device_guid_.empty());
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::TestIOThread io_thread_;
   std::unique_ptr<HidService> service_;
   std::unique_ptr<UsbTestGadget> test_gadget_;

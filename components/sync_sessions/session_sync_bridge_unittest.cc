@@ -322,7 +322,7 @@ class SessionSyncBridgeTest : public ::testing::Test {
   syncer::ModelTypeStore* underlying_store() { return store_.get(); }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   const std::unique_ptr<syncer::ModelTypeStore> store_;
 
   // Dependencies.

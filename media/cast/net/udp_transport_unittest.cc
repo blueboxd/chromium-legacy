@@ -71,18 +71,17 @@ static void UpdateCastTransportStatus(CastTransportStatus status) {
 class UdpTransportImplTest : public ::testing::Test {
  public:
   UdpTransportImplTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {
     net::IPEndPoint free_local_port1 = test::GetFreeLocalPort();
     net::IPEndPoint free_local_port2 = test::GetFreeLocalPort();
 
     send_transport_ = std::make_unique<UdpTransportImpl>(
-        scoped_task_environment_.GetMainThreadTaskRunner(), free_local_port1,
+        task_environment_.GetMainThreadTaskRunner(), free_local_port1,
         free_local_port2, base::BindRepeating(&UpdateCastTransportStatus));
     send_transport_->SetSendBufferSize(65536);
 
     recv_transport_ = std::make_unique<UdpTransportImpl>(
-        scoped_task_environment_.GetMainThreadTaskRunner(), free_local_port2,
+        task_environment_.GetMainThreadTaskRunner(), free_local_port2,
         free_local_port1, base::BindRepeating(&UpdateCastTransportStatus));
     recv_transport_->SetSendBufferSize(65536);
   }
@@ -90,7 +89,7 @@ class UdpTransportImplTest : public ::testing::Test {
   ~UdpTransportImplTest() override = default;
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<UdpTransportImpl> send_transport_;
 

@@ -49,7 +49,7 @@ class AudioSyncReaderBitstreamTest : public TestWithParam<OverflowTestCase> {
   ~AudioSyncReaderBitstreamTest() override {}
 
  private:
-  base::test::ScopedTaskEnvironment env_;
+  base::test::TaskEnvironment env_;
 };
 
 TEST_P(AudioSyncReaderBitstreamTest, BitstreamBufferOverflow_DoesNotWriteOOB) {

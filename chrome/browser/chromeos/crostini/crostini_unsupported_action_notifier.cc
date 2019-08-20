@@ -124,8 +124,9 @@ bool CrostiniUnsupportedActionNotifier::Delegate::IsFocusedWindowCrostini() {
     return false;
   }
   auto* focused_window = exo::WMHelper::GetInstance()->GetFocusedWindow();
-  return focused_window->GetProperty(aura::client::kAppType) ==
-         static_cast<int>(ash::AppType::CROSTINI_APP);
+  return focused_window &&
+         (focused_window->GetProperty(aura::client::kAppType) ==
+          static_cast<int>(ash::AppType::CROSTINI_APP));
 }
 
 chromeos::input_method::InputMethodDescriptor

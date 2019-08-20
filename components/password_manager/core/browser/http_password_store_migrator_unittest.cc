@@ -130,7 +130,7 @@ class HttpPasswordStoreMigratorTest : public testing::Test {
   MockPasswordStore& store() { return *mock_store_; }
   MockPasswordManagerClient& client() { return client_; }
 
-  void WaitForPasswordStore() { scoped_task_environment_.RunUntilIdle(); }
+  void WaitForPasswordStore() { task_environment_.RunUntilIdle(); }
 
  protected:
   void TestEmptyStore(bool is_hsts);
@@ -138,7 +138,7 @@ class HttpPasswordStoreMigratorTest : public testing::Test {
   void TestMigratorDeletionByConsumer(bool is_hsts);
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   MockConsumer consumer_;
   scoped_refptr<MockPasswordStore> mock_store_;
   MockPasswordManagerClient client_;

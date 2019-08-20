@@ -6,6 +6,7 @@
 #define NGLayoutResult_h
 
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
@@ -120,6 +121,10 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   LayoutUnit MinimalSpaceShortage() const {
     return HasRareData() ? rare_data_->minimal_space_shortage
                          : LayoutUnit::Max();
+  }
+
+  SerializedScriptValue* CustomLayoutData() const {
+    return HasRareData() ? rare_data_->custom_layout_data.get() : nullptr;
   }
 
   // The break-before value on the first child needs to be propagated to the
@@ -280,6 +285,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     NGUnpositionedListMarker unpositioned_list_marker;
     LayoutUnit minimal_space_shortage = LayoutUnit::Max();
     NGExclusionSpace exclusion_space;
+    scoped_refptr<SerializedScriptValue> custom_layout_data;
   };
 
   bool HasRareData() const { return bitfields_.has_rare_data; }

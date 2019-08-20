@@ -129,8 +129,8 @@ TEST(DataReductionProxySettingsStandaloneTest, TestEndToEndSecureProxyCheck) {
       data_reduction_proxy::switches::kDataReductionProxyHttpProxies,
       kHttpsProxy.ToURI() + ";" + kHttpProxy.ToURI());
 
-  base::test::ScopedTaskEnvironment task_environment{
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  base::test::TaskEnvironment task_environment{
+      base::test::TaskEnvironment::MainThreadType::IO};
   struct TestCase {
     const char* response_headers;
     const char* response_body;
@@ -200,8 +200,8 @@ TEST(DataReductionProxySettingsStandaloneTest, TestEndToEndSecureProxyCheck) {
 }
 
 TEST(DataReductionProxySettingsStandaloneTest, TestOnProxyEnabledPrefChange) {
-  base::test::ScopedTaskEnvironment task_environment{
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  base::test::TaskEnvironment task_environment{
+      base::test::TaskEnvironment::MainThreadType::IO};
   std::unique_ptr<DataReductionProxyTestContext> drp_test_context =
       DataReductionProxyTestContext::Builder()
           .WithMockConfig()
@@ -232,8 +232,8 @@ TEST(DataReductionProxySettingsStandaloneTest, TestOnProxyEnabledPrefChange) {
 }
 
 TEST(DataReductionProxySettingsStandaloneTest, TestIsProxyEnabledOrManaged) {
-  base::test::ScopedTaskEnvironment task_environment{
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  base::test::TaskEnvironment task_environment{
+      base::test::TaskEnvironment::MainThreadType::IO};
   std::unique_ptr<DataReductionProxyTestContext> drp_test_context =
       DataReductionProxyTestContext::Builder()
           .WithMockConfig()
@@ -273,8 +273,8 @@ TEST(DataReductionProxySettingsStandaloneTest, TestIsProxyEnabledOrManaged) {
 }
 
 TEST(DataReductionProxySettingsStandaloneTest, TestCanUseDataReductionProxy) {
-  base::test::ScopedTaskEnvironment task_environment{
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  base::test::TaskEnvironment task_environment{
+      base::test::TaskEnvironment::MainThreadType::IO};
   std::unique_ptr<DataReductionProxyTestContext> drp_test_context =
       DataReductionProxyTestContext::Builder()
           .WithMockConfig()
@@ -475,8 +475,8 @@ TEST_F(DataReductionProxySettingsTest, TestDaysSinceEnabledWithTestClock) {
 // that already have data reduction proxy on.
 TEST(DataReductionProxySettingsStandaloneTest,
      TestDaysSinceEnabledExistingUser) {
-  base::test::ScopedTaskEnvironment task_environment{
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  base::test::TaskEnvironment task_environment{
+      base::test::TaskEnvironment::MainThreadType::IO};
   std::unique_ptr<DataReductionProxyTestContext> drp_test_context =
       DataReductionProxyTestContext::Builder()
           .WithMockConfig()

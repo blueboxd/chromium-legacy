@@ -17,7 +17,7 @@ class MediaSessionTest : public testing::Test {
   ~MediaSessionTest() override = default;
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSessionTest);
 };

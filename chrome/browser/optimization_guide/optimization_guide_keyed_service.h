@@ -62,6 +62,9 @@ class OptimizationGuideKeyedService
   // optimization type registered and there is a hint available.
   void MaybeLoadHintForNavigation(content::NavigationHandle* navigation_handle);
 
+  // Clears data specific to the user.
+  void ClearData();
+
   // optimization_guide::OptimizationGuideDecider implementation:
   void RegisterOptimizationTypes(
       std::vector<optimization_guide::proto::OptimizationType>

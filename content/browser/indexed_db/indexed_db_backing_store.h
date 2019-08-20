@@ -20,7 +20,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -97,10 +96,21 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     DISALLOW_COPY_AND_ASSIGN(RecordIdentifier);
   };
 
-  enum class BlobWriteResult { FAILURE_ASYNC, SUCCESS_ASYNC, SUCCESS_SYNC };
+  enum class BlobWriteResult {
+    // There was an error writing the blobs.
+    kFailure,
+    // The blobs were written, and phase two should be scheduled asynchronously.
+    // The returned status will be ignored.
+    kRunPhaseTwoAsync,
+    // The blobs were written, and phase two should be run now. The returned
+    // status will be correctly propagated.
+    kRunPhaseTwoAndReturnResult,
+  };
 
+  // The returned status is only used when the result is
+  // |kRunPhaseTwoAndReturnResult|.
   using BlobWriteCallback = base::OnceCallback<leveldb::Status(
-      IndexedDBBackingStore::BlobWriteResult result)>;
+      IndexedDBBackingStore::BlobWriteResult)>;
 
   class BlobChangeRecord {
    public:
@@ -562,6 +572,8 @@ class CONTENT_EXPORT IndexedDBBackingStore {
   leveldb::Status RevertSchemaToV2();
 
   bool is_incognito() const { return backing_store_mode_ == Mode::kInMemory; }
+
+  virtual std::unique_ptr<Transaction> CreateTransaction();
 
   base::WeakPtr<IndexedDBBackingStore> AsWeakPtr() {
     return weak_factory_.GetWeakPtr();

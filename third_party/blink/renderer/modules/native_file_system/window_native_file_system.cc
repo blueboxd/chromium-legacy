@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/modules/native_file_system/choose_file_system_entries_options.h"
 #include "third_party/blink/renderer/modules/native_file_system/choose_file_system_entries_options_accepts.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_directory_handle.h"
+#include "third_party/blink/renderer/modules/native_file_system/native_file_system_error.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_file_handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -121,9 +122,10 @@ ScriptPromise WindowNativeFileSystem::chooseFileSystemEntries(
             ExecutionContext* context = resolver->GetExecutionContext();
             if (!context)
               return;
-            if (file_operation_result->error_code != base::File::FILE_OK) {
-              resolver->Reject(file_error::CreateDOMException(
-                  file_operation_result->error_code));
+            if (file_operation_result->status !=
+                mojom::blink::NativeFileSystemStatus::kOk) {
+              native_file_system_error::Reject(resolver,
+                                               *file_operation_result);
               return;
             }
             if (options->multiple()) {

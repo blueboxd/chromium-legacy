@@ -27,7 +27,7 @@ const int64_t kId = 439829;
 class SyncDataTest : public testing::Test {
  protected:
   SyncDataTest() = default;
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   sync_pb::EntitySpecifics specifics;
 };
 

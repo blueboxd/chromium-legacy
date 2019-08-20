@@ -117,7 +117,7 @@ class FFmpegDemuxerTest : public testing::Test {
     if (demuxer_)
       demuxer_->Stop();
     demuxer_.reset();
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     data_source_.reset();
   }
 
@@ -268,7 +268,7 @@ class FFmpegDemuxerTest : public testing::Test {
 
   // Fixture members.
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // TODO(wolenetz): Consider expanding MediaLog verification coverage here
   // using StrictMock<MockMediaLog> for all FFmpegDemuxerTests. See
@@ -487,12 +487,12 @@ TEST_F(FFmpegDemuxerTest, AbortPendingReads) {
   audio->Read(NewReadCB(FROM_HERE, 29, 0, true, DemuxerStream::kAborted));
   demuxer_->AbortPendingReads();
   base::RunLoop().Run();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Additional reads should also be aborted (until a Seek()).
   audio->Read(NewReadCB(FROM_HERE, 29, 0, true, DemuxerStream::kAborted));
   base::RunLoop().Run();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Ensure blocking thread has completed outstanding work.
   demuxer_->Stop();
@@ -516,7 +516,7 @@ TEST_F(FFmpegDemuxerTest, Read_Audio) {
 
   audio->Read(NewReadCB(FROM_HERE, 27, 3000, true));
   base::RunLoop().Run();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_EQ(166866, demuxer_->GetMemoryUsage());
 }
@@ -534,7 +534,7 @@ TEST_F(FFmpegDemuxerTest, Read_Video) {
 
   video->Read(NewReadCB(FROM_HERE, 1057, 33000, false));
   base::RunLoop().Run();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_EQ(148778, demuxer_->GetMemoryUsage());
 }
@@ -1066,7 +1066,7 @@ TEST_F(FFmpegDemuxerTest, Stop) {
 
   // Attempt the read...
   audio->Read(callback.Get());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ;
 
   // Don't let the test call Stop() again.
@@ -1696,7 +1696,7 @@ void QuitLoop(base::Closure quit_closure,
 
 void DisableAndEnableDemuxerTracks(
     FFmpegDemuxer* demuxer,
-    base::test::ScopedTaskEnvironment* scoped_task_environment) {
+    base::test::TaskEnvironment* task_environment) {
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   std::vector<MediaTrack::Id> audio_tracks;
@@ -1728,7 +1728,7 @@ void DisableAndEnableDemuxerTracks(
       base::BindOnce(QuitLoop, base::Passed(enable_audio.QuitClosure())));
   enable_audio.Run();
 
-  scoped_task_environment->RunUntilIdle();
+  task_environment->RunUntilIdle();
 }
 
 void OnReadDoneExpectEos(DemuxerStream::Status status,
@@ -1749,7 +1749,7 @@ TEST_F(FFmpegDemuxerTest, StreamStatusNotifications) {
   EXPECT_NE(nullptr, video_stream);
 
   // Verify stream status notifications delivery without pending read first.
-  DisableAndEnableDemuxerTracks(demuxer_.get(), &scoped_task_environment_);
+  DisableAndEnableDemuxerTracks(demuxer_.get(), &task_environment_);
 
   // Verify that stream notifications are delivered properly when stream status
   // changes with a pending read. Call FlushBuffers before reading, to ensure
@@ -1761,7 +1761,7 @@ TEST_F(FFmpegDemuxerTest, StreamStatusNotifications) {
   audio_stream->Read(base::Bind(&OnReadDoneExpectEos));
   video_stream->Read(base::Bind(&OnReadDoneExpectEos));
 
-  DisableAndEnableDemuxerTracks(demuxer_.get(), &scoped_task_environment_);
+  DisableAndEnableDemuxerTracks(demuxer_.get(), &task_environment_);
 }
 
 TEST_F(FFmpegDemuxerTest, MultitrackMemoryUsage) {
@@ -1776,7 +1776,7 @@ TEST_F(FFmpegDemuxerTest, MultitrackMemoryUsage) {
   // shouldn't be too high.
   audio->Read(NewReadCB(FROM_HERE, 304, 0, true));
   base::RunLoop().Run();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(22134, demuxer_->GetMemoryUsage());
 
   // Now enable all demuxer streams in the file and perform another read, this
@@ -1788,7 +1788,7 @@ TEST_F(FFmpegDemuxerTest, MultitrackMemoryUsage) {
 
   audio->Read(NewReadCB(FROM_HERE, 166, 21000, true));
   base::RunLoop().Run();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   // With newly enabled demuxer streams the amount of memory used by the demuxer
   // is much higher.
   EXPECT_EQ(156011, demuxer_->GetMemoryUsage());

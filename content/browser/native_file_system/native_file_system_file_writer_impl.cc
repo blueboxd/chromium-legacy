@@ -4,13 +4,14 @@
 
 #include "content/browser/native_file_system/native_file_system_file_writer_impl.h"
 #include "base/logging.h"
+#include "content/browser/native_file_system/native_file_system_error.h"
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/fileapi/file_system_operation_runner.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_error.mojom.h"
 
-using blink::mojom::NativeFileSystemError;
+using blink::mojom::NativeFileSystemStatus;
 using storage::BlobDataHandle;
 using storage::FileSystemOperation;
 
@@ -59,9 +60,9 @@ void NativeFileSystemFileWriterImpl::Write(uint64_t offset,
       base::BindOnce(&NativeFileSystemFileWriterImpl::WriteImpl,
                      weak_factory_.GetWeakPtr(), offset, std::move(data)),
       base::BindOnce([](WriteCallback callback) {
-        std::move(callback).Run(
-            NativeFileSystemError::New(base::File::FILE_ERROR_ACCESS_DENIED),
-            /*bytes_written=*/0);
+        std::move(callback).Run(native_file_system_error::FromStatus(
+                                    NativeFileSystemStatus::kPermissionDenied),
+                                /*bytes_written=*/0);
       }),
       std::move(callback));
 }
@@ -76,9 +77,9 @@ void NativeFileSystemFileWriterImpl::WriteStream(
       base::BindOnce(&NativeFileSystemFileWriterImpl::WriteStreamImpl,
                      weak_factory_.GetWeakPtr(), offset, std::move(stream)),
       base::BindOnce([](WriteStreamCallback callback) {
-        std::move(callback).Run(
-            NativeFileSystemError::New(base::File::FILE_ERROR_ACCESS_DENIED),
-            /*bytes_written=*/0);
+        std::move(callback).Run(native_file_system_error::FromStatus(
+                                    NativeFileSystemStatus::kPermissionDenied),
+                                /*bytes_written=*/0);
       }),
       std::move(callback));
 }
@@ -91,8 +92,8 @@ void NativeFileSystemFileWriterImpl::Truncate(uint64_t length,
       base::BindOnce(&NativeFileSystemFileWriterImpl::TruncateImpl,
                      weak_factory_.GetWeakPtr(), length),
       base::BindOnce([](TruncateCallback callback) {
-        std::move(callback).Run(
-            NativeFileSystemError::New(base::File::FILE_ERROR_ACCESS_DENIED));
+        std::move(callback).Run(native_file_system_error::FromStatus(
+            NativeFileSystemStatus::kPermissionDenied));
       }),
       std::move(callback));
 }
@@ -104,8 +105,8 @@ void NativeFileSystemFileWriterImpl::Close(CloseCallback callback) {
       base::BindOnce(&NativeFileSystemFileWriterImpl::CloseImpl,
                      weak_factory_.GetWeakPtr()),
       base::BindOnce([](CloseCallback callback) {
-        std::move(callback).Run(
-            NativeFileSystemError::New(base::File::FILE_ERROR_ACCESS_DENIED));
+        std::move(callback).Run(native_file_system_error::FromStatus(
+            NativeFileSystemStatus::kPermissionDenied));
       }),
       std::move(callback));
 }
@@ -119,7 +120,9 @@ void NativeFileSystemFileWriterImpl::WriteImpl(uint64_t offset,
 
   if (is_closed()) {
     std::move(callback).Run(
-        NativeFileSystemError::New(base::File::FILE_ERROR_INVALID_OPERATION),
+        native_file_system_error::FromStatus(
+            NativeFileSystemStatus::kInvalidState,
+            "An attempt was made to write to a closed writer."),
         /*bytes_written=*/0);
     return;
   }
@@ -138,7 +141,8 @@ void NativeFileSystemFileWriterImpl::DoWriteBlob(
 
   if (!blob) {
     std::move(callback).Run(
-        NativeFileSystemError::New(base::File::FILE_ERROR_FAILED),
+        native_file_system_error::FromStatus(
+            NativeFileSystemStatus::kInvalidArgument, "Blob does not exist"),
         /*bytes_written=*/0);
     return;
   }
@@ -160,7 +164,9 @@ void NativeFileSystemFileWriterImpl::WriteStreamImpl(
 
   if (is_closed()) {
     std::move(callback).Run(
-        NativeFileSystemError::New(base::File::FILE_ERROR_INVALID_OPERATION),
+        native_file_system_error::FromStatus(
+            NativeFileSystemStatus::kInvalidState,
+            "An attempt was made to write to a closed writer."),
         /*bytes_written=*/0);
     return;
   }
@@ -182,7 +188,8 @@ void NativeFileSystemFileWriterImpl::DidWrite(WriteState* state,
   state->bytes_written += bytes;
   if (complete) {
     std::move(state->callback)
-        .Run(NativeFileSystemError::New(result), state->bytes_written);
+        .Run(native_file_system_error::FromFileError(result),
+             state->bytes_written);
   }
 }
 
@@ -193,8 +200,9 @@ void NativeFileSystemFileWriterImpl::TruncateImpl(uint64_t length,
             blink::mojom::PermissionStatus::GRANTED);
 
   if (is_closed()) {
-    std::move(callback).Run(
-        NativeFileSystemError::New(base::File::FILE_ERROR_INVALID_OPERATION));
+    std::move(callback).Run(native_file_system_error::FromStatus(
+        NativeFileSystemStatus::kInvalidState,
+        "An attempt was made to write to a closed writer."));
     return;
   }
 
@@ -202,7 +210,8 @@ void NativeFileSystemFileWriterImpl::TruncateImpl(uint64_t length,
       swap_url(), length,
       base::BindOnce(
           [](TruncateCallback callback, base::File::Error result) {
-            std::move(callback).Run(NativeFileSystemError::New(result));
+            std::move(callback).Run(
+                native_file_system_error::FromFileError(result));
           },
           std::move(callback)));
 }
@@ -212,8 +221,9 @@ void NativeFileSystemFileWriterImpl::CloseImpl(CloseCallback callback) {
   DCHECK_EQ(GetWritePermissionStatus(),
             blink::mojom::PermissionStatus::GRANTED);
   if (is_closed()) {
-    std::move(callback).Run(
-        NativeFileSystemError::New(base::File::FILE_ERROR_INVALID_OPERATION));
+    std::move(callback).Run(native_file_system_error::FromStatus(
+        NativeFileSystemStatus::kInvalidState,
+        "An attempt was made to close an already closed writer."));
     return;
   }
 
@@ -245,7 +255,7 @@ void NativeFileSystemFileWriterImpl::DidSwapFileBeforeClose(
     state_ = State::kClosed;
   }
 
-  std::move(callback).Run(NativeFileSystemError::New(result));
+  std::move(callback).Run(native_file_system_error::FromFileError(result));
 }
 
 base::WeakPtr<NativeFileSystemHandleBase>

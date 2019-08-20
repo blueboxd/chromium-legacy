@@ -83,7 +83,7 @@ class RemotingRegisterSupportHostTest : public testing::Test {
   ~RemotingRegisterSupportHostTest() override {
     register_host_request_.reset();
     signal_strategy_.reset();
-    scoped_task_environment_.FastForwardUntilNoTasksRemain();
+    task_environment_.FastForwardUntilNoTasksRemain();
   }
 
  protected:
@@ -96,8 +96,8 @@ class RemotingRegisterSupportHostTest : public testing::Test {
     MOCK_METHOD0(CancelPendingRequests, void());
   };
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
   std::unique_ptr<RemotingRegisterSupportHostRequest> register_host_request_;
   MockRegisterSupportHostClient* register_host_client_ = nullptr;

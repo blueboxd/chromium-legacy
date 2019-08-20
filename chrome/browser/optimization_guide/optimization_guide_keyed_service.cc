@@ -93,6 +93,11 @@ OptimizationGuideKeyedService::CanApplyOptimization(
       optimization_metadata);
 }
 
+void OptimizationGuideKeyedService::ClearData() {
+  if (hints_manager_)
+    hints_manager_->ClearFetchedHints();
+}
+
 void OptimizationGuideKeyedService::Shutdown() {
   if (hints_manager_) {
     hints_manager_->Shutdown();

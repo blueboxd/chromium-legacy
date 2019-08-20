@@ -172,7 +172,7 @@ class MojoAudioInputStreamTest : public Test {
         .WillOnce(SaveArg<0>(&delegate_event_handler_));
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::CancelableSyncSocket local_;
   std::unique_ptr<TestCancelableSyncSocket> foreign_socket_;
   base::ReadOnlySharedMemoryRegion mem_;

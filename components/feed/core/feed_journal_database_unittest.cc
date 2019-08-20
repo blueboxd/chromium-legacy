@@ -128,7 +128,7 @@ class FeedJournalDatabaseTest : public testing::Test {
     RunUntilIdle();
   }
 
-  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
   scoped_refptr<base::SequencedTaskRunner> task_runner() {
     return task_runner_;
@@ -145,7 +145,7 @@ class FeedJournalDatabaseTest : public testing::Test {
   MOCK_METHOD2(OnCheckJournalExistReceived, void(bool, bool));
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::map<std::string, JournalStorageProto> journal_db_storage_;
 

@@ -103,8 +103,8 @@ void SecurityKeyMessageWriterImplTest::WriteMessageToOutput(
   reader_thread.StartWithOptions(options);
 
   // Used to block until the read complete callback is triggered.
-  base::test::ScopedTaskEnvironment scoped_task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
   base::RunLoop run_loop;
 
   ASSERT_TRUE(base::PostTaskAndReplyWithResult(

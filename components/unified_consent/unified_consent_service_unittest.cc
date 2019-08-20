@@ -89,7 +89,7 @@ class UnifiedConsentServiceTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   signin::IdentityTestEnvironment identity_test_environment_;
   TestSyncService sync_service_;

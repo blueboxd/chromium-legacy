@@ -1173,8 +1173,19 @@ void Layer::SuppressPaint() {
 void Layer::OnDeviceScaleFactorChanged(float device_scale_factor) {
   if (device_scale_factor_ == device_scale_factor)
     return;
-  if (animator_)
+
+  base::WeakPtr<Layer> weak_this = weak_ptr_factory_.GetWeakPtr();
+
+  // NOTE: Some animation observers destroy the layer when the animation ends.
+  if (animator_) {
     animator_->StopAnimatingProperty(LayerAnimationElement::TRANSFORM);
+
+    // Do not proceed if the layer was destroyed due to an animation
+    // observer.
+    if (!weak_this)
+      return;
+  }
+
   const float old_device_scale_factor = device_scale_factor_;
   device_scale_factor_ = device_scale_factor;
   RecomputeDrawsContentAndUVRect();
@@ -1189,8 +1200,14 @@ void Layer::OnDeviceScaleFactorChanged(float device_scale_factor) {
     delegate_->OnDeviceScaleFactorChanged(old_device_scale_factor,
                                           device_scale_factor);
   }
-  for (auto* child : children_)
+  for (auto* child : children_) {
     child->OnDeviceScaleFactorChanged(device_scale_factor);
+
+    // A child layer may have triggered a delegate or an observer to delete
+    // |this| layer. In which case return early to avoid crash.
+    if (!weak_this)
+      return;
+  }
   if (layer_mask_)
     layer_mask_->OnDeviceScaleFactorChanged(device_scale_factor);
 }

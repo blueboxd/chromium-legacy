@@ -511,8 +511,8 @@ class BridgedNativeWidgetTest : public BridgedNativeWidgetTestBase,
 
   HandleKeyEventCallback handle_key_event_callback_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::UI};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::UI};
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BridgedNativeWidgetTest);

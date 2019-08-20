@@ -125,7 +125,7 @@ class ChannelMultiplexerTest : public testing::Test {
 
  private:
   // Must be instantiated before the FakeStreamChannelFactories below.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  protected:
   FakeStreamChannelFactory host_channel_factory_;

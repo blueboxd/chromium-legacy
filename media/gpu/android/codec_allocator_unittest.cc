@@ -72,8 +72,8 @@ class CodecAllocatorTest : public testing::Test {
                               std::unique_ptr<MediaCodecBridge> codec) {
     // This should always be called on the main thread, despite whatever thread
     // the allocator happens to be running on.
-    ASSERT_TRUE(scoped_task_environment_.GetMainThreadTaskRunner()
-                    ->BelongsToCurrentThread());
+    ASSERT_TRUE(
+        task_environment_.GetMainThreadTaskRunner()->BelongsToCurrentThread());
 
     last_created_codec_.reset(
         reinterpret_cast<MockMediaCodecBridge*>(codec.release()));
@@ -85,8 +85,8 @@ class CodecAllocatorTest : public testing::Test {
   void OnCodecReleasedInternal(base::OnceClosure quit_closure) {
     // This should always be called on the main thread, despite whatever thread
     // the allocator happens to be running on.
-    ASSERT_TRUE(scoped_task_environment_.GetMainThreadTaskRunner()
-                    ->BelongsToCurrentThread());
+    ASSERT_TRUE(
+        task_environment_.GetMainThreadTaskRunner()->BelongsToCurrentThread());
     OnCodecReleased();
     std::move(quit_closure).Run();
   }
@@ -110,7 +110,7 @@ class CodecAllocatorTest : public testing::Test {
 
  protected:
   // So that we can get the thread's task runner.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   base::Thread allocator_thread_;
 
@@ -265,7 +265,7 @@ TEST_F(CodecAllocatorTest, SecureCreationFailsWhenHung) {
 
   // QuitClosure may run before the initial release processes, so RunUntilIdle
   // here such that hung status is cleared.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Running the loop should clear hung status.
   ASSERT_FALSE(IsPrimaryTaskRunnerLikelyHung());
@@ -294,7 +294,7 @@ TEST_F(CodecAllocatorTest, SoftwareCodecUsedWhenHung) {
 
   // QuitClosure may run before the initial release processes, so RunUntilIdle
   // here such that hung status is cleared.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Running the loop should clear hung status.
   ASSERT_FALSE(IsPrimaryTaskRunnerLikelyHung());
@@ -341,7 +341,7 @@ TEST_F(CodecAllocatorTest, CodecReleasedOnRightTaskRunnerWhenHung) {
 
   // QuitClosure may run before the initial release processes, so RunUntilIdle
   // here such that hung status is cleared.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Running the loop should clear hung status.
   ASSERT_FALSE(IsPrimaryTaskRunnerLikelyHung());

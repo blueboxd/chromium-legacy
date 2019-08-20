@@ -582,7 +582,7 @@ class LocalDeviceInstrumentationTestRun(
       def handle_coverage_data():
         if self._test_instance.coverage_directory:
           try:
-            device.PullFile(coverage_directory,
+            device.PullFile(coverage_device_file,
                             self._test_instance.coverage_directory)
             device.RunShellCommand(
                 'rm -f %s' % posixpath.join(coverage_directory, '*'),

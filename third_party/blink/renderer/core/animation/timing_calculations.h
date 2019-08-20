@@ -31,7 +31,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_TIMING_CALCULATIONS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_TIMING_CALCULATIONS_H_
 
-#include "third_party/blink/renderer/core/animation/animation_effect.h"
 #include "third_party/blink/renderer/core/animation/timing.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
@@ -68,11 +67,10 @@ static inline double MultiplyZeroAlwaysGivesZero(AnimationTimeDelta x,
 }
 
 // https://drafts.csswg.org/web-animations-1/#animation-effect-phases-and-states
-static inline Timing::Phase CalculatePhase(
-    double active_duration,
-    double local_time,
-    AnimationEffect::AnimationDirection direction,
-    const Timing& specified) {
+static inline Timing::Phase CalculatePhase(double active_duration,
+                                           double local_time,
+                                           Timing::AnimationDirection direction,
+                                           const Timing& specified) {
   DCHECK_GE(active_duration, 0);
   if (IsNull(local_time))
     return Timing::kPhaseNone;
@@ -82,14 +80,14 @@ static inline Timing::Phase CalculatePhase(
       std::max(std::min(specified.start_delay, end_time), 0.0);
   if (local_time < before_active_boundary_time ||
       (local_time == before_active_boundary_time &&
-       direction == AnimationEffect::AnimationDirection::kBackwards)) {
+       direction == Timing::AnimationDirection::kBackwards)) {
     return Timing::kPhaseBefore;
   }
   double active_after_boundary_time = std::max(
       std::min(specified.start_delay + active_duration, end_time), 0.0);
   if (local_time > active_after_boundary_time ||
       (local_time == active_after_boundary_time &&
-       direction == AnimationEffect::AnimationDirection::kForwards)) {
+       direction == Timing::AnimationDirection::kForwards)) {
     return Timing::kPhaseAfter;
   }
   return Timing::kPhaseActive;

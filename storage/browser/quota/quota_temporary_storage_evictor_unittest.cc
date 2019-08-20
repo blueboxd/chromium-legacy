@@ -214,7 +214,7 @@ class QuotaTemporaryStorageEvictorTest : public testing::Test {
     return num_get_usage_and_quota_for_eviction_;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<MockQuotaEvictionHandler> quota_eviction_handler_;
   std::unique_ptr<QuotaTemporaryStorageEvictor> temporary_storage_evictor_;
   int num_get_usage_and_quota_for_eviction_;

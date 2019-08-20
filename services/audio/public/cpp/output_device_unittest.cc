@@ -140,9 +140,9 @@ struct DataFlowTestEnvironment {
 class AudioServiceOutputDeviceTest : public testing::Test {
  public:
   AudioServiceOutputDeviceTest()
-      : task_env_(base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
-                  base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::
-                      QUEUED) {
+      : task_env_(
+            base::test::TaskEnvironment::MainThreadType::DEFAULT,
+            base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED) {
     stream_factory_ = std::make_unique<FakeOutputStreamFactory>();
   }
 
@@ -157,7 +157,7 @@ class AudioServiceOutputDeviceTest : public testing::Test {
     return stream_factory_->receiver_.BindNewPipeAndPassRemote();
   }
 
-  base::test::ScopedTaskEnvironment task_env_;
+  base::test::TaskEnvironment task_env_;
   std::unique_ptr<FakeOutputStreamFactory> stream_factory_;
 
  private:

@@ -155,7 +155,7 @@ void PageRenovatorBrowserTest::SetUpOnMainThread() {
 
 void PageRenovatorBrowserTest::Navigate(const std::string& test_page_path) {
   GURL url = test_server_.GetURL(test_page_path);
-  content::NavigateToURL(shell(), url);
+  EXPECT_TRUE(content::NavigateToURL(shell(), url));
   render_frame_ = shell()->web_contents()->GetMainFrame();
 }
 

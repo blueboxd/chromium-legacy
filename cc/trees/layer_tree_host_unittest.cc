@@ -1319,19 +1319,21 @@ class LayerTreeHostTestNoDamageCausesNoInvalidate : public LayerTreeHostTest {
 
  protected:
   void SetupTree() override {
-    root_ = Layer::Create();
+    scoped_refptr<Layer> root = Layer::Create();
+    layer_ = Layer::Create();
+    root->AddChild(layer_);
 
     layer_tree_host()->SetViewportSizeAndScale(gfx::Size(10, 10), 1.f,
                                                viz::LocalSurfaceIdAllocation());
-
-    layer_tree_host()->SetRootLayer(root_);
+    layer_tree_host()->SetRootLayer(root);
 
     // Translate the root layer past the viewport.
     gfx::Transform translation;
     translation.Translate(100, 100);
-    root_->SetTransform(translation);
+    layer_->SetTransform(translation);
 
-    root_->SetBounds(gfx::Size(50, 50));
+    root->SetBounds(gfx::Size(50, 50));
+    layer_->SetBounds(gfx::Size(50, 50));
 
     LayerTreeHostTest::SetupTree();
   }
@@ -1342,7 +1344,7 @@ class LayerTreeHostTestNoDamageCausesNoInvalidate : public LayerTreeHostTest {
     // This does not damage the frame because the root layer is outside the
     // viewport.
     if (layer_tree_host()->SourceFrameNumber() == 2)
-      root_->SetOpacity(0.9f);
+      layer_->SetOpacity(0.9f);
   }
 
   DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* impl,
@@ -1385,7 +1387,7 @@ class LayerTreeHostTestNoDamageCausesNoInvalidate : public LayerTreeHostTest {
   void AfterTest() override {}
 
  private:
-  scoped_refptr<Layer> root_;
+  scoped_refptr<Layer> layer_;
   bool first_frame_invalidate_before_commit_ = false;
 };
 
@@ -2056,8 +2058,14 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestEffectTreeSync);
 class LayerTreeHostTestTransformTreeSync : public LayerTreeHostTest {
  protected:
   void SetupTree() override {
-    root_ = Layer::Create();
-    layer_tree_host()->SetRootLayer(root_);
+    scoped_refptr<Layer> root = Layer::Create();
+    layer_ = Layer::Create();
+    // Force a transform node for the layer.
+    gfx::Transform rotate5;
+    rotate5.Rotate(5.f);
+    layer_->SetTransform(rotate5);
+    root->AddChild(layer_);
+    layer_tree_host()->SetRootLayer(root);
     LayerTreeHostTest::SetupTree();
   }
 
@@ -2066,7 +2074,7 @@ class LayerTreeHostTestTransformTreeSync : public LayerTreeHostTest {
   void DidCommit() override {
     TransformTree& transform_tree =
         layer_tree_host()->property_trees()->transform_tree;
-    TransformNode* node = transform_tree.Node(root_->transform_tree_index());
+    TransformNode* node = transform_tree.Node(layer_->transform_tree_index());
     gfx::Transform rotate10;
     rotate10.Rotate(10.f);
     switch (layer_tree_host()->SourceFrameNumber()) {
@@ -2090,17 +2098,16 @@ class LayerTreeHostTestTransformTreeSync : public LayerTreeHostTest {
   void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
     TransformTree& transform_tree =
         impl->sync_tree()->property_trees()->transform_tree;
-    const LayerImpl* root_layer = impl->sync_tree()->root_layer_for_testing();
+    const LayerImpl* layer = impl->sync_tree()->LayerById(layer_->id());
     const TransformNode* node =
-        transform_tree.Node(root_layer->transform_tree_index());
+        transform_tree.Node(layer->transform_tree_index());
     gfx::Transform rotate10;
     rotate10.Rotate(10.f);
     gfx::Transform rotate20;
     rotate20.Rotate(20.f);
     switch (impl->sync_tree()->source_frame_number()) {
       case 0:
-        impl->sync_tree()->SetTransformMutated(root_layer->element_id(),
-                                               rotate20);
+        impl->sync_tree()->SetTransformMutated(layer->element_id(), rotate20);
         PostSetNeedsCommitToMainThread();
         break;
       case 1:
@@ -2109,8 +2116,7 @@ class LayerTreeHostTestTransformTreeSync : public LayerTreeHostTest {
         break;
       case 2:
         EXPECT_EQ(node->local, rotate20);
-        impl->sync_tree()->SetTransformMutated(root_layer->element_id(),
-                                               rotate20);
+        impl->sync_tree()->SetTransformMutated(layer->element_id(), rotate20);
         PostSetNeedsCommitToMainThread();
         break;
       case 3:
@@ -2126,7 +2132,7 @@ class LayerTreeHostTestTransformTreeSync : public LayerTreeHostTest {
   void AfterTest() override {}
 
  private:
-  scoped_refptr<Layer> root_;
+  scoped_refptr<Layer> layer_;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestTransformTreeSync);
@@ -2395,20 +2401,23 @@ class LayerTreeHostTestGpuRasterDeviceSizeChanged : public LayerTreeHostTest {
 
   void BeginTest() override {
     client_.set_fill_with_nonsolid_color(true);
-    root_layer_ = FakePictureLayer::Create(&client_);
-    root_layer_->SetIsDrawable(true);
+    scoped_refptr<Layer> root = Layer::Create();
+    layer_ = FakePictureLayer::Create(&client_);
+    root->AddChild(layer_);
+    layer_->SetIsDrawable(true);
     gfx::Transform transform;
     // Translate the layer out of the viewport to force it to not update its
     // tile size via PushProperties.
     transform.Translate(10000.0, 10000.0);
-    root_layer_->SetTransform(transform);
-    root_layer_->SetBounds(bounds_);
-    layer_tree_host()->SetRootLayer(root_layer_);
+    layer_->SetTransform(transform);
+    root->SetBounds(bounds_);
+    layer_->SetBounds(bounds_);
+    layer_tree_host()->SetRootLayer(root);
     layer_tree_host()->SetViewportSizeAndScale(bounds_, 1.f,
                                                viz::LocalSurfaceIdAllocation());
 
     PostSetNeedsCommitToMainThread();
-    client_.set_bounds(root_layer_->bounds());
+    client_.set_bounds(layer_->bounds());
   }
 
   void InitializeSettings(LayerTreeSettings* settings) override {
@@ -2419,12 +2428,12 @@ class LayerTreeHostTestGpuRasterDeviceSizeChanged : public LayerTreeHostTest {
     if (num_draws_ == 2) {
       auto* pending_tree = host_impl->pending_tree();
       auto* pending_layer_impl = static_cast<FakePictureLayerImpl*>(
-          pending_tree->root_layer_for_testing());
+          pending_tree->LayerById(layer_->id()));
       EXPECT_NE(pending_layer_impl, nullptr);
 
       auto* active_tree = host_impl->pending_tree();
       auto* active_layer_impl = static_cast<FakePictureLayerImpl*>(
-          active_tree->root_layer_for_testing());
+          active_tree->LayerById(layer_->id()));
       EXPECT_NE(pending_layer_impl, nullptr);
 
       auto* active_tiling_set = active_layer_impl->picture_layer_tiling_set();
@@ -2459,7 +2468,7 @@ class LayerTreeHostTestGpuRasterDeviceSizeChanged : public LayerTreeHostTest {
   const gfx::Size bounds_;
   const gfx::Rect invalid_rect_;
   FakeContentLayerClient client_;
-  scoped_refptr<FakePictureLayer> root_layer_;
+  scoped_refptr<FakePictureLayer> layer_;
 };
 
 // As there's no pending tree in single-threaded case, this test should run

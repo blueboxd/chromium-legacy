@@ -33,7 +33,7 @@ class FakeProvider : public SigninInvestigator::DependencyProvider {
   PrefService* GetPrefs() override { return &prefs_; }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   sync_preferences::TestingPrefServiceSyncable prefs_;
   signin::IdentityTestEnvironment identity_test_env_;
 };

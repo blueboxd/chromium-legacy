@@ -873,7 +873,7 @@ void ContentSecurityPolicy::EnforceSandboxFlags(SandboxFlags mask) {
 }
 
 void ContentSecurityPolicy::TreatAsPublicAddress() {
-  if (!RuntimeEnabledFeatures::CorsRFC1918Enabled())
+  if (!RuntimeEnabledFeatures::AddressSpaceEnabled())
     return;
   treat_as_public_address_ = true;
 }

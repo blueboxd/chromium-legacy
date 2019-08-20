@@ -278,7 +278,7 @@ class MediaCodecVideoDecoderTest : public testing::TestWithParam<VideoCodec> {
 
  protected:
   const VideoCodec codec_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::android::ScopedJavaGlobalRef<jobject> java_surface_;
   scoped_refptr<DecoderBuffer> fake_decoder_buffer_;
   std::unique_ptr<MockDeviceInfo> device_info_;

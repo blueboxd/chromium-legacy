@@ -100,12 +100,11 @@ class GrpcAsyncExecutorTest : public testing::Test {
   std::unique_ptr<GrpcAsyncExecutor> executor_;
   std::unique_ptr<test::GrpcAsyncTestServer> server_;
   std::unique_ptr<GrpcAsyncExecutorTestService::Stub> stub_;
-  std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
+  std::unique_ptr<base::test::TaskEnvironment> task_environment_;
 };
 
 void GrpcAsyncExecutorTest::SetUp() {
-  scoped_task_environment_ =
-      std::make_unique<base::test::ScopedTaskEnvironment>();
+  task_environment_ = std::make_unique<base::test::TaskEnvironment>();
   executor_ = std::make_unique<GrpcAsyncExecutor>();
   server_ = std::make_unique<test::GrpcAsyncTestServer>(
       std::make_unique<GrpcAsyncExecutorTestService::AsyncService>());
@@ -629,11 +628,10 @@ TEST_F(GrpcAsyncExecutorTest,
        ServerStreamInitialMetadataDeadline_DefaultDeadline) {
   // Other tests can't work with mock time so we have to replace it here.
   // We also have to reset the old task environment before creating a new one
-  // since only one ScopedTaskEnvironment can exist at a time.
-  scoped_task_environment_.reset();
-  scoped_task_environment_ =
-      std::make_unique<base::test::ScopedTaskEnvironment>(
-          base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME);
+  // since only one TaskEnvironment can exist at a time.
+  task_environment_.reset();
+  task_environment_ = std::make_unique<base::test::TaskEnvironment>(
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME);
 
   MockOnceClosure on_channel_ready;
   MockMessageCallback on_incoming_message;
@@ -643,15 +641,14 @@ TEST_F(GrpcAsyncExecutorTest,
                       on_incoming_message.Get(), on_status.Get());
   EXPECT_CALL(on_status, Run(Property(&grpc::Status::error_code,
                                       grpc::StatusCode::DEADLINE_EXCEEDED)));
-  scoped_task_environment_->FastForwardBy(base::TimeDelta::FromSeconds(30));
+  task_environment_->FastForwardBy(base::TimeDelta::FromSeconds(30));
 }
 
 TEST_F(GrpcAsyncExecutorTest,
        ServerStreamInitialMetadataDeadline_ManualDeadline) {
-  scoped_task_environment_.reset();
-  scoped_task_environment_ =
-      std::make_unique<base::test::ScopedTaskEnvironment>(
-          base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME);
+  task_environment_.reset();
+  task_environment_ = std::make_unique<base::test::TaskEnvironment>(
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME);
 
   MockOnceClosure on_channel_ready;
   MockMessageCallback on_incoming_message;
@@ -662,13 +659,13 @@ TEST_F(GrpcAsyncExecutorTest,
       base::Time::Now() + base::TimeDelta::FromSeconds(60));
 
   // |on_status| shouldn't be called in the first 30 seconds.
-  scoped_task_environment_->FastForwardBy(base::TimeDelta::FromSeconds(30));
+  task_environment_->FastForwardBy(base::TimeDelta::FromSeconds(30));
 
   EXPECT_CALL(on_status, Run(Property(&grpc::Status::error_code,
                                       grpc::StatusCode::DEADLINE_EXCEEDED)));
 
   // |on_status| should be called here.
-  scoped_task_environment_->FastForwardBy(base::TimeDelta::FromSeconds(30));
+  task_environment_->FastForwardBy(base::TimeDelta::FromSeconds(30));
 }
 
 }  // namespace remoting

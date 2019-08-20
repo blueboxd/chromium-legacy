@@ -298,7 +298,7 @@ class OAuth2AccessTokenManagerTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   CoreAccountId account_id_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   FakeOAuth2AccessTokenManagerDelegate delegate_;

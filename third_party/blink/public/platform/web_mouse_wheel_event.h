@@ -127,6 +127,17 @@ class WebMouseWheelEvent : public WebMouseEvent {
   bool IsCancelable() const { return dispatch_type == kBlocking; }
 #endif
 };
+
+inline bool operator==(const WebMouseWheelEvent& a,
+                       const WebMouseWheelEvent& b) {
+  return memcmp(&a, &b, a.size()) == 0;
+}
+
+inline bool operator!=(const WebMouseWheelEvent& a,
+                       const WebMouseWheelEvent& b) {
+  return !(a == b);
+}
+
 #pragma pack(pop)
 
 }  // namespace blink

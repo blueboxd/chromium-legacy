@@ -53,7 +53,7 @@ class PolicyTestBase : public testing::Test {
                       const std::string& schema);
 
   // Needs to be the first member
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   SchemaRegistry schema_registry_;
 
  private:

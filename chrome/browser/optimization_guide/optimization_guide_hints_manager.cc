@@ -408,7 +408,8 @@ void OptimizationGuideHintsManager::FetchHints() {
   if (!hints_fetcher_) {
     hints_fetcher_ = std::make_unique<optimization_guide::HintsFetcher>(
         url_loader_factory_,
-        optimization_guide::features::GetOptimizationGuideServiceURL());
+        optimization_guide::features::GetOptimizationGuideServiceURL(),
+        pref_service_);
   }
   hints_fetcher_->FetchOptimizationGuideServiceHints(
       top_hosts, base::BindOnce(&OptimizationGuideHintsManager::OnHintsFetched,
@@ -436,6 +437,8 @@ void OptimizationGuideHintsManager::OnHintsFetched(
 }
 
 void OptimizationGuideHintsManager::OnFetchedHintsStored() {
+  LOCAL_HISTOGRAM_BOOLEAN("OptimizationGuide.FetchedHints.Stored", true);
+
   hints_fetch_timer_.Stop();
   hints_fetch_timer_.Start(
       FROM_HERE, hint_cache_->FetchedHintsUpdateTime() - clock_->Now(), this,
@@ -642,4 +645,10 @@ OptimizationGuideHintsManager::CanApplyOptimization(
 void OptimizationGuideHintsManager::OnEffectiveConnectionTypeChanged(
     net::EffectiveConnectionType effective_connection_type) {
   current_effective_connection_type_ = effective_connection_type;
+}
+
+void OptimizationGuideHintsManager::ClearFetchedHints() {
+  hint_cache_->ClearFetchedHints();
+  optimization_guide::HintsFetcher::ClearHostsSuccessfullyFetched(
+      pref_service_);
 }

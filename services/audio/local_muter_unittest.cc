@@ -84,7 +84,7 @@ TEST(LocalMuterTest, MutesJoiningMembers) {
 }
 
 TEST(LocalMuter, UnmutesWhenLastBindingIsLost) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   LoopbackCoordinator coordinator;
   const UnguessableToken group_id = UnguessableToken::Create();
 

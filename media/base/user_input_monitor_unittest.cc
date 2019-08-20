@@ -21,11 +21,11 @@ namespace media {
 
 TEST(UserInputMonitorTest, CreatePlatformSpecific) {
 #if defined(OS_LINUX)
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
 #else
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::UI);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::UI);
 #endif  // defined(OS_LINUX)
 
   std::unique_ptr<UserInputMonitor> monitor = UserInputMonitor::Create(
@@ -43,11 +43,11 @@ TEST(UserInputMonitorTest, CreatePlatformSpecific) {
 
 TEST(UserInputMonitorTest, CreatePlatformSpecificWithMapping) {
 #if defined(OS_LINUX)
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
 #else
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::UI);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::UI);
 #endif  // defined(OS_LINUX)
 
   std::unique_ptr<UserInputMonitor> monitor = UserInputMonitor::Create(

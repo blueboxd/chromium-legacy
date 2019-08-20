@@ -117,7 +117,7 @@ TEST_F(ShelfTest, ShowOverflowBubble) {
 
   // Shows overflow bubble.
   test_api()->ShowOverflowBubble();
-  EXPECT_TRUE(shelf_widget->IsShowingOverflowBubble());
+  EXPECT_TRUE(shelf_widget->hotseat_widget()->IsShowingOverflowBubble());
 
   // Remove one of the first items in the main shelf view.
   ASSERT_GT(shelf_model()->item_count(), 2);
@@ -125,7 +125,7 @@ TEST_F(ShelfTest, ShowOverflowBubble) {
 
   // Waits for all transitions to finish and there should be no crash.
   test_api()->RunMessageLoopUntilAnimationsDone();
-  EXPECT_FALSE(shelf_widget->IsShowingOverflowBubble());
+  EXPECT_FALSE(shelf_widget->hotseat_widget()->IsShowingOverflowBubble());
 }
 
 // Tests if shelf is hidden on secondary display after the primary display is

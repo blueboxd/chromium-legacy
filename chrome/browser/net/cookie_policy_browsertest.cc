@@ -478,9 +478,8 @@ IN_PROC_BROWSER_TEST_F(CookiePolicyTopLevelOriginBrowserTest,
   ExpectStorageForFrame(GetNestedFrame(), true);
 }
 
-// TODO(crbug.com/989926): Nested first-party iframes behave incorrectly.
 IN_PROC_BROWSER_TEST_F(CookiePolicyTopLevelOriginBrowserTest,
-                       DISABLED_NestedFirstPartyIFrameStorage) {
+                       NestedFirstPartyIFrameStorage) {
   NavigateToPageWithFrame("a.com");
   NavigateFrameTo("b.com", "/iframe.html");
   NavigateNestedFrameTo("a.com", "/browsing_data/site_data.html");

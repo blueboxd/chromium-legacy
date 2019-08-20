@@ -191,7 +191,8 @@ TEST(ProtoConversionTest, NotificationEntryConversion) {
   // Test notification data.
   entry.notification_data.title = base::UTF8ToUTF16("title");
   entry.notification_data.message = base::UTF8ToUTF16("message");
-  entry.icons_uuid = {"icon_uuid_0", "icon_uuid_1"};
+  entry.small_icon_uuid = "small_icon_uuid";
+  entry.large_icon_uuid = "large_icon_uuid";
   entry.notification_data.custom_data = {{"url", "https://www.example.com"}};
   TestNotificationEntryConversion(&entry);
 

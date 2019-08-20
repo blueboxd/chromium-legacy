@@ -82,13 +82,29 @@ public class UrlBarMediatorUnitTest {
     }
 
     @Test
-    public void setUrlData_ScrollStateForNonHttpOrHttps() {
+    public void setUrlData_ScrollStateForDataUrl() {
         PropertyModel model = new PropertyModel(UrlBarProperties.ALL_KEYS);
         UrlBarMediator mediator = new UrlBarMediator(model);
 
         String displayText = "data:text/html,blah";
         UrlBarData data = UrlBarData.create(
                 "data:text/html,blah,blah", spannable(displayText), 0, displayText.length(), null);
+        Assert.assertTrue(mediator.setUrlBarData(data, UrlBar.ScrollType.SCROLL_TO_TLD,
+                UrlBarCoordinator.SelectionState.SELECT_ALL));
+
+        // The scroll state should be overridden to SCROLL_TO_BEGINNING for file-type schemes.
+        Assert.assertEquals(UrlBar.ScrollType.SCROLL_TO_BEGINNING,
+                model.get(UrlBarProperties.TEXT_STATE).scrollType);
+    }
+
+    @Test
+    public void setUrlData_ScrollStateForAboutUrl() {
+        PropertyModel model = new PropertyModel(UrlBarProperties.ALL_KEYS);
+        UrlBarMediator mediator = new UrlBarMediator(model);
+
+        String displayText = "about:blank#verylongurl.totallylegit.notsuspicious.url.com";
+        UrlBarData data = UrlBarData.create(
+                displayText, spannable(displayText), 0, displayText.length(), null);
         Assert.assertTrue(mediator.setUrlBarData(data, UrlBar.ScrollType.SCROLL_TO_TLD,
                 UrlBarCoordinator.SelectionState.SELECT_ALL));
 

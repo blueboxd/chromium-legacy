@@ -359,7 +359,7 @@ class SubresourceFilteringRulesetServiceTest : public ::testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir scoped_temp_dir_;
 
   scoped_refptr<base::TestSimpleTaskRunner> blocking_task_runner_;

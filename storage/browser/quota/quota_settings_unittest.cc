@@ -33,7 +33,7 @@ class QuotaSettingsTest : public testing::Test {
 
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   const base::FilePath& profile_path() const { return data_dir_.GetPath(); }
 
  private:
@@ -61,7 +61,7 @@ TEST_F(QuotaSettingsTest, ExpandedTempPool) {
         // 750 = 1500 * PerHostRatio
         EXPECT_EQ(settings->per_host_quota, 750);
       }));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(callback_executed);
 }
 
@@ -80,7 +80,7 @@ TEST_F(QuotaSettingsTest, UnlimitedTempPool) {
         EXPECT_EQ(settings->pool_size, 2000);
         EXPECT_EQ(settings->per_host_quota, 2000);
       }));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(callback_executed);
 }
 }  // namespace storage

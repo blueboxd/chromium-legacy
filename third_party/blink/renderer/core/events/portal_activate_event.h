@@ -72,10 +72,14 @@ class CORE_EXPORT PortalActivateEvent : public Event {
   ScriptValue data(ScriptState*);
   HTMLPortalElement* adoptPredecessor(ExceptionState& exception_state);
 
-  void DetachPortalIfNotAdopted();
+  // Invoked when this event should no longer keep its guest contents alive
+  // due to the portalactivate event.
+  void ExpireAdoptionLifetime();
 
  private:
   Member<Document> document_;
+  Member<HTMLPortalElement> adopted_portal_;
+
   base::UnguessableToken predecessor_portal_token_;
   mojo::AssociatedRemote<mojom::blink::Portal> predecessor_portal_;
   mojo::PendingAssociatedReceiver<mojom::blink::PortalClient>

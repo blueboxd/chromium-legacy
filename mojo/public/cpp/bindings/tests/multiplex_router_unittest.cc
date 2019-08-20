@@ -61,7 +61,7 @@ class MultiplexRouterTest : public testing::Test {
   ScopedInterfaceEndpointHandle endpoint1_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(MultiplexRouterTest, BasicRequestResponse) {

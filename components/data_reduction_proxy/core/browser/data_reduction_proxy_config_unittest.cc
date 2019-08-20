@@ -201,7 +201,7 @@ class DataReductionProxyConfigTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+      base::test::TaskEnvironment::MainThreadType::IO};
 
   std::unique_ptr<DataReductionProxyTestContext> test_context_;
 

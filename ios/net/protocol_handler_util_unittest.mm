@@ -154,7 +154,7 @@ class ProtocolHandlerUtilTest : public PlatformTest,
   void OnReadCompleted(URLRequest* request, int bytes_read) override {}
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   URLRequestJobFactoryImpl job_factory_;
   std::unique_ptr<URLRequestContext> request_context_;
 };

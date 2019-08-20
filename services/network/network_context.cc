@@ -1536,8 +1536,7 @@ void NetworkContext::VerifyCertificateForTesting(
 void NetworkContext::PreconnectSockets(
     uint32_t num_streams,
     const GURL& original_url,
-    int32_t load_flags,
-    bool privacy_mode_enabled,
+    bool allow_credentials,
     const net::NetworkIsolationKey& network_isolation_key) {
   GURL url = GetHSTSRedirect(original_url);
 
@@ -1557,9 +1556,15 @@ void NetworkContext::PreconnectSockets(
   request_info.extra_headers.SetHeader(net::HttpRequestHeaders::kUserAgent,
                                        user_agent);
 
-  request_info.load_flags = load_flags;
-  request_info.privacy_mode = privacy_mode_enabled ? net::PRIVACY_MODE_ENABLED
-                                                   : net::PRIVACY_MODE_DISABLED;
+  if (allow_credentials) {
+    request_info.load_flags = net::LOAD_NORMAL;
+    request_info.privacy_mode = net::PRIVACY_MODE_DISABLED;
+  } else {
+    request_info.load_flags = net::LOAD_DO_NOT_SEND_COOKIES |
+                              net::LOAD_DO_NOT_SAVE_COOKIES |
+                              net::LOAD_DO_NOT_SEND_AUTH_DATA;
+    request_info.privacy_mode = net::PRIVACY_MODE_ENABLED;
+  }
   request_info.network_isolation_key = network_isolation_key;
 
   net::HttpTransactionFactory* factory =

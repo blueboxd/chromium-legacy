@@ -59,7 +59,7 @@ class DeferredDestroyStrongBindingSetTest : public testing::Test {
   ~DeferredDestroyStrongBindingSetTest() override = default;
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(DeferredDestroyStrongBindingSetTest, Destructor) {

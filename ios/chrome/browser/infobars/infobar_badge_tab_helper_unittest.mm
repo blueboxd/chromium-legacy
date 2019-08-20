@@ -195,7 +195,7 @@ class InfobarBadgeTabHelperTest : public PlatformTest {
     return InfoBarManagerImpl::FromWebState(&web_state_);
   }
 
-  base::test::ScopedTaskEnvironment environment_;
+  base::test::TaskEnvironment environment_;
   InfobarBadgeTabHelperTestDelegate* infobar_badge_tab_delegate_;
   std::unique_ptr<ios::ChromeBrowserState> browser_state_;
   FakeInfobarContainerCoordinator* infobar_container_coordinator_;

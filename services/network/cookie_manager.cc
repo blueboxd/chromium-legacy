@@ -231,6 +231,11 @@ void CookieManager::BlockThirdPartyCookies(bool block) {
   cookie_settings_.set_block_third_party_cookies(block);
 }
 
+void CookieManager::SetContentSettingsForLegacyCookieAccess(
+    const ContentSettingsForOneType& settings) {
+  cookie_settings_.set_content_settings_for_legacy_cookie_access(settings);
+}
+
 // static
 void CookieManager::ConfigureCookieSettings(
     const network::mojom::CookieManagerParams& params,
@@ -243,6 +248,8 @@ void CookieManager::ConfigureCookieSettings(
       params.matching_scheme_cookies_allowed_schemes);
   out->set_third_party_cookies_allowed_schemes(
       params.third_party_cookies_allowed_schemes);
+  out->set_content_settings_for_legacy_cookie_access(
+      params.settings_for_legacy_cookie_access);
 }
 
 void CookieManager::CrashOnGetCookieList() {

@@ -58,6 +58,7 @@ class VrShellDelegate : public device::GvrDelegateProvider,
                         const base::android::JavaParamRef<jobject>& obj,
                         jboolean success);
   void RecordVrStartAction(JNIEnv* env,
+                           const base::android::JavaParamRef<jobject>& obj,
                            jint start_action);
   void DisplayActivate(JNIEnv* env,
                        const base::android::JavaParamRef<jobject>& obj);

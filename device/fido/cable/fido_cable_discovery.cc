@@ -23,6 +23,7 @@
 #include "device/fido/ble/fido_ble_uuids.h"
 #include "device/fido/cable/fido_cable_device.h"
 #include "device/fido/cable/fido_cable_handshake_handler.h"
+#include "device/fido/features.h"
 #include "device/fido/fido_parsing_utils.h"
 #include "third_party/boringssl/src/include/openssl/digest.h"
 #include "third_party/boringssl/src/include/openssl/hkdf.h"
@@ -189,13 +190,39 @@ FidoCableDiscovery::~FidoCableDiscovery() {
     advertisement.second->Unregister(base::DoNothing(), base::DoNothing());
 }
 
-std::unique_ptr<FidoCableHandshakeHandler>
+base::Optional<std::unique_ptr<FidoCableHandshakeHandler>>
 FidoCableDiscovery::CreateHandshakeHandler(
     FidoCableDevice* device,
-    base::span<const uint8_t, kCableSessionPreKeySize> session_pre_key,
-    base::span<const uint8_t, 8> nonce) {
-  return std::make_unique<FidoCableHandshakeHandler>(device, nonce,
-                                                     session_pre_key);
+    const CableDiscoveryData* discovery_data) {
+  std::unique_ptr<FidoCableHandshakeHandler> handler;
+  switch (discovery_data->version) {
+    case 1: {
+      // Nonce is embedded as first 8 bytes of client EID.
+      std::array<uint8_t, 8> nonce;
+      const bool ok = fido_parsing_utils::ExtractArray(
+          discovery_data->client_eid, 0, &nonce);
+      DCHECK(ok);
+
+      handler.reset(new FidoCableV1HandshakeHandler(
+          device, nonce, discovery_data->session_pre_key));
+      break;
+    }
+
+    case 2:
+      if (!base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport)) {
+        return base::nullopt;
+      }
+      handler.reset(new FidoCableV2HandshakeHandler(
+          device, discovery_data->session_pre_key));
+      break;
+
+    default:
+      FIDO_LOG(DEBUG) << "Dropping caBLE handshake request for unknown version "
+                      << discovery_data->version;
+      return base::nullopt;
+  }
+
+  return handler;
 }
 
 void FidoCableDiscovery::DeviceAdded(BluetoothAdapter* adapter,
@@ -353,17 +380,19 @@ void FidoCableDiscovery::CableDeviceFound(BluetoothAdapter* adapter,
   StopAdvertisements(
       base::BindOnce(&FidoCableDiscovery::ConductEncryptionHandshake,
                      weak_factory_.GetWeakPtr(), std::move(cable_device),
-                     found_cable_device_data->session_pre_key, nonce));
+                     *found_cable_device_data));
 }
 
 void FidoCableDiscovery::ConductEncryptionHandshake(
     std::unique_ptr<FidoCableDevice> cable_device,
-    base::span<const uint8_t, kCableSessionPreKeySize> session_pre_key,
-    base::span<const uint8_t, 8> nonce) {
-  auto handshake_handler =
-      CreateHandshakeHandler(cable_device.get(), session_pre_key, nonce);
-  auto* const handshake_handler_ptr = handshake_handler.get();
-  cable_handshake_handlers_.emplace_back(std::move(handshake_handler));
+    CableDiscoveryData discovery_data) {
+  base::Optional<std::unique_ptr<FidoCableHandshakeHandler>> handshake_handler =
+      CreateHandshakeHandler(cable_device.get(), &discovery_data);
+  if (!handshake_handler) {
+    return;
+  }
+  auto* const handshake_handler_ptr = handshake_handler->get();
+  cable_handshake_handlers_.emplace_back(std::move(*handshake_handler));
 
   handshake_handler_ptr->InitiateCableHandshake(
       base::BindOnce(&FidoCableDiscovery::ValidateAuthenticatorHandshakeMessage,

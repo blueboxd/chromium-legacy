@@ -322,6 +322,8 @@ ClientBase::InitParams::InitParams() {
 
 ClientBase::InitParams::~InitParams() {}
 
+ClientBase::InitParams::InitParams(const InitParams& params) = default;
+
 bool ClientBase::InitParams::FromCommandLine(
     const base::CommandLine& command_line) {
   if (command_line.HasSwitch(switches::kSize)) {

@@ -361,6 +361,7 @@ java_cpp_enum("content_public_android_java_enums_srcjar") {
     "//content/browser/android/select_popup.cc",
     "//content/public/browser/android/child_process_importance.h",
     "//content/public/browser/android/motion_event_action.h",
+    "//content/public/browser/bluetooth_scanning_prompt.h",
     "//content/public/browser/browser_task_traits.h",
     "//content/public/browser/browsing_data_remover.h",
     "//content/public/browser/invalidate_type.h",

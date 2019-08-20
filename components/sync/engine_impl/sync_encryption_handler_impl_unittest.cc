@@ -582,7 +582,7 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
   std::unique_ptr<SyncEncryptionHandlerImpl> encryption_handler_;
   StrictMock<SyncEncryptionHandlerObserverMock> observer_;
   TestIdFactory ids_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::test::ScopedFeatureList feature_list_;
   base::RepeatingCallback<std::string()> fake_random_salt_generator_;
 };

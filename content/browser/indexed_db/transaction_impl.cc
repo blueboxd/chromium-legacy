@@ -15,6 +15,7 @@
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
+#include "content/browser/indexed_db/indexed_db_factory_impl.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -125,8 +126,8 @@ void TransactionImpl::CreateObjectStore(int64_t object_store_id,
   leveldb::Status status = connection->database()->CreateObjectStoreOperation(
       object_store_id, name, key_path, auto_increment, transaction_.get());
   if (!status.ok()) {
-    connection->database()->error_callback().Run(
-        status, "Internal error creating object store.");
+    indexed_db_context_->GetIDBFactory()->OnDatabaseError(
+        origin_, status, "Internal error creating object store.");
   }
 }
 

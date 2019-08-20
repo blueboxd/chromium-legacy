@@ -19,7 +19,7 @@ class OmniboxPedalImplementationsTest : public testing::Test {
       : omnibox_client_(new TestOmniboxClient),
         omnibox_edit_controller_(new TestOmniboxEditController) {}
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<TestOmniboxClient> omnibox_client_;
   std::unique_ptr<TestOmniboxEditController> omnibox_edit_controller_;
 };

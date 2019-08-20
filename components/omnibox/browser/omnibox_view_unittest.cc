@@ -58,7 +58,7 @@ class OmniboxViewTest : public testing::Test {
   bookmarks::BookmarkModel* bookmark_model() { return bookmark_model_.get(); }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<TestOmniboxEditController> controller_;
   std::unique_ptr<TestOmniboxView> view_;
   std::unique_ptr<bookmarks::BookmarkModel> bookmark_model_;

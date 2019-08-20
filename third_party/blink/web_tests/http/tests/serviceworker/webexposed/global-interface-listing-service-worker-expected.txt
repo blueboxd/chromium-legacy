@@ -3602,6 +3602,7 @@ interface WindowClient : Client
     method navigate
 interface WorkerGlobalScope : EventTarget
     attribute @@toStringTag
+    getter addressSpace
     getter caches
     getter crypto
     getter fonts

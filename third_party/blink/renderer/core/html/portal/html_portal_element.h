@@ -79,7 +79,26 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement,
   // terminate the portal interface.
   void ConsumePortal();
 
+  // Invoked when this element should no longer keep its guest contents alive
+  // due to recent adoption.
+  void ExpireAdoptionLifetime();
+
  private:
+  enum class GuestContentsEligibility {
+    // Can have a guest contents.
+    kEligible,
+
+    // Would be eligible except that it is not top-level.
+    kNotTopLevel,
+
+    // Ineligible for additional reasons.
+    kIneligible,
+  };
+  GuestContentsEligibility GetGuestContentsEligibility() const;
+  bool CanHaveGuestContents() const {
+    return GetGuestContentsEligibility() == GuestContentsEligibility::kEligible;
+  }
+
   // Navigates the portal to |url_|.
   void Navigate();
 
@@ -115,6 +134,9 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement,
 
   mojo::AssociatedRemote<mojom::blink::Portal> remote_portal_;
   mojo::AssociatedReceiver<mojom::blink::PortalClient> portal_client_receiver_;
+
+  // Temporarily set to keep this element alive after adoption.
+  bool was_just_adopted_ = false;
 };
 
 }  // namespace blink

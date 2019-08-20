@@ -23,8 +23,7 @@ using ::testing::SaveArg;
 namespace ui {
 
 WaylandTest::WaylandTest()
-    : scoped_task_environment_(
-          base::test::ScopedTaskEnvironment::MainThreadType::UI) {
+    : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {
 #if BUILDFLAG(USE_XKBCOMMON)
   KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
       std::make_unique<XkbKeyboardLayoutEngine>(xkb_evdev_code_converter_));

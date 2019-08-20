@@ -94,7 +94,7 @@ IN_PROC_BROWSER_TEST_F(SourceUrlRecorderWebContentsObserverBrowserTest,
 
   GURL url = embedded_test_server()->GetURL("/title1.html");
   content::NavigationHandleObserver observer(shell()->web_contents(), url);
-  content::NavigateToURL(shell(), url);
+  EXPECT_TRUE(content::NavigateToURL(shell(), url));
   EXPECT_TRUE(observer.has_committed());
   const ukm::UkmSource* source =
       GetSourceForNavigationId(observer.navigation_id());
@@ -130,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(SourceUrlRecorderWebContentsObserverBrowserTest,
                                                   main_url);
   content::NavigationHandleObserver subframe_observer(shell()->web_contents(),
                                                       subframe_url);
-  content::NavigateToURL(shell(), main_url);
+  EXPECT_TRUE(content::NavigateToURL(shell(), main_url));
   EXPECT_TRUE(main_observer.has_committed());
   EXPECT_TRUE(main_observer.is_main_frame());
   EXPECT_TRUE(subframe_observer.has_committed());
@@ -165,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(SourceUrlRecorderWebContentsObserverDownloadBrowserTest,
                        IgnoreDownload) {
   GURL url(embedded_test_server()->GetURL("/download-test1.lib"));
   content::NavigationHandleObserver observer(shell()->web_contents(), url);
-  content::NavigateToURL(shell(), url);
+  EXPECT_TRUE(content::NavigateToURLAndExpectNoCommit(shell(), url));
   EXPECT_FALSE(observer.has_committed());
   EXPECT_TRUE(observer.is_download());
   EXPECT_EQ(nullptr, GetSourceForNavigationId(observer.navigation_id()));

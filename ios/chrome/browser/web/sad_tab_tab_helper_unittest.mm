@@ -98,7 +98,7 @@ class SadTabTabHelperTest : public PlatformTest {
 
   ~SadTabTabHelperTest() override { [application_ stopMocking]; }
 
-  base::test::ScopedTaskEnvironment environment_;
+  base::test::TaskEnvironment environment_;
   ScopedKeyWindow scoped_key_window_;
   UIView* web_state_view_;
   std::unique_ptr<ios::ChromeBrowserState> browser_state_;

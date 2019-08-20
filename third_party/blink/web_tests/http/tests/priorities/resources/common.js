@@ -18,13 +18,13 @@ function observeAndReportResourceLoadPriority(url, optionalDoc, message) {
 }
 
 function reportPriority(priority) {
-  window.opener.postMessage(priority, '*');
+  window.opener.postMessage({'Priority': priority}, '*');
 }
 
 function reportLoaded() {
-  window.opener.postMessage('LOADED', '*');
+  window.opener.postMessage({'Status': 'LOADED'}, '*');
 }
 
 function reportFailure() {
-  window.opener.postMessage('FAILED', '*');
+  window.opener.postMessage({'Status': 'FAILED'}, '*');
 }

@@ -20,9 +20,9 @@ constexpr char kTestData[] = "Test Data";
 
 class DataSourceTest : public testing::Test {
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_ = {
-      base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
-      base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::ASYNC};
+  base::test::TaskEnvironment task_environment_ = {
+      base::test::TaskEnvironment::MainThreadType::DEFAULT,
+      base::test::TaskEnvironment::ThreadPoolExecutionMode::ASYNC};
 };
 
 class TestDataSourceDelegate : public DataSourceDelegate {
@@ -94,7 +94,7 @@ TEST_F(DataSourceTest, ReadData) {
         std::string string_data(data.begin(), data.end());
         EXPECT_EQ(std::string(kTestData), string_data);
       }));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(DataSourceTest, ReadDataArbitraryMimeType) {
@@ -109,7 +109,7 @@ TEST_F(DataSourceTest, ReadDataArbitraryMimeType) {
         std::string string_data(data.begin(), data.end());
         EXPECT_EQ(std::string(kTestData), string_data);
       }));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(DataSourceTest, ReadData_UnknownMimeType) {
@@ -124,7 +124,7 @@ TEST_F(DataSourceTest, ReadData_UnknownMimeType) {
         FAIL() << "Callback should not be invoked when known "
                   "mimetype is not offerred";
       }));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(DataSourceTest, ReadData_Destroyed) {
@@ -141,7 +141,7 @@ TEST_F(DataSourceTest, ReadData_Destroyed) {
                     "data source is destroyed";
         }));
   }
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(DataSourceTest, ReadData_Cancelled) {
@@ -156,7 +156,7 @@ TEST_F(DataSourceTest, ReadData_Cancelled) {
         FAIL() << "Callback should not be invoked after cancelled";
       }));
   data_source.Cancelled();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(DataSourceTest, PreferredMimeTypeUTF16) {

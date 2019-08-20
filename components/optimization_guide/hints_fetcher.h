@@ -14,8 +14,11 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
+#include "base/time/clock.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "url/gurl.h"
+
+class PrefService;
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -40,7 +43,8 @@ class HintsFetcher {
  public:
   HintsFetcher(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      GURL optimization_guide_service_url);
+      GURL optimization_guide_service_url,
+      PrefService* pref_service);
   virtual ~HintsFetcher();
 
   // Requests hints from the Optimization Guide Service if a request for them is
@@ -51,6 +55,13 @@ class HintsFetcher {
   virtual bool FetchOptimizationGuideServiceHints(
       const std::vector<std::string>& hosts,
       HintsFetchedCallback hints_fetched_callback);
+
+  // Set |time_clock_| for testing.
+  void SetTimeClockForTesting(const base::Clock* time_clock);
+
+  // Clear all the hosts and expiration times from the
+  // HintsFetcherHostsSuccessfullyFetched dictionary pref.
+  static void ClearHostsSuccessfullyFetched(PrefService* pref_service);
 
  private:
   // URL loader completion callback.
@@ -63,6 +74,13 @@ class HintsFetcher {
   void HandleResponse(const std::string& response,
                       int status,
                       int response_code);
+
+  // Stores the hosts in |hosts_in_fetch_| in the
+  // HintsFetcherHostsSuccessfullyFetched dictionary pref. The value stored for
+  // each host is the time that the hints fetched for each host will expire.
+  // |hosts_in_fetch_| is cleared once the hosts are stored
+  // in the pref.
+  void UpdateHostsSuccessfullyFetched();
 
   // Used to hold the GetHintsRequest being constructed and sent as a remote
   // request.
@@ -77,6 +95,15 @@ class HintsFetcher {
 
   // Holds the |URLLoader| for an active hints request.
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
+
+  // A reference to the PrefService for this profile. Not owned.
+  PrefService* pref_service_ = nullptr;
+
+  // Holds the hosts being requested by the hints fetcher.
+  std::vector<std::string> hosts_fetched_;
+
+  // Clock used for recording time that the hints fetch occurred.
+  const base::Clock* time_clock_;
 
   // Used for creating a |url_loader_| when needed for request hints.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;

@@ -55,10 +55,10 @@ void FakeDataTypeController::LoadModels(
   }
 }
 
-void FakeDataTypeController::RegisterWithBackend(
-    base::OnceCallback<void(bool)> set_downloaded,
-    ModelTypeConfigurer* configurer) {
+DataTypeController::RegisterWithBackendResult
+FakeDataTypeController::RegisterWithBackend(ModelTypeConfigurer* configurer) {
   ++register_with_backend_call_count_;
+  return REGISTRATION_IGNORED;
 }
 
 // MODEL_LOADED -> MODEL_STARTING.

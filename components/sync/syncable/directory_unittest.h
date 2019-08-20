@@ -94,7 +94,7 @@ class SyncableDirectoryTest : public testing::Test {
                      int64_t server_version,
                      bool is_del);
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<Directory> dir_;
   NullDirectoryChangeDelegate delegate_;
   FakeEncryptor encryptor_;

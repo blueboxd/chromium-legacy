@@ -146,8 +146,7 @@ class TestCertVerifierConfigObserver : public net::CertVerifier {
 class NetworkServiceSSLConfigServiceTest : public testing::Test {
  public:
   NetworkServiceSSLConfigServiceTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         network_service_(NetworkService::CreateForTesting()) {}
   ~NetworkServiceSSLConfigServiceTest() override {
     NetworkContext::SetCertVerifierForTesting(nullptr);
@@ -260,7 +259,7 @@ class NetworkServiceSSLConfigServiceTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<NetworkService> network_service_;
   mojom::SSLConfigClientPtr ssl_config_client_;
   mojom::NetworkContextPtr network_context_ptr_;

@@ -35,7 +35,7 @@ class PowerMonitorBroadcastSourceTest : public testing::Test {
     return power_monitor_source_ptr_->client_for_testing();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   PowerMonitorBroadcastSource* power_monitor_source_ptr_;

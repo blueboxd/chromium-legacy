@@ -78,8 +78,7 @@ void StartupData::RecordCoreSystemProfile() {
   // |field_trial_provider|.
   variations::FieldTrialsProvider field_trial_provider(nullptr,
                                                        base::StringPiece());
-  field_trial_provider.ProvideSystemProfileMetricsWithLogCreationTime(
-      base::TimeTicks(), &system_profile);
+  field_trial_provider.ProvideSystemProfileMetrics(&system_profile);
 
   // TODO(crbug.com/965482): Records information from other providers.
   metrics::GlobalPersistentSystemProfile::GetInstance()->SetSystemProfile(

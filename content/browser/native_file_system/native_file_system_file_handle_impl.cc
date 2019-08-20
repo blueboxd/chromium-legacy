@@ -7,6 +7,7 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "content/browser/native_file_system/native_file_system_error.h"
 #include "net/base/mime_util.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_impl.h"
@@ -17,7 +18,7 @@
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_error.mojom.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_transfer_token.mojom.h"
 
-using blink::mojom::NativeFileSystemError;
+using blink::mojom::NativeFileSystemStatus;
 using storage::BlobDataHandle;
 using storage::BlobImpl;
 using storage::FileSystemOperation;
@@ -52,9 +53,9 @@ void NativeFileSystemFileHandleImpl::RequestPermission(
 void NativeFileSystemFileHandleImpl::AsBlob(AsBlobCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (GetReadPermissionStatus() != PermissionStatus::GRANTED) {
-    std::move(callback).Run(
-        NativeFileSystemError::New(base::File::FILE_ERROR_ACCESS_DENIED),
-        nullptr);
+    std::move(callback).Run(native_file_system_error::FromStatus(
+                                NativeFileSystemStatus::kPermissionDenied),
+                            nullptr);
     return;
   }
 
@@ -78,9 +79,9 @@ void NativeFileSystemFileHandleImpl::CreateFileWriter(
       base::BindOnce(&NativeFileSystemFileHandleImpl::CreateFileWriterImpl,
                      weak_factory_.GetWeakPtr(), keep_existing_data),
       base::BindOnce([](CreateFileWriterCallback callback) {
-        std::move(callback).Run(
-            NativeFileSystemError::New(base::File::FILE_ERROR_ACCESS_DENIED),
-            nullptr);
+        std::move(callback).Run(native_file_system_error::FromStatus(
+                                    NativeFileSystemStatus::kPermissionDenied),
+                                nullptr);
       }),
       std::move(callback));
 }
@@ -99,7 +100,8 @@ void NativeFileSystemFileHandleImpl::DidGetMetaDataForBlob(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (result != base::File::FILE_OK) {
-    std::move(callback).Run(NativeFileSystemError::New(result), nullptr);
+    std::move(callback).Run(native_file_system_error::FromFileError(result),
+                            nullptr);
     return;
   }
 
@@ -126,7 +128,9 @@ void NativeFileSystemFileHandleImpl::DidGetMetaDataForBlob(
       blob_context()->AddFinishedBlob(std::move(blob_builder));
   if (blob_handle->IsBroken()) {
     std::move(callback).Run(
-        NativeFileSystemError::New(base::File::FILE_ERROR_FAILED), nullptr);
+        native_file_system_error::FromStatus(
+            NativeFileSystemStatus::kOperationFailed, "Failed to create blob."),
+        nullptr);
     return;
   }
 
@@ -135,7 +139,7 @@ void NativeFileSystemFileHandleImpl::DidGetMetaDataForBlob(
   BlobImpl::Create(std::move(blob_handle), mojo::MakeRequest(&blob_ptr));
 
   std::move(callback).Run(
-      NativeFileSystemError::New(base::File::FILE_OK),
+      native_file_system_error::Ok(),
       blink::mojom::SerializedBlob::New(uuid, content_type, info.size,
                                         blob_ptr.PassInterface()));
 }
@@ -169,9 +173,9 @@ void NativeFileSystemFileHandleImpl::CreateSwapFile(
   DCHECK(max_swap_files_ >= 0);
 
   if (GetWritePermissionStatus() != blink::mojom::PermissionStatus::GRANTED) {
-    std::move(callback).Run(
-        NativeFileSystemError::New(base::File::FILE_ERROR_ACCESS_DENIED),
-        nullptr);
+    std::move(callback).Run(native_file_system_error::FromStatus(
+                                NativeFileSystemStatus::kPermissionDenied),
+                            nullptr);
     return;
   }
 
@@ -179,8 +183,10 @@ void NativeFileSystemFileHandleImpl::CreateSwapFile(
     DLOG(ERROR) << "Error Creating Swap File, count: " << count
                 << " exceeds max unique files of: " << max_swap_files_
                 << " base path: " << base_swap_path;
-    std::move(callback).Run(
-        NativeFileSystemError::New(base::File::FILE_ERROR_MAX), nullptr);
+    std::move(callback).Run(native_file_system_error::FromStatus(
+                                NativeFileSystemStatus::kOperationFailed,
+                                "Failed to create swap file."),
+                            nullptr);
     return;
   }
 
@@ -221,12 +227,14 @@ void NativeFileSystemFileHandleImpl::DidCreateSwapFile(
     DLOG(ERROR) << "Error Creating Swap File, status: "
                 << base::File::ErrorToString(result)
                 << " path: " << swap_url.path();
-    std::move(callback).Run(NativeFileSystemError::New(result), nullptr);
+    std::move(callback).Run(native_file_system_error::FromFileError(
+                                result, "Error creating swap file."),
+                            nullptr);
     return;
   }
 
   if (!keep_existing_data) {
-    std::move(callback).Run(NativeFileSystemError::New(base::File::FILE_OK),
+    std::move(callback).Run(native_file_system_error::Ok(),
                             manager()->CreateFileWriter(
                                 context(), url(), swap_url, handle_state()));
     return;
@@ -251,11 +259,13 @@ void NativeFileSystemFileHandleImpl::DidCopySwapFile(
     DLOG(ERROR) << "Error Creating Swap File, status: "
                 << base::File::ErrorToString(result)
                 << " path: " << swap_url.path();
-    std::move(callback).Run(NativeFileSystemError::New(result), nullptr);
+    std::move(callback).Run(native_file_system_error::FromFileError(
+                                result, "Error copying to swap file."),
+                            nullptr);
     return;
   }
   std::move(callback).Run(
-      NativeFileSystemError::New(base::File::FILE_OK),
+      native_file_system_error::Ok(),
       manager()->CreateFileWriter(context(), url(), swap_url, handle_state()));
 }
 

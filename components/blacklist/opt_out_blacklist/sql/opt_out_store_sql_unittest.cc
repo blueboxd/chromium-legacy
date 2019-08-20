@@ -93,7 +93,7 @@ class OptOutStoreSQLTest : public testing::Test {
   void TearDown() override { DestroyStore(); }
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // The backing SQL store.
   std::unique_ptr<OptOutStoreSQL> store_;

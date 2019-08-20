@@ -40,7 +40,7 @@ const char kTestLocalDeviceId[] = "testLocalDeviceId";
 class TestConnectionAttempt
     : public ConnectionAttemptBase<BleInitiatorFailureType> {
  public:
-  TestConnectionAttempt(FakeConnectionAttemptDelegate* delegate)
+  explicit TestConnectionAttempt(FakeConnectionAttemptDelegate* delegate)
       : ConnectionAttemptBase<BleInitiatorFailureType>(
             delegate,
             ConnectionAttemptDetails(kTestRemoteDeviceId,

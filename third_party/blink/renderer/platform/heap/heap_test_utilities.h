@@ -38,7 +38,7 @@ class TestSupportingGC : public testing::Test {
   void CompleteSweepingIfNeeded();
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 template <typename T>

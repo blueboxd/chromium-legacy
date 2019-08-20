@@ -71,7 +71,7 @@ class PictureBufferManagerImplTest : public testing::Test {
     return sync_token;
   }
 
-  base::test::ScopedTaskEnvironment environment_;
+  base::test::TaskEnvironment environment_;
 
   uint64_t next_release_count_ = 1;
   testing::StrictMock<

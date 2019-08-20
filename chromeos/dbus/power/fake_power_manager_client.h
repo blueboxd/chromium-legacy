@@ -127,6 +127,7 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
                      VoidDBusMethodCallback callback) override;
   void DeleteArcTimers(const std::string& tag,
                        VoidDBusMethodCallback callback) override;
+  base::TimeDelta GetDarkSuspendDelayTimeout() override;
 
   // Pops the first report from |video_activity_reports_|, returning whether the
   // activity was fullscreen or not. There must be at least one report.

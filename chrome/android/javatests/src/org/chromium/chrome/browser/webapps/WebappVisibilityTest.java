@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import android.content.Intent;
 import android.support.test.filters.MediumTest;
 import android.support.test.rule.UiThreadTestRule;
 
@@ -16,6 +17,9 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.blink_public.platform.WebDisplayMode;
+import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.test.util.browser.WebApkInfoBuilder;
+import org.chromium.chrome.test.util.browser.WebappTestHelper;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 
@@ -128,17 +132,15 @@ public class WebappVisibilityTest {
 
     private static WebappInfo createWebappInfo(String webappStartUrlOrScopeUrl,
             @WebappScopePolicy.Type int scopePolicy, @WebDisplayMode int displayMode) {
-        return scopePolicy == WebappScopePolicy.Type.LEGACY
-                ? WebappInfo.create("", webappStartUrlOrScopeUrl, null, null, null, null,
-                        displayMode, 0, 0, 0, 0, false /* isIconGenerated */,
-                        false /* isIconAdaptive */, false /* forceNavigation */)
-                : WebApkInfo.create(
-                        "", "", webappStartUrlOrScopeUrl, null, null, null, null, null, displayMode,
-                        0, 0, 0, 0, 0, false, "", 0, null, "", WebApkInfo.WebApkDistributor.BROWSER,
-                        null, null, null /*shareTargetActivityName*/, false /* forceNavigation */,
-                        false /* isSplashProvidedByWebApk */, null /* shareData */,
-                        1 /* webApkVersionCode */
-
-                );
+        if (scopePolicy == WebappScopePolicy.Type.LEGACY) {
+            Intent webappIntent = WebappTestHelper.createMinimalWebappIntent(
+                    "" /* id */, webappStartUrlOrScopeUrl);
+            webappIntent.putExtra(ShortcutHelper.EXTRA_DISPLAY_MODE, displayMode);
+            return WebappInfo.create(webappIntent);
+        }
+        WebApkInfoBuilder webApkInfoBuilder = new WebApkInfoBuilder("random.package", "" /* url */);
+        webApkInfoBuilder.setScope(webappStartUrlOrScopeUrl);
+        webApkInfoBuilder.setDisplayMode(displayMode);
+        return webApkInfoBuilder.build();
     }
 }

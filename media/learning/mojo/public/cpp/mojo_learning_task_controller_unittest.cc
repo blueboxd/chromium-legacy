@@ -70,7 +70,7 @@ class MojoLearningTaskControllerTest : public ::testing::Test {
   }
 
   // Mojo stuff.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   FakeMojoLearningTaskController fake_learning_controller_;
   mojo::Binding<mojom::LearningTaskController> learning_controller_binding_;
@@ -83,7 +83,7 @@ TEST_F(MojoLearningTaskControllerTest, Begin) {
   base::UnguessableToken id = base::UnguessableToken::Create();
   FeatureVector features = {FeatureValue(123), FeatureValue(456)};
   learning_controller_->BeginObservation(id, features);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(id, fake_learning_controller_.begin_args_.id_);
   EXPECT_EQ(features, fake_learning_controller_.begin_args_.features_);
 }
@@ -92,7 +92,7 @@ TEST_F(MojoLearningTaskControllerTest, Complete) {
   base::UnguessableToken id = base::UnguessableToken::Create();
   ObservationCompletion completion(TargetValue(1234));
   learning_controller_->CompleteObservation(id, completion);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(id, fake_learning_controller_.complete_args_.id_);
   EXPECT_EQ(completion.target_value,
             fake_learning_controller_.complete_args_.completion_.target_value);
@@ -101,7 +101,7 @@ TEST_F(MojoLearningTaskControllerTest, Complete) {
 TEST_F(MojoLearningTaskControllerTest, Cancel) {
   base::UnguessableToken id = base::UnguessableToken::Create();
   learning_controller_->CancelObservation(id);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(id, fake_learning_controller_.cancel_args_.id_);
 }
 

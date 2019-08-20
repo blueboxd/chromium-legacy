@@ -319,7 +319,7 @@ class AccountTrackerServiceTest : public testing::Test {
   void ReturnFetchResults(net::HttpStatusCode response_code,
                           const std::string& response_string);
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   void CreateAccountTracker(base::FilePath path, bool network_enabled) {
@@ -407,7 +407,7 @@ void AccountTrackerServiceTest::ReturnAccountImageFetchSuccess(
     AccountKey account_key) {
   GetTestURLLoaderFactory()->AddResponse(
       AccountKeyToPictureURLWithSize(account_key), "image data");
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 void AccountTrackerServiceTest::ReturnAccountImageFetchFailure(
@@ -415,7 +415,7 @@ void AccountTrackerServiceTest::ReturnAccountImageFetchFailure(
   GetTestURLLoaderFactory()->AddResponse(
       AccountKeyToPictureURLWithSize(account_key), std::string(),
       net::HTTP_BAD_REQUEST);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(AccountTrackerServiceTest, Basic) {}
@@ -682,7 +682,7 @@ TEST_F(AccountTrackerServiceTest, Persistence) {
                     AccountKeyToEmail(kAccountKeyBeta)),
   }));
   // Wait until all account images are loaded.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(CheckAccountTrackerEvents({
       TrackingEvent(UPDATED, AccountKeyToAccountId(kAccountKeyAlpha),
                     AccountKeyToGaiaId(kAccountKeyAlpha),

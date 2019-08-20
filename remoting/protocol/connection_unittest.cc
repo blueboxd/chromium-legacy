@@ -262,8 +262,7 @@ class ConnectionTest : public testing::Test,
                        public testing::WithParamInterface<bool> {
  public:
   ConnectionTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         video_encode_thread_("VideoEncode"),
         audio_encode_thread_("AudioEncode"),
         audio_decode_thread_("AudioDecode") {
@@ -291,16 +290,16 @@ class ConnectionTest : public testing::Test,
       host_connection_.reset(new WebrtcConnectionToClient(
           base::WrapUnique(host_session_),
           TransportContext::ForTests(protocol::TransportRole::SERVER),
-          scoped_task_environment_.GetMainThreadTaskRunner(),
-          scoped_task_environment_.GetMainThreadTaskRunner()));
+          task_environment_.GetMainThreadTaskRunner(),
+          task_environment_.GetMainThreadTaskRunner()));
       client_connection_.reset(new WebrtcConnectionToHost());
 
     } else {
       host_connection_.reset(new IceConnectionToClient(
           base::WrapUnique(host_session_),
           TransportContext::ForTests(protocol::TransportRole::SERVER),
-          scoped_task_environment_.GetMainThreadTaskRunner(),
-          scoped_task_environment_.GetMainThreadTaskRunner()));
+          task_environment_.GetMainThreadTaskRunner(),
+          task_environment_.GetMainThreadTaskRunner()));
       client_connection_.reset(new IceConnectionToHost());
     }
 
@@ -436,7 +435,7 @@ class ConnectionTest : public testing::Test,
                      .empty());
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
   MockConnectionToClientEventHandler host_event_handler_;

@@ -94,7 +94,7 @@ class MojoCdmHelperTest : public testing::Test {
   MojoCdmHelperTest() : helper_(&test_interface_provider_) {}
   ~MojoCdmHelperTest() override = default;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestInterfaceProvider test_interface_provider_;
   MockFileIOClient file_io_client_;
   MojoCdmHelper helper_;

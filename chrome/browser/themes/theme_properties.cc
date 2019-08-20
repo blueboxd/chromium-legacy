@@ -34,14 +34,114 @@ constexpr char kTilingRepeatX[] = "repeat-x";
 constexpr char kTilingRepeatY[] = "repeat-y";
 constexpr char kTilingRepeat[] = "repeat";
 
+SkColor GetLightModeColor(int id) {
+#if defined(OS_WIN)
+  const SkColor kDefaultColorNTPBackground =
+      color_utils::GetSysSkColor(COLOR_WINDOW);
+  const SkColor kDefaultColorNTPText =
+      color_utils::GetSysSkColor(COLOR_WINDOWTEXT);
+  const SkColor kDefaultColorNTPLink =
+      color_utils::GetSysSkColor(COLOR_HOTLIGHT);
+#else
+  // TODO(beng): source from theme provider.
+  constexpr SkColor kDefaultColorNTPBackground = SK_ColorWHITE;
+  constexpr SkColor kDefaultColorNTPText = SK_ColorBLACK;
+  constexpr SkColor kDefaultColorNTPLink = SkColorSetRGB(0x06, 0x37, 0x74);
+#endif  // OS_WIN
+
+  switch (id) {
+    // Properties stored in theme pack.  If you change these defaults, you must
+    // increment the version number in browser_theme_pack.cc.
+    case ThemeProperties::COLOR_FRAME:
+    case ThemeProperties::COLOR_BACKGROUND_TAB:
+      return SkColorSetRGB(0xDE, 0xE1, 0xE6);
+    case ThemeProperties::COLOR_FRAME_INACTIVE:
+    case ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE:
+      return color_utils::HSLShift(
+          GetLightModeColor(ThemeProperties::COLOR_FRAME),
+          ThemeProperties::GetDefaultTint(ThemeProperties::TINT_FRAME_INACTIVE,
+                                          false));
+    case ThemeProperties::COLOR_DOWNLOAD_SHELF:
+    case ThemeProperties::COLOR_INFOBAR:
+    case ThemeProperties::COLOR_TOOLBAR:
+    case ThemeProperties::COLOR_STATUS_BUBBLE:
+      return SK_ColorWHITE;
+    case ThemeProperties::COLOR_HOVER_CARD_NO_PREVIEW_FOREGROUND:
+      return gfx::kGoogleGrey300;
+    case ThemeProperties::COLOR_HOVER_CARD_NO_PREVIEW_BACKGROUND:
+      return gfx::kGoogleGrey050;
+    case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT:
+    case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE:
+    case ThemeProperties::COLOR_BOOKMARK_TEXT:
+    case ThemeProperties::COLOR_TAB_TEXT:
+      return gfx::kGoogleGrey800;
+    case ThemeProperties::COLOR_NTP_BACKGROUND:
+      return kDefaultColorNTPBackground;
+    case ThemeProperties::COLOR_NTP_TEXT:
+      return kDefaultColorNTPText;
+    case ThemeProperties::COLOR_NTP_LINK:
+      return kDefaultColorNTPLink;
+    case ThemeProperties::COLOR_NTP_HEADER:
+      return SkColorSetRGB(0x96, 0x96, 0x96);
+    case ThemeProperties::COLOR_CONTROL_BUTTON_BACKGROUND:
+      return SK_ColorTRANSPARENT;
+    case ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON:
+      // If color is not explicitly specified, it should be calculated from
+      // TINT_BUTTONS.
+      NOTREACHED();
+      return gfx::kPlaceholderColor;
+
+    // Properties not stored in theme pack.
+    case ThemeProperties::COLOR_TAB_ALERT_AUDIO:
+      return gfx::kChromeIconGrey;
+    case ThemeProperties::COLOR_TAB_ALERT_RECORDING:
+      return gfx::kGoogleRed600;
+    case ThemeProperties::COLOR_TAB_ALERT_CAPTURING:
+    case ThemeProperties::COLOR_TAB_PIP_PLAYING:
+      return gfx::kGoogleBlue600;
+    case ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR:
+      return SkColorSetRGB(0xB6, 0xB4, 0xB6);
+    case ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR:
+    case ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR_INACTIVE:
+      return SkColorSetA(SK_ColorBLACK, 0x40);
+#if defined(OS_WIN)
+    case ThemeProperties::COLOR_ACCENT_BORDER:
+      NOTREACHED();
+      return gfx::kPlaceholderColor;
+#endif
+    case ThemeProperties::COLOR_FEATURE_PROMO_BUBBLE_TEXT:
+      return SK_ColorWHITE;
+    case ThemeProperties::COLOR_FEATURE_PROMO_BUBBLE_BACKGROUND:
+      return gfx::kGoogleBlue700;
+
+    case ThemeProperties::COLOR_FRAME_INCOGNITO:
+    case ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE:
+    case ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO:
+    case ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE:
+    case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO:
+    case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE:
+      NOTREACHED() << "These values should be queried via their respective "
+                      "non-incognito equivalents and an appropriate "
+                      "|incognito| value.";
+      FALLTHROUGH;
+    default:
+      return gfx::kPlaceholderColor;
+  }
+}
+
 base::Optional<SkColor> GetIncognitoColor(int id) {
   switch (id) {
     case ThemeProperties::COLOR_FRAME:
     case ThemeProperties::COLOR_BACKGROUND_TAB:
-      return gfx::kGoogleGrey900;
+      return color_utils::HSLShift(
+          GetLightModeColor(ThemeProperties::COLOR_FRAME),
+          ThemeProperties::GetDefaultTint(ThemeProperties::TINT_FRAME, true));
     case ThemeProperties::COLOR_FRAME_INACTIVE:
     case ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE:
-      return gfx::kGoogleGrey800;
+      return color_utils::HSLShift(
+          GetLightModeColor(ThemeProperties::COLOR_FRAME),
+          ThemeProperties::GetDefaultTint(ThemeProperties::TINT_FRAME_INACTIVE,
+                                          true));
     case ThemeProperties::COLOR_DOWNLOAD_SHELF:
     case ThemeProperties::COLOR_STATUS_BUBBLE:
     case ThemeProperties::COLOR_INFOBAR:
@@ -153,22 +253,17 @@ color_utils::HSL ThemeProperties::GetDefaultTint(int id, bool incognito) {
   DCHECK(id != TINT_FRAME_INCOGNITO && id != TINT_FRAME_INCOGNITO_INACTIVE)
       << "These values should be queried via their respective non-incognito "
          "equivalents and an appropriate |incognito| value.";
-  if (!incognito &&
-      ui::NativeTheme::GetInstanceForNativeUi()->ShouldUseDarkColors() &&
-      id == TINT_BUTTONS) {
-    return {0, 0, 1};
-  }
   // If you change these defaults, you must increment the version number in
   // browser_theme_pack.cc.
   if (incognito) {
     if (id == TINT_FRAME)
-      return {-1, 0.2, 0.35};
+      return {-1, 0.7, 0.075};  // #DEE1E6 -> kGoogleGrey900
     if (id == TINT_FRAME_INACTIVE)
-      return {-1, 0.3, 0.6};
+      return {0.57, 0.65, 0.1405};  // #DEE1E6 -> kGoogleGrey800
     if (id == TINT_BUTTONS)
-      return {-1, -1, 0.96};
+      return {-1, 0.57, 0.9605};  // kChromeIconGrey -> kGoogleGrey100
   } else if (id == TINT_FRAME_INACTIVE) {
-    return {-1, -1, 0.75};
+    return {-1, -1, 0.642};  // #DEE1E6 -> #E7EAED
   }
   return {-1, -1, -1};
 }
@@ -185,94 +280,5 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool incognito) {
     if (dark_mode_color.has_value())
       return dark_mode_color.value();
   }
-
-#if defined(OS_WIN)
-  const SkColor kDefaultColorNTPBackground =
-      color_utils::GetSysSkColor(COLOR_WINDOW);
-  const SkColor kDefaultColorNTPText =
-      color_utils::GetSysSkColor(COLOR_WINDOWTEXT);
-  const SkColor kDefaultColorNTPLink =
-      color_utils::GetSysSkColor(COLOR_HOTLIGHT);
-#else
-  // TODO(beng): source from theme provider.
-  constexpr SkColor kDefaultColorNTPBackground = SK_ColorWHITE;
-  constexpr SkColor kDefaultColorNTPText = SK_ColorBLACK;
-  constexpr SkColor kDefaultColorNTPLink = SkColorSetRGB(0x06, 0x37, 0x74);
-#endif  // OS_WIN
-
-  switch (id) {
-    // Properties stored in theme pack.  If you change these defaults, you must
-    // increment the version number in browser_theme_pack.cc.
-    case COLOR_FRAME:
-    case COLOR_BACKGROUND_TAB:
-      return SkColorSetRGB(0xDE, 0xE1, 0xE6);
-    case COLOR_FRAME_INACTIVE:
-    case COLOR_BACKGROUND_TAB_INACTIVE:
-      return SkColorSetRGB(0xE7, 0xEA, 0xED);
-    case COLOR_DOWNLOAD_SHELF:
-    case COLOR_INFOBAR:
-    case COLOR_TOOLBAR:
-    case COLOR_STATUS_BUBBLE:
-      return SK_ColorWHITE;
-    case COLOR_HOVER_CARD_NO_PREVIEW_FOREGROUND:
-      return gfx::kGoogleGrey300;
-    case COLOR_HOVER_CARD_NO_PREVIEW_BACKGROUND:
-      return gfx::kGoogleGrey050;
-    case COLOR_BACKGROUND_TAB_TEXT:
-    case COLOR_BACKGROUND_TAB_TEXT_INACTIVE:
-    case COLOR_BOOKMARK_TEXT:
-    case COLOR_TAB_TEXT:
-      return gfx::kGoogleGrey800;
-    case COLOR_NTP_BACKGROUND:
-      return kDefaultColorNTPBackground;
-    case COLOR_NTP_TEXT:
-      return kDefaultColorNTPText;
-    case COLOR_NTP_LINK:
-      return kDefaultColorNTPLink;
-    case COLOR_NTP_HEADER:
-      return SkColorSetRGB(0x96, 0x96, 0x96);
-    case COLOR_CONTROL_BUTTON_BACKGROUND:
-      return SK_ColorTRANSPARENT;
-    case COLOR_TOOLBAR_BUTTON_ICON:
-      // If color is not explicitly specified, it should be calculated from
-      // TINT_BUTTONS.
-      NOTREACHED();
-      return gfx::kPlaceholderColor;
-
-    // Properties not stored in theme pack.
-    case COLOR_TAB_ALERT_AUDIO:
-      return gfx::kChromeIconGrey;
-    case COLOR_TAB_ALERT_RECORDING:
-      return gfx::kGoogleRed600;
-    case COLOR_TAB_ALERT_CAPTURING:
-    case COLOR_TAB_PIP_PLAYING:
-      return gfx::kGoogleBlue600;
-    case COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR:
-      return SkColorSetRGB(0xB6, 0xB4, 0xB6);
-    case COLOR_TOOLBAR_TOP_SEPARATOR:
-    case COLOR_TOOLBAR_TOP_SEPARATOR_INACTIVE:
-      return SkColorSetA(SK_ColorBLACK, 0x40);
-#if defined(OS_WIN)
-    case COLOR_ACCENT_BORDER:
-      NOTREACHED();
-      return gfx::kPlaceholderColor;
-#endif
-    case COLOR_FEATURE_PROMO_BUBBLE_TEXT:
-      return SK_ColorWHITE;
-    case COLOR_FEATURE_PROMO_BUBBLE_BACKGROUND:
-      return gfx::kGoogleBlue700;
-
-    case COLOR_FRAME_INCOGNITO:
-    case COLOR_FRAME_INCOGNITO_INACTIVE:
-    case COLOR_BACKGROUND_TAB_INCOGNITO:
-    case COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE:
-    case COLOR_BACKGROUND_TAB_TEXT_INCOGNITO:
-    case COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE:
-      NOTREACHED() << "These values should be queried via their respective "
-                      "non-incognito equivalents and an appropriate "
-                      "|incognito| value.";
-      FALLTHROUGH;
-    default:
-      return gfx::kPlaceholderColor;
-  }
+  return GetLightModeColor(id);
 }

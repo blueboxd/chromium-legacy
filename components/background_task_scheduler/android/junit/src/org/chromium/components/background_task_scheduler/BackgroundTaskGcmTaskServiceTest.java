@@ -199,9 +199,9 @@ public class BackgroundTaskGcmTaskServiceTest {
 
         ReflectionHelpers.setStaticField(
                 Build.VERSION.class, "SDK_INT", Build.VERSION_CODES.LOLLIPOP);
-        TaskInfo.TimingInfo timingInfo =
-                TaskInfo.OneOffInfo.create().setWindowEndTimeMs(TimeUnit.DAYS.toMillis(1)).build();
-        TaskInfo task = TaskInfo.createTask(TaskIds.TEST, timingInfo).build();
+        TaskInfo task = TaskInfo.createOneOffTask(TaskIds.TEST, TestBackgroundTask.class,
+                                        TimeUnit.DAYS.toMillis(1))
+                                .build();
         BackgroundTaskSchedulerPrefs.addScheduledTask(task);
         assertEquals(0, TestBackgroundTask.getRescheduleCalls());
 
@@ -215,9 +215,9 @@ public class BackgroundTaskGcmTaskServiceTest {
         BackgroundTaskSchedulerFactory.setBackgroundTaskFactory(new TestBackgroundTaskFactory());
 
         ReflectionHelpers.setStaticField(Build.VERSION.class, "SDK_INT", Build.VERSION_CODES.M);
-        TaskInfo.TimingInfo timingInfo =
-                TaskInfo.OneOffInfo.create().setWindowEndTimeMs(TimeUnit.DAYS.toMillis(1)).build();
-        TaskInfo task = TaskInfo.createTask(TaskIds.TEST, timingInfo).build();
+        TaskInfo task = TaskInfo.createOneOffTask(TaskIds.TEST, TestBackgroundTask.class,
+                                        TimeUnit.DAYS.toMillis(1))
+                                .build();
         BackgroundTaskSchedulerPrefs.addScheduledTask(task);
         assertEquals(0, TestBackgroundTask.getRescheduleCalls());
 

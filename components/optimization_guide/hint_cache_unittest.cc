@@ -46,8 +46,7 @@ class HintCacheTest : public ProtoDatabaseProviderTestBase {
   void CreateAndInitializeHintCache(int memory_cache_size,
                                     bool purge_existing_data = false) {
     auto database_path = temp_dir_.GetPath();
-    auto database_task_runner =
-        scoped_task_environment_.GetMainThreadTaskRunner();
+    auto database_task_runner = task_environment_.GetMainThreadTaskRunner();
     hint_cache_ = std::make_unique<HintCache>(
         std::make_unique<HintCacheStore>(db_provider_.get(), database_path,
                                          nullptr /* pref_service */,
@@ -120,7 +119,7 @@ class HintCacheTest : public ProtoDatabaseProviderTestBase {
 
  private:
   void RunUntilIdle() {
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -131,7 +130,7 @@ class HintCacheTest : public ProtoDatabaseProviderTestBase {
     loaded_hint_ = hint;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<HintCache> hint_cache_;
   const proto::Hint* loaded_hint_;

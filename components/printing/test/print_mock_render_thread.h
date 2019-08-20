@@ -76,7 +76,8 @@ class PrintMockRenderThread : public content::MockRenderThread {
                        PrintMsg_PrintPages_Params* settings);
 
   void OnDidGetPrintedPagesCount(int cookie, int number_pages);
-  void OnDidPrintDocument(const PrintHostMsg_DidPrintDocument_Params& params);
+  void OnDidPrintDocument(const PrintHostMsg_DidPrintDocument_Params& params,
+                          IPC::Message* reply_msg);
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   void OnDidStartPreview(const PrintHostMsg_DidStartPreview_Params& params,
                          const PrintHostMsg_PreviewIds& ids);

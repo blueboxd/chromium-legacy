@@ -1354,8 +1354,10 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DevtoolsInDevTools) {
 // Some web features, when used from an extension, are subject to browser-side
 // security policy enforcement. Make sure they work properly from inside a
 // devtools extension.
+// ToDo(993982): The test is flaky (timeout, crash, and fail) on several builds:
+// Debug, Windows, Mac, MSan, and ASan.
 IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
-                       DevToolsExtensionSecurityPolicyGrants) {
+                       DISABLED_DevToolsExtensionSecurityPolicyGrants) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   auto dir = std::make_unique<extensions::TestExtensionDir>();

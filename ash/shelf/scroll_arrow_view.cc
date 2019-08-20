@@ -7,9 +7,9 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/scoped_canvas.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
@@ -46,20 +46,6 @@ void ScrollArrowView::PaintButtonContents(gfx::Canvas* canvas) {
   gfx::PointF center_point(width() / 2.f, height() / 2.f);
   canvas->DrawImageInt(img, center_point.x() - img.width() / 2,
                        center_point.y() - img.height() / 2);
-
-  float ring_radius_dp = width() / 2;
-  {
-    gfx::PointF circle_center(center_point);
-    gfx::ScopedCanvas scoped_canvas(canvas);
-    const float dsf = canvas->UndoDeviceScaleFactor();
-    circle_center.Scale(dsf);
-    cc::PaintFlags fg_flags;
-    fg_flags.setAntiAlias(true);
-    fg_flags.setColor(kShelfControlPermanentHighlightBackground);
-
-    const float radius = std::ceil(ring_radius_dp * dsf);
-    canvas->DrawCircle(circle_center, radius, fg_flags);
-  }
 }
 
 const char* ScrollArrowView::GetClassName() const {
@@ -74,14 +60,13 @@ std::unique_ptr<views::InkDrop> ScrollArrowView::CreateInkDrop() {
 
 std::unique_ptr<views::InkDropMask> ScrollArrowView::CreateInkDropMask() const {
   gfx::Point center_point = gfx::Rect(size()).CenterPoint();
-  return std::make_unique<views::CircleInkDropMask>(size(), center_point, 20);
+  return std::make_unique<views::CircleInkDropMask>(size(), center_point,
+                                                    width() / 2);
 }
 
 std::unique_ptr<views::InkDropRipple> ScrollArrowView::CreateInkDropRipple()
     const {
-  const int button_radius = 20;
   gfx::Rect bounds = gfx::Rect(size());
-  bounds.ClampToCenteredSize(gfx::Size(2 * button_radius, 2 * button_radius));
   return std::make_unique<views::FloodFillInkDropRipple>(
       size(), GetLocalBounds().InsetsFrom(bounds),
       GetInkDropCenterBasedOnLastEvent(), kShelfInkDropBaseColor,

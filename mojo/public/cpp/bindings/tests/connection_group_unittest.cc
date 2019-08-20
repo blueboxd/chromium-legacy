@@ -24,7 +24,7 @@ class ConnectionGroupTest : public testing::Test {
   ConnectionGroupTest() = default;
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionGroupTest);
 };

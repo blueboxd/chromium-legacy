@@ -69,7 +69,7 @@ class TransientFileUtilTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir data_dir_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
   std::unique_ptr<storage::TransientFileUtil> transient_file_util_;

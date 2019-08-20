@@ -142,7 +142,7 @@ class ServiceManagerListenerTest : public testing::Test, public Service {
   }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   ServiceManager service_manager_;
   ServiceBinding service_binding_{this};
   std::unique_ptr<TestListener> listener_;

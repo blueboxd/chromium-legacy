@@ -78,8 +78,7 @@ class SocketDataPumpTest : public testing::Test,
                            public ::testing::WithParamInterface<net::IoMode> {
  public:
   SocketDataPumpTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
   ~SocketDataPumpTest() override {}
 
   // Initializes the test case with a socket data provider, which will be used
@@ -130,7 +129,7 @@ class SocketDataPumpTest : public testing::Test,
   mojo::ScopedDataPipeProducerHandle send_handle_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   net::MockClientSocketFactory mock_client_socket_factory_;
   TestSocketDataPumpDelegate test_delegate_;
   std::unique_ptr<net::StreamSocket> socket_;

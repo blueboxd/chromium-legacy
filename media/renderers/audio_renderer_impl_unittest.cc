@@ -507,7 +507,7 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
 
   // Fixture members.
   AudioParameters hardware_params_;
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   NullMediaLog media_log_;
   std::unique_ptr<AudioRendererImpl> renderer_;

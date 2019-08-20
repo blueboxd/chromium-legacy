@@ -60,13 +60,6 @@ class ExtensionsMenuButtonTest : public BrowserWithTestWindowTest {
     BrowserWithTestWindowTest::TearDown();
   }
 
-  void TriggerNotifyClick() {
-    ui::MouseEvent click_event(ui::ET_MOUSE_RELEASED, gfx::Point(),
-                               gfx::Point(), base::TimeTicks(),
-                               ui::EF_LEFT_MOUSE_BUTTON, 0);
-    button_->button_controller()->OnMouseReleased(click_event);
-  }
-
   base::test::ScopedFeatureList scoped_feature_list_;
   const base::string16 initial_extension_name_;
   const base::string16 initial_tooltip_;
@@ -86,7 +79,14 @@ TEST_F(ExtensionsMenuButtonTest, UpdatesToDisplayCorrectActionTitle) {
 
 TEST_F(ExtensionsMenuButtonTest, NotifyClickExecutesAction) {
   EXPECT_EQ(0, controller_->execute_action_count());
-  TriggerNotifyClick();
+
+  button_->SetBounds(0, 0, 100, 100);
+  ui::MouseEvent click_event(ui::ET_MOUSE_RELEASED,
+                             button_->GetLocalBounds().CenterPoint(),
+                             button_->GetLocalBounds().CenterPoint(),
+                             base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, 0);
+  button_->button_controller()->OnMouseReleased(click_event);
+
   EXPECT_EQ(1, controller_->execute_action_count());
 }
 

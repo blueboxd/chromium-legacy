@@ -45,12 +45,18 @@ class AwPrintManager : public printing::PrintManager,
   // printing::PrintManager:
   void OnDidPrintDocument(
       content::RenderFrameHost* render_frame_host,
-      const PrintHostMsg_DidPrintDocument_Params& params) override;
+      const PrintHostMsg_DidPrintDocument_Params& params,
+      std::unique_ptr<DelayedFrameDispatchHelper> helper) override;
   void OnGetDefaultPrintSettings(content::RenderFrameHost* render_frame_host,
                                  IPC::Message* reply_msg) override;
   void OnScriptedPrint(content::RenderFrameHost* render_frame_host,
                        const PrintHostMsg_ScriptedPrint_Params& params,
                        IPC::Message* reply_msg) override;
+
+  static void OnDidPrintDocumentWritingDone(
+      PdfWritingDoneCallback callback,
+      std::unique_ptr<DelayedFrameDispatchHelper> helper,
+      int page_count);
 
   const std::unique_ptr<printing::PrintSettings> settings_;
 

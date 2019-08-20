@@ -82,6 +82,7 @@ class ASH_EXPORT OverflowBubbleView : public ShelfBubble,
  private:
   friend class OverflowBubbleViewTestAPI;
 
+  class OverflowScrollArrowView;
   class OverflowShelfContainerView;
 
   // Returns the maximum scroll distance.

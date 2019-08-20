@@ -87,7 +87,8 @@ base::Optional<fuchsia::web::WebMessage> FidlWebMessageFromMojo(
 
   base::STLClearObject(&data_utf16);
 
-  fuchsia::mem::Buffer data = cr_fuchsia::MemBufferFromString(data_utf8);
+  fuchsia::mem::Buffer data =
+      cr_fuchsia::MemBufferFromString(data_utf8, "cr-web-message-from-mojo");
   if (!data.vmo)
     return {};
 

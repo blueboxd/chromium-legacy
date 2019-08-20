@@ -230,7 +230,7 @@ class PasswordSyncableServiceTest : public testing::Test {
 
  private:
   // Used by the password store.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   PasswordSyncableServiceWrapper wrapper_;
 };
 

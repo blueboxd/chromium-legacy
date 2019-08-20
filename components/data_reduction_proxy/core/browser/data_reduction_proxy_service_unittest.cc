@@ -72,7 +72,7 @@ class DataReductionProxyServiceTest : public testing::Test {
   PrefService* prefs() { return &prefs_; }
 
  protected:
-  content::TestBrowserThreadBundle scoped_task_environment_;
+  content::TestBrowserThreadBundle task_environment_;
 
  private:
   TestingPrefServiceSimple prefs_;

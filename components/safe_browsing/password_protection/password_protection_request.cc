@@ -145,10 +145,15 @@ void PasswordProtectionRequest::OnWhitelistCheckDoneOnIO(
 
 void PasswordProtectionRequest::OnWhitelistCheckDone(bool match_whitelist) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (match_whitelist)
+  if (match_whitelist) {
     Finish(RequestOutcome::MATCHED_WHITELIST, nullptr);
-  else
+  } else {
+    // In case the request to Safe Browsing takes too long,
+    // we set a timer to cancel that request and return an "unspecified verdict"
+    // so that the navigation isn't blocked indefinitely.
+    StartTimeout();
     CheckCachedVerdicts();
+  }
 }
 
 void PasswordProtectionRequest::CheckCachedVerdicts() {
@@ -361,8 +366,6 @@ void PasswordProtectionRequest::SendRequest() {
     return;
   }
 
-  // In case the request take too long, we set a timer to cancel this request.
-  StartTimeout();
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("password_protection_request", R"(
         semantics {
@@ -485,7 +488,6 @@ void PasswordProtectionRequest::Finish(
                                    response->verdict_type());
     }
   }
-
   password_protection_service_->RequestFinished(this, outcome,
                                                 std::move(response));
 }
@@ -495,8 +497,9 @@ void PasswordProtectionRequest::Cancel(bool timed_out) {
   url_loader_.reset();
   // If request is canceled because |password_protection_service_| is shutting
   // down, ignore all these deferred navigations.
-  if (!timed_out)
+  if (!timed_out) {
     throttles_.clear();
+  }
 
   Finish(timed_out ? RequestOutcome::TIMEDOUT : RequestOutcome::CANCELED,
          nullptr);

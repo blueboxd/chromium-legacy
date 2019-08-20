@@ -260,7 +260,7 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         if (VrModuleProvider.getDelegate().isInVr()) onEnterVr();
 
         mOverviewModeBehavior = overviewModeBehavior;
-        if (overviewModeBehavior.overviewVisible()) {
+        if (overviewModeBehavior != null && overviewModeBehavior.overviewVisible()) {
             mOverviewObserver = new EmptyOverviewModeObserver() {
                 @Override
                 public void onOverviewModeFinishedHiding() {

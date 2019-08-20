@@ -1148,7 +1148,7 @@ class SmallCacheImpl : public SmallCache {
 };
 
 TEST(UnionTest, InterfaceInUnion) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   base::RunLoop run_loop;
   SmallCacheImpl impl(run_loop.QuitClosure());
   Remote<SmallCache> remote;
@@ -1164,7 +1164,7 @@ TEST(UnionTest, InterfaceInUnion) {
 }
 
 TEST(UnionTest, InterfaceInUnionFactoryFunction) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   base::RunLoop run_loop;
   SmallCacheImpl impl(run_loop.QuitClosure());
   Remote<SmallCache> remote;
@@ -1178,7 +1178,7 @@ TEST(UnionTest, InterfaceInUnionFactoryFunction) {
 }
 
 TEST(UnionTest, InterfaceInUnionSerialization) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   base::RunLoop run_loop;
   SmallCacheImpl impl(run_loop.QuitClosure());
   Remote<SmallCache> remote;
@@ -1215,7 +1215,7 @@ class UnionInterfaceImpl : public UnionInterface {
 };
 
 TEST(UnionTest, UnionInInterface) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   UnionInterfaceImpl impl;
   Remote<UnionInterface> remote;
   Receiver<UnionInterface> receiver(&impl, remote.BindNewPipeAndPassReceiver());

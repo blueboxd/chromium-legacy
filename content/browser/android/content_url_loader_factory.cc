@@ -159,7 +159,7 @@ class ContentURLLoader : public network::mojom::URLLoader {
 
     // Set the mimetype of the response.
     GetMimeType(request, path, &head.mime_type);
-    if (!head.mime_type.empty() && head.headers) {
+    if (!head.mime_type.empty()) {
       head.headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
       head.headers->AddHeader(
           base::StringPrintf("%s: %s", net::HttpRequestHeaders::kContentType,

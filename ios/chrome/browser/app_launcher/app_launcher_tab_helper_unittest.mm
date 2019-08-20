@@ -184,7 +184,7 @@ class AppLauncherTabHelperTest : public PlatformTest {
     return entry->IsRead() == expected_read_status;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   web::TestWebState web_state_;
   FakeNavigationManager* navigation_manager_ = nullptr;
 

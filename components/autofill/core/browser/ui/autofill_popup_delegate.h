@@ -56,6 +56,10 @@ class AutofillPopupDelegate {
   // Returns the associated AutofillDriver.
   virtual AutofillDriver* GetAutofillDriver() = 0;
 
+  // Returns the ax node id associated with the current web contents' element
+  // who has a controller relation to the current autofill popup.
+  virtual int32_t GetWebContentsPopupControllerAxId() const = 0;
+
   // Sets |deletion_callback| to be called from the delegate's destructor.
   // Useful for deleting objects which cannot be owned by the delegate but
   // should not outlive it.

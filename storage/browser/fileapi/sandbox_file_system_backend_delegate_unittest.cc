@@ -59,7 +59,7 @@ class SandboxFileSystemBackendDelegateTest : public testing::Test {
             &SandboxFileSystemBackendDelegateTest::OpenFileSystemCallback,
             base::Unretained(this)),
         GURL());
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   int callback_count() const { return callback_count_; }
@@ -79,7 +79,7 @@ class SandboxFileSystemBackendDelegateTest : public testing::Test {
   }
 
   base::ScopedTempDir data_dir_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;
   std::unique_ptr<storage::SandboxFileSystemBackendDelegate> delegate_;
 

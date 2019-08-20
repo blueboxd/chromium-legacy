@@ -254,8 +254,7 @@ class TestFilePathCallback {
 class NetExportFileWriterTest : public ::testing::Test {
  public:
   NetExportFileWriterTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         network_change_notifier_(net::NetworkChangeNotifier::CreateMock()),
         network_service_(network::NetworkService::CreateForTesting()) {}
 
@@ -440,7 +439,7 @@ class NetExportFileWriterTest : public ::testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   // Use a mock NetworkChangeNotifier so the real one can't add any logging.
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   std::unique_ptr<network::NetworkService> network_service_;

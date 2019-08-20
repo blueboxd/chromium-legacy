@@ -297,7 +297,7 @@ class D3D11CdmProxyTest : public ::testing::Test {
   const UINT kPrivateOutputSize = 40;
 
   // ObjectWatcher uses SequencedTaskRunnerHandle.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 // Verifies that if device creation fails, then the call fails.

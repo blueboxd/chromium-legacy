@@ -52,7 +52,7 @@ class BundledExchangesParserFactoryTest : public testing::Test {
 
  private:
   std::unique_ptr<BundledExchangesParserFactory> factory_;
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(BundledExchangesParserFactoryTest, GetSize) {

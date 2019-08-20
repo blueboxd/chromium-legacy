@@ -50,7 +50,7 @@ class ChildCallStackProfileCollectorTest : public testing::Test {
     return child_collector_.profiles_;
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   mojom::CallStackProfileCollectorPtr receiver_;
   std::unique_ptr<Receiver> receiver_impl_;
   ChildCallStackProfileCollector child_collector_;

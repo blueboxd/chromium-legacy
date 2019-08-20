@@ -100,7 +100,7 @@ class OAuth2ApiCallFlowTest : public testing::Test {
     AddFetchResult(url, succeeds, status, std::string());
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
   StrictMock<MockApiCallFlow> flow_;

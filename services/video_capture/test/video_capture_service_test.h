@@ -42,7 +42,7 @@ class VideoCaptureServiceTest : public testing::Test {
   mojom::TextureVirtualDevicePtr AddTextureVirtualDevice(
       const std::string& device_id);
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<VideoCaptureServiceImpl> service_impl_;
   mojo::Remote<mojom::VideoCaptureService> service_remote_;

@@ -78,7 +78,7 @@ class SessionTest : public mojom::ResourceProvider,
         session_observer_binding_(this),
         outbound_channel_binding_(this) {}
 
-  ~SessionTest() override { scoped_task_environment_.RunUntilIdle(); }
+  ~SessionTest() override { task_environment_.RunUntilIdle(); }
 
  protected:
   // mojom::SessionObserver implemenation.
@@ -185,7 +185,7 @@ class SessionTest : public mojom::ResourceProvider,
     response.answer = std::move(answer);
 
     session_->OnAnswer(audio_configs, video_configs, response);
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   // Create a mirroring session. Expect to send OFFER message.
@@ -212,7 +212,7 @@ class SessionTest : public mojom::ResourceProvider,
         std::move(session_observer_ptr), std::move(resource_provider_ptr),
         std::move(outbound_channel_ptr), mojo::MakeRequest(&inbound_channel_),
         nullptr);
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     Mock::VerifyAndClear(this);
   }
 
@@ -231,7 +231,7 @@ class SessionTest : public mojom::ResourceProvider,
     EXPECT_CALL(*this, OnOutboundMessage("GET_CAPABILITIES")).Times(1);
     EXPECT_CALL(*this, DidStart()).Times(1);
     SendAnswer();
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     Mock::VerifyAndClear(this);
   }
 
@@ -240,7 +240,7 @@ class SessionTest : public mojom::ResourceProvider,
       EXPECT_CALL(*video_host_, OnStopped()).Times(1);
     EXPECT_CALL(*this, DidStop()).Times(1);
     session_.reset();
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     Mock::VerifyAndClear(this);
   }
 
@@ -252,7 +252,7 @@ class SessionTest : public mojom::ResourceProvider,
     EXPECT_CALL(*video_host_, ReleaseBuffer(_, _, _)).Times(1);
     // Send one video frame to the consumer.
     video_host_->SendOneFrame(gfx::Size(64, 32), base::TimeTicks::Now());
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     Mock::VerifyAndClear(network_context_.get());
     Mock::VerifyAndClear(video_host_.get());
   }
@@ -274,7 +274,7 @@ class SessionTest : public mojom::ResourceProvider,
     }
     session_->OnAnswer(std::vector<FrameSenderConfig>(),
                        std::vector<FrameSenderConfig>(), ReceiverResponse());
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     cast_mode_ = "mirroring";
     Mock::VerifyAndClear(this);
     Mock::VerifyAndClear(&remoting_source_);
@@ -291,7 +291,7 @@ class SessionTest : public mojom::ResourceProvider,
     response.capabilities->media_caps =
         std::vector<std::string>({"video", "audio", "vp8", "opus"});
     session_->OnCapabilitiesResponse(response);
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     Mock::VerifyAndClear(this);
     Mock::VerifyAndClear(&remoting_source_);
   }
@@ -305,7 +305,7 @@ class SessionTest : public mojom::ResourceProvider,
         .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
     remoter_->Start();
     run_loop.Run();
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     cast_mode_ = "remoting";
     Mock::VerifyAndClear(this);
   }
@@ -314,7 +314,7 @@ class SessionTest : public mojom::ResourceProvider,
     ASSERT_TRUE(cast_mode_ == "remoting");
     EXPECT_CALL(remoting_source_, OnStarted()).Times(1);
     SendAnswer();
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     Mock::VerifyAndClear(this);
     Mock::VerifyAndClear(&remoting_source_);
   }
@@ -326,14 +326,14 @@ class SessionTest : public mojom::ResourceProvider,
     EXPECT_CALL(*this, OnOutboundMessage("OFFER")).Times(1);
     EXPECT_CALL(remoting_source_, OnStopped(reason)).Times(1);
     remoter_->Stop(reason);
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     cast_mode_ = "mirroring";
     Mock::VerifyAndClear(this);
     Mock::VerifyAndClear(&remoting_source_);
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   const net::IPEndPoint receiver_endpoint_;
   mojo::Binding<mojom::ResourceProvider> resource_provider_binding_;
   mojo::Binding<mojom::SessionObserver> session_observer_binding_;

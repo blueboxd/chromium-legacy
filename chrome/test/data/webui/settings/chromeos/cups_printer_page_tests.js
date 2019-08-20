@@ -988,6 +988,58 @@ suite('EditPrinterDialog', function() {
         });
   });
 
+  test('TestNonAutoConfPrintersCanSelectManufactureAndModel', function() {
+    dialog.pendingPrinter_ = {
+      ppdManufacturer: '',
+      ppdModel: '',
+      printerAddress: '03f0/e414?serial=CD4234',
+      printerDescription: '',
+      printerId: 'id_123',
+      printerManufacturer: '',
+      printerModel: '',
+      printerMakeAndModel: '',
+      printerName: 'Test Printer',
+      printerPPDPath: '',
+      printerPpdReference: {
+        userSuppliedPpdUrl: '',
+        effectiveMakeAndModel: '',
+        autoconf: false,
+      },
+      printerProtocol: 'ipp',
+      printerQueue: 'moreinfohere',
+      printerStatus: '',
+    };
+
+    // Assert that the manufacturer and model drop-downs are shown.
+    assertFalse(dialog.$$('#makeAndModelSection').hidden);
+  });
+
+  test('TestAutoConfPrintersCannotSelectManufactureAndModel', function() {
+    dialog.pendingPrinter_ = {
+      ppdManufacturer: '',
+      ppdModel: '',
+      printerAddress: '03f0/e414?serial=CD4234',
+      printerDescription: '',
+      printerId: 'id_123',
+      printerManufacturer: '',
+      printerModel: '',
+      printerMakeAndModel: '',
+      printerName: 'Test Printer',
+      printerPPDPath: '',
+      printerPpdReference: {
+        userSuppliedPpdUrl: '',
+        effectiveMakeAndModel: '',
+        autoconf: true,
+      },
+      printerProtocol: 'ipp',
+      printerQueue: 'moreinfohere',
+      printerStatus: '',
+    };
+
+    // Assert that the manufacturer and model drop-downs are hidden.
+    assertTrue(!dialog.$$('#makeAndModelSection').if);
+  });
+
   test('TestChangingNameEnablesSaveButton', function() {
     dialog.pendingPrinter_ = {
       ppdManufacturer: '',
@@ -1150,6 +1202,8 @@ suite('EditPrinterDialog', function() {
       printerStatus: '',
     };
     setPpdManufacturerAndPpdModel('manufacture', 'model');
+    Polymer.dom.flush();
+
     // Printers are considered initialized for editing after PPD make/models
     // are set.
     dialog.arePrinterFieldsInitialized_ = true;

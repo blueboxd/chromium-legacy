@@ -94,7 +94,7 @@ class PaymentRequestPaymentResponseHelperTest : public PlatformTest {
   TestPaymentRequest* payment_request() { return payment_request_.get(); }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_evironment_;
+  base::test::TaskEnvironment scoped_task_evironment_;
 
   autofill::AutofillProfile profile_;
   autofill::CreditCard credit_card_;

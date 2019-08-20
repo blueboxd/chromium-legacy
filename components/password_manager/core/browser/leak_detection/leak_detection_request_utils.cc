@@ -78,16 +78,4 @@ void AnalyzeResponseResult(std::unique_ptr<SingleLookupResponse> response,
       std::move(callback));
 }
 
-bool ParseLookupSingleLeakResponse(const SingleLookupResponse& response) {
-  // TODO(crbug.com/086298): Implement decrypting the response and checking
-  // whether the credential was actually leaked.
-  DVLOG(0) << "Number of Encrypted Leak Match Prefixes: "
-           << response.encrypted_leak_match_prefixes.size();
-
-  base::span<const char> hash = response.reencrypted_lookup_hash;
-  DVLOG(0) << "Reencrypted Lookup Hash: "
-           << base::HexEncode(base::as_bytes(hash));
-  return false;
-}
-
 }  // namespace password_manager

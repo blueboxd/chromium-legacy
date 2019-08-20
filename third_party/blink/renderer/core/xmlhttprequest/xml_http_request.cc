@@ -1104,11 +1104,12 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
   if (async_) {
     UseCounter::Count(&execution_context,
                       WebFeature::kXMLHttpRequestAsynchronous);
-    if (GetExecutionContext()->IsDocument()) {
+    if (execution_context.IsDocument()) {
       // Update histogram for usage of async xhr within pagedismissal.
       auto pagedismissal = GetDocument()->PageDismissalEventBeingDispatched();
       if (pagedismissal != Document::kNoDismissal) {
-        UseCounter::Count(GetDocument(), WebFeature::kAsyncXhrInPageDismissal);
+        UseCounter::Count(&execution_context,
+                          WebFeature::kAsyncXhrInPageDismissal);
         DEFINE_STATIC_LOCAL(EnumerationHistogram,
                             asyncxhr_pagedismissal_histogram,
                             ("XHR.Async.PageDismissal", 5));
@@ -1145,7 +1146,7 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
         // Disallow synchronous requests on page dismissal
         if (base::FeatureList::IsEnabled(
                 features::kForbidSyncXHRInPageDismissal)) {
-          UseCounter::Count(GetDocument(),
+          UseCounter::Count(&execution_context,
                             WebFeature::kForbiddenSyncXhrInPageDismissal);
           DEFINE_STATIC_LOCAL(EnumerationHistogram,
                               forbidden_syncxhr_pagedismissal_histogram,

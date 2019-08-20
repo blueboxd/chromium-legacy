@@ -82,10 +82,13 @@ base::string16 GetTitleForButton(ConfirmInfoBarDelegate* delegate,
   // Icon.
   gfx::Image icon = self.infoBarDelegate->GetIcon();
   DCHECK(!icon.IsEmpty());
-  if (self.infoBarDelegate->IsGooglePayBrandingEnabled())
+  if (self.infoBarDelegate->IsGooglePayBrandingEnabled()) {
     [self.infoBarView setGooglePayIcon:icon.ToUIImage()];
-  else
-    [self.infoBarView setIcon:icon.ToUIImage()];
+  } else {
+    UIImage* iconImage = [icon.ToUIImage()
+        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    [self.infoBarView setIcon:iconImage];
+  }
 
   // Message, if any.
   base::string16 messageText = self.infoBarDelegate->GetMessageText();

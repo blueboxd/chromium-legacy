@@ -7,27 +7,31 @@
 
 #include "base/test/scoped_task_environment.h"
 
-// TestWebThreadBundle is a convenience class for creating a set of
-// TestWebThreads and a thread pool in unit tests. For most tests, it is
-// sufficient to just instantiate the TestWebThreadBundle as a member variable.
-// It is a good idea to put the TestWebThreadBundle as the first member variable
-// in test classes, so it is destroyed last, and the test threads always exist
-// from the perspective of other classes.
+// TODO(crbug.com/992483): Rename this header to web_task_environment.h and
+// migrate all users.
+//
+// WebTaskEnvironment is the iOS equivalent of content::BrowserTaskEnvironment.
+//
+// It's is a convenience class for creating a set of TestWebThreads and a thread
+// pool in unit tests. For most tests, it is sufficient to just instantiate the
+// WebTaskEnvironment as a member variable. It is a good idea to put the
+// WebTaskEnvironment as the first member variable in test classes, so it is
+// destroyed last, and the test threads always exist from the perspective of
+// other classes.
 //
 // By default, all of the created TestWebThreads will be backed by a single
 // shared MessageLoop. If a test truly needs separate threads, it can do so by
 // passing the appropriate combination of option values during the
-// TestWebThreadBundle construction.
+// WebTaskEnvironment construction.
 //
 // To synchronously run tasks posted to TestWebThreads that use the shared
 // MessageLoop, call RunLoop::Run/RunUntilIdle() on the thread where the
-// TestWebThreadBundle lives. The destructor of TestWebThreadBundle runs
-// remaining TestWebThreads tasks and remaining BLOCK_SHUTDOWN thread pool
-// tasks.
+// WebTaskEnvironment lives. The destructor of WebTaskEnvironment runs remaining
+// TestWebThreads tasks and remaining BLOCK_SHUTDOWN thread pool tasks.
 //
-// Some tests using the IO thread expect a MessageLoopForIO. Passing
-// IO_MAINLOOP will use a MessageLoopForIO for the main MessageLoop.
-// Most of the time, this avoids needing to use a REAL_IO_THREAD.
+// Some tests using the IO thread expect a MessageLoopForIO. Passing IO_MAINLOOP
+// will use a MessageLoopForIO for the main MessageLoop. Most of the time, this
+// avoids needing to use a REAL_IO_THREAD.
 
 #include <memory>
 
@@ -41,7 +45,7 @@ namespace web {
 
 class TestWebThread;
 
-class TestWebThreadBundle : public base::test::ScopedTaskEnvironment {
+class WebTaskEnvironment : public base::test::TaskEnvironment {
  public:
   // Used to specify the type of MessageLoop that backs the UI thread, and
   // which of the named WebThreads should be backed by a real
@@ -52,9 +56,9 @@ class TestWebThreadBundle : public base::test::ScopedTaskEnvironment {
     REAL_IO_THREAD = 1 << 1,
   };
 
-  explicit TestWebThreadBundle(int options = Options::DEFAULT);
+  explicit WebTaskEnvironment(int options = Options::DEFAULT);
 
-  ~TestWebThreadBundle() override;
+  ~WebTaskEnvironment() override;
 
  private:
   void Init(int options);
@@ -62,7 +66,13 @@ class TestWebThreadBundle : public base::test::ScopedTaskEnvironment {
   std::unique_ptr<TestWebThread> ui_thread_;
   std::unique_ptr<TestWebThread> io_thread_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestWebThreadBundle);
+  DISALLOW_COPY_AND_ASSIGN(WebTaskEnvironment);
+};
+
+// TODO(crbug.com/992483): Mass migrate users and remove this.
+class TestWebThreadBundle : public WebTaskEnvironment {
+ public:
+  using WebTaskEnvironment::WebTaskEnvironment;
 };
 
 }  // namespace web

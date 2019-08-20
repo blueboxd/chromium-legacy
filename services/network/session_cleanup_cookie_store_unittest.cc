@@ -83,7 +83,7 @@ class SessionCleanupCookieStoreTest : public testing::Test {
 
   void TearDown() override { DestroyStore(); }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   const scoped_refptr<base::SequencedTaskRunner> background_task_runner_ =
       base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
   base::ScopedTempDir temp_dir_;
@@ -213,7 +213,7 @@ TEST_F(SessionCleanupCookieStoreTest, TestDeleteSessionCookies) {
       base::BindRepeating([](const std::string& domain, bool is_https) {
         return domain == "nonpersistent.com";
       }));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   DestroyStore();
   cookies = CreateAndLoad();
 
@@ -251,7 +251,7 @@ TEST_F(SessionCleanupCookieStoreTest, ForceKeepSessionState) {
       base::BindRepeating([](const std::string& domain, bool is_https) {
         return domain == "nonpersistent.com";
       }));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   DestroyStore();
   cookies = CreateAndLoad();
 

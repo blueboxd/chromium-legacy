@@ -198,8 +198,8 @@ class IpcDesktopEnvironmentTest : public testing::Test {
 
   void RunMainLoopUntilDone();
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::UI};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::UI};
 
   // Runs until |desktop_session_proxy_| is connected to the desktop.
   std::unique_ptr<base::RunLoop> setup_run_loop_;
@@ -263,9 +263,9 @@ IpcDesktopEnvironmentTest::~IpcDesktopEnvironmentTest() = default;
 
 void IpcDesktopEnvironmentTest::SetUp() {
   // Arrange to run |message_loop_| until no components depend on it.
-  task_runner_ = new AutoThreadTaskRunner(
-      scoped_task_environment_.GetMainThreadTaskRunner(),
-      main_run_loop_.QuitClosure());
+  task_runner_ =
+      new AutoThreadTaskRunner(task_environment_.GetMainThreadTaskRunner(),
+                               main_run_loop_.QuitClosure());
 
   io_task_runner_ = AutoThread::CreateWithType("IPC thread", task_runner_,
                                                base::MessagePumpType::IO);
@@ -371,7 +371,7 @@ DesktopEnvironment* IpcDesktopEnvironmentTest::CreateDesktopEnvironment() {
       .Times(AtMost(1));
 
   // Let tests know that the remote desktop environment is created.
-  scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+  task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE, setup_run_loop_->QuitClosure());
 
   return desktop_environment;

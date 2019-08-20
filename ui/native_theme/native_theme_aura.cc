@@ -148,9 +148,22 @@ NativeThemeAura* NativeThemeAura::web_instance() {
   return s_native_theme_for_web.get();
 }
 
-// This implementation returns hardcoded colors.
 SkColor NativeThemeAura::GetSystemColor(ColorId color_id,
                                         ColorScheme color_scheme) const {
+  if (UsesHighContrastColors() && features::IsFormControlsRefreshEnabled() &&
+      !system_colors_.empty()) {
+    switch (color_id) {
+      case kColorId_ButtonDisabledColor:
+        return system_colors_[SystemThemeColor::kGrayText];
+      case kColorId_ButtonEnabledColor:
+        return system_colors_[SystemThemeColor::kButtonText];
+      case kColorId_WindowBackground:
+        return system_colors_[SystemThemeColor::kWindow];
+      default:
+        break;
+    }
+  }
+
   return GetAuraColor(color_id, this, color_scheme);
 }
 
@@ -406,10 +419,17 @@ void NativeThemeAura::PaintCheckbox(cc::PaintCanvas* canvas,
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
 
-    if (state == kDisabled) {
-      flags.setColor(kCheckboxAndRadioStrokeDisabledColor);
+    if (UsesHighContrastColors()) {
+      ColorId color_id = (state == kDisabled)
+                             ? NativeTheme::kColorId_ButtonDisabledColor
+                             : NativeTheme::kColorId_ButtonEnabledColor;
+      flags.setColor(GetSystemColor(color_id, color_scheme));
     } else {
-      flags.setColor(kCheckboxAndRadioStrokeColor);
+      if (state == kDisabled) {
+        flags.setColor(kCheckboxAndRadioStrokeDisabledColor);
+      } else {
+        flags.setColor(kCheckboxAndRadioStrokeColor);
+      }
     }
 
     if (button.indeterminate) {
@@ -453,11 +473,20 @@ void NativeThemeAura::PaintRadio(cc::PaintCanvas* canvas,
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
     flags.setStyle(cc::PaintFlags::kFill_Style);
-    if (state == kDisabled) {
-      flags.setColor(kCheckboxAndRadioStrokeDisabledColor);
+
+    if (UsesHighContrastColors()) {
+      ColorId color_id = (state == kDisabled)
+                             ? NativeTheme::kColorId_ButtonDisabledColor
+                             : NativeTheme::kColorId_ButtonEnabledColor;
+      flags.setColor(GetSystemColor(color_id, color_scheme));
     } else {
-      flags.setColor(kCheckboxAndRadioStrokeColor);
+      if (state == kDisabled) {
+        flags.setColor(kCheckboxAndRadioStrokeDisabledColor);
+      } else {
+        flags.setColor(kCheckboxAndRadioStrokeColor);
+      }
     }
+
     skrect.inset(skrect.width() * 0.2, skrect.height() * 0.2);
     // Use drawRoundedRect instead of drawOval to be completely consistent
     // with the border in PaintCheckboxRadioNewCommon.
@@ -489,7 +518,14 @@ SkRect NativeThemeAura::PaintCheckboxRadioCommon(
   // or underflow.
   if (skrect.width() <= 2) {
     cc::PaintFlags flags;
-    flags.setColor(kCheckboxAndRadioTinyColor);
+
+    if (UsesHighContrastColors()) {
+      flags.setColor(GetSystemColor(NativeTheme::kColorId_ButtonEnabledColor,
+                                    color_scheme));
+    } else {
+      flags.setColor(kCheckboxAndRadioTinyColor);
+    }
+
     flags.setStyle(cc::PaintFlags::kFill_Style);
     canvas->drawRect(skrect, flags);
     // Too small to draw anything more.
@@ -503,18 +539,33 @@ SkRect NativeThemeAura::PaintCheckboxRadioCommon(
 
   // Paint the background (is not visible behind the rounded corners).
   skrect.inset(borderWidth / 2, borderWidth / 2);
-  flags.setColor(kCkeckboxAndRadioBackgroundColor);
+
+  if (UsesHighContrastColors()) {
+    flags.setColor(
+        GetSystemColor(NativeTheme::kColorId_WindowBackground, color_scheme));
+  } else {
+    flags.setColor(kCkeckboxAndRadioBackgroundColor);
+  }
+
   flags.setStyle(cc::PaintFlags::kFill_Style);
   canvas->drawRoundRect(skrect, borderRadius, borderRadius, flags);
 
   // Draw the border.
-  if (state == kHovered) {
-    flags.setColor(kCheckboxAndRadioBorderHoveredColor);
-  } else if (state == kDisabled) {
-    flags.setColor(kCheckboxAndRadioBorderDisabledColor);
+  if (UsesHighContrastColors()) {
+    ColorId color_id = (state == kDisabled)
+                           ? NativeTheme::kColorId_ButtonDisabledColor
+                           : NativeTheme::kColorId_ButtonEnabledColor;
+    flags.setColor(GetSystemColor(color_id, color_scheme));
   } else {
-    flags.setColor(kCheckboxAndRadioBorderColor);
+    if (state == kHovered) {
+      flags.setColor(kCheckboxAndRadioBorderHoveredColor);
+    } else if (state == kDisabled) {
+      flags.setColor(kCheckboxAndRadioBorderDisabledColor);
+    } else {
+      flags.setColor(kCheckboxAndRadioBorderColor);
+    }
   }
+
   flags.setStyle(cc::PaintFlags::kStroke_Style);
   flags.setStrokeWidth(borderWidth);
   canvas->drawRoundRect(skrect, borderRadius, borderRadius, flags);

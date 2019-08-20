@@ -77,7 +77,7 @@ class CrossThreadSharedURLLoaderFactoryInfoTest : public ::testing::Test {
   }
 
   void TearDown() override {
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
     // Release |shared_factory_| on |loader_thread_|
     base::RunLoop run_loop;
@@ -145,7 +145,7 @@ class CrossThreadSharedURLLoaderFactoryInfoTest : public ::testing::Test {
     run_loop.Run();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<CloneCheckingURLLoaderFactory> test_url_loader_factory_;
   scoped_refptr<SharedURLLoaderFactory> shared_factory_;

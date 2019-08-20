@@ -160,7 +160,7 @@ class WatchTimeRecorderTest : public testing::Test {
   MOCK_METHOD0(GetCurrentMediaTime, base::TimeDelta());
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   mojom::MediaMetricsProviderPtr provider_;
   std::unique_ptr<base::HistogramTester> histogram_tester_;
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_recorder_;

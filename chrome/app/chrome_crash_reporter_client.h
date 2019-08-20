@@ -19,6 +19,13 @@ class ChromeCrashReporterClient : public crash_reporter::CrashReporterClient {
  public:
   static void Create();
 
+#if defined(OS_CHROMEOS)
+  // If true, processes of this type should pass crash-loop-before down to the
+  // crash reporter and to their children (if the children's type is a process
+  // type that wants crash-loop-before).
+  static bool ShouldPassCrashLoopBefore(const std::string& process_type);
+#endif
+
   // crash_reporter::CrashReporterClient implementation.
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
   void SetCrashReporterClientIdFromGUID(

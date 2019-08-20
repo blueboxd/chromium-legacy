@@ -35,8 +35,4 @@ const base::Feature kNtpCustomizationMenuV2{"NtpCustomizationMenuV2",
 const base::Feature kFirstRunDefaultSearchShortcut{
     "FirstRunDefaultSearchShortcut", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// If enabled, the shortcuts will not be shown on the NTP.
-const base::Feature kHideShortcutsOnNtp{"HideShortcutsOnNtp",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
 }  // namespace features

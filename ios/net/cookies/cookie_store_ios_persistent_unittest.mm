@@ -53,7 +53,7 @@ struct PersistentCookieStoreIOSTestTraits {
   static const int enforces_prefixes = true;
   static const bool enforce_strict_secure = false;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 INSTANTIATE_TYPED_TEST_SUITE_P(PersistentCookieStoreIOS,
@@ -110,7 +110,7 @@ class CookieStoreIOSPersistentTest : public PlatformTest {
   const GURL kTestCookieURL;
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   ScopedTestingCookieStoreIOSClient scoped_cookie_store_ios_client_;
   scoped_refptr<net::TestPersistentCookieStore> backend_;
   std::unique_ptr<net::CookieStoreIOS> store_;

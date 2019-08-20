@@ -512,7 +512,7 @@ class TypedURLSyncBridgeTest : public testing::Test {
   RecordingModelTypeChangeProcessor& processor() { return *processor_; }
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir test_dir_;
   scoped_refptr<TestHistoryBackend> fake_history_backend_;
   TypedURLSyncBridge* typed_url_sync_bridge_;

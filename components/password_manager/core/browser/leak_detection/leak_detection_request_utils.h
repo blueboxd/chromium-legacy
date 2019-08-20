@@ -46,10 +46,6 @@ void AnalyzeResponseResult(std::unique_ptr<SingleLookupResponse> response,
                            const std::string& encryption_key,
                            SingleLeakResponseAnalysisCallback callback);
 
-// Processes the provided |response| and returns whether the relevant credential
-// was leaked.
-bool ParseLookupSingleLeakResponse(const SingleLookupResponse& response);
-
 }  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_LEAK_DETECTION_LEAK_DETECTION_REQUEST_UTILS_H_

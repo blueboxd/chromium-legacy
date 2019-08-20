@@ -339,7 +339,7 @@ class ConnectTest : public testing::Test,
     connection_state_ = std::move(state);
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestServiceManager test_service_manager_;
   ServiceBinding service_binding_{this};
   mojo::BindingSet<test::mojom::ExposedInterface> bindings_;

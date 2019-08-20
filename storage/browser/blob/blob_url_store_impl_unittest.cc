@@ -101,7 +101,7 @@ class BlobURLStoreImplTest : public testing::Test {
   const GURL kFragmentUrl = GURL("blob:id#fragment");
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<BlobStorageContext> context_;
   MockBlobRegistryDelegate delegate_;
   std::vector<std::string> bad_messages_;

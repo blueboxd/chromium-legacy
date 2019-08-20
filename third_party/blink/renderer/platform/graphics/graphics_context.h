@@ -196,10 +196,15 @@ class PLATFORM_EXPORT GraphicsContext {
   void FillRect(const IntRect&,
                 const Color&,
                 SkBlendMode = SkBlendMode::kSrcOver);
+  void FillRect(const IntRect& rect,
+                const Color& color,
+                DarkModeFilter::ElementRole role);
   void FillRect(const FloatRect&);
-  void FillRect(const FloatRect&,
-                const Color&,
-                SkBlendMode = SkBlendMode::kSrcOver);
+  void FillRect(
+      const FloatRect&,
+      const Color&,
+      SkBlendMode = SkBlendMode::kSrcOver,
+      DarkModeFilter::ElementRole = DarkModeFilter::ElementRole::kBackground);
   void FillRoundedRect(const FloatRoundedRect&, const Color&);
   void FillDRRect(const FloatRoundedRect&,
                   const FloatRoundedRect&,

@@ -286,6 +286,10 @@ AutofillDriver* AutofillExternalDelegate::GetAutofillDriver() {
   return driver_;
 }
 
+int32_t AutofillExternalDelegate::GetWebContentsPopupControllerAxId() const {
+  return query_field_.form_control_ax_id;
+}
+
 void AutofillExternalDelegate::RegisterDeletionCallback(
     base::OnceClosure deletion_callback) {
   deletion_callback_ = std::move(deletion_callback);
@@ -293,10 +297,6 @@ void AutofillExternalDelegate::RegisterDeletionCallback(
 
 void AutofillExternalDelegate::Reset() {
   manager_->client()->HideAutofillPopup();
-}
-
-int32_t AutofillExternalDelegate::GetWebContentsPopupControllerAxId() const {
-  return query_field_.form_control_ax_id;
 }
 
 base::WeakPtr<AutofillExternalDelegate> AutofillExternalDelegate::GetWeakPtr() {

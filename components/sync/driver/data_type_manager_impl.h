@@ -184,9 +184,6 @@ class DataTypeManagerImpl : public DataTypeManager,
   // Returns the currently enabled types.
   ModelTypeSet GetEnabledTypes() const;
 
-  // Adds or removes |type| from |downloaded_types_| based on |downloaded|.
-  void SetTypeDownloaded(ModelType type, bool downloaded);
-
   ModelTypeConfigurer* configurer_;
 
   // Map of all data type controllers that are available for sync.

@@ -194,7 +194,7 @@ class PasswordAutofillManagerTest : public testing::Test {
 
   // The TestAutofillDriver uses a SequencedWorkerPool which expects the
   // existence of a MessageLoop.
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(PasswordAutofillManagerTest, FillSuggestion) {

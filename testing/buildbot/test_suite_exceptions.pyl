@@ -1859,7 +1859,7 @@
           '--additional-driver-flag=--enable-blink-features=CompositeAfterPaint',
         ],
       },
-      'WebKit Linux layout_ng Dummy Builder': {
+      'WebKit Linux layout_ng_disabled Builder': {
         'args': [
           '--additional-driver-flag=--disable-blink-features=LayoutNG',
         ],

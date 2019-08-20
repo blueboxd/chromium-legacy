@@ -236,7 +236,7 @@ class HistoryURLProviderTest : public testing::Test,
                                 size_t expected_match_location,
                                 size_t expected_match_length);
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   ACMatches matches_;
   std::unique_ptr<FakeAutocompleteProviderClient> client_;
   scoped_refptr<HistoryURLProvider> autocomplete_;
@@ -282,7 +282,7 @@ bool HistoryURLProviderTest::SetUpImpl(bool create_history_db) {
 void HistoryURLProviderTest::TearDown() {
   autocomplete_ = nullptr;
   client_.reset();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 void HistoryURLProviderTest::FillData() {

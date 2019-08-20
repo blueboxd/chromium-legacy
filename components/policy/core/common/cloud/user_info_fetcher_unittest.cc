@@ -47,7 +47,7 @@ class UserInfoFetcherTest : public testing::Test {
   ~UserInfoFetcherTest() override = default;
 
  protected:
-  base::test::ScopedTaskEnvironment task_env_;
+  base::test::TaskEnvironment task_env_;
   network::TestURLLoaderFactory loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UserInfoFetcherTest);

@@ -57,13 +57,13 @@ class NetworkServiceProxyDelegateTest : public testing::Test {
 
   void SetConfig(mojom::CustomProxyConfigPtr config) {
     client_->OnCustomProxyConfigUpdated(std::move(config));
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
  private:
   mojom::CustomProxyConfigClientPtr client_;
   std::unique_ptr<net::TestURLRequestContext> context_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(NetworkServiceProxyDelegateTest, NullConfigDoesNotCrash) {

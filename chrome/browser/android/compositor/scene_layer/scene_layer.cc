@@ -6,7 +6,6 @@
 
 #include "cc/layers/layer.h"
 #include "chrome/android/chrome_jni_headers/SceneLayer_jni.h"
-#include "content/public/browser/android/compositor.h"
 
 using base::android::JavaParamRef;
 using base::android::JavaRef;

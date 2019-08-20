@@ -795,6 +795,8 @@ WKBasedNavigationManagerImpl::GetLastCommittedItemInCurrentOrRestoredSession()
       } else {
         last_committed_web_view_item_->SetVirtualURL(virtual_url);
       }
+    } else {
+      last_committed_web_view_item_->SetVirtualURL(document_url);
     }
     last_committed_web_view_item_->SetTimestamp(
         time_smoother_.GetSmoothedTime(base::Time::Now()));

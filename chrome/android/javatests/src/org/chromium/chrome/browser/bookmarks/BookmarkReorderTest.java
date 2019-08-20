@@ -10,7 +10,7 @@ import static android.support.test.espresso.assertion.ViewAssertions.doesNotExis
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.chromium.chrome.browser.ViewHighlighterTestUtils.checkHighlightOff;
-import static org.chromium.chrome.browser.ViewHighlighterTestUtils.checkHighlightOn;
+import static org.chromium.chrome.browser.ViewHighlighterTestUtils.checkHighlightPulse;
 
 import android.support.test.filters.MediumTest;
 import android.support.v7.widget.RecyclerView.ViewHolder;
@@ -628,9 +628,9 @@ public class BookmarkReorderTest extends BookmarkTest {
         TestThreadUtils.runOnUiThreadBlocking(more::performClick);
         onView(withText("Show in folder")).perform(click());
 
-        Assert.assertTrue(
-                "Expected bookmark row to be highlighted after clicking \"show in folder\"",
-                checkHighlightOn(testFolder));
+        // Assert that the view pulses.
+        Assert.assertTrue("Expected bookmark row to pulse after clicking \"show in folder\"!",
+                checkHighlightPulse(testFolder));
 
         // Enter search mode again.
         searchButton = mManager.getToolbarForTests().findViewById(R.id.search_menu_id);
@@ -645,11 +645,9 @@ public class BookmarkReorderTest extends BookmarkTest {
         // Click "Show in folder" again.
         TestThreadUtils.runOnUiThreadBlocking(more::performClick);
         onView(withText("Show in folder")).perform(click());
-
-        // Check that the highlight is on.
-        Assert.assertTrue("Expected highlight to successfully come back on"
-                        + " after clicking \"show in folder\" a 2nd time",
-                checkHighlightOn(testFolder));
+        Assert.assertTrue(
+                "Expected bookmark row to pulse after clicking \"show in folder\" a 2nd time!",
+                checkHighlightPulse(testFolder));
     }
 
     @Test
@@ -691,8 +689,8 @@ public class BookmarkReorderTest extends BookmarkTest {
                 "Expected list to scroll bookmark item into view", testFolderInList == null);
         Assert.assertEquals("Wrong bookmark item selected.", TEST_FOLDER_TITLE,
                 ((BookmarkFolderRow) testFolderInList.itemView).getTitle());
-        Assert.assertTrue("Expected bookmark item to be highlighted after scrolling to it.",
-                checkHighlightOn(testFolderInList.itemView));
+        Assert.assertTrue("Expected highlight to pulse on after scrolling to the item!",
+                checkHighlightPulse(testFolderInList.itemView));
     }
 
     @Test
@@ -726,9 +724,9 @@ public class BookmarkReorderTest extends BookmarkTest {
         View itemA = mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
         Assert.assertEquals("Wrong bookmark item selected.", TEST_TITLE_A,
                 ((BookmarkItemRow) itemA).getTitle());
-        Assert.assertTrue(
-                "Expected bookmark item to be highlighted after opening it in new folder.",
-                checkHighlightOn(itemA));
+
+        Assert.assertTrue("Expected highlight to pulse after opening an item in another folder!",
+                checkHighlightPulse(itemA));
 
         // Open mobile bookmarks folder, then go back to the subfolder.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -737,12 +735,12 @@ public class BookmarkReorderTest extends BookmarkTest {
         });
         RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
 
-        itemA = mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
+        View itemASecondView = mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
         Assert.assertEquals("Wrong bookmark item selected.", TEST_TITLE_A,
-                ((BookmarkItemRow) itemA).getTitle());
-        Assert.assertTrue("Expected bookmark item to not be highlighted after "
-                        + "exiting and re-entering folder.",
-                checkHighlightOff(itemA));
+                ((BookmarkItemRow) itemASecondView).getTitle());
+        Assert.assertTrue(
+                "Expected highlight to not be highlighted after exiting and re-entering folder!",
+                checkHighlightOff(itemASecondView));
     }
 
     @Override

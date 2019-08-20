@@ -91,8 +91,7 @@ MATCHER_P(FormIgnoreDate, expected, "") {
 
 class MockLeakDetectionCheck : public LeakDetectionCheck {
  public:
-  MOCK_METHOD3(Start,
-               void(const GURL&, base::StringPiece16, base::StringPiece16));
+  MOCK_METHOD3(Start, void(const GURL&, base::string16, base::string16));
 };
 
 class MockLeakDetectionCheckFactory : public LeakDetectionCheckFactory {
@@ -518,7 +517,7 @@ class PasswordManagerTest : public testing::Test {
   }
 
   const GURL test_url_;
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<MockPasswordStore> store_;
   testing::NiceMock<MockPasswordManagerClient> client_;
   MockPasswordManagerDriver driver_;
@@ -3874,8 +3873,7 @@ TEST_F(PasswordManagerTest, StartLeakDetection) {
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
   auto check_instance = std::make_unique<MockLeakDetectionCheck>();
   EXPECT_CALL(*check_instance,
-              Start(form.origin, base::StringPiece16(form.username_value),
-                    base::StringPiece16(form.password_value)));
+              Start(form.origin, form.username_value, form.password_value));
   EXPECT_CALL(*weak_factory, TryCreateLeakCheck)
       .WillOnce(Return(ByMove(std::move(check_instance))));
 

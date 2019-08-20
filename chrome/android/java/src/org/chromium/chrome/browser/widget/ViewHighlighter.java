@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.widget;
 
+import static org.chromium.chrome.browser.widget.PulseDrawable.createCircle;
+
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
@@ -28,12 +30,43 @@ public class ViewHighlighter {
     public static final int IPH_MIN_DELAY_BETWEEN_TWO_HIGHLIGHTS = 200;
 
     /**
+     * Allows its associated PulseDrawable to pulse a specified number of times, then turns off the
+     * PulseDrawable highlight.
+     */
+    public static class NumberPulser implements PulseDrawable.PulseEndAuthority {
+        private final View mView;
+        private int mNumPulsesRemaining;
+
+        NumberPulser(View view, int numPulses) {
+            mView = view;
+            mNumPulsesRemaining = numPulses;
+        }
+
+        @Override
+        public boolean canPulseAgain() {
+            mNumPulsesRemaining--;
+            if (mNumPulsesRemaining == 0) ViewHighlighter.turnOffHighlight(mView);
+            return mNumPulsesRemaining > 0;
+        }
+    }
+
+    public static void pulseHighlight(View view, boolean circular, int numPulses) {
+        if (view == null) return;
+
+        PulseDrawable pulseDrawable = circular
+                ? createCircle(view.getContext(), new NumberPulser(view, numPulses))
+                : PulseDrawable.createHighlight(
+                        view.getContext(), new NumberPulser(view, numPulses));
+
+        attachViewAsHighlight(view, pulseDrawable);
+    }
+
+    /**
      * Create a highlight layer over the view.
      * @param view The view to be highlighted.
      * @param circular Whether the highlight should be a circle or rectangle.
      */
     public static void turnOnHighlight(View view, boolean circular) {
-        if (view == null) return;
 
         PulseDrawable pulseDrawable = circular ? PulseDrawable.createCircle(view.getContext())
                                                : PulseDrawable.createHighlight(view.getContext());

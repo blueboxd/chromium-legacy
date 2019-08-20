@@ -219,6 +219,12 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
     return header_row()->close_button_for_testing();
   }
 
+  bool CloseButtonHasImage() const {
+    return !close_button()
+                ->GetImage(views::Button::ButtonState::STATE_NORMAL)
+                .isNull();
+  }
+
   const views::ImageView* icon_view() const {
     return header_row()->app_icon_for_testing();
   }
@@ -409,7 +415,8 @@ TEST_F(LockScreenMediaControlsViewTest, ProgressBarVisibility) {
 
 TEST_F(LockScreenMediaControlsViewTest, CloseButtonVisibility) {
   EXPECT_TRUE(media_controls_view_->IsDrawn());
-  EXPECT_FALSE(close_button()->IsDrawn());
+  EXPECT_TRUE(close_button()->IsDrawn());
+  EXPECT_FALSE(CloseButtonHasImage());
 
   // Move the mouse inside |media_controls_view_|.
   ui::test::EventGenerator* generator = GetEventGenerator();
@@ -417,14 +424,17 @@ TEST_F(LockScreenMediaControlsViewTest, CloseButtonVisibility) {
       media_controls_view_->GetBoundsInScreen().CenterPoint());
 
   // Verify that the close button is shown.
+  EXPECT_TRUE(media_controls_view_->IsDrawn());
   EXPECT_TRUE(close_button()->IsDrawn());
+  EXPECT_TRUE(CloseButtonHasImage());
 
   // Move the mouse outside |media_controls_view_|.
   generator->MoveMouseBy(500, 500);
 
   // Verify that the close button is hidden.
   EXPECT_TRUE(media_controls_view_->IsDrawn());
-  EXPECT_FALSE(close_button()->IsDrawn());
+  EXPECT_TRUE(close_button()->IsDrawn());
+  EXPECT_FALSE(CloseButtonHasImage());
 }
 
 TEST_F(LockScreenMediaControlsViewTest, CloseButtonClick) {

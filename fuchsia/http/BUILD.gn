@@ -20,6 +20,7 @@ source_set("core") {
   ]
   public_deps = [
     "//base:base",
+    "//fuchsia/base",
     "//net:net",
     "//third_party/fuchsia-sdk/sdk:net_oldhttp",
     "//third_party/fuchsia-sdk/sdk:sys",

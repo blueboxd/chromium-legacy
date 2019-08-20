@@ -28,10 +28,6 @@ using blink::WebMouseWheelEvent;
 using blink::WebTouchEvent;
 
 namespace blink {
-bool operator==(const WebMouseWheelEvent& lhs, const WebMouseWheelEvent& rhs) {
-  return memcmp(&lhs, &rhs, lhs.size()) == 0;
-}
-
 bool operator==(const WebTouchEvent& lhs, const WebTouchEvent& rhs) {
   return memcmp(&lhs, &rhs, lhs.size()) == 0;
 }

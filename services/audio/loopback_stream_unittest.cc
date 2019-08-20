@@ -139,14 +139,14 @@ class LoopbackStreamTest : public testing::Test {
     }
     sources_.clear();
 
-    scoped_task_environment_.FastForwardUntilNoTasksRemain();
+    task_environment_.FastForwardUntilNoTasksRemain();
   }
 
   MockClientAndObserver* client() { return &client_; }
   LoopbackStream* stream() { return stream_.get(); }
   FakeSyncWriter* consumer() { return consumer_; }
 
-  void RunMojoTasks() { scoped_task_environment_.RunUntilIdle(); }
+  void RunMojoTasks() { task_environment_.RunUntilIdle(); }
 
   FakeLoopbackGroupMember* AddSource(int channels, int sample_rate) {
     sources_.emplace_back(std::make_unique<FakeLoopbackGroupMember>(
@@ -183,7 +183,7 @@ class LoopbackStreamTest : public testing::Test {
         base::BindOnce([](LoopbackStreamTest* self,
                           LoopbackStream* stream) { self->stream_ = nullptr; },
                        this),
-        scoped_task_environment_.GetMainThreadTaskRunner(),
+        task_environment_.GetMainThreadTaskRunner(),
         remote_input_stream_.BindNewPipeAndPassReceiver(), std::move(client),
         std::move(observer), GetLoopbackStreamParams(),
         // The following argument is the |shared_memory_count|, which does not
@@ -193,7 +193,7 @@ class LoopbackStreamTest : public testing::Test {
 
     // Override the clock used by the LoopbackStream so that everything is
     // single-threaded and synchronized with the driving code in these tests.
-    stream_->set_clock_for_testing(scoped_task_environment_.GetMockTickClock());
+    stream_->set_clock_for_testing(task_environment_.GetMockTickClock());
 
     // Redirect the output of the LoopbackStream to a FakeSyncWriter.
     // LoopbackStream takes ownership of the FakeSyncWriter.
@@ -234,14 +234,14 @@ class LoopbackStreamTest : public testing::Test {
       // Render audio meant for local output at some point in the near
       // future.
       const base::TimeTicks output_timestamp =
-          scoped_task_environment_.NowTicks() + kDelayUntilOutput;
+          task_environment_.NowTicks() + kDelayUntilOutput;
       for (const auto& source : sources_) {
         source->RenderMoreAudio(output_timestamp);
       }
 
       // Move the task runner forward, which will cause the FlowNetwork's
       // delayed tasks to run, which will generate output for the consumer.
-      scoped_task_environment_.FastForwardBy(kBufferDuration);
+      task_environment_.FastForwardBy(kBufferDuration);
     } while (consumer_->GetRecordedFrameCount() < min_frames_to_record);
   }
 
@@ -251,8 +251,8 @@ class LoopbackStreamTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   LoopbackCoordinator coordinator_;
   const base::UnguessableToken group_id_;
   std::vector<std::unique_ptr<FakeLoopbackGroupMember>> sources_;

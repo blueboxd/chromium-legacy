@@ -92,6 +92,10 @@ class CreateViewParams;
 // a local frame for this view, then it also manages a RenderWidget for the
 // main frame.
 //
+// The main distinction between RenderView and RenderWidget is that the
+// RenderView holds synchronized state across all processes participating in the
+// frame tree, whereas the RenderWidget holds per-root-frame state.
+//
 // TODO(419087): Currently even though the RenderViewImpl "manages" the
 // RenderWidget, the RenderWidget owns the RenderViewImpl. This is due to
 // RenderViewImpl historically being a subclass of RenderWidget. Breaking

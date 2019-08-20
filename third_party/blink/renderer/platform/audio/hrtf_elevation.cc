@@ -125,12 +125,6 @@ bool HRTFElevation::CalculateKernelsForAzimuthElevation(
   if (!is_elevation_good)
     return false;
 
-  // Construct the resource name from the subject name, azimuth, and elevation,
-  // for example:
-  // "IRC_Composite_C_R0195_T015_P000"
-  // Note: the passed in subjectName is not a string passed in via JavaScript or
-  // the web.  It's passed in as an internal ASCII identifier and is an
-  // implementation detail.
   int positive_elevation = elevation < 0 ? elevation + 360 : elevation;
 
   scoped_refptr<AudioBus> bus(

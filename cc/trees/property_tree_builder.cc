@@ -574,11 +574,32 @@ bool PropertyTreeBuilderContext<LayerType>::AddTransformNodeIfNeeded(
   node->scrolls = is_scrollable;
   node->should_be_snapped = is_snapped;
   node->flattens_inherited_transform = data_for_children->should_flatten;
-
+  node->source_node_id = source_index;
   node->sorting_context_id = SortingContextId(layer);
 
-  if (layer == page_scale_layer_)
-    data_for_children->in_subtree_of_page_scale_layer = true;
+  if (is_root || is_page_scale_layer) {
+    // Root layer and page scale layer should not have transform or offset.
+    DCHECK(Position(layer).IsOrigin());
+    DCHECK(source_offset.IsZero());
+    DCHECK(Transform(layer).IsIdentity());
+
+    if (is_root) {
+      DCHECK(!is_page_scale_layer);
+      transform_tree_.SetRootScaleAndTransform(
+          transform_tree_.device_scale_factor(), device_transform_);
+    } else {
+      DCHECK(is_page_scale_layer);
+      transform_tree_.set_page_scale_factor(page_scale_factor_);
+      node->local.Scale(page_scale_factor_, page_scale_factor_);
+      data_for_children->in_subtree_of_page_scale_layer = true;
+    }
+  } else {
+    node->source_offset = source_offset;
+    node->local = Transform(layer);
+    node->update_pre_local_transform(TransformOrigin(layer));
+    node->update_post_local_transform(Position(layer), TransformOrigin(layer));
+  }
+
   node->in_subtree_of_page_scale_layer =
       data_for_children->in_subtree_of_page_scale_layer;
 
@@ -590,30 +611,6 @@ bool PropertyTreeBuilderContext<LayerType>::AddTransformNodeIfNeeded(
   node->is_currently_animating = TransformIsAnimating(mutator_host_, layer);
   GetAnimationScales(mutator_host_, layer, &node->maximum_animation_scale,
                      &node->starting_animation_scale);
-
-  float post_local_scale_factor = 1.0f;
-
-  if (is_page_scale_layer) {
-    if (!is_root)
-      post_local_scale_factor *= page_scale_factor_;
-    transform_tree_.set_page_scale_factor(page_scale_factor_);
-  }
-
-  node->source_node_id = source_index;
-  node->post_local_scale_factor = post_local_scale_factor;
-  if (is_root) {
-    float page_scale_factor_for_root =
-        is_page_scale_layer ? page_scale_factor_ : 1.f;
-    // SetRootTransformsAndScales will be incorrect if the root layer has
-    // non-zero position, so ensure it is zero.
-    DCHECK(Position(layer).IsOrigin());
-    transform_tree_.SetRootTransformsAndScales(
-        transform_tree_.device_scale_factor(), page_scale_factor_for_root,
-        device_transform_);
-  } else {
-    node->source_offset = source_offset;
-    node->update_post_local_transform(Position(layer), TransformOrigin(layer));
-  }
 
   if (is_overscroll_elasticity_layer) {
     DCHECK(!is_scrollable);
@@ -634,9 +631,6 @@ bool PropertyTreeBuilderContext<LayerType>::AddTransformNodeIfNeeded(
       }
     }
   }
-
-  node->local = Transform(layer);
-  node->update_pre_local_transform(TransformOrigin(layer));
 
   if (StickyPositionConstraint(layer).is_sticky) {
     StickyPositionNodeData* sticky_data =
@@ -1484,38 +1478,24 @@ void PropertyTreeBuilderContext<LayerType>::BuildPropertyTrees(
     const gfx::Rect& viewport,
     SkColor root_background_color) const {
   if (!property_trees_.needs_rebuild) {
-    bool page_scale_is_root_layer = page_scale_layer_ == root_layer_;
+    DCHECK_NE(page_scale_layer_, root_layer_);
     if (page_scale_layer_) {
       DCHECK_GE(page_scale_layer_->transform_tree_index(),
                 TransformTree::kRootNodeId);
       TransformNode* node = property_trees_.transform_tree.Node(
           page_scale_layer_->transform_tree_index());
-
-      // When the page scale layer is also the root layer, the node should also
-      // store the combined scale factor and not just the page scale factor.
-      float device_scale_factor_for_page_scale_node = 1.f;
-      gfx::Transform device_transform_for_page_scale_node;
-      if (page_scale_is_root_layer) {
-        device_transform_for_page_scale_node = device_transform_;
-        device_scale_factor_for_page_scale_node = device_scale_factor;
-      }
-
-      draw_property_utils::UpdatePageScaleFactor(
-          &property_trees_, node, page_scale_factor_,
-          device_scale_factor_for_page_scale_node,
-          device_transform_for_page_scale_node);
+      draw_property_utils::UpdatePageScaleFactor(&property_trees_, node,
+                                                 page_scale_factor_);
     }
     draw_property_utils::UpdateElasticOverscroll(
         &property_trees_, overscroll_elasticity_element_id_,
         elastic_overscroll_);
     clip_tree_.SetViewportClip(gfx::RectF(viewport));
-    float page_scale_factor_for_root =
-        page_scale_is_root_layer ? page_scale_factor_ : 1.f;
-    // SetRootTransformsAndScales will be incorrect if the root layer has
+    // SetRootScaleAndTransform will be incorrect if the root layer has
     // non-zero position, so ensure it is zero.
     DCHECK(Position(root_layer_).IsOrigin());
-    transform_tree_.SetRootTransformsAndScales(
-        device_scale_factor, page_scale_factor_for_root, device_transform_);
+    transform_tree_.SetRootScaleAndTransform(device_scale_factor,
+                                             device_transform_);
     return;
   }
 

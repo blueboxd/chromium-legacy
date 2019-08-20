@@ -131,8 +131,7 @@ class MockHostResolverProc : public net::HostResolverProc {
 class StaleHostResolverTest : public testing::Test {
  protected:
   StaleHostResolverTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         mock_network_change_notifier_(
             net::test::MockNetworkChangeNotifier::Create()),
         mock_proc_(new MockHostResolverProc(net::OK)),
@@ -339,7 +338,7 @@ class StaleHostResolverTest : public testing::Test {
 
  private:
   // Needed for HostResolver to run HostResolverProc callbacks.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::SimpleTestTickClock tick_clock_;
   std::unique_ptr<net::test::MockNetworkChangeNotifier>
       mock_network_change_notifier_;

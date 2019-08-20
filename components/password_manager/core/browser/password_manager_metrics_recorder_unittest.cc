@@ -34,7 +34,7 @@ PasswordManagerMetricsRecorder CreateMetricsRecorder() {
 }  // namespace
 
 TEST(PasswordManagerMetricsRecorder, UserModifiedPasswordField) {
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
   {
     PasswordManagerMetricsRecorder recorder(CreateMetricsRecorder());
@@ -52,7 +52,7 @@ TEST(PasswordManagerMetricsRecorder, UserModifiedPasswordField) {
 }
 
 TEST(PasswordManagerMetricsRecorder, UserModifiedPasswordFieldMultipleTimes) {
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
   {
     PasswordManagerMetricsRecorder recorder(CreateMetricsRecorder());
@@ -71,7 +71,7 @@ TEST(PasswordManagerMetricsRecorder, UserModifiedPasswordFieldMultipleTimes) {
 }
 
 TEST(PasswordManagerMetricsRecorder, UserModifiedPasswordFieldNotCalled) {
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
   { PasswordManagerMetricsRecorder recorder(CreateMetricsRecorder()); }
   const auto& entries =

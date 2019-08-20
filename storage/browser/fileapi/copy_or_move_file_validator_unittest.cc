@@ -181,7 +181,7 @@ class CopyOrMoveFileValidatorTestHelper {
   std::string src_fsid_;
   std::string dest_fsid_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
 
   FileSystemURL copy_src_;

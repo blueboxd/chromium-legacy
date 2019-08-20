@@ -78,7 +78,10 @@ class DeviceSyncClientHolder : public KeyedService {
 
  private:
   // KeyedService:
-  void Shutdown() override { device_sync_client_.reset(); }
+  void Shutdown() override {
+    device_sync_client_.reset();
+    service_.reset();
+  }
 
   mojo::Remote<chromeos::device_sync::mojom::DeviceSyncService> remote_service_;
 

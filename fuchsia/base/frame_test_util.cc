@@ -33,7 +33,7 @@ base::Optional<base::Value> ExecuteJavaScript(fuchsia::web::Frame* frame,
   base::RunLoop run_loop;
   ResultReceiver<fuchsia::web::Frame_ExecuteJavaScript_Result> result(
       run_loop.QuitClosure());
-  frame->ExecuteJavaScript({"*"}, MemBufferFromString(script),
+  frame->ExecuteJavaScript({"*"}, MemBufferFromString(script, "test"),
                            CallbackToFitFunction(result.GetReceiveCallback()));
   run_loop.Run();
 

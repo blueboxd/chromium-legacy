@@ -19,8 +19,7 @@ namespace device {
 class GeolocationChromeOsWifiDataProviderTest : public testing::Test {
  protected:
   GeolocationChromeOsWifiDataProviderTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
     chromeos::shill_clients::InitializeFakes();
@@ -59,7 +58,7 @@ class GeolocationChromeOsWifiDataProviderTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<WifiDataProviderChromeOs> provider_;
   chromeos::ShillManagerClient* manager_client_;
   chromeos::ShillManagerClient::TestInterface* manager_test_;

@@ -35,6 +35,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(display::DisplayConnectionType,
 
 IPC_ENUM_TRAITS_MAX_VALUE(display::HDCPState, display::HDCP_STATE_LAST)
 
+IPC_ENUM_TRAITS_MAX_VALUE(display::PanelOrientation,
+                          display::PanelOrientation::kLast)
+
 IPC_ENUM_TRAITS_MAX_VALUE(gfx::OverlayTransform, gfx::OVERLAY_TRANSFORM_LAST)
 
 IPC_ENUM_TRAITS_MAX_VALUE(ui::OverlayStatus, ui::OVERLAY_STATUS_LAST)
@@ -59,6 +62,7 @@ IPC_STRUCT_TRAITS_BEGIN(ui::DisplaySnapshot_Params)
   IPC_STRUCT_TRAITS_MEMBER(display_name)
   IPC_STRUCT_TRAITS_MEMBER(sys_path)
   IPC_STRUCT_TRAITS_MEMBER(modes)
+  IPC_STRUCT_TRAITS_MEMBER(panel_orientation)
   IPC_STRUCT_TRAITS_MEMBER(edid)
   IPC_STRUCT_TRAITS_MEMBER(has_current_mode)
   IPC_STRUCT_TRAITS_MEMBER(current_mode)

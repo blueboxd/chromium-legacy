@@ -256,8 +256,7 @@ class TestServer {
 class TCPSocketTest : public testing::Test {
  public:
   TCPSocketTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         url_request_context_(true) {}
   ~TCPSocketTest() override {}
 
@@ -343,7 +342,7 @@ class TCPSocketTest : public testing::Test {
   SocketFactory* factory() { return factory_.get(); }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   net::TestURLRequestContext url_request_context_;
   std::unique_ptr<SocketFactory> factory_;
   TestSocketObserver test_observer_;
@@ -1428,8 +1427,8 @@ TEST_F(TCPSocketWithMockSocketTest, SocketDestroyedBeforeConnectCompletes) {
 // net::ServerSocket::GetLocalAddress() fails. This should still be considered
 // as a failure.
 TEST(TCPServerSocketTest, GetLocalAddressFailedInListen) {
-  base::test::ScopedTaskEnvironment scoped_task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
 
   TCPServerSocket socket(nullptr /* delegate */, nullptr /* net_log */,
                          TRAFFIC_ANNOTATION_FOR_TESTS);

@@ -75,6 +75,7 @@ class TestLayerTreeHostBase : public testing::Test {
   FakePictureLayerImpl* active_layer_;
   FakePictureLayerImpl* old_pending_layer_;
   const int root_id_;
+  const int page_scale_id_;
   const int id_;
 };
 

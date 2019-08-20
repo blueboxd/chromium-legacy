@@ -79,7 +79,7 @@ class MessageReaderTest : public testing::Test {
     callback_.OnMessage();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<MessageReader> reader_;
   FakeStreamSocket socket_;
   MockMessageReceivedCallback callback_;

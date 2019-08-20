@@ -191,8 +191,7 @@ class MockISensorDataReport : public MockCOMInterface<ISensorDataReport> {
 class PlatformSensorAndProviderTestWin : public ::testing::Test {
  public:
   PlatformSensorAndProviderTestWin()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
 
   void SetUp() override {
     sensor_ = new NiceMock<MockISensor>();
@@ -287,7 +286,7 @@ class PlatformSensorAndProviderTestWin : public ::testing::Test {
           events->AddRef();
           sensor_events_.Attach(events);
           if (this->run_loop_) {
-            scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+            task_environment_.GetMainThreadTaskRunner()->PostTask(
                 FROM_HERE,
                 base::BindOnce(&PlatformSensorAndProviderTestWin::QuitInnerLoop,
                                base::Unretained(this)));
@@ -301,7 +300,7 @@ class PlatformSensorAndProviderTestWin : public ::testing::Test {
         .WillByDefault(Invoke([this](ISensorEvents* events) {
           sensor_events_.Reset();
           if (this->run_loop_) {
-            scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+            task_environment_.GetMainThreadTaskRunner()->PostTask(
                 FROM_HERE,
                 base::BindOnce(&PlatformSensorAndProviderTestWin::QuitInnerLoop,
                                base::Unretained(this)));
@@ -382,7 +381,7 @@ class PlatformSensorAndProviderTestWin : public ::testing::Test {
   }
 
   base::win::ScopedCOMInitializer com_initializer_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<MockISensorManager> sensor_manager_;
   scoped_refptr<MockISensorCollection> sensor_collection_;
   scoped_refptr<MockISensor> sensor_;

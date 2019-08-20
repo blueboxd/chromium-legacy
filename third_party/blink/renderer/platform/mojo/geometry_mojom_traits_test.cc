@@ -96,7 +96,7 @@ class GeometryStructTraitsTest
   mojo::BindingSet<gfx::mojom::blink::GeometryTraitsTestService>
       traits_test_bindings_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(GeometryStructTraitsTest);
 };

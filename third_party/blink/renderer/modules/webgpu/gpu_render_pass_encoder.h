@@ -13,6 +13,7 @@ namespace blink {
 class GPUBindGroup;
 class GPUBuffer;
 class GPUColor;
+class GPURenderBundle;
 class GPURenderPipeline;
 
 class GPURenderPassEncoder : public DawnObject<DawnRenderPassEncoder> {
@@ -60,7 +61,7 @@ class GPURenderPassEncoder : public DawnObject<DawnRenderPassEncoder> {
                    uint32_t firstInstance);
   void drawIndirect(GPUBuffer* indirectBuffer, uint64_t indirectOffset);
   void drawIndexedIndirect(GPUBuffer* indirectBuffer, uint64_t indirectOffset);
-
+  void executeBundles(const HeapVector<Member<GPURenderBundle>>& bundles);
   void endPass();
 
  private:

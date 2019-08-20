@@ -72,7 +72,7 @@ class MojoLearningTaskControllerServiceTest : public ::testing::Test {
   LearningTask task_;
 
   // Mojo stuff.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   FakeLearningTaskController* controller_raw_ = nullptr;
 

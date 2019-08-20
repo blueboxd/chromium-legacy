@@ -10,6 +10,8 @@ blink_modules_sources("native_file_system") {
     "native_file_system_directory_handle.h",
     "native_file_system_directory_iterator.cc",
     "native_file_system_directory_iterator.h",
+    "native_file_system_error.cc",
+    "native_file_system_error.h",
     "native_file_system_file_handle.cc",
     "native_file_system_file_handle.h",
     "native_file_system_handle.cc",

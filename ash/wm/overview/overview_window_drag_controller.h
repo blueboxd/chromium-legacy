@@ -111,9 +111,6 @@ class ASH_EXPORT OverviewWindowDragController {
   SplitViewController::SnapPosition GetSnapPosition(
       const gfx::PointF& location_in_screen) const;
 
-  // Returns the expected window grid bounds based on |snap_position|.
-  gfx::Rect GetGridBounds(SplitViewController::SnapPosition snap_position);
-
   void SnapWindow(SplitViewController::SnapPosition snap_position);
 
   OverviewSession* overview_session_;

@@ -39,7 +39,7 @@ class ChromeActivityItemThumbnailGeneratorTest : public PlatformTest {
   }
 
   FakeSnapshotGeneratorDelegate* delegate_ = nil;
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   web::TestWebState test_web_state_;
 };

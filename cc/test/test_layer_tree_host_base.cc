@@ -18,7 +18,8 @@ TestLayerTreeHostBase::TestLayerTreeHostBase()
       active_layer_(nullptr),
       old_pending_layer_(nullptr),
       root_id_(6),
-      id_(7) {}
+      page_scale_id_(7),
+      id_(8) {}
 
 TestLayerTreeHostBase::~TestLayerTreeHostBase() = default;
 
@@ -109,11 +110,13 @@ void TestLayerTreeHostBase::SetupPendingTree(
 
   // Steal from the recycled tree if possible.
   LayerImpl* pending_root = pending_tree->root_layer_for_testing();
+  std::unique_ptr<LayerImpl> page_scale_layer;
   std::unique_ptr<FakePictureLayerImpl> pending_layer;
   DCHECK(!pending_root || pending_root->id() == root_id_);
   if (!pending_root) {
     std::unique_ptr<LayerImpl> new_pending_root =
         LayerImpl::Create(pending_tree, root_id_);
+    page_scale_layer = LayerImpl::Create(pending_tree, page_scale_id_);
     switch (mask_type) {
       case Layer::LayerMaskType::NOT_MASK:
         pending_layer = FakePictureLayerImpl::Create(pending_tree, id_);
@@ -131,9 +134,13 @@ void TestLayerTreeHostBase::SetupPendingTree(
     pending_root = new_pending_root.get();
     pending_tree->SetRootLayerForTesting(std::move(new_pending_root));
   } else {
-    pending_layer.reset(static_cast<FakePictureLayerImpl*>(
+    page_scale_layer.reset(
         pending_root->test_properties()
             ->RemoveChild(pending_root->test_properties()->children[0])
+            .release());
+    pending_layer.reset(static_cast<FakePictureLayerImpl*>(
+        page_scale_layer->test_properties()
+            ->RemoveChild(page_scale_layer->test_properties()->children[0])
             .release()));
     if (!tile_size.IsEmpty())
       pending_layer->set_fixed_tile_size(tile_size);
@@ -143,9 +150,11 @@ void TestLayerTreeHostBase::SetupPendingTree(
   pending_layer->SetBounds(raster_source->GetSize());
   pending_layer->SetRasterSourceOnPending(raster_source, invalidation);
 
-  pending_root->test_properties()->AddChild(std::move(pending_layer));
+  page_scale_layer->test_properties()->AddChild(std::move(pending_layer));
+  pending_root->test_properties()->AddChild(std::move(page_scale_layer));
+
   LayerTreeImpl::ViewportLayerIds viewport_ids;
-  viewport_ids.page_scale = pending_tree->root_layer_for_testing()->id();
+  viewport_ids.page_scale = page_scale_id_;
   pending_tree->SetViewportLayersFromIds(viewport_ids);
 
   pending_layer_ = static_cast<FakePictureLayerImpl*>(

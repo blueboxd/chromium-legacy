@@ -26,21 +26,19 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
-import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.MultiActivityTestRule;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
+import org.chromium.chrome.test.util.browser.WebappTestHelper;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
-import org.chromium.content_public.common.ScreenOrientationValues;
 
 /**
  * Tests that WebappActivities are launched correctly.
@@ -75,7 +73,7 @@ public class WebappModeTest {
             + "ggR0lNUFeBDhcAAAAMSURBVAjXY2AUawEAALcAnI/TkI8AAAAASUVORK5CYII=";
 
     private Intent createIntent(String id, String url, String title, String icon, boolean addMac) {
-        Intent intent = new Intent();
+        Intent intent = WebappTestHelper.createMinimalWebappIntent(id, url);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.setPackage(InstrumentationRegistry.getTargetContext().getPackageName());
         intent.setAction(WebappLauncherActivity.ACTION_START_WEBAPP);
@@ -86,13 +84,8 @@ public class WebappModeTest {
             intent.putExtra(ShortcutHelper.EXTRA_MAC, mac);
         }
 
-        WebappInfo webappInfo = WebappInfo.create(id, url, null, new WebappInfo.Icon(icon), title,
-                null, WebDisplayMode.STANDALONE, ScreenOrientationValues.PORTRAIT,
-                ShortcutSource.UNKNOWN, ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false /* isIconGenerated */,
-                false /* isIconAdaptive */, false /* forceNavigation */);
-        webappInfo.setWebappIntentExtras(intent);
-
+        intent.putExtra(ShortcutHelper.EXTRA_ICON, icon);
+        intent.putExtra(ShortcutHelper.EXTRA_NAME, title);
         return intent;
     }
 

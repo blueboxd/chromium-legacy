@@ -216,6 +216,12 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
           'reg_mandatory_key_name'
     return self.config['win_config'][platform][key]
 
+  def _GetOmaUriPath(self, policy):
+    product = 'googlechrome' if self.config['build'] == 'chrome' else 'chromium'
+    group = '~' + policy['group'] if 'group' in policy else ''
+    return '.\\Device\\Vendor\\MSFT\\Policy\\Config\\Chrome~Policy~%s%s\\%s' % (
+        product, group, policy['name'])
+
   def _AddListExampleAndroidLinux(self, parent, policy):
     '''Adds an example value for Android/Linux of a 'list' policy to a DOM node.
 
@@ -399,6 +405,46 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     if self.IsPolicySupportedOnPlatform(policy, 'mac'):
       self._AddDictionaryExampleMac(examples, policy)
 
+  def _AddIntuneExample(self, parent, policy):
+    example_value = policy['example_value']
+    policy_type = policy['type']
+
+    container = self._AddStyledElement(parent, 'dl', [])
+    self.AddElement(container, 'dt', {}, 'Windows (Intune):')
+
+    if policy_type == 'main':
+      self._AddStyledElement(
+          container,
+          'dd', ['.monospace', '.pre-wrap'],
+          text='<enabled/>' if example_value else '<disabled/>')
+      return
+
+    self._AddStyledElement(
+        container, 'dd', ['.monospace', '.pre-wrap'], text='<enabled/>')
+    if policy_type == 'list':
+      values = [
+          '%s&#xF000;%s' % (index, value)
+          for index, value in enumerate(example_value, start=1)
+      ]
+      self._AddStyledElement(
+          container,
+          'dd', ['.monospace', '.pre-wrap'],
+          text='<data id="%s" value="%s"/>' % (policy['name'] + 'Desc',
+                                               '&#xF000;'.join(values)))
+      return
+    elif policy_type == 'int' or policy_type == 'int-enum':
+      self._AddStyledElement(
+          container,
+          'dd', ['.monospace', '.pre-wrap'],
+          text='<data id="%s" value="%s"/>' % (policy['name'], example_value))
+    else:
+      self._AddStyledElement(
+          container,
+          'dd', ['.monospace', '.pre-wrap'],
+          text='<data id="%s" value="%s"/>' % (policy['name'],
+                                               json.dumps(example_value)[1:-1]))
+      return
+
   def _AddExample(self, parent, policy):
     '''Adds the HTML DOM representation of the example value of a policy to
     a DOM node. It is simple text for boolean policies, like
@@ -456,6 +502,9 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
       self._AddDictionaryExample(parent, policy)
     else:
       raise Exception('Unknown policy type: ' + policy_type)
+
+    if self.IsPolicySupportedOnWindows(policy):
+      self._AddIntuneExample(parent, policy)
 
   def _AddPolicyAttribute(self,
                           dl,
@@ -562,9 +611,13 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
             '(%s)' % self.GetLocalizedMessage('complex_policies_on_windows'))
     self._AddPolicyAttribute(dl, 'data_type', ' '.join(data_type))
     if self.IsPolicySupportedOnWindows(policy):
-      key_name = self._GetRegistryKeyName(policy, True)
+      registry_key_name = self._GetRegistryKeyName(policy, True)
       self._AddPolicyAttribute(dl, 'win_reg_loc',
-                               key_name + '\\' + policy['name'], ['.monospace'])
+                               registry_key_name + '\\' + policy['name'],
+                               ['.monospace'])
+      self._AddPolicyAttribute(dl, 'oma_uri', self._GetOmaUriPath(policy),
+                               ['.monospace'])
+
     if self.IsPolicySupportedOnPlatform(
         policy, 'chrome_os', management='active_directory'):
       key_name = self._GetRegistryKeyName(policy, False)

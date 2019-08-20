@@ -793,11 +793,7 @@ bool LayerTreeHost::DoUpdateLayers() {
   // need to be built here.
   if (!IsUsingLayerLists()) {
     TRACE_EVENT0("cc", "LayerTreeHost::UpdateLayers::BuildPropertyTrees");
-    Layer* root_scroll =
-        PropertyTreeBuilder::FindFirstScrollableLayer(root_layer_.get());
     Layer* page_scale_layer = viewport_layers_.page_scale.get();
-    if (!page_scale_layer && root_scroll)
-      page_scale_layer = root_scroll->parent();
     gfx::Transform identity_transform;
     PropertyTreeBuilder::BuildPropertyTrees(
         root_layer_.get(), page_scale_layer, inner_viewport_scroll_layer(),
@@ -1558,13 +1554,17 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
       ids.overscroll_elasticity_element_id =
           viewport_layers_.overscroll_elasticity_element_id;
     }
-    ids.page_scale = viewport_layers_.page_scale->id();
-    if (viewport_layers_.inner_viewport_container)
+    if (viewport_layers_.page_scale) {
+      ids.page_scale = viewport_layers_.page_scale->id();
+    }
+    if (viewport_layers_.inner_viewport_container) {
       ids.inner_viewport_container =
           viewport_layers_.inner_viewport_container->id();
-    if (viewport_layers_.outer_viewport_container)
+    }
+    if (viewport_layers_.outer_viewport_container) {
       ids.outer_viewport_container =
           viewport_layers_.outer_viewport_container->id();
+    }
     ids.inner_viewport_scroll = viewport_layers_.inner_viewport_scroll->id();
     if (viewport_layers_.outer_viewport_scroll)
       ids.outer_viewport_scroll = viewport_layers_.outer_viewport_scroll->id();

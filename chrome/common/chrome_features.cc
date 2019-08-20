@@ -378,6 +378,12 @@ const base::Feature kHappinessTrackingSystem{"HappinessTrackingSystem",
 // Enables or disables the Happiness Tracking System for Desktop Chrome.
 const base::Feature kHappinessTrackingSurveysForDesktop{
     "HappinessTrackingSurveysForDesktop", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables or disables the Happiness Tracking System demo mode for Desktop
+// Chrome.
+const base::Feature kHappinessTrackingSurveysForDesktopDemo{
+    "HappinessTrackingSurveysForDesktopDemo",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // !defined(OS_ANDROID)
 
 // Enables committed error pages instead of transient navigation entries for

@@ -113,8 +113,7 @@ class WriteToFileAudioSink : public AudioInputStream::AudioInputCallback {
 class MacAudioInputTest : public testing::Test {
  protected:
   MacAudioInputTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
         audio_manager_(AudioManager::CreateForTesting(
             std::make_unique<TestAudioThread>())) {
     // Wait for the AudioManager to finish any initialization on the audio loop.
@@ -159,7 +158,7 @@ class MacAudioInputTest : public testing::Test {
 
   void OnLogMessage(const std::string& message) { log_message_ = message; }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<AudioManager> audio_manager_;
   std::string log_message_;
 };
@@ -219,7 +218,7 @@ TEST_F(MacAudioInputTest, AUAudioInputStreamVerifyMonoRecording) {
   EXPECT_CALL(sink, OnData(NotNull(), _, _))
       .Times(AtLeast(10))
       .WillRepeatedly(CheckCountAndPostQuitTask(
-          &count, 10, scoped_task_environment_.GetMainThreadTaskRunner(),
+          &count, 10, task_environment_.GetMainThreadTaskRunner(),
           run_loop.QuitClosure()));
   ais->Start(&sink);
   run_loop.Run();
@@ -255,7 +254,7 @@ TEST_F(MacAudioInputTest, AUAudioInputStreamVerifyStereoRecording) {
   EXPECT_CALL(sink, OnData(NotNull(), _, _))
       .Times(AtLeast(10))
       .WillRepeatedly(CheckCountAndPostQuitTask(
-          &count, 10, scoped_task_environment_.GetMainThreadTaskRunner(),
+          &count, 10, task_environment_.GetMainThreadTaskRunner(),
           run_loop.QuitClosure()));
   ais->Start(&sink);
   run_loop.Run();

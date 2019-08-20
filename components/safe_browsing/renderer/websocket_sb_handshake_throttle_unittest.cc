@@ -109,7 +109,7 @@ class WebSocketSBHandshakeThrottleTest : public ::testing::Test {
         safe_browsing_ptr_.get(), MSG_ROUTING_NONE);
   }
 
-  base::test::ScopedTaskEnvironment message_loop_;
+  base::test::TaskEnvironment message_loop_;
   FakeSafeBrowsing safe_browsing_;
   mojo::Binding<mojom::SafeBrowsing> mojo_binding_;
   mojom::SafeBrowsingPtr safe_browsing_ptr_;

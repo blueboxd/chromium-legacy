@@ -233,7 +233,7 @@ class AndroidStreamReaderURLLoaderTest : public ::testing::Test {
     return std::string(buffer.data(), buffer.size());
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(AndroidStreamReaderURLLoaderTest);
 };

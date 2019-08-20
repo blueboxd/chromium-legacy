@@ -268,7 +268,7 @@ class WinAudioInputTest : public ::testing::Test {
   ~WinAudioInputTest() override { audio_manager_->Shutdown(); }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<AudioManager> audio_manager_;
 };
 
@@ -414,7 +414,7 @@ TEST_F(WinAudioInputTest, WASAPIAudioInputStreamTestPacketSizes) {
     EXPECT_CALL(sink, OnData(NotNull(), _, _))
         .Times(AtLeast(10))
         .WillRepeatedly(CheckCountAndPostQuitTask(
-            &count, 10, scoped_task_environment_.GetMainThreadTaskRunner(),
+            &count, 10, task_environment_.GetMainThreadTaskRunner(),
             run_loop.QuitWhenIdleClosure()));
     ais->Start(&sink);
     run_loop.Run();
@@ -439,7 +439,7 @@ TEST_F(WinAudioInputTest, WASAPIAudioInputStreamTestPacketSizes) {
     EXPECT_CALL(sink, OnData(NotNull(), _, _))
         .Times(AtLeast(10))
         .WillRepeatedly(CheckCountAndPostQuitTask(
-            &count, 10, scoped_task_environment_.GetMainThreadTaskRunner(),
+            &count, 10, task_environment_.GetMainThreadTaskRunner(),
             run_loop.QuitWhenIdleClosure()));
     ais->Start(&sink);
     run_loop.Run();
@@ -460,7 +460,7 @@ TEST_F(WinAudioInputTest, WASAPIAudioInputStreamTestPacketSizes) {
     EXPECT_CALL(sink, OnData(NotNull(), _, _))
         .Times(AtLeast(10))
         .WillRepeatedly(CheckCountAndPostQuitTask(
-            &count, 10, scoped_task_environment_.GetMainThreadTaskRunner(),
+            &count, 10, task_environment_.GetMainThreadTaskRunner(),
             run_loop.QuitWhenIdleClosure()));
     ais->Start(&sink);
     run_loop.Run();

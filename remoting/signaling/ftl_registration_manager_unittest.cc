@@ -82,8 +82,8 @@ class FtlRegistrationManagerTest : public testing::Test {
     return registration_manager_.sign_in_backoff_;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   FakeOAuthTokenGetter token_getter{OAuthTokenGetter::SUCCESS, "fake_email",
                                     "access_token"};
   FtlRegistrationManager registration_manager_{
@@ -104,14 +104,14 @@ TEST_F(FtlRegistrationManagerTest, SignInGaiaAndAutorefresh) {
 
   EXPECT_CALL(done_callback_, Run(IsStatusOk())).Times(1);
   registration_manager_.SignInGaia(done_callback_.Get());
-  scoped_task_environment_.FastForwardBy(GetBackoff().GetTimeUntilRelease());
+  task_environment_.FastForwardBy(GetBackoff().GetTimeUntilRelease());
 
   ASSERT_TRUE(registration_manager_.IsSignedIn());
   ASSERT_EQ("registration_id_1", registration_manager_.GetRegistrationId());
   ASSERT_EQ(kAuthToken, registration_manager_.GetFtlAuthToken());
 
-  scoped_task_environment_.FastForwardBy(kAuthTokenExpiration);
-  scoped_task_environment_.FastForwardBy(GetBackoff().GetTimeUntilRelease());
+  task_environment_.FastForwardBy(kAuthTokenExpiration);
+  task_environment_.FastForwardBy(GetBackoff().GetTimeUntilRelease());
   ASSERT_EQ("registration_id_2", registration_manager_.GetRegistrationId());
 }
 
@@ -140,7 +140,7 @@ TEST_F(FtlRegistrationManagerTest, FailedToSignIn_Backoff) {
   EXPECT_CALL(done_callback_, Run(HasErrorCode(grpc::StatusCode::UNAVAILABLE)))
       .Times(1);
   registration_manager_.SignInGaia(done_callback_.Get());
-  scoped_task_environment_.FastForwardBy(GetBackoff().GetTimeUntilRelease());
+  task_environment_.FastForwardBy(GetBackoff().GetTimeUntilRelease());
   ASSERT_FALSE(registration_manager_.IsSignedIn());
   ASSERT_EQ(1, GetBackoff().failure_count());
 
@@ -148,13 +148,13 @@ TEST_F(FtlRegistrationManagerTest, FailedToSignIn_Backoff) {
               Run(HasErrorCode(grpc::StatusCode::UNAUTHENTICATED)))
       .Times(1);
   registration_manager_.SignInGaia(done_callback_.Get());
-  scoped_task_environment_.FastForwardBy(GetBackoff().GetTimeUntilRelease());
+  task_environment_.FastForwardBy(GetBackoff().GetTimeUntilRelease());
   ASSERT_FALSE(registration_manager_.IsSignedIn());
   ASSERT_EQ(2, GetBackoff().failure_count());
 
   EXPECT_CALL(done_callback_, Run(IsStatusOk())).Times(1);
   registration_manager_.SignInGaia(done_callback_.Get());
-  scoped_task_environment_.FastForwardBy(GetBackoff().GetTimeUntilRelease());
+  task_environment_.FastForwardBy(GetBackoff().GetTimeUntilRelease());
   ASSERT_TRUE(registration_manager_.IsSignedIn());
   ASSERT_EQ("registration_id", registration_manager_.GetRegistrationId());
   ASSERT_EQ(0, GetBackoff().failure_count());
@@ -170,7 +170,7 @@ TEST_F(FtlRegistrationManagerTest, SignOut) {
 
   EXPECT_CALL(done_callback_, Run(IsStatusOk())).Times(1);
   registration_manager_.SignInGaia(done_callback_.Get());
-  scoped_task_environment_.FastForwardBy(GetBackoff().GetTimeUntilRelease());
+  task_environment_.FastForwardBy(GetBackoff().GetTimeUntilRelease());
 
   ASSERT_TRUE(registration_manager_.IsSignedIn());
   ASSERT_EQ("registration_id", registration_manager_.GetRegistrationId());
@@ -183,7 +183,7 @@ TEST_F(FtlRegistrationManagerTest, SignOut) {
   ASSERT_TRUE(registration_manager_.GetRegistrationId().empty());
   ASSERT_TRUE(registration_manager_.GetFtlAuthToken().empty());
 
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   ASSERT_FALSE(registration_manager_.IsSignedIn());
 }
 

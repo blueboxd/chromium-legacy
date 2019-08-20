@@ -264,11 +264,11 @@ class FidoCableHandshakeHandlerTest : public Test {
     connection_->read_callback() = device_->GetReadCallbackForTesting();
   }
 
-  std::unique_ptr<FidoCableHandshakeHandler> CreateHandshakeHandler(
+  std::unique_ptr<FidoCableV1HandshakeHandler> CreateHandshakeHandler(
       std::array<uint8_t, 8> nonce,
       std::array<uint8_t, 32> session_pre_key) {
-    return std::make_unique<FidoCableHandshakeHandler>(device_.get(), nonce,
-                                                       session_pre_key);
+    return std::make_unique<FidoCableV1HandshakeHandler>(device_.get(), nonce,
+                                                         session_pre_key);
   }
 
   void ConnectWithLength(uint16_t length) {

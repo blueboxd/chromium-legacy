@@ -23,7 +23,7 @@ namespace {
 
 class SyncChangeTest : public testing::Test {
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(SyncChangeTest, LocalDelete) {

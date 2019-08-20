@@ -100,7 +100,7 @@ void RunClearPrimaryAccountTest(
     signin::PrimaryAccountMutator::ClearAccountsAction account_action,
     RemoveAccountExpectation account_expectation,
     AuthExpectation auth_expection = AuthExpectation::kAuthNormal) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   signin::IdentityTestEnvironment environment(
       /*test_url_loader_factory=*/nullptr, /*pref_service=*/nullptr,
       account_consistency_method);
@@ -215,7 +215,7 @@ using PrimaryAccountMutatorTest = PlatformTest;
 
 // Checks that setting the primary account works.
 TEST_F(PrimaryAccountMutatorTest, SetPrimaryAccount) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   signin::IdentityTestEnvironment environment;
 
   signin::IdentityManager* identity_manager = environment.identity_manager();
@@ -247,7 +247,7 @@ TEST_F(PrimaryAccountMutatorTest, SetPrimaryAccount) {
 // Checks that setting the primary account fails if the account is not known by
 // the identity service.
 TEST_F(PrimaryAccountMutatorTest, SetPrimaryAccount_NoAccount) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   signin::IdentityTestEnvironment environment;
 
   signin::IdentityManager* identity_manager = environment.identity_manager();
@@ -265,7 +265,7 @@ TEST_F(PrimaryAccountMutatorTest, SetPrimaryAccount_NoAccount) {
 
 // Checks that setting the primary account fails if the account is unknown.
 TEST_F(PrimaryAccountMutatorTest, SetPrimaryAccount_UnknownAccount) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   signin::IdentityTestEnvironment environment;
 
   signin::IdentityManager* identity_manager = environment.identity_manager();
@@ -287,7 +287,7 @@ TEST_F(PrimaryAccountMutatorTest, SetPrimaryAccount_UnknownAccount) {
 // Checks that trying to set the primary account fails when there is already a
 // primary account.
 TEST_F(PrimaryAccountMutatorTest, SetPrimaryAccount_AlreadyHasPrimaryAccount) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   signin::IdentityTestEnvironment environment;
 
   signin::IdentityManager* identity_manager = environment.identity_manager();
@@ -320,7 +320,7 @@ TEST_F(PrimaryAccountMutatorTest, SetPrimaryAccount_AlreadyHasPrimaryAccount) {
 // account is not allowed.
 TEST_F(PrimaryAccountMutatorTest,
        SetPrimaryAccount_SettingPrimaryAccountForbidden) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
 
   sync_preferences::TestingPrefServiceSyncable pref_service;
   signin::IdentityTestEnvironment environment(
@@ -354,7 +354,7 @@ TEST_F(PrimaryAccountMutatorTest,
 // support clearing the primary account.
 #if !defined(OS_CHROMEOS)
 TEST_F(PrimaryAccountMutatorTest, ClearPrimaryAccount_NotSignedIn) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   signin::IdentityTestEnvironment environment;
 
   signin::IdentityManager* identity_manager = environment.identity_manager();
@@ -385,7 +385,7 @@ TEST_F(PrimaryAccountMutatorTest, ClearPrimaryAccount_NotSignedIn) {
 }
 
 TEST_F(PrimaryAccountMutatorTest, ClearPrimaryAccount_Default) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   signin::IdentityTestEnvironment environment;
 
   signin::IdentityManager* identity_manager = environment.identity_manager();

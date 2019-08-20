@@ -200,7 +200,7 @@ class FFmpegVideoDecoderTest : public testing::Test {
 
   StrictMock<MockMediaLog> media_log_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<FFmpegVideoDecoder> decoder_;
 
   // Various buffers for testing.

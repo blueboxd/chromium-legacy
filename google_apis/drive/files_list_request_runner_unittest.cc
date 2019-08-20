@@ -101,7 +101,7 @@ class FilesListRequestRunnerTest : public testing::Test {
   void SetUp() override {
     request_sender_ = std::make_unique<RequestSender>(
         std::make_unique<DummyAuthService>(), test_shared_loader_factory_,
-        scoped_task_environment_.GetMainThreadTaskRunner(), kTestUserAgent,
+        task_environment_.GetMainThreadTaskRunner(), kTestUserAgent,
         TRAFFIC_ANNOTATION_FOR_TESTS);
 
     test_server_.RegisterRequestHandler(
@@ -149,8 +149,8 @@ class FilesListRequestRunnerTest : public testing::Test {
     return std::move(fake_server_response_);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::IO};
   std::unique_ptr<RequestSender> request_sender_;
   net::EmbeddedTestServer test_server_;
   std::unique_ptr<FilesListRequestRunner> runner_;

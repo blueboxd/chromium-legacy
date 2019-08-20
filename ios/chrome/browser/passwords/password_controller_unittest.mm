@@ -1128,7 +1128,7 @@ using PasswordControllerTestSimple = PlatformTest;
 // The test case below does not need the heavy fixture from above, but it
 // needs to use MockWebState.
 TEST_F(PasswordControllerTestSimple, SaveOnNonHTMLLandingPage) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   TestChromeBrowserState::Builder builder;
   std::unique_ptr<TestChromeBrowserState> browser_state(builder.Build());
   MockWebState web_state;

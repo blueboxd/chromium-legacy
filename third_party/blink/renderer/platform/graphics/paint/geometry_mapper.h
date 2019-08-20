@@ -68,6 +68,13 @@ class PLATFORM_EXPORT GeometryMapper {
         rect = Matrix().MapRect(rect);
     }
 
+    void MapQuad(FloatQuad& quad) const {
+      if (LIKELY(IsIdentityOr2DTranslation()))
+        quad.Move(Translation2D());
+      else
+        quad = Matrix().MapQuad(quad);
+    }
+
     void MapFloatClipRect(FloatClipRect& rect) const {
       if (LIKELY(IsIdentityOr2DTranslation()))
         rect.MoveBy(FloatPoint(Translation2D()));

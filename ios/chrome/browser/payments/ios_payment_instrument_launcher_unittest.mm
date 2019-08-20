@@ -91,7 +91,7 @@ class PaymentRequestIOSPaymentInstrumentLauncherTest : public PlatformTest {
     launcher.payment_request_id_ = "some-payment-request-id";
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   autofill::TestPersonalDataManager test_personal_data_manager_;
   web::TestWebState web_state_;

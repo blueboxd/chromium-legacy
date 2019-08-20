@@ -26,8 +26,7 @@ namespace policy {
 class MachineLevelUserCloudPolicyStoreTest : public ::testing::Test {
  public:
   MachineLevelUserCloudPolicyStoreTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {
     policy_.SetDefaultInitialSigningKey();
     policy_.policy_data().set_policy_type(
         dm_protocol::kChromeMachineLevelUserCloudPolicyType);
@@ -74,7 +73,7 @@ class MachineLevelUserCloudPolicyStoreTest : public ::testing::Test {
   PolicyMap expected_policy_map_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(MachineLevelUserCloudPolicyStoreTest);
 };

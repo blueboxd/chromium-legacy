@@ -53,7 +53,7 @@
 
 namespace remoting {
 
-using base::test::ScopedTaskEnvironment;
+using base::test::TaskEnvironment;
 using protocol::ChannelConfig;
 
 namespace {
@@ -109,7 +109,7 @@ class ProtocolPerfTest
       public HostStatusObserver {
  public:
   ProtocolPerfTest()
-      : task_environment_(ScopedTaskEnvironment::MainThreadType::IO),
+      : task_environment_(TaskEnvironment::MainThreadType::IO),
         host_thread_("host"),
         capture_thread_("capture"),
         encode_thread_("encode"),
@@ -381,7 +381,7 @@ class ProtocolPerfTest
   void MeasureTotalLatency(bool use_webrtc);
   void MeasureScrollPerformance(bool use_webrtc);
 
-  ScopedTaskEnvironment task_environment_;
+  TaskEnvironment task_environment_;
 
   scoped_refptr<FakeNetworkDispatcher> fake_network_dispatcher_;
 

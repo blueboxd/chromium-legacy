@@ -44,33 +44,28 @@ class LayerTreeImplTest : public testing::Test {
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
   }
 
-  int HitTestSimpleTree(int root_id,
-                        int left_child_id,
-                        int right_child_id,
-                        int root_sorting_context,
+  int HitTestSimpleTree(int top_sorting_context,
                         int left_child_sorting_context,
                         int right_child_sorting_context,
-                        float root_depth,
+                        float top_depth,
                         float left_child_depth,
                         float right_child_depth) {
-    host_impl().active_tree()->SetRootLayerForTesting(nullptr);
-
-    std::unique_ptr<LayerImpl> root =
-        LayerImpl::Create(host_impl().active_tree(), root_id);
+    std::unique_ptr<LayerImpl> top =
+        LayerImpl::Create(host_impl().active_tree(), kTopId);
     std::unique_ptr<LayerImpl> left_child =
-        LayerImpl::Create(host_impl().active_tree(), left_child_id);
+        LayerImpl::Create(host_impl().active_tree(), kLeftChildId);
     std::unique_ptr<LayerImpl> right_child =
-        LayerImpl::Create(host_impl().active_tree(), right_child_id);
+        LayerImpl::Create(host_impl().active_tree(), kRightChildId);
 
     gfx::Size bounds(100, 100);
     {
       gfx::Transform translate_z;
-      translate_z.Translate3d(0, 0, root_depth);
-      root->test_properties()->transform = translate_z;
-      root->test_properties()->sorting_context_id = root_sorting_context;
-      root->SetBounds(bounds);
-      root->SetDrawsContent(true);
-      root->SetHitTestable(true);
+      translate_z.Translate3d(0, 0, top_depth);
+      top->test_properties()->transform = translate_z;
+      top->test_properties()->sorting_context_id = top_sorting_context;
+      top->SetBounds(bounds);
+      top->SetDrawsContent(true);
+      top->SetHitTestable(true);
     }
     {
       gfx::Transform translate_z;
@@ -94,11 +89,12 @@ class LayerTreeImplTest : public testing::Test {
       right_child->SetHitTestable(true);
     }
 
-    root->test_properties()->AddChild(std::move(left_child));
-    root->test_properties()->AddChild(std::move(right_child));
+    top->test_properties()->AddChild(std::move(left_child));
+    top->test_properties()->AddChild(std::move(right_child));
+    root_layer()->SetBounds(top->bounds());
+    host_impl().active_tree()->SetDeviceViewportSize(top->bounds());
+    root_layer()->test_properties()->AddChild(std::move(top));
 
-    host_impl().active_tree()->SetDeviceViewportSize(root->bounds());
-    host_impl().active_tree()->SetRootLayerForTesting(std::move(root));
     host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
     CHECK_EQ(1u, GetRenderSurfaceList().size());
 
@@ -109,6 +105,10 @@ class LayerTreeImplTest : public testing::Test {
     CHECK(result_layer);
     return result_layer->id();
   }
+
+  const int kTopId = 2;
+  const int kLeftChildId = 3;
+  const int kRightChildId = 4;
 
  private:
   LayerTestCommon::LayerImplTest impl_test_;
@@ -236,17 +236,21 @@ TEST_F(LayerTreeImplTest, HitTestingForUninvertibleTransform) {
   ASSERT_FALSE(uninvertible_transform.IsInvertible());
 
   LayerImpl* root = root_layer();
-  root->test_properties()->transform = uninvertible_transform;
-  root->SetBounds(gfx::Size(100, 100));
-  root->SetDrawsContent(true);
-  root->SetHitTestable(true);
+  std::unique_ptr<LayerImpl> layer =
+      LayerImpl::Create(host_impl().active_tree(), 2);
+  LayerImpl* layer_raw = layer.get();
+  layer->test_properties()->transform = uninvertible_transform;
+  layer->SetBounds(gfx::Size(100, 100));
+  layer->SetDrawsContent(true);
+  layer->SetHitTestable(true);
+  root->SetBounds(layer->bounds());
+  root->test_properties()->AddChild(std::move(layer));
 
   host_impl().active_tree()->SetDeviceViewportSize(root->bounds());
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, GetRenderSurfaceList().size());
-  ASSERT_EQ(1, GetRenderSurface(root_layer())->num_contributors());
-  ASSERT_FALSE(root_layer()->ScreenSpaceTransform().IsInvertible());
+  ASSERT_FALSE(layer_raw->ScreenSpaceTransform().IsInvertible());
 
   // Hit testing any point should not hit the layer. If the invertible matrix is
   // accidentally ignored and treated like an identity, then the hit testing
@@ -336,16 +340,23 @@ TEST_F(LayerTreeImplTest, HitTestingForSinglePositionedLayer) {
 }
 
 TEST_F(LayerTreeImplTest, HitTestingForSingleRotatedLayer) {
-  gfx::Transform rotation45_degrees_about_center;
-  rotation45_degrees_about_center.Translate(50.0, 50.0);
-  rotation45_degrees_about_center.RotateAboutZAxis(45.0);
-  rotation45_degrees_about_center.Translate(-50.0, -50.0);
-
+  const int kLayerId = 2;
   LayerImpl* root = root_layer();
-  root->test_properties()->transform = rotation45_degrees_about_center;
-  root->SetBounds(gfx::Size(100, 100));
-  root->SetDrawsContent(true);
-  root->SetHitTestable(true);
+  {
+    gfx::Transform rotation45_degrees_about_center;
+    rotation45_degrees_about_center.Translate(50.0, 50.0);
+    rotation45_degrees_about_center.RotateAboutZAxis(45.0);
+    rotation45_degrees_about_center.Translate(-50.0, -50.0);
+
+    std::unique_ptr<LayerImpl> layer =
+        LayerImpl::Create(host_impl().active_tree(), kLayerId);
+    layer->test_properties()->transform = rotation45_degrees_about_center;
+    layer->SetBounds(gfx::Size(100, 100));
+    layer->SetDrawsContent(true);
+    layer->SetHitTestable(true);
+    root->SetBounds(layer->bounds());
+    root->test_properties()->AddChild(std::move(layer));
+  }
 
   host_impl().active_tree()->SetDeviceViewportSize(root->bounds());
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
@@ -372,7 +383,7 @@ TEST_F(LayerTreeImplTest, HitTestingForSingleRotatedLayer) {
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
-  EXPECT_EQ(root->id(), result_layer->id());
+  EXPECT_EQ(kLayerId, result_layer->id());
 
   // Hit testing the corners that would overlap the unclipped layer, but are
   // outside the clipped region.
@@ -472,21 +483,29 @@ TEST_F(LayerTreeImplTest, HitTestingSiblings) {
 }
 
 TEST_F(LayerTreeImplTest, HitTestingForSinglePerspectiveLayer) {
-  // perspective_projection_about_center * translation_by_z is designed so that
-  // the 100 x 100 layer becomes 50 x 50, and remains centered at (50, 50).
-  gfx::Transform perspective_projection_about_center;
-  perspective_projection_about_center.Translate(50.0, 50.0);
-  perspective_projection_about_center.ApplyPerspectiveDepth(1.0);
-  perspective_projection_about_center.Translate(-50.0, -50.0);
-  gfx::Transform translation_by_z;
-  translation_by_z.Translate3d(0.0, 0.0, -1.0);
-
+  const int kLayerId = 2;
   LayerImpl* root = root_layer();
-  root->test_properties()->transform =
-      (perspective_projection_about_center * translation_by_z);
-  root->SetBounds(gfx::Size(100, 100));
-  root->SetDrawsContent(true);
-  root->SetHitTestable(true);
+  {
+    // perspective_projection_about_center * translation_by_z is designed so
+    // that the 100 x 100 layer becomes 50 x 50, and remains centered at (50,
+    // 50).
+    gfx::Transform perspective_projection_about_center;
+    perspective_projection_about_center.Translate(50.0, 50.0);
+    perspective_projection_about_center.ApplyPerspectiveDepth(1.0);
+    perspective_projection_about_center.Translate(-50.0, -50.0);
+    gfx::Transform translation_by_z;
+    translation_by_z.Translate3d(0.0, 0.0, -1.0);
+
+    std::unique_ptr<LayerImpl> layer =
+        LayerImpl::Create(host_impl().active_tree(), kLayerId);
+    layer->test_properties()->transform =
+        (perspective_projection_about_center * translation_by_z);
+    layer->SetBounds(gfx::Size(100, 100));
+    layer->SetDrawsContent(true);
+    layer->SetHitTestable(true);
+    root->SetBounds(layer->bounds());
+    root->test_properties()->AddChild(std::move(layer));
+  }
 
   host_impl().active_tree()->SetDeviceViewportSize(root->bounds());
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
@@ -513,13 +532,13 @@ TEST_F(LayerTreeImplTest, HitTestingForSinglePerspectiveLayer) {
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
-  EXPECT_EQ(root->id(), result_layer->id());
+  EXPECT_EQ(kLayerId, result_layer->id());
 
   test_point = gfx::PointF(74.f, 74.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
-  EXPECT_EQ(root->id(), result_layer->id());
+  EXPECT_EQ(kLayerId, result_layer->id());
 }
 
 TEST_F(LayerTreeImplTest, HitTestingForSimpleClippedLayer) {
@@ -873,39 +892,34 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayers) {
 }
 
 TEST_F(LayerTreeImplTest, HitTestingSameSortingContextTied) {
-  int hit_layer_id = HitTestSimpleTree(/* ids */ 1, 2, 3,
-                                       /* sorting_contexts */ 10, 10, 10,
+  int hit_layer_id = HitTestSimpleTree(/* sorting_contexts */ 10, 10, 10,
                                        /* depths */ 0, 0, 0);
   // 3 is the last in tree order, and so should be on top.
-  EXPECT_EQ(3, hit_layer_id);
+  EXPECT_EQ(kRightChildId, hit_layer_id);
 }
 
 TEST_F(LayerTreeImplTest, HitTestingSameSortingContextChildWins) {
-  int hit_layer_id = HitTestSimpleTree(/* ids */ 1, 2, 3,
-                                       /* sorting_contexts */ 10, 10, 10,
+  int hit_layer_id = HitTestSimpleTree(/* sorting_contexts */ 10, 10, 10,
                                        /* depths */ 0, 1, 0);
-  EXPECT_EQ(2, hit_layer_id);
+  EXPECT_EQ(kLeftChildId, hit_layer_id);
 }
 
 TEST_F(LayerTreeImplTest, HitTestingWithoutSortingContext) {
-  int hit_layer_id = HitTestSimpleTree(/* ids */ 1, 2, 3,
-                                       /* sorting_contexts */ 0, 0, 0,
+  int hit_layer_id = HitTestSimpleTree(/* sorting_contexts */ 0, 0, 0,
                                        /* depths */ 0, 1, 0);
-  EXPECT_EQ(3, hit_layer_id);
+  EXPECT_EQ(kRightChildId, hit_layer_id);
 }
 
 TEST_F(LayerTreeImplTest, HitTestingDistinctSortingContext) {
-  int hit_layer_id = HitTestSimpleTree(/* ids */ 1, 2, 3,
-                                       /* sorting_contexts */ 10, 11, 12,
+  int hit_layer_id = HitTestSimpleTree(/* sorting_contexts */ 10, 11, 12,
                                        /* depths */ 0, 1, 0);
-  EXPECT_EQ(3, hit_layer_id);
+  EXPECT_EQ(kRightChildId, hit_layer_id);
 }
 
 TEST_F(LayerTreeImplTest, HitTestingSameSortingContextParentWins) {
-  int hit_layer_id = HitTestSimpleTree(/* ids */ 1, 2, 3,
-                                       /* sorting_contexts */ 10, 10, 10,
+  int hit_layer_id = HitTestSimpleTree(/* sorting_contexts */ 10, 10, 10,
                                        /* depths */ 0, -1, -1);
-  EXPECT_EQ(1, hit_layer_id);
+  EXPECT_EQ(kTopId, hit_layer_id);
 }
 
 TEST_F(LayerTreeImplTest, HitTestingForMultipleLayersAtVaryingDepths) {
@@ -1311,6 +1325,8 @@ TEST_F(LayerTreeImplTest, HitCheckingTouchHandlerRegionsForSingleLayer) {
 
 TEST_F(LayerTreeImplTest,
        HitCheckingTouchHandlerRegionsForUninvertibleTransform) {
+  const int kLayerId = 2;
+  LayerImpl* root = root_layer();
   gfx::Transform uninvertible_transform;
   uninvertible_transform.matrix().set(0, 0, 0.0);
   uninvertible_transform.matrix().set(1, 1, 0.0);
@@ -1321,20 +1337,23 @@ TEST_F(LayerTreeImplTest,
   TouchActionRegion touch_action_region;
   touch_action_region.Union(kTouchActionNone, gfx::Rect(10, 10, 50, 50));
 
-  LayerImpl* root = root_layer();
-  root->test_properties()->transform = uninvertible_transform;
-  root->SetBounds(gfx::Size(100, 100));
-  root->SetDrawsContent(true);
-  root->SetHitTestable(true);
-  root->SetTouchActionRegion(touch_action_region);
+  std::unique_ptr<LayerImpl> layer =
+      LayerImpl::Create(host_impl().active_tree(), kLayerId);
+  LayerImpl* layer_raw = layer.get();
+  layer->test_properties()->transform = uninvertible_transform;
+  layer->SetBounds(gfx::Size(100, 100));
+  layer->SetDrawsContent(true);
+  layer->SetHitTestable(true);
+  layer->SetTouchActionRegion(touch_action_region);
+  root->SetBounds(layer->bounds());
+  root->test_properties()->AddChild(std::move(layer));
 
   host_impl().active_tree()->SetDeviceViewportSize(root->bounds());
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, GetRenderSurfaceList().size());
-  ASSERT_EQ(1, GetRenderSurface(root)->num_contributors());
-  ASSERT_FALSE(root->ScreenSpaceTransform().IsInvertible());
+  ASSERT_FALSE(layer_raw->ScreenSpaceTransform().IsInvertible());
 
   // Hit checking any point should not hit the touch handler region on the
   // layer. If the invertible matrix is accidentally ignored and treated like an
@@ -1458,6 +1477,9 @@ TEST_F(LayerTreeImplTest,
   // Set the bounds of the root layer big enough to fit the child when scaled.
   LayerImpl* root = root_layer();
   root->SetBounds(gfx::Size(100, 100));
+  std::unique_ptr<LayerImpl> page_scale_layer_ptr =
+      LayerImpl::Create(host_impl().active_tree(), 2);
+  LayerImpl* page_scale_layer = page_scale_layer_ptr.get();
   {
     TouchActionRegion touch_action_region;
     touch_action_region.Union(kTouchActionNone, gfx::Rect(10, 10, 30, 30));
@@ -1468,8 +1490,9 @@ TEST_F(LayerTreeImplTest,
     test_layer->SetDrawsContent(true);
     test_layer->SetHitTestable(true);
     test_layer->SetTouchActionRegion(touch_action_region);
-    root->test_properties()->AddChild(std::move(test_layer));
+    page_scale_layer->test_properties()->AddChild(std::move(test_layer));
   }
+  root->test_properties()->AddChild(std::move(page_scale_layer_ptr));
 
   float device_scale_factor = 3.f;
   float page_scale_factor = 5.f;
@@ -1480,8 +1503,7 @@ TEST_F(LayerTreeImplTest,
 
   host_impl().active_tree()->SetDeviceScaleFactor(device_scale_factor);
   LayerTreeImpl::ViewportLayerIds viewport_ids;
-  viewport_ids.page_scale = 1;
-  viewport_ids.inner_viewport_scroll = 1;
+  viewport_ids.page_scale = 2;
   host_impl().active_tree()->SetViewportLayersFromIds(viewport_ids);
   host_impl().active_tree()->BuildLayerListAndPropertyTreesForTesting();
   host_impl().active_tree()->PushPageScaleFromMainThread(
@@ -1568,7 +1590,7 @@ TEST_F(LayerTreeImplTest,
   // is also the root layer.
   page_scale_factor *= 1.5f;
   host_impl().active_tree()->SetPageScaleOnActiveTree(page_scale_factor);
-  EXPECT_EQ(root, host_impl().active_tree()->PageScaleLayer());
+  EXPECT_EQ(page_scale_layer, host_impl().active_tree()->PageScaleLayer());
 
   test_point = gfx::PointF(35.f, 35.f);
   test_point =
@@ -1712,10 +1734,6 @@ TEST_F(LayerTreeImplTest,
   host_impl().active_tree()->SetDeviceViewportSize(scaled_bounds_for_root);
 
   host_impl().active_tree()->SetDeviceScaleFactor(device_scale_factor);
-  LayerTreeImpl::ViewportLayerIds viewport_ids;
-  viewport_ids.page_scale = 1;
-  viewport_ids.inner_viewport_scroll = 1;
-  host_impl().active_tree()->SetViewportLayersFromIds(viewport_ids);
   host_impl().active_tree()->BuildLayerListAndPropertyTreesForTesting();
   host_impl().active_tree()->PushPageScaleFromMainThread(
       page_scale_factor, page_scale_factor, max_page_scale_factor);
@@ -2044,9 +2062,12 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForScaledLayers) {
   root->SetDrawsContent(true);
   root->SetBounds(gfx::Size(100, 100));
 
-  int root_layer_id = root->id();
-  int sub_layer_id = 2;
+  int page_scale_layer_id = 2;
+  int sub_layer_id = 3;
 
+  std::unique_ptr<LayerImpl> page_scale_layer =
+      LayerImpl::Create(host_impl().active_tree(), page_scale_layer_id);
+  page_scale_layer->SetBounds(gfx::Size(50, 50));
   gfx::Vector2dF sub_layer_offset(10, 0);
   {
     std::unique_ptr<LayerImpl> sub_layer =
@@ -2054,8 +2075,9 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForScaledLayers) {
     sub_layer->test_properties()->position = gfx::PointF() + sub_layer_offset;
     sub_layer->SetBounds(gfx::Size(50, 50));
     sub_layer->SetDrawsContent(true);
-    root->test_properties()->AddChild(std::move(sub_layer));
+    page_scale_layer->test_properties()->AddChild(std::move(sub_layer));
   }
+  root->test_properties()->AddChild(std::move(page_scale_layer));
 
   host_impl().active_tree()->BuildPropertyTreesForTesting();
 
@@ -2063,11 +2085,11 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForScaledLayers) {
   float page_scale_factor = 5.f;
   gfx::Size scaled_bounds_for_root = gfx::ScaleToCeiledSize(
       root->bounds(), device_scale_factor * page_scale_factor);
-  host_impl().active_tree()->SetDeviceViewportSize(scaled_bounds_for_root);
 
   LayerTreeImpl::ViewportLayerIds viewport_ids;
-  viewport_ids.page_scale = root->id();
+  viewport_ids.page_scale = page_scale_layer_id;
   host_impl().active_tree()->SetViewportLayersFromIds(viewport_ids);
+  host_impl().active_tree()->SetDeviceViewportSize(scaled_bounds_for_root);
   host_impl().active_tree()->SetDeviceScaleFactor(device_scale_factor);
   host_impl().active_tree()->SetPageScaleOnActiveTree(page_scale_factor);
 
@@ -2083,7 +2105,7 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForScaledLayers) {
   input.start.type = gfx::SelectionBound::LEFT;
   input.start.edge_top = gfx::Point(10, 10);
   input.start.edge_bottom = gfx::Point(10, 30);
-  input.start.layer_id = root_layer_id;
+  input.start.layer_id = page_scale_layer_id;
 
   input.end.type = gfx::SelectionBound::RIGHT;
   input.end.edge_top = gfx::Point(0, 0);
@@ -2097,11 +2119,11 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForScaledLayers) {
   host_impl().active_tree()->GetViewportSelection(&output);
   EXPECT_EQ(input.start.type, output.start.type());
   auto expected_output_start_top = gfx::PointF(input.start.edge_top);
-  auto expected_output_edge_bottom = gfx::PointF(input.start.edge_bottom);
+  auto expected_output_start_bottom = gfx::PointF(input.start.edge_bottom);
   expected_output_start_top.Scale(page_scale_factor);
-  expected_output_edge_bottom.Scale(page_scale_factor);
+  expected_output_start_bottom.Scale(page_scale_factor);
   EXPECT_EQ(expected_output_start_top, output.start.edge_top());
-  EXPECT_EQ(expected_output_edge_bottom, output.start.edge_bottom());
+  EXPECT_EQ(expected_output_start_bottom, output.start.edge_bottom());
   EXPECT_TRUE(output.start.visible());
   EXPECT_EQ(input.end.type, output.end.type());
 
@@ -2139,10 +2161,6 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForDSFEnabled) {
 
   float device_scale_factor = 3.f;
   float painted_device_scale_factor = 5.f;
-
-  LayerTreeImpl::ViewportLayerIds viewport_ids;
-  viewport_ids.page_scale = root->id();
-  host_impl().active_tree()->SetViewportLayersFromIds(viewport_ids);
   host_impl().active_tree()->SetDeviceScaleFactor(device_scale_factor);
   host_impl().active_tree()->set_painted_device_scale_factor(
       painted_device_scale_factor);
@@ -2287,18 +2305,20 @@ TEST_F(LayerTreeImplTest, HitTestingCorrectLayerWheelListener) {
       EventListenerClass::kMouseWheel, EventListenerProperties::kBlocking);
 
   LayerImpl* root = root_layer();
+  std::unique_ptr<LayerImpl> top =
+      LayerImpl::Create(host_impl().active_tree(), kTopId);
   std::unique_ptr<LayerImpl> left_child =
-      LayerImpl::Create(host_impl().active_tree(), 2);
+      LayerImpl::Create(host_impl().active_tree(), kLeftChildId);
   std::unique_ptr<LayerImpl> right_child =
-      LayerImpl::Create(host_impl().active_tree(), 3);
+      LayerImpl::Create(host_impl().active_tree(), kRightChildId);
 
   {
     gfx::Transform translate_z;
     translate_z.Translate3d(0, 0, 10);
-    root->test_properties()->transform = translate_z;
-    root->SetBounds(gfx::Size(100, 100));
-    root->SetDrawsContent(true);
-    root->SetHitTestable(true);
+    top->test_properties()->transform = translate_z;
+    top->SetBounds(gfx::Size(100, 100));
+    top->SetDrawsContent(true);
+    top->SetHitTestable(true);
   }
   {
     gfx::Transform translate_z;
@@ -2315,8 +2335,10 @@ TEST_F(LayerTreeImplTest, HitTestingCorrectLayerWheelListener) {
     right_child->SetBounds(gfx::Size(100, 100));
   }
 
-  root->test_properties()->AddChild(std::move(left_child));
-  root->test_properties()->AddChild(std::move(right_child));
+  top->test_properties()->AddChild(std::move(left_child));
+  top->test_properties()->AddChild(std::move(right_child));
+  root->SetBounds(top->bounds());
+  root->test_properties()->AddChild(std::move(top));
 
   host_impl().active_tree()->SetDeviceViewportSize(root->bounds());
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
@@ -2327,7 +2349,7 @@ TEST_F(LayerTreeImplTest, HitTestingCorrectLayerWheelListener) {
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
 
   CHECK(result_layer);
-  EXPECT_EQ(2, result_layer->id());
+  EXPECT_EQ(kLeftChildId, result_layer->id());
 }
 
 // When using layer lists, we may not have layers for the outer viewport. This

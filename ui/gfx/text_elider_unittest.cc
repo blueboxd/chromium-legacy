@@ -294,8 +294,8 @@ static void CheckCodeUnitPairs(const base::string16& text,
 TEST(TextEliderTest, ElideTextAtomicSequences) {
 #if defined(OS_WIN)
   // Needed to bypass DCHECK in GetFallbackFont.
-  base::test::ScopedTaskEnvironment scoped_task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::UI);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::UI);
 #endif
   const FontList font_list;
   // The below is 'MUSICAL SYMBOL G CLEF' (U+1D11E), which is represented in

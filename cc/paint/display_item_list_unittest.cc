@@ -1125,4 +1125,47 @@ TEST(DisplayItemListTest, TotalOpCount) {
   EXPECT_EQ(8u, list->TotalOpCount());
 }
 
+TEST(DisplayItemListTest, ClippedToPaintableArea) {
+  auto list = base::MakeRefCounted<DisplayItemList>();
+
+  {
+    list->StartPaint();
+    list->push<SaveOp>();
+    list->EndPaintOfPairedBegin();
+  }
+
+  // Construct a rect that slightly hangs into
+  gfx::Vector2d offset(30, 40);
+  gfx::Size size(std::numeric_limits<int>::max(),
+                 std::numeric_limits<int>::max());
+  gfx::Rect visual_rect(std::numeric_limits<int>::min() + offset.x(),
+                        std::numeric_limits<int>::min() + offset.y(),
+                        size.width(), size.height());
+  gfx::Rect clipped_rect(0, 0, visual_rect.width() + visual_rect.x(),
+                         visual_rect.height() + visual_rect.y());
+
+  {
+    list->StartPaint();
+
+    PaintFlags paint;
+    list->push<SaveLayerOp>(nullptr, &paint);
+    list->push<TranslateOp>(static_cast<float>(visual_rect.x()),
+                            static_cast<float>(visual_rect.y()));
+    list->push<DrawRectOp>(
+        SkRect::MakeWH(visual_rect.width(), visual_rect.height()), paint);
+    list->push<RestoreOp>();
+
+    list->EndPaintOfUnpaired(visual_rect);
+  }
+
+  {
+    list->StartPaint();
+    list->push<RestoreOp>();
+    list->EndPaintOfPairedEnd();
+  }
+  list->Finalize();
+
+  EXPECT_EQ(list->rtree_.GetBounds(), clipped_rect);
+}
+
 }  // namespace cc

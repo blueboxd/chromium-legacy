@@ -28,11 +28,17 @@ class PrefStoreManagerImpl::ConnectorConnection
                       const service_manager::BindSourceInfo& source_info)
       : owner_(owner), source_info_(source_info) {}
 
-  void Connect(
-      mojom::PrefRegistryPtr pref_registry,
-      ConnectCallback callback) override {
+  void Connect(mojom::PrefRegistryPtr pref_registry,
+               const base::Optional<base::Token>& client_token,
+               ConnectCallback callback) override {
+    service_manager::Identity modified_identity = source_info_.identity;
+    if (client_token) {
+      modified_identity = service_manager::Identity(
+          modified_identity.name(), modified_identity.instance_group(),
+          modified_identity.instance_id(), *client_token);
+    }
     auto connection = owner_->shared_pref_registry_->CreateConnectionBuilder(
-        std::move(pref_registry), source_info_.identity, std::move(callback));
+        std::move(pref_registry), modified_identity, std::move(callback));
     if (owner_->persistent_pref_store_ &&
         owner_->persistent_pref_store_->initialized()) {
       connection->ProvidePersistentPrefStore(

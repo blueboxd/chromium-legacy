@@ -211,7 +211,7 @@ class ProxyResolverImplTest : public testing::Test {
   ~ProxyResolverImplTest() override = default;
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   MockProxyResolverV8Tracing* mock_proxy_resolver_;
 
   std::unique_ptr<ProxyResolverImpl> resolver_impl_;

@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_INTERNAL_IMPRESSION_TYPES_H_
 #define CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_INTERNAL_IMPRESSION_TYPES_H_
 
-#include <deque>
 #include <map>
 #include <string>
 
+#include "base/containers/circular_deque.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/notifications/scheduler/public/notification_scheduler_types.h"
@@ -97,7 +97,7 @@ struct SuppressionInfo {
 // to the user and the history of user interactions to a particular notification
 // client.
 struct ClientState {
-  using Impressions = std::deque<Impression>;
+  using Impressions = base::circular_deque<Impression>;
   ClientState();
   explicit ClientState(const ClientState& other);
   ~ClientState();

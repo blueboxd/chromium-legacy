@@ -3253,8 +3253,8 @@ TEST(LayerAnimatorTest, AnimatorRemovedFromCollectionWhenLayerIsDestroyed) {
 }
 
 TEST(LayerAnimatorTest, LayerMovedBetweenCompositorsDuringAnimation) {
-  base::test::ScopedTaskEnvironment scoped_task_environment_(
-      base::test::ScopedTaskEnvironment::MainThreadType::UI);
+  base::test::TaskEnvironment task_environment_(
+      base::test::TaskEnvironment::MainThreadType::UI);
   const bool enable_pixel_output = false;
   TestContextFactories context_factories(enable_pixel_output);
   const gfx::Rect bounds(10, 10, 100, 100);
@@ -3317,8 +3317,8 @@ TEST(LayerAnimatorTest, LayerMovedBetweenCompositorsDuringAnimation) {
 }
 
 TEST(LayerAnimatorTest, ThreadedAnimationSurvivesIfLayerRemovedAdded) {
-  base::test::ScopedTaskEnvironment scoped_task_environment_(
-      base::test::ScopedTaskEnvironment::MainThreadType::UI);
+  base::test::TaskEnvironment task_environment_(
+      base::test::TaskEnvironment::MainThreadType::UI);
   const bool enable_pixel_output = false;
   TestContextFactories context_factories(enable_pixel_output);
   const gfx::Rect bounds(10, 10, 100, 100);

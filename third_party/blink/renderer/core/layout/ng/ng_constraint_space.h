@@ -6,6 +6,7 @@
 #define NGConstraintSpace_h
 
 #include "base/optional.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_size.h"
@@ -421,6 +422,10 @@ class CORE_EXPORT NGConstraintSpace final {
         OptimisticBfcBlockOffset().value_or(BfcOffset().block_offset));
   }
 
+  SerializedScriptValue* CustomLayoutData() const {
+    return HasRareData() ? rare_data_->custom_layout_data.get() : nullptr;
+  }
+
   // Returns the types of preceding adjoining objects.
   // See |NGAdjoiningObjectTypes|.
   //
@@ -563,6 +568,8 @@ class CORE_EXPORT NGConstraintSpace final {
 
     NGBoxStrut table_cell_borders;
     NGBoxStrut table_cell_intrinsic_padding;
+
+    scoped_refptr<SerializedScriptValue> custom_layout_data;
 
     LayoutUnit fragmentainer_block_size = kIndefiniteSize;
     LayoutUnit fragmentainer_space_at_bfc_start = kIndefiniteSize;

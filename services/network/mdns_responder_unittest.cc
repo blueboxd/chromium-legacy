@@ -391,8 +391,7 @@ class SimpleNameGenerator : public MdnsResponderManager::NameGenerator {
 class MdnsResponderTest : public testing::Test {
  public:
   MdnsResponderTest()
-      : failing_socket_factory_(
-            scoped_task_environment_.GetMainThreadTaskRunner()) {
+      : failing_socket_factory_(task_environment_.GetMainThreadTaskRunner()) {
     Reset();
   }
 
@@ -415,8 +414,7 @@ class MdnsResponderTest : public testing::Test {
 
     host_manager_->SetNameGeneratorForTesting(
         std::make_unique<SimpleNameGenerator>());
-    host_manager_->SetTickClockForTesting(
-        scoped_task_environment_.GetMockTickClock());
+    host_manager_->SetTickClockForTesting(task_environment_.GetMockTickClock());
     CreateMdnsResponders();
   }
 
@@ -478,14 +476,14 @@ class MdnsResponderTest : public testing::Test {
   }
 
   void RunUntilNoTasksRemain() {
-    scoped_task_environment_.FastForwardUntilNoTasksRemain();
+    task_environment_.FastForwardUntilNoTasksRemain();
   }
   void RunFor(base::TimeDelta duration) {
-    scoped_task_environment_.FastForwardBy(duration);
+    task_environment_.FastForwardBy(duration);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   // Overrides the current thread task runner, so we can simulate the passage
   // of time and avoid any actual sleeps.
   NiceMock<net::MockMDnsSocketFactory> socket_factory_;

@@ -31,7 +31,7 @@ class ServerEnvironment : public WaylandClientTestHelper {
 
  private:
   std::unique_ptr<aura::Env> env_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::Thread ui_thread_;
 };
 

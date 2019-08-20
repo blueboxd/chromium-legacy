@@ -78,7 +78,7 @@ class UserEventServiceImplTest : public testing::Test {
   MockModelTypeChangeProcessor* mock_processor() { return &mock_processor_; }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   syncer::TestSyncService sync_service_;
   testing::NiceMock<MockModelTypeChangeProcessor> mock_processor_;
   TestGlobalIdMapper mapper_;

@@ -32,7 +32,7 @@ class ProxyHelpersTest : public testing::Test {
   void QuitFunction(int a) {
     EXPECT_TRUE(drm_checker_.CalledOnValidThread());
 
-    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+    task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&ProxyHelpersTest::QuitFunctionCallback,
                                   base::Unretained(this), 8));
   }
@@ -42,8 +42,7 @@ class ProxyHelpersTest : public testing::Test {
     EXPECT_TRUE(main_checker_.CalledOnValidThread());
 
     auto quitter = run_loop_.QuitWhenIdleClosure();
-    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(FROM_HERE,
-                                                                 quitter);
+    task_environment_.GetMainThreadTaskRunner()->PostTask(FROM_HERE, quitter);
   }
 
   void SetDrmChecker() { drm_checker_.DetachFromThread(); }
@@ -91,7 +90,7 @@ class ProxyHelpersTest : public testing::Test {
 
  protected:
   // Main thread message loop.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::RunLoop run_loop_;
 
   // Thread to simulate the drm thread in ozone viz process.

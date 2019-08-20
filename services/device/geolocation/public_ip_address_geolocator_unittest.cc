@@ -25,8 +25,7 @@ const char kTestGeolocationApiKey[] = "";
 class PublicIpAddressGeolocatorTest : public testing::Test {
  public:
   PublicIpAddressGeolocatorTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         network_connection_tracker_(
             network::TestNetworkConnectionTracker::CreateInstance()) {
     notifier_.reset(new PublicIpAddressLocationNotifier(
@@ -92,7 +91,7 @@ class PublicIpAddressGeolocatorTest : public testing::Test {
   mojo::StrongBindingSet<mojom::Geolocation> binding_set_;
 
   // Test task runner.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // List of any Mojo bad-message errors raised.
   std::vector<std::string> bad_messages_;

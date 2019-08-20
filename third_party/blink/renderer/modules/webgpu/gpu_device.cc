@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_device_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_pipeline_layout.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_queue.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_render_bundle_encoder.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_render_pipeline.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_sampler.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_shader_module.h"
@@ -176,6 +177,11 @@ GPUComputePipeline* GPUDevice::createComputePipeline(
 GPUCommandEncoder* GPUDevice::createCommandEncoder(
     const GPUCommandEncoderDescriptor* descriptor) {
   return GPUCommandEncoder::Create(this, descriptor);
+}
+
+GPURenderBundleEncoder* GPUDevice::createRenderBundleEncoder(
+    const GPURenderBundleEncoderDescriptor* descriptor) {
+  return GPURenderBundleEncoder::Create(this, descriptor);
 }
 
 GPUQueue* GPUDevice::getQueue() {

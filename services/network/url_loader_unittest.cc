@@ -384,8 +384,7 @@ void StopMonitorBodyReadFromNetBeforePausedHistogram() {
 class URLLoaderTest : public testing::Test {
  public:
   URLLoaderTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         resource_scheduler_(true) {
     net::TestRootCerts* root_certs = net::TestRootCerts::GetInstance();
     root_certs->AddFromFile(
@@ -727,7 +726,7 @@ class URLLoaderTest : public testing::Test {
     return unowned_test_network_delegate_;
   }
 
-  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
   static constexpr int kProcessId = 4;
   static constexpr int kRouteId = 8;
@@ -737,7 +736,7 @@ class URLLoaderTest : public testing::Test {
     sent_request_ = request;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   net::EmbeddedTestServer test_server_;
   std::unique_ptr<net::ScopedDefaultHostResolverProc> mock_host_resolver_;
   net::TestNetworkDelegate*

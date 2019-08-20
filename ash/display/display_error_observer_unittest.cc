@@ -34,6 +34,7 @@ std::unique_ptr<display::DisplaySnapshot> CreateTestDisplaySnapshot(
       gfx::ColorSpace() /* color_space */, std::string() /* display_name */,
       base::FilePath() /* sys_path */,
       display::DisplaySnapshot::DisplayModeList() /* modes */,
+      display::PanelOrientation::kNormal /* panel_orientation */,
       std::vector<uint8_t>() /* edid */, nullptr /* current_mode */,
       nullptr /* native_mode */, 0 /* product_id */,
       display::kInvalidYearOfManufacture,

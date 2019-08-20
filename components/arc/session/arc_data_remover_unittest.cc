@@ -72,7 +72,7 @@ class ArcDataRemoverTest : public testing::Test {
  private:
   TestingPrefServiceSimple prefs_;
   const cryptohome::Identification cryptohome_id_{EmptyAccountId()};
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<TestUpstartClient> test_upstart_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcDataRemoverTest);

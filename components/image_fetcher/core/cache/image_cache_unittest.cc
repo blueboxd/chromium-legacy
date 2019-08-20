@@ -171,7 +171,7 @@ class CachedImageFetcherImageCacheTest : public testing::Test {
   FakeDB<CachedImageMetadataProto>* db_;
   std::map<std::string, CachedImageMetadataProto> db_store_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::HistogramTester histogram_tester_;
 
   DISALLOW_COPY_AND_ASSIGN(CachedImageFetcherImageCacheTest);

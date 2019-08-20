@@ -79,7 +79,7 @@ class ImageReaderGLOwnerTest : public testing::Test {
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<gl::GLShareGroup> share_group_;
   scoped_refptr<gl::GLSurface> surface_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(ImageReaderGLOwnerTest, ImageReaderObjectCreation) {

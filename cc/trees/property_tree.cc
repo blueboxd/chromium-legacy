@@ -633,9 +633,8 @@ void TransformTree::UpdateNodeAndAncestorsAreAnimatedOrInvertible(
       node->has_potential_animation || is_invertible;
 }
 
-void TransformTree::SetRootTransformsAndScales(
+void TransformTree::SetRootScaleAndTransform(
     float device_scale_factor,
-    float page_scale_factor_for_root,
     const gfx::Transform& device_transform) {
   gfx::Vector2dF device_transform_scale_components =
       MathUtil::ComputeTransform2dScaleComponents(device_transform, 1.f);
@@ -651,11 +650,10 @@ void TransformTree::SetRootTransformsAndScales(
   // transform node is set to SSS and the post local transform of the contents
   // root node is set to SSS^-1*DT*DSF.
   gfx::Transform transform = device_transform;
-  transform.Scale(device_scale_factor * page_scale_factor_for_root,
-                  device_scale_factor * page_scale_factor_for_root);
-  float fallback_value = device_scale_factor * page_scale_factor_for_root;
+  transform.Scale(device_scale_factor, device_scale_factor);
   gfx::Vector2dF screen_space_scale =
-      MathUtil::ComputeTransform2dScaleComponents(transform, fallback_value);
+      MathUtil::ComputeTransform2dScaleComponents(transform,
+                                                  device_scale_factor);
   DCHECK_NE(screen_space_scale.x(), 0.f);
   DCHECK_NE(screen_space_scale.y(), 0.f);
 
@@ -672,8 +670,8 @@ void TransformTree::SetRootTransformsAndScales(
 
   transform.ConcatTransform(root_from_screen);
   TransformNode* contents_root_node = Node(kContentsRootNodeId);
-  if (contents_root_node->post_local != transform) {
-    contents_root_node->post_local = transform;
+  if (contents_root_node->local != transform) {
+    contents_root_node->local = transform;
     contents_root_node->needs_local_transform_update = true;
     set_needs_update(true);
   }

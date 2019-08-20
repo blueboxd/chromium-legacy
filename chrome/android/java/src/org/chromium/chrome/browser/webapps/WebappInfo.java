@@ -112,6 +112,10 @@ public class WebappInfo {
     public static WebappInfo create(Intent intent) {
         String id = idFromIntent(intent);
         String url = urlFromIntent(intent);
+        if (id == null || url == null) {
+            Log.e(TAG, "Incomplete data provided: " + id + ", " + url);
+            return null;
+        }
 
         String icon = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_ICON);
         String scope = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_SCOPE);
@@ -137,9 +141,11 @@ public class WebappInfo {
         String name = nameFromIntent(intent);
         String shortName = shortNameFromIntent(intent);
 
-        return create(id, url, scope, new Icon(icon), name, shortName, displayMode, orientation,
-                source, themeColor, backgroundColor, isIconGenerated, isIconAdaptive,
-                forceNavigation);
+        int defaultBackgroundColor =
+                SplashLayout.getDefaultBackgroundColor(ContextUtils.getApplicationContext());
+        return new WebappInfo(id, url, scope, new Icon(icon), name, shortName, displayMode,
+                orientation, source, themeColor, backgroundColor, defaultBackgroundColor,
+                isIconGenerated, isIconAdaptive, forceNavigation);
     }
 
     /**
@@ -160,22 +166,6 @@ public class WebappInfo {
      * @param forceNavigation Whether the webapp should navigate to {@link url} if the
      *                        webapp is already open.
      */
-    public static WebappInfo create(String id, String url, String scope, Icon icon, String name,
-            String shortName, @WebDisplayMode int displayMode, int orientation, int source,
-            long themeColor, long backgroundColor, boolean isIconGenerated, boolean isIconAdaptive,
-            boolean forceNavigation) {
-        if (id == null || url == null) {
-            Log.e(TAG, "Incomplete data provided: " + id + ", " + url);
-            return null;
-        }
-
-        int defaultBackgroundColor =
-                SplashLayout.getDefaultBackgroundColor(ContextUtils.getApplicationContext());
-        return new WebappInfo(id, url, scope, icon, name, shortName, displayMode, orientation,
-                source, themeColor, backgroundColor, defaultBackgroundColor, isIconGenerated,
-                isIconAdaptive, forceNavigation);
-    }
-
     protected WebappInfo(String id, String url, String scope, Icon icon, String name,
             String shortName, @WebDisplayMode int displayMode, int orientation, int source,
             long themeColor, long backgroundColor, int defaultBackgroundColor,

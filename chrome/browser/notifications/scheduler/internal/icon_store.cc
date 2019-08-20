@@ -37,8 +37,9 @@ using KeyEntryVector = std::vector<KeyEntryPair>;
 using KeyVector = std::vector<std::string>;
 
 IconProtoDbStore::IconProtoDbStore(
-    std::unique_ptr<leveldb_proto::ProtoDatabase<proto::Icon, IconEntry>> db)
-    : db_(std::move(db)) {}
+    std::unique_ptr<leveldb_proto::ProtoDatabase<proto::Icon, IconEntry>> db,
+    std::unique_ptr<IconConverter> icon_converter)
+    : db_(std::move(db)), icon_converter_(std::move(icon_converter)) {}
 
 IconProtoDbStore::~IconProtoDbStore() = default;
 

@@ -75,7 +75,7 @@ class DownloadPathReservationTrackerTest : public testing::Test {
   base::ScopedTempDir test_download_dir_;
   base::FilePath default_download_path_;
   base::FilePath fallback_directory_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   void TestReservedPathCallback(base::FilePath* return_path,
@@ -138,7 +138,7 @@ bool DownloadPathReservationTrackerTest::IsPathInUse(
 }
 
 void DownloadPathReservationTrackerTest::RunUntilIdle() {
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 void DownloadPathReservationTrackerTest::CallGetReservedPath(
@@ -157,7 +157,7 @@ void DownloadPathReservationTrackerTest::CallGetReservedPath(
       create_directory, conflict_action,
       base::Bind(&DownloadPathReservationTrackerTest::TestReservedPathCallback,
                  weak_ptr_factory.GetWeakPtr(), return_path, return_result));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 void DownloadPathReservationTrackerTest::TestReservedPathCallback(

@@ -133,10 +133,9 @@ PipelineIntegrationTestBase::PipelineIntegrationTestBase()
       webaudio_attached_(false),
       mono_output_(false),
       fuzzing_(false),
-      pipeline_(
-          new PipelineImpl(scoped_task_environment_.GetMainThreadTaskRunner(),
-                           scoped_task_environment_.GetMainThreadTaskRunner(),
-                           &media_log_)),
+      pipeline_(new PipelineImpl(task_environment_.GetMainThreadTaskRunner(),
+                                 task_environment_.GetMainThreadTaskRunner(),
+                                 &media_log_)),
       ended_(false),
       pipeline_status_(PIPELINE_OK),
       last_video_frame_format_(PIXEL_FORMAT_UNKNOWN),
@@ -229,7 +228,7 @@ PipelineStatus PipelineIntegrationTestBase::WaitUntilEndedOrError() {
     base::RunLoop run_loop;
     RunUntilQuitOrEndedOrError(&run_loop);
   } else {
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
   return pipeline_status_;
 }
@@ -417,7 +416,7 @@ void PipelineIntegrationTestBase::QuitAfterCurrentTimeTask(
     return;
   }
 
-  scoped_task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
+  task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&PipelineIntegrationTestBase::QuitAfterCurrentTimeTask,
                      base::Unretained(this), quit_time,
@@ -432,7 +431,7 @@ bool PipelineIntegrationTestBase::WaitUntilCurrentTimeIsAfter(
   DCHECK(wait_time <= pipeline_->GetMediaDuration());
 
   base::RunLoop run_loop;
-  scoped_task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
+  task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&PipelineIntegrationTestBase::QuitAfterCurrentTimeTask,
                      base::Unretained(this), wait_time,
@@ -450,7 +449,7 @@ void PipelineIntegrationTestBase::CreateDemuxer(
 
 #if BUILDFLAG(ENABLE_FFMPEG)
   demuxer_ = std::unique_ptr<Demuxer>(new FFmpegDemuxer(
-      scoped_task_environment_.GetMainThreadTaskRunner(), data_source_.get(),
+      task_environment_.GetMainThreadTaskRunner(), data_source_.get(),
       base::BindRepeating(
           &PipelineIntegrationTestBase::DemuxerEncryptedMediaInitDataCB,
           base::Unretained(this)),
@@ -468,11 +467,11 @@ std::unique_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer(
       clockless_playback_, base::TimeDelta::FromSecondsD(1.0 / 60),
       base::Bind(&PipelineIntegrationTestBase::OnVideoFramePaint,
                  base::Unretained(this)),
-      scoped_task_environment_.GetMainThreadTaskRunner()));
+      task_environment_.GetMainThreadTaskRunner()));
 
   // Disable frame dropping if hashing is enabled.
   std::unique_ptr<VideoRenderer> video_renderer(new VideoRendererImpl(
-      scoped_task_environment_.GetMainThreadTaskRunner(), video_sink_.get(),
+      task_environment_.GetMainThreadTaskRunner(), video_sink_.get(),
       base::Bind(&CreateVideoDecodersForTest, &media_log_,
                  prepend_video_decoders_cb),
       false, &media_log_, nullptr));
@@ -481,7 +480,7 @@ std::unique_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer(
     DCHECK(!mono_output_) << " NullAudioSink doesn't specify output parameters";
 
     audio_sink_ =
-        new NullAudioSink(scoped_task_environment_.GetMainThreadTaskRunner());
+        new NullAudioSink(task_environment_.GetMainThreadTaskRunner());
   } else {
     ChannelLayout output_layout =
         mono_output_ ? CHANNEL_LAYOUT_MONO : CHANNEL_LAYOUT_STEREO;
@@ -501,12 +500,12 @@ std::unique_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer(
   }
 
   std::unique_ptr<AudioRenderer> audio_renderer(new AudioRendererImpl(
-      scoped_task_environment_.GetMainThreadTaskRunner(),
+      task_environment_.GetMainThreadTaskRunner(),
       (clockless_playback_)
           ? static_cast<AudioRendererSink*>(clockless_audio_sink_.get())
           : audio_sink_.get(),
       base::Bind(&CreateAudioDecodersForTest, &media_log_,
-                 scoped_task_environment_.GetMainThreadTaskRunner(),
+                 task_environment_.GetMainThreadTaskRunner(),
                  prepend_audio_decoders_cb),
       &media_log_));
   if (hashing_enabled_) {
@@ -520,7 +519,7 @@ std::unique_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer(
       ->SetPlayDelayCBForTesting(std::move(audio_play_delay_cb_));
 
   std::unique_ptr<RendererImpl> renderer_impl(
-      new RendererImpl(scoped_task_environment_.GetMainThreadTaskRunner(),
+      new RendererImpl(task_environment_.GetMainThreadTaskRunner(),
                        std::move(audio_renderer), std::move(video_renderer)));
 
   // Prevent non-deterministic buffering state callbacks from firing (e.g., slow
@@ -673,7 +672,7 @@ void PipelineIntegrationTestBase::RunUntilQuitOrError(base::RunLoop* run_loop) {
   run_loop->Run();
   on_ended_closure_ = base::OnceClosure();
   on_error_closure_ = base::OnceClosure();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 void PipelineIntegrationTestBase::RunUntilQuitOrEndedOrError(

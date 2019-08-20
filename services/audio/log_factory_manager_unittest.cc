@@ -98,14 +98,14 @@ class LogFactoryManagerTest
 
   void DestroyLogFactoryManager() {
     remote_log_factory_manager_.reset();
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     EXPECT_TRUE(service_keepalive_.HasNoRefs());
   }
 
   // service_manager::ServiceKeepalive::Observer:
   void OnIdleTimeout() override { OnNoServiceRefs(); }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   mojo::Remote<mojom::LogFactoryManager> remote_log_factory_manager_;
   std::unique_ptr<LogFactoryManager> log_factory_manager_;
 
@@ -146,7 +146,7 @@ TEST_F(LogFactoryManagerTest, LogFactoryManagerQueuesRequestsAndSetsFactory) {
   EXPECT_CALL(*mock_log1, OnStopped());
   EXPECT_CALL(*mock_log1, OnClosed());
   remote_log_factory_manager_->SetLogFactory(std::move(remote_log_factory));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Create another log after the factory is already set.
   const int kComponentId2 = 2;

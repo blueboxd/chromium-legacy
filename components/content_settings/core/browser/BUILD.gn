@@ -110,6 +110,7 @@ jumbo_source_set("unit_tests") {
     "//components/prefs:test_support",
     "//components/sync_preferences:test_support",
     "//extensions/buildflags",
+    "//net",
     "//ppapi/buildflags:buildflags",
     "//testing/gmock",
     "//testing/gtest",

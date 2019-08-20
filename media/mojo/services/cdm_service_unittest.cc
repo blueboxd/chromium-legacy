@@ -127,7 +127,7 @@ class CdmServiceTest : public testing::Test {
 
   CdmService* cdm_service() { return service_.get(); }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   mojom::CdmServicePtr cdm_service_ptr_;
   mojom::CdmFactoryPtr cdm_factory_ptr_;
   mojom::ContentDecryptionModulePtr cdm_ptr_;
@@ -207,8 +207,8 @@ TEST_F(CdmServiceTest, DestroyCdmFactory) {
 }
 
 // Same as DestroyCdmFactory test, but do not disable delayed service release.
-// TODO(xhwang): Use  ScopedTaskEnvironment::TimeSource::MOCK_TIME and
-// ScopedTaskEnvironment::FastForwardBy() so we don't have to really wait for
+// TODO(xhwang): Use  TaskEnvironment::TimeSource::MOCK_TIME and
+// TaskEnvironment::FastForwardBy() so we don't have to really wait for
 // the delay in the test. But currently FastForwardBy() doesn't support delayed
 // task yet.
 TEST_F(CdmServiceTest, DestroyCdmFactory_DelayedServiceRelease) {

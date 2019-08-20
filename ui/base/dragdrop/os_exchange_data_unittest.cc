@@ -23,12 +23,11 @@ namespace ui {
 class OSExchangeDataTest : public PlatformTest {
  public:
   OSExchangeDataTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
         event_source_(PlatformEventSource::CreateDefault()) {}
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<PlatformEventSource> event_source_;
 };
 

@@ -132,7 +132,7 @@ class DataPipeProducerTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   int tmp_file_id_ = 0;
 

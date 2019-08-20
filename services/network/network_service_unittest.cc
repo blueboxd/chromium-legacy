@@ -84,8 +84,7 @@ mojom::NetworkContextParamsPtr CreateContextParams() {
 class NetworkServiceTest : public testing::Test {
  public:
   NetworkServiceTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         service_(NetworkService::CreateForTesting()) {}
   ~NetworkServiceTest() override {}
 
@@ -94,7 +93,7 @@ class NetworkServiceTest : public testing::Test {
   void DestroyService() { service_.reset(); }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<NetworkService> service_;
 };
 
@@ -676,8 +675,7 @@ TEST_F(NetworkServiceTest, SetMaxConnectionsPerProxy) {
 class NetworkServiceTestWithService : public testing::Test {
  public:
   NetworkServiceTestWithService()
-      : task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
   ~NetworkServiceTestWithService() override {}
 
   void SetUp() override {
@@ -732,7 +730,7 @@ class NetworkServiceTestWithService : public testing::Test {
   mojom::NetworkContext* context() { return network_context_.get(); }
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   service_manager::TestConnectorFactory test_connector_factory_;
   std::unique_ptr<NetworkService> service_;
 
@@ -1321,8 +1319,7 @@ class TestNetworkChangeManagerClient
 class NetworkChangeTest : public testing::Test {
  public:
   NetworkChangeTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         network_change_notifier_(net::NetworkChangeNotifier::CreateMock()),
         service_(NetworkService::CreateForTesting()) {}
 
@@ -1331,7 +1328,7 @@ class NetworkChangeTest : public testing::Test {
   NetworkService* service() const { return service_.get(); }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   std::unique_ptr<NetworkService> service_;
 };
@@ -1353,8 +1350,7 @@ TEST_F(NetworkChangeTest, MAYBE_NetworkChangeManagerRequest) {
 class NetworkServiceNetworkChangeTest : public testing::Test {
  public:
   NetworkServiceNetworkChangeTest()
-      : task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         network_change_notifier_(net::NetworkChangeNotifier::CreateMock()),
         service_(NetworkService::CreateForTesting(
             test_connector_factory_.RegisterInstance(kNetworkServiceName))) {
@@ -1367,7 +1363,7 @@ class NetworkServiceNetworkChangeTest : public testing::Test {
   mojom::NetworkService* service() { return network_service_.get(); }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   service_manager::TestConnectorFactory test_connector_factory_;
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   std::unique_ptr<NetworkService> service_;

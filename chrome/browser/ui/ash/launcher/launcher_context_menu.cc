@@ -25,7 +25,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/vector_icons.h"
 
 namespace {
@@ -178,11 +177,7 @@ void LauncherContextMenu::AddContextMenuOption(ui::SimpleMenuModel* menu_model,
                                                int string_id) {
   const gfx::VectorIcon& icon = GetCommandIdVectorIcon(type, string_id);
   if (!icon.is_empty()) {
-    const views::MenuConfig& menu_config = views::MenuConfig::instance();
-    menu_model->AddItemWithStringIdAndIcon(
-        type, string_id,
-        gfx::CreateVectorIcon(icon, menu_config.touchable_icon_size,
-                              menu_config.touchable_icon_color));
+    menu_model->AddItemWithStringIdAndIcon(type, string_id, icon);
     return;
   }
   // If the MenuType is a check item.

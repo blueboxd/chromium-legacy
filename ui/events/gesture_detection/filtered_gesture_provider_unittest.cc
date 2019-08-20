@@ -13,8 +13,7 @@ class FilteredGestureProviderTest : public GestureProviderClient,
                                     public testing::Test {
  public:
   FilteredGestureProviderTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
   ~FilteredGestureProviderTest() override {}
 
   // GestureProviderClient implementation.
@@ -22,7 +21,7 @@ class FilteredGestureProviderTest : public GestureProviderClient,
   bool RequiresDoubleTapGestureEvents() const override { return false; }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 // Single touch drag test: After touch-start, the moved_beyond_slop_region bit

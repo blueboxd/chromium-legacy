@@ -76,7 +76,7 @@ class P2PSocketTcpTestBase : public testing::Test {
     return result;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::string sent_data_;
   FakeSocket* socket_;  // Owned by |socket_impl_|.
   std::unique_ptr<P2PSocketTcpBase> socket_impl_;
@@ -465,8 +465,8 @@ TEST_F(P2PSocketStunTcpTest, AsyncWrites) {
 // ProxyResolvingClientSocket::Connect() won't be called twice.
 // Regression test for crbug.com/840797.
 TEST(P2PSocketTcpWithPseudoTlsTest, Basic) {
-  base::test::ScopedTaskEnvironment scoped_task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
 
   mojom::P2PSocketClientPtr socket_client;
   auto socket_client_request = mojo::MakeRequest(&socket_client);
@@ -525,8 +525,8 @@ INSTANTIATE_TEST_SUITE_P(
 // Tests that if a socket type satisfies IsTlsClientSocket(), TLS connection is
 // established.
 TEST_P(P2PSocketTcpWithTlsTest, Basic) {
-  base::test::ScopedTaskEnvironment scoped_task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
 
   mojom::P2PSocketClientPtr socket_client;
   auto socket_client_request = mojo::MakeRequest(&socket_client);

@@ -362,8 +362,7 @@ class TestRectangleBuffer {
 class RenderTextTest : public testing::Test {
  public:
   RenderTextTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
         render_text_(std::make_unique<RenderTextHarfBuzz>()),
         test_api_(new test::RenderTextTestApi(render_text_.get())),
         renderer_(canvas()) {}
@@ -536,7 +535,7 @@ class RenderTextTest : public testing::Test {
 
  private:
   // Needed to bypass DCHECK in GetFallbackFont.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<RenderTextHarfBuzz> render_text_;
   std::unique_ptr<test::RenderTextTestApi> test_api_;

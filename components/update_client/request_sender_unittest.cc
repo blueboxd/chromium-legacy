@@ -57,7 +57,7 @@ class RequestSenderTest : public testing::Test,
   void Quit();
   void RunThreads();
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   scoped_refptr<TestConfigurator> config_;
   std::unique_ptr<RequestSender> request_sender_;
@@ -76,8 +76,7 @@ class RequestSenderTest : public testing::Test,
 INSTANTIATE_TEST_SUITE_P(IsForeground, RequestSenderTest, ::testing::Bool());
 
 RequestSenderTest::RequestSenderTest()
-    : scoped_task_environment_(
-          base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
+    : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
 
 RequestSenderTest::~RequestSenderTest() {}
 
@@ -101,7 +100,7 @@ void RequestSenderTest::TearDown() {
 
   // Run the threads until they are idle to allow the clean up
   // of the network interceptors on the IO thread.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   config_ = nullptr;
 }
 

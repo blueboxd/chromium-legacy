@@ -14,6 +14,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/launcher/test_launcher.h"
+#include "base/test/launcher/test_launcher_test_utils.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
@@ -141,6 +142,78 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, BrowserCrashCallStack) {
     GTEST_FAIL() << "Couldn't find\n" << crash_string << "\n in output\n "
                  << output;
   }
+}
+
+// The following 3 tests are disabled as they are meant to only run from
+// |RunMockTests| to validate tests launcher output for known results.
+using MockContentBrowserTest = ContentBrowserTest;
+
+// Basic Test to pass
+IN_PROC_BROWSER_TEST_F(MockContentBrowserTest, DISABLED_PassTest) {
+  ASSERT_TRUE(true);
+}
+// Basic Test to fail
+IN_PROC_BROWSER_TEST_F(MockContentBrowserTest, DISABLED_FailTest) {
+  ASSERT_TRUE(false);
+}
+// Basic Test to crash
+IN_PROC_BROWSER_TEST_F(MockContentBrowserTest, DISABLED_CrashTest) {
+  IMMEDIATE_CRASH();
+}
+
+// Using TestLauncher to launch 3 simple browser tests
+// and validate the resulting json file.
+IN_PROC_BROWSER_TEST_F(ContentBrowserTest, RunMockTests) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  base::ScopedTempDir temp_dir;
+
+  base::CommandLine command_line(
+      base::CommandLine::ForCurrentProcess()->GetProgram());
+  command_line.AppendSwitchASCII("gtest_filter",
+                                 "MockContentBrowserTest.DISABLED_*");
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath path =
+      temp_dir.GetPath().AppendASCII("SaveSummaryResult.json");
+  command_line.AppendSwitchPath("test-launcher-summary-output", path);
+  command_line.AppendSwitch("gtest_also_run_disabled_tests");
+  command_line.AppendSwitch("--test-launcher-retry-limit=0");
+
+  std::string output;
+  base::GetAppOutputAndError(command_line, &output);
+
+  // Validate the resulting JSON file is the expected output.
+  base::Optional<base::Value> root =
+      base::test_launcher_utils::ReadSummary(path);
+  ASSERT_TRUE(root);
+
+  base::Value* val = root->FindDictKey("test_locations");
+  ASSERT_TRUE(val);
+  EXPECT_EQ(3u, val->DictSize());
+  // If path or test location changes, the following expectation
+  // will need to change accordingly.
+  std::string file_name = "../../content/test/content_browser_test_test.cc";
+  EXPECT_TRUE(base::test_launcher_utils::ValidateTestLocation(
+      val, "MockContentBrowserTest.DISABLED_PassTest", file_name, 152));
+  EXPECT_TRUE(base::test_launcher_utils::ValidateTestLocation(
+      val, "MockContentBrowserTest.DISABLED_FailTest", file_name, 156));
+  EXPECT_TRUE(base::test_launcher_utils::ValidateTestLocation(
+      val, "MockContentBrowserTest.DISABLED_CrashTest", file_name, 160));
+
+  val = root->FindListKey("per_iteration_data");
+  ASSERT_TRUE(val);
+  ASSERT_EQ(1u, val->GetList().size());
+
+  base::Value* iteration_val = &(val->GetList().at(0));
+  ASSERT_TRUE(iteration_val);
+  ASSERT_TRUE(iteration_val->is_dict());
+  EXPECT_EQ(3u, iteration_val->DictSize());
+  // We expect the result to be stripped of disabled prefix.
+  EXPECT_TRUE(base::test_launcher_utils::ValidateTestResult(
+      iteration_val, "MockContentBrowserTest.PassTest", "SUCCESS", 0u));
+  EXPECT_TRUE(base::test_launcher_utils::ValidateTestResult(
+      iteration_val, "MockContentBrowserTest.FailTest", "FAILURE", 1u));
+  EXPECT_TRUE(base::test_launcher_utils::ValidateTestResult(
+      iteration_val, "MockContentBrowserTest.CrashTest", "CRASH", 0u));
 }
 
 #endif

@@ -153,8 +153,8 @@ class DesktopProcessTest : public testing::Test {
   MockDaemonListener daemon_listener_;
 
   // Runs the daemon's end of the channel.
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::UI};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::UI};
 
   scoped_refptr<AutoThreadTaskRunner> io_task_runner_;
 
@@ -229,7 +229,7 @@ void DesktopProcessTest::DisconnectChannels() {
 }
 
 void DesktopProcessTest::PostDisconnectChannels() {
-  scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+  task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&DesktopProcessTest::DisconnectChannels,
                                 base::Unretained(this)));
 }
@@ -238,10 +238,10 @@ void DesktopProcessTest::RunDesktopProcess() {
   base::RunLoop run_loop;
   base::Closure quit_ui_task_runner =
       base::Bind(base::IgnoreResult(&base::SingleThreadTaskRunner::PostTask),
-                 scoped_task_environment_.GetMainThreadTaskRunner(), FROM_HERE,
+                 task_environment_.GetMainThreadTaskRunner(), FROM_HERE,
                  run_loop.QuitClosure());
   scoped_refptr<AutoThreadTaskRunner> ui_task_runner = new AutoThreadTaskRunner(
-      scoped_task_environment_.GetMainThreadTaskRunner(), quit_ui_task_runner);
+      task_environment_.GetMainThreadTaskRunner(), quit_ui_task_runner);
 
   io_task_runner_ = AutoThread::CreateWithType("IPC thread", ui_task_runner,
                                                base::MessagePumpType::IO);

@@ -4,7 +4,7 @@
 
 package org.chromium.components.module_installer;
 
-import android.content.Context;
+import android.app.Activity;
 
 import org.chromium.base.VisibleForTesting;
 
@@ -32,8 +32,9 @@ public interface ModuleInstaller {
      *
      * For details, see:
      * https://developer.android.com/reference/com/google/android/play/core/splitcompat/SplitCompat.html#install(android.content.Context)
+     * @param activity The Activity for which SplitCompat will be run.
      */
-    default void initActivity(Context context) {}
+    default void initActivity(Activity activity) {}
 
     /**
      * Records via UMA all modules that have been requested and are currently installed. The intent

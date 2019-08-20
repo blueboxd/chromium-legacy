@@ -150,6 +150,7 @@ void VrShellDelegate::SetPresentResult(JNIEnv* env,
 
 void VrShellDelegate::RecordVrStartAction(
     JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
     jint start_action) {
   VrStartAction action = static_cast<VrStartAction>(start_action);
 

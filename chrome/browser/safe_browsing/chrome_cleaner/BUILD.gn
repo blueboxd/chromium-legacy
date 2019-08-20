@@ -5,14 +5,6 @@
 import("//build/config/jumbo.gni")
 import("//third_party/protobuf/proto_library.gni")
 
-proto_library("test_only_proto") {
-  testonly = true
-  generate_python = false
-  sources = [
-    "chrome_prompt_for_tests.proto",
-  ]
-}
-
 source_set("public") {
   sources = [
     "chrome_cleaner_controller_win.cc",

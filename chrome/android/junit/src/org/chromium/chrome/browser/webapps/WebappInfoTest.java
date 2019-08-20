@@ -15,6 +15,7 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
+import org.chromium.chrome.test.util.browser.WebappTestHelper;
 import org.chromium.content_public.common.ScreenOrientationValues;
 
 /**
@@ -30,11 +31,10 @@ public class WebappInfoTest {
         String shortName = "name";
         String url = "about:blank";
 
-        WebappInfo info = WebappInfo.create(id, url, null, null, name, shortName,
-                WebDisplayMode.STANDALONE, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false /* isIconGenerated */,
-                false /* isIconAdaptive */, false /* forceNavigation */);
+        Intent intent = WebappTestHelper.createMinimalWebappIntent(id, url);
+        intent.putExtra(ShortcutHelper.EXTRA_NAME, name);
+        intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName);
+        WebappInfo info = WebappInfo.create(intent);
         Assert.assertNotNull(info);
     }
 
@@ -45,11 +45,10 @@ public class WebappInfoTest {
         String shortName = "name";
         String url = "http://google.com";
 
-        WebappInfo info = WebappInfo.create(id, url, null, null, name, shortName,
-                WebDisplayMode.STANDALONE, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false /* isIconGenerated */,
-                false /* isIconAdaptive */, false /* forceNavigation */);
+        Intent intent = WebappTestHelper.createMinimalWebappIntent(id, url);
+        intent.putExtra(ShortcutHelper.EXTRA_NAME, name);
+        intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName);
+        WebappInfo info = WebappInfo.create(intent);
         Assert.assertNotNull(info);
     }
 
@@ -124,16 +123,16 @@ public class WebappInfoTest {
 
     @Test
     public void testDisplayModeAndOrientationAndSource() {
-        String id = "webapp id";
         String name = "longName";
         String shortName = "name";
-        String url = "http://money.cnn.com";
 
-        WebappInfo info = WebappInfo.create(id, url, null, null, name, shortName,
-                WebDisplayMode.FULLSCREEN, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false /* isIconGenerated */,
-                false /* isIconAdaptive */, false /* forceNavigation */);
+        Intent intent = createIntentWithUrlAndId();
+        intent.putExtra(ShortcutHelper.EXTRA_NAME, name);
+        intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName);
+        intent.putExtra(ShortcutHelper.EXTRA_DISPLAY_MODE, WebDisplayMode.FULLSCREEN);
+        intent.putExtra(ShortcutHelper.EXTRA_ORIENTATION, ScreenOrientationValues.DEFAULT);
+        intent.putExtra(ShortcutHelper.EXTRA_SOURCE, ShortcutSource.UNKNOWN);
+        WebappInfo info = WebappInfo.create(intent);
         Assert.assertEquals(WebDisplayMode.FULLSCREEN, info.displayMode());
         Assert.assertEquals(ScreenOrientationValues.DEFAULT, info.orientation());
         Assert.assertEquals(ShortcutSource.UNKNOWN, info.source());
@@ -141,33 +140,30 @@ public class WebappInfoTest {
 
     @Test
     public void testNormalColors() {
-        String id = "webapp id";
         String name = "longName";
         String shortName = "name";
-        String url = "http://money.cnn.com";
         long themeColor = 0xFF00FF00L;
         long backgroundColor = 0xFF0000FFL;
 
-        WebappInfo info = WebappInfo.create(id, url, null, null, name, shortName,
-                WebDisplayMode.STANDALONE, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
-                themeColor, backgroundColor, false /* isIconGenerated */,
-                false /* isIconAdaptive */, false /* forceNavigation */);
+        Intent intent = createIntentWithUrlAndId();
+        intent.putExtra(ShortcutHelper.EXTRA_NAME, name);
+        intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName);
+        intent.putExtra(ShortcutHelper.EXTRA_THEME_COLOR, themeColor);
+        intent.putExtra(ShortcutHelper.EXTRA_BACKGROUND_COLOR, backgroundColor);
+        WebappInfo info = WebappInfo.create(intent);
         Assert.assertEquals(themeColor, info.themeColor());
         Assert.assertEquals(backgroundColor, info.backgroundColor());
     }
 
     @Test
     public void testInvalidOrMissingColors() {
-        String id = "webapp id";
         String name = "longName";
         String shortName = "name";
-        String url = "http://money.cnn.com";
 
-        WebappInfo info = WebappInfo.create(id, url, null, null, name, shortName,
-                WebDisplayMode.STANDALONE, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false /* isIconGenerated */,
-                false /* isIconAdaptive */, false /* forceNavigation */);
+        Intent intent = createIntentWithUrlAndId();
+        intent.putExtra(ShortcutHelper.EXTRA_NAME, name);
+        intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName);
+        WebappInfo info = WebappInfo.create(intent);
         Assert.assertEquals(ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, info.themeColor());
         Assert.assertEquals(
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, info.backgroundColor());
@@ -337,9 +333,7 @@ public class WebappInfoTest {
      */
     @Test
     public void testForceNavigationNotSpecified() {
-        Intent intent = new Intent();
-        intent.putExtra(ShortcutHelper.EXTRA_ID, "webapp_id");
-        intent.putExtra(ShortcutHelper.EXTRA_URL, "about:blank");
+        Intent intent = createIntentWithUrlAndId();
         Assert.assertFalse(WebappInfo.create(intent).shouldForceNavigation());
     }
 

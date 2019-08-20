@@ -46,7 +46,7 @@ class MediaPlayerBridgeTest : public testing::Test {
 
   void SimulatePlaybackCompleted() { bridge_.OnPlaybackComplete(); }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   StrictMock<MockMediaPlayerBridgeClient> client_;
   MediaPlayerBridge bridge_;
 

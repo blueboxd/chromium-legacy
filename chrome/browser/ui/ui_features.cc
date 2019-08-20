@@ -29,6 +29,11 @@ const base::Feature kExtensionsToolbarMenu{"ExtensionsToolbarMenu",
 const base::Feature kNewTabstripAnimation{"NewTabstripAnimation",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables the new version of the profile menu(aka user menu).
+// https://crbug.com/966388
+const base::Feature kProfileMenuRevamp{"ProfileMenuRevamp",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables tabs to scroll in the tabstrip. https://crbug.com/951078
 const base::Feature kScrollableTabStrip{"ScrollableTabStrip",
                                         base::FEATURE_DISABLED_BY_DEFAULT};

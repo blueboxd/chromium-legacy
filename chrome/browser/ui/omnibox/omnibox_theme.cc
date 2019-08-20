@@ -49,9 +49,7 @@ SkColor GetOmniboxColor(OmniboxPart part,
   // For high contrast, selected rows use inverted colors to stand out more.
   ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
   bool high_contrast = native_theme && native_theme->UsesHighContrastColors();
-  bool selected = state == OmniboxPartState::SELECTED ||
-                  state == OmniboxPartState::HOVERED_AND_SELECTED;
-  if (high_contrast && selected)
+  if (high_contrast && (state == OmniboxPartState::SELECTED))
     dark = !dark;
 
   switch (part) {
@@ -66,15 +64,15 @@ SkColor GetOmniboxColor(OmniboxPart part,
     case OmniboxPart::LOCATION_BAR_SELECTED_KEYWORD:
       return dark ? gfx::kGoogleGrey100 : gfx::kGoogleBlue600;
     case OmniboxPart::RESULTS_BACKGROUND: {
-      // High contrast mode needs a darker base - Grey 800 with 14% white
+      // High contrast mode needs a darker base - Grey 800 with 16% white
       // overlaid on it (see below) is hard to produce good contrast ratios
       // against with colors other than white.
       const SkColor dark_base_color =
           high_contrast ? gfx::kGoogleGrey900 : gfx::kGoogleGrey800;
       const SkColor base_color = dark ? dark_base_color : SK_ColorWHITE;
-      // The spec calls for transparent black (or white) overlays for hover (8%)
-      // and select (6%), which can overlap (for 14%). Pre-blend these with the
-      // background for the best text AA result.
+      // The spec calls for transparent black (or white) overlays for hover
+      // (10%) and select (16%). Pre-blend these with the background for the
+      // best text AA result.
       return color_utils::BlendTowardMaxContrast(
           base_color,
           gfx::ToRoundedInt(GetOmniboxStateOpacity(state) * SK_AlphaOPAQUE));
@@ -132,18 +130,7 @@ SkColor GetOmniboxSecurityChipColor(
 }
 
 float GetOmniboxStateOpacity(OmniboxPartState state) {
-  switch (state) {
-    case OmniboxPartState::NORMAL:
-      return 0;
-    case OmniboxPartState::HOVERED:
-      return 0.08f;
-    case OmniboxPartState::SELECTED:
-      return 0.06f;
-    case OmniboxPartState::HOVERED_AND_SELECTED:
-      return GetOmniboxStateOpacity(OmniboxPartState::HOVERED) +
-             GetOmniboxStateOpacity(OmniboxPartState::SELECTED);
-    default:
-      NOTREACHED();
-      return 0;
-  }
+  DCHECK_LE(state, OmniboxPartState::SELECTED);
+  constexpr float kOpacities[3] = {0.00f, 0.10f, 0.16f};
+  return kOpacities[static_cast<size_t>(state)];
 }

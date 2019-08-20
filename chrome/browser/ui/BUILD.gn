@@ -737,7 +737,6 @@ jumbo_split_static_library("ui") {
       "android/tab_contents/chrome_web_contents_view_delegate_android.h",
       "android/tab_model/android_live_tab_context.cc",
       "android/tab_model/android_live_tab_context.h",
-      "android/tab_model/single_tab_model.cc",
       "android/tab_model/tab_model.cc",
       "android/tab_model/tab_model.h",
       "android/tab_model/tab_model_jni_bridge.cc",

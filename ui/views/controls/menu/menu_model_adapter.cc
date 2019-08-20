@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/submenu_view.h"
 
@@ -107,7 +108,8 @@ MenuItemView* MenuModelAdapter::AddMenuItemFromModelAt(ui::MenuModel* model,
       model->GetSublabelAt(model_index), model->GetMinorTextAt(model_index),
       model->GetMinorIconAt(model_index),
       icon.IsEmpty() ? gfx::ImageSkia() : *icon.ToImageSkia(),
-      model->GetVectorIconAt(model_index), *type, ui::NORMAL_SEPARATOR);
+      icon.IsEmpty() ? model->GetVectorIconAt(model_index) : nullptr, *type,
+      ui::NORMAL_SEPARATOR);
 }
 
 // Static.

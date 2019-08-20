@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
 
   mojo::core::Init();
 
-  // RlzLibTest uses base::test::ScopedTaskEnvironment that needs TestTimeouts.
+  // RlzLibTest uses base::test::TaskEnvironment that needs TestTimeouts.
   TestTimeouts::Initialize();
 
   int ret = RUN_ALL_TESTS();

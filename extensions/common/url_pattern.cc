@@ -297,21 +297,22 @@ URLPattern::ParseResult URLPattern::Parse(base::StringPiece pattern) {
     // wasn't found.
     base::StringPiece host_piece = host_and_port.substr(0, port_separator_pos);
 
-    // The first component can optionally be '*' to match all subdomains.
-    std::vector<base::StringPiece> host_components = base::SplitStringPiece(
-        host_piece, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-
-    // Could be empty if the host only consists of whitespace characters.
-    if (host_components.empty() ||
-        (host_components.size() == 1 && host_components[0].empty()))
+    if (host_piece.empty())
       return ParseResult::kEmptyHost;
 
-    if (host_components[0] == "*") {
+    if (host_piece == "*") {
       match_subdomains_ = true;
-      host_components.erase(host_components.begin());
+      host_piece.clear();
+    } else if (host_piece.starts_with("*.")) {
+      if (host_piece.length() == 2) {
+        // We don't allow just '*.' as a host.
+        return ParseResult::kEmptyHost;
+      }
+      match_subdomains_ = true;
+      host_piece = host_piece.substr(2);
     }
 
-    host_ = base::JoinString(host_components, ".");
+    host_ = host_piece.as_string();
 
     path_start_pos = host_end_pos;
   }

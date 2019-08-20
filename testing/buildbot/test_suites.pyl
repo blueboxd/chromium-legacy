@@ -3975,9 +3975,12 @@
           '--additional-driver-flag', '--enable-unsafe-webgpu',
           '--additional-driver-flag', '--disable-gpu-sandbox',
           '--driver-logging',
-          # These tests are skipped by default. Since we run with
-          # --enable-unsafe-webgpu, ignore the Skip expectation.
-          '--skipped', 'ignore',
+          '--ignore-default-expectations',
+          '--additional-expectations=../../third_party/blink/web_tests/WebGPUExpectations',
+          # TODO(crbug.com/984815): Use --isolated-script-test-filter to select
+          # webgpu tests, instead of just the file path, so retries (which just
+          # append the specific test path to the end of this command line) work
+          # correctly instead of also running the whole rest of the test suite.
           'external/wpt/webgpu/',
         ],
         'linux_args': [ '--no-xvfb' ],
@@ -3998,10 +4001,13 @@
           '--additional-driver-flag', '--enable-unsafe-webgpu',
           '--additional-driver-flag', '--disable-gpu-sandbox',
           '--driver-logging',
-          # These tests are skipped by default. Since we run with
-          # --enable-unsafe-webgpu, ignore the Skip expectation.
-          '--skipped', 'ignore',
+          '--ignore-default-expectations',
+          '--additional-expectations=../../third_party/blink/web_tests/WebGPUExpectations',
           '-t', 'Release_x64',
+          # TODO(crbug.com/984815): Use --isolated-script-test-filter to select
+          # webgpu tests, instead of just the file path, so retries (which just
+          # append the specific test path to the end of this command line) work
+          # correctly instead of also running the whole rest of the test suite.
           'external/wpt/webgpu/',
         ],
         'merge': {
@@ -4736,7 +4742,7 @@
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'version:1.6',
+              'revision': 'version:1.7',
             }
           ]
         },

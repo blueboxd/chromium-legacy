@@ -10,7 +10,6 @@
 #include "cc/paint/filter_operations.h"
 #include "chrome/browser/android/compositor/layer/thumbnail_layer.h"
 #include "chrome/browser/android/compositor/tab_content_manager.h"
-#include "content/public/browser/android/compositor.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace android {

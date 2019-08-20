@@ -55,9 +55,8 @@ class ExoClientPerfTestSuite : public ash::AshTestSuite {
     if (run_with_external_wayland_server_) {
       base::TestSuite::Initialize();
 
-      scoped_task_environment_ =
-          std::make_unique<base::test::ScopedTaskEnvironment>(
-              base::test::ScopedTaskEnvironment::MainThreadType::UI);
+      task_environment_ = std::make_unique<base::test::TaskEnvironment>(
+          base::test::TaskEnvironment::MainThreadType::UI);
     } else {
       // We only need initialized ash related stuff for running wayland server
       // within the test.
@@ -65,9 +64,8 @@ class ExoClientPerfTestSuite : public ash::AshTestSuite {
 
       // Initialize task envrionment here instead of Test::SetUp(), because all
       // tests and their SetUp() will be running in client thread.
-      scoped_task_environment_ =
-          std::make_unique<base::test::ScopedTaskEnvironment>(
-              base::test::ScopedTaskEnvironment::MainThreadType::UI);
+      task_environment_ = std::make_unique<base::test::TaskEnvironment>(
+          base::test::TaskEnvironment::MainThreadType::UI);
 
       // Set the UI thread task runner to WaylandClientTest, so all tests can
       // post tasks to UI thread.
@@ -78,11 +76,11 @@ class ExoClientPerfTestSuite : public ash::AshTestSuite {
 
   void Shutdown() override {
     if (run_with_external_wayland_server_) {
-      scoped_task_environment_ = nullptr;
+      task_environment_ = nullptr;
       base::TestSuite::Shutdown();
     } else {
       WaylandClientTest::SetUIThreadTaskRunner(nullptr);
-      scoped_task_environment_ = nullptr;
+      task_environment_ = nullptr;
       ash::AshTestSuite::Shutdown();
     }
   }
@@ -96,7 +94,7 @@ class ExoClientPerfTestSuite : public ash::AshTestSuite {
   // Do not run the wayland server within the test.
   const bool run_with_external_wayland_server_ = false;
 
-  std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
+  std::unique_ptr<base::test::TaskEnvironment> task_environment_;
 
   // Result of RUN_ALL_TESTS().
   int result_ = 1;

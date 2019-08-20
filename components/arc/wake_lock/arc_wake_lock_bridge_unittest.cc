@@ -27,8 +27,7 @@ using device::mojom::WakeLockType;
 class ArcWakeLockBridgeTest : public testing::Test {
  public:
   ArcWakeLockBridgeTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         wake_lock_provider_(
             connector_factory_.RegisterInstance(device::mojom::kServiceName)) {
     bridge_service_ = std::make_unique<ArcBridgeService>();
@@ -98,7 +97,7 @@ class ArcWakeLockBridgeTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   service_manager::TestConnectorFactory connector_factory_;
   device::TestWakeLockProvider wake_lock_provider_;

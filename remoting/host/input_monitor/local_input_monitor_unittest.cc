@@ -33,12 +33,12 @@ class LocalInputMonitorTest : public testing::Test {
 
   void SetUp() override;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_ {
+  base::test::TaskEnvironment task_environment_ {
 #if defined(OS_WIN)
-    base::test::ScopedTaskEnvironment::MainThreadType::UI
+    base::test::TaskEnvironment::MainThreadType::UI
 #else   // !defined(OS_WIN)
     // Required to watch a file descriptor from NativeMessageProcessHost.
-    base::test::ScopedTaskEnvironment::MainThreadType::IO
+    base::test::TaskEnvironment::MainThreadType::IO
 #endif  // !defined(OS_WIN)
   };
 

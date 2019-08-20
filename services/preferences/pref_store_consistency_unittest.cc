@@ -202,7 +202,7 @@ class PersistentPrefStoreConsistencyTest : public testing::Test {
  private:
   scoped_refptr<PersistentPrefStore> pref_store_;
   std::unique_ptr<PersistentPrefStoreImpl> pref_store_impl_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(PersistentPrefStoreConsistencyTest, TwoPrefs) {

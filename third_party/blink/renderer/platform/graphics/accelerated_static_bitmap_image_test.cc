@@ -57,7 +57,7 @@ class AcceleratedStaticBitmapImageTest : public Test {
   void TearDown() override { SharedGpuContext::ResetForTesting(); }
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   MockGLES2InterfaceWithSyncTokenSupport gl_;
 };
 

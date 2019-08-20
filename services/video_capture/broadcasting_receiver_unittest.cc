@@ -63,7 +63,7 @@ class BroadcastingReceiverTest : public ::testing::Test {
   int32_t client_id_1_;
   int32_t client_id_2_;
   base::UnsafeSharedMemoryRegion shm_region_;
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(

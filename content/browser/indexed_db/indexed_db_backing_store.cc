@@ -830,6 +830,11 @@ V2SchemaCorruptionStatus IndexedDBBackingStore::HasV2SchemaCorruption() {
   return V2SchemaCorruptionStatus::kYes;
 }
 
+std::unique_ptr<IndexedDBBackingStore::Transaction>
+IndexedDBBackingStore::CreateTransaction() {
+  return std::make_unique<IndexedDBBackingStore::Transaction>(this);
+}
+
 leveldb::Status IndexedDBBackingStore::GetCompleteMetadata(
     std::vector<IndexedDBDatabaseMetadata>* output) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
@@ -1386,7 +1391,7 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
       ++iter_;
       WriteNextFile();
     } else {
-      std::move(callback_).Run(BlobWriteResult::FAILURE_ASYNC);
+      std::move(callback_).Run(BlobWriteResult::kFailure);
     }
   }
 
@@ -1416,12 +1421,12 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
     }
     if (iter_ == blobs_.end()) {
       DCHECK(!self_ref_.get());
-      std::move(callback_).Run(BlobWriteResult::SUCCESS_ASYNC);
+      std::move(callback_).Run(BlobWriteResult::kRunPhaseTwoAsync);
       return;
     } else {
       if (!backing_store_ ||
           !backing_store_->WriteBlobFile(database_id_, *iter_, this)) {
-        std::move(callback_).Run(BlobWriteResult::FAILURE_ASYNC);
+        std::move(callback_).Run(BlobWriteResult::kFailure);
         return;
       }
       waiting_for_callback_ = true;
@@ -3001,7 +3006,8 @@ Status IndexedDBBackingStore::Transaction::CommitPhaseOne(
     return WriteNewBlobs(&new_blob_entries, &new_files_to_write,
                          std::move(callback));
   } else {
-    return std::move(callback).Run(BlobWriteResult::SUCCESS_SYNC);
+    return std::move(callback).Run(
+        BlobWriteResult::kRunPhaseTwoAndReturnResult);
   }
 }
 
@@ -3133,21 +3139,21 @@ leveldb::Status IndexedDBBackingStore::Transaction::WriteNewBlobs(
           [](base::WeakPtr<IndexedDBBackingStore::Transaction> transaction,
              void* tracing_end_ptr, BlobWriteCallback final_callback,
              BlobWriteResult result) {
-            DCHECK_NE(result, BlobWriteResult::SUCCESS_SYNC);
+            DCHECK_NE(result, BlobWriteResult::kRunPhaseTwoAndReturnResult);
             IDB_ASYNC_TRACE_END(
                 "IndexedDBBackingStore::Transaction::WriteNewBlobs",
                 tracing_end_ptr);
-            Status leveldb_result = std::move(final_callback).Run(result);
+            leveldb::Status s = std::move(final_callback).Run(result);
             switch (result) {
-              case BlobWriteResult::FAILURE_ASYNC:
+              case BlobWriteResult::kFailure:
                 break;
-              case BlobWriteResult::SUCCESS_ASYNC:
-              case BlobWriteResult::SUCCESS_SYNC:
+              case BlobWriteResult::kRunPhaseTwoAsync:
+              case BlobWriteResult::kRunPhaseTwoAndReturnResult:
                 if (transaction)
                   transaction->chained_blob_writer_ = nullptr;
                 break;
             }
-            return leveldb_result;
+            return s;
           },
           ptr_factory_.GetWeakPtr(), this, std::move(callback)));
   return leveldb::Status::OK();

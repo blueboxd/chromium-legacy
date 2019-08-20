@@ -68,7 +68,7 @@ class BackgroundTracingAgentImplTest : public testing::Test {
   BackgroundTracingAgentClientRecorder* recorder() const { return recorder_; }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   mojo::Remote<tracing::mojom::BackgroundTracingAgentProvider> provider_;
   mojo::Remote<tracing::mojom::BackgroundTracingAgent> agent_;
   mojo::UniqueReceiverSet<tracing::mojom::BackgroundTracingAgentProvider>

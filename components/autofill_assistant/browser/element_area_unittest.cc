@@ -68,8 +68,7 @@ ACTION(DoNothing) {}
 class ElementAreaTest : public testing::Test {
  protected:
   ElementAreaTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         element_area_(&delegate_) {
     delegate_.SetWebController(&mock_web_controller_);
     delegate_.GetMutableSettings()->element_position_update_interval =
@@ -104,9 +103,9 @@ class ElementAreaTest : public testing::Test {
     reported_restricted_area_ = restricted_area;
   }
 
-  // scoped_task_environment_ must be first to guarantee other field
+  // task_environment_ must be first to guarantee other field
   // creation run in that environment.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   MockWebController mock_web_controller_;
   FakeScriptExecutorDelegate delegate_;
@@ -382,8 +381,7 @@ TEST_F(ElementAreaTest, ElementMovesWithTime) {
 
   EXPECT_THAT(reported_area_, ElementsAre(MatchingRectF(0, 25, 100, 50)));
 
-  scoped_task_environment_.FastForwardBy(
-      base::TimeDelta::FromMilliseconds(100));
+  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(100));
 
   // Updated area is available
   std::vector<RectF> rectangles;

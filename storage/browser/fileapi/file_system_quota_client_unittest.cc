@@ -232,7 +232,7 @@ class FileSystemQuotaClientTest : public testing::Test {
   }
 
   base::ScopedTempDir data_dir_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
   int64_t usage_;
   int additional_callback_count_;

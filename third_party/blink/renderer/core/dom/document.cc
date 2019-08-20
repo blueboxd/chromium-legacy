@@ -3144,15 +3144,17 @@ void Document::UnscheduleUseShadowTreeUpdate(SVGUseElement& element) {
 }
 
 void Document::UpdateUseShadowTreesIfNeeded() {
-  ScriptForbiddenScope forbid_script;
-
   if (use_elements_needing_update_.IsEmpty())
     return;
+
+  ScriptForbiddenScope forbid_script;
 
   HeapHashSet<Member<SVGUseElement>> elements;
   use_elements_needing_update_.swap(elements);
   for (SVGUseElement* element : elements)
     element->BuildPendingResource();
+
+  DCHECK(use_elements_needing_update_.IsEmpty());
 }
 
 StyleResolver* Document::GetStyleResolver() const {

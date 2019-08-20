@@ -297,7 +297,7 @@ class BrowsingHistoryServiceTest : public ::testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // Duplicates on the same day in the local timezone are removed, so set a
   // baseline time in local time.

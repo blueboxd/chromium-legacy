@@ -312,21 +312,21 @@ class ThreadCheckerMacroTest : public testing::Test {
 
   void ExpectDeathOnOtherThread() {
 #if DCHECK_IS_ON()
-    EXPECT_DCHECK_DEATH({ DCHECK_CALLED_ON_VALID_THREAD(my_thread_checker_); });
+    EXPECT_DCHECK_DEATH({ DCHECK_CALLED_ON_VALID_THREAD(thread_checker_); });
 #else
     // Happily no-ops on non-dcheck builds.
-    DCHECK_CALLED_ON_VALID_THREAD(my_thread_checker_);
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 #endif
   }
 
   void ExpectNoDeathOnOtherThreadAfterDetach() {
-    DCHECK_CALLED_ON_VALID_THREAD(my_thread_checker_);
-    DCHECK_CALLED_ON_VALID_THREAD(my_thread_checker_)
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_)
         << "Make sure it compiles when DCHECK is off";
   }
 
  protected:
-  THREAD_CHECKER(my_thread_checker_);
+  THREAD_CHECKER(thread_checker_);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ThreadCheckerMacroTest);
@@ -342,7 +342,7 @@ TEST_F(ThreadCheckerMacroTest, Macros) {
   RunCallbackOnNewThreadSynchronously(BindOnce(
       &ThreadCheckerMacroTest::ExpectDeathOnOtherThread, Unretained(this)));
 
-  DETACH_FROM_THREAD(my_thread_checker_);
+  DETACH_FROM_THREAD(thread_checker_);
 
   RunCallbackOnNewThreadSynchronously(
       BindOnce(&ThreadCheckerMacroTest::ExpectNoDeathOnOtherThreadAfterDetach,

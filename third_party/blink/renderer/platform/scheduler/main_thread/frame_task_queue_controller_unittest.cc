@@ -36,8 +36,8 @@ class FrameTaskQueueControllerTest : public testing::Test,
  public:
   FrameTaskQueueControllerTest()
       : task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME,
-            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED),
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME,
+            base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED),
         task_queue_created_count_(0) {}
 
   ~FrameTaskQueueControllerTest() override = default;
@@ -91,7 +91,7 @@ class FrameTaskQueueControllerTest : public testing::Test,
   size_t task_queue_created_count() const { return task_queue_created_count_; }
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<MainThreadSchedulerImpl> scheduler_;
   std::unique_ptr<PageSchedulerImpl> page_scheduler_;
   std::unique_ptr<FrameSchedulerImpl> frame_scheduler_;

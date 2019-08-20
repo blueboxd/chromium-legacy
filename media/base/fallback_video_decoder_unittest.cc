@@ -72,7 +72,7 @@ class FallbackVideoDecoderUnittest : public ::testing::TestWithParam<bool> {
 
   bool PreferredShouldSucceed() { return GetParam(); }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   StrictMock<MockVideoDecoder>* backup_decoder_;
   StrictMock<MockVideoDecoder>* preferred_decoder_;

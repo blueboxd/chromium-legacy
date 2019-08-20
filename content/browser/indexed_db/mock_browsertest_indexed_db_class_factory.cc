@@ -57,8 +57,7 @@ class IndexedDBTestDatabase : public IndexedDBDatabase {
       IndexedDBBackingStore* backing_store,
       IndexedDBFactory* factory,
       IndexedDBClassFactory* class_factory,
-      ErrorCallback error_callback,
-      base::OnceClosure destroy_me,
+      TasksAvailableCallback tasks_available_callback,
       std::unique_ptr<IndexedDBMetadataCoding> metadata_coding,
       const Identifier& unique_identifier,
       ScopesLockManager* transaction_lock_manager)
@@ -66,8 +65,7 @@ class IndexedDBTestDatabase : public IndexedDBDatabase {
                           backing_store,
                           factory,
                           class_factory,
-                          std::move(error_callback),
-                          std::move(destroy_me),
+                          std::move(tasks_available_callback),
                           std::move(metadata_coding),
                           unique_identifier,
                           transaction_lock_manager) {}
@@ -84,15 +82,15 @@ class IndexedDBTestTransaction : public IndexedDBTransaction {
   IndexedDBTestTransaction(
       int64_t id,
       IndexedDBConnection* connection,
-      ErrorCallback error_callback,
       const std::set<int64_t>& scope,
       blink::mojom::IDBTransactionMode mode,
+      TasksAvailableCallback tasks_available_callback,
       IndexedDBBackingStore::Transaction* backing_store_transaction)
       : IndexedDBTransaction(id,
                              connection,
-                             std::move(error_callback),
                              scope,
                              mode,
+                             std::move(tasks_available_callback),
                              backing_store_transaction) {}
   ~IndexedDBTestTransaction() override {}
 
@@ -368,16 +366,15 @@ MockBrowserTestIndexedDBClassFactory::CreateIndexedDBDatabase(
     const base::string16& name,
     IndexedDBBackingStore* backing_store,
     IndexedDBFactory* factory,
-    IndexedDBDatabase::ErrorCallback error_callback,
-    base::OnceClosure destroy_me,
+    TasksAvailableCallback tasks_available_callback,
     std::unique_ptr<IndexedDBMetadataCoding> metadata_coding,
     const IndexedDBDatabase::Identifier& unique_identifier,
     ScopesLockManager* transaction_lock_manager) {
   std::unique_ptr<IndexedDBTestDatabase> database =
       std::make_unique<IndexedDBTestDatabase>(
-          name, backing_store, factory, this, std::move(error_callback),
-          std::move(destroy_me), std::move(metadata_coding), unique_identifier,
-          transaction_lock_manager);
+          name, backing_store, factory, this,
+          std::move(tasks_available_callback), std::move(metadata_coding),
+          unique_identifier, transaction_lock_manager);
   leveldb::Status s = database->OpenInternal();
   if (!s.ok())
     database.reset();
@@ -388,12 +385,12 @@ std::unique_ptr<IndexedDBTransaction>
 MockBrowserTestIndexedDBClassFactory::CreateIndexedDBTransaction(
     int64_t id,
     IndexedDBConnection* connection,
-    ErrorCallback error_callback,
     const std::set<int64_t>& scope,
     blink::mojom::IDBTransactionMode mode,
+    TasksAvailableCallback tasks_available_callback,
     IndexedDBBackingStore::Transaction* backing_store_transaction) {
   return std::make_unique<IndexedDBTestTransaction>(
-      id, connection, std::move(error_callback), scope, mode,
+      id, connection, scope, mode, std::move(tasks_available_callback),
       backing_store_transaction);
 }
 

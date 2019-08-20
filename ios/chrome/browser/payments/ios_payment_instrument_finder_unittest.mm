@@ -40,8 +40,7 @@ class TestIOSPaymentInstrumentFinder final : public IOSPaymentInstrumentFinder {
 class PaymentRequestIOSPaymentInstrumentFinderTest : public PlatformTest {
  public:
   PaymentRequestIOSPaymentInstrumentFinderTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         shared_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)),
@@ -156,7 +155,7 @@ class PaymentRequestIOSPaymentInstrumentFinderTest : public PlatformTest {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
 

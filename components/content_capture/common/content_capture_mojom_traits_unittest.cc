@@ -32,7 +32,7 @@ class ContentCaptureStructTraitsTest : public testing::Test,
     std::move(callback).Run(i);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   mojo::BindingSet<TraitsTestService> traits_test_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentCaptureStructTraitsTest);

@@ -25,7 +25,7 @@ class AudioDeviceListenerMacTest : public testing::Test {
   AudioDeviceListenerMacTest() {
     // It's important to create the device listener from the message loop in
     // order to ensure we don't end up with unbalanced TaskObserver calls.
-    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+    task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(&AudioDeviceListenerMacTest::CreateDeviceListener,
                        base::Unretained(this)));
@@ -35,7 +35,7 @@ class AudioDeviceListenerMacTest : public testing::Test {
   virtual ~AudioDeviceListenerMacTest() {
     // It's important to destroy the device listener from the message loop in
     // order to ensure we don't end up with unbalanced TaskObserver calls.
-    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+    task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(&AudioDeviceListenerMacTest::DestroyDeviceListener,
                        base::Unretained(this)));
@@ -98,7 +98,7 @@ class AudioDeviceListenerMacTest : public testing::Test {
   MOCK_METHOD0(OnDeviceChange, void());
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<AudioDeviceListenerMac> device_listener_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioDeviceListenerMacTest);

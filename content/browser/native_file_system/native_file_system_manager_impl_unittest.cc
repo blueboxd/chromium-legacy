@@ -95,7 +95,7 @@ TEST_F(NativeFileSystemManagerImplTest, GetSandboxedFileSystem_Permissions) {
   manager_ptr_->GetSandboxedFileSystem(base::BindLambdaForTesting(
       [&](blink::mojom::NativeFileSystemErrorPtr result,
           blink::mojom::NativeFileSystemDirectoryHandlePtr handle) {
-        EXPECT_EQ(base::File::FILE_OK, result->error_code);
+        EXPECT_EQ(blink::mojom::NativeFileSystemStatus::kOk, result->status);
         root = std::move(handle);
         loop.Quit();
       }));

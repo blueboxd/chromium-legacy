@@ -105,7 +105,7 @@ class SyncBackendRegistrarTest : public testing::Test {
     }
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::Thread db_thread_;
   base::Thread sync_thread_;
 

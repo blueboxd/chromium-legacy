@@ -389,7 +389,7 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
 
   void RunUntilIdle() {
     timer_mock_task_runner_->RunUntilIdle();
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void SetCategoryRanker(std::unique_ptr<CategoryRanker> category_ranker) {
@@ -595,7 +595,7 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
   image_fetcher::FakeImageDecoder image_decoder_;
   std::unique_ptr<MockScheduler> scheduler_;
   RemoteSuggestionsStatusService* remote_suggestions_status_service_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   RemoteSuggestionsStatusService::StatusChangeCallback status_change_callback_;
 

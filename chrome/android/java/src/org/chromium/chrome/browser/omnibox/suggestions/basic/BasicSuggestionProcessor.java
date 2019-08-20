@@ -130,8 +130,6 @@ public class BasicSuggestionProcessor implements SuggestionProcessor {
         if (suggestion.isUrlSuggestion()) {
             if (suggestion.isStarred()) {
                 return SuggestionIcon.BOOKMARK;
-            } else if (suggestion.getType() == OmniboxSuggestionType.HISTORY_URL) {
-                return SuggestionIcon.HISTORY;
             } else {
                 return SuggestionIcon.GLOBE;
             }

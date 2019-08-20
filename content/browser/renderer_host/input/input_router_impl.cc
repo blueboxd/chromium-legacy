@@ -664,9 +664,8 @@ void InputRouterImpl::MouseWheelEventHandled(
   if (overscroll)
     DidOverscroll(overscroll.value());
 
-  wheel_event_queue_.ProcessMouseWheelAck(source, state, event.latency);
-  touchpad_pinch_event_queue_.ProcessMouseWheelAck(source, state,
-                                                   event.latency);
+  wheel_event_queue_.ProcessMouseWheelAck(source, state, event);
+  touchpad_pinch_event_queue_.ProcessMouseWheelAck(source, state, event);
 }
 
 void InputRouterImpl::OnHasTouchEventHandlers(bool has_handlers) {

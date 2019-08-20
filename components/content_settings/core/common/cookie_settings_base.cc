@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "components/content_settings/core/common/cookie_settings_base.h"
+
 #include "base/debug/stack_trace.h"
 #include "base/debug/task_trace.h"
 #include "base/feature_list.h"
+#include "base/logging.h"
 #include "components/content_settings/core/common/features.h"
 #include "net/base/net_errors.h"
 #include "net/base/static_cookie_policy.h"
@@ -65,7 +67,8 @@ bool CookieSettingsBase::IsCookieAccessAllowed(
     const GURL& url,
     const GURL& first_party_url) const {
   DCHECK(!base::FeatureList::IsEnabled(kImprovedCookieControls) ||
-         !first_party_url.is_empty() || url.is_empty());
+         !first_party_url.is_empty() || url.is_empty())
+      << url;
   ContentSetting setting;
   GetCookieSetting(url, first_party_url, nullptr, &setting);
   return IsAllowed(setting);
@@ -96,6 +99,23 @@ bool CookieSettingsBase::IsCookieSessionOnly(const GURL& origin) const {
   return setting == CONTENT_SETTING_SESSION_ONLY;
 }
 
+net::CookieAccessSemantics
+CookieSettingsBase::GetCookieAccessSemanticsForDomain(
+    const GURL& cookie_domain) const {
+  ContentSetting setting;
+  GetSettingForLegacyCookieAccess(cookie_domain, &setting);
+  DCHECK(IsValidSettingForLegacyAccess(setting));
+  switch (setting) {
+    case CONTENT_SETTING_ALLOW:
+      return net::CookieAccessSemantics::LEGACY;
+    case CONTENT_SETTING_BLOCK:
+      return net::CookieAccessSemantics::NONLEGACY;
+    default:
+      NOTREACHED();
+  }
+  return net::CookieAccessSemantics::UNKNOWN;
+}
+
 // static
 bool CookieSettingsBase::IsValidSetting(ContentSetting setting) {
   return (setting == CONTENT_SETTING_ALLOW ||
@@ -108,6 +128,11 @@ bool CookieSettingsBase::IsAllowed(ContentSetting setting) {
   DCHECK(IsValidSetting(setting));
   return (setting == CONTENT_SETTING_ALLOW ||
           setting == CONTENT_SETTING_SESSION_ONLY);
+}
+
+// static
+bool CookieSettingsBase::IsValidSettingForLegacyAccess(ContentSetting setting) {
+  return (setting == CONTENT_SETTING_ALLOW || setting == CONTENT_SETTING_BLOCK);
 }
 
 }  // namespace content_settings

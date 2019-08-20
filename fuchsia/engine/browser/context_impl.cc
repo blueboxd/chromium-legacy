@@ -25,6 +25,15 @@ ContextImpl::ContextImpl(content::BrowserContext* browser_context)
 
 ContextImpl::~ContextImpl() = default;
 
+fidl::InterfaceHandle<fuchsia::web::Frame>
+ContextImpl::CreateFrameForPopupWebContents(
+    std::unique_ptr<content::WebContents> web_contents) {
+  fidl::InterfaceHandle<fuchsia::web::Frame> frame_handle;
+  frames_.insert(std::make_unique<FrameImpl>(std::move(web_contents), this,
+                                             frame_handle.NewRequest()));
+  return frame_handle;
+}
+
 void ContextImpl::DestroyFrame(FrameImpl* frame) {
   DCHECK(frames_.find(frame) != frames_.end());
   frames_.erase(frames_.find(frame));

@@ -116,9 +116,9 @@ class ProfileOAuth2TokenServiceTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::
-          IO};  // net:: stuff needs IO message loop.
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::IO};  // net:: stuff needs IO
+                                                         // message loop.
   network::TestURLLoaderFactory* test_url_loader_factory_ = nullptr;
   FakeProfileOAuth2TokenServiceDelegate* delegate_ptr_ = nullptr;  // Not owned.
   std::unique_ptr<ProfileOAuth2TokenService> oauth2_service_;

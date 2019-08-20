@@ -125,7 +125,7 @@ class MojoHostResolverImplTest : public testing::Test {
     }
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   net::MockHostResolver mock_host_resolver_;
   std::unique_ptr<MojoHostResolverImpl> resolver_service_;

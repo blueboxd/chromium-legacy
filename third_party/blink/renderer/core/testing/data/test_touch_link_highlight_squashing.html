@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+
+<style>
+  .abs {
+    position: absolute;
+    top: 5;
+    left: 5;
+    width: 512px;
+    height: 512px;
+  }
+
+  #target {
+    display: block;
+    transform: scale(0.5);
+    transform-origin: left top;
+    background-color: green;
+  }
+</style>
+<div class=abs style="will-change: transform; pointer-events: none;"></div>
+<a class=abs id=target href="javascript:void(0)"></a>

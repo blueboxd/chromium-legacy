@@ -142,37 +142,37 @@ class SessionMonitorTest : public mojom::CastMessageChannel,
           "\"wifiFcsError\": [12, 13, 12, 12]}"  // This will be ignored.
           "}";
       inbound_channel_->Send(message.Clone());
-      scoped_task_environment_.RunUntilIdle();
+      task_environment_.RunUntilIdle();
     }
   }
 
   void StartStreamingSession() {
     cast_environment_ = new media::cast::CastEnvironment(
         base::DefaultTickClock::GetInstance(),
-        scoped_task_environment_.GetMainThreadTaskRunner(),
-        scoped_task_environment_.GetMainThreadTaskRunner(),
-        scoped_task_environment_.GetMainThreadTaskRunner());
+        task_environment_.GetMainThreadTaskRunner(),
+        task_environment_.GetMainThreadTaskRunner(),
+        task_environment_.GetMainThreadTaskRunner());
     EXPECT_TRUE(session_monitor_);
     auto wifi_status_monitor =
         std::make_unique<WifiStatusMonitor>(&message_dispatcher_);
     session_monitor_->StartStreamingSession(
         cast_environment_, std::move(wifi_status_monitor),
         SessionMonitor::AUDIO_AND_VIDEO, false /* is_remoting */);
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void StopStreamingSession() {
     EXPECT_TRUE(session_monitor_);
     session_monitor_->StopStreamingSession();
     cast_environment_ = nullptr;
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   std::vector<SessionMonitor::EventsAndStats> AssembleBundleAndVerify(
       const std::vector<int32_t>& bundle_sizes) {
     std::vector<SessionMonitor::EventsAndStats> bundles =
         session_monitor_->AssembleBundlesAndClear(bundle_sizes);
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     EXPECT_EQ(bundle_sizes.size(), bundles.size());
     for (size_t i = 0; i < bundles.size(); ++i) {
       EXPECT_FALSE(bundles[i].first.empty());
@@ -197,19 +197,19 @@ class SessionMonitorTest : public mojom::CastMessageChannel,
     url_loader_factory_->AddResponse(
         "http://" + receiver_address_.ToString() + ":8008/setup/eureka_info",
         setup_info);
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void TakeSnapshot() {
     ASSERT_TRUE(session_monitor_);
     session_monitor_->TakeSnapshot();
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void ReportError(SessionError error) {
     ASSERT_TRUE(session_monitor_);
     session_monitor_->OnStreamingError(error);
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
  private:
@@ -219,7 +219,7 @@ class SessionMonitorTest : public mojom::CastMessageChannel,
     return outbound_channel_ptr;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   const net::IPAddress receiver_address_;
   mojo::Binding<mojom::CastMessageChannel> binding_;
   mojom::CastMessageChannelPtr inbound_channel_;

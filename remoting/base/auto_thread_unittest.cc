@@ -57,20 +57,20 @@ namespace remoting {
 class AutoThreadTest : public testing::Test {
  public:
   void RunMessageLoop() {
-    // Release |main_task_runner_|, then run |scoped_task_environment_| until
+    // Release |main_task_runner_|, then run |task_environment_| until
     // other references created in tests are gone.  We also post a delayed quit
     // task to |message_loop_| so the test will not hang on failure.
     main_task_runner_ = NULL;
     base::RunLoop run_loop;
     quit_closure_ = run_loop.QuitClosure();
-    scoped_task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
+    task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
         FROM_HERE, run_loop.QuitClosure(), base::TimeDelta::FromSeconds(5));
     run_loop.Run();
   }
 
   void SetUp() override {
     main_task_runner_ = new AutoThreadTaskRunner(
-        scoped_task_environment_.GetMainThreadTaskRunner(),
+        task_environment_.GetMainThreadTaskRunner(),
         base::Bind(&AutoThreadTest::QuitMainMessageLoop,
                    base::Unretained(this)));
   }
@@ -83,7 +83,7 @@ class AutoThreadTest : public testing::Test {
  protected:
   void QuitMainMessageLoop() { std::move(quit_closure_).Run(); }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::OnceClosure quit_closure_;
   scoped_refptr<AutoThreadTaskRunner> main_task_runner_;
 };

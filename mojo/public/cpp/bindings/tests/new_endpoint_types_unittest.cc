@@ -179,7 +179,7 @@ TEST(NewEndpointTypesTest, BasicUsage) {
   // demonstrate look & feel as well as to ensure basic completeness and
   // correctness.
 
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
 
   // A Remote<T> exposes a callable T interface which sends messages to a remote
   // implementation of T. Here we create a new unbound Remote which will control
@@ -263,7 +263,7 @@ TEST(NewEndpointTypesTest, BasicUsage) {
 }
 
 TEST(NewEndpointTypesTest, AssociatedTypes) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
 
   mojo::Remote<mojom::AssociatedPingerHost> host;
   AssociatedPingerHostImpl host_impl(host.BindNewPipeAndPassReceiver());

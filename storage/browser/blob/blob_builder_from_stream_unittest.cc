@@ -176,7 +176,7 @@ class BlobBuilderFromStreamTestWithDelayedLimits
   const std::string kContentDisposition = "disposition";
 
   base::ScopedTempDir data_dir_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   BlobStorageLimits limits_;
   std::unique_ptr<BlobStorageContext> context_;
 };

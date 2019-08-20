@@ -49,7 +49,7 @@ class DeviceMediaToMojoAdapterTest : public ::testing::Test {
   std::unique_ptr<DeviceMediaToMojoAdapter> adapter_;
   std::unique_ptr<MockReceiver> mock_receiver_;
   mojom::ReceiverPtr receiver_;
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(DeviceMediaToMojoAdapterTest,

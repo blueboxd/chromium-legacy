@@ -122,7 +122,7 @@ class HttpAuthManagerTest : public testing::Test {
 
   HttpAuthManagerImpl* httpauth_manager() { return httpauth_manager_.get(); }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<MockPasswordStore> store_;
   testing::NiceMock<MockPasswordManagerClient> client_;
   std::unique_ptr<HttpAuthManagerImpl> httpauth_manager_;

@@ -38,13 +38,13 @@ constexpr base::TimeDelta kLongHangDeadline = base::TimeDelta::FromMinutes(30);
 class AudioThreadHangMonitorTest : public Test {
  public:
   AudioThreadHangMonitorTest()
-      : task_env_(base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
+      : task_env_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         histograms_(),
         audio_thread_("Audio thread"),
         hang_monitor_({nullptr, base::OnTaskRunnerDeleter(nullptr)}) {
     CHECK(audio_thread_.Start());
     // We must inject the main thread task runner as the hang monitor task
-    // runner since ScopedTaskEnvironment::FastForwardBy only works for the main
+    // runner since TaskEnvironment::FastForwardBy only works for the main
     // thread.
     hang_monitor_ = AudioThreadHangMonitor::Create(
         HangAction::kDoNothing, base::nullopt, task_env_.GetMockTickClock(),
@@ -87,7 +87,7 @@ class AudioThreadHangMonitorTest : public Test {
   MOCK_METHOD0(HangActionTerminate, void());
 
   base::WaitableEvent event_;
-  base::test::ScopedTaskEnvironment task_env_;
+  base::test::TaskEnvironment task_env_;
   base::HistogramTester histograms_;
   base::Thread audio_thread_;
   AudioThreadHangMonitor::Ptr hang_monitor_;

@@ -39,6 +39,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/optimization_guide/hint_cache_store.h"
 #include "components/optimization_guide/optimization_guide_features.h"
+#include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/proto_database_provider_test_base.h"
 #include "components/optimization_guide/top_host_provider.h"
@@ -396,7 +397,7 @@ class PreviewsDeciderImplTest
       : field_trial_list_(nullptr),
         previews_decider_impl_(nullptr),
         optimization_guide_service_(
-            scoped_task_environment_.GetMainThreadTaskRunner()) {
+            task_environment_.GetMainThreadTaskRunner()) {
     clock_.SetNow(base::Time::Now());
 
     network_quality_tracker_.ReportEffectiveConnectionTypeForTesting(
@@ -434,11 +435,12 @@ class PreviewsDeciderImplTest
         std::make_unique<TestPreviewsDeciderImpl>(&clock_);
     previews_decider_impl_ = previews_decider_impl.get();
     pref_service_ = std::make_unique<TestingPrefServiceSimple>();
+    optimization_guide::prefs::RegisterProfilePrefs(pref_service_->registry());
     ui_service_.reset(new TestPreviewsUIService(
         std::move(previews_decider_impl), std::make_unique<TestOptOutStore>(),
         std::make_unique<TestPreviewsOptimizationGuide>(
             &optimization_guide_service_,
-            scoped_task_environment_.GetMainThreadTaskRunner(),
+            task_environment_.GetMainThreadTaskRunner(),
             base::CreateSequencedTaskRunner({base::ThreadPool(),
                                              base::MayBlock(),
                                              base::TaskPriority::BEST_EFFORT}),
@@ -451,7 +453,7 @@ class PreviewsDeciderImplTest
 
   void InitializeUIService() {
     InitializeUIServiceWithoutWaitingForBlackList();
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -480,7 +482,7 @@ class PreviewsDeciderImplTest
   base::SimpleTestClock clock_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::FieldTrialList field_trial_list_;
   TestPreviewsDeciderImpl* previews_decider_impl_;
   optimization_guide::OptimizationGuideService optimization_guide_service_;

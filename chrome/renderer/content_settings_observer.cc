@@ -50,6 +50,7 @@
 
 using blink::WebDocument;
 using blink::WebFrame;
+using blink::WebLocalFrame;
 using blink::WebSecurityOrigin;
 using blink::WebString;
 using blink::WebURL;
@@ -251,20 +252,21 @@ void ContentSettingsObserver::OnContentSettingsRendererRequest(
 }
 
 bool ContentSettingsObserver::AllowDatabase() {
-  WebFrame* frame = render_frame()->GetWebFrame();
+  WebLocalFrame* frame = render_frame()->GetWebFrame();
   if (IsUniqueFrame(frame))
     return false;
 
   bool result = false;
   Send(new ChromeViewHostMsg_AllowDatabase(
-      routing_id(), url::Origin(frame->GetSecurityOrigin()).GetURL(),
-      url::Origin(frame->Top()->GetSecurityOrigin()).GetURL(), &result));
+      routing_id(), frame->GetSecurityOrigin(),
+      frame->GetDocument().SiteForCookies(),
+      frame->GetDocument().TopFrameOrigin(), &result));
   return result;
 }
 
 void ContentSettingsObserver::RequestFileSystemAccessAsync(
     base::OnceCallback<void(bool)> callback) {
-  WebFrame* frame = render_frame()->GetWebFrame();
+  WebLocalFrame* frame = render_frame()->GetWebFrame();
   if (IsUniqueFrame(frame)) {
     std::move(callback).Run(false);
     return;
@@ -279,9 +281,9 @@ void ContentSettingsObserver::RequestFileSystemAccessAsync(
   DCHECK(inserted);
 
   Send(new ChromeViewHostMsg_RequestFileSystemAccessAsync(
-      routing_id(), current_request_id_,
-      url::Origin(frame->GetSecurityOrigin()).GetURL(),
-      url::Origin(frame->Top()->GetSecurityOrigin()).GetURL()));
+      routing_id(), current_request_id_, frame->GetSecurityOrigin(),
+      frame->GetDocument().SiteForCookies(),
+      frame->GetDocument().TopFrameOrigin()));
 }
 
 bool ContentSettingsObserver::AllowImage(bool enabled_per_settings,
@@ -306,27 +308,29 @@ bool ContentSettingsObserver::AllowImage(bool enabled_per_settings,
 }
 
 bool ContentSettingsObserver::AllowIndexedDB(const WebSecurityOrigin& origin) {
-  WebFrame* frame = render_frame()->GetWebFrame();
+  WebLocalFrame* frame = render_frame()->GetWebFrame();
   if (IsUniqueFrame(frame))
     return false;
 
   bool result = false;
   Send(new ChromeViewHostMsg_AllowIndexedDB(
-      routing_id(), url::Origin(frame->GetSecurityOrigin()).GetURL(),
-      url::Origin(frame->Top()->GetSecurityOrigin()).GetURL(), &result));
+      routing_id(), frame->GetSecurityOrigin(),
+      frame->GetDocument().SiteForCookies(),
+      frame->GetDocument().TopFrameOrigin(), &result));
   return result;
 }
 
 bool ContentSettingsObserver::AllowCacheStorage(
     const blink::WebSecurityOrigin& origin) {
-  WebFrame* frame = render_frame()->GetWebFrame();
+  WebLocalFrame* frame = render_frame()->GetWebFrame();
   if (IsUniqueFrame(frame))
     return false;
 
   bool result = false;
   Send(new ChromeViewHostMsg_AllowCacheStorage(
-      routing_id(), url::Origin(frame->GetSecurityOrigin()).GetURL(),
-      url::Origin(frame->Top()->GetSecurityOrigin()).GetURL(), &result));
+      routing_id(), frame->GetSecurityOrigin(),
+      frame->GetDocument().SiteForCookies(),
+      frame->GetDocument().TopFrameOrigin(), &result));
   return result;
 }
 
@@ -380,7 +384,7 @@ bool ContentSettingsObserver::AllowScriptFromSource(
 }
 
 bool ContentSettingsObserver::AllowStorage(bool local) {
-  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
+  WebLocalFrame* frame = render_frame()->GetWebFrame();
   if (IsUniqueFrame(frame))
     return false;
 
@@ -392,8 +396,9 @@ bool ContentSettingsObserver::AllowStorage(bool local) {
 
   bool result = false;
   Send(new ChromeViewHostMsg_AllowDOMStorage(
-      routing_id(), url::Origin(frame->GetSecurityOrigin()).GetURL(),
-      url::Origin(frame->Top()->GetSecurityOrigin()).GetURL(), local, &result));
+      routing_id(), frame->GetSecurityOrigin(),
+      frame->GetDocument().SiteForCookies(),
+      frame->GetDocument().TopFrameOrigin(), local, &result));
   cached_storage_permissions_[key] = result;
   return result;
 }

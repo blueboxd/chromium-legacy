@@ -1978,4 +1978,16 @@ TEST_F(TextfieldModelTest, SetCompositionFromExistingText_Empty) {
   EXPECT_STR_EQ("abc", model.text());
 }
 
+TEST_F(TextfieldModelTest, SetCompositionFromExistingText_OutOfBounds) {
+  TextfieldModel model(nullptr);
+  model.SetText(base::string16());
+
+  model.SetCompositionFromExistingText(gfx::Range(0, 2));
+  EXPECT_FALSE(model.HasCompositionText());
+
+  model.SetText(base::ASCIIToUTF16("abc"));
+  model.SetCompositionFromExistingText(gfx::Range(1, 4));
+  EXPECT_FALSE(model.HasCompositionText());
+}
+
 }  // namespace views

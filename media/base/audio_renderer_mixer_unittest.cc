@@ -351,7 +351,7 @@ class AudioRendererMixerTest
  protected:
   virtual ~AudioRendererMixerTest() = default;
 
-  base::test::ScopedTaskEnvironment task_env_;
+  base::test::TaskEnvironment task_env_;
   scoped_refptr<MockAudioRendererSink> sink_;
   std::unique_ptr<AudioRendererMixer> mixer_;
   AudioRendererSink::RenderCallback* mixer_callback_;

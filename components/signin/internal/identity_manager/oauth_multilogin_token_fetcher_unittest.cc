@@ -73,7 +73,7 @@ class OAuthMultiloginTokenFetcherTest : public testing::Test {
     error_ = error;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   bool success_callback_called_ = false;
   bool failure_callback_called_ = false;

@@ -61,7 +61,7 @@ class ChromeWebClientTest : public PlatformTest {
   ios::ChromeBrowserState* browser_state() { return browser_state_.get(); }
 
  private:
-  base::test::ScopedTaskEnvironment environment_;
+  base::test::TaskEnvironment environment_;
   std::unique_ptr<ios::ChromeBrowserState> browser_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeWebClientTest);

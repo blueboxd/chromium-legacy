@@ -109,7 +109,7 @@ class DownloadDBCacheTest : public testing::Test {
   leveldb_proto::test::FakeDB<download_pb::DownloadDBEntry>* db_;
   std::unique_ptr<DownloadDBCache> db_cache_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   DISALLOW_COPY_AND_ASSIGN(DownloadDBCacheTest);
 };
 

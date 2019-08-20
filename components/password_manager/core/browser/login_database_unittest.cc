@@ -273,7 +273,7 @@ class LoginDatabaseTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   base::FilePath file_;
   std::unique_ptr<LoginDatabase> db_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(LoginDatabaseTest, Logins) {
@@ -1934,7 +1934,7 @@ class LoginDatabaseMigrationTest : public testing::TestWithParam<int> {
  private:
   base::FilePath database_dump_location_;
   base::ScopedTempDir temp_dir_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 void LoginDatabaseMigrationTest::MigrationToVCurrent(
@@ -2088,12 +2088,12 @@ class LoginDatabaseUndecryptableLoginsTest : public testing::Test {
     return testing_local_state_;
   }
 
-  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
  private:
   base::FilePath database_path_;
   base::ScopedTempDir temp_dir_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestingPrefServiceSimple testing_local_state_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginDatabaseUndecryptableLoginsTest);

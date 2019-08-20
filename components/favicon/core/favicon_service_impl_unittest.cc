@@ -17,7 +17,7 @@ namespace favicon {
 namespace {
 
 TEST(FaviconServiceImplTest, ShouldCacheUnableToDownloadFavicons) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   base::ScopedTempDir history_dir;
   CHECK(history_dir.CreateUniqueTempDir());
   std::unique_ptr<history::HistoryService> history_service =

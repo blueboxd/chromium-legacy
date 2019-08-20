@@ -17,6 +17,7 @@
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
+#include "content/browser/indexed_db/indexed_db_factory_impl.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/browser/indexed_db/transaction_impl.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
@@ -57,7 +58,7 @@ DatabaseImpl::DatabaseImpl(std::unique_ptr<IndexedDBConnection> connection,
 DatabaseImpl::~DatabaseImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (connection_->IsConnected())
-    connection_->Close();
+    connection_->AbortTransactionsAndClose();
   indexed_db_context_->ConnectionClosed(origin_, connection_.get());
 }
 
@@ -86,8 +87,8 @@ void DatabaseImpl::RenameObjectStore(int64_t transaction_id,
   leveldb::Status status = connection_->database()->RenameObjectStoreOperation(
       object_store_id, new_name, transaction);
   if (!status.ok()) {
-    connection_->database()->error_callback().Run(
-        status, "Internal error renaming object store.");
+    indexed_db_context_->GetIDBFactory()->OnDatabaseError(
+        origin_, status, "Internal error renaming object store.");
   }
 }
 
@@ -127,7 +128,7 @@ void DatabaseImpl::Close() {
   if (!connection_->IsConnected())
     return;
 
-  connection_->Close();
+  connection_->AbortTransactionsAndClose();
 }
 
 void DatabaseImpl::VersionChangeIgnored() {
@@ -290,8 +291,8 @@ void DatabaseImpl::SetIndexKeys(
       object_store_id, std::make_unique<IndexedDBKey>(primary_key), index_keys,
       transaction);
   if (!status.ok()) {
-    connection_->database()->error_callback().Run(
-        status, "Internal error setting index keys.");
+    indexed_db_context_->GetIDBFactory()->OnDatabaseError(
+        origin_, status, "Internal error setting index keys.");
   }
 }
 
@@ -516,8 +517,8 @@ void DatabaseImpl::CreateIndex(int64_t transaction_id,
       object_store_id, index_id, name, key_path, unique, multi_entry,
       transaction);
   if (!status.ok()) {
-    connection_->database()->error_callback().Run(
-        status, "Internal error creating an index.");
+    indexed_db_context_->GetIDBFactory()->OnDatabaseError(
+        origin_, status, "Internal error creating an index.");
   }
 }
 

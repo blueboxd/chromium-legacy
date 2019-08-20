@@ -198,7 +198,7 @@ class DatabaseQuotaClientTest : public testing::Test {
     delete_status_ = status;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   int64_t usage_;
   std::set<url::Origin> origins_;
   blink::mojom::QuotaStatusCode delete_status_;

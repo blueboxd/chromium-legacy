@@ -43,7 +43,7 @@ class RunnablesTest : public ::testing::Test {
   bool callback_called() const { return callback_called_; }
 
   // Provide a message loop for use by TestExecutor instances.
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   bool callback_called_ = false;

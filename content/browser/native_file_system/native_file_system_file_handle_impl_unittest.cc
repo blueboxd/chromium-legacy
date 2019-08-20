@@ -138,7 +138,8 @@ TEST_F(NativeFileSystemFileHandleImplTest, CreateFileWriterOverLimitNotOK) {
         base::BindLambdaForTesting(
             [&](blink::mojom::NativeFileSystemErrorPtr result,
                 blink::mojom::NativeFileSystemFileWriterPtr writer_ptr) {
-              EXPECT_EQ(base::File::FILE_OK, result->error_code);
+              EXPECT_EQ(blink::mojom::NativeFileSystemStatus::kOk,
+                        result->status);
               EXPECT_EQ("", ReadFile(swap_url));
               writers.push_back(std::move(writer_ptr));
               loop.Quit();
@@ -152,7 +153,8 @@ TEST_F(NativeFileSystemFileHandleImplTest, CreateFileWriterOverLimitNotOK) {
       base::BindLambdaForTesting(
           [&](blink::mojom::NativeFileSystemErrorPtr result,
               blink::mojom::NativeFileSystemFileWriterPtr writer_ptr) {
-            EXPECT_EQ(base::File::FILE_ERROR_MAX, result->error_code);
+            EXPECT_EQ(blink::mojom::NativeFileSystemStatus::kOperationFailed,
+                      result->status);
             loop.Quit();
           }));
   loop.Run();

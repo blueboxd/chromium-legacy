@@ -45,6 +45,10 @@ component("client") {
     "//components/crash/core/common:crash_key",
     "//components/gwp_asan/common",
   ]
+
+  if (is_android) {
+    deps += [ "//components/crash/content/app" ]
+  }
 }
 
 source_set("unit_tests") {

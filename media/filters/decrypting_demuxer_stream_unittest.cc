@@ -69,7 +69,7 @@ class DecryptingDemuxerStreamTest : public testing::Test {
  public:
   DecryptingDemuxerStreamTest()
       : demuxer_stream_(new DecryptingDemuxerStream(
-            scoped_task_environment_.GetMainThreadTaskRunner(),
+            task_environment_.GetMainThreadTaskRunner(),
             &media_log_,
             base::Bind(&DecryptingDemuxerStreamTest::OnWaiting,
                        base::Unretained(this)))),
@@ -264,7 +264,7 @@ class DecryptingDemuxerStreamTest : public testing::Test {
                void(DemuxerStream::Status, scoped_refptr<DecoderBuffer>));
   MOCK_METHOD1(OnWaiting, void(WaitingReason));
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   StrictMock<MockMediaLog> media_log_;
   std::unique_ptr<DecryptingDemuxerStream> demuxer_stream_;
   std::unique_ptr<StrictMock<MockCdmContext>> cdm_context_;

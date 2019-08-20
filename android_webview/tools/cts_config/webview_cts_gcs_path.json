@@ -266,5 +266,34 @@
         "apk": "android-cts/testcases/CtsWebViewStartupApp.apk"
       }
     ]
+  },
+  "P": {
+    "arch": {
+      "arm64": {
+	"filename": "arm64/P/android-cts-arm64-9.0_r8.zip",
+        "_origin": "aosp-pie-cts-release@9.0_r8",
+        "unzip_dir": "arm64/P/9.0_r8/"
+      },
+      "x86": {
+	"filename": "x86/P/android-cts-x86-9.0_r8.zip",
+        "_origin": "aosp-pie-cts-release@9.0_r8",
+        "unzip_dir": "x86/P/9.0_r8/"
+      }
+    },
+    "test_runs": [
+      {
+        "apk": "android-cts/testcases/CtsWebkitTestCases.apk",
+        "excludes": [
+          {
+            "match": "android.webkit.cts.WebViewTest#testGetContentHeight",
+            "_bug_id": "crbug.com/967173"
+          }
+        ]
+      },
+      {
+        "apk": "android-cts/testcases/CtsWebViewStartupApp.apk"
+      }
+    ]
   }
+
 }

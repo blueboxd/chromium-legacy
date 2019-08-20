@@ -84,9 +84,11 @@ class MODULES_EXPORT IDBFactory final : public ScriptWrappable {
                                            ExceptionState&,
                                            bool);
 
-  bool AllowIndexedDB(ExecutionContext* execution_context);
+  bool AllowIndexedDB(ScriptState* script_state);
+  bool CachedAllowIndexedDB(ScriptState* script_state);
 
   std::unique_ptr<WebIDBFactory> web_idb_factory_;
+  base::Optional<bool> cached_allowed_;
 };
 
 }  // namespace blink

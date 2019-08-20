@@ -55,8 +55,7 @@ bool WriteStringToFile(const base::FilePath path, const std::string& data) {
 class UserCloudPolicyStoreTest : public testing::Test {
  public:
   UserCloudPolicyStoreTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
     ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
@@ -135,7 +134,7 @@ class UserCloudPolicyStoreTest : public testing::Test {
   std::unique_ptr<UserCloudPolicyStore> store_;
   std::unique_ptr<MockCloudExternalDataManager> external_data_manager_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   base::ScopedTempDir tmp_dir_;
 

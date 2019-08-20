@@ -98,14 +98,14 @@ class GCMAccountTracker : public AccountTracker::Observer,
 
   // Maps account keys to account states. Keyed by account_ids as used by
   // IdentityManager.
-  typedef std::map<std::string, AccountInfo> AccountInfos;
+  typedef std::map<CoreAccountId, AccountInfo> AccountInfos;
 
   // AccountTracker::Observer overrides.
   void OnAccountSignInChanged(const AccountIds& ids,
                               bool is_signed_in) override;
 
   void OnAccessTokenFetchCompleteForAccount(
-      std::string account_id,
+      CoreAccountId account_id,
       GoogleServiceAuthError error,
       signin::AccessTokenInfo access_token_info);
 
@@ -156,7 +156,7 @@ class GCMAccountTracker : public AccountTracker::Observer,
   // completion or upon signout of the account for which the request is being
   // made.
   using AccountIDToTokenFetcherMap =
-      std::map<std::string, std::unique_ptr<signin::AccessTokenFetcher>>;
+      std::map<CoreAccountId, std::unique_ptr<signin::AccessTokenFetcher>>;
   AccountIDToTokenFetcherMap pending_token_requests_;
 
   // Creates weak pointers used to postpone reporting tokens. See

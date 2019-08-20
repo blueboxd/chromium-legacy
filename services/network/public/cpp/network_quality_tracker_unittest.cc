@@ -167,8 +167,7 @@ class TestRTTAndThroughputEstimatesObserver
 class NetworkQualityTrackerTest : public testing::Test {
  public:
   NetworkQualityTrackerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {
     network::mojom::NetworkServicePtr network_service_ptr;
     network::mojom::NetworkServiceRequest network_service_request =
         mojo::MakeRequest(&network_service_ptr);
@@ -211,7 +210,7 @@ class NetworkQualityTrackerTest : public testing::Test {
     return network_service_.get();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<network::NetworkService> network_service_;
   std::unique_ptr<NetworkQualityTracker> tracker_;
   std::unique_ptr<TestEffectiveConnectionTypeObserver> ect_observer_;

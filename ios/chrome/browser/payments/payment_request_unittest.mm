@@ -103,7 +103,7 @@ class PaymentRequestTest : public PlatformTest {
     return options;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   autofill::TestPersonalDataManager test_personal_data_manager_;
   web::TestWebState web_state_;

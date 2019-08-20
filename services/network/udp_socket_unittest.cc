@@ -189,8 +189,7 @@ class ZeroByteReadUDPSocket : public SocketWrapperTestImpl {
 class UDPSocketTest : public testing::Test {
  public:
   UDPSocketTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         factory_(nullptr /*netlog*/, &url_request_context_) {}
   ~UDPSocketTest() override {}
 
@@ -207,7 +206,7 @@ class UDPSocketTest : public testing::Test {
   SocketFactory* factory() { return &factory_; }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   net::TestURLRequestContext url_request_context_;
   SocketFactory factory_;
 

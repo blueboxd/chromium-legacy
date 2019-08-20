@@ -122,7 +122,7 @@ class HistoryDeleteDirectiveHandlerTest : public testing::Test {
   DeleteDirectiveHandler* handler() { return delete_directive_handler_.get(); }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir test_dir_;
   scoped_refptr<HistoryBackend> history_backend_;
   std::unique_ptr<DeleteDirectiveHandler> delete_directive_handler_;

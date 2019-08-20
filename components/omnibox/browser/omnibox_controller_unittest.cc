@@ -33,7 +33,7 @@ class OmniboxControllerTest : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<TestOmniboxClient> omnibox_client_;
   std::unique_ptr<OmniboxController> omnibox_controller_;
 

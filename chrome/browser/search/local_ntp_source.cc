@@ -605,9 +605,6 @@ class LocalNtpSource::SearchConfigurationProvider
           "enableShortcutsGrid",
           base::FeatureList::IsEnabled(features::kGridLayoutForNtpShortcuts));
       config_data.SetBoolean(
-          "hideShortcuts",
-          base::FeatureList::IsEnabled(features::kHideShortcutsOnNtp));
-      config_data.SetBoolean(
           "showFakeboxPlaceholderOnFocus",
           base::FeatureList::IsEnabled(
               omnibox::kUIExperimentShowPlaceholderWhenCaretShowing));

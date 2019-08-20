@@ -94,8 +94,7 @@ class Result {
 class FileWriterDelegateTest : public PlatformTest {
  public:
   FileWriterDelegateTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
 
  protected:
   void SetUp() override;
@@ -166,7 +165,7 @@ class FileWriterDelegateTest : public PlatformTest {
   }
 
   // This should be alive until the very end of this instance.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   scoped_refptr<storage::FileSystemContext> file_system_context_;
   std::unique_ptr<storage::BlobStorageContext> blob_context_;

@@ -27,7 +27,7 @@ class RemotingLogToServerTest : public testing::Test {
   }
 
   ~RemotingLogToServerTest() override {
-    scoped_task_environment_.FastForwardUntilNoTasksRemain();
+    task_environment_.FastForwardUntilNoTasksRemain();
   }
 
  protected:
@@ -42,8 +42,8 @@ class RemotingLogToServerTest : public testing::Test {
   using CreateLogEntryResponseCallback =
       RemotingLogToServer::CreateLogEntryResponseCallback;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
   base::MockCallback<RemotingLogToServer::CreateLogEntryCallback>
       mock_create_log_entry_;
@@ -69,7 +69,7 @@ TEST_F(RemotingLogToServerTest, SuccessfullySendOneLog) {
   entry.Set("test-key", "test-value");
   log_to_server_.Log(entry);
 
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
 
   ASSERT_EQ(0, GetBackoffEntry().failure_count());
 }
@@ -91,8 +91,7 @@ TEST_F(RemotingLogToServerTest, FailedToSend_RetryWithBackoff) {
   log_to_server_.Log(entry);
 
   for (int i = 1; i <= GetMaxSendLogAttempts(); i++) {
-    scoped_task_environment_.FastForwardBy(
-        GetBackoffEntry().GetTimeUntilRelease());
+    task_environment_.FastForwardBy(GetBackoffEntry().GetTimeUntilRelease());
     ASSERT_EQ(i, GetBackoffEntry().failure_count());
   }
 }
@@ -133,26 +132,26 @@ TEST_F(RemotingLogToServerTest, FailedToSendTwoLogs_RetryThenSucceeds) {
   ServerLogEntry entry_1;
   entry_1.Set("test-key-1", "test-value-1");
   log_to_server_.Log(entry_1);
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
 
   ServerLogEntry entry_2;
   entry_2.Set("test-key-2", "test-value-2");
   log_to_server_.Log(entry_2);
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
 
   ASSERT_EQ(0, GetBackoffEntry().failure_count());
 
   std::move(response_callback_1)
       .Run(grpc::Status(grpc::StatusCode::UNAVAILABLE, "unavailable"), {});
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   std::move(response_callback_2)
       .Run(grpc::Status(grpc::StatusCode::UNAVAILABLE, "unavailable"), {});
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   ASSERT_EQ(2, GetBackoffEntry().failure_count());
 
   std::move(response_callback_1).Run(grpc::Status::OK, {});
   std::move(response_callback_2).Run(grpc::Status::OK, {});
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   ASSERT_EQ(0, GetBackoffEntry().failure_count());
 }
 

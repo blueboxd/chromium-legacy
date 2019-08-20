@@ -282,7 +282,7 @@ class HistoryBackendTestBase : public testing::Test {
   URLsModifiedList urls_modified_notifications_;
   URLsDeletedList urls_deleted_notifications_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::FilePath test_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryBackendTestBase);

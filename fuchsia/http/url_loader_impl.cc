@@ -7,6 +7,7 @@
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/task/post_task.h"
+#include "fuchsia/base/mem_buffer_util.h"
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
@@ -30,20 +31,9 @@ oldhttp::URLBodyPtr CreateURLBodyFromBuffer(net::GrowableIOBuffer* buffer) {
   // The response buffer size is exactly the offset.
   size_t total_size = buffer->offset();
 
-  ::fuchsia::mem::Buffer mem_buffer;
-  mem_buffer.size = total_size;
-  zx_status_t result = zx::vmo::create(total_size, 0, &mem_buffer.vmo);
-  if (result != ZX_OK) {
-    ZX_DLOG(WARNING, result) << "zx_vmo_create";
-    return nullptr;
-  }
-
-  result = mem_buffer.vmo.write(buffer->StartOfBuffer(), 0, total_size);
-  if (result != ZX_OK) {
-    ZX_DLOG(WARNING, result) << "zx_vmo_write";
-    return nullptr;
-  }
-  body->set_buffer(std::move(mem_buffer));
+  body->set_buffer(cr_fuchsia::MemBufferFromString(
+      base::StringPiece(buffer->StartOfBuffer(), total_size),
+      "cr-http-url-body"));
 
   return body;
 }

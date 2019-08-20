@@ -130,8 +130,11 @@ class TestHintsFetcher : public optimization_guide::HintsFetcher {
   TestHintsFetcher(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       GURL optimization_guide_service_url,
-      HintsFetcherEndState fetch_state)
-      : HintsFetcher(url_loader_factory, optimization_guide_service_url),
+      HintsFetcherEndState fetch_state,
+      PrefService* pref_service)
+      : HintsFetcher(url_loader_factory,
+                     optimization_guide_service_url,
+                     pref_service),
         fetch_state_(fetch_state) {}
 
   bool FetchOptimizationGuideServiceHints(
@@ -265,8 +268,9 @@ class OptimizationGuideHintsManagerTest
   std::unique_ptr<TestHintsFetcher> BuildTestHintsFetcher(
       HintsFetcherEndState end_state) {
     std::unique_ptr<TestHintsFetcher> hints_fetcher =
-        std::make_unique<TestHintsFetcher>(
-            url_loader_factory_, GURL("https://hintsserver.com"), end_state);
+        std::make_unique<TestHintsFetcher>(url_loader_factory_,
+                                           GURL("https://hintsserver.com"),
+                                           end_state, pref_service());
     return hints_fetcher;
   }
 

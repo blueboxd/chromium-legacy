@@ -19,6 +19,7 @@
 #include "base/rand_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
@@ -3104,11 +3105,26 @@ void NavigationRequest::OnCommitTimeout() {
   // TODO(http://crbug.com/934317): Remove this once done debugging renderer
   // hangs.
   if (base::RandDouble() < 0.1) {
-    static base::debug::CrashKeyString* url =
+    static base::debug::CrashKeyString* url_key =
         base::debug::AllocateCrashKeyString("commit_timeout_url",
                                             base::debug::CrashKeySize::Size256);
-    base::debug::ScopedCrashKeyString(
-        url, common_params_->url.possibly_invalid_spec());
+    base::debug::ScopedCrashKeyString scoped_url(
+        url_key, common_params_->url.possibly_invalid_spec());
+
+    static base::debug::CrashKeyString* last_crash_key =
+        base::debug::AllocateCrashKeyString("ns_last_crash_ms",
+                                            base::debug::CrashKeySize::Size32);
+    base::debug::ScopedCrashKeyString scoped_last_crash(
+        last_crash_key,
+        base::NumberToString(
+            GetTimeSinceLastNetworkServiceCrash().InMilliseconds()));
+
+    static base::debug::CrashKeyString* memory_key =
+        base::debug::AllocateCrashKeyString("physical_memory_mb",
+                                            base::debug::CrashKeySize::Size32);
+    base::debug::ScopedCrashKeyString scoped_memory(
+        memory_key,
+        base::NumberToString(base::SysInfo::AmountOfPhysicalMemoryMB()));
     base::debug::DumpWithoutCrashing();
 
     if (IsOutOfProcessNetworkService())

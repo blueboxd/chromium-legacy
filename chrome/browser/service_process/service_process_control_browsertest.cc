@@ -54,6 +54,26 @@ class ServiceProcessControlBrowserTest
 
  protected:
   void LaunchServiceProcessControl(base::RepeatingClosure on_launched) {
+#if defined(OS_MACOSX)
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    // browser_tests and the child processes run as standalone executables,
+    // rather than bundled apps. For this test, set up the CHILD_PROCESS_EXE to
+    // point to a bundle so that the service process has an Info.plist.
+    base::FilePath exe_path;
+    ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &exe_path));
+    exe_path = exe_path.Append(chrome::kBrowserProcessExecutablePath)
+                   .DirName()
+                   .DirName()
+                   .Append("Frameworks")
+                   .Append(chrome::kFrameworkName)
+                   .Append("Versions")
+                   .Append(chrome::kChromeVersion)
+                   .Append("Helpers")
+                   .Append(chrome::kHelperProcessExecutablePath);
+    base::ScopedPathOverride path_override(content::CHILD_PROCESS_EXE,
+                                           exe_path);
+#endif
+
     // Launch the process asynchronously.
     ServiceProcessControl::GetInstance()->Launch(
         base::BindOnce(
@@ -76,25 +96,6 @@ class ServiceProcessControlBrowserTest
   }
 
   void SetUp() override {
-#if defined(OS_MACOSX)
-    // browser_tests and the child processes run as standalone executables,
-    // rather than bundled apps. For this test, set up the CHILD_PROCESS_EXE to
-    // point to a bundle so that the service process has an Info.plist.
-    base::FilePath exe_path;
-    ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &exe_path));
-    exe_path = exe_path.Append(chrome::kBrowserProcessExecutablePath)
-                   .DirName()
-                   .DirName()
-                   .Append("Frameworks")
-                   .Append(chrome::kFrameworkName)
-                   .Append("Versions")
-                   .Append(chrome::kChromeVersion)
-                   .Append("Helpers")
-                   .Append(chrome::kHelperProcessExecutablePath);
-    child_process_exe_override_ = std::make_unique<base::ScopedPathOverride>(
-        content::CHILD_PROCESS_EXE, exe_path);
-#endif
-
     InProcessBrowserTest::SetUp();
 
     // This should not be needed because TearDown() ends with a closed
@@ -110,8 +111,6 @@ class ServiceProcessControlBrowserTest
 #if defined(OS_MACOSX)
     // ForceServiceProcessShutdown removes the process from launched on Mac.
     ForceServiceProcessShutdown("", 0);
-
-    child_process_exe_override_.reset();
 #endif  // OS_MACOSX
 
     if (service_process_.IsValid()) {
@@ -148,9 +147,6 @@ class ServiceProcessControlBrowserTest
   }
 
  private:
-#if defined(OS_MACOSX)
-  std::unique_ptr<base::ScopedPathOverride> child_process_exe_override_;
-#endif
   base::Process service_process_;
 };
 

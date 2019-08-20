@@ -85,15 +85,15 @@ void ChromeColorsService::RevertThemeChanges() {
 void ChromeColorsService::ConfirmThemeChanges() {
   if (!search_provider_observer_ || !search_provider_observer_->is_google())
     return;
-  revert_theme_changes_.Reset();
+  prev_theme_reinstaller_ = nullptr;
   dialog_tab_ = nullptr;
   RecordChangesConfirmedHistogram(true);
 }
 
 void ChromeColorsService::RevertThemeChangesWithReason(RevertReason reason) {
-  if (!revert_theme_changes_.is_null()) {
-    std::move(revert_theme_changes_).Run();
-    revert_theme_changes_.Reset();
+  if (prev_theme_reinstaller_) {
+    prev_theme_reinstaller_->Reinstall();
+    prev_theme_reinstaller_ = nullptr;
     dialog_tab_ = nullptr;
     UMA_HISTOGRAM_ENUMERATION("ChromeColors.RevertReason", reason);
     RecordChangesConfirmedHistogram(false);
@@ -107,8 +107,8 @@ void ChromeColorsService::OnSearchProviderChanged() {
 
 void ChromeColorsService::SaveThemeRevertState(content::WebContents* tab) {
   // TODO(crbug.com/980745): Support theme reverting for multiple tabs.
-  if (revert_theme_changes_.is_null()) {
-    revert_theme_changes_ = theme_service_->GetRevertThemeCallback();
+  if (!prev_theme_reinstaller_) {
+    prev_theme_reinstaller_ = theme_service_->BuildReinstallerForCurrentTheme();
     dialog_tab_ = tab;
   }
 }

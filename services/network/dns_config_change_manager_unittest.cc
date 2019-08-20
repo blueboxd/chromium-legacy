@@ -62,7 +62,7 @@ class DnsConfigChangeManagerTest : public testing::Test {
   TestDnsConfigChangeManagerClient* client() { return &client_; }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<net::NetworkChangeNotifier> notifier_mock_ =
       net::NetworkChangeNotifier::CreateMock();
   DnsConfigChangeManager manager_;

@@ -242,7 +242,7 @@ class P2PSocketUdpTest : public testing::Test {
     return static_cast<FakeDatagramServerSocket*>(socket_host->socket_.get());
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   P2PMessageThrottler throttler_;
   ScopedFakeClock fake_clock_;
   base::circular_deque<FakeDatagramServerSocket::UDPPacket> sent_packets_;

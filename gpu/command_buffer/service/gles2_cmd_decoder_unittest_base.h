@@ -804,7 +804,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool>,
   SharedImageManager shared_image_manager_;
   scoped_refptr<ContextGroup> group_;
   MockGLStates gl_states_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   MockCopyTextureResourceManager* copy_texture_manager_;     // not owned
   MockCopyTexImageResourceManager* copy_tex_image_blitter_;  // not owned

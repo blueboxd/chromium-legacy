@@ -36,7 +36,7 @@ class OmniboxViewIOSTest : public PlatformTest {
   // Mock for the OmniboxTextFieldIOS.
   id mockOmniboxTextfield_;
   // Message loop for the main test thread.
-  base::test::ScopedTaskEnvironment environment_;
+  base::test::TaskEnvironment environment_;
 };
 
 TEST_F(OmniboxViewIOSTest, copyAddsTextToPasteboard) {

@@ -100,7 +100,7 @@ TEST_F(ContentSecurityPolicyTest, ParseInsecureRequestPolicy) {
 }
 
 TEST_F(ContentSecurityPolicyTest, ParseEnforceTreatAsPublicAddressDisabled) {
-  ScopedCorsRFC1918ForTest cors_rfc1918(false);
+  ScopedAddressSpaceForTest address_space(false);
   execution_context->SetAddressSpace(network::mojom::IPAddressSpace::kPrivate);
   EXPECT_EQ(network::mojom::IPAddressSpace::kPrivate,
             execution_context->AddressSpace());
@@ -114,7 +114,7 @@ TEST_F(ContentSecurityPolicyTest, ParseEnforceTreatAsPublicAddressDisabled) {
 }
 
 TEST_F(ContentSecurityPolicyTest, ParseEnforceTreatAsPublicAddressEnabled) {
-  ScopedCorsRFC1918ForTest cors_rfc1918(true);
+  ScopedAddressSpaceForTest address_space(true);
   execution_context->SetAddressSpace(network::mojom::IPAddressSpace::kPrivate);
   EXPECT_EQ(network::mojom::IPAddressSpace::kPrivate,
             execution_context->AddressSpace());

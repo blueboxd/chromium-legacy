@@ -87,7 +87,7 @@ class SyncBackendMigratorTest : public testing::Test {
   BackendMigrator* migrator() { return migrator_.get(); }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   ModelTypeSet preferred_types_;
   NiceMock<DataTypeManagerMock> manager_;
   NiceMock<base::MockCallback<base::RepeatingClosure>> reconfigure_callback_;

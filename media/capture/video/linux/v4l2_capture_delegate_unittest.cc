@@ -186,7 +186,7 @@ class V4L2CaptureDelegateTest : public ::testing::Test {
             0)) {}
   ~V4L2CaptureDelegateTest() override = default;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   VideoCaptureDeviceDescriptor device_descriptor_;
   scoped_refptr<V4L2CaptureDevice> v4l2_;
   std::unique_ptr<V4L2CaptureDelegate> delegate_;

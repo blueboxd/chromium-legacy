@@ -20,13 +20,12 @@ namespace device {
 class PositionCacheImplTest : public ::testing::Test {
  public:
   PositionCacheImplTest()
-      : task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         network_change_notifier_(net::NetworkChangeNotifier::CreateMock()),
         cache_(task_environment_.GetMockTickClock()) {}
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   PositionCacheImpl cache_;
 };

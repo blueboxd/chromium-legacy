@@ -30,6 +30,7 @@
 #include "content/browser/indexed_db/indexed_db_observer.h"
 #include "content/browser/indexed_db/indexed_db_origin_state_handle.h"
 #include "content/browser/indexed_db/indexed_db_pending_connection.h"
+#include "content/browser/indexed_db/indexed_db_task_helper.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/browser/indexed_db/list_set.h"
 #include "content/browser/indexed_db/scopes/scopes_lock_manager.h"
@@ -88,21 +89,23 @@ class CONTENT_EXPORT IndexedDBDatabase {
   }
 
   const list_set<IndexedDBConnection*>& connections() const {
-    return connection_coordinator_.connections();
+    return connections_;
   }
-
-  base::WeakPtr<IndexedDBDatabase> AsWeakPtr() {
-    return weak_factory_.GetWeakPtr();
+  TasksAvailableCallback tasks_available_callback() {
+    return tasks_available_callback_;
   }
 
   // TODO(dmurph): Remove this method and have transactions be directly
   // scheduled using the lock manager.
+
+  enum class RunTasksResult { kDone, kError, kCanBeDestroyed };
+  std::tuple<RunTasksResult, leveldb::Status> RunTasks();
   void RegisterAndScheduleTransaction(IndexedDBTransaction* transaction);
 
   // The database object (this object) must be kept alive for the duration of
   // this call. This means the caller should own an IndexedDBOriginStateHandle
   // while caling this methods.
-  void ForceClose();
+  leveldb::Status ForceCloseAndRunTasks();
 
   void Commit(IndexedDBTransaction* transaction);
 
@@ -146,9 +149,7 @@ class CONTENT_EXPORT IndexedDBDatabase {
   // database:
 
   // Number of connections that have progressed passed initial open call.
-  size_t ConnectionCount() const {
-    return connection_coordinator_.ConnectionCount();
-  }
+  size_t ConnectionCount() const { return connections_.size(); }
 
   // Number of active open/delete calls (running or blocked on other
   // connections).
@@ -306,7 +307,13 @@ class CONTENT_EXPORT IndexedDBDatabase {
   bool IsObjectStoreIdInMetadataAndIndexNotInMetadata(int64_t object_store_id,
                                                       int64_t index_id) const;
 
-  ErrorCallback error_callback() { return error_callback_; }
+  base::WeakPtr<IndexedDBDatabase> AsWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
+  void AddConnectionForTesting(IndexedDBConnection* connection) {
+    connections_.insert(connection);
+  }
 
  protected:
   friend class IndexedDBTransaction;
@@ -319,8 +326,7 @@ class CONTENT_EXPORT IndexedDBDatabase {
                     IndexedDBBackingStore* backing_store,
                     IndexedDBFactory* factory,
                     IndexedDBClassFactory* class_factory,
-                    ErrorCallback error_callback,
-                    base::OnceClosure destroy_me,
+                    TasksAvailableCallback tasks_available_callback,
                     std::unique_ptr<IndexedDBMetadataCoding> metadata_coding,
                     const Identifier& unique_identifier,
                     ScopesLockManager* transaction_lock_manager);
@@ -370,6 +376,8 @@ class CONTENT_EXPORT IndexedDBDatabase {
   // has any transaction objects.
   void ConnectionClosed(IndexedDBConnection* connection);
 
+  bool CanBeDestroyed();
+
   // Safe because the IndexedDBBackingStore is owned by the same object which
   // owns us, the IndexedDBPerOriginFactory.
   IndexedDBBackingStore* backing_store_;
@@ -384,13 +392,11 @@ class CONTENT_EXPORT IndexedDBDatabase {
   ScopesLockManager* lock_manager_;
   int64_t transaction_count_ = 0;
 
-  // Called when a backing store operation has failed. The database will be
-  // closed (IndexedDBFactory::ForceClose) during this call. This should NOT
-  // be used in an method scheduled as a transaction operation.
-  ErrorCallback error_callback_;
+  list_set<IndexedDBConnection*> connections_;
 
-  // Calling this closure will destroy this object.
-  base::OnceClosure destroy_me_;
+  TasksAvailableCallback tasks_available_callback_;
+
+  bool force_closing_ = false;
 
   IndexedDBConnectionCoordinator connection_coordinator_;
 

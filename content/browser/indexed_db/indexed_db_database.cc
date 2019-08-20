@@ -139,8 +139,7 @@ IndexedDBDatabase::IndexedDBDatabase(
     IndexedDBBackingStore* backing_store,
     IndexedDBFactory* factory,
     IndexedDBClassFactory* class_factory,
-    ErrorCallback error_callback,
-    base::OnceClosure destroy_me,
+    TasksAvailableCallback tasks_available_callback,
     std::unique_ptr<IndexedDBMetadataCoding> metadata_coding,
     const Identifier& unique_identifier,
     ScopesLockManager* transaction_lock_manager)
@@ -154,10 +153,8 @@ IndexedDBDatabase::IndexedDBDatabase(
       class_factory_(class_factory),
       metadata_coding_(std::move(metadata_coding)),
       lock_manager_(transaction_lock_manager),
-      error_callback_(std::move(error_callback)),
-      destroy_me_(std::move(destroy_me)),
-      connection_coordinator_(this) {
-  DCHECK(destroy_me_);
+      tasks_available_callback_(tasks_available_callback),
+      connection_coordinator_(this, tasks_available_callback) {
   DCHECK(factory != nullptr);
 }
 
@@ -185,12 +182,117 @@ void IndexedDBDatabase::RegisterAndScheduleTransaction(
   }
   lock_manager_->AcquireLocks(
       std::move(lock_requests),
-      transaction->locks_receiver()->weak_factory.GetWeakPtr(),
+      transaction->mutable_locks_receiver()->weak_factory.GetWeakPtr(),
       base::BindOnce(&IndexedDBTransaction::Start, transaction->AsWeakPtr()));
 }
 
-void IndexedDBDatabase::ForceClose() {
-  connection_coordinator_.ForceClose();
+std::tuple<IndexedDBDatabase::RunTasksResult, leveldb::Status>
+IndexedDBDatabase::RunTasks() {
+  // First execute any pending tasks in the connection coordinator.
+  IndexedDBConnectionCoordinator::ExecuteTaskResult task_state;
+  leveldb::Status status;
+  do {
+    std::tie(task_state, status) =
+        connection_coordinator_.ExecuteTask(!connections_.empty());
+  } while (task_state ==
+           IndexedDBConnectionCoordinator::ExecuteTaskResult::kMoreTasks);
+
+  if (task_state == IndexedDBConnectionCoordinator::ExecuteTaskResult::kError)
+    return {RunTasksResult::kError, status};
+
+  bool transactions_removed = true;
+
+  // Finally, execute transactions that have tasks & remove those that are
+  // complete.
+  while (transactions_removed) {
+    transactions_removed = false;
+    IndexedDBTransaction* finished_upgrade_transaction = nullptr;
+    bool upgrade_transaction_commmitted = false;
+    for (IndexedDBConnection* connection : connections_) {
+      std::vector<int64_t> txns_to_remove;
+      for (const auto& id_txn_pair : connection->transactions()) {
+        IndexedDBTransaction* txn = id_txn_pair.second.get();
+        // Determine if the transaction's task queue should be processed.
+        switch (txn->state()) {
+          case IndexedDBTransaction::FINISHED:
+            if (txn->mode() ==
+                blink::mojom::IDBTransactionMode::VersionChange) {
+              finished_upgrade_transaction = txn;
+              upgrade_transaction_commmitted = !txn->aborted();
+            }
+            txns_to_remove.push_back(id_txn_pair.first);
+            continue;
+          case IndexedDBTransaction::CREATED:
+            continue;
+          case IndexedDBTransaction::STARTED:
+          case IndexedDBTransaction::COMMITTING:
+            break;
+        }
+
+        // Process the queue for transactions that are STARTED or COMMITTING.
+        // Add transactions that can be removed to a queue.
+        IndexedDBTransaction::RunTasksResult task_result;
+        leveldb::Status transaction_status;
+        std::tie(task_result, transaction_status) = txn->RunTasks();
+        switch (task_result) {
+          case IndexedDBTransaction::RunTasksResult::kError:
+            return {RunTasksResult::kError, transaction_status};
+          case IndexedDBTransaction::RunTasksResult::kCommitted:
+          case IndexedDBTransaction::RunTasksResult::kAborted:
+            if (txn->mode() ==
+                blink::mojom::IDBTransactionMode::VersionChange) {
+              DCHECK(!finished_upgrade_transaction);
+              finished_upgrade_transaction = txn;
+              upgrade_transaction_commmitted = !txn->aborted();
+            }
+            txns_to_remove.push_back(txn->id());
+            break;
+          case IndexedDBTransaction::RunTasksResult::kNotFinished:
+            continue;
+        }
+      }
+      // Do the removals.
+      for (int64_t id : txns_to_remove) {
+        connection->RemoveTransaction(id);
+        transactions_removed = true;
+      }
+      if (finished_upgrade_transaction) {
+        connection_coordinator_.OnUpgradeTransactionFinished(
+            upgrade_transaction_commmitted);
+      }
+    }
+  }
+  if (CanBeDestroyed())
+    return {RunTasksResult::kCanBeDestroyed, leveldb::Status::OK()};
+  return {RunTasksResult::kDone, leveldb::Status::OK()};
+}
+
+leveldb::Status IndexedDBDatabase::ForceCloseAndRunTasks() {
+  leveldb::Status status;
+  force_closing_ = true;
+  for (IndexedDBConnection* connection : connections_) {
+    connection->CloseAndReportForceClose();
+  }
+  connections_.clear();
+  connection_coordinator_.PruneTasksForForceClose();
+  connection_coordinator_.OnNoConnections();
+
+  // Execute any pending tasks in the connection coordinator.
+  IndexedDBConnectionCoordinator::ExecuteTaskResult task_state;
+  do {
+    std::tie(task_state, status) = connection_coordinator_.ExecuteTask(false);
+    DCHECK(task_state !=
+           IndexedDBConnectionCoordinator::ExecuteTaskResult::kPendingAsyncWork)
+        << "There are no more connections, so all tasks should be able to "
+           "complete synchronously.";
+  } while (
+      task_state != IndexedDBConnectionCoordinator::ExecuteTaskResult::kDone &&
+      task_state != IndexedDBConnectionCoordinator::ExecuteTaskResult::kError);
+  DCHECK(connections_.empty());
+  force_closing_ = false;
+  if (CanBeDestroyed())
+    tasks_available_callback_.Run();
+  return status;
 }
 
 void IndexedDBDatabase::Commit(IndexedDBTransaction* transaction) {
@@ -199,12 +301,7 @@ void IndexedDBDatabase::Commit(IndexedDBTransaction* transaction) {
   // been dispatched to the frontend, so it will find out about that
   // asynchronously.
   if (transaction) {
-    // The database can be destroyed in the call to Commit(), so save a copy of
-    // the error callback in case of an error.
-    auto error_callback_copy = error_callback_;
-    Status result = transaction->Commit();
-    if (!result.ok())
-      error_callback_copy.Run(result, nullptr);
+    transaction->SetCommitFlag();
   }
 }
 
@@ -1573,23 +1670,6 @@ Status IndexedDBDatabase::OpenInternal() {
       metadata_.version, &metadata_);
 }
 
-void IndexedDBDatabase::ProcessRequestQueueAndMaybeRelease() {
-  // Don't run re-entrantly to avoid exploding call stacks for requests that
-  // complete synchronously. The loop below will process requests until one is
-  // blocked.
-  if (connection_coordinator_.processing_pending_requests())
-    return;
-  connection_coordinator_.ProcessRequestQueue();
-  MaybeReleaseDatabase();
-}
-
-void IndexedDBDatabase::MaybeReleaseDatabase() {
-  if (!connection_coordinator_.HasActiveRequest() &&
-      !connection_coordinator_.HasPendingRequests() && connections().empty() &&
-      !connection_coordinator_.force_closing())
-    std::move(destroy_me_).Run();
-}
-
 std::unique_ptr<IndexedDBConnection> IndexedDBDatabase::CreateConnection(
     IndexedDBOriginStateHandle origin_state_handle,
     scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
@@ -1602,8 +1682,8 @@ std::unique_ptr<IndexedDBConnection> IndexedDBDatabase::CreateConnection(
                               weak_factory_.GetWeakPtr()),
           base::BindOnce(&IndexedDBDatabase::ConnectionClosed,
                          weak_factory_.GetWeakPtr()),
-          error_callback_, database_callbacks);
-  connection_coordinator_.AddConnection(connection.get());
+          database_callbacks);
+  connections_.insert(connection.get());
   backing_store_->GrantChildProcessPermissions(child_process_id);
   return connection;
 }
@@ -1613,20 +1693,32 @@ void IndexedDBDatabase::VersionChangeIgnored() {
 }
 
 bool IndexedDBDatabase::HasNoConnections() const {
-  return connection_coordinator_.force_closing() || connections().empty();
+  return force_closing_ || connections().empty();
 }
 
 void IndexedDBDatabase::SendVersionChangeToAllConnections(int64_t old_version,
                                                           int64_t new_version) {
-  if (connection_coordinator_.force_closing())
+  if (force_closing_)
     return;
   for (const auto* connection : connections())
     connection->callbacks()->OnVersionChange(old_version, new_version);
 }
 
 void IndexedDBDatabase::ConnectionClosed(IndexedDBConnection* connection) {
-  IDB_TRACE("IndexedDBDatabase::Close");
+  IDB_TRACE("IndexedDBDatabase::ConnectionClosed");
+  // Ignore connection closes during force close to prevent re-entry.
+  if (force_closing_)
+    return;
+  connections_.erase(connection);
   connection_coordinator_.OnConnectionClosed(connection);
+  if (connections_.empty())
+    connection_coordinator_.OnNoConnections();
+  if (CanBeDestroyed())
+    tasks_available_callback_.Run();
+}
+
+bool IndexedDBDatabase::CanBeDestroyed() {
+  return !connection_coordinator_.HasTasks() && connections_.empty();
 }
 
 }  // namespace content

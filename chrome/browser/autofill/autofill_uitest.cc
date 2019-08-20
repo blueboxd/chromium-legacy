@@ -50,15 +50,14 @@ void AutofillManagerTestDelegateImpl::DidShowSuggestions() {
 
 void AutofillManagerTestDelegateImpl::OnTextFieldChanged() {}
 
-void AutofillManagerTestDelegateImpl::Reset() {
-  event_waiter_.reset();
-}
-
-bool AutofillManagerTestDelegateImpl::Wait(
+void AutofillManagerTestDelegateImpl::SetExpectations(
     std::list<ObservedUiEvents> expected_events,
     base::TimeDelta timeout) {
   event_waiter_ =
       std::make_unique<EventWaiter<ObservedUiEvents>>(expected_events, timeout);
+}
+
+bool AutofillManagerTestDelegateImpl::Wait() {
   return event_waiter_->Wait();
 }
 
@@ -118,10 +117,10 @@ void AutofillUiTest::SendKeyToPageAndWait(
     ui::DomCode code,
     ui::KeyboardCode key_code,
     std::list<ObservedUiEvents> expected_events) {
-  test_delegate()->Reset();
+  test_delegate()->SetExpectations(std::move(expected_events));
   content::SimulateKeyPress(GetWebContents(), key, code, key_code, false, false,
                             false, false);
-  test_delegate()->Wait(std::move(expected_events));
+  test_delegate()->Wait();
 }
 
 void AutofillUiTest::SendKeyToPopup(content::RenderFrameHost* render_frame_host,
@@ -168,19 +167,19 @@ void AutofillUiTest::SendKeyToPopupAndWait(
   event.windows_key_code = key_code;
   event.dom_code = static_cast<int>(code);
   event.dom_key = key;
-  test_delegate()->Reset();
+  test_delegate()->SetExpectations(std::move(expected_events));
   // Install the key press event sink to ensure that any events that are not
   // handled by the installed callbacks do not end up crashing the test.
   widget->AddKeyPressEventCallback(key_press_event_sink_);
   widget->ForwardKeyboardEvent(event);
-  test_delegate()->Wait(std::move(expected_events));
+  test_delegate()->Wait();
   widget->RemoveKeyPressEventCallback(key_press_event_sink_);
 }
 
 void AutofillUiTest::DoNothingAndWait(unsigned seconds) {
-  test_delegate()->Reset();
-  ASSERT_FALSE(test_delegate()->Wait({ObservedUiEvents::kNoEvent},
-                                     base::TimeDelta::FromSeconds(seconds)));
+  test_delegate()->SetExpectations({ObservedUiEvents::kNoEvent},
+                                   base::TimeDelta::FromSeconds(seconds));
+  ASSERT_FALSE(test_delegate()->Wait());
 }
 
 void AutofillUiTest::SendKeyToDataListPopup(ui::DomKey key) {

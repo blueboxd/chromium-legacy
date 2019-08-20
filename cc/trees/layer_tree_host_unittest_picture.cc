@@ -585,15 +585,18 @@ class LayerTreeHostPictureTestForceRecalculateScales
     gfx::Size size(100, 100);
     scoped_refptr<Layer> root = Layer::Create();
     root->SetBounds(size);
+    top_layer_ = Layer::Create();
+    top_layer_->SetBounds(size);
+    root->AddChild(top_layer_);
 
     will_change_layer_ = FakePictureLayer::Create(&client_);
     will_change_layer_->SetHasWillChangeTransformHint(true);
     will_change_layer_->SetBounds(size);
-    root->AddChild(will_change_layer_);
+    top_layer_->AddChild(will_change_layer_);
 
     normal_layer_ = FakePictureLayer::Create(&client_);
     normal_layer_->SetBounds(size);
-    root->AddChild(normal_layer_);
+    top_layer_->AddChild(normal_layer_);
 
     layer_tree_host()->SetRootLayer(root);
     layer_tree_host()->SetViewportSizeAndScale(size, 1.f,
@@ -626,7 +629,7 @@ class LayerTreeHostPictureTestForceRecalculateScales
         MainThreadTaskRunner()->PostTask(
             FROM_HERE,
             base::BindOnce(
-                &LayerTreeHostPictureTestForceRecalculateScales::ScaleRootUp,
+                &LayerTreeHostPictureTestForceRecalculateScales::ScaleUp,
                 base::Unretained(this)));
         break;
       case 1:
@@ -643,7 +646,7 @@ class LayerTreeHostPictureTestForceRecalculateScales
         MainThreadTaskRunner()->PostTask(
             FROM_HERE,
             base::BindOnce(&LayerTreeHostPictureTestForceRecalculateScales::
-                               ScaleRootUpAndRecalculateScales,
+                               ScaleUpAndRecalculateScales,
                            base::Unretained(this)));
         break;
       case 2:
@@ -661,21 +664,22 @@ class LayerTreeHostPictureTestForceRecalculateScales
     }
   }
 
-  void ScaleRootUp() {
+  void ScaleUp() {
     gfx::Transform transform;
     transform.Scale(2, 2);
-    layer_tree_host()->root_layer()->SetTransform(transform);
+    top_layer_->SetTransform(transform);
   }
 
-  void ScaleRootUpAndRecalculateScales() {
+  void ScaleUpAndRecalculateScales() {
     gfx::Transform transform;
     transform.Scale(4, 4);
-    layer_tree_host()->root_layer()->SetTransform(transform);
+    top_layer_->SetTransform(transform);
     layer_tree_host()->SetNeedsRecalculateRasterScales();
   }
 
   void AfterTest() override {}
 
+  scoped_refptr<Layer> top_layer_;
   scoped_refptr<FakePictureLayer> will_change_layer_;
   scoped_refptr<FakePictureLayer> normal_layer_;
 };

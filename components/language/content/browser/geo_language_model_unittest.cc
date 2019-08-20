@@ -30,8 +30,7 @@ MATCHER_P(EqualsLd, lang_details, "") {
 class GeoLanguageModelTest : public testing::Test {
  public:
   GeoLanguageModelTest()
-      : geo_language_provider_(
-            scoped_task_environment_.GetMainThreadTaskRunner()),
+      : geo_language_provider_(task_environment_.GetMainThreadTaskRunner()),
         geo_language_model_(&geo_language_provider_),
         mock_ip_geo_location_provider_(&mock_geo_location_) {
     service_manager::mojom::ConnectorRequest request;
@@ -58,8 +57,8 @@ class GeoLanguageModelTest : public testing::Test {
 
   GeoLanguageModel* language_model() { return &geo_language_model_; }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
  private:
   GeoLanguageProvider geo_language_provider_;
@@ -75,7 +74,7 @@ TEST_F(GeoLanguageModelTest, InsideIndia) {
   // Setup a random place in Madhya Pradesh, India.
   MoveToLocation(23.0, 80.0);
   StartGeoLanguageProvider();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_THAT(language_model()->GetLanguages(),
               testing::ElementsAre(
@@ -87,7 +86,7 @@ TEST_F(GeoLanguageModelTest, OutsideIndia) {
   // Setup a random place outside of India.
   MoveToLocation(45.5, 73.5);
   StartGeoLanguageProvider();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(0UL, language_model()->GetLanguages().size());
 }
 

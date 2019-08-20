@@ -21,13 +21,10 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.DeferredStartupHandler;
-import org.chromium.chrome.browser.ShortcutHelper;
-import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
@@ -37,11 +34,11 @@ import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
+import org.chromium.chrome.test.util.browser.WebApkInfoBuilder;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
-import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
 /** Tests for WebApkActivity. */
@@ -230,16 +227,10 @@ public final class WebApkActivityTest {
     }
 
     private WebApkInfo createWebApkInfo(String startUrl, String scopeUrl) {
-        return WebApkInfo.create(TEST_WEBAPK_ID, startUrl, scopeUrl, null /* primaryIcon */,
-                null /* badgeIcon */, null /* splashIcon */, "" /* name */, "" /* short_name */,
-                WebDisplayMode.STANDALONE, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING /* themeColor */,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING /* backgroundColor */,
-                0 /* defaultBackgroundColor */, false /* isPrimaryIconMaskable */,
-                TEST_WEBAPK_PACKAGE_NAME, 10 /* packageVersion */, "" /* manifestURL */,
-                "" /* manifestStartURL */, WebApkInfo.WebApkDistributor.BROWSER, null, null,
-                null /*shareTargetActivityName*/, false /* forceNavigation */,
-                false /* isSplashProvidedByWebApk */, null /* shareData */, 1 /* apkVersionCode */);
+        WebApkInfoBuilder webApkInfoBuilder =
+                new WebApkInfoBuilder(TEST_WEBAPK_PACKAGE_NAME, startUrl);
+        webApkInfoBuilder.setScope(scopeUrl);
+        return webApkInfoBuilder.build();
     }
 
     private String getTestServerUrl(String relativeUrl) {

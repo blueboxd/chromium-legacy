@@ -38,7 +38,7 @@ class QuarantineServiceTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   mojo::Remote<mojom::Quarantine> quarantine_;
   mojom::QuarantineFileResult result_;
 

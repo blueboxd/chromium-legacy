@@ -86,7 +86,7 @@ class InMemoryDBTestBase : public testing::Test {
 
     in_memory_db_->Initialize(base::BindOnce(&InMemoryDBTestBase::InitializeCB,
                                              base::Unretained(this)));
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   MOCK_METHOD1(InitializeCB, void(bool success));
@@ -101,7 +101,7 @@ class InMemoryDBTestBase : public testing::Test {
   using VideoDescKey = media::VideoDecodeStatsDB::VideoDescKey;
   using DecodeStatsEntry = media::VideoDecodeStatsDB::DecodeStatsEntry;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<MockSeedDB> seed_db_;
   std::unique_ptr<MockDBProvider> db_provider_;
   std::unique_ptr<InMemoryVideoDecodeStatsDBImpl> in_memory_db_;
@@ -122,7 +122,7 @@ TEST_F(SeedlessInMemoryDBTest, ReadExpectingEmpty) {
       kTestKey(), base::BindOnce(&InMemoryDBTestBase::GetDecodeStatsCB,
                                  base::Unretained(this)));
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(SeededInMemoryDBTest, ReadExpectingEmpty) {
@@ -141,7 +141,7 @@ TEST_F(SeededInMemoryDBTest, ReadExpectingEmpty) {
       kTestKey(), base::BindOnce(&InMemoryDBTestBase::GetDecodeStatsCB,
                                  base::Unretained(this)));
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(SeededInMemoryDBTest, ReadExpectingSeedData) {
@@ -163,7 +163,7 @@ TEST_F(SeededInMemoryDBTest, ReadExpectingSeedData) {
       kTestKey(), base::BindOnce(&InMemoryDBTestBase::GetDecodeStatsCB,
                                  base::Unretained(this)));
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ::testing::Mock::VerifyAndClear(this);
 
   // Verify a second GetDecodeStats() call with the same key does not trigger a
@@ -174,7 +174,7 @@ TEST_F(SeededInMemoryDBTest, ReadExpectingSeedData) {
       kTestKey(), base::BindOnce(&InMemoryDBTestBase::GetDecodeStatsCB,
                                  base::Unretained(this)));
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(SeededInMemoryDBTest, AppendReadAndClear) {
@@ -202,7 +202,7 @@ TEST_F(SeededInMemoryDBTest, AppendReadAndClear) {
       base::BindOnce(&InMemoryDBTestBase::AppendDecodeStatsCB,
                      base::Unretained(this)));
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ::testing::Mock::VerifyAndClear(this);
 
   // Seed DB should not be queried again for this key.
@@ -214,7 +214,7 @@ TEST_F(SeededInMemoryDBTest, AppendReadAndClear) {
       kTestKey(), base::BindOnce(&InMemoryDBTestBase::GetDecodeStatsCB,
                                  base::Unretained(this)));
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ::testing::Mock::VerifyAndClear(this);
 
   // Append the same seed entry again to triple the stats. Additional appends
@@ -236,7 +236,7 @@ TEST_F(SeededInMemoryDBTest, AppendReadAndClear) {
   in_memory_db_->ClearStats(base::BindOnce(&InMemoryDBTestBase::ClearStatsCB,
                                            base::Unretained(this)));
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ::testing::Mock::VerifyAndClear(this);
 
   // With in-memory stats now gone, GetDecodeStats(kTestKey()) should again
@@ -247,7 +247,7 @@ TEST_F(SeededInMemoryDBTest, AppendReadAndClear) {
       kTestKey(), base::BindOnce(&InMemoryDBTestBase::GetDecodeStatsCB,
                                  base::Unretained(this)));
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(SeedlessInMemoryDBTest, AppendReadAndClear) {
@@ -269,7 +269,7 @@ TEST_F(SeedlessInMemoryDBTest, AppendReadAndClear) {
       kTestKey(), base::BindOnce(&InMemoryDBTestBase::GetDecodeStatsCB,
                                  base::Unretained(this)));
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ::testing::Mock::VerifyAndClear(this);
 
   // Append same stats again to test summation.
@@ -285,7 +285,7 @@ TEST_F(SeedlessInMemoryDBTest, AppendReadAndClear) {
       kTestKey(), base::BindOnce(&InMemoryDBTestBase::GetDecodeStatsCB,
                                  base::Unretained(this)));
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ::testing::Mock::VerifyAndClear(this);
 
   // Now destroy the in-memory stats...
@@ -293,7 +293,7 @@ TEST_F(SeedlessInMemoryDBTest, AppendReadAndClear) {
   in_memory_db_->ClearStats(base::BindOnce(&InMemoryDBTestBase::ClearStatsCB,
                                            base::Unretained(this)));
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ::testing::Mock::VerifyAndClear(this);
 
   // Verify DB now empty for this key.
@@ -302,7 +302,7 @@ TEST_F(SeedlessInMemoryDBTest, AppendReadAndClear) {
       kTestKey(), base::BindOnce(&InMemoryDBTestBase::GetDecodeStatsCB,
                                  base::Unretained(this)));
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(SeededInMemoryDBTest, ProvidedNullSeedDB) {
@@ -316,7 +316,7 @@ TEST_F(SeededInMemoryDBTest, ProvidedNullSeedDB) {
   in_memory_db_->Initialize(base::BindOnce(&InMemoryDBTestBase::InitializeCB,
                                            base::Unretained(this)));
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ::testing::Mock::VerifyAndClear(this);
 
   // Writes still succeed.
@@ -333,7 +333,7 @@ TEST_F(SeededInMemoryDBTest, ProvidedNullSeedDB) {
       kTestKey(), base::BindOnce(&InMemoryDBTestBase::GetDecodeStatsCB,
                                  base::Unretained(this)));
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(SeededInMemoryDBTest, SeedReadFailureOnGettingStats) {
@@ -354,7 +354,7 @@ TEST_F(SeededInMemoryDBTest, SeedReadFailureOnGettingStats) {
       kTestKey(), base::BindOnce(&InMemoryDBTestBase::GetDecodeStatsCB,
                                  base::Unretained(this)));
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(SeededInMemoryDBTest, SeedReadFailureOnAppendingingStats) {
@@ -377,7 +377,7 @@ TEST_F(SeededInMemoryDBTest, SeedReadFailureOnAppendingingStats) {
       base::BindOnce(&InMemoryDBTestBase::AppendDecodeStatsCB,
                      base::Unretained(this)));
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ::testing::Mock::VerifyAndClear(this);
 
   // Reading the appended data works without issue and does not trigger new
@@ -388,7 +388,7 @@ TEST_F(SeededInMemoryDBTest, SeedReadFailureOnAppendingingStats) {
       kTestKey(), base::BindOnce(&InMemoryDBTestBase::GetDecodeStatsCB,
                                  base::Unretained(this)));
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(SeededInMemoryDBTest, SeedDBTearDownRace) {

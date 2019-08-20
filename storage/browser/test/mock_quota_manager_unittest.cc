@@ -97,7 +97,7 @@ class MockQuotaManagerTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir data_dir_;
   scoped_refptr<MockQuotaManager> manager_;
   scoped_refptr<MockSpecialStoragePolicy> policy_;

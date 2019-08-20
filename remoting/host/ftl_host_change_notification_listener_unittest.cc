@@ -76,7 +76,7 @@ class FtlHostChangeNotificationListenerTest : public testing::Test {
   ftl::Id system_sender_id_;
   ftl::Id peer_sender_id_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   MockListener mock_listener_;
   MockSignalStrategy signal_strategy_;

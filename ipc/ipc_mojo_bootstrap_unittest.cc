@@ -107,7 +107,7 @@ class IPCMojoBootstrapTest : public testing::Test {
 };
 
 TEST_F(IPCMojoBootstrapTest, Connect) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   Connection connection(
       IPC::MojoBootstrap::Create(
           helper_.StartChild("IPCMojoBootstrapTestClient"),
@@ -132,7 +132,7 @@ TEST_F(IPCMojoBootstrapTest, Connect) {
 MULTIPROCESS_TEST_MAIN_WITH_SETUP(
     IPCMojoBootstrapTestClientTestChildMain,
     ::mojo::core::test::MultiprocessTestHelper::ChildSetup) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   Connection connection(
       IPC::MojoBootstrap::Create(
           std::move(mojo::core::test::MultiprocessTestHelper::primordial_pipe),
@@ -153,7 +153,7 @@ MULTIPROCESS_TEST_MAIN_WITH_SETUP(
 }
 
 TEST_F(IPCMojoBootstrapTest, ReceiveEmptyMessage) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   Connection connection(
       IPC::MojoBootstrap::Create(
           helper_.StartChild("IPCMojoBootstrapTestEmptyMessage"),
@@ -180,7 +180,7 @@ TEST_F(IPCMojoBootstrapTest, ReceiveEmptyMessage) {
 MULTIPROCESS_TEST_MAIN_WITH_SETUP(
     IPCMojoBootstrapTestEmptyMessageTestChildMain,
     ::mojo::core::test::MultiprocessTestHelper::ChildSetup) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   Connection connection(
       IPC::MojoBootstrap::Create(
           std::move(mojo::core::test::MultiprocessTestHelper::primordial_pipe),

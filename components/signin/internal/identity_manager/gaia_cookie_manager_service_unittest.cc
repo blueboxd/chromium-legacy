@@ -228,7 +228,7 @@ class GaiaCookieManagerServiceTest : public testing::Test {
   const CoreAccountId account_id3_;
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   GoogleServiceAuthError no_error_;
   GoogleServiceAuthError error_;
   GoogleServiceAuthError canceled_;

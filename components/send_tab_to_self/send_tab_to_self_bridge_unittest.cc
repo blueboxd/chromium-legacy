@@ -195,7 +195,7 @@ class SendTabToSelfBridgeTest : public testing::Test {
   base::SimpleTestClock clock_;
 
   // In memory model type store needs to be able to post tasks.
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<syncer::ModelTypeStore> store_;
 

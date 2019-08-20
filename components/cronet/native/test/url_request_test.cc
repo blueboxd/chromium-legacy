@@ -486,8 +486,8 @@ class UrlRequestTest : public ::testing::TestWithParam<
  protected:
   // Provide a task environment for use by TestExecutor instances. Do not
   // initialize the ThreadPool as this is done by the Cronet_Engine
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY};
 
   // Not owned, |request_finished_listener_| destroys itself when run. This
   // pointer is only needed to unregister the listener from the Engine in

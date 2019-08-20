@@ -120,7 +120,7 @@ class FeedContentDatabaseTest : public testing::Test {
     RunUntilIdle();
   }
 
-  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
   scoped_refptr<base::SequencedTaskRunner> task_runner() {
     return task_runner_;
@@ -138,7 +138,7 @@ class FeedContentDatabaseTest : public testing::Test {
   MOCK_METHOD1(OnStorageCommitted, void(bool));
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::map<std::string, ContentStorageProto> content_db_storage_;
 

@@ -299,7 +299,7 @@ void GCMAccountMapper::CreateAndSendMessage(
                                account_mapping.account_id));
 }
 
-void GCMAccountMapper::OnSendFinished(const std::string& account_id,
+void GCMAccountMapper::OnSendFinished(const CoreAccountId& account_id,
                                       const std::string& message_id,
                                       GCMClient::Result result) {
   // TODO(fgorski): Add another attempt, in case the QUEUE is not full.
@@ -361,7 +361,7 @@ bool GCMAccountMapper::IsLastStatusChangeOlderThanTTL(
 }
 
 AccountMapping* GCMAccountMapper::FindMappingByAccountId(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   for (auto iter = accounts_.begin(); iter != accounts_.end(); ++iter) {
     if (iter->account_id == account_id)
       return &*iter;

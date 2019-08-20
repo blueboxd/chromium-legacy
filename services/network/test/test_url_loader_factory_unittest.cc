@@ -51,7 +51,7 @@ class TestURLLoaderFactoryTest : public testing::Test {
   TestURLLoaderClient* client() { return &client_; }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestURLLoaderFactory factory_;
   mojom::URLLoaderPtr loader_;
   TestURLLoaderClient client_;

@@ -62,7 +62,7 @@ class GCMProfileService::IdentityObserver
 
   // The account ID that this service is responsible for. Empty when the service
   // is not running.
-  std::string account_id_;
+  CoreAccountId account_id_;
 
   base::WeakPtrFactory<GCMProfileService::IdentityObserver> weak_ptr_factory_{
       this};
@@ -100,7 +100,7 @@ void GCMProfileService::IdentityObserver::OnPrimaryAccountSet(
 
 void GCMProfileService::IdentityObserver::OnPrimaryAccountCleared(
     const CoreAccountInfo& previous_primary_account_info) {
-  account_id_.clear();
+  account_id_ = CoreAccountId();
 
   // Still need to notify GCMDriver for UMA purpose.
   driver_->OnSignedOut();

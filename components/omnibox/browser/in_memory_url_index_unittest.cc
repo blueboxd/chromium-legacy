@@ -169,7 +169,7 @@ class InMemoryURLIndexTest : public testing::Test {
   void ExpectPrivateDataEqual(const URLIndexPrivateData& expected,
                               const URLIndexPrivateData& actual);
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir history_dir_;
   std::unique_ptr<history::HistoryService> history_service_;
   history::HistoryDatabase* history_database_ = nullptr;
@@ -292,7 +292,7 @@ void InMemoryURLIndexTest::TearDown() {
   // it is destroyed in order to prevent HistoryService calling dead observer.
   if (url_index_)
     url_index_->Shutdown();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 base::FilePath::StringType InMemoryURLIndexTest::TestDBName() const {
@@ -1433,7 +1433,7 @@ class InMemoryURLIndexCacheTest : public testing::Test {
   void set_history_dir(const base::FilePath& dir_path);
   bool GetCacheFilePath(base::FilePath* file_path) const;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<InMemoryURLIndex> url_index_;
 };

@@ -316,7 +316,7 @@ class PseudoTcpAdapterTest : public testing::Test {
 
   std::unique_ptr<PseudoTcpAdapter> host_pseudotcp_;
   std::unique_ptr<PseudoTcpAdapter> client_pseudotcp_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(PseudoTcpAdapterTest, DataTransfer) {

@@ -41,7 +41,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.AsyncTask;
@@ -241,7 +240,7 @@ public class VrShellDelegate
                 // If we didn't request WebVR then we're not coming from a request present call.
                 // If we didn't set mStartedFromVrIntent this isn't an intent from another app.
                 // Therefore we can assume this was triggered by NFC.
-                VrShellDelegateJni.get().recordVrStartAction(
+                sInstance.nativeRecordVrStartAction(
                         sInstance.mNativeVrShellDelegate, VrStartAction.HEADSET_ACTIVATION);
             }
 
@@ -342,7 +341,7 @@ public class VrShellDelegate
      */
     public static void onNativeLibraryAvailable() {
         VrModuleProvider.registerJni();
-        VrShellDelegateJni.get().onLibraryAvailable();
+        nativeOnLibraryAvailable();
     }
 
     /**
@@ -713,7 +712,7 @@ public class VrShellDelegate
     private static void registerVrAssetsComponentIfDaydreamUser(boolean isDaydreamCurrentViewer) {
         assert !sRegisteredVrAssetsComponent;
         if (isDaydreamCurrentViewer) {
-            VrShellDelegateJni.get().registerVrAssetsComponent();
+            nativeRegisterVrAssetsComponent();
             sRegisteredVrAssetsComponent = true;
         }
         ChromePreferenceManager.getInstance().writeBoolean(
@@ -898,7 +897,7 @@ public class VrShellDelegate
         // If an activity isn't resumed at the point, it must have been paused.
         mPaused = ApplicationStatus.getStateForActivity(activity) != ActivityState.RESUMED;
         mVisible = activity.hasWindowFocus();
-        mNativeVrShellDelegate = VrShellDelegateJni.get().init(VrShellDelegate.this);
+        mNativeVrShellDelegate = nativeInit();
         updateVrSupportLevel(null);
         mFeedbackFrequency = VrFeedbackStatus.getFeedbackFrequency();
         ensureLifecycleObserverInitialized();
@@ -1050,8 +1049,7 @@ public class VrShellDelegate
 
     private void maybeSetPresentResult(boolean result) {
         if (mNativeVrShellDelegate == 0 || !mRequestedWebVr) return;
-        VrShellDelegateJni.get().setPresentResult(
-                mNativeVrShellDelegate, VrShellDelegate.this, result);
+        nativeSetPresentResult(mNativeVrShellDelegate, result);
         mRequestedWebVr = false;
     }
 
@@ -1073,7 +1071,7 @@ public class VrShellDelegate
         }
         enterVr(mActivateFromHeadsetInsertion);
         if (mActivateFromHeadsetInsertion && mListeningForWebVrActivate) {
-            VrShellDelegateJni.get().displayActivate(mNativeVrShellDelegate, VrShellDelegate.this);
+            nativeDisplayActivate(mNativeVrShellDelegate);
             mActivateFromHeadsetInsertion = false;
         }
 
@@ -1172,9 +1170,7 @@ public class VrShellDelegate
             return;
         }
 
-        if (!mInVr)
-            VrShellDelegateJni.get().recordVrStartAction(
-                    mNativeVrShellDelegate, VrStartAction.INTENT_LAUNCH);
+        if (!mInVr) nativeRecordVrStartAction(mNativeVrShellDelegate, VrStartAction.INTENT_LAUNCH);
 
         mStartedFromVrIntent = true;
         // Setting DON succeeded will cause us to enter VR when resuming.
@@ -1468,8 +1464,7 @@ public class VrShellDelegate
 
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {
-            if (mNativeVrShellDelegate != 0)
-                VrShellDelegateJni.get().onResume(mNativeVrShellDelegate, VrShellDelegate.this);
+            if (mNativeVrShellDelegate != 0) nativeOnResume(mNativeVrShellDelegate);
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
@@ -1556,8 +1551,7 @@ public class VrShellDelegate
         }
 
         if (mInVr) mVrShell.pause();
-        if (mNativeVrShellDelegate != 0)
-            VrShellDelegateJni.get().onPause(mNativeVrShellDelegate, VrShellDelegate.this);
+        if (mNativeVrShellDelegate != 0) nativeOnPause(mNativeVrShellDelegate);
 
         mIsDaydreamCurrentViewer = null;
     }
@@ -1666,8 +1660,7 @@ public class VrShellDelegate
             if (mActivateFromHeadsetInsertion) {
                 // Dispatch vrdisplayactivate so that the WebVr page can call requestPresent
                 // to start presentation.
-                VrShellDelegateJni.get().displayActivate(
-                        mNativeVrShellDelegate, VrShellDelegate.this);
+                nativeDisplayActivate(mNativeVrShellDelegate);
                 mActivateFromHeadsetInsertion = false;
             }
         } else {
@@ -1953,22 +1946,18 @@ public class VrShellDelegate
     private void destroy() {
         if (sInstance == null) return;
         shutdownVr(false /* disableVrMode */, false /* stayingInChrome */);
-        if (mNativeVrShellDelegate != 0)
-            VrShellDelegateJni.get().destroy(mNativeVrShellDelegate, VrShellDelegate.this);
+        if (mNativeVrShellDelegate != 0) nativeDestroy(mNativeVrShellDelegate);
         mNativeVrShellDelegate = 0;
         sInstance = null;
     }
 
-    @NativeMethods
-    interface Natives {
-        long init(VrShellDelegate caller);
-        void onLibraryAvailable();
-        void setPresentResult(long nativeVrShellDelegate, VrShellDelegate caller, boolean result);
-        void recordVrStartAction(long nativeVrShellDelegate, int startAction);
-        void displayActivate(long nativeVrShellDelegate, VrShellDelegate caller);
-        void onPause(long nativeVrShellDelegate, VrShellDelegate caller);
-        void onResume(long nativeVrShellDelegate, VrShellDelegate caller);
-        void destroy(long nativeVrShellDelegate, VrShellDelegate caller);
-        void registerVrAssetsComponent();
-    }
+    private native long nativeInit();
+    private static native void nativeOnLibraryAvailable();
+    private native void nativeSetPresentResult(long nativeVrShellDelegate, boolean result);
+    private native void nativeRecordVrStartAction(long nativeVrShellDelegate, int startAction);
+    private native void nativeDisplayActivate(long nativeVrShellDelegate);
+    private native void nativeOnPause(long nativeVrShellDelegate);
+    private native void nativeOnResume(long nativeVrShellDelegate);
+    private native void nativeDestroy(long nativeVrShellDelegate);
+    private static native void nativeRegisterVrAssetsComponent();
 }

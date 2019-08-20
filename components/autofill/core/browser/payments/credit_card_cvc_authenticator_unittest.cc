@@ -151,7 +151,7 @@ class CreditCardCVCAuthenticatorTest : public testing::Test {
 
  protected:
   std::unique_ptr<TestAuthenticationRequester> requester_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestAutofillClient autofill_client_;
   std::unique_ptr<TestAutofillDriver> autofill_driver_;
   scoped_refptr<AutofillWebDataService> database_;

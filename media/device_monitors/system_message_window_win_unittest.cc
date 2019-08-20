@@ -29,8 +29,8 @@ class SystemMessageWindowWinTest : public testing::Test {
   }
 
   // Run single threaded to not require explicit COM initialization
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY};
   base::SystemMonitor system_monitor_;
   base::MockDevicesChangedObserver observer_;
   SystemMessageWindowWin window_;

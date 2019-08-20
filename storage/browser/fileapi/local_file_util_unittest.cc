@@ -122,7 +122,7 @@ class LocalFileUtilTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<FileSystemContext> file_system_context_;
   base::ScopedTempDir data_dir_;
 

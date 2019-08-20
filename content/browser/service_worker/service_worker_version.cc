@@ -2042,12 +2042,20 @@ bool ServiceWorkerVersion::IsStartWorkerAllowed() const {
   // was previously allowed and installed, but later content settings changed to
   // disallow this scope. Since this worker might not be used for a specific
   // tab, pass a null callback as WebContents getter.
-  // resource_context() can return null in unit tests.
-  if ((context_->wrapper()->resource_context() &&
-       !GetContentClient()->browser()->AllowServiceWorkerOnIO(
-           scope_, scope_, script_url_, context_->wrapper()->resource_context(),
-           base::NullCallback()))) {
-    return false;
+  if (ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled()) {
+    if (!GetContentClient()->browser()->AllowServiceWorkerOnUI(
+            scope_, scope_, script_url_, context_->wrapper()->browser_context(),
+            base::NullCallback())) {
+      return false;
+    }
+  } else {
+    // resource_context() can return null in unit tests.
+    if ((context_->wrapper()->resource_context() &&
+         !GetContentClient()->browser()->AllowServiceWorkerOnIO(
+             scope_, scope_, script_url_,
+             context_->wrapper()->resource_context(), base::NullCallback()))) {
+      return false;
+    }
   }
 
   return true;

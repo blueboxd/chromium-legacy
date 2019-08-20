@@ -5,6 +5,8 @@
 #include "chromeos/cryptohome/cryptohome_util.h"
 
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/logging.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
@@ -367,6 +369,9 @@ MountError CryptohomeErrorToMountError(CryptohomeErrorCode code) {
     case CRYPTOHOME_ERROR_FIRMWARE_MANAGEMENT_PARAMETERS_CANNOT_STORE:
     case CRYPTOHOME_ERROR_FIRMWARE_MANAGEMENT_PARAMETERS_CANNOT_REMOVE:
     case CRYPTOHOME_ERROR_UPDATE_USER_ACTIVITY_TIMESTAMP_FAILED:
+    case CRYPTOHOME_ERROR_FAILED_TO_EXTEND_PCR:
+    case CRYPTOHOME_ERROR_FAILED_TO_READ_PCR:
+    case CRYPTOHOME_ERROR_PCR_ALREADY_EXTENDED:
       NOTREACHED();
       return MOUNT_ERROR_FATAL;
   }

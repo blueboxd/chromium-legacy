@@ -214,7 +214,7 @@ class PreviewsUIServiceTest : public testing::Test {
 
  protected:
   // Run this test on a single thread.
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestPreviewsLogger* logger_ptr_;
   network::TestNetworkQualityTracker test_network_quality_tracker_;
 

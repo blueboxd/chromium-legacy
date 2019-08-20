@@ -74,7 +74,7 @@ class VariationsIdCollectionTest : public ::testing::Test {
   VariationsIdCollection* collection() { return collection_.get(); }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::FieldTrialList field_trial_list_;
   std::unique_ptr<VariationsIdCollection> collection_;
   std::vector<VariationID> new_ids_;

@@ -43,7 +43,8 @@ NamedMessagePortConnector::NamedMessagePortConnector(fuchsia::web::Frame* frame)
   frame_->AddBeforeLoadJavaScript(
       static_cast<uint64_t>(
           CastPlatformBindingsId::NAMED_MESSAGE_PORT_CONNECTOR),
-      std::move(origins), cr_fuchsia::CloneBuffer(bindings_script_),
+      std::move(origins),
+      cr_fuchsia::CloneBuffer(bindings_script_, "cast-bindings-js"),
       [](fuchsia::web::Frame_AddBeforeLoadJavaScript_Result result) {
         CHECK(result.is_response()) << "Couldn't inject bindings.";
       });
@@ -81,7 +82,8 @@ void NamedMessagePortConnector::OnPageLoad() {
   control_port_.Unbind();
 
   fuchsia::web::WebMessage message;
-  message.set_data(cr_fuchsia::MemBufferFromString(kControlPortConnectMessage));
+  message.set_data(cr_fuchsia::MemBufferFromString(kControlPortConnectMessage,
+                                                   "cast-connect-message"));
   std::vector<fuchsia::web::OutgoingTransferable> outgoing_vector(1);
   outgoing_vector[0].set_message_port(control_port_.NewRequest());
   message.set_outgoing_transfer(std::move(outgoing_vector));

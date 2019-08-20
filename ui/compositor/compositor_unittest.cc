@@ -82,8 +82,7 @@ class CompositorTestWithMockedTime : public CompositorTest {
 class CompositorTestWithMessageLoop : public CompositorTest {
  public:
   CompositorTestWithMessageLoop()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
   ~CompositorTestWithMessageLoop() override = default;
 
  protected:
@@ -95,7 +94,7 @@ class CompositorTestWithMessageLoop : public CompositorTest {
   base::SequencedTaskRunner* task_runner() { return task_runner_.get(); }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 

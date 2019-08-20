@@ -48,10 +48,10 @@ TEST(PropertyTreeTest, SetNeedsUpdate) {
   contents_root.id = tree.Insert(contents_root, 0);
 
   EXPECT_FALSE(tree.needs_update());
-  tree.SetRootTransformsAndScales(0.6f, 1.f, gfx::Transform());
+  tree.SetRootScaleAndTransform(0.6f, gfx::Transform());
   EXPECT_TRUE(tree.needs_update());
   tree.set_needs_update(false);
-  tree.SetRootTransformsAndScales(0.6f, 1.f, gfx::Transform());
+  tree.SetRootScaleAndTransform(0.6f, gfx::Transform());
   EXPECT_FALSE(tree.needs_update());
 }
 

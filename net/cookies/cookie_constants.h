@@ -41,6 +41,21 @@ enum class CookieSameSite {
   LAX_MODE_ALLOW_UNSAFE = 4,  // Allowed for effective SameSite only.
 };
 
+// What rules to apply when determining when whether access to a particular
+// cookie is allowed.
+// TODO(crbug.com/978172): Machinery to read the content setting and set the
+// appropriate CookieAccessSemantics on the cookie (will be added as a new
+// metadata field of CanonicalCookie).
+enum class CookieAccessSemantics {
+  // Has not been checked yet.
+  UNKNOWN = -1,
+  // Has been checked and the cookie should *not* be subject to legacy access
+  // rules.
+  NONLEGACY = 0,
+  // Has been checked and the cookie should be subject to legacy access rules.
+  LEGACY,
+};
+
 // Returns the Set-Cookie header priority token corresponding to |priority|.
 //
 // TODO(mkwst): Remove this once its callsites are refactored.

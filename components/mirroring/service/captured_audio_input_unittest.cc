@@ -51,9 +51,7 @@ class CapturedAudioInputTest : public ::testing::Test {
  public:
   CapturedAudioInputTest() {}
 
-  ~CapturedAudioInputTest() override {
-    scoped_task_environment_.RunUntilIdle();
-  }
+  ~CapturedAudioInputTest() override { task_environment_.RunUntilIdle(); }
 
   void CreateMockStream(bool initially_muted,
                         mojom::AudioStreamCreatorClientPtr client,
@@ -91,7 +89,7 @@ class CapturedAudioInputTest : public ::testing::Test {
   void CloseStream() {
     EXPECT_TRUE(audio_input_);
     audio_input_->CloseStream();
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     socket_.Close();
     audio_input_.reset();
     stream_ = nullptr;
@@ -134,7 +132,7 @@ class CapturedAudioInputTest : public ::testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<media::AudioInputIPC> audio_input_;
   MockDelegate delegate_;
   MockStream* stream_ = nullptr;

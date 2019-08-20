@@ -254,7 +254,7 @@ class AutofillTypeTraitsTestImpl : public testing::Test,
   }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   mojo::BindingSet<TypeTraitsTest> bindings_;
 };

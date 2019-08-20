@@ -35,7 +35,7 @@ TEST(SigninErrorControllerTest, SingleAccount) {
   MockSigninErrorControllerObserver observer;
   EXPECT_CALL(observer, OnErrorChanged()).Times(0);
 
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   signin::IdentityTestEnvironment identity_test_env;
   SigninErrorController error_controller(
       SigninErrorController::AccountMode::ANY_ACCOUNT,
@@ -83,7 +83,7 @@ TEST(SigninErrorControllerTest, SingleAccount) {
 }
 
 TEST(SigninErrorControllerTest, AccountTransitionAnyAccount) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   signin::IdentityTestEnvironment identity_test_env;
 
   CoreAccountId test_account_id =
@@ -114,7 +114,7 @@ TEST(SigninErrorControllerTest, AccountTransitionAnyAccount) {
 // ChromeOS.
 #if !defined(OS_CHROMEOS)
 TEST(SigninErrorControllerTest, AccountTransitionPrimaryAccount) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   signin::IdentityTestEnvironment identity_test_env;
   signin::PrimaryAccountMutator* primary_account_mutator =
       identity_test_env.identity_manager()->GetPrimaryAccountMutator();
@@ -179,7 +179,7 @@ TEST(SigninErrorControllerTest, AccountTransitionPrimaryAccount) {
 
 // Verify that SigninErrorController handles errors properly.
 TEST(SigninErrorControllerTest, AuthStatusEnumerateAllErrors) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   signin::IdentityTestEnvironment identity_test_env;
 
   CoreAccountId test_account_id =
@@ -226,7 +226,7 @@ TEST(SigninErrorControllerTest, AuthStatusEnumerateAllErrors) {
 
 // Verify that existing error is not replaced by new error.
 TEST(SigninErrorControllerTest, AuthStatusChange) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   signin::IdentityTestEnvironment identity_test_env;
 
   CoreAccountId test_account_id =
@@ -282,7 +282,7 @@ TEST(SigninErrorControllerTest, AuthStatusChange) {
 
 TEST(SigninErrorControllerTest,
      PrimaryAccountErrorsArePreferredToSecondaryAccountErrors) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   signin::IdentityTestEnvironment identity_test_env;
 
   AccountInfo primary_account_info =
@@ -329,7 +329,7 @@ TEST(SigninErrorControllerTest,
 }
 
 TEST(SigninErrorControllerTest, PrimaryAccountErrorsAreSticky) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   signin::IdentityTestEnvironment identity_test_env;
 
   AccountInfo primary_account_info =

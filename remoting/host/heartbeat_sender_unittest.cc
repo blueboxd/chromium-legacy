@@ -101,7 +101,7 @@ class HeartbeatSenderTest : public testing::Test, public LogToServer {
   ~HeartbeatSenderTest() override {
     heartbeat_sender_.reset();
     signal_strategy_.reset();
-    scoped_task_environment_.FastForwardUntilNoTasksRemain();
+    task_environment_.FastForwardUntilNoTasksRemain();
   }
 
  protected:
@@ -122,8 +122,8 @@ class HeartbeatSenderTest : public testing::Test, public LogToServer {
     return heartbeat_sender_->backoff_;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   MockHeartbeatClient* mock_client_;
 
   std::unique_ptr<FakeSignalStrategy> signal_strategy_;
@@ -156,7 +156,7 @@ TEST_F(HeartbeatSenderTest, SendHeartbeat) {
   EXPECT_CALL(mock_heartbeat_successful_callback_, Run()).Times(1);
 
   signal_strategy_->Connect();
-  scoped_task_environment_.FastForwardBy(kWaitForAllStrategiesConnectedTimeout);
+  task_environment_.FastForwardBy(kWaitForAllStrategiesConnectedTimeout);
 }
 
 TEST_F(HeartbeatSenderTest, SignalingReconnect_NewHeartbeats) {
@@ -221,7 +221,7 @@ TEST_F(HeartbeatSenderTest, HostOsInfoOnFirstHeartbeat) {
         response.set_set_interval_seconds(kGoodIntervalSeconds);
         std::move(callback).Run(grpc::Status::OK, response);
       });
-  scoped_task_environment_.FastForwardBy(kTestHeartbeatDelay);
+  task_environment_.FastForwardBy(kTestHeartbeatDelay);
 }
 
 TEST_F(HeartbeatSenderTest, UnknownHostId) {
@@ -237,7 +237,7 @@ TEST_F(HeartbeatSenderTest, UnknownHostId) {
 
   signal_strategy_->Connect();
 
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
 }
 
 TEST_F(HeartbeatSenderTest, SendHeartbeatLogEntryOnHeartbeat) {
@@ -271,9 +271,9 @@ TEST_F(HeartbeatSenderTest, FailedToHeartbeat_Backoff) {
   ASSERT_EQ(0, GetBackoff().failure_count());
   signal_strategy_->Connect();
   ASSERT_EQ(1, GetBackoff().failure_count());
-  scoped_task_environment_.FastForwardBy(GetBackoff().GetTimeUntilRelease());
+  task_environment_.FastForwardBy(GetBackoff().GetTimeUntilRelease());
   ASSERT_EQ(2, GetBackoff().failure_count());
-  scoped_task_environment_.FastForwardBy(GetBackoff().GetTimeUntilRelease());
+  task_environment_.FastForwardBy(GetBackoff().GetTimeUntilRelease());
   ASSERT_EQ(0, GetBackoff().failure_count());
 }
 
@@ -292,7 +292,7 @@ TEST_F(HeartbeatSenderTest, Unauthenticated) {
   EXPECT_CALL(mock_unauthenticated_error_callback_, Run()).Times(1);
 
   signal_strategy_->Connect();
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
 
   // Should retry heartbeating at least once.
   ASSERT_LT(1, heartbeat_count);

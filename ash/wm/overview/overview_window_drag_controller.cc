@@ -661,26 +661,6 @@ SplitViewController::SnapPosition OverviewWindowDragController::GetSnapPosition(
   }
 }
 
-gfx::Rect OverviewWindowDragController::GetGridBounds(
-    SplitViewController::SnapPosition snap_position) {
-  aura::Window* pending_snapped_window = item_->GetWindow();
-  switch (snap_position) {
-    case SplitViewController::NONE:
-      return gfx::Rect(
-          screen_util::GetDisplayWorkAreaBoundsInParentForActiveDeskContainer(
-              pending_snapped_window));
-    case SplitViewController::LEFT:
-      return split_view_controller_->GetSnappedWindowBoundsInScreen(
-          pending_snapped_window, SplitViewController::RIGHT);
-    case SplitViewController::RIGHT:
-      return split_view_controller_->GetSnappedWindowBoundsInScreen(
-          pending_snapped_window, SplitViewController::LEFT);
-  }
-
-  NOTREACHED();
-  return gfx::Rect();
-}
-
 void OverviewWindowDragController::SnapWindow(
     SplitViewController::SnapPosition snap_position) {
   DCHECK_NE(snap_position, SplitViewController::NONE);

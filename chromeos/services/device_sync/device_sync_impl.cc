@@ -11,6 +11,7 @@
 #include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/time/default_clock.h"
+#include "base/token.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/secure_message_delegate_impl.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -243,7 +244,8 @@ void DeviceSyncImpl::PrefConnectionDelegate::ConnectToPrefService(
     prefs::ConnectCallback callback) {
   prefs::ConnectToPrefService(
       prefs::mojom::PrefStoreConnectorPtr(std::move(pref_store_connector)),
-      std::move(pref_registry), std::move(callback));
+      std::move(pref_registry), base::Token::CreateRandom(),
+      std::move(callback));
 }
 
 DeviceSyncImpl::PendingSetSoftwareFeatureRequest::

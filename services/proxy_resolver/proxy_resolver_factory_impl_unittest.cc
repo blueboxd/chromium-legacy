@@ -157,7 +157,7 @@ class ProxyResolverFactoryImplTest
       std::move(idle_callback_).Run();
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<TestProxyResolverFactoryImpl> mock_factory_impl_;
   TestProxyResolverFactory* mock_factory_;
   mojo::Remote<mojom::ProxyResolverFactory> factory_;

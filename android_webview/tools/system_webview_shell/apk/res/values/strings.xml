@@ -28,4 +28,7 @@
     <string name="rotate_button">Rotate</string>
     <string name="scale_button">Scale</string>
     <string name="translate_button">Translate</string>
+
+    <!--  activity_web_platform_tests strings -->
+    <string name="close_button">close</string>
 </resources>

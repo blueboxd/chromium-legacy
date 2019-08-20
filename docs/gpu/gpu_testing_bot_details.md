@@ -27,11 +27,11 @@ waterfalls, and various tryservers, as described in [Using the GPU Bots].
 All of the physical hardware for the bots lives in the Swarming pool, and most
 of it in the Chrome-GPU Swarming pool. The waterfall bots are simply virtual
 machines which spawn Swarming tasks with the appropriate tags to get them to run
-on the desired GPU and operating system type. So, for example, the [Win10
+on the desired GPU and operating system type. So, for example, the [Win10 x64
 Release (NVIDIA)] bot is actually a virtual machine which spawns all of its jobs
 with the Swarming parameters:
 
-[Win10 Release (NVIDIA)]: https://ci.chromium.org/p/chromium/builders/luci.chromium.ci/Win10%20Release%20%28NVIDIA%29
+[Win10 x64 Release (NVIDIA)]: https://ci.chromium.org/p/chromium/builders/ci/Win10%20x64%20Release%20%28NVIDIA%29
 
 ```json
 {

@@ -30,7 +30,7 @@ developer will not remove it earlier than this process specifies.
 After each milestone's branch point:
 
 1. The flags team chooses a set of flags to begin expiring, from the list
-   produced by `tools/flags/list-flags.py --expired-by $MSTONE`. In the steady
+   produced by `tools/flags/list_flags.py --expired-by $MSTONE`. In the steady
    state, when there is not a big backlog of flags to remove, this set will be
    the entire list of flags that are `expired-by $MSTONE`.
 2. The flags team hides the flags in this set by default from `chrome://flags`,

@@ -108,7 +108,7 @@ class RlzLibTest : public RlzLibTestBase {
     url_loader_factory->AddResponse(url, kGoodPingResponses);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(RlzLibTest, RecordProductEvent) {

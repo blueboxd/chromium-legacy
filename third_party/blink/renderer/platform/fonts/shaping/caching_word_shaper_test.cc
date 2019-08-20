@@ -28,7 +28,7 @@ class CachingWordShaperTest : public testing::Test {
     cache = std::make_unique<ShapeCache>();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   FontCachePurgePreventer font_cache_purge_preventer;
   FontDescription font_description;
   Font font;

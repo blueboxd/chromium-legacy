@@ -97,7 +97,7 @@ class InterfaceInvalidatorTest : public testing::Test {
   ~InterfaceInvalidatorTest() override {}
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(InterfaceInvalidatorTest);
 };

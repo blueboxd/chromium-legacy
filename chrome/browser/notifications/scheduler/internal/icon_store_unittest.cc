@@ -15,6 +15,7 @@
 #include "chrome/browser/notifications/proto/icon.pb.h"
 #include "chrome/browser/notifications/scheduler/internal/icon_entry.h"
 #include "components/leveldb_proto/testing/fake_db.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace notifications {
@@ -24,6 +25,18 @@ const char kEntryId[] = "proto_id_1";
 const char kEntryId2[] = "proto_id_2";
 const char kEntryData[] = "data_1";
 const char kEntryData2[] = "data_2";
+
+class MockIconConverter : public IconConverter {
+ public:
+  MockIconConverter() = default;
+  MOCK_METHOD2(ConvertIconToString,
+               void(std::vector<SkBitmap>, IconConverter::EncodeCallback));
+  MOCK_METHOD2(ConvertStringToIcon,
+               void(std::vector<std::string>, IconConverter::DecodeCallback));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockIconConverter);
+};
 
 class IconStoreTest : public testing::Test {
  public:
@@ -42,7 +55,10 @@ class IconStoreTest : public testing::Test {
         std::make_unique<leveldb_proto::test::FakeDB<proto::Icon, IconEntry>>(
             &db_entries_);
     db_ = db.get();
-    store_ = std::make_unique<IconProtoDbStore>(std::move(db));
+    auto icon_converter = std::make_unique<MockIconConverter>();
+    icon_converter_ = icon_converter.get();
+    store_ = std::make_unique<IconProtoDbStore>(std::move(db),
+                                                std::move(icon_converter));
   }
 
   void InitDb() {
@@ -68,6 +84,7 @@ class IconStoreTest : public testing::Test {
   const std::vector<IconEntry>* loaded_entries() {
     return loaded_entries_.get();
   }
+  MockIconConverter* icon_converter() { return icon_converter_; }
 
   void VerifyEntries(std::vector<std::pair<std::string, std::string>> inputs) {
     EXPECT_EQ(inputs.size(), loaded_entries_->size());
@@ -84,6 +101,7 @@ class IconStoreTest : public testing::Test {
   std::unique_ptr<std::vector<IconEntry>> loaded_entries_;
   bool load_result_;
   leveldb_proto::test::FakeDB<proto::Icon, IconEntry>* db_;
+  MockIconConverter* icon_converter_;
 
   DISALLOW_COPY_AND_ASSIGN(IconStoreTest);
 };

@@ -44,8 +44,7 @@ class MockPdfCompositorImpl : public PdfCompositorImpl {
 class PdfCompositorImplTest : public testing::Test {
  public:
   PdfCompositorImplTest()
-      : task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         run_loop_(std::make_unique<base::RunLoop>()),
         is_ready_(false) {}
 
@@ -77,7 +76,7 @@ class PdfCompositorImplTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<base::RunLoop> run_loop_;
   bool is_ready_;
 };

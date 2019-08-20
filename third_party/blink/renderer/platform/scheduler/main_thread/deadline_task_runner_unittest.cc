@@ -19,9 +19,8 @@ class DeadlineTaskRunnerTest : public testing::Test {
  public:
   DeadlineTaskRunnerTest()
       : task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME,
-            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::
-                QUEUED) {}
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME,
+            base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED) {}
   ~DeadlineTaskRunnerTest() override = default;
 
   void SetUp() override {
@@ -38,7 +37,7 @@ class DeadlineTaskRunnerTest : public testing::Test {
 
   void TestTask() { run_times_.push_back(Now()); }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<DeadlineTaskRunner> deadline_task_runner_;
   std::vector<base::TimeTicks> run_times_;
 };

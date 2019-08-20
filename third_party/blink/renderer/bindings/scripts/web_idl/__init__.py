@@ -14,13 +14,13 @@ def _setup_sys_path():
     this_dir = os.path.dirname(__file__)
     root_dir = os.path.join(this_dir, *(['..'] * expected_path.count('/')))
     sys.path = [
+        # //third_party/blink/renderer/build/scripts/blinkbuild
+        os.path.join(root_dir, 'third_party', 'blink', 'renderer', 'build',
+                     'scripts'),
         # //third_party/ply
         os.path.join(root_dir, 'third_party'),
         # //tools/idl_parser
         os.path.join(root_dir, 'tools'),
-        # //third_party/blink/renderer/build/scripts/blinkbuild
-        os.path.join(root_dir, 'third_party', 'blink', 'renderer', 'build',
-                     'scripts'),
     ] + sys.path
 
 

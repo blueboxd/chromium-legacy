@@ -54,8 +54,7 @@ class PlatformVideoFramePoolTest
   using DmabufId = PlatformVideoFramePool::DmabufId;
 
   PlatformVideoFramePoolTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
     pool_.reset(new PlatformVideoFramePool(
         base::BindRepeating(&CreateDmabufVideoFrame), &test_clock_));
     pool_->set_parent_task_runner(base::ThreadTaskRunnerHandle::Get());
@@ -90,7 +89,7 @@ class PlatformVideoFramePoolTest
   DmabufId GetDmabufId(const VideoFrame& frame) { return &(frame.DmabufFds()); }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::SimpleTestTickClock test_clock_;
   std::unique_ptr<PlatformVideoFramePool,
                   std::default_delete<DmabufVideoFramePool>>
@@ -114,7 +113,7 @@ TEST_F(PlatformVideoFramePoolTest, SingleFrameReuse) {
 
   // Clear frame reference to return the frame to the pool.
   frame = nullptr;
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Verify that the next frame from the pool uses the same memory.
   scoped_refptr<VideoFrame> new_frame = GetFrame(20);
@@ -129,18 +128,18 @@ TEST_F(PlatformVideoFramePoolTest, MultipleFrameReuse) {
   DmabufId id2 = GetDmabufId(*frame2);
 
   frame1 = nullptr;
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   frame1 = GetFrame(30);
   EXPECT_EQ(id1, GetDmabufId(*frame1));
 
   frame2 = nullptr;
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   frame2 = GetFrame(40);
   EXPECT_EQ(id2, GetDmabufId(*frame2));
 
   frame1 = nullptr;
   frame2 = nullptr;
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   CheckPoolSize(2u);
 }
 
@@ -152,7 +151,7 @@ TEST_F(PlatformVideoFramePoolTest, FormatChange) {
   // Clear frame references to return the frames to the pool.
   frame_a = nullptr;
   frame_b = nullptr;
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Verify that both frames are in the pool.
   CheckPoolSize(2u);
@@ -173,16 +172,16 @@ TEST_F(PlatformVideoFramePoolTest, StaleFramesAreExpired) {
 
   // Drop frame and verify that resources are still available for reuse.
   frame_1 = nullptr;
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   CheckPoolSize(1u);
 
   // Advance clock far enough to hit stale timer; ensure only frame_1 has its
   // resources released.
   base::TimeDelta time_forward = base::TimeDelta::FromMinutes(1);
   test_clock_.Advance(time_forward);
-  scoped_task_environment_.FastForwardBy(time_forward);
+  task_environment_.FastForwardBy(time_forward);
   frame_2 = nullptr;
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   CheckPoolSize(1u);
 }
 

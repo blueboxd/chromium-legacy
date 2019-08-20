@@ -536,7 +536,7 @@ class MojoInterfacePassingPerfTest : public mojo::core::test::MojoTestBase {
 DEFINE_TEST_CLIENT_WITH_PIPE(InterfacePassingClient,
                              MojoInterfacePassingPerfTest,
                              h) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   return RunInterfacePassingClient(h);
 }
 
@@ -571,7 +571,7 @@ using MojoInProcessInterfacePassingPerfTest =
     InProcessPerfTest<MojoInterfacePassingPerfTest>;
 
 DEFINE_TEST_CLIENT_WITH_PIPE(PingPongClient, MojoInterfacePerfTest, h) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   return RunPingPongClient(h);
 }
 
@@ -579,7 +579,7 @@ DEFINE_TEST_CLIENT_WITH_PIPE(PingPongClient, MojoInterfacePerfTest, h) {
 // raw IPC::Messages.
 TEST_F(MojoInterfacePerfTest, MultiprocessPingPong) {
   RunTestClient("PingPongClient", [&](MojoHandle h) {
-    base::test::ScopedTaskEnvironment scoped_task_environment;
+    base::test::TaskEnvironment task_environment;
     RunPingPongServer(h, "Multiprocess");
   });
 }
@@ -587,21 +587,21 @@ TEST_F(MojoInterfacePerfTest, MultiprocessPingPong) {
 TEST_F(MojoInterfacePerfTest, MultiprocessSyncPing) {
   sync_ = true;
   RunTestClient("PingPongClient", [&](MojoHandle h) {
-    base::test::ScopedTaskEnvironment scoped_task_environment;
+    base::test::TaskEnvironment task_environment;
     RunPingPongServer(h, "MultiprocessSync");
   });
 }
 
 TEST_F(MojoInterfacePassingPerfTest, MultiprocessInterfacePassing) {
   RunTestClient("InterfacePassingClient", [&](MojoHandle h) {
-    base::test::ScopedTaskEnvironment scoped_task_environment;
+    base::test::TaskEnvironment task_environment;
     RunInterfacePassingServer(h, "InterfacePassing", false /* associated */);
   });
 }
 
 TEST_F(MojoInterfacePassingPerfTest, MultiprocessAssociatedInterfacePassing) {
   RunTestClient("InterfacePassingClient", [&](MojoHandle h) {
-    base::test::ScopedTaskEnvironment scoped_task_environment;
+    base::test::TaskEnvironment task_environment;
     RunInterfacePassingServer(h, "AssociatedInterfacePassing",
                               true /* associated*/);
   });
@@ -618,7 +618,7 @@ TEST_P(MojoInProcessInterfacePerfTest, MultiThreadPingPong) {
       FROM_HERE,
       base::BindOnce(base::IgnoreResult(&RunPingPongClient), client_handle));
 
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   RunPingPongServer(server_handle, "SingleProcess");
 }
 
@@ -626,7 +626,7 @@ TEST_P(MojoInProcessInterfacePerfTest, SingleThreadPingPong) {
   MojoHandle server_handle, client_handle;
   CreateMessagePipe(&server_handle, &client_handle);
 
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   mojo::MessagePipeHandle mp_handle(client_handle);
   mojo::ScopedMessagePipeHandle scoped_mp(mp_handle);
   LockThreadAffinity thread_locker(kSharedCore);
@@ -650,7 +650,7 @@ TEST_P(MojoInProcessInterfacePassingPerfTest, MultiThreadInterfacePassing) {
       FROM_HERE, base::BindOnce(base::IgnoreResult(&RunInterfacePassingClient),
                                 client_handle));
 
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   RunInterfacePassingServer(server_handle, "SingleProcess",
                             false /* associated */);
 }
@@ -666,7 +666,7 @@ TEST_P(MojoInProcessInterfacePassingPerfTest,
       FROM_HERE, base::BindOnce(base::IgnoreResult(&RunInterfacePassingClient),
                                 client_handle));
 
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   RunInterfacePassingServer(server_handle, "SingleProcess",
                             true /* associated */);
 }
@@ -675,7 +675,7 @@ TEST_P(MojoInProcessInterfacePassingPerfTest, SingleThreadInterfacePassing) {
   MojoHandle server_handle, client_handle;
   CreateMessagePipe(&server_handle, &client_handle);
 
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   mojo::MessagePipeHandle mp_handle(client_handle);
   mojo::ScopedMessagePipeHandle scoped_mp(mp_handle);
   LockThreadAffinity thread_locker(kSharedCore);
@@ -690,7 +690,7 @@ TEST_P(MojoInProcessInterfacePassingPerfTest,
   MojoHandle server_handle, client_handle;
   CreateMessagePipe(&server_handle, &client_handle);
 
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   mojo::MessagePipeHandle mp_handle(client_handle);
   mojo::ScopedMessagePipeHandle scoped_mp(mp_handle);
   LockThreadAffinity thread_locker(kSharedCore);
@@ -729,7 +729,7 @@ class CallbackPerfTest : public testing::Test {
   }
 
   void Ping(const std::string& value) {
-    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+    task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&CallbackPerfTest::OnPong,
                                   base::Unretained(this), value));
   }
@@ -836,7 +836,7 @@ class CallbackPerfTest : public testing::Test {
 
  private:
   base::Thread client_thread_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   int message_count_;
   int count_down_;
   std::string payload_;

@@ -586,8 +586,8 @@ TEST_P(PaintChunksToCcLayerTest, VisualRect) {
       cc::DisplayItemList::kTopLevelDisplayItemList);
   PaintChunksToCcLayer::ConvertInto(
       chunks.chunks, PropertyTreeState(*layer_transform, c0(), e0()),
-      gfx::Vector2dF(100, 200), FloatSize(), chunks.items, *cc_list);
-  EXPECT_EQ(gfx::Rect(-50, -100, 100, 100), cc_list->VisualRectForTesting(4));
+      gfx::Vector2dF(10, 20), FloatSize(), chunks.items, *cc_list);
+  EXPECT_EQ(gfx::Rect(40, 80, 100, 100), cc_list->VisualRectForTesting(4));
 
   EXPECT_THAT(*cc_list->ReleaseAsRecord(),
               PaintRecordMatcher::Make(

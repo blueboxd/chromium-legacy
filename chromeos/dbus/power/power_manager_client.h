@@ -72,6 +72,9 @@ class COMPONENT_EXPORT(DBUS_POWER) PowerManagerClient {
     // PowerManagerClient if the service's availability is already known.
     virtual void PowerManagerBecameAvailable(bool available) {}
 
+    // Called when the power manager is completely initialized.
+    virtual void PowerManagerInitialized() {}
+
     // Called if the power manager process restarts.
     virtual void PowerManagerRestarted() {}
 
@@ -317,6 +320,9 @@ class COMPONENT_EXPORT(DBUS_POWER) PowerManagerClient {
   // false on failure.
   virtual void DeleteArcTimers(const std::string& tag,
                                VoidDBusMethodCallback callback) = 0;
+
+  // The time power manager will wait before resuspending from a dark resume.
+  virtual base::TimeDelta GetDarkSuspendDelayTimeout() = 0;
 
   PowerManagerClient();
   virtual ~PowerManagerClient();

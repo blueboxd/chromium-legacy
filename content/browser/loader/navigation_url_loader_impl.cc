@@ -1029,8 +1029,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
           // TODO(crbug/898733): Support SignedExchange loading and Service
           // Worker integration.
           if (service_worker_navigation_handle_) {
-            base::PostTask(
-                FROM_HERE, {BrowserThread::IO},
+            RunOrPostTaskOnThread(
+                FROM_HERE, ServiceWorkerContextWrapper::GetCoreThreadId(),
                 base::BindOnce(
                     [](ServiceWorkerNavigationHandleCore* core) {
                       base::WeakPtr<ServiceWorkerProviderHost> host =
@@ -1042,7 +1042,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
                       }
                     },
                     // Unretained() is safe because the handle owns the core,
-                    // and core gets deleted on the IO thread in a task that
+                    // and core gets deleted on the core thread in a task that
                     // must occur after this task.
                     base::Unretained(
                         service_worker_navigation_handle_->core())));

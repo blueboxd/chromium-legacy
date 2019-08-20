@@ -61,8 +61,7 @@ mojom::NetworkContextParamsPtr CreateContextParams() {
 class HttpCacheDataCounterTest : public testing::Test {
  public:
   HttpCacheDataCounterTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         network_service_(NetworkService::CreateForTesting()) {}
 
   ~HttpCacheDataCounterTest() override = default;
@@ -104,7 +103,7 @@ class HttpCacheDataCounterTest : public testing::Test {
       ASSERT_TRUE(base::Time::FromString(test_entry.date, &time));
       entry->SetLastUsedTimeForTest(time);
       entry->Close();
-      scoped_task_environment_.RunUntilIdle();
+      task_environment_.RunUntilIdle();
     }
   }
 
@@ -183,7 +182,7 @@ class HttpCacheDataCounterTest : public testing::Test {
         std::move(context_params));
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir cache_dir_;
   std::unique_ptr<NetworkService> network_service_;
   std::unique_ptr<NetworkContext> network_context_;
@@ -215,8 +214,8 @@ TEST_F(HttpCacheDataCounterTest, Basic) {
 
 // Return the sensible thing (0 bytes used) when there is no cache.
 TEST(HttpCacheDataCounterTestNoCache, BeSensible) {
-  base::test::ScopedTaskEnvironment scoped_task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
   std::unique_ptr<NetworkService> network_service(
       NetworkService::CreateForTesting());
   std::unique_ptr<NetworkContext> network_context;

@@ -41,8 +41,8 @@ namespace test {
 
 // Test the order of notifications sent when faking fullscreen transitions.
 TEST(ScopedFakeNSWindowFullscreenTest, TestOrdering) {
-  base::test::ScopedTaskEnvironment scoped_task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::UI);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::UI);
 
   NSUInteger style_mask = NSTexturedBackgroundWindowMask | NSTitledWindowMask |
                           NSClosableWindowMask | NSMiniaturizableWindowMask |

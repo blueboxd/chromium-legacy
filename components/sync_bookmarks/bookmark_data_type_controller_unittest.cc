@@ -125,7 +125,7 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test {
     history_service_->NotifyHistoryServiceLoaded();
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   testing::NiceMock<syncer::SyncApiComponentFactoryMock> components_factory_;
   std::unique_ptr<BookmarkModel> bookmark_model_;
   std::unique_ptr<HistoryMock> history_service_;

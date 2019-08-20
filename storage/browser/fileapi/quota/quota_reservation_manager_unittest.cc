@@ -211,7 +211,7 @@ class QuotaReservationManagerTest : public testing::Test {
   const base::FilePath& file_path() const { return file_path_; }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir work_dir_;
   base::FilePath file_path_;
   std::unique_ptr<QuotaReservationManager> reservation_manager_;

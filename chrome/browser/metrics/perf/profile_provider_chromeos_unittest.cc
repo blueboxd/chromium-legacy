@@ -333,9 +333,10 @@ class ProfileProviderFeatureParamsTest : public testing::Test {
     chromeos::PowerManagerClient::Shutdown();
   }
 
- private:
+ protected:
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(ProfileProviderFeatureParamsTest);
 };
 
@@ -356,6 +357,11 @@ TEST_F(ProfileProviderFeatureParamsTest, HeapCollectorDisabled) {
   // sampling factor param is set to 0.
   profile_provider.Init();
   EXPECT_EQ(1u, profile_provider.collectors_.size());
+
+  // Before destroying ScopedFeatureList, we need to finish SetUp() of each
+  // registered collector, which accesses field trial params on its own
+  // dedicated sequence.
+  test_browser_thread_bundle_.RunUntilIdle();
 }
 
 TEST_F(ProfileProviderFeatureParamsTest, HeapCollectorEnabled) {
@@ -380,6 +386,11 @@ TEST_F(ProfileProviderFeatureParamsTest, HeapCollectorEnabled) {
 #else
   EXPECT_EQ(1u, profile_provider.collectors_.size());
 #endif
+
+  // Before destroying ScopedFeatureList, we need to finish SetUp() of each
+  // registered collector, which accesses field trial params on its own
+  // dedicated sequence.
+  test_browser_thread_bundle_.RunUntilIdle();
 }
 
 }  // namespace metrics

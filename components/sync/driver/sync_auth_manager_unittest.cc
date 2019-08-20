@@ -55,7 +55,7 @@ class SyncAuthManagerTest : public testing::Test {
   signin::IdentityTestEnvironment* identity_env() { return &identity_env_; }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   signin::IdentityTestEnvironment identity_env_;
 };

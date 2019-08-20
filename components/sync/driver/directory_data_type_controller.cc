@@ -40,9 +40,11 @@ void DirectoryDataTypeController::BeforeLoadModels(
   configurer->RegisterDirectoryDataType(type(), model_safe_group_);
 }
 
-void DirectoryDataTypeController::RegisterWithBackend(
-    base::OnceCallback<void(bool)> set_downloaded,
-    ModelTypeConfigurer* configurer) {}
+DataTypeController::RegisterWithBackendResult
+DirectoryDataTypeController::RegisterWithBackend(
+    ModelTypeConfigurer* configurer) {
+  return REGISTRATION_IGNORED;
+}
 
 void DirectoryDataTypeController::ActivateDataType(
     ModelTypeConfigurer* configurer) {

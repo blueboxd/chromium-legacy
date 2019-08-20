@@ -100,8 +100,8 @@ class RdpClientTest : public testing::Test {
 
   // Used by RdpClient. The loop is stopped once there are no more references to
   // |task_runner_|.
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::UI};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::UI};
   base::RunLoop run_loop_;
   scoped_refptr<AutoThreadTaskRunner> task_runner_;
 
@@ -122,8 +122,7 @@ RdpClientTest::~RdpClientTest() {}
 void RdpClientTest::SetUp() {
   // Arrange to run |run_loop_| until no components depend on it.
   task_runner_ = new AutoThreadTaskRunner(
-      scoped_task_environment_.GetMainThreadTaskRunner(),
-      run_loop_.QuitClosure());
+      task_environment_.GetMainThreadTaskRunner(), run_loop_.QuitClosure());
 
   module_.reset(new RdpClientModule());
 }
@@ -141,7 +140,7 @@ void RdpClientTest::OnRdpConnected() {
   EXPECT_TRUE(WtsTerminalMonitor::LookupTerminalId(session_id, &id));
   EXPECT_EQ(id, terminal_id_);
 
-  scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+  task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&RdpClientTest::CloseRdpClient, base::Unretained(this)));
 }

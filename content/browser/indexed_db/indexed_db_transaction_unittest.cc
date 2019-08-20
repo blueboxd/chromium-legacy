@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -62,18 +63,44 @@ class IndexedDBTransactionTest : public testing::Test {
     leveldb::Status s;
     std::tie(db_, s) = IndexedDBClassFactory::Get()->CreateIndexedDBDatabase(
         base::ASCIIToUTF16("db"), backing_store_.get(), factory_.get(),
-        GetErrorCallback(), base::BindLambdaForTesting([&]() { db_.reset(); }),
+        CreateRunTasksCallback(),
         std::make_unique<FakeIndexedDBMetadataCoding>(),
         IndexedDBDatabase::Identifier(), &lock_manager_);
     ASSERT_TRUE(s.ok());
   }
 
-  IndexedDBTransaction::ErrorCallback GetErrorCallback() {
-    return base::BindLambdaForTesting(
-        [&](leveldb::Status, const char*) { error_called_ = true; });
+  TasksAvailableCallback CreateRunTasksCallback() {
+    return base::BindRepeating(&IndexedDBTransactionTest::RunTasksForDatabase,
+                               base::Unretained(this), true);
+  }
+
+  void RunTasksForDatabase(bool async) {
+    if (!db_)
+      return;
+    if (async) {
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::BindOnce(&IndexedDBTransactionTest::RunTasksForDatabase,
+                         base::Unretained(this), false));
+      return;
+    }
+    IndexedDBDatabase::RunTasksResult result;
+    leveldb::Status status;
+    std::tie(result, status) = db_->RunTasks();
+    switch (result) {
+      case IndexedDBDatabase::RunTasksResult::kDone:
+        return;
+      case IndexedDBDatabase::RunTasksResult::kError:
+        error_called_ = true;
+        return;
+      case IndexedDBDatabase::RunTasksResult::kCanBeDestroyed:
+        db_.reset();
+        return;
+    }
   }
 
   void RunPostedTasks() { base::RunLoop().RunUntilIdle(); }
+
   leveldb::Status DummyOperation(leveldb::Status result,
                                  IndexedDBTransaction* transaction) {
     return result;
@@ -85,13 +112,14 @@ class IndexedDBTransactionTest : public testing::Test {
     return leveldb::Status::OK();
   }
 
-  std::unique_ptr<IndexedDBConnection> CreateConnection(int process_id) {
-    return std::unique_ptr<IndexedDBConnection>(
+  std::unique_ptr<IndexedDBConnection> CreateConnection() {
+    auto connection = std::unique_ptr<IndexedDBConnection>(
         std::make_unique<IndexedDBConnection>(
             kFakeProcessId, IndexedDBOriginStateHandle(),
             IndexedDBClassFactory::Get(), db_->AsWeakPtr(), base::DoNothing(),
-            base::DoNothing(), GetErrorCallback(),
-            new MockIndexedDBDatabaseCallbacks()));
+            base::DoNothing(), new MockIndexedDBDatabaseCallbacks()));
+    db_->AddConnectionForTesting(connection.get());
+    return connection;
   }
 
  protected:
@@ -122,14 +150,11 @@ TEST_F(IndexedDBTransactionTest, Timeout) {
   const int64_t id = 0;
   const std::set<int64_t> scope;
   const leveldb::Status commit_success = leveldb::Status::OK();
-  std::unique_ptr<IndexedDBConnection> connection =
-      CreateConnection(kFakeProcessId);
-  std::unique_ptr<IndexedDBTransaction> transaction =
-      std::unique_ptr<IndexedDBTransaction>(new IndexedDBTransaction(
-          id, connection.get(), GetErrorCallback(), scope,
-          blink::mojom::IDBTransactionMode::ReadWrite,
-          new IndexedDBFakeBackingStore::FakeTransaction(commit_success)));
-  db_->RegisterAndScheduleTransaction(transaction.get());
+  std::unique_ptr<IndexedDBConnection> connection = CreateConnection();
+  IndexedDBTransaction* transaction = connection->CreateTransaction(
+      id, scope, blink::mojom::IDBTransactionMode::ReadWrite,
+      new IndexedDBFakeBackingStore::FakeTransaction(commit_success));
+  db_->RegisterAndScheduleTransaction(transaction);
 
   // No conflicting transactions, so coordinator will start it immediately:
   EXPECT_EQ(IndexedDBTransaction::STARTED, transaction->state());
@@ -168,14 +193,11 @@ TEST_F(IndexedDBTransactionTest, NoTimeoutReadOnly) {
   const int64_t id = 0;
   const std::set<int64_t> scope;
   const leveldb::Status commit_success = leveldb::Status::OK();
-  std::unique_ptr<IndexedDBConnection> connection =
-      CreateConnection(kFakeProcessId);
-  std::unique_ptr<IndexedDBTransaction> transaction =
-      std::unique_ptr<IndexedDBTransaction>(new IndexedDBTransaction(
-          id, connection.get(), GetErrorCallback(), scope,
-          blink::mojom::IDBTransactionMode::ReadOnly,
-          new IndexedDBFakeBackingStore::FakeTransaction(commit_success)));
-  db_->RegisterAndScheduleTransaction(transaction.get());
+  std::unique_ptr<IndexedDBConnection> connection = CreateConnection();
+  IndexedDBTransaction* transaction = connection->CreateTransaction(
+      id, scope, blink::mojom::IDBTransactionMode::ReadOnly,
+      new IndexedDBFakeBackingStore::FakeTransaction(commit_success));
+  db_->RegisterAndScheduleTransaction(transaction);
 
   // No conflicting transactions, so coordinator will start it immediately:
   EXPECT_EQ(IndexedDBTransaction::STARTED, transaction->state());
@@ -203,12 +225,10 @@ TEST_P(IndexedDBTransactionTestMode, ScheduleNormalTask) {
   const int64_t id = 0;
   const std::set<int64_t> scope;
   const leveldb::Status commit_success = leveldb::Status::OK();
-  std::unique_ptr<IndexedDBConnection> connection =
-      CreateConnection(kFakeProcessId);
-  std::unique_ptr<IndexedDBTransaction> transaction =
-      std::unique_ptr<IndexedDBTransaction>(new IndexedDBTransaction(
-          id, connection.get(), GetErrorCallback(), scope, GetParam(),
-          new IndexedDBFakeBackingStore::FakeTransaction(commit_success)));
+  std::unique_ptr<IndexedDBConnection> connection = CreateConnection();
+  IndexedDBTransaction* transaction = connection->CreateTransaction(
+      id, scope, GetParam(),
+      new IndexedDBFakeBackingStore::FakeTransaction(commit_success));
 
   EXPECT_FALSE(transaction->HasPendingTasks());
   EXPECT_TRUE(transaction->IsTaskQueueEmpty());
@@ -217,7 +237,7 @@ TEST_P(IndexedDBTransactionTestMode, ScheduleNormalTask) {
   EXPECT_EQ(0, transaction->diagnostics().tasks_scheduled);
   EXPECT_EQ(0, transaction->diagnostics().tasks_completed);
 
-  db_->RegisterAndScheduleTransaction(transaction.get());
+  db_->RegisterAndScheduleTransaction(transaction);
 
   EXPECT_FALSE(transaction->HasPendingTasks());
   EXPECT_TRUE(transaction->IsTaskQueueEmpty());
@@ -248,28 +268,19 @@ TEST_P(IndexedDBTransactionTestMode, ScheduleNormalTask) {
   EXPECT_EQ(1, transaction->diagnostics().tasks_scheduled);
   EXPECT_EQ(1, transaction->diagnostics().tasks_completed);
 
-  transaction->Commit();
-
-  EXPECT_EQ(IndexedDBTransaction::FINISHED, transaction->state());
-  EXPECT_FALSE(transaction->HasPendingTasks());
-  EXPECT_FALSE(transaction->IsTimeoutTimerRunning());
-  EXPECT_TRUE(transaction->IsTaskQueueEmpty());
-  EXPECT_TRUE(transaction->task_queue_.empty());
-  EXPECT_TRUE(transaction->preemptive_task_queue_.empty());
-  EXPECT_EQ(1, transaction->diagnostics().tasks_scheduled);
-  EXPECT_EQ(1, transaction->diagnostics().tasks_completed);
+  transaction->SetCommitFlag();
+  RunPostedTasks();
+  EXPECT_EQ(0UL, connection->transactions().size());
 }
 
 TEST_P(IndexedDBTransactionTestMode, TaskFails) {
   const int64_t id = 0;
   const std::set<int64_t> scope;
   const leveldb::Status commit_success = leveldb::Status::OK();
-  std::unique_ptr<IndexedDBConnection> connection =
-      CreateConnection(kFakeProcessId);
-  std::unique_ptr<IndexedDBTransaction> transaction =
-      std::unique_ptr<IndexedDBTransaction>(new IndexedDBTransaction(
-          id, connection.get(), GetErrorCallback(), scope, GetParam(),
-          new IndexedDBFakeBackingStore::FakeTransaction(commit_success)));
+  std::unique_ptr<IndexedDBConnection> connection = CreateConnection();
+  IndexedDBTransaction* transaction = connection->CreateTransaction(
+      id, scope, GetParam(),
+      new IndexedDBFakeBackingStore::FakeTransaction(commit_success));
 
   EXPECT_FALSE(transaction->HasPendingTasks());
   EXPECT_TRUE(transaction->IsTaskQueueEmpty());
@@ -278,7 +289,7 @@ TEST_P(IndexedDBTransactionTestMode, TaskFails) {
   EXPECT_EQ(0, transaction->diagnostics().tasks_scheduled);
   EXPECT_EQ(0, transaction->diagnostics().tasks_completed);
 
-  db_->RegisterAndScheduleTransaction(transaction.get());
+  db_->RegisterAndScheduleTransaction(transaction);
 
   EXPECT_FALSE(transaction->HasPendingTasks());
   EXPECT_TRUE(transaction->IsTaskQueueEmpty());
@@ -312,29 +323,19 @@ TEST_P(IndexedDBTransactionTestMode, TaskFails) {
 
   EXPECT_TRUE(error_called_);
 
-  transaction->Commit();
-
-  EXPECT_EQ(IndexedDBTransaction::FINISHED, transaction->state());
-  EXPECT_FALSE(transaction->HasPendingTasks());
-  EXPECT_FALSE(transaction->IsTimeoutTimerRunning());
-  EXPECT_TRUE(transaction->IsTaskQueueEmpty());
-  EXPECT_TRUE(transaction->task_queue_.empty());
-  EXPECT_TRUE(transaction->preemptive_task_queue_.empty());
-  EXPECT_EQ(1, transaction->diagnostics().tasks_scheduled);
-  EXPECT_EQ(1, transaction->diagnostics().tasks_completed);
+  transaction->SetCommitFlag();
+  RunPostedTasks();
+  EXPECT_EQ(0UL, connection->transactions().size());
 }
 
 TEST_F(IndexedDBTransactionTest, SchedulePreemptiveTask) {
   const int64_t id = 0;
   const std::set<int64_t> scope;
   const leveldb::Status commit_failure = leveldb::Status::Corruption("Ouch.");
-  std::unique_ptr<IndexedDBConnection> connection =
-      CreateConnection(kFakeProcessId);
-  std::unique_ptr<IndexedDBTransaction> transaction =
-      std::unique_ptr<IndexedDBTransaction>(new IndexedDBTransaction(
-          id, connection.get(), GetErrorCallback(), scope,
-          blink::mojom::IDBTransactionMode::VersionChange,
-          new IndexedDBFakeBackingStore::FakeTransaction(commit_failure)));
+  std::unique_ptr<IndexedDBConnection> connection = CreateConnection();
+  IndexedDBTransaction* transaction = connection->CreateTransaction(
+      id, scope, blink::mojom::IDBTransactionMode::VersionChange,
+      new IndexedDBFakeBackingStore::FakeTransaction(commit_failure));
 
   EXPECT_FALSE(transaction->HasPendingTasks());
   EXPECT_TRUE(transaction->IsTaskQueueEmpty());
@@ -343,7 +344,7 @@ TEST_F(IndexedDBTransactionTest, SchedulePreemptiveTask) {
   EXPECT_EQ(0, transaction->diagnostics().tasks_scheduled);
   EXPECT_EQ(0, transaction->diagnostics().tasks_completed);
 
-  db_->RegisterAndScheduleTransaction(transaction.get());
+  db_->RegisterAndScheduleTransaction(transaction);
 
   EXPECT_FALSE(transaction->HasPendingTasks());
   EXPECT_TRUE(transaction->IsTaskQueueEmpty());
@@ -373,29 +374,20 @@ TEST_F(IndexedDBTransactionTest, SchedulePreemptiveTask) {
   EXPECT_EQ(0, transaction->diagnostics().tasks_completed);
 
   transaction->DidCompletePreemptiveEvent();
-  transaction->Commit();
-
-  EXPECT_EQ(IndexedDBTransaction::FINISHED, transaction->state());
-  EXPECT_FALSE(transaction->HasPendingTasks());
-  EXPECT_FALSE(transaction->IsTimeoutTimerRunning());
-  EXPECT_TRUE(transaction->IsTaskQueueEmpty());
-  EXPECT_TRUE(transaction->task_queue_.empty());
-  EXPECT_TRUE(transaction->preemptive_task_queue_.empty());
-  EXPECT_EQ(0, transaction->diagnostics().tasks_scheduled);
-  EXPECT_EQ(0, transaction->diagnostics().tasks_completed);
+  transaction->SetCommitFlag();
+  RunPostedTasks();
+  EXPECT_TRUE(error_called_);
 }
 
 TEST_P(IndexedDBTransactionTestMode, AbortTasks) {
   const int64_t id = 0;
   const std::set<int64_t> scope;
   const leveldb::Status commit_failure = leveldb::Status::Corruption("Ouch.");
-  std::unique_ptr<IndexedDBConnection> connection =
-      CreateConnection(kFakeProcessId);
-  std::unique_ptr<IndexedDBTransaction> transaction =
-      std::unique_ptr<IndexedDBTransaction>(new IndexedDBTransaction(
-          id, connection.get(), GetErrorCallback(), scope, GetParam(),
-          new IndexedDBFakeBackingStore::FakeTransaction(commit_failure)));
-  db_->RegisterAndScheduleTransaction(transaction.get());
+  std::unique_ptr<IndexedDBConnection> connection = CreateConnection();
+  IndexedDBTransaction* transaction = connection->CreateTransaction(
+      id, scope, GetParam(),
+      new IndexedDBFakeBackingStore::FakeTransaction(commit_failure));
+  db_->RegisterAndScheduleTransaction(transaction);
 
   AbortObserver observer;
   transaction->ScheduleTask(
@@ -407,23 +399,21 @@ TEST_P(IndexedDBTransactionTestMode, AbortTasks) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(observer.abort_task_called());
-  transaction->Commit();
+  transaction->SetCommitFlag();
+  RunPostedTasks();
   EXPECT_TRUE(observer.abort_task_called());
-  EXPECT_EQ(IndexedDBTransaction::FINISHED, transaction->state());
-  EXPECT_FALSE(transaction->IsTimeoutTimerRunning());
+  EXPECT_TRUE(error_called_);
 }
 
 TEST_P(IndexedDBTransactionTestMode, AbortPreemptive) {
   const int64_t id = 0;
   const std::set<int64_t> scope;
   const leveldb::Status commit_success = leveldb::Status::OK();
-  std::unique_ptr<IndexedDBConnection> connection =
-      CreateConnection(kFakeProcessId);
-  std::unique_ptr<IndexedDBTransaction> transaction =
-      std::unique_ptr<IndexedDBTransaction>(new IndexedDBTransaction(
-          id, connection.get(), GetErrorCallback(), scope, GetParam(),
-          new IndexedDBFakeBackingStore::FakeTransaction(commit_success)));
-  db_->RegisterAndScheduleTransaction(transaction.get());
+  std::unique_ptr<IndexedDBConnection> connection = CreateConnection();
+  IndexedDBTransaction* transaction = connection->CreateTransaction(
+      id, scope, GetParam(),
+      new IndexedDBFakeBackingStore::FakeTransaction(commit_success));
+  db_->RegisterAndScheduleTransaction(transaction);
 
   // No conflicting transactions, so coordinator will start it immediately:
   EXPECT_EQ(IndexedDBTransaction::STARTED, transaction->state());
@@ -450,7 +440,6 @@ TEST_P(IndexedDBTransactionTestMode, AbortPreemptive) {
   EXPECT_FALSE(transaction->HasPendingTasks());
   EXPECT_EQ(transaction->diagnostics().tasks_completed,
             transaction->diagnostics().tasks_scheduled);
-  EXPECT_FALSE(transaction->should_process_queue_);
   EXPECT_TRUE(transaction->backing_store_transaction_begun_);
   EXPECT_TRUE(transaction->used_);
   EXPECT_FALSE(transaction->is_commit_pending_);
@@ -470,17 +459,12 @@ TEST_F(IndexedDBTransactionTest, IndexedDBObserver) {
   const int64_t id = 0;
   const std::set<int64_t> scope;
   const leveldb::Status commit_success = leveldb::Status::OK();
-  std::unique_ptr<IndexedDBConnection> connection =
-      CreateConnection(kFakeProcessId);
-
-  base::WeakPtr<IndexedDBTransaction> transaction =
-      connection->AddTransactionForTesting(
-          std::unique_ptr<IndexedDBTransaction>(new IndexedDBTransaction(
-              id, connection.get(), GetErrorCallback(), scope,
-              blink::mojom::IDBTransactionMode::ReadWrite,
-              new IndexedDBFakeBackingStore::FakeTransaction(commit_success))));
+  std::unique_ptr<IndexedDBConnection> connection = CreateConnection();
+  IndexedDBTransaction* transaction = connection->CreateTransaction(
+      id, scope, blink::mojom::IDBTransactionMode::ReadWrite,
+      new IndexedDBFakeBackingStore::FakeTransaction(commit_success));
   ASSERT_TRUE(transaction);
-  db_->RegisterAndScheduleTransaction(transaction.get());
+  db_->RegisterAndScheduleTransaction(transaction);
 
   EXPECT_EQ(0UL, transaction->pending_observers_.size());
   EXPECT_EQ(0UL, connection->active_observers().size());
@@ -500,8 +484,9 @@ TEST_F(IndexedDBTransactionTest, IndexedDBObserver) {
   EXPECT_EQ(0UL, connection->active_observers().size());
 
   // After commit, observer moved to connection's active observer.
-  transaction->Commit();
-  EXPECT_FALSE(transaction);
+  transaction->SetCommitFlag();
+  RunPostedTasks();
+  EXPECT_EQ(0UL, connection->transactions().size());
   EXPECT_EQ(1UL, connection->active_observers().size());
 
   // Observer does not exist, so no change to active_observers.

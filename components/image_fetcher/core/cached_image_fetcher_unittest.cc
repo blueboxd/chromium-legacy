@@ -113,7 +113,7 @@ class CachedImageFetcherTest : public testing::Test {
     RunUntilIdle();
   }
 
-  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
   CachedImageFetcher* cached_image_fetcher() {
     return cached_image_fetcher_.get();
@@ -142,7 +142,7 @@ class CachedImageFetcherTest : public testing::Test {
   FakeDB<CachedImageMetadataProto>* db_;
   std::map<std::string, CachedImageMetadataProto> metadata_store_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::HistogramTester histogram_tester_;
 
   DISALLOW_COPY_AND_ASSIGN(CachedImageFetcherTest);

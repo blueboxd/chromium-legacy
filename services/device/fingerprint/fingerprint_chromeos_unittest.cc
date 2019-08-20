@@ -125,7 +125,7 @@ class FingerprintChromeOSTest : public testing::Test {
   int get_records_results() { return get_records_results_; }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<FingerprintChromeOS> fingerprint_;
   int get_records_results_ = 0;
 

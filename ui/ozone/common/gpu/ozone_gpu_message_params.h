@@ -49,6 +49,8 @@ struct DisplaySnapshot_Params {
   std::string display_name;
   base::FilePath sys_path;
   std::vector<DisplayMode_Params> modes;
+  display::PanelOrientation panel_orientation =
+      display::PanelOrientation::kNormal;
   std::vector<uint8_t> edid;
   bool has_current_mode = false;
   DisplayMode_Params current_mode;

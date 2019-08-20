@@ -84,6 +84,10 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   // crash handler.
   std::string GetCrashKey() const;
 
+  // Returns internal memory used by the allocator (required for sanitization
+  // on supported platforms.)
+  std::vector<std::pair<void*, size_t>> GetInternalMemoryRegions();
+
   // Returns true if ptr points to memory managed by this class.
   inline bool PointerIsMine(const void* ptr) const {
     return state_.PointerIsMine(reinterpret_cast<uintptr_t>(ptr));

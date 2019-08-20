@@ -568,9 +568,9 @@ TEST_F(LauncherContextMenuTest, CrostiniTerminalApp) {
 
   // Check that every menu item has an icon
   for (int i = 0; i < menu->GetItemCount(); ++i) {
-    gfx::Image icon;
-    EXPECT_TRUE(menu->GetIconAt(i, &icon));
-    EXPECT_FALSE(icon.IsEmpty());
+    const gfx::VectorIcon* icon = menu->GetVectorIconAt(i);
+    ASSERT_TRUE(icon);
+    EXPECT_FALSE(icon->is_empty());
   }
 
   // When crostini is running, the terminal should have an option to kill the
@@ -608,9 +608,9 @@ TEST_F(LauncherContextMenuTest, CrostiniNormalApp) {
 
   // Check that every menu item has an icon
   for (int i = 0; i < menu->GetItemCount(); ++i) {
-    gfx::Image icon;
-    EXPECT_TRUE(menu->GetIconAt(i, &icon));
-    EXPECT_FALSE(icon.IsEmpty());
+    const gfx::VectorIcon* icon = menu->GetVectorIconAt(i);
+    ASSERT_TRUE(icon);
+    EXPECT_FALSE(icon->is_empty());
   }
 
   // Precisely which density option is shown is not important to us, we only

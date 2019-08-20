@@ -200,7 +200,7 @@ class ComponentInstallerTest : public testing::Test {
   void Unpack(const base::FilePath& crx_path);
   ComponentUnpacker::Result result() const { return result_; }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   void UnpackComplete(const ComponentUnpacker::Result& result);
@@ -357,7 +357,7 @@ TEST_F(ComponentInstallerTest, UnpackPathInstallSuccess) {
         EXPECT_EQ(0, result.error);
       }));
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(base::PathExists(unpack_path));
   EXPECT_CALL(update_client(), Stop()).Times(1);
@@ -388,7 +388,7 @@ TEST_F(ComponentInstallerTest, UnpackPathInstallError) {
                   result.error);
       }));
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(base::PathExists(unpack_path));
   EXPECT_CALL(update_client(), Stop()).Times(1);

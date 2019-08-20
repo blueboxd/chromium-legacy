@@ -316,7 +316,7 @@ class CookieManagerTest : public testing::Test {
         &CookieManagerTest::OnConnectionError, base::Unretained(this)));
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   void OnConnectionError() { connection_error_seen_ = true; }
@@ -2118,8 +2118,8 @@ class SessionCleanupCookieManagerTest : public CookieManagerTest {
   scoped_refptr<SessionCleanupCookieStore> CreateCookieStore() {
     auto sqlite_store = base::MakeRefCounted<net::SQLitePersistentCookieStore>(
         temp_dir_.GetPath().Append(kTestCookiesFilename),
-        scoped_task_environment_.GetMainThreadTaskRunner(),
-        background_task_runner_, true, nullptr);
+        task_environment_.GetMainThreadTaskRunner(), background_task_runner_,
+        true, nullptr);
     return base::MakeRefCounted<SessionCleanupCookieStore>(sqlite_store.get());
   }
 

@@ -116,6 +116,16 @@ bool CookieSettings::IsStorageDurable(const GURL& origin) const {
   return setting == CONTENT_SETTING_ALLOW;
 }
 
+void CookieSettings::GetSettingForLegacyCookieAccess(
+    const GURL& cookie_domain,
+    ContentSetting* setting) const {
+  DCHECK(setting);
+
+  *setting = host_content_settings_map_->GetContentSetting(
+      cookie_domain, GURL(), CONTENT_SETTINGS_TYPE_LEGACY_COOKIE_ACCESS,
+      std::string() /* resource_identifier */);
+}
+
 void CookieSettings::ShutdownOnUIThread() {
   DCHECK(thread_checker_.CalledOnValidThread());
   pref_change_registrar_.RemoveAll();
@@ -179,6 +189,9 @@ void CookieSettings::OnCookiePreferencesChanged() {
        pref_change_registrar_.prefs()->GetBoolean(
            prefs::kCookieControlsEnabled));
 
+  // Safe to read |block_third_party_cookies_| without locking here because the
+  // only place that writes to it is this method and it will always be run on
+  // the same thread.
   if (block_third_party_cookies_ != new_block_third_party_cookies) {
     {
       base::AutoLock auto_lock(lock_);

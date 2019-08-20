@@ -70,7 +70,7 @@ class ProxyResolvingClientSocketTest
     base::RunLoop().RunUntilIdle();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestURLRequestContextWithProxy context_with_proxy_;
   net::MockClientSocketFactory mock_client_socket_factory_;
   const bool use_tls_;
@@ -791,7 +791,7 @@ class ReconsiderProxyAfterErrorTest
 
   ~ReconsiderProxyAfterErrorTest() override {}
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   net::MockClientSocketFactory mock_client_socket_factory_;
   TestURLRequestContextWithProxy context_with_proxy_;
   const bool use_tls_;

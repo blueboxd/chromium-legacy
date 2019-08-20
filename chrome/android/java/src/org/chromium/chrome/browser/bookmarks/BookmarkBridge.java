@@ -269,6 +269,15 @@ public class BookmarkBridge {
     }
 
     /**
+     * Load a fake partner bookmark shim for testing. To see (or edit) the titles and URLs of the
+     * partner bookmarks, go to bookmark_bridge.cc.
+     */
+    @VisibleForTesting
+    public void loadFakePartnerBookmarkShimForTesting() {
+        nativeLoadFakePartnerBookmarkShimForTesting(mNativeBookmarkBridge);
+    }
+
+    /**
      * Add an observer to bookmark model changes.
      * @param observer The observer to be added.
      */
@@ -939,6 +948,7 @@ public class BookmarkBridge {
     private native void nativeStartGroupingUndos(long nativeBookmarkBridge);
     private native void nativeEndGroupingUndos(long nativeBookmarkBridge);
     private native void nativeLoadEmptyPartnerBookmarkShimForTesting(long nativeBookmarkBridge);
+    private native void nativeLoadFakePartnerBookmarkShimForTesting(long nativeBookmarkBridge);
     private native void nativeSearchBookmarks(long nativeBookmarkBridge,
             List<BookmarkId> bookmarkMatches, String query, int maxNumber);
     private native long nativeInit(Profile profile);

@@ -28,11 +28,10 @@ namespace web {
 class URLFetcherBlockAdapterTest : public PlatformTest {
  protected:
   URLFetcherBlockAdapterTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
 
   // Required for base::MessageLoopCurrent::Get().
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 // Tests that URLFetcherBlockAdapter calls its completion handler with the

@@ -183,7 +183,7 @@ class LevelDBServiceTest : public testing::Test {
   mojo::Remote<mojom::LevelDBService>& leveldb() { return leveldb_remote_; }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::test::ScopedFeatureList feature_list_;
   filesystem::DirectoryTestHelper directory_helper_;
   LevelDBServiceImpl leveldb_service_;

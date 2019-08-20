@@ -1026,23 +1026,9 @@ void LayerTreeImpl::UpdatePageScaleNode() {
     return;
   }
 
-  // When the page scale layer is also the root layer (this happens in the UI
-  // compositor), the node should also store the combined scale factor and not
-  // just the page scale factor.
-  // TODO(crbug.com/909750): Implement this behavior without PageScaleLayer,
-  // e.g. when we switch the UI compositor to create property trees.
-  float device_scale_factor_for_page_scale_layer = 1.f;
-  gfx::Transform device_transform_for_page_scale_layer;
-  if (IsRootLayer(PageScaleLayer())) {
-    DCHECK(!settings().use_layer_lists);
-    device_transform_for_page_scale_layer = host_impl_->DrawTransform();
-    device_scale_factor_for_page_scale_layer = device_scale_factor();
-  }
-
+  DCHECK(!IsRootLayer(PageScaleLayer()));
   draw_property_utils::UpdatePageScaleFactor(
-      property_trees(), PageScaleTransformNode(), current_page_scale_factor(),
-      device_scale_factor_for_page_scale_layer,
-      device_transform_for_page_scale_layer);
+      property_trees(), PageScaleTransformNode(), current_page_scale_factor());
 }
 
 void LayerTreeImpl::SetPageScaleOnActiveTree(float active_page_scale) {

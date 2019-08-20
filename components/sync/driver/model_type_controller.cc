@@ -114,23 +114,22 @@ void ModelTypeController::LoadModels(
 
 void ModelTypeController::BeforeLoadModels(ModelTypeConfigurer* configurer) {}
 
-void ModelTypeController::RegisterWithBackend(
-    base::OnceCallback<void(bool)> set_downloaded,
-    ModelTypeConfigurer* configurer) {
+DataTypeController::RegisterWithBackendResult
+ModelTypeController::RegisterWithBackend(ModelTypeConfigurer* configurer) {
   DCHECK(CalledOnValidThread());
   if (activated_)
-    return;
+    return REGISTRATION_IGNORED;
   DCHECK(configurer);
   DCHECK(activation_response_);
   DCHECK_EQ(MODEL_LOADED, state_);
-  // Inform the DataTypeManager whether our initial download is complete.
-  std::move(set_downloaded)
-      .Run(activation_response_->model_type_state.initial_sync_done());
+  bool initial_sync_done =
+      activation_response_->model_type_state.initial_sync_done();
   // Pass activation context to ModelTypeRegistry, where ModelTypeWorker gets
   // created and connected with the delegate (processor).
   configurer->ActivateNonBlockingDataType(type(),
                                           std::move(activation_response_));
   activated_ = true;
+  return initial_sync_done ? TYPE_ALREADY_DOWNLOADED : TYPE_NOT_YET_DOWNLOADED;
 }
 
 void ModelTypeController::StartAssociating(StartCallback start_callback) {

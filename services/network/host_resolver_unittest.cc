@@ -37,11 +37,10 @@ namespace {
 class HostResolverTest : public testing::Test {
  public:
   HostResolverTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 net::IPEndPoint CreateExpectedEndPoint(const std::string& address,

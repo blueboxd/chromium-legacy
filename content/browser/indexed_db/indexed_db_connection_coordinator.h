@@ -6,13 +6,16 @@
 #define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_CONNECTION_COORDINATOR_H_
 
 #include <memory>
+#include <tuple>
 
 #include "base/callback.h"
 #include "base/containers/queue.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/indexed_db/indexed_db_origin_state_handle.h"
+#include "content/browser/indexed_db/indexed_db_task_helper.h"
 #include "content/browser/indexed_db/list_set.h"
+#include "content/common/content_export.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 
 namespace content {
@@ -21,12 +24,14 @@ class IndexedDBConnection;
 class IndexedDBDatabase;
 struct IndexedDBPendingConnection;
 
-class IndexedDBConnectionCoordinator {
+class CONTENT_EXPORT IndexedDBConnectionCoordinator {
  public:
-  static const int64_t kInvalidId = 0;
+  static const int64_t kInvalidDatabaseId = 0;
   static const int64_t kMinimumIndexId = 30;
 
-  explicit IndexedDBConnectionCoordinator(IndexedDBDatabase* db);
+  IndexedDBConnectionCoordinator(
+      IndexedDBDatabase* db,
+      TasksAvailableCallback tasks_available_callback);
   ~IndexedDBConnectionCoordinator();
 
   void ScheduleOpenConnection(
@@ -37,10 +42,13 @@ class IndexedDBConnectionCoordinator {
                               scoped_refptr<IndexedDBCallbacks> callbacks,
                               base::OnceClosure on_deletion_complete);
 
-  // Returns if the caller should process the request queue.
-  void ForceClose();
+  // Call this method to prune any tasks that don't want to be run during
+  // force close.
+  void PruneTasksForForceClose();
 
   void OnConnectionClosed(IndexedDBConnection* connection);
+
+  void OnNoConnections();
 
   // Ack that one of the connections notified with a "versionchange" event did
   // not promptly close. Therefore a "blocked" event should be fired at the
@@ -53,36 +61,30 @@ class IndexedDBConnectionCoordinator {
 
   void OnUpgradeTransactionFinished(bool committed);
 
-  // If there is no active request, grab a new one from the pending queue and
-  // start it. Afterwards, possibly release the database by calling
-  // MaybeReleaseDatabase().
-  void ProcessRequestQueue();
+  enum class ExecuteTaskResult {
+    // There are more tasks to run, so ExecuteTask() should be called again.
+    kMoreTasks,
+    // There are tasks but they are waiting on async work to complete. No more
+    // calls to ExecuteTask() are necessary.
+    kPendingAsyncWork,
+    // There was an error executing a task - see the status. The offending task
+    // was removed, and the caller can choose to continue executing tasks if
+    // they want.
+    kError,
+    // There are no more tasks to run.
+    kDone,
+  };
+  std::tuple<ExecuteTaskResult, leveldb::Status> ExecuteTask(
+      bool has_connections);
 
-  bool processing_pending_requests() const {
-    return processing_pending_requests_;
-  }
-
-  bool force_closing() const { return force_closing_; }
-
-  const list_set<IndexedDBConnection*>& connections() const {
-    return connections_;
-  }
-
-  void AddConnection(IndexedDBConnection* connection);
+  bool HasTasks() const { return !request_queue_.empty(); }
 
   // Number of active open/delete calls (running or blocked on other
   // connections).
-  size_t ActiveOpenDeleteCount() const { return active_request_ ? 1 : 0; }
+  size_t ActiveOpenDeleteCount() const;
 
   // Number of open/delete calls that are waiting their turn.
-  size_t PendingOpenDeleteCount() const { return pending_requests_.size(); }
-
-  // Number of connections that have progressed passed initial open call.
-  size_t ConnectionCount() const { return connections_.size(); }
-
-  bool HasActiveRequest() { return !!active_request_; }
-
-  bool HasPendingRequests() { return !pending_requests_.empty(); }
+  size_t PendingOpenDeleteCount() const;
 
   base::WeakPtr<IndexedDBConnectionCoordinator> AsWeakPtr() {
     return weak_factory_.GetWeakPtr();
@@ -94,39 +96,11 @@ class IndexedDBConnectionCoordinator {
   class OpenRequest;
   class DeleteRequest;
 
-  // Called internally when an open or delete request comes in. Processes
-  // the queue immediately if there are no other requests.
-  void AppendRequest(std::unique_ptr<ConnectionRequest> request);
-
-  // Called by requests when complete. The request will be freed, so the
-  // request must do no other work after calling this. If there are pending
-  // requests, the queue will be synchronously processed.
-  void RequestComplete(ConnectionRequest* request);
-
   IndexedDBDatabase* db_;
 
-  list_set<IndexedDBConnection*> connections_;
+  TasksAvailableCallback tasks_available_callback_;
 
-  // During ForceClose(), the internal state can be inconsistent during cleanup,
-  // specifically for ConnectionClosed() and MaybeReleaseDatabase(). Keeping
-  // track of whether the code is currently in the ForceClose() method helps
-  // ensure that the state stays consistent.
-  bool force_closing_ = false;
-
-  // This holds the first open or delete request that is currently being
-  // processed. The request has already broadcast OnVersionChange if
-  // necessary.
-  std::unique_ptr<ConnectionRequest> active_request_;
-
-  // This holds open or delete requests that are waiting for the active
-  // request to be completed. The requests have not yet broadcast
-  // OnVersionChange (if necessary).
-  base::queue<std::unique_ptr<ConnectionRequest>> pending_requests_;
-
-  // The |processing_pending_requests_| flag is set while ProcessRequestQueue()
-  // is executing. It prevents rentrant calls if the active request completes
-  // synchronously.
-  bool processing_pending_requests_ = false;
+  base::queue<std::unique_ptr<ConnectionRequest>> request_queue_;
 
   // |weak_factory_| is used for all callback uses.
   base::WeakPtrFactory<IndexedDBConnectionCoordinator> weak_factory_{this};

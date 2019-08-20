@@ -493,7 +493,7 @@ class AesDecryptorTest : public testing::TestWithParam<TestType> {
   }
 
   // Must be the first member to be initialized first and destroyed last.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   StrictMock<MockCdmClient> cdm_client_;
   scoped_refptr<ContentDecryptionModule> cdm_;

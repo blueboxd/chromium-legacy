@@ -77,7 +77,8 @@ IN_PROC_BROWSER_TEST_F(ApiBindingsClientTest, EndToEnd) {
   std::vector<chromium::cast::ApiBinding> binding_list;
   chromium::cast::ApiBinding echo_binding;
   echo_binding.set_before_load_script(cr_fuchsia::MemBufferFromString(
-      "window.echo = cast.__platform__.PortConnector.bind('echoService');"));
+      "window.echo = cast.__platform__.PortConnector.bind('echoService');",
+      "test"));
   binding_list.emplace_back(std::move(echo_binding));
   api_service_.set_bindings(std::move(binding_list));
   StartClient();
@@ -92,7 +93,7 @@ IN_PROC_BROWSER_TEST_F(ApiBindingsClientTest, EndToEnd) {
       api_service_.RunUntilMessagePortReceived("echoService").Bind();
 
   fuchsia::web::WebMessage message;
-  message.set_data(cr_fuchsia::MemBufferFromString("ping"));
+  message.set_data(cr_fuchsia::MemBufferFromString("ping", "ping-msg"));
   port->PostMessage(std::move(message),
                     [](fuchsia::web::MessagePort_PostMessage_Result result) {
                       EXPECT_TRUE(result.is_response());

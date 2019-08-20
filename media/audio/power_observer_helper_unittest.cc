@@ -102,7 +102,7 @@ class PowerObserverHelperTest : public testing::Test {
   }
 
   // The test task environment.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // The thread the helper is run on.
   base::Thread power_observer_helper_thread_;

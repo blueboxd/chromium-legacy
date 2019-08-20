@@ -137,7 +137,7 @@ class AccountsCookieMutatorTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   sync_preferences::TestingPrefServiceSyncable prefs_;
   TestSigninClient test_signin_client_;
   IdentityTestEnvironment identity_test_env_;

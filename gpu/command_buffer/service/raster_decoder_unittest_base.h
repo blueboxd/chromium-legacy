@@ -235,7 +235,7 @@ class RasterDecoderTestBase : public ::testing::TestWithParam<bool>,
   MemoryTypeTracker memory_tracker_;
   std::vector<std::unique_ptr<SharedImageRepresentationFactoryRef>>
       shared_images_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   gles2::MockCopyTextureResourceManager* copy_texture_manager_;  // not owned
   GLuint next_fake_texture_client_id_ = 271828;
 };

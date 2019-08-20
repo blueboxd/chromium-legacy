@@ -162,7 +162,7 @@ class GeolocationLocationArbitratorTest : public testing::Test {
 
   const std::unique_ptr<MockLocationObserver> observer_;
   std::unique_ptr<TestingLocationArbitrator> arbitrator_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 };
 

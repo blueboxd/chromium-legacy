@@ -54,7 +54,7 @@ class SyncReaderBitstreamTest : public TestWithParam<OverflowTestCase> {
   ~SyncReaderBitstreamTest() override {}
 
  private:
-  base::test::ScopedTaskEnvironment env_;
+  base::test::TaskEnvironment env_;
 };
 
 TEST_P(SyncReaderBitstreamTest, BitstreamBufferOverflow_DoesNotWriteOOB) {

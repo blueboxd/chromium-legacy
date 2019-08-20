@@ -29,7 +29,7 @@ using ::testing::SizeIs;
 class ConfigureBottomSheetActionTest : public testing::Test {
  public:
   ConfigureBottomSheetActionTest()
-      : task_env_(base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
+      : task_env_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   void SetUp() override {
     ON_CALL(mock_action_delegate_, GetViewportMode())
@@ -84,7 +84,7 @@ class ConfigureBottomSheetActionTest : public testing::Test {
 
   // task_env_ must be first to guarantee other field
   // creation run in that environment.
-  base::test::ScopedTaskEnvironment task_env_;
+  base::test::TaskEnvironment task_env_;
 
   MockActionDelegate mock_action_delegate_;
   MockWebController mock_web_controller_;

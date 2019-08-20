@@ -39,6 +39,9 @@ void JNI_WebApkUkmRecorder_RecordSessionDuration(
     jint distributor,
     jint version_code,
     jlong duration) {
+  if (!manifest_url)
+    return;
+
   WebApkUkmRecorder::RecordSessionDuration(
       GURL(base::android::ConvertJavaStringToUTF8(env, manifest_url)),
       distributor, version_code, duration);

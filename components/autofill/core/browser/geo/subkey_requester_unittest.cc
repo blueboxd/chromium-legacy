@@ -102,7 +102,7 @@ class SubKeyRequesterTest : public testing::Test {
 
   ~SubKeyRequesterTest() override {}
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<TestSubKeyRequester> requester_;
 
  private:
@@ -157,7 +157,7 @@ TEST_F(SubKeyRequesterTest, StartRequest_RulesNotLoaded_WillNotLoad) {
   requester_->StartRegionSubKeysRequest(kLocale, kLanguage, 0, std::move(cb));
 
   // Let the timeout execute.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Since the rules are never loaded and the timeout is 0, the delegate should
   // get notified that the subkeys could not be received.

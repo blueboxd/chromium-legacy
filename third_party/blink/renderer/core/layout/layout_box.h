@@ -27,7 +27,6 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/layout/custom/custom_layout_child.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/min_max_size.h"
 #include "third_party/blink/renderer/core/layout/overflow_model.h"
@@ -35,6 +34,7 @@
 
 namespace blink {
 
+class CustomLayoutChild;
 class EventHandler;
 class LayoutBlockFlow;
 class LayoutMultiColumnSpannerPlaceholder;
@@ -69,18 +69,7 @@ struct LayoutBoxRareData {
   USING_FAST_MALLOC(LayoutBoxRareData);
 
  public:
-  LayoutBoxRareData()
-      : spanner_placeholder_(nullptr),
-        override_logical_width_(-1),
-        override_logical_height_(-1),
-        // TODO(rego): We should store these based on physical direction.
-        has_override_containing_block_content_logical_width_(false),
-        has_override_containing_block_content_logical_height_(false),
-        has_override_percentage_resolution_block_size_(false),
-        has_previous_content_box_rect_and_layout_overflow_rect_(false),
-        percent_height_container_(nullptr),
-        snap_container_(nullptr),
-        snap_areas_(nullptr) {}
+  LayoutBoxRareData();
 
   // For spanners, the spanner placeholder that lays us out within the multicol
   // container.

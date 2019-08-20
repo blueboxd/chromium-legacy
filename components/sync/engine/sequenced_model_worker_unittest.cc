@@ -66,7 +66,7 @@ class SequencedModelWorkerTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   bool did_do_work_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   scoped_refptr<SequencedModelWorker> worker_;

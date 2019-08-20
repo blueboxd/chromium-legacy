@@ -232,8 +232,8 @@ class DownloadItemTest : public testing::Test {
  public:
   DownloadItemTest()
       : task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI,
-            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED),
+            base::test::TaskEnvironment::MainThreadType::UI,
+            base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED),
         next_download_id_(DownloadItem::kInvalidId + 1) {
     create_info_.reset(new DownloadCreateInfo());
     create_info_->save_info =
@@ -377,7 +377,7 @@ class DownloadItemTest : public testing::Test {
 
   bool canceled() { return canceled_; }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   StrictMock<MockDelegate> mock_delegate_;

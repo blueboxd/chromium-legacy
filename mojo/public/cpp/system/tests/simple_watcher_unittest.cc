@@ -40,7 +40,7 @@ class SimpleWatcherTest : public testing::Test {
   ~SimpleWatcherTest() override {}
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleWatcherTest);
 };

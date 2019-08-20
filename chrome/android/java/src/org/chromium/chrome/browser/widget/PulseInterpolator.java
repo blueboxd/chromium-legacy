@@ -23,8 +23,8 @@ public class PulseInterpolator implements Interpolator {
 
     @Override
     public float getInterpolation(float input) {
-        if (input < 0.4f) return 0.f;
-        if (input < 0.8f) return mInterpolator.getInterpolation((input - 0.4f) / 0.4f);
-        return mInterpolator.getInterpolation(1.f - (input - 0.8f) / 0.2f);
+        if (input < 0.2) return mInterpolator.getInterpolation(input / 0.2f);
+        if (input < 0.6) return 1.f;
+        return mInterpolator.getInterpolation(1.f - (input - 0.6f) / 0.4f);
     }
 }

@@ -104,7 +104,7 @@ class PrefProxyConfigTrackerImplTest : public testing::Test {
     proxy_config_service_.reset();
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   TestProxyConfigService* delegate_service_; // weak
   std::unique_ptr<net::ProxyConfigService> proxy_config_service_;

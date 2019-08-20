@@ -7,11 +7,11 @@
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
-#include "third_party/blink/renderer/core/layout/custom/custom_layout_fragment.h"
-#include "third_party/blink/renderer/core/layout/custom/custom_layout_scope.h"
-#include "third_party/blink/renderer/core/layout/custom/fragment_result_options.h"
-#include "third_party/blink/renderer/core/layout/custom/layout_worklet.h"
-#include "third_party/blink/renderer/core/layout/custom/layout_worklet_global_scope_proxy.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_scope.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/fragment_result_options.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/layout_worklet.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/layout_worklet_global_scope_proxy.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_layout_part.h"
@@ -86,7 +86,7 @@ scoped_refptr<const NGLayoutResult> NGCustomLayoutAlgorithm::Layout() {
     // TODO(ikilpatrick): Implement paint order. This should abort this loop,
     // and go into a "slow" loop which allows developers to control the paint
     // order of the children.
-    if (!child || child.GetLayoutBox() != fragment->GetLayoutBox()) {
+    if (!child || child != fragment->GetLayoutNode()) {
       // TODO(ikilpatrick): Report this error to the developer.
       return FallbackLayout();
     }
@@ -122,6 +122,7 @@ scoped_refptr<const NGLayoutResult> NGCustomLayoutAlgorithm::Layout() {
   LayoutUnit block_size = ComputeBlockSizeForFragment(
       ConstraintSpace(), Style(), border_padding_, auto_block_size);
 
+  container_builder_.SetCustomLayoutData(std::move(fragment_result_data));
   container_builder_.SetIntrinsicBlockSize(auto_block_size);
   container_builder_.SetBlockSize(block_size);
 

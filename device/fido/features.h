@@ -28,6 +28,10 @@ extern const base::Feature kWebAuthBiometricEnrollment;
 COMPONENT_EXPORT(DEVICE_FIDO)
 extern const base::Feature kWebAuthCredentialManagement;
 
+// Enable using a phone as a generic security key.
+COMPONENT_EXPORT(DEVICE_FIDO)
+extern const base::Feature kWebAuthPhoneSupport;
+
 }  // namespace device
 
 #endif  // DEVICE_FIDO_FEATURES_H_

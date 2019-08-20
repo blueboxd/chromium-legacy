@@ -52,7 +52,8 @@ SDK_PLATFORM_DICT = {
     version_codes.NOUGAT: 'N',
     version_codes.NOUGAT_MR1: 'N',
     version_codes.OREO: 'O',
-    version_codes.OREO_MR1: 'O'
+    version_codes.OREO_MR1: 'O',
+    version_codes.PIE: 'P',
 }
 
 # The test apks are apparently compatible across all architectures, the

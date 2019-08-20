@@ -266,8 +266,8 @@ void FrameImpl::ExecuteJavaScriptInternal(std::vector<std::string> origins,
           }
 
           fuchsia::web::Frame_ExecuteJavaScript_Response response;
-          response.result =
-              cr_fuchsia::MemBufferFromString(std::move(result_json));
+          response.result = cr_fuchsia::MemBufferFromString(
+              std::move(result_json), "cr-execute-js-response");
           result.set_response(std::move(response));
           callback(std::move(result));
         },
@@ -283,6 +283,117 @@ void FrameImpl::ExecuteJavaScriptInternal(std::vector<std::string> origins,
     result.set_response(fuchsia::web::Frame_ExecuteJavaScript_Response());
     callback(std::move(result));
   }
+}
+
+FrameImpl::PendingPopup::PendingPopup() = default;
+FrameImpl::PendingPopup::~PendingPopup() = default;
+
+bool FrameImpl::ShouldCreateWebContents(
+    content::WebContents* web_contents,
+    content::RenderFrameHost* opener,
+    content::SiteInstance* source_site_instance,
+    int32_t route_id,
+    int32_t main_frame_route_id,
+    int32_t main_frame_widget_route_id,
+    content::mojom::WindowContainerType window_container_type,
+    const GURL& opener_url,
+    const std::string& frame_name,
+    const GURL& target_url,
+    const std::string& partition_id,
+    content::SessionStorageNamespace* session_storage_namespace) {
+  // Specify a generous upper bound for unacknowledged popup windows, so that we
+  // can catch bad client behavior while not interfering with normal operation.
+  constexpr size_t kMaxPendingWebContentsCount = 10;
+
+  DCHECK_EQ(web_contents, web_contents_.get());
+
+  if (!popup_listener_)
+    return false;
+
+  if (pending_popups_.size() >= kMaxPendingWebContentsCount) {
+    // The content is producing popups faster than the embedder can process
+    // them. Drop the popups so as to prevent resource exhaustion.
+    LOG(WARNING) << "Too many pending popups, ignoring request.";
+
+    // Don't produce a WebContents for this popup.
+    return false;
+  }
+
+  return true;
+}
+
+void FrameImpl::AddNewContents(
+    content::WebContents* source,
+    std::unique_ptr<content::WebContents> new_contents,
+    WindowOpenDisposition disposition,
+    const gfx::Rect& initial_rect,
+    bool user_gesture,
+    bool* was_blocked) {
+  DCHECK_EQ(source, web_contents_.get());
+  DCHECK(!last_popup_url_.is_empty());
+
+  // TODO(crbug.com/995395): Add window disposition to the FIDL interface.
+  switch (disposition) {
+    case WindowOpenDisposition::NEW_FOREGROUND_TAB:
+    case WindowOpenDisposition::NEW_BACKGROUND_TAB:
+    case WindowOpenDisposition::NEW_POPUP:
+    case WindowOpenDisposition::NEW_WINDOW: {
+      pending_popups_.emplace_back();
+      PendingPopup& popup = pending_popups_.back();
+      popup.creation_info.set_initial_url(last_popup_url_.spec());
+      popup.creation_info.set_initiated_by_user(user_gesture);
+      popup.web_contents = std::move(new_contents);
+      last_popup_url_ = {};
+
+      MaybeSendPopup();
+      return;
+    }
+
+    // These kinds of windows don't produce Frames.
+    case WindowOpenDisposition::CURRENT_TAB:
+    case WindowOpenDisposition::SINGLETON_TAB:
+    case WindowOpenDisposition::SAVE_TO_DISK:
+    case WindowOpenDisposition::OFF_THE_RECORD:
+    case WindowOpenDisposition::IGNORE_ACTION:
+    case WindowOpenDisposition::SWITCH_TO_TAB:
+    case WindowOpenDisposition::UNKNOWN:
+      NOTIMPLEMENTED() << "Dropped new web contents (disposition: "
+                       << static_cast<int>(disposition) << ")";
+      return;
+  }
+}
+
+void FrameImpl::WebContentsCreated(content::WebContents* source_contents,
+                                   int opener_render_process_id,
+                                   int opener_render_frame_id,
+                                   const std::string& frame_name,
+                                   const GURL& target_url,
+                                   content::WebContents* new_contents) {
+  last_popup_url_ = target_url;
+}
+
+void FrameImpl::MaybeSendPopup() {
+  if (!popup_listener_)
+    return;
+
+  if (popup_ack_outstanding_ || pending_popups_.empty())
+    return;
+
+  PendingPopup& popup = pending_popups_.front();
+  popup_listener_->OnPopupFrameCreated(
+      context_->CreateFrameForPopupWebContents(std::move(popup.web_contents)),
+      std::move(popup.creation_info), [this] {
+        popup_ack_outstanding_ = false;
+        MaybeSendPopup();
+      });
+  pending_popups_.pop_front();
+  popup_ack_outstanding_ = true;
+}
+
+void FrameImpl::OnPopupListenerDisconnected(zx_status_t status) {
+  ZX_LOG_IF(WARNING, status != ZX_ERR_PEER_CLOSED, status)
+      << "Popup listener disconnected.";
+  pending_popups_.clear();
 }
 
 void FrameImpl::CreateView(fuchsia::ui::views::ViewToken view_token) {
@@ -372,7 +483,7 @@ void FrameImpl::AddBeforeLoadJavaScript(
 
   // Create a read-only VMO from |script|.
   fuchsia::mem::Buffer script_buffer =
-      cr_fuchsia::MemBufferFromString16(script_utf16);
+      cr_fuchsia::MemBufferFromString16(script_utf16, "cr-before-load-js");
 
   // Wrap the VMO into a read-only shared-memory container that Mojo can work
   // with.
@@ -485,6 +596,13 @@ void FrameImpl::SetEnableInput(bool enable_input) {
   discarding_event_filter_.set_discard_events(!enable_input);
 }
 
+void FrameImpl::SetPopupFrameCreationListener(
+    fidl::InterfaceHandle<fuchsia::web::PopupFrameCreationListener> listener) {
+  popup_listener_ = listener.Bind();
+  popup_listener_.set_error_handler(
+      fit::bind_member(this, &FrameImpl::OnPopupListenerDisconnected));
+}
+
 void FrameImpl::CloseContents(content::WebContents* source) {
   DCHECK_EQ(source, web_contents_.get());
   context_->DestroyFrame(this);
@@ -527,29 +645,6 @@ bool FrameImpl::DidAddMessageToConsole(
     console_log_message_hook_.Run(formatted_message);
 
   return true;
-}
-
-bool FrameImpl::ShouldCreateWebContents(
-    content::WebContents* web_contents,
-    content::RenderFrameHost* opener,
-    content::SiteInstance* source_site_instance,
-    int32_t route_id,
-    int32_t main_frame_route_id,
-    int32_t main_frame_widget_route_id,
-    content::mojom::WindowContainerType window_container_type,
-    const GURL& opener_url,
-    const std::string& frame_name,
-    const GURL& target_url,
-    const std::string& partition_id,
-    content::SessionStorageNamespace* session_storage_namespace) {
-  DCHECK_EQ(web_contents, web_contents_.get());
-
-  // Prevent any child WebContents (popup windows, tabs, etc.) from spawning.
-  // TODO(crbug.com/888131): Implement support for popup windows.
-  NOTIMPLEMENTED() << "Ignored popup window request for URL: "
-                   << target_url.spec();
-
-  return false;
 }
 
 void FrameImpl::ReadyToCommitNavigation(

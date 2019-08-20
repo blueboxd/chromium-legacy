@@ -202,7 +202,7 @@ class FCMInvalidationServiceTestDelegate {
         ConvertObjectIdInvalidationMapToTopicInvalidationMap(invalidation_map));
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   data_decoder::TestingJsonParser::ScopedFactoryOverride factory_override_;
   std::unique_ptr<gcm::GCMDriver> gcm_driver_;
   std::unique_ptr<MockInstanceIDDriver> mock_instance_id_driver_;

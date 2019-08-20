@@ -117,7 +117,7 @@ TEST(AudioInputDeviceTest, CreateStream) {
       shared_memory.region.Duplicate();
   ASSERT_TRUE(duplicated_shared_memory_region.IsValid());
 
-  base::test::ScopedTaskEnvironment ste;
+  base::test::TaskEnvironment ste;
   MockCaptureCallback callback;
   MockAudioInputIPC* input_ipc = new MockAudioInputIPC();
   scoped_refptr<AudioInputDevice> device(new AudioInputDevice(

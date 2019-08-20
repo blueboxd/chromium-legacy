@@ -126,7 +126,7 @@ class WarmupURLFetcherTest : public WarmupURLFetcher {
 
 // Test that query param for the warmup URL is randomly set.
 TEST(WarmupURLFetcherTest, TestGetWarmupURLWithQueryParam) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   network::TestURLLoaderFactory test_url_loader_factory;
   WarmupURLFetcherTest warmup_url_fetcher(&test_url_loader_factory);
 
@@ -157,7 +157,7 @@ TEST(WarmupURLFetcherTest, TestGetWarmupURLWithQueryParam) {
 }
 
 TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLNoViaHeader) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   network::TestURLLoaderFactory test_url_loader_factory;
 
   base::HistogramTester histogram_tester;
@@ -167,7 +167,7 @@ TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLNoViaHeader) {
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
   warmup_url_fetcher.FetchWarmupURL(0, DataReductionProxyServer(proxy_server));
   EXPECT_TRUE(warmup_url_fetcher.IsFetchInFlight());
-  scoped_task_environment.RunUntilIdle();
+  task_environment.RunUntilIdle();
 
   auto resource_response_head =
       network::CreateResourceResponseHead(net::HTTP_OK);
@@ -203,7 +203,7 @@ TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLNoViaHeader) {
 }
 
 TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLWithViaHeader) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   network::TestURLLoaderFactory test_url_loader_factory;
 
   base::HistogramTester histogram_tester;
@@ -213,7 +213,7 @@ TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLWithViaHeader) {
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
   warmup_url_fetcher.FetchWarmupURL(0, DataReductionProxyServer(proxy_server));
   EXPECT_TRUE(warmup_url_fetcher.IsFetchInFlight());
-  scoped_task_environment.RunUntilIdle();
+  task_environment.RunUntilIdle();
 
   auto resource_response_head =
       network::CreateResourceResponseHead(net::HTTP_NOT_FOUND);
@@ -255,7 +255,7 @@ TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLWithViaHeader) {
 
 TEST(WarmupURLFetcherTest,
      TestSuccessfulFetchWarmupURLWithViaHeaderExperimentNotEnabled) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   network::TestURLLoaderFactory test_url_loader_factory;
 
   base::HistogramTester histogram_tester;
@@ -295,7 +295,7 @@ TEST(WarmupURLFetcherTest,
 }
 
 TEST(WarmupURLFetcherTest, TestConnectionResetFetchWarmupURL) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   network::TestURLLoaderFactory test_url_loader_factory;
 
   base::HistogramTester histogram_tester;
@@ -337,7 +337,7 @@ TEST(WarmupURLFetcherTest, TestConnectionResetFetchWarmupURL) {
 }
 
 TEST(WarmupURLFetcherTest, TestFetchTimesout) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   network::TestURLLoaderFactory test_url_loader_factory;
 
   base::HistogramTester histogram_tester;
@@ -372,8 +372,8 @@ TEST(WarmupURLFetcherTest, TestFetchTimesout) {
 }
 
 TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLWithDelay) {
-  base::test::ScopedTaskEnvironment scoped_task_environment(
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME);
   network::TestURLLoaderFactory test_url_loader_factory;
 
   base::HistogramTester histogram_tester;
@@ -383,7 +383,7 @@ TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLWithDelay) {
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
   warmup_url_fetcher.SetFetchWaitTime(base::TimeDelta::FromMilliseconds(1));
   warmup_url_fetcher.FetchWarmupURL(1, DataReductionProxyServer(proxy_server));
-  scoped_task_environment.FastForwardBy(base::TimeDelta::FromMilliseconds(2));
+  task_environment.FastForwardBy(base::TimeDelta::FromMilliseconds(2));
 
   auto resource_response_head =
       network::CreateResourceResponseHead(net::HTTP_NOT_FOUND);
@@ -430,7 +430,7 @@ TEST(WarmupURLFetcherTest, TestFetchTimeoutIncreasing) {
 
   base::HistogramTester histogram_tester;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   network::TestURLLoaderFactory test_url_loader_factory;
 
   DataReductionProxyServer proxy_server(net::ProxyServer::Direct());
@@ -460,7 +460,7 @@ TEST(WarmupURLFetcherTest, TestFetchTimeoutIncreasing) {
 TEST(WarmupURLFetcherTest, TestFetchWaitTime) {
   base::HistogramTester histogram_tester;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   network::TestURLLoaderFactory test_url_loader_factory;
 
   DataReductionProxyServer proxy_server(net::ProxyServer::Direct());

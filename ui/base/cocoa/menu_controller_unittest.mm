@@ -377,8 +377,8 @@ TEST_F(MenuControllerTest, EmptySubmenuWhenAllChildItemsAreHidden) {
 // hidden, then the submenu should hide.
 TEST_F(MenuControllerTest, HiddenSubmenu) {
   // SimpleMenuModel posts a task that calls Delegate::MenuClosed.
-  base::test::ScopedTaskEnvironment scoped_task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::UI);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::UI);
 
   // Create the model.
   Delegate delegate;
@@ -424,8 +424,8 @@ TEST_F(MenuControllerTest, HiddenSubmenu) {
 
 TEST_F(MenuControllerTest, DisabledSubmenu) {
   // SimpleMenuModel posts a task that calls Delegate::MenuClosed.
-  base::test::ScopedTaskEnvironment scoped_task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::UI);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::UI);
 
   // Create the model.
   Delegate delegate;
@@ -619,8 +619,8 @@ TEST_F(MenuControllerTest, Dynamic) {
 
 TEST_F(MenuControllerTest, OpenClose) {
   // SimpleMenuModel posts a task that calls Delegate::MenuClosed.
-  base::test::ScopedTaskEnvironment scoped_task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::UI);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::UI);
 
   // Create the model.
   Delegate delegate;
@@ -689,8 +689,8 @@ TEST_F(MenuControllerTest, EmulateItemSelectedEarly) {
   if (![NSMenuItem instancesRespondToSelector:@selector(_sendItemSelectedNote)])
     return;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::UI);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::UI);
 
   Delegate delegate;
   delegate.auto_close_ = false;
@@ -795,8 +795,8 @@ TEST_F(MenuControllerTest, EmulateItemSelectedEarly) {
 // MenuControllerCocoa and destroys itself. Note this usually needs asan to
 // actually crash (before it was fixed).
 TEST_F(MenuControllerTest, OwningDelegate) {
-  base::test::ScopedTaskEnvironment scoped_task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::UI);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::UI);
   bool did_delete = false;
   BOOL did_dealloc = NO;
   OwningDelegate* delegate;

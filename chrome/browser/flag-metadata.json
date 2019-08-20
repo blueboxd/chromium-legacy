@@ -775,8 +775,8 @@
   },
   {
     "name": "enable-android-night-mode",
-    "owners": [ "huayinz", "twellington", "tedchoc" ],
-    "expiry_milestone": 76
+    "owners": [ "twellington", "tedchoc" ],
+    "expiry_milestone": 80
   },
   {
     "name": "enable-android-spellchecker",
@@ -785,8 +785,8 @@
   },
   {
     "name": "enable-android-web-contents-dark-mode",
-    "owners": [ "huayinz", "tedchoc" ],
-    "expiry_milestone": 76
+    "owners": [ "tedchoc" ],
+    "expiry_milestone": 80
   },
   {
     "name": "enable-app-data-search",
@@ -1537,7 +1537,7 @@
   {
     "name": "enable-revamped-context-menu",
     "owners": [ "twellington" ],
-    "expiry_milestone": 77
+    "expiry_milestone": 80
   },
   {
     "name": "enable-safe-browsing-ap-download-verdicts",
@@ -1703,27 +1703,27 @@
   {
     "name": "enable-tab-grid-layout",
     "owners": [ "memex-team@google.com" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 82
   },
   {
     "name": "enable-tab-groups",
     "owners": [ "memex-team@google.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 82
   },
   {
     "name": "enable-tab-groups-ui-improvements",
     "owners": [ "memex-team@google.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 82
   },
   {
     "name": "enable-tab-switcher-on-return",
     "owners": [ "memex-team@google.com" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 82
   },
   {
     "name": "enable-tab-to-gts-animation",
     "owners": [ "memex-team@google.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 82
   },
   {
     "name": "enable-text-fragment-anchor",
@@ -2070,7 +2070,7 @@
   {
     "name": "force-enable-home-page-button",
     "owners": [ "twellington", "chrome-android-app" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 81
   },
   {
     "name": "force-enable-system-aec",
@@ -2164,7 +2164,15 @@
   },
   {
     "name": "happiness-tracking-surveys-for-desktop",
-    "owners": [ "robliao" ],
+    "owners": [ "//chrome/browser/ui/hats/OWNERS" ],
+    "expiry_milestone": 78
+  },
+  {
+    "name": "happiness-tracking-surveys-for-desktop-demo",
+    "owners": [ "//chrome/browser/ui/hats/OWNERS" ],
+    // A debugging and demo flag to allow UI/dev/testing team to always show the UI
+    // components for the survey without being limited by the triggering mechanism.
+    // This flag should expire along with the above feature flag.
     "expiry_milestone": 78
   },
   {
@@ -2766,6 +2774,11 @@
     "name": "proactive-tab-freeze-and-discard",
     "owners": [ "fdoray" ],
     "expiry_milestone": 75
+  },
+  {
+    "name": "profile-menu-revamp",
+    "owners": [ "tangltom" ],
+    "expiry_milestone": 82
   },
   {
     "name": "progress-bar-throttle",

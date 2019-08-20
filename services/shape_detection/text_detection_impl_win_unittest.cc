@@ -48,7 +48,7 @@ class TextDetectionImplWinTest : public testing::Test {
  private:
   std::unique_ptr<base::win::ScopedCOMInitializer> scoped_com_initializer_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(TextDetectionImplWinTest);
 };

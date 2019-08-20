@@ -46,7 +46,7 @@ void AccountTracker::RemoveObserver(Observer* observer) {
 }
 
 std::vector<AccountIds> AccountTracker::GetAccounts() const {
-  const std::string active_account_id =
+  const CoreAccountId active_account_id =
       identity_manager_->GetPrimaryAccountId();
   std::vector<AccountIds> accounts;
 
@@ -116,7 +116,7 @@ void AccountTracker::NotifySignInChanged(const AccountState& account) {
     observer.OnAccountSignInChanged(account.ids, account.is_signed_in);
 }
 
-void AccountTracker::UpdateSignInState(const std::string& account_key,
+void AccountTracker::UpdateSignInState(const CoreAccountId& account_key,
                                        bool is_signed_in) {
   StartTrackingAccount(account_key);
   AccountState& account = accounts_[account_key];
@@ -131,18 +131,18 @@ void AccountTracker::UpdateSignInState(const std::string& account_key,
     NotifySignInChanged(account);
 }
 
-void AccountTracker::StartTrackingAccount(const std::string& account_key) {
+void AccountTracker::StartTrackingAccount(const CoreAccountId& account_key) {
   if (!base::Contains(accounts_, account_key)) {
     DVLOG(1) << "StartTracking " << account_key;
     AccountState account_state;
     account_state.ids.account_key = account_key;
-    account_state.ids.email = account_key;
+    account_state.ids.email = account_key.id;
     account_state.is_signed_in = false;
-    accounts_.insert(make_pair(account_key, account_state));
+    accounts_.insert(std::make_pair(account_key, account_state));
   }
 }
 
-void AccountTracker::StopTrackingAccount(const std::string account_key) {
+void AccountTracker::StopTrackingAccount(const CoreAccountId account_key) {
   DVLOG(1) << "StopTracking " << account_key;
   if (base::Contains(accounts_, account_key)) {
     AccountState& account = accounts_[account_key];
@@ -161,7 +161,7 @@ void AccountTracker::StopTrackingAllAccounts() {
     StopTrackingAccount(accounts_.begin()->first);
 }
 
-void AccountTracker::StartFetchingUserInfo(const std::string& account_key) {
+void AccountTracker::StartFetchingUserInfo(const CoreAccountId& account_key) {
   if (base::Contains(user_info_requests_, account_key)) {
     DeleteFetcher(user_info_requests_[account_key].get());
   }
@@ -175,7 +175,7 @@ void AccountTracker::StartFetchingUserInfo(const std::string& account_key) {
 
 void AccountTracker::OnUserInfoFetchSuccess(AccountIdFetcher* fetcher,
                                             const std::string& gaia_id) {
-  const std::string& account_key = fetcher->account_key();
+  const CoreAccountId& account_key = fetcher->account_key();
   DCHECK(base::Contains(accounts_, account_key));
   AccountState& account = accounts_[account_key];
 
@@ -189,14 +189,14 @@ void AccountTracker::OnUserInfoFetchSuccess(AccountIdFetcher* fetcher,
 
 void AccountTracker::OnUserInfoFetchFailure(AccountIdFetcher* fetcher) {
   LOG(WARNING) << "Failed to get UserInfo for " << fetcher->account_key();
-  std::string key = fetcher->account_key();
+  CoreAccountId key = fetcher->account_key();
   DeleteFetcher(fetcher);
   StopTrackingAccount(key);
 }
 
 void AccountTracker::DeleteFetcher(AccountIdFetcher* fetcher) {
   DVLOG(1) << "DeleteFetcher " << fetcher->account_key();
-  const std::string& account_key = fetcher->account_key();
+  const CoreAccountId& account_key = fetcher->account_key();
   DCHECK(base::Contains(user_info_requests_, account_key));
   DCHECK_EQ(fetcher, user_info_requests_[account_key].get());
   user_info_requests_.erase(account_key);
@@ -206,13 +206,13 @@ AccountIdFetcher::AccountIdFetcher(
     signin::IdentityManager* identity_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     AccountTracker* tracker,
-    const std::string& account_key)
+    const CoreAccountId& account_key)
     : identity_manager_(identity_manager),
       url_loader_factory_(std::move(url_loader_factory)),
       tracker_(tracker),
       account_key_(account_key) {
   TRACE_EVENT_ASYNC_BEGIN1("identity", "AccountIdFetcher", this, "account_key",
-                           account_key);
+                           account_key.id);
 }
 
 AccountIdFetcher::~AccountIdFetcher() {

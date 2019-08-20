@@ -12,6 +12,7 @@
 #include "base/path_service.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/extension_paths.h"
@@ -269,6 +270,9 @@ void ManifestTest::RunTestcases(const Testcase* testcases,
 
 void ManifestTest::RunTestcase(const Testcase& testcase,
                                         ExpectType type) {
+  SCOPED_TRACE(base::StringPrintf("Testing file '%s'",
+                                  testcase.manifest_filename_.c_str()));
+
   switch (type) {
     case EXPECT_TYPE_ERROR:
       LoadAndExpectError(testcase.manifest_filename_.c_str(),

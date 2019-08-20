@@ -832,8 +832,8 @@ public class WebappActivity extends SingleTabActivity {
     }
 
     @Override
-    protected TabCreator createTabCreator(boolean incognito) {
-        return new WebappTabDelegate(incognito, mWebappInfo);
+    protected TabCreator createNormalTabCreator() {
+        return new WebappTabDelegate(false /* incognito */, mWebappInfo);
     }
 
     // We're temporarily disable CS on webapp since there are some issues. (http://crbug.com/471950)

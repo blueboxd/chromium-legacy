@@ -56,8 +56,8 @@ class ClipboardAuraTest : public testing::Test {
  protected:
   void StopAndResetClipboard();
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::UI};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::UI};
   ClientClipboard* client_clipboard_;
   std::unique_ptr<ClipboardAura> clipboard_;
 };
@@ -119,13 +119,13 @@ TEST_F(ClipboardAuraTest, MonitorClipboardChanges) {
                                             Eq("Test data.")))).Times(1);
 
   base::RunLoop run_loop;
-  scoped_task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
+  task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&ClipboardAuraTest_MonitorClipboardChanges_Test::
                          StopAndResetClipboard,
                      base::Unretained(this)),
       TestTimeouts::tiny_timeout());
-  scoped_task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
+  task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
   run_loop.Run();
 }

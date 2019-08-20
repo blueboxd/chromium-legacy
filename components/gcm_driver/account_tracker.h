@@ -14,6 +14,7 @@
 #include "base/observer_list.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 
 class GoogleServiceAuthError;
@@ -29,7 +30,7 @@ class SharedURLLoaderFactory;
 namespace gcm {
 
 struct AccountIds {
-  std::string account_key;  // The account ID used by IdentityManager.
+  CoreAccountId account_key;  // The account ID used by IdentityManager.
   std::string gaia;
   std::string email;
 };
@@ -96,23 +97,24 @@ class AccountTracker : public signin::IdentityManager::Observer {
 
   void NotifySignInChanged(const AccountState& account);
 
-  void UpdateSignInState(const std::string& account_key, bool is_signed_in);
+  void UpdateSignInState(const CoreAccountId& account_key, bool is_signed_in);
 
-  void StartTrackingAccount(const std::string& account_key);
+  void StartTrackingAccount(const CoreAccountId& account_key);
 
   // Note: |account_key| is passed by value here, because the original
   // object may be stored in |accounts_| and if so, it will be destroyed
   // after erasing the key from the map.
-  void StopTrackingAccount(const std::string account_key);
+  void StopTrackingAccount(const CoreAccountId account_key);
 
   void StopTrackingAllAccounts();
-  void StartFetchingUserInfo(const std::string& account_key);
+  void StartFetchingUserInfo(const CoreAccountId& account_key);
   void DeleteFetcher(AccountIdFetcher* fetcher);
 
   signin::IdentityManager* identity_manager_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
-  std::map<std::string, std::unique_ptr<AccountIdFetcher>> user_info_requests_;
-  std::map<std::string, AccountState> accounts_;
+  std::map<CoreAccountId, std::unique_ptr<AccountIdFetcher>>
+      user_info_requests_;
+  std::map<CoreAccountId, AccountState> accounts_;
   base::ObserverList<Observer>::Unchecked observer_list_;
   bool shutdown_called_;
 };
@@ -123,10 +125,10 @@ class AccountIdFetcher : public gaia::GaiaOAuthClient::Delegate {
       signin::IdentityManager* identity_manager,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       AccountTracker* tracker,
-      const std::string& account_key);
+      const CoreAccountId& account_key);
   ~AccountIdFetcher() override;
 
-  const std::string& account_key() { return account_key_; }
+  const CoreAccountId& account_key() { return account_key_; }
 
   void Start();
 
@@ -142,7 +144,7 @@ class AccountIdFetcher : public gaia::GaiaOAuthClient::Delegate {
   signin::IdentityManager* identity_manager_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   AccountTracker* tracker_;
-  const std::string account_key_;
+  const CoreAccountId account_key_;
 
   std::unique_ptr<signin::AccessTokenFetcher> access_token_fetcher_;
   std::unique_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;

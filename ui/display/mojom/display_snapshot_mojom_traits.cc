@@ -81,6 +81,10 @@ bool StructTraits<display::mojom::DisplaySnapshotDataView,
   if (!data.ReadType(&type))
     return false;
 
+  display::PanelOrientation panel_orientation;
+  if (!data.ReadPanelOrientation(&panel_orientation))
+    return false;
+
   gfx::ColorSpace color_space;
   if (!data.ReadColorSpace(&color_space))
     return false;
@@ -134,8 +138,9 @@ bool StructTraits<display::mojom::DisplaySnapshotDataView,
       data.is_aspect_preserving_scaling(), data.has_overscan(),
       data.has_color_correction_matrix(),
       data.color_correction_in_linear_space(), color_space, display_name,
-      file_path, std::move(modes), std::move(edid), current_mode, native_mode,
-      data.product_code(), data.year_of_manufacture(), maximum_cursor_size);
+      file_path, std::move(modes), panel_orientation, std::move(edid),
+      current_mode, native_mode, data.product_code(),
+      data.year_of_manufacture(), maximum_cursor_size);
   return true;
 }
 

@@ -20,7 +20,7 @@ namespace web {
 class WebSubThread;
 class WebThreadImpl;
 
-// DEPRECATED: use TestWebThreadBundle instead.
+// DEPRECATED: use WebTaskEnvironment instead.
 // A WebThread for unit tests; this lets unit tests outside of web create
 // WebThread instances.
 class TestWebThread {

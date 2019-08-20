@@ -29,7 +29,6 @@ let MostVisitedData;
  * @typedef {{chromeColors: boolean,
  *            enableShortcutsGrid: boolean,
  *            googleBaseUrl: string,
- *            hideShortcuts: boolean,
  *            isAccessibleBrowser: boolean,
  *            isGooglePage: boolean,
  *            richerPicker: boolean,

@@ -35,7 +35,6 @@ enum class OmniboxPartState {
   NORMAL,
   HOVERED,
   SELECTED,
-  HOVERED_AND_SELECTED,
 
   // Applicable to LOCATION_BAR_SECURITY_CHIP only.
   CHIP_DEFAULT,

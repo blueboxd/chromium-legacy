@@ -17,7 +17,6 @@ import org.chromium.base.SysUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.media.router.caf.CafMediaRouteProvider;
 import org.chromium.chrome.browser.media.router.caf.remoting.CafRemotingMediaRouteProvider;
@@ -146,8 +145,8 @@ public class ChromeMediaRouter implements MediaRouteManager {
 
         mSinksPerSource.put(sourceId, allSinksPerSource);
         if (mNativeMediaRouterAndroidBridge != 0) {
-            ChromeMediaRouterJni.get().onSinksReceived(mNativeMediaRouterAndroidBridge,
-                    ChromeMediaRouter.this, sourceId, allSinksPerSource.size());
+            nativeOnSinksReceived(
+                    mNativeMediaRouterAndroidBridge, sourceId, allSinksPerSource.size());
         }
     }
 
@@ -156,24 +155,22 @@ public class ChromeMediaRouter implements MediaRouteManager {
             MediaRouteProvider provider, boolean wasLaunched) {
         mRouteIdsToProviders.put(mediaRouteId, provider);
         if (mNativeMediaRouterAndroidBridge != 0) {
-            ChromeMediaRouterJni.get().onRouteCreated(mNativeMediaRouterAndroidBridge,
-                    ChromeMediaRouter.this, mediaRouteId, mediaSinkId, requestId, wasLaunched);
+            nativeOnRouteCreated(mNativeMediaRouterAndroidBridge, mediaRouteId, mediaSinkId,
+                    requestId, wasLaunched);
         }
     }
 
     @Override
     public void onRouteRequestError(String errorText, int requestId) {
         if (mNativeMediaRouterAndroidBridge != 0) {
-            ChromeMediaRouterJni.get().onRouteRequestError(
-                    mNativeMediaRouterAndroidBridge, ChromeMediaRouter.this, errorText, requestId);
+            nativeOnRouteRequestError(mNativeMediaRouterAndroidBridge, errorText, requestId);
         }
     }
 
     @Override
     public void onRouteTerminated(String mediaRouteId) {
         if (mNativeMediaRouterAndroidBridge != 0) {
-            ChromeMediaRouterJni.get().onRouteTerminated(
-                    mNativeMediaRouterAndroidBridge, ChromeMediaRouter.this, mediaRouteId);
+            nativeOnRouteTerminated(mNativeMediaRouterAndroidBridge, mediaRouteId);
         }
         mRouteIdsToProviders.remove(mediaRouteId);
     }
@@ -181,8 +178,7 @@ public class ChromeMediaRouter implements MediaRouteManager {
     @Override
     public void onRouteClosed(String mediaRouteId, String error) {
         if (mNativeMediaRouterAndroidBridge != 0) {
-            ChromeMediaRouterJni.get().onRouteClosed(
-                    mNativeMediaRouterAndroidBridge, ChromeMediaRouter.this, mediaRouteId, error);
+            nativeOnRouteClosed(mNativeMediaRouterAndroidBridge, mediaRouteId, error);
         }
         mRouteIdsToProviders.remove(mediaRouteId);
     }
@@ -190,8 +186,7 @@ public class ChromeMediaRouter implements MediaRouteManager {
     @Override
     public void onMessage(String mediaRouteId, String message) {
         if (mNativeMediaRouterAndroidBridge != 0) {
-            ChromeMediaRouterJni.get().onMessage(
-                    mNativeMediaRouterAndroidBridge, ChromeMediaRouter.this, mediaRouteId, message);
+            nativeOnMessage(mNativeMediaRouterAndroidBridge, mediaRouteId, message);
         }
     }
 
@@ -397,20 +392,15 @@ public class ChromeMediaRouter implements MediaRouteManager {
         return null;
     }
 
-    @NativeMethods
-    interface Natives {
-        void onSinksReceived(long nativeMediaRouterAndroidBridge, ChromeMediaRouter caller,
-                String sourceUrn, int count);
-        void onRouteCreated(long nativeMediaRouterAndroidBridge, ChromeMediaRouter caller,
-                String mediaRouteId, String mediaSinkId, int createRouteRequestId,
-                boolean wasLaunched);
-        void onRouteRequestError(long nativeMediaRouterAndroidBridge, ChromeMediaRouter caller,
-                String errorText, int createRouteRequestId);
-        void onRouteTerminated(
-                long nativeMediaRouterAndroidBridge, ChromeMediaRouter caller, String mediaRouteId);
-        void onRouteClosed(long nativeMediaRouterAndroidBridge, ChromeMediaRouter caller,
-                String mediaRouteId, String message);
-        void onMessage(long nativeMediaRouterAndroidBridge, ChromeMediaRouter caller,
-                String mediaRouteId, String message);
-    }
+    native void nativeOnSinksReceived(
+            long nativeMediaRouterAndroidBridge, String sourceUrn, int count);
+    native void nativeOnRouteCreated(long nativeMediaRouterAndroidBridge, String mediaRouteId,
+            String mediaSinkId, int createRouteRequestId, boolean wasLaunched);
+    native void nativeOnRouteRequestError(
+            long nativeMediaRouterAndroidBridge, String errorText, int createRouteRequestId);
+    native void nativeOnRouteTerminated(long nativeMediaRouterAndroidBridge, String mediaRouteId);
+    native void nativeOnRouteClosed(
+            long nativeMediaRouterAndroidBridge, String mediaRouteId, String message);
+    native void nativeOnMessage(
+            long nativeMediaRouterAndroidBridge, String mediaRouteId, String message);
 }

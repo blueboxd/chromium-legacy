@@ -3987,6 +3987,8 @@ void LocalFrameView::RenderThrottlingStatusChanged() {
     InvalidateForThrottlingChange();
 
   if (FrameScheduler* frame_scheduler = frame_->GetFrameScheduler()) {
+    // TODO(szager): Per crbug.com/994443, maybe this should be:
+    //   SetFrameVisible(IsHiddenForThrottling() || IsSubtreeThrottled());
     frame_scheduler->SetFrameVisible(!IsHiddenForThrottling());
     frame_scheduler->SetCrossOrigin(frame_->IsCrossOriginSubframe());
     frame_scheduler->TraceUrlChange(frame_->GetDocument()->Url().GetString());

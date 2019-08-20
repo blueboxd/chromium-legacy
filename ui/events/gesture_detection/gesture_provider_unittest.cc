@@ -66,8 +66,7 @@ gfx::RectF BoundsForSingleMockTouchAtLocation(float x, float y) {
 class GestureProviderTest : public testing::Test, public GestureProviderClient {
  public:
   GestureProviderTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
   ~GestureProviderTest() override {}
 
   static MockMotionEvent ObtainMotionEvent(base::TimeTicks event_time,
@@ -438,7 +437,7 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
   std::vector<GestureEventData> gestures_;
   std::unique_ptr<GestureProvider> gesture_provider_;
   std::unique_ptr<GestureEventData> active_scroll_begin_event_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   bool should_process_double_tap_events_ = true;
 };
 

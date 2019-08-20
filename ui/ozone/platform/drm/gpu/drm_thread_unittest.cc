@@ -75,7 +75,7 @@ class DrmThreadTest : public testing::Test {
     drm_device_ptr_->AddGraphicsDevice(file_path, std::move(file));
   }
 
-  base::test::ScopedTaskEnvironment env_;
+  base::test::TaskEnvironment env_;
   DrmThread drm_thread_;
   ozone::mojom::DrmDevicePtr drm_device_ptr_;
 };

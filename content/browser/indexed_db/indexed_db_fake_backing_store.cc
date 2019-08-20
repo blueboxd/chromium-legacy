@@ -164,7 +164,7 @@ void IndexedDBFakeBackingStore::FakeTransaction::Begin(
 leveldb::Status IndexedDBFakeBackingStore::FakeTransaction::CommitPhaseOne(
     BlobWriteCallback callback) {
   return std::move(callback).Run(
-      IndexedDBBackingStore::BlobWriteResult::SUCCESS_SYNC);
+      IndexedDBBackingStore::BlobWriteResult::kRunPhaseTwoAndReturnResult);
 }
 leveldb::Status IndexedDBFakeBackingStore::FakeTransaction::CommitPhaseTwo() {
   return result_;
@@ -173,5 +173,10 @@ uint64_t IndexedDBFakeBackingStore::FakeTransaction::GetTransactionSize() {
   return 0;
 }
 void IndexedDBFakeBackingStore::FakeTransaction::RollbackAndMaybeTearDown() {}
+
+std::unique_ptr<IndexedDBBackingStore::Transaction>
+IndexedDBFakeBackingStore::CreateTransaction() {
+  return std::make_unique<FakeTransaction>(leveldb::Status::OK());
+}
 
 }  // namespace content

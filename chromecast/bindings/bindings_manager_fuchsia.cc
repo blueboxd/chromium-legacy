@@ -22,7 +22,7 @@ BindingsManagerFuchsia::~BindingsManagerFuchsia() = default;
 void BindingsManagerFuchsia::AddBinding(base::StringPiece binding_name,
                                         base::StringPiece binding_script) {
   bindings_[binding_name.as_string()] =
-      cr_fuchsia::MemBufferFromString(binding_script);
+      cr_fuchsia::MemBufferFromString(binding_script, "cast-binding-script");
 }
 
 void BindingsManagerFuchsia::GetAll(GetAllCallback callback) {

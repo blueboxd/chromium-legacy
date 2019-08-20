@@ -125,8 +125,11 @@ class TestHintsFetcher : public optimization_guide::HintsFetcher {
   TestHintsFetcher(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       GURL optimization_guide_service_url,
-      HintsFetcherEndState fetch_state)
-      : HintsFetcher(url_loader_factory, optimization_guide_service_url),
+      HintsFetcherEndState fetch_state,
+      PrefService* pref_service)
+      : HintsFetcher(url_loader_factory,
+                     optimization_guide_service_url,
+                     pref_service),
         fetch_state_(fetch_state) {}
 
   bool FetchOptimizationGuideServiceHints(
@@ -201,9 +204,8 @@ class PreviewsOptimizationGuideTest
     : public optimization_guide::ProtoDatabaseProviderTestBase {
  public:
   PreviewsOptimizationGuideTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI,
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI,
+                          base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   ~PreviewsOptimizationGuideTest() override {}
 
@@ -281,7 +283,7 @@ class PreviewsOptimizationGuideTest
     }
     optimization_guide_service_ =
         std::make_unique<TestOptimizationGuideService>(
-            scoped_task_environment_.GetMainThreadTaskRunner());
+            task_environment_.GetMainThreadTaskRunner());
     pref_service_ = std::make_unique<TestingPrefServiceSimple>();
 
     // Registry pref for DataSaver with default off.
@@ -291,12 +293,12 @@ class PreviewsOptimizationGuideTest
 
     guide_ = std::make_unique<TestPreviewsOptimizationGuide>(
         optimization_guide_service_.get(),
-        scoped_task_environment_.GetMainThreadTaskRunner(),
-        scoped_task_environment_.GetMainThreadTaskRunner(), temp_dir(),
+        task_environment_.GetMainThreadTaskRunner(),
+        task_environment_.GetMainThreadTaskRunner(), temp_dir(),
         pref_service_.get(), db_provider_.get(),
         optimization_guide_top_host_provider_.get(), url_loader_factory_);
 
-    guide_->SetTimeClockForTesting(scoped_task_environment_.GetMockClock());
+    guide_->SetTimeClockForTesting(task_environment_.GetMockClock());
 
     base::test::ScopedFeatureList scoped_list;
     scoped_list.InitAndEnableFeature(
@@ -310,7 +312,7 @@ class PreviewsOptimizationGuideTest
   }
 
   const base::Clock* GetMockClock() const {
-    return scoped_task_environment_.GetMockClock();
+    return task_environment_.GetMockClock();
   }
 
   void ResetGuide() {
@@ -321,23 +323,24 @@ class PreviewsOptimizationGuideTest
   std::unique_ptr<TestHintsFetcher> BuildTestHintsFetcher(
       HintsFetcherEndState end_state) {
     std::unique_ptr<TestHintsFetcher> hints_fetcher =
-        std::make_unique<TestHintsFetcher>(
-            url_loader_factory_, GURL("https://hintsserver.com"), end_state);
+        std::make_unique<TestHintsFetcher>(url_loader_factory_,
+                                           GURL("https://hintsserver.com"),
+                                           end_state, pref_service());
     return hints_fetcher;
   }
 
   base::FilePath temp_dir() const { return temp_dir_.GetPath(); }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   void MoveClockForwardBy(base::TimeDelta time_delta) {
-    scoped_task_environment_.FastForwardBy(time_delta);
+    task_environment_.FastForwardBy(time_delta);
     base::RunLoop().RunUntilIdle();
   }
 
   void RunUntilIdle() {
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     base::RunLoop().RunUntilIdle();
   }
 

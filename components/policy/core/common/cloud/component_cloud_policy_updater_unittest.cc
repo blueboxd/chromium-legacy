@@ -80,7 +80,7 @@ class ComponentCloudPolicyUpdaterTest : public testing::Test {
   std::unique_ptr<em::PolicyFetchResponse> CreateResponse();
 
   const PolicyNamespace kTestPolicyNS{POLICY_DOMAIN_EXTENSIONS, kTestExtension};
-  base::test::ScopedTaskEnvironment task_env_;
+  base::test::TaskEnvironment task_env_;
   std::unique_ptr<ComponentCloudPolicyStore> store_;
   MockComponentCloudPolicyStoreDelegate store_delegate_;
   network::TestURLLoaderFactory loader_factory_;
@@ -96,7 +96,7 @@ class ComponentCloudPolicyUpdaterTest : public testing::Test {
 };
 
 ComponentCloudPolicyUpdaterTest::ComponentCloudPolicyUpdaterTest()
-    : task_env_(base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {
+    : task_env_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
   builder_.SetDefaultSigningKey();
   builder_.policy_data().set_policy_type(
       dm_protocol::kChromeExtensionPolicyType);

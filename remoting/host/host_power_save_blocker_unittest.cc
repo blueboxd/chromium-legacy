@@ -24,8 +24,8 @@ class HostPowerSaveBlockerTest : public testing::Test {
 
   void SetUp() override;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::UI};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::UI};
   base::Thread blocking_thread_;
   scoped_refptr<HostStatusMonitor> monitor_;
   std::unique_ptr<HostPowerSaveBlocker> blocker_;
@@ -39,7 +39,7 @@ void HostPowerSaveBlockerTest::SetUp() {
                   base::Thread::Options(base::MessagePumpType::IO, 0)) &&
               blocking_thread_.WaitUntilThreadStarted());
   blocker_.reset(new HostPowerSaveBlocker(
-      monitor_, scoped_task_environment_.GetMainThreadTaskRunner(),
+      monitor_, task_environment_.GetMainThreadTaskRunner(),
       blocking_thread_.task_runner()));
 }
 

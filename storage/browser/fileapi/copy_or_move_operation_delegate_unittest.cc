@@ -182,15 +182,14 @@ class CopyOrMoveOperationTestHelper {
       : origin_(origin),
         src_type_(src_type),
         dest_type_(dest_type),
-        scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
+        task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
 
   ~CopyOrMoveOperationTestHelper() {
     file_system_context_ = nullptr;
     quota_manager_proxy_->SimulateQuotaManagerDestroyed();
     quota_manager_ = nullptr;
     quota_manager_proxy_ = nullptr;
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void SetUp() {
@@ -239,7 +238,7 @@ class CopyOrMoveOperationTestHelper {
                                      base::FilePath()),
         storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::BindOnce(&ExpectOk));
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
     // Grant relatively big quota initially.
     quota_manager_->SetQuota(
@@ -402,7 +401,7 @@ class CopyOrMoveOperationTestHelper {
   const storage::FileSystemType src_type_;
   const storage::FileSystemType dest_type_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
   scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;
   scoped_refptr<MockQuotaManager> quota_manager_;
@@ -737,8 +736,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper) {
   base::WriteFile(source_path, kTestData,
                   base::size(kTestData) - 1);  // Exclude trailing '\0'.
 
-  base::test::ScopedTaskEnvironment scoped_task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
   base::Thread file_thread("file_thread");
   ASSERT_TRUE(file_thread.Start());
   ScopedThreadStopper thread_stopper(&file_thread);
@@ -795,8 +794,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelperWithFlush) {
   base::WriteFile(source_path, kTestData,
                   base::size(kTestData) - 1);  // Exclude trailing '\0'.
 
-  base::test::ScopedTaskEnvironment scoped_task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
   base::Thread file_thread("file_thread");
   ASSERT_TRUE(file_thread.Start());
   ScopedThreadStopper thread_stopper(&file_thread);
@@ -849,8 +848,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper_Cancel) {
   base::WriteFile(source_path, kTestData,
                   base::size(kTestData) - 1);  // Exclude trailing '\0'.
 
-  base::test::ScopedTaskEnvironment scoped_task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
   base::Thread file_thread("file_thread");
   ASSERT_TRUE(file_thread.Start());
   ScopedThreadStopper thread_stopper(&file_thread);

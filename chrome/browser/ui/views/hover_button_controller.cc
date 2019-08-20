@@ -53,7 +53,9 @@ bool HoverButtonController::OnMousePressed(const ui::MouseEvent& event) {
 void HoverButtonController::OnMouseReleased(const ui::MouseEvent& event) {
   DCHECK(notify_action() ==
          views::ButtonController::NotifyAction::NOTIFY_ON_RELEASE);
-  if (button()->state() != views::Button::STATE_DISABLED) {
+  if (button()->state() != views::Button::STATE_DISABLED &&
+      delegate()->IsTriggerableEvent(event) &&
+      button()->HitTestPoint(event.location()) && !delegate()->InDrag()) {
     if (listener_)
       listener_->ButtonPressed(button(), event);
   } else {

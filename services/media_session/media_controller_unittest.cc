@@ -69,7 +69,7 @@ class MediaControllerTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   service_manager::TestConnectorFactory connector_factory_;
   std::unique_ptr<MediaSessionService> service_;
   mojo::Remote<mojom::AudioFocusManager> audio_focus_remote_;

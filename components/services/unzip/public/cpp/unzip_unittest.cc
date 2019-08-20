@@ -104,7 +104,7 @@ class UnzipTest : public testing::Test {
     unzip_dir_ = temp_dir_.GetPath();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   base::ScopedTempDir temp_dir_;
   base::FilePath unzip_dir_;

@@ -94,7 +94,7 @@ class AddressNormalizerTest : public testing::Test {
   ~AddressNormalizerTest() override {}
 
   void WaitForAddressValidatorInitialization() {
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   bool normalization_successful() const { return success_; }
@@ -103,7 +103,7 @@ class AddressNormalizerTest : public testing::Test {
 
   TestAddressNormalizer* normalizer() { return &normalizer_; }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   bool AreRulesLoadedForRegion(const std::string& region_code) {
     return normalizer_.AreRulesLoadedForRegion(region_code);
@@ -187,7 +187,7 @@ TEST_F(AddressNormalizerTest,
                      base::Unretained(this)));
 
   // Let the timeout execute.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Since the rules are never loaded and the timeout is 0, the callback should
   // get notified that the address could not be normalized.
@@ -338,7 +338,7 @@ TEST_F(AddressNormalizerTest, FormatPhone_AddressNotNormalizedAsync) {
                      base::Unretained(this)));
 
   // Let the timeout execute.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Make sure the address was not normalized.
   EXPECT_FALSE(normalization_successful());

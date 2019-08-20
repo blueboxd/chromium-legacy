@@ -41,13 +41,13 @@ typedef NS_ENUM(NSInteger, CWVSyncError) {
   CWVSyncErrorUnexpectedServiceResponse = -600,
 };
 
-CWV_EXPORT
 // Used to manage syncing for autofill and password data. Usage:
 // 1. Call |startSyncWithIdentity:dataSource:| to start syncing with identity.
 // 2. Call |stopSyncAndClearIdentity| to stop syncing.
 // It is necessary to call |startSyncWithIdentity:dataSource:| once per cold app
 // launch to keep |currentIdentity| syncing. Remember to set the |delegate| to
 // listen to sync start and stop events.
+CWV_EXPORT
 @interface CWVSyncController : NSObject
 
 // The delegate of CWVSyncController.

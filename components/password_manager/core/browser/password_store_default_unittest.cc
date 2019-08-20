@@ -97,7 +97,7 @@ class PasswordStoreDefaultTestDelegate {
 
   base::FilePath test_login_db_file_path() const;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   scoped_refptr<PasswordStoreDefault> store_;
 
@@ -105,8 +105,7 @@ class PasswordStoreDefaultTestDelegate {
 };
 
 PasswordStoreDefaultTestDelegate::PasswordStoreDefaultTestDelegate()
-    : scoped_task_environment_(
-          base::test::ScopedTaskEnvironment::MainThreadType::UI) {
+    : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {
   OSCryptMocker::SetUp();
   SetupTempDir();
   store_ = CreateInitializedStore(
@@ -115,8 +114,7 @@ PasswordStoreDefaultTestDelegate::PasswordStoreDefaultTestDelegate()
 
 PasswordStoreDefaultTestDelegate::PasswordStoreDefaultTestDelegate(
     std::unique_ptr<LoginDatabase> database)
-    : scoped_task_environment_(
-          base::test::ScopedTaskEnvironment::MainThreadType::UI) {
+    : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {
   OSCryptMocker::SetUp();
   SetupTempDir();
   store_ = CreateInitializedStore(std::move(database));
@@ -128,7 +126,7 @@ PasswordStoreDefaultTestDelegate::~PasswordStoreDefaultTestDelegate() {
 }
 
 void PasswordStoreDefaultTestDelegate::FinishAsyncProcessing() {
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 void PasswordStoreDefaultTestDelegate::SetupTempDir() {

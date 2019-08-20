@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_management_constants.h"
 #include "chrome/browser/extensions/external_policy_loader.h"
@@ -333,6 +334,28 @@ bool ExtensionSettingsPolicyHandler::CheckPolicySettings(
           }
         }
       }
+    }
+
+    const base::ListValue* runtime_blocked_hosts = nullptr;
+    if (sub_dict->GetList(schema_constants::kPolicyBlockedHosts,
+                          &runtime_blocked_hosts) &&
+        runtime_blocked_hosts->GetList().size() >
+            schema_constants::kMaxItemsURLPatternSet) {
+      errors->AddError(
+          policy_name(), it.key() + "." + schema_constants::kPolicyBlockedHosts,
+          IDS_POLICY_EXTENSION_SETTINGS_ORIGIN_LIMIT_WARNING,
+          base::NumberToString(schema_constants::kMaxItemsURLPatternSet));
+    }
+
+    const base::ListValue* runtime_allowed_hosts = nullptr;
+    if (sub_dict->GetList(schema_constants::kPolicyAllowedHosts,
+                          &runtime_allowed_hosts) &&
+        runtime_allowed_hosts->GetList().size() >
+            schema_constants::kMaxItemsURLPatternSet) {
+      errors->AddError(
+          policy_name(), it.key() + "." + schema_constants::kPolicyAllowedHosts,
+          IDS_POLICY_EXTENSION_SETTINGS_ORIGIN_LIMIT_WARNING,
+          base::NumberToString(schema_constants::kMaxItemsURLPatternSet));
     }
   }
 

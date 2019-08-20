@@ -3587,6 +3587,64 @@ bool AXPlatformNodeAuraLinux::GrabFocus() {
   return delegate_->AccessibilityPerformAction(action_data);
 }
 
+bool AXPlatformNodeAuraLinux::FocusFirstFocusableAncestorInWebContent() {
+  if (!GetDelegate()->IsWebContent())
+    return false;
+
+  // Don't cross document boundaries in order to avoid having this operation
+  // cross iframe boundaries or escape to non-document UI elements.
+  if (GetAtkRole() == ATK_ROLE_DOCUMENT_WEB)
+    return false;
+
+  if (GetData().HasState(ax::mojom::State::kFocusable) ||
+      SelectionAndFocusAreTheSame()) {
+    if (g_current_focused != GetOrCreateAtkObject())
+      GrabFocus();
+    return true;
+  }
+
+  auto* parent = AtkObjectToAXPlatformNodeAuraLinux(GetParent());
+  if (!parent)
+    return false;
+
+  // If any of the siblings of this element are focusable, focusing the parent
+  // would be like moving the focus position backward, so we should fall back
+  // to setting the sequential focus navigation starting point.
+  for (auto child_iterator_ptr = parent->GetDelegate()->ChildrenBegin();
+       *child_iterator_ptr != *parent->GetDelegate()->ChildrenEnd();
+       ++(*child_iterator_ptr)) {
+    auto* child = AtkObjectToAXPlatformNodeAuraLinux(
+        child_iterator_ptr->GetNativeViewAccessible());
+    if (!child || child == this)
+      continue;
+
+    if (child->GetData().HasState(ax::mojom::State::kFocusable) ||
+        child->SelectionAndFocusAreTheSame()) {
+      return false;
+    }
+  }
+
+  return parent->FocusFirstFocusableAncestorInWebContent();
+}
+
+bool AXPlatformNodeAuraLinux::SetSequentialFocusNavigationStartingPoint() {
+  AXActionData action_data;
+  action_data.action =
+      ax::mojom::Action::kSetSequentialFocusNavigationStartingPoint;
+  return delegate_->AccessibilityPerformAction(action_data);
+}
+
+bool AXPlatformNodeAuraLinux::
+    GrabFocusOrSetSequentialFocusNavigationStartingPoint() {
+  // First we try to grab focus on this node if any ancestor in the same
+  // document is focusable. Otherwise we set the sequential navigation starting
+  // point.
+  if (!FocusFirstFocusableAncestorInWebContent())
+    return SetSequentialFocusNavigationStartingPoint();
+  else
+    return true;
+}
+
 bool AXPlatformNodeAuraLinux::
     GrabFocusOrSetSequentialFocusNavigationStartingPointAtOffset(int offset) {
   int child_count = delegate_->GetChildCount();
@@ -3613,36 +3671,12 @@ bool AXPlatformNodeAuraLinux::
 
     // If the offset is larger than our size, try to work with the last child,
     // which is also the behavior of SetCaretOffset.
-    if (offset <= current_offset || i == child_count - 1) {
-      // When deciding to do this on the parent or the child we want to err
-      // toward doing it on a focusable node. If neither node is focusable, we
-      // should call GrabFocusOrSetSequentialFocusNavigationStartingPoint on
-      // the child.
-      bool can_focus_node = GetData().HasState(ax::mojom::State::kFocusable);
-      bool can_focus_child =
-          child->GetData().HasState(ax::mojom::State::kFocusable);
-      if (can_focus_node && !can_focus_child)
-        return GrabFocusOrSetSequentialFocusNavigationStartingPoint();
-      else
-        return child->GrabFocusOrSetSequentialFocusNavigationStartingPoint();
-    }
+    if (offset <= current_offset || i == child_count - 1)
+      return child->GrabFocusOrSetSequentialFocusNavigationStartingPoint();
   }
 
   NOTREACHED();
   return false;
-}
-
-bool AXPlatformNodeAuraLinux::
-    GrabFocusOrSetSequentialFocusNavigationStartingPoint() {
-  if (GetData().HasState(ax::mojom::State::kFocusable) ||
-      SelectionAndFocusAreTheSame()) {
-    return GrabFocus();
-  }
-
-  AXActionData action_data;
-  action_data.action =
-      ax::mojom::Action::kSetSequentialFocusNavigationStartingPoint;
-  return delegate_->AccessibilityPerformAction(action_data);
 }
 
 bool AXPlatformNodeAuraLinux::DoDefaultAction() {

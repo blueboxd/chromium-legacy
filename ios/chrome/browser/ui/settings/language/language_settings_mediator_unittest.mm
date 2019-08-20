@@ -89,8 +89,7 @@ std::vector<std::string> ExtractLanguageCodesFromLanguageItems(
 class LanguageSettingsMediatorTest : public PlatformTest {
  protected:
   LanguageSettingsMediatorTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {
     // Create BrowserState.
     TestChromeBrowserState::Builder test_cbs_builder;
     test_cbs_builder.SetPrefService(CreatePrefService());
@@ -135,7 +134,7 @@ class LanguageSettingsMediatorTest : public PlatformTest {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<translate::TranslatePrefs> translate_prefs_;
   FakeLanguageSettingsConsumer* consumer_;

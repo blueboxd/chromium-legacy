@@ -35,17 +35,29 @@ class Proxy(object):
         self._target_attrs_with_priority = target_attrs_with_priority
 
     def __getattr__(self, attribute):
-        target_object = object.__getattribute__(self, '_target_object')
-        target_attrs = object.__getattribute__(self, '_target_attrs')
+        try:
+            target_object = object.__getattribute__(self, '_target_object')
+            target_attrs = object.__getattribute__(self, '_target_attrs')
+        except AttributeError:
+            # When unpickling, __init__ does not get called.  _target_object is
+            # not defined yet during unpickling.  Then, just fallback to the
+            # default access.
+            return object.__getattribute__(self, attribute)
         assert target_object is not None
         if target_attrs is None or attribute in target_attrs:
             return getattr(target_object, attribute)
         raise AttributeError
 
     def __getattribute__(self, attribute):
-        target_object = object.__getattribute__(self, '_target_object')
-        target_attrs = object.__getattribute__(self,
-                                               '_target_attrs_with_priority')
+        try:
+            target_object = object.__getattribute__(self, '_target_object')
+            target_attrs = object.__getattribute__(
+                self, '_target_attrs_with_priority')
+        except AttributeError:
+            # When unpickling, __init__ does not get called.  _target_object is
+            # not defined yet during unpickling.  Then, just fallback to the
+            # default access.
+            return object.__getattribute__(self, attribute)
         # It's okay to access own attributes, such as 'identifier', even when
         # the target object is not yet resolved.
         if target_object is None:

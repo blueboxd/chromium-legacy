@@ -141,10 +141,9 @@ std::string NextMonth() {
 class CreditCardAccessManagerTest : public testing::Test {
  public:
   CreditCardAccessManagerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
-            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::
-                QUEUED) {}
+      : task_environment_(
+            base::test::TaskEnvironment::MainThreadType::DEFAULT,
+            base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED) {}
 
   void SetUp() override {
     autofill_client_.SetPrefs(test::PrefServiceForTesting());
@@ -283,11 +282,11 @@ class CreditCardAccessManagerTest : public testing::Test {
     credit_card_access_manager_->ready_to_start_authentication_.Signal();
   }
 
-  void WaitForCallbacks() { scoped_task_environment_.RunUntilIdle(); }
+  void WaitForCallbacks() { task_environment_.RunUntilIdle(); }
 
  protected:
   std::unique_ptr<TestAccessor> accessor_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   payments::TestPaymentsClient* payments_client_;
   TestAutofillClient autofill_client_;
   std::unique_ptr<TestAutofillDriver> autofill_driver_;

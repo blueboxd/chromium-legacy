@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/containers/circular_deque.h"
 #include "base/guid.h"
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/notifications/scheduler/internal/impression_types.h"
@@ -31,9 +32,9 @@ class SchedulerUtilsTest : public testing::Test {
   }
 
   void CreateFakeImpressions(std::vector<base::Time> times,
-                             std::deque<Impression>& impressions) {
+                             base::circular_deque<Impression>& impressions) {
     impressions.clear();
-    for (auto time : times) {
+    for (const auto& time : times) {
       impressions.emplace_back(SchedulerClientType::kTest1,
                                base::GenerateGUID(), time);
     }

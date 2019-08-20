@@ -96,8 +96,8 @@ class SyncSchedulerImplTest : public testing::Test {
  public:
   SyncSchedulerImplTest()
       : task_environment_(
-            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::ASYNC,
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
+            base::test::TaskEnvironment::ThreadPoolExecutionMode::ASYNC,
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         syncer_(nullptr),
         delay_(nullptr) {}
 
@@ -304,7 +304,7 @@ class SyncSchedulerImplTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   static const base::TickClock* tick_clock_;

@@ -8,6 +8,7 @@ import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
@@ -97,6 +98,12 @@ public class PictureInPictureActivity extends AsyncInitializationActivity {
         sInitiatorTab.removeObserver(sTabObserver);
         sInitiatorTab = null;
         sTabObserver = null;
+    }
+
+    @Override
+    public void onPictureInPictureModeChanged(
+            boolean isInPictureInPictureMode, Configuration newConfig) {
+        if (!isInPictureInPictureMode) this.finish();
     }
 
     @Override

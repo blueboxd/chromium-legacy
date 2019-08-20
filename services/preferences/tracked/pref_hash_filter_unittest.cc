@@ -634,7 +634,7 @@ class PrefHashFilterTest : public testing::TestWithParam<EnforcementLevel>,
     reset_recorded_ = true;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   MockValidationDelegate mock_validation_delegate_;
   mojo::BindingSet<prefs::mojom::ResetOnLoadObserver>
       reset_on_load_observer_bindings_;

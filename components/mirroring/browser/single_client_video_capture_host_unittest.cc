@@ -242,7 +242,7 @@ class SingleClientVideoCaptureHostTest : public ::testing::Test {
     run_loop.Run();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<MockVideoCaptureObserver> consumer_;
   base::WeakPtr<VideoFrameReceiver> frame_receiver_;
   MockVideoCaptureDevice* launched_device_ = nullptr;
@@ -280,7 +280,7 @@ TEST_F(SingleClientVideoCaptureHostTest, ReuseBufferId) {
   {
     EXPECT_CALL(*consumer_, OnBufferDestroyedCall(0)).Times(0);
     frame_receiver_->OnBufferRetired(0);
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   // Re-use buffer 0.

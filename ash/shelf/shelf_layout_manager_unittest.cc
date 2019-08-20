@@ -35,6 +35,7 @@
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_controller.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
+#include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shelf/shelf_widget.h"
@@ -55,6 +56,7 @@
 #include "ash/wm/workspace_controller.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/i18n/rtl.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/metrics/user_action_tester.h"
@@ -1060,8 +1062,16 @@ TEST_F(ShelfLayoutManagerTest, ShelfUpdatedWhenStatusAreaChangesSize) {
   ASSERT_TRUE(shelf_widget);
   ASSERT_TRUE(shelf_widget->status_area_widget());
   shelf_widget->status_area_widget()->SetBounds(gfx::Rect(0, 0, 200, 200));
-  EXPECT_EQ(200, shelf_widget->GetContentsView()->width() -
-                     shelf->GetShelfViewForTesting()->width());
+  const int total_width =
+      screen_util::GetDisplayBoundsWithShelf(shelf_widget->GetNativeWindow())
+          .width();
+  const int nav_width =
+      shelf_widget->navigation_widget()->GetWindowBoundsInScreen().width();
+  const int hotseat_width =
+      GetPrimaryShelf()->GetShelfViewForTesting()->width();
+  const int margins =
+      ShelfConstants::home_button_edge_spacing() + kAppIconGroupMargin;
+  EXPECT_EQ(200, total_width - nav_width - hotseat_width - margins);
 }
 
 // Various assertions around auto-hide.
@@ -2662,14 +2672,12 @@ TEST_F(ShelfLayoutManagerTest, PressAppListBtnWhenAutoHideShelfBeingDragged) {
   // Press the AppList button to hide the AppList and Shelf. Check the following
   // things:
   // (1) Shelf is hidden
-  // (2) Shelf has correct bounds in screen coordinate.
+  // (2) Shelf has correct bounds in screen coordinates.
   PressHomeButton();
-  EXPECT_EQ(GetScreenAvailableBounds().bottom_left() +
-                gfx::Point(0, -kHiddenShelfInScreenPortion).OffsetFromOrigin(),
-            GetPrimaryShelf()
-                ->GetShelfViewForTesting()
-                ->GetBoundsInScreen()
-                .origin());
+  EXPECT_EQ(
+      GetScreenAvailableBounds().bottom_left() +
+          gfx::Point(0, -kHiddenShelfInScreenPortion).OffsetFromOrigin(),
+      GetPrimaryShelf()->shelf_widget()->GetWindowBoundsInScreen().origin());
   EXPECT_FALSE(GetPrimaryShelf()->IsVisible());
 }
 
@@ -2712,12 +2720,10 @@ TEST_F(ShelfLayoutManagerTest, MousePressAppListBtnWhenShelfBeingDragged) {
   GetPrimaryShelf()->shelf_widget()->OnGestureEvent(&scroll_end_event);
 
   // Verify that the shelf has expected bounds.
-  EXPECT_EQ(GetScreenAvailableBounds().bottom_left() +
-                gfx::Point(0, -ShelfConstants::shelf_size()).OffsetFromOrigin(),
-            GetPrimaryShelf()
-                ->GetShelfViewForTesting()
-                ->GetBoundsInScreen()
-                .origin());
+  EXPECT_EQ(
+      GetScreenAvailableBounds().bottom_left() +
+          gfx::Point(0, -ShelfConstants::shelf_size()).OffsetFromOrigin(),
+      GetPrimaryShelf()->shelf_widget()->GetWindowBoundsInScreen().origin());
 }
 
 // Tests that tap outside of the AUTO_HIDE_SHOWN shelf should hide it.
@@ -2883,7 +2889,7 @@ TEST_F(ShelfLayoutManagerTest, ShelfItemRespondToGestureEvent) {
   ShelfItem item;
   item.type = TYPE_APP;
   item.id = ShelfID(app_id);
-  const int index = controller->model()->Add(item);
+  controller->model()->Add(item);
 
   // Turn on the auto-hide mode for shelf. Check the initial states.
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
@@ -2902,10 +2908,10 @@ TEST_F(ShelfLayoutManagerTest, ShelfItemRespondToGestureEvent) {
   // events.
   base::UserActionTester user_action_tester;
   user_action_tester.ResetCounts();
-  auto shelf_test_api = std::make_unique<ShelfViewTestAPI>(
-      GetPrimaryShelf()->GetShelfViewForTesting());
-  views::View* shelf_view = shelf_test_api->GetViewAt(index);
-  gfx::Point shelf_btn_center = shelf_view->GetBoundsInScreen().CenterPoint();
+  views::View* button = GetPrimaryShelf()
+                            ->GetShelfViewForTesting()
+                            ->first_visible_button_for_testing();
+  gfx::Point shelf_btn_center = button->GetBoundsInScreen().CenterPoint();
   generator->GestureTapAt(shelf_btn_center);
   EXPECT_EQ(1, user_action_tester.GetActionCount("Launcher_ClickOnApp"));
 }
@@ -3051,6 +3057,34 @@ TEST_F(ShelfLayoutManagerTest, AutoHideShelfHiddenForSinglePipWindow) {
   // Expect the shelf to be hidden.
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+}
+
+// Verifies that shelf components are placed properly in right-to-left UI.
+TEST_F(ShelfLayoutManagerTest, RtlPlacement) {
+  // Helper function to check that the given widget is placed symmetrically
+  // between LTR and RTL.
+  auto check_mirrored_placement = [](views::Widget* widget) {
+    base::i18n::SetICUDefaultLocale("en");
+    EXPECT_FALSE(base::i18n::IsRTL());
+    GetShelfLayoutManager()->LayoutShelf();
+    const int ltr_left_position =
+        widget->GetNativeWindow()->GetBoundsInScreen().x();
+
+    base::i18n::SetICUDefaultLocale("ar");
+    EXPECT_TRUE(base::i18n::IsRTL());
+    GetShelfLayoutManager()->LayoutShelf();
+    const int rtl_right_position =
+        widget->GetNativeWindow()->GetBoundsInScreen().right();
+
+    EXPECT_EQ(
+        GetShelfWidget()->GetWindowBoundsInScreen().width() - ltr_left_position,
+        rtl_right_position);
+  };
+
+  ShelfWidget* shelf_widget = GetPrimaryShelf()->shelf_widget();
+  check_mirrored_placement(shelf_widget->navigation_widget());
+  check_mirrored_placement(shelf_widget->status_area_widget());
+  check_mirrored_placement(shelf_widget);
 }
 
 class ShelfLayoutManagerKeyboardTest : public AshTestBase {

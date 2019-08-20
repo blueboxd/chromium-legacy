@@ -68,7 +68,7 @@ class StartupControllerTest : public testing::Test {
   ModelTypeSet preferred_types_;
   bool should_start_;
   bool started_;
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<StartupController> controller_;
 };
 

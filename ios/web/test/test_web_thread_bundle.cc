@@ -12,13 +12,13 @@
 
 namespace web {
 
-TestWebThreadBundle::TestWebThreadBundle(int options)
-    : base::test::ScopedTaskEnvironment(
-          options == IO_MAINLOOP ? MainThreadType::IO : MainThreadType::UI) {
+WebTaskEnvironment::WebTaskEnvironment(int options)
+    : base::test::TaskEnvironment(options == IO_MAINLOOP ? MainThreadType::IO
+                                                         : MainThreadType::UI) {
   Init(options);
 }
 
-TestWebThreadBundle::~TestWebThreadBundle() {
+WebTaskEnvironment::~WebTaskEnvironment() {
   // To ensure a clean teardown, each thread's message loop must be flushed
   // just before the thread is destroyed. But stopping a fake thread does not
   // automatically flush the message loop, so do it manually.
@@ -40,13 +40,13 @@ TestWebThreadBundle::~TestWebThreadBundle() {
   WebThreadImpl::ResetTaskExecutorForTesting();
 }
 
-void TestWebThreadBundle::Init(int options) {
+void WebTaskEnvironment::Init(int options) {
   WebThreadImpl::CreateTaskExecutor();
 
   ui_thread_ =
       std::make_unique<TestWebThread>(WebThread::UI, GetMainThreadTaskRunner());
 
-  if (options & TestWebThreadBundle::REAL_IO_THREAD) {
+  if (options & WebTaskEnvironment::REAL_IO_THREAD) {
     io_thread_ = std::make_unique<TestWebThread>(WebThread::IO);
     io_thread_->StartIOThread();
   } else {

@@ -166,7 +166,7 @@ class CastTransportTest : public testing::Test {
     run_loop.RunUntilIdle();
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   MockCastTransportDelegate* delegate_;
   MockSocket mock_socket_;
   Logger* logger_;

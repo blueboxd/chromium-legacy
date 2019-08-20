@@ -9,6 +9,7 @@
 #include "components/vector_icons/vector_icons.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
@@ -90,14 +91,13 @@ MediaControlsHeaderView::MediaControlsHeaderView(
   AddChildView(std::move(spacer));
 
   auto close_button = CreateVectorImageButton(this);
-  SetImageFromVectorIcon(close_button.get(), vector_icons::kCloseRoundedIcon,
-                         kCloseButtonIconSize, gfx::kGoogleGrey700);
   close_button->SetPreferredSize(kCloseButtonSize);
   close_button->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   base::string16 close_button_label(
       l10n_util::GetStringUTF16(IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_CLOSE));
   close_button->SetAccessibleName(close_button_label);
-  close_button->SetVisible(false);
+  close_button->set_ink_drop_base_color(
+      color_utils::DeriveDefaultIconColor(gfx::kGoogleGrey700));
   close_button_ = AddChildView(std::move(close_button));
 }
 
@@ -112,9 +112,11 @@ void MediaControlsHeaderView::SetAppName(const base::string16& name) {
 }
 
 void MediaControlsHeaderView::SetCloseButtonVisibility(bool visible) {
-  if (visible != close_button_->GetVisible()) {
-    close_button_->SetVisible(visible);
-    Layout();
+  if (visible) {
+    SetImageFromVectorIcon(close_button_, vector_icons::kCloseRoundedIcon,
+                           kCloseButtonIconSize, gfx::kGoogleGrey700);
+  } else {
+    close_button_->SetImage(views::Button::ButtonState::STATE_NORMAL, nullptr);
   }
 }
 

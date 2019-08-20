@@ -8,7 +8,6 @@ import android.support.annotation.Nullable;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
@@ -315,62 +314,38 @@ class AutofillAssistantUiController {
 
     // Native methods.
     private void safeSnackbarResult(boolean undo) {
-        if (mNativeUiController != 0)
-            AutofillAssistantUiControllerJni.get().snackbarResult(
-                    mNativeUiController, AutofillAssistantUiController.this, undo);
+        if (mNativeUiController != 0) nativeSnackbarResult(mNativeUiController, undo);
     }
+    private native void nativeSnackbarResult(long nativeUiControllerAndroid, boolean undo);
 
     private void safeNativeStop(@DropOutReason int reason) {
-        if (mNativeUiController != 0)
-            AutofillAssistantUiControllerJni.get().stop(
-                    mNativeUiController, AutofillAssistantUiController.this, reason);
+        if (mNativeUiController != 0) nativeStop(mNativeUiController, reason);
     }
+    private native void nativeStop(long nativeUiControllerAndroid, @DropOutReason int reason);
 
     private void safeNativeOnFatalError(String message, @DropOutReason int reason) {
-        if (mNativeUiController != 0)
-            AutofillAssistantUiControllerJni.get().onFatalError(
-                    mNativeUiController, AutofillAssistantUiController.this, message, reason);
+        if (mNativeUiController != 0) nativeOnFatalError(mNativeUiController, message, reason);
     }
+    private native void nativeOnFatalError(
+            long nativeUiControllerAndroid, String message, @DropOutReason int reason);
 
     private void safeNativeOnUserActionSelected(int index) {
-        if (mNativeUiController != 0)
-            AutofillAssistantUiControllerJni.get().onUserActionSelected(
-                    mNativeUiController, AutofillAssistantUiController.this, index);
+        if (mNativeUiController != 0) nativeOnUserActionSelected(mNativeUiController, index);
     }
+    private native void nativeOnUserActionSelected(long nativeUiControllerAndroid, int index);
 
     private void safeNativeOnCancelButtonClicked(int index) {
-        if (mNativeUiController != 0)
-            AutofillAssistantUiControllerJni.get().onCancelButtonClicked(
-                    mNativeUiController, AutofillAssistantUiController.this, index);
+        if (mNativeUiController != 0) nativeOnCancelButtonClicked(mNativeUiController, index);
     }
+    private native void nativeOnCancelButtonClicked(long nativeUiControllerAndroid, int index);
 
     private void safeNativeOnCloseButtonClicked() {
-        if (mNativeUiController != 0)
-            AutofillAssistantUiControllerJni.get().onCloseButtonClicked(
-                    mNativeUiController, AutofillAssistantUiController.this);
+        if (mNativeUiController != 0) nativeOnCloseButtonClicked(mNativeUiController);
     }
+    private native void nativeOnCloseButtonClicked(long nativeUiControllerAndroid);
 
     private void safeNativeSetVisible(boolean visible) {
-        if (mNativeUiController != 0)
-            AutofillAssistantUiControllerJni.get().setVisible(
-                    mNativeUiController, AutofillAssistantUiController.this, visible);
+        if (mNativeUiController != 0) nativeSetVisible(mNativeUiController, visible);
     }
-
-    @NativeMethods
-    interface Natives {
-        void snackbarResult(
-                long nativeUiControllerAndroid, AutofillAssistantUiController caller, boolean undo);
-        void stop(long nativeUiControllerAndroid, AutofillAssistantUiController caller,
-                @DropOutReason int reason);
-        void onFatalError(long nativeUiControllerAndroid, AutofillAssistantUiController caller,
-                String message, @DropOutReason int reason);
-        void onUserActionSelected(
-                long nativeUiControllerAndroid, AutofillAssistantUiController caller, int index);
-        void onCancelButtonClicked(
-                long nativeUiControllerAndroid, AutofillAssistantUiController caller, int index);
-        void onCloseButtonClicked(
-                long nativeUiControllerAndroid, AutofillAssistantUiController caller);
-        void setVisible(long nativeUiControllerAndroid, AutofillAssistantUiController caller,
-                boolean visible);
-    }
+    private native void nativeSetVisible(long nativeUiControllerAndroid, boolean visible);
 }

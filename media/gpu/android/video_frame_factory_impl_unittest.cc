@@ -114,7 +114,7 @@ class VideoFrameFactoryImplTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   std::unique_ptr<VideoFrameFactoryImpl> impl_;

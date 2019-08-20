@@ -424,12 +424,12 @@ class GCMClientImplTest : public testing::Test,
   }
 
   void FastForwardBy(const base::TimeDelta& duration) {
-    scoped_task_environment_.FastForwardBy(duration);
+    task_environment_.FastForwardBy(duration);
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
   // Must be declared first so that it is destroyed last. Injected to
   // GCM client.
@@ -460,7 +460,7 @@ GCMClientImplTest::GCMClientImplTest()
     : last_event_(NONE),
       last_result_(GCMClient::UNKNOWN_ERROR),
       url_request_context_getter_(new net::TestURLRequestContextGetter(
-          scoped_task_environment_.GetMainThreadTaskRunner())) {}
+          task_environment_.GetMainThreadTaskRunner())) {}
 
 GCMClientImplTest::~GCMClientImplTest() {}
 
@@ -503,7 +503,7 @@ void GCMClientImplTest::InitializeInvalidationFieldTrial() {
 }
 
 void GCMClientImplTest::PumpLoopUntilIdle() {
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 bool GCMClientImplTest::CreateUniqueTempDir() {
@@ -612,7 +612,7 @@ void GCMClientImplTest::InitializeGCMClient() {
   chrome_build_info.product_category_for_subtypes = kProductCategoryForSubtypes;
   gcm_client_->Initialize(
       chrome_build_info, gcm_store_path(),
-      scoped_task_environment_.GetMainThreadTaskRunner(),
+      task_environment_.GetMainThreadTaskRunner(),
       base::ThreadTaskRunnerHandle::Get(), base::DoNothing(),
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
           &test_url_loader_factory_),

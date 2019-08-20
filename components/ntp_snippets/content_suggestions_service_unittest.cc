@@ -259,7 +259,7 @@ TEST_F(ContentSuggestionsServiceTest, ShouldRedirectFetchSuggestionImage) {
 
 TEST_F(ContentSuggestionsServiceTest,
        ShouldCallbackEmptyImageForUnavailableProvider) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   base::RunLoop run_loop;
   // Assuming there will never be a category with the id below.

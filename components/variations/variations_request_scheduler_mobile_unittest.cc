@@ -49,7 +49,7 @@ TEST(VariationsRequestSchedulerMobileTest, StartRun) {
 }
 
 TEST(VariationsRequestSchedulerMobileTest, OnAppEnterForegroundNoRun) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
 
   TestingPrefServiceSimple prefs;
 
@@ -76,7 +76,7 @@ TEST(VariationsRequestSchedulerMobileTest, OnAppEnterForegroundNoRun) {
 }
 
 TEST(VariationsRequestSchedulerMobileTest, OnAppEnterForegroundRun) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
 
   TestingPrefServiceSimple prefs;
 
@@ -102,7 +102,7 @@ TEST(VariationsRequestSchedulerMobileTest, OnAppEnterForegroundRun) {
 }
 
 TEST(VariationsRequestSchedulerMobileTest, OnAppEnterForegroundOnStartup) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
 
   TestingPrefServiceSimple prefs;
 

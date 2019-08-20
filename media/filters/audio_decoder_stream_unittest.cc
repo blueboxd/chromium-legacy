@@ -113,7 +113,7 @@ class AudioDecoderStreamTest : public testing::Test {
     std::move(closure).Run();
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   NullMediaLog media_log_;
   testing::NiceMock<MockDemuxerStream> demuxer_stream_{DemuxerStream::AUDIO};
   AudioDecoderStream audio_decoder_stream_;

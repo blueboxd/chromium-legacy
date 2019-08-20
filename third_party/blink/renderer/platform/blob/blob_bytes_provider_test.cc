@@ -46,7 +46,7 @@ class BlobBytesProviderTest : public testing::Test {
   }
 
   void TearDown() override {
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     Platform::UnsetMainThreadTaskRunnerForTesting();
   }
 
@@ -60,7 +60,7 @@ class BlobBytesProviderTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   scoped_refptr<RawData> test_data1_;
   Vector<uint8_t> test_bytes1_;

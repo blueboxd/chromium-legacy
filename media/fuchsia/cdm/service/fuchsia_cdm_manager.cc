@@ -171,7 +171,9 @@ void FuchsiaCdmManager::OriginProvisioner::OnProvisioningResponse(
   }
 
   fuchsia::media::drm::ProvisioningResponse provision_response;
-  provision_response.message = cr_fuchsia::MemBufferFromString(response);
+  provision_response.message =
+      cr_fuchsia::MemBufferFromString(response, "cr-drm-provision-response");
+
   provisioner_->ProcessProvisioningResponse(
       std::move(provision_response),
       fit::bind_member(this, &OriginProvisioner::OnProvisioningResponseResult));

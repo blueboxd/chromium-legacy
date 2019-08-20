@@ -115,6 +115,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
   }
 
   State state_for_testing() const { return state_; }
+  void SetStateForTesting(State state) { state_ = state; }
 
  protected:
   void OnDeviceInfoReceived(base::OnceClosure done,

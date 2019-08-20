@@ -125,7 +125,7 @@ TEST_F(AudioDebugRecordingSessionImplTest, CreateWavFileCreatesExpectedFiles) {
   CreateDebugRecordingSession();
 
   // Wait for files to be created.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Check that expected files were created.
   base::FilePath input_recording_filename(GetFileName(kInput, kId));

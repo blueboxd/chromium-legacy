@@ -266,12 +266,12 @@ class CableMockAdapter : public MockBluetoothAdapter {
   ~CableMockAdapter() override = default;
 };
 
-class FakeHandshakeHandler : public FidoCableHandshakeHandler {
+class FakeHandshakeHandler : public FidoCableV1HandshakeHandler {
  public:
   FakeHandshakeHandler(FidoCableDevice* device,
                        base::span<const uint8_t, 8> nonce,
                        base::span<const uint8_t, 32> session_pre_key)
-      : FidoCableHandshakeHandler(device, nonce, session_pre_key) {}
+      : FidoCableV1HandshakeHandler(device, nonce, session_pre_key) {}
   ~FakeHandshakeHandler() override = default;
 
   void InitiateCableHandshake(FidoDevice::DeviceCallback callback) override {
@@ -295,12 +295,16 @@ class FakeFidoCableDiscovery : public FidoCableDiscovery {
   ~FakeFidoCableDiscovery() override = default;
 
  private:
-  std::unique_ptr<FidoCableHandshakeHandler> CreateHandshakeHandler(
-      FidoCableDevice* device,
-      base::span<const uint8_t, kCableSessionPreKeySize> session_pre_key,
-      base::span<const uint8_t, 8> nonce) override {
-    return std::make_unique<FakeHandshakeHandler>(device, nonce,
-                                                  session_pre_key);
+  base::Optional<std::unique_ptr<FidoCableHandshakeHandler>>
+  CreateHandshakeHandler(FidoCableDevice* device,
+                         const CableDiscoveryData* discovery_data) override {
+    // Nonce is embedded as first 8 bytes of client EID.
+    std::array<uint8_t, 8> nonce;
+    const bool ok =
+        fido_parsing_utils::ExtractArray(discovery_data->client_eid, 0, &nonce);
+    DCHECK(ok);
+    return std::make_unique<FakeHandshakeHandler>(
+        device, nonce, discovery_data->session_pre_key);
   }
 };
 

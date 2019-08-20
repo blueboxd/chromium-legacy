@@ -283,7 +283,7 @@ class AutofillMetricsTest : public testing::Test {
   // Purge recorded UKM metrics for running more tests.
   void PurgeUKM();
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   MockAutofillClient autofill_client_;
   ukm::TestUkmRecorder* test_ukm_recorder_;
   syncer::TestSyncService sync_service_;

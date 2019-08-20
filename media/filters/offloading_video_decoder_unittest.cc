@@ -66,9 +66,9 @@ class MockOffloadableVideoDecoder : public OffloadableVideoDecoder {
 class OffloadingVideoDecoderTest : public testing::Test {
  public:
   OffloadingVideoDecoderTest()
-      : task_env_(base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
-                  base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::
-                      QUEUED) {}
+      : task_env_(
+            base::test::TaskEnvironment::MainThreadType::DEFAULT,
+            base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED) {}
 
   void CreateWrapper(int offload_width, VideoCodec codec) {
     decoder_ = new testing::StrictMock<MockOffloadableVideoDecoder>();
@@ -187,7 +187,7 @@ class OffloadingVideoDecoderTest : public testing::Test {
   MOCK_METHOD1(DecodeDone, void(DecodeStatus));
   MOCK_METHOD0(ResetDone, void(void));
 
-  base::test::ScopedTaskEnvironment task_env_;
+  base::test::TaskEnvironment task_env_;
   std::unique_ptr<OffloadingVideoDecoder> offloading_decoder_;
   testing::StrictMock<MockOffloadableVideoDecoder>* decoder_ =
       nullptr;  // Owned by |offloading_decoder_|.

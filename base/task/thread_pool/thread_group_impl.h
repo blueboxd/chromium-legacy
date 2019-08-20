@@ -98,10 +98,6 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
     return num_tasks_before_detach_histogram_;
   }
 
-  const HistogramBase* num_tasks_between_waits_histogram() const {
-    return num_tasks_between_waits_histogram_;
-  }
-
   const HistogramBase* num_workers_histogram() const {
     return num_workers_histogram_;
   }
@@ -346,10 +342,6 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
   // ThreadPool.NumTasksBeforeDetach.[thread group name] histogram.
   // Intentionally leaked.
   HistogramBase* const num_tasks_before_detach_histogram_;
-
-  // ThreadPool.NumTasksBetweenWaits.[thread group name] histogram.
-  // Intentionally leaked.
-  HistogramBase* const num_tasks_between_waits_histogram_;
 
   // ThreadPool.NumWorkers.[thread group name] histogram.
   // Intentionally leaked.

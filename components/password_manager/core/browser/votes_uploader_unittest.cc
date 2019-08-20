@@ -107,7 +107,7 @@ class VotesUploaderTest : public testing::Test {
     return ASCIIToUTF16("field") + base::NumberToString16(index);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   MockAutofillDownloadManager mock_autofill_download_manager_;
 
   MockPasswordManagerClient client_;

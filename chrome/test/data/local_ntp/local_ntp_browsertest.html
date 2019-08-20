@@ -160,174 +160,177 @@
     </dialog>
 
     <dialog id="customization-menu" class="customize-dialog">
-      <div id="menu-nav-panel" role="tablist" aria-label="$i18n{customizeMenu}">
-        <button id="backgrounds-button" class="menu-option" tabindex="0"
-            role="tab" aria-controls="backgrounds-menu backgrounds-image-menu"
-            aria-selected="true" aria-labelledby="backgrounds-menu-option"
-            title="$i18n{backgroundsOption}">
-          <div class="menu-option-icon-wrapper">
-            <div id="backgrounds-icon" class="menu-option-icon"></div>
-          </div>
-          <div id="backgrounds-menu-option" class="menu-option-label">
-            $i18n{backgroundsOption}
-          </div>
-        </button>
-        <button id="shortcuts-button" class="menu-option" tabindex="0"
-            role="tab" aria-controls="shortcuts-menu" aria-selected="false"
-            aria-labelledby="shortcuts-menu-option"
-            title="$i18n{shortcutsOption}">
-          <div class="menu-option-icon-wrapper">
-            <div id="shortcuts-icon" class="menu-option-icon"></div>
-          </div>
-          <div id="shortcuts-menu-option" class="menu-option-label">
-            $i18n{shortcutsOption}
-          </div>
-        </button>
-        <button id="colors-button" class="menu-option" tabindex="0" role="tab"
-            aria-controls="colors-menu" aria-selected="false"
-            aria-labelledby="colors-menu-option" title="$i18n{colorsOption}">
-          <div class="menu-option-icon-wrapper">
-            <div id="colors-icon" class="menu-option-icon"></div>
-          </div>
-          <div id="colors-menu-option" class="menu-option-label">
-            $i18n{colorsOption}
-          </div>
-        </button>
-      </div>
-      <div id="menu-contents">
-        <div id="menu-header">
-          <div id="menu-back-circle" tabindex="0" role="button"
-              aria-label="$i18n{backLabel}" title="$i18n{backLabel}">
-            <div id="menu-back"></div>
-          </div>
-          <div id="menu-title">$i18n{customizeMenu}</div>
-          <div id="refresh-daily-wrapper">
-            <div id="refresh-toggle-wrapper" title="$i18n{refreshDaily}">
-              <label class="switch">
-                <input id="refresh-daily-toggle" type="checkbox"
-                    aria-labelledby="refresh-text"></input>
-                <span class="toggle">
-                  <div class="knob"></div>
-                  <div class="highlight"></div>
-                </span>
-              </label>
+      <div id="menu-inner">
+        <div id="menu-nav-panel" role="tablist"
+            aria-label="$i18n{customizeMenu}">
+          <button id="backgrounds-button" class="menu-option" tabindex="0"
+              role="tab" aria-controls="backgrounds-menu backgrounds-image-menu"
+              aria-selected="true" aria-labelledby="backgrounds-menu-option"
+              title="$i18n{backgroundsOption}">
+            <div class="menu-option-icon-wrapper">
+              <div id="backgrounds-icon" class="menu-option-icon"></div>
             </div>
-            <div id="refresh-text">$i18n{refreshDaily}</div>
-          </div>
+            <div id="backgrounds-menu-option" class="menu-option-label">
+              $i18n{backgroundsOption}
+            </div>
+          </button>
+          <button id="shortcuts-button" class="menu-option" tabindex="0"
+              role="tab" aria-controls="shortcuts-menu" aria-selected="false"
+              aria-labelledby="shortcuts-menu-option"
+              title="$i18n{shortcutsOption}">
+            <div class="menu-option-icon-wrapper">
+              <div id="shortcuts-icon" class="menu-option-icon"></div>
+            </div>
+            <div id="shortcuts-menu-option" class="menu-option-label">
+              $i18n{shortcutsOption}
+            </div>
+          </button>
+          <button id="colors-button" class="menu-option" tabindex="0" role="tab"
+              aria-controls="colors-menu" aria-selected="false"
+              aria-labelledby="colors-menu-option" title="$i18n{colorsOption}">
+            <div class="menu-option-icon-wrapper">
+              <div id="colors-icon" class="menu-option-icon"></div>
+            </div>
+            <div id="colors-menu-option" class="menu-option-label">
+              $i18n{colorsOption}
+            </div>
+          </button>
         </div>
-        <div id="backgrounds-menu" class="menu-panel" tabindex="0"
-            role="tabpanel" aria-label="$i18n{backgroundsOption}">
-          <div id="backgrounds-upload" class="bg-sel-tile-bg">
-            <div id="backgrounds-upload-icon" class="bg-sel-tile" tabindex="-1"
-                role="button" aria-label="$i18n{uploadImage}"
-                aria-pressed="false" title="$i18n{uploadImage}">
-              <div id="backgrounds-upload-arrow"></div>
-              <div id="backgrounds-upload-text">$i18n{uploadImage}</div>
+        <div id="menu-contents">
+          <div id="menu-header">
+            <div id="menu-back-circle" tabindex="0" role="button"
+                aria-label="$i18n{backLabel}" title="$i18n{backLabel}">
+              <div id="menu-back"></div>
+            </div>
+            <div id="menu-title">$i18n{customizeMenu}</div>
+            <div id="refresh-daily-wrapper">
+              <div id="refresh-toggle-wrapper" title="$i18n{refreshDaily}">
+                <label class="switch">
+                  <input id="refresh-daily-toggle" type="checkbox"
+                      aria-labelledby="refresh-text"></input>
+                  <span class="toggle">
+                    <div class="knob"></div>
+                    <div class="highlight"></div>
+                  </span>
+                </label>
+              </div>
+              <div id="refresh-text">$i18n{refreshDaily}</div>
             </div>
           </div>
-          <div id="backgrounds-default" class="bg-sel-tile-bg">
-            <div id="backgrounds-default-icon" class="bg-sel-tile" tabindex="-1"
-                role="button" aria-label="$i18n{noBackground}"
-                title="$i18n{noBackground}" aria-pressed="false">
-              <div class="mini-page">
-                <div class="mini-header-colorful"></div>
-                <div class="mini-shortcuts"></div>
+          <div id="backgrounds-menu" class="menu-panel" tabindex="0"
+              role="tabpanel" aria-label="$i18n{backgroundsOption}">
+            <div id="backgrounds-upload" class="bg-sel-tile-bg">
+              <div id="backgrounds-upload-icon" class="bg-sel-tile"
+                  tabindex="-1" role="button" aria-label="$i18n{uploadImage}"
+                  aria-pressed="false" title="$i18n{uploadImage}">
+                <div id="backgrounds-upload-arrow"></div>
+                <div id="backgrounds-upload-text">$i18n{uploadImage}</div>
               </div>
             </div>
-            <div class="bg-sel-tile-title">$i18n{noBackground}</div>
-          </div>
-        </div>
-        <div id="backgrounds-image-menu" class="menu-panel" tabindex="0"
-            role="tabpanel" aria-label="$i18n{backgroundsOption}"></div>
-        <div id="shortcuts-menu" class="menu-panel" tabindex="0" role="tabpanel"
-            aria-label="$i18n{shortcutsOption}">
-          <div id="sh-options">
-            <div class="sh-option">
-              <div id="sh-option-cl" class="sh-option-image" tabindex="-1"
-                  role="button" aria-pressed="false"
-                  aria-labelledby="sh-option-cl-title"
-                  title="$i18n{myShortcuts}">
-                <div class="sh-option-icon"></div>
-                <div class="sh-option-mini">
-                  <div class="mini-page">
-                    <div class="mini-header"></div>
-                    <div class="mini-shortcuts"></div>
-                  </div>
+            <div id="backgrounds-default" class="bg-sel-tile-bg">
+              <div id="backgrounds-default-icon" class="bg-sel-tile"
+                  tabindex="-1" role="button" aria-label="$i18n{noBackground}"
+                  title="$i18n{noBackground}" aria-pressed="false">
+                <div class="mini-page">
+                  <div class="mini-header-colorful"></div>
+                  <div class="mini-shortcuts"></div>
                 </div>
               </div>
-              <div id="sh-option-cl-title" class="sh-option-title">
-                $i18n{myShortcuts}
-              </div>
-              $i18n{shortcutsCurated}
+              <div class="bg-sel-tile-title">$i18n{noBackground}</div>
             </div>
-            <div class="sh-option">
-              <div id="sh-option-mv" class="sh-option-image" tabindex="-1"
-                  role="button" aria-pressed="false"
-                  aria-labelledby="sh-option-mv-title"
-                  title="$i18n{mostVisited}">
-                <div class="sh-option-icon"></div>
-                <div class="sh-option-mini">
-                  <div class="mini-page">
-                    <div class="mini-header"></div>
-                    <div class="mini-shortcuts"></div>
+          </div>
+          <div id="backgrounds-image-menu" class="menu-panel" tabindex="0"
+              role="tabpanel" aria-label="$i18n{backgroundsOption}"></div>
+          <div id="shortcuts-menu" class="menu-panel" tabindex="0"
+              role="tabpanel" aria-label="$i18n{shortcutsOption}">
+            <div id="sh-options">
+              <div class="sh-option">
+                <div id="sh-option-cl" class="sh-option-image" tabindex="-1"
+                    role="button" aria-pressed="false"
+                    aria-labelledby="sh-option-cl-title"
+                    title="$i18n{myShortcuts}">
+                  <div class="sh-option-icon"></div>
+                  <div class="sh-option-mini">
+                    <div class="mini-page">
+                      <div class="mini-header"></div>
+                      <div class="mini-shortcuts"></div>
+                    </div>
                   </div>
                 </div>
+                <div id="sh-option-cl-title" class="sh-option-title">
+                  $i18n{myShortcuts}
+                </div>
+                $i18n{shortcutsCurated}
               </div>
-              <div id="sh-option-mv-title" class="sh-option-title">
-                $i18n{mostVisited}
+              <div class="sh-option">
+                <div id="sh-option-mv" class="sh-option-image" tabindex="-1"
+                    role="button" aria-pressed="false"
+                    aria-labelledby="sh-option-mv-title"
+                    title="$i18n{mostVisited}">
+                  <div class="sh-option-icon"></div>
+                  <div class="sh-option-mini">
+                    <div class="mini-page">
+                      <div class="mini-header"></div>
+                      <div class="mini-shortcuts"></div>
+                    </div>
+                  </div>
+                </div>
+                <div id="sh-option-mv-title" class="sh-option-title">
+                  $i18n{mostVisited}
+                </div>
+                $i18n{shortcutsSuggested}
               </div>
-              $i18n{shortcutsSuggested}
             </div>
-          </div>
-          <div id="sh-hide">
-            <div id="sh-hide-icon"></div>
-            <div>
-              <div id="sh-hide-title">$i18n{hideShortcuts}</div>
-              $i18n{hideShortcutsDesc}
-            </div>
-            <div id="sh-hide-toggle-wrapper" title="$i18n{hideShortcuts}">
-              <label class="switch">
-                <input id="sh-hide-toggle" type="checkbox" tabindex="-1"
-                    aria-labelledby="sh-hide-title"></input>
-                <span class="toggle">
-                  <div class="knob"></div>
-                  <div class="highlight"></div>
-                </span>
-              </label>
-            </div>
-          </div>
-        </div>
-        <div id="colors-menu" class="menu-panel" tabindex="0" role="tabpanel"
-            aria-label="$i18n{colorsOption}">
-          <div id="colors-theme" tabindex="0">
-              <div id="colors-theme-icon"></div>
+            <div id="sh-hide">
+              <div id="sh-hide-icon"></div>
               <div>
-                <div id="colors-theme-name"></div>
-                $i18n{installedThemeDesc}
+                <div id="sh-hide-title">$i18n{hideShortcuts}</div>
+                $i18n{hideShortcutsDesc}
               </div>
-              <a id="colors-theme-link" target="_blank">
-                <div id="colors-theme-link-icon" > </div>
-              </a>
-              <button id="colors-theme-uninstall" class="paper secondary">
-                $i18n{uninstallButton}
-              </button>
-          </div>
-          <div id="color-picker-container" class="bg-sel-tile-bg">
-            <div id="color-picker-tile" class="bg-sel-tile" tabindex="-1"
-              aria-label="$i18n{colorPickerLabel}"
-              title="$i18n{colorPickerLabel}"
-              role="button" aria-pressed="false">
-              <div id="left-semicircle"></div>
-              <div id="color-picker-icon"></div>
-              <input id="color-picker" type="color" style="display:none">
-              </input>
+              <div id="sh-hide-toggle-wrapper" title="$i18n{hideShortcuts}">
+                <label class="switch">
+                  <input id="sh-hide-toggle" type="checkbox" tabindex="-1"
+                      aria-labelledby="sh-hide-title"></input>
+                  <span class="toggle">
+                    <div class="knob"></div>
+                    <div class="highlight"></div>
+                  </span>
+                </label>
+              </div>
             </div>
           </div>
-          <div id="colors-default" class="bg-sel-tile-bg">
-            <div id="colors-default-icon" class="bg-sel-tile" tabindex="-1"
-                aria-label="$i18n{defaultThemeLabel}"
-                title="$i18n{defaultThemeLabel}" tabindex="-1"
+          <div id="colors-menu" class="menu-panel" tabindex="0" role="tabpanel"
+              aria-label="$i18n{colorsOption}">
+            <div id="colors-theme" tabindex="0">
+                <div id="colors-theme-icon"></div>
+                <div>
+                  <div id="colors-theme-name"></div>
+                  $i18n{installedThemeDesc}
+                </div>
+                <a id="colors-theme-link" target="_blank">
+                  <div id="colors-theme-link-icon" > </div>
+                </a>
+                <button id="colors-theme-uninstall" class="paper secondary">
+                  $i18n{uninstallButton}
+                </button>
+            </div>
+            <div id="color-picker-container" class="bg-sel-tile-bg">
+              <div id="color-picker-tile" class="bg-sel-tile" tabindex="-1"
+                aria-label="$i18n{colorPickerLabel}"
+                title="$i18n{colorPickerLabel}"
                 role="button" aria-pressed="false">
+                <div id="left-semicircle"></div>
+                <div id="color-picker-icon"></div>
+                <input id="color-picker" type="color" style="display:none">
+                </input>
+              </div>
+            </div>
+            <div id="colors-default" class="bg-sel-tile-bg">
+              <div id="colors-default-icon" class="bg-sel-tile" tabindex="-1"
+                  aria-label="$i18n{defaultThemeLabel}"
+                  title="$i18n{defaultThemeLabel}" tabindex="-1"
+                  role="button" aria-pressed="false">
+              </div>
             </div>
           </div>
         </div>

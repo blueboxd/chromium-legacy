@@ -52,6 +52,10 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
     return false;
   }
 
+  static const char kVmoName[] = "cr-shared-memory";
+  status = vmo.set_property(ZX_PROP_NAME, kVmoName, strlen(kVmoName));
+  ZX_DCHECK(status == ZX_OK, status);
+
   if (!options.executable) {
     // If options.executable isn't set, drop that permission by replacement.
     const int kNoExecFlags = ZX_DEFAULT_VMO_RIGHTS & ~ZX_RIGHT_EXECUTE;

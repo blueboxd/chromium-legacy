@@ -147,7 +147,7 @@ class SandboxFileSystemBackendTest
 
   std::unique_ptr<leveldb::Env> incognito_env_override_;
   base::ScopedTempDir data_dir_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<storage::SandboxFileSystemBackendDelegate> delegate_;
   std::unique_ptr<storage::SandboxFileSystemBackend> backend_;
   base::test::ScopedFeatureList feature_list_;

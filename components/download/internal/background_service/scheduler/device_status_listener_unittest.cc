@@ -146,7 +146,7 @@ class DeviceStatusListenerTest : public testing::Test {
   MockObserver mock_observer_;
 
   // Needed for network change notifier and power monitor.
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::PowerMonitorTestSource* power_source_;
   TestBatteryStatusListener* test_battery_listener_;
 };

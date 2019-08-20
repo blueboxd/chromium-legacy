@@ -493,7 +493,7 @@ class QuicProxyClientSocketTest
   void AssertSyncReadEquals(const char* data, int len) {
     scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(len);
     ASSERT_EQ(len, sock_->Read(buf.get(), len, CompletionOnceCallback()));
-    ASSERT_EQ(spdy::SpdyString(data, len), spdy::SpdyString(buf->data(), len));
+    ASSERT_EQ(std::string(data, len), std::string(buf->data(), len));
     ASSERT_TRUE(sock_->IsConnected());
   }
 
@@ -507,7 +507,7 @@ class QuicProxyClientSocketTest
 
     EXPECT_EQ(len, read_callback_.WaitForResult());
     EXPECT_TRUE(sock_->IsConnected());
-    ASSERT_EQ(spdy::SpdyString(data, len), spdy::SpdyString(buf->data(), len));
+    ASSERT_EQ(std::string(data, len), std::string(buf->data(), len));
   }
 
   void AssertReadStarts(const char* data, int len) {
@@ -523,8 +523,7 @@ class QuicProxyClientSocketTest
 
     // Now the read will return.
     EXPECT_EQ(len, read_callback_.WaitForResult());
-    ASSERT_EQ(spdy::SpdyString(data, len),
-              spdy::SpdyString(read_buf_->data(), len));
+    ASSERT_EQ(std::string(data, len), std::string(read_buf_->data(), len));
   }
 
   std::string ConstructDataHeader(size_t body_len) {
@@ -1184,8 +1183,7 @@ TEST_P(QuicProxyClientSocketTest, MultipleReadsFromSameLargeFrame) {
   // Now attempt to do a read of more data than remains buffered
   scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(kLen33);
   ASSERT_EQ(kLen3, sock_->Read(buf.get(), kLen33, CompletionOnceCallback()));
-  ASSERT_EQ(spdy::SpdyString(kMsg3, kLen3),
-            spdy::SpdyString(buf->data(), kLen3));
+  ASSERT_EQ(std::string(kMsg3, kLen3), std::string(buf->data(), kLen3));
   ASSERT_TRUE(sock_->IsConnected());
 }
 

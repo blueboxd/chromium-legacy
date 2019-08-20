@@ -97,7 +97,13 @@ static String BuildCSSText(const String& expression) {
 }
 
 String CSSMathFunctionValue::CustomCSSText() const {
-  return BuildCSSText(expression_->CustomCSSText());
+  const String& expression_text = expression_->CustomCSSText();
+  if (expression_->IsMathFunction()) {
+    // If |expression_| is already a math function (e.g., min/max), we don't
+    // need to wrap it in |calc()|.
+    return expression_text;
+  }
+  return BuildCSSText(expression_text);
 }
 
 bool CSSMathFunctionValue::Equals(const CSSMathFunctionValue& other) const {

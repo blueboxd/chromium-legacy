@@ -23,10 +23,9 @@ WorkerContentSettingsClient::WorkerContentSettingsClient(
       frame->Top()->GetSecurityOrigin().IsUnique())
     is_unique_origin_ = true;
   sync_message_filter_ = content::RenderThread::Get()->GetSyncMessageFilter();
-  document_origin_url_ =
-      url::Origin(frame->GetDocument().GetSecurityOrigin()).GetURL();
-  top_frame_origin_url_ =
-      url::Origin(frame->Top()->GetSecurityOrigin()).GetURL();
+  document_origin_ = frame->GetDocument().GetSecurityOrigin();
+  site_for_cookies_ = frame->GetDocument().SiteForCookies();
+  top_frame_origin_ = frame->GetDocument().TopFrameOrigin();
   allow_running_insecure_content_ = ContentSettingsObserver::Get(render_frame)
                                         ->allow_running_insecure_content();
   content_setting_rules_ =
@@ -37,8 +36,9 @@ WorkerContentSettingsClient::WorkerContentSettingsClient(
     const WorkerContentSettingsClient& other)
     : routing_id_(other.routing_id_),
       is_unique_origin_(other.is_unique_origin_),
-      document_origin_url_(other.document_origin_url_),
-      top_frame_origin_url_(other.top_frame_origin_url_),
+      document_origin_(other.document_origin_),
+      site_for_cookies_(other.site_for_cookies_),
+      top_frame_origin_(other.top_frame_origin_),
       allow_running_insecure_content_(other.allow_running_insecure_content_),
       sync_message_filter_(other.sync_message_filter_),
       content_setting_rules_(other.content_setting_rules_) {}
@@ -56,7 +56,8 @@ bool WorkerContentSettingsClient::RequestFileSystemAccessSync() {
 
   bool result = false;
   sync_message_filter_->Send(new ChromeViewHostMsg_RequestFileSystemAccessSync(
-      routing_id_, document_origin_url_, top_frame_origin_url_, &result));
+      routing_id_, document_origin_, site_for_cookies_, top_frame_origin_,
+      &result));
   return result;
 }
 
@@ -67,7 +68,8 @@ bool WorkerContentSettingsClient::AllowIndexedDB(
 
   bool result = false;
   sync_message_filter_->Send(new ChromeViewHostMsg_AllowIndexedDB(
-      routing_id_, document_origin_url_, top_frame_origin_url_, &result));
+      routing_id_, document_origin_, site_for_cookies_, top_frame_origin_,
+      &result));
   return result;
 }
 
@@ -78,7 +80,8 @@ bool WorkerContentSettingsClient::AllowCacheStorage(
 
   bool result = false;
   sync_message_filter_->Send(new ChromeViewHostMsg_AllowCacheStorage(
-      routing_id_, document_origin_url_, top_frame_origin_url_, &result));
+      routing_id_, document_origin_, site_for_cookies_, top_frame_origin_,
+      &result));
   return result;
 }
 
@@ -100,8 +103,9 @@ bool WorkerContentSettingsClient::AllowScriptFromSource(
     const blink::WebURL& script_url) {
   bool allow = enabled_per_settings;
   if (allow && content_setting_rules_) {
+    GURL top_frame_origin_url = top_frame_origin_.GetURL();
     for (const auto& rule : content_setting_rules_->script_rules) {
-      if (rule.primary_pattern.Matches(top_frame_origin_url_) &&
+      if (rule.primary_pattern.Matches(top_frame_origin_url) &&
           rule.secondary_pattern.Matches(script_url)) {
         allow = rule.GetContentSetting() != CONTENT_SETTING_BLOCK;
         break;

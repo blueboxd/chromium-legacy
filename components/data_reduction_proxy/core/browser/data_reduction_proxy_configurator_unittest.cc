@@ -101,7 +101,7 @@ class DataReductionProxyConfiguratorTest : public testing::Test {
   }
 
   TestingPrefServiceSimple test_prefs;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<DataReductionProxyTestContext> test_context_;
   std::unique_ptr<DataReductionProxyConfigurator> config_;
   std::unique_ptr<NetworkPropertiesManager> manager_;

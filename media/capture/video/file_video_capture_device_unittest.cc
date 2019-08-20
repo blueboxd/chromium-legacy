@@ -67,7 +67,7 @@ class FileVideoCaptureDeviceTest : public ::testing::Test {
   MockImageCaptureClient image_capture_client_;
   std::unique_ptr<VideoCaptureDevice> device_;
   VideoCaptureFormat last_format_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(FileVideoCaptureDeviceTest, GetPhotoState) {

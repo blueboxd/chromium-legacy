@@ -50,8 +50,8 @@ class DistillerURLFetcherTest : public testing::Test {
     CHECK_EQ(expected_response, response_);
   }
 
-  base::test::ScopedTaskEnvironment task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::UI};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::UI};
   std::unique_ptr<dom_distiller::DistillerURLFetcher> url_fetcher_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory>

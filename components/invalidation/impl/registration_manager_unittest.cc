@@ -223,7 +223,7 @@ class RegistrationManagerTest : public testing::Test {
 
  private:
   // Needed by timers in RegistrationManager.
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(RegistrationManagerTest);
 };

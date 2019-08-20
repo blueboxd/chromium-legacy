@@ -61,8 +61,7 @@ class MockPolicyCallback {
 class PolicyWatcherTest : public testing::Test {
  public:
   PolicyWatcherTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
 
   void SetUp() override {
     // We expect no callbacks unless explicitly specified by individual tests.
@@ -250,7 +249,7 @@ class PolicyWatcherTest : public testing::Test {
   static const char* kHostDomain;
   static const char* kClientDomain;
   static const char* kPortRange;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   MockPolicyCallback mock_policy_callback_;
 
   // |policy_loader_| is owned by |policy_watcher_|. PolicyWatcherTest retains

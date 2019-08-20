@@ -18,6 +18,7 @@
 
 namespace content {
 class BrowserContext;
+class WebContents;
 }  // namespace content
 
 class FrameImpl;
@@ -42,6 +43,10 @@ class WEB_ENGINE_EXPORT ContextImpl : public fuchsia::web::Context {
 
   // Returns |true| if JS injection was enabled for this Context.
   bool IsJavaScriptInjectionAllowed();
+
+  // Registers a Frame originating from web content (i.e. a popup).
+  fidl::InterfaceHandle<fuchsia::web::Frame> CreateFrameForPopupWebContents(
+      std::unique_ptr<content::WebContents> web_contents);
 
   // Called by Frames to signal a document has been loaded and signal to the
   // debug listeners in |web_engine_remote_debugging_| that they can now

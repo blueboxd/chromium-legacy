@@ -11,7 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(InProcessJsonParserTest, TestSuccess) {
-  base::test::ScopedTaskEnvironment environment;
+  base::test::TaskEnvironment environment;
 
   base::RunLoop run_loop;
   InProcessJsonParser::Parse(
@@ -34,7 +34,7 @@ TEST(InProcessJsonParserTest, TestSuccess) {
 }
 
 TEST(InProcessJsonParserTest, TestFailure) {
-  base::test::ScopedTaskEnvironment environment;
+  base::test::TaskEnvironment environment;
 
   base::RunLoop run_loop;
   InProcessJsonParser::Parse(

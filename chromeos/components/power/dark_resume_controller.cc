@@ -11,15 +11,25 @@
 namespace chromeos {
 namespace system {
 
+namespace {
+
+// The default value of |dark_resume_hard_timeout_| till
+// |PowerManagerInitialized| is called.
+constexpr base::TimeDelta kDefaultDarkResumeHardTimeout =
+    base::TimeDelta::FromSeconds(20);
+
+}  // namespace
+
 // static.
 constexpr base::TimeDelta DarkResumeController::kDarkResumeWakeLockCheckTimeout;
-constexpr base::TimeDelta DarkResumeController::kDarkResumeHardTimeout;
 
 DarkResumeController::DarkResumeController(
     service_manager::Connector* connector)
     : connector_(connector),
       wake_lock_observer_binding_(this),
+      dark_resume_hard_timeout_(kDefaultDarkResumeHardTimeout),
       weak_ptr_factory_(this) {
+  DCHECK(!dark_resume_hard_timeout_.is_zero());
   connector_->BindInterface(device::mojom::kServiceName,
                             mojo::MakeRequest(&wake_lock_provider_));
   PowerManagerClient::Get()->AddObserver(this);
@@ -27,6 +37,11 @@ DarkResumeController::DarkResumeController(
 
 DarkResumeController::~DarkResumeController() {
   PowerManagerClient::Get()->RemoveObserver(this);
+}
+
+void DarkResumeController::PowerManagerInitialized() {
+  dark_resume_hard_timeout_ =
+      PowerManagerClient::Get()->GetDarkSuspendDelayTimeout();
 }
 
 void DarkResumeController::DarkSuspendImminent() {
@@ -70,6 +85,10 @@ bool DarkResumeController::IsDarkResumeStateSetForTesting() const {
   return block_suspend_token_ && wake_lock_observer_binding_.is_bound();
 }
 
+base::TimeDelta DarkResumeController::GetHardTimeoutForTesting() const {
+  return dark_resume_hard_timeout_;
+}
+
 bool DarkResumeController::IsDarkResumeStateClearedForTesting() const {
   return !weak_ptr_factory_.HasWeakPtrs() &&
          !wake_lock_check_timer_.IsRunning() &&
@@ -95,7 +114,7 @@ void DarkResumeController::HandleDarkResumeWakeLockCheckTimeout() {
   // the device doesn't stay up indefinitely in dark resume.
   DCHECK(!hard_timeout_timer_.IsRunning());
   hard_timeout_timer_.Start(
-      FROM_HERE, kDarkResumeHardTimeout,
+      FROM_HERE, dark_resume_hard_timeout_,
       base::BindOnce(&DarkResumeController::HandleDarkResumeHardTimeout,
                      weak_ptr_factory_.GetWeakPtr()));
 }

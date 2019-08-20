@@ -30,10 +30,6 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
             new AtomicBoolean(true);
     private final TabPersistentStore mTabSaver;
 
-    // This flag signifies the object has gotten an onNativeReady callback and
-    // has not been destroyed.
-    private boolean mActiveState;
-
     private boolean mIsUndoSupported;
 
     // Whether the Activity that owns that TabModelSelector is tabbed or not.
@@ -117,7 +113,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
      * @param tabContentProvider                      A {@link TabContentManager} instance.
      */
     public void onNativeLibraryReady(TabContentManager tabContentProvider) {
-        assert !mActiveState : "onNativeLibraryReady called twice!";
+        assert mTabContentManager == null : "onNativeLibraryReady called twice!";
         mTabContentManager = tabContentProvider;
 
         ChromeTabCreator regularTabCreator =
@@ -146,8 +142,6 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
                 if (tab.hasPendingLoadParams()) mTabSaver.addTabToSaveQueue(tab);
             }
         });
-
-        mActiveState = true;
 
         new TabModelSelectorTabObserver(this) {
             @Override
@@ -215,17 +209,11 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
     @VisibleForTesting
     public void initializeForTesting(TabModel normalModel, TabModel incognitoModel) {
         initialize(isIncognitoSelected(), normalModel, incognitoModel);
-        mActiveState = true;
     }
 
     @Override
     public void setCloseAllTabsDelegate(CloseAllTabsDelegate delegate) {
         mCloseAllTabsDelegate = delegate;
-    }
-
-    @Override
-    public TabModel getModelAt(int index) {
-        return mActiveState ? super.getModelAt(index) : EmptyTabModel.getInstance();
     }
 
     @Override
@@ -254,7 +242,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
     @Override
     public void commitAllTabClosures() {
         for (int i = 0; i < getModels().size(); i++) {
-            getModelAt(i).commitAllTabClosures();
+            getModels().get(i).commitAllTabClosures();
         }
     }
 
@@ -324,7 +312,6 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
         mTabSaver.destroy();
         mUma.destroy();
         super.destroy();
-        mActiveState = false;
     }
 
     /**

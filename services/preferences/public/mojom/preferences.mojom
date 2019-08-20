@@ -4,6 +4,7 @@
 
 module prefs.mojom;
 
+import "mojo/public/mojom/base/token.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/values.mojom";
@@ -92,7 +93,14 @@ interface PrefStoreConnector {
   //
   // Calls to |Connect| before |Init| are allowed and will cause the calls to
   // queue and connect once |Init| has been called.
-  Connect(PrefRegistry pref_registry) =>
+  //
+  // If |client_token| is provided, it uniquely identifies the connection,
+  // fixing it to a specific set of observed prefs. Normally the client's
+  // Service Manager Identity is used for this purposes, and this is a temporary
+  // measure to support pulling disjoint clients off of Service Manager APIs.
+  // Once all clients are migrated to using this token argument, the structure
+  // of Prefs Service interfaces can be changed to eliminate the Token value.
+  Connect(PrefRegistry pref_registry, mojo_base.mojom.Token? client_token) =>
       (PersistentPrefStoreConnection connection,
        IncognitoPersistentPrefStoreConnection? underlay,
        array<PrefRegistration> remote_defaults,

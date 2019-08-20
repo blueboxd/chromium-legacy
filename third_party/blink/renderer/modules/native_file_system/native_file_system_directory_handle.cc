@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/modules/native_file_system/file_system_get_file_options.h"
 #include "third_party/blink/renderer/modules/native_file_system/file_system_remove_options.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_directory_iterator.h"
+#include "third_party/blink/renderer/modules/native_file_system/native_file_system_error.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_file_handle.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -49,19 +50,15 @@ ScriptPromise NativeFileSystemDirectoryHandle::getFile(
             ExecutionContext* context = resolver->GetExecutionContext();
             if (!context)
               return;
-            if (result->error_code == base::File::FILE_OK) {
-              resolver->Resolve(
-                  MakeGarbageCollected<NativeFileSystemFileHandle>(
-                      name,
-                      RevocableInterfacePtr<
-                          mojom::blink::NativeFileSystemFileHandle>(
-                          handle.PassInterface(),
-                          context->GetInterfaceInvalidator(),
-                          context->GetTaskRunner(TaskType::kMiscPlatformAPI))));
-            } else {
-              resolver->Reject(
-                  file_error::CreateDOMException(result->error_code));
+            if (result->status != mojom::blink::NativeFileSystemStatus::kOk) {
+              native_file_system_error::Reject(resolver, *result);
+              return;
             }
+            resolver->Resolve(MakeGarbageCollected<NativeFileSystemFileHandle>(
+                name,
+                RevocableInterfacePtr<mojom::blink::NativeFileSystemFileHandle>(
+                    handle.PassInterface(), context->GetInterfaceInvalidator(),
+                    context->GetTaskRunner(TaskType::kMiscPlatformAPI))));
           },
           WrapPersistent(resolver), name));
 
@@ -84,19 +81,18 @@ ScriptPromise NativeFileSystemDirectoryHandle::getDirectory(
             ExecutionContext* context = resolver->GetExecutionContext();
             if (!context)
               return;
-            if (result->error_code == base::File::FILE_OK) {
-              resolver->Resolve(
-                  MakeGarbageCollected<NativeFileSystemDirectoryHandle>(
-                      name,
-                      RevocableInterfacePtr<
-                          mojom::blink::NativeFileSystemDirectoryHandle>(
-                          handle.PassInterface(),
-                          context->GetInterfaceInvalidator(),
-                          context->GetTaskRunner(TaskType::kMiscPlatformAPI))));
-            } else {
-              resolver->Reject(
-                  file_error::CreateDOMException(result->error_code));
+            if (result->status != mojom::blink::NativeFileSystemStatus::kOk) {
+              native_file_system_error::Reject(resolver, *result);
+              return;
             }
+            resolver->Resolve(
+                MakeGarbageCollected<NativeFileSystemDirectoryHandle>(
+                    name,
+                    RevocableInterfacePtr<
+                        mojom::blink::NativeFileSystemDirectoryHandle>(
+                        handle.PassInterface(),
+                        context->GetInterfaceInvalidator(),
+                        context->GetTaskRunner(TaskType::kMiscPlatformAPI))));
           },
           WrapPersistent(resolver), name));
 
@@ -140,12 +136,7 @@ ScriptPromise NativeFileSystemDirectoryHandle::removeEntry(
       name, options->recursive(),
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, NativeFileSystemErrorPtr result) {
-            if (result->error_code == base::File::FILE_OK) {
-              resolver->Resolve();
-            } else {
-              resolver->Reject(
-                  file_error::CreateDOMException(result->error_code));
-            }
+            native_file_system_error::ResolveOrReject(resolver, *result);
           },
           WrapPersistent(resolver)));
 
@@ -180,18 +171,16 @@ ScriptPromise NativeFileSystemDirectoryHandle::getSystemDirectory(
         ExecutionContext* context = resolver->GetExecutionContext();
         if (!context)
           return;
-        if (result->error_code == base::File::FILE_OK) {
-          resolver->Resolve(
-              MakeGarbageCollected<NativeFileSystemDirectoryHandle>(
-                  kSandboxRootDirectoryName,
-                  RevocableInterfacePtr<
-                      mojom::blink::NativeFileSystemDirectoryHandle>(
-                      handle.PassInterface(),
-                      context->GetInterfaceInvalidator(),
-                      context->GetTaskRunner(TaskType::kMiscPlatformAPI))));
-        } else {
-          resolver->Reject(file_error::CreateDOMException(result->error_code));
+        if (result->status != mojom::blink::NativeFileSystemStatus::kOk) {
+          native_file_system_error::Reject(resolver, *result);
+          return;
         }
+        resolver->Resolve(MakeGarbageCollected<NativeFileSystemDirectoryHandle>(
+            kSandboxRootDirectoryName,
+            RevocableInterfacePtr<
+                mojom::blink::NativeFileSystemDirectoryHandle>(
+                handle.PassInterface(), context->GetInterfaceInvalidator(),
+                context->GetTaskRunner(TaskType::kMiscPlatformAPI))));
       },
       WrapPersistent(resolver), std::move(manager)));
 

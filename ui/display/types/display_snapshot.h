@@ -41,6 +41,7 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
                   std::string display_name,
                   const base::FilePath& sys_path,
                   DisplayModeList modes,
+                  PanelOrientation panel_orientation,
                   const std::vector<uint8_t>& edid,
                   const DisplayMode* current_mode,
                   const DisplayMode* native_mode,
@@ -69,6 +70,7 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
   const std::string& display_name() const { return display_name_; }
   const base::FilePath& sys_path() const { return sys_path_; }
   const DisplayModeList& modes() const { return modes_; }
+  PanelOrientation panel_orientation() const { return panel_orientation_; }
   const std::vector<uint8_t>& edid() const { return edid_; }
   const DisplayMode* current_mode() const { return current_mode_; }
   void set_current_mode(const DisplayMode* mode) { current_mode_ = mode; }
@@ -119,6 +121,9 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
   const base::FilePath sys_path_;
 
   DisplayModeList modes_;
+
+  // The orientation of the panel in respect to the natural device orientation.
+  PanelOrientation panel_orientation_;
 
   // The display's EDID. It can be empty if nothing extracted such as in the
   // case of a virtual display.

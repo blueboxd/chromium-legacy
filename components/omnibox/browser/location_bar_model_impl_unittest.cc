@@ -88,7 +88,7 @@ class LocationBarModelImplTest : public testing::Test {
   LocationBarModelImpl* model() { return &model_; }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   FakeLocationBarModelDelegate delegate_;
   LocationBarModelImpl model_;
 };

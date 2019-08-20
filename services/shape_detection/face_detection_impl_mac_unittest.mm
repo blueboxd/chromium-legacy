@@ -137,7 +137,7 @@ class FaceDetectionImplMacTest : public TestWithParam<struct TestParams> {
   MOCK_METHOD0(Detection, void(void));
 
   std::unique_ptr<mojom::FaceDetection> impl_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   void* vision_framework_;
 };
 

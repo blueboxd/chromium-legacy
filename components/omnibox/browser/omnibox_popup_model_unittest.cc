@@ -59,7 +59,7 @@ class OmniboxPopupModelTest : public ::testing::Test {
   OmniboxPopupModel* popup_model() { return &popup_model_; }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestOmniboxEditController controller_;
   TestOmniboxView view_;
   TestOmniboxEditModel model_;

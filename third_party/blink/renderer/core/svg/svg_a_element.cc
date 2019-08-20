@@ -133,14 +133,18 @@ void SVGAElement::DefaultEventHandler(Event& event) {
         target = AtomicString("_blank");
       event.SetDefaultHandled();
 
+      if (!GetDocument().GetFrame())
+        return;
+
       FrameLoadRequest frame_request(
           &GetDocument(), ResourceRequest(GetDocument().CompleteURL(url)));
       frame_request.SetNavigationPolicy(NavigationPolicyFromEvent(&event));
       frame_request.SetTriggeringEventInfo(
           event.isTrusted() ? WebTriggeringEventInfo::kFromTrustedEvent
                             : WebTriggeringEventInfo::kFromUntrustedEvent);
-      if (!GetDocument().GetFrame())
-        return;
+      frame_request.GetResourceRequest().SetHasUserGesture(
+          LocalFrame::HasTransientUserActivation(GetDocument().GetFrame()));
+
       Frame* frame = GetDocument()
                          .GetFrame()
                          ->Tree()

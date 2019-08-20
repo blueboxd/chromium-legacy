@@ -40,13 +40,13 @@ class ShaderDiskCacheTest : public testing::Test {
   void TearDown() override {
     factory_.RemoveCacheInfo(kDefaultClientId);
 
-    // Run all pending tasks before destroying ScopedTaskEnvironment. Otherwise,
+    // Run all pending tasks before destroying TaskEnvironment. Otherwise,
     // SimpleEntryImpl instances bound to pending tasks are destroyed in an
     // incorrect state (see |state_| DCHECK in ~SimpleEntryImpl).
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   ShaderCacheFactory factory_;
 

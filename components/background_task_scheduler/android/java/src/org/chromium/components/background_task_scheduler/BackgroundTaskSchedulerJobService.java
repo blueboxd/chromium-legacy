@@ -48,6 +48,11 @@ class BackgroundTaskSchedulerJobService implements BackgroundTaskSchedulerDelega
         return extras.getLong(BACKGROUND_TASK_DEADLINE_KEY);
     }
 
+    private static long getDeadlineTime(TaskInfo taskInfo) {
+        long windowEndTimeMs = taskInfo.getOneOffInfo().getWindowEndTimeMs();
+        return sClock.currentTimeMillis() + windowEndTimeMs;
+    }
+
     /**
      * Retrieves the {@link TaskParameters} from the {@link JobParameters}, which are passed as
      * one of the keys. Only values valid for {@link android.os.BaseBundle} are supported, and other
@@ -74,6 +79,10 @@ class BackgroundTaskSchedulerJobService implements BackgroundTaskSchedulerDelega
     static JobInfo createJobInfoFromTaskInfo(Context context, TaskInfo taskInfo) {
         PersistableBundle jobExtras = new PersistableBundle();
 
+        if (!taskInfo.isPeriodic() && taskInfo.getOneOffInfo().expiresAfterWindowEndTime()) {
+            jobExtras.putLong(BACKGROUND_TASK_DEADLINE_KEY, getDeadlineTime(taskInfo));
+        }
+
         PersistableBundle persistableBundle = getTaskExtrasAsPersistableBundle(taskInfo);
         jobExtras.putPersistableBundle(BACKGROUND_TASK_EXTRAS_KEY, persistableBundle);
 
@@ -81,60 +90,42 @@ class BackgroundTaskSchedulerJobService implements BackgroundTaskSchedulerDelega
                 new JobInfo
                         .Builder(taskInfo.getTaskId(),
                                 new ComponentName(context, BackgroundTaskJobService.class))
+                        .setExtras(jobExtras)
                         .setPersisted(taskInfo.isPersisted())
                         .setRequiresCharging(taskInfo.requiresCharging())
                         .setRequiredNetworkType(getJobInfoNetworkTypeFromTaskNetworkType(
                                 taskInfo.getRequiredNetworkType()));
 
-        JobInfoBuilderVisitor jobInfoBuilderVisitor = new JobInfoBuilderVisitor(builder, jobExtras);
-        taskInfo.getTimingInfo().accept(jobInfoBuilderVisitor);
-        builder = jobInfoBuilderVisitor.getBuilder();
+        if (taskInfo.isPeriodic()) {
+            builder = getPeriodicJobInfo(builder, taskInfo);
+        } else {
+            builder = getOneOffJobInfo(builder, taskInfo);
+        }
 
         return builder.build();
     }
 
-    private static class JobInfoBuilderVisitor implements TaskInfo.TimingInfoVisitor {
-        private final JobInfo.Builder mBuilder;
-        private final PersistableBundle mJobExtras;
-
-        JobInfoBuilderVisitor(JobInfo.Builder builder, PersistableBundle jobExtras) {
-            mBuilder = builder;
-            mJobExtras = jobExtras;
+    private static JobInfo.Builder getOneOffJobInfo(JobInfo.Builder builder, TaskInfo taskInfo) {
+        TaskInfo.OneOffInfo oneOffInfo = taskInfo.getOneOffInfo();
+        if (oneOffInfo.hasWindowStartTimeConstraint()) {
+            builder = builder.setMinimumLatency(oneOffInfo.getWindowStartTimeMs());
         }
-
-        // Only valid after a TimingInfo object was visited.
-        JobInfo.Builder getBuilder() {
-            return mBuilder;
+        long windowEndTimeMs = oneOffInfo.getWindowEndTimeMs();
+        if (oneOffInfo.expiresAfterWindowEndTime()) {
+            windowEndTimeMs += DEADLINE_DELTA_MS;
         }
+        return builder.setOverrideDeadline(windowEndTimeMs);
+    }
 
-        @Override
-        public void visit(TaskInfo.OneOffInfo oneOffInfo) {
-            if (oneOffInfo.expiresAfterWindowEndTime()) {
-                mJobExtras.putLong(BACKGROUND_TASK_DEADLINE_KEY,
-                        sClock.currentTimeMillis() + oneOffInfo.getWindowEndTimeMs());
+    private static JobInfo.Builder getPeriodicJobInfo(JobInfo.Builder builder, TaskInfo taskInfo) {
+        TaskInfo.PeriodicInfo periodicInfo = taskInfo.getPeriodicInfo();
+        if (periodicInfo.hasFlex()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                return builder.setPeriodic(periodicInfo.getIntervalMs(), periodicInfo.getFlexMs());
             }
-            mBuilder.setExtras(mJobExtras);
-
-            if (oneOffInfo.hasWindowStartTimeConstraint()) {
-                mBuilder.setMinimumLatency(oneOffInfo.getWindowStartTimeMs());
-            }
-            long windowEndTimeMs = oneOffInfo.getWindowEndTimeMs();
-            if (oneOffInfo.expiresAfterWindowEndTime()) {
-                windowEndTimeMs += DEADLINE_DELTA_MS;
-            }
-            mBuilder.setOverrideDeadline(windowEndTimeMs);
+            return builder.setPeriodic(periodicInfo.getIntervalMs());
         }
-
-        @Override
-        public void visit(TaskInfo.PeriodicInfo periodicInfo) {
-            mBuilder.setExtras(mJobExtras);
-
-            if (periodicInfo.hasFlex() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                mBuilder.setPeriodic(periodicInfo.getIntervalMs(), periodicInfo.getFlexMs());
-                return;
-            }
-            mBuilder.setPeriodic(periodicInfo.getIntervalMs());
-        }
+        return builder.setPeriodic(periodicInfo.getIntervalMs());
     }
 
     private static int getJobInfoNetworkTypeFromTaskNetworkType(

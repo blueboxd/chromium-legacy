@@ -7008,10 +7008,13 @@ TEST_F(LayerTreeHostImplTest, ScrollWithoutBubbling) {
   // the scroll doesn't bubble up to the parent layer.
   gfx::Size surface_size(20, 20);
   gfx::Size viewport_size(10, 10);
-  const int kPageScaleLayerId = 1;
-  const int kViewportClipLayerId = 2;
-  const int kViewportScrollLayerId = 3;
+  const int kRootLayerId = 1;
+  const int kPageScaleLayerId = 2;
+  const int kViewportClipLayerId = 3;
+  const int kViewportScrollLayerId = 4;
   std::unique_ptr<LayerImpl> root_ptr =
+      LayerImpl::Create(host_impl_->active_tree(), kRootLayerId);
+  std::unique_ptr<LayerImpl> page_scale =
       LayerImpl::Create(host_impl_->active_tree(), kPageScaleLayerId);
   std::unique_ptr<LayerImpl> root_clip =
       LayerImpl::Create(host_impl_->active_tree(), kViewportClipLayerId);
@@ -7024,21 +7027,22 @@ TEST_F(LayerTreeHostImplTest, ScrollWithoutBubbling) {
   std::unique_ptr<LayerImpl> grand_child =
       CreateScrollableLayer(5, surface_size);
 
-  std::unique_ptr<LayerImpl> child = CreateScrollableLayer(4, surface_size);
+  std::unique_ptr<LayerImpl> child = CreateScrollableLayer(6, surface_size);
   LayerImpl* grand_child_layer = grand_child.get();
   child->test_properties()->AddChild(std::move(grand_child));
 
   LayerImpl* child_layer = child.get();
   root_scrolling->test_properties()->AddChild(std::move(child));
   root_clip->test_properties()->AddChild(std::move(root_scrolling));
-  root_ptr->test_properties()->AddChild(std::move(root_clip));
+  page_scale->test_properties()->AddChild(std::move(root_clip));
+  root_ptr->test_properties()->AddChild(std::move(page_scale));
   host_impl_->active_tree()->SetRootLayerForTesting(std::move(root_ptr));
-  host_impl_->active_tree()->BuildPropertyTreesForTesting();
   LayerTreeImpl::ViewportLayerIds viewport_ids;
   viewport_ids.page_scale = kPageScaleLayerId;
   viewport_ids.inner_viewport_container = kViewportClipLayerId;
   viewport_ids.inner_viewport_scroll = kViewportScrollLayerId;
   host_impl_->active_tree()->SetViewportLayersFromIds(viewport_ids);
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
   host_impl_->active_tree()->DidBecomeActive();
   host_impl_->active_tree()->SetDeviceViewportSize(viewport_size);
 
@@ -7066,21 +7070,12 @@ TEST_F(LayerTreeHostImplTest, ScrollWithoutBubbling) {
         host_impl_->ProcessScrollDeltas();
 
     // The grand child should have scrolled up to its limit.
-    LayerImpl* child = host_impl_->active_tree()
-                           ->root_layer_for_testing()
-                           ->test_properties()
-                           ->children[0]
-                           ->test_properties()
-                           ->children[0]
-                           ->test_properties()
-                           ->children[0];
-    LayerImpl* grand_child = child->test_properties()->children[0];
     EXPECT_TRUE(ScrollInfoContains(*scroll_info.get(),
-                                   grand_child->element_id(),
+                                   grand_child_layer->element_id(),
                                    gfx::ScrollOffset(0, -2)));
 
     // The child should not have scrolled.
-    ExpectNone(*scroll_info.get(), child->element_id());
+    ExpectNone(*scroll_info.get(), child_layer->element_id());
 
     // The next time we scroll we should only scroll the parent.
     scroll_delta = gfx::Vector2d(0, -3);
@@ -7090,21 +7085,22 @@ TEST_F(LayerTreeHostImplTest, ScrollWithoutBubbling) {
                                 InputHandler::TOUCHSCREEN)
                   .thread);
     EXPECT_EQ(host_impl_->CurrentlyScrollingNode()->id,
-              grand_child->scroll_tree_index());
+              grand_child_layer->scroll_tree_index());
     host_impl_->ScrollBy(UpdateState(gfx::Point(), scroll_delta).get());
     EXPECT_EQ(host_impl_->CurrentlyScrollingNode()->id,
-              child->scroll_tree_index());
+              child_layer->scroll_tree_index());
     host_impl_->ScrollEnd(EndState().get());
 
     scroll_info = host_impl_->ProcessScrollDeltas();
 
     // The child should have scrolled up to its limit.
-    EXPECT_TRUE(ScrollInfoContains(*scroll_info.get(), child->element_id(),
+    EXPECT_TRUE(ScrollInfoContains(*scroll_info.get(),
+                                   child_layer->element_id(),
                                    gfx::ScrollOffset(0, -3)));
 
     // The grand child should not have scrolled.
     EXPECT_TRUE(ScrollInfoContains(*scroll_info.get(),
-                                   grand_child->element_id(),
+                                   grand_child_layer->element_id(),
                                    gfx::ScrollOffset(0, -2)));
 
     // After scrolling the parent, another scroll on the opposite direction
@@ -7116,21 +7112,22 @@ TEST_F(LayerTreeHostImplTest, ScrollWithoutBubbling) {
                                 InputHandler::TOUCHSCREEN)
                   .thread);
     EXPECT_EQ(host_impl_->CurrentlyScrollingNode()->id,
-              grand_child->scroll_tree_index());
+              grand_child_layer->scroll_tree_index());
     host_impl_->ScrollBy(UpdateState(gfx::Point(), scroll_delta).get());
     EXPECT_EQ(host_impl_->CurrentlyScrollingNode()->id,
-              grand_child->scroll_tree_index());
+              grand_child_layer->scroll_tree_index());
     host_impl_->ScrollEnd(EndState().get());
 
     scroll_info = host_impl_->ProcessScrollDeltas();
 
     // The grand child should have scrolled.
     EXPECT_TRUE(ScrollInfoContains(*scroll_info.get(),
-                                   grand_child->element_id(),
+                                   grand_child_layer->element_id(),
                                    gfx::ScrollOffset(0, 5)));
 
     // The child should not have scrolled.
-    EXPECT_TRUE(ScrollInfoContains(*scroll_info.get(), child->element_id(),
+    EXPECT_TRUE(ScrollInfoContains(*scroll_info.get(),
+                                   child_layer->element_id(),
                                    gfx::ScrollOffset(0, -3)));
 
     // Scrolling should be adjusted from viewport space.
@@ -7143,7 +7140,7 @@ TEST_F(LayerTreeHostImplTest, ScrollWithoutBubbling) {
                   ->ScrollBegin(BeginState(gfx::Point(1, 1)).get(),
                                 InputHandler::TOUCHSCREEN)
                   .thread);
-    EXPECT_EQ(grand_child->scroll_tree_index(),
+    EXPECT_EQ(grand_child_layer->scroll_tree_index(),
               host_impl_->CurrentlyScrollingNode()->id);
     host_impl_->ScrollBy(UpdateState(gfx::Point(), scroll_delta).get());
     host_impl_->ScrollEnd(EndState().get());
@@ -7152,7 +7149,7 @@ TEST_F(LayerTreeHostImplTest, ScrollWithoutBubbling) {
 
     // Should have scrolled by half the amount in layer space (5 - 2/2)
     EXPECT_TRUE(ScrollInfoContains(*scroll_info.get(),
-                                   grand_child->element_id(),
+                                   grand_child_layer->element_id(),
                                    gfx::ScrollOffset(0, 4)));
   }
 }
@@ -7263,14 +7260,14 @@ TEST_F(LayerTreeHostImplTest, ScrollEventBubbling) {
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollBeforeRedraw) {
-  const int kPageScaleLayerId = 1;
+  const int kRootLayerId = 1;
   const int kInnerViewportClipLayerId = 2;
   const int kOuterViewportClipLayerId = 7;
   const int kInnerViewportScrollLayerId = 3;
   const int kOuterViewportScrollLayerId = 8;
   gfx::Size surface_size(10, 10);
   std::unique_ptr<LayerImpl> root_ptr =
-      LayerImpl::Create(host_impl_->active_tree(), kPageScaleLayerId);
+      LayerImpl::Create(host_impl_->active_tree(), kRootLayerId);
   std::unique_ptr<LayerImpl> inner_clip =
       LayerImpl::Create(host_impl_->active_tree(), kInnerViewportClipLayerId);
   std::unique_ptr<LayerImpl> inner_scroll =
@@ -7290,7 +7287,6 @@ TEST_F(LayerTreeHostImplTest, ScrollBeforeRedraw) {
   root_ptr->test_properties()->AddChild(std::move(inner_clip));
   host_impl_->active_tree()->SetRootLayerForTesting(std::move(root_ptr));
   LayerTreeImpl::ViewportLayerIds viewport_ids;
-  viewport_ids.page_scale = kPageScaleLayerId;
   viewport_ids.inner_viewport_container = kInnerViewportClipLayerId;
   viewport_ids.outer_viewport_container = kOuterViewportClipLayerId;
   viewport_ids.inner_viewport_scroll = kInnerViewportScrollLayerId;
@@ -7305,7 +7301,6 @@ TEST_F(LayerTreeHostImplTest, ScrollBeforeRedraw) {
   // synchronization.
   DrawFrame();
 
-  const int kPageScaleLayerId2 = 4;
   const int kInnerViewportClipLayerId2 = 5;
   const int kOuterViewportClipLayerId2 = 9;
   const int kInnerViewportScrollLayerId2 = 6;
@@ -7333,7 +7328,6 @@ TEST_F(LayerTreeHostImplTest, ScrollBeforeRedraw) {
   host_impl_->active_tree()->SetRootLayerForTesting(std::move(root_ptr2));
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   LayerTreeImpl::ViewportLayerIds viewport_ids2;
-  viewport_ids2.page_scale = kPageScaleLayerId2;
   viewport_ids2.inner_viewport_container = kInnerViewportClipLayerId2;
   viewport_ids2.outer_viewport_container = kOuterViewportClipLayerId2;
   viewport_ids2.inner_viewport_scroll = kInnerViewportScrollLayerId2;
@@ -7356,10 +7350,8 @@ TEST_F(LayerTreeHostImplTest, ScrollAxisAlignedRotatedLayer) {
   // Rotate the root layer 90 degrees counter-clockwise about its center.
   gfx::Transform rotate_transform;
   rotate_transform.Rotate(-90.0);
-  host_impl_->active_tree()
-      ->root_layer_for_testing()
-      ->test_properties()
-      ->transform = rotate_transform;
+  // Set external transform.
+  host_impl_->OnDraw(rotate_transform, gfx::Rect(0, 0, 50, 50), false, false);
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
   gfx::Size surface_size(50, 50);
@@ -7584,8 +7576,8 @@ TEST_F(LayerTreeHostImplTest, ScrollScaledLayer) {
   int scale = 2;
   gfx::Transform scale_transform;
   scale_transform.Scale(scale, scale);
-  scroll_layer->test_properties()->parent->test_properties()->transform =
-      scale_transform;
+  // Set external transform above root.
+  host_impl_->OnDraw(scale_transform, gfx::Rect(0, 0, 50, 50), false, false);
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
   gfx::Size surface_size(50, 50);
@@ -13411,27 +13403,38 @@ TEST_F(LayerTreeHostImplTest, UpdatePageScaleFactorOnActiveTree) {
       host_impl_->active_tree()->property_trees()->transform_tree.Node(
           page_scale_layer->transform_tree_index());
   // SetPageScaleOnActiveTree also updates the factors in property trees.
-  EXPECT_EQ(active_tree_node->post_local_scale_factor, 2.f);
+  EXPECT_TRUE(active_tree_node->local.IsScale2d());
+  EXPECT_EQ(gfx::Vector2dF(2.f, 2.f), active_tree_node->local.Scale2d());
+  EXPECT_TRUE(active_tree_node->pre_local.IsIdentity());
+  EXPECT_TRUE(active_tree_node->post_local.IsIdentity());
   EXPECT_EQ(host_impl_->active_tree()->current_page_scale_factor(), 2.f);
 
   TransformNode* pending_tree_node =
       host_impl_->pending_tree()->property_trees()->transform_tree.Node(
           page_scale_layer->transform_tree_index());
-  EXPECT_EQ(pending_tree_node->post_local_scale_factor, 1.f);
+  EXPECT_TRUE(pending_tree_node->local.IsIdentity());
+  EXPECT_TRUE(pending_tree_node->pre_local.IsIdentity());
+  EXPECT_TRUE(pending_tree_node->post_local.IsIdentity());
   EXPECT_EQ(host_impl_->pending_tree()->current_page_scale_factor(), 2.f);
 
   host_impl_->pending_tree()->UpdateDrawProperties();
   pending_tree_node =
       host_impl_->pending_tree()->property_trees()->transform_tree.Node(
           page_scale_layer->transform_tree_index());
-  EXPECT_EQ(pending_tree_node->post_local_scale_factor, 2.f);
+  EXPECT_TRUE(pending_tree_node->local.IsScale2d());
+  EXPECT_EQ(gfx::Vector2dF(2.f, 2.f), pending_tree_node->local.Scale2d());
+  EXPECT_TRUE(pending_tree_node->pre_local.IsIdentity());
+  EXPECT_TRUE(pending_tree_node->post_local.IsIdentity());
 
   host_impl_->ActivateSyncTree();
   host_impl_->active_tree()->UpdateDrawProperties();
   active_tree_node =
       host_impl_->active_tree()->property_trees()->transform_tree.Node(
           page_scale_layer->transform_tree_index());
-  EXPECT_EQ(active_tree_node->post_local_scale_factor, 2.f);
+  EXPECT_TRUE(active_tree_node->local.IsScale2d());
+  EXPECT_EQ(gfx::Vector2dF(2.f, 2.f), active_tree_node->local.Scale2d());
+  EXPECT_TRUE(active_tree_node->pre_local.IsIdentity());
+  EXPECT_TRUE(active_tree_node->post_local.IsIdentity());
 }
 
 TEST_F(LayerTreeHostImplTest, SubLayerScaleForNodeInSubtreeOfPageScaleLayer) {

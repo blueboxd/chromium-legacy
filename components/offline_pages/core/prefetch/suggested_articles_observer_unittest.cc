@@ -52,7 +52,7 @@ class OfflinePageSuggestedArticlesObserverTest : public testing::Test {
   ~OfflinePageSuggestedArticlesObserverTest() override {
     // Ensure the store can be properly disposed off.
     prefetch_service_test_taco_.reset();
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   SuggestedArticlesObserver* observer() {
@@ -69,7 +69,7 @@ class OfflinePageSuggestedArticlesObserverTest : public testing::Test {
       Category::FromKnownCategory(ntp_snippets::KnownCategories::ARTICLES);
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<PrefetchServiceTestTaco> prefetch_service_test_taco_;
 
   // Owned by the PrefetchServiceTestTaco.

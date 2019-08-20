@@ -68,7 +68,7 @@ std::unique_ptr<AudioOutputDelegate> CreateFakeDelegate(
 }  // namespace
 
 TEST(MojoAudioOutputStreamProviderTest, AcquireTwice_BadMessage) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   bool got_bad_message = false;
   mojo::core::SetDefaultProcessErrorCallback(
       base::BindRepeating([](bool* got_bad_message,
@@ -104,7 +104,7 @@ TEST(MojoAudioOutputStreamProviderTest, AcquireTwice_BadMessage) {
 
 TEST(MojoAudioOutputStreamProviderTest,
      Bitstream_BadMessageOnNonAndoirdPlatforms) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   bool got_bad_message = false;
   mojo::core::SetDefaultProcessErrorCallback(
       base::BindRepeating([](bool* got_bad_message,

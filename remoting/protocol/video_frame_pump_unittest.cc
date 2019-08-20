@@ -147,7 +147,7 @@ class VideoFramePumpTest : public testing::Test {
                            std::unique_ptr<VideoEncoder> encoder);
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::RunLoop run_loop_;
   scoped_refptr<AutoThreadTaskRunner> encode_task_runner_;
   scoped_refptr<AutoThreadTaskRunner> main_task_runner_;
@@ -158,8 +158,7 @@ class VideoFramePumpTest : public testing::Test {
 
 void VideoFramePumpTest::SetUp() {
   main_task_runner_ = new AutoThreadTaskRunner(
-      scoped_task_environment_.GetMainThreadTaskRunner(),
-      run_loop_.QuitClosure());
+      task_environment_.GetMainThreadTaskRunner(), run_loop_.QuitClosure());
   encode_task_runner_ = AutoThread::Create("encode", main_task_runner_);
 }
 

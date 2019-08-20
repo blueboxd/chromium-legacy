@@ -85,7 +85,7 @@ class SyncSystemResourcesTest : public testing::Test {
   }
 
   // Needed by |sync_system_resources_|.
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   MockStateWriter mock_state_writer_;
   PushClientChannel push_client_channel_;
   SyncSystemResources sync_system_resources_;

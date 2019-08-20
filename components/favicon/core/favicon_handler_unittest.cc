@@ -492,8 +492,7 @@ class FaviconHandlerTest : public testing::Test {
   const GURL kIconURL64x64 = GURL("http://www.google.com/favicon64x64");
 
   FaviconHandlerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {
     // Register various known icon URLs.
     delegate_.fake_image_downloader().Add(kIconURL10x10, IntVector{10});
     delegate_.fake_image_downloader().Add(kIconURL12x12, IntVector{12});
@@ -547,7 +546,7 @@ class FaviconHandlerTest : public testing::Test {
                                     candidates, manifest_url);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<ui::test::ScopedSetSupportedScaleFactors>
       scoped_set_supported_scale_factors_;
   testing::NiceMock<MockFaviconServiceWithFake> favicon_service_;

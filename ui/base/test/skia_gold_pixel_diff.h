@@ -19,7 +19,7 @@ class SkBitmap;
 class SkiaGoldPixelDiff {
  public:
   SkiaGoldPixelDiff();
-  ~SkiaGoldPixelDiff();
+  virtual ~SkiaGoldPixelDiff();
   // Call Init method before using this class.
   // Args:
   // screenshot_prefix The prefix for your screenshot name on GCS.

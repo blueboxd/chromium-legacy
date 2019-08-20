@@ -31,7 +31,7 @@ namespace welcome {
 
 // Available modules for both new and returning users.
 const char kDefaultNewUserModules[] =
-    "nux-google-apps,nux-set-as-default,signin-view";
+    "nux-google-apps,nux-ntp-background,nux-set-as-default,signin-view";
 const char kDefaultReturningUserModules[] = "nux-set-as-default";
 
 // Feature flag.
@@ -49,11 +49,9 @@ const base::FeatureParam<std::string> kReturningUserModules{
     &kFeature, "returning-user-modules", kDefaultReturningUserModules};
 // For testing purposes
 const base::FeatureParam<std::string> kForceEnabledNewUserModules = {
-    &kForceEnabled, "new-user-modules",
-    "nux-google-apps,nux-ntp-background,nux-set-as-default,"
-    "signin-view"};
+    &kForceEnabled, "new-user-modules", kDefaultNewUserModules};
 const base::FeatureParam<std::string> kForceEnabledReturningUserModules = {
-    &kForceEnabled, "returning-user-modules", "nux-set-as-default"};
+    &kForceEnabled, "returning-user-modules", kDefaultReturningUserModules};
 
 // FeatureParam for app variation.
 const base::FeatureParam<bool> kShowGoogleApp{&kFeature,

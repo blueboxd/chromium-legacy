@@ -108,7 +108,7 @@ class MojoVideoEncodeAcceleratorIntegrationTest : public ::testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // This member holds on to the implementation of the "service" side.
   mojo::StrongBindingPtr<mojom::VideoEncodeAccelerator> mojo_vea_binding_;

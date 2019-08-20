@@ -21,7 +21,7 @@ class WaitForNetworkCallbackHelperTest : public testing::Test {
   WaitForNetworkCallbackHelperTest() : num_callbacks_invoked_(0) {}
 
   int num_callbacks_invoked_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<net::test::MockNetworkChangeNotifier>
       network_change_notifier_ = net::test::MockNetworkChangeNotifier::Create();
   WaitForNetworkCallbackHelper callback_helper_;
@@ -51,6 +51,6 @@ TEST_F(WaitForNetworkCallbackHelperTest, CallbackInvokedLater) {
       net::NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI);
   network_change_notifier_->NotifyObserversOfConnectionTypeChangeForTests(
       net::NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(2, num_callbacks_invoked_);
 }

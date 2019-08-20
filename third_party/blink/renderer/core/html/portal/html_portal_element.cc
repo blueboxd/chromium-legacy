@@ -55,6 +55,12 @@ HTMLPortalElement::HTMLPortalElement(
       remote_portal_(std::move(remote_portal)),
       portal_client_receiver_(this, std::move(portal_client_receiver)) {
   if (remote_portal_) {
+    was_just_adopted_ = true;
+
+    DCHECK(CanHaveGuestContents())
+        << "<portal> element was created with an existing contents but is not "
+           "permitted to have one";
+
     // If the portal element hosts a predecessor from activation, it can be
     // activated before being inserted into the DOM, and we need to keep track
     // of it from creation.
@@ -76,6 +82,29 @@ void HTMLPortalElement::ConsumePortal() {
   }
   remote_portal_.reset();
   portal_client_receiver_.reset();
+}
+
+void HTMLPortalElement::ExpireAdoptionLifetime() {
+  was_just_adopted_ = false;
+}
+
+// https://wicg.github.io/portals/#htmlportalelement-may-have-a-guest-browsing-context
+HTMLPortalElement::GuestContentsEligibility
+HTMLPortalElement::GetGuestContentsEligibility() const {
+  // Non-HTML documents aren't eligible at all.
+  if (!GetDocument().IsHTMLDocument())
+    return GuestContentsEligibility::kIneligible;
+
+  LocalFrame* frame = GetDocument().GetFrame();
+  const bool is_connected = frame && isConnected();
+  if (!is_connected && !was_just_adopted_)
+    return GuestContentsEligibility::kIneligible;
+
+  const bool is_top_level = frame && frame->IsMainFrame();
+  if (!is_top_level)
+    return GuestContentsEligibility::kNotTopLevel;
+
+  return GuestContentsEligibility::kEligible;
 }
 
 void HTMLPortalElement::Navigate() {
@@ -304,18 +333,20 @@ HTMLPortalElement::InsertionNotificationRequest HTMLPortalElement::InsertedInto(
     ContainerNode& node) {
   auto result = HTMLFrameOwnerElement::InsertedInto(node);
 
-  if (!node.IsInDocumentTree() || !GetDocument().IsHTMLDocument() ||
-      !GetDocument().GetFrame())
-    return result;
+  switch (GetGuestContentsEligibility()) {
+    case GuestContentsEligibility::kIneligible:
+      return result;
 
-  // We don't support embedding portals in nested browsing contexts.
-  if (!GetDocument().GetFrame()->IsMainFrame()) {
-    GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-        mojom::ConsoleMessageSource::kRendering,
-        mojom::ConsoleMessageLevel::kWarning,
-        "Cannot use <portal> in a nested browsing context."));
-    return result;
-  }
+    case GuestContentsEligibility::kNotTopLevel:
+      GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+          mojom::ConsoleMessageSource::kRendering,
+          mojom::ConsoleMessageLevel::kWarning,
+          "Cannot use <portal> in a nested browsing context."));
+      return result;
+
+    case GuestContentsEligibility::kEligible:
+      break;
+  };
 
   if (remote_portal_) {
     // The interface is already bound if the HTMLPortalElement is adopting the

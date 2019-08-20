@@ -71,7 +71,7 @@ class DebugRecordingFileProviderTest : public testing::Test {
 
  protected:
   mojo::Remote<mojom::DebugRecordingFileProvider> remote_file_provider_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   std::unique_ptr<DebugRecordingSession::DebugRecordingFileProvider>
@@ -95,7 +95,7 @@ class DebugRecordingSessionTest : public media::AudioDebugRecordingTest {
         static_cast<media::AudioManager*>(mock_audio_manager_.get()),
         connector_factory_.RegisterInstance(audio::mojom::kServiceName));
 
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void TearDown() override { ShutdownAudioManager(); }
@@ -106,14 +106,14 @@ class DebugRecordingSessionTest : public media::AudioDebugRecordingTest {
         std::make_unique<DebugRecordingSession>(
             base::FilePath(kBaseFileName),
             connector_factory_.CreateConnector()));
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     return session;
   }
 
   void DestroyDebugRecordingSession(
       std::unique_ptr<DebugRecordingSession> debug_recording_session) {
     debug_recording_session.reset();
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
  private:
@@ -130,7 +130,7 @@ TEST_F(DebugRecordingFileProviderTest, CreateFileForInputStream) {
       media::AudioDebugRecordingStreamType::kInput, id,
       base::BindOnce(&DebugRecordingFileProviderTest::FileCreated,
                      base::Unretained(this)));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   base::FilePath file_name(GetFileName(kInput, id));
   EXPECT_TRUE(base::PathExists(file_name));
@@ -144,7 +144,7 @@ TEST_F(DebugRecordingFileProviderTest, CreateFileForOutputStream) {
       media::AudioDebugRecordingStreamType::kOutput, id,
       base::BindOnce(&DebugRecordingFileProviderTest::FileCreated,
                      base::Unretained(this)));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   base::FilePath file_name(GetFileName(kOutput, id));
   EXPECT_TRUE(base::PathExists(file_name));
@@ -161,7 +161,7 @@ TEST_F(DebugRecordingFileProviderTest, CreateFilesForVariousIds) {
         base::BindOnce(&DebugRecordingFileProviderTest::FileCreated,
                        base::Unretained(this)));
   }
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   for (uint32_t id : ids) {
     base::FilePath file_name(GetFileName(kOutput, id));
@@ -181,7 +181,7 @@ TEST_F(DebugRecordingFileProviderTest,
       id,
       base::BindOnce(&DebugRecordingFileProviderTest::FileCreated,
                      base::Unretained(this))));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   base::FilePath file_name(
       GetFileName(NumberToStringType(invalid_stream_type), id));

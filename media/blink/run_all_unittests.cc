@@ -34,7 +34,7 @@ constexpr gin::V8Initializer::V8SnapshotFileType kSnapshotType =
 #endif  // defined(V8_USE_EXTERNAL_STARTUP_DATA)
 
 // We must use a custom blink::Platform that ensures the main thread scheduler
-// knows about the ScopedTaskEnvironment.
+// knows about the TaskEnvironment.
 class BlinkPlatformWithTaskEnvironment : public blink::Platform {
  public:
   BlinkPlatformWithTaskEnvironment()
@@ -51,7 +51,7 @@ class BlinkPlatformWithTaskEnvironment : public blink::Platform {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<blink::scheduler::WebThreadScheduler> main_thread_scheduler_;
 
   DISALLOW_COPY_AND_ASSIGN(BlinkPlatformWithTaskEnvironment);

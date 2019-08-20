@@ -89,7 +89,7 @@ class TabUsageRecorderTest : public PlatformTest {
     tab_usage_recorder_.termination_timestamps_.push_back(time);
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   FakeWebStateListDelegate web_state_list_delegate_;
   WebStateList web_state_list_;
   base::HistogramTester histogram_tester_;

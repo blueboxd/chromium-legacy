@@ -29,6 +29,8 @@ class GPUDeviceDescriptor;
 class GPUPipelineLayout;
 class GPUPipelineLayoutDescriptor;
 class GPUQueue;
+class GPURenderBundleEncoder;
+class GPURenderBundleEncoderDescriptor;
 class GPURenderPipeline;
 class GPURenderPipelineDescriptor;
 class GPUSampler;
@@ -86,6 +88,8 @@ class GPUDevice final : public DawnObject<DawnDevice> {
 
   GPUCommandEncoder* createCommandEncoder(
       const GPUCommandEncoderDescriptor* descriptor);
+  GPURenderBundleEncoder* createRenderBundleEncoder(
+      const GPURenderBundleEncoderDescriptor* descriptor);
 
   GPUQueue* getQueue();
 

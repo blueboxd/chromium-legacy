@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <memory>
 #include <utility>
 #include <vector>
@@ -552,7 +553,7 @@ void NetworkDeviceHandlerImpl::ApplyMACAddressRandomizationToShill() {
       return;
     case MACAddressRandomizationSupport::SUPPORTED:
       SetDevicePropertyInternal(
-          device_state->path(), shill::kMACAddressRandomizationEnabledProperty,
+          device_state->path(), shill::kMacAddressRandomizationEnabledProperty,
           base::Value(mac_addr_randomization_enabled_), base::DoNothing(),
           network_handler::ErrorCallback());
       return;
@@ -566,7 +567,7 @@ void NetworkDeviceHandlerImpl::HandleMACAddressRandomization(
     const base::DictionaryValue& properties) {
   bool supported;
   if (!properties.GetBooleanWithoutPathExpansion(
-          shill::kMACAddressRandomizationSupportedProperty, &supported)) {
+          shill::kMacAddressRandomizationSupportedProperty, &supported)) {
     if (base::SysInfo::IsRunningOnChromeOS()) {
       NET_LOG(ERROR) << "Failed to determine if device " << device_path
                      << " supports MAC address randomization";

@@ -177,7 +177,7 @@ class BlobRegistryImplTest : public testing::Test {
 
  protected:
   base::ScopedTempDir data_dir_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<BlobStorageContext> context_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
   std::unique_ptr<BlobRegistryImpl> registry_impl_;
@@ -967,7 +967,7 @@ TEST_F(BlobRegistryImplTest,
 
   // Now cause construction to complete, if it would still be going on.
   CreateBytesProvider(kData, std::move(request));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0u, BlobsUnderConstruction());
 }
@@ -1003,7 +1003,7 @@ TEST_F(BlobRegistryImplTest,
 
   // Now cause construction to complete, if it would still be going on.
   CreateBytesProvider(kData, std::move(request));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0u, BlobsUnderConstruction());
 }

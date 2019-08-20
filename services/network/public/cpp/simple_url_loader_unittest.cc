@@ -568,8 +568,7 @@ std::unique_ptr<net::test_server::HttpResponse> FailOnceThenEchoBody(
 class SimpleURLLoaderTestBase {
  public:
   SimpleURLLoaderTestBase()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {
     network::mojom::NetworkServicePtr network_service_ptr;
     network::mojom::NetworkServiceRequest network_service_request =
         mojo::MakeRequest(&network_service_ptr);
@@ -628,7 +627,7 @@ class SimpleURLLoaderTestBase {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<network::mojom::NetworkService> network_service_;
   std::unique_ptr<network::mojom::NetworkServiceClient> network_service_client_;
@@ -1643,7 +1642,7 @@ TEST_P(SimpleURLLoaderTest, UploadFileCanceledBeforeLoaderStarted) {
 
   test_helper->StartSimpleLoader(url_loader_factory_.get());
   test_helper.reset();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_P(SimpleURLLoaderTest, UploadFileCanceledWithRetry) {
@@ -1654,9 +1653,9 @@ TEST_P(SimpleURLLoaderTest, UploadFileCanceledWithRetry) {
   test_helper->simple_url_loader()->SetRetryOptions(
       2, SimpleURLLoader::RETRY_ON_5XX);
   test_helper->StartSimpleLoader(url_loader_factory_.get());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   test_helper.reset();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 enum class TestLoaderEvent {
@@ -1708,12 +1707,12 @@ enum class TestLoaderEvent {
 // unexpected order, to test handling of events from less trusted processes.
 class MockURLLoader : public network::mojom::URLLoader {
  public:
-  MockURLLoader(base::test::ScopedTaskEnvironment* scoped_task_environment,
+  MockURLLoader(base::test::TaskEnvironment* task_environment,
                 network::mojom::URLLoaderRequest url_loader_request,
                 network::mojom::URLLoaderClientPtr client,
                 std::vector<TestLoaderEvent> test_events,
                 scoped_refptr<network::ResourceRequestBody> request_body)
-      : scoped_task_environment_(scoped_task_environment),
+      : task_environment_(task_environment),
         binding_(this, std::move(url_loader_request)),
         client_(std::move(client)),
         test_events_(std::move(test_events)) {
@@ -1902,13 +1901,12 @@ class MockURLLoader : public network::mojom::URLLoader {
           break;
         }
         case TestLoaderEvent::kAdvanceOneSecond: {
-          scoped_task_environment_->FastForwardBy(
-              base::TimeDelta::FromSeconds(1));
+          task_environment_->FastForwardBy(base::TimeDelta::FromSeconds(1));
           break;
         }
       }
       // Wait for Mojo to pass along the message, to ensure expected ordering.
-      scoped_task_environment_->RunUntilIdle();
+      task_environment_->RunUntilIdle();
     }
   }
   ~MockURLLoader() override {}
@@ -1945,7 +1943,7 @@ class MockURLLoader : public network::mojom::URLLoader {
     read_run_loop_->Quit();
   }
 
-  base::test::ScopedTaskEnvironment* scoped_task_environment_;
+  base::test::TaskEnvironment* task_environment_;
 
   std::unique_ptr<net::URLRequest> url_request_;
   mojo::Binding<network::mojom::URLLoader> binding_;
@@ -1968,9 +1966,8 @@ class MockURLLoader : public network::mojom::URLLoader {
 
 class MockURLLoaderFactory : public network::mojom::URLLoaderFactory {
  public:
-  explicit MockURLLoaderFactory(
-      base::test::ScopedTaskEnvironment* scoped_task_environment)
-      : scoped_task_environment_(scoped_task_environment) {}
+  explicit MockURLLoaderFactory(base::test::TaskEnvironment* task_environment)
+      : task_environment_(task_environment) {}
   ~MockURLLoaderFactory() override {}
 
   // network::mojom::URLLoaderFactory implementation:
@@ -1986,8 +1983,8 @@ class MockURLLoaderFactory : public network::mojom::URLLoaderFactory {
     ASSERT_FALSE(test_events_.empty());
     requested_urls_.push_back(url_request.url);
     url_loaders_.push_back(std::make_unique<MockURLLoader>(
-        scoped_task_environment_, std::move(url_loader_request),
-        std::move(client), test_events_.front(), url_request.request_body));
+        task_environment_, std::move(url_loader_request), std::move(client),
+        test_events_.front(), url_request.request_body));
     test_events_.pop_front();
 
     url_loader_queue_.push_back(url_loaders_.back().get());
@@ -2041,7 +2038,7 @@ class MockURLLoaderFactory : public network::mojom::URLLoaderFactory {
   const std::list<GURL>& requested_urls() const { return requested_urls_; }
 
  private:
-  base::test::ScopedTaskEnvironment* scoped_task_environment_;
+  base::test::TaskEnvironment* task_environment_;
   std::list<std::unique_ptr<MockURLLoader>> url_loaders_;
   std::list<std::vector<TestLoaderEvent>> test_events_;
 
@@ -2060,7 +2057,7 @@ class MockURLLoaderFactory : public network::mojom::URLLoaderFactory {
 
 // Check that the request fails if OnComplete() is called before anything else.
 TEST_P(SimpleURLLoaderTest, ResponseCompleteBeforeReceivedResponse) {
-  MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+  MockURLLoaderFactory loader_factory(&task_environment_);
   loader_factory.AddEvents({TestLoaderEvent::kResponseComplete});
   std::unique_ptr<SimpleLoaderTestHelper> test_helper =
       CreateHelperForURL(GURL("foo://bar/"));
@@ -2074,7 +2071,7 @@ TEST_P(SimpleURLLoaderTest, ResponseCompleteBeforeReceivedResponse) {
 // Check that the request fails if OnComplete() is called before the body pipe
 // is received.
 TEST_P(SimpleURLLoaderTest, ResponseCompleteAfterReceivedResponse) {
-  MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+  MockURLLoaderFactory loader_factory(&task_environment_);
   loader_factory.AddEvents(
       {TestLoaderEvent::kReceivedResponse, TestLoaderEvent::kResponseComplete});
   std::unique_ptr<SimpleLoaderTestHelper> test_helper =
@@ -2087,7 +2084,7 @@ TEST_P(SimpleURLLoaderTest, ResponseCompleteAfterReceivedResponse) {
 }
 
 TEST_P(SimpleURLLoaderTest, CloseClientPipeBeforeBodyStarts) {
-  MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+  MockURLLoaderFactory loader_factory(&task_environment_);
   loader_factory.AddEvents(
       {TestLoaderEvent::kReceivedResponse, TestLoaderEvent::kClientPipeClosed});
   std::unique_ptr<SimpleLoaderTestHelper> test_helper =
@@ -2134,7 +2131,7 @@ TEST_P(SimpleURLLoaderTest, CloseClientPipeOrder) {
               bytes_received < 2) {
             continue;
           }
-          MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+          MockURLLoaderFactory loader_factory(&task_environment_);
           std::vector<TestLoaderEvent> events;
           events.push_back(TestLoaderEvent::kReceivedResponse);
           events.push_back(TestLoaderEvent::kBodyBufferReceived);
@@ -2195,7 +2192,7 @@ TEST_P(SimpleURLLoaderTest, CloseClientPipeOrder) {
 
 // Make sure the close client pipe message doesn't cause any issues.
 TEST_P(SimpleURLLoaderTest, ErrorAndCloseClientPipeBeforeBodyStarts) {
-  MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+  MockURLLoaderFactory loader_factory(&task_environment_);
   loader_factory.AddEvents({TestLoaderEvent::kReceivedResponse,
                             TestLoaderEvent::kResponseCompleteFailed,
                             TestLoaderEvent::kClientPipeClosed});
@@ -2210,7 +2207,7 @@ TEST_P(SimpleURLLoaderTest, ErrorAndCloseClientPipeBeforeBodyStarts) {
 
 // Make sure the close client pipe message doesn't cause any issues.
 TEST_P(SimpleURLLoaderTest, SuccessAndCloseClientPipeBeforeBodyComplete) {
-  MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+  MockURLLoaderFactory loader_factory(&task_environment_);
   loader_factory.AddEvents(
       {TestLoaderEvent::kReceivedResponse, TestLoaderEvent::kBodyBufferReceived,
        TestLoaderEvent::kResponseComplete, TestLoaderEvent::kClientPipeClosed,
@@ -2230,7 +2227,7 @@ TEST_P(SimpleURLLoaderTest, SuccessAndCloseClientPipeBeforeBodyComplete) {
 
 // Make sure the close client pipe message doesn't cause any issues.
 TEST_P(SimpleURLLoaderTest, SuccessAndCloseClientPipeAfterBodyComplete) {
-  MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+  MockURLLoaderFactory loader_factory(&task_environment_);
   loader_factory.AddEvents(
       {TestLoaderEvent::kReceivedResponse, TestLoaderEvent::kBodyBufferReceived,
        TestLoaderEvent::kBodyDataRead, TestLoaderEvent::kBodyBufferClosed,
@@ -2249,7 +2246,7 @@ TEST_P(SimpleURLLoaderTest, SuccessAndCloseClientPipeAfterBodyComplete) {
 }
 
 TEST_P(SimpleURLLoaderTest, DoubleReceivedResponse) {
-  MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+  MockURLLoaderFactory loader_factory(&task_environment_);
   loader_factory.AddEvents(
       {TestLoaderEvent::kReceivedResponse, TestLoaderEvent::kReceivedResponse});
   std::unique_ptr<SimpleLoaderTestHelper> test_helper =
@@ -2262,7 +2259,7 @@ TEST_P(SimpleURLLoaderTest, DoubleReceivedResponse) {
 }
 
 TEST_P(SimpleURLLoaderTest, RedirectAfterReseivedResponse) {
-  MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+  MockURLLoaderFactory loader_factory(&task_environment_);
   loader_factory.AddEvents(
       {TestLoaderEvent::kReceivedResponse, TestLoaderEvent::kReceivedRedirect});
   std::unique_ptr<SimpleLoaderTestHelper> test_helper =
@@ -2275,7 +2272,7 @@ TEST_P(SimpleURLLoaderTest, RedirectAfterReseivedResponse) {
 }
 
 TEST_P(SimpleURLLoaderTest, UnexpectedBodyBufferReceived) {
-  MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+  MockURLLoaderFactory loader_factory(&task_environment_);
   loader_factory.AddEvents({TestLoaderEvent::kBodyBufferReceived});
   std::unique_ptr<SimpleLoaderTestHelper> test_helper =
       CreateHelperForURL(GURL("foo://bar/"));
@@ -2287,7 +2284,7 @@ TEST_P(SimpleURLLoaderTest, UnexpectedBodyBufferReceived) {
 }
 
 TEST_P(SimpleURLLoaderTest, DoubleBodyBufferReceived) {
-  MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+  MockURLLoaderFactory loader_factory(&task_environment_);
   loader_factory.AddEvents({TestLoaderEvent::kReceivedResponse,
                             TestLoaderEvent::kBodyBufferReceived,
                             TestLoaderEvent::kBodyBufferReceived});
@@ -2301,7 +2298,7 @@ TEST_P(SimpleURLLoaderTest, DoubleBodyBufferReceived) {
 }
 
 TEST_P(SimpleURLLoaderTest, UnexpectedMessageAfterBodyStarts) {
-  MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+  MockURLLoaderFactory loader_factory(&task_environment_);
   loader_factory.AddEvents(
       {TestLoaderEvent::kReceivedResponse, TestLoaderEvent::kBodyBufferReceived,
        TestLoaderEvent::kBodyDataRead, TestLoaderEvent::kReceivedRedirect});
@@ -2315,7 +2312,7 @@ TEST_P(SimpleURLLoaderTest, UnexpectedMessageAfterBodyStarts) {
 }
 
 TEST_P(SimpleURLLoaderTest, UnexpectedMessageAfterBodyStarts2) {
-  MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+  MockURLLoaderFactory loader_factory(&task_environment_);
   loader_factory.AddEvents(
       {TestLoaderEvent::kReceivedResponse, TestLoaderEvent::kBodyBufferReceived,
        TestLoaderEvent::kBodyDataRead, TestLoaderEvent::kBodyBufferReceived});
@@ -2329,7 +2326,7 @@ TEST_P(SimpleURLLoaderTest, UnexpectedMessageAfterBodyStarts2) {
 }
 
 TEST_P(SimpleURLLoaderTest, UnexpectedMessageAfterBodyComplete) {
-  MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+  MockURLLoaderFactory loader_factory(&task_environment_);
   loader_factory.AddEvents(
       {TestLoaderEvent::kReceivedResponse, TestLoaderEvent::kBodyBufferReceived,
        TestLoaderEvent::kBodyDataRead, TestLoaderEvent::kBodyBufferClosed,
@@ -2344,7 +2341,7 @@ TEST_P(SimpleURLLoaderTest, UnexpectedMessageAfterBodyComplete) {
 }
 
 TEST_P(SimpleURLLoaderTest, MoreDataThanExpected) {
-  MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+  MockURLLoaderFactory loader_factory(&task_environment_);
   loader_factory.AddEvents(
       {TestLoaderEvent::kReceivedResponse, TestLoaderEvent::kBodyBufferReceived,
        TestLoaderEvent::kBodyDataRead, TestLoaderEvent::kBodyDataRead,
@@ -2362,7 +2359,7 @@ TEST_P(SimpleURLLoaderTest, MoreDataThanExpected) {
 TEST_P(SimpleURLLoaderTest, DownloadProgressCallbackIncremental) {
   // Make sure that intermediate states of download are reported to the
   // progress callback.
-  MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+  MockURLLoaderFactory loader_factory(&task_environment_);
   loader_factory.AddEvents(
       {TestLoaderEvent::kReceivedResponse, TestLoaderEvent::kBodyBufferReceived,
        TestLoaderEvent::kBodyDataRead, TestLoaderEvent::kBodyDataRead});
@@ -2388,7 +2385,7 @@ TEST_P(SimpleURLLoaderTest, DownloadProgressCallbackIncremental) {
 
   // Clean the file up.
   test_helper->DestroySimpleURLLoader();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_P(SimpleURLLoaderTest, RetryOn5xx) {
@@ -2428,7 +2425,7 @@ TEST_P(SimpleURLLoaderTest, RetryOn5xx) {
   };
 
   for (const auto& test_case : kTestCases) {
-    MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+    MockURLLoaderFactory loader_factory(&task_environment_);
     for (int i = 0; i < test_case.num_5xx; i++) {
       loader_factory.AddEvents({TestLoaderEvent::kReceived501Response});
     }
@@ -2476,7 +2473,7 @@ TEST_P(SimpleURLLoaderTest, RetryOn5xx) {
 
 // Test that when retrying on 5xx is enabled, there's no retry on a 4xx error.
 TEST_P(SimpleURLLoaderTest, NoRetryOn4xx) {
-  MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+  MockURLLoaderFactory loader_factory(&task_environment_);
   loader_factory.AddEvents({TestLoaderEvent::kReceived401Response});
 
   std::unique_ptr<SimpleLoaderTestHelper> test_helper =
@@ -2497,7 +2494,7 @@ TEST_P(SimpleURLLoaderTest, NoRetryOn4xx) {
 // re-requested.
 TEST_P(SimpleURLLoaderTest, RetryAfterRedirect) {
   const GURL kInitialURL("foo://bar/initial");
-  MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+  MockURLLoaderFactory loader_factory(&task_environment_);
   loader_factory.AddEvents({TestLoaderEvent::kReceivedRedirect,
                             TestLoaderEvent::kReceived501Response});
   loader_factory.AddEvents(
@@ -2600,7 +2597,7 @@ TEST_P(SimpleURLLoaderTest, RetryOnNetworkChange) {
 
   for (const auto& network_events : kNetworkChangedEvents) {
     for (const auto& test_case : kTestCases) {
-      MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+      MockURLLoaderFactory loader_factory(&task_environment_);
       for (int i = 0; i < test_case.num_network_changes; i++) {
         loader_factory.AddEvents(network_events);
       }
@@ -2655,7 +2652,7 @@ TEST_P(SimpleURLLoaderTest, RetryOnNetworkChange) {
       if (test_loader_event == TestLoaderEvent::kResponseCompleteNetworkChanged)
         test_loader_event = TestLoaderEvent::kResponseCompleteFailed;
     }
-    MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+    MockURLLoaderFactory loader_factory(&task_environment_);
     loader_factory.AddEvents(modifed_network_events);
 
     std::unique_ptr<SimpleLoaderTestHelper> test_helper =
@@ -2676,7 +2673,7 @@ TEST_P(SimpleURLLoaderTest, RetryOnNetworkChange) {
 // Check the case where the URLLoaderFactory has been disconnected before the
 // request is retried.
 TEST_P(SimpleURLLoaderTest, RetryWithUnboundFactory) {
-  MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+  MockURLLoaderFactory loader_factory(&task_environment_);
   loader_factory.AddEvents({TestLoaderEvent::kResponseCompleteNetworkChanged});
   // Since clone fails asynchronously, this shouldn't be any different from
   // the new URLLoaderFactory being disconnected in some other way.
@@ -2699,7 +2696,7 @@ TEST_P(SimpleURLLoaderTest, RetryWithUnboundFactory) {
 // with no intervening reads of the data on the pipe.
 TEST_P(SimpleURLLoaderTest, UploadLongStringStartReadTwice) {
   std::string long_string = GetLongUploadBody();
-  MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+  MockURLLoaderFactory loader_factory(&task_environment_);
   loader_factory.AddEvents(
       {TestLoaderEvent::kStartReadLongUploadBody,
        TestLoaderEvent::kStartReadLongUploadBody,
@@ -2726,7 +2723,7 @@ TEST_P(SimpleURLLoaderTest, UploadLongStringStartReadTwice) {
 TEST_P(SimpleURLLoaderTest,
        UploadLongStringReadPartOfUploadBodyBeforeRestartBodyRead) {
   std::string long_string = GetLongUploadBody();
-  MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+  MockURLLoaderFactory loader_factory(&task_environment_);
   loader_factory.AddEvents(
       {TestLoaderEvent::kStartReadLongUploadBody,
        TestLoaderEvent::kWaitForLongUploadBodySize,
@@ -2851,7 +2848,7 @@ TEST_F(SimpleURLLoaderFileTest, DeleteLoaderDuringRequestDestroysFile) {
         if (body_buffer_closed && client_pipe_closed)
           continue;
 
-        MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+        MockURLLoaderFactory loader_factory(&task_environment_);
         std::vector<TestLoaderEvent> events;
         events.push_back(TestLoaderEvent::kReceivedResponse);
         events.push_back(TestLoaderEvent::kBodyBufferReceived);
@@ -2872,7 +2869,7 @@ TEST_F(SimpleURLLoaderFileTest, DeleteLoaderDuringRequestDestroysFile) {
                                false /* wait_for_completion */);
 
         // Wait for the request to advance as far as it's going to.
-        scoped_task_environment_.RunUntilIdle();
+        task_environment_.RunUntilIdle();
 
         // Destination file should have been created, and request should still
         // be in progress.
@@ -2886,7 +2883,7 @@ TEST_F(SimpleURLLoaderFileTest, DeleteLoaderDuringRequestDestroysFile) {
         // Destroying the SimpleURLLoader now should post a task to destroy the
         // file.
         test_helper->DestroySimpleURLLoader();
-        scoped_task_environment_.RunUntilIdle();
+        task_environment_.RunUntilIdle();
         {
           base::ScopedAllowBlockingForTesting allow_blocking;
           EXPECT_FALSE(base::PathExists(dest_path));
@@ -2979,15 +2976,14 @@ TEST_F(SimpleURLLoaderStreamTest, OnRetryDestruction) {
 }
 
 // Don't inherit from SimpleURLLoaderTestBase so that we can initialize our
-// |scoped_task_environment_| different namely with TimeSource::MOCK_TIME.
+// |task_environment_| different namely with TimeSource::MOCK_TIME.
 class SimpleURLLoaderMockTimeTest : public testing::Test {
  public:
   SimpleURLLoaderMockTimeTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         disallow_blocking_(std::make_unique<base::ScopedDisallowBlocking>()) {
     SimpleURLLoader::SetTimeoutTickClockForTest(
-        scoped_task_environment_.GetMockTickClock());
+        task_environment_.GetMockTickClock());
   }
   ~SimpleURLLoaderMockTimeTest() override {}
 
@@ -3003,14 +2999,14 @@ class SimpleURLLoaderMockTimeTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<base::ScopedDisallowBlocking> disallow_blocking_;
 };
 
 // The amount of time that's simulated passing is equal to the timeout value
 // specified, so the request should fail.
 TEST_F(SimpleURLLoaderMockTimeTest, TimeoutTriggered) {
-  MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+  MockURLLoaderFactory loader_factory(&task_environment_);
   loader_factory.AddEvents(
       {TestLoaderEvent::kAdvanceOneSecond, TestLoaderEvent::kReceivedResponse,
        TestLoaderEvent::kBodyBufferReceived, TestLoaderEvent::kResponseComplete,
@@ -3027,7 +3023,7 @@ TEST_F(SimpleURLLoaderMockTimeTest, TimeoutTriggered) {
 // Less time is simulated passing than the timeout value, so this request should
 // succeed normally.
 TEST_F(SimpleURLLoaderMockTimeTest, TimeoutNotTriggered) {
-  MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+  MockURLLoaderFactory loader_factory(&task_environment_);
   loader_factory.AddEvents(
       {TestLoaderEvent::kAdvanceOneSecond, TestLoaderEvent::kReceivedResponse,
        TestLoaderEvent::kBodyBufferReceived, TestLoaderEvent::kResponseComplete,
@@ -3045,7 +3041,7 @@ TEST_F(SimpleURLLoaderMockTimeTest, TimeoutNotTriggered) {
 // Simulate time passing, without setting the timeout. This should result in no
 // timer being started, and request should succeed.
 TEST_F(SimpleURLLoaderMockTimeTest, TimeNotSetAndTimeAdvanced) {
-  MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+  MockURLLoaderFactory loader_factory(&task_environment_);
   loader_factory.AddEvents(
       {TestLoaderEvent::kAdvanceOneSecond, TestLoaderEvent::kReceivedResponse,
        TestLoaderEvent::kBodyBufferReceived, TestLoaderEvent::kResponseComplete,
@@ -3061,7 +3057,7 @@ TEST_F(SimpleURLLoaderMockTimeTest, TimeNotSetAndTimeAdvanced) {
 // Simulate time passing before and after a redirect. The redirect should not
 // reset the timeout timer, and the request should timeout.
 TEST_F(SimpleURLLoaderMockTimeTest, TimeoutAfterRedirectTriggered) {
-  MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+  MockURLLoaderFactory loader_factory(&task_environment_);
   loader_factory.AddEvents(
       {TestLoaderEvent::kAdvanceOneSecond, TestLoaderEvent::kReceivedRedirect,
        TestLoaderEvent::kAdvanceOneSecond, TestLoaderEvent::kReceivedResponse,
@@ -3079,7 +3075,7 @@ TEST_F(SimpleURLLoaderMockTimeTest, TimeoutAfterRedirectTriggered) {
 // Simulate time passing after a failure. The retry restarts the timeout timer,
 // so the second attempt gets a full two seconds and it is not exhausted.
 TEST_F(SimpleURLLoaderMockTimeTest, TimeoutAfterRetryNotTriggered) {
-  MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+  MockURLLoaderFactory loader_factory(&task_environment_);
   loader_factory.AddEvents({TestLoaderEvent::kAdvanceOneSecond,
                             TestLoaderEvent::kReceived501Response});
   loader_factory.AddEvents(
@@ -3101,7 +3097,7 @@ TEST_F(SimpleURLLoaderMockTimeTest, TimeoutAfterRetryNotTriggered) {
 // Trigger a failure and retry, and then simulate enough time passing to trigger
 // the timeout. The retry should have correctly started its timeout timer.
 TEST_F(SimpleURLLoaderMockTimeTest, TimeoutAfterRetryTriggered) {
-  MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+  MockURLLoaderFactory loader_factory(&task_environment_);
   loader_factory.AddEvents({TestLoaderEvent::kAdvanceOneSecond,
                             TestLoaderEvent::kReceived501Response});
   loader_factory.AddEvents(
@@ -3207,7 +3203,7 @@ TEST_P(SimpleURLLoaderTest, DeleteInDownloadProgressCallback) {
   base::RunLoop run_loop;
   auto callback = base::BindLambdaForTesting([&](uint64_t current) {
     test_helper->DestroySimpleURLLoader();  // cleanup files.
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     test_helper.reset();
     run_loop.Quit();
   });
@@ -3232,7 +3228,7 @@ TEST_P(SimpleURLLoaderTest, DeleteInDownloadProgressCallback2) {
   auto callback = base::BindLambdaForTesting([&](uint64_t current) {
     if (current == kResponseSize) {
       test_helper->DestroySimpleURLLoader();  // cleanup files.
-      scoped_task_environment_.RunUntilIdle();
+      task_environment_.RunUntilIdle();
       test_helper.reset();
       run_loop.Quit();
     }

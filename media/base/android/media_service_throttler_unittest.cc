@@ -60,7 +60,7 @@ class MediaServiceThrottlerTest : public testing::Test {
   scoped_refptr<FakeSingleThreadTaskRunner> test_task_runner_;
 
   // Necessary, or else base::ThreadTaskRunnerHandle::Get() fails.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaServiceThrottlerTest);

@@ -415,11 +415,8 @@ void NotificationEntryToProto(NotificationEntry* entry,
   proto->set_create_time(TimeToMilliseconds(entry->create_time));
   auto* proto_notification_data = proto->mutable_notification_data();
   NotificationDataToProto(&entry->notification_data, proto_notification_data);
-  for (const auto& icon_id : entry->icons_uuid) {
-    auto* proto_icon_id = proto_notification_data->add_icon_uuid();
-    *proto_icon_id = icon_id;
-  }
-
+  proto_notification_data->set_small_icon_uuid(entry->small_icon_uuid);
+  proto_notification_data->set_large_icon_uuid(entry->large_icon_uuid);
   auto* proto_schedule_params = proto->mutable_schedule_params();
   ScheduleParamsToProto(&entry->schedule_params, proto_schedule_params);
 }
@@ -431,10 +428,8 @@ void NotificationEntryFromProto(proto::NotificationEntry* proto,
   entry->create_time = MillisecondsToTime(proto->create_time());
   NotificationDataFromProto(proto->mutable_notification_data(),
                             &entry->notification_data);
-  for (int i = 0; i < proto->notification_data().icon_uuid_size(); ++i) {
-    entry->icons_uuid.emplace_back(proto->notification_data().icon_uuid(i));
-  }
-
+  entry->small_icon_uuid = proto->notification_data().small_icon_uuid();
+  entry->large_icon_uuid = proto->notification_data().large_icon_uuid();
   ScheduleParamsFromProto(proto->mutable_schedule_params(),
                           &entry->schedule_params);
 }

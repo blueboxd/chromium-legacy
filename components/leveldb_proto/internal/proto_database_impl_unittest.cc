@@ -394,7 +394,7 @@ class ProtoDatabaseImplTest : public testing::Test {
 
  private:
   std::unique_ptr<base::ScopedTempDir> temp_dir_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
   // Shared database.

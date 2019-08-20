@@ -1061,10 +1061,15 @@ struct ShapeRunWithFontInput {
                   full_range.end() - context_start);
     text = full_text.substr(context_start, context_end - context_start);
 
-    // Pre-compute the hash to avoid having to re-hash text at every comparison.
-    // Attempt to minimize collisions by including the font and text in the
-    // hash.
-    hash = (uintptr_t)skia_face.get() ^ base::Hash(text);
+    // Pre-compute the hash to avoid having to re-hash at every comparison.
+    // Attempt to minimize collisions by including the typeface, script, font
+    // size, text and the text range.
+    hash = base::HashInts(hash, skia_face->uniqueID());
+    hash = base::HashInts(hash, script);
+    hash = base::HashInts(hash, font_size);
+    hash = base::Hash(text);
+    hash = base::HashInts(hash, range.start());
+    hash = base::HashInts(hash, range.length());
   }
 
   bool operator==(const ShapeRunWithFontInput& other) const {

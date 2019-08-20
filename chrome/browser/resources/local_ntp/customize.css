@@ -95,6 +95,7 @@ html[dir=rtl] #edit-bg {
   color: rgb(var(--GB600-rgb));
   display: none;
   font-size: 14px;
+  line-height: 1;
   padding-inline-end: 12px;
   padding-inline-start: 8px;
   user-select: none;

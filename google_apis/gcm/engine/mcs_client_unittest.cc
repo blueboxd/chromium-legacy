@@ -173,7 +173,7 @@ class MCSClientTest : public testing::Test {
   base::SimpleTestClock clock_;
 
   base::ScopedTempDir temp_directory_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<base::RunLoop> run_loop_;
   std::unique_ptr<GCMStore> gcm_store_;
 
@@ -209,10 +209,9 @@ void MCSClientTest::SetUp() {
 }
 
 void MCSClientTest::BuildMCSClient() {
-  gcm_store_.reset(
-      new GCMStoreImpl(temp_directory_.GetPath(),
-                       scoped_task_environment_.GetMainThreadTaskRunner(),
-                       base::WrapUnique<Encryptor>(new FakeEncryptor)));
+  gcm_store_.reset(new GCMStoreImpl(
+      temp_directory_.GetPath(), task_environment_.GetMainThreadTaskRunner(),
+      base::WrapUnique<Encryptor>(new FakeEncryptor)));
   mcs_client_.reset(
       new TestMCSClient(&clock_, &connection_factory_, gcm_store_.get(),
                         base::ThreadTaskRunnerHandle::Get(), &recorder_));

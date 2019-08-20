@@ -100,7 +100,7 @@ class PrefMemberTestClass {
 }  // anonymous namespace
 
 class PrefMemberTest : public testing::Test {
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(PrefMemberTest, BasicGetAndSet) {

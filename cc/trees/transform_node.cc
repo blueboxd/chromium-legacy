@@ -34,7 +34,6 @@ TransformNode::TransformNode()
       moved_by_outer_viewport_bounds_delta_y(false),
       in_subtree_of_page_scale_layer(false),
       transform_changed(false),
-      post_local_scale_factor(1.0f),
       maximum_animation_scale(kNotScaled),
       starting_animation_scale(kNotScaled) {}
 
@@ -69,7 +68,6 @@ bool TransformNode::operator==(const TransformNode& other) const {
          in_subtree_of_page_scale_layer ==
              other.in_subtree_of_page_scale_layer &&
          transform_changed == other.transform_changed &&
-         post_local_scale_factor == other.post_local_scale_factor &&
          scroll_offset == other.scroll_offset &&
          snap_amount == other.snap_amount &&
          source_offset == other.source_offset &&
@@ -89,7 +87,6 @@ void TransformNode::update_post_local_transform(
     const gfx::PointF& position,
     const gfx::Point3F& transform_origin) {
   post_local.MakeIdentity();
-  post_local.Scale(post_local_scale_factor, post_local_scale_factor);
   post_local.Translate3d(
       position.x() + source_offset.x() + transform_origin.x(),
       position.y() + source_offset.y() + transform_origin.y(),

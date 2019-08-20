@@ -51,7 +51,7 @@ class ResourceCacheTest : public testing::Test {
 
   void TearDown() override { task_environment_.RunUntilIdle(); }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
 };
 

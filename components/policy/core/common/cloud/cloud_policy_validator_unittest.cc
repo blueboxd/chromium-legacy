@@ -57,8 +57,7 @@ class FakeUserPolicyValueValidator
 class CloudPolicyValidatorTest : public testing::Test {
  public:
   CloudPolicyValidatorTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
         timestamp_(base::Time::FromJavaTime(PolicyBuilder::kFakeTimestamp)),
         timestamp_option_(CloudPolicyValidatorBase::TIMESTAMP_VALIDATED),
         dm_token_option_(CloudPolicyValidatorBase::DM_TOKEN_REQUIRED),
@@ -154,7 +153,7 @@ class CloudPolicyValidatorTest : public testing::Test {
     EXPECT_EQ(kMessage, result.message);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::Time timestamp_;
   CloudPolicyValidatorBase::ValidateTimestampOption timestamp_option_;
   CloudPolicyValidatorBase::ValidateDMTokenOption dm_token_option_;

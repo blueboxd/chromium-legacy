@@ -14,6 +14,7 @@
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
+#include "content/browser/indexed_db/indexed_db_task_helper.h"
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "content/browser/indexed_db/scopes/scopes_lock_manager.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
@@ -55,17 +56,16 @@ class MockBrowserTestIndexedDBClassFactory
       const base::string16& name,
       IndexedDBBackingStore* backing_store,
       IndexedDBFactory* factory,
-      IndexedDBDatabase::ErrorCallback error_callback,
-      base::OnceClosure destroy_me,
+      TasksAvailableCallback tasks_available_callback,
       std::unique_ptr<IndexedDBMetadataCoding> metadata_coding,
       const IndexedDBDatabase::Identifier& unique_identifier,
       ScopesLockManager* transaction_lock_manager) override;
   std::unique_ptr<IndexedDBTransaction> CreateIndexedDBTransaction(
       int64_t id,
       IndexedDBConnection* connection,
-      ErrorCallback error_callback,
       const std::set<int64_t>& scope,
       blink::mojom::IDBTransactionMode mode,
+      TasksAvailableCallback tasks_available_callback,
       IndexedDBBackingStore::Transaction* backing_store_transaction) override;
 
   std::unique_ptr<TransactionalLevelDBDatabase> CreateLevelDBDatabase(

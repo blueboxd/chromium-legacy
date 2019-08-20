@@ -221,8 +221,7 @@ TEST(PreflightControllerCreatePreflightRequestTest, RenderFrameId) {
 class PreflightControllerTest : public testing::Test {
  public:
   PreflightControllerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {
     mojom::NetworkServicePtr network_service_ptr;
     mojom::NetworkServiceRequest network_service_request =
         mojo::MakeRequest(&network_service_ptr);
@@ -310,7 +309,7 @@ class PreflightControllerTest : public testing::Test {
     return response;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
   std::unique_ptr<mojom::NetworkService> network_service_;

@@ -90,9 +90,7 @@ gfx::Transform CC_EXPORT ScreenSpaceTransform(const LayerImpl* layer,
 
 void CC_EXPORT UpdatePageScaleFactor(PropertyTrees* property_trees,
                                      TransformNode* page_scale_node,
-                                     float page_scale_factor,
-                                     float device_scale_factor,
-                                     const gfx::Transform device_transform);
+                                     float page_scale_factor);
 
 void CC_EXPORT
 UpdateElasticOverscroll(PropertyTrees* property_trees,

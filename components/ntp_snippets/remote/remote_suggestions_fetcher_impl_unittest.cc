@@ -201,7 +201,7 @@ class RemoteSuggestionsFetcherImplTest : public testing::Test {
         base::BindRepeating(&ParseJsonDelayed), GetFetchEndpoint(), api_key,
         user_classifier_.get());
 
-    fetcher_->SetClockForTesting(scoped_task_environment_.GetMockClock());
+    fetcher_->SetClockForTesting(task_environment_.GetMockClock());
   }
 
   void SignIn() { identity_test_env_.MakePrimaryAccountAvailable(kTestEmail); }
@@ -215,7 +215,7 @@ class RemoteSuggestionsFetcherImplTest : public testing::Test {
   RemoteSuggestionsFetcherImpl& fetcher() { return *fetcher_; }
   MockSnippetsAvailableCallback& mock_callback() { return mock_callback_; }
   void FastForwardUntilNoTasksRemain() {
-    scoped_task_environment_.FastForwardUntilNoTasksRemain();
+    task_environment_.FastForwardUntilNoTasksRemain();
   }
   base::HistogramTester& histogram_tester() { return histogram_tester_; }
 
@@ -253,8 +253,8 @@ class RemoteSuggestionsFetcherImplTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   std::map<std::string, std::string> default_variation_params_;
   signin::IdentityTestEnvironment identity_test_env_;
   network::TestURLLoaderFactory test_url_loader_factory_;

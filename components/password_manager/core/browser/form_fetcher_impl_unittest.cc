@@ -200,11 +200,11 @@ class FormFetcherImplTest : public testing::Test {
 #endif
     EXPECT_CALL(*mock_store_, GetLogins(form_digest_, form_fetcher_.get()));
     form_fetcher_->Fetch();
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     testing::Mock::VerifyAndClearExpectations(mock_store_.get());
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   PasswordStore::FormDigest form_digest_;
   std::unique_ptr<FormFetcherImpl> form_fetcher_;
   MockConsumer consumer_;
@@ -422,7 +422,7 @@ TEST_F(FormFetcherImplTest, FetchStatistics) {
   EXPECT_CALL(*mock_store_, GetSiteStatsImpl(stats.origin_domain))
       .WillOnce(Return(db_stats));
   form_fetcher_->Fetch();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_THAT(form_fetcher_->GetInteractionsStats(),
               UnorderedElementsAre(stats));
@@ -432,7 +432,7 @@ TEST_F(FormFetcherImplTest, DontFetchStatistics) {
   EXPECT_CALL(*mock_store_, GetLogins(form_digest_, form_fetcher_.get()));
   EXPECT_CALL(*mock_store_, GetSiteStatsImpl(_)).Times(0);
   form_fetcher_->Fetch();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 #endif
 

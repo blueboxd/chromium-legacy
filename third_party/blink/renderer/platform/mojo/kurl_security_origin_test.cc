@@ -35,7 +35,7 @@ class UrlTestImpl : public url::mojom::blink::UrlTest {
 
 // Mojo version of chrome IPC test in url/ipc/url_param_traits_unittest.cc.
 TEST(KURLSecurityOriginStructTraitsTest, Basic) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   url::mojom::blink::UrlTestPtr proxy;
   UrlTestImpl impl(MakeRequest(&proxy));

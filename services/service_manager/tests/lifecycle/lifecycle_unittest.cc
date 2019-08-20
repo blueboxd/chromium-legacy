@@ -255,7 +255,7 @@ class LifecycleTest : public testing::Test {
     return base::WrapUnique(state);
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestServiceManager test_service_manager_;
   Service test_service_;
   ServiceBinding test_service_binding_;

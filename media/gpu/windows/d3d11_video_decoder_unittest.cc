@@ -229,7 +229,7 @@ class D3D11VideoDecoderTest : public ::testing::Test {
 
   MOCK_METHOD1(MockInitCB, void(bool));
 
-  base::test::ScopedTaskEnvironment env_;
+  base::test::TaskEnvironment env_;
 
   scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
 

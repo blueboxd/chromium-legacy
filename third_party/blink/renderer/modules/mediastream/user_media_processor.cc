@@ -1218,7 +1218,10 @@ void UserMediaProcessor::StartTracks(const String& label) {
       blink::WebString(label),
       ToStdVector(current_request_info_->audio_devices()),
       ToStdVector(current_request_info_->video_devices()),
-      weak_factory_.GetWeakPtr());
+      WTF::BindRepeating(&UserMediaProcessor::OnDeviceStopped,
+                         weak_factory_.GetWeakPtr()),
+      WTF::BindRepeating(&UserMediaProcessor::OnDeviceChanged,
+                         weak_factory_.GetWeakPtr()));
 
   Vector<blink::WebMediaStreamTrack> audio_tracks(
       current_request_info_->audio_devices().size());

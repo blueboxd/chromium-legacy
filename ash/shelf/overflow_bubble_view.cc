@@ -21,6 +21,7 @@
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/views/view_model.h"
 #include "ui/views/widget/widget.h"
 
@@ -52,6 +53,41 @@ int GetBubbleCornerRadius() {
 }
 
 }  // namespace
+
+////////////////////////////////////////////////////////////////////////////////
+// OverflowScrollArrowView impl
+
+class OverflowBubbleView::OverflowScrollArrowView : public ScrollArrowView {
+ public:
+  OverflowScrollArrowView(ArrowType arrow_type,
+                          bool is_horizontal_alignment,
+                          views::ButtonListener* button_lister)
+      : ScrollArrowView(arrow_type, is_horizontal_alignment, button_lister) {}
+  ~OverflowScrollArrowView() override = default;
+
+  // views::View:
+  void PaintButtonContents(gfx::Canvas* canvas) override {
+    ScrollArrowView::PaintButtonContents(canvas);
+
+    float ring_radius_dp = width() / 2;
+    gfx::PointF circle_center(width() / 2.f, height() / 2.f);
+
+    {
+      gfx::ScopedCanvas scoped_canvas(canvas);
+      const float dsf = canvas->UndoDeviceScaleFactor();
+      cc::PaintFlags fg_flags;
+      fg_flags.setAntiAlias(true);
+      fg_flags.setColor(kShelfControlPermanentHighlightBackground);
+
+      const float radius = std::ceil(ring_radius_dp * dsf);
+      canvas->DrawCircle(gfx::ScalePoint(circle_center, dsf), radius, fg_flags);
+    }
+  }
+
+  const char* GetClassName() const override {
+    return "OverflowScrollArrowView";
+  }
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 // OverflowShelfContainerView impl
@@ -204,11 +240,11 @@ OverflowBubbleView::OverflowBubbleView(ShelfView* shelf_view,
       gfx::RoundedCornersF(GetBubbleCornerRadius()));
 
   // Initialize the left arrow button.
-  left_arrow_ = AddChildView(std::make_unique<ScrollArrowView>(
+  left_arrow_ = AddChildView(std::make_unique<OverflowScrollArrowView>(
       ScrollArrowView::kLeft, shelf_->IsHorizontalAlignment(), this));
 
   // Initialize the right arrow button.
-  right_arrow_ = AddChildView(std::make_unique<ScrollArrowView>(
+  right_arrow_ = AddChildView(std::make_unique<OverflowScrollArrowView>(
       ScrollArrowView::kRight, shelf_->IsHorizontalAlignment(), this));
 
   // Initialize the shelf container view.
@@ -590,14 +626,15 @@ bool OverflowBubbleView::CanActivate() const {
   if (!GetWidget())
     return false;
 
-  // Do not activate the bubble unless the current active window is the shelf
+  // Do not activate the bubble unless the current active window is the hotseat
   // window or the status widget window.
   aura::Window* active_window = window_util::GetActiveWindow();
   aura::Window* bubble_window = GetWidget()->GetNativeWindow();
-  aura::Window* shelf_window = shelf_->shelf_widget()->GetNativeWindow();
+  aura::Window* hotseat_window =
+      shelf_->shelf_widget()->hotseat_widget()->GetNativeWindow();
   aura::Window* status_area_window =
       shelf_->shelf_widget()->status_area_widget()->GetNativeWindow();
-  return active_window == bubble_window || active_window == shelf_window ||
+  return active_window == bubble_window || active_window == hotseat_window ||
          active_window == status_area_window;
 }
 

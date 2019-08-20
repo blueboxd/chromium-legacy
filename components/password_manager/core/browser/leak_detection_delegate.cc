@@ -38,14 +38,17 @@ void LeakDetectionDelegate::StartLeakCheck(const autofill::PasswordForm& form) {
     leak_check_->Start(form.origin, form.username_value, form.password_value);
 }
 
-void LeakDetectionDelegate::OnLeakDetectionDone(bool leaked,
-                                                const GURL& url,
-                                                base::StringPiece16 username) {
+void LeakDetectionDelegate::OnLeakDetectionDone(bool is_leaked,
+                                                GURL url,
+                                                base::string16 username,
+                                                base::string16 password) {
   leak_check_.reset();
   if (password_manager_util::IsLoggingActive(client_)) {
     BrowserSavePasswordProgressLogger logger(client_->GetLogManager());
-    logger.LogBoolean(Logger::STRING_LEAK_DETECTION_FINISHED, leaked);
+    logger.LogBoolean(Logger::STRING_LEAK_DETECTION_FINISHED, is_leaked);
   }
+  if (is_leaked)
+    client_->NotifyUserCredentialsWereLeaked(url);
 }
 
 void LeakDetectionDelegate::OnError(LeakDetectionError error) {

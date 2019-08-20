@@ -24,7 +24,7 @@ class SerialRunnerTest : public ::testing::Test {
   ~SerialRunnerTest() override = default;
 
   void RunSerialRunner() {
-    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+    task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&SerialRunnerTest::StartRunnerInternal,
                                   base::Unretained(this), bound_fns_));
     base::RunLoop().RunUntilIdle();
@@ -119,7 +119,7 @@ class SerialRunnerTest : public ::testing::Test {
 
   void CancelSerialRunner(const PipelineStatusCB& status_cb) {
     // Tasks run by |runner_| shouldn't reset it, hence we post a task to do so.
-    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+    task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&SerialRunnerTest::ResetSerialRunner,
                                   base::Unretained(this)));
     status_cb.Run(PIPELINE_OK);
@@ -129,7 +129,7 @@ class SerialRunnerTest : public ::testing::Test {
     runner_.reset();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   SerialRunner::Queue bound_fns_;
   std::unique_ptr<SerialRunner> runner_;
 

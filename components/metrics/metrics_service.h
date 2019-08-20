@@ -38,6 +38,8 @@ class PrefService;
 class PrefRegistrySimple;
 FORWARD_DECLARE_TEST(ChromeMetricsServiceClientTest,
                      TestRegisterMetricsServiceProviders);
+FORWARD_DECLARE_TEST(IOSChromeMetricsServiceClientTest,
+                     TestRegisterMetricsServiceProviders);
 
 namespace base {
 class HistogramSamples;
@@ -180,10 +182,6 @@ class MetricsService : public base::HistogramFlattener {
     return reporting_service_.metrics_log_store();
   }
 
-  // Sets the persistent system profile. Virtual for tests.
-  virtual void SetPersistentSystemProfile(const std::string& serialized_proto,
-                                          bool complete);
-
   // Records the current environment (system profile) in |log|, and persists
   // the results in prefs.
   // Exposed for testing.
@@ -295,7 +293,8 @@ class MetricsService : public base::HistogramFlattener {
 
   // Records the current environment (system profile) in |log|, and persists
   // the results in prefs and GlobalPersistentSystemProfile.
-  void RecordCurrentEnvironment(MetricsLog* log, bool complete);
+  // Exposed for testing.
+  void RecordCurrentEnvironment(MetricsLog* log);
 
   // Record complete list of histograms into the current log.
   // Called when we close a log.
@@ -392,6 +391,8 @@ class MetricsService : public base::HistogramFlattener {
 
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, IsPluginProcess);
   FRIEND_TEST_ALL_PREFIXES(::ChromeMetricsServiceClientTest,
+                           TestRegisterMetricsServiceProviders);
+  FRIEND_TEST_ALL_PREFIXES(::IOSChromeMetricsServiceClientTest,
                            TestRegisterMetricsServiceProviders);
   SEQUENCE_CHECKER(sequence_checker_);
 

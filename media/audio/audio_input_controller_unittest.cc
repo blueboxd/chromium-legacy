@@ -144,7 +144,7 @@ class AudioInputControllerTest : public testing::TestWithParam<bool> {
     run_loop.Run();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // Parameterize tests to run AudioInputController either on audio thread
   // (synchronously), or on a different thread (non-blocking).

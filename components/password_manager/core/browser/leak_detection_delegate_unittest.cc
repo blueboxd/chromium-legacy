@@ -21,6 +21,7 @@ namespace password_manager {
 namespace {
 
 using base::ASCIIToUTF16;
+using testing::_;
 using testing::ByMove;
 using testing::Eq;
 using testing::Return;
@@ -41,12 +42,12 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
 
   MOCK_CONST_METHOD0(IsIncognito, bool());
   MOCK_CONST_METHOD0(GetPrefs, PrefService*());
+  MOCK_METHOD1(NotifyUserCredentialsWereLeaked, void(const GURL&));
 };
 
 class MockLeakDetectionCheck : public LeakDetectionCheck {
  public:
-  MOCK_METHOD3(Start,
-               void(const GURL&, base::StringPiece16, base::StringPiece16));
+  MOCK_METHOD3(Start, void(const GURL&, base::string16, base::string16));
 };
 
 class MockLeakDetectionCheckFactory : public LeakDetectionCheckFactory {
@@ -82,7 +83,7 @@ class LeakDetectionDelegateTest : public testing::Test {
   std::unique_ptr<TestingPrefServiceSimple> prefs_;
 
  private:
-  MockPasswordManagerClient client_;
+  testing::NiceMock<MockPasswordManagerClient> client_;
   MockLeakDetectionCheckFactory* mock_factory_ = nullptr;
   LeakDetectionDelegate delegate_;
 };
@@ -111,13 +112,26 @@ TEST_F(LeakDetectionDelegateTest, StartCheck) {
   const autofill::PasswordForm form = CreateTestForm();
   EXPECT_CALL(client(), IsIncognito).WillOnce(Return(false));
   auto check_instance = std::make_unique<MockLeakDetectionCheck>();
-  EXPECT_CALL(*check_instance, Start(form.origin, Eq(form.username_value),
-                                     Eq(form.password_value)));
-  EXPECT_CALL(factory(), TryCreateLeakCheck)
+  EXPECT_CALL(*check_instance,
+              Start(form.origin, form.username_value, form.password_value));
+  EXPECT_CALL(factory(), TryCreateLeakCheck(&delegate(), _, _))
       .WillOnce(Return(ByMove(std::move(check_instance))));
   delegate().StartLeakCheck(form);
 
   EXPECT_TRUE(delegate().leak_check());
+}
+
+TEST_F(LeakDetectionDelegateTest, LeakDetectionDone) {
+  LeakDetectionDelegateInterface* delegate_interface = &delegate();
+  const autofill::PasswordForm form = CreateTestForm();
+
+  EXPECT_CALL(client(), NotifyUserCredentialsWereLeaked).Times(0);
+  delegate_interface->OnLeakDetectionDone(
+      false, form.origin, form.username_value, form.password_value);
+
+  EXPECT_CALL(client(), NotifyUserCredentialsWereLeaked(form.origin));
+  delegate_interface->OnLeakDetectionDone(
+      true, form.origin, form.username_value, form.password_value);
 }
 
 }  // namespace password_manager

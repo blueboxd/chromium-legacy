@@ -10,12 +10,11 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/session/session_observer.h"
-#include "ash/shelf/scrollable_shelf_view.h"
+#include "ash/shelf/hotseat_widget.h"
 #include "ash/shelf/shelf_background_animator.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_observer.h"
 #include "base/macros.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "ui/views/widget/widget.h"
 
 namespace app_list {
@@ -24,10 +23,10 @@ class ApplicationDragAndDropHost;
 
 namespace ash {
 enum class AnimationChangeType;
-class HomeButton;
-class HotseatWidget;
 class BackButton;
 class FocusCycler;
+class HomeButton;
+class HotseatWidget;
 class LoginShelfView;
 class Shelf;
 class ShelfLayoutManager;
@@ -73,6 +72,9 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
 
   const Shelf* shelf() const { return shelf_; }
   ShelfLayoutManager* shelf_layout_manager() { return shelf_layout_manager_; }
+
+  // TODO(manucornet): Move these three getters directly to |Shelf| to make it
+  // clear that they are on the same level as the shelf widget.
   ShelfNavigationWidget* navigation_widget() const {
     return navigation_widget_.get();
   }
@@ -85,13 +87,8 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
 
   bool IsShowingAppList() const;
   bool IsShowingMenu() const;
-  bool IsShowingOverflowBubble() const;
 
-  // Focuses the first or the last app shortcut inside the overflow shelf.
-  // Does nothing if the overflow shelf is not currently shown.
-  void FocusOverflowShelf(bool last_element);
-
-  // Sets the focus cycler.  Also adds the shelf to the cycle.
+  // Sets the focus cycler. Also adds the shelf to the cycle.
   void SetFocusCycler(FocusCycler* focus_cycler);
   FocusCycler* GetFocusCycler();
 
@@ -111,10 +108,6 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   LoginShelfView* login_shelf_view() { return login_shelf_view_; }
 
   void set_default_last_focusable_child(bool default_last_focusable_child);
-
-  // Finds the first or last focusable child of the set (main shelf + overflow)
-  // and focuses it.
-  void FocusFirstOrLastFocusableChild(bool last);
 
   // views::Widget:
   void OnMouseEvent(ui::MouseEvent* event) override;
@@ -139,9 +132,7 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
 
   // Internal implementation detail. Do not expose outside of tests.
   ShelfView* shelf_view_for_testing() const {
-    if (chromeos::switches::ShouldShowScrollableShelf())
-      return scrollable_shelf_view_->shelf_view();
-    return shelf_view_;
+    return hotseat_widget()->GetShelfView();
   }
 
   ShelfBackgroundAnimator* background_animator_for_testing() {
@@ -176,11 +167,6 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   // |delegate_view_| is the contents view of this widget and is cleaned up
   // during CloseChildWindows of the associated RootWindowController.
   DelegateView* delegate_view_;
-
-  // View containing the shelf items within an active user session. Owned by
-  // the views hierarchy.
-  ShelfView* shelf_view_ = nullptr;
-  ScrollableShelfView* scrollable_shelf_view_ = nullptr;
 
   // View containing the shelf items for Login/Lock/OOBE/Add User screens.
   // Owned by the views hierarchy.

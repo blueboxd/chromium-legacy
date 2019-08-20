@@ -90,6 +90,16 @@ void GetBookmarksMatchingProperties(BookmarkModel* model,
                                     size_t max_count,
                                     std::vector<const BookmarkNode*>* nodes);
 
+// Parses the provided query and returns a vector of query words.
+std::vector<base::string16> ParseBookmarkQuery(
+    const bookmarks::QueryFields& query);
+
+// Returns true iff |title| or |url| contains each string in |words|. This is
+// used when searching for bookmarks.
+bool DoesBookmarkContainWords(const base::string16& title,
+                              const GURL& url,
+                              const std::vector<base::string16>& words);
+
 // Register user preferences for Bookmarks Bar.
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 

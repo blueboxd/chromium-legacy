@@ -18,6 +18,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
+#include "third_party/blink/public/web/modules/mediastream/web_media_stream_device_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
@@ -38,10 +39,12 @@ class MODULES_EXPORT MediaStreamDeviceObserver
   // being shown to the user.
   blink::MediaStreamDevices GetNonScreenCaptureDevices();
 
-  void AddStream(const String& label,
-                 const blink::MediaStreamDevices& audio_devices,
-                 const blink::MediaStreamDevices& video_devices,
-                 const base::WeakPtr<blink::UserMediaProcessor>& event_handler);
+  void AddStream(
+      const String& label,
+      const blink::MediaStreamDevices& audio_devices,
+      const blink::MediaStreamDevices& video_devices,
+      WebMediaStreamDeviceObserver::OnDeviceStoppedCb on_device_stopped_cb,
+      WebMediaStreamDeviceObserver::OnDeviceChangedCb on_device_changed_cb);
   void AddStream(const String& label, const blink::MediaStreamDevice& device);
   bool RemoveStream(const String& label);
   void RemoveStreamDevice(const blink::MediaStreamDevice& device);

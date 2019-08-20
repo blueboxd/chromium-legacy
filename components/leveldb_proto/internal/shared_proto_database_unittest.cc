@@ -53,7 +53,7 @@ class SharedProtoDatabaseTest : public testing::Test {
         FROM_HERE,
         base::BindOnce(&SharedProtoDatabase::Init, db_, create_if_missing,
                        client_name, std::move(callback),
-                       scoped_task_environment_.GetMainThreadTaskRunner()));
+                       task_environment_.GetMainThreadTaskRunner()));
   }
 
   void KillDB() { db_.reset(); }
@@ -85,14 +85,14 @@ class SharedProtoDatabaseTest : public testing::Test {
   }
 
   scoped_refptr<base::SequencedTaskRunner> GetMainThreadTaskRunner() {
-    return scoped_task_environment_.GetMainThreadTaskRunner();
+    return task_environment_.GetMainThreadTaskRunner();
   }
 
   SharedProtoDatabase* db() { return db_.get(); }
   ProtoLevelDBWrapper* wrapper() { return db_->db_wrapper_.get(); }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<base::ScopedTempDir> temp_dir_;
   scoped_refptr<SharedProtoDatabase> db_;

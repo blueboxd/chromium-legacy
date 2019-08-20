@@ -80,7 +80,7 @@ class HostListServiceTest : public PlatformTest {
   id remoting_service_mock_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<HostListService::CallbackSubscription>
       host_list_state_subscription_;
   std::unique_ptr<HostListService::CallbackSubscription>

@@ -9,7 +9,6 @@
 
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/drag_drop/drag_image_view.h"
-#include "ash/focus_cycler.h"
 #include "ash/keyboard/keyboard_util.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/metrics/user_metrics_recorder.h"
@@ -156,8 +155,7 @@ class ShelfFocusSearch : public views::FocusSearch {
       FocusSearch::AnchoredDialogPolicy can_go_into_anchored_dialog,
       views::FocusTraversable** focus_traversable,
       View** focus_traversable_view) override {
-    // Build a list of all views that we are able to focus: 1) items from the
-    // main shelf, 2) overflow button, 3) items from overflow if applicable.
+    // Build a list of all the views that we are able to focus.
     std::vector<views::View*> focusable_views;
 
     for (int i = shelf_view_->first_visible_index();
@@ -313,6 +311,7 @@ ShelfView::ShelfView(ShelfModel* model, Shelf* shelf)
   Shell::Get()->AddShellObserver(this);
   bounds_animator_->AddObserver(this);
   set_context_menu_controller(this);
+  set_allow_deactivate_on_esc(true);
 
   announcement_view_ = new views::View();
   AddChildView(announcement_view_);
@@ -726,6 +725,14 @@ views::FocusSearch* ShelfView::GetFocusSearch() {
   return focus_search_.get();
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// ShelfView, AccessiblePaneView implementation:
+
+views::View* ShelfView::GetDefaultFocusableChild() {
+  return default_last_focusable_child_ ? FindLastFocusableChild()
+                                       : FindFirstFocusableChild();
+}
+
 void ShelfView::CreateDragIconProxy(
     const gfx::Point& location_in_screen_coordinates,
     const gfx::ImageSkia& icon,
@@ -934,20 +941,12 @@ void ShelfView::CalculateIdealBounds() {
   // When scrollable shelf is enabled, the padding is handled in
   // ScrollableShelfView.
   if (!is_overflow_mode() && !chromeos::switches::ShouldShowScrollableShelf()) {
-    const int available_size = shelf()->PrimaryAxisValue(width(), height());
-
-    // Add the minimum padding required after the home button.
-    x += shelf()->PrimaryAxisValue(kAppIconGroupMargin, 0);
-    y += shelf()->PrimaryAxisValue(0, kAppIconGroupMargin);
-
     // Now add the necessary padding to center app icons.
-    StatusAreaWidget* status_widget = shelf_widget()->status_area_widget();
-    const int status_widget_size =
-        status_widget ? shelf()->PrimaryAxisValue(
-                            status_widget->GetWindowBoundsInScreen().width(),
-                            status_widget->GetWindowBoundsInScreen().height())
-                      : 0;
-    const int screen_size = available_size + status_widget_size;
+    const gfx::Size screen_size =
+        screen_util::GetDisplayBoundsWithShelf(GetWidget()->GetNativeWindow())
+            .size();
+    const int screen_size_primary =
+        shelf()->PrimaryAxisValue(screen_size.width(), screen_size.height());
 
     const int available_size_for_app_icons = GetAvailableSpaceForAppIcons();
     const int icons_size = GetSizeOfAppIcons(number_of_visible_apps(),
@@ -955,17 +954,21 @@ void ShelfView::CalculateIdealBounds() {
     int padding_for_centering = 0;
 
     if (app_centering_strategy.center_on_screen) {
-      padding_for_centering = (screen_size - icons_size) / 2;
+      // This is how far the first icon needs to be from the screen edge.
+      padding_for_centering = (screen_size_primary - icons_size) / 2;
+
+      // Let's see how far this view is from the edge of the screen to
+      // compute how much extra padding is needed.
+      gfx::Point origin = gfx::Point(0, 0);
+      views::View::ConvertPointToScreen(this, &origin);
+
+      padding_for_centering -= origin.x();
     } else {
       padding_for_centering =
-          ShelfConstants::home_button_edge_spacing() +
-          (IsTabletModeEnabled() ? 2 : 1) * ShelfConstants::control_size() +
-          (IsTabletModeEnabled() ? button_spacing : 0) + kAppIconGroupMargin +
           (available_size_for_app_icons - icons_size) / 2;
     }
 
-    if (padding_for_centering > kAppIconGroupMargin) {
-      // Only shift buttons to the right.
+    if (padding_for_centering > 0) {
       x = shelf()->PrimaryAxisValue(padding_for_centering, 0);
       y = shelf()->PrimaryAxisValue(0, padding_for_centering);
     }
@@ -1067,13 +1070,7 @@ void ShelfView::UpdateOverflowRange(ShelfView* overflow_view) const {
 }
 
 int ShelfView::GetAvailableSpaceForAppIcons() const {
-  // Subtract space already allocated to the home button, and the back
-  // button if applicable.
-  return shelf()->PrimaryAxisValue(width(), height()) -
-         ShelfConstants::home_button_edge_spacing() -
-         (IsTabletModeEnabled() ? 2 : 1) * ShelfConstants::control_size() -
-         (IsTabletModeEnabled() ? ShelfConstants::button_spacing() : 0) -
-         2 * kAppIconGroupMargin;
+  return shelf()->PrimaryAxisValue(width(), height());
 }
 
 int ShelfView::GetSeparatorIndex() const {

@@ -29,12 +29,6 @@ class ScheduledNotificationManager {
   using Notifications =
       std::map<SchedulerClientType, std::vector<const NotificationEntry*>>;
   using InitCallback = base::OnceCallback<void(bool)>;
-  using EncodeIconsCallback =
-      base::RepeatingCallback<void(SkBitmap,
-                                   base::OnceCallback<void(std::string)>)>;
-  using DecodeIconsCallback =
-      base::RepeatingCallback<void(std::string,
-                                   base::OnceCallback<void(SkBitmap)>)>;
 
   // Delegate that receives events from the manager.
   class Delegate {
@@ -55,9 +49,7 @@ class ScheduledNotificationManager {
       std::unique_ptr<CollectionStore<NotificationEntry>> notification_store,
       std::unique_ptr<IconStore> icon_store,
       const std::vector<SchedulerClientType>& clients,
-      const SchedulerConfig& config,
-      EncodeIconsCallback encode_icons_callback,
-      DecodeIconsCallback decode_icons_callback);
+      const SchedulerConfig& config);
 
   // Initializes the notification store.
   virtual void Init(Delegate* delegate, InitCallback callback) = 0;

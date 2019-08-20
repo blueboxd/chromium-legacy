@@ -8,6 +8,7 @@
 #include "ash/shelf/login_shelf_view.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_navigation_widget.h"
+#include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
@@ -32,7 +33,7 @@ void ShelfFocusCycler::FocusOut(bool reverse, SourceView source_view) {
       if (reverse) {
         FocusNavigation(reverse);
       } else {
-        if (shelf_->shelf_widget()->IsShowingOverflowBubble())
+        if (shelf_->shelf_widget()->hotseat_widget()->IsShowingOverflowBubble())
           FocusOverflowShelf(reverse);
         else
           FocusStatusArea(reverse);
@@ -56,7 +57,7 @@ void ShelfFocusCycler::FocusOut(bool reverse, SourceView source_view) {
         // Login/lock screen or OOBE.
         Shell::Get()->system_tray_notifier()->NotifyFocusOut(reverse);
       } else if (reverse) {
-        if (shelf_->shelf_widget()->IsShowingOverflowBubble())
+        if (shelf_->shelf_widget()->hotseat_widget()->IsShowingOverflowBubble())
           FocusOverflowShelf(reverse);
         else
           FocusShelf(reverse);
@@ -76,14 +77,20 @@ void ShelfFocusCycler::FocusNavigation(bool last_element) {
 }
 
 void ShelfFocusCycler::FocusShelf(bool last_element) {
-  ShelfWidget* shelf_widget = shelf_->shelf_widget();
-  shelf_widget->set_default_last_focusable_child(last_element);
-  Shell::Get()->focus_cycler()->FocusWidget(shelf_widget);
-  shelf_widget->FocusFirstOrLastFocusableChild(last_element);
+  if (shelf_->shelf_widget()->login_shelf_view()->GetVisible()) {
+    ShelfWidget* shelf_widget = shelf_->shelf_widget();
+    shelf_widget->set_default_last_focusable_child(last_element);
+    Shell::Get()->focus_cycler()->FocusWidget(shelf_widget);
+  } else {
+    HotseatWidget* hotseat_widget = shelf_->shelf_widget()->hotseat_widget();
+    hotseat_widget->GetShelfView()->set_default_last_focusable_child(
+        last_element);
+    Shell::Get()->focus_cycler()->FocusWidget(hotseat_widget);
+  }
 }
 
 void ShelfFocusCycler::FocusOverflowShelf(bool last_element) {
-  shelf_->shelf_widget()->FocusOverflowShelf(last_element);
+  shelf_->shelf_widget()->hotseat_widget()->FocusOverflowShelf(last_element);
 }
 
 void ShelfFocusCycler::FocusStatusArea(bool last_element) {

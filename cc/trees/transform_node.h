@@ -125,9 +125,6 @@ struct CC_EXPORT TransformNode {
   bool transform_changed : 1;
 
   // TODO(vollick): will be moved when accelerated effects are implemented.
-  float post_local_scale_factor;
-
-  // TODO(vollick): will be moved when accelerated effects are implemented.
   gfx::ScrollOffset scroll_offset;
 
   // This value stores the snapped amount whenever we snap. If the snap is due

@@ -299,10 +299,10 @@ class SyncFaviconCacheTest : public testing::Test {
       const std::string& icon_bytes,
       base::Time last_visit_time = base::Time::Now());
 
-  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   testing::NiceMock<favicon::MockFaviconService> mock_favicon_service_;
   FaviconCache cache_;
 
@@ -313,8 +313,7 @@ class SyncFaviconCacheTest : public testing::Test {
 };
 
 SyncFaviconCacheTest::SyncFaviconCacheTest()
-    : scoped_task_environment_(
-          base::test::ScopedTaskEnvironment::MainThreadType::UI),
+    : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
       cache_(&mock_favicon_service_, nullptr, kMaxSyncFavicons),
       sync_processor_(new TestChangeProcessor),
       sync_processor_wrapper_(new syncer::SyncChangeProcessorWrapperForTest(

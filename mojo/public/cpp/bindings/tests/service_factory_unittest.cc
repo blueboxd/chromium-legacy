@@ -25,7 +25,7 @@ class ServiceFactoryTest : public testing::Test {
   ServiceFactoryTest() = default;
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceFactoryTest);
 };

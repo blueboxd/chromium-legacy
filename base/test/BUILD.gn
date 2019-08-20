@@ -170,6 +170,8 @@ static_library("test_support") {
     sources += [
       "launcher/test_launcher.cc",
       "launcher/test_launcher.h",
+      "launcher/test_launcher_test_utils.cc",
+      "launcher/test_launcher_test_utils.h",
       "launcher/test_launcher_tracer.cc",
       "launcher/test_launcher_tracer.h",
       "launcher/test_results_tracker.cc",

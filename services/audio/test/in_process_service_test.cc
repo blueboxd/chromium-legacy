@@ -171,7 +171,7 @@ class InProcessServiceTest : public testing::Test {
   media::AudioSystem* audio_system() { return audio_system_.get(); }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   service_manager::TestServiceManager test_service_manager_;
   media::MockAudioManager audio_manager_;
   std::unique_ptr<ServiceTestHelper> helper_;

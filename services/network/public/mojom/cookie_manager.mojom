@@ -28,6 +28,11 @@ struct CookieManagerParams {
   // Whether or not to allow cookies for file:// URLs. Can be overridden by
   // CookieManager.AllowFileSchemeCookies().
   bool allow_file_scheme_cookies = false;
+
+  // Content settings for which domains are allowed to use legacy cookie
+  // access rules.
+  array<content_settings.mojom.ContentSettingPatternSource>
+      settings_for_legacy_cookie_access;
 };
 
 enum CookiePriority {
@@ -301,4 +306,9 @@ interface CookieManager {
 
   // Enables/Disables blocking of third-party cookies.
   BlockThirdPartyCookies(bool block);
+
+  // Sets content settings for which domains are allowed to use legacy cookie
+  // access rules.
+  SetContentSettingsForLegacyCookieAccess(
+      array<content_settings.mojom.ContentSettingPatternSource> settings);
 };

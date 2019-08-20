@@ -85,7 +85,7 @@ class PublicIpAddressLocationNotifierTest : public testing::Test {
     std::string body =
         base::StringPrintf(kNetworkResponseFormatString, latitude);
     test_url_loader_factory_.AddResponse(request_url, body, net::HTTP_OK);
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     test_url_loader_factory_.ClearResponses();
   }
 
@@ -102,7 +102,7 @@ class PublicIpAddressLocationNotifierTest : public testing::Test {
 
     test_url_loader_factory_.AddResponse(request_url, std::string(),
                                          net::HTTP_INTERNAL_SERVER_ERROR);
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     test_url_loader_factory_.ClearResponses();
   }
 
@@ -122,8 +122,8 @@ class PublicIpAddressLocationNotifierTest : public testing::Test {
   }
 
   // Use a TaskRunner on which we can fast-forward time.
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
   // Test NetworkConnectionTracker instance.
   std::unique_ptr<network::TestNetworkConnectionTracker>
@@ -198,7 +198,7 @@ TEST_F(PublicIpAddressLocationNotifierTest,
   network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
       network::mojom::ConnectionType::CONNECTION_UNKNOWN);
   // Wait for the notifier to complete its delayed reaction.
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
 
   // Now expect a network request and query_2 to return.
   RespondToFetchWithLatitude(2.0f);
@@ -230,14 +230,14 @@ TEST_F(PublicIpAddressLocationNotifierTest,
   for (int i = 0; i < 10; ++i) {
     network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
         network::mojom::ConnectionType::CONNECTION_UNKNOWN);
-    scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(5));
+    task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(5));
   }
   // Expect still no network request or callback.
   EXPECT_EQ(0, test_url_loader_factory_.NumPending());
   EXPECT_FALSE(query_2.position().has_value());
 
   // Wait longer.
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
 
   // Now expect a network request & query_2 to return.
   RespondToFetchWithLatitude(2.0f);
@@ -273,7 +273,7 @@ TEST_F(PublicIpAddressLocationNotifierTest, MutipleWaitingQueries) {
   network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
       network::mojom::ConnectionType::CONNECTION_UNKNOWN);
   // Wait for the notifier to complete its delayed reaction.
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
 
   // Now expect a network request & fake a valid response.
   RespondToFetchWithLatitude(2.0f);

@@ -130,7 +130,7 @@ class SpellCheckTest : public testing::Test {
  private:
   spellcheck::EmptyLocalInterfaceProvider embedder_provider_;
   std::unique_ptr<SpellCheck> spell_check_;
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 struct MockTextCheckingResult {

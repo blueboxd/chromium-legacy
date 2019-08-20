@@ -183,15 +183,8 @@ class TabMetricsLoggerTest : public ChromeRenderViewHostTestHarness {
   }
 };
 
-// TODO(crbug.com/949288, crbug.com/950244): All tests are flaky on ChromeOS
-#if defined(OS_CHROMEOS)
-#define MAYBE_(test) DISABLED_##test
-#else
-#define MAYBE_(test) test
-#endif
-
 // Tests has_form_entry.
-TEST_F(TabMetricsLoggerTest, MAYBE_(MAYBE_GetHasFormEntry)) {
+TEST_F(TabMetricsLoggerTest, MAYBE_GetHasFormEntry) {
   EXPECT_FALSE(CurrentTabFeatures().has_form_entry);
   content::PageImportanceSignals signal;
   signal.had_form_interaction = true;
@@ -200,14 +193,14 @@ TEST_F(TabMetricsLoggerTest, MAYBE_(MAYBE_GetHasFormEntry)) {
 }
 
 // Tests is_pinned.
-TEST_F(TabMetricsLoggerTest, MAYBE_(MAYBE_GetPinState)) {
+TEST_F(TabMetricsLoggerTest, MAYBE_GetPinState) {
   EXPECT_FALSE(CurrentTabFeatures().is_pinned);
   tab_strip_model_->SetTabPinned(0, true);
   EXPECT_TRUE(CurrentTabFeatures().is_pinned);
 }
 
 // Tests navigation_entry_count.
-TEST_F(TabMetricsLoggerTest, MAYBE_(MAYBE_GetNavigationEntryCount)) {
+TEST_F(TabMetricsLoggerTest, MAYBE_GetNavigationEntryCount) {
   EXPECT_EQ(CurrentTabFeatures().navigation_entry_count, 1);
   tab_activity_simulator_.Navigate(web_contents_, GURL(kExampleUrl),
                                    pg_metrics_.page_transition);
@@ -218,7 +211,7 @@ TEST_F(TabMetricsLoggerTest, MAYBE_(MAYBE_GetNavigationEntryCount)) {
 }
 
 // Tests site_engagement_score.
-TEST_F(TabMetricsLoggerTest, MAYBE_(MAYBE_GetSiteEngagementScore)) {
+TEST_F(TabMetricsLoggerTest, MAYBE_GetSiteEngagementScore) {
   EXPECT_EQ(CurrentTabFeatures().site_engagement_score, 0);
   SiteEngagementService::Get(profile())->ResetBaseScoreForURL(
       GURL(kChromiumUrl), 91);
@@ -226,20 +219,20 @@ TEST_F(TabMetricsLoggerTest, MAYBE_(MAYBE_GetSiteEngagementScore)) {
 }
 
 // Tests was_recently_audible.
-TEST_F(TabMetricsLoggerTest, MAYBE_(MAYBE_GetAudibleState)) {
+TEST_F(TabMetricsLoggerTest, MAYBE_GetAudibleState) {
   EXPECT_FALSE(CurrentTabFeatures().was_recently_audible);
   web_contents_tester_->SetIsCurrentlyAudible(true);
   EXPECT_TRUE(CurrentTabFeatures().was_recently_audible);
 }
 
 // Tests host.
-TEST_F(TabMetricsLoggerTest, MAYBE_(MAYBE_GetHost)) {
+TEST_F(TabMetricsLoggerTest, MAYBE_GetHost) {
   EXPECT_EQ(CurrentTabFeatures().host, kChromiumDomain);
 }
 
 // Tests creating a flat TabFeatures structure for logging a tab and its
 // TabMetrics state.
-TEST_F(TabMetricsLoggerTest, MAYBE_(MAYBE_GetTabFeatures)) {
+TEST_F(TabMetricsLoggerTest, MAYBE_GetTabFeatures) {
   TabActivitySimulator tab_activity_simulator;
   Browser::CreateParams params(profile(), true);
   std::unique_ptr<Browser> browser =

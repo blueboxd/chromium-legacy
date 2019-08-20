@@ -301,7 +301,7 @@ class ConnectionFactoryImplTest
 
   std::unique_ptr<network::TestNetworkConnectionTracker>
       network_connection_tracker_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestConnectionFactoryImpl factory_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
@@ -315,8 +315,7 @@ class ConnectionFactoryImplTest
 ConnectionFactoryImplTest::ConnectionFactoryImplTest()
     : network_connection_tracker_(
           network::TestNetworkConnectionTracker::CreateInstance()),
-      scoped_task_environment_(
-          base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
       factory_(base::BindRepeating(
                    &ConnectionFactoryImplTest::GetProxyResolvingSocketFactory,
                    base::Unretained(this)),

@@ -23,11 +23,10 @@ namespace {
 class RetryTimerTest : public testing::Test {
  protected:
   RetryTimerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   void FastForwardOneSecond() {
-    scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+    task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
   }
 
   base::RepeatingCallback<void(base::OnceCallback<void(bool)>)>
@@ -65,9 +64,9 @@ class RetryTimerTest : public testing::Test {
     captured_callback_ = std::move(callback);
   }
 
-  // scoped_task_environment_ must be first to guarantee other field
+  // task_environment_ must be first to guarantee other field
   // creation run in that environment.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   int try_count_ = 0;
   base::OnceCallback<void(bool)> captured_callback_;

@@ -134,7 +134,7 @@ class SuggestionsServiceTest : public testing::Test {
             url_loader_factory()),
         base::WrapUnique(test_suggestions_store_),
         base::WrapUnique(mock_blacklist_store_),
-        scoped_task_environment_.GetMockTickClock());
+        task_environment_.GetMockTickClock());
   }
 
   GURL GetCurrentlyQueriedUrl() {
@@ -171,7 +171,7 @@ class SuggestionsServiceTest : public testing::Test {
     bool rv = url_loader_factory()->SimulateResponseForPendingRequest(
         url, network::URLLoaderCompletionStatus(net_error),
         network::CreateResourceResponseHead(response_code), response_body);
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     return rv;
   }
 
@@ -193,8 +193,8 @@ class SuggestionsServiceTest : public testing::Test {
     return &url_loader_factory_;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
  private:
   signin::IdentityTestEnvironment identity_test_env_;
@@ -224,7 +224,7 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsData) {
   EXPECT_CALL(callback, Run(_));
 
   // Wait for the eventual network request.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_TRUE(GetCurrentlyQueriedUrl().is_valid());
   EXPECT_EQ(GetCurrentlyQueriedUrl().path(), kSuggestionsUrlPath);
   ASSERT_TRUE(RespondToFetchWithProfile(CreateSuggestionsProfile()));
@@ -247,7 +247,7 @@ TEST_F(SuggestionsServiceTest, IgnoresNoopSyncChange) {
       ->OnStateChanged(sync_service());
 
   // Wait for eventual (but unexpected) network requests.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(suggestions_service()->HasPendingRequestForTesting());
 }
 
@@ -263,7 +263,7 @@ TEST_F(SuggestionsServiceTest, PersistentAuthErrorState) {
       ->OnStateChanged(sync_service());
 
   // Wait for eventual (but unexpected) network requests.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(suggestions_service()->HasPendingRequestForTesting());
 
   SuggestionsProfile empty_suggestions;
@@ -283,7 +283,7 @@ TEST_F(SuggestionsServiceTest, IgnoresUninterestingSyncChange) {
       ->OnStateChanged(sync_service());
 
   // Wait for eventual (but unexpected) network requests.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(suggestions_service()->HasPendingRequestForTesting());
 }
 
@@ -297,7 +297,7 @@ TEST_F(SuggestionsServiceTest, DoesNotFetchOnStartup) {
   static_cast<SyncServiceObserver*>(suggestions_service())
       ->OnStateChanged(sync_service());
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_FALSE(suggestions_service()->HasPendingRequestForTesting());
 
   // Sync getting enabled should not result in a fetch.
@@ -307,7 +307,7 @@ TEST_F(SuggestionsServiceTest, DoesNotFetchOnStartup) {
       ->OnStateChanged(sync_service());
 
   // Wait for eventual (but unexpected) network requests.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(suggestions_service()->HasPendingRequestForTesting());
 }
 
@@ -326,7 +326,7 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsDataSyncNotInitializedEnabled) {
   suggestions_service()->FetchSuggestionsData();
 
   // Wait for eventual (but unexpected) network requests.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(suggestions_service()->HasPendingRequestForTesting());
 
   // |suggestions_store()| should still contain the default values.
@@ -355,7 +355,7 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsDataSyncDisabled) {
   suggestions_service()->FetchSuggestionsData();
 
   // Wait for eventual (but unexpected) network requests.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(suggestions_service()->HasPendingRequestForTesting());
 }
 
@@ -376,7 +376,7 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsDataNoAccessToken) {
           GoogleServiceAuthError::State::INVALID_GAIA_CREDENTIALS));
 
   // Wait for eventual (but unexpected) network requests.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(suggestions_service()->HasPendingRequestForTesting());
 }
 
@@ -387,7 +387,7 @@ TEST_F(SuggestionsServiceTest, FetchingSuggestionsIgnoresRequestFailure) {
   suggestions_service()->FetchSuggestionsData();
 
   // Wait for the eventual network request.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_TRUE(RespondToSuggestionsFetch("irrelevant", net::HTTP_OK,
                                         net::ERR_INVALID_RESPONSE));
 }
@@ -403,7 +403,7 @@ TEST_F(SuggestionsServiceTest, FetchingSuggestionsClearsStoreIfResponseNotOK) {
   suggestions_service()->FetchSuggestionsData();
 
   // Wait for the eventual network request.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_TRUE(RespondToSuggestionsFetch("irrelevant", net::HTTP_BAD_REQUEST));
 
   SuggestionsProfile empty_suggestions;
@@ -433,14 +433,14 @@ TEST_F(SuggestionsServiceTest, BlacklistURL) {
 
   // Wait on the upload task, the blacklist request and the next blacklist
   // scheduling task.
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
 
   EXPECT_EQ(GetCurrentlyQueriedUrl().path(), kBlacklistUrlPath);
   // The blacklist fetch needs to contain a valid profile or the favicon will
   // not be set.
   ASSERT_TRUE(RespondToBlacklistFetch(
       CreateSuggestionsProfile().SerializeAsString(), net::HTTP_OK));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   SuggestionsProfile suggestions;
   suggestions_store()->LoadSuggestions(&suggestions);
@@ -483,7 +483,7 @@ TEST_F(SuggestionsServiceTest, RetryBlacklistURLRequestAfterFailure) {
   EXPECT_TRUE(suggestions_service()->BlacklistURL(GURL(kBlacklistedUrl)));
 
   // Wait for the first scheduling receiving a failing response.
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   ASSERT_TRUE(GetCurrentlyQueriedUrl().is_valid());
   EXPECT_EQ(GetCurrentlyQueriedUrl().path(), kBlacklistUrlPath);
   ASSERT_TRUE(RespondToBlacklistFetch("irrelevant", net::HTTP_OK,
@@ -503,7 +503,7 @@ TEST_F(SuggestionsServiceTest, RetryBlacklistURLRequestAfterFailure) {
       .WillOnce(Return(true));
 
   // Wait for the second scheduling followed by a successful response.
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   ASSERT_TRUE(suggestions_service()->HasPendingRequestForTesting());
   ASSERT_TRUE(GetCurrentlyQueriedUrl().is_valid());
   EXPECT_EQ(GetCurrentlyQueriedUrl().path(), kBlacklistUrlPath);
@@ -562,7 +562,7 @@ TEST_F(SuggestionsServiceTest, ClearBlacklist) {
   suggestions_service()->ClearBlacklist();
 
   // Wait for the eventual network request.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_TRUE(suggestions_service()->HasPendingRequestForTesting());
   EXPECT_EQ(GetCurrentlyQueriedUrl().path(), kBlacklistClearUrlPath);
 }
@@ -628,13 +628,13 @@ TEST_F(SuggestionsServiceTest, TemporarilyIncreasesBlacklistDelayOnFailure) {
 
   // Delay unchanged on success.
   suggestions_service()->FetchSuggestionsData();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_TRUE(RespondToFetchWithProfile(CreateSuggestionsProfile()));
   EXPECT_EQ(initial_delay, suggestions_service()->BlacklistDelayForTesting());
 
   // Delay increases on failure.
   suggestions_service()->FetchSuggestionsData();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_TRUE(RespondToSuggestionsFetch("irrelevant", net::HTTP_BAD_REQUEST));
   base::TimeDelta delay_after_fail =
       suggestions_service()->BlacklistDelayForTesting();
@@ -643,15 +643,15 @@ TEST_F(SuggestionsServiceTest, TemporarilyIncreasesBlacklistDelayOnFailure) {
   // Success resets future delays, but the current horizon remains. Since no
   // time has passed, the actual current delay stays the same.
   suggestions_service()->FetchSuggestionsData();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_TRUE(RespondToFetchWithProfile(CreateSuggestionsProfile()));
   EXPECT_EQ(delay_after_fail,
             suggestions_service()->BlacklistDelayForTesting());
 
   // After the current horizon has passed, we're back at the initial delay.
-  scoped_task_environment_.FastForwardBy(delay_after_fail);
+  task_environment_.FastForwardBy(delay_after_fail);
   suggestions_service()->FetchSuggestionsData();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_TRUE(RespondToFetchWithProfile(CreateSuggestionsProfile()));
   EXPECT_EQ(initial_delay, suggestions_service()->BlacklistDelayForTesting());
 }
@@ -663,7 +663,7 @@ TEST_F(SuggestionsServiceTest, DoesNotOverrideDefaultExpiryTime) {
 
   suggestions_service()->FetchSuggestionsData();
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   // Creates one suggestion without timestamp and adds a second with timestamp.
   SuggestionsProfile profile = CreateSuggestionsProfile();
   ChromeSuggestion* suggestion = profile.add_suggestions();

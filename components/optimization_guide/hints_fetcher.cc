@@ -10,8 +10,13 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/time/default_clock.h"
+#include "components/optimization_guide/hints_processing_util.h"
 #include "components/optimization_guide/optimization_guide_features.h"
+#include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/proto/hints.pb.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/network_service_instance.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
@@ -24,19 +29,42 @@
 
 namespace optimization_guide {
 
+namespace {
+
+// The duration that hosts placed in the HintsFetcherHostsSuccessfullyFetched
+// dictionary pref are considered valid.
+constexpr base::TimeDelta kHintsFetcherHostFetchedValidDuration =
+    base::TimeDelta::FromDays(7);
+
+}  // namespace
+
 HintsFetcher::HintsFetcher(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    GURL optimization_guide_service_url)
+    GURL optimization_guide_service_url,
+    PrefService* pref_service)
     : optimization_guide_service_url_(net::AppendOrReplaceQueryParameter(
           optimization_guide_service_url,
           "key",
-          features::GetOptimizationGuideServiceAPIKey())) {
+          features::GetOptimizationGuideServiceAPIKey())),
+      pref_service_(pref_service),
+      time_clock_(base::DefaultClock::GetInstance()) {
   url_loader_factory_ = std::move(url_loader_factory);
   CHECK(optimization_guide_service_url_.SchemeIs(url::kHttpsScheme));
   CHECK(features::IsHintsFetchingEnabled());
 }
 
 HintsFetcher::~HintsFetcher() {}
+
+// static
+void HintsFetcher::ClearHostsSuccessfullyFetched(PrefService* pref_service) {
+  DictionaryPrefUpdate hosts_fetched_list(
+      pref_service, prefs::kHintsFetcherHostsSuccessfullyFetched);
+  hosts_fetched_list->Clear();
+}
+
+void HintsFetcher::SetTimeClockForTesting(const base::Clock* time_clock) {
+  time_clock_ = time_clock;
+}
 
 bool HintsFetcher::FetchOptimizationGuideServiceHints(
     const std::vector<std::string>& hosts,
@@ -123,6 +151,7 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
       base::BindOnce(&HintsFetcher::OnURLLoadComplete, base::Unretained(this)));
 
   hints_fetched_callback_ = std::move(hints_fetched_callback);
+  hosts_fetched_ = hosts;
   return true;
 }
 
@@ -146,10 +175,26 @@ void HintsFetcher::HandleResponse(const std::string& get_hints_response_data,
     UMA_HISTOGRAM_COUNTS_100(
         "OptimizationGuide.HintsFetcher.GetHintsRequest.HintCount",
         get_hints_response->hints_size());
+    UpdateHostsSuccessfullyFetched();
     std::move(hints_fetched_callback_).Run(std::move(get_hints_response));
   } else {
     std::move(hints_fetched_callback_).Run(base::nullopt);
   }
+}
+
+void HintsFetcher::UpdateHostsSuccessfullyFetched() {
+  if (hosts_fetched_.size() == 0)
+    return;
+  DictionaryPrefUpdate hosts_fetched_list(
+      pref_service_, prefs::kHintsFetcherHostsSuccessfullyFetched);
+  base::Time host_invalid_time =
+      time_clock_->Now() + kHintsFetcherHostFetchedValidDuration;
+  for (const std::string& host : hosts_fetched_) {
+    hosts_fetched_list->SetDoubleKey(
+        HashHostForDictionary(host),
+        host_invalid_time.ToDeltaSinceWindowsEpoch().InSecondsF());
+  }
+  hosts_fetched_.clear();
 }
 
 void HintsFetcher::OnURLLoadComplete(

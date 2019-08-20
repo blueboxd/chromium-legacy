@@ -50,8 +50,8 @@ class NativeMessagingReaderTest : public testing::Test {
  private:
   // MessageLoop declared here, since the NativeMessageReader ctor requires a
   // MessageLoop to have been created.
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::IO};
   std::unique_ptr<base::RunLoop> run_loop_;
 };
 

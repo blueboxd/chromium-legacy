@@ -42,7 +42,7 @@ class HistoryProviderTest : public testing::Test {
   HistoryProvider* provider() { return &(*provider_); }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<FakeAutocompleteProviderClient> client_;
   scoped_refptr<TestHistoryProvider> provider_;
 
@@ -57,7 +57,7 @@ void HistoryProviderTest::SetUp() {
 void HistoryProviderTest::TearDown() {
   provider_ = nullptr;
   client_.reset();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 // Placeholder test. Remove after adding a substantive test.

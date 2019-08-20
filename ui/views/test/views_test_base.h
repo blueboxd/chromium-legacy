@@ -42,14 +42,13 @@ class ViewsTestBase : public PlatformTest {
   };
 
   // Constructs a ViewsTestBase with |traits| being forwarded to its
-  // ScopedTaskEnvironment. MainThreadType always defaults to UI and must not be
+  // TaskEnvironment. MainThreadType always defaults to UI and must not be
   // specified.
   template <typename... TaskEnvironmentTraits>
   NOINLINE explicit ViewsTestBase(TaskEnvironmentTraits... traits)
-      : scoped_task_environment_(
-            base::in_place,
-            base::test::ScopedTaskEnvironment::MainThreadType::UI,
-            traits...) {
+      : task_environment_(base::in_place,
+                          base::test::TaskEnvironment::MainThreadType::UI,
+                          traits...) {
     // MaterialDesignController is initialized here instead of in SetUp because
     // a subclass might construct a MaterialDesignControllerTestAPI as a member
     // to override the value, and this must happen first.
@@ -57,7 +56,7 @@ class ViewsTestBase : public PlatformTest {
   }
 
   // Alternatively a subclass may pass this tag to ask this ViewsTestBase not to
-  // instantiate a ScopedTaskEnvironment. The subclass is then responsible to
+  // instantiate a TaskEnvironment. The subclass is then responsible to
   // instantiate one before ViewsTestBase::SetUp().
   struct SubclassManagesTaskEnvironment {};
   explicit ViewsTestBase(SubclassManagesTaskEnvironment tag);
@@ -126,7 +125,7 @@ class ViewsTestBase : public PlatformTest {
  protected:
   // Initialized first, destroyed last. Use this protected member directly from
   // the test body to drive tasks posted within a ViewsTestBase-based test.
-  base::Optional<base::test::ScopedTaskEnvironment> scoped_task_environment_;
+  base::Optional<base::test::TaskEnvironment> task_environment_;
 
  private:
   // Controls what type of widget will be created by default for a test (i.e.

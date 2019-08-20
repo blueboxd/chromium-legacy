@@ -901,6 +901,31 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, UnelideOnHomeKey) {
   EXPECT_EQ(0U, end);
 }
 
+TEST_F(OmniboxViewViewsSteadyStateElisionsTest,
+       UnelideViaEndKeyWorksWithIntranetUrls) {
+  location_bar_model()->set_url(GURL("https://foobar/"));
+  location_bar_model()->set_formatted_full_url(
+      base::ASCIIToUTF16("https://foobar"));
+  location_bar_model()->set_url_for_display(base::ASCIIToUTF16("foobar/"));
+
+  omnibox_view()->model()->ResetDisplayTexts();
+  omnibox_view()->RevertAll();
+
+  SendMouseClick(0);
+
+  // End key should unelide and move the cursor to the end of the full URL.
+  omnibox_textfield_view()->OnKeyPressed(
+      ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_END, 0));
+
+  EXPECT_EQ(base::ASCIIToUTF16("https://foobar"), omnibox_view()->GetText());
+  EXPECT_FALSE(omnibox_view()->model()->user_input_in_progress());
+
+  size_t start, end;
+  omnibox_view()->GetSelectionBounds(&start, &end);
+  EXPECT_EQ(14U, start);
+  EXPECT_EQ(14U, end);
+}
+
 TEST_F(OmniboxViewViewsSteadyStateElisionsTest, GestureTaps) {
   ui::GestureEvent tap_down(0, 0, 0, ui::EventTimeForNow(),
                             ui::GestureEventDetails(ui::ET_GESTURE_TAP_DOWN));

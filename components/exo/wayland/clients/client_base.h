@@ -38,6 +38,7 @@ class ClientBase {
   struct InitParams {
     InitParams();
     ~InitParams();
+    InitParams(const InitParams& params);
 
     bool FromCommandLine(const base::CommandLine& command_line);
 

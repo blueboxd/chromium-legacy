@@ -878,6 +878,11 @@ void RootWindowController::InitLayoutManagers() {
   aura::Window* shelf_container = GetContainer(kShellWindowId_ShelfContainer);
   shelf_container->SetEventTargeter(
       std::make_unique<ShelfWindowTargeter>(shelf_container, shelf_.get()));
+  aura::Window* shelf_control_container =
+      GetContainer(kShellWindowId_ShelfControlContainer);
+  shelf_control_container->SetEventTargeter(
+      std::make_unique<ShelfWindowTargeter>(shelf_control_container,
+                                            shelf_.get()));
   aura::Window* status_container = GetContainer(kShellWindowId_StatusContainer);
   status_container->SetEventTargeter(
       std::make_unique<ShelfWindowTargeter>(status_container, shelf_.get()));

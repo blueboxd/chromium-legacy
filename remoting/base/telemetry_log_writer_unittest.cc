@@ -139,7 +139,7 @@ class TelemetryLogWriterTest : public testing::Test {
 
  private:
   int id_ = 0;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 // Test workflow: add request -> log event -> respond request.

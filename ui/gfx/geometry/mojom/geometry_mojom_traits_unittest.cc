@@ -84,7 +84,7 @@ class GeometryStructTraitsTest : public testing::Test,
     std::move(callback).Run(q);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   mojo::BindingSet<GeometryTraitsTestService> traits_test_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(GeometryStructTraitsTest);

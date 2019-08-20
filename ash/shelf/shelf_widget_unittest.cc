@@ -11,10 +11,12 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/root_window_controller.h"
+#include "ash/screen_util.h"
 #include "ash/shelf/login_shelf_view.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shell.h"
@@ -143,9 +145,17 @@ TEST_F(ShelfWidgetTest, LauncherInitiallySized) {
       shelf_widget->status_area_widget()->GetWindowBoundsInScreen().width();
   // Test only makes sense if the status is > 0, which it better be.
   EXPECT_GT(status_width, 0);
-  EXPECT_EQ(status_width,
-            shelf_widget->GetContentsView()->width() -
-                GetPrimaryShelf()->GetShelfViewForTesting()->width());
+
+  const int total_width =
+      screen_util::GetDisplayBoundsWithShelf(shelf_widget->GetNativeWindow())
+          .width();
+  const int nav_width =
+      shelf_widget->navigation_widget()->GetWindowBoundsInScreen().width();
+  const int hotseat_width =
+      GetPrimaryShelf()->GetShelfViewForTesting()->width();
+  const int margins =
+      ShelfConstants::home_button_edge_spacing() + kAppIconGroupMargin;
+  EXPECT_EQ(status_width, total_width - nav_width - hotseat_width - margins);
 }
 
 // Verifies when the shell is deleted with a full screen window we don't crash.
@@ -182,18 +192,36 @@ TEST_F(ShelfWidgetTest, ShelfInitiallySizedAfterLogin) {
   // Simulate login.
   CreateUserSessions(1);
 
+  const int total_width1 =
+      screen_util::GetDisplayBoundsWithShelf(shelf_widget1->GetNativeWindow())
+          .width();
+  const int nav_width1 =
+      shelf_widget1->navigation_widget()->GetWindowBoundsInScreen().width();
+  const int hotseat_width1 =
+      shelf_widget1->hotseat_widget()->GetWindowBoundsInScreen().width();
+  const int margins =
+      ShelfConstants::home_button_edge_spacing() + kAppIconGroupMargin;
+
+  const int total_width2 =
+      screen_util::GetDisplayBoundsWithShelf(shelf_widget2->GetNativeWindow())
+          .width();
+  const int nav_width2 =
+      shelf_widget2->navigation_widget()->GetWindowBoundsInScreen().width();
+  const int hotseat_width2 =
+      shelf_widget2->hotseat_widget()->GetWindowBoundsInScreen().width();
+
   // The shelf view and status area horizontally fill the shelf widget.
   const int status_width1 =
       shelf_widget1->status_area_widget()->GetWindowBoundsInScreen().width();
   EXPECT_GT(status_width1, 0);
-  EXPECT_EQ(shelf_widget1->GetContentsView()->width(),
-            shelf1->GetShelfViewForTesting()->width() + status_width1);
+  EXPECT_EQ(total_width1,
+            nav_width1 + hotseat_width1 + margins + status_width1);
 
   const int status_width2 =
       shelf_widget2->status_area_widget()->GetWindowBoundsInScreen().width();
   EXPECT_GT(status_width2, 0);
-  EXPECT_EQ(shelf_widget2->GetContentsView()->width(),
-            shelf2->GetShelfViewForTesting()->width() + status_width2);
+  EXPECT_EQ(total_width2,
+            nav_width2 + hotseat_width2 + margins + status_width2);
 }
 
 // Tests that the shelf lets mouse-events close to the edge fall through to the

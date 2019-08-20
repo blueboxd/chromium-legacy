@@ -978,6 +978,13 @@
     "args": ["--enable-features=FormControlsRefresh"]
   },
   {
+    "prefix": "controls-refresh-high-contrast",
+    "base": "fast/forms/controls-new-ui-high-contrast",
+    "args": ["--enable-features=FormControlsRefresh",
+             "--force-high-contrast",
+             "--enable-blink-features=ForcedColors"]
+  },
+  {
     "prefix": "user-timing-l2",
     "base": "external/wpt/user-timing",
     "args": ["--disable-blink-features=CustomUserTiming"]

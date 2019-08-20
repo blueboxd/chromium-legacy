@@ -394,7 +394,7 @@ class MojoSteadyPingPongTest : public mojo::core::test::MojoTestBase {
 };
 
 DEFINE_TEST_CLIENT_WITH_PIPE(PingPongClient, MojoSteadyPingPongTest, h) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   return RunPingPongClient(h);
 }
 
@@ -402,14 +402,14 @@ DEFINE_TEST_CLIENT_WITH_PIPE(PingPongClient, MojoSteadyPingPongTest, h) {
 // instead of raw IPC::Messages.
 TEST_F(MojoSteadyPingPongTest, AsyncPingPong) {
   RunTestClient("PingPongClient", [&](MojoHandle h) {
-    base::test::ScopedTaskEnvironment scoped_task_environment;
+    base::test::TaskEnvironment task_environment;
     RunPingPongServer(h, "Mojo_CPU_Async", false);
   });
 }
 
 TEST_F(MojoSteadyPingPongTest, SyncPingPong) {
   RunTestClient("PingPongClient", [&](MojoHandle h) {
-    base::test::ScopedTaskEnvironment scoped_task_environment;
+    base::test::TaskEnvironment task_environment;
     RunPingPongServer(h, "Mojo_CPU_Sync", true);
   });
 }

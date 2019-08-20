@@ -153,11 +153,12 @@ void FrameView::UpdateFrameVisibility(bool intersects_viewport) {
 void FrameView::UpdateRenderThrottlingStatus(bool hidden_for_throttling,
                                              bool subtree_throttled,
                                              bool recurse) {
-  bool was_throttled = CanThrottleRendering();
+  bool visibility_changed = (hidden_for_throttling_ || subtree_throttled_) !=
+                            (hidden_for_throttling || subtree_throttled ||
+                             DisplayLockedInParentFrame());
   hidden_for_throttling_ = hidden_for_throttling;
   subtree_throttled_ = subtree_throttled || DisplayLockedInParentFrame();
-  bool throttling_did_change = (was_throttled != CanThrottleRendering());
-  if (throttling_did_change)
+  if (visibility_changed)
     RenderThrottlingStatusChanged();
   if (recurse) {
     for (Frame* child = GetFrame().Tree().FirstChild(); child;

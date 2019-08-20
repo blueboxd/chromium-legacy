@@ -41,10 +41,10 @@ class AutofillManagerTestDelegateImpl
   void DidShowSuggestions() override;
   void OnTextFieldChanged() override;
 
-  void Reset();
-
-  bool Wait(std::list<ObservedUiEvents> expected_events,
-            base::TimeDelta timeout = base::TimeDelta::FromSeconds(0));
+  void SetExpectations(
+      std::list<ObservedUiEvents> expected_events,
+      base::TimeDelta timeout = base::TimeDelta::FromSeconds(0));
+  bool Wait();
 
   void SetIsExpectingDynamicRefill(bool expect_refill) {
     is_expecting_dynamic_refill_ = expect_refill;

@@ -105,8 +105,8 @@ class MockAudioInputStream : public media::AudioInputStream {
 };
 
 // Parameter: use audio processing.
-template <base::test::ScopedTaskEnvironment::TimeSource TimeSource =
-              base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME>
+template <base::test::TaskEnvironment::TimeSource TimeSource =
+              base::test::TaskEnvironment::TimeSource::MOCK_TIME>
 class TimeSourceInputControllerTest : public ::testing::TestWithParam<bool> {
  public:
   TimeSourceInputControllerTest()
@@ -151,7 +151,7 @@ class TimeSourceInputControllerTest : public ::testing::TestWithParam<bool> {
         &stream_monitor_coordinator_, std::move(config_ptr));
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   StreamMonitorCoordinator stream_monitor_coordinator_;
   std::unique_ptr<InputController> controller_;
@@ -170,7 +170,7 @@ class TimeSourceInputControllerTest : public ::testing::TestWithParam<bool> {
 };
 
 using SystemTimeInputControllerTest = TimeSourceInputControllerTest<
-    base::test::ScopedTaskEnvironment::TimeSource::SYSTEM_TIME>;
+    base::test::TaskEnvironment::TimeSource::SYSTEM_TIME>;
 using InputControllerTest = TimeSourceInputControllerTest<>;
 
 TEST_P(InputControllerTest, CreateAndCloseWithoutRecording) {

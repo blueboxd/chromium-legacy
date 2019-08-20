@@ -1017,7 +1017,7 @@ class PasswordFormManagerTest : public testing::Test {
 
  private:
   // Necessary for callbacks, and for TestAutofillDriver.
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   PasswordForm observed_form_;
   PasswordForm saved_match_;

@@ -38,7 +38,7 @@ class VideoCaptureServiceLifecycleTest : public ::testing::Test {
         switches::kUseFakeDeviceForMediaStream);
     service_impl_ = std::make_unique<VideoCaptureServiceImpl>(
         service_remote_.BindNewPipeAndPassReceiver(),
-        scoped_task_environment_.GetMainThreadTaskRunner());
+        task_environment_.GetMainThreadTaskRunner());
     service_remote_.set_idle_handler(
         base::TimeDelta(),
         base::BindRepeating(&VideoCaptureServiceLifecycleTest::OnServiceIdle,
@@ -46,7 +46,7 @@ class VideoCaptureServiceLifecycleTest : public ::testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<VideoCaptureServiceImpl> service_impl_;
   mojo::Remote<mojom::VideoCaptureService> service_remote_;
   base::MockCallback<mojom::DeviceFactory::GetDeviceInfosCallback>

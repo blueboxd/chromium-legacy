@@ -1736,15 +1736,26 @@ SkColor TabStrip::GetTabForegroundColor(TabState tab_state,
     // inactive windows, generate the inactive color by blending the active one
     // at 75% as we do in the default theme.
     color = tp->GetColor(ThemeProperties::COLOR_BACKGROUND_TAB_TEXT);
-  } else if (tab_state != TAB_ACTIVE) {
-    color = color_utils::PickContrastingColor(
-        gfx::kGoogleGrey400, gfx::kGoogleGrey800, background_color);
   }
 
   if (!is_active_frame)
     color = color_utils::AlphaBlend(color, background_color, 0.75f);
 
-  return color_utils::BlendForMinContrast(color, background_color).color;
+  // To minimize any readability cost of custom system frame colors, try to make
+  // the text reach the same contrast ratio that it would in the default theme.
+  const SkColor target = color_utils::GetColorWithMaxContrast(background_color);
+  // These contrast ratios should match the actual ratios in the default theme
+  // colors when no system colors are involved, except for the inactive tab/
+  // inactive frame case, which has been raised from 4.48 to 4.5 to meet
+  // accessibility guidelines.
+  constexpr float kContrast[2][2] = {{5.0f,     // Active tab, inactive frame
+                                      10.46f},  // Active tab, active frame
+                                     {4.5f,     // Inactive tab, inactive frame
+                                      7.98f}};  // Inactive tab, active frame
+  const float contrast = kContrast[tab_state][is_active_frame];
+  return color_utils::BlendForMinContrast(color, background_color, target,
+                                          contrast)
+      .color;
 }
 
 // Returns the accessible tab name for the tab.

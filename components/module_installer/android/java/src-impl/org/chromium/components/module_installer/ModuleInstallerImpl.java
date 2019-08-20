@@ -4,6 +4,7 @@
 
 package org.chromium.components.module_installer;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -21,6 +22,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.components.crash.CrashKeyIndex;
 import org.chromium.components.crash.CrashKeys;
+import org.chromium.components.module_installer.observers.ModuleActivityObserver;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -32,7 +34,7 @@ import java.util.TreeSet;
 
 /** Installs dynamic feature modules (DFMs). */
 @MainDex
-public class ModuleInstallerImpl implements ModuleInstaller {
+/* package */ class ModuleInstallerImpl implements ModuleInstaller {
     /** Command line switch for activating the fake backend.  */
     private static final String FAKE_FEATURE_MODULE_INSTALL = "fake-feature-module-install";
     private static ModuleInstaller sInstance = new ModuleInstallerImpl();
@@ -64,8 +66,11 @@ public class ModuleInstallerImpl implements ModuleInstaller {
     }
 
     @Override
-    public void initActivity(Context context) {
-        SplitCompat.install(context);
+    public void initActivity(Activity activity) {
+        // SplitCompat#install should always be run for the application first before it is run for
+        // any activities.
+        init();
+        SplitCompat.install(activity);
     }
 
     @Override

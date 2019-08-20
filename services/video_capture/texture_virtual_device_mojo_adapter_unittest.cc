@@ -60,7 +60,7 @@ class TextureVirtualDeviceMojoAdapterTest : public ::testing::Test {
   std::unique_ptr<MockReceiver> mock_receiver_2_;
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<TextureVirtualDeviceMojoAdapter> adapter_;
   mojom::ReceiverPtr receiver_1_;
   mojom::ReceiverPtr receiver_2_;

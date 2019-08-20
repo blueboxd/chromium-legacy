@@ -34,8 +34,7 @@ class VoiceSearchTableViewControllerTest
     : public ChromeTableViewControllerTest {
  protected:
   VoiceSearchTableViewControllerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
     ChromeTableViewControllerTest::SetUp();
@@ -60,7 +59,7 @@ class VoiceSearchTableViewControllerTest
         cellForRowAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]]);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<PrefService> pref_service_;
 };
 

@@ -51,8 +51,7 @@ class MockUbertokenConsumer {
 class UbertokenFetcherImplTest : public testing::Test {
  public:
   UbertokenFetcherImplTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
         token_service_(&pref_service_),
         test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
@@ -65,7 +64,7 @@ class UbertokenFetcherImplTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestingPrefServiceSimple pref_service_;
   FakeProfileOAuth2TokenService token_service_;
   network::TestURLLoaderFactory url_loader_factory_;

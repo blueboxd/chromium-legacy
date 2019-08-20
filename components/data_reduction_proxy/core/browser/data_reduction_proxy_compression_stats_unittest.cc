@@ -114,8 +114,7 @@ const char kLastUpdateTime[] = "Wed, 18 Sep 2013 03:45:26";
 class DataReductionProxyCompressionStatsTest : public testing::Test {
  protected:
   DataReductionProxyCompressionStatsTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {
     EXPECT_TRUE(base::Time::FromString(kLastUpdateTime, &now_));
   }
 
@@ -500,7 +499,7 @@ class DataReductionProxyCompressionStatsTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<DataReductionProxyTestContext> drp_test_context_;
   std::unique_ptr<DataReductionProxyCompressionStats> compression_stats_;
   base::Time now_;

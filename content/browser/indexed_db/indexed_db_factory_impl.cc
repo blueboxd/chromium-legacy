@@ -36,6 +36,7 @@
 #include "content/browser/indexed_db/indexed_db_origin_state.h"
 #include "content/browser/indexed_db/indexed_db_pre_close_task_queue.h"
 #include "content/browser/indexed_db/indexed_db_reporting.h"
+#include "content/browser/indexed_db/indexed_db_task_helper.h"
 #include "content/browser/indexed_db/indexed_db_tombstone_sweeper.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
@@ -276,9 +277,9 @@ void IndexedDBFactoryImpl::Open(
   std::unique_ptr<IndexedDBDatabase> database;
   std::tie(database, s) = indexed_db_class_factory_->CreateIndexedDBDatabase(
       name, factory->backing_store(), this,
-      base::BindRepeating(&IndexedDBFactoryImpl::OnDatabaseError,
-                          weak_factory_.GetWeakPtr(), origin),
-      factory->CreateDatabaseDeleteClosure(name),
+      base::BindRepeating(&IndexedDBFactoryImpl::MaybeRunTasksForOrigin,
+                          origin_state_destruction_weak_factory_.GetWeakPtr(),
+                          origin),
       std::make_unique<IndexedDBMetadataCoding>(), std::move(unique_identifier),
       factory->lock_manager());
   if (!database.get()) {
@@ -331,8 +332,8 @@ void IndexedDBFactoryImpl::DeleteDatabase(
         std::move(origin_state_handle), callbacks,
         base::BindOnce(&IndexedDBFactoryImpl::OnDatabaseDeleted,
                        weak_factory_.GetWeakPtr(), origin));
-    if (force_close && database)
-      database->ForceClose();
+    if (force_close)
+      database->ForceCloseAndRunTasks();
     return;
   }
 
@@ -362,9 +363,9 @@ void IndexedDBFactoryImpl::DeleteDatabase(
   std::unique_ptr<IndexedDBDatabase> database;
   std::tie(database, s) = indexed_db_class_factory_->CreateIndexedDBDatabase(
       name, factory->backing_store(), this,
-      base::BindRepeating(&IndexedDBFactoryImpl::OnDatabaseError,
-                          weak_factory_.GetWeakPtr(), origin),
-      factory->CreateDatabaseDeleteClosure(name),
+      base::BindRepeating(&IndexedDBFactoryImpl::MaybeRunTasksForOrigin,
+                          origin_state_destruction_weak_factory_.GetWeakPtr(),
+                          origin),
       std::make_unique<IndexedDBMetadataCoding>(), unique_identifier,
       factory->lock_manager());
   if (!database.get()) {
@@ -384,8 +385,8 @@ void IndexedDBFactoryImpl::DeleteDatabase(
       std::move(origin_state_handle), std::move(callbacks),
       base::BindOnce(&IndexedDBFactoryImpl::OnDatabaseDeleted,
                      weak_factory_.GetWeakPtr(), origin));
-  if (force_close && database_ptr)
-    database_ptr->ForceClose();
+  if (force_close)
+    database_ptr->ForceCloseAndRunTasks();
 }
 
 void IndexedDBFactoryImpl::AbortTransactionsAndCompactDatabase(
@@ -399,6 +400,7 @@ void IndexedDBFactoryImpl::AbortTransactionsAndCompactDatabase(
     return;
   }
   it->second->AbortAllTransactions(true);
+  RunTasksForOrigin(it->second->AsWeakPtr());
   std::move(callback).Run(leveldb::Status::OK());
 }
 
@@ -413,6 +415,7 @@ void IndexedDBFactoryImpl::AbortTransactionsForDatabase(
     return;
   }
   it->second->AbortAllTransactions(false);
+  RunTasksForOrigin(it->second->AsWeakPtr());
   std::move(callback).Run(leveldb::Status::OK());
 }
 
@@ -477,11 +480,17 @@ void IndexedDBFactoryImpl::ForceClose(const Origin& origin,
   if (it == factories_per_origin_.end())
     return;
 
-  IndexedDBOriginStateHandle origin_state_handle = it->second->CreateHandle();
+  base::WeakPtr<IndexedDBOriginState> weak_ptr;
+  {
+    IndexedDBOriginStateHandle origin_state_handle = it->second->CreateHandle();
 
-  if (delete_in_memory_store)
-    origin_state_handle.origin_state()->StopPersistingForIncognito();
-  origin_state_handle.origin_state()->ForceClose();
+    if (delete_in_memory_store)
+      origin_state_handle.origin_state()->StopPersistingForIncognito();
+    origin_state_handle.origin_state()->ForceClose();
+    weak_ptr = origin_state_handle.origin_state()->AsWeakPtr();
+  }
+  // Run tasks so the origin state is deleted.
+  RunTasksForOrigin(std::move(weak_ptr));
 }
 
 void IndexedDBFactoryImpl::ForceSchemaDowngrade(const Origin& origin) {
@@ -714,10 +723,11 @@ IndexedDBFactoryImpl::GetOrOpenOriginFactory(
            .emplace(
                origin,
                std::make_unique<IndexedDBOriginState>(
+                   origin,
                    /*persist_for_incognito=*/is_incognito_and_in_memory, clock_,
                    leveldb_factory_, &earliest_sweep_, std::move(lock_manager),
-                   base::BindOnce(
-                       &IndexedDBFactoryImpl::RemoveOriginState,
+                   base::BindRepeating(
+                       &IndexedDBFactoryImpl::MaybeRunTasksForOrigin,
                        origin_state_destruction_weak_factory_.GetWeakPtr(),
                        origin),
                    std::move(backing_store)))
@@ -884,6 +894,44 @@ void IndexedDBFactoryImpl::OnDatabaseDeleted(const url::Origin& origin) {
   if (!context_)
     return;
   context_->DatabaseDeleted(origin);
+}
+
+void IndexedDBFactoryImpl::MaybeRunTasksForOrigin(const url::Origin& origin) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  auto it = factories_per_origin_.find(origin);
+  if (it == factories_per_origin_.end())
+    return;
+
+  IndexedDBOriginState* origin_state = it->second.get();
+  if (origin_state->is_task_run_scheduled())
+    return;
+
+  origin_state->set_task_run_scheduled();
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&IndexedDBFactoryImpl::RunTasksForOrigin,
+                     origin_state_destruction_weak_factory_.GetWeakPtr(),
+                     origin_state->AsWeakPtr()));
+}
+
+void IndexedDBFactoryImpl::RunTasksForOrigin(
+    base::WeakPtr<IndexedDBOriginState> origin_state) {
+  if (!origin_state)
+    return;
+  IndexedDBOriginState::RunTasksResult result;
+  leveldb::Status status;
+  std::tie(result, status) = origin_state->RunTasks();
+  switch (result) {
+    case IndexedDBOriginState::RunTasksResult::kDone:
+      return;
+    case IndexedDBOriginState::RunTasksResult::kError:
+      OnDatabaseError(origin_state->origin(), status, nullptr);
+      return;
+    case IndexedDBOriginState::RunTasksResult::kCanBeDestroyed:
+      factories_per_origin_.erase(origin_state->origin());
+      return;
+  }
 }
 
 bool IndexedDBFactoryImpl::IsDatabaseOpen(const Origin& origin,

@@ -52,8 +52,7 @@ std::string RandomASCII(size_t length) {
 class SystemPerfettoTest : public testing::Test {
  public:
   SystemPerfettoTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {
     // Ensure system tracing is enabled for all tests.
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeature(features::kEnablePerfettoSystemTracing);
@@ -136,7 +135,7 @@ class SystemPerfettoTest : public testing::Test {
 
   ~SystemPerfettoTest() override {
     // The real "AndroidSystemProducer" must be destroyed on the correct
-    // sequence however that sequence is tied to the |scoped_task_environment_|
+    // sequence however that sequence is tied to the |task_environment_|
     // which is being deleted now. Therefore to prevent it crashing a future
     // test we destroy it now.
     PerfettoTracedProcess::GetTaskRunner()->GetOrCreateTaskRunner()->PostTask(
@@ -149,7 +148,7 @@ class SystemPerfettoTest : public testing::Test {
     RunUntilIdle();
     // The producer client will be destroyed in the next iteration of the test,
     // but the sequence it was used on disappears with the
-    // |scoped_task_environment_|. So we reset the sequence so it can be freely
+    // |task_environment_|. So we reset the sequence so it can be freely
     // destroyed.
     PerfettoTracedProcess::Get()->producer_client()->ResetSequenceForTesting();
     if (old_tmp_dir_) {
@@ -162,7 +161,7 @@ class SystemPerfettoTest : public testing::Test {
   }
 
   PerfettoService* local_service() const { return perfetto_service_.get(); }
-  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
   // Fork() + executes the perfetto cmdline client with the given args and
   // returns true if we exited with a success otherwise |stderr_| is populated
@@ -215,7 +214,7 @@ class SystemPerfettoTest : public testing::Test {
   std::string consumer_socket_;
   std::unique_ptr<PerfettoService> perfetto_service_;
   std::vector<std::unique_ptr<TestDataSource>> data_sources_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::string stderr_;
   const char* old_tmp_dir_ = nullptr;
 };

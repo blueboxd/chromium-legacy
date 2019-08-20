@@ -113,7 +113,7 @@ void GCMAccountTracker::OnAccountSignInChanged(const AccountIds& ids,
 }
 
 void GCMAccountTracker::OnAccessTokenFetchCompleteForAccount(
-    std::string account_id,
+    CoreAccountId account_id,
     GoogleServiceAuthError error,
     signin::AccessTokenInfo access_token_info) {
   auto iter = account_infos_.find(account_id);

@@ -412,9 +412,12 @@ IPC_MESSAGE_ROUTED0(PrintHostMsg_DidShowPrintDialog)
 
 // Sends back to the browser the rendered document that was requested by a
 // PrintMsg_PrintPages message or from scripted printing. The memory handle in
-// this message is already valid in the browser process.
-IPC_MESSAGE_ROUTED1(PrintHostMsg_DidPrintDocument,
-                    PrintHostMsg_DidPrintDocument_Params /* page content */)
+// this message is already valid in the browser process. Waits until the
+// document is complete ready before replying.
+IPC_SYNC_MESSAGE_ROUTED1_1(PrintHostMsg_DidPrintDocument,
+                           PrintHostMsg_DidPrintDocument_Params
+                           /* page content */,
+                           bool /* completed */)
 
 // Sends back to the browser the rendered subframe content that was
 // requested by a PrintMsg_PrintFrameContent message.

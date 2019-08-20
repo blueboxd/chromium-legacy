@@ -233,10 +233,8 @@ bool OmniboxResultView::IsSelected() const {
 }
 
 OmniboxPartState OmniboxResultView::GetThemeState() const {
-  if (IsSelected()) {
-    return is_hovered_ ? OmniboxPartState::HOVERED_AND_SELECTED
-                       : OmniboxPartState::SELECTED;
-  }
+  if (IsSelected())
+    return OmniboxPartState::SELECTED;
   return is_hovered_ ? OmniboxPartState::HOVERED : OmniboxPartState::NORMAL;
 }
 

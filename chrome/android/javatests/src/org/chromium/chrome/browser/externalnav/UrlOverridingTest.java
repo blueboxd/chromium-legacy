@@ -27,7 +27,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -414,7 +413,6 @@ public class UrlOverridingTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    @DisabledTest(message = "crbug.com/993149")
     public void testOpenWindowFromLinkUserGesture() throws InterruptedException {
         boolean opensNewTab =
                 !(mActivityTestRule.getActivity().getCurrentTabModel() instanceof SingleTabModel);
@@ -425,7 +423,6 @@ public class UrlOverridingTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    @DisabledTest(message = "crbug.com/993149")
     public void testOpenWindowFromSvgUserGesture() throws InterruptedException {
         boolean opensNewTab =
                 !(mActivityTestRule.getActivity().getCurrentTabModel() instanceof SingleTabModel);

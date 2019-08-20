@@ -46,7 +46,7 @@ class WidgetTest : public ViewsTestBase {
   using WidgetAutoclosePtr = std::unique_ptr<Widget, WidgetCloser>;
 
   // Constructs an AshTestBase with |traits| being forwarded to its
-  // ScopedTaskEnvironment. |ViewsTestBase::SubclassManagesTaskEnvironment()|
+  // TaskEnvironment. |ViewsTestBase::SubclassManagesTaskEnvironment()|
   // can also be passed as a sole trait to indicate that this WidgetTest's
   // subclass will manage the task environment.
   template <typename... TaskEnvironmentTraits>

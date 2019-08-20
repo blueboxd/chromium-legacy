@@ -58,13 +58,6 @@ extern void AddGpuFingerprintToMicrodumpCrashHandler(
 extern void SuppressDumpGeneration();
 #endif  // defined(OS_ANDROID)
 
-#if defined(OS_CHROMEOS)
-// If true, processes of this type should pass crash-loop-before down to the
-// crash reporter and to their children (if the children's type is a process
-// type that wants crash-loop-before).
-bool ShouldPassCrashLoopBefore(const std::string& process_type);
-#endif
-
 // Checks if crash reporting is enabled. Note that this is not the same as
 // being opted into metrics reporting (and crash reporting), which controls
 // whether InitCrashReporter() is called.

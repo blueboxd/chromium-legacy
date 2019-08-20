@@ -17,6 +17,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/persistent_histogram_allocator.h"
 #include "base/path_service.h"
 #include "base/process/process_metrics.h"
 #include "base/rand_util.h"
@@ -33,6 +34,7 @@
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_reporting_default_state.h"
 #include "components/metrics/metrics_service.h"
+#include "components/metrics/metrics_state_manager.h"
 #include "components/metrics/net/cellular_logic_helper.h"
 #include "components/metrics/net/net_metrics_log_uploader.h"
 #include "components/metrics/net/network_metrics_provider.h"
@@ -75,28 +77,49 @@
 
 namespace {
 
+// Maximum amount of local storage for storing persistent histograms.
+const int kMaxHistogramStorageKiB = 50 << 10;  // 50 MiB
+
 void GetNetworkConnectionTrackerAsync(
     base::OnceCallback<void(network::NetworkConnectionTracker*)> callback) {
   std::move(callback).Run(
       GetApplicationContext()->GetNetworkConnectionTracker());
 }
 
-void CleanupBrowserMetricsDataFiles() {
+std::unique_ptr<metrics::FileMetricsProvider> CreateFileMetricsProvider(
+    bool metrics_reporting_enabled) {
+  // Create an object to monitor files of metrics and include them in reports.
+  std::unique_ptr<metrics::FileMetricsProvider> file_metrics_provider(
+      new metrics::FileMetricsProvider(
+          GetApplicationContext()->GetLocalState()));
+
   base::FilePath user_data_dir;
-  if (!base::PathService::Get(ios::DIR_USER_DATA, &user_data_dir))
-    return;
-  base::FilePath browser_metrics_upload_dir =
-      user_data_dir.AppendASCII(kBrowserMetricsName);
-  if (base::IsDirectoryEmpty(browser_metrics_upload_dir))
-    return;
-  // Delete accumulated metrics files due to http://crbug/992946
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                     std::move(browser_metrics_upload_dir),
-                     /*recursive=*/true));
+  if (base::PathService::Get(ios::DIR_USER_DATA, &user_data_dir)) {
+    base::FilePath browser_metrics_upload_dir =
+        user_data_dir.AppendASCII(kBrowserMetricsName);
+    if (metrics_reporting_enabled) {
+      metrics::FileMetricsProvider::Params browser_metrics_params(
+          browser_metrics_upload_dir,
+          metrics::FileMetricsProvider::SOURCE_HISTOGRAMS_ATOMIC_DIR,
+          metrics::FileMetricsProvider::ASSOCIATE_INTERNAL_PROFILE,
+          kBrowserMetricsName);
+      browser_metrics_params.max_dir_kib = kMaxHistogramStorageKiB;
+      browser_metrics_params.filter = base::BindRepeating(
+          &IOSChromeMetricsServiceClient::FilterBrowserMetricsFiles);
+      file_metrics_provider->RegisterSource(browser_metrics_params);
+    } else {
+      // When metrics reporting is not enabled, any existing files should be
+      // deleted in order to preserve user privacy.
+      base::PostTask(FROM_HERE,
+                     {base::ThreadPool(), base::MayBlock(),
+                      base::TaskPriority::BEST_EFFORT,
+                      base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+                     base::BindOnce(base::IgnoreResult(&base::DeleteFile),
+                                    std::move(browser_metrics_upload_dir),
+                                    /*recursive=*/true));
+    }
+  }
+  return file_metrics_provider;
 }
 
 }  // namespace
@@ -132,6 +155,7 @@ void IOSChromeMetricsServiceClient::RegisterPrefs(
     PrefRegistrySimple* registry) {
   metrics::MetricsService::RegisterPrefs(registry);
   metrics::StabilityMetricsHelper::RegisterPrefs(registry);
+  metrics::FileMetricsProvider::RegisterPrefs(registry, kBrowserMetricsName);
   metrics::RegisterMetricsReportingStatePrefs(registry);
   ukm::UkmService::RegisterPrefs(registry);
 }
@@ -239,6 +263,12 @@ void IOSChromeMetricsServiceClient::Initialize() {
         std::move(stability_metrics_provider));
   }
 
+  // NOTE: metrics_state_manager_->IsMetricsReportingEnabled() returns false
+  // during local testing. To test locally, modify
+  // MetricsServiceAccessor::IsMetricsReportingEnabled() to return true.
+  metrics_service_->RegisterMetricsProvider(CreateFileMetricsProvider(
+      metrics_state_manager_->IsMetricsReportingEnabled()));
+
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<metrics::ScreenInfoMetricsProvider>());
 
@@ -266,10 +296,6 @@ void IOSChromeMetricsServiceClient::Initialize() {
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<metrics::DemographicMetricsProvider>(
           std::make_unique<metrics::ChromeBrowserStateClient>()));
-
-  // TODO(crbug.com/992946): This is an interim fix to stop logging of
-  // persistent histograms and delete any accumulated metrics files.
-  CleanupBrowserMetricsDataFiles();
 }
 
 void IOSChromeMetricsServiceClient::CollectFinalHistograms() {
@@ -335,6 +361,23 @@ void IOSChromeMetricsServiceClient::OnTabParented(web::WebState* web_state) {
 
 void IOSChromeMetricsServiceClient::OnURLOpenedFromOmnibox(OmniboxLog* log) {
   metrics_service_->OnApplicationNotIdle();
+}
+
+// static
+metrics::FileMetricsProvider::FilterAction
+IOSChromeMetricsServiceClient::FilterBrowserMetricsFiles(
+    const base::FilePath& path) {
+  // Do not process the file if it corresponds to the current process id.
+  base::ProcessId pid;
+  bool parse_success = base::GlobalHistogramAllocator::ParseFilePath(
+      path, nullptr, nullptr, &pid);
+  if (!parse_success)
+    return metrics::FileMetricsProvider::FILTER_PROCESS_FILE;
+  if (pid == base::GetCurrentProcId())
+    return metrics::FileMetricsProvider::FILTER_ACTIVE_THIS_PID;
+  // No need to test whether |pid| is a different active process. This isn't
+  // applicable to iOS because there cannot be two copies of Chrome running.
+  return metrics::FileMetricsProvider::FILTER_PROCESS_FILE;
 }
 
 metrics::EnableMetricsDefault

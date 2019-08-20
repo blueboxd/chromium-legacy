@@ -47,7 +47,7 @@ class CookieManagerImplTest : public testing::Test {
  public:
   CookieManagerImplTest()
       : task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+            base::test::TaskEnvironment::MainThreadType::IO),
         network_service_(network::NetworkService::CreateForTesting()),
         cookie_manager_(
             base::BindRepeating(&CookieManagerImplTest::GetNetworkContext,
@@ -124,7 +124,7 @@ class CookieManagerImplTest : public testing::Test {
         mojo::MakeRequest(&mojo_cookie_manager_));
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<network::NetworkService> network_service_;
   network::mojom::NetworkContextPtr network_context_;

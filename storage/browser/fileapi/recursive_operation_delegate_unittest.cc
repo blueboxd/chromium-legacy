@@ -191,7 +191,7 @@ class RecursiveOperationDelegateTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // Common temp base for nondestructive uses.
   base::ScopedTempDir base_;

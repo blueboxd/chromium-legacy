@@ -73,8 +73,8 @@ class XmppRegisterSupportHostRequestTest : public testing::Test {
         .WillRepeatedly(RemoveListener(&signal_strategy_listeners_));
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   MockSignalStrategy signal_strategy_;
   base::ObserverList<SignalStrategy::Listener, true> signal_strategy_listeners_;
   scoped_refptr<RsaKeyPair> key_pair_;
@@ -94,7 +94,7 @@ TEST_F(XmppRegisterSupportHostRequestTest, Timeout) {
   EXPECT_CALL(callback_, Run("", base::TimeDelta::FromSeconds(0),
                              ErrorCode::SIGNALING_TIMEOUT));
 
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(15));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(15));
 }
 
 TEST_F(XmppRegisterSupportHostRequestTest, Send) {
@@ -110,7 +110,7 @@ TEST_F(XmppRegisterSupportHostRequestTest, Send) {
       .WillOnce(DoAll(SaveArg<0>(&sent_iq), Return(true)));
 
   request->OnSignalStrategyStateChange(SignalStrategy::CONNECTED);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Verify format of the query.
   std::unique_ptr<XmlElement> stanza(sent_iq);
@@ -185,7 +185,7 @@ TEST_F(XmppRegisterSupportHostRequestTest, Send) {
   }
   EXPECT_EQ(1, consumed);
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 }  // namespace remoting

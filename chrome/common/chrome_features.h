@@ -243,6 +243,9 @@ extern const base::Feature kHappinessTrackingSystem;
 #if !defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kHappinessTrackingSurveysForDesktop;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kHappinessTrackingSurveysForDesktopDemo;
 #endif
 
 COMPONENT_EXPORT(CHROME_FEATURES)

@@ -87,7 +87,7 @@ class NonBlockingInvalidatorTestDelegate {
   }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::Thread io_thread_;
   std::unique_ptr<jingle_glue::NetworkServiceConfigTestUtil> net_config_helper_;
   std::unique_ptr<NonBlockingInvalidator> invalidator_;

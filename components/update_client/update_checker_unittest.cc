@@ -151,7 +151,7 @@ class UpdateCheckerTest : public testing::TestWithParam<bool> {
  private:
   scoped_refptr<UpdateContext> MakeMockUpdateContext() const;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::OnceClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateCheckerTest);
@@ -161,8 +161,7 @@ class UpdateCheckerTest : public testing::TestWithParam<bool> {
 INSTANTIATE_TEST_SUITE_P(Parameterized, UpdateCheckerTest, testing::Bool());
 
 UpdateCheckerTest::UpdateCheckerTest()
-    : scoped_task_environment_(
-          base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
+    : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
 
 UpdateCheckerTest::~UpdateCheckerTest() {
 }
@@ -199,7 +198,7 @@ void UpdateCheckerTest::TearDown() {
 
   // The PostInterceptor requires the message loop to run to destruct correctly.
   // TODO(sorin): This is fragile and should be fixed.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 void UpdateCheckerTest::RunThreads() {

@@ -35,10 +35,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
   ~FidoCableDiscovery() override;
 
  protected:
-  virtual std::unique_ptr<FidoCableHandshakeHandler> CreateHandshakeHandler(
-      FidoCableDevice* device,
-      base::span<const uint8_t, kCableSessionPreKeySize> session_pre_key,
-      base::span<const uint8_t, 8> nonce);
+  virtual base::Optional<std::unique_ptr<FidoCableHandshakeHandler>>
+  CreateHandshakeHandler(FidoCableDevice* device,
+                         const CableDiscoveryData* discovery_data);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(FidoCableDiscoveryTest,
@@ -76,10 +75,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
   // |callback|.
   void StopAdvertisements(base::OnceClosure callback);
   void CableDeviceFound(BluetoothAdapter* adapter, BluetoothDevice* device);
-  void ConductEncryptionHandshake(
-      std::unique_ptr<FidoCableDevice> device,
-      base::span<const uint8_t, kCableSessionPreKeySize> session_pre_key,
-      base::span<const uint8_t, 8> nonce);
+  void ConductEncryptionHandshake(std::unique_ptr<FidoCableDevice> cable_device,
+                                  CableDiscoveryData discovery_data);
   void ValidateAuthenticatorHandshakeMessage(
       std::unique_ptr<FidoCableDevice> cable_device,
       FidoCableHandshakeHandler* handshake_handler,

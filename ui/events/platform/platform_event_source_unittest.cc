@@ -498,7 +498,7 @@ class PlatformEventTestWithMessageLoop : public PlatformEventTest {
   ~PlatformEventTestWithMessageLoop() override {}
 
   void Run() {
-    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+    task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(&PlatformEventTestWithMessageLoop::RunTestImpl,
                        base::Unretained(this)));
@@ -509,8 +509,8 @@ class PlatformEventTestWithMessageLoop : public PlatformEventTest {
   virtual void RunTestImpl() = 0;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::UI};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::UI};
 
   DISALLOW_COPY_AND_ASSIGN(PlatformEventTestWithMessageLoop);
 };

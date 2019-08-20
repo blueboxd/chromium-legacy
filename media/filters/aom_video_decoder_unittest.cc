@@ -164,7 +164,7 @@ class AomVideoDecoderTest : public testing::Test {
 
   testing::StrictMock<MockMediaLog> media_log_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<AomVideoDecoder> decoder_;
 
   scoped_refptr<DecoderBuffer> i_frame_buffer_;

@@ -63,6 +63,20 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
     MAX_CONFIGURE_RESULT
   };
 
+  // Returned from RegisterWithBackend.
+  enum RegisterWithBackendResult {
+    // Used by non-USS data types which don't use RegisterWithBackend, and by
+    // USS types when RegisterWithBackend is called on an already-registered
+    // type.
+    // TODO(crbug.com/923287): Update the above comment once there are only USS
+    // data types (or get rid of this entry entirely if possible).
+    REGISTRATION_IGNORED,
+    // Indicates that the initial download for this type is already complete.
+    TYPE_ALREADY_DOWNLOADED,
+    // Indicates that the initial download for this type still needs to be done.
+    TYPE_NOT_YET_DOWNLOADED,
+  };
+
   using StartCallback = base::OnceCallback<
       void(ConfigureResult, const SyncMergeResult&, const SyncMergeResult&)>;
 
@@ -114,13 +128,10 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
                           const ModelLoadCallback& model_load_callback) = 0;
 
   // Registers with sync backend if needed. This function is called by
-  // DataTypeManager before downloading initial data. Non-blocking types need to
-  // pass activation context containing progress marker to sync backend and use
-  // |set_downloaded| to inform the manager whether their initial sync is done.
-  // TODO(treib): Make this synchronous and possibly merge with
-  // ActivateManuallyForNigori().
-  virtual void RegisterWithBackend(
-      base::OnceCallback<void(bool)> set_downloaded,
+  // DataTypeManager before downloading initial data. For non-blocking (USS)
+  // types, returns whether the initial download for this type is already
+  // complete.
+  virtual RegisterWithBackendResult RegisterWithBackend(
       ModelTypeConfigurer* configurer) = 0;
 
   // Will start a potentially asynchronous operation to perform the

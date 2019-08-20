@@ -495,7 +495,7 @@ class ResourceSchedulerTest : public testing::Test {
 
   ResourceScheduler* scheduler() { return scheduler_.get(); }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<ResourceScheduler> scheduler_;
   net::TestNetworkQualityEstimator network_quality_estimator_;
   net::TestURLRequestContext context_;

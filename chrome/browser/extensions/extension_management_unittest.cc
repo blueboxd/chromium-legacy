@@ -466,6 +466,28 @@ TEST_F(ExtensionManagementServiceTest, LegacyInstallForcelist) {
             ExtensionManagement::INSTALLATION_ALLOWED);
 }
 
+// Tests handling of exceeding number of urls
+TEST_F(ExtensionManagementServiceTest, HostsMaximumExceeded) {
+  const char policy_template[] =
+      "{"
+      "  \"abcdefghijklmnopabcdefghijklmnop\": {"
+      "    \"installation_mode\": \"allowed\","
+      "    \"runtime_blocked_hosts\": [%s],"
+      "    \"runtime_allowed_hosts\": [%s]"
+      "  }"
+      "}";
+
+  std::string urls;
+  for (size_t i = 0; i < 200; ++i)
+    urls.append("\"*://example" + base::NumberToString(i) + ".com\",");
+
+  std::string policy =
+      base::StringPrintf(policy_template, urls.c_str(), urls.c_str());
+  SetExampleDictPref(policy);
+  EXPECT_EQ(100u, GetPolicyBlockedHosts(kTargetExtension).size());
+  EXPECT_EQ(100u, GetPolicyAllowedHosts(kTargetExtension).size());
+}
+
 // Tests parsing of new dictionary preference.
 TEST_F(ExtensionManagementServiceTest, PreferenceParsing) {
   SetExampleDictPref(kExampleDictPreference);

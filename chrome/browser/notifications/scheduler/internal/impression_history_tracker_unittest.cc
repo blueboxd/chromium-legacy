@@ -210,20 +210,13 @@ TEST_F(ImpressionHistoryTrackerTest, DeleteExpiredImpression) {
   Impression expired = CreateImpression(expired_create_time, "guid1");
   Impression not_expired = CreateImpression(not_expired_time, "guid2");
 
-  // The impressions in the input should be sorted by creation time when gets
-  // loaded to memory.
   test_case.input.back().impressions = {expired, not_expired, expired};
-
-  // Expired impression created in |expired_create_time| should be deleted.
-  // No change expected on the next impression, which is not expired and no user
-  // feedback .
   test_case.expected.back().impressions = {not_expired};
 
   CreateTracker(test_case);
-  InitTrackerWithData(test_case);
   EXPECT_CALL(*store(), Update(_, _, _));
-  EXPECT_CALL(*delegate(), OnImpressionUpdated());
-  tracker()->AnalyzeImpressionHistory();
+  InitTrackerWithData(test_case);
+  EXPECT_CALL(*delegate(), OnImpressionUpdated()).Times(0);
   VerifyClientStates(test_case);
 }
 

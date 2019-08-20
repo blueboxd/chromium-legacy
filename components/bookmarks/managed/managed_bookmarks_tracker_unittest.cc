@@ -165,7 +165,7 @@ class ManagedBookmarksTrackerTest : public testing::Test {
   }
 
   base::ScopedTempDir scoped_temp_dir_;
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestingPrefServiceSimple prefs_;
   std::unique_ptr<BookmarkModel> model_;
   MockBookmarkModelObserver observer_;

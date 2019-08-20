@@ -59,7 +59,7 @@ class NaClIPCAdapterTest : public testing::Test {
     return adapter_->Send(&msg);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   scoped_refptr<NaClIPCAdapter> adapter_;
 

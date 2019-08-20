@@ -177,7 +177,7 @@ class UpdateClientTest : public testing::Test {
  private:
   static constexpr int kNumWorkerThreads_ = 2;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::RunLoop runloop_;
 
   scoped_refptr<update_client::TestConfigurator> config_ =
@@ -201,7 +201,7 @@ UpdateClientTest::~UpdateClientTest() {
 
 void UpdateClientTest::RunThreads() {
   runloop_.Run();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 base::FilePath UpdateClientTest::TestFilePath(const char* file) {

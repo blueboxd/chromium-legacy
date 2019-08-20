@@ -85,7 +85,7 @@ class BaseSearchProviderTest : public testing::Test {
         AutocompleteProvider::TYPE_SEARCH, client_.get());
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<NiceMock<TestBaseSearchProvider>> provider_;
   std::unique_ptr<MockAutocompleteProviderClient> client_;
 };

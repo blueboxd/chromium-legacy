@@ -36,6 +36,10 @@ class CallbackCookieSettings : public CookieSettingsBase {
                                 ContentSetting* cookie_setting) const override {
     *cookie_setting = callback_.Run(url);
   }
+  void GetSettingForLegacyCookieAccess(const GURL& cookie_domain,
+                                       ContentSetting* setting) const override {
+    *setting = callback_.Run(cookie_domain);
+  }
 
  private:
   GetSettingCallback callback_;
@@ -118,6 +122,17 @@ TEST(CookieSettingsBaseTest, CookieAccessAllowedWithSessionOnlySetting) {
   EXPECT_TRUE(settings.IsCookieAccessAllowed(GURL(kDomain), GURL(kDomain)));
 }
 
+TEST(CookieSettingsBaseTest, LegacyCookieAccessSemantics) {
+  CallbackCookieSettings settings1(
+      base::BindRepeating([](const GURL&) { return CONTENT_SETTING_ALLOW; }));
+  EXPECT_EQ(net::CookieAccessSemantics::LEGACY,
+            settings1.GetCookieAccessSemanticsForDomain(GURL()));
+  CallbackCookieSettings settings2(
+      base::BindRepeating([](const GURL&) { return CONTENT_SETTING_BLOCK; }));
+  EXPECT_EQ(net::CookieAccessSemantics::NONLEGACY,
+            settings2.GetCookieAccessSemanticsForDomain(GURL()));
+}
+
 TEST(CookieSettingsBaseTest, IsCookieSessionOnlyWithAllowSetting) {
   CallbackCookieSettings settings(
       base::BindRepeating([](const GURL&) { return CONTENT_SETTING_ALLOW; }));
@@ -148,6 +163,19 @@ TEST(CookieSettingsBaseTest, IsAllowed) {
   EXPECT_FALSE(CookieSettingsBase::IsAllowed(CONTENT_SETTING_BLOCK));
   EXPECT_TRUE(CookieSettingsBase::IsAllowed(CONTENT_SETTING_ALLOW));
   EXPECT_TRUE(CookieSettingsBase::IsAllowed(CONTENT_SETTING_SESSION_ONLY));
+}
+
+TEST(CookieSettingsBaseTest, IsValidLegacyAccessSetting) {
+  EXPECT_FALSE(CookieSettingsBase::IsValidSettingForLegacyAccess(
+      CONTENT_SETTING_DEFAULT));
+  EXPECT_FALSE(
+      CookieSettingsBase::IsValidSettingForLegacyAccess(CONTENT_SETTING_ASK));
+  EXPECT_TRUE(
+      CookieSettingsBase::IsValidSettingForLegacyAccess(CONTENT_SETTING_ALLOW));
+  EXPECT_TRUE(
+      CookieSettingsBase::IsValidSettingForLegacyAccess(CONTENT_SETTING_BLOCK));
+  EXPECT_FALSE(CookieSettingsBase::IsValidSettingForLegacyAccess(
+      CONTENT_SETTING_SESSION_ONLY));
 }
 
 }  // namespace

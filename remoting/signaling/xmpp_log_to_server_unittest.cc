@@ -48,7 +48,7 @@ class XmppLogToServerTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::RunLoop run_loop_;
   MockSignalStrategy signal_strategy_;
   std::unique_ptr<XmppLogToServer> xmpp_log_to_server_;

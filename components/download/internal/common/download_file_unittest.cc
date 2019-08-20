@@ -500,7 +500,7 @@ class DownloadFileTest : public testing::Test {
     closure.Run();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 // DownloadFile::RenameAndAnnotate and DownloadFile::RenameAndUniquify have a

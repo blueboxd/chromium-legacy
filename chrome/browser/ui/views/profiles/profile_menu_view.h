@@ -25,9 +25,6 @@ class Button;
 }
 
 class Browser;
-class DiceSigninButtonView;
-class HoverButton;
-
 
 // This bubble view is displayed when the user clicks on the avatar button.
 // It displays a list of profiles and allows users to switch between profiles.
@@ -63,7 +60,7 @@ class ProfileMenuView : public ProfileMenuViewBase, public AvatarMenuObserver {
   void OnSyncErrorButtonClicked(sync_ui_util::AvatarSyncErrorType error);
   void OnCurrentProfileCardClicked();
   void OnSigninButtonClicked();
-  void OnSigninAccountButtonClicked();
+  void OnSigninAccountButtonClicked(AccountInfo account);
   void OnSignoutButtonClicked();
   void OnOtherProfileButtonClicked(int profile_index);
   void OnCookiesClearedOnExitLinkClicked();
@@ -138,36 +135,10 @@ class ProfileMenuView : public ProfileMenuViewBase, public AvatarMenuObserver {
 
   std::unique_ptr<AvatarMenu> avatar_menu_;
 
-  // Button in the signin/sync error header on top of the desktop user menu.
-  views::Button* sync_error_button_;
-
-  // Links and buttons displayed in the active profile card.
-  views::Link* manage_accounts_link_;
-  views::Button* manage_accounts_button_;
-  views::Button* signin_current_profile_button_;
-  HoverButton* sync_to_another_account_button_;
-  views::Button* signin_with_gaia_account_button_;
-
-  // For material design user menu, the active profile card owns the profile
-  // name and photo.
-  views::Button* current_profile_card_;
-
-  // Action buttons.
-  views::Button* first_profile_button_;
-  views::Button* guest_profile_button_;
-  views::Button* users_button_;
-  views::Button* lock_button_;
-  views::Button* close_all_windows_button_;
-  views::Button* passwords_button_;
-  views::Button* credit_cards_button_;
-  views::Button* addresses_button_;
-  views::Button* signout_button_;
-  views::Button* manage_google_account_button_;
-
-  views::StyledLabel* cookies_cleared_on_exit_label_;
-
-  // View for the signin/turn-on-sync button in the dice promo.
-  DiceSigninButtonView* dice_signin_button_view_;
+  // Button pointers used in tests.
+  views::Button* first_profile_button_ = nullptr;
+  views::Button* lock_button_ = nullptr;
+  views::Button* signin_current_profile_button_ = nullptr;
 
   // The GAIA service type provided in the response header.
   signin::GAIAServiceType gaia_service_type_;

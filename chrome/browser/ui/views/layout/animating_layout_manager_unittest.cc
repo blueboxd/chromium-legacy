@@ -139,7 +139,7 @@ class AnimatingLayoutManagerSteppingTest : public testing::Test {
   View* view_;
   std::vector<View*> children_;
   AnimatingLayoutManager* animating_layout_manager_ = nullptr;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<gfx::AnimationContainerTestApi> container_test_api_;
 };
 

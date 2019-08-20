@@ -112,7 +112,7 @@ class TraceEventAgentTest : public testing::Test {
   MockRecorder* recorder() const { return recorder_.get(); }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<MockRecorder> recorder_;
 };
 

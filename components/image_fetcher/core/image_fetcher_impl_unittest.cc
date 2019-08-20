@@ -48,7 +48,7 @@ class ImageFetcherImplTest : public testing::Test {
         std::move(decoder), shared_factory_);
   }
 
-  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
   FakeImageDecoder* image_decoder() { return fake_image_decoder_; }
   network::TestURLLoaderFactory* test_url_loader_factory() {
@@ -61,7 +61,7 @@ class ImageFetcherImplTest : public testing::Test {
   FakeImageDecoder* fake_image_decoder_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageFetcherImplTest);
 };

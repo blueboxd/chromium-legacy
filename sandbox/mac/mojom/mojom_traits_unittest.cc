@@ -29,7 +29,7 @@ class StructTraitsTest : public testing::Test,
     std::move(callback).Run(std::move(token));
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   sandbox::mac::mojom::TraitsTestServicePtr interface_ptr_;
   mojo::Binding<sandbox::mac::mojom::TraitsTestService> binding_;

@@ -162,7 +162,7 @@ class VpxVideoDecoderTest : public testing::Test {
 
   MOCK_METHOD1(DecodeDone, void(DecodeStatus));
 
-  base::test::ScopedTaskEnvironment task_env_;
+  base::test::TaskEnvironment task_env_;
   std::unique_ptr<VideoDecoder> decoder_;
 
   scoped_refptr<DecoderBuffer> i_frame_buffer_;

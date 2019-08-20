@@ -58,8 +58,7 @@ class FileSystemOperationImplTest
     : public testing::Test {
  public:
   FileSystemOperationImplTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
 
  protected:
   void SetUp() override {
@@ -254,7 +253,7 @@ class FileSystemOperationImplTest
             quota_manager_.get(),
             url::Origin::Create(sandbox_file_system_.origin()),
             sandbox_file_system_.type(), usage, quota);
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     ASSERT_EQ(blink::mojom::QuotaStatusCode::kOk, status);
   }
 
@@ -460,7 +459,7 @@ class FileSystemOperationImplTest
     return status;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   scoped_refptr<QuotaManager> quota_manager_;

@@ -247,7 +247,7 @@ class TopSitesImplTest : public HistoryUnitTestBase {
       top_sites_impl_->ShutdownOnUIThread();
       top_sites_impl_ = nullptr;
 
-      scoped_task_environment_.RunUntilIdle();
+      task_environment_.RunUntilIdle();
     }
   }
 
@@ -258,7 +258,7 @@ class TopSitesImplTest : public HistoryUnitTestBase {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   base::ScopedTempDir scoped_temp_dir_;
 

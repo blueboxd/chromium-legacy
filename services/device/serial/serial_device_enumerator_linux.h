@@ -36,6 +36,8 @@ class SerialDeviceEnumeratorLinux : public SerialDeviceEnumerator,
   void OnDeviceRemoved(ScopedUdevDevicePtr device) override;
 
  private:
+  void CreatePort(ScopedUdevDevicePtr device, const std::string& syspath);
+
   std::unique_ptr<UdevWatcher> watcher_;
   std::map<base::UnguessableToken, mojom::SerialPortInfoPtr> ports_;
   std::map<std::string, base::UnguessableToken> paths_;

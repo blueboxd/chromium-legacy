@@ -176,9 +176,9 @@ void AutocompleteResult::SortAndCull(
     MaybeCullTailSuggestions(&matches_);
   }
 #endif
-  DeduplicateMatches(input.current_page_classification(), &matches_);
-
   DemoteOnDeviceSearchSuggestions();
+
+  DeduplicateMatches(input.current_page_classification(), &matches_);
 
   // Sort and trim to the most relevant GetMaxMatches() matches.
   CompareWithDemoteByType<AutocompleteMatch> comparing_object(

@@ -183,7 +183,7 @@ class AutofillMergeTest : public DataDrivenTest,
   // Deserializes |str| into a field type.
   ServerFieldType StringToFieldType(const std::string& str);
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestAutofillClient autofill_client_;
   PersonalDataManagerMock personal_data_;
   std::unique_ptr<FormDataImporter> form_data_importer_;

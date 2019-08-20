@@ -72,12 +72,10 @@ class FrameInterferenceRecorderTest : public testing::Test {
   }
 
   void FastForwardBy(base::TimeDelta delta) {
-    scoped_task_environment_.FastForwardBy(delta);
+    task_environment_.FastForwardBy(delta);
   }
 
-  base::TimeTicks NowTicks() const {
-    return scoped_task_environment_.NowTicks();
-  }
+  base::TimeTicks NowTicks() const { return task_environment_.NowTicks(); }
 
   void OnTaskReady(FrameScheduler* frame_scheduler,
                    base::sequence_manager::EnqueueOrder enqueue_order) {
@@ -86,7 +84,7 @@ class FrameInterferenceRecorderTest : public testing::Test {
   }
 
   const base::TickClock* GetMockTickClock() const {
-    return scoped_task_environment_.GetMockTickClock();
+    return task_environment_.GetMockTickClock();
   }
 
   testing::StrictMock<MockFrameInterferenceRecorder> recorder_{this};
@@ -104,8 +102,8 @@ class FrameInterferenceRecorderTest : public testing::Test {
   scoped_refptr<MainThreadTaskQueue> queue_no_frame_ =
       CreateMainThreadTaskQueue();
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
  private:
   scoped_refptr<MainThreadTaskQueue> CreateMainThreadTaskQueue() {

@@ -363,8 +363,8 @@ TEST_F(SSLErrorClassificationTest, GetClockState) {
 // Tests that all possible NetworkClockState histogram values are recorded
 // appropriately.
 TEST_F(SSLErrorClassificationTest, NetworkClockStateHistogram) {
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
 
   scoped_refptr<network::TestSharedURLLoaderFactory> shared_url_loader_factory =
       base::MakeRefCounted<network::TestSharedURLLoaderFactory>();

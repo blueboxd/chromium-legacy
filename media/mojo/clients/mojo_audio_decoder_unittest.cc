@@ -66,7 +66,7 @@ class MojoAudioDecoderTest : public ::testing::Test {
                        base::Unretained(this),
                        base::Passed(mojo::MakeRequest(&remote_audio_decoder))));
     mojo_audio_decoder_.reset(
-        new MojoAudioDecoder(scoped_task_environment_.GetMainThreadTaskRunner(),
+        new MojoAudioDecoder(task_environment_.GetMainThreadTaskRunner(),
                              std::move(remote_audio_decoder)));
   }
 
@@ -219,7 +219,7 @@ class MojoAudioDecoderTest : public ::testing::Test {
     RunLoop();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
   // The MojoAudioDecoder that we are testing.

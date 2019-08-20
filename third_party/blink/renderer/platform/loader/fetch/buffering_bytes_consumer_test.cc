@@ -20,8 +20,7 @@ namespace {
 class BufferingBytesConsumerTest : public testing::Test {
  public:
   BufferingBytesConsumerTest()
-      : task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   using Command = ReplayingBytesConsumer::Command;
   using Result = BytesConsumer::Result;
@@ -40,7 +39,7 @@ class BufferingBytesConsumerTest : public testing::Test {
     return consumer_handle;
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(BufferingBytesConsumerTest, Read) {

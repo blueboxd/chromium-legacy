@@ -189,6 +189,11 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   // Either this function or SetBoxType must be called before ToBoxFragment().
   void SetIsNewFormattingContext(bool is_new_fc) { is_new_fc_ = is_new_fc; }
 
+  void SetCustomLayoutData(
+      scoped_refptr<SerializedScriptValue> custom_layout_data) {
+    custom_layout_data_ = std::move(custom_layout_data);
+  }
+
   // Layout algorithms should call this function for each baseline request in
   // the constraint space.
   //
@@ -259,6 +264,8 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   NGBaselineList baselines_;
 
   NGBorderEdges border_edges_;
+
+  scoped_refptr<SerializedScriptValue> custom_layout_data_;
 
   friend class NGPhysicalBoxFragment;
   friend class NGLayoutResult;

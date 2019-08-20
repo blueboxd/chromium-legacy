@@ -33,8 +33,7 @@ class TimeRangeSelectorTableViewControllerTest
     : public ChromeTableViewControllerTest {
  protected:
   TimeRangeSelectorTableViewControllerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
     ChromeTableViewControllerTest::SetUp();
@@ -66,7 +65,7 @@ class TimeRangeSelectorTableViewControllerTest
     EXPECT_EQ(accessory_type, cell.accessoryType);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<PrefService> pref_service_;
   TimeRangeSelectorTableViewController* time_range_selector_controller_;
 };

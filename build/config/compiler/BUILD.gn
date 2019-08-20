@@ -186,8 +186,7 @@ if (is_win || is_android || is_chromeos) {
     } else if (is_win && is_clang && is_official_build) {
       chrome_orderfile_path = "//chrome/build/chrome.$target_cpu.orderfile"
     } else if (is_chromeos) {
-      # FIXME(tcwang): update this with autoroller.
-      chrome_orderfile_path = ""
+      chrome_orderfile_path = "//chromeos/profiles/chromeos.orderfile.txt"
     }
   }
 }

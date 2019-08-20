@@ -155,7 +155,7 @@ class ZeroSuggestProviderTest : public testing::Test,
   void CreateMostVisitedFieldTrial();
   void SetZeroSuggestVariantForAllContexts(const std::string& variant);
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
 
   std::unique_ptr<FakeAutocompleteProviderClient> client_;

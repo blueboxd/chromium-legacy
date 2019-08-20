@@ -34,8 +34,7 @@ void DummyRetrieveOriginPolicyCallback(const network::OriginPolicy& result) {}
 class OriginPolicyFetcherTest : public testing::Test {
  public:
   OriginPolicyFetcherTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {
     network_service_ = NetworkService::CreateForTesting();
     auto context_params = mojom::NetworkContextParams::New();
     // Use a fixed proxy config, to avoid dependencies on local network
@@ -129,7 +128,7 @@ class OriginPolicyFetcherTest : public testing::Test {
     return std::move(response);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<NetworkService> network_service_;
   std::unique_ptr<NetworkContext> network_context_;
   mojom::NetworkContextPtr network_context_ptr_;

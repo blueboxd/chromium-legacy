@@ -66,7 +66,7 @@ class DiscardableSharedMemoryManagerTest : public testing::Test {
   }
 
   // DiscardableSharedMemoryManager requires a message loop.
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<TestDiscardableSharedMemoryManager> manager_;
 };
 
@@ -240,7 +240,7 @@ class DiscardableSharedMemoryManagerScheduleEnforceMemoryPolicyTest
   void SetUp() override { manager_.reset(new DiscardableSharedMemoryManager); }
 
   // DiscardableSharedMemoryManager requires a message loop.
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<DiscardableSharedMemoryManager> manager_;
 };
 

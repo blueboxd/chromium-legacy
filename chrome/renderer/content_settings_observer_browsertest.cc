@@ -58,8 +58,13 @@ class MockContentSettingsObserver : public ContentSettingsObserver {
   MOCK_METHOD2(OnContentBlocked,
                void(ContentSettingsType, const base::string16&));
 
-  MOCK_METHOD5(OnAllowDOMStorage,
-               void(int, const GURL&, const GURL&, bool, IPC::Message*));
+  MOCK_METHOD6(OnAllowDOMStorage,
+               void(int,
+                    const url::Origin&,
+                    const GURL&,
+                    const url::Origin&,
+                    bool,
+                    IPC::Message*));
 
   const GURL& image_url() const { return image_url_; }
   const std::string& image_origin() const { return image_origin_; }
@@ -155,10 +160,9 @@ TEST_F(ContentSettingsObserverBrowserTest, AllowDOMStorage) {
   LoadHTMLWithUrlOverride("<html></html>", "https://example.com/");
   MockContentSettingsObserver observer(view_->GetMainRenderFrame(),
                                        registry_.get());
-  ON_CALL(observer,
-          OnAllowDOMStorage(_, _, _, _, _)).WillByDefault(DeleteArg<4>());
-  EXPECT_CALL(observer,
-              OnAllowDOMStorage(_, _, _, _, _));
+  ON_CALL(observer, OnAllowDOMStorage(_, _, _, _, _, _))
+      .WillByDefault(DeleteArg<5>());
+  EXPECT_CALL(observer, OnAllowDOMStorage(_, _, _, _, _, _));
   observer.AllowStorage(true);
 
   // Accessing localStorage from the same origin again shouldn't result in a

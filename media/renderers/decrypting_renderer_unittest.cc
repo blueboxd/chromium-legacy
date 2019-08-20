@@ -38,7 +38,7 @@ class DecryptingRendererTest : public testing::Test {
     renderer_ = renderer.get();
     decrypting_renderer_ = std::make_unique<DecryptingRenderer>(
         std::move(renderer), &null_media_log_,
-        scoped_task_environment_.GetMainThreadTaskRunner());
+        task_environment_.GetMainThreadTaskRunner());
 
     EXPECT_CALL(cdm_context_, GetDecryptor())
         .WillRepeatedly(Return(&decryptor_));
@@ -85,7 +85,7 @@ class DecryptingRendererTest : public testing::Test {
   }
 
   bool use_aes_decryptor_ = false;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::MockCallback<CdmAttachedCB> set_cdm_cb_;
   base::MockCallback<PipelineStatusCB> renderer_init_cb_;
   NullMediaLog null_media_log_;
@@ -108,7 +108,7 @@ TEST_F(DecryptingRendererTest, ClearStreams_NoCdm) {
 
   decrypting_renderer_->Initialize(&media_resource_, &renderer_client_,
                                    renderer_init_cb_.Get());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(decrypting_renderer_->HasDecryptingMediaResourceForTesting());
 }
@@ -126,7 +126,7 @@ TEST_F(DecryptingRendererTest, ClearStreams_AesDecryptor) {
   decrypting_renderer_->SetCdm(&cdm_context_, set_cdm_cb_.Get());
   decrypting_renderer_->Initialize(&media_resource_, &renderer_client_,
                                    renderer_init_cb_.Get());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(decrypting_renderer_->HasDecryptingMediaResourceForTesting());
 }
@@ -144,7 +144,7 @@ TEST_F(DecryptingRendererTest, ClearStreams_OtherCdm) {
   decrypting_renderer_->Initialize(&media_resource_, &renderer_client_,
                                    renderer_init_cb_.Get());
   decrypting_renderer_->SetCdm(&cdm_context_, set_cdm_cb_.Get());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(decrypting_renderer_->HasDecryptingMediaResourceForTesting());
 }
@@ -155,7 +155,7 @@ TEST_F(DecryptingRendererTest, EncryptedStreams_NoCdm) {
 
   decrypting_renderer_->Initialize(&media_resource_, &renderer_client_,
                                    renderer_init_cb_.Get());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(decrypting_renderer_->HasDecryptingMediaResourceForTesting());
 }
@@ -173,7 +173,7 @@ TEST_F(DecryptingRendererTest, EncryptedStreams_AesDecryptor) {
   decrypting_renderer_->Initialize(&media_resource_, &renderer_client_,
                                    renderer_init_cb_.Get());
   decrypting_renderer_->SetCdm(&cdm_context_, set_cdm_cb_.Get());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(decrypting_renderer_->HasDecryptingMediaResourceForTesting());
 }
@@ -191,7 +191,7 @@ TEST_F(DecryptingRendererTest, EncryptedStreams_OtherCdm) {
   decrypting_renderer_->Initialize(&media_resource_, &renderer_client_,
                                    renderer_init_cb_.Get());
   decrypting_renderer_->SetCdm(&cdm_context_, set_cdm_cb_.Get());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(decrypting_renderer_->HasDecryptingMediaResourceForTesting());
 }
@@ -209,7 +209,7 @@ TEST_F(DecryptingRendererTest, EncryptedStreams_AesDecryptor_CdmSetBeforeInit) {
   decrypting_renderer_->SetCdm(&cdm_context_, set_cdm_cb_.Get());
   decrypting_renderer_->Initialize(&media_resource_, &renderer_client_,
                                    renderer_init_cb_.Get());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(decrypting_renderer_->HasDecryptingMediaResourceForTesting());
 }
@@ -227,7 +227,7 @@ TEST_F(DecryptingRendererTest, EncryptedStreams_OtherCdm_CdmSetBeforeInit) {
   decrypting_renderer_->SetCdm(&cdm_context_, set_cdm_cb_.Get());
   decrypting_renderer_->Initialize(&media_resource_, &renderer_client_,
                                    renderer_init_cb_.Get());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(decrypting_renderer_->HasDecryptingMediaResourceForTesting());
 }
@@ -245,7 +245,7 @@ TEST_F(DecryptingRendererTest, EncryptedAndClearStream_OtherCdm) {
   decrypting_renderer_->Initialize(&media_resource_, &renderer_client_,
                                    renderer_init_cb_.Get());
   decrypting_renderer_->SetCdm(&cdm_context_, set_cdm_cb_.Get());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(decrypting_renderer_->HasDecryptingMediaResourceForTesting());
 }
@@ -259,7 +259,7 @@ TEST_F(DecryptingRendererTest, DecryptingMediaResourceInitFails) {
 
   decrypting_renderer_->Initialize(&media_resource_, &renderer_client_,
                                    renderer_init_cb_.Get());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Cause a PIPELINE_ERROR_INITIALIZATION_FAILED error to be passed as a
   // parameter to the initialization callback.

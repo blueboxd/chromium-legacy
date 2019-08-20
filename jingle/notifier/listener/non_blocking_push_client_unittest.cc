@@ -60,7 +60,7 @@ class NonBlockingPushClientTest : public testing::Test {
     return std::unique_ptr<PushClient>(fake_push_client_);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   FakePushClientObserver fake_observer_;
   std::unique_ptr<NonBlockingPushClient> push_client_;
   // Owned by |push_client_|.

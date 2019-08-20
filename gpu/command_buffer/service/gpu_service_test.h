@@ -42,7 +42,7 @@ class GpuServiceTest : public testing::Test {
   bool ran_teardown_;
   scoped_refptr<gl::GLContextStub> context_;
   scoped_refptr<gl::GLSurfaceStub> surface_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 }  // namespace gles2

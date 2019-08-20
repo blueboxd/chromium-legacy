@@ -3526,6 +3526,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHappinessTrackingSurveysForDesktopDescription,
      kOsDesktop,
      FEATURE_VALUE_TYPE(features::kHappinessTrackingSurveysForDesktop)},
+
+    {"happiness-tracking-surveys-for-desktop-demo",
+     flag_descriptions::kHappinessTrackingSurveysForDesktopDemoName,
+     flag_descriptions::kHappinessTrackingSurveysForDesktopDemoDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kHappinessTrackingSurveysForDesktopDemo)},
 #endif  // !defined(OS_ANDROID)
 
     {"enable-service-worker-imported-script-update-check",
@@ -4332,6 +4338,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"bundled-exchanges", flag_descriptions::kBundledHTTPExchangesName,
      flag_descriptions::kBundledHTTPExchangesDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kBundledHTTPExchanges)},
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+    {"profile-menu-revamp", flag_descriptions::kProfileMenuRevampName,
+     flag_descriptions::kProfileMenuRevampDescription,
+     kOsWin | kOsMac | kOsLinux,
+     FEATURE_VALUE_TYPE(features::kProfileMenuRevamp)},
+#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

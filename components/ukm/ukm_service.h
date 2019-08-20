@@ -128,13 +128,13 @@ class UkmService : public UkmRecorderImpl {
   bool restrict_to_whitelist_entries_;
 
   // The UKM client id stored in prefs.
-  uint64_t client_id_ = 0;
+  uint64_t client_id_;
 
   // The UKM session id stored in prefs.
-  int32_t session_id_ = 0;
+  int32_t session_id_;
 
   // The number of reports generated this session.
-  int32_t report_count_ = 0;
+  int32_t report_count_;
 
   // Used to interact with the embedder. Weak pointer; must outlive |this|
   // instance.
@@ -149,12 +149,10 @@ class UkmService : public UkmRecorderImpl {
   // The scheduler for determining when uploads should happen.
   std::unique_ptr<metrics::MetricsRotationScheduler> scheduler_;
 
-  base::TimeTicks log_creation_time_;
-
-  bool initialize_started_ = false;
-  bool initialize_complete_ = false;
-
   SEQUENCE_CHECKER(sequence_checker_);
+
+  bool initialize_started_;
+  bool initialize_complete_;
 
   // Weak pointers factory used to post task on different threads. All weak
   // pointers managed by this factory have the same lifetime as UkmService.

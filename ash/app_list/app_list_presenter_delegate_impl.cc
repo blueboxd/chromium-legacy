@@ -235,7 +235,6 @@ void AppListPresenterDelegateImpl::ProcessLocatedEvent(
       !app_list::switches::ShouldNotDismissOnBlur() && !IsTabletMode()) {
     const aura::Window* status_window =
         shelf->shelf_widget()->status_area_widget()->GetNativeWindow();
-    const aura::Window* shelf_window = shelf->shelf_widget()->GetNativeWindow();
     // Don't dismiss the auto-hide shelf if event happened in status area. Then
     // the event can still be propagated to the status area tray to open the
     // corresponding tray bubble.
@@ -243,8 +242,10 @@ void AppListPresenterDelegateImpl::ProcessLocatedEvent(
     if (status_window && status_window->Contains(target))
       auto_hide_lock.emplace(shelf);
 
-    // Keep app list opened if event happened in the shelf area.
-    if (!shelf_window || !shelf_window->Contains(target))
+    // Keep the app list open if the event happened in the shelf area.
+    const aura::Window* hotseat_window =
+        shelf->shelf_widget()->hotseat_widget()->GetNativeWindow();
+    if (!hotseat_window || !hotseat_window->Contains(target))
       presenter_->Dismiss(event->time_stamp());
   }
 

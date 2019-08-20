@@ -5,7 +5,6 @@
 #include "content/browser/renderer_host/input/mouse_wheel_event_queue.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "content/common/input/input_event_dispatch_type.h"
 #include "content/common/input/web_mouse_wheel_event_traits.h"
@@ -19,23 +18,6 @@ using blink::WebMouseWheelEvent;
 using ui::LatencyInfo;
 
 namespace content {
-
-// This class represents a single queued mouse wheel event. Its main use
-// is that it is reported via trace events.
-class QueuedWebMouseWheelEvent : public MouseWheelEventWithLatencyInfo {
- public:
-  QueuedWebMouseWheelEvent(const MouseWheelEventWithLatencyInfo& original_event)
-      : MouseWheelEventWithLatencyInfo(original_event) {
-    TRACE_EVENT_ASYNC_BEGIN0("input", "MouseWheelEventQueue::QueueEvent", this);
-  }
-
-  ~QueuedWebMouseWheelEvent() {
-    TRACE_EVENT_ASYNC_END0("input", "MouseWheelEventQueue::QueueEvent", this);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(QueuedWebMouseWheelEvent);
-};
 
 MouseWheelEventQueue::MouseWheelEventQueue(MouseWheelEventQueueClient* client)
     : client_(client),
@@ -125,12 +107,21 @@ bool MouseWheelEventQueue::CanGenerateGestureScroll(
 void MouseWheelEventQueue::ProcessMouseWheelAck(
     InputEventAckSource ack_source,
     InputEventAckState ack_result,
-    const LatencyInfo& latency_info) {
+    const MouseWheelEventWithLatencyInfo& ack_event) {
   TRACE_EVENT0("input", "MouseWheelEventQueue::ProcessMouseWheelAck");
   if (!event_sent_for_gesture_ack_)
     return;
 
-  event_sent_for_gesture_ack_->latency.AddNewLatencyFrom(latency_info);
+  // |ack_event.event| should be the same as
+  // |event_sent_for_gesture_ack_->event|. If they aren't, then don't continue
+  // processing the ack. The two events can potentially be different because
+  // TouchpadPinchEventQueue also dispatches wheel events, and any wheel event
+  // ack that is received is sent to both *EventQueue::ProcessMouseWheelAck
+  // methods.
+  if (ack_event.event != event_sent_for_gesture_ack_->event)
+    return;
+
+  event_sent_for_gesture_ack_->latency.AddNewLatencyFrom(ack_event.latency);
   client_->OnMouseWheelEventAck(*event_sent_for_gesture_ack_, ack_source,
                                 ack_result);
 

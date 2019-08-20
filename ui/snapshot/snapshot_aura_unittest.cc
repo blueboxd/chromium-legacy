@@ -99,9 +99,8 @@ class SnapshotAuraTest : public testing::TestWithParam<bool> {
   void SetUp() override {
     testing::Test::SetUp();
 
-    scoped_task_environment_ =
-        std::make_unique<base::test::ScopedTaskEnvironment>(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI);
+    task_environment_ = std::make_unique<base::test::TaskEnvironment>(
+        base::test::TaskEnvironment::MainThreadType::UI);
 
     // The ContextFactory must exist before any Compositors are created.
     // Snapshot test tests real drawing and readback, so needs pixel output.
@@ -121,7 +120,7 @@ class SnapshotAuraTest : public testing::TestWithParam<bool> {
     helper_->RunAllPendingInMessageLoop();
     helper_->TearDown();
     context_factories_.reset();
-    scoped_task_environment_.reset();
+    task_environment_.reset();
     testing::Test::TearDown();
   }
 
@@ -182,7 +181,7 @@ class SnapshotAuraTest : public testing::TestWithParam<bool> {
     bool completed_;
   };
 
-  std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
+  std::unique_ptr<base::test::TaskEnvironment> task_environment_;
   std::unique_ptr<ui::TestContextFactories> context_factories_;
   std::unique_ptr<aura::test::AuraTestHelper> helper_;
   std::unique_ptr<aura::Window> test_window_;

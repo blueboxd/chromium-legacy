@@ -68,6 +68,7 @@ class CORE_EXPORT LinkHighlights final
   FRIEND_TEST_ALL_PREFIXES(LinkHighlightImplTest, multipleHighlights);
   FRIEND_TEST_ALL_PREFIXES(LinkHighlightImplTest, HighlightLayerEffectNode);
   FRIEND_TEST_ALL_PREFIXES(LinkHighlightImplTest, MultiColumn);
+  FRIEND_TEST_ALL_PREFIXES(LinkHighlightSquashingImplTest, SquashingLayer);
 
   void RemoveAllHighlights();
 

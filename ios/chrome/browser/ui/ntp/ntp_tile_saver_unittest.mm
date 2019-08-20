@@ -160,7 +160,7 @@ class NTPTileSaverControllerTest : public BlockCleanupTest {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_evironment_;
+  base::test::TaskEnvironment scoped_task_evironment_;
   UIImage* mock_image_;
 };
 

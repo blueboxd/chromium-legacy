@@ -157,7 +157,7 @@ class GpuTest : public testing::Test {
     event.Wait();
   }
 
-  base::test::ScopedTaskEnvironment env_;
+  base::test::TaskEnvironment env_;
   base::Thread io_thread_;
   std::unique_ptr<Gpu> gpu_;
   std::unique_ptr<TestGpuImpl> gpu_impl_;

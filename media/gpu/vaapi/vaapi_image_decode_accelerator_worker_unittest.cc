@@ -159,7 +159,7 @@ class VaapiImageDecodeAcceleratorWorkerTest : public testing::Test {
       void(std::unique_ptr<gpu::ImageDecodeAcceleratorWorker::DecodeResult>));
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<VaapiImageDecodeAcceleratorWorker> worker_;
 
   DISALLOW_COPY_AND_ASSIGN(VaapiImageDecodeAcceleratorWorkerTest);
@@ -224,7 +224,7 @@ TEST_F(VaapiImageDecodeAcceleratorWorkerTest, ImageDecodeSucceeds) {
       std::move(webp_encoded_data), kVisibleSize,
       base::BindOnce(&VaapiImageDecodeAcceleratorWorkerTest::OnDecodeCompleted,
                      base::Unretained(this)));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(VaapiImageDecodeAcceleratorWorkerTest, ImageDecodeFails) {
@@ -266,7 +266,7 @@ TEST_F(VaapiImageDecodeAcceleratorWorkerTest, ImageDecodeFails) {
       std::move(webp_encoded_data), kVisibleSize,
       base::BindOnce(&VaapiImageDecodeAcceleratorWorkerTest::OnDecodeCompleted,
                      base::Unretained(this)));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(VaapiImageDecodeAcceleratorWorkerTest, UnknownImageDecodeFails) {
@@ -276,7 +276,7 @@ TEST_F(VaapiImageDecodeAcceleratorWorkerTest, UnknownImageDecodeFails) {
       std::move(encoded_data), kVisibleSize,
       base::BindOnce(&VaapiImageDecodeAcceleratorWorkerTest::OnDecodeCompleted,
                      base::Unretained(this)));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 }  // namespace media

@@ -45,8 +45,7 @@ class CrashMetricsReporterObserver : public CrashMetricsReporter::Observer {
 class CrashMetricsReporterTest : public testing::Test {
  public:
   CrashMetricsReporterTest()
-      : scoped_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : scoped_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
   ~CrashMetricsReporterTest() override {}
 
  protected:
@@ -82,7 +81,7 @@ class CrashMetricsReporterTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_environment_;
+  base::test::TaskEnvironment scoped_environment_;
   DISALLOW_COPY_AND_ASSIGN(CrashMetricsReporterTest);
 };
 

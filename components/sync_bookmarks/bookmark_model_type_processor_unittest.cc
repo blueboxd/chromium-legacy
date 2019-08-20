@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -169,7 +170,7 @@ class BookmarkModelTypeProcessorTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   NiceMock<base::MockCallback<base::RepeatingClosure>> schedule_save_closure_;
   BookmarkUndoService bookmark_undo_service_;
   NiceMock<favicon::MockFaviconService> favicon_service_;
@@ -344,8 +345,11 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldDecodeSyncMetadata) {
 
   std::string metadata_str;
   model_metadata.SerializeToString(&metadata_str);
+  base::HistogramTester histogram_tester;
   new_processor.ModelReadyToSync(metadata_str, base::DoNothing(),
                                  bookmark_model());
+  histogram_tester.ExpectTotalCount("Sync.BookmarksModelReadyToSyncTime",
+                                    /*count=*/1);
 
   AssertState(&new_processor, bookmarks);
 }

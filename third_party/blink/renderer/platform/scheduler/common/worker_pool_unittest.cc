@@ -21,7 +21,7 @@ void PingPongTask(base::WaitableEvent* done_event) {
 }  // namespace
 
 TEST(BackgroundSchedulerTest, RunOnBackgroundThread) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   std::unique_ptr<base::WaitableEvent> done_event =
       std::make_unique<base::WaitableEvent>();
   worker_pool::PostTask(

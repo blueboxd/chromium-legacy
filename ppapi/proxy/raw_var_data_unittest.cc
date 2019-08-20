@@ -52,8 +52,8 @@ class RawVarDataTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment
-      scoped_task_environment_;  // Required to receive callbacks.
+  base::test::TaskEnvironment
+      task_environment_;  // Required to receive callbacks.
   TestGlobals globals_;
 };
 

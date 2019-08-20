@@ -119,7 +119,7 @@ class SyncSharedChangeProcessorTest : public testing::Test {
     did_connect_ = true;
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::Thread model_thread_;
   TestUserShare test_user_share_;
 

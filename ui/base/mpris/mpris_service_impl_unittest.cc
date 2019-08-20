@@ -51,8 +51,7 @@ class MockMprisServiceObserver : public MprisServiceObserver {
 class MprisServiceImplTest : public testing::Test, public MprisServiceObserver {
  public:
   MprisServiceImplTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
   ~MprisServiceImplTest() override = default;
 
   void SetUp() override { StartMprisServiceAndWaitForReady(); }
@@ -153,7 +152,7 @@ class MprisServiceImplTest : public testing::Test, public MprisServiceObserver {
       service_wait_loop_->Quit();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<base::RunLoop> service_wait_loop_;
   std::unique_ptr<base::RunLoop> response_wait_loop_;
   std::unique_ptr<MprisServiceImpl> service_;

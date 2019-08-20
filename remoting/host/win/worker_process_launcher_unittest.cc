@@ -158,8 +158,8 @@ class WorkerProcessLauncherTest
  protected:
   void DoLaunchProcess();
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::IO};
   scoped_refptr<AutoThreadTaskRunner> task_runner_;
 
   // Receives messages sent to the worker process.
@@ -196,7 +196,7 @@ WorkerProcessLauncherTest::~WorkerProcessLauncherTest() {
 
 void WorkerProcessLauncherTest::SetUp() {
   task_runner_ = new AutoThreadTaskRunner(
-      scoped_task_environment_.GetMainThreadTaskRunner(),
+      task_environment_.GetMainThreadTaskRunner(),
       base::Bind(&WorkerProcessLauncherTest::QuitMainMessageLoop,
                  base::Unretained(this)));
 
@@ -341,7 +341,7 @@ void WorkerProcessLauncherTest::StopWorker() {
 }
 
 void WorkerProcessLauncherTest::QuitMainMessageLoop() {
-  scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+  task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
 }
 

@@ -194,7 +194,7 @@ class HistoryQueryTest : public testing::Test {
 
   base::ScopedTempDir temp_dir_;
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   base::FilePath history_dir_;
 

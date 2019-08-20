@@ -150,9 +150,9 @@ class CoordinatorImplTest : public testing::Test {
  protected:
   std::unique_ptr<NiceMock<FakeCoordinatorImpl>> coordinator_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 };
 
 class MockClientProcess : public mojom::ClientProcess {
@@ -321,8 +321,8 @@ TEST_F(CoordinatorImplTest, QueuedRequest) {
 
   // This variable to be static as the lambda below has to convert to a function
   // pointer rather than a functor.
-  static base::test::ScopedTaskEnvironment* task_environment = nullptr;
-  task_environment = &scoped_task_environment_;
+  static base::test::TaskEnvironment* task_environment = nullptr;
+  task_environment = &task_environment_;
 
   NiceMock<MockClientProcess> client_process_1(this, 1,
                                                mojom::ProcessType::BROWSER);

@@ -268,7 +268,7 @@ IDBRequest* IDBFactory::GetDatabaseNames(ScriptState* script_state,
                       WebFeature::kFileAccessedDatabase);
   }
 
-  if (!AllowIndexedDB(ExecutionContext::From(script_state))) {
+  if (!CachedAllowIndexedDB(script_state)) {
     request->HandleResponse(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kUnknownError, kPermissionDeniedErrorMessage));
     return request;
@@ -330,7 +330,7 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
       script_state, database_callbacks, std::move(transaction_backend),
       transaction_id, version, std::move(metrics));
 
-  if (!AllowIndexedDB(ExecutionContext::From(script_state))) {
+  if (!CachedAllowIndexedDB(script_state)) {
     request->HandleResponse(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kUnknownError, kPermissionDeniedErrorMessage));
     return request;
@@ -397,7 +397,7 @@ IDBOpenDBRequest* IDBFactory::DeleteDatabaseInternal(
       script_state, nullptr, /*IDBTransactionAssociatedPtr=*/nullptr, 0,
       IDBDatabaseMetadata::kDefaultVersion, std::move(metrics));
 
-  if (!AllowIndexedDB(ExecutionContext::From(script_state))) {
+  if (!CachedAllowIndexedDB(script_state)) {
     request->HandleResponse(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kUnknownError, kPermissionDeniedErrorMessage));
     return request;
@@ -444,7 +444,8 @@ int16_t IDBFactory::cmp(ScriptState* script_state,
   return static_cast<int16_t>(first->Compare(second.get()));
 }
 
-bool IDBFactory::AllowIndexedDB(ExecutionContext* execution_context) {
+bool IDBFactory::AllowIndexedDB(ScriptState* script_state) {
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
   DCHECK(execution_context->IsContextThread());
   SECURITY_DCHECK(execution_context->IsDocument() ||
                   execution_context->IsWorkerGlobalScope());
@@ -453,6 +454,7 @@ bool IDBFactory::AllowIndexedDB(ExecutionContext* execution_context) {
     if (!frame)
       return false;
     if (auto* settings_client = frame->GetContentSettingsClient()) {
+      // This triggers a sync IPC.
       return settings_client->AllowIndexedDB(
           WebSecurityOrigin(execution_context->GetSecurityOrigin()));
     }
@@ -463,8 +465,17 @@ bool IDBFactory::AllowIndexedDB(ExecutionContext* execution_context) {
       To<WorkerGlobalScope>(execution_context)->ContentSettingsClient();
   if (!content_settings_client)
     return true;
+  // This triggers a sync IPC.
   return content_settings_client->AllowIndexedDB(
       WebSecurityOrigin(execution_context->GetSecurityOrigin()));
+}
+
+bool IDBFactory::CachedAllowIndexedDB(ScriptState* script_state) {
+  if (!cached_allowed_.has_value()) {
+    // Cache the AllowIndexedDB() call because it triggers a sync IPC.
+    cached_allowed_.emplace(AllowIndexedDB(script_state));
+  }
+  return cached_allowed_.value();
 }
 
 }  // namespace blink

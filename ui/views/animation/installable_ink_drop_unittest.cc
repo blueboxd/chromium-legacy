@@ -27,7 +27,7 @@ class InstallableInkDropTest : public ::testing::Test {
   View* root_view() { return &root_view_; }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   View root_view_;
 };

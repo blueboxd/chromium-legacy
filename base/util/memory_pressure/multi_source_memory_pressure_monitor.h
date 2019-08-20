@@ -11,6 +11,8 @@
 
 namespace util {
 
+class SystemMemoryPressureEvaluator;
+
 // This is a specialization of a MemoryPressureMonitor that relies on a set of
 // MemoryPressureVoters to determine the memory pressure state. The
 // MemoryPressureVoteAggregator is in charge of receiving votes from these
@@ -40,6 +42,8 @@ class MultiSourceMemoryPressureMonitor
     return &aggregator_;
   }
 
+  void ResetSystemEvaluatorForTesting();
+
  protected:
   void StartMetricsTimer();
   void StopMetricsTimer();
@@ -57,6 +61,8 @@ class MultiSourceMemoryPressureMonitor
   DispatchCallback dispatch_callback_;
 
   MemoryPressureVoteAggregator aggregator_;
+
+  std::unique_ptr<SystemMemoryPressureEvaluator> system_evaluator_;
 
   // A periodic timer to record UMA metrics.
   base::RepeatingTimer metric_timer_;

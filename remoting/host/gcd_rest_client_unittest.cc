@@ -62,7 +62,7 @@ class GcdRestClientTest : public testing::Test {
   GcdRestClient::Result last_result_ = GcdRestClient::OTHER_ERROR;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(GcdRestClientTest, NetworkErrorGettingToken) {

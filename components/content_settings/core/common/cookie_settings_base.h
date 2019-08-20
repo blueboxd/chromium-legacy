@@ -9,6 +9,7 @@
 
 #include "base/optional.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "net/cookies/cookie_constants.h"
 
 namespace url {
 class Origin;
@@ -106,10 +107,27 @@ class CookieSettingsBase {
                         content_settings::SettingSource* source,
                         ContentSetting* cookie_setting) const;
 
+  // Returns the cookie access semantics (legacy or nonlegacy) to be applied for
+  // cookies on the given domain.
+  //
+  // This may be called on any thread.
+  net::CookieAccessSemantics GetCookieAccessSemanticsForDomain(
+      const GURL& cookie_domain) const;
+
+  // Gets the setting that controls whether legacy access is allowed for a given
+  // cookie domain (provided as a URL).
+  virtual void GetSettingForLegacyCookieAccess(
+      const GURL& cookie_domain,
+      ContentSetting* setting) const = 0;
+
   // Determines whether |setting| is a valid content setting for cookies.
   static bool IsValidSetting(ContentSetting setting);
   // Determines whether |setting| means the cookie should be allowed.
   static bool IsAllowed(ContentSetting setting);
+
+  // Determines whether |setting| is a valid content setting for legacy cookie
+  // access.
+  static bool IsValidSettingForLegacyAccess(ContentSetting setting);
 
  private:
   virtual void GetCookieSettingInternal(

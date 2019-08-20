@@ -133,8 +133,6 @@ public class PrefetchBackgroundTaskUnitTest {
 
         mFakeTaskScheduler = new FakeBackgroundTaskScheduler();
         BackgroundTaskSchedulerFactory.setSchedulerForTesting(mFakeTaskScheduler);
-
-        PrefetchBackgroundTask.skipCachingFlagForTesting();
     }
 
     @Test

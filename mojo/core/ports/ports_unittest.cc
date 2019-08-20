@@ -423,7 +423,7 @@ class PortsTest : public testing::Test, public MessageRouter {
     }
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // Acquired before any operation which makes a Node busy, and before testing
   // if all nodes are idle.

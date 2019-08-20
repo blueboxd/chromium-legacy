@@ -112,7 +112,7 @@ class BrowsingDataRemoverTest : public PlatformTest {
     return BrowsingDataRemover::FromBrowserState(&browser_state_);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestBrowserState browser_state_;
 };
 

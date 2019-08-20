@@ -438,12 +438,13 @@ class TestCallback {
         [this](IndexedDBBackingStore::BlobWriteResult result) {
           this->called = true;
           switch (result) {
-            case IndexedDBBackingStore::BlobWriteResult::FAILURE_ASYNC:
+            case IndexedDBBackingStore::BlobWriteResult::kFailure:
               // Not tested.
               this->succeeded = false;
               break;
-            case IndexedDBBackingStore::BlobWriteResult::SUCCESS_ASYNC:
-            case IndexedDBBackingStore::BlobWriteResult::SUCCESS_SYNC:
+            case IndexedDBBackingStore::BlobWriteResult::kRunPhaseTwoAsync:
+            case IndexedDBBackingStore::BlobWriteResult::
+                kRunPhaseTwoAndReturnResult:
               this->succeeded = true;
               break;
           }

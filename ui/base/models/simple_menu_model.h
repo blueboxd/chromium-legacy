@@ -55,6 +55,11 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
     virtual bool GetIconForCommandId(int command_id,
                                      gfx::Image* icon) const;
 
+    // Returns the vector icon for the given command id, or null if there is
+    // none. Only used for dynamic menu items.
+    virtual const gfx::VectorIcon* GetVectorIconForCommandId(
+        int command_id) const;
+
     // Performs the action associates with the specified command id.
     // The passed |event_flags| are the flags from the event which issued this
     // command and they can be examined to find modifier keys.
@@ -93,6 +98,9 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
   void AddItemWithStringIdAndIcon(int command_id,
                                   int string_id,
                                   const gfx::ImageSkia& icon);
+  void AddItemWithStringIdAndIcon(int command_id,
+                                  int string_id,
+                                  const gfx::VectorIcon& icon);
   void AddCheckItem(int command_id, const base::string16& label);
   void AddCheckItemWithStringId(int command_id, int string_id);
   void AddRadioItem(int command_id, const base::string16& label, int group_id);
@@ -130,6 +138,10 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
                                                int string_id,
                                                MenuModel* model,
                                                const gfx::ImageSkia& icon);
+  void AddActionableSubmenuWithStringIdAndIcon(int command_id,
+                                               int string_id,
+                                               MenuModel* model,
+                                               const gfx::VectorIcon& icon);
 
   // Methods for inserting items into the model.
   void InsertItemAt(int index, int command_id, const base::string16& label);
@@ -157,6 +169,9 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
 
   // Sets the icon for the item at |index|.
   void SetIcon(int index, const gfx::Image& icon);
+
+  // As above, but uses a VectorIcon. Only one of the two should be set.
+  void SetIcon(int index, const gfx::VectorIcon& icon);
 
   // Sets the label for the item at |index|.
   void SetLabel(int index, const base::string16& label);

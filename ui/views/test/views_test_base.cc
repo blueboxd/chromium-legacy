@@ -65,7 +65,7 @@ bool InitializeVisuals() {
 
 ViewsTestBase::ViewsTestBase(
     ViewsTestBase::SubclassManagesTaskEnvironment /* tag */)
-    : scoped_task_environment_(base::nullopt) {
+    : task_environment_(base::nullopt) {
   // MaterialDesignController is initialized here instead of in SetUp because
   // a subclass might construct a MaterialDesignControllerTestAPI as a member to
   // override the value, and this must happen first.

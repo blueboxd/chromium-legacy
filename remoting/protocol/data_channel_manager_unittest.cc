@@ -99,7 +99,7 @@ std::map<std::string, FakeNamedMessagePipeHandler*>
 FakeNamedMessagePipeHandler::handlers_;
 
 void TestDataChannelManagerFullMatch(bool asynchronous) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   DataChannelManager manager;
   manager.RegisterCreateHandlerCallback("FullMatch", base::Bind(
       [](const std::string& expected_data,
@@ -191,7 +191,7 @@ void TestDataChannelManagerFullMatch(bool asynchronous) {
 }
 
 void TestDataChannelManagerMultipleRegistrations(bool asynchronous) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   DataChannelManager manager;
   manager.RegisterCreateHandlerCallback("FullMatch", base::Bind(
       [](const std::string& expected_data,

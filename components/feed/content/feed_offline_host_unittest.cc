@@ -130,7 +130,7 @@ class FeedOfflineHostTest : public ::testing::Test {
     return status_notifications_;
   }
 
-  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
   void SetupHost() {
     EXPECT_CALL(*offline_page_model(), AddObserver(testing::_))
@@ -172,7 +172,7 @@ class FeedOfflineHostTest : public ::testing::Test {
     status_notifications_.emplace_back(url, available_offline);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestOfflinePageModel offline_page_model_;
   TestPrefetchService prefetch_service_;
   std::unique_ptr<FeedOfflineHost> host_;

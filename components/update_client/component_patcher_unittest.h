@@ -29,7 +29,7 @@ class ComponentPatcherOperationTest : public testing::Test {
   ~ComponentPatcherOperationTest() override;
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir input_dir_;
   base::ScopedTempDir installed_dir_;
   base::ScopedTempDir unpack_dir_;

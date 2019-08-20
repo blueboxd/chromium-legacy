@@ -35,7 +35,7 @@ class BindingsTestBase
   static void SetupSerializationBehavior(BindingsTestSerializationMode mode);
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 }  // namespace mojo

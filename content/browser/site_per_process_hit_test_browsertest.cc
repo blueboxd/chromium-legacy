@@ -6338,6 +6338,14 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   }
 }
 
+#if defined(OS_LINUX)
+// Test is flaky. See https://crbug.com/995285
+#define MAYBE_RenderWidgetUserActivationStateTest \
+  DISABLED_RenderWidgetUserActivationStateTest
+#else
+#define MAYBE_RenderWidgetUserActivationStateTest \
+  RenderWidgetUserActivationStateTest
+#endif
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                        RenderWidgetUserActivationStateTest) {
   base::test::ScopedFeatureList scoped_feature_list_;

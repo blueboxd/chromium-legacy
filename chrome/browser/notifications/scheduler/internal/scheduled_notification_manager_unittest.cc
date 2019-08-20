@@ -31,16 +31,6 @@ namespace {
 const char kGuid[] = "test_guid_1234";
 const char kTitle[] = "test_title";
 
-void NoopConvertIconToString(SkBitmap image,
-                             base::OnceCallback<void(std::string)> callback) {
-  // TODO(hesen): Need to implement and then move a mock class.
-}
-
-void NoopConvertStringToIcon(std::string data,
-                             base::OnceCallback<void(SkBitmap)> callback) {
-  // TODO(hesen): Need to implement and then move a mock class.
-}
-
 NotificationEntry CreateNotificationEntry(SchedulerClientType type) {
   return NotificationEntry(type, base::GenerateGUID());
 }
@@ -113,8 +103,7 @@ class ScheduledNotificationManagerTest : public testing::Test {
         std::move(notification_store), std::move(icon_store),
         {SchedulerClientType::kTest1, SchedulerClientType::kTest2,
          SchedulerClientType::kTest3},
-        config_, base::BindRepeating(&NoopConvertIconToString),
-        base::BindRepeating(&NoopConvertStringToIcon));
+        config_);
   }
 
  protected:

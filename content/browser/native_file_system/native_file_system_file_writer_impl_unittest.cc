@@ -28,6 +28,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 
+using blink::mojom::NativeFileSystemStatus;
 using storage::FileSystemURL;
 
 namespace content {
@@ -135,16 +136,16 @@ class NativeFileSystemFileWriterImplTest : public testing::Test {
     }
   }
 
-  base::File::Error WriteBlobSync(uint64_t position,
-                                  blink::mojom::BlobPtr blob,
-                                  uint64_t* bytes_written_out) {
+  NativeFileSystemStatus WriteBlobSync(uint64_t position,
+                                       blink::mojom::BlobPtr blob,
+                                       uint64_t* bytes_written_out) {
     base::RunLoop loop;
-    base::File::Error result_out;
+    NativeFileSystemStatus result_out;
     handle_->Write(position, std::move(blob),
                    base::BindLambdaForTesting(
                        [&](blink::mojom::NativeFileSystemErrorPtr result,
                            uint64_t bytes_written) {
-                         result_out = result->error_code;
+                         result_out = result->status;
                          *bytes_written_out = bytes_written;
                          loop.Quit();
                        }));
@@ -152,17 +153,17 @@ class NativeFileSystemFileWriterImplTest : public testing::Test {
     return result_out;
   }
 
-  base::File::Error WriteStreamSync(
+  NativeFileSystemStatus WriteStreamSync(
       uint64_t position,
       mojo::ScopedDataPipeConsumerHandle data_pipe,
       uint64_t* bytes_written_out) {
     base::RunLoop loop;
-    base::File::Error result_out;
+    NativeFileSystemStatus result_out;
     handle_->WriteStream(position, std::move(data_pipe),
                          base::BindLambdaForTesting(
                              [&](blink::mojom::NativeFileSystemErrorPtr result,
                                  uint64_t bytes_written) {
-                               result_out = result->error_code;
+                               result_out = result->status;
                                *bytes_written_out = bytes_written;
                                loop.Quit();
                              }));
@@ -170,25 +171,25 @@ class NativeFileSystemFileWriterImplTest : public testing::Test {
     return result_out;
   }
 
-  base::File::Error TruncateSync(uint64_t length) {
+  NativeFileSystemStatus TruncateSync(uint64_t length) {
     base::RunLoop loop;
-    base::File::Error result_out;
+    NativeFileSystemStatus result_out;
     handle_->Truncate(length,
                       base::BindLambdaForTesting(
                           [&](blink::mojom::NativeFileSystemErrorPtr result) {
-                            result_out = result->error_code;
+                            result_out = result->status;
                             loop.Quit();
                           }));
     loop.Run();
     return result_out;
   }
 
-  base::File::Error CloseSync() {
+  NativeFileSystemStatus CloseSync() {
     base::RunLoop loop;
-    base::File::Error result_out;
+    NativeFileSystemStatus result_out;
     handle_->Close(base::BindLambdaForTesting(
         [&](blink::mojom::NativeFileSystemErrorPtr result) {
-          result_out = result->error_code;
+          result_out = result->status;
           loop.Quit();
         }));
     loop.Run();
@@ -197,9 +198,9 @@ class NativeFileSystemFileWriterImplTest : public testing::Test {
 
   virtual bool WriteUsingBlobs() { return true; }
 
-  base::File::Error WriteSync(uint64_t position,
-                              const std::string& contents,
-                              uint64_t* bytes_written_out) {
+  NativeFileSystemStatus WriteSync(uint64_t position,
+                                   const std::string& contents,
+                                   uint64_t* bytes_written_out) {
     if (WriteUsingBlobs())
       return WriteBlobSync(position, CreateBlob(contents), bytes_written_out);
     return WriteStreamSync(position, CreateStream(contents), bytes_written_out);
@@ -242,24 +243,25 @@ TEST_F(NativeFileSystemFileWriterImplTest, WriteInvalidBlob) {
   MakeRequest(&blob);
 
   uint64_t bytes_written;
-  base::File::Error result = WriteBlobSync(0, std::move(blob), &bytes_written);
-  EXPECT_EQ(result, base::File::FILE_ERROR_FAILED);
+  NativeFileSystemStatus result =
+      WriteBlobSync(0, std::move(blob), &bytes_written);
+  EXPECT_EQ(result, NativeFileSystemStatus::kInvalidArgument);
   EXPECT_EQ(bytes_written, 0u);
 
   result = CloseSync();
-  EXPECT_EQ(result, base::File::FILE_OK);
+  EXPECT_EQ(result, NativeFileSystemStatus::kOk);
 
   EXPECT_EQ("", ReadFile(test_file_url_));
 }
 
 TEST_P(NativeFileSystemFileWriterImplWriteTest, WriteValidEmptyString) {
   uint64_t bytes_written;
-  base::File::Error result = WriteSync(0, "", &bytes_written);
-  EXPECT_EQ(result, base::File::FILE_OK);
+  NativeFileSystemStatus result = WriteSync(0, "", &bytes_written);
+  EXPECT_EQ(result, NativeFileSystemStatus::kOk);
   EXPECT_EQ(bytes_written, 0u);
 
   result = CloseSync();
-  EXPECT_EQ(result, base::File::FILE_OK);
+  EXPECT_EQ(result, NativeFileSystemStatus::kOk);
 
   EXPECT_EQ("", ReadFile(test_file_url_));
 }
@@ -267,116 +269,116 @@ TEST_P(NativeFileSystemFileWriterImplWriteTest, WriteValidEmptyString) {
 TEST_P(NativeFileSystemFileWriterImplWriteTest, WriteValidNonEmpty) {
   std::string test_data("abcdefghijklmnopqrstuvwxyz");
   uint64_t bytes_written;
-  base::File::Error result = WriteSync(0, test_data, &bytes_written);
-  EXPECT_EQ(result, base::File::FILE_OK);
+  NativeFileSystemStatus result = WriteSync(0, test_data, &bytes_written);
+  EXPECT_EQ(result, NativeFileSystemStatus::kOk);
   EXPECT_EQ(bytes_written, test_data.size());
 
   result = CloseSync();
-  EXPECT_EQ(result, base::File::FILE_OK);
+  EXPECT_EQ(result, NativeFileSystemStatus::kOk);
 
   EXPECT_EQ(test_data, ReadFile(test_file_url_));
 }
 
 TEST_P(NativeFileSystemFileWriterImplWriteTest, WriteWithOffsetInFile) {
   uint64_t bytes_written;
-  base::File::Error result;
+  NativeFileSystemStatus result;
 
   result = WriteSync(0, "1234567890", &bytes_written);
-  EXPECT_EQ(result, base::File::FILE_OK);
+  EXPECT_EQ(result, NativeFileSystemStatus::kOk);
   EXPECT_EQ(bytes_written, 10u);
 
   result = WriteSync(4, "abc", &bytes_written);
-  EXPECT_EQ(result, base::File::FILE_OK);
+  EXPECT_EQ(result, NativeFileSystemStatus::kOk);
   EXPECT_EQ(bytes_written, 3u);
 
   result = CloseSync();
-  EXPECT_EQ(result, base::File::FILE_OK);
+  EXPECT_EQ(result, NativeFileSystemStatus::kOk);
 
   EXPECT_EQ("1234abc890", ReadFile(test_file_url_));
 }
 
 TEST_P(NativeFileSystemFileWriterImplWriteTest, WriteWithOffsetPastFile) {
   uint64_t bytes_written;
-  base::File::Error result = WriteSync(4, "abc", &bytes_written);
-  EXPECT_EQ(result, base::File::FILE_ERROR_FAILED);
+  NativeFileSystemStatus result = WriteSync(4, "abc", &bytes_written);
+  EXPECT_EQ(result, NativeFileSystemStatus::kFileError);
   EXPECT_EQ(bytes_written, 0u);
 
   result = CloseSync();
-  EXPECT_EQ(result, base::File::FILE_OK);
+  EXPECT_EQ(result, NativeFileSystemStatus::kOk);
 
   EXPECT_EQ("", ReadFile(test_file_url_));
 }
 
 TEST_F(NativeFileSystemFileWriterImplTest, TruncateShrink) {
   uint64_t bytes_written;
-  base::File::Error result;
+  NativeFileSystemStatus result;
 
   result = WriteSync(0, "1234567890", &bytes_written);
-  EXPECT_EQ(result, base::File::FILE_OK);
+  EXPECT_EQ(result, NativeFileSystemStatus::kOk);
   EXPECT_EQ(bytes_written, 10u);
 
   result = TruncateSync(5);
-  EXPECT_EQ(result, base::File::FILE_OK);
+  EXPECT_EQ(result, NativeFileSystemStatus::kOk);
 
   result = CloseSync();
-  EXPECT_EQ(result, base::File::FILE_OK);
+  EXPECT_EQ(result, NativeFileSystemStatus::kOk);
 
   EXPECT_EQ("12345", ReadFile(test_file_url_));
 }
 
 TEST_F(NativeFileSystemFileWriterImplTest, TruncateGrow) {
   uint64_t bytes_written;
-  base::File::Error result;
+  NativeFileSystemStatus result;
 
   result = WriteSync(0, "abc", &bytes_written);
-  EXPECT_EQ(result, base::File::FILE_OK);
+  EXPECT_EQ(result, NativeFileSystemStatus::kOk);
   EXPECT_EQ(bytes_written, 3u);
 
   result = TruncateSync(5);
-  EXPECT_EQ(result, base::File::FILE_OK);
+  EXPECT_EQ(result, NativeFileSystemStatus::kOk);
 
   result = CloseSync();
-  EXPECT_EQ(result, base::File::FILE_OK);
+  EXPECT_EQ(result, NativeFileSystemStatus::kOk);
 
   EXPECT_EQ(std::string("abc\0\0", 5), ReadFile(test_file_url_));
 }
 
 TEST_F(NativeFileSystemFileWriterImplTest, CloseAfterCloseNotOK) {
   uint64_t bytes_written;
-  base::File::Error result = WriteSync(0, "abc", &bytes_written);
-  EXPECT_EQ(result, base::File::FILE_OK);
+  NativeFileSystemStatus result = WriteSync(0, "abc", &bytes_written);
+  EXPECT_EQ(result, NativeFileSystemStatus::kOk);
   EXPECT_EQ(bytes_written, 3u);
 
   result = CloseSync();
-  EXPECT_EQ(result, base::File::FILE_OK);
+  EXPECT_EQ(result, NativeFileSystemStatus::kOk);
   result = CloseSync();
-  EXPECT_EQ(result, base::File::FILE_ERROR_INVALID_OPERATION);
+  EXPECT_EQ(result, NativeFileSystemStatus::kInvalidState);
 }
 
 TEST_F(NativeFileSystemFileWriterImplTest, TruncateAfterCloseNotOK) {
   uint64_t bytes_written;
-  base::File::Error result = WriteSync(0, "abc", &bytes_written);
-  EXPECT_EQ(result, base::File::FILE_OK);
+  NativeFileSystemStatus result = WriteSync(0, "abc", &bytes_written);
+  EXPECT_EQ(result, NativeFileSystemStatus::kOk);
   EXPECT_EQ(bytes_written, 3u);
 
   result = CloseSync();
-  EXPECT_EQ(result, base::File::FILE_OK);
+  EXPECT_EQ(result, NativeFileSystemStatus::kOk);
 
   result = TruncateSync(0);
-  EXPECT_EQ(result, base::File::FILE_ERROR_INVALID_OPERATION);
+  EXPECT_EQ(result, NativeFileSystemStatus::kInvalidState);
 }
 
 TEST_P(NativeFileSystemFileWriterImplWriteTest, WriteAfterCloseNotOK) {
   uint64_t bytes_written;
-  base::File::Error result = WriteSync(0, "abc", &bytes_written);
-  EXPECT_EQ(result, base::File::FILE_OK);
+  NativeFileSystemStatus result = WriteSync(0, "abc", &bytes_written);
+  EXPECT_EQ(result, NativeFileSystemStatus::kOk);
   EXPECT_EQ(bytes_written, 3u);
 
   result = CloseSync();
-  EXPECT_EQ(result, base::File::FILE_OK);
+  EXPECT_EQ(result, NativeFileSystemStatus::kOk);
 
   result = WriteSync(0, "bcd", &bytes_written);
-  EXPECT_EQ(result, base::File::FILE_ERROR_INVALID_OPERATION);
+  EXPECT_EQ(result, NativeFileSystemStatus::kInvalidState);
 }
 
 // TODO(mek): More tests, particularly for error conditions.

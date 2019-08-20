@@ -8,10 +8,12 @@
 
 #include <algorithm>
 #include <memory>
+#include <unordered_map>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
@@ -22,8 +24,10 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/unguessable_token.h"
+#include "chromeos/dbus/constants/dbus_switches.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
@@ -537,6 +541,10 @@ class PowerManagerClientImpl : public PowerManagerClient {
         base::BindOnce(&OnVoidDBusMethod, std::move(callback)));
   }
 
+  base::TimeDelta GetDarkSuspendDelayTimeout() override {
+    return max_dark_suspend_delay_timeout_;
+  }
+
  private:
   // Returns true if the current thread is the origin thread.
   bool OnOriginThread() {
@@ -582,6 +590,11 @@ class PowerManagerClientImpl : public PowerManagerClient {
       for (auto& observer : observers_)
         observer.PowerManagerRestarted();
     }
+  }
+
+  void NotifiyIntiailization() {
+    for (auto& observer : observers_)
+      observer.PowerManagerInitialized();
   }
 
   void ScreenBrightnessChangedReceived(dbus::Signal* signal) {
@@ -674,6 +687,12 @@ class PowerManagerClientImpl : public PowerManagerClient {
   }
 
   void OnGetPowerSupplyPropertiesMethod(dbus::Response* response) {
+    // This is the last callback to run after all the initialization in |Init|.
+    // Notify all observers that the initialization is complete.
+    base::ScopedClosureRunner(
+        base::BindOnce(&PowerManagerClientImpl::NotifiyIntiailization,
+                       base::Unretained(this)));
+
     if (!response) {
       POWER_LOG(ERROR) << "Error calling "
                        << power_manager::kGetPowerSupplyPropertiesMethod;
@@ -800,6 +819,12 @@ class PowerManagerClientImpl : public PowerManagerClient {
     if (dark_suspend) {
       dark_suspend_delay_id_ = protobuf.delay_id();
       has_dark_suspend_delay_id_ = true;
+
+      // Set |max_dark_suspend_delay_timeout_| to the minimum time power manager
+      // guarantees before resuspending.
+      max_dark_suspend_delay_timeout_ =
+          base::TimeDelta::FromMilliseconds(protobuf.min_delay_timeout_ms());
+
       POWER_LOG(EVENT) << "Registered dark suspend delay "
                        << dark_suspend_delay_id_;
     } else {
@@ -1027,6 +1052,12 @@ class PowerManagerClientImpl : public PowerManagerClient {
         base::BindOnce(&PowerManagerClientImpl::HandleRegisterSuspendDelayReply,
                        weak_ptr_factory_.GetWeakPtr(), false,
                        power_manager::kRegisterSuspendDelayMethod));
+
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            chromeos::switches::kRegisterMaxDarkSuspendDelay)) {
+      // Negative timeout means request maximum delay.
+      protobuf_request.set_timeout(-1);
+    }
     RegisterSuspendDelayImpl(
         power_manager::kRegisterDarkSuspendDelayMethod, protobuf_request,
         base::BindOnce(&PowerManagerClientImpl::HandleRegisterSuspendDelayReply,
@@ -1097,6 +1128,10 @@ class PowerManagerClientImpl : public PowerManagerClient {
   // The delay ID obtained from the RegisterDarkSuspendDelay request.
   int32_t dark_suspend_delay_id_ = -1;
   bool has_dark_suspend_delay_id_ = false;
+
+  // The maximum time power manager will wait before resuspending from a dark
+  // resume.
+  base::TimeDelta max_dark_suspend_delay_timeout_;
 
   // powerd-supplied ID corresponding to an imminent (either regular or dark)
   // suspend attempt that is currently being delayed.

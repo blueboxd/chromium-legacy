@@ -100,7 +100,7 @@ class AutofillDriverFactoryTest : public testing::Test {
 
  protected:
   // For TestAutofillDriver.
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   MockAutofillClient client_;
 

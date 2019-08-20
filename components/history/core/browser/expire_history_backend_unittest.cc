@@ -84,7 +84,7 @@ class ExpireHistoryTest : public testing::Test, public HistoryBackendNotifier {
       : backend_client_(history_client_.CreateBackendClient()),
         expirer_(this,
                  backend_client_.get(),
-                 scoped_task_environment_.GetMainThreadTaskRunner()),
+                 task_environment_.GetMainThreadTaskRunner()),
         now_(PretendNow()) {}
 
  protected:
@@ -131,7 +131,7 @@ class ExpireHistoryTest : public testing::Test, public HistoryBackendNotifier {
   // This must be destroyed last.
   base::ScopedTempDir tmp_dir_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   HistoryClientFakeBookmarks history_client_;
   std::unique_ptr<HistoryBackendClient> backend_client_;

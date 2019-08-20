@@ -284,6 +284,18 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
       space_.exclusion_space_ = exclusion_space;
   }
 
+  void SetCustomLayoutData(
+      scoped_refptr<SerializedScriptValue> custom_layout_data) {
+#if DCHECK_IS_ON()
+    DCHECK(!is_custom_layout_data_set_);
+    is_custom_layout_data_set_ = true;
+#endif
+    if (custom_layout_data) {
+      space_.EnsureRareData()->custom_layout_data =
+          std::move(custom_layout_data);
+    }
+  }
+
   void AddBaselineRequests(const NGBaselineRequestList requests) {
     DCHECK(baseline_requests_.IsEmpty());
     baseline_requests_.AppendVector(requests);
@@ -337,6 +349,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   bool is_clearance_offset_set_ = false;
   bool is_table_cell_borders_set_ = false;
   bool is_table_cell_intrinsic_padding_set_ = false;
+  bool is_custom_layout_data_set_ = false;
 
   bool to_constraint_space_called_ = false;
 #endif

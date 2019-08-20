@@ -42,8 +42,7 @@ const char kLanguage2[] = "pirate";
 class TranslateTableViewControllerTest : public ChromeTableViewControllerTest {
  protected:
   TranslateTableViewControllerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
     ChromeTableViewControllerTest::SetUp();
@@ -67,7 +66,7 @@ class TranslateTableViewControllerTest : public ChromeTableViewControllerTest {
     return factory.Create(registry.get());
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<PrefService> pref_service_;
 };
 

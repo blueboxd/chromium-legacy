@@ -380,7 +380,7 @@ class ServiceManagerTest : public testing::Test,
       service_pid_received_callback_.Run(identity, pid);
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestServiceManager test_service_manager_;
   TestService test_service_;
 

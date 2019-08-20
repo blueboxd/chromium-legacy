@@ -75,7 +75,7 @@ class AudioPipeReaderTest : public testing::Test,
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<base::RunLoop> run_loop_;
   std::unique_ptr<base::Thread> audio_thread_;
   base::ScopedTempDir test_dir_;

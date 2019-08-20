@@ -26,7 +26,7 @@ class PlatformSensorProviderTest : public testing::Test {
   std::unique_ptr<FakePlatformSensorProvider> provider_;
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformSensorProviderTest);
 };

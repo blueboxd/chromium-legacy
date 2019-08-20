@@ -57,8 +57,8 @@ class DataplanUsageTableViewControllerTest
 
     sync_preferences::PrefServiceMockFactory factory;
     base::FilePath path("DataplanUsageTableViewControllerTest.pref");
-    factory.SetUserPrefsFile(
-        path, scoped_task_environment_.GetMainThreadTaskRunner().get());
+    factory.SetUserPrefsFile(path,
+                             task_environment_.GetMainThreadTaskRunner().get());
     return factory.Create(registry.get());
   }
 
@@ -71,8 +71,8 @@ class DataplanUsageTableViewControllerTest
     EXPECT_EQ(accessory_type, cell.accessoryType);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::UI};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::UI};
   std::unique_ptr<PrefService> pref_service_;
   DataplanUsageTableViewController* dataplanController_;
 };

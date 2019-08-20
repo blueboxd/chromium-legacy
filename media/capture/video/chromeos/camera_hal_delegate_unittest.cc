@@ -59,7 +59,7 @@ class CameraHalDelegateTest : public ::testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<CameraHalDelegate> camera_hal_delegate_;
   testing::StrictMock<unittest_internal::MockCameraModule> mock_camera_module_;
   testing::StrictMock<unittest_internal::MockVendorTagOps> mock_vendor_tag_ops_;

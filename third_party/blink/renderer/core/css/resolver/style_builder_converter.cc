@@ -982,11 +982,8 @@ float StyleBuilderConverter::ConvertBorderWidth(StyleResolverState& state,
     return 0;
   }
   const auto& primitive_value = To<CSSPrimitiveValue>(value);
-  double result =
-      primitive_value.ComputeLength<double>(state.CssToLengthConversionData());
-  return clampTo<float>(RoundForImpreciseConversion<float>(result),
-                        defaultMinimumForClamp<float>(),
-                        defaultMaximumForClamp<float>());
+  return primitive_value.ComputeLength<float>(
+      state.CssToLengthConversionData());
 }
 
 GapLength StyleBuilderConverter::ConvertGapLength(StyleResolverState& state,

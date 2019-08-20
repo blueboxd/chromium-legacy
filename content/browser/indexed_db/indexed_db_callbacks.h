@@ -119,6 +119,8 @@ class CONTENT_EXPORT IndexedDBCallbacks
 
   void OnConnectionError();
 
+  bool is_complete() const { return complete_; }
+
  protected:
   virtual ~IndexedDBCallbacks();
 

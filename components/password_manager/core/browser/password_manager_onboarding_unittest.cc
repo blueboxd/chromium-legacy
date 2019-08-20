@@ -55,7 +55,7 @@ class PasswordManagerOnboardingTest : public testing::Test {
 
   PrefService* GetPrefs() { return prefs_.get(); }
 
-  void RunAllPendingTasks() { scoped_task_environment_.RunUntilIdle(); }
+  void RunAllPendingTasks() { task_environment_.RunUntilIdle(); }
 
   PasswordForm MakeSimpleForm(int id) {
     PasswordForm form;
@@ -76,7 +76,7 @@ class PasswordManagerOnboardingTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<TestPasswordStore> store_;
   std::unique_ptr<TestingPrefServiceSimple> prefs_;
 };

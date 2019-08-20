@@ -19,6 +19,10 @@
 class GURL;
 class Profile;
 
+namespace url {
+class Origin;
+}
+
 namespace predictors {
 class PreconnectManager;
 }
@@ -55,30 +59,35 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
                     int count);
 
   void OnAllowDatabase(int render_frame_id,
-                       const GURL& origin_url,
-                       const GURL& top_origin_url,
+                       const url::Origin& origin,
+                       const GURL& site_for_cookies,
+                       const url::Origin& top_frame_origin,
                        bool* allowed);
   void OnAllowDOMStorage(int render_frame_id,
-                         const GURL& origin_url,
-                         const GURL& top_origin_url,
+                         const url::Origin& origin,
+                         const GURL& site_for_cookies,
+                         const url::Origin& top_frame_origin,
                          bool local,
                          bool* allowed);
   void OnRequestFileSystemAccessSync(int render_frame_id,
-                                     const GURL& origin_url,
-                                     const GURL& top_origin_url,
+                                     const url::Origin& origin,
+                                     const GURL& site_for_cookies,
+                                     const url::Origin& top_frame_origin,
                                      IPC::Message* message);
   void OnRequestFileSystemAccessAsync(int render_frame_id,
                                       int request_id,
-                                      const GURL& origin_url,
-                                      const GURL& top_origin_url);
+                                      const url::Origin& origin,
+                                      const GURL& site_for_cookies,
+                                      const url::Origin& top_frame_origin);
   void OnRequestFileSystemAccessSyncResponse(IPC::Message* reply_msg,
                                              bool allowed);
   void OnRequestFileSystemAccessAsyncResponse(int render_frame_id,
                                               int request_id,
                                               bool allowed);
   void OnRequestFileSystemAccess(int render_frame_id,
-                                 const GURL& origin_url,
-                                 const GURL& top_origin_url,
+                                 const url::Origin& origin,
+                                 const GURL& site_for_cookies,
+                                 const url::Origin& top_frame_origin,
                                  base::Callback<void(bool)> callback);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   static void FileSystemAccessedOnUIThread(int render_process_id,
@@ -93,12 +102,14 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
                                          bool allowed);
 #endif
   void OnAllowIndexedDB(int render_frame_id,
-                        const GURL& origin_url,
-                        const GURL& top_origin_url,
+                        const url::Origin& origin,
+                        const GURL& site_for_cookies,
+                        const url::Origin& top_frame_origin,
                         bool* allowed);
   void OnAllowCacheStorage(int render_frame_id,
-                           const GURL& origin_url,
-                           const GURL& top_origin_url,
+                           const url::Origin& origin,
+                           const GURL& site_for_cookies,
+                           const url::Origin& top_frame_origin,
                            bool* allowed);
 #if BUILDFLAG(ENABLE_PLUGINS)
   void OnIsCrashReportingEnabled(bool* enabled);

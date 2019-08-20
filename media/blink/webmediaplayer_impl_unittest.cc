@@ -659,7 +659,7 @@ class WebMediaPlayerImplTest : public testing::Test {
   // This runs until we reach the |ready_state_|. Attempting to wait for ready
   // states < kReadyStateHaveCurrentData in non-startup-suspend test cases is
   // unreliable due to asynchronous execution of tasks on the
-  // base::test:ScopedTaskEnvironment.
+  // base::test:TaskEnvironment.
   void LoadAndWaitForReadyState(std::string data_file,
                                 blink::WebMediaPlayer::ReadyState ready_state) {
     Load(data_file);
@@ -839,7 +839,7 @@ TEST_F(WebMediaPlayerImplTest, LoadAndDestroyDataUrl) {
 
   // This runs until we reach the have current data state. Attempting to wait
   // for states < kReadyStateHaveCurrentData is unreliable due to asynchronous
-  // execution of tasks on the base::test:ScopedTaskEnvironment.
+  // execution of tasks on the base::test:TaskEnvironment.
   while (wmpi_->GetReadyState() <
          blink::WebMediaPlayer::kReadyStateHaveCurrentData) {
     base::RunLoop loop;

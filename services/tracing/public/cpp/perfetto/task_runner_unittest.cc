@@ -114,7 +114,7 @@ class PerfettoTaskRunnerTest : public testing::Test {
   TaskDestination* destination() { return task_destination_.get(); }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
   std::unique_ptr<PerfettoTaskRunner> task_runner_;
   std::unique_ptr<TaskDestination> task_destination_;

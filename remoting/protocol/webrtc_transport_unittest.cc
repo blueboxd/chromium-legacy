@@ -150,8 +150,7 @@ class TestMessagePipeEventHandler : public MessagePipe::EventHandler {
 class WebrtcTransportTest : public testing::Test {
  public:
   WebrtcTransportTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {
     jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
     network_settings_ =
         NetworkSettings(NetworkSettings::NAT_TRAVERSAL_OUTGOING);
@@ -297,7 +296,7 @@ class WebrtcTransportTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
   NetworkSettings network_settings_;

@@ -59,7 +59,7 @@ class HistoryBackendDBBaseTest : public HistoryUnitTestBase {
 
   base::ScopedTempDir temp_dir_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // names of the database files
   base::FilePath history_dir_;

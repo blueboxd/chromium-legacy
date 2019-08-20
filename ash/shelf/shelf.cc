@@ -53,10 +53,13 @@ class Shelf::AutoHideEventHandler : public ui::EventHandler {
     if (shelf_->auto_hide_behavior() != SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS)
       return;
 
-    // The event target should be the shelf widget.
+    // The event target should be the shelf widget or the hotseat widget.
     aura::Window* target = static_cast<aura::Window*>(event->target());
-    if (target != Shelf::ForWindow(target)->shelf_widget()->GetNativeView())
+    const ShelfWidget* shelf_widget = Shelf::ForWindow(target)->shelf_widget();
+    if (target != shelf_widget->GetNativeView() &&
+        target != shelf_widget->hotseat_widget()->GetNativeView()) {
       return;
+    }
 
     // The touch-pressing event may hide the shelf. Lock the shelf's auto hide
     // state to give the shelf a chance to handle the touch event before it
@@ -125,7 +128,6 @@ void Shelf::CreateShelfWidget(aura::Window* root) {
   aura::Window* shelf_container =
       root->GetChildById(kShellWindowId_ShelfContainer);
   shelf_widget_.reset(new ShelfWidget(this));
-  shelf_widget_->Initialize(shelf_container);
 
   DCHECK(!shelf_layout_manager_);
   shelf_layout_manager_ = shelf_widget_->shelf_layout_manager();
@@ -145,6 +147,7 @@ void Shelf::CreateShelfWidget(aura::Window* root) {
   aura::Window* status_container =
       root->GetChildById(kShellWindowId_StatusContainer);
   shelf_widget_->CreateStatusAreaWidget(status_container);
+  shelf_widget_->Initialize(shelf_container);
 }
 
 void Shelf::ShutdownShelfWidget() {

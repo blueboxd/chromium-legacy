@@ -69,19 +69,39 @@ class IndexedDBDatabaseTest : public ::testing::Test {
 
     std::tie(db_, s) = IndexedDBClassFactory::Get()->CreateIndexedDBDatabase(
         ASCIIToUTF16("db"), backing_store_.get(), factory_.get(),
-        GetErrorCallback(), base::BindLambdaForTesting([&]() {
-          db_.reset();
-          metadata_coding_ = nullptr;
-        }),
+        base::BindRepeating(&IndexedDBDatabaseTest::RunTasksForDatabase,
+                            weak_factory_.GetWeakPtr(), true),
         std::move(metadata_coding), IndexedDBDatabase::Identifier(),
         &lock_manager_);
     ASSERT_TRUE(s.ok());
   }
 
-  IndexedDBTransaction::ErrorCallback GetErrorCallback() {
-    return base::BindLambdaForTesting(
-        [&](leveldb::Status, const char*) { error_called_ = true; });
+  void RunTasksForDatabase(bool async) {
+    if (!db_)
+      return;
+    if (async) {
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(&IndexedDBDatabaseTest::RunTasksForDatabase,
+                                    weak_factory_.GetWeakPtr(), false));
+      return;
+    }
+    IndexedDBDatabase::RunTasksResult result;
+    leveldb::Status status;
+    std::tie(result, status) = db_->RunTasks();
+    switch (result) {
+      case IndexedDBDatabase::RunTasksResult::kDone:
+        return;
+      case IndexedDBDatabase::RunTasksResult::kError:
+        error_called_ = true;
+        return;
+      case IndexedDBDatabase::RunTasksResult::kCanBeDestroyed:
+        db_.reset();
+        metadata_coding_ = nullptr;
+        return;
+    }
   }
+
+  void RunPostedTasks() { base::RunLoop().RunUntilIdle(); }
 
  protected:
   std::unique_ptr<IndexedDBFakeBackingStore> backing_store_;
@@ -93,6 +113,8 @@ class IndexedDBDatabaseTest : public ::testing::Test {
  private:
   TestBrowserThreadBundle thread_bundle_;
   DisjointRangeLockManager lock_manager_;
+
+  base::WeakPtrFactory<IndexedDBDatabaseTest> weak_factory_{this};
 };
 
 TEST_F(IndexedDBDatabaseTest, ConnectionLifecycle) {
@@ -109,6 +131,7 @@ TEST_F(IndexedDBDatabaseTest, ConnectionLifecycle) {
           std::move(create_transaction_callback1)));
   db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
                               std::move(connection1));
+  RunPostedTasks();
 
   scoped_refptr<MockIndexedDBCallbacks> request2(new MockIndexedDBCallbacks());
   scoped_refptr<MockIndexedDBDatabaseCallbacks> callbacks2(
@@ -123,12 +146,17 @@ TEST_F(IndexedDBDatabaseTest, ConnectionLifecycle) {
           std::move(create_transaction_callback2)));
   db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
                               std::move(connection2));
+  RunPostedTasks();
 
+  EXPECT_TRUE(request1->connection());
   request1->connection()->CloseAndReportForceClose();
   EXPECT_FALSE(request1->connection()->IsConnected());
 
+  EXPECT_TRUE(request2->connection());
   request2->connection()->CloseAndReportForceClose();
   EXPECT_FALSE(request2->connection()->IsConnected());
+
+  RunPostedTasks();
 
   EXPECT_FALSE(db_);
 }
@@ -147,6 +175,8 @@ TEST_F(IndexedDBDatabaseTest, ForcedClose) {
           std::move(create_transaction_callback)));
   db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
                               std::move(connection));
+  RunPostedTasks();
+
   EXPECT_EQ(db_.get(), request->connection()->database().get());
 
   const int64_t transaction_id = 123;
@@ -204,6 +234,7 @@ TEST_F(IndexedDBDatabaseTest, PendingDelete) {
           std::move(create_transaction_callback1)));
   db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
                               std::move(connection));
+  RunPostedTasks();
 
   EXPECT_EQ(db_->ConnectionCount(), 1UL);
   EXPECT_EQ(db_->ActiveOpenDeleteCount(), 0UL);
@@ -214,6 +245,7 @@ TEST_F(IndexedDBDatabaseTest, PendingDelete) {
   db_->ScheduleDeleteDatabase(
       IndexedDBOriginStateHandle(), request2,
       base::BindLambdaForTesting([&]() { deleted = true; }));
+  RunPostedTasks();
   EXPECT_EQ(db_->ConnectionCount(), 1UL);
   EXPECT_EQ(db_->ActiveOpenDeleteCount(), 1UL);
   EXPECT_EQ(db_->PendingOpenDeleteCount(), 0UL);
@@ -225,7 +257,9 @@ TEST_F(IndexedDBDatabaseTest, PendingDelete) {
   EXPECT_EQ(db_->ActiveOpenDeleteCount(), 1UL);
   EXPECT_EQ(db_->PendingOpenDeleteCount(), 0UL);
 
-  db_->ForceClose();
+  db_->ForceCloseAndRunTasks();
+
+  RunPostedTasks();
   EXPECT_FALSE(db_);
 
   EXPECT_TRUE(deleted);
@@ -248,6 +282,7 @@ TEST_F(IndexedDBDatabaseTest, OpenDeleteClear) {
           kDatabaseVersion, std::move(create_transaction_callback1)));
   db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
                               std::move(connection1));
+  RunPostedTasks();
 
   EXPECT_EQ(db_->ConnectionCount(), 1UL);
   EXPECT_EQ(db_->ActiveOpenDeleteCount(), 1UL);
@@ -266,6 +301,7 @@ TEST_F(IndexedDBDatabaseTest, OpenDeleteClear) {
           kDatabaseVersion, std::move(create_transaction_callback2)));
   db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
                               std::move(connection2));
+  RunPostedTasks();
 
   EXPECT_EQ(db_->ConnectionCount(), 1UL);
   EXPECT_EQ(db_->ActiveOpenDeleteCount(), 1UL);
@@ -284,27 +320,24 @@ TEST_F(IndexedDBDatabaseTest, OpenDeleteClear) {
           kDatabaseVersion, std::move(create_transaction_callback3)));
   db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
                               std::move(connection3));
+  RunPostedTasks();
 
-  // This causes the active request to call OnUpgradeNeeded on its callbacks.
-  // The Abort() triggered by ForceClose() assumes that the transaction was
-  // started and passed the connection along to the front end.
-  db_->CallUpgradeTransactionStartedForTesting(
-      IndexedDBDatabaseMetadata::DEFAULT_VERSION);
   EXPECT_TRUE(request1->upgrade_called());
 
   EXPECT_EQ(db_->ConnectionCount(), 1UL);
   EXPECT_EQ(db_->ActiveOpenDeleteCount(), 1UL);
   EXPECT_EQ(db_->PendingOpenDeleteCount(), 2UL);
 
-  db_->ForceClose();
+  db_->ForceCloseAndRunTasks();
+  RunPostedTasks();
   EXPECT_FALSE(db_);
 
   EXPECT_TRUE(callbacks1->forced_close_called());
   EXPECT_TRUE(request1->error_called());
   EXPECT_TRUE(callbacks2->forced_close_called());
-  EXPECT_FALSE(request2->error_called());
+  EXPECT_TRUE(request2->error_called());
   EXPECT_TRUE(callbacks3->forced_close_called());
-  EXPECT_FALSE(request3->error_called());
+  EXPECT_TRUE(request3->error_called());
 }
 
 TEST_F(IndexedDBDatabaseTest, ForceDelete) {
@@ -321,6 +354,7 @@ TEST_F(IndexedDBDatabaseTest, ForceDelete) {
           std::move(create_transaction_callback1)));
   db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
                               std::move(connection));
+  RunPostedTasks();
 
   EXPECT_EQ(db_->ConnectionCount(), 1UL);
   EXPECT_EQ(db_->ActiveOpenDeleteCount(), 0UL);
@@ -331,8 +365,10 @@ TEST_F(IndexedDBDatabaseTest, ForceDelete) {
   db_->ScheduleDeleteDatabase(
       IndexedDBOriginStateHandle(), request2,
       base::BindLambdaForTesting([&]() { deleted = true; }));
+  RunPostedTasks();
   EXPECT_FALSE(deleted);
-  db_->ForceClose();
+  db_->ForceCloseAndRunTasks();
+  RunPostedTasks();
   EXPECT_FALSE(db_);
   EXPECT_TRUE(deleted);
   EXPECT_FALSE(request2->blocked_called());
@@ -355,6 +391,7 @@ TEST_F(IndexedDBDatabaseTest, ForceCloseWhileOpenPending) {
           std::move(create_transaction_callback1)));
   db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
                               std::move(connection));
+  RunPostedTasks();
 
   EXPECT_EQ(db_->ConnectionCount(), 1UL);
   EXPECT_EQ(db_->ActiveOpenDeleteCount(), 0UL);
@@ -373,12 +410,14 @@ TEST_F(IndexedDBDatabaseTest, ForceCloseWhileOpenPending) {
           std::move(create_transaction_callback2)));
   db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
                               std::move(connection2));
+  RunPostedTasks();
 
   EXPECT_EQ(db_->ConnectionCount(), 1UL);
   EXPECT_EQ(db_->ActiveOpenDeleteCount(), 1UL);
   EXPECT_EQ(db_->PendingOpenDeleteCount(), 0UL);
 
-  db_->ForceClose();
+  db_->ForceCloseAndRunTasks();
+  RunPostedTasks();
   EXPECT_FALSE(db_);
 }
 
@@ -397,6 +436,7 @@ TEST_F(IndexedDBDatabaseTest, ForceCloseWhileOpenAndDeletePending) {
           std::move(create_transaction_callback1));
   db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
                               std::move(connection));
+  RunPostedTasks();
 
   EXPECT_EQ(db_->ConnectionCount(), 1UL);
   EXPECT_EQ(db_->ActiveOpenDeleteCount(), 0UL);
@@ -413,20 +453,22 @@ TEST_F(IndexedDBDatabaseTest, ForceCloseWhileOpenAndDeletePending) {
           std::move(create_transaction_callback2)));
   db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
                               std::move(connection2));
+  RunPostedTasks();
 
   bool deleted = false;
   auto request3 = base::MakeRefCounted<MockCallbacks>();
   db_->ScheduleDeleteDatabase(
       IndexedDBOriginStateHandle(), request3,
       base::BindLambdaForTesting([&]() { deleted = true; }));
+  RunPostedTasks();
   EXPECT_FALSE(deleted);
 
   EXPECT_EQ(db_->ConnectionCount(), 1UL);
   EXPECT_EQ(db_->ActiveOpenDeleteCount(), 1UL);
   EXPECT_EQ(db_->PendingOpenDeleteCount(), 1UL);
 
-  db_->ForceClose();
-
+  db_->ForceCloseAndRunTasks();
+  RunPostedTasks();
   EXPECT_TRUE(deleted);
   EXPECT_FALSE(db_);
 }
@@ -450,10 +492,9 @@ class IndexedDBDatabaseOperationTest : public testing::Test {
     leveldb::Status s;
     std::tie(db_, s) = IndexedDBClassFactory::Get()->CreateIndexedDBDatabase(
         ASCIIToUTF16("db"), backing_store_.get(), factory_.get(),
-        GetErrorCallback(), base::BindLambdaForTesting([&]() {
-          db_.reset();
-          metadata_coding_ = nullptr;
-        }),
+        base::BindRepeating(
+            &IndexedDBDatabaseOperationTest::RunTasksForDatabase,
+            base::Unretained(this), true),
         std::move(metadata_coding), IndexedDBDatabase::Identifier(),
         &lock_manager_);
     ASSERT_TRUE(s.ok());
@@ -470,8 +511,10 @@ class IndexedDBDatabaseOperationTest : public testing::Test {
             std::move(create_transaction_callback1)));
     db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
                                 std::move(connection));
+    RunPostedTasks();
     EXPECT_EQ(IndexedDBDatabaseMetadata::NO_VERSION, db_->metadata().version);
 
+    EXPECT_TRUE(request_->connection());
     transaction_ = request_->connection()->CreateTransaction(
         transaction_id, std::set<int64_t>() /*scope*/,
         blink::mojom::IDBTransactionMode::VersionChange,
@@ -487,12 +530,33 @@ class IndexedDBDatabaseOperationTest : public testing::Test {
     RunPostedTasks();
   }
 
-  void RunPostedTasks() { base::RunLoop().RunUntilIdle(); }
-
-  IndexedDBTransaction::ErrorCallback GetErrorCallback() {
-    return base::BindLambdaForTesting(
-        [&](leveldb::Status, const char*) { error_called_ = true; });
+  void RunTasksForDatabase(bool async) {
+    if (!db_)
+      return;
+    if (async) {
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::BindOnce(&IndexedDBDatabaseOperationTest::RunTasksForDatabase,
+                         base::Unretained(this), false));
+      return;
+    }
+    IndexedDBDatabase::RunTasksResult result;
+    leveldb::Status status;
+    std::tie(result, status) = db_->RunTasks();
+    switch (result) {
+      case IndexedDBDatabase::RunTasksResult::kDone:
+        return;
+      case IndexedDBDatabase::RunTasksResult::kError:
+        error_called_ = true;
+        return;
+      case IndexedDBDatabase::RunTasksResult::kCanBeDestroyed:
+        db_.reset();
+        metadata_coding_ = nullptr;
+        return;
+    }
   }
+
+  void RunPostedTasks() { base::RunLoop().RunUntilIdle(); }
 
  private:
   // Needs to outlive |db_|.
@@ -523,8 +587,9 @@ TEST_F(IndexedDBDatabaseOperationTest, CreateObjectStore) {
       store_id, ASCIIToUTF16("store"), IndexedDBKeyPath(),
       false /*auto_increment*/, transaction_);
   EXPECT_TRUE(s.ok());
-  s = transaction_->Commit();
-  EXPECT_TRUE(s.ok());
+  transaction_->SetCommitFlag();
+  RunPostedTasks();
+  EXPECT_FALSE(error_called_);
   EXPECT_EQ(1ULL, db_->metadata().object_stores.size());
 }
 
@@ -544,8 +609,9 @@ TEST_F(IndexedDBDatabaseOperationTest, CreateIndex) {
   EXPECT_EQ(
       1ULL,
       db_->metadata().object_stores.find(store_id)->second.indexes.size());
-  s = transaction_->Commit();
-  EXPECT_TRUE(s.ok());
+  transaction_->SetCommitFlag();
+  RunPostedTasks();
+  EXPECT_FALSE(error_called_);
   EXPECT_EQ(1ULL, db_->metadata().object_stores.size());
   EXPECT_EQ(
       1ULL,
@@ -571,8 +637,8 @@ TEST_F(IndexedDBDatabaseOperationAbortTest, CreateObjectStore) {
       false /*auto_increment*/, transaction_);
   EXPECT_TRUE(s.ok());
   EXPECT_EQ(1ULL, db_->metadata().object_stores.size());
-  s = transaction_->Commit();
-  EXPECT_FALSE(s.ok());
+  transaction_->SetCommitFlag();
+  RunPostedTasks();
   EXPECT_EQ(0ULL, db_->metadata().object_stores.size());
 }
 
@@ -592,8 +658,9 @@ TEST_F(IndexedDBDatabaseOperationAbortTest, CreateIndex) {
   EXPECT_EQ(
       1ULL,
       db_->metadata().object_stores.find(store_id)->second.indexes.size());
-  s = transaction_->Commit();
-  EXPECT_FALSE(s.ok());
+  transaction_->SetCommitFlag();
+  RunPostedTasks();
+  EXPECT_TRUE(error_called_);
   EXPECT_EQ(0ULL, db_->metadata().object_stores.size());
 }
 
@@ -627,7 +694,9 @@ TEST_F(IndexedDBDatabaseOperationTest, CreatePutDelete) {
 
   EXPECT_EQ(0ULL, db_->metadata().object_stores.size());
 
-  s = transaction_->Commit();  // Cleans up the object hierarchy.
+  transaction_->SetCommitFlag();
+  RunPostedTasks();
+  EXPECT_FALSE(error_called_);
   EXPECT_TRUE(s.ok());
 }
 

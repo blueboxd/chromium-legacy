@@ -147,8 +147,6 @@ public class NoTouchActivity extends SingleTabActivity {
 
         ((TouchlessTabCreator) getTabCreator(false))
                 .setTabModel(getTabModelSelector().getModel(false));
-        ((TouchlessTabCreator) getTabCreator(true))
-                .setTabModel(getTabModelSelector().getModel(true));
 
         super.initializeState();
 
@@ -289,7 +287,7 @@ public class NoTouchActivity extends SingleTabActivity {
     }
 
     @Override
-    protected TabCreator createTabCreator(boolean incognito) {
-        return new TouchlessTabCreator(this, getWindowAndroid(), incognito);
+    protected TabCreator createNormalTabCreator() {
+        return new TouchlessTabCreator(this, getWindowAndroid(), false /* incognito */);
     }
 }

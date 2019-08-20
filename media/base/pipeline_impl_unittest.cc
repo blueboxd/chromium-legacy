@@ -103,10 +103,9 @@ class PipelineImplTest : public ::testing::Test {
   };
 
   PipelineImplTest()
-      : pipeline_(
-            new PipelineImpl(scoped_task_environment_.GetMainThreadTaskRunner(),
-                             scoped_task_environment_.GetMainThreadTaskRunner(),
-                             &media_log_)),
+      : pipeline_(new PipelineImpl(task_environment_.GetMainThreadTaskRunner(),
+                                   task_environment_.GetMainThreadTaskRunner(),
+                                   &media_log_)),
         demuxer_(new StrictMock<MockDemuxer>()),
         demuxer_host_(nullptr),
         scoped_renderer_(new StrictMock<MockRenderer>()),
@@ -329,7 +328,7 @@ class PipelineImplTest : public ::testing::Test {
   // Fixture members.
   StrictMock<CallbackHelper> callbacks_;
   base::SimpleTestTickClock test_tick_clock_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   NullMediaLog media_log_;
   std::unique_ptr<PipelineImpl> pipeline_;
 
@@ -718,10 +717,9 @@ TEST_F(PipelineImplTest, ErrorDuringSeek) {
 
 // Invoked function OnError. This asserts that the pipeline does not enqueue
 // non-teardown related tasks while tearing down.
-static void TestNoCallsAfterError(
-    PipelineImpl* pipeline,
-    base::test::ScopedTaskEnvironment* task_environment,
-    PipelineStatus /* status */) {
+static void TestNoCallsAfterError(PipelineImpl* pipeline,
+                                  base::test::TaskEnvironment* task_environment,
+                                  PipelineStatus /* status */) {
   CHECK(pipeline);
   CHECK(task_environment);
 
@@ -746,8 +744,8 @@ TEST_F(PipelineImplTest, NoMessageDuringTearDownFromError) {
   StartPipelineAndExpect(PIPELINE_OK);
 
   // Trigger additional requests on the pipeline during tear down from error.
-  base::Callback<void(PipelineStatus)> cb = base::Bind(
-      &TestNoCallsAfterError, pipeline_.get(), &scoped_task_environment_);
+  base::Callback<void(PipelineStatus)> cb =
+      base::Bind(&TestNoCallsAfterError, pipeline_.get(), &task_environment_);
   ON_CALL(callbacks_, OnError(_)).WillByDefault(Invoke(CreateFunctor(cb)));
 
   base::TimeDelta seek_time = base::TimeDelta::FromSeconds(5);

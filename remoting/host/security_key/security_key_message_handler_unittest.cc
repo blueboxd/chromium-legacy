@@ -53,8 +53,8 @@ class SecurityKeyMessageHandlerTest : public testing::Test {
   std::unique_ptr<SecurityKeyMessageHandler> message_handler_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::IO};
   std::unique_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(SecurityKeyMessageHandlerTest);

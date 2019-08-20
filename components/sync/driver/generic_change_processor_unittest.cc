@@ -39,8 +39,7 @@ class SyncGenericChangeProcessorTest : public testing::Test {
   static const ModelType kType = PREFERENCES;
 
   SyncGenericChangeProcessorTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
         syncable_service_ptr_factory_(&fake_syncable_service_) {}
 
   void SetUp() override {
@@ -101,7 +100,7 @@ class SyncGenericChangeProcessorTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<SyncMergeResult> sync_merge_result_;
   std::unique_ptr<base::WeakPtrFactory<SyncMergeResult>>

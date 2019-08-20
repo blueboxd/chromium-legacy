@@ -17,6 +17,7 @@
 #include "content/browser/devtools/devtools_url_loader_interceptor.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/loader/webrtc_connections_observer.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/ssl/ssl_error_handler.h"
 #include "content/browser/ssl/ssl_manager.h"
@@ -364,12 +365,21 @@ void OnAuthRequiredContinuationForWindowId(
     std::move(auth_challenge_responder)->OnAuthCredentials(base::nullopt);
     return;
   }
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&GetWebContentsFromRegistry, window_id),
-      base::BindOnce(&OnAuthRequiredContinuation, process_id, routing_id,
-                     request_id, url, *is_main_frame_opt, first_auth_attempt,
-                     auth_info, head, std::move(auth_challenge_responder)));
+
+  if (ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled()) {
+    OnAuthRequiredContinuation(process_id, routing_id, request_id, url,
+                               *is_main_frame_opt, first_auth_attempt,
+                               auth_info, head,
+                               std::move(auth_challenge_responder),
+                               GetWebContentsFromRegistry(window_id));
+  } else {
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(&GetWebContentsFromRegistry, window_id),
+        base::BindOnce(&OnAuthRequiredContinuation, process_id, routing_id,
+                       request_id, url, *is_main_frame_opt, first_auth_attempt,
+                       auth_info, head, std::move(auth_challenge_responder)));
+  }
 }
 
 void CreateSSLClientAuthDelegateOnIO(
@@ -488,13 +498,21 @@ void NetworkServiceClient::OnAuthRequired(
     const base::Optional<network::ResourceResponseHead>& head,
     network::mojom::AuthChallengeResponderPtr auth_challenge_responder) {
   if (window_id) {
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&GetIsMainFrameFromRegistry, *window_id),
-        base::BindOnce(&OnAuthRequiredContinuationForWindowId, *window_id,
-                       process_id, routing_id, request_id, url,
-                       first_auth_attempt, auth_info, head,
-                       std::move(auth_challenge_responder)));
+    if (ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled()) {
+      OnAuthRequiredContinuationForWindowId(
+          *window_id, process_id, routing_id, request_id, url,
+          first_auth_attempt, auth_info, head,
+          std::move(auth_challenge_responder),
+          GetIsMainFrameFromRegistry(*window_id));
+    } else {
+      base::PostTaskAndReplyWithResult(
+          FROM_HERE, {BrowserThread::IO},
+          base::BindOnce(&GetIsMainFrameFromRegistry, *window_id),
+          base::BindOnce(&OnAuthRequiredContinuationForWindowId, *window_id,
+                         process_id, routing_id, request_id, url,
+                         first_auth_attempt, auth_info, head,
+                         std::move(auth_challenge_responder)));
+    }
     return;
   }
   OnAuthRequiredContinuation(process_id, routing_id, request_id, url,
@@ -512,12 +530,19 @@ void NetworkServiceClient::OnCertificateRequested(
     network::mojom::ClientCertificateResponderPtr cert_responder) {
   // Use |window_id| if it's provided.
   if (window_id) {
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&GetWebContentsFromRegistry, *window_id),
-        base::BindOnce(&OnCertificateRequestedContinuation, process_id,
-                       routing_id, request_id, cert_info,
-                       cert_responder.PassInterface()));
+    if (ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled()) {
+      OnCertificateRequestedContinuation(
+          process_id, routing_id, request_id, cert_info,
+          cert_responder.PassInterface(),
+          GetWebContentsFromRegistry(*window_id));
+    } else {
+      base::PostTaskAndReplyWithResult(
+          FROM_HERE, {BrowserThread::IO},
+          base::BindOnce(&GetWebContentsFromRegistry, *window_id),
+          base::BindOnce(&OnCertificateRequestedContinuation, process_id,
+                         routing_id, request_id, cert_info,
+                         cert_responder.PassInterface()));
+    }
     return;
   }
 

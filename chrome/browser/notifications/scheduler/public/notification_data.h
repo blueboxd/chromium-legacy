@@ -38,6 +38,14 @@ struct NotificationData {
     std::string id;
   };
 
+  struct Icon {
+    Icon();
+    ~Icon();
+
+    // The icon bitmap.
+    SkBitmap bitmap;
+  };
+
   using CustomData = std::map<std::string, std::string>;
   NotificationData();
   NotificationData(const NotificationData& other);
@@ -50,9 +58,11 @@ struct NotificationData {
   // The body text of the notification.
   base::string16 message;
 
-  // A list of icons. On Android, the first element will be used as small icon,
-  // the second as large icon(optional).
-  std::vector<SkBitmap> icons;
+  // The small icon of the notification.
+  Icon small_icon;
+
+  // The large icon of the notification.
+  Icon large_icon;
 
   // Custom key value pair data associated with each notification. Will be sent
   // back after user interaction.

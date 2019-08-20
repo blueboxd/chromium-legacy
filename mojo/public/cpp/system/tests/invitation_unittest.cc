@@ -172,7 +172,7 @@ class InvitationCppTest : public testing::Test,
   }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::Process child_process_;
 
   DISALLOW_COPY_AND_ASSIGN(InvitationCppTest);
@@ -264,7 +264,7 @@ DEFINE_TEST_CLIENT(CppSendWithMultiplePipesClient) {
 }
 
 TEST(InvitationCppTest_NoParam, SendIsolatedInvitationWithDuplicateName) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   PlatformChannel channel1;
   PlatformChannel channel2;
   const char kConnectionName[] = "foo";

@@ -8,20 +8,8 @@
 #include <iterator>
 #include <memory>
 
-#include "base/containers/iterator_buildflags.h"
 #include "base/containers/util.h"
 #include "base/logging.h"
-#include "build/build_config.h"
-
-#if BUILDFLAG(ENABLE_CHECKED_ITERATORS)
-#define ITERATOR_CHECK CHECK
-#define ITERATOR_CHECK_EQ CHECK_EQ
-#define ITERATOR_CHECK_LE CHECK_LE
-#else
-#define ITERATOR_CHECK DCHECK
-#define ITERATOR_CHECK_EQ DCHECK_EQ
-#define ITERATOR_CHECK_LE DCHECK_LE
-#endif
 
 namespace base {
 
@@ -44,8 +32,8 @@ class CheckedRandomAccessIterator {
       : CheckedRandomAccessIterator(start, start, end) {}
   CheckedRandomAccessIterator(T* start, T* current, const T* end)
       : start_(start), current_(current), end_(end) {
-    ITERATOR_CHECK(start <= current);
-    ITERATOR_CHECK(current <= end);
+    CHECK(start <= current);
+    CHECK(current <= end);
   }
   CheckedRandomAccessIterator(const CheckedRandomAccessIterator& other) =
       default;
@@ -75,7 +63,7 @@ class CheckedRandomAccessIterator {
   }
 
   CheckedRandomAccessIterator& operator++() {
-    ITERATOR_CHECK(current_ != end_);
+    CHECK(current_ != end_);
     ++current_;
     return *this;
   }
@@ -87,7 +75,7 @@ class CheckedRandomAccessIterator {
   }
 
   CheckedRandomAccessIterator& operator--() {
-    ITERATOR_CHECK(current_ != start_);
+    CHECK(current_ != start_);
     --current_;
     return *this;
   }
@@ -100,9 +88,9 @@ class CheckedRandomAccessIterator {
 
   CheckedRandomAccessIterator& operator+=(difference_type rhs) {
     if (rhs > 0) {
-      ITERATOR_CHECK_LE(rhs, end_ - current_);
+      CHECK_LE(rhs, end_ - current_);
     } else {
-      ITERATOR_CHECK_LE(-rhs, current_ - start_);
+      CHECK_LE(-rhs, current_ - start_);
     }
     current_ += rhs;
     return *this;
@@ -116,9 +104,9 @@ class CheckedRandomAccessIterator {
 
   CheckedRandomAccessIterator& operator-=(difference_type rhs) {
     if (rhs < 0) {
-      ITERATOR_CHECK_LE(rhs, end_ - current_);
+      CHECK_LE(rhs, end_ - current_);
     } else {
-      ITERATOR_CHECK_LE(-rhs, current_ - start_);
+      CHECK_LE(-rhs, current_ - start_);
     }
     current_ -= rhs;
     return *this;
@@ -132,18 +120,18 @@ class CheckedRandomAccessIterator {
 
   friend difference_type operator-(const CheckedRandomAccessIterator& lhs,
                                    const CheckedRandomAccessIterator& rhs) {
-    ITERATOR_CHECK(lhs.start_ == rhs.start_);
-    ITERATOR_CHECK(lhs.end_ == rhs.end_);
+    CHECK(lhs.start_ == rhs.start_);
+    CHECK(lhs.end_ == rhs.end_);
     return lhs.current_ - rhs.current_;
   }
 
   reference operator*() const {
-    ITERATOR_CHECK(current_ != end_);
+    CHECK(current_ != end_);
     return *current_;
   }
 
   pointer operator->() const {
-    ITERATOR_CHECK(current_ != end_);
+    CHECK(current_ != end_);
     return current_;
   }
 
@@ -165,8 +153,8 @@ class CheckedRandomAccessIterator {
 
  private:
   void CheckComparable(const CheckedRandomAccessIterator& other) const {
-    ITERATOR_CHECK_EQ(start_, other.start_);
-    ITERATOR_CHECK_EQ(end_, other.end_);
+    CHECK_EQ(start_, other.start_);
+    CHECK_EQ(end_, other.end_);
   }
 
   const T* start_ = nullptr;
@@ -188,16 +176,16 @@ class CheckedRandomAccessConstIterator {
       : CheckedRandomAccessConstIterator(start, start, end) {}
   CheckedRandomAccessConstIterator(T* start, T* current, const T* end)
       : start_(start), current_(current), end_(end) {
-    ITERATOR_CHECK(start <= current);
-    ITERATOR_CHECK(current <= end);
+    CHECK(start <= current);
+    CHECK(current <= end);
   }
   CheckedRandomAccessConstIterator(
       const CheckedRandomAccessConstIterator& other) = default;
   CheckedRandomAccessConstIterator(const CheckedRandomAccessIterator<T>& other)
       : start_(other.start_), current_(other.current_), end_(other.end_) {
     // We explicitly don't delegate to the 3-argument constructor here. Its
-    // ITERATOR_CHECKs would be redundant, since we expect |other| to maintain
-    // its own invariant. However, DCHECKs never hurt anybody. Presumably.
+    // CHECKs would be redundant, since we expect |other| to maintain its own
+    // invariant. However, DCHECKs never hurt anybody. Presumably.
     DCHECK(other.start_ <= other.current_);
     DCHECK(other.current_ <= other.end_);
   }
@@ -230,7 +218,7 @@ class CheckedRandomAccessConstIterator {
   }
 
   CheckedRandomAccessConstIterator& operator++() {
-    ITERATOR_CHECK(current_ != end_);
+    CHECK(current_ != end_);
     ++current_;
     return *this;
   }
@@ -242,7 +230,7 @@ class CheckedRandomAccessConstIterator {
   }
 
   CheckedRandomAccessConstIterator& operator--() {
-    ITERATOR_CHECK(current_ != start_);
+    CHECK(current_ != start_);
     --current_;
     return *this;
   }
@@ -255,9 +243,9 @@ class CheckedRandomAccessConstIterator {
 
   CheckedRandomAccessConstIterator& operator+=(difference_type rhs) {
     if (rhs > 0) {
-      ITERATOR_CHECK_LE(rhs, end_ - current_);
+      CHECK_LE(rhs, end_ - current_);
     } else {
-      ITERATOR_CHECK_LE(-rhs, current_ - start_);
+      CHECK_LE(-rhs, current_ - start_);
     }
     current_ += rhs;
     return *this;
@@ -271,9 +259,9 @@ class CheckedRandomAccessConstIterator {
 
   CheckedRandomAccessConstIterator& operator-=(difference_type rhs) {
     if (rhs < 0) {
-      ITERATOR_CHECK_LE(rhs, end_ - current_);
+      CHECK_LE(rhs, end_ - current_);
     } else {
-      ITERATOR_CHECK_LE(-rhs, current_ - start_);
+      CHECK_LE(-rhs, current_ - start_);
     }
     current_ -= rhs;
     return *this;
@@ -288,18 +276,18 @@ class CheckedRandomAccessConstIterator {
   friend difference_type operator-(
       const CheckedRandomAccessConstIterator& lhs,
       const CheckedRandomAccessConstIterator& rhs) {
-    ITERATOR_CHECK(lhs.start_ == rhs.start_);
-    ITERATOR_CHECK(lhs.end_ == rhs.end_);
+    CHECK(lhs.start_ == rhs.start_);
+    CHECK(lhs.end_ == rhs.end_);
     return lhs.current_ - rhs.current_;
   }
 
   reference operator*() const {
-    ITERATOR_CHECK(current_ != end_);
+    CHECK(current_ != end_);
     return *current_;
   }
 
   pointer operator->() const {
-    ITERATOR_CHECK(current_ != end_);
+    CHECK(current_ != end_);
     return current_;
   }
 
@@ -321,8 +309,8 @@ class CheckedRandomAccessConstIterator {
 
  private:
   void CheckComparable(const CheckedRandomAccessConstIterator& other) const {
-    ITERATOR_CHECK_EQ(start_, other.start_);
-    ITERATOR_CHECK_EQ(end_, other.end_);
+    CHECK_EQ(start_, other.start_);
+    CHECK_EQ(end_, other.end_);
   }
 
   const T* start_ = nullptr;
@@ -331,9 +319,5 @@ class CheckedRandomAccessConstIterator {
 };
 
 }  // namespace base
-
-#undef ITERATOR_CHECK
-#undef ITERATOR_CHECK_EQ
-#undef ITERATOR_CHECK_LE
 
 #endif  // BASE_CONTAINERS_CHECKED_ITERATORS_H_

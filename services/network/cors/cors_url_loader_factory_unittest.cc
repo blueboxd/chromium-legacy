@@ -38,8 +38,7 @@ constexpr int kRouteId = 789;
 class CorsURLLoaderFactoryTest : public testing::Test {
  public:
   CorsURLLoaderFactoryTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         resource_scheduler_(true) {
     net::URLRequestContextBuilder context_builder;
     context_builder.set_proxy_resolution_service(
@@ -91,7 +90,7 @@ class CorsURLLoaderFactoryTest : public testing::Test {
   base::test::ScopedFeatureList feature_list_;
 
   // Test environment.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<net::URLRequestContext> url_request_context_;
   ResourceScheduler resource_scheduler_;
   std::unique_ptr<NetworkService> network_service_;

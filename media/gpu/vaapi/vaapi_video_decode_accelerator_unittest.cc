@@ -363,7 +363,7 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<TestParams>,
   MOCK_METHOD0(NotifyResetDone, void());
   MOCK_METHOD1(NotifyError, void(VideoDecodeAccelerator::Error));
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // The class under test and a worker thread for it.
   VaapiVideoDecodeAccelerator vda_;

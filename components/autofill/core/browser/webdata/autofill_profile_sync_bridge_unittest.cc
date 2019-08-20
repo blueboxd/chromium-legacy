@@ -321,7 +321,7 @@ class AutofillProfileSyncBridgeTest : public testing::Test {
  private:
   autofill::TestAutofillClock test_clock_;
   ScopedTempDir temp_dir_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   testing::NiceMock<MockAutofillWebDataBackend> backend_;
   AutofillTable table_;
   WebDatabase db_;

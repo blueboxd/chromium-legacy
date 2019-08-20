@@ -63,7 +63,7 @@ class ImageTraitsTest : public testing::Test,
     std::move(callback).Run(in);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   mojo::BindingSet<ImageTraitsTestService> bindings_;
   mojom::ImageTraitsTestServicePtr service_;
 

@@ -7,7 +7,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/time/time.h"
 
 namespace base {
 class HistogramSnapshotManager;
@@ -65,17 +64,8 @@ class MetricsProvider {
       ChromeUserMetricsExtension* uma_proto,
       base::HistogramSnapshotManager* snapshot_manager);
 
-  // Provides additional metrics into the system profile. This is a convenience
-  // method over ProvideSystemProfileMetricsWithLogCreationTime() without the
-  // |log_creation_time| param. Should not be called directly by services.
+  // Provides additional metrics into the system profile.
   virtual void ProvideSystemProfileMetrics(
-      SystemProfileProto* system_profile_proto);
-
-  // Provides additional metrics into the system profile. The log creation
-  // time param provides a timestamp of when the log was opened, which is needed
-  // for some metrics providers.
-  virtual void ProvideSystemProfileMetricsWithLogCreationTime(
-      base::TimeTicks log_creation_time,
       SystemProfileProto* system_profile_proto);
 
   // Called once at startup to see whether this provider has critical data

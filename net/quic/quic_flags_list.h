@@ -302,7 +302,7 @@ QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_connection_id_use_siphash, true)
 
 // If true, when RTO fires and there is no packet to be RTOed, let connection
 // send.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_rto_retransmission2, true)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_rto_retransmission3, true)
 
 // If true, QuicSession::GetOrCreateDynamicStream() is deprecated, and its
 // contents are moved to GetOrCreateStream().
@@ -399,4 +399,12 @@ QUIC_FLAG(bool,
 // packet_info.use_length_prefix instead of an incorrect local computation.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_use_length_prefix_from_packet_info,
+          false)
+
+// If true, enable IETF style probe timeout.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_pto, false)
+
+// When true, QuicFramer will use QueueUndecryptablePacket on all QUIC versions.
+QUIC_FLAG(bool,
+          FLAGS_quic_restart_flag_quic_framer_uses_undecryptable_upcall,
           false)

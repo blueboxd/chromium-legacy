@@ -151,8 +151,8 @@ class DaemonProcessTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::IO};
 
   std::unique_ptr<MockDaemonProcess> daemon_process_;
   int terminal_id_;
@@ -165,7 +165,7 @@ DaemonProcessTest::~DaemonProcessTest() = default;
 
 void DaemonProcessTest::SetUp() {
   scoped_refptr<AutoThreadTaskRunner> task_runner = new AutoThreadTaskRunner(
-      scoped_task_environment_.GetMainThreadTaskRunner(),
+      task_environment_.GetMainThreadTaskRunner(),
       base::Bind(&DaemonProcessTest::QuitMessageLoop, base::Unretained(this)));
   daemon_process_.reset(
       new MockDaemonProcess(task_runner, task_runner,
@@ -210,7 +210,7 @@ void DaemonProcessTest::DeleteDaemonProcess() {
 }
 
 void DaemonProcessTest::QuitMessageLoop() {
-  scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+  task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
 }
 
@@ -392,7 +392,7 @@ TEST_F(DaemonProcessTest, StopProcessStatsReportWhenTheWorkerProcessDied) {
           }));
   static_cast<WorkerProcessIpcDelegate*>(daemon_process_.get())
       ->OnWorkerProcessStopped();
-  scoped_task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
+  task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), base::TimeDelta::FromMilliseconds(10));
   run_loop.Run();
 }

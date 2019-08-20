@@ -2780,6 +2780,11 @@ const char kHappinessTrackingSurveysForDesktopName[] =
 const char kHappinessTrackingSurveysForDesktopDescription[] =
     "Enable showing Happiness Tracking Surveys to users on Desktop";
 
+const char kHappinessTrackingSurveysForDesktopDemoName[] =
+    "Happiness Tracking Surveys Demo";
+const char kHappinessTrackingSurveysForDesktopDemoDescription[] =
+    "Enable showing Happiness Tracking Surveys Demo to users on Desktop";
+
 const char kIntentPickerName[] = "Intent picker";
 const char kIntentPickerDescription[] =
     "When going to a site that has URL managable by a PWA, show the intent"
@@ -3586,6 +3591,10 @@ const char kClickToCallUIName[] =
 const char kClickToCallUIDescription[] =
     "Enables click to call feature signals to be handled on desktop by showing "
     "a list of user's available devices with telephony functionality.";
+
+const char kProfileMenuRevampName[] = "Profile menu revamp";
+const char kProfileMenuRevampDescription[] =
+    "Enables the new version of the profile menu (aka user menu).";
 
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 

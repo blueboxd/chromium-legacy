@@ -182,7 +182,7 @@ class PasswordGenerationFrameHelperTest : public testing::Test {
     return GetGenerationHelper()->IsGenerationEnabled(true);
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<MockPasswordManagerClient> client_;
 };
 

@@ -130,7 +130,7 @@ class PrimaryAccountManagerTest : public testing::Test {
 
   void GoogleSignedOut(const AccountInfo& account_info) { num_signouts_++; }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   sync_preferences::TestingPrefServiceSyncable user_prefs_;
   TestingPrefServiceSimple local_state_;
   TestSigninClient test_signin_client_;

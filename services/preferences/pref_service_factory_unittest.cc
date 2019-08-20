@@ -247,7 +247,7 @@ class PrefServiceFactoryTest : public testing::Test {
       quit_closure.Run();
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   service_manager::TestServiceManager test_service_manager_;
   base::ScopedTempDir profile_dir_;
   scoped_refptr<WriteablePrefStore> above_user_prefs_pref_store_;

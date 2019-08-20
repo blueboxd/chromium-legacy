@@ -1105,13 +1105,7 @@ TEST_F(HostResolverManagerTest, DeleteWithinCallback) {
   }
 }
 
-// Flaky on Fuchsia and Linux ASAN. crbug.com/930483
-#if defined(OS_FUCHSIA) || defined(OS_LINUX)
-#define MAYBE_DeleteWithinAbortedCallback DISABLED_DeleteWithinAbortedCallback
-#else
-#define MAYBE_DeleteWithinAbortedCallback DeleteWithinAbortedCallback
-#endif
-TEST_F(HostResolverManagerTest, MAYBE_DeleteWithinAbortedCallback) {
+TEST_F(HostResolverManagerTest, DeleteWithinAbortedCallback) {
   std::vector<std::unique_ptr<ResolveHostResponseHelper>> responses;
   ResolveHostResponseHelper::Callback custom_callback =
       base::BindLambdaForTesting(

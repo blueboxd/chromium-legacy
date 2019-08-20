@@ -38,7 +38,7 @@ class ConfigurationPolicyPrefStoreTest : public testing::Test {
   MockConfigurationPolicyProvider provider_;
   std::unique_ptr<PolicyServiceImpl> policy_service_;
   scoped_refptr<ConfigurationPolicyPrefStore> store_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyPrefStoreTest);

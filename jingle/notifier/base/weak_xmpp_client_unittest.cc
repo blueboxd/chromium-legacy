@@ -61,7 +61,7 @@ class WeakXmppClientTest : public testing::Test {
   }
 
   // Needed by TaskPump.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<jingle_glue::TaskPump> task_pump_;
   MockXmppDelegate mock_xmpp_delegate_;

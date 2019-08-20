@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "components/metrics/file_metrics_provider.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_service_client.h"
 #include "components/omnibox/browser/omnibox_event_global_tracker.h"
@@ -94,6 +95,10 @@ class IOSChromeMetricsServiceClient : public IncognitoWebStateObserver,
   void OnIncognitoWebStateRemoved() override;
 
   metrics::EnableMetricsDefault GetMetricsReportingDefaultState() override;
+
+  // Determine what to do with a file based on filename. Visible for testing.
+  static metrics::FileMetricsProvider::FilterAction FilterBrowserMetricsFiles(
+      const base::FilePath& path);
 
  private:
   explicit IOSChromeMetricsServiceClient(

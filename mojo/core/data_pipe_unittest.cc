@@ -1986,7 +1986,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(DataPipeStatusChangeInTransitClient,
   EXPECT_EQ(MOJO_RESULT_OK,
             WaitForSignals(consumers[0], MOJO_HANDLE_SIGNAL_PEER_CLOSED));
 
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   // Wait on producer 1 and consumer 1 using SimpleWatchers.
   {

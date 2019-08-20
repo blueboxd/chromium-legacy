@@ -103,7 +103,7 @@ class UssMigratorTest : public ::testing::Test {
  private:
   syncable::Directory* directory() { return user_share()->directory.get(); }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestUserShare test_user_share_;
   CancelationSignal cancelation_signal_;
   std::unique_ptr<TestEntryFactory> entry_factory_;

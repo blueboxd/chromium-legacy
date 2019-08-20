@@ -35,11 +35,6 @@ namespace predictors {
 
 namespace {
 
-constexpr int kNormalLoadFlags = net::LOAD_NORMAL;
-constexpr int kPrivateLoadFlags = net::LOAD_DO_NOT_SEND_COOKIES |
-                                  net::LOAD_DO_NOT_SAVE_COOKIES |
-                                  net::LOAD_DO_NOT_SEND_AUTH_DATA;
-
 net::ProxyInfo GetIndirectProxyInfo() {
   net::ProxyInfo proxy_info;
   proxy_info.UseNamedProxy("proxy.com");
@@ -137,11 +132,10 @@ class MockNetworkContext : public network::TestNetworkContext {
   void EnableProxyTesting() { enabled_proxy_testing_ = true; }
 
   MOCK_METHOD1(ResolveHostProxy, void(const std::string& host));
-  MOCK_METHOD5(PreconnectSockets,
+  MOCK_METHOD4(PreconnectSockets,
                void(uint32_t num_streams,
                     const GURL& url,
-                    int32_t load_flags,
-                    bool privacy_mode_enabled,
+                    bool allow_credentials,
                     const net::NetworkIsolationKey& network_isolation_key));
 
  private:
@@ -227,10 +221,10 @@ TEST_F(PreconnectManagerTest, TestStartOneUrlPreconnect) {
   preconnect_manager_->Start(
       main_frame_url,
       {PreconnectRequest(url_to_preconnect, 1, network_isolation_key)});
-  EXPECT_CALL(*mock_network_context_,
-              PreconnectSockets(1, url_to_preconnect, kNormalLoadFlags,
-                                false /* privacy_mode_enabled */,
-                                network_isolation_key));
+  EXPECT_CALL(
+      *mock_network_context_,
+      PreconnectSockets(1, url_to_preconnect, true /* allow credentials */,
+                        network_isolation_key));
   EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url));
   mock_network_context_->CompleteHostLookup(url_to_preconnect.host(), net::OK);
 }
@@ -247,10 +241,10 @@ TEST_F(PreconnectManagerTest,
   preconnect_manager_->Start(
       main_frame_url,
       {PreconnectRequest(url_to_preconnect, 1, network_isolation_key)});
-  EXPECT_CALL(*mock_network_context_,
-              PreconnectSockets(1, url_to_preconnect, kNormalLoadFlags,
-                                false /* privacy_mode_enabled */,
-                                network_isolation_key));
+  EXPECT_CALL(
+      *mock_network_context_,
+      PreconnectSockets(1, url_to_preconnect, true /* allow credentials */,
+                        network_isolation_key));
   EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url));
   mock_network_context_->CompleteHostLookup(url_to_preconnect.host(), net::OK);
 }
@@ -286,17 +280,17 @@ TEST_F(PreconnectManagerTest, TestStartOneUrlPreconnect_MultipleTimes) {
   VerifyAndClearExpectations();
 
   // Now, restart the preconnect request.
-  EXPECT_CALL(*mock_network_context_,
-              PreconnectSockets(1, requests.back().origin, kNormalLoadFlags,
-                                false /* privacy_mode_enabled */,
-                                network_isolation_key));
+  EXPECT_CALL(
+      *mock_network_context_,
+      PreconnectSockets(1, requests.back().origin, true /* allow credentials */,
+                        network_isolation_key));
   EXPECT_CALL(*mock_network_context_,
               ResolveHostProxy(requests.back().origin.host()));
   for (size_t i = 0; i < count; ++i) {
-    EXPECT_CALL(*mock_network_context_,
-                PreconnectSockets(1, requests[i].origin, kNormalLoadFlags,
-                                  false /* privacy_mode_enabled */,
-                                  network_isolation_key));
+    EXPECT_CALL(
+        *mock_network_context_,
+        PreconnectSockets(1, requests[i].origin, true /* allow credentials */,
+                          network_isolation_key));
     EXPECT_CALL(*mock_network_context_,
                 ResolveHostProxy(requests[i].origin.host()));
   }
@@ -336,10 +330,10 @@ TEST_F(PreconnectManagerTest, TestTwoConcurrentMainFrameUrls_MultipleTimes) {
   }
   EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url_1));
   for (size_t i = 0; i < count - 1; ++i) {
-    EXPECT_CALL(*mock_network_context_,
-                PreconnectSockets(1, requests[i].origin, kNormalLoadFlags,
-                                  false /* privacy_mode_enabled */,
-                                  network_isolation_key_1));
+    EXPECT_CALL(
+        *mock_network_context_,
+        PreconnectSockets(1, requests[i].origin, true /* allow credentials */,
+                          network_isolation_key_1));
   }
 
   preconnect_manager_->Start(
@@ -375,14 +369,14 @@ TEST_F(PreconnectManagerTest, TestTwoConcurrentMainFrameUrls_MultipleTimes) {
                              std::vector<PreconnectRequest>(
                                  requests.begin() + count - 1, requests.end()));
 
-  EXPECT_CALL(*mock_network_context_,
-              PreconnectSockets(1, requests[count - 1].origin, kNormalLoadFlags,
-                                false /* privacy_mode_enabled */,
-                                network_isolation_key_2));
-  EXPECT_CALL(*mock_network_context_,
-              PreconnectSockets(1, requests[count].origin, kNormalLoadFlags,
-                                false /* privacy_mode_enabled */,
-                                network_isolation_key_2));
+  EXPECT_CALL(
+      *mock_network_context_,
+      PreconnectSockets(1, requests[count - 1].origin,
+                        true /* allow credentials */, network_isolation_key_2));
+  EXPECT_CALL(
+      *mock_network_context_,
+      PreconnectSockets(1, requests[count].origin, true /* allow credentials */,
+                        network_isolation_key_2));
 
   mock_network_context_->CompleteHostLookup(requests[count - 1].origin.host(),
                                             net::OK);
@@ -445,14 +439,14 @@ TEST_F(PreconnectManagerTest,
   EXPECT_CALL(*mock_network_context_,
               ResolveHostProxy(url_to_preconnect_2.host()));
   EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url_2));
-  EXPECT_CALL(*mock_network_context_,
-              PreconnectSockets(1, url_to_preconnect_1, kNormalLoadFlags,
-                                false /* privacy_mode_enabled */,
-                                network_isolation_key_2));
-  EXPECT_CALL(*mock_network_context_,
-              PreconnectSockets(1, url_to_preconnect_2, kNormalLoadFlags,
-                                false /* privacy_mode_enabled */,
-                                network_isolation_key_2));
+  EXPECT_CALL(
+      *mock_network_context_,
+      PreconnectSockets(1, url_to_preconnect_1, true /* allow credentials */,
+                        network_isolation_key_2));
+  EXPECT_CALL(
+      *mock_network_context_,
+      PreconnectSockets(1, url_to_preconnect_2, true /* allow credentials */,
+                        network_isolation_key_2));
   preconnect_manager_->Start(
       main_frame_url_2,
       {PreconnectRequest(url_to_preconnect_1, 1, network_isolation_key_2),
@@ -497,14 +491,14 @@ TEST_F(PreconnectManagerTest,
               ResolveHostProxy(url_to_preconnect_1.host()));
   EXPECT_CALL(*mock_network_context_,
               ResolveHostProxy(url_to_preconnect_2.host()));
-  EXPECT_CALL(*mock_network_context_,
-              PreconnectSockets(1, url_to_preconnect_1, kNormalLoadFlags,
-                                false /* privacy_mode_enabled */,
-                                network_isolation_key));
-  EXPECT_CALL(*mock_network_context_,
-              PreconnectSockets(1, url_to_preconnect_2, kNormalLoadFlags,
-                                false /* privacy_mode_enabled */,
-                                network_isolation_key));
+  EXPECT_CALL(
+      *mock_network_context_,
+      PreconnectSockets(1, url_to_preconnect_1, true /* allow credentials */,
+                        network_isolation_key));
+  EXPECT_CALL(
+      *mock_network_context_,
+      PreconnectSockets(1, url_to_preconnect_2, true /* allow credentials */,
+                        network_isolation_key));
   EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url));
   preconnect_manager_->Start(
       main_frame_url,
@@ -602,10 +596,10 @@ TEST_F(PreconnectManagerTest, TestTwoConcurrentMainFrameUrls) {
 
   preconnect_manager_->Stop(main_frame_url2);
   // Stopping the second url shouldn't stop the first one.
-  EXPECT_CALL(*mock_network_context_,
-              PreconnectSockets(1, url_to_preconnect1, kNormalLoadFlags,
-                                false /* privacy_mode_enabled */,
-                                network_isolation_key1));
+  EXPECT_CALL(
+      *mock_network_context_,
+      PreconnectSockets(1, url_to_preconnect1, true /* allow credentials */,
+                        network_isolation_key1));
   EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url1));
   mock_network_context_->CompleteHostLookup(url_to_preconnect1.host(), net::OK);
   // No preconnect for the second url.
@@ -636,10 +630,10 @@ TEST_F(PreconnectManagerTest, TestTwoConcurrentSameHostMainFrameUrls) {
       main_frame_url2,
       {PreconnectRequest(url_to_preconnect2, 1, network_isolation_key2)});
 
-  EXPECT_CALL(*mock_network_context_,
-              PreconnectSockets(1, url_to_preconnect1, kNormalLoadFlags,
-                                false /* privacy_mode_enabled */,
-                                network_isolation_key1));
+  EXPECT_CALL(
+      *mock_network_context_,
+      PreconnectSockets(1, url_to_preconnect1, true /* allow credentials */,
+                        network_isolation_key1));
   EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url1));
   mock_network_context_->CompleteHostLookup(url_to_preconnect1.host(), net::OK);
 }
@@ -680,9 +674,9 @@ TEST_F(PreconnectManagerTest, TestStartPreconnectUrl) {
   preconnect_manager_->StartPreconnectUrl(url, allow_credentials,
                                           network_isolation_key);
 
-  EXPECT_CALL(*mock_network_context_,
-              PreconnectSockets(1, origin, kPrivateLoadFlags,
-                                !allow_credentials, network_isolation_key));
+  EXPECT_CALL(
+      *mock_network_context_,
+      PreconnectSockets(1, origin, allow_credentials, network_isolation_key));
   mock_network_context_->CompleteHostLookup(origin.host(), net::OK);
 
   // Non http url shouldn't be preconnected.
@@ -703,9 +697,9 @@ TEST_F(PreconnectManagerTest, TestStartPreconnectUrlWithNetworkIsolationKey) {
   preconnect_manager_->StartPreconnectUrl(url, allow_credentials,
                                           network_isolation_key);
 
-  EXPECT_CALL(*mock_network_context_,
-              PreconnectSockets(1, origin, kPrivateLoadFlags,
-                                !allow_credentials, network_isolation_key));
+  EXPECT_CALL(
+      *mock_network_context_,
+      PreconnectSockets(1, origin, allow_credentials, network_isolation_key));
   mock_network_context_->CompleteHostLookup(origin.host(), net::OK);
 }
 
@@ -760,10 +754,10 @@ TEST_F(PreconnectManagerTest, TestSuccessfulProxyLookup) {
       main_frame_url,
       {PreconnectRequest(url_to_preconnect, 1, network_isolation_key)});
 
-  EXPECT_CALL(*mock_network_context_,
-              PreconnectSockets(1, url_to_preconnect, kNormalLoadFlags,
-                                false /* privacy_mode_enabled */,
-                                network_isolation_key));
+  EXPECT_CALL(
+      *mock_network_context_,
+      PreconnectSockets(1, url_to_preconnect, true /* allow credentials */,
+                        network_isolation_key));
   EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url));
   mock_network_context_->CompleteProxyLookup(url_to_preconnect,
                                              GetIndirectProxyInfo());
@@ -792,14 +786,14 @@ TEST_F(PreconnectManagerTest, TestSuccessfulHostLookupAfterProxyLookupFailure) {
   mock_network_context_->CompleteProxyLookup(url_to_preconnect2, base::nullopt);
   Mock::VerifyAndClearExpectations(mock_network_context_.get());
 
-  EXPECT_CALL(*mock_network_context_,
-              PreconnectSockets(1, url_to_preconnect, kNormalLoadFlags,
-                                false /* privacy_mode_enabled */,
-                                network_isolation_key));
-  EXPECT_CALL(*mock_network_context_,
-              PreconnectSockets(1, url_to_preconnect2, kNormalLoadFlags,
-                                false /* privacy_mode_enabled */,
-                                network_isolation_key));
+  EXPECT_CALL(
+      *mock_network_context_,
+      PreconnectSockets(1, url_to_preconnect, true /* allow credentials */,
+                        network_isolation_key));
+  EXPECT_CALL(
+      *mock_network_context_,
+      PreconnectSockets(1, url_to_preconnect2, true /* allow credentials */,
+                        network_isolation_key));
   EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url));
   mock_network_context_->CompleteHostLookup(url_to_preconnect.host(), net::OK);
   mock_network_context_->CompleteHostLookup(url_to_preconnect2.host(), net::OK);

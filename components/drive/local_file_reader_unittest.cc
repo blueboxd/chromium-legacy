@@ -56,7 +56,7 @@ class LocalFileReaderTest : public ::testing::Test {
         std::make_unique<LocalFileReader>(worker_thread_->task_runner().get());
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<base::Thread> worker_thread_;
   std::unique_ptr<LocalFileReader> file_reader_;

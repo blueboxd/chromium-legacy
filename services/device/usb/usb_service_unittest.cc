@@ -25,13 +25,12 @@ namespace {
 class UsbServiceTest : public ::testing::Test {
  public:
   UsbServiceTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
         usb_service_(UsbService::Create()),
         io_thread_(base::TestIOThread::kAutoStart) {}
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<UsbService> usb_service_;
   base::TestIOThread io_thread_;
 };

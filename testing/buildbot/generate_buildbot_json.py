@@ -1026,7 +1026,7 @@ class BBJSONGenerator(object):
       'win10-blink-rel-dummy',
       'Dummy WebKit Mac10.13',
       'WebKit Linux composite_after_paint Dummy Builder',
-      'WebKit Linux layout_ng Dummy Builder',
+      'WebKit Linux layout_ng_disabled Builder',
       # chromium, due to https://crbug.com/878915
       'win-dbg',
       'win32-dbg',

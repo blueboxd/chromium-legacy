@@ -132,7 +132,7 @@ class IconCacherTestBase : public ::testing::Test {
     loop.RunUntilIdle();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir history_dir_;
   history::HistoryService history_service_;
   favicon::FaviconServiceImpl favicon_service_;
@@ -365,7 +365,7 @@ TEST_F(IconCacherTestMostLikely, Cached) {
   base::MockCallback<base::Closure> done;
   EXPECT_CALL(done, Run()).Times(0);
   cacher.StartFetchMostLikely(page_url, done.Get());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(IconIsCachedFor(page_url, favicon_base::IconType::kFavicon));
   EXPECT_TRUE(IconIsCachedFor(page_url, favicon_base::IconType::kTouchIcon));
@@ -397,7 +397,7 @@ TEST_F(IconCacherTestMostLikely, NotCachedAndFetchSucceeded) {
   // Both these task runners need to be flushed in order to get |done| called by
   // running the main loop.
   WaitForHistoryThreadTasksToFinish();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   loop.Run();
   EXPECT_FALSE(IconIsCachedFor(page_url, favicon_base::IconType::kFavicon));
@@ -429,7 +429,7 @@ TEST_F(IconCacherTestMostLikely, NotCachedAndFetchFailed) {
   // Both these task runners need to be flushed before flushing the main thread
   // queue in order to finish the work.
   WaitForHistoryThreadTasksToFinish();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(IconIsCachedFor(page_url, favicon_base::IconType::kFavicon));
   EXPECT_FALSE(IconIsCachedFor(page_url, favicon_base::IconType::kTouchIcon));
@@ -452,14 +452,14 @@ TEST_F(IconCacherTestMostLikely, HandlesEmptyCallbacksNicely) {
 
   // Finish the posted tasks on the main and the history thread to find out if
   // we can write the icon.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   WaitForHistoryThreadTasksToFinish();
   // Continue with the work in large icon service - fetch and decode the data.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   // Do the work on the history thread to write down the icon
   WaitForHistoryThreadTasksToFinish();
   // Finish the tasks on the main thread.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Even though the callbacks are not called, the icon gets written out.
   EXPECT_FALSE(IconIsCachedFor(page_url, favicon_base::IconType::kFavicon));
@@ -493,10 +493,10 @@ TEST_F(IconCacherTestMostLikely, NotCachedAndFetchPerformedOnlyOnce) {
 
   // Finish the posted tasks on the main and the history thread to find out if
   // we can write the icon.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   WaitForHistoryThreadTasksToFinish();
   // Continue with the work in large icon service - fetch and decode the data.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   // Do the work on the history thread to write down the icon
   WaitForHistoryThreadTasksToFinish();
   // Finish the tasks on the main thread.

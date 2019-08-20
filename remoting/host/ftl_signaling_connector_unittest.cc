@@ -33,7 +33,7 @@ class FtlSignalingConnectorTest : public testing::Test {
   }
 
   ~FtlSignalingConnectorTest() override {
-    scoped_task_environment_.FastForwardUntilNoTasksRemain();
+    task_environment_.FastForwardUntilNoTasksRemain();
   }
 
  protected:
@@ -45,8 +45,8 @@ class FtlSignalingConnectorTest : public testing::Test {
     return signaling_connector_->backoff_reset_timer_;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   FakeSignalStrategy signal_strategy_{SignalingAddress(kLocalFtlId)};
   base::MockCallback<base::OnceClosure> auth_failed_callback_;
   std::unique_ptr<FtlSignalingConnector> signaling_connector_;
@@ -54,7 +54,7 @@ class FtlSignalingConnectorTest : public testing::Test {
 
 TEST_F(FtlSignalingConnectorTest, StartAndSucceed) {
   signaling_connector_->Start();
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   ASSERT_EQ(SignalStrategy::CONNECTING, signal_strategy_.GetState());
   signal_strategy_.ProceedConnect();
   ASSERT_EQ(SignalStrategy::CONNECTED, signal_strategy_.GetState());
@@ -63,7 +63,7 @@ TEST_F(FtlSignalingConnectorTest, StartAndSucceed) {
 
 TEST_F(FtlSignalingConnectorTest, StartAndAuthFailed) {
   signaling_connector_->Start();
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   ASSERT_EQ(SignalStrategy::CONNECTING, signal_strategy_.GetState());
 
   signal_strategy_.SetIsSignInError(true);
@@ -76,14 +76,14 @@ TEST_F(FtlSignalingConnectorTest, StartAndAuthFailed) {
 TEST_F(FtlSignalingConnectorTest, StartAndFailedThenRetryAndSucceeded) {
   ASSERT_EQ(0, GetBackoff().failure_count());
   signaling_connector_->Start();
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   ASSERT_EQ(SignalStrategy::CONNECTING, signal_strategy_.GetState());
 
   signal_strategy_.SetError(SignalStrategy::NETWORK_ERROR);
   signal_strategy_.Disconnect();
   ASSERT_EQ(1, GetBackoff().failure_count());
 
-  scoped_task_environment_.FastForwardBy(GetBackoff().GetTimeUntilRelease());
+  task_environment_.FastForwardBy(GetBackoff().GetTimeUntilRelease());
   ASSERT_EQ(SignalStrategy::CONNECTING, signal_strategy_.GetState());
   signal_strategy_.ProceedConnect();
 
@@ -91,7 +91,7 @@ TEST_F(FtlSignalingConnectorTest, StartAndFailedThenRetryAndSucceeded) {
   ASSERT_EQ(1, GetBackoff().failure_count());
 
   // Failure count is eventually reset to 0.
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   ASSERT_EQ(0, GetBackoff().failure_count());
 }
 
@@ -99,7 +99,7 @@ TEST_F(FtlSignalingConnectorTest,
        StartAndImmediatelyDisconnected_RetryWithBackoff) {
   ASSERT_EQ(0, GetBackoff().failure_count());
   signaling_connector_->Start();
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   ASSERT_EQ(SignalStrategy::CONNECTING, signal_strategy_.GetState());
 
   signal_strategy_.ProceedConnect();
@@ -108,7 +108,7 @@ TEST_F(FtlSignalingConnectorTest,
   signal_strategy_.Disconnect();
   ASSERT_EQ(1, GetBackoff().failure_count());
 
-  scoped_task_environment_.FastForwardBy(GetBackoff().GetTimeUntilRelease());
+  task_environment_.FastForwardBy(GetBackoff().GetTimeUntilRelease());
   ASSERT_EQ(SignalStrategy::CONNECTING, signal_strategy_.GetState());
   signal_strategy_.ProceedConnect();
 
@@ -116,7 +116,7 @@ TEST_F(FtlSignalingConnectorTest,
   ASSERT_EQ(1, GetBackoff().failure_count());
 
   // Failure count is eventually reset to 0.
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   ASSERT_EQ(0, GetBackoff().failure_count());
 }
 
@@ -125,7 +125,7 @@ TEST_F(FtlSignalingConnectorTest, AutoConnectOnNetworkChange) {
       net::NetworkChangeNotifier::CONNECTION_ETHERNET);
   // Reconnection starts with some delay.
   ASSERT_EQ(SignalStrategy::DISCONNECTED, signal_strategy_.GetState());
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   ASSERT_EQ(SignalStrategy::CONNECTING, signal_strategy_.GetState());
 }
 

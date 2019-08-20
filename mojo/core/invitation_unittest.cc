@@ -66,7 +66,7 @@ class InvitationTest : public test::MojoTestBase {
       base::StringPiece isolated_invitation_name);
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(InvitationTest);
 };

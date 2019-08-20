@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_directory_handle.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_directory_iterator_entry.h"
+#include "third_party/blink/renderer/modules/native_file_system/native_file_system_error.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_file_handle.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -25,9 +26,11 @@ NativeFileSystemDirectoryIterator::NativeFileSystemDirectoryIterator(
 
 ScriptPromise NativeFileSystemDirectoryIterator::next(
     ScriptState* script_state) {
-  if (error_ != base::File::FILE_OK) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, file_error::CreateDOMException(error_));
+  if (error_) {
+    auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+    auto result = resolver->Promise();
+    native_file_system_error::Reject(resolver, *error_);
+    return result;
   }
 
   if (!entries_.IsEmpty()) {
@@ -62,10 +65,10 @@ void NativeFileSystemDirectoryIterator::OnGotEntries(
     Vector<mojom::blink::NativeFileSystemEntryPtr> entries) {
   if (!GetExecutionContext())
     return;
-  if (result->error_code != base::File::FILE_OK) {
-    error_ = result->error_code;
+  if (result->status != mojom::blink::NativeFileSystemStatus::kOk) {
+    error_ = std::move(result);
     if (pending_next_) {
-      pending_next_->Reject(file_error::CreateDOMException(error_));
+      native_file_system_error::Reject(pending_next_, *error_);
       pending_next_ = nullptr;
     }
     return;

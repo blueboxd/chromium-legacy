@@ -165,7 +165,7 @@ class BlobMemoryControllerTest : public testing::Test {
 
   scoped_refptr<TestSimpleTaskRunner> file_runner_ = new TestSimpleTaskRunner();
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(BlobMemoryControllerTest, Strategy) {

@@ -79,7 +79,7 @@ class RetryableURLFetcherTest : public PlatformTest {
     test_delegate_ = [[TestRetryableURLFetcherDelegate alloc] init];
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory>
       test_shared_url_loader_factory_;
@@ -98,7 +98,7 @@ TEST_F(RetryableURLFetcherTest, TestResponse200) {
       url, base::SysNSStringToUTF8(kFakeResponseString), net::HTTP_OK);
 
   [retryableFetcher startFetch];
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_EQ(1U, [test_delegate_ responsesProcessed]);
 }
@@ -114,7 +114,7 @@ TEST_F(RetryableURLFetcherTest, TestResponse404) {
   test_url_loader_factory_.AddResponse(url, "", net::HTTP_NOT_FOUND);
 
   [retryableFetcher startFetch];
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_EQ(0U, [test_delegate_ responsesProcessed]);
 }
@@ -132,7 +132,7 @@ TEST_F(RetryableURLFetcherTest, TestFailingURLNoRetry) {
   [failing_delegate setResponsesProcessed:0U];
 
   [retryableFetcher startFetch];
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Verify that a response has been received, even if the failing delegate
   // received a nil in processSuccessResponse to indicate the failure.

@@ -291,7 +291,7 @@ class SyncEngineImplTest : public testing::Test {
     run_loop.Run();
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   base::Thread sync_thread_;

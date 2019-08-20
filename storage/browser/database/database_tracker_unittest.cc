@@ -189,7 +189,7 @@ class DatabaseTracker_TestHelper_Test {
  public:
   static void TestDeleteOpenDatabase(bool incognito_mode) {
     // Initialize the tracker database.
-    base::test::ScopedTaskEnvironment scoped_task_environment;
+    base::test::TaskEnvironment task_environment;
     base::ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
     scoped_refptr<MockSpecialStoragePolicy> special_storage_policy =
@@ -285,7 +285,7 @@ class DatabaseTracker_TestHelper_Test {
 
   static void TestDatabaseTracker(bool incognito_mode) {
     // Initialize the tracker database.
-    base::test::ScopedTaskEnvironment scoped_task_environment;
+    base::test::TaskEnvironment task_environment;
     base::ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
     scoped_refptr<MockSpecialStoragePolicy> special_storage_policy =
@@ -426,7 +426,7 @@ class DatabaseTracker_TestHelper_Test {
     const base::string16 kName = ASCIIToUTF16("name");
     const base::string16 kDescription = ASCIIToUTF16("description");
 
-    base::test::ScopedTaskEnvironment scoped_task_environment;
+    base::test::TaskEnvironment task_environment;
     base::ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
@@ -537,7 +537,7 @@ class DatabaseTracker_TestHelper_Test {
     const base::string16 kDescription = ASCIIToUTF16("database_description");
 
     // Initialize the tracker database.
-    base::test::ScopedTaskEnvironment scoped_task_environment;
+    base::test::TaskEnvironment task_environment;
     base::ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
     base::FilePath origin1_db_dir;
@@ -617,7 +617,7 @@ class DatabaseTracker_TestHelper_Test {
     const base::string16 kDescription = ASCIIToUTF16("database_description");
 
     // Initialize the tracker database.
-    base::test::ScopedTaskEnvironment scoped_task_environment;
+    base::test::TaskEnvironment task_environment;
     base::ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
     base::FilePath origin1_db_dir;
@@ -693,7 +693,7 @@ class DatabaseTracker_TestHelper_Test {
 
     // Initialize a tracker database, no need to put it on disk.
     const bool kUseInMemoryTrackerDatabase = true;
-    base::test::ScopedTaskEnvironment scoped_task_environment;
+    base::test::TaskEnvironment task_environment;
     base::ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
     scoped_refptr<DatabaseTracker> tracker(
@@ -742,7 +742,7 @@ class DatabaseTracker_TestHelper_Test {
 
     // Initialize a tracker database, no need to put it on disk.
     const bool kUseInMemoryTrackerDatabase = true;
-    base::test::ScopedTaskEnvironment scoped_task_environment;
+    base::test::TaskEnvironment task_environment;
     base::ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
     scoped_refptr<DatabaseTracker> tracker(

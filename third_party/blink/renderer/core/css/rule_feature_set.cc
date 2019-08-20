@@ -1018,6 +1018,7 @@ void RuleFeatureSet::Clear() {
   pseudo_invalidation_sets_.clear();
   universal_sibling_invalidation_set_ = nullptr;
   nth_invalidation_set_ = nullptr;
+  type_rule_invalidation_set_ = nullptr;
   viewport_dependent_media_query_results_.clear();
   device_dependent_media_query_results_.clear();
 }

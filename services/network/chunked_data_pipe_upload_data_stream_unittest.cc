@@ -55,8 +55,8 @@ class ChunkedDataPipeUploadDataStreamTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::IO};
   std::unique_ptr<TestChunkedDataPipeGetter> chunked_data_pipe_getter_;
   std::unique_ptr<ChunkedDataPipeUploadDataStream> chunked_upload_stream_;
 

@@ -125,13 +125,14 @@ bool IndividualSettings::Parse(const base::DictionaryValue* dict,
         LOG(WARNING) << "Exceeded maximum number of URL match patterns ("
                      << schema_constants::kMaxItemsURLPatternSet
                      << ") for attribute '" << key << "'";
-        return false;
       }
 
       out_value->ClearPatterns();
       const int extension_scheme_mask =
           URLPattern::GetValidSchemeMaskForExtensions();
-      for (size_t i = 0; i < host_list_value->GetSize(); ++i) {
+      auto numItems = std::min(host_list_value->GetSize(),
+                               schema_constants::kMaxItemsURLPatternSet);
+      for (size_t i = 0; i < numItems; ++i) {
         std::string unparsed_str;
         host_list_value->GetString(i, &unparsed_str);
         URLPattern pattern(extension_scheme_mask);

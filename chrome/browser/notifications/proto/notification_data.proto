@@ -22,7 +22,7 @@ enum ActionButtonType {
 }
 
 // Stores data used to display a notification in the UI.
-// Next tag: 6
+// Next tag: 7
 message NotificationData {
   // Represents the button on the notification.
   // Next tag: 4
@@ -38,13 +38,17 @@ message NotificationData {
   // Body text of the notification.
   optional string message = 2;
 
-  // The unique identifiers of the icons on the notification. Each time we
-  // should only load icons asynchronously into memory.
-  repeated string icon_uuid = 3;
-
   // Custom data associated with a notification.
-  repeated CustomData custom_data = 4;
+  repeated CustomData custom_data = 3;
 
   // A list of buttons on the notification.
-  repeated Button buttons = 5;
+  repeated Button buttons = 4;
+
+  // The unique identifier of the small icon on notification, which must be
+  // loaded asynchronously into memory.
+  optional string small_icon_uuid = 5;
+
+  // The unique identifier of the large icon on notification, which must be
+  // loaded asynchronously into memory.
+  optional string large_icon_uuid = 6;
 }

@@ -200,7 +200,7 @@ class ShortcutsProviderTest : public testing::Test {
                      const ShortcutsDatabase::Shortcut& shortcut,
                      int max_relevance);
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<FakeAutocompleteProviderClient> client_;
   scoped_refptr<ShortcutsProvider> provider_;
 };
@@ -220,7 +220,7 @@ void ShortcutsProviderTest::SetUp() {
 void ShortcutsProviderTest::TearDown() {
   provider_ = nullptr;
   client_.reset();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 int ShortcutsProviderTest::CalculateScore(

@@ -41,7 +41,8 @@ void HeadlessNativeDisplayDelegate::Initialize() {
       next_display_id(), gfx::Point(0, 0), kDefaultWindowSize,
       display::DisplayConnectionType::DISPLAY_CONNECTION_TYPE_NONE, false,
       false, false, false, gfx::ColorSpace(), "", base::FilePath(),
-      std::move(modes), std::vector<uint8_t>(), mode, mode, 0, 0, gfx::Size());
+      std::move(modes), display::PanelOrientation::kNormal,
+      std::vector<uint8_t>(), mode, mode, 0, 0, gfx::Size());
 
   for (display::NativeDisplayObserver& observer : observers_)
     observer.OnConfigurationChanged();

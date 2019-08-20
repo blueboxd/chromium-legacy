@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser;
 
+import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 
@@ -17,9 +18,12 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
+import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -33,7 +37,11 @@ import java.util.concurrent.TimeoutException;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class JavaScriptEvalChromeTest {
     @Rule
-    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+    public ChromeActivityTestRule<? extends ChromeActivity> mActivityTestRule =
+            ChromeActivityTestRule.forMainActivity();
+
+    @Rule
+    public CustomTabActivityTestRule mCustomTabActivityTestRule = new CustomTabActivityTestRule();
 
     private static final String JSTEST_URL = UrlUtils.encodeHtmlDataUri(
             "<html><head><script>"
@@ -59,12 +67,28 @@ public class JavaScriptEvalChromeTest {
     public void testJavaScriptEvalIsCorrectlyOrderedWithinOneTab()
             throws InterruptedException, TimeoutException {
         Tab tab1 = mActivityTestRule.getActivity().getActivityTab();
-        ChromeTabUtils.newTabFromMenu(
-                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
-        Tab tab2 = mActivityTestRule.getActivity().getActivityTab();
-        mActivityTestRule.loadUrl(JSTEST_URL);
+        Tab tab2;
+        if (mActivityTestRule.getActivity() instanceof ChromeTabbedActivity) {
+            ChromeTabUtils.newTabFromMenu(
+                    InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
+            tab2 = mActivityTestRule.getActivity().getActivityTab();
+            mActivityTestRule.loadUrl(JSTEST_URL);
+            ChromeTabUtils.switchTabInCurrentTabModel(
+                    mActivityTestRule.getActivity(), tab1.getId());
+        } else {
+            // For now, only NoTouchMode should hit this path.
+            // In NoTouchMode, multiple tabs are only supported though CCT, so use a CCT instead of
+            // a second tab.
+            Assert.assertTrue(FeatureUtilities.isNoTouchModeEnabled());
+            Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(
+                    InstrumentationRegistry.getTargetContext(), "about:blank");
+            // NoTouchMode only allows CCT for 1p use-cases.
+            IntentHandler.addTrustedIntentExtras(intent);
+            mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+            tab2 = mCustomTabActivityTestRule.getActivity().getActivityTab();
+            mCustomTabActivityTestRule.loadUrl(JSTEST_URL);
+        }
 
-        ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), tab1.getId());
         Assert.assertFalse("Tab didn't open", tab1 == tab2);
 
         JavaScriptUtils.executeJavaScriptAndWaitForResult(

@@ -1247,7 +1247,7 @@ class ChunkDemuxerTest : public ::testing::Test {
     return true;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   StrictMock<MockMediaLog> media_log_;
 
@@ -4415,7 +4415,7 @@ void QuitLoop(base::Closure quit_closure,
 
 void DisableAndEnableDemuxerTracks(
     ChunkDemuxer* demuxer,
-    base::test::ScopedTaskEnvironment* scoped_task_environment) {
+    base::test::TaskEnvironment* task_environment) {
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   std::vector<MediaTrack::Id> audio_tracks;
@@ -4447,7 +4447,7 @@ void DisableAndEnableDemuxerTracks(
       base::BindOnce(QuitLoop, base::Passed(enable_audio.QuitClosure())));
   enable_audio.Run();
 
-  scoped_task_environment->RunUntilIdle();
+  task_environment->RunUntilIdle();
 }
 }
 
@@ -4461,16 +4461,16 @@ TEST_F(ChunkDemuxerTest, StreamStatusNotifications) {
   EXPECT_NE(nullptr, video_stream);
 
   // Verify stream status changes without pending read.
-  DisableAndEnableDemuxerTracks(demuxer_.get(), &scoped_task_environment_);
+  DisableAndEnableDemuxerTracks(demuxer_.get(), &task_environment_);
 
   // Verify stream status changes with pending read.
   bool read_done = false;
   audio_stream->Read(base::Bind(&OnReadDone_EOSExpected, &read_done));
-  DisableAndEnableDemuxerTracks(demuxer_.get(), &scoped_task_environment_);
+  DisableAndEnableDemuxerTracks(demuxer_.get(), &task_environment_);
   EXPECT_TRUE(read_done);
   read_done = false;
   video_stream->Read(base::Bind(&OnReadDone_EOSExpected, &read_done));
-  DisableAndEnableDemuxerTracks(demuxer_.get(), &scoped_task_environment_);
+  DisableAndEnableDemuxerTracks(demuxer_.get(), &task_environment_);
   EXPECT_TRUE(read_done);
 }
 

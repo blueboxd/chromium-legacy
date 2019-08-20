@@ -12,7 +12,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-CWV_EXPORT
 // Represents a suggestion for an address, credit card, or password form based
 // off of a single field. May also represent non-fillable suggestions whose
 // action when used is described in its |value| property.
@@ -37,6 +36,7 @@ CWV_EXPORT
 //   |value| "John"
 //   |displayDescription| "1600 Amphitheatre Pkwy ..."
 //   Using this suggestion would replace all fields with the appropriate value.
+CWV_EXPORT
 @interface CWVAutofillSuggestion : NSObject
 
 // The 'name' attribute of the html form element.

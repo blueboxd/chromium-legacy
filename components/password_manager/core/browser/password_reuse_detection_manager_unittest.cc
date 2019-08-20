@@ -52,7 +52,7 @@ class PasswordReuseDetectionManagerTest : public ::testing::Test {
  protected:
   // It's needed for an initialisation of thread runners that are used in
   // MockPasswordStore.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   MockPasswordManagerClient client_;
   scoped_refptr<MockPasswordStore> store_;
 

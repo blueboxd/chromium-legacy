@@ -333,10 +333,10 @@ class CredentialManagerImplTest : public testing::Test {
                           std::move(callback));
   }
 
-  void RunAllPendingTasks() { scoped_task_environment_.RunUntilIdle(); }
+  void RunAllPendingTasks() { task_environment_.RunUntilIdle(); }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   autofill::PasswordForm form_;
   autofill::PasswordForm affiliated_form1_;
   autofill::PasswordForm affiliated_form2_;

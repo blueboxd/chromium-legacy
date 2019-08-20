@@ -25,7 +25,7 @@ class Image;
 class BrowserSkiaGoldPixelDiff : public SkiaGoldPixelDiff {
  public:
   BrowserSkiaGoldPixelDiff();
-  ~BrowserSkiaGoldPixelDiff();
+  ~BrowserSkiaGoldPixelDiff() override;
   // Call Init method before using this class.
   // Args:
   // widget The instance you plan to take screenshots with.

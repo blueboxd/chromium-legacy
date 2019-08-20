@@ -72,6 +72,10 @@ public final class FeedConfiguration {
     /** Default value for whether to use menu options to launch interest management page. */
     public static final boolean MANAGE_INTERESTS_ENABLED_DEFAULT = false;
 
+    private static final String MAXIMUM_GC_ATTEMPTS = "maximum_gc_attempts";
+    /** Default value for the maximum number of times that the GC task can re-enqueue itself. */
+    public static final long MAXIMUM_GC_ATTEMPTS_DEFAULT = 10;
+
     private static final String NON_CACHED_MIN_PAGE_SIZE = "non_cached_min_page_size";
     /** Default value for non cached minimum page size. */
     public static final long NON_CACHED_MIN_PAGE_SIZE_DEFAULT = 5;
@@ -216,12 +220,20 @@ public final class FeedConfiguration {
                 (int) LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS_DEFAULT);
     }
 
-    /** return Whether to show context menu option to launch to customization page. */
+    /** @return Whether to show context menu option to launch to customization page. */
     @VisibleForTesting
     static boolean getManageInterestsEnabled() {
         return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
                 ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, MANAGE_INTERESTS_ENABLED,
                 MANAGE_INTERESTS_ENABLED_DEFAULT);
+    }
+
+    /** @return The maximum number of times that the GC task can re-enqueue itself. */
+    @VisibleForTesting
+    static long getMaximumGcAttempts() {
+        return (long) ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, MAXIMUM_GC_ATTEMPTS,
+                (int) MAXIMUM_GC_ATTEMPTS_DEFAULT);
     }
 
     /** @return Used to decide where to place the more button. */
@@ -355,6 +367,7 @@ public final class FeedConfiguration {
                         FeedConfiguration.getLoggingImmediateContentThresholdMs())
                 .put(ConfigKey.MANAGE_INTERESTS_ENABLED,
                         FeedConfiguration.getManageInterestsEnabled())
+                .put(ConfigKey.MAXIMUM_GC_ATTEMPTS, FeedConfiguration.getMaximumGcAttempts())
                 .put(ConfigKey.NON_CACHED_MIN_PAGE_SIZE,
                         FeedConfiguration.getNonCachedMinPageSize())
                 .put(ConfigKey.NON_CACHED_PAGE_SIZE, FeedConfiguration.getNonCachedPageSize())

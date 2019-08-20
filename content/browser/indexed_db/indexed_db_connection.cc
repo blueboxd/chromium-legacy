@@ -32,7 +32,6 @@ IndexedDBConnection::IndexedDBConnection(
     base::WeakPtr<IndexedDBDatabase> database,
     base::RepeatingClosure on_version_change_ignored,
     base::OnceCallback<void(IndexedDBConnection*)> on_close,
-    ErrorCallback error_callback,
     scoped_refptr<IndexedDBDatabaseCallbacks> callbacks)
     : id_(g_next_indexed_db_connection_id++),
       child_process_id_(child_process_id),
@@ -41,40 +40,41 @@ IndexedDBConnection::IndexedDBConnection(
       database_(std::move(database)),
       on_version_change_ignored_(std::move(on_version_change_ignored)),
       on_close_(std::move(on_close)),
-      error_callback_(std::move(error_callback)),
       callbacks_(callbacks) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 IndexedDBConnection::~IndexedDBConnection() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (on_close_)
-    std::move(on_close_).Run(this);
+  if (IsConnected())
+    AbortTransactionsAndClose();
 }
 
-void IndexedDBConnection::Close() {
+void IndexedDBConnection::AbortTransactionsAndClose() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!callbacks_.get())
+  if (!IsConnected())
     return;
+
+  DCHECK(database_);
+  active_observers_.clear();
+  callbacks_ = nullptr;
 
   // Finish up any transaction, in case there were any running.
   FinishAllTransactions(IndexedDBDatabaseError(
       blink::kWebIDBDatabaseExceptionUnknownError, "Connection is closing."));
 
-  // Calling |on_close_| can destroy this object.
-  base::WeakPtr<IndexedDBConnection> this_obj = weak_factory_.GetWeakPtr();
   std::move(on_close_).Run(this);
-  if (this_obj)
-    ClearStateAfterClose();
+  origin_state_handle_.Release();
+  active_observers_.clear();
 }
 
 void IndexedDBConnection::CloseAndReportForceClose() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!callbacks_.get())
+  if (!IsConnected())
     return;
 
   scoped_refptr<IndexedDBDatabaseCallbacks> callbacks(callbacks_);
-  Close();
+  AbortTransactionsAndClose();
   callbacks->OnForcedClose();
 }
 
@@ -84,6 +84,7 @@ void IndexedDBConnection::VersionChangeIgnored() {
 }
 
 bool IndexedDBConnection::IsConnected() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return callbacks_.get();
 }
 
@@ -129,7 +130,8 @@ IndexedDBTransaction* IndexedDBConnection::CreateTransaction(
   CHECK_EQ(GetTransaction(id), nullptr) << "Duplicate transaction id." << id;
   std::unique_ptr<IndexedDBTransaction> transaction =
       indexed_db_class_factory_->CreateIndexedDBTransaction(
-          id, this, error_callback_, scope, mode, backing_store_transaction);
+          id, this, scope, mode, database()->tasks_available_callback(),
+          backing_store_transaction);
   IndexedDBTransaction* transaction_ptr = transaction.get();
   transactions_[id] = std::move(transaction);
   return transaction_ptr;
@@ -146,21 +148,17 @@ void IndexedDBConnection::AbortTransaction(
 void IndexedDBConnection::FinishAllTransactions(
     const IndexedDBDatabaseError& error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::unordered_map<int64_t, std::unique_ptr<IndexedDBTransaction>> temp_map;
-  std::swap(temp_map, transactions_);
-  for (const auto& pair : temp_map) {
+  base::WeakPtr<IndexedDBConnection> weak_ptr = weak_factory_.GetWeakPtr();
+  for (const auto& pair : transactions_) {
     auto& transaction = pair.second;
-    if (transaction->is_commit_pending()) {
-      IDB_TRACE1("IndexedDBDatabase::Commit", "transaction.id",
-                 transaction->id());
-      transaction->ForcePendingCommit();
-    }
-    // If a transaction has blobs, then it can still pending after the call to
-    // ForcePendingCommit while it waits on blobs to be written or deleted.
     if (transaction->state() != IndexedDBTransaction::FINISHED) {
       IDB_TRACE1("IndexedDBDatabase::Abort(error)", "transaction.id",
                  transaction->id());
       transaction->Abort(error);
+      // Calling Abort on a transaction can destroy the IndexedDBOriginState if
+      // the revert fails when scopes is in single-sequence mode.
+      if (!weak_ptr)
+        return;
     }
   }
 }

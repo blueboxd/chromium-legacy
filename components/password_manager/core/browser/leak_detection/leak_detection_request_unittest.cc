@@ -24,14 +24,14 @@ class LeakDetectionRequestTest : public testing::Test {
 
   ~LeakDetectionRequestTest() override = default;
 
-  base::test::ScopedTaskEnvironment& task_env() { return task_env_; }
+  base::test::TaskEnvironment& task_env() { return task_env_; }
   network::TestURLLoaderFactory* test_url_loader_factory() {
     return &test_url_loader_factory_;
   }
   LeakDetectionRequest& request() { return request_; }
 
  private:
-  base::test::ScopedTaskEnvironment task_env_;
+  base::test::TaskEnvironment task_env_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   LeakDetectionRequest request_;
 };

@@ -14,8 +14,8 @@ class MessageTrackerTest : public testing::Test {
  protected:
   static constexpr base::TimeDelta GetCleanupInterval();
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   MessageTracker message_tracker_;
 };
 
@@ -36,14 +36,14 @@ TEST_F(MessageTrackerTest, TrackIdOnce_IdIsTracked) {
 TEST_F(MessageTrackerTest, TrackIdAndAdvanceTimer_ExpiredIdNotRejected) {
   message_tracker_.TrackId("1");
   ASSERT_TRUE(message_tracker_.IsIdTracked("1"));
-  scoped_task_environment_.FastForwardBy(GetCleanupInterval() * 2);
+  task_environment_.FastForwardBy(GetCleanupInterval() * 2);
   ASSERT_FALSE(message_tracker_.IsIdTracked("1"));
 }
 
 TEST_F(MessageTrackerTest, TrackIdAndAdvanceTimer_NotExpiredIdRejected) {
   message_tracker_.TrackId("1");
   ASSERT_TRUE(message_tracker_.IsIdTracked("1"));
-  scoped_task_environment_.FastForwardBy(GetCleanupInterval() / 2);
+  task_environment_.FastForwardBy(GetCleanupInterval() / 2);
   ASSERT_TRUE(message_tracker_.IsIdTracked("1"));
 }
 

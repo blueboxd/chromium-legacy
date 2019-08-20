@@ -55,7 +55,7 @@ class RemotingIceConfigRequestTest : public testing::Test {
     return received_config;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   RemotingIceConfigRequest request_;
   test::GrpcTestServer<MockNetworkTraversalService> test_server_;
 };

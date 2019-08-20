@@ -61,8 +61,8 @@ class GCMRequestTestBase : public testing::Test {
   // Fast forward the timer used in the test to retry the request immediately.
   void FastForwardToTriggerNextRetry();
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;

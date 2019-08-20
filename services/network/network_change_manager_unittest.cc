@@ -113,7 +113,7 @@ class NetworkChangeManagerTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<NetworkChangeManager> network_change_manager_;
   std::unique_ptr<TestNetworkChangeManagerClient>
       network_change_manager_client_;

@@ -550,7 +550,7 @@ class ProxyResolverFactoryMojoTest : public testing::Test {
     std::move(callback).Run(result);
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   net::HangingHostResolver host_resolver_;
   net::TestNetLog net_log_;
   std::unique_ptr<MockMojoProxyResolverFactory> mock_proxy_resolver_factory_;

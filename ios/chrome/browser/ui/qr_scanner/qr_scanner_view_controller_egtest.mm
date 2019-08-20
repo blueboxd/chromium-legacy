@@ -16,9 +16,9 @@
 #import "ios/chrome/browser/ui/location_bar/location_bar_coordinator.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_url_loader.h"
 #include "ios/chrome/browser/ui/omnibox/location_bar_delegate.h"
-#include "ios/chrome/browser/ui/qr_scanner/camera_controller.h"
 #include "ios/chrome/browser/ui/qr_scanner/qr_scanner_view.h"
 #include "ios/chrome/browser/ui/qr_scanner/qr_scanner_view_controller.h"
+#include "ios/chrome/browser/ui/scanner/camera_controller.h"
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
@@ -42,7 +42,7 @@
 #endif
 
 using namespace chrome_test_util;
-using namespace qr_scanner;
+using namespace scanner;
 
 namespace {
 
@@ -80,9 +80,9 @@ id<GREYMatcher> QrScannerCloseButton() {
 // which turns on the torch.
 id<GREYMatcher> QrScannerTorchOffButton() {
   return grey_allOf(grey_accessibilityLabel(l10n_util::GetNSString(
-                        IDS_IOS_QR_SCANNER_TORCH_BUTTON_ACCESSIBILITY_LABEL)),
+                        IDS_IOS_SCANNER_TORCH_BUTTON_ACCESSIBILITY_LABEL)),
                     grey_accessibilityValue(l10n_util::GetNSString(
-                        IDS_IOS_QR_SCANNER_TORCH_OFF_ACCESSIBILITY_VALUE)),
+                        IDS_IOS_SCANNER_TORCH_OFF_ACCESSIBILITY_VALUE)),
                     grey_accessibilityTrait(UIAccessibilityTraitButton), nil);
 }
 
@@ -90,9 +90,9 @@ id<GREYMatcher> QrScannerTorchOffButton() {
 // which turns off the torch.
 id<GREYMatcher> QrScannerTorchOnButton() {
   return grey_allOf(grey_accessibilityLabel(l10n_util::GetNSString(
-                        IDS_IOS_QR_SCANNER_TORCH_BUTTON_ACCESSIBILITY_LABEL)),
+                        IDS_IOS_SCANNER_TORCH_BUTTON_ACCESSIBILITY_LABEL)),
                     grey_accessibilityValue(l10n_util::GetNSString(
-                        IDS_IOS_QR_SCANNER_TORCH_ON_ACCESSIBILITY_VALUE)),
+                        IDS_IOS_SCANNER_TORCH_ON_ACCESSIBILITY_VALUE)),
                     grey_accessibilityTrait(UIAccessibilityTraitButton), nil);
 }
 
@@ -380,7 +380,7 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
           IDS_IOS_QR_SCANNER_CAMERA_IN_USE_ALERT_TITLE);
     case CAMERA_PERMISSION_DENIED:
       return l10n_util::GetNSString(
-          IDS_IOS_QR_SCANNER_CAMERA_PERMISSIONS_HELP_TITLE_GO_TO_SETTINGS);
+          IDS_IOS_SCANNER_CAMERA_PERMISSIONS_HELP_TITLE_GO_TO_SETTINGS);
     case CAMERA_UNAVAILABLE_DUE_TO_SYSTEM_PRESSURE:
     case CAMERA_UNAVAILABLE:
       return l10n_util::GetNSString(

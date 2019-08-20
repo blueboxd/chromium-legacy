@@ -10,6 +10,7 @@
 #include "content/browser/native_file_system/file_system_chooser.h"
 #include "content/browser/native_file_system/fixed_native_file_system_permission_grant.h"
 #include "content/browser/native_file_system/native_file_system_directory_handle_impl.h"
+#include "content/browser/native_file_system/native_file_system_error.h"
 #include "content/browser/native_file_system/native_file_system_file_handle_impl.h"
 #include "content/browser/native_file_system/native_file_system_file_writer_impl.h"
 #include "content/browser/native_file_system/native_file_system_transfer_token_impl.h"
@@ -31,7 +32,7 @@
 
 namespace content {
 
-using blink::mojom::NativeFileSystemError;
+using blink::mojom::NativeFileSystemStatus;
 using PermissionStatus = NativeFileSystemPermissionGrant::PermissionStatus;
 using SensitiveDirectoryResult =
     NativeFileSystemPermissionContext::SensitiveDirectoryResult;
@@ -50,10 +51,11 @@ void ShowFilePickerOnUIThread(const url::Origin& requesting_origin,
 
   if (!web_contents) {
     callback_runner->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback),
-                                  blink::mojom::NativeFileSystemError::New(
-                                      base::File::FILE_ERROR_ABORT),
-                                  std::vector<base::FilePath>()));
+        FROM_HERE,
+        base::BindOnce(std::move(callback),
+                       native_file_system_error::FromStatus(
+                           NativeFileSystemStatus::kOperationAborted),
+                       std::vector<base::FilePath>()));
     return;
   }
 
@@ -62,10 +64,13 @@ void ShowFilePickerOnUIThread(const url::Origin& requesting_origin,
   if (embedding_origin != requesting_origin) {
     // Third party iframes are not allowed to show a file picker.
     callback_runner->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback),
-                                  blink::mojom::NativeFileSystemError::New(
-                                      base::File::FILE_ERROR_ACCESS_DENIED),
-                                  std::vector<base::FilePath>()));
+        FROM_HERE,
+        base::BindOnce(
+            std::move(callback),
+            native_file_system_error::FromStatus(
+                NativeFileSystemStatus::kPermissionDenied,
+                "Third party iframes are not allowed to show a file picker."),
+            std::vector<base::FilePath>()));
     return;
   }
 
@@ -75,10 +80,13 @@ void ShowFilePickerOnUIThread(const url::Origin& requesting_origin,
   // to expire between the renderer side check and this check.
   if (!rfh->HasTransientUserActivation()) {
     callback_runner->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback),
-                                  blink::mojom::NativeFileSystemError::New(
-                                      base::File::FILE_ERROR_ACCESS_DENIED),
-                                  std::vector<base::FilePath>()));
+        FROM_HERE,
+        base::BindOnce(
+            std::move(callback),
+            native_file_system_error::FromStatus(
+                NativeFileSystemStatus::kPermissionDenied,
+                "User activation is required to show a file picker."),
+            std::vector<base::FilePath>()));
     return;
   }
 
@@ -347,7 +355,8 @@ void NativeFileSystemManagerImpl::DidOpenSandboxedFileSystem(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (result != base::File::FILE_OK) {
-    std::move(callback).Run(NativeFileSystemError::New(result), nullptr);
+    std::move(callback).Run(native_file_system_error::FromFileError(result),
+                            nullptr);
     return;
   }
 
@@ -356,7 +365,7 @@ void NativeFileSystemManagerImpl::DidOpenSandboxedFileSystem(
           PermissionStatus::GRANTED);
 
   std::move(callback).Run(
-      NativeFileSystemError::New(base::File::FILE_OK),
+      native_file_system_error::Ok(),
       CreateDirectoryHandle(
           binding_context, context()->CrackURL(root),
           SharedHandleState(permission_grant, permission_grant,
@@ -369,7 +378,7 @@ void NativeFileSystemManagerImpl::DidChooseEntries(
     ChooseEntriesCallback callback,
     blink::mojom::NativeFileSystemErrorPtr result,
     std::vector<base::FilePath> entries) {
-  if (result->error_code != base::File::FILE_OK) {
+  if (result->status != NativeFileSystemStatus::kOk) {
     std::move(callback).Run(
         std::move(result),
         std::vector<blink::mojom::NativeFileSystemEntryPtr>());
@@ -400,7 +409,8 @@ void NativeFileSystemManagerImpl::DidVerifySensitiveDirectoryAccess(
     SensitiveDirectoryResult result) {
   if (result == SensitiveDirectoryResult::kAbort) {
     std::move(callback).Run(
-        NativeFileSystemError::New(base::File::FILE_ERROR_ABORT),
+        native_file_system_error::FromStatus(
+            NativeFileSystemStatus::kOperationAborted),
         std::vector<blink::mojom::NativeFileSystemEntryPtr>());
     return;
   }
@@ -445,7 +455,7 @@ void NativeFileSystemManagerImpl::DidVerifySensitiveDirectoryAccess(
     }
   }
 
-  std::move(callback).Run(NativeFileSystemError::New(base::File::FILE_OK),
+  std::move(callback).Run(native_file_system_error::Ok(),
                           std::move(result_entries));
 }
 
@@ -456,14 +466,14 @@ void NativeFileSystemManagerImpl::DidChooseDirectory(
     NativeFileSystemPermissionContext::PermissionStatus permission) {
   std::vector<blink::mojom::NativeFileSystemEntryPtr> result_entries;
   if (permission != PermissionStatus::GRANTED) {
-    std::move(callback).Run(
-        NativeFileSystemError::New(base::File::FILE_ERROR_ABORT),
-        std::move(result_entries));
+    std::move(callback).Run(native_file_system_error::FromStatus(
+                                NativeFileSystemStatus::kOperationAborted),
+                            std::move(result_entries));
     return;
   }
 
   result_entries.push_back(CreateDirectoryEntryFromPath(binding_context, path));
-  std::move(callback).Run(NativeFileSystemError::New(base::File::FILE_OK),
+  std::move(callback).Run(native_file_system_error::Ok(),
                           std::move(result_entries));
 }
 

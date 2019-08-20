@@ -24,6 +24,7 @@ android_apk("system_webview_shell_apk") {
     "apk/src/org/chromium/webview_shell/StartupTimeActivity.java",
     "apk/src/org/chromium/webview_shell/TelemetryActivity.java",
     "apk/src/org/chromium/webview_shell/TelemetryMemoryPressureActivity.java",
+    "apk/src/org/chromium/webview_shell/WebPlatformTestsActivity.java",
     "apk/src/org/chromium/webview_shell/WebViewAnimationTestActivity.java",
     "apk/src/org/chromium/webview_shell/WebViewBrowserActivity.java",
     "apk/src/org/chromium/webview_shell/WebViewCreateDestroyActivity.java",

@@ -1053,8 +1053,10 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
   // Setting visibility during an animation causes the visibility property to
   // animate. Set the visibility property without an animation.
   if (target_bounds.opacity) {
-    if (state_.IsActiveSessionState())
+    if (state_.IsActiveSessionState()) {
       nav_widget->ShowInactive();
+      hotseat_widget->ShowInactive();
+    }
     status_widget->Show();
   }
 }
@@ -1140,8 +1142,10 @@ void ShelfLayoutManager::CalculateTargetBounds(
   gfx::Point nav_origin =
       gfx::Point(ShelfConstants::home_button_edge_spacing(),
                  ShelfConstants::home_button_edge_spacing());
-  target_bounds->nav_bounds_in_shelf =
-      gfx::Rect(nav_origin, shelf_widget_->navigation_widget()->GetIdealSize());
+  const gfx::Size nav_size = shelf_widget_->navigation_widget()->GetIdealSize();
+  if (shelf_->IsHorizontalAlignment() && base::i18n::IsRTL())
+    nav_origin.set_x(shelf_width - nav_size.width() - nav_origin.x());
+  target_bounds->nav_bounds_in_shelf = gfx::Rect(nav_origin, nav_size);
 
   gfx::Point hotseat_origin;
   int hotseat_width;
@@ -1346,11 +1350,12 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
   if (shelf_widget_->IsShowingMenu())
     return SHELF_AUTO_HIDE_SHOWN;
 
-  if (shelf_widget_->IsShowingOverflowBubble())
+  if (shelf_widget_->hotseat_widget()->IsShowingOverflowBubble())
     return SHELF_AUTO_HIDE_SHOWN;
 
   if (shelf_widget_->IsActive() ||
       shelf_widget_->navigation_widget()->IsActive() ||
+      shelf_widget_->hotseat_widget()->IsActive() ||
       (shelf_widget_->status_area_widget() &&
        shelf_widget_->status_area_widget()->IsActive())) {
     return SHELF_AUTO_HIDE_SHOWN;
@@ -1435,7 +1440,10 @@ bool ShelfLayoutManager::IsShelfWindow(aura::Window* window) {
   if (!window)
     return false;
   const aura::Window* shelf_window = shelf_widget_->GetNativeWindow();
-  return shelf_window && shelf_window->Contains(window);
+  const aura::Window* hotseat_window =
+      shelf_widget_->hotseat_widget()->GetNativeWindow();
+  return (shelf_window && shelf_window->Contains(window)) ||
+         (hotseat_window && hotseat_window->Contains(window));
 }
 
 bool ShelfLayoutManager::IsStatusAreaWindow(aura::Window* window) {
@@ -1647,7 +1655,7 @@ bool ShelfLayoutManager::StartAppListDrag(
 
   // Do not show the fullscreen app list until the overflow bubble has been
   // closed.
-  if (shelf_widget_->IsShowingOverflowBubble())
+  if (shelf_widget_->hotseat_widget()->IsShowingOverflowBubble())
     return false;
 
   // If app list is already opened, swiping up on the shelf should keep the app
@@ -1682,7 +1690,7 @@ bool ShelfLayoutManager::StartShelfDrag() {
     return false;
 
   // Also disable shelf drags until the overflow shelf is closed.
-  if (shelf_widget_->IsShowingOverflowBubble())
+  if (shelf_widget_->hotseat_widget()->IsShowingOverflowBubble())
     return false;
 
   drag_status_ = kDragInProgress;

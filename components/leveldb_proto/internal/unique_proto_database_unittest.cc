@@ -30,7 +30,7 @@
 #include "third_party/leveldatabase/leveldb_chrome.h"
 
 using base::ScopedTempDir;
-using base::test::ScopedTaskEnvironment;
+using base::test::TaskEnvironment;
 using leveldb_env::Options;
 using testing::_;
 using testing::Invoke;
@@ -231,7 +231,7 @@ class UniqueProtoDatabaseTest : public testing::Test {
   }
 
   const Matcher<const Options&> options_;
-  ScopedTaskEnvironment task_environment_;
+  TaskEnvironment task_environment_;
   std::unique_ptr<ProtoDatabaseImpl<TestProto>> db_;
 };
 
@@ -561,7 +561,7 @@ class UniqueProtoDatabaseLevelDBTest : public testing::Test {
   void TearDown() override { base::RunLoop().RunUntilIdle(); }
 
  private:
-  ScopedTaskEnvironment scoped_task_environment_;
+  TaskEnvironment task_environment_;
 };
 
 TEST_F(UniqueProtoDatabaseLevelDBTest, TestDBSaveAndLoadKeys) {
@@ -793,7 +793,7 @@ TEST_F(UniqueProtoDatabaseTest, TestDBRemoveFailure) {
 // This tests that normal usage of the real database does not cause any
 // threading violations.
 TEST(UniqueProtoDatabaseThreadingTest, TestDBDestruction) {
-  ScopedTaskEnvironment scoped_task_environment;
+  TaskEnvironment task_environment;
 
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -827,7 +827,7 @@ TEST(UniqueProtoDatabaseThreadingTest, TestDBDestruction) {
 // This tests that normal usage of the real database does not cause any
 // threading violations.
 TEST(UniqueProtoDatabaseThreadingTest, TestDBDestroy) {
-  ScopedTaskEnvironment scoped_task_environment;
+  TaskEnvironment task_environment;
 
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());

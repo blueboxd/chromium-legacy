@@ -59,22 +59,22 @@
                   on-change="onProtocolChange_"
                   disabled="[[!protocolSelectEnabled(isOnline_,
                       networkProtocolActive_)]]">
-                <option value="ipp" disabled="[[!networkProtocolActive_]]">
+                <option value="ipp">
                   $i18n{printerProtocolIpp}
                 </option>
-                <option value="ipps" disabled="[[!networkProtocolActive_]]">
+                <option value="ipps">
                   $i18n{printerProtocolIpps}
                 </option>
-                <option value="http" disabled="[[!networkProtocolActive_]]">
+                <option value="http">
                   $i18n{printerProtocolHttp}
                 </option>
-                <option value="https" disabled="[[!networkProtocolActive_]]">
+                <option value="https">
                   $i18n{printerProtocolHttps}
                 </option>
-                <option value="socket" disabled="[[!networkProtocolActive_]]">
+                <option value="socket">
                   $i18n{printerProtocolAppSocket}
                 </option>
-                <option value="lpd" disabled="[[!networkProtocolActive_]]">
+                <option value="lpd">
                   $i18n{printerProtocolLpd}
                 </option>
                 <option value="usb" disabled="[[networkProtocolActive_]]">
@@ -101,42 +101,45 @@
               value="[[getPrinterURI_(pendingPrinter_)]]">
           </cr-input>
         </div>
-        <div class="settings-box two-line">
-          <cr-searchable-drop-down items="[[manufacturerList]]"
-              id="printerPPDManufacturer"
-              label="$i18n{printerManufacturer}"
-              value="{{pendingPrinter_.ppdManufacturer}}"
-              readonly="[[!isOnline_]]">
-          </cr-searchable-drop-down>
-        </div>
-        <div class="settings-box two-line">
-          <cr-searchable-drop-down items="[[modelList]]"
-              id="printerPPDModel"
-              label="$i18n{printerModel}"
-              value="{{pendingPrinter_.ppdModel}}"
-              readonly="[[!isOnline_]]">
-          </cr-searchable-drop-down>
-        </div>
-        <div id="ppdLabel" class="cr-form-field-label">
-          <span>$i18n{selectDriver}</span>
-          <a href="$i18n{printingCUPSPrintPpdLearnMoreUrl}" target="_blank">
-              $i18n{learnMore}
-          </a>
-        </div>
-        <div class="settings-box two-line">
-          <cr-input class="browse-file-input" readonly tabindex="-1"
-              value="[[userPPD_]]" aria-labelledby="ppdLabel"
-              error-message="$i18n{selectDriverErrorMessage}"
-              invalid="[[invalidPPD_]]">
-          </cr-input>
-          <cr-button class="browse-button" on-click="onBrowseFile_"
-          disabled="[[!isOnline_]]">
-            $i18n{selectDriverButtonText}
-          </cr-button>
-        </div>
-        <div class="eula" id="eulaUrl" hidden="[[!eulaUrl_]]">
-          <a href="[[eulaUrl_]]" target="_blank">$i18n{printerEulaNotice}</a>
-        </div>
+        <template id="makeAndModelSection" is="dom-if"
+            if="[[!isAutoconfPrinter_(pendingPrinter_.*)]]">
+          <div class="settings-box two-line">
+            <cr-searchable-drop-down items="[[manufacturerList]]"
+                id="printerPPDManufacturer"
+                label="$i18n{printerManufacturer}"
+                value="{{pendingPrinter_.ppdManufacturer}}"
+                readonly="[[!isOnline_]]">
+            </cr-searchable-drop-down>
+          </div>
+          <div class="settings-box two-line">
+            <cr-searchable-drop-down items="[[modelList]]"
+                id="printerPPDModel"
+                label="$i18n{printerModel}"
+                value="{{pendingPrinter_.ppdModel}}"
+                readonly="[[!isOnline_]]">
+            </cr-searchable-drop-down>
+          </div>
+          <div id="ppdLabel" class="cr-form-field-label">
+            <span>$i18n{selectDriver}</span>
+            <a href="$i18n{printingCUPSPrintPpdLearnMoreUrl}" target="_blank">
+                $i18n{learnMore}
+            </a>
+          </div>
+          <div class="settings-box two-line">
+            <cr-input class="browse-file-input" readonly tabindex="-1"
+                value="[[userPPD_]]" aria-labelledby="ppdLabel"
+                error-message="$i18n{selectDriverErrorMessage}"
+                invalid="[[invalidPPD_]]">
+            </cr-input>
+            <cr-button class="browse-button" on-click="onBrowseFile_"
+            disabled="[[!isOnline_]]">
+              $i18n{selectDriverButtonText}
+            </cr-button>
+          </div>
+          <div class="eula" id="eulaUrl" hidden="[[!eulaUrl_]]">
+            <a href="[[eulaUrl_]]" target="_blank">$i18n{printerEulaNotice}</a>
+          </div>
+        </template>
       </div>
       <div slot="dialog-buttons">
         <cr-button class="cancel-button" on-click="onCancelTap_">

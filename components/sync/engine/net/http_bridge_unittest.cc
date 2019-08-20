@@ -108,7 +108,7 @@ class MAYBE_SyncHttpBridgeTest : public testing::Test {
 
   HttpBridge* bridge_for_race_test_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   // Separate thread for IO used by the HttpBridge.
   base::Thread io_thread_;
 };

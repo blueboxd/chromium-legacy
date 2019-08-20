@@ -75,6 +75,15 @@ SaveCardBubbleController* SaveCardBubbleController::GetOrCreate(
   return SaveCardBubbleControllerImpl::FromWebContents(web_contents);
 }
 
+// static
+SaveCardBubbleController* SaveCardBubbleController::Get(
+    content::WebContents* web_contents) {
+  if (!web_contents)
+    return nullptr;
+
+  return SaveCardBubbleControllerImpl::FromWebContents(web_contents);
+}
+
 void SaveCardBubbleControllerImpl::OfferLocalSave(
     const CreditCard& card,
     AutofillClient::SaveCreditCardOptions options,

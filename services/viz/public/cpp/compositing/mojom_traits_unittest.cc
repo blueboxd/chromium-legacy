@@ -221,7 +221,7 @@ TEST_F(StructTraitsTest, LocalSurfaceId) {
 }
 
 TEST_F(StructTraitsTest, CopyOutputRequest_BitmapRequest) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   const auto result_format = CopyOutputRequest::ResultFormat::RGBA_BITMAP;
   const gfx::Rect area(5, 7, 44, 55);
@@ -277,7 +277,7 @@ TEST_F(StructTraitsTest, CopyOutputRequest_BitmapRequest) {
 }
 
 TEST_F(StructTraitsTest, CopyOutputRequest_MessagePipeBroken) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   base::RunLoop run_loop;
   auto request = std::make_unique<CopyOutputRequest>(
@@ -299,7 +299,7 @@ TEST_F(StructTraitsTest, CopyOutputRequest_MessagePipeBroken) {
 }
 
 TEST_F(StructTraitsTest, CopyOutputRequest_TextureRequest) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   const auto result_format = CopyOutputRequest::ResultFormat::RGBA_TEXTURE;
   const int8_t mailbox_name[GL_MAILBOX_SIZE_CHROMIUM] = {
@@ -356,7 +356,7 @@ TEST_F(StructTraitsTest, CopyOutputRequest_TextureRequest) {
 }
 
 TEST_F(StructTraitsTest, CopyOutputRequest_CallbackRunsOnce) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   int n_called = 0;
   auto request = std::make_unique<CopyOutputRequest>(
@@ -698,7 +698,7 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
 
 TEST_F(StructTraitsTest, RenderPass) {
   // The CopyOutputRequest struct traits require a TaskRunner.
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   const RenderPassId render_pass_id = 3u;
   const gfx::Rect output_rect(45, 22, 120, 13);
@@ -1179,7 +1179,7 @@ TEST_F(StructTraitsTest, CopyOutputResult_EmptyBitmap) {
 }
 
 TEST_F(StructTraitsTest, CopyOutputResult_EmptyTexture) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   auto input = std::make_unique<CopyOutputResult>(
       CopyOutputResult::Format::RGBA_TEXTURE, gfx::Rect());
@@ -1230,7 +1230,7 @@ TEST_F(StructTraitsTest, CopyOutputResult_Bitmap) {
 }
 
 TEST_F(StructTraitsTest, CopyOutputResult_Texture) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   const gfx::Rect result_rect(12, 34, 56, 78);
   const gfx::ColorSpace result_color_space =

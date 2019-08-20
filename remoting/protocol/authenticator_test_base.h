@@ -65,7 +65,7 @@ class AuthenticatorTestBase : public testing::Test {
   std::unique_ptr<P2PStreamSocket> host_socket_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorTestBase);
 };

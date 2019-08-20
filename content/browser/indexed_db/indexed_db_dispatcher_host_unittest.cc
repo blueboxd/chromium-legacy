@@ -199,6 +199,12 @@ class IndexedDBDispatcherHostTest : public testing::Test {
               base::OnTaskRunnerDeleter(context_impl_->TaskRunner())) {}
 
   void TearDown() override {
+    // Cycle the IndexedDBTaskQueue to remove all IDB tasks.
+    {
+      base::RunLoop loop;
+      context_impl_->TaskRunner()->PostTask(FROM_HERE, loop.QuitClosure());
+      loop.Run();
+    }
     base::RunLoop loop;
     context_impl_->TaskRunner()->PostTask(FROM_HERE,
                                           base::BindLambdaForTesting([&]() {

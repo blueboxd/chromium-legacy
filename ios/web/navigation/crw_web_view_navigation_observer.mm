@@ -144,19 +144,23 @@ using web::wk_navigation_util::IsPlaceholderUrl;
   // not fire 'pageshow', 'onload', 'popstate' or any of the
   // WKNavigationDelegate callbacks for back/forward navigation from an about:
   // scheme placeholder URL to another entry or if either of the redirect fails
-  // to load (e.g. in airplane mode). Loading state KVO is the only observable
-  // event in this scenario, so force a reload to trigger redirect from
-  // restore_session.html to the restored URL.
+  // to load (e.g. in airplane mode, <iOS13). Loading state KVO is the only
+  // observable event in this scenario, so force a reload to trigger redirect
+  // from restore_session.html to the restored URL.
   bool previousURLHasAboutScheme =
       self.documentURL.SchemeIs(url::kAboutScheme) ||
       IsPlaceholderUrl(self.documentURL) ||
       web::GetWebClient()->IsAppSpecificURL(self.documentURL);
-  bool is_back_forward_navigation =
+  bool needs_back_forward_navigation_reload =
       existingContext &&
       (existingContext->GetPageTransition() & ui::PAGE_TRANSITION_FORWARD_BACK);
+  // The back-forward workaround isn't need on iOS13.
+  if (@available(iOS 13, *)) {
+    needs_back_forward_navigation_reload = false;
+  }
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
       IsRestoreSessionUrl(webViewURL)) {
-    if (previousURLHasAboutScheme || is_back_forward_navigation) {
+    if (previousURLHasAboutScheme || needs_back_forward_navigation_reload) {
       [self.webView reload];
       self.navigationHandler.navigationState =
           web::WKNavigationState::REQUESTED;

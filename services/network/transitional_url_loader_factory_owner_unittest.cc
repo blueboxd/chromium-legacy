@@ -27,8 +27,7 @@ namespace {
 class TransitionalURLLoaderFactoryOwnerTest : public ::testing::Test {
  public:
   TransitionalURLLoaderFactoryOwnerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
 
   void SetUp() override {
     net::test_server::RegisterDefaultHandlers(&test_server_);
@@ -68,7 +67,7 @@ class TransitionalURLLoaderFactoryOwnerTest : public ::testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   net::EmbeddedTestServer test_server_;
 };
 
@@ -84,9 +83,9 @@ TEST_F(TransitionalURLLoaderFactoryOwnerTest, CrossThread) {
 }
 
 TEST_F(TransitionalURLLoaderFactoryOwnerTest, SameThread) {
-  TestOnTaskRunner(scoped_task_environment_.GetMainThreadTaskRunner(),
-                   base::BindLambdaForTesting(
-                       [&]() { scoped_task_environment_.RunUntilIdle(); }));
+  TestOnTaskRunner(
+      task_environment_.GetMainThreadTaskRunner(),
+      base::BindLambdaForTesting([&]() { task_environment_.RunUntilIdle(); }));
 }
 
 }  // namespace

@@ -104,10 +104,10 @@ class LearningSessionImplTest : public testing::Test {
     // To prevent a memory leak, reset the session.  This will post destruction
     // of other objects, so RunUntilIdle().
     session_.reset();
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
@@ -125,13 +125,13 @@ TEST_F(LearningSessionImplTest, RegisteringTasksCreatesControllers) {
   EXPECT_EQ(task_runners_.size(), 0u);
 
   session_->RegisterTask(task_0_);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(task_controllers_.size(), 1u);
   EXPECT_EQ(task_runners_.size(), 1u);
   EXPECT_EQ(task_runners_[0], task_runner_.get());
 
   session_->RegisterTask(task_1_);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(task_controllers_.size(), 2u);
   EXPECT_EQ(task_runners_.size(), 2u);
   EXPECT_EQ(task_runners_[1], task_runner_.get());
@@ -160,7 +160,7 @@ TEST_F(LearningSessionImplTest, ExamplesAreForwardedToCorrectTask) {
   ltc_1->CompleteObservation(
       id, ObservationCompletion(example_1.target_value, example_1.weight));
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(task_controllers_[0]->example_, example_0);
   EXPECT_EQ(task_controllers_[1]->example_, example_1);
 }
@@ -174,7 +174,7 @@ TEST_F(LearningSessionImplTest, ControllerLifetimeScopedToSession) {
   // Destroy the session.  |controller| should still be usable, though it won't
   // forward requests anymore.
   session_.reset();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Should not crash.
   controller->BeginObservation(base::UnguessableToken::Create(),
@@ -186,7 +186,7 @@ TEST_F(LearningSessionImplTest, FeatureProviderIsForwarded) {
   bool flag = false;
   session_->RegisterTask(
       task_0_, base::SequenceBound<FakeFeatureProvider>(task_runner_, &flag));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   // Registering the task should create a FakeLearningTaskController, which will
   // call AddFeatures on the fake FeatureProvider.
   EXPECT_TRUE(flag);
@@ -197,18 +197,18 @@ TEST_F(LearningSessionImplTest, DestroyingControllerCancelsObservations) {
 
   std::unique_ptr<LearningTaskController> controller =
       session_->GetController(task_0_.name);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Start an observation and verify that it starts.
   base::UnguessableToken id = base::UnguessableToken::Create();
   controller->BeginObservation(id, FeatureVector());
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(task_controllers_[0]->id_, id);
   EXPECT_NE(task_controllers_[0]->cancelled_id_, id);
 
   // Should result in cancelling the observation.
   controller.reset();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(task_controllers_[0]->cancelled_id_, id);
 }
 

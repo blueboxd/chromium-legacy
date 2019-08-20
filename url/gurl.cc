@@ -10,19 +10,13 @@
 #include <ostream>
 #include <utility>
 
-#include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "url/url_canon_stdstring.h"
 #include "url/url_util.h"
-
-namespace {
-
-static base::LazyInstance<GURL>::Leaky empty_gurl = LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
 
 GURL::GURL() : is_valid_(false) {
 }
@@ -449,7 +443,8 @@ bool GURL::HostIsIPAddress() const {
 }
 
 const GURL& GURL::EmptyGURL() {
-  return empty_gurl.Get();
+  static base::NoDestructor<GURL> empty_gurl;
+  return *empty_gurl;
 }
 
 bool GURL::DomainIs(base::StringPiece canonical_domain) const {

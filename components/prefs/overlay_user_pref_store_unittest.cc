@@ -40,7 +40,7 @@ class OverlayUserPrefStoreTest : public testing::Test {
 
   ~OverlayUserPrefStoreTest() override {}
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<TestingPrefStore> underlay_;
   scoped_refptr<OverlayUserPrefStore> overlay_;
 };
@@ -275,7 +275,7 @@ TEST_F(OverlayUserPrefStoreTest, GetValues) {
 }
 
 TEST_F(OverlayUserPrefStoreTest, CommitPendingWriteWithCallback) {
-  TestCommitPendingWriteWithCallback(overlay_.get(), &scoped_task_environment_);
+  TestCommitPendingWriteWithCallback(overlay_.get(), &task_environment_);
 }
 
 }  // namespace base

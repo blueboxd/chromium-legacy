@@ -175,13 +175,13 @@ class BLINK_PLATFORM_EXPORT Platform {
   static void CreateMainThreadForTesting();
 
   // These are dirty workaround for tests requiring the main thread task runner
-  // from a non-main thread. If your test needs base::ScopedTaskEnvironment
+  // from a non-main thread. If your test needs base::TaskEnvironment
   // and a non-main thread may call MainThread()->GetTaskRunner(), call
   // SetMainThreadTaskRunnerForTesting() in your test fixture's SetUp(), and
   // call UnsetMainThreadTaskRunnerForTesting() in TearDown().
   //
   // TODO(yutak): Ideally, these should be packed in a custom test fixture
-  // along with ScopedTaskEnvironment for reusability.
+  // along with TaskEnvironment for reusability.
   static void SetMainThreadTaskRunnerForTesting();
   static void UnsetMainThreadTaskRunnerForTesting();
 

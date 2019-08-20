@@ -868,9 +868,9 @@ class HardwareDisplayPlaneManagerPlanesReadyTest : public testing::Test {
   scoped_refptr<ui::MockDrmDevice> fake_drm_;
   std::unique_ptr<ui::HardwareDisplayPlaneManager> plane_manager_;
   bool callback_called = false;
-  base::test::ScopedTaskEnvironment task_env_{
-      base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
-      base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED};
+  base::test::TaskEnvironment task_env_{
+      base::test::TaskEnvironment::MainThreadType::DEFAULT,
+      base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED};
   scoped_refptr<ui::DrmFramebuffer> drm_framebuffer_;
   const FakeFenceFD fake_fence_fd1_;
   const FakeFenceFD fake_fence_fd2_;

@@ -1577,26 +1577,6 @@ TEST_F(StreamMixerDeathTest, BadJsonCrashes) {
                DeathRegex("Invalid JSON"));
 }
 
-TEST_F(StreamMixerDeathTest, CrashesIfChannelCountDoesNotMatchFlags) {
-  const int kNumOutputChannels = 2;
-  const std::string config = R"Json({
-"postprocessors": {
-  "linearize": {
-    "processors": [{
-      "processor": "delay.so",
-      "config": { "output_channels": 4,
-                  "delay": 0 }
-    }]
-  }
-}})Json";
-
-  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  mixer_->SetNumOutputChannelsForTest(kNumOutputChannels);
-  ASSERT_DEATH(mixer_->ResetPostProcessorsForTest(
-                   std::make_unique<MockPostProcessorFactory>(), config),
-               DeathRegex("PostProcessorsHaveCorrectNumOutputs"));
-}
-
 TEST_F(StreamMixerDeathTest, CrashesIfMoreThan2LoopbackChannels) {
   const int kNumOutputChannels = 2;
   const std::string config = R"Json({

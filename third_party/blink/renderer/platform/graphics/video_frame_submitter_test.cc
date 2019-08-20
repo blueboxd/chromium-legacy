@@ -159,7 +159,7 @@ class VideoFrameSubmitterTest : public testing::Test {
         context_provider_(viz::TestContextProvider::Create()) {
     context_provider_->BindToCurrentThread();
     MakeSubmitter();
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void MakeSubmitter() {
@@ -218,7 +218,7 @@ class VideoFrameSubmitterTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<base::SimpleTestTickClock> now_src_;
   std::unique_ptr<viz::FakeExternalBeginFrameSource> begin_frame_source_;
   std::unique_ptr<StrictMock<VideoMockCompositorFrameSink>> sink_;
@@ -264,7 +264,7 @@ TEST_F(VideoFrameSubmitterTest, StatRenderingFlipsBits) {
 
   submitter_->StartRendering();
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(IsRendering());
 }
@@ -275,7 +275,7 @@ TEST_F(VideoFrameSubmitterTest, StopRenderingSkipsUpdateCurrentFrame) {
 
   submitter_->StartRendering();
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(IsRendering());
 
@@ -284,20 +284,20 @@ TEST_F(VideoFrameSubmitterTest, StopRenderingSkipsUpdateCurrentFrame) {
   viz::BeginFrameArgs args = begin_frame_source_->CreateBeginFrameArgs(
       BEGINFRAME_FROM_HERE, now_src_.get());
   submitter_->OnBeginFrame(args, {});
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // StopRendering submits one more frame.
   EXPECT_SUBMISSION(SubmissionType::kStateChange);
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(false));
   submitter_->StopRendering();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // No frames should be produced after StopRendering().
   EXPECT_CALL(*sink_, DidNotProduceFrame(_));
   begin_frame_source_->CreateBeginFrameArgs(BEGINFRAME_FROM_HERE,
                                             now_src_.get());
   submitter_->OnBeginFrame(args, {});
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(VideoFrameSubmitterTest, StopUsingProviderNullsProvider) {
@@ -313,7 +313,7 @@ TEST_F(VideoFrameSubmitterTest,
        StopUsingProviderSubmitsFrameAndStopsRendering) {
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
   submitter_->StartRendering();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(IsRendering());
 
@@ -321,7 +321,7 @@ TEST_F(VideoFrameSubmitterTest,
   EXPECT_SUBMISSION(SubmissionType::kStateChange);
   submitter_->StopUsingProvider();
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(IsRendering());
 }
@@ -330,13 +330,13 @@ TEST_F(VideoFrameSubmitterTest, DidReceiveFrameStillSubmitsIfRendering) {
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
 
   submitter_->StartRendering();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(IsRendering());
 
   EXPECT_SUBMISSION(SubmissionType::kManual);
   submitter_->DidReceiveFrame();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(VideoFrameSubmitterTest, DidReceiveFrameSubmitsFrame) {
@@ -344,31 +344,31 @@ TEST_F(VideoFrameSubmitterTest, DidReceiveFrameSubmitsFrame) {
 
   EXPECT_SUBMISSION(SubmissionType::kManual);
   submitter_->DidReceiveFrame();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(VideoFrameSubmitterTest, ShouldSubmitPreventsSubmission) {
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(false));
   submitter_->SetIsSurfaceVisible(false);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(ShouldSubmit());
 
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(false));
   submitter_->StartRendering();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_SUBMISSION(SubmissionType::kStateChange);
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
   submitter_->SetIsSurfaceVisible(true);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(ShouldSubmit());
 
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(false));
   EXPECT_CALL(*video_frame_provider_, GetCurrentFrame()).Times(0);
   submitter_->SetIsSurfaceVisible(false);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(ShouldSubmit());
   EXPECT_GET_PUT_FRAME();
@@ -380,7 +380,7 @@ TEST_F(VideoFrameSubmitterTest, ShouldSubmitPreventsSubmission) {
 TEST_F(VideoFrameSubmitterTest, SetForceSubmitForcesSubmission) {
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(false));
   submitter_->SetIsSurfaceVisible(false);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(ShouldSubmit());
 
@@ -390,23 +390,23 @@ TEST_F(VideoFrameSubmitterTest, SetForceSubmitForcesSubmission) {
 
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
   submitter_->StartRendering();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
   EXPECT_SUBMISSION(SubmissionType::kStateChange);
   submitter_->SetIsSurfaceVisible(true);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(ShouldSubmit());
 
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
   EXPECT_SUBMISSION(SubmissionType::kStateChange);
   submitter_->SetIsSurfaceVisible(false);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(ShouldSubmit());
 
   EXPECT_SUBMISSION(SubmissionType::kManual);
   SubmitSingleFrame();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(VideoFrameSubmitterTest, RotationInformationPassedToResourceProvider) {
@@ -427,7 +427,7 @@ TEST_F(VideoFrameSubmitterTest, RotationInformationPassedToResourceProvider) {
   EXPECT_CALL(*resource_provider_, ReleaseFrameResources());
 
   submitter_->DidReceiveFrame();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   {
     WTF::Vector<viz::ReturnedResource> resources;
@@ -441,7 +441,7 @@ TEST_F(VideoFrameSubmitterTest, RotationInformationPassedToResourceProvider) {
 
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
   submitter_->StartRendering();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   {
     WTF::Vector<viz::ReturnedResource> resources;
@@ -465,7 +465,7 @@ TEST_F(VideoFrameSubmitterTest, RotationInformationPassedToResourceProvider) {
   viz::BeginFrameArgs args = begin_frame_source_->CreateBeginFrameArgs(
       BEGINFRAME_FROM_HERE, now_src_.get());
   submitter_->OnBeginFrame(args, {});
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   {
     WTF::Vector<viz::ReturnedResource> resources;
@@ -490,20 +490,20 @@ TEST_F(VideoFrameSubmitterTest, RotationInformationPassedToResourceProvider) {
   EXPECT_CALL(*resource_provider_, ReleaseFrameResources());
 
   submitter_->OnBeginFrame(args, {});
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(VideoFrameSubmitterTest, OnBeginFrameSubmitsFrame) {
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
 
   submitter_->StartRendering();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_SUBMISSION(SubmissionType::kBeginFrame);
   viz::BeginFrameArgs args = begin_frame_source_->CreateBeginFrameArgs(
       BEGINFRAME_FROM_HERE, now_src_.get());
   submitter_->OnBeginFrame(args, {});
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(VideoFrameSubmitterTest, MissedFrameArgDoesNotProduceFrame) {
@@ -513,7 +513,7 @@ TEST_F(VideoFrameSubmitterTest, MissedFrameArgDoesNotProduceFrame) {
       BEGINFRAME_FROM_HERE, now_src_.get());
   args.type = viz::BeginFrameArgs::MISSED;
   submitter_->OnBeginFrame(args, {});
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(VideoFrameSubmitterTest, MissingProviderDoesNotProduceFrame) {
@@ -524,7 +524,7 @@ TEST_F(VideoFrameSubmitterTest, MissingProviderDoesNotProduceFrame) {
   viz::BeginFrameArgs args = begin_frame_source_->CreateBeginFrameArgs(
       BEGINFRAME_FROM_HERE, now_src_.get());
   submitter_->OnBeginFrame(args, {});
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(VideoFrameSubmitterTest, NoUpdateOnFrameDoesNotProduceFrame) {
@@ -538,7 +538,7 @@ TEST_F(VideoFrameSubmitterTest, NoUpdateOnFrameDoesNotProduceFrame) {
   viz::BeginFrameArgs args = begin_frame_source_->CreateBeginFrameArgs(
       BEGINFRAME_FROM_HERE, now_src_.get());
   submitter_->OnBeginFrame(args, {});
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(VideoFrameSubmitterTest, NotRenderingDoesNotProduceFrame) {
@@ -551,14 +551,14 @@ TEST_F(VideoFrameSubmitterTest, NotRenderingDoesNotProduceFrame) {
   viz::BeginFrameArgs args = begin_frame_source_->CreateBeginFrameArgs(
       BEGINFRAME_FROM_HERE, now_src_.get());
   submitter_->OnBeginFrame(args, {});
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(VideoFrameSubmitterTest, ReturnsResourceOnCompositorAck) {
   WTF::Vector<viz::ReturnedResource> resources;
   EXPECT_CALL(*resource_provider_, ReceiveReturnsFromParent(_));
   submitter_->DidReceiveCompositorFrameAck(resources);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 // Tests that after submitting a frame, no frame will be submitted until an ACK
@@ -567,13 +567,13 @@ TEST_F(VideoFrameSubmitterTest, WaitingForAckPreventsNewFrame) {
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
 
   submitter_->StartRendering();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_SUBMISSION(SubmissionType::kBeginFrame);
   viz::BeginFrameArgs args = begin_frame_source_->CreateBeginFrameArgs(
       BEGINFRAME_FROM_HERE, now_src_.get());
   submitter_->OnBeginFrame(args, {});
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // DidNotProduceFrame should be called because no frame will be submitted
   // given that the ACK is still pending.
@@ -588,7 +588,7 @@ TEST_F(VideoFrameSubmitterTest, WaitingForAckPreventsNewFrame) {
   args = begin_frame_source_->CreateBeginFrameArgs(BEGINFRAME_FROM_HERE,
                                                    new_time.get());
   submitter_->OnBeginFrame(args, {});
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 // Test that after context is lost, the CompositorFrameSink is recreated but the
@@ -608,7 +608,7 @@ TEST_F(VideoFrameSubmitterTest, RecreateCompositorFrameSinkAfterContextLost) {
       .Times(1);
   submitter_->OnContextLost();
   OnReceivedContextProvider(true, context_provider_);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 // This test simulates a race condition in which the |video_frame_provider_| is
@@ -617,19 +617,19 @@ TEST_F(VideoFrameSubmitterTest, StopUsingProviderDuringContextLost) {
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
 
   submitter_->StartRendering();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_SUBMISSION(SubmissionType::kStateChange);
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(false));
   submitter_->StopUsingProvider();
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // OnReceivedContextProvider returns. We don't run the actual function
   // because it would overwrite our fake |sink_| with a real one.
   SubmitSingleFrame();
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 // Test the behaviour of the ChildLocalSurfaceIdAllocator instance. It checks
@@ -651,11 +651,11 @@ TEST_F(VideoFrameSubmitterTest, FrameSizeChangeUpdatesLocalSurfaceId) {
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
 
   submitter_->StartRendering();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_SUBMISSION(SubmissionType::kManual);
   SubmitSingleFrame();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   {
     viz::LocalSurfaceId local_surface_id =
@@ -680,7 +680,7 @@ TEST_F(VideoFrameSubmitterTest, FrameSizeChangeUpdatesLocalSurfaceId) {
   EXPECT_CALL(*resource_provider_, ReleaseFrameResources());
 
   SubmitSingleFrame();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   {
     viz::LocalSurfaceId local_surface_id =
@@ -724,7 +724,7 @@ TEST_F(VideoFrameSubmitterTest, VideoRotationOutputRect) {
     viz::BeginFrameArgs args = begin_frame_source_->CreateBeginFrameArgs(
         BEGINFRAME_FROM_HERE, now_src_.get());
     submitter_->OnBeginFrame(args, {});
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
     EXPECT_EQ(sink_->last_submitted_compositor_frame().size_in_pixels(),
               rotated_size);
@@ -755,7 +755,7 @@ TEST_F(VideoFrameSubmitterTest, VideoRotationOutputRect) {
     viz::BeginFrameArgs args = begin_frame_source_->CreateBeginFrameArgs(
         BEGINFRAME_FROM_HERE, now_src_.get());
     submitter_->OnBeginFrame(args, {});
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
     // 180 deg rotation has same size.
     EXPECT_EQ(sink_->last_submitted_compositor_frame().size_in_pixels(),
@@ -785,7 +785,7 @@ TEST_F(VideoFrameSubmitterTest, VideoRotationOutputRect) {
     viz::BeginFrameArgs args = begin_frame_source_->CreateBeginFrameArgs(
         BEGINFRAME_FROM_HERE, now_src_.get());
     submitter_->OnBeginFrame(args, {});
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
     EXPECT_EQ(sink_->last_submitted_compositor_frame().size_in_pixels(),
               rotated_size);
@@ -800,26 +800,26 @@ TEST_F(VideoFrameSubmitterTest, PageVisibilityControlsSubmission) {
   // Hide the page and ensure no begin frames are issued.
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(false));
   submitter_->SetIsPageVisible(false);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(ShouldSubmit());
 
   // Start rendering, but since page is hidden nothing should start yet.
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(false));
   submitter_->StartRendering();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Mark the page as visible and confirm frame submission.
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
   EXPECT_SUBMISSION(SubmissionType::kStateChange);
   submitter_->SetIsPageVisible(true);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Transition back to the page being hidden and ensure begin frames stop.
   EXPECT_TRUE(ShouldSubmit());
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(false));
   EXPECT_CALL(*video_frame_provider_, GetCurrentFrame()).Times(0);
   submitter_->SetIsPageVisible(false);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(VideoFrameSubmitterTest, PreferredInterval) {
@@ -828,13 +828,13 @@ TEST_F(VideoFrameSubmitterTest, PreferredInterval) {
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
 
   submitter_->StartRendering();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_SUBMISSION(SubmissionType::kBeginFrame);
   viz::BeginFrameArgs args = begin_frame_source_->CreateBeginFrameArgs(
       BEGINFRAME_FROM_HERE, now_src_.get());
   submitter_->OnBeginFrame(args, {});
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_EQ(sink_->last_submitted_compositor_frame()
                 .metadata.preferred_frame_interval,

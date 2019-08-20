@@ -35,8 +35,10 @@ We plan to implement it in the near future.
 
 ## Related Documentation
 
-[design doc](https://docs.google.com/document/d/1dB5UM9x8Ap2-bs6Xn0KnbC_B1KNLIUv4W05MunuXYh0)
+[Design Doc](https://docs.google.com/document/d/1dB5UM9x8Ap2-bs6Xn0KnbC_B1KNLIUv4W05MunuXYh0)
 
 [SMS Receiver API explainer](https://github.com/samuelgoto/sms-receiver)
 
-[launch bug](https://bugs.chromium.org/p/chromium/issues/detail?id=670299)
+[How to use the SMS Receiver API](https://github.com/samuelgoto/sms-receiver/blob/master/HOWTO.md)
+
+[Launch Bug](https://bugs.chromium.org/p/chromium/issues/detail?id=670299)

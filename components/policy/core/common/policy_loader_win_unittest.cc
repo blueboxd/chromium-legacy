@@ -426,7 +426,7 @@ class PolicyLoaderWinTest : public PolicyTestBase {
   }
 
   bool Matches(const PolicyBundle& expected) {
-    PolicyLoaderWin loader(scoped_task_environment_.GetMainThreadTaskRunner(),
+    PolicyLoaderWin loader(task_environment_.GetMainThreadTaskRunner(),
                            kTestPolicyKey);
     std::unique_ptr<PolicyBundle> loaded(
         loader.InitialLoad(schema_registry_.schema_map()));

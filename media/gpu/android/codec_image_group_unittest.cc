@@ -79,7 +79,7 @@ class CodecImageGroupTest : public testing::Test {
   // Handy method to check that CodecImage destruction is relayed properly.
   MOCK_METHOD1(OnCodecImageDestroyed, void(CodecImage*));
 
-  base::test::ScopedTaskEnvironment env_;
+  base::test::TaskEnvironment env_;
 
   // Our thread is the mcvd thread.  This is the task runner for the gpu thread.
   scoped_refptr<base::TestSimpleTaskRunner> gpu_task_runner_;

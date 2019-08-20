@@ -17,8 +17,7 @@ class GestureProviderAuraTest : public testing::Test,
                                 public GestureProviderAuraClient {
  public:
   GestureProviderAuraTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
 
   ~GestureProviderAuraTest() override {}
 
@@ -37,7 +36,7 @@ class GestureProviderAuraTest : public testing::Test,
  private:
   std::unique_ptr<GestureConsumer> consumer_;
   std::unique_ptr<GestureProviderAura> provider_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(GestureProviderAuraTest, IgnoresExtraPressEvents) {

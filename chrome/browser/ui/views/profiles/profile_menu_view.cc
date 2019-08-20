@@ -147,22 +147,9 @@ ProfileMenuView::~ProfileMenuView() = default;
 
 void ProfileMenuView::Reset() {
   ProfileMenuViewBase::Reset();
-  sync_error_button_ = nullptr;
   signin_current_profile_button_ = nullptr;
-  signin_with_gaia_account_button_ = nullptr;
-  current_profile_card_ = nullptr;
   first_profile_button_ = nullptr;
-  guest_profile_button_ = nullptr;
-  users_button_ = nullptr;
   lock_button_ = nullptr;
-  close_all_windows_button_ = nullptr;
-  dice_signin_button_view_ = nullptr;
-  passwords_button_ = nullptr;
-  credit_cards_button_ = nullptr;
-  addresses_button_ = nullptr;
-  signout_button_ = nullptr;
-  manage_google_account_button_ = nullptr;
-  cookies_cleared_on_exit_label_ = nullptr;
 }
 
 void ProfileMenuView::Init() {
@@ -334,12 +321,10 @@ void ProfileMenuView::OnSigninButtonClicked() {
       profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN, browser(), access_point_);
 }
 
-void ProfileMenuView::OnSigninAccountButtonClicked() {
-  DCHECK(dice_signin_button_view_->account());
+void ProfileMenuView::OnSigninAccountButtonClicked(AccountInfo account) {
   Hide();
-  signin_ui_util::EnableSyncFromPromo(
-      browser(), dice_signin_button_view_->account().value(), access_point_,
-      true /* is_default_promo_account */);
+  signin_ui_util::EnableSyncFromPromo(browser(), account, access_point_,
+                                      true /* is_default_promo_account */);
 }
 
 void ProfileMenuView::OnSignoutButtonClicked() {
@@ -445,7 +430,7 @@ void ProfileMenuView::AddPreDiceSyncErrorView(
 
   // Adds an action button if an action exists.
   if (button_string_id) {
-    sync_error_button_ = CreateAndAddBlueButton(
+    CreateAndAddBlueButton(
         l10n_util::GetStringUTF16(button_string_id), true /* md_style */,
         base::BindRepeating(&ProfileMenuView::OnSyncErrorButtonClicked,
                             base::Unretained(this), error));
@@ -477,7 +462,7 @@ void ProfileMenuView::AddDiceSyncErrorView(
           : sync_disabled ? BadgedProfilePhoto::BADGE_TYPE_SYNC_DISABLED
                           : BadgedProfilePhoto::BADGE_TYPE_SYNC_ERROR,
       avatar_item.icon);
-  current_profile_card_ = CreateAndAddTitleCard(
+  views::Button* current_profile_card = CreateAndAddTitleCard(
       std::move(current_profile_photo),
       l10n_util::GetStringUTF16(
           show_sync_paused_ui
@@ -489,13 +474,13 @@ void ProfileMenuView::AddDiceSyncErrorView(
                           base::Unretained(this)));
 
   if (!show_sync_paused_ui && !sync_disabled) {
-    static_cast<HoverButton*>(current_profile_card_)
+    static_cast<HoverButton*>(current_profile_card)
         ->SetStyle(HoverButton::STYLE_ERROR);
-    current_profile_card_->SetEnabled(false);
+    current_profile_card->SetEnabled(false);
   }
 
   if (!sync_disabled) {
-    sync_error_button_ = CreateAndAddBlueButton(
+    CreateAndAddBlueButton(
         l10n_util::GetStringUTF16(button_string_id), true /* md_style */,
         base::BindRepeating(&ProfileMenuView::OnSyncErrorButtonClicked,
                             base::Unretained(this), error));
@@ -511,7 +496,7 @@ void ProfileMenuView::AddSyncPausedReasonCookiesClearedOnExit() {
   base::string16 text = l10n_util::GetStringFUTF16(
       IDS_SYNC_PAUSED_REASON_CLEAR_COOKIES_ON_EXIT, link_text, &link_begin);
 
-  cookies_cleared_on_exit_label_ = CreateAndAddLabelWithLink(
+  CreateAndAddLabelWithLink(
       text, gfx::Range(link_begin, link_begin + link_text.length()),
       base::BindRepeating(&ProfileMenuView::OnCookiesClearedOnExitLinkClicked,
                           base::Unretained(this)));
@@ -548,7 +533,7 @@ void ProfileMenuView::AddCurrentProfileView(
           ? l10n_util::GetStringUTF16(IDS_PROFILES_SYNC_COMPLETE_TITLE)
           : profile_name;
 
-  current_profile_card_ = CreateAndAddTitleCard(
+  views::Button* current_profile_card = CreateAndAddTitleCard(
       std::move(current_profile_photo), hover_button_title,
       show_email ? avatar_item.username : base::string16(),
       base::BindRepeating(&ProfileMenuView::OnCurrentProfileCardClicked,
@@ -558,14 +543,14 @@ void ProfileMenuView::AddCurrentProfileView(
   // setting the elision behavior, so until this bug is fixed, avoid the crash
   // by checking that the username is not empty.
   if (show_email && !avatar_item.username.empty())
-    static_cast<HoverButton*>(current_profile_card_)
+    static_cast<HoverButton*>(current_profile_card)
         ->SetSubtitleElideBehavior(gfx::ELIDE_EMAIL);
 
   // The available links depend on the type of profile that is active.
   if (is_guest) {
-    current_profile_card_->SetEnabled(false);
+    current_profile_card->SetEnabled(false);
   } else if (avatar_item.signed_in) {
-    current_profile_card_->SetAccessibleName(l10n_util::GetStringFUTF16(
+    current_profile_card->SetAccessibleName(l10n_util::GetStringFUTF16(
         IDS_PROFILES_EDIT_SIGNED_IN_PROFILE_ACCESSIBLE_NAME, profile_name,
         avatar_item.username));
   } else {
@@ -575,7 +560,7 @@ void ProfileMenuView::AddCurrentProfileView(
     if (!dice_enabled_ && is_signin_allowed)
       AddPreDiceSigninPromo();
 
-    current_profile_card_->SetAccessibleName(l10n_util::GetStringFUTF16(
+    current_profile_card->SetAccessibleName(l10n_util::GetStringFUTF16(
         IDS_PROFILES_EDIT_PROFILE_ACCESSIBLE_NAME, profile_name));
   }
 }
@@ -614,13 +599,11 @@ void ProfileMenuView::AddDiceSigninPromo() {
   CreateAndAddLabel(l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SYNC_PROMO));
 
   // Create a sign-in button without account information.
-  std::unique_ptr<DiceSigninButtonView> signin_button =
-      std::make_unique<DiceSigninButtonView>(this);
-  dice_signin_button_view_ = CreateAndAddDiceSigninButton(
+  DiceSigninButtonView* dice_signin_button_view = CreateAndAddDiceSigninButton(
       /*account_info=*/nullptr, /*account_icon=*/nullptr,
       base::BindRepeating(&ProfileMenuView::OnSigninButtonClicked,
                           base::Unretained(this)));
-  signin_current_profile_button_ = dice_signin_button_view_->signin_button();
+  signin_current_profile_button_ = dice_signin_button_view->signin_button();
 }
 
 void ProfileMenuView::AddDiceSigninView() {
@@ -652,14 +635,13 @@ void ProfileMenuView::AddDiceSigninView() {
     account_icon = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
         profiles::GetPlaceholderAvatarIconResourceID());
   }
-  dice_signin_button_view_ = CreateAndAddDiceSigninButton(
+  CreateAndAddDiceSigninButton(
       &dice_promo_default_account, &account_icon,
       base::BindRepeating(&ProfileMenuView::OnSigninAccountButtonClicked,
-                          base::Unretained(this)));
-  signin_with_gaia_account_button_ = dice_signin_button_view_->signin_button();
+                          base::Unretained(this), dice_promo_default_account));
 
   // Add sign out button.
-  signout_button_ = CreateAndAddBlueButton(
+  CreateAndAddBlueButton(
       l10n_util::GetStringUTF16(IDS_SCREEN_LOCK_SIGN_OUT), false /* md_style */,
       base::BindRepeating(&ProfileMenuView::OnSignoutButtonClicked,
                           base::Unretained(this)));
@@ -716,7 +698,7 @@ void ProfileMenuView::AddOptionsView(bool display_lock,
     PrefService* service = g_browser_process->local_state();
     DCHECK(service);
     if (service->GetBoolean(prefs::kBrowserGuestModeEnabled)) {
-      guest_profile_button_ = CreateAndAddButton(
+      CreateAndAddButton(
           CreateVectorIcon(kUserMenuGuestIcon),
           l10n_util::GetStringUTF16(IDS_PROFILES_OPEN_GUEST_PROFILE_BUTTON),
           base::BindRepeating(&ProfileMenuView::OnGuestProfileButtonClicked,
@@ -728,7 +710,7 @@ void ProfileMenuView::AddOptionsView(bool display_lock,
       is_guest ? IDS_PROFILES_EXIT_GUEST : IDS_PROFILES_MANAGE_USERS_BUTTON);
   const gfx::VectorIcon& settings_icon =
       is_guest ? kCloseAllIcon : vector_icons::kSettingsIcon;
-  users_button_ = CreateAndAddButton(
+  CreateAndAddButton(
       CreateVectorIcon(settings_icon), text,
       base::BindRepeating(&ProfileMenuView::OnManageProfilesButtonClicked,
                           base::Unretained(this)));
@@ -743,7 +725,7 @@ void ProfileMenuView::AddOptionsView(bool display_lock,
   } else if (!is_guest) {
     AvatarMenu::Item active_avatar_item =
         avatar_menu->GetItemAt(ordered_item_indices[0]);
-    close_all_windows_button_ = CreateAndAddButton(
+    CreateAndAddButton(
         CreateVectorIcon(kCloseAllIcon),
         avatar_menu->GetNumberOfItems() >= 2
             ? l10n_util::GetStringFUTF16(IDS_PROFILES_EXIT_PROFILE_BUTTON,
@@ -768,21 +750,21 @@ void ProfileMenuView::AddAutofillHomeView() {
   AddMenuGroup();
 
   // Passwords.
-  passwords_button_ = CreateAndAddButton(
+  CreateAndAddButton(
       CreateVectorIcon(kKeyIcon),
       l10n_util::GetStringUTF16(IDS_PROFILES_PASSWORDS_LINK),
       base::BindRepeating(&ProfileMenuView::OnPasswordsButtonClicked,
                           base::Unretained(this)));
 
   // Credit cards.
-  credit_cards_button_ = CreateAndAddButton(
+  CreateAndAddButton(
       CreateVectorIcon(kCreditCardIcon),
       l10n_util::GetStringUTF16(IDS_PROFILES_CREDIT_CARDS_LINK),
       base::BindRepeating(&ProfileMenuView::OnCreditCardsButtonClicked,
                           base::Unretained(this)));
 
   // Addresses.
-  addresses_button_ = CreateAndAddButton(
+  CreateAndAddButton(
       CreateVectorIcon(vector_icons::kLocationOnIcon),
       l10n_util::GetStringUTF16(IDS_PROFILES_ADDRESSES_LINK),
       base::BindRepeating(&ProfileMenuView::OnAddressesButtonClicked,
@@ -792,7 +774,7 @@ void ProfileMenuView::AddAutofillHomeView() {
 #if defined(GOOGLE_CHROME_BUILD)
 void ProfileMenuView::AddManageGoogleAccountButton() {
   AddMenuGroup(false);
-  manage_google_account_button_ = CreateAndAddButton(
+  CreateAndAddButton(
       GetGoogleIconForUserMenu(GetDefaultIconSize()),
       l10n_util::GetStringUTF16(IDS_SETTINGS_MANAGE_GOOGLE_ACCOUNT),
       base::BindRepeating(&ProfileMenuView::OnManageGoogleAccountButtonClicked,

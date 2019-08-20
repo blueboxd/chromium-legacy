@@ -632,6 +632,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   // |worker_interfaces_parameterized_|.
   void InitWebContextInterfaces();
 
+  // Initializes |network_contexts_parent_directory_| on the UI thread.
+  void InitNetworkContextsParentDirectory();
+
   // Copies disable WebRTC encryption switch depending on the channel.
   static void MaybeCopyDisableWebRtcEncryptionSwitch(
       base::CommandLine* to_command_line,
@@ -699,6 +702,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   std::unique_ptr<ChromeSerialDelegate> serial_delegate_;
   std::unique_ptr<ChromeHidDelegate> hid_delegate_;
 #endif
+
+  // Returned from GetNetworkContextsParentDirectory() but created on the UI
+  // thread because it needs to access the Local State prefs.
+  std::vector<base::FilePath> network_contexts_parent_directory_;
 
   base::WeakPtrFactory<ChromeContentBrowserClient> weak_factory_{this};
 

@@ -109,7 +109,7 @@ constexpr char kServiceCName[] = "ServiceC";
 }  // namespace
 
 TEST(ServiceManagerTestSupport, TestConnectorFactoryUniqueService) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
 
   TestConnectorFactory factory;
   TestCServiceImpl c_service(factory.RegisterInstance(kServiceCName));
@@ -123,7 +123,7 @@ TEST(ServiceManagerTestSupport, TestConnectorFactoryUniqueService) {
 }
 
 TEST(ServiceManagerTestSupport, TestConnectorFactoryMultipleServices) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
 
   TestConnectorFactory factory;
   TestBServiceImpl b_service(factory.RegisterInstance(kServiceBName));

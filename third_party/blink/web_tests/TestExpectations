@@ -336,10 +336,6 @@ crbug.com/922249 virtual/android/fullscreen/compositor-touch-hit-rects-fullscree
 
 # ====== Layout team owned tests from here ======
 
-crbug.com/992950 external/wpt/css/css-layout-api/constraints-data.https.html [ Failure ]
-crbug.com/992950 external/wpt/css/css-layout-api/fragment-data-immutable.https.html [ Failure ]
-crbug.com/992950 external/wpt/css/css-layout-api/fragment-data.https.html [ Failure ]
-
 crbug.com/711704 external/wpt/css/CSS2/floats/floats-rule3-outside-left-002.xht [ Failure ]
 crbug.com/711704 external/wpt/css/CSS2/floats/floats-rule3-outside-right-002.xht [ Failure ]
 crbug.com/711704 external/wpt/css/CSS2/floats/floats-rule7-outside-left-001.xht [ Failure ]
@@ -2019,12 +2015,13 @@ crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/ord
 # Fieldset in NG
 #
 crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-overflow.html [ Failure ]
-crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-painting-order.html [ Failure ]
+crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-painting-order.html [ Failure Crash ]
 crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-percentage-block-size.html [ Failure ]
 crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-transform-translatez.html [ Failure ]
 crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-vertical.html [ Failure ]
 crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-align.html [ Failure ]
 crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-auto-margins.html [ Failure ]
+crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-block-formatting-context.html [ Crash ]
 crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-block-margins.html [ Failure ]
 crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-block-margins-2.html [ Failure ]
 crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-display-rendering.html [ Failure ]
@@ -4615,6 +4612,7 @@ crbug.com/626703 external/wpt/html/cross-origin-embedder-policy/none.https.html 
 crbug.com/626703 external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure ]
 crbug.com/626703 external/wpt/html/cross-origin-opener-policy/coop-sandbox.https.html [ Failure ]
 crbug.com/626703 [ Linux Mac10.10 ] virtual/cross-origin-embedder-policy/external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Pass Failure ]
+crbug.com/626703 [ Linux Mac10.10 ] virtual/cross-origin-embedder-policy/external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Failure ]
 
 # Failure due to on-going off-thread paint worklet project.
 crbug.com/957457 virtual/threaded/external/wpt/css/css-paint-api/invalid-image-pending-script.https.html [ Crash ]
@@ -6283,7 +6281,6 @@ crbug.com/971319 [ Mac ] media/audio-garbage-collect.html [ Pass Timeout ]
 crbug.com/971319 [ Mac ] virtual/audio-service/media/audio-garbage-collect.html [ Pass Timeout ]
 
 # Sheriff 2019-06-06
-crbug.com/971590 fast/dom/timer-throttling-out-of-view-cross-origin-page.html [ Pass Failure ]
 crbug.com/971590 [ Mac ] fast/dom/timer-throttling-hidden-page.html [ Pass Failure ]
 crbug.com/971612 fast/canvas/OffscreenCanvas-MessageChannel-transfer.html [ Pass Failure ]
 

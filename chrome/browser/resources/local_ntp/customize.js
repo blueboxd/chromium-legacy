@@ -322,8 +322,6 @@ customize.setMenuVisibility = function() {
   $(customize.IDS.UPLOAD_IMAGE).hidden = false;
   $(customize.IDS.RESTORE_DEFAULT).hidden = false;
   $(customize.IDS.EDIT_BG_DIVIDER).hidden = false;
-  $(customize.IDS.CUSTOM_LINKS_RESTORE_DEFAULT).hidden =
-      configData.hideShortcuts;
   $(customize.IDS.COLORS_BUTTON).hidden = !configData.chromeColors;
   $(customize.IDS.COLOR_PICKER_CONTAINER)
       .classList.toggle(
@@ -971,8 +969,6 @@ customize.richerPicker_selectBackgroundTile = function(tile) {
     return;
   }
 
-  $(customize.IDS.REFRESH_TOGGLE).checked = false;
-
   if (customize.selectedOptions.background &&
       customize.selectedOptions.background.id == tile.id) {
     // If the clicked tile is already selected do nothing.
@@ -982,6 +978,8 @@ customize.richerPicker_selectBackgroundTile = function(tile) {
     customize.richerPicker_removeSelectedState(
         customize.selectedOptions.background);
   }
+
+  $(customize.IDS.REFRESH_TOGGLE).checked = false;
 
   // Remove any existing preview.
   customize.richerPicker_unpreviewImage();
@@ -1056,6 +1054,7 @@ customize.richerPicker_toggleRefreshDaily = function(toggledOn) {
         customize.selectedOptions.background);
   }
 
+  customize.selectedOptions.background = null;
   customize.selectedOptions.backgroundData = {
     id: '',
     url: '',

@@ -108,8 +108,7 @@ class MockInputPane
 class OnScreenKeyboardTest : public ::testing::Test {
  protected:
   OnScreenKeyboardTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
 
   std::unique_ptr<OnScreenKeyboardDisplayManagerTabTip> CreateTabTip() {
     return std::unique_ptr<OnScreenKeyboardDisplayManagerTabTip>(
@@ -123,14 +122,14 @@ class OnScreenKeyboardTest : public ::testing::Test {
 
   void WaitForEventsWithTimeDelay(int64_t time_delta_ms = 10) {
     base::RunLoop run_loop;
-    scoped_task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
+    task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
         FROM_HERE, run_loop.QuitClosure(),
         base::TimeDelta::FromMilliseconds(time_delta_ms));
     run_loop.Run();
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(OnScreenKeyboardTest);
 };

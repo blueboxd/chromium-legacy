@@ -255,7 +255,8 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
     case EDisplay::kWebkitBox:
     case EDisplay::kWebkitInlineBox:
       if (RuntimeEnabledFeatures::WebkitBoxLayoutUsesFlexLayoutEnabled() &&
-          !style.HasLineClamp()) {
+          (!style.HasLineClamp() ||
+           style.BoxOrient() == EBoxOrient::kHorizontal)) {
         return new LayoutFlexibleBox(element);
       }
       return new LayoutDeprecatedFlexibleBox(*element);

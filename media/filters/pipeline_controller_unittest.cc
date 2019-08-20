@@ -158,7 +158,7 @@ class PipelineControllerTest : public ::testing::Test, public Pipeline::Client {
   void OnAudioDecoderChange(const PipelineDecoderInfo& info) override {}
   void OnVideoDecoderChange(const PipelineDecoderInfo& info) override {}
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   NiceMock<MockDemuxer> demuxer_;
   StrictMock<MockPipeline>* pipeline_;

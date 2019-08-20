@@ -4,7 +4,7 @@
     Forced colors mode - animations.
     Tests that animation colors are overridden in forced colors mode.
   </title>
-  <style type="text/css">
+  <style type="text/css" media="screen">
     #forcedtextcolor {
       color: WindowText;
       forced-color-adjust: none;
@@ -26,7 +26,7 @@
   <p id="forcedtextcolor"></p>
 </body>
 
-<script src="../../../animations/resources/animation-test-helpers.js"></script>
+<script src="../../../animations/resources/animation-test-helpers.js" type="text/javascript" charset="utf-8"></script>
 <script type="text/javascript" charset="utf-8">
   var textcolor = getComputedStyle(forcedtextcolor).color;
   const expectedValues = [

@@ -57,7 +57,7 @@ class CoordinatorTestUtil : public mojo::DataPipeDrainer::Client {
   std::unique_ptr<Coordinator> coordinator_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<AgentRegistry> agent_registry_;
   std::vector<std::unique_ptr<MockAgent>> agents_;

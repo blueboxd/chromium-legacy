@@ -91,7 +91,7 @@ void OutputImageError(double* const error,
 }  // namespace
 
 TEST(ImageProcessorTest, NullImage) {
-  base::test::ScopedTaskEnvironment test_task_env;
+  base::test::TaskEnvironment test_task_env;
   base::HistogramTester histogram_tester;
 
   bool empty_bytes = false;
@@ -114,7 +114,7 @@ TEST(ImageProcessorTest, NullImage) {
 }
 
 TEST(ImageProcessorTest, ImageContent) {
-  base::test::ScopedTaskEnvironment test_task_env;
+  base::test::TaskEnvironment test_task_env;
   base::HistogramTester histogram_tester;
 
   // Create one image that doesn't need scaling and one image that does.

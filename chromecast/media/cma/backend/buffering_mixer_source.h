@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 #include "chromecast/media/cma/backend/audio_fader.h"
 #include "chromecast/media/cma/backend/audio_resampler.h"
 #include "chromecast/media/cma/backend/mixer_input.h"
@@ -130,93 +131,6 @@ class BufferingMixerSource : public MixerInput::Source,
     kRemoved,         // The caller has removed this source; finish playing out.
   };
 
-  // Class to wrap members that must be used only when a lock is held. Usage:
-  // {
-  //   auto locked = locked_members_.Lock();
-  //   locked->paused_ = true;  // or other member access
-  // }
-  class LockedMembers {
-   public:
-    struct Members {
-      Members(BufferingMixerSource* source,
-              int input_samples_per_second,
-              int num_channels,
-              int64_t playback_start_timestamp,
-              int64_t playback_start_pts);
-      ~Members();
-
-      State state_ = State::kUninitialized;
-      bool paused_ = false;
-      bool mixer_error_ = false;
-      scoped_refptr<DecoderBufferBase> pending_data_;
-      base::circular_deque<scoped_refptr<DecoderBufferBase>> queue_;
-      // We let the caller thread free audio buffers since freeing memory can
-      // be expensive sometimes; we want to avoid potentially long-running
-      // operations on the mixer thread.
-      std::vector<scoped_refptr<DecoderBufferBase>> buffers_to_be_freed_;
-      int queued_frames_ = 0;
-      RenderingDelay mixer_rendering_delay_;
-      RenderingDelay last_buffer_delay_;
-      int extra_delay_frames_ = 0;
-      int current_buffer_offset_ = 0;
-      AudioFader fader_;
-      bool zero_fader_frames_ = false;
-      bool started_ = false;
-      double playback_rate_ = 1.0;
-      // The absolute timestamp relative to clock monotonic (raw) at which the
-      // playback should start. INT64_MIN indicates playback should start ASAP.
-      // INT64_MAX indicates playback should start at a specified timestamp,
-      // but we don't know what that timestamp is.
-      int64_t playback_start_timestamp_ = INT64_MIN;
-      // The PTS the playback should start at. We will drop audio pushed to us
-      // with PTS values below this value. If the audio doesn't have a starting
-      // PTS, then this value can be INT64_MIN, to play whatever audio is sent
-      // to us.
-      int64_t playback_start_pts_ = INT64_MIN;
-      AudioResampler audio_resampler_;
-
-     private:
-      DISALLOW_COPY_AND_ASSIGN(Members);
-    };
-
-    class AcquiredLock {
-     public:
-      explicit AcquiredLock(LockedMembers* locked);
-      ~AcquiredLock();
-
-      Members* operator->() { return &(locked_->members_); }
-
-     private:
-      LockedMembers* const locked_;
-    };
-
-    class AssertedLock {
-     public:
-      explicit AssertedLock(LockedMembers* locked);
-
-      Members* operator->() { return &(locked_->members_); }
-
-     private:
-      LockedMembers* const locked_;
-    };
-
-    LockedMembers(BufferingMixerSource* source,
-                  int input_samples_per_second,
-                  int num_channels,
-                  int64_t playback_start_timestamp,
-                  int64_t playback_start_pts);
-    ~LockedMembers();
-
-    AcquiredLock Lock();
-    AssertedLock AssertAcquired();
-
-   private:
-    base::Lock member_lock_;
-    Members members_;
-
-    DISALLOW_COPY_AND_ASSIGN(LockedMembers);
-  };
-
   ~BufferingMixerSource() override;
 
   // MixerInput::Source implementation:
@@ -239,18 +153,21 @@ class BufferingMixerSource : public MixerInput::Source,
   // AudioFader::Source implementation:
   int FillFaderFrames(int num_frames,
                       RenderingDelay rendering_delay,
-                      float* const* channels) override;
+                      float* const* channels)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_) override;
 
-  RenderingDelay QueueData(scoped_refptr<DecoderBufferBase> data);
+  RenderingDelay QueueData(scoped_refptr<DecoderBufferBase> data)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   void PostPcmCompletion();
   void PostEos();
   void PostError(MixerError error);
   void PostAudioReadyForPlayback();
-  void DropAudio(int64_t frames);
+  void DropAudio(int64_t frames) EXCLUSIVE_LOCKS_REQUIRED(lock_);
   int64_t DataToFrames(int64_t size);
   void CheckAndStartPlaybackIfNecessary(int num_frames,
-                                        int64_t playback_absolute_timestamp);
+                                        int64_t playback_absolute_timestamp)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
   Delegate* const delegate_;
   const int num_channels_;
   const int input_samples_per_second_;
@@ -263,14 +180,44 @@ class BufferingMixerSource : public MixerInput::Source,
   const int max_queued_frames_;
   // Minimum number of frames buffered before starting to fill data.
   const int start_threshold_frames_;
-  bool audio_ready_for_playback_fired_ = false;
 
   // Only used on the caller thread.
   std::vector<scoped_refptr<DecoderBufferBase>> old_buffers_to_be_freed_;
+  bool audio_ready_for_playback_fired_ = false;
 
-  LockedMembers locked_members_;
-
-  int remaining_silence_frames_ = 0;
+  base::Lock lock_;
+  State state_ GUARDED_BY(lock_) = State::kUninitialized;
+  bool paused_ GUARDED_BY(lock_) = false;
+  bool mixer_error_ GUARDED_BY(lock_) = false;
+  scoped_refptr<DecoderBufferBase> pending_data_ GUARDED_BY(lock_);
+  base::circular_deque<scoped_refptr<DecoderBufferBase>> queue_
+      GUARDED_BY(lock_);
+  // We let the caller thread free audio buffers since freeing memory can
+  // be expensive sometimes; we want to avoid potentially long-running
+  // operations on the mixer thread.
+  std::vector<scoped_refptr<DecoderBufferBase>> buffers_to_be_freed_
+      GUARDED_BY(lock_);
+  int queued_frames_ GUARDED_BY(lock_) = 0;
+  RenderingDelay mixer_rendering_delay_ GUARDED_BY(lock_);
+  RenderingDelay last_buffer_delay_ GUARDED_BY(lock_);
+  int extra_delay_frames_ GUARDED_BY(lock_) = 0;
+  int current_buffer_offset_ GUARDED_BY(lock_) = 0;
+  AudioFader fader_ GUARDED_BY(lock_);
+  bool zero_fader_frames_ GUARDED_BY(lock_) = false;
+  bool started_ GUARDED_BY(lock_) = false;
+  double playback_rate_ GUARDED_BY(lock_) = 1.0;
+  // The absolute timestamp relative to clock monotonic (raw) at which the
+  // playback should start. INT64_MIN indicates playback should start ASAP.
+  // INT64_MAX indicates playback should start at a specified timestamp,
+  // but we don't know what that timestamp is.
+  int64_t playback_start_timestamp_ GUARDED_BY(lock_) = INT64_MIN;
+  // The PTS the playback should start at. We will drop audio pushed to us
+  // with PTS values below this value. If the audio doesn't have a starting
+  // PTS, then this value can be INT64_MIN, to play whatever audio is sent
+  // to us.
+  int64_t playback_start_pts_ GUARDED_BY(lock_) = INT64_MIN;
+  AudioResampler audio_resampler_ GUARDED_BY(lock_);
+  int remaining_silence_frames_ GUARDED_BY(lock_) = 0;
 
   base::RepeatingClosure pcm_completion_task_;
   base::RepeatingClosure eos_task_;

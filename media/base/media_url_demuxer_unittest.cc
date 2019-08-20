@@ -42,7 +42,7 @@ class MediaUrlDemuxerTest : public testing::Test {
   std::unique_ptr<Demuxer> demuxer_;
 
   // Necessary, or else base::ThreadTaskRunnerHandle::Get() fails.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaUrlDemuxerTest);

@@ -106,7 +106,7 @@ EffectTiming* Timing::ConvertToEffectTiming() const {
 }
 
 ComputedEffectTiming* Timing::getComputedTiming(
-    const Timing::CalculatedTiming& calculated_timing,
+    const CalculatedTiming& calculated_timing,
     bool is_keyframe_effect) const {
   ComputedEffectTiming* computed_timing = ComputedEffectTiming::Create();
 
@@ -147,6 +147,75 @@ ComputedEffectTiming* Timing::getComputedTiming(
   computed_timing->setEasing(timing_function->ToString());
 
   return computed_timing;
+}
+
+Timing::CalculatedTiming Timing::CalculateTimings(
+    double local_time,
+    AnimationDirection animation_direction,
+    bool is_keyframe_effect) const {
+  const double active_duration = ActiveDuration();
+
+  const Timing::Phase current_phase =
+      CalculatePhase(active_duration, local_time, animation_direction, *this);
+  const double active_time =
+      CalculateActiveTime(active_duration, ResolvedFillMode(is_keyframe_effect),
+                          local_time, current_phase, *this);
+
+  base::Optional<double> progress;
+  const double iteration_duration = IterationDuration().InSecondsF();
+
+  const double overall_progress =
+      CalculateOverallProgress(current_phase, active_time, iteration_duration,
+                               iteration_count, iteration_start);
+  const double simple_iteration_progress = CalculateSimpleIterationProgress(
+      current_phase, overall_progress, iteration_start, active_time,
+      active_duration, iteration_count);
+  const double current_iteration =
+      CalculateCurrentIteration(current_phase, active_time, iteration_count,
+                                overall_progress, simple_iteration_progress);
+  const bool current_direction_is_forwards =
+      IsCurrentDirectionForwards(current_iteration, direction);
+  const double directed_progress = CalculateDirectedProgress(
+      simple_iteration_progress, current_iteration, direction);
+
+  progress = CalculateTransformedProgress(
+      current_phase, directed_progress, iteration_duration,
+      current_direction_is_forwards, timing_function);
+  if (IsNull(progress.value())) {
+    progress.reset();
+  }
+
+  double time_to_next_iteration = std::numeric_limits<double>::infinity();
+  // Conditionally compute the time to next iteration, which is only
+  // applicable if the iteration duration is non-zero.
+  if (iteration_duration) {
+    const double start_offset =
+        MultiplyZeroAlwaysGivesZero(iteration_start, iteration_duration);
+    DCHECK_GE(start_offset, 0);
+    const double offset_active_time =
+        CalculateOffsetActiveTime(active_duration, active_time, start_offset);
+    const double iteration_time = CalculateIterationTime(
+        iteration_duration, active_duration, offset_active_time, start_offset,
+        current_phase, *this);
+    if (!IsNull(iteration_time)) {
+      time_to_next_iteration = iteration_duration - iteration_time;
+      if (active_duration - active_time < time_to_next_iteration)
+        time_to_next_iteration = std::numeric_limits<double>::infinity();
+    }
+  }
+
+  CalculatedTiming calculated = CalculatedTiming();
+  calculated.phase = current_phase;
+  calculated.current_iteration = current_iteration;
+  calculated.progress = progress;
+  calculated.is_in_effect = !IsNull(active_time);
+  calculated.is_in_play = calculated.phase == Timing::kPhaseActive;
+  calculated.is_current =
+      calculated.phase == Timing::kPhaseBefore || calculated.is_in_play;
+  calculated.local_time = local_time;
+  calculated.time_to_next_iteration = time_to_next_iteration;
+
+  return calculated;
 }
 
 }  // namespace blink

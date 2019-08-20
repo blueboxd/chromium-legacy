@@ -65,7 +65,7 @@ class AwMetricsServiceClientTest : public testing::Test {
   ~AwMetricsServiceClientTest() override {}
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(AwMetricsServiceClientTest);

@@ -85,7 +85,7 @@ class VideoDecoderStreamTest
         has_no_key_(false) {
     video_decoder_stream_.reset(new VideoDecoderStream(
         std::make_unique<VideoDecoderStream::StreamTraits>(&media_log_),
-        scoped_task_environment_.GetMainThreadTaskRunner(),
+        task_environment_.GetMainThreadTaskRunner(),
         base::BindRepeating(&VideoDecoderStreamTest::CreateVideoDecodersForTest,
                             base::Unretained(this)),
         &media_log_));
@@ -139,7 +139,7 @@ class VideoDecoderStreamTest
   void PrepareFrame(scoped_refptr<VideoFrame> frame,
                     VideoDecoderStream::OutputReadyCB output_ready_cb) {
     // Simulate some delay in return of the output.
-    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+    task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(output_ready_cb), std::move(frame)));
   }
@@ -167,7 +167,7 @@ class VideoDecoderStreamTest
     // Note this is _not_ inserted into |decoders_| below, so we don't need to
     // adjust the indices used below to compensate.
     decoders.push_back(std::make_unique<DecryptingVideoDecoder>(
-        scoped_task_environment_.GetMainThreadTaskRunner(), &media_log_));
+        task_environment_.GetMainThreadTaskRunner(), &media_log_));
 #endif
 
     for (int i = 0; i < 3; ++i) {
@@ -463,7 +463,7 @@ class VideoDecoderStreamTest
     SatisfyPendingCallback(DECODER_REINIT);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   StrictMock<MockMediaLog> media_log_;
   std::unique_ptr<VideoDecoderStream> video_decoder_stream_;

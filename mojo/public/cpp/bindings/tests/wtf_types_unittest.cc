@@ -59,7 +59,7 @@ class WTFTypesTest : public testing::Test {
   WTFTypesTest() {}
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 WTF::Vector<WTF::String> ConstructStringArray() {

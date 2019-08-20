@@ -36,10 +36,10 @@ class AppContextMenu : public ui::SimpleMenuModel::Delegate {
   // ui::SimpleMenuModel::Delegate overrides:
   bool IsItemForCommandIdDynamic(int command_id) const override;
   base::string16 GetLabelForCommandId(int command_id) const override;
-  bool IsCommandIdChecked(int command_id) const override;
   bool IsCommandIdEnabled(int command_id) const override;
   void ExecuteCommand(int command_id, int event_flags) override;
-  bool GetIconForCommandId(int command_id, gfx::Image* icon) const override;
+  const gfx::VectorIcon* GetVectorIconForCommandId(
+      int command_id) const override;
 
  protected:
   // Creates default items, derived class may override to add their specific

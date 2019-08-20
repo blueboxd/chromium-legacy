@@ -88,7 +88,7 @@ class InstanceIDDriverTest : public testing::Test {
   void GetTokenCompleted(const std::string& token, InstanceID::Result result);
   void DeleteTokenCompleted(InstanceID::Result result);
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<FakeGCMDriverForInstanceID> gcm_driver_;
   std::unique_ptr<InstanceIDDriver> driver_;
 
@@ -109,8 +109,7 @@ class InstanceIDDriverTest : public testing::Test {
 };
 
 InstanceIDDriverTest::InstanceIDDriverTest()
-    : scoped_task_environment_(
-          base::test::ScopedTaskEnvironment::MainThreadType::UI),
+    : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
       result_(InstanceID::UNKNOWN_ERROR),
       async_operation_completed_(false) {}
 

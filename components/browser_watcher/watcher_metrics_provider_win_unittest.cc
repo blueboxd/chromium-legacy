@@ -65,7 +65,7 @@ class WatcherMetricsProviderWinTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   registry_util::RegistryOverrideManager override_manager_;
   base::HistogramTester histogram_tester_;
 };
@@ -138,7 +138,7 @@ TEST_F(WatcherMetricsProviderWinTest, DeletesExitcodeKeyWhenNotReporting) {
   provider.OnRecordingDisabled();
 
   // Flush the task(s).
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Make sure the subkey for the pseudo process has been deleted on reporting.
   ASSERT_EQ(ERROR_FILE_NOT_FOUND,

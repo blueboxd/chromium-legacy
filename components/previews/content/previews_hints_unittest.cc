@@ -89,7 +89,7 @@ class PreviewsHintsTest
     hint_cache_ = std::make_unique<optimization_guide::HintCache>(
         std::make_unique<optimization_guide::HintCacheStore>(
             db_provider_.get(), temp_dir_.GetPath(), nullptr /* pref_service */,
-            scoped_task_environment_.GetMainThreadTaskRunner()));
+            task_environment_.GetMainThreadTaskRunner()));
 
     is_store_initialized_ = false;
     hint_cache_->Initialize(
@@ -147,7 +147,7 @@ class PreviewsHintsTest
   void MaybeLoadHintAndLogHintCacheMatch(const GURL& url, bool is_committed);
 
   void RunUntilIdle() {
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -169,7 +169,7 @@ class PreviewsHintsTest
 
   void MaybeLoadHint(const GURL& url);
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   bool is_store_initialized_;
   bool are_previews_hints_initialized_;

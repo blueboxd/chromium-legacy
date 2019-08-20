@@ -19,7 +19,6 @@ SensorProxyImpl::SensorProxyImpl(SensorType sensor_type,
                                  SensorProviderProxy* provider,
                                  Page* page)
     : SensorProxy(sensor_type, provider, page),
-      client_binding_(this),
       polling_timer_(
           provider->GetSupplementable()->GetTaskRunner(TaskType::kSensor),
           this,
@@ -28,7 +27,7 @@ SensorProxyImpl::SensorProxyImpl(SensorType sensor_type,
 SensorProxyImpl::~SensorProxyImpl() {}
 
 void SensorProxyImpl::Dispose() {
-  client_binding_.Close();
+  client_receiver_.reset();
 }
 
 void SensorProxyImpl::Trace(blink::Visitor* visitor) {
@@ -55,14 +54,15 @@ void SensorProxyImpl::AddConfiguration(
     base::OnceCallback<void(bool)> callback) {
   DCHECK(IsInitialized());
   AddActiveFrequency(configuration->frequency);
-  sensor_->AddConfiguration(std::move(configuration), std::move(callback));
+  sensor_remote_->AddConfiguration(std::move(configuration),
+                                   std::move(callback));
 }
 
 void SensorProxyImpl::RemoveConfiguration(
     SensorConfigurationPtr configuration) {
   DCHECK(IsInitialized());
   RemoveActiveFrequency(configuration->frequency);
-  sensor_->RemoveConfiguration(std::move(configuration));
+  sensor_remote_->RemoveConfiguration(std::move(configuration));
 }
 
 double SensorProxyImpl::GetDefaultFrequency() const {
@@ -79,7 +79,7 @@ void SensorProxyImpl::Suspend() {
   if (suspended_)
     return;
 
-  sensor_->Suspend();
+  sensor_remote_->Suspend();
   suspended_ = true;
   UpdatePollingStatus();
 }
@@ -88,7 +88,7 @@ void SensorProxyImpl::Resume() {
   if (!suspended_)
     return;
 
-  sensor_->Resume();
+  sensor_remote_->Resume();
   suspended_ = false;
   UpdatePollingStatus();
 }
@@ -136,11 +136,11 @@ void SensorProxyImpl::ReportError(DOMExceptionCode code,
 
   // The m_sensor.reset() will release all callbacks and its bound parameters,
   // therefore, handleSensorError accepts messages by value.
-  sensor_.reset();
+  sensor_remote_.reset();
   shared_buffer_reader_.reset();
   default_frequency_ = 0.0;
   frequency_limits_ = {0.0, 0.0};
-  client_binding_.Close();
+  client_receiver_.reset();
 
   SensorProxy::ReportError(code, message);
 }
@@ -174,8 +174,8 @@ void SensorProxyImpl::OnSensorCreated(SensorCreationResult result,
   default_frequency_ = params->default_configuration->frequency;
   DCHECK_GT(default_frequency_, 0.0);
 
-  sensor_.Bind(std::move(params->sensor));
-  client_binding_.Bind(std::move(params->client_request));
+  sensor_remote_.Bind(std::move(params->sensor));
+  client_receiver_.Bind(std::move(params->client_request));
 
   shared_buffer_reader_ = device::SensorReadingSharedBufferReader::Create(
       std::move(params->memory), params->buffer_offset);
@@ -197,7 +197,7 @@ void SensorProxyImpl::OnSensorCreated(SensorCreationResult result,
   auto error_callback =
       WTF::Bind(&SensorProxyImpl::HandleSensorError, WrapWeakPersistent(this),
                 SensorCreationResult::ERROR_NOT_AVAILABLE);
-  sensor_.set_connection_error_handler(std::move(error_callback));
+  sensor_remote_.set_disconnect_handler(std::move(error_callback));
 
   state_ = kInitialized;
 

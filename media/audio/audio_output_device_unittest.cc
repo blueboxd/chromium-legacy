@@ -109,8 +109,8 @@ class AudioOutputDeviceTest : public testing::Test {
   MOCK_METHOD1(OnDeviceInfoReceived, void(OutputDeviceInfo));
 
  protected:
-  base::test::ScopedTaskEnvironment task_env_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::TaskEnvironment task_env_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   AudioParameters default_audio_parameters_;
   StrictMock<MockRenderCallback> callback_;
   MockAudioOutputIPC* audio_output_ipc_;  // owned by audio_device_

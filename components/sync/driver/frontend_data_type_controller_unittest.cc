@@ -138,7 +138,7 @@ class SyncFrontendDataTypeControllerTest : public testing::Test {
 
   void PumpLoop() { base::RunLoop().RunUntilIdle(); }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   ModelAssociatorMock* model_associator_;
   ChangeProcessorMock* change_processor_;
   std::unique_ptr<ModelAssociatorMock> model_associator_deleter_;

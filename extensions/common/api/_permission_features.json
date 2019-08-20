@@ -667,6 +667,20 @@
         "E24F1786D842E91E74C27929B0B3715A4689A473",  // CryptoToken
         "A28C9619C4C41306FA5236FB4D94DA812F504DE8"   // CryptoToken (dev)
       ]
+    },
+    // TODO(995294, hendrich) Remove this whitelisting once a WebUSB solution is
+    // ready to go (target M79/M80).
+    {
+      "channel": "dev",
+      "extension_types": ["login_screen_extension", "extension"],
+      "location": "policy",
+      "platforms": ["chromeos"],
+      "whitelist": [
+        "E219EE36A3B40612FD2A8CD6937B03EF0C97D3FE",  // Imprivata (login screen)
+        "4DBFC1C52D6660DD90791976DF7FEF7B3D360509",  // Imprivata (login screen) DEV
+        "A24DE1B21A67E25FB62AC8491642038FE25DA75B",  // Imprivata (in session)
+        "6B25164FFE2BADB5F1DBBD301CC022170267022D"   // Imprivata (in session) DEV
+      ]
     }
   ],
   "usbDevices": [
@@ -686,6 +700,20 @@
         "D4EFCCC0CC612380762758BB96C7997224BD6395",  // http://crbug.com/710541
         "4839A26B29CD1BD021B2E126EF6D28C9CB84018B",  // http://crbug.com/710541
         "8F44FBB4474CCDF23450B166C9E83E85BD03AE24"   // http://crbug.com/710541
+      ]
+    },
+    // TODO(995294, hendrich) Remove this whitelisting once a WebUSB solution is
+    // ready to go (target M79/M80).
+    {
+      "channel": "dev",
+      "extension_types": ["login_screen_extension", "extension"],
+      "location": "policy",
+      "platforms": ["chromeos"],
+      "whitelist": [
+        "E219EE36A3B40612FD2A8CD6937B03EF0C97D3FE",  // Imprivata (login screen)
+        "4DBFC1C52D6660DD90791976DF7FEF7B3D360509",  // Imprivata (login screen) DEV
+        "A24DE1B21A67E25FB62AC8491642038FE25DA75B",  // Imprivata (in session)
+        "6B25164FFE2BADB5F1DBBD301CC022170267022D"   // Imprivata (in session) DEV
       ]
     }
   ],

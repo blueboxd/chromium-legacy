@@ -186,7 +186,7 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
     return ScriptPromise::RejectWithDOMException(script_state, error);
   }
 
-  if (!service_) {
+  if (!service_remote_) {
     LocalFrame* frame = doc->GetFrame();
     if (!frame) {
       auto* error = MakeGarbageCollected<DOMException>(
@@ -197,11 +197,12 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
     }
 
     // See https://bit.ly/2S0zRAS for task types.
-    frame->GetInterfaceProvider().GetInterface(mojo::MakeRequest(
-        &service_, frame->GetTaskRunner(TaskType::kMiscPlatformAPI)));
-    service_.set_connection_error_handler(WTF::Bind(
+    frame->GetInterfaceProvider().GetInterface(
+        service_remote_.BindNewPipeAndPassReceiver(
+            frame->GetTaskRunner(TaskType::kMiscPlatformAPI)));
+    service_remote_.set_disconnect_handler(WTF::Bind(
         &NavigatorShare::OnConnectionError, WrapWeakPersistent(this)));
-    DCHECK(service_);
+    DCHECK(service_remote_);
   }
 
   bool has_files = HasFiles(*share_data);
@@ -229,7 +230,7 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
     }
   }
 
-  service_->Share(
+  service_remote_->Share(
       share_data->hasTitle() ? share_data->title() : g_empty_string,
       share_data->hasText() ? share_data->text() : g_empty_string, full_url,
       std::move(files),
@@ -249,7 +250,7 @@ void NavigatorShare::OnConnectionError() {
     client->OnConnectionError();
   }
   clients_.clear();
-  service_.reset();
+  service_remote_.reset();
 }
 
 }  // namespace blink

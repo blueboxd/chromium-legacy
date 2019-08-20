@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_METRICS_FIELD_TRIALS_PROVIDER_H_
 #define COMPONENTS_METRICS_FIELD_TRIALS_PROVIDER_H_
 
+#include <vector>
+
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "components/metrics/metrics_provider.h"
@@ -25,10 +27,8 @@ class FieldTrialsProvider : public metrics::MetricsProvider {
   ~FieldTrialsProvider() override;
 
   // metrics::MetricsProvider:
+  void OnDidCreateMetricsLog() override;
   void ProvideSystemProfileMetrics(
-      metrics::SystemProfileProto* system_profile_proto) override;
-  void ProvideSystemProfileMetricsWithLogCreationTime(
-      base::TimeTicks log_creation_time,
       metrics::SystemProfileProto* system_profile_proto) override;
 
  private:
@@ -41,7 +41,13 @@ class FieldTrialsProvider : public metrics::MetricsProvider {
   // Suffix used for the field trial names before they are hashed for uploads.
   std::string suffix_;
 
-  DISALLOW_COPY_AND_ASSIGN(FieldTrialsProvider);
+  // A stack of log creation times.
+  // While the initial metrics log exists, there will be two logs open.
+  // Use a stack so that we use the right creation time for the first ongoing
+  // log.
+  // TODO(crbug/746098): Simplify InitialMetricsLog logic so this is not
+  // necessary.
+  std::vector<base::TimeTicks> creation_times_;
 };
 
 }  // namespace variations

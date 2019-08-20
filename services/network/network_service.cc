@@ -646,7 +646,7 @@ void NetworkService::DumpWithoutCrashing(base::Time dump_request_time) {
   static base::debug::CrashKeyString* time_key =
       base::debug::AllocateCrashKeyString("time_since_dump_request_ms",
                                           base::debug::CrashKeySize::Size32);
-  base::debug::ScopedCrashKeyString(
+  base::debug::ScopedCrashKeyString scoped_time(
       time_key, base::NumberToString(
                     (base::Time::Now() - dump_request_time).InMilliseconds()));
   base::debug::DumpWithoutCrashing();

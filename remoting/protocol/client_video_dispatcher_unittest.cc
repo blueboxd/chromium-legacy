@@ -46,7 +46,7 @@ class ClientVideoDispatcherTest : public testing::Test,
   void OnMessageReceived(std::unique_ptr<CompoundBuffer> buffer);
   void OnReadError(int error);
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // Set to true in OnChannelInitialized().
   bool initialized_ = false;

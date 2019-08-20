@@ -38,8 +38,7 @@ namespace {
 class TCPBoundSocketTest : public testing::Test {
  public:
   TCPBoundSocketTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         factory_(nullptr /* net_log */, &url_request_context_) {}
   ~TCPBoundSocketTest() override {}
 
@@ -170,7 +169,7 @@ class TCPBoundSocketTest : public testing::Test {
       MojoResult result = receive_handle.BeginReadData(
           &buffer, &num_bytes, MOJO_READ_DATA_FLAG_NONE);
       if (result == MOJO_RESULT_SHOULD_WAIT) {
-        scoped_task_environment_.RunUntilIdle();
+        task_environment_.RunUntilIdle();
         continue;
       }
       if (result != MOJO_RESULT_OK) {
@@ -189,12 +188,10 @@ class TCPBoundSocketTest : public testing::Test {
     return net::IPEndPoint(net::IPAddress::IPv4Localhost(), 0 /* port */);
   }
 
-  base::test::ScopedTaskEnvironment* scoped_task_environment() {
-    return &scoped_task_environment_;
-  }
+  base::test::TaskEnvironment* task_environment() { return &task_environment_; }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   net::TestURLRequestContext url_request_context_;
   SocketFactory factory_;
 
@@ -354,7 +351,7 @@ TEST_F(TCPBoundSocketTest, ReadWrite) {
     MojoResult result = client_socket_send_handle->BeginWriteData(
         &buffer, &buffer_num_bytes, MOJO_WRITE_DATA_FLAG_NONE);
     if (result == MOJO_RESULT_SHOULD_WAIT) {
-      scoped_task_environment()->RunUntilIdle();
+      task_environment()->RunUntilIdle();
       continue;
     }
     if (result != MOJO_RESULT_OK)

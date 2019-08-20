@@ -1092,9 +1092,16 @@ void GraphicsContext::FillRect(const FloatRect& rect) {
   DrawRect(rect, ImmutableState()->FillFlags());
 }
 
+void GraphicsContext::FillRect(const IntRect& rect,
+                               const Color& color,
+                               DarkModeFilter::ElementRole role) {
+  FillRect(FloatRect(rect), color, SkBlendMode::kSrcOver, role);
+}
+
 void GraphicsContext::FillRect(const FloatRect& rect,
                                const Color& color,
-                               SkBlendMode xfer_mode) {
+                               SkBlendMode xfer_mode,
+                               DarkModeFilter::ElementRole role) {
   if (ContextDisabled())
     return;
 
@@ -1102,7 +1109,7 @@ void GraphicsContext::FillRect(const FloatRect& rect,
   flags.setColor(color.Rgb());
   flags.setBlendMode(xfer_mode);
 
-  DrawRect(rect, flags);
+  DrawRect(rect, flags, role);
 }
 
 void GraphicsContext::FillRoundedRect(const FloatRoundedRect& rrect,

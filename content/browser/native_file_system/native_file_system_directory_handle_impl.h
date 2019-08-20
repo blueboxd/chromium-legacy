@@ -80,9 +80,9 @@ class NativeFileSystemDirectoryHandleImpl
   // Calculates a FileSystemURL for a (direct) child of this directory with the
   // given basename.  Returns an error when |basename| includes invalid input
   // like "/".
-  base::File::Error GetChildURL(const std::string& basename,
-                                storage::FileSystemURL* result)
-      WARN_UNUSED_RESULT;
+  blink::mojom::NativeFileSystemErrorPtr GetChildURL(
+      const std::string& basename,
+      storage::FileSystemURL* result) WARN_UNUSED_RESULT;
 
   // Helper to create a blink::mojom::NativeFileSystemEntry struct.
   blink::mojom::NativeFileSystemEntryPtr CreateEntry(

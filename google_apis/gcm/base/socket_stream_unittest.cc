@@ -79,7 +79,7 @@ class GCMSocketStreamTest : public testing::Test {
   void ResetInputStream();
   void ResetOutputStream();
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // SocketStreams and their data providers.
   ReadList mock_reads_;
@@ -103,8 +103,7 @@ class GCMSocketStreamTest : public testing::Test {
 };
 
 GCMSocketStreamTest::GCMSocketStreamTest()
-    : scoped_task_environment_(
-          base::test::ScopedTaskEnvironment::MainThreadType::IO),
+    : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
       network_change_notifier_(net::NetworkChangeNotifier::CreateMock()),
       network_service_(network::NetworkService::CreateForTesting()),
       url_request_context_(true /* delay_initialization */) {

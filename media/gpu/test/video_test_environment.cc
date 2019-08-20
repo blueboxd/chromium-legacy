@@ -46,8 +46,8 @@ void VideoTestEnvironment::SetUp() {
   // thread and allow posting tasks to other threads. This is required for video
   // tests to function correctly.
   TestTimeouts::Initialize();
-  task_environment_ = std::make_unique<base::test::ScopedTaskEnvironment>(
-      base::test::ScopedTaskEnvironment::MainThreadType::UI);
+  task_environment_ = std::make_unique<base::test::TaskEnvironment>(
+      base::test::TaskEnvironment::MainThreadType::UI);
 
   // Perform all static initialization that is required when running video
   // decoders in a test environment.

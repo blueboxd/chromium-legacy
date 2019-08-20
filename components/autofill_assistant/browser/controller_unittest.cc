@@ -76,8 +76,8 @@ class ControllerTest : public content::RenderViewHostTestHarness {
  public:
   ControllerTest()
       : RenderViewHostTestHarness(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI,
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
+            base::test::TaskEnvironment::MainThreadType::UI,
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
   ~ControllerTest() override {}
 
   void SetUp() override {

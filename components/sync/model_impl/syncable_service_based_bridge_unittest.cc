@@ -159,7 +159,7 @@ class SyncableServiceBasedBridgeTest : public ::testing::Test {
   const std::string kClientTagHash =
       GenerateSyncableHash(kModelType, kClientTag);
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   testing::NiceMock<MockSyncableService> syncable_service_;
   testing::NiceMock<MockModelTypeChangeProcessor> mock_processor_;
   base::MockCallback<ModelErrorHandler> mock_error_handler_;
@@ -526,7 +526,7 @@ TEST(SyncableServiceBasedBridgeLocalChangeProcessorTest,
      ShouldDropIfCommitted) {
   const std::string kClientTagHash = "clienttaghash1";
 
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   std::unique_ptr<ModelTypeStore> store =
       ModelTypeStoreTestUtil::CreateInMemoryStoreForTest();
   SyncableServiceBasedBridge::InMemoryStore in_memory_store;
@@ -561,7 +561,7 @@ TEST(SyncableServiceBasedBridgeLocalChangeProcessorTest,
      ShouldNotDropIfUnsynced) {
   const std::string kClientTagHash = "clienttaghash1";
 
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   std::unique_ptr<ModelTypeStore> store =
       ModelTypeStoreTestUtil::CreateInMemoryStoreForTest();
   SyncableServiceBasedBridge::InMemoryStore in_memory_store;

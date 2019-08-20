@@ -21,7 +21,7 @@ class TestHelperTest : public testing::Test {
   ~TestHelperTest() override = default;
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(TestHelperTest);
 };

@@ -41,7 +41,9 @@ fuchsia::media::drm::LicenseServerMessage CreateLicenseServerMessage(
     const std::vector<uint8_t>& response) {
   fuchsia::media::drm::LicenseServerMessage message;
   message.message = cr_fuchsia::MemBufferFromString(
-      std::string(response.begin(), response.end()));
+      base::StringPiece(reinterpret_cast<const char*>(response.data()),
+                        response.size()),
+      "cr-drm-license-server-message");
   return message;
 }
 

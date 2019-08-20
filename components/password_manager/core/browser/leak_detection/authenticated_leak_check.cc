@@ -171,18 +171,19 @@ bool AuthenticatedLeakCheck::HasAccountForRequest(
 }
 
 void AuthenticatedLeakCheck::Start(const GURL& url,
-                                   base::StringPiece16 username,
-                                   base::StringPiece16 password) {
+                                   base::string16 username,
+                                   base::string16 password) {
   DCHECK(payload_helper_);
   DCHECK(!request_);
 
   url_ = url;
-  username_ = base::UTF16ToUTF8(username);
+  username_ = std::move(username);
+  password_ = std::move(password);
   payload_helper_->RequestAccessToken(
       base::BindOnce(&AuthenticatedLeakCheck::OnAccessTokenRequestCompleted,
                      weak_ptr_factory_.GetWeakPtr()));
   payload_helper_->PreparePayload(
-      username_, base::UTF16ToUTF8(password),
+      base::UTF16ToUTF8(username_), base::UTF16ToUTF8(password_),
       base::BindOnce(&AuthenticatedLeakCheck::OnRequestDataReady,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -226,13 +227,25 @@ void AuthenticatedLeakCheck::DoLeakRequest(
 
 void AuthenticatedLeakCheck::OnLookupSingleLeakResponse(
     std::unique_ptr<SingleLookupResponse> response) {
+  request_.reset();
   if (!response) {
     delegate_->OnError(LeakDetectionError::kInvalidServerResponse);
     return;
   }
 
-  delegate_->OnLeakDetectionDone(ParseLookupSingleLeakResponse(*response), url_,
-                                 base::UTF8ToUTF16(username_));
+  DVLOG(0) << "Leak check: number of matching encrypted prefixes="
+           << response->encrypted_leak_match_prefixes.size();
+
+  AnalyzeResponseResult(
+      std::move(response), encryption_key_,
+      base::BindOnce(&AuthenticatedLeakCheck::OnAnalyzeSingleLeakResponse,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void AuthenticatedLeakCheck::OnAnalyzeSingleLeakResponse(bool is_leaked) {
+  DVLOG(0) << "Leak check result=" << is_leaked;
+  delegate_->OnLeakDetectionDone(is_leaked, std::move(url_),
+                                 std::move(username_), std::move(password_));
 }
 
 }  // namespace password_manager

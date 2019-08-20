@@ -363,7 +363,7 @@ class AffiliationBackendTest : public testing::Test {
         GetTestEquivalenceClassGamma());
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<base::TestMockTimeTaskRunner> backend_task_runner_;
   scoped_refptr<base::TestSimpleTaskRunner> consumer_task_runner_;
 

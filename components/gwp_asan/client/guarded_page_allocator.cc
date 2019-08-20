@@ -21,6 +21,10 @@
 #include "components/gwp_asan/common/crash_key_name.h"
 #include "components/gwp_asan/common/pack_stack_trace.h"
 
+#if defined(OS_ANDROID)
+#include "components/crash/content/app/crashpad.h"  // nogncheck
+#endif
+
 #if defined(OS_MACOSX)
 #include <pthread.h>
 #endif
@@ -166,6 +170,27 @@ void GuardedPageAllocator::Init(size_t max_alloced_pages,
   metadata_ =
       std::make_unique<AllocatorState::SlotMetadata[]>(state_.num_metadata);
   state_.metadata_addr = reinterpret_cast<uintptr_t>(metadata_.get());
+
+#if defined(OS_ANDROID)
+  // Explicitly whitelist memory ranges the crash_handler needs to reads. This
+  // is required for WebView because it has a stricter set of privacy
+  // constraints on what it reads from the crashing process.
+  for (auto& region : GetInternalMemoryRegions())
+    crash_reporter::WhitelistMemoryRange(region.first, region.second);
+#endif
+}
+
+std::vector<std::pair<void*, size_t>>
+GuardedPageAllocator::GetInternalMemoryRegions() {
+  std::vector<std::pair<void*, size_t>> regions;
+  regions.push_back(std::make_pair(&state_, sizeof(state_)));
+  regions.push_back(std::make_pair(
+      metadata_.get(),
+      sizeof(AllocatorState::SlotMetadata) * state_.num_metadata));
+  regions.push_back(
+      std::make_pair(slot_to_metadata_idx_.data(),
+                     sizeof(AllocatorState::MetadataIdx) * state_.total_pages));
+  return regions;
 }
 
 GuardedPageAllocator::~GuardedPageAllocator() {

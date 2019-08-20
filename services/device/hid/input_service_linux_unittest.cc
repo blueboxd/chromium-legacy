@@ -27,8 +27,8 @@ void OnGetDevices(base::OnceClosure quit_closure,
 }  // namespace
 
 TEST(InputServiceLinux, Simple) {
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
 
   InputServiceLinux* service = InputServiceLinux::GetInstance();
   ASSERT_TRUE(service);

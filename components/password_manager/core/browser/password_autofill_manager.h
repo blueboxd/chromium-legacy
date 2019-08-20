@@ -55,6 +55,7 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   void ClearPreviewedForm() override;
   autofill::PopupType GetPopupType() const override;
   autofill::AutofillDriver* GetAutofillDriver() override;
+  int32_t GetWebContentsPopupControllerAxId() const override;
   void RegisterDeletionCallback(base::OnceClosure deletion_callback) override;
 
   // Invoked when a password mapping is added.

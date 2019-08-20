@@ -148,7 +148,7 @@ class AutofillWalletDataTypeControllerTest : public testing::Test {
     last_error_ = error;
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestingPrefServiceSimple prefs_;
   syncer::UserShare user_share_;
   testing::NiceMock<syncer::MockSyncService> sync_service_;

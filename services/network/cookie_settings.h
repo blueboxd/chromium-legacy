@@ -53,11 +53,20 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieSettings
         third_party_cookies_allowed_schemes.end());
   }
 
+  void set_content_settings_for_legacy_cookie_access(
+      const ContentSettingsForOneType& settings) {
+    settings_for_legacy_cookie_access_ = settings;
+  }
+
   // Returns a predicate that takes the domain of a cookie and a bool whether
   // the cookie is secure and returns true if the cookie should be deleted on
   // exit.
   SessionCleanupCookieStore::DeleteCookiePredicate
   CreateDeleteCookieOnExitPredicate() const;
+
+  // content_settings::CookieSettingsBase:
+  void GetSettingForLegacyCookieAccess(const GURL& cookie_domain,
+                                       ContentSetting* setting) const override;
 
  private:
   // content_settings::CookieSettingsBase:
@@ -75,6 +84,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieSettings
   std::set<std::string> secure_origin_cookies_allowed_schemes_;
   std::set<std::string> matching_scheme_cookies_allowed_schemes_;
   std::set<std::string> third_party_cookies_allowed_schemes_;
+  ContentSettingsForOneType settings_for_legacy_cookie_access_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieSettings);
 };

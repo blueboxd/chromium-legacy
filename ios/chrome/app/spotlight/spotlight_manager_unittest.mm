@@ -87,7 +87,7 @@ class SpotlightManagerTest : public PlatformTest {
 
   ~SpotlightManagerTest() override { [bookmarksSpotlightManager_ shutdown]; }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   testing::StrictMock<favicon::MockFaviconService> mock_favicon_service_;
   std::unique_ptr<favicon::LargeIconServiceImpl> large_icon_service_;
   base::CancelableTaskTracker cancelable_task_tracker_;

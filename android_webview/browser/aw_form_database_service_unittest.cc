@@ -37,11 +37,11 @@ class AwFormDatabaseServiceTest : public Test {
 
   void TearDown() override {
     service_->Shutdown();
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   // The path to the temporary directory used for the test operations.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   JNIEnv* env_;
   std::unique_ptr<AwFormDatabaseService> service_;

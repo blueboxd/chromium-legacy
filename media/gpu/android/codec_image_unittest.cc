@@ -98,7 +98,7 @@ class CodecImageTest : public testing::Test {
 
   virtual bool BindsTextureOnUpdate() { return true; }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   NiceMock<MockMediaCodecBridge>* codec_;
   std::unique_ptr<CodecWrapper> wrapper_;
   scoped_refptr<NiceMock<MockCodecBufferWaitCoordinator>>

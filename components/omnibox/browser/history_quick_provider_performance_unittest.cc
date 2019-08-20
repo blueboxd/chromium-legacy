@@ -99,7 +99,7 @@ class HQPPerfTestOnePopularURL : public testing::Test {
  private:
   base::TimeDelta RunTest(const base::string16& text);
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<FakeAutocompleteProviderClient> client_;
 
   scoped_refptr<HistoryQuickProvider> provider_;
@@ -118,7 +118,7 @@ void HQPPerfTestOnePopularURL::SetUp() {
 void HQPPerfTestOnePopularURL::TearDown() {
   provider_ = nullptr;
   client_.reset();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 void HQPPerfTestOnePopularURL::PrepareData() {

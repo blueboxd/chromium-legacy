@@ -4022,9 +4022,12 @@ TEST_F(ShelfViewOverflowFocusTest, OpenOverflow) {
 // shelf are ignored because it is not visible.
 TEST_F(ShelfViewOverflowFocusTest, ForwardCycling) {
   // Focus the last visible item on the shelf.
-  Shell::Get()->focus_cycler()->FocusWidget(shelf_view_->shelf_widget());
-  shelf_view_->shelf_widget()->GetFocusManager()->SetFocusedView(
-      test_api_->GetViewAt(last_item_on_main_shelf_index_));
+  Shell::Get()->focus_cycler()->FocusWidget(
+      shelf_view_->shelf_widget()->hotseat_widget());
+  shelf_view_->shelf_widget()
+      ->hotseat_widget()
+      ->GetFocusManager()
+      ->SetFocusedView(test_api_->GetViewAt(last_item_on_main_shelf_index_));
   EXPECT_TRUE(test_api_->GetViewAt(last_item_on_main_shelf_index_)->HasFocus());
 
   // Focus the overflow button.
@@ -4048,9 +4051,12 @@ TEST_F(ShelfViewOverflowFocusTest, ForwardCyclingWithBubbleOpen) {
   OpenOverflow();
 
   // Focus the last item on the main shelf.
-  Shell::Get()->focus_cycler()->FocusWidget(shelf_view_->shelf_widget());
-  shelf_view_->shelf_widget()->GetFocusManager()->SetFocusedView(
-      test_api_->GetViewAt(last_item_on_main_shelf_index_));
+  Shell::Get()->focus_cycler()->FocusWidget(
+      shelf_view_->shelf_widget()->hotseat_widget());
+  shelf_view_->shelf_widget()
+      ->hotseat_widget()
+      ->GetFocusManager()
+      ->SetFocusedView(test_api_->GetViewAt(last_item_on_main_shelf_index_));
 
   // Focus the overflow button.
   DoTab();
@@ -4074,13 +4080,13 @@ TEST_F(ShelfViewOverflowFocusTest, BackwardCyclingWithBubbleOpen) {
   // Focus the first item on the overflow shelf.
   while (!test_api_->overflow_bubble()->bubble_view()->GetWidget()->IsActive())
     DoTab();
-  EXPECT_FALSE(shelf_view_->shelf_widget()->IsActive());
+  EXPECT_FALSE(shelf_view_->shelf_widget()->hotseat_widget()->IsActive());
   EXPECT_FALSE(shelf_view_->GetOverflowButton()->HasFocus());
 
   // Tests that after pressing shift tab once, the main shelf is active and
   // the overflow button has focus.
   DoShiftTab();
-  EXPECT_TRUE(shelf_view_->shelf_widget()->IsActive());
+  EXPECT_TRUE(shelf_view_->shelf_widget()->hotseat_widget()->IsActive());
   EXPECT_TRUE(shelf_view_->GetOverflowButton()->HasFocus());
 
   // One more shift tab and the last item on the main shelf has focus.
@@ -4095,8 +4101,10 @@ TEST_F(ShelfViewOverflowFocusTest, ToggleBubbleWithKeyboard) {
   GetPrimaryShelf()->shelf_focus_cycler()->FocusShelf(false /* last_element */);
   EXPECT_FALSE(shelf_view_->GetOverflowButton()->HasFocus());
   // Focus the last item on the main shelf.
-  shelf_view_->shelf_widget()->GetFocusManager()->SetFocusedView(
-      test_api_->GetViewAt(last_item_on_main_shelf_index_));
+  shelf_view_->shelf_widget()
+      ->hotseat_widget()
+      ->GetFocusManager()
+      ->SetFocusedView(test_api_->GetViewAt(last_item_on_main_shelf_index_));
   // Focus the overflow button.
   DoTab();
   EXPECT_TRUE(shelf_view_->GetOverflowButton()->HasFocus());

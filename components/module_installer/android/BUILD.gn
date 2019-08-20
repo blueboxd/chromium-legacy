@@ -14,7 +14,9 @@ android_library("module_installer_java") {
     "java/src-common/org/chromium/components/module_installer/ModuleInstaller.java",
     "java/src-common/org/chromium/components/module_installer/OnModuleInstallFinishedListener.java",
     "java/src-common/org/chromium/components/module_installer/Module.java",
-    "java/src-common/org/chromium/components/module_installer/ModuleActivityObserver.java",
+    "java/src-common/org/chromium/components/module_installer/observers/ModuleActivityObserver.java",
+    "java/src-common/org/chromium/components/module_installer/observers/ObserverStrategy.java",
+    "java/src-common/org/chromium/components/module_installer/observers/ObserverStrategyImpl.java",
   ]
   jar_excluded_patterns = [ "*/ModuleInstallerImpl.class" ]
   deps = [
@@ -63,7 +65,7 @@ android_library("module_installer_test_java") {
 }
 
 junit_binary("module_installer_junit_tests") {
-  java_files = [ "junit/src/org/chromium/components/module_installer/ModuleActivityObserverTest.java" ]
+  java_files = [ "junit/src/org/chromium/components/module_installer/observers/ModuleActivityObserverTest.java" ]
   deps = [
     ":module_installer_impl_java",
     "//base:base_java",

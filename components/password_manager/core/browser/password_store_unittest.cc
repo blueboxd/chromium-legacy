@@ -109,8 +109,7 @@ class StartSyncFlareMock {
 class PasswordStoreTest : public testing::Test {
  protected:
   PasswordStoreTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -123,7 +122,7 @@ class PasswordStoreTest : public testing::Test {
     OSCryptMocker::TearDown();
   }
 
-  void WaitForPasswordStore() { scoped_task_environment_.RunUntilIdle(); }
+  void WaitForPasswordStore() { task_environment_.RunUntilIdle(); }
 
   base::FilePath test_login_db_file_path() const {
     return temp_dir_.GetPath().Append(FILE_PATH_LITERAL("login_test"));
@@ -131,7 +130,7 @@ class PasswordStoreTest : public testing::Test {
 
  private:
   base::ScopedTempDir temp_dir_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreTest);
 };

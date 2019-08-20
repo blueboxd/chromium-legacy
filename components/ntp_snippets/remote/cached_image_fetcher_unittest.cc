@@ -121,7 +121,7 @@ class NtpSnippetsCachedImageFetcherTest
         image_db_->GetCallback(true);
       } break;
     }
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   RemoteSuggestionsDatabase* database() { return database_.get(); }
@@ -152,7 +152,7 @@ class NtpSnippetsCachedImageFetcherTest
   FakeDB<SnippetImageProto>* image_db_;
 
   TestingPrefServiceSimple pref_service_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(NtpSnippetsCachedImageFetcherTest);
 };

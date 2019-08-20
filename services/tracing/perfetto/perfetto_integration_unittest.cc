@@ -48,12 +48,12 @@ class PerfettoIntegrationTest : public testing::Test {
   void TearDown() override { perfetto_service_.reset(); }
 
   PerfettoService* perfetto_service() const { return perfetto_service_.get(); }
-  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
  protected:
   std::unique_ptr<TestDataSource> data_source_;
   std::unique_ptr<PerfettoService> perfetto_service_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(PerfettoIntegrationTest, ProducerDatasourceInitialized) {

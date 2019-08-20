@@ -415,6 +415,7 @@ jumbo_static_library("test_support") {
     "payments/test_credit_card_save_manager.h",
     "payments/test_credit_card_save_strike_database.cc",
     "payments/test_credit_card_save_strike_database.h",
+    "payments/test_legal_message_line.h",
     "payments/test_local_card_migration_manager.cc",
     "payments/test_local_card_migration_manager.h",
     "payments/test_payments_client.cc",

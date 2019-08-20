@@ -8,7 +8,6 @@
 #include "base/android/jni_array.h"
 #include "cc/layers/ui_resource_layer.h"
 #include "chrome/android/chrome_jni_headers/ScrollingBottomViewSceneLayer_jni.h"
-#include "content/public/browser/android/compositor.h"
 #include "ui/android/resources/resource_manager_impl.h"
 
 using base::android::JavaParamRef;

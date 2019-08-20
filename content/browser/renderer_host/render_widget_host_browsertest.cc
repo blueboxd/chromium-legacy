@@ -223,8 +223,15 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostTouchEmulatorBrowserTest,
 }
 #endif  // !defined(OS_ANDROID)
 
+// Todo(crbug.com/994353): The test is flaky(crash/timeout) on MSAN, TSAN, and
+// DEBUG builds.
+#if (!defined(NDEBUG) || defined(THREAD_SANITIZER) || defined(MEMORY_SANITIZER))
+#define MAYBE_TouchEmulator DISABLED_TouchEmulator
+#else
+#define MAYBE_TouchEmulator TouchEmulator
+#endif
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostTouchEmulatorBrowserTest,
-                       TouchEmulator) {
+                       MAYBE_TouchEmulator) {
   host()->GetTouchEmulator()->Enable(
       TouchEmulator::Mode::kEmulatingTouchFromMouse,
       ui::GestureProviderConfigType::GENERIC_MOBILE);

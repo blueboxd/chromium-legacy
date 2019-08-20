@@ -29,11 +29,11 @@ using mojom::blink::ShareService;
 // A mock ShareService used to intercept calls to the mojo methods.
 class MockShareService : public ShareService {
  public:
-  MockShareService() : binding_(this), error_(mojom::ShareError::OK) {}
+  MockShareService() : error_(mojom::ShareError::OK) {}
   ~MockShareService() override = default;
 
   void Bind(mojo::ScopedMessagePipeHandle handle) {
-    binding_.Bind(mojom::blink::ShareServiceRequest(std::move(handle)));
+    receiver_.Bind(mojom::blink::ShareServiceRequest(std::move(handle)));
   }
 
   void set_error(mojom::ShareError value) { error_ = value; }
@@ -63,7 +63,7 @@ class MockShareService : public ShareService {
     std::move(callback).Run(error_);
   }
 
-  mojo::Binding<ShareService> binding_;
+  mojo::Receiver<ShareService> receiver_{this};
   WTF::String title_;
   WTF::String text_;
   KURL url_;

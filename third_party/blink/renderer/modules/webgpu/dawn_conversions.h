@@ -72,6 +72,18 @@ std::unique_ptr<TypeOfDawnType<WebGPUType>[]> AsDawnType(
   return dawn_objects;
 }
 
+template <typename DawnEnum, typename WebGPUEnum>
+std::unique_ptr<DawnEnum[]> AsDawnEnum(const Vector<WebGPUEnum>& webgpu_enums) {
+  wtf_size_t count = webgpu_enums.size();
+  // TODO(enga): Pass in temporary memory or an allocator so we don't make a
+  // separate memory allocation here.
+  std::unique_ptr<DawnEnum[]> dawn_enums(new DawnEnum[count]);
+  for (wtf_size_t i = 0; i < count; ++i) {
+    dawn_enums[i] = AsDawnEnum<DawnEnum>(webgpu_enums[i]);
+  }
+  return dawn_enums;
+}
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_DAWN_CONVERSIONS_H_

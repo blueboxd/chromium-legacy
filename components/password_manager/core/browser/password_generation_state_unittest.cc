@@ -133,7 +133,7 @@ class PasswordGenerationStateTest : public testing::Test {
 
  private:
   // For the MockPasswordStore.
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<MockPasswordStore> mock_store_;
   // Test with the real form saver for better robustness.
   FormSaverImpl form_saver_;

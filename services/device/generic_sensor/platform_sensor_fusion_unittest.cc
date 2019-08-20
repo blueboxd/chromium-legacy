@@ -90,7 +90,7 @@ class PlatformSensorFusionTest : public testing::Test {
     EXPECT_TRUE(platform_sensor_fusion_callback_called_);
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<FakePlatformSensorProvider> provider_;
   bool accelerometer_callback_called_ = false;
   scoped_refptr<FakePlatformSensor> accelerometer_;

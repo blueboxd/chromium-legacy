@@ -222,8 +222,7 @@ message AutoUpdateSettingsProto {
   // The types of connections that are OK to use for OS updates. OS updates
   // potentially put heavy strain on the connection due to their size and may
   // incur additional cost. Therefore, they are by default not enabled for
-  // connection types that are considered expensive, which include WiMax,
-  // Bluetooth and Cellular at the moment.
+  // connection types that are considered expensive (currently only Cellular).
   repeated ConnectionType allowed_connection_types = 5;
 
   // This has been replaced by |reboot_after_update| below.

@@ -47,8 +47,6 @@
 #include "third_party/blink/renderer/core/layout/api/line_layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_box.h"
 #include "third_party/blink/renderer/core/layout/box_layout_extra_input.h"
-#include "third_party/blink/renderer/core/layout/custom/layout_worklet.h"
-#include "third_party/blink/renderer/core/layout/custom/layout_worklet_global_scope_proxy.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
 #include "third_party/blink/renderer/core/layout/layout_deprecated_flexible_box.h"
@@ -62,7 +60,10 @@
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_child.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/layout_ng_custom.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/layout_worklet.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/layout_worklet_global_scope_proxy.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
@@ -119,6 +120,19 @@ BoxLayoutExtraInput::BoxLayoutExtraInput(LayoutBox& box) : box(box) {
 BoxLayoutExtraInput::~BoxLayoutExtraInput() {
   box.SetBoxLayoutExtraInput(nullptr);
 }
+
+LayoutBoxRareData::LayoutBoxRareData()
+    : spanner_placeholder_(nullptr),
+      override_logical_width_(-1),
+      override_logical_height_(-1),
+      // TODO(rego): We should store these based on physical direction.
+      has_override_containing_block_content_logical_width_(false),
+      has_override_containing_block_content_logical_height_(false),
+      has_override_percentage_resolution_block_size_(false),
+      has_previous_content_box_rect_and_layout_overflow_rect_(false),
+      percent_height_container_(nullptr),
+      snap_container_(nullptr),
+      snap_areas_(nullptr) {}
 
 LayoutBox::LayoutBox(ContainerNode* node)
     : LayoutBoxModelObject(node),
@@ -6230,7 +6244,7 @@ void LayoutBox::AddCustomLayoutChildIfNeeded() {
     return;
 
   EnsureRareData().layout_child_ =
-      MakeGarbageCollected<CustomLayoutChild>(*definition, this);
+      MakeGarbageCollected<CustomLayoutChild>(*definition, NGBlockNode(this));
 }
 
 void LayoutBox::ClearCustomLayoutChild() {
@@ -6238,7 +6252,7 @@ void LayoutBox::ClearCustomLayoutChild() {
     return;
 
   if (rare_data_->layout_child_)
-    rare_data_->layout_child_->ClearLayoutBox();
+    rare_data_->layout_child_->ClearLayoutNode();
 
   rare_data_->layout_child_ = nullptr;
 }

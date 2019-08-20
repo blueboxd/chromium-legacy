@@ -9,6 +9,7 @@
 
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/time/time.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "services/device/public/cpp/test/test_wake_lock_provider.h"
 #include "services/device/public/mojom/constants.mojom.h"
@@ -127,10 +128,12 @@ TEST_F(DarkResumeControllerTest, CheckSuspendAfterDarkResumeWakeLocksHeld) {
   run_loop.RunUntilIdle();
   EXPECT_TRUE(dark_resume_controller_->IsDarkResumeStateSetForTesting());
 
-  // Move time forward by < |kDarkResumeHardTimeout| and release the
+  // Move time forward by < |dark_resume_hard_timeout_| and release the
   // partial wake lock. This should instantaneously re-suspend the device.
-  task_environment_.FastForwardBy(DarkResumeController::kDarkResumeHardTimeout -
-                                  base::TimeDelta::FromSeconds(1));
+  base::TimeDelta small_delay = base::TimeDelta::FromSeconds(1);
+  ASSERT_GT(dark_resume_controller_->GetHardTimeoutForTesting(), small_delay);
+  task_environment_.FastForwardBy(
+      dark_resume_controller_->GetHardTimeoutForTesting() - small_delay);
   wake_lock_->CancelWakeLock();
   base::RunLoop run_loop2;
   run_loop2.RunUntilIdle();
@@ -153,9 +156,10 @@ TEST_F(DarkResumeControllerTest, CheckSuspendAfterDarkResumeHardTimeout) {
   run_loop.RunUntilIdle();
   EXPECT_TRUE(dark_resume_controller_->IsDarkResumeStateSetForTesting());
 
-  // Move time forward by |kDarkResumeHardTimeout|. At this point the
+  // Move time forward by |dark_resume_hard_timeout_|. At this point the
   // device should re-suspend even though the wake lock is acquired.
-  task_environment_.FastForwardBy(DarkResumeController::kDarkResumeHardTimeout);
+  task_environment_.FastForwardBy(
+      dark_resume_controller_->GetHardTimeoutForTesting());
   EXPECT_EQ(1, GetActiveWakeLocks(WakeLockType::kPreventAppSuspension));
   base::RunLoop run_loop2;
   run_loop2.RunUntilIdle();

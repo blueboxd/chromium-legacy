@@ -46,7 +46,7 @@ class WaylandTest : public ::testing::TestWithParam<uint32_t> {
   void Sync();
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   wl::TestWaylandServerThread server_;
   wl::MockSurface* surface_;

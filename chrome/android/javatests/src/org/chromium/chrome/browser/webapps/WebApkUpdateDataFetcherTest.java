@@ -22,11 +22,10 @@ import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.browser.WebApkInfoBuilder;
 import org.chromium.chrome.test.util.browser.WebappTestPage;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.net.test.EmbeddedTestServerRule;
-
-import java.util.HashMap;
 
 /**
  * Tests the WebApkUpdateDataFetcher.
@@ -112,13 +111,11 @@ public class WebApkUpdateDataFetcherTest {
             final String manifestUrl, final WebApkUpdateDataFetcher.Observer observer) {
         final WebApkUpdateDataFetcher fetcher = new WebApkUpdateDataFetcher();
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
-            WebApkInfo oldInfo = WebApkInfo.create("", "", scopeUrl, null, null, null, null, null,
-                    -1, -1, -1, -1, -1, -1, false, "random.package", -1, manifestUrl, "",
-                    WebApkInfo.WebApkDistributor.BROWSER, new HashMap<String, String>(), null,
-                    null /*shareTargetActivityName*/, false /* forceNavigation */,
-                    false /* isSplashProvidedByWebApk */, null /* shareData */,
-                    1 /* webApkVersionCode */);
-            fetcher.start(mTab, oldInfo, observer);
+            WebApkInfoBuilder oldWebApkInfoBuilder =
+                    new WebApkInfoBuilder("random.package", "" /* url */);
+            oldWebApkInfoBuilder.setScope(scopeUrl);
+            oldWebApkInfoBuilder.setManifestUrl(manifestUrl);
+            fetcher.start(mTab, oldWebApkInfoBuilder.build(), observer);
         });
     }
 

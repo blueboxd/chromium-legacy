@@ -130,6 +130,12 @@ void HatsService::SetSurveyMetadataForTesting(
 }
 
 bool HatsService::ShouldShowSurvey(const std::string& trigger) const {
+  if (base::FeatureList::IsEnabled(
+          features::kHappinessTrackingSurveysForDesktopDemo)) {
+    // Always show the survey in demo mode.
+    return true;
+  }
+
   bool consent_given =
       g_browser_process->GetMetricsServicesManager()->IsMetricsConsentGiven();
   if (!consent_given)

@@ -260,6 +260,13 @@ autofill::AutofillDriver* PasswordAutofillManager::GetAutofillDriver() {
   return password_manager_driver_->GetAutofillDriver();
 }
 
+int32_t PasswordAutofillManager::GetWebContentsPopupControllerAxId() const {
+  // TODO: Needs to be implemented when we step up accessibility features in the
+  // future.
+  NOTIMPLEMENTED_LOG_ONCE() << "See http://crbug.com/991253";
+  return 0;
+}
+
 void PasswordAutofillManager::RegisterDeletionCallback(
     base::OnceClosure deletion_callback) {
   deletion_callback_ = std::move(deletion_callback);

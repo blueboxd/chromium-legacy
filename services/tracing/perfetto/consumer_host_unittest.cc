@@ -400,7 +400,7 @@ class TracingConsumerTest : public testing::Test,
   bool IsTracingEnabled() {
     // Flush any other pending tasks on the perfetto task runner to ensure that
     // any pending data source start callbacks have propagated.
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
     return threaded_service_->IsTracingEnabled();
   }
@@ -413,7 +413,7 @@ class TracingConsumerTest : public testing::Test,
 
  private:
   std::unique_ptr<ThreadedPerfettoService> threaded_service_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::OnceClosure on_data_complete_;
   std::unique_ptr<mojo::DataPipeDrainer> drainer_;
   std::vector<uint8_t> received_data_;

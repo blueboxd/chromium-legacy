@@ -121,6 +121,7 @@ source_set("unit_tests") {
   sources = [
     "chrome_browser_state_client_unittest.mm",
     "ios_chrome_metrics_service_accessor_unittest.cc",
+    "ios_chrome_metrics_service_client_unittest.mm",
     "ios_chrome_stability_metrics_provider_unittest.mm",
     "mobile_session_shutdown_metrics_provider_unittest.mm",
     "previous_session_info_unittest.mm",

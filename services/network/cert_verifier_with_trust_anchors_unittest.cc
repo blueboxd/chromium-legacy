@@ -35,8 +35,7 @@ class CertVerifierWithTrustAnchorsTest : public testing::Test {
   CertVerifierWithTrustAnchorsTest()
       : trust_anchor_used_(false),
         test_nss_user_("user1"),
-        scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
+        task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
 
   ~CertVerifierWithTrustAnchorsTest() override {}
 
@@ -132,7 +131,7 @@ class CertVerifierWithTrustAnchorsTest : public testing::Test {
 
   bool trust_anchor_used_;
   crypto::ScopedTestNSSChromeOSUser test_nss_user_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(CertVerifierWithTrustAnchorsTest, VerifyUntrustedCert) {

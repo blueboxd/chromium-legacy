@@ -28,7 +28,8 @@ namespace {
 
 class FakeMultiplexedChannelFactory : public MultiplexedChannelImpl::Factory {
  public:
-  FakeMultiplexedChannelFactory(MultiplexedChannel::Delegate* expected_delegate)
+  explicit FakeMultiplexedChannelFactory(
+      MultiplexedChannel::Delegate* expected_delegate)
       : expected_delegate_(expected_delegate) {}
   ~FakeMultiplexedChannelFactory() override = default;
 

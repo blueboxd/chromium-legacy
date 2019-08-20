@@ -103,7 +103,7 @@ class ArcPowerBridgeTest : public testing::Test {
     return chromeos::FakePowerManagerClient::Get();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   service_manager::TestConnectorFactory connector_factory_;
 

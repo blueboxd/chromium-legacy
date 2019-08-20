@@ -195,21 +195,24 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
                      const ui::Event& event,
                      views::InkDrop* ink_drop) override;
 
-  // Overridden from FocusTraversable:
+  // FocusTraversable:
   views::FocusSearch* GetFocusSearch() override;
 
-  // Overridden from app_list::ApplicationDragAndDropHost:
+  // AccessiblePaneView:
+  views::View* GetDefaultFocusableChild() override;
+
+  // app_list::ApplicationDragAndDropHost:
   void CreateDragIconProxy(const gfx::Point& location_in_screen_coordinates,
                            const gfx::ImageSkia& icon,
                            views::View* replaced_view,
                            const gfx::Vector2d& cursor_offset_from_center,
                            float scale_factor) override;
 
-  // Overridden from ash::TabletModeObserver:
+  // ash::TabletModeObserver:
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;
 
-  // Overridden from VirtualKeyboardModel::Observer:
+  // VirtualKeyboardModel::Observer:
   void OnVirtualKeyboardVisibilityChanged() override;
 
   // Returns true if |event| on the shelf item is going to activate the
@@ -300,6 +303,10 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
     return IsShowingOverflowBubble()
                ? overflow_bubble_->bubble_view()->shelf_view()
                : nullptr;
+  }
+
+  void set_default_last_focusable_child(bool default_last_focusable_child) {
+    default_last_focusable_child_ = default_last_focusable_child;
   }
 
   const ShelfAppButton* drag_view() const { return drag_view_; }
@@ -692,6 +699,10 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // launching metrics. This is recorded in case home_launcher_shown_ is changed
   // before the metric is recorded.
   bool recorded_home_launcher_shown_ = false;
+
+  // Whether this view should focus its last focusable child (instead of its
+  // first) when focused.
+  bool default_last_focusable_child_ = false;
 
   base::WeakPtrFactory<ShelfView> weak_factory_;
 

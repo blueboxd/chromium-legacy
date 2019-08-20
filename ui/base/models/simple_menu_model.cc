@@ -57,6 +57,11 @@ bool SimpleMenuModel::Delegate::GetIconForCommandId(
   return false;
 }
 
+const gfx::VectorIcon* SimpleMenuModel::Delegate::GetVectorIconForCommandId(
+    int command_id) const {
+  return nullptr;
+}
+
 void SimpleMenuModel::Delegate::OnMenuWillShow(SimpleMenuModel* /*source*/) {}
 
 void SimpleMenuModel::Delegate::MenuClosed(SimpleMenuModel* /*source*/) {
@@ -103,6 +108,12 @@ void SimpleMenuModel::AddItemWithIcon(int command_id,
 void SimpleMenuModel::AddItemWithStringIdAndIcon(int command_id,
                                                  int string_id,
                                                  const gfx::ImageSkia& icon) {
+  AddItemWithIcon(command_id, l10n_util::GetStringUTF16(string_id), icon);
+}
+
+void SimpleMenuModel::AddItemWithStringIdAndIcon(int command_id,
+                                                 int string_id,
+                                                 const gfx::VectorIcon& icon) {
   AddItemWithIcon(command_id, l10n_util::GetStringUTF16(string_id), icon);
 }
 
@@ -218,6 +229,18 @@ void SimpleMenuModel::AddActionableSubmenuWithStringIdAndIcon(
   AppendItem(std::move(item));
 }
 
+void SimpleMenuModel::AddActionableSubmenuWithStringIdAndIcon(
+    int command_id,
+    int string_id,
+    MenuModel* model,
+    const gfx::VectorIcon& icon) {
+  Item item(command_id, TYPE_ACTIONABLE_SUBMENU,
+            l10n_util::GetStringUTF16(string_id));
+  item.submenu = model;
+  item.vector_icon = &icon;
+  AppendItem(std::move(item));
+}
+
 void SimpleMenuModel::InsertItemAt(int index,
                                    int command_id,
                                    const base::string16& label) {
@@ -288,7 +311,16 @@ void SimpleMenuModel::RemoveItemAt(int index) {
 }
 
 void SimpleMenuModel::SetIcon(int index, const gfx::Image& icon) {
-  items_[ValidateItemIndex(index)].icon = icon;
+  Item* item = &items_[ValidateItemIndex(index)];
+  DCHECK(!item->vector_icon);
+  item->icon = icon;
+  MenuItemsChanged();
+}
+
+void SimpleMenuModel::SetIcon(int index, const gfx::VectorIcon& icon) {
+  Item* item = &items_[ValidateItemIndex(index)];
+  DCHECK(item->icon.IsEmpty());
+  item->vector_icon = &icon;
   MenuItemsChanged();
 }
 
@@ -432,6 +464,9 @@ bool SimpleMenuModel::GetIconAt(int index, gfx::Image* icon) const {
 }
 
 const gfx::VectorIcon* SimpleMenuModel::GetVectorIconAt(int index) const {
+  if (IsItemDynamicAt(index))
+    return delegate_->GetVectorIconForCommandId(GetCommandIdAt(index));
+
   return items_[ValidateItemIndex(index)].vector_icon;
 }
 

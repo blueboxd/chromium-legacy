@@ -264,7 +264,7 @@ class MediaStreamAudioTest : public ::testing::Test {
   WebMediaStreamSource blink_audio_source_;
   WebMediaStreamTrack blink_audio_track_;
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 // Tests that a simple source-->track-->sink connection and audio data flow

@@ -29,14 +29,14 @@ void ThemeInstalledInfoBarDelegate::Create(
     ThemeService* theme_service,
     const std::string& theme_name,
     const std::string& theme_id,
-    base::OnceClosure revert_theme_callback) {
+    std::unique_ptr<ThemeService::ThemeReinstaller> prev_theme_reinstaller) {
   // Create the new infobar.
   std::unique_ptr<infobars::InfoBar> new_infobar(
       infobar_service->CreateConfirmInfoBar(
           std::unique_ptr<ConfirmInfoBarDelegate>(
               new ThemeInstalledInfoBarDelegate(
                   theme_service, theme_name, theme_id,
-                  std::move(revert_theme_callback)))));
+                  std::move(prev_theme_reinstaller)))));
 
   // If there's a previous theme infobar, just replace that instead of adding a
   // new one.
@@ -52,27 +52,24 @@ void ThemeInstalledInfoBarDelegate::Create(
       // don't show an infobar, it's valid in this case.
       if (theme_infobar->theme_id_ != theme_id) {
         infobar_service->ReplaceInfoBar(old_infobar, std::move(new_infobar));
-        theme_service->OnInfobarDisplayed();
       }
       return;
     }
   }
-
   // No previous theme infobar, so add this.
   infobar_service->AddInfoBar(std::move(new_infobar));
-  theme_service->OnInfobarDisplayed();
 }
 
 ThemeInstalledInfoBarDelegate::ThemeInstalledInfoBarDelegate(
     ThemeService* theme_service,
     const std::string& theme_name,
     const std::string& theme_id,
-    base::OnceClosure revert_theme_callback)
+    std::unique_ptr<ThemeService::ThemeReinstaller> prev_theme_reinstaller)
     : ConfirmInfoBarDelegate(),
       theme_service_(theme_service),
       theme_name_(theme_name),
       theme_id_(theme_id),
-      revert_theme_callback_(std::move(revert_theme_callback)) {
+      prev_theme_reinstaller_(std::move(prev_theme_reinstaller)) {
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(theme_service_));
 }
@@ -80,8 +77,6 @@ ThemeInstalledInfoBarDelegate::ThemeInstalledInfoBarDelegate(
 ThemeInstalledInfoBarDelegate::~ThemeInstalledInfoBarDelegate() {
   // We don't want any notifications while we're running our destructor.
   registrar_.RemoveAll();
-
-  theme_service_->OnInfobarDestroyed();
 }
 
 infobars::InfoBarDelegate::InfoBarIdentifier
@@ -114,8 +109,8 @@ base::string16 ThemeInstalledInfoBarDelegate::GetButtonLabel(
 }
 
 bool ThemeInstalledInfoBarDelegate::Cancel() {
-  if (!revert_theme_callback_.is_null())
-    std::move(revert_theme_callback_).Run();
+  if (prev_theme_reinstaller_)
+    prev_theme_reinstaller_->Reinstall();
   return false;  // The theme change will close us.
 }
 

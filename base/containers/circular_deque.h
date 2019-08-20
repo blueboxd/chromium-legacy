@@ -791,12 +791,12 @@ class circular_deque {
       return iterator(this, first.index_);
     } else if (first.index_ < last.index_) {
       // Contiguous range.
-      buffer_.DestructRange(buffer_.begin() + first.index_,
-                            buffer_.begin() + last.index_);
+      buffer_.DestructRange(&buffer_[first.index_], &buffer_[last.index_]);
     } else {
       // Deleted range wraps around.
-      buffer_.DestructRange(buffer_.begin() + first.index_, buffer_.end());
-      buffer_.DestructRange(buffer_.begin(), buffer_.begin() + last.index_);
+      buffer_.DestructRange(&buffer_[first.index_],
+                            &buffer_[buffer_.capacity()]);
+      buffer_.DestructRange(&buffer_[0], &buffer_[last.index_]);
     }
 
     if (first.index_ == begin_) {
@@ -812,9 +812,9 @@ class circular_deque {
     iterator move_src_end = end();
     iterator move_dest(this, first.index_);
     for (; move_src < move_src_end; move_src++, move_dest++) {
-      buffer_.MoveRange(buffer_.begin() + move_src.index_,
-                        buffer_.begin() + move_src.index_ + 1,
-                        buffer_.begin() + move_dest.index_);
+      buffer_.MoveRange(&buffer_[move_src.index_],
+                        &buffer_[move_src.index_ + 1],
+                        &buffer_[move_dest.index_]);
     }
 
     end_ = move_dest.index_;
@@ -860,8 +860,7 @@ class circular_deque {
 
   void pop_front() {
     DCHECK(size());
-    buffer_.DestructRange(buffer_.begin() + begin_,
-                          buffer_.begin() + begin_ + 1);
+    buffer_.DestructRange(&buffer_[begin_], &buffer_[begin_ + 1]);
     begin_++;
     if (begin_ == buffer_.capacity())
       begin_ = 0;
@@ -880,7 +879,7 @@ class circular_deque {
       end_ = buffer_.capacity() - 1;
     else
       end_--;
-    buffer_.DestructRange(buffer_.begin() + end_, buffer_.begin() + end_ + 1);
+    buffer_.DestructRange(&buffer_[end_], &buffer_[end_ + 1]);
 
     ShrinkCapacityIfNecessary();
 
@@ -918,17 +917,17 @@ class circular_deque {
     *to_begin = 0;
     if (from_begin < from_end) {
       // Contiguous.
-      from_buf.MoveRange(from_buf.begin() + from_begin,
-                         from_buf.begin() + from_end, to_buf->begin());
+      from_buf.MoveRange(&from_buf[from_begin], &from_buf[from_end],
+                         to_buf->begin());
       *to_end = from_end - from_begin;
     } else if (from_begin > from_end) {
       // Discontiguous, copy the right side to the beginning of the new buffer.
-      from_buf.MoveRange(from_buf.begin() + from_begin, from_buf.end(),
+      from_buf.MoveRange(&from_buf[from_begin], &from_buf[from_capacity],
                          to_buf->begin());
       size_t right_size = from_capacity - from_begin;
       // Append the left side.
-      from_buf.MoveRange(from_buf.begin(), from_buf.begin() + from_end,
-                         to_buf->begin() + right_size);
+      from_buf.MoveRange(&from_buf[0], &from_buf[from_end],
+                         &(*to_buf)[right_size]);
       *to_end = right_size + from_end;
     } else {
       // No items.
@@ -999,10 +998,10 @@ class circular_deque {
     if (end == begin) {
       return;
     } else if (end > begin) {
-      buffer_.DestructRange(buffer_.begin() + begin, buffer_.begin() + end);
+      buffer_.DestructRange(&buffer_[begin], &buffer_[end]);
     } else {
-      buffer_.DestructRange(buffer_.begin() + begin, buffer_.end());
-      buffer_.DestructRange(buffer_.begin(), buffer_.begin() + end);
+      buffer_.DestructRange(&buffer_[begin], &buffer_[buffer_.capacity()]);
+      buffer_.DestructRange(&buffer_[0], &buffer_[end]);
     }
   }
 
@@ -1036,9 +1035,8 @@ class circular_deque {
         break;
       --src;
       --dest;
-      buffer_.MoveRange(buffer_.begin() + src.index_,
-                        buffer_.begin() + src.index_ + 1,
-                        buffer_.begin() + dest.index_);
+      buffer_.MoveRange(&buffer_[src.index_], &buffer_[src.index_ + 1],
+                        &buffer_[dest.index_]);
     }
   }
 

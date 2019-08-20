@@ -390,9 +390,18 @@ ProfileNetworkContextService::CreateCookieManagerParams(
 #endif
 
   ContentSettingsForOneType settings;
-  HostContentSettingsMapFactory::GetForProfile(profile)->GetSettingsForOneType(
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(profile);
+  host_content_settings_map->GetSettingsForOneType(
       CONTENT_SETTINGS_TYPE_COOKIES, std::string(), &settings);
   out->settings = std::move(settings);
+
+  ContentSettingsForOneType settings_for_legacy_cookie_access;
+  host_content_settings_map->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_LEGACY_COOKIE_ACCESS, std::string(),
+      &settings_for_legacy_cookie_access);
+  out->settings_for_legacy_cookie_access =
+      std::move(settings_for_legacy_cookie_access);
   return out;
 }
 
@@ -607,19 +616,40 @@ void ProfileNetworkContextService::OnContentSettingChanged(
     ContentSettingsType content_type,
     const std::string& resource_identifier) {
   if (content_type != CONTENT_SETTINGS_TYPE_COOKIES &&
+      content_type != CONTENT_SETTINGS_TYPE_LEGACY_COOKIE_ACCESS &&
       content_type != CONTENT_SETTINGS_TYPE_DEFAULT) {
     return;
   }
 
-  ContentSettingsForOneType settings;
-  HostContentSettingsMapFactory::GetForProfile(profile_)->GetSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_COOKIES, std::string(), &settings);
-  content::BrowserContext::ForEachStoragePartition(
-      profile_, base::BindRepeating(
-                    [](ContentSettingsForOneType settings,
-                       content::StoragePartition* storage_partition) {
-                      storage_partition->GetCookieManagerForBrowserProcess()
-                          ->SetContentSettings(settings);
-                    },
-                    settings));
+  if (content_type == CONTENT_SETTINGS_TYPE_COOKIES ||
+      content_type == CONTENT_SETTINGS_TYPE_DEFAULT) {
+    ContentSettingsForOneType cookies_settings;
+    HostContentSettingsMapFactory::GetForProfile(profile_)
+        ->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_COOKIES, std::string(),
+                                &cookies_settings);
+    content::BrowserContext::ForEachStoragePartition(
+        profile_, base::BindRepeating(
+                      [](ContentSettingsForOneType settings,
+                         content::StoragePartition* storage_partition) {
+                        storage_partition->GetCookieManagerForBrowserProcess()
+                            ->SetContentSettings(settings);
+                      },
+                      cookies_settings));
+  }
+
+  if (content_type == CONTENT_SETTINGS_TYPE_LEGACY_COOKIE_ACCESS ||
+      content_type == CONTENT_SETTINGS_TYPE_DEFAULT) {
+    ContentSettingsForOneType legacy_cookie_access_settings;
+    HostContentSettingsMapFactory::GetForProfile(profile_)
+        ->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_LEGACY_COOKIE_ACCESS,
+                                std::string(), &legacy_cookie_access_settings);
+    content::BrowserContext::ForEachStoragePartition(
+        profile_, base::BindRepeating(
+                      [](ContentSettingsForOneType settings,
+                         content::StoragePartition* storage_partition) {
+                        storage_partition->GetCookieManagerForBrowserProcess()
+                            ->SetContentSettingsForLegacyCookieAccess(settings);
+                      },
+                      legacy_cookie_access_settings));
+  }
 }

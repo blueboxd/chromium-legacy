@@ -575,7 +575,7 @@ class QuotaDatabaseTest : public testing::Test {
     db->CommitTransaction();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(QuotaDatabaseTest, LazyOpen) {

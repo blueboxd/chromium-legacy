@@ -221,7 +221,7 @@ class MidiManagerTest : public ::testing::Test {
   base::WeakPtr<FakeMidiManagerFactory> factory() { return factory_; }
 
  private:
-  base::test::ScopedTaskEnvironment env_;
+  base::test::TaskEnvironment env_;
   base::WeakPtr<FakeMidiManagerFactory> factory_;
   std::unique_ptr<MidiService> service_;
 
@@ -354,7 +354,7 @@ class PlatformMidiManagerTest : public ::testing::Test {
   // SystemMonitor is needed on Windows.
   base::SystemMonitor system_monitor;
 
-  base::test::ScopedTaskEnvironment env_;
+  base::test::TaskEnvironment env_;
 
   std::unique_ptr<FakeMidiManagerClient> client_;
   std::unique_ptr<MidiService> service_;

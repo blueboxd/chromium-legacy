@@ -40,7 +40,7 @@ FeatureVector ConsumeFeatureVector(FuzzedDataProvider* provider) {
 }
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   FuzzedDataProvider provider(data, size);
 
   LearningTask task;
@@ -67,7 +67,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     controller.CompleteObservation(
         id, ObservationCompletion(TargetValue(ConsumeDouble(&provider)),
                                   ConsumeDouble(&provider)));
-    scoped_task_environment.RunUntilIdle();
+    task_environment.RunUntilIdle();
   }
 
   return 0;

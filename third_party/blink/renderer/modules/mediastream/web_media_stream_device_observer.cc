@@ -21,8 +21,11 @@ void WebMediaStreamDeviceObserver::AddStream(
     const WebString& label,
     const MediaStreamDevices& audio_devices,
     const MediaStreamDevices& video_devices,
-    const base::WeakPtr<UserMediaProcessor>& event_handler) {
-  observer_->AddStream(label, audio_devices, video_devices, event_handler);
+    OnDeviceStoppedCb on_device_stopped_cb,
+    OnDeviceChangedCb on_device_changed_cb) {
+  observer_->AddStream(label, audio_devices, video_devices,
+                       std::move(on_device_stopped_cb),
+                       std::move(on_device_changed_cb));
 }
 
 void WebMediaStreamDeviceObserver::AddStream(const WebString& label,

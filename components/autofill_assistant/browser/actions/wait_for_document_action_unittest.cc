@@ -33,7 +33,7 @@ using ::testing::SizeIs;
 class WaitForDocumentActionTest : public testing::Test {
  public:
   WaitForDocumentActionTest()
-      : task_env_(base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
+      : task_env_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   void SetUp() override {
     ON_CALL(mock_action_delegate_, OnWaitForDocumentReadyState(_, _, _))
@@ -61,7 +61,7 @@ class WaitForDocumentActionTest : public testing::Test {
  protected:
   // task_env_ must be first to guarantee other field
   // creation run in that environment.
-  base::test::ScopedTaskEnvironment task_env_;
+  base::test::TaskEnvironment task_env_;
 
   MockActionDelegate mock_action_delegate_;
   WaitForDocumentProto proto_;

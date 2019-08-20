@@ -69,7 +69,7 @@ class VideoThumbnailDecoderTest : public testing::Test {
     frame_ = std::move(frame);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   MockVideoDecoder* mock_video_decoder_;
   std::unique_ptr<VideoThumbnailDecoder> thumbnail_decoder_;

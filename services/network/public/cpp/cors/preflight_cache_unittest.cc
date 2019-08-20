@@ -53,7 +53,7 @@ class PreflightCacheTest : public testing::Test {
   void SetUp() override { PreflightResult::SetTickClockForTesting(&clock_); }
   void TearDown() override { PreflightResult::SetTickClockForTesting(nullptr); }
 
-  base::test::ScopedTaskEnvironment env_;
+  base::test::TaskEnvironment env_;
   PreflightCache cache_;
   base::SimpleTestTickClock clock_;
 };

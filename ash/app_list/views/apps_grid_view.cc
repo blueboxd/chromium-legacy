@@ -2729,6 +2729,8 @@ void AppsGridView::OnAppListModelStatusChanged() {
 void AppsGridView::SetViewHidden(AppListItemView* view,
                                  bool hide,
                                  bool immediate) {
+  if (!view->layer())
+    return;
   ui::ScopedLayerAnimationSettings animator(view->layer()->GetAnimator());
   animator.SetPreemptionStrategy(
       immediate ? ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET

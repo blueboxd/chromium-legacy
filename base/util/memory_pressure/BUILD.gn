@@ -8,6 +8,10 @@ source_set("memory_pressure") {
     "memory_pressure_voter.h",
     "multi_source_memory_pressure_monitor.cc",
     "multi_source_memory_pressure_monitor.h",
+    "system_memory_pressure_evaluator.cc",
+    "system_memory_pressure_evaluator.h",
+    "system_memory_pressure_evaluator_win.cc",
+    "system_memory_pressure_evaluator_win.h",
   ]
 
   deps = [
@@ -20,12 +24,14 @@ source_set("unittests") {
   sources = [
     "memory_pressure_voter_unittest.cc",
     "multi_source_memory_pressure_monitor_unittest.cc",
+    "system_memory_pressure_evaluator_win_unittest.cc",
   ]
 
   deps = [
     ":memory_pressure",
     "//base",
     "//base/test:test_support",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 }

@@ -109,27 +109,11 @@ static void UpdateCcTransformLocalMatrix(
   compositor_node.needs_local_transform_update = true;
 }
 
-static void AdjustPageScaleToUsePostLocal(cc::TransformNode& page_scale) {
-  // The page scale node is special because its transform matrix is assumed to
-  // be in the post_local matrix by the compositor. There should be no
-  // translation from the origin so we clear the other matrices.
-  DCHECK(page_scale.local.IsScale2d());
-  DCHECK(page_scale.pre_local.IsIdentity());
-  page_scale.post_local.matrix() = page_scale.local.matrix();
-  page_scale.pre_local.matrix().setIdentity();
-  page_scale.local.matrix().setIdentity();
-}
-
 static void SetTransformTreePageScaleFactor(
     cc::TransformTree* transform_tree,
     cc::TransformNode* page_scale_node) {
-  // |AdjustPageScaleToUsePostLocal| should have been called already so that the
-  // scale component is in the post_local transform.
-  DCHECK(page_scale_node->local.IsIdentity());
-  DCHECK(page_scale_node->pre_local.IsIdentity());
-
-  DCHECK(page_scale_node->post_local.IsScale2d());
-  auto page_scale = page_scale_node->post_local.Scale2d();
+  DCHECK(page_scale_node->local.IsScale2d());
+  auto page_scale = page_scale_node->local.Scale2d();
   DCHECK_EQ(page_scale.x(), page_scale.y());
   transform_tree->set_page_scale_factor(page_scale.x());
 }
@@ -218,8 +202,6 @@ bool PropertyTreeManager::DirectlyUpdatePageScaleTransform(
     return false;
 
   UpdateCcTransformLocalMatrix(*cc_transform, transform);
-  AdjustPageScaleToUsePostLocal(*cc_transform);
-
   SetTransformTreePageScaleFactor(&property_trees->transform_tree,
                                   cc_transform);
   cc_transform->transform_changed = true;
@@ -503,8 +485,6 @@ int PropertyTreeManager::EnsureCompositorPageScaleTransformNode(
   int id = EnsureCompositorTransformNode(node);
   DCHECK(GetTransformTree().Node(id));
   cc::TransformNode& compositor_node = *GetTransformTree().Node(id);
-  AdjustPageScaleToUsePostLocal(compositor_node);
-
   SetTransformTreePageScaleFactor(&GetTransformTree(), &compositor_node);
   GetTransformTree().set_needs_update(true);
   return id;

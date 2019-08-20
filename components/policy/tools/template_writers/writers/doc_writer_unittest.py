@@ -132,6 +132,9 @@ class DocWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         'doc_win_reg_loc': {
             'text': '_test_win_reg_loc'
         },
+        'doc_oma_uri': {
+            'text': '_test_oma_uri'
+        },
         'doc_chrome_os_reg_loc': {
             'text': '_test_chrome_os_reg_loc'
         },
@@ -430,7 +433,10 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
     self.assertEquals(
         e1.toxml(), '<e1>0x00000001 (Windows),'
         ' true (Linux), true (Android),'
-        ' &lt;true /&gt; (Mac)</e1>')
+        ' &lt;true /&gt; (Mac)'
+        '<dl><dt>Windows (Intune):</dt>'
+        '<dd style="style_.monospace;style_.pre-wrap;">&lt;enabled/&gt;</dd></dl>'
+        '</e1>')
 
     policy = {
         'name': 'PolicyName',
@@ -445,7 +451,10 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
     self.assertEquals(
         e2.toxml(), '<e2>0x00000000 (Windows),'
         ' false (Linux), false (Android),'
-        ' &lt;false /&gt; (Mac)</e2>')
+        ' &lt;false /&gt; (Mac)'
+        '<dl><dt>Windows (Intune):</dt>'
+        '<dd style="style_.monospace;style_.pre-wrap;">&lt;disabled/&gt;</dd></dl>'
+        '</e2>')
 
   def testIntEnumExample(self):
     # Test representation of 'int-enum' example values.
@@ -460,14 +469,21 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
     self.writer._AddExample(self.doc_root, policy)
     self.assertEquals(
         self.doc_root.toxml(),
-        '<root>0x00000010 (Windows), 16 (Linux), 16 (Android), 16 (Mac)</root>')
+        '<root>0x00000010 (Windows), 16 (Linux), 16 (Android), 16 (Mac)'
+        '<dl><dt>Windows (Intune):</dt>'
+        '<dd style="style_.monospace;style_.pre-wrap;">&lt;enabled/&gt;</dd>'
+        '<dd style="style_.monospace;style_.pre-wrap;">&lt;data id=&quot;PolicyName&quot; value=&quot;16&quot;/&gt;</dd></dl>'
+        '</root>')
 
   def testStringEnumExample(self):
     # Test representation of 'string-enum' example values.
     policy = {
         'name': 'PolicyName',
         'type': 'string-enum',
-        'example_value': "wacky"
+        'example_value': "wacky",
+        'supported_on': [{
+            'platforms': []
+        }]
     }
     self.writer._AddExample(self.doc_root, policy)
     self.assertEquals(self.doc_root.toxml(), '<root>&quot;wacky&quot;</root>')
@@ -519,7 +535,10 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
     policy = {
         'name': 'PolicyName',
         'type': 'string',
-        'example_value': 'awesome-example'
+        'example_value': 'awesome-example',
+        'supported_on': [{
+            'platforms': []
+        }]
     }
     self.writer._AddExample(self.doc_root, policy)
     self.assertEquals(self.doc_root.toxml(),
@@ -538,7 +557,11 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
     self.writer._AddExample(self.doc_root, policy)
     self.assertEquals(
         self.doc_root.toxml(),
-        '<root>0x0000001a (Windows), 26 (Linux), 26 (Android), 26 (Mac)</root>')
+        '<root>0x0000001a (Windows), 26 (Linux), 26 (Android), 26 (Mac)'
+        '<dl><dt>Windows (Intune):</dt>'
+        '<dd style="style_.monospace;style_.pre-wrap;">&lt;enabled/&gt;</dd>'
+        '<dd style="style_.monospace;style_.pre-wrap;">&lt;data id=&quot;PolicyName&quot; value=&quot;26&quot;/&gt;</dd></dl>'
+        '</root>')
 
   def testAddPolicyAttribute(self):
     # Test creating a policy attribute term-definition pair.
@@ -600,6 +623,8 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
         '<dd>Boolean [Windows:REG_DWORD]</dd>'
         '<dt style="style_dt;">_test_win_reg_loc</dt>'
         '<dd style="style_.monospace;">MockKey\TestPolicyName</dd>'
+        '<dt style="style_dt;">_test_oma_uri</dt>'
+        '<dd style="style_.monospace;">.\\Device\\Vendor\\MSFT\\Policy\\Config\\Chrome~Policy~chromium\\TestPolicyName</dd>'
         '<dt style="style_dt;">_test_chrome_os_reg_loc</dt>'
         '<dd style="style_.monospace;">MockKeyCrOS\TestPolicyName</dd>'
         '<dt style="style_dt;">_test_mac_linux_pref_name</dt>'
@@ -624,7 +649,10 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
         '<dd><p>TestArcSupportNote</p></dd>'
         '<dt style="style_dt;">_test_example_value</dt>'
         '<dd>0x00000000 (Windows), false (Linux),'
-        ' false (Android), &lt;false /&gt; (Mac)</dd>'
+        ' false (Android), &lt;false /&gt; (Mac)'
+        '<dl><dt>Windows (Intune):</dt>'
+        '<dd style="style_.monospace;style_.pre-wrap;">&lt;disabled/&gt;</dd></dl>'
+        '</dd>'
         '</dl></root>')
 
   def testAddPolicyDetailsNoArcSupport(self):
@@ -714,6 +742,8 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
         '<dd>Dictionary [Windows:REG_SZ] (_test_complex_policies_win)</dd>'
         '<dt style="style_dt;">_test_win_reg_loc</dt>'
         '<dd style="style_.monospace;">MockKey\TestPolicyName</dd>'
+        '<dt style="style_dt;">_test_oma_uri</dt>'
+        '<dd style="style_.monospace;">.\\Device\\Vendor\\MSFT\\Policy\\Config\\Chrome~Policy~chromium\\TestPolicyName</dd>'
         '<dt style="style_dt;">_test_chrome_os_reg_loc</dt>'
         '<dd style="style_.monospace;">MockKeyCrOS\TestPolicyName</dd>'
         '<dt style="style_dt;">_test_mac_linux_pref_name</dt>'
@@ -768,6 +798,9 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
         '&lt;/dict&gt;'
         '</dd>'
         '</dl>'
+        '<dl><dt>Windows (Intune):</dt>'
+        '<dd style="style_.monospace;style_.pre-wrap;">&lt;enabled/&gt;</dd>'
+        '<dd style="style_.monospace;style_.pre-wrap;">&lt;data id=&quot;TestPolicyName&quot; value=&quot;&quot;foo&quot;: 123&quot;/&gt;</dd></dl>'
         '</dd>'
         '</dl></root>')
 
@@ -816,6 +849,8 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
         '<dd>External data reference [Windows:REG_SZ] (_test_complex_policies_win)</dd>'
         '<dt style="style_dt;">_test_win_reg_loc</dt>'
         '<dd style="style_.monospace;">MockKey\TestPolicyName</dd>'
+        '<dt style="style_dt;">_test_oma_uri</dt>'
+        '<dd style="style_.monospace;">.\\Device\\Vendor\\MSFT\\Policy\\Config\\Chrome~Policy~chromium\\TestPolicyName</dd>'
         '<dt style="style_dt;">_test_mac_linux_pref_name</dt>'
         '<dd style="style_.monospace;">TestPolicyName</dd>'
         '<dt style="style_dt;">_test_supported_on</dt>'
@@ -867,6 +902,9 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
         '/dict&gt;'
         '</dd>'
         '</dl>'
+        '<dl><dt>Windows (Intune):</dt>'
+        '<dd style="style_.monospace;style_.pre-wrap;">&lt;enabled/&gt;</dd>'
+        '<dd style="style_.monospace;style_.pre-wrap;">&lt;data id=&quot;TestPolicyName&quot; value=&quot;&quot;url&quot;: &quot;https://example.com/avatar.jpg&quot;, &quot;hash&quot;: &quot;deadbeef&quot;&quot;/&gt;</dd></dl>'
         '</dd>'
         '</dl></root>')
 
@@ -913,6 +951,8 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
         '<dd>Boolean [Windows:REG_DWORD]</dd>'
         '<dt style="style_dt;">_test_win_reg_loc</dt>'
         '<dd style="style_.monospace;">MockKeyRec\TestPolicyName</dd>'
+        '<dt style="style_dt;">_test_oma_uri</dt>'
+        '<dd style="style_.monospace;">.\\Device\\Vendor\\MSFT\\Policy\\Config\\Chrome~Policy~chromium\\TestPolicyName</dd>'
         '<dt style="style_dt;">_test_chrome_os_reg_loc</dt>'
         '<dd style="style_.monospace;">MockKeyCrOSRec\TestPolicyName</dd>'
         '<dt style="style_dt;">_test_mac_linux_pref_name</dt>'
@@ -934,7 +974,10 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
         '<dt style="style_dt;">_test_description</dt><dd><p>TestPolicyDesc</p></dd>'
         '<dt style="style_dt;">_test_example_value</dt>'
         '<dd>0x00000000 (Windows), false (Linux),'
-        ' false (Android), &lt;false /&gt; (Mac)</dd>'
+        ' false (Android), &lt;false /&gt; (Mac)'
+        '<dl><dt>Windows (Intune):</dt>'
+        '<dd style="style_.monospace;style_.pre-wrap;">&lt;disabled/&gt;</dd></dl>'
+        '</dd>'
         '</dl></root>')
 
   def testAddPolicyNote(self):
@@ -1014,6 +1057,8 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
         '<dd>String [Windows:REG_SZ]</dd>'
         '<dt style="style_dt;">_test_win_reg_loc</dt>'
         '<dd style="style_.monospace;">MockKey\\PolicyName</dd>'
+        '<dt style="style_dt;">_test_oma_uri</dt>'
+        '<dd style="style_.monospace;">.\\Device\\Vendor\\MSFT\\Policy\\Config\\Chrome~Policy~chromium\\PolicyName</dd>'
         '<dt style="style_dt;">_test_chrome_os_reg_loc</dt>'
         '<dd style="style_.monospace;">MockKeyCrOS\\PolicyName</dd>'
         '<dt style="style_dt;">_test_mac_linux_pref_name</dt>'
@@ -1029,7 +1074,11 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
         '<dt style="style_dt;">_test_description</dt>'
         '<dd><p>PolicyDesc</p></dd>'
         '<dt style="style_dt;">_test_example_value</dt>'
-        '<dd>&quot;False&quot;</dd>'
+        '<dd>&quot;False&quot;'
+        '<dl><dt>Windows (Intune):</dt>'
+        '<dd style="style_.monospace;style_.pre-wrap;">&lt;enabled/&gt;</dd>'
+        '<dd style="style_.monospace;style_.pre-wrap;">&lt;data id=&quot;PolicyName&quot; value=&quot;False&quot;/&gt;</dd></dl>'
+        '</dd>'
         '</dl>'
         '<a href="#top">_test_back_to_top</a>'
         '</div>'
@@ -1083,6 +1132,8 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
         '<dd>String [Windows:REG_SZ]</dd>'
         '<dt style="style_dt;">_test_win_reg_loc</dt>'
         '<dd style="style_.monospace;">MockKey\\PolicyName</dd>'
+        '<dt style="style_dt;">_test_oma_uri</dt>'
+        '<dd style="style_.monospace;">.\\Device\\Vendor\\MSFT\\Policy\\Config\\Chrome~Policy~chromium\\PolicyName</dd>'
         '<dt style="style_dt;">_test_chrome_os_reg_loc</dt>'
         '<dd style="style_.monospace;">MockKeyCrOS\\PolicyName</dd>'
         '<dt style="style_dt;">_test_mac_linux_pref_name</dt>'
@@ -1098,7 +1149,11 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
         '<dt style="style_dt;">_test_description</dt>'
         '<dd><p>PolicyDesc</p></dd>'
         '<dt style="style_dt;">_test_example_value</dt>'
-        '<dd>&quot;False&quot;</dd>'
+        '<dd>&quot;False&quot;'
+        '<dl><dt>Windows (Intune):</dt>'
+        '<dd style="style_.monospace;style_.pre-wrap;">&lt;enabled/&gt;</dd>'
+        '<dd style="style_.monospace;style_.pre-wrap;">&lt;data id=&quot;PolicyName&quot; value=&quot;False&quot;/&gt;</dd></dl>'
+        '</dd>'
         '<dt style="style_dt;">_test_policy_atomic_group</dt>'
         '<dd>_test_policy_in_atomic_group <a href="./policy-list-3/atomic_groups#PolicyGroup">PolicyGroup</a></dd>'
         '</dl>'
@@ -1139,6 +1194,8 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
         '<dd>Integer [Windows:REG_DWORD]</dd>'
         '<dt style="style_dt;">_test_win_reg_loc</dt>'
         '<dd style="style_.monospace;">MockKey\\PolicyName</dd>'
+        '<dt style="style_dt;">_test_oma_uri</dt>'
+        '<dd style="style_.monospace;">.\\Device\\Vendor\\MSFT\\Policy\\Config\\Chrome~Policy~chromium\\PolicyName</dd>'
         '<dt style="style_dt;">_test_supported_on</dt>'
         '<dd>'
         '<ul style="style_ul;">'
@@ -1150,7 +1207,11 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
         '<dt style="style_dt;">_test_description</dt>'
         '<dd><p>PolicyDesc</p></dd>'
         '<dt style="style_dt;">_test_example_value</dt>'
-        '<dd>0x0000007b (Windows)</dd>'
+        '<dd>0x0000007b (Windows)'
+        '<dl><dt>Windows (Intune):</dt>'
+        '<dd style="style_.monospace;style_.pre-wrap;">&lt;enabled/&gt;</dd>'
+        '<dd style="style_.monospace;style_.pre-wrap;">&lt;data id=&quot;PolicyName&quot; value=&quot;123&quot;/&gt;</dd></dl>'
+        '</dd>'
         '</dl>'
         '<a href="#top">_test_back_to_top</a>'
         '</div>'
@@ -1189,6 +1250,8 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
         '<dd>Integer [Windows:REG_DWORD]</dd>'
         '<dt style="style_dt;">_test_win_reg_loc</dt>'
         '<dd style="style_.monospace;">MockKey\\PolicyName</dd>'
+        '<dt style="style_dt;">_test_oma_uri</dt>'
+        '<dd style="style_.monospace;">.\\Device\\Vendor\\MSFT\\Policy\\Config\\Chrome~Policy~chromium\\PolicyName</dd>'
         '<dt style="style_dt;">_test_supported_on</dt>'
         '<dd>'
         '<ul style="style_ul;">'
@@ -1200,7 +1263,11 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
         '<dt style="style_dt;">_test_description</dt>'
         '<dd><p>PolicyDesc</p></dd>'
         '<dt style="style_dt;">_test_example_value</dt>'
-        '<dd>0x0000007b (Windows)</dd>'
+        '<dd>0x0000007b (Windows)'
+        '<dl><dt>Windows (Intune):</dt>'
+        '<dd style="style_.monospace;style_.pre-wrap;">&lt;enabled/&gt;</dd>'
+        '<dd style="style_.monospace;style_.pre-wrap;">&lt;data id=&quot;PolicyName&quot; value=&quot;123&quot;/&gt;</dd></dl>'
+        '</dd>'
         '</dl>'
         '<a href="#top">_test_back_to_top</a>'
         '</div>'

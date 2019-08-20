@@ -158,7 +158,7 @@ public class WebApkUpdateManagerTest {
         final TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(waiter, storage);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            WebApkInfo info = WebApkInfo.create(WEBAPK_ID, "", creationData.scope, null, null, null,
+            WebApkInfo info = WebApkInfo.create("", creationData.scope, null, null, null,
                     creationData.name, creationData.shortName, creationData.displayMode,
                     creationData.orientation, 0, creationData.themeColor,
                     creationData.backgroundColor, 0, creationData.isPrimaryIconMaskable, "",

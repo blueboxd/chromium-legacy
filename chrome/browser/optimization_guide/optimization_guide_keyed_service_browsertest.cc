@@ -16,6 +16,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/optimization_guide/command_line_top_host_provider.h"
+#include "components/optimization_guide/hint_cache_store.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/optimization_guide_switches.h"
@@ -97,20 +98,39 @@ class OptimizationGuideKeyedServiceBrowserTest
         {optimization_guide::features::kOptimizationHints,
          optimization_guide::features::kOptimizationGuideKeyedService},
         {});
+
     OptimizationGuideKeyedServiceDisabledBrowserTest::SetUp();
   }
 
+  void SetUpCommandLine(base::CommandLine* cmd) override {
+    cmd->AppendSwitch(optimization_guide::switches::kPurgeHintCacheStore);
+  }
+
   void SetUpOnMainThread() override {
-    embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+    OptimizationGuideKeyedServiceDisabledBrowserTest::SetUpOnMainThread();
+
+    https_server_.reset(
+        new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
+    https_server_->RegisterRequestHandler(base::BindRepeating(
         &OptimizationGuideKeyedServiceBrowserTest::HandleRequest,
         base::Unretained(this)));
-    ASSERT_TRUE(embedded_test_server()->Start());
+    ASSERT_TRUE(https_server_->Start());
+
     url_with_hints_ =
-        embedded_test_server()->GetURL("somehost.com", "/hashints/whatever");
+        https_server_->GetURL("somehost.com", "/hashints/whatever");
+    url_that_redirects_ = https_server_->GetURL("/redirect");
+  }
 
-    PushHintsComponentAndWaitForCompletion();
+  void TearDown() override {
+    scoped_feature_list_.Reset();
 
-    OptimizationGuideKeyedServiceDisabledBrowserTest::SetUpOnMainThread();
+    OptimizationGuideKeyedServiceDisabledBrowserTest::TearDown();
+  }
+
+  void TearDownOnMainThread() override {
+    EXPECT_TRUE(https_server_->ShutdownAndWaitUntilComplete());
+
+    OptimizationGuideKeyedServiceDisabledBrowserTest::TearDownOnMainThread();
   }
 
   void RegisterWithKeyedService() {
@@ -118,9 +138,6 @@ class OptimizationGuideKeyedServiceBrowserTest
         ->RegisterOptimizationTypes({optimization_guide::proto::NOSCRIPT});
   }
 
-  GURL url_with_hints() { return url_with_hints_; }
-
- private:
   void PushHintsComponentAndWaitForCompletion() {
     base::RunLoop run_loop;
     OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
@@ -138,6 +155,11 @@ class OptimizationGuideKeyedServiceBrowserTest
     run_loop.Run();
   }
 
+  GURL url_with_hints() { return url_with_hints_; }
+
+  GURL url_that_redirects() { return url_that_redirects_; }
+
+ private:
   std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
       const net::test_server::HttpRequest& request) {
     std::unique_ptr<net::test_server::BasicHttpResponse> response;
@@ -149,7 +171,9 @@ class OptimizationGuideKeyedServiceBrowserTest
     return std::move(response);
   }
 
+  std::unique_ptr<net::EmbeddedTestServer> https_server_;
   GURL url_with_hints_;
+  GURL url_that_redirects_;
   base::test::ScopedFeatureList scoped_feature_list_;
   optimization_guide::testing::TestHintsComponentCreator
       test_hints_component_creator_;
@@ -167,6 +191,8 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
 IN_PROC_BROWSER_TEST_F(
     OptimizationGuideKeyedServiceBrowserTest,
     NavigateToPageWithHintsButNoRegistrationDoesNotAttemptToLoadHint) {
+  PushHintsComponentAndWaitForCompletion();
+
   base::HistogramTester histogram_tester;
 
   ui_test_utils::NavigateToURL(browser(), url_with_hints());
@@ -176,6 +202,7 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
                        NavigateToPageWithHintsLoadsHint) {
+  PushHintsComponentAndWaitForCompletion();
   RegisterWithKeyedService();
 
   base::HistogramTester histogram_tester;
@@ -194,12 +221,12 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
 IN_PROC_BROWSER_TEST_F(
     OptimizationGuideKeyedServiceBrowserTest,
     NavigateToPageThatRedirectsToUrlWithHintsShouldAttemptTwoLoads) {
+  PushHintsComponentAndWaitForCompletion();
   RegisterWithKeyedService();
 
   base::HistogramTester histogram_tester;
 
-  GURL first_url = embedded_test_server()->GetURL("/redirect");
-  ui_test_utils::NavigateToURL(browser(), first_url);
+  ui_test_utils::NavigateToURL(browser(), url_that_redirects());
 
   EXPECT_GE(RetryForHistogramUntilCountReached(
                 histogram_tester, "OptimizationGuide.LoadedHint.Result", 2),
@@ -214,6 +241,7 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
                        NavigateToPageWithoutHint) {
+  PushHintsComponentAndWaitForCompletion();
   RegisterWithKeyedService();
 
   base::HistogramTester histogram_tester;
@@ -247,6 +275,8 @@ class OptimizationGuideKeyedServiceDataSaverUserWithInfobarShownTest
   }
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
+    OptimizationGuideKeyedServiceBrowserTest::SetUpCommandLine(cmd);
+
     cmd->AppendSwitch("enable-spdy-proxy-auth");
     // Add switch to avoid having to see the infobar in the test.
     cmd->AppendSwitch(previews::switches::kDoNotRequireLitePageRedirectInfoBar);
@@ -308,7 +338,7 @@ class OptimizationGuideKeyedServiceCommandLineOverridesTest
         SetUpCommandLine(cmd);
 
     cmd->AppendSwitchASCII(optimization_guide::switches::kFetchHintsOverride,
-                           "whatever.com,awesome.com");
+                           "whatever.com,somehost.com");
   }
 };
 
@@ -324,4 +354,177 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceCommandLineOverridesTest,
   std::vector<std::string> top_hosts = top_host_provider->GetTopHosts(1);
   EXPECT_EQ(1ul, top_hosts.size());
   EXPECT_EQ("whatever.com", top_hosts[0]);
+}
+
+// TODO(crbug/969558): Migrate this test directly to the HintsFetcherBrowserTest
+// when it supports both the original and OptimizationGuideKeyedService path.
+class OptimizationGuideKeyedServiceHintsFetcherTest
+    : public OptimizationGuideKeyedServiceCommandLineOverridesTest {
+ public:
+  OptimizationGuideKeyedServiceHintsFetcherTest() = default;
+  ~OptimizationGuideKeyedServiceHintsFetcherTest() override = default;
+
+  void SetUp() override {
+    feature_list_.InitWithFeatures(
+        {optimization_guide::features::kOptimizationHintsFetching}, {});
+
+    api_server_.reset(
+        new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
+    api_server_->ServeFilesFromSourceDirectory("chrome/test/data/previews");
+    api_server_->RegisterRequestHandler(base::BindRepeating(
+        &OptimizationGuideKeyedServiceHintsFetcherTest::HandleGetHintsRequest,
+        base::Unretained(this)));
+    ASSERT_TRUE(api_server_->InitializeAndListen());
+
+    // We run the base class's set up after we set up here since the base class
+    // runs SetUpCommandLine prior to all the API server initialization and
+    // will have a non-existent URL to override the API server URL with.
+    OptimizationGuideKeyedServiceCommandLineOverridesTest::SetUp();
+  }
+
+  void SetUpCommandLine(base::CommandLine* cmd) override {
+    OptimizationGuideKeyedServiceCommandLineOverridesTest::SetUpCommandLine(
+        cmd);
+
+    cmd->AppendSwitch(optimization_guide::switches::kFetchHintsOverrideTimer);
+    cmd->AppendSwitchASCII(
+        optimization_guide::switches::kOptimizationGuideServiceURL,
+        api_server_->base_url().spec());
+  }
+
+  void SetUpOnMainThread() override {
+    OptimizationGuideKeyedServiceCommandLineOverridesTest::SetUpOnMainThread();
+
+    api_server_->StartAcceptingConnections();
+
+    // Expect that the browser initialization will record at least one sample
+    // in each of the follow histograms as OnePlatform Hints are enabled.
+    EXPECT_GE(
+        RetryForHistogramUntilCountReached(
+            histogram_tester_,
+            "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1),
+        1);
+
+    // There should be 2 sites passed via command line.
+    histogram_tester_.ExpectBucketCount(
+        "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 2, 1);
+
+    EXPECT_GE(RetryForHistogramUntilCountReached(
+                  histogram_tester_,
+                  "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", 1),
+              1);
+    // There should have been 1 hint returned in the response.
+    histogram_tester_.ExpectUniqueSample(
+        "OptimizationGuide.HintsFetcher.GetHintsRequest.HintCount", 1, 1);
+
+    // Wait until fetched hints have been stored.
+    EXPECT_GE(
+        RetryForHistogramUntilCountReached(
+            histogram_tester_, "OptimizationGuide.FetchedHints.Stored", 1),
+        1);
+  }
+
+  void TearDown() override {
+    // Make sure to reset the other feature list first, otherwise we hit a
+    // DCHECK where the feature lists aren't reset in the same order they are
+    // set up.
+    OptimizationGuideKeyedServiceCommandLineOverridesTest::TearDown();
+
+    feature_list_.Reset();
+  }
+
+  void TearDownOnMainThread() override {
+    EXPECT_TRUE(api_server_->ShutdownAndWaitUntilComplete());
+
+    OptimizationGuideKeyedServiceCommandLineOverridesTest::
+        TearDownOnMainThread();
+  }
+
+ private:
+  std::unique_ptr<net::test_server::HttpResponse> HandleGetHintsRequest(
+      const net::test_server::HttpRequest& request) {
+    std::unique_ptr<net::test_server::BasicHttpResponse> response;
+
+    response.reset(new net::test_server::BasicHttpResponse);
+    // If the request is a GET, it corresponds to a navigation so return a
+    // normal response.
+    EXPECT_EQ(request.method, net::test_server::METHOD_POST);
+    response->set_code(net::HTTP_OK);
+
+    optimization_guide::proto::GetHintsResponse get_hints_response;
+
+    optimization_guide::proto::Hint* hint = get_hints_response.add_hints();
+    hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+    hint->set_key("somehost.com");
+    optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
+    page_hint->set_page_pattern("*");
+
+    std::string serialized_request;
+    get_hints_response.SerializeToString(&serialized_request);
+    response->set_content(serialized_request);
+
+    return std::move(response);
+  }
+
+  std::unique_ptr<net::EmbeddedTestServer> api_server_;
+  base::test::ScopedFeatureList feature_list_;
+  base::HistogramTester histogram_tester_;
+};
+
+// TODO(crbug/969558): Figure out why hints fetcher not fetching on ChromeOS.
+#if defined(OS_CHROMEOS)
+#define DISABLE_ON_CHROMEOS(x) DISABLED_##x
+#else
+#define DISABLE_ON_CHROMEOS(x) x
+#endif
+
+IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceHintsFetcherTest,
+                       DISABLE_ON_CHROMEOS(ClearFetchedHints)) {
+  PushHintsComponentAndWaitForCompletion();
+
+  RegisterWithKeyedService();
+
+  // Prompt the loading of the hint that was just fetched.
+  {
+    base::HistogramTester histogram_tester;
+    ui_test_utils::NavigateToURL(browser(), url_with_hints());
+    EXPECT_GE(RetryForHistogramUntilCountReached(
+                  histogram_tester, "OptimizationGuide.LoadedHint.Result", 1),
+              1);
+    histogram_tester.ExpectUniqueSample("OptimizationGuide.LoadedHint.Result",
+                                        true, 1);
+
+    // Verifies that the fetched hint is loaded and not the component hint as
+    // fetched hints are prioritized.
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.HintCache.HintType.Loaded",
+        static_cast<int>(
+            optimization_guide::HintCacheStore::StoreEntryType::kFetchedHint),
+        1);
+  }
+
+  // Wipe the browser history - clear all the fetched hints.
+  browser()->profile()->Wipe();
+  // Run until idle so the hints have time to clear and the hint keys are
+  // repopulated.
+  base::RunLoop().RunUntilIdle();
+
+  // Try to load the same hint to confirm fetched hints are no longer there.
+  {
+    base::HistogramTester histogram_tester;
+
+    ui_test_utils::NavigateToURL(browser(), url_with_hints());
+    EXPECT_GE(RetryForHistogramUntilCountReached(
+                  histogram_tester, "OptimizationGuide.LoadedHint.Result", 1),
+              1);
+    histogram_tester.ExpectUniqueSample("OptimizationGuide.LoadedHint.Result",
+                                        true, 1);
+
+    // Component Hint should be used instead.
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.HintCache.HintType.Loaded",
+        static_cast<int>(
+            optimization_guide::HintCacheStore::StoreEntryType::kComponentHint),
+        1);
+  }
 }

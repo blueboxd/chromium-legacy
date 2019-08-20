@@ -264,7 +264,8 @@ void PreviewsOptimizationGuide::FetchHints() {
   if (!hints_fetcher_) {
     hints_fetcher_ = std::make_unique<optimization_guide::HintsFetcher>(
         url_loader_factory_,
-        optimization_guide::features::GetOptimizationGuideServiceURL());
+        optimization_guide::features::GetOptimizationGuideServiceURL(),
+        pref_service_);
   }
 
   if (top_hosts->size() > 0) {
@@ -322,6 +323,8 @@ void PreviewsOptimizationGuide::UpdateHints(
 void PreviewsOptimizationGuide::ClearFetchedHints() {
   DCHECK(hint_cache_);
   hint_cache_->ClearFetchedHints();
+  optimization_guide::HintsFetcher::ClearHostsSuccessfullyFetched(
+      pref_service_);
 }
 
 void PreviewsOptimizationGuide::OnHintsUpdated(

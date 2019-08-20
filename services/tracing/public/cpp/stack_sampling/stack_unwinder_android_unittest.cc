@@ -34,7 +34,7 @@ class StackUnwinderTest : public testing::Test {
 
  private:
   StackUnwinderAndroid unwinder_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(StackUnwinderTest);
 };

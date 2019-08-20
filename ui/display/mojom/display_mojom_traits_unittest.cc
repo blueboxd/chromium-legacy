@@ -94,6 +94,7 @@ void CheckDisplaySnapShotMojoEqual(const DisplaySnapshot& input,
   for (size_t i = 0; i < input.modes().size(); i++)
     CheckDisplayModesEqual(input.modes()[i].get(), output.modes()[i].get());
 
+  EXPECT_EQ(input.panel_orientation(), output.panel_orientation());
   EXPECT_EQ(input.edid(), output.edid());
 
   CheckDisplayModesEqual(input.current_mode(), output.current_mode());
@@ -275,8 +276,9 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotCurrentAndNativeModesNull) {
       display_id, origin, physical_size, type, is_aspect_preserving_scaling,
       has_overscan, has_color_correction_matrix,
       color_correction_in_linear_space, display_color_space, display_name,
-      sys_path, std::move(modes), edid, current_mode, native_mode, product_code,
-      year_of_manufacture, maximum_cursor_size);
+      sys_path, std::move(modes), display::PanelOrientation::kNormal, edid,
+      current_mode, native_mode, product_code, year_of_manufacture,
+      maximum_cursor_size);
 
   std::unique_ptr<DisplaySnapshot> output;
   SerializeAndDeserialize<mojom::DisplaySnapshot>(input->Clone(), &output);
@@ -315,8 +317,9 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotCurrentModeNull) {
       display_id, origin, physical_size, type, is_aspect_preserving_scaling,
       has_overscan, has_color_correction_matrix,
       color_correction_in_linear_space, display_color_space, display_name,
-      sys_path, std::move(modes), edid, current_mode, native_mode, product_code,
-      year_of_manufacture, maximum_cursor_size);
+      sys_path, std::move(modes), display::PanelOrientation::kNormal, edid,
+      current_mode, native_mode, product_code, year_of_manufacture,
+      maximum_cursor_size);
 
   std::unique_ptr<DisplaySnapshot> output;
   SerializeAndDeserialize<mojom::DisplaySnapshot>(input->Clone(), &output);
@@ -359,8 +362,9 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotExternal) {
       display_id, origin, physical_size, type, is_aspect_preserving_scaling,
       has_overscan, has_color_correction_matrix,
       color_correction_in_linear_space, display_color_space, display_name,
-      sys_path, std::move(modes), edid, current_mode, native_mode, product_code,
-      year_of_manufacture, maximum_cursor_size);
+      sys_path, std::move(modes), display::PanelOrientation::kLeftUp, edid,
+      current_mode, native_mode, product_code, year_of_manufacture,
+      maximum_cursor_size);
 
   std::unique_ptr<DisplaySnapshot> output;
   SerializeAndDeserialize<mojom::DisplaySnapshot>(input->Clone(), &output);
@@ -399,8 +403,9 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotInternal) {
       display_id, origin, physical_size, type, is_aspect_preserving_scaling,
       has_overscan, has_color_correction_matrix,
       color_correction_in_linear_space, display_color_space, display_name,
-      sys_path, std::move(modes), edid, current_mode, native_mode, product_code,
-      year_of_manufacture, maximum_cursor_size);
+      sys_path, std::move(modes), display::PanelOrientation::kRightUp, edid,
+      current_mode, native_mode, product_code, year_of_manufacture,
+      maximum_cursor_size);
 
   std::unique_ptr<DisplaySnapshot> output;
   SerializeAndDeserialize<mojom::DisplaySnapshot>(input->Clone(), &output);

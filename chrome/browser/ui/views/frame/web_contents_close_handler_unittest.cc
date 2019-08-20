@@ -12,7 +12,7 @@
 class MockWebContentsCloseHandlerDelegate
     : public WebContentsCloseHandlerDelegate {
  public:
-  explicit MockWebContentsCloseHandlerDelegate()
+  MockWebContentsCloseHandlerDelegate()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
         got_clone_(false),
         got_destroy_(false) {}

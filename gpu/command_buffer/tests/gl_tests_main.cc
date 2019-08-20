@@ -36,16 +36,15 @@ class GlTestsSuite : public base::TestSuite {
     base::TestSuite::Initialize();
 
     base::FeatureList::InitializeInstance(std::string(), std::string());
-    scoped_task_environment_ =
-        std::make_unique<base::test::ScopedTaskEnvironment>(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI);
+    task_environment_ = std::make_unique<base::test::TaskEnvironment>(
+        base::test::TaskEnvironment::MainThreadType::UI);
 #if defined(USE_OZONE)
     // Make Ozone run in single-process mode.
     ui::OzonePlatform::InitParams params;
     params.single_process = true;
     params.using_mojo = true;
 
-    // This initialization must be done after ScopedTaskEnvironment has
+    // This initialization must be done after TaskEnvironment has
     // initialized the UI thread.
     ui::OzonePlatform::InitializeForUI(params);
     ui::OzonePlatform::InitializeForGPU(params);
@@ -56,7 +55,7 @@ class GlTestsSuite : public base::TestSuite {
   }
 
  private:
-  std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
+  std::unique_ptr<base::test::TaskEnvironment> task_environment_;
 };
 
 }  // namespace

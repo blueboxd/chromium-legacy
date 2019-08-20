@@ -112,7 +112,7 @@ class LearningTaskControllerImplTest : public testing::Test {
     // To prevent a memory leak, reset the controller.  This may post
     // destruction of other objects, so RunUntilIdle().
     controller_.reset();
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void CreateController(SequenceBoundFeatureProvider feature_provider =
@@ -137,7 +137,7 @@ class LearningTaskControllerImplTest : public testing::Test {
         id, ObservationCompletion(example.target_value, example.weight));
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // Number of models that we trained.
   int num_models_ = 0;
@@ -208,7 +208,7 @@ TEST_F(LearningTaskControllerImplTest, FeatureProviderIsUsed) {
   example.features.push_back(FeatureValue(123));
   example.weight = 321u;
   AddExample(example);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(trainer_raw_->training_data()[0].features[0], FeatureValue(124));
   EXPECT_EQ(trainer_raw_->training_data()[0].weight, example.weight);
 }

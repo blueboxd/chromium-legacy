@@ -29,7 +29,7 @@ class AppSourceUrlRecorderTest : public testing::Test {
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestAutoSetUkmRecorder test_ukm_recorder_;
 };
 

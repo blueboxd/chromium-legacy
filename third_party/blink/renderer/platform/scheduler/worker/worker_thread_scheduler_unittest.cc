@@ -140,8 +140,8 @@ class WorkerThreadSchedulerTest : public testing::Test {
  public:
   WorkerThreadSchedulerTest()
       : task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME,
-            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED),
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME,
+            base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED),
         sequence_manager_(
             base::sequence_manager::SequenceManagerForTest::Create(
                 nullptr,
@@ -207,7 +207,7 @@ class WorkerThreadSchedulerTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   // Needs to be initialized immediately after |task_environment_|, specifically
   // before |scheduler_|.
   ScopedSaveStartTicks save_start_ticks_{task_environment_.NowTicks()};
@@ -427,10 +427,10 @@ TEST_F(WorkerThreadSchedulerTest, TestMicrotaskCheckpointTiming) {
 
   base::TimeTicks start_time = task_environment_.NowTicks();
   default_task_runner_->PostTask(
-      FROM_HERE, WTF::Bind(&base::test::ScopedTaskEnvironment::FastForwardBy,
+      FROM_HERE, WTF::Bind(&base::test::TaskEnvironment::FastForwardBy,
                            base::Unretained(&task_environment_), kTaskTime));
   scheduler_->set_on_microtask_checkpoint(
-      WTF::Bind(&base::test::ScopedTaskEnvironment::FastForwardBy,
+      WTF::Bind(&base::test::TaskEnvironment::FastForwardBy,
                 base::Unretained(&task_environment_), kMicrotaskTime));
 
   RecordingTaskTimeObserver observer;
@@ -474,8 +474,8 @@ class WorkerThreadSchedulerWithProxyTest : public testing::Test {
  public:
   WorkerThreadSchedulerWithProxyTest()
       : task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME,
-            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED),
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME,
+            base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED),
         sequence_manager_(
             base::sequence_manager::SequenceManagerForTest::Create(
                 nullptr,
@@ -510,7 +510,7 @@ class WorkerThreadSchedulerWithProxyTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<base::sequence_manager::SequenceManagerForTest>
       sequence_manager_;
   Vector<String> timeline_;

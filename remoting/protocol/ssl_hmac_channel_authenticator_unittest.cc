@@ -136,7 +136,7 @@ class SslHmacChannelAuthenticatorTest : public testing::Test {
     client_socket_ = std::move(socket);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   scoped_refptr<RsaKeyPair> key_pair_;
   std::string host_cert_;

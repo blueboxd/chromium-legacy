@@ -49,7 +49,7 @@ class IconConverterTest : public testing::Test {
   std::vector<std::string>* encoded_data() { return &encoded_data_; }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<IconConverter> icon_converter_;
   std::vector<std::string> encoded_data_;
   std::vector<SkBitmap> decoded_icons_;

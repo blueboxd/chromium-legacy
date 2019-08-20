@@ -189,7 +189,7 @@ class GCMNetworkChannelTest
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestGCMNetworkChannelDelegate* delegate_;
   std::unique_ptr<GCMNetworkChannel> gcm_network_channel_;
   int network_request_count_;

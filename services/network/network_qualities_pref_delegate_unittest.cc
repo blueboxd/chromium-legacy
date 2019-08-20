@@ -26,13 +26,12 @@ namespace {
 class NetworkQualitiesPrefDelegateTest : public testing::Test {
  public:
   NetworkQualitiesPrefDelegateTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
 
   ~NetworkQualitiesPrefDelegateTest() override = default;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkQualitiesPrefDelegateTest);
 };

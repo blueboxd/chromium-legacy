@@ -43,7 +43,7 @@ class FileSystemUsageCacheTest : public testing::Test,
 
  private:
   base::test::ScopedFeatureList feature_list_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir data_dir_;
   FileSystemUsageCache usage_cache_;
 

@@ -185,7 +185,7 @@ class UserEventSyncBridgeTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   testing::NiceMock<MockModelTypeChangeProcessor> mock_processor_;
   TestGlobalIdMapper test_global_id_mapper_;
   std::unique_ptr<UserEventSyncBridge> bridge_;

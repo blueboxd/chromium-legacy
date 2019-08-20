@@ -96,7 +96,7 @@ class SessionServiceTest : public PlatformTest {
 
  private:
   base::ScopedTempDir scoped_temp_directory_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   SessionServiceIOS* session_service_;
   NSString* directory_;
 

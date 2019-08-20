@@ -31,7 +31,7 @@ TEST(TranslateLanguageListTest, SetSupportedLanguages) {
       "\"tl\":{\"en\":\"English\",\"ja\":\"Japanese\"}"
       "}");
 
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   network::TestURLLoaderFactory test_url_loader_factory;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory =
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
@@ -115,7 +115,7 @@ TEST(TranslateLanguageListTest, GetSupportedLanguages) {
 // list when translate is enabled by policy.
 TEST(TranslateLanguageListTest, GetSupportedLanguagesFetch) {
   // Set up fake network environment.
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   network::TestURLLoaderFactory test_url_loader_factory;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory =
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
@@ -168,7 +168,7 @@ TEST(TranslateLanguageListTest, GetSupportedLanguagesFetch) {
 // policy.
 TEST(TranslateLanguageListTest, GetSupportedLanguagesNoFetch) {
   // Set up fake network environment.
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   network::TestURLLoaderFactory test_url_loader_factory;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory =
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(

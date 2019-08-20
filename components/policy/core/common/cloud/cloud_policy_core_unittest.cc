@@ -64,7 +64,7 @@ class CloudPolicyCoreTest : public testing::Test,
       bad_callback_count_++;
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   TestingPrefServiceSimple prefs_;
   MockCloudPolicyStore store_;

@@ -1019,7 +1019,7 @@
       }
     ]
   },
-  "WebKit Linux layout_ng Dummy Builder": {
+  "WebKit Linux layout_ng_disabled Builder": {
     "gtest_tests": [
       {
         "args": [

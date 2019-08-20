@@ -38,8 +38,8 @@ TEST(ExtensionURLPatternTest, ParseInvalid) {
       {"about://", URLPattern::ParseResult::kWrongSchemeSeparator},
       {"http://", URLPattern::ParseResult::kEmptyHost},
       {"http:///", URLPattern::ParseResult::kEmptyHost},
-      {"http:// /", URLPattern::ParseResult::kEmptyHost},
       {"http://:1234/", URLPattern::ParseResult::kEmptyHost},
+      {"http://*./", URLPattern::ParseResult::kEmptyHost},
       {"http://*foo/bar", URLPattern::ParseResult::kInvalidHostWildcard},
       {"http://foo.*.bar/baz", URLPattern::ParseResult::kInvalidHostWildcard},
       {"http://fo.*.ba:123/baz", URLPattern::ParseResult::kInvalidHostWildcard},
@@ -1256,6 +1256,42 @@ TEST(ExtensionURLPatternTest, ContainsSchemes) {
   EXPECT_TRUE(http.Contains(
       URLPattern(URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS,
                  "http://google.com/*")));
+}
+
+// Tests the handling of whitespace, along with various "."s.
+TEST(ExtensionURLPatternTest, WhitespaceHostParsing) {
+  constexpr char const* kHosts[] = {
+      ".", " ", " .", ". ", ". .", ". . .", " . ",
+  };
+
+  for (const char* host : kHosts) {
+    SCOPED_TRACE(base::StringPrintf("Testing Host: '%s'", host));
+
+    std::string pattern_str = base::StringPrintf("https://%s/*", host);
+    URLPattern pattern(URLPattern::SCHEME_HTTPS);
+    EXPECT_EQ(URLPattern::ParseResult::kSuccess, pattern.Parse(pattern_str));
+
+    std::string match_subdomains_pattern_str =
+        base::StringPrintf("https://*.%s/*", host);
+    URLPattern match_subdomains_pattern(URLPattern::SCHEME_HTTPS);
+    EXPECT_EQ(URLPattern::ParseResult::kSuccess,
+              match_subdomains_pattern.Parse(match_subdomains_pattern_str));
+
+    GURL url(base::StringPrintf("https://%s/foo", host));
+    EXPECT_TRUE(url.is_valid());
+    GURL subdomain_url(base::StringPrintf("https://foo.%s/foo", host));
+    EXPECT_TRUE(subdomain_url.is_valid());
+
+    // Both the root pattern and the subdomain-matching pattern should match
+    // the root URL.
+    EXPECT_TRUE(pattern.MatchesURL(url)) << url;
+    EXPECT_TRUE(match_subdomains_pattern.MatchesURL(url)) << url;
+
+    // Only the subdomain-matching pattern should match the subdomain URL.
+    EXPECT_FALSE(pattern.MatchesURL(subdomain_url)) << subdomain_url;
+    EXPECT_TRUE(match_subdomains_pattern.MatchesURL(subdomain_url))
+        << subdomain_url;
+  }
 }
 
 }  // namespace

@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.tabmodel;
 
 import android.support.annotation.Nullable;
 
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -63,12 +62,6 @@ public interface TabModelSelector {
      * @return a list for the underlying models
      */
     List<TabModel> getModels();
-
-    /**
-     * @return the model at {@code index} or null if no model exist for that index.
-     */
-    @VisibleForTesting
-    TabModel getModelAt(int index);
 
     /**
      * Get the current tab model.

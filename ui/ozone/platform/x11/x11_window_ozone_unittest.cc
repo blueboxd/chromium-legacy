@@ -40,8 +40,8 @@ ACTION_P(CloneEvent, event_ptr) {
 class X11WindowOzoneTest : public testing::Test {
  public:
   X11WindowOzoneTest()
-      : task_env_(std::make_unique<base::test::ScopedTaskEnvironment>(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI)) {}
+      : task_env_(std::make_unique<base::test::TaskEnvironment>(
+            base::test::TaskEnvironment::MainThreadType::UI)) {}
 
   ~X11WindowOzoneTest() override = default;
 
@@ -79,7 +79,7 @@ class X11WindowOzoneTest : public testing::Test {
   }
 
  private:
-  std::unique_ptr<base::test::ScopedTaskEnvironment> task_env_;
+  std::unique_ptr<base::test::TaskEnvironment> task_env_;
   std::unique_ptr<X11WindowManagerOzone> window_manager_;
   std::unique_ptr<X11EventSourceDefault> event_source_;
 

@@ -227,7 +227,7 @@ struct Environment {
   Environment() {
     base::CommandLine::Init(0, nullptr);
 
-    // |test| instances uses ScopedTaskEnvironment, which needs TestTimeouts.
+    // |test| instances uses TaskEnvironment, which needs TestTimeouts.
     TestTimeouts::Initialize();
 
     media::InitializeMediaLibrary();

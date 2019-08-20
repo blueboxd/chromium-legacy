@@ -50,8 +50,7 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
 class AllowlistCheckerClientTest : public testing::Test {
  public:
   AllowlistCheckerClientTest()
-      : thread_bundle_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
+      : thread_bundle_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         target_url_("https://example.test") {}
 
   void SetUp() override {

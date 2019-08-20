@@ -159,7 +159,7 @@ class QuotaBackendImplTest : public testing::Test,
   }
 
   base::test::ScopedFeatureList feature_list_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir data_dir_;
   std::unique_ptr<leveldb::Env> in_memory_env_;
   std::unique_ptr<ObfuscatedFileUtil> file_util_;

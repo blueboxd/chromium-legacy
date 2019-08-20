@@ -47,6 +47,7 @@
 #include "base/timer/hi_res_timer_manager.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
+#include "base/util/memory_pressure/multi_source_memory_pressure_monitor.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "cc/base/histograms.h"
@@ -184,7 +185,6 @@
 #include <commctrl.h>
 #include <shellapi.h>
 
-#include "base/memory/memory_pressure_monitor_win.h"
 #include "content/browser/renderer_host/dwrite_font_lookup_table_builder_win.h"
 #include "net/base/winsock_init.h"
 #include "services/service_manager/sandbox/win/sandbox_win.h"
@@ -384,7 +384,7 @@ std::unique_ptr<base::MemoryPressureMonitor> CreateMemoryPressureMonitor(
 #elif defined(OS_MACOSX)
   return std::make_unique<base::mac::MemoryPressureMonitor>();
 #elif defined(OS_WIN)
-  return std::make_unique<base::win::MemoryPressureMonitor>();
+  return std::make_unique<util::MultiSourceMemoryPressureMonitor>();
 #else
   // No memory monitor on other platforms...
   return nullptr;

@@ -119,7 +119,7 @@ class CachedImageFetcherImageMetadataStoreLevelDBTest : public testing::Test {
     ASSERT_EQ(entry.needs_transcoding(), needs_transcoding);
   }
 
-  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
   base::SimpleTestClock* clock() { return clock_.get(); }
   ImageMetadataStore* metadata_store() { return metadata_store_.get(); }
   FakeDB<CachedImageMetadataProto>* db() { return db_; }
@@ -136,7 +136,7 @@ class CachedImageFetcherImageMetadataStoreLevelDBTest : public testing::Test {
   std::map<std::string, CachedImageMetadataProto> db_store_;
   std::unique_ptr<ImageMetadataStoreLevelDB> metadata_store_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(CachedImageFetcherImageMetadataStoreLevelDBTest);
 };

@@ -17,8 +17,8 @@ namespace media {
 // required, because on MacOS the capture code must run on a CFRunLoop
 // enabled message loop.
 void RunTestCase(base::OnceClosure test_case) {
-  base::test::ScopedTaskEnvironment scoped_task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::UI);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::UI);
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(

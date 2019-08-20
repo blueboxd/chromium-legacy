@@ -188,7 +188,7 @@ class It2MeHostTest : public testing::Test, public It2MeHost::Observer {
  private:
   void StartupHostStateHelper(const base::Closure& quit_closure);
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<base::RunLoop> run_loop_;
   std::unique_ptr<FakeSignalStrategy> fake_bot_signal_strategy_;

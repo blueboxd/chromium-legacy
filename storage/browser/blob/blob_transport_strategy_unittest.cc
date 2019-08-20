@@ -96,7 +96,7 @@ class BlobTransportStrategyTest : public testing::Test {
 
  protected:
   base::ScopedTempDir data_dir_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<base::SequencedTaskRunner> bytes_provider_runner_;
   base::Time mock_time_;
   storage::BlobStorageLimits limits_;

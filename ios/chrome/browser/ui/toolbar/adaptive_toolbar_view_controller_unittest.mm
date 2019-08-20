@@ -41,10 +41,9 @@ UIView* GetTabGridToolbarButton(UIView* parentView) {
 class AdaptiveToolbarViewControllerTest : public PlatformTest {
  protected:
   AdaptiveToolbarViewControllerTest()
-      : scopedTaskEnvironment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : TaskEnvironment_(base::test::TaskEnvironment::MainThreadType::UI) {}
 
-  base::test::ScopedTaskEnvironment scopedTaskEnvironment_;
+  base::test::TaskEnvironment TaskEnvironment_;
 };
 
 TEST_F(AdaptiveToolbarViewControllerTest, DetectForceTouch) {

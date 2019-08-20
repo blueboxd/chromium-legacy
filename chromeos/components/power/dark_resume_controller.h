@@ -56,12 +56,8 @@ class COMPONENT_EXPORT(CHROMEOS_POWER) DarkResumeController
   static constexpr base::TimeDelta kDarkResumeWakeLockCheckTimeout =
       base::TimeDelta::FromSeconds(3);
 
-  // Max time to wait for wake lock release after a wake lock check after a dark
-  // resume. After this time the system is asked to re-suspend.
-  static constexpr base::TimeDelta kDarkResumeHardTimeout =
-      base::TimeDelta::FromSeconds(10);
-
   // chromeos::PowerManagerClient::Observer overrides.
+  void PowerManagerInitialized() override;
   void DarkSuspendImminent() override;
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
@@ -78,6 +74,9 @@ class COMPONENT_EXPORT(CHROMEOS_POWER) DarkResumeController
   // no in flight tasks. This should be true when device exits dark resume
   // either by re-suspending or transitioning to full resume.
   bool IsDarkResumeStateClearedForTesting() const;
+
+  // Returns |dark_resume_hard_timeout_|.
+  base::TimeDelta GetHardTimeoutForTesting() const;
 
  private:
   // Called |kDarkResumeWakeLockCheckTimeout| after a dark resume. Checks if
@@ -111,6 +110,13 @@ class COMPONENT_EXPORT(CHROMEOS_POWER) DarkResumeController
 
   // Timer used to schedule HandleDarkResumeHardTimeout.
   base::OneShotTimer hard_timeout_timer_;
+
+  // Max time to wait for wake lock release after a wake lock check after a dark
+  // resume. After this time the system is asked to re-suspend. This is
+  // initialized via PowerManagerClient when it's initialization is complete in
+  // |PowerManagerInitialized|. Till then there may be a very small window after
+  // booth when it takes a default value.
+  base::TimeDelta dark_resume_hard_timeout_;
 
   // Used for checking if HandleDarkResumeWakeLockCheckTimeout and
   // HandleDarkResumeHardTimeout run on the same sequence.

@@ -440,16 +440,9 @@ class SitePerProcessTextInputManagerTest : public InProcessBrowserTest {
 // creates a sequence of tab presses and verifies that after each key press, the
 // TextInputState.value reflects that of the focused input, i.e., the
 // TextInputManager is correctly tracking TextInputState across frames.
-// Flaky on chromeOS; https://crbug.com/704994.
-#if defined(OS_CHROMEOS)
-#define MAYBE_TrackStateWhenSwitchingFocusedFrames \
-  DISABLED_TrackStateWhenSwitchingFocusedFrames
-#else
-#define MAYBE_TrackStateWhenSwitchingFocusedFrames \
-  TrackStateWhenSwitchingFocusedFrames
-#endif
+// Flaky on ChromeOS, Linux, Mac, and Windows; https://crbug.com/704994.
 IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
-                       MAYBE_TrackStateWhenSwitchingFocusedFrames) {
+                       DISABLED_TrackStateWhenSwitchingFocusedFrames) {
   CreateIframePage("a(a,b,c(a,b,d(e, f)),g)");
   std::vector<std::string> values{
       "main",     "node_a",   "node_b",     "node_c",     "node_c_a",

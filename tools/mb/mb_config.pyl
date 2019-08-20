@@ -777,7 +777,7 @@
       'linux_chromium_ubsan_rel_ng': 'ubsan_vptr_release_bot',
 
       'linux_layout_tests_composite_after_paint': 'release_trybot',
-      'linux_layout_tests_layout_ng': 'release_trybot',
+      'linux_layout_tests_layout_ng_disabled': 'release_trybot',
       'linux_mojo': 'release_trybot',
       'linux_mojo_chromeos': 'chromeos_with_codecs_release_trybot',
       'linux_optional_gpu_tests_rel': 'gpu_fyi_tests_release_trybot',

@@ -37,8 +37,7 @@ void OnURLLoadComplete(const network::SimpleURLLoader* source,
 class DocumentSuggestionsServiceTest : public testing::Test {
  protected:
   DocumentSuggestionsServiceTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
         shared_url_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)),
@@ -60,7 +59,7 @@ class DocumentSuggestionsServiceTest : public testing::Test {
     base::FieldTrialList::CreateFieldTrial("trial name", "group name")->group();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
   sync_preferences::TestingPrefServiceSyncable prefs_;

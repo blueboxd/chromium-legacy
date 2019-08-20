@@ -61,7 +61,7 @@ class WebrtcAudioSourceAdapterTest : public testing::Test {
  public:
   void SetUp() override {
     audio_source_adapter_ = new rtc::RefCountedObject<WebrtcAudioSourceAdapter>(
-        scoped_task_environment_.GetMainThreadTaskRunner());
+        task_environment_.GetMainThreadTaskRunner());
     audio_source_ = new FakeAudioSource();
     audio_source_adapter_->Start(base::WrapUnique(audio_source_));
     audio_source_adapter_->AddSink(&sink_);
@@ -74,7 +74,7 @@ class WebrtcAudioSourceAdapterTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   FakeAudioSource* audio_source_;
   scoped_refptr<WebrtcAudioSourceAdapter> audio_source_adapter_;
   FakeAudioSink sink_;

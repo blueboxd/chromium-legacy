@@ -669,7 +669,7 @@ void TextfieldModel::SetCompositionText(
 }
 
 void TextfieldModel::SetCompositionFromExistingText(const gfx::Range& range) {
-  if (range.is_empty()) {
+  if (range.is_empty() || !gfx::Range(0, text().length()).Contains(range)) {
     ClearComposition();
     return;
   }

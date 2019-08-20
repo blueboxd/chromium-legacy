@@ -39,7 +39,7 @@ class TestIdentityManagerObserver;
 // not available; call MakePrimaryAccountAvailable() as needed.
 // NOTE: IdentityTestEnvironment requires that tests have a properly set up
 // task environment. If your test doesn't already have one, use a
-// base::test::ScopedTaskEnvironment instance variable to fulfill this
+// base::test::TaskEnvironment instance variable to fulfill this
 // requirement.
 class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
  public:

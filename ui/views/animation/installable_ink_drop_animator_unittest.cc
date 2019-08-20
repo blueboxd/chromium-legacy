@@ -32,7 +32,7 @@ class InstallableInkDropAnimatorTest : public ::testing::Test {
                        &callback_called_)) {}
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   scoped_refptr<gfx::AnimationContainer> animation_container_;
   gfx::AnimationContainerTestApi animation_tester_;

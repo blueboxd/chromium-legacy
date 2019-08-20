@@ -55,7 +55,7 @@ class TranslateScriptTest : public testing::Test {
 
   const std::string& GetData() { return script_->data(); }
 
-  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
   network::TestURLLoaderFactory* GetTestURLLoaderFactory() {
     return &test_url_loader_factory_;
@@ -67,7 +67,7 @@ class TranslateScriptTest : public testing::Test {
   }
 
   // Sets up the task scheduling/task-runner environment for each test.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // The translate script.
   std::unique_ptr<TranslateScript> script_;

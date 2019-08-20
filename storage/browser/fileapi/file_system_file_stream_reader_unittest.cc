@@ -116,8 +116,8 @@ class FileSystemFileStreamReaderTest : public testing::Test {
         base::FilePath().AppendASCII(file_name));
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::IO};
   base::ScopedTempDir temp_dir_;
   scoped_refptr<FileSystemContext> file_system_context_;
   base::Time test_file_modification_time_;

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/global_media_controls/media_notification_list_view.h"
 
 #include "chrome/browser/ui/views/global_media_controls/media_notification_container_impl.h"
+#include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace {
@@ -18,6 +19,9 @@ MediaNotificationListView::MediaNotificationListView() {
   contents()->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
   ClipHeightTo(0, kMediaListMaxHeight);
+
+  SetVerticalScrollBar(new views::OverlayScrollBar(/*horizontal=*/false));
+  SetHorizontalScrollBar(new views::OverlayScrollBar(/*horizontal=*/true));
 }
 
 MediaNotificationListView::~MediaNotificationListView() = default;

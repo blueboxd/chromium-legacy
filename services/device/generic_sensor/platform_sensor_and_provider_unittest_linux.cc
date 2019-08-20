@@ -282,7 +282,7 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
     ASSERT_TRUE(success);
     // Make sure all tasks have been delivered (including SensorDeviceManager
     // notifying PlatformSensorProviderLinux of a device addition).
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   // Generates a "remove device" event by removed sensors' directory and
@@ -298,10 +298,10 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
     ASSERT_TRUE(success);
     // Make sure all tasks have been delivered (including SensorDeviceManager
     // notifying PlatformSensorProviderLinux of a device removal).
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   MockSensorDeviceManager* manager_;
   std::unique_ptr<PlatformSensorProviderLinux> provider_;

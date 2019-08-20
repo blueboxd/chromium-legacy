@@ -146,7 +146,7 @@ class TracingSampleProfilerTest : public testing::Test {
     PerfettoTracedProcess::GetTaskRunner()->GetOrCreateTaskRunner();
 
     auto perfetto_wrapper = std::make_unique<PerfettoTaskRunner>(
-        scoped_task_environment_.GetMainThreadTaskRunner());
+        task_environment_.GetMainThreadTaskRunner());
 
     producer_ =
         std::make_unique<MockPerfettoProducer>(std::move(perfetto_wrapper));
@@ -154,7 +154,7 @@ class TracingSampleProfilerTest : public testing::Test {
 
   void TearDown() override {
     // Be sure there is no pending/running tasks.
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void BeginTrace() {
@@ -213,7 +213,7 @@ class TracingSampleProfilerTest : public testing::Test {
   const MockPerfettoProducer* producer() const { return producer_.get(); }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // We want our singleton torn down after each test.
   base::ShadowingAtExitManager at_exit_manager_;

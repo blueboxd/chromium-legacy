@@ -553,7 +553,7 @@ class NetworkServiceAsyncSocketTest : public testing::Test,
   }
 
   // Need a message loop for both the socket and Mojo.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   AsyncSocketDataProvider async_socket_data_provider_;
   net::SSLSocketDataProvider ssl_socket_data_provider_;

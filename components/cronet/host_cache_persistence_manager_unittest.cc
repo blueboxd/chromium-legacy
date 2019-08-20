@@ -80,7 +80,7 @@ class HostCachePersistenceManagerTest : public testing::Test {
 
   static const char kPrefName[];
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedMockTimeMessageLoopTaskRunner task_runner_;
 
   // The HostCache and PrefService have to outlive the

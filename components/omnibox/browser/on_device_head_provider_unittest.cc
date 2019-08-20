@@ -29,13 +29,13 @@ class OnDeviceHeadProviderTest : public testing::Test,
     client_.reset(new FakeAutocompleteProviderClient());
     SetTestOnDeviceHeadModel();
     provider_ = OnDeviceHeadProvider::Create(client_.get(), this);
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void TearDown() override {
     provider_ = nullptr;
     client_.reset();
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   // AutocompleteProviderListener:
@@ -52,7 +52,7 @@ class OnDeviceHeadProviderTest : public testing::Test,
     auto* update_listener = OnDeviceModelUpdateListener::GetInstance();
     if (update_listener)
       update_listener->OnModelUpdate(file_path);
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void ResetServingInstance() {
@@ -63,7 +63,7 @@ class OnDeviceHeadProviderTest : public testing::Test,
     }
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<FakeAutocompleteProviderClient> client_;
   scoped_refptr<OnDeviceHeadProvider> provider_;
 };
@@ -80,7 +80,7 @@ TEST_F(OnDeviceHeadProviderTest, ServingInstanceNotCreated) {
 
   provider_->Start(input, false);
   if (!provider_->done())
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(provider_->matches().empty());
   EXPECT_TRUE(provider_->done());
@@ -94,7 +94,7 @@ TEST_F(OnDeviceHeadProviderTest, RejectSynchronousRequest) {
 
   provider_->Start(input, false);
   if (!provider_->done())
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(provider_->matches().empty());
   EXPECT_TRUE(provider_->done());
@@ -110,7 +110,7 @@ TEST_F(OnDeviceHeadProviderTest, RejectIncognito) {
 
   provider_->Start(input, false);
   if (!provider_->done())
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(provider_->matches().empty());
   EXPECT_TRUE(provider_->done());
@@ -128,7 +128,7 @@ TEST_F(OnDeviceHeadProviderTest, RejectOnFocusRequest) {
 
   provider_->Start(input, false);
   if (!provider_->done())
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(provider_->matches().empty());
   EXPECT_TRUE(provider_->done());
@@ -145,7 +145,7 @@ TEST_F(OnDeviceHeadProviderTest, NoMatches) {
 
   provider_->Start(input, false);
   if (!provider_->done())
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(provider_->matches().empty());
   EXPECT_TRUE(provider_->done());
@@ -162,7 +162,7 @@ TEST_F(OnDeviceHeadProviderTest, HasMatches) {
 
   provider_->Start(input, false);
   if (!provider_->done())
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(provider_->done());
   ASSERT_EQ(3U, provider_->matches().size());
@@ -190,7 +190,7 @@ TEST_F(OnDeviceHeadProviderTest, CancelInProgressRequest) {
   provider_->Start(input2, false);
 
   if (!provider_->done())
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(provider_->done());
   ASSERT_EQ(3U, provider_->matches().size());

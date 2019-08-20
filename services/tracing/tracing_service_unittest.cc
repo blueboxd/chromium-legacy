@@ -34,7 +34,7 @@ class TracingServiceTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   service_manager::TestConnectorFactory test_connector_factory_;
   TracingService service_;
 

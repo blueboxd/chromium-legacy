@@ -105,7 +105,8 @@ class PrintViewManagerBase : public content::NotificationObserver,
   void OnDidGetPrintedPagesCount(int cookie, int number_pages) override;
   void OnDidPrintDocument(
       content::RenderFrameHost* render_frame_host,
-      const PrintHostMsg_DidPrintDocument_Params& params) override;
+      const PrintHostMsg_DidPrintDocument_Params& params,
+      std::unique_ptr<DelayedFrameDispatchHelper> helper) override;
   void OnGetDefaultPrintSettings(content::RenderFrameHost* render_frame_host,
                                  IPC::Message* reply_msg) override;
   void OnPrintingFailed(int cookie) override;
@@ -119,6 +120,7 @@ class PrintViewManagerBase : public content::NotificationObserver,
   void OnComposePdfDone(const gfx::Size& page_size,
                         const gfx::Rect& content_area,
                         const gfx::Point& physical_offsets,
+                        std::unique_ptr<DelayedFrameDispatchHelper> helper,
                         mojom::PdfCompositor::Status status,
                         base::ReadOnlySharedMemoryRegion region);
 

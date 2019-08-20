@@ -864,6 +864,18 @@ bool OmniboxViewViews::UnapplySteadyStateElisions(UnelisionGesture gesture) {
   // This simple logic only works because we elide only prefixes from the full
   // URL. Otherwise, we would have to use the FormatURL offset adjustments.
   size_t offset = GetText().find(original_text);
+
+  // Some intranet URLs have an elided form that's not a substring of the full
+  // URL string. e.g. "https://foobar" has the elided form "foobar/". This is
+  // to prevent elided URLs from looking like search terms. See
+  // AutocompleteInput::FormattedStringWithEquivalentMeaning for details.
+  //
+  // In this special case, chop off the trailing slash and search again.
+  if (offset == base::string16::npos && !original_text.empty() &&
+      original_text.back() == base::char16('/')) {
+    offset = GetText().find(original_text.substr(0, original_text.size() - 1));
+  }
+
   if (offset != base::string16::npos) {
     AutocompleteMatch match;
     model()->ClassifyString(original_selected_text, &match, nullptr);

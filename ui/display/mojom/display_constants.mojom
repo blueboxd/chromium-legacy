@@ -22,3 +22,12 @@ enum HDCPState {
   HDCP_STATE_DESIRED,
   HDCP_STATE_ENABLED,
 };
+
+// Corresponds to display::PanelOrientation.
+enum PanelOrientation {
+  NORMAL = 0,
+  BOTTOM_UP = 1,
+  LEFT_UP = 2,
+  RIGHT_UP = 3
+};
+

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
@@ -37,6 +38,10 @@ IndexedDBDatabaseCallbacks::IndexedDBDatabaseCallbacks(
 
 IndexedDBDatabaseCallbacks::~IndexedDBDatabaseCallbacks() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Transfer |context_| ownership to a new task to prevent re-entrancy through
+  // IndexedDBFactory::ContextDestroyed.
+  base::SequencedTaskRunnerHandle::Get()->ReleaseSoon(
+      FROM_HERE, std::move(indexed_db_context_));
 }
 
 void IndexedDBDatabaseCallbacks::OnForcedClose() {

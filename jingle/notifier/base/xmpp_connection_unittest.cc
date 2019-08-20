@@ -79,7 +79,7 @@ class XmppConnectionTest : public testing::Test {
       : mock_pre_xmpp_auth_(new MockPreXmppAuth()),
         net_config_helper_(
             base::MakeRefCounted<net::TestURLRequestContextGetter>(
-                scoped_task_environment_.GetMainThreadTaskRunner())) {
+                task_environment_.GetMainThreadTaskRunner())) {
     // GTest death tests by default execute in a fork()ed but not exec()ed
     // process. On macOS, a CoreFoundation-backed MessageLoop will exit with a
     // __THE_PROCESS_HAS_FORKED_AND_YOU_CANNOT_USE_THIS_COREFOUNDATION_FUNCTIONALITY___YOU_MUST_EXEC__
@@ -95,7 +95,7 @@ class XmppConnectionTest : public testing::Test {
   }
 
   // Needed by XmppConnection.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   MockXmppConnectionDelegate mock_xmpp_connection_delegate_;
   std::unique_ptr<MockPreXmppAuth> mock_pre_xmpp_auth_;
   jingle_glue::NetworkServiceConfigTestUtil net_config_helper_;

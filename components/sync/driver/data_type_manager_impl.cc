@@ -205,12 +205,16 @@ void DataTypeManagerImpl::RegisterTypesWithBackend() {
       // successfully. Such types shouldn't be in an error state at the same
       // time.
       DCHECK(!data_type_status_table_.GetFailedTypes().Has(dtc->type()));
-      dtc->RegisterWithBackend(
-          base::Bind(&DataTypeManagerImpl::SetTypeDownloaded,
-                     base::Unretained(this), dtc->type()),
-          configurer_);
-      // This assumes SetTypeDownloaded() is called synchronously, which is
-      // the case.
+      switch (dtc->RegisterWithBackend(configurer_)) {
+        case DataTypeController::REGISTRATION_IGNORED:
+          break;
+        case DataTypeController::TYPE_ALREADY_DOWNLOADED:
+          downloaded_types_.Put(type);
+          break;
+        case DataTypeController::TYPE_NOT_YET_DOWNLOADED:
+          downloaded_types_.Remove(type);
+          break;
+      }
       if (force_redownload_types_.Has(type)) {
         downloaded_types_.Remove(type);
       }
@@ -919,14 +923,6 @@ DataTypeManager::State DataTypeManagerImpl::state() const {
 ModelTypeSet DataTypeManagerImpl::GetEnabledTypes() const {
   return Difference(last_requested_types_,
                     data_type_status_table_.GetFailedTypes());
-}
-
-void DataTypeManagerImpl::SetTypeDownloaded(ModelType type, bool downloaded) {
-  if (downloaded) {
-    downloaded_types_.Put(type);
-  } else {
-    downloaded_types_.Remove(type);
-  }
 }
 
 }  // namespace syncer

@@ -138,7 +138,7 @@ TEST_P(HttpCredentialCleanerTest, ReportHttpMigrationMetrics) {
   static const base::string16 password[2] = {base::ASCIIToUTF16("pass0"),
                                              base::ASCIIToUTF16("pass1")};
 
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   ASSERT_TRUE(store_->Init(syncer::SyncableService::StartSyncFlare(), nullptr));
   TestCase test = GetParam();
   SCOPED_TRACE(testing::Message()
@@ -187,7 +187,7 @@ TEST_P(HttpCredentialCleanerTest, ReportHttpMigrationMetrics) {
                              run_loop.QuitClosure());
     run_loop.Run();
   }
-  scoped_task_environment.RunUntilIdle();
+  task_environment.RunUntilIdle();
 
   base::HistogramTester histogram_tester;
   const TestPasswordStore::PasswordMap passwords_before_cleaning =
@@ -212,7 +212,7 @@ TEST_P(HttpCredentialCleanerTest, ReportHttpMigrationMetrics) {
       &prefs);
   EXPECT_CALL(observer, CleaningCompleted);
   cleaner.StartCleaning(&observer);
-  scoped_task_environment.RunUntilIdle();
+  task_environment.RunUntilIdle();
 
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.HttpCredentials",
@@ -237,7 +237,7 @@ TEST_P(HttpCredentialCleanerTest, ReportHttpMigrationMetrics) {
   }
 
   store_->ShutdownOnUIThread();
-  scoped_task_environment.RunUntilIdle();
+  task_environment.RunUntilIdle();
 }
 
 INSTANTIATE_TEST_SUITE_P(,
@@ -249,7 +249,7 @@ TEST(HttpCredentialCleaner, StartCleanUpTest) {
     SCOPED_TRACE(testing::Message()
                  << "should_start_clean_up=" << should_start_clean_up);
 
-    base::test::ScopedTaskEnvironment scoped_task_environment;
+    base::test::TaskEnvironment task_environment;
     auto password_store = base::MakeRefCounted<TestPasswordStore>();
     ASSERT_TRUE(password_store->Init(syncer::SyncableService::StartSyncFlare(),
                                      nullptr));
@@ -275,7 +275,7 @@ TEST(HttpCredentialCleaner, StartCleanUpTest) {
 
     if (!should_start_clean_up) {
       password_store->ShutdownOnUIThread();
-      scoped_task_environment.RunUntilIdle();
+      task_environment.RunUntilIdle();
       continue;
     }
 
@@ -304,13 +304,13 @@ TEST(HttpCredentialCleaner, StartCleanUpTest) {
     EXPECT_TRUE(cleaner.NeedsCleaning());
     EXPECT_CALL(observer, CleaningCompleted);
     cleaner.StartCleaning(&observer);
-    scoped_task_environment.RunUntilIdle();
+    task_environment.RunUntilIdle();
 
     EXPECT_NE(prefs.GetDouble(prefs::kLastTimeObsoleteHttpCredentialsRemoved),
               last_time);
 
     password_store->ShutdownOnUIThread();
-    scoped_task_environment.RunUntilIdle();
+    task_environment.RunUntilIdle();
   }
 }
 

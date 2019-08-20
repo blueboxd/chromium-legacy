@@ -19,8 +19,8 @@ jboolean JNI_MemoryMetricsLoggerTest_ForceRecordHistograms(JNIEnv* env) {
     return false;
 
   TestTimeouts::Initialize();
-  base::test::ScopedTaskEnvironment scoped_task_environment(
-      base::test::ScopedTaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY);
   base::RunLoop run_loop;
   bool result = false;
   memory_metrics_logger->ScheduleRecordForTesting(

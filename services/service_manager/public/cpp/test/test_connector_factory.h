@@ -26,7 +26,7 @@ class Service;
 // Service Manager machinery. Typical usage should look something like:
 //
 //     TEST(MyTest, Foo) {
-//       base::test::ScopedTaskEnvironment task_environment;
+//       base::test::TaskEnvironment task_environment;
 //       TestConnectorFactory connector_factory;
 //       my_service::MyServiceImpl service(connector_factory.RegisterInstance(
 //           my_service::mojom::kServiceName));

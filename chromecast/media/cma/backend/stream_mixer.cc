@@ -933,11 +933,12 @@ bool StreamMixer::PostProcessorsHaveCorrectNumOutputs() {
 
   if (fixed_num_output_channels_ != kInvalidNumChannels &&
       fixed_num_output_channels_ != mixer_pipeline_->GetOutputChannelCount()) {
-    LOG(WARNING) << "PostProcessor configuration channel count does not match "
-                 << "command line flag: "
+    // Just log a warning, but this is still fine because we will remap the
+    // channels prior to output (so don't return false).
+    LOG(WARNING) << "PostProcessor configuration output channel count does not "
+                 << "match command line flag: "
                  << mixer_pipeline_->GetOutputChannelCount() << " vs "
-                 << fixed_num_output_channels_;
-    return false;
+                 << fixed_num_output_channels_ << ". Channels will be remapped";
   }
 
   if (mixer_pipeline_->GetLoopbackChannelCount() > 2) {

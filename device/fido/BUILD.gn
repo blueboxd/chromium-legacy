@@ -305,6 +305,21 @@ fuzzer_test("fido_cable_handshake_handler_fuzzer") {
   libfuzzer_options = [ "max_len=2048" ]
 }
 
+fuzzer_test("fido_cable_handshake_handler_v2_fuzzer") {
+  sources = [
+    "cable/fido_cable_handshake_handler_v2_fuzzer.cc",
+  ]
+  deps = [
+    ":fido",
+    "//base",
+    "//base/test:test_support",
+    "//device/bluetooth:mocks",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+  libfuzzer_options = [ "max_len=2048" ]
+}
+
 is_linux_without_udev = is_linux && !use_udev
 
 source_set("test_support") {

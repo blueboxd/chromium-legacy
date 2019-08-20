@@ -1323,6 +1323,14 @@ class LayerTreeHostAnimationTestAnimationsAddedToNewAndExistingLayers
   LayerTreeHostAnimationTestAnimationsAddedToNewAndExistingLayers()
       : frame_count_with_pending_tree_(0) {}
 
+  void SetupTree() override {
+    LayerTreeHostAnimationTest::SetupTree();
+    layer_ = Layer::Create();
+    layer_->SetBounds(gfx::Size(4, 4));
+    layer_tree_host()->root_layer()->AddChild(layer_);
+    layer_tree_host()->SetElementIdsForTesting();
+  }
+
   void BeginTest() override {
     AttachAnimationsToTimeline();
     PostSetNeedsCommitToMainThread();
@@ -1330,18 +1338,18 @@ class LayerTreeHostAnimationTestAnimationsAddedToNewAndExistingLayers
 
   void DidCommit() override {
     if (layer_tree_host()->SourceFrameNumber() == 1) {
-      animation_->AttachElement(layer_tree_host()->root_layer()->element_id());
+      animation_->AttachElement(layer_->element_id());
       AddAnimatedTransformToAnimation(animation_.get(), 4, 1, 1);
     } else if (layer_tree_host()->SourceFrameNumber() == 2) {
       AddOpacityTransitionToAnimation(animation_.get(), 1, 0.f, 0.5f, true);
 
-      scoped_refptr<Layer> layer = Layer::Create();
-      layer_tree_host()->root_layer()->AddChild(layer);
+      scoped_refptr<Layer> child_layer = Layer::Create();
+      layer_->AddChild(child_layer);
 
       layer_tree_host()->SetElementIdsForTesting();
-      layer->SetBounds(gfx::Size(4, 4));
+      child_layer->SetBounds(gfx::Size(4, 4));
 
-      animation_child_->AttachElement(layer->element_id());
+      animation_child_->AttachElement(child_layer->element_id());
       animation_child_->set_animation_delegate(this);
       AddOpacityTransitionToAnimation(animation_child_.get(), 1, 0.f, 0.5f,
                                       true);
@@ -1412,6 +1420,7 @@ class LayerTreeHostAnimationTestAnimationsAddedToNewAndExistingLayers
   void AfterTest() override {}
 
  private:
+  scoped_refptr<Layer> layer_;
   int frame_count_with_pending_tree_;
 };
 
@@ -1606,11 +1615,14 @@ class LayerTreeHostAnimationTestAddKeyframeModelAfterAnimating
     layer_ = Layer::Create();
     layer_->SetBounds(gfx::Size(4, 4));
     layer_tree_host()->root_layer()->AddChild(layer_);
+    child_layer_ = Layer::Create();
+    child_layer_->SetBounds(gfx::Size(4, 4));
+    layer_->AddChild(child_layer_);
 
     AttachAnimationsToTimeline();
 
-    animation_->AttachElement(layer_tree_host()->root_layer()->element_id());
-    animation_child_->AttachElement(layer_->element_id());
+    animation_->AttachElement(layer_->element_id());
+    animation_child_->AttachElement(child_layer_->element_id());
   }
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
@@ -1669,6 +1681,7 @@ class LayerTreeHostAnimationTestAddKeyframeModelAfterAnimating
 
  private:
   scoped_refptr<Layer> layer_;
+  scoped_refptr<Layer> child_layer_;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
@@ -2295,9 +2308,14 @@ class LayerTreeHostAnimationTestChangeSingleKeyframeEffectAnimation
  public:
   void SetupTree() override {
     LayerTreeHostAnimationTest::SetupTree();
+    layer_ = Layer::Create();
+    layer_->SetBounds(gfx::Size(4, 4));
+    layer_tree_host()->root_layer()->AddChild(layer_);
+
     AttachAnimationsToTimeline();
+
     timeline_->DetachAnimation(animation_child_.get());
-    animation_->AttachElement(layer_tree_host()->root_layer()->element_id());
+    animation_->AttachElement(layer_->element_id());
 
     TransformOperations start;
     start.AppendTranslate(5.f, 5.f, 0.f);
@@ -2312,7 +2330,7 @@ class LayerTreeHostAnimationTestChangeSingleKeyframeEffectAnimation
     PropertyTrees* property_trees = host_impl->sync_tree()->property_trees();
     TransformNode* node =
         property_trees->transform_tree.Node(host_impl->sync_tree()
-                                                ->root_layer_for_testing()
+                                                ->LayerById(layer_->id())
                                                 ->transform_tree_index());
     gfx::Transform translate;
     translate.Translate(5, 5);
@@ -2334,8 +2352,7 @@ class LayerTreeHostAnimationTestChangeSingleKeyframeEffectAnimation
       timeline_->DetachAnimation(animation_.get());
       animation_ = nullptr;
       timeline_->AttachAnimation(animation_child_.get());
-      animation_child_->AttachElement(
-          layer_tree_host()->root_layer()->element_id());
+      animation_child_->AttachElement(layer_->element_id());
       AddAnimatedTransformToAnimation(animation_child_.get(), 1.0, 10, 10);
       KeyframeModel* keyframe_model =
           animation_child_->GetKeyframeModel(TargetProperty::TRANSFORM);
@@ -2346,6 +2363,9 @@ class LayerTreeHostAnimationTestChangeSingleKeyframeEffectAnimation
   }
 
   void AfterTest() override {}
+
+ private:
+  scoped_refptr<Layer> layer_;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(

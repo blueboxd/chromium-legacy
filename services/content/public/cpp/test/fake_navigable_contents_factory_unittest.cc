@@ -34,7 +34,7 @@ class FakeNavigableContentsFactoryTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   mojo::Remote<mojom::NavigableContentsFactory> remote_factory_;
   FakeNavigableContentsFactory factory_;

@@ -554,21 +554,6 @@ void CalculateDrawPropertiesInternal(
       // trying to update property trees whenever these values change, we
       // update property trees before using them.
 
-      // When the page scale layer is also the root layer, the node should also
-      // store the combined scale factor and not just the page scale factor.
-      // TODO(bokan): Need to implement this behavior for
-      // BlinkGeneratedPropertyTrees. i.e. (no page scale layer). Ideally by
-      // not baking these into the page scale layer.
-      bool combine_dsf_and_psf = inputs->page_scale_layer == inputs->root_layer;
-      float device_scale_factor_for_page_scale_node = 1.f;
-      gfx::Transform device_transform_for_page_scale_node;
-      if (combine_dsf_and_psf) {
-        DCHECK(
-            !inputs->root_layer->layer_tree_impl()->settings().use_layer_lists);
-        device_transform_for_page_scale_node = inputs->device_transform;
-        device_scale_factor_for_page_scale_node = inputs->device_scale_factor;
-      }
-
       // We should never be setting a non-unit page scale factor on an oopif
       // subframe ... if we attempt this log it and fail.
       // TODO(wjmaclean): Remove as part of conditions for closing the bug.
@@ -586,10 +571,10 @@ void CalculateDrawPropertiesInternal(
         NOTREACHED();
       }
 
+      DCHECK_NE(inputs->page_scale_layer, inputs->root_layer);
       draw_property_utils::UpdatePageScaleFactor(
           inputs->property_trees, inputs->page_scale_transform_node,
-          inputs->page_scale_factor, device_scale_factor_for_page_scale_node,
-          device_transform_for_page_scale_node);
+          inputs->page_scale_factor);
       draw_property_utils::UpdateElasticOverscroll(
           inputs->property_trees, inputs->elastic_overscroll_element_id,
           inputs->elastic_overscroll);
@@ -598,11 +583,8 @@ void CalculateDrawPropertiesInternal(
       PropertyTrees* property_trees = inputs->property_trees;
       property_trees->clip_tree.SetViewportClip(
           gfx::RectF(gfx::SizeF(inputs->device_viewport_size)));
-      float page_scale_factor_for_root =
-          combine_dsf_and_psf ? inputs->page_scale_factor : 1.f;
-      property_trees->transform_tree.SetRootTransformsAndScales(
-          inputs->device_scale_factor, page_scale_factor_for_root,
-          inputs->device_transform);
+      property_trees->transform_tree.SetRootScaleAndTransform(
+          inputs->device_scale_factor, inputs->device_transform);
       draw_property_utils::UpdatePropertyTreesAndRenderSurfaces(
           inputs->root_layer, inputs->property_trees);
       break;

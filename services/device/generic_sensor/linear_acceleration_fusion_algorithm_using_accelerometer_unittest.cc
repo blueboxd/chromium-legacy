@@ -106,7 +106,7 @@ class LinearAccelerationFusionAlgorithmUsingAccelerometerTest
   }
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<FakePlatformSensorFusion> fake_fusion_sensor_;
   LinearAccelerationFusionAlgorithmUsingAccelerometer* fusion_algorithm_;
 };

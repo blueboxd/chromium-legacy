@@ -66,7 +66,7 @@ class PrefStoreClientTest : public testing::Test {
   scoped_refptr<PrefStoreClient> store_;
 
   // Required by mojo binding code within PrefStoreClient.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefStoreClientTest);
 };

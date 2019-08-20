@@ -207,8 +207,8 @@ TEST(PasswordRequirementsSpecFetcherTest, FetchData) {
     SCOPED_TRACE(test.test_name);
     base::HistogramTester histogram_tester;
 
-    base::test::ScopedTaskEnvironment environment(
-        base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME);
+    base::test::TaskEnvironment environment(
+        base::test::TaskEnvironment::TimeSource::MOCK_TIME);
     network::TestURLLoaderFactory loader_factory;
     loader_factory.AddResponse(test.requested_url, test.response_content,
                                test.response_status);
@@ -262,8 +262,8 @@ TEST(PasswordRequirementsSpecFetcherTest, FetchDataInterleaved) {
     (*shard.mutable_specs())["b.com"].set_min_length(18);
     shard.SerializeToString(&serialized_shard);
 
-    base::test::ScopedTaskEnvironment environment(
-        base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME);
+    base::test::TaskEnvironment environment(
+        base::test::TaskEnvironment::TimeSource::MOCK_TIME);
     network::TestURLLoaderFactory loader_factory;
 
     // Target into which data will be written by the callback.
@@ -315,7 +315,7 @@ TEST(PasswordRequirementsSpecFetcherTest, FetchDataInterleaved) {
 // In case of incognito mode, we won't have a URL loader factory.
 // Test that an empty spec is returned by the spec fetcher in this case.
 TEST(PasswordRequirementsSpecFetcherTest, FetchDataWithoutURLLoaderFactory) {
-  base::test::ScopedTaskEnvironment environment;
+  base::test::TaskEnvironment environment;
 
   // Target into which data will be written by the callback.
   PasswordRequirementsSpec received_spec;

@@ -142,11 +142,11 @@ class BaseRequestsTest : public testing::Test {
   }
 
   void SetUp() override {
-    sender_.reset(new RequestSender(
-        std::make_unique<DummyAuthService>(), test_shared_loader_factory_,
-        scoped_task_environment_.GetMainThreadTaskRunner(),
-        std::string(), /* custom user agent */
-        TRAFFIC_ANNOTATION_FOR_TESTS));
+    sender_.reset(new RequestSender(std::make_unique<DummyAuthService>(),
+                                    test_shared_loader_factory_,
+                                    task_environment_.GetMainThreadTaskRunner(),
+                                    std::string(), /* custom user agent */
+                                    TRAFFIC_ANNOTATION_FOR_TESTS));
 
     test_server_.RegisterRequestHandler(
         base::Bind(&BaseRequestsTest::HandleRequest, base::Unretained(this)));
@@ -157,7 +157,7 @@ class BaseRequestsTest : public testing::Test {
     // Deleting the sender here will delete all request objects.
     sender_.reset();
     // Wait for any DeleteSoon tasks to run.
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
@@ -170,8 +170,8 @@ class BaseRequestsTest : public testing::Test {
     return std::move(response);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::IO};
   std::unique_ptr<network::mojom::NetworkService> network_service_;
   std::unique_ptr<network::mojom::NetworkServiceClient> network_service_client_;
   network::mojom::NetworkContextPtr network_context_;

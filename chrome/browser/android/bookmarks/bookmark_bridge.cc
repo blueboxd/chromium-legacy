@@ -15,7 +15,10 @@
 #include "base/containers/adapters.h"
 #include "base/containers/stack.h"
 #include "base/containers/stack_container.h"
+#include "base/guid.h"
 #include "base/i18n/string_compare.h"
+#include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/android/chrome_jni_headers/BookmarkBridge_jni.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
@@ -155,6 +158,29 @@ void BookmarkBridge::LoadEmptyPartnerBookmarkShimForTesting(
       return;
   partner_bookmarks_shim_->SetPartnerBookmarksRoot(
       std::make_unique<BookmarkPermanentNode>(0, BookmarkNode::FOLDER));
+  PartnerBookmarksShim::DisablePartnerBookmarksEditing();
+  DCHECK(partner_bookmarks_shim_->IsLoaded());
+}
+
+// Loads a fake partner bookmarks shim for testing.
+// This is used in BookmarkBridgeTest.java.
+void BookmarkBridge::LoadFakePartnerBookmarkShimForTesting(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  if (partner_bookmarks_shim_->IsLoaded())
+    return;
+  std::unique_ptr<BookmarkPermanentNode> root_partner_node =
+      std::make_unique<BookmarkPermanentNode>(0, BookmarkNode::FOLDER);
+  BookmarkNode* partner_bookmark_a =
+      root_partner_node->Add(std::make_unique<BookmarkNode>(
+          1, base::GenerateGUID(), GURL("http://www.a.com")));
+  partner_bookmark_a->SetTitle(base::ASCIIToUTF16("Partner Bookmark A"));
+  BookmarkNode* partner_bookmark_b =
+      root_partner_node->Add(std::make_unique<BookmarkNode>(
+          2, base::GenerateGUID(), GURL("http://www.b.com")));
+  partner_bookmark_b->SetTitle(base::ASCIIToUTF16("Partner Bookmark B"));
+  partner_bookmarks_shim_->SetPartnerBookmarksRoot(
+      std::move(root_partner_node));
   PartnerBookmarksShim::DisablePartnerBookmarksEditing();
   DCHECK(partner_bookmarks_shim_->IsLoaded());
 }
@@ -594,6 +620,12 @@ void BookmarkBridge::SearchBookmarks(JNIEnv* env,
 
   GetBookmarksMatchingProperties(bookmark_model_, query, max_results, &results);
 
+  if (partner_bookmarks_shim_->HasPartnerBookmarks() &&
+      IsReachable(partner_bookmarks_shim_->GetPartnerBookmarksRoot())) {
+    partner_bookmarks_shim_->GetPartnerBookmarksMatchingProperties(
+        query, max_results, &results);
+  }
+  DCHECK((int)results.size() <= max_results);
   for (const bookmarks::BookmarkNode* match : results) {
     // If this bookmark is a partner bookmark
     if (partner_bookmarks_shim_->IsPartnerBookmark(match) &&

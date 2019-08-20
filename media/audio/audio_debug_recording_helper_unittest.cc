@@ -112,7 +112,7 @@ class AudioDebugRecordingHelperTest : public ::testing::Test {
       const AudioParameters& params,
       base::OnceClosure on_destruction_closure) {
     return std::make_unique<AudioDebugRecordingHelperUnderTest>(
-        params, scoped_task_environment_.GetMainThreadTaskRunner(),
+        params, task_environment_.GetMainThreadTaskRunner(),
         std::move(on_destruction_closure));
   }
 
@@ -146,7 +146,7 @@ class AudioDebugRecordingHelperTest : public ::testing::Test {
   const uint32_t id_ = 1;
 
   // The test task environment.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioDebugRecordingHelperTest);

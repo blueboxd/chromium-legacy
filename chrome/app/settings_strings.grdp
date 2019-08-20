@@ -1476,7 +1476,7 @@
       Add Printer
     </message>
      <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_ADD_DETECTED_OR_NEW_PRINTER" desc="In CUPS printing settings subpage, explanatory text for the nearby printers list.">
-      Saved detected printers to your profile, or add a new printer.
+      Save detected printers to your profile, or add a new printer.
     </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_AVAILABLE_PRINTERS" desc="In CUPS printing settings subpage, title for the nearby printers list.">
       Available printers to save

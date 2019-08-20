@@ -35,9 +35,9 @@ typedef NS_ENUM(NSInteger, CWVCreditCardVerificationError) {
   CWVCreditCardVerificationErrorNetworkFailure = -300,
 };
 
-CWV_EXPORT
 // Helps with verifying credit cards for autofill, updating expired expiration
 // dates, and saving the card locally.
+CWV_EXPORT
 @interface CWVCreditCardVerifier : NSObject
 
 // The credit card that is pending verification.

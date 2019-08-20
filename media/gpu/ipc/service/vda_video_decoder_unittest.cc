@@ -288,7 +288,7 @@ class VdaVideoDecoderTest : public testing::TestWithParam<bool> {
     return std::move(owned_vda_);
   }
 
-  base::test::ScopedTaskEnvironment environment_;
+  base::test::TaskEnvironment environment_;
   base::Thread gpu_thread_;
 
   testing::NiceMock<MockMediaLog> media_log_;

@@ -46,7 +46,7 @@ class MojoMjpegDecodeAcceleratorServiceTest : public ::testing::Test {
  private:
   // This is required to allow base::ThreadTaskRunnerHandle::Get() from the
   // test execution thread.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(MojoMjpegDecodeAcceleratorServiceTest, InitializeAndDecode) {

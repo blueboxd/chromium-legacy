@@ -247,7 +247,7 @@ class MockDeviceSharedAccessTest : public ::testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   media::MockDevice mock_device_;
   media::MockDeviceFactory* mock_device_factory_;
   std::unique_ptr<DeviceFactoryMediaToMojoAdapter> service_device_factory_;

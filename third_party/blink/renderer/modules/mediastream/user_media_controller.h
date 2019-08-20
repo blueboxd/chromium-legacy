@@ -46,10 +46,10 @@ class UserMediaController final
  public:
   static const char kSupplementName[];
 
-  UserMediaController(LocalFrame&, std::unique_ptr<UserMediaClient>);
+  UserMediaController(LocalFrame&);
   void Trace(blink::Visitor*) override;
 
-  UserMediaClient* Client() const { return client_.get(); }
+  UserMediaClient* Client();
 
   void RequestUserMedia(UserMediaRequest*);
   void CancelUserMediaRequest(UserMediaRequest*);
@@ -70,30 +70,29 @@ class UserMediaController final
 };
 
 inline void UserMediaController::RequestUserMedia(UserMediaRequest* request) {
-  client_->RequestUserMedia(request);
+  Client()->RequestUserMedia(request);
   has_requested_user_media_ = true;
 }
 
 inline void UserMediaController::CancelUserMediaRequest(
     UserMediaRequest* request) {
-  client_->CancelUserMediaRequest(WebUserMediaRequest(request));
+  Client()->CancelUserMediaRequest(WebUserMediaRequest(request));
 }
 
 inline void UserMediaController::ApplyConstraints(
     ApplyConstraintsRequest* request) {
-  client_->ApplyConstraints(WebApplyConstraintsRequest(request));
+  Client()->ApplyConstraints(WebApplyConstraintsRequest(request));
 }
 
 inline void UserMediaController::StopTrack(MediaStreamComponent* track) {
-  client_->StopTrack(WebMediaStreamTrack(track));
+  Client()->StopTrack(WebMediaStreamTrack(track));
 }
 
 inline bool UserMediaController::HasRequestedUserMedia() {
   return has_requested_user_media_;
 }
 
-MODULES_EXPORT void ProvideUserMediaTo(LocalFrame&,
-                                       std::unique_ptr<UserMediaClient>);
+MODULES_EXPORT void ProvideUserMediaTo(LocalFrame&);
 
 }  // namespace blink
 

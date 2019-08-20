@@ -150,6 +150,7 @@ void OnConnectError(
 
 void ConnectToPrefService(mojom::PrefStoreConnectorPtr connector,
                           scoped_refptr<PrefRegistry> pref_registry,
+                          base::Optional<base::Token> client_token,
                           ConnectCallback callback) {
   auto connector_ptr =
       base::MakeRefCounted<RefCountedInterfacePtr<mojom::PrefStoreConnector>>();
@@ -158,7 +159,7 @@ void ConnectToPrefService(mojom::PrefStoreConnectorPtr connector,
       &OnConnectError, connector_ptr, base::Passed(ConnectCallback{callback})));
   auto serialized_pref_registry = SerializePrefRegistry(*pref_registry);
   connector_ptr->get()->Connect(
-      std::move(serialized_pref_registry),
+      std::move(serialized_pref_registry), client_token,
       base::BindOnce(&OnConnect, connector_ptr, std::move(pref_registry),
                      std::move(callback)));
 }
@@ -170,7 +171,7 @@ void ConnectToPrefService(service_manager::Connector* connector,
   mojom::PrefStoreConnectorPtr pref_connector;
   connector->BindInterface(service_name.as_string(), &pref_connector);
   ConnectToPrefService(std::move(pref_connector), std::move(pref_registry),
-                       std::move(callback));
+                       base::nullopt, std::move(callback));
 }
 
 }  // namespace prefs

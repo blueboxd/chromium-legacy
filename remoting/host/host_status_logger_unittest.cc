@@ -138,7 +138,7 @@ class HostStatusLoggerTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   MockSignalStrategy signal_strategy_;
   std::unique_ptr<XmppLogToServer> log_to_server_;
   std::unique_ptr<HostStatusLogger> host_status_logger_;

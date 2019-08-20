@@ -73,7 +73,7 @@ class ExternalPolicyDataUpdaterTest : public testing::Test {
   void RequestExternalDataFetch(int key_index, int url_index);
   void RequestExternalDataFetch(int index);
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   MockFetchSuccessCallbackListener callback_listener_;
   scoped_refptr<base::TestSimpleTaskRunner> backend_task_runner_;

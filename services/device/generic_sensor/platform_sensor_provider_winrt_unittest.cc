@@ -43,7 +43,7 @@ class MockSensorReaderFactory : public SensorReaderFactory {
 // Tests that PlatformSensorProviderWinrt can successfully be instantiated
 // and passes the correct result to the CreateSensor callback.
 TEST(PlatformSensorProviderTestWinrt, SensorCreationReturnCheck) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   auto mock_sensor_reader_factory =
       std::make_unique<testing::NiceMock<MockSensorReaderFactory>>();

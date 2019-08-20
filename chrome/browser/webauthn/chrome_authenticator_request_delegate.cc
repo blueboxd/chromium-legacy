@@ -131,10 +131,8 @@ bool ChromeAuthenticatorRequestDelegate::DoesBlockRequestOnFailure(
     return false;
 
 #if defined(OS_WIN)
+  // Errors from the Windows API should not result in a Chrome error dialog.
   if (authenticator && authenticator->IsWinNativeApiAuthenticator()) {
-    // Do not display a Chrome error dialog if the user cancels out of the
-    // Windows UI. No other errors are reachable.
-    DCHECK(reason == InterestingFailureReason::kUserConsentDenied);
     return false;
   }
 #endif  // defined(OS_WIN)

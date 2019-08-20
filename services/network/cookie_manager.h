@@ -85,6 +85,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
                               AllowFileSchemeCookiesCallback callback) override;
   void SetForceKeepSessionState() override;
   void BlockThirdPartyCookies(bool block) override;
+  void SetContentSettingsForLegacyCookieAccess(
+      const ContentSettingsForOneType& settings) override;
 
   // Configures |out| based on |params|. (This doesn't honor
   // allow_file_scheme_cookies, which affects the cookie store rather than the

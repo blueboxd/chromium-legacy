@@ -128,8 +128,8 @@ class EventConverterEvdevImplTest : public testing::Test {
     dispatched_events_.push_back(std::move(cloned_event));
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::UI};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::UI};
   std::unique_ptr<ui::FakeCursorDelegateEvdev> cursor_;
   std::unique_ptr<ui::DeviceManager> device_manager_;
   std::unique_ptr<ui::EventFactoryEvdev> event_factory_;

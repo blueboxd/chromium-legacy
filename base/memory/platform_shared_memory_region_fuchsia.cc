@@ -147,6 +147,12 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
     return {};
   }
 
+  // TODO(crbug.com/991805): Take base::Location from the caller and use it to
+  // generate the name here.
+  constexpr char kVmoName[] = "cr-shared-memory-region";
+  status = vmo.set_property(ZX_PROP_NAME, kVmoName, strlen(kVmoName));
+  ZX_DCHECK(status == ZX_OK, status);
+
   const int kNoExecFlags = ZX_DEFAULT_VMO_RIGHTS & ~ZX_RIGHT_EXECUTE;
   status = vmo.replace(kNoExecFlags, &vmo);
   if (status != ZX_OK) {

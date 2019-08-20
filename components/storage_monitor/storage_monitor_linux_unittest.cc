@@ -188,13 +188,13 @@ class StorageMonitorLinuxTest : public testing::Test {
     monitor_->AddObserver(mock_storage_observer_.get());
 
     monitor_->Init();
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void TearDown() override {
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     monitor_->RemoveObserver(mock_storage_observer_.get());
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
     // Linux storage monitor must be destroyed on the UI thread, so do it here.
     monitor_.reset();
@@ -309,7 +309,7 @@ class StorageMonitorLinuxTest : public testing::Test {
     ASSERT_EQ(1, endmntent(file));
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<MockRemovableStorageObserver> mock_storage_observer_;
 

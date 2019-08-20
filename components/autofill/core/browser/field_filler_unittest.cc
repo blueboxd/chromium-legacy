@@ -758,14 +758,14 @@ class AutofillSelectWithStatesTest
         std::unique_ptr<Storage>(new NullStorage), "en-US");
     // Make sure the normalizer is done initializing its member(s) in
     // background task(s).
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
  protected:
   AddressNormalizer* normalizer() { return normalizer_.get(); }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<AddressNormalizerImpl> normalizer_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillSelectWithStatesTest);

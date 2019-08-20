@@ -192,9 +192,10 @@ class ModelTypeControllerTest : public testing::Test {
   }
 
   void RegisterWithBackend(bool expect_downloaded) {
-    base::MockCallback<base::RepeatingCallback<void(bool)>> callback;
-    EXPECT_CALL(callback, Run(expect_downloaded));
-    controller_.RegisterWithBackend(callback.Get(), &configurer_);
+    auto result = expect_downloaded
+                      ? DataTypeController::TYPE_ALREADY_DOWNLOADED
+                      : DataTypeController::TYPE_NOT_YET_DOWNLOADED;
+    EXPECT_EQ(result, controller_.RegisterWithBackend(&configurer_));
     // ModelTypeProcessorProxy does posting of tasks.
     base::RunLoop().RunUntilIdle();
   }
@@ -223,7 +224,7 @@ class ModelTypeControllerTest : public testing::Test {
   TestModelTypeController* controller() { return &controller_; }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   NiceMock<MockDelegate> mock_delegate_;
   TestModelTypeConfigurer configurer_;
   TestModelTypeProcessor processor_;
@@ -557,7 +558,7 @@ TEST_F(ModelTypeControllerTest, StopAndReportErrorWhileStarting) {
 // Tests that StorageOption is honored when the controller has been constructed
 // with two delegates.
 TEST(ModelTypeControllerWithMultiDelegateTest, ToggleStorageOption) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   NiceMock<MockDelegate> delegate_on_disk;
   NiceMock<MockDelegate> delegate_in_memory;
 

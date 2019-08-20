@@ -61,10 +61,15 @@ zx::vmo CreateContiguousVmo(size_t size, const zx::handle& bti_handle) {
 zx::vmo CreateVmo(size_t size) {
   zx::vmo vmo;
   zx_status_t status = zx::vmo::create(size, 0, &vmo);
+
   if (status != ZX_OK) {
     ZX_DLOG(ERROR, status) << "zx_vmo_create";
     return zx::vmo();
   }
+
+  static const char kVmoName[] = "cr-codec-output";
+  status = vmo.set_property(ZX_PROP_NAME, kVmoName, strlen(kVmoName));
+  ZX_DCHECK(status == ZX_OK, status);
 
   return vmo;
 }

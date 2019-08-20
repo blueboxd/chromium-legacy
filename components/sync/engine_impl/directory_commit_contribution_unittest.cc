@@ -93,7 +93,7 @@ class DirectoryCommitContributionTest : public ::testing::Test {
 
  private:
   // Neeed to initialize the directory.
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestDirectorySetterUpper dir_maker_;
 };
 

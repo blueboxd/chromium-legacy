@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/platform/graphics/dark_mode_filter.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 
@@ -266,7 +267,7 @@ void CaretDisplayItemClient::PaintCaret(
 
   DrawingRecorder recorder(context, *this, display_item_type);
   IntRect paint_rect = PixelSnappedIntRect(drawing_rect);
-  context.FillRect(paint_rect, color_);
+  context.FillRect(paint_rect, color_, DarkModeFilter::ElementRole::kText);
 }
 
 String CaretDisplayItemClient::DebugName() const {

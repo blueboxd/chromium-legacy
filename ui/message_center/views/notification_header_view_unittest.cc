@@ -17,7 +17,7 @@ class NotificationHeaderViewTest : public views::ViewsTestBase {
  public:
   NotificationHeaderViewTest()
       : views::ViewsTestBase(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
   ~NotificationHeaderViewTest() override = default;
 
   // ViewsTestBase:
@@ -60,22 +60,22 @@ TEST_F(NotificationHeaderViewTest, UpdatesTimestampOverTime) {
                 IDS_MESSAGE_NOTIFICATION_DURATION_HOURS_SHORTEST_FUTURE, 3),
             notification_header_view_->timestamp_for_testing());
 
-  scoped_task_environment_->FastForwardBy(base::TimeDelta::FromHours(3));
-  scoped_task_environment_->RunUntilIdle();
+  task_environment_->FastForwardBy(base::TimeDelta::FromHours(3));
+  task_environment_->RunUntilIdle();
 
   EXPECT_EQ(l10n_util::GetPluralStringFUTF16(
                 IDS_MESSAGE_NOTIFICATION_DURATION_MINUTES_SHORTEST_FUTURE, 30),
             notification_header_view_->timestamp_for_testing());
 
-  scoped_task_environment_->FastForwardBy(base::TimeDelta::FromMinutes(30));
-  scoped_task_environment_->RunUntilIdle();
+  task_environment_->FastForwardBy(base::TimeDelta::FromMinutes(30));
+  task_environment_->RunUntilIdle();
 
   EXPECT_EQ(
       l10n_util::GetStringUTF16(IDS_MESSAGE_NOTIFICATION_NOW_STRING_SHORTEST),
       notification_header_view_->timestamp_for_testing());
 
-  scoped_task_environment_->FastForwardBy(base::TimeDelta::FromDays(2));
-  scoped_task_environment_->RunUntilIdle();
+  task_environment_->FastForwardBy(base::TimeDelta::FromDays(2));
+  task_environment_->RunUntilIdle();
 
   EXPECT_EQ(l10n_util::GetPluralStringFUTF16(
                 IDS_MESSAGE_NOTIFICATION_DURATION_DAYS_SHORTEST, 2),

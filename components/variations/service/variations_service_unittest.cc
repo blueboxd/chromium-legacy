@@ -336,7 +336,7 @@ class VariationsServiceTest : public ::testing::Test {
   network::TestNetworkConnectionTracker* network_tracker_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<metrics::TestEnabledStateProvider> enabled_state_provider_;
   std::unique_ptr<metrics::MetricsStateManager> metrics_state_manager_;
 

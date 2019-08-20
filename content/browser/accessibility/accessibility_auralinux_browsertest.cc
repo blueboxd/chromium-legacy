@@ -836,6 +836,13 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
 IN_PROC_BROWSER_TEST_F(
     AccessibilityAuraLinuxBrowserTest,
     MAYBE_TestSetCaretSetsSequentialFocusNavigationStartingPoint) {
+  auto is_focused = [](AtkObject* object) {
+    AtkStateSet* state_set = atk_object_ref_state_set(object);
+    bool result = atk_state_set_contains_state(state_set, ATK_STATE_FOCUSED);
+    g_object_unref(state_set);
+    return result;
+  };
+
   LoadInitialAccessibilityTreeFromHtml(
       R"HTML(<!DOCTYPE html>
       <html>
@@ -848,7 +855,7 @@ IN_PROC_BROWSER_TEST_F(
         4
         <a href="http://google.com">5</a>
         6
-        <a href="http://google.com">7</a>
+        <a href="http://google.com"><div>7</div></a>
         8
       </div>
       </body>
@@ -858,12 +865,9 @@ IN_PROC_BROWSER_TEST_F(
   AtkObject* document = GetRendererAccessible();
   ASSERT_TRUE(ATK_IS_COMPONENT(document));
 
-  AtkObject* parent_div = atk_object_ref_accessible_child(document, 0);
-  EXPECT_NE(parent_div, nullptr);
-
-  AtkObject* child_2 = atk_object_ref_accessible_child(parent_div, 2);
-  AtkObject* child_3 = atk_object_ref_accessible_child(parent_div, 3);
-  AtkObject* child_7 = atk_object_ref_accessible_child(parent_div, 7);
+  AtkObject* child_2 = atk_object_ref_accessible_child(document, 2);
+  AtkObject* child_3 = atk_object_ref_accessible_child(document, 3);
+  AtkObject* child_7 = atk_object_ref_accessible_child(document, 7);
   EXPECT_NE(child_2, nullptr);
   EXPECT_NE(child_3, nullptr);
   EXPECT_NE(child_7, nullptr);
@@ -886,15 +890,12 @@ IN_PROC_BROWSER_TEST_F(
   SimulateKeyPress(shell()->web_contents(), ui::DomKey::TAB, ui::DomCode::TAB,
                    ui::VKEY_TAB, false, false, false, false);
   waiter->WaitForNotification();
+  ASSERT_TRUE(is_focused(child_3));
 
-  AtkStateSet* state_set = atk_object_ref_state_set(child_3);
-  ASSERT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_FOCUSED));
-  g_object_unref(state_set);
-
-  // Now we repeat a similar test, but this time setting the caret offset
-  // on the parent node. In this case, the sequential navigation starting
-  // point should move to the appropriate child.
-  atk_text_set_caret_offset(ATK_TEXT(parent_div), 13);
+  // Now we repeat a similar test, but this time setting the caret offset on
+  // the document. In this case, the sequential navigation starting point
+  // should move to the appropriate child.
+  atk_text_set_caret_offset(ATK_TEXT(document), 13);
   SimulateKeyPress(shell()->web_contents(), ui::DomKey::TAB, ui::DomCode::TAB,
                    ui::VKEY_TAB, false, false, false, false);
   waiter->WaitForNotification();
@@ -903,9 +904,7 @@ IN_PROC_BROWSER_TEST_F(
                    ui::VKEY_TAB, false, false, false, false);
   waiter->WaitForNotification();
 
-  state_set = atk_object_ref_state_set(child_7);
-  ASSERT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_FOCUSED));
-  g_object_unref(state_set);
+  ASSERT_TRUE(is_focused(child_7));
 
   // Now test setting the caret in a node that can accept focus. That
   // node should actually receive focus.
@@ -913,14 +912,21 @@ IN_PROC_BROWSER_TEST_F(
   SimulateKeyPress(shell()->web_contents(), ui::DomKey::TAB, ui::DomCode::TAB,
                    ui::VKEY_TAB, false, false, false, false);
   waiter->WaitForNotification();
-  state_set = atk_object_ref_state_set(child_3);
-  ASSERT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_FOCUSED));
-  g_object_unref(state_set);
+  ASSERT_TRUE(is_focused(child_3));
 
+  AtkObject* link_section = atk_object_ref_accessible_child(child_7, 0);
+  EXPECT_NE(link_section, nullptr);
+  AtkObject* link_text = atk_object_ref_accessible_child(link_section, 0);
+  EXPECT_NE(link_text, nullptr);
+  atk_text_set_caret_offset(ATK_TEXT(link_text), 0);
+  waiter->WaitForNotification();
+  ASSERT_TRUE(is_focused(child_7));
+
+  g_object_unref(link_section);
+  g_object_unref(link_text);
   g_object_unref(child_2);
   g_object_unref(child_3);
   g_object_unref(child_7);
-  g_object_unref(parent_div);
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,

@@ -185,7 +185,7 @@ class CloudPolicyManagerTest : public testing::Test {
 
     EXPECT_CALL(store_, Load());
     manager_.reset(new TestCloudPolicyManager(
-        &store_, scoped_task_environment_.GetMainThreadTaskRunner()));
+        &store_, task_environment_.GetMainThreadTaskRunner()));
     manager_->Init(&schema_registry_);
     Mock::VerifyAndClearExpectations(&store_);
     manager_->AddObserver(&observer_);
@@ -197,7 +197,7 @@ class CloudPolicyManagerTest : public testing::Test {
   }
 
   // Needs to be the first member.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // Testing policy.
   const std::string policy_type_;

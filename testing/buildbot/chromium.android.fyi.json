@@ -25,7 +25,7 @@
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
               "location": "android_webview/tools/cts_archive",
-              "revision": "version:1.6"
+              "revision": "version:1.7"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",

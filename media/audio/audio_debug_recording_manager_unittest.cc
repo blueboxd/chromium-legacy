@@ -114,7 +114,7 @@ class AudioDebugRecordingManagerUnderTest : public AudioDebugRecordingManager {
 class AudioDebugRecordingManagerTest : public ::testing::Test {
  public:
   AudioDebugRecordingManagerTest()
-      : manager_(scoped_task_environment_.GetMainThreadTaskRunner()) {}
+      : manager_(task_environment_.GetMainThreadTaskRunner()) {}
 
   ~AudioDebugRecordingManagerTest() override = default;
 
@@ -127,7 +127,7 @@ class AudioDebugRecordingManagerTest : public ::testing::Test {
 
  protected:
   // The test task environment.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   AudioDebugRecordingManagerUnderTest manager_;
 

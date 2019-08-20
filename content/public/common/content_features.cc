@@ -232,7 +232,7 @@ const base::Feature kLazyInitializeMediaControls{
 // API font fallback calls to retrieve a fallback font family name as opposed to
 // using a hard-coded font lookup table.
 const base::Feature kLegacyWindowsDWriteFontFallback{
-    "LegacyWindowsDWriteFontFallback", base::FEATURE_DISABLED_BY_DEFAULT};
+    "LegacyWindowsDWriteFontFallback", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kLogJsConsoleMessages{"LogJsConsoleMessages",
                                           base::FEATURE_DISABLED_BY_DEFAULT};

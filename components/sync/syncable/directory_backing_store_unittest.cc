@@ -115,7 +115,7 @@ class MigrationTest : public testing::TestWithParam<int> {
   }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
 };
 

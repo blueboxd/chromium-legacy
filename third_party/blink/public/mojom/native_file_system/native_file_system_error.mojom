@@ -6,10 +6,31 @@ module blink.mojom;
 
 import "mojo/public/mojom/base/file_error.mojom";
 
-// This struct represents errors as they are reported by various methods in the
-// Native File System API. For now this is just a base FileError, but not all
-// errors can be easily represented by that, and some errors could use a more
-// descriptive string, so in the future this struct will likely change.
+// Always returned as a member of a NativeFileSystemError, which is declared below.
+enum NativeFileSystemStatus {
+  kOk,
+  // The website doesn't/didn't have permission to do what it tried to do.
+  kPermissionDenied,
+  // The object being operated on was in an invalid state for the operation.
+  kInvalidState,
+  // An invalid argument was passed to a method.
+  kInvalidArgument,
+  // The operation failed for some unspecified reason.
+  kOperationFailed,
+  // The operation was aborted by the user.
+  kOperationAborted,
+  // The operation failed with a mojom_base.mojom.FileError describing the
+  // underlying cause.
+  kFileError,
+};
+
+// Errors reported by Native File System API methods.
 struct NativeFileSystemError {
-  mojo_base.mojom.FileError error_code;
+  NativeFileSystemStatus status;
+  // Only meaningful when |status| is kFileError.
+  // Conceptually, this should be an optional member, but mojo does not
+  // currently support optionals.
+  mojo_base.mojom.FileError file_error;
+  // Optional extra information describing the error.
+  string message;
 };

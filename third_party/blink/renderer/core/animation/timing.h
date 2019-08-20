@@ -64,6 +64,12 @@ struct CORE_EXPORT Timing {
     kPhaseAfter,
     kPhaseNone,
   };
+  // Represents the animation direction from the Web Animations spec, see
+  // https://drafts.csswg.org/web-animations-1/#animation-direction.
+  enum AnimationDirection {
+    kForwards,
+    kBackwards,
+  };
 
   using FillMode = CompositorKeyframeModel::FillMode;
   using PlaybackDirection = CompositorKeyframeModel::Direction;
@@ -128,20 +134,25 @@ struct CORE_EXPORT Timing {
 
   struct CalculatedTiming {
     DISALLOW_NEW();
-    Phase phase;
-    double current_iteration;
-    base::Optional<double> progress;
-    bool is_current;
-    bool is_in_effect;
-    bool is_in_play;
+    Phase phase = Phase::kPhaseNone;
+    double current_iteration = 0;
+    base::Optional<double> progress = 0;
+    bool is_current = false;
+    bool is_in_effect = false;
+    bool is_in_play = false;
     double local_time = NullValue();
-    double time_to_forwards_effect_change;
-    double time_to_reverse_effect_change;
+    double time_to_forwards_effect_change =
+        std::numeric_limits<double>::infinity();
+    double time_to_reverse_effect_change =
+        std::numeric_limits<double>::infinity();
+    double time_to_next_iteration = std::numeric_limits<double>::infinity();
   };
 
-  ComputedEffectTiming* getComputedTiming(
-      const Timing::CalculatedTiming& calculated_timing,
-      bool is_keyframe_effect) const;
+  CalculatedTiming CalculateTimings(double local_time,
+                                    AnimationDirection animation_direction,
+                                    bool is_keyframe_effect) const;
+  ComputedEffectTiming* getComputedTiming(const CalculatedTiming& calculated,
+                                          bool is_keyframe_effect) const;
 };
 
 }  // namespace blink

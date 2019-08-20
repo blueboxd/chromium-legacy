@@ -120,7 +120,7 @@ class PasswordExporterTest : public PlatformTest {
   id password_exporter_delegate_;
   PasswordExporter* password_exporter_;
   MockReauthenticationModule* mock_reauthentication_module_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::HistogramTester histogram_tester_;
 };
 
@@ -140,7 +140,7 @@ TEST_F(PasswordExporterTest, PasswordFileWriteReauthSucceeded) {
   [password_exporter_ startExportFlow:CreatePasswordList()];
 
   // Wait for all asynchronous tasks to complete.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(fake_password_file_writer.writeAttempted);
 
@@ -171,7 +171,7 @@ TEST_F(PasswordExporterTest, WritingFailedOutOfDiskSpace) {
   [password_exporter_ startExportFlow:CreatePasswordList()];
 
   // Wait for all asynchronous tasks to complete.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Use @try/@catch as -reject raises an exception.
   @try {
@@ -208,7 +208,7 @@ TEST_F(PasswordExporterTest, WritingFailedUnknownError) {
   [password_exporter_ startExportFlow:CreatePasswordList()];
 
   // Wait for all asynchronous tasks to complete.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Use @try/@catch as -reject raises an exception.
   @try {
@@ -246,7 +246,7 @@ TEST_F(PasswordExporterTest, ExportInterruptedWhenReauthFails) {
     [password_exporter_ startExportFlow:CreatePasswordList()];
 
     // Wait for all asynchronous tasks to complete.
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     EXPECT_OCMOCK_VERIFY(password_exporter_delegate_);
   } @catch (NSException* exception) {
     // The exception is raised when
@@ -261,7 +261,7 @@ TEST_F(PasswordExporterTest, ExportInterruptedWhenReauthFails) {
 
   // Make sure this test doesn't pass only because file writing hasn't finished
   // yet.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Serializing passwords has finished, but reauthentication was not
   // successful, so writing the file was not attempted.
@@ -294,7 +294,7 @@ TEST_F(PasswordExporterTest, CancelWaitsForSerializationFinished) {
   @try {
     [fake_password_serializer_bridge executeHandler];
     // Wait for all asynchronous tasks to complete.
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     EXPECT_OCMOCK_VERIFY(password_exporter_delegate_);
   } @catch (NSException* exception) {
     // The exception is raised when
@@ -321,7 +321,7 @@ TEST_F(PasswordExporterTest, CancelledBeforeWriteToFileFinishesSuccessfully) {
 
   [password_exporter_ startExportFlow:CreatePasswordList()];
   // Wait for all asynchronous tasks to complete.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   [password_exporter_ cancelExport];
   EXPECT_EQ(ExportState::CANCELLING, password_exporter_.exportState);
 
@@ -352,7 +352,7 @@ TEST_F(PasswordExporterTest, CancelledBeforeWriteToFileFails) {
 
   [password_exporter_ startExportFlow:CreatePasswordList()];
   // Wait for all asynchronous tasks to complete.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   [password_exporter_ cancelExport];
   EXPECT_EQ(ExportState::CANCELLING, password_exporter_.exportState);
 

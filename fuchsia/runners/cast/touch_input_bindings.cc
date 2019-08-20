@@ -140,7 +140,8 @@ void TouchInputBindings::OnControlMessageReceived(
   std::string response_json;
   CHECK(base::JSONWriter::Write(response, &response_json));
   fuchsia::web::WebMessage response_message = {};
-  response_message.set_data(cr_fuchsia::MemBufferFromString(response_json));
+  response_message.set_data(cr_fuchsia::MemBufferFromString(
+      response_json, "cast-touch-message-response"));
   port_->PostMessage(std::move(response_message),
                      [](fuchsia::web::MessagePort_PostMessage_Result result) {
                        LOG_IF(ERROR, result.is_err())

@@ -224,7 +224,7 @@ class ArcSessionImplTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   user_manager::ScopedUserManager scoped_user_manager_{
       std::make_unique<user_manager::FakeUserManager>()};
 

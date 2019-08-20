@@ -9,6 +9,7 @@ import android.graphics.drawable.LayerDrawable;
 import android.view.View;
 
 import org.chromium.chrome.browser.widget.PulseDrawable;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 /**
  * Allows for testing of views which are highlightable via ViewHighlighter.
@@ -39,5 +40,40 @@ public class ViewHighlighterTestUtils {
      */
     public static boolean checkHighlightOff(View view) {
         return !(view.getBackground() instanceof LayerDrawable);
+    }
+
+    /**
+     * Checks that the view is highlighted with a pulse highlight.
+     *
+     * @param view The view of interest.
+     * @param timeoutDuration The timeout duration (should be set depending on the number of pulses
+     *         and the pulse duration).
+     * @return True iff the view was highlighted, and then turned off.
+     */
+    public static boolean checkHighlightPulse(View view, long timeoutDuration) {
+        try {
+            CriteriaHelper.pollUiThread(()
+                                                -> checkHighlightOn(view),
+                    "Expected highlight to pulse on!", timeoutDuration,
+                    CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+            CriteriaHelper.pollUiThread(()
+                                                -> checkHighlightOff(view),
+                    "Expected highlight to turn off!", timeoutDuration,
+                    CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        } catch (AssertionError e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Checks that the view is highlighted with a pulse highlight.
+     *
+     * @param view The view of interest.
+     * @return True iff the view was highlighted, and then turned off.
+     */
+    public static boolean checkHighlightPulse(View view) {
+        return checkHighlightPulse(view, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
     }
 }

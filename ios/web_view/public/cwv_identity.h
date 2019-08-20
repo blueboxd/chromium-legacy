@@ -11,8 +11,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-CWV_EXPORT
 // Represents a user in ChromeWebView.
+CWV_EXPORT
 @interface CWVIdentity : NSObject
 
 - (instancetype)initWithEmail:(NSString*)email

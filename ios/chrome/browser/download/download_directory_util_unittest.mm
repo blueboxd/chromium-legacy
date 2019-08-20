@@ -22,7 +22,7 @@ using DownloadDirectoryTest = PlatformTest;
 
 // Tests that DeleteDownloadsDirectory() actually deletes the directory.
 TEST_F(DownloadDirectoryTest, Deletion) {
-  base::test::ScopedTaskEnvironment envoronment;
+  base::test::TaskEnvironment envoronment;
 
   // Create a new file in downloads directory.
   base::FilePath dir;

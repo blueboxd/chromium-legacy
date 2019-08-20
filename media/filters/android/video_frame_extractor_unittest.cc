@@ -65,7 +65,7 @@ class VideoFrameExtractorTest : public testing::Test {
   const base::FilePath& temp_dir() const { return temp_dir_.GetPath(); }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<FileDataSource> data_source_;
   std::unique_ptr<VideoFrameExtractor> extractor_;

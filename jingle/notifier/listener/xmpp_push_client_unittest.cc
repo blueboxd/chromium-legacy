@@ -38,7 +38,7 @@ class XmppPushClientTest : public testing::Test {
   XmppPushClientTest()
       : net_config_helper_(
             base::MakeRefCounted<net::TestURLRequestContextGetter>(
-                scoped_task_environment_.GetMainThreadTaskRunner())) {
+                task_environment_.GetMainThreadTaskRunner())) {
     net_config_helper_.FillInNetworkConfig(&notifier_options_.network_config);
   }
 
@@ -57,8 +57,8 @@ class XmppPushClientTest : public testing::Test {
   }
 
   // The sockets created by the XMPP code expect an IO loop.
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::IO};
 
   jingle_glue::NetworkServiceConfigTestUtil net_config_helper_;
   NotifierOptions notifier_options_;

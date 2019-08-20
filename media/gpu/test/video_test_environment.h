@@ -21,7 +21,7 @@ class OzoneGpuTestHelper;
 
 namespace base {
 namespace test {
-class ScopedTaskEnvironment;
+class TaskEnvironment;
 }  // namespace test
 }  // namespace base
 
@@ -48,7 +48,7 @@ class VideoTestEnvironment : public ::testing::Environment {
   // An exit manager is required to run callbacks on shutdown.
   base::AtExitManager at_exit_manager;
 
-  std::unique_ptr<base::test::ScopedTaskEnvironment> task_environment_;
+  std::unique_ptr<base::test::TaskEnvironment> task_environment_;
 
 #if defined(USE_OZONE)
   std::unique_ptr<ui::OzoneGpuTestHelper> gpu_helper_;

@@ -66,7 +66,7 @@ class SendTabToSelfUtilTest : public PlatformTest {
 
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   std::unique_ptr<ios::ChromeBrowserState> browser_state_;
@@ -82,7 +82,7 @@ TEST_F(SendTabToSelfUtilTest, HasValidTargetDevice) {
 }
 
 TEST_F(SendTabToSelfUtilTest, AreFlagsEnabled) {
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   scoped_feature_list_.InitWithFeatures(
       {switches::kSyncSendTabToSelf, kSendTabToSelfShowSendingUI}, {});
 
@@ -91,7 +91,7 @@ TEST_F(SendTabToSelfUtilTest, AreFlagsEnabled) {
 }
 
 TEST_F(SendTabToSelfUtilTest, AreFlagsDisabled) {
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   scoped_feature_list_.InitWithFeatures(
       {}, {switches::kSyncSendTabToSelf, kSendTabToSelfShowSendingUI});
 
@@ -100,7 +100,7 @@ TEST_F(SendTabToSelfUtilTest, AreFlagsDisabled) {
 }
 
 TEST_F(SendTabToSelfUtilTest, IsReceivingEnabled) {
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   scoped_feature_list_.InitWithFeatures({switches::kSyncSendTabToSelf},
                                         {kSendTabToSelfShowSendingUI});
 
@@ -109,7 +109,7 @@ TEST_F(SendTabToSelfUtilTest, IsReceivingEnabled) {
 }
 
 TEST_F(SendTabToSelfUtilTest, IsOnlySendingEnabled) {
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   scoped_feature_list_.InitWithFeatures({kSendTabToSelfShowSendingUI},
                                         {switches::kSyncSendTabToSelf});
 

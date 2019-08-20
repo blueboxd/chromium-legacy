@@ -221,8 +221,10 @@ class MouseWheelEventQueueTest : public testing::Test,
   }
 
   void SendMouseWheelEventAck(InputEventAckState ack_result) {
+    const MouseWheelEventWithLatencyInfo mouse_event_with_latency_info(
+        queue_->get_wheel_event_awaiting_ack_for_testing(), ui::LatencyInfo());
     queue_->ProcessMouseWheelAck(InputEventAckSource::COMPOSITOR_THREAD,
-                                 ack_result, ui::LatencyInfo());
+                                 ack_result, mouse_event_with_latency_info);
   }
   void SendMouseWheel(float x,
                       float y,

@@ -297,7 +297,7 @@ TEST_F(ResizingHostObserverTest, RateLimited) {
   resizing_host_observer_->SetNowFunctionForTesting(
       base::Bind(&ResizingHostObserverTest::GetTime, base::Unretained(this)));
 
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   base::RunLoop run_loop;
 
   EXPECT_EQ(MakeResolution(100, 100),
@@ -315,7 +315,7 @@ TEST_F(ResizingHostObserverTest, RateLimited) {
   // Since it was queued 900 + 99 ms after the first, we need to wait an
   // additional 1ms. However, since RunLoop is not guaranteed to process tasks
   // with the same due time in FIFO order, wait an additional 1ms for safety.
-  scoped_task_environment.GetMainThreadTaskRunner()->PostDelayedTask(
+  task_environment.GetMainThreadTaskRunner()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), base::TimeDelta::FromMilliseconds(2));
   run_loop.Run();
 

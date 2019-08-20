@@ -127,6 +127,10 @@ class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
     DISALLOW_COPY_AND_ASSIGN(FakeTransaction);
   };
 
+  std::unique_ptr<IndexedDBBackingStore::Transaction> CreateTransaction()
+      override;
+
+ protected:
  private:
   DISALLOW_COPY_AND_ASSIGN(IndexedDBFakeBackingStore);
 };

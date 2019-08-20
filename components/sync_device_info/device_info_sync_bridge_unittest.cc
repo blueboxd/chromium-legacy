@@ -399,7 +399,7 @@ class DeviceInfoSyncBridgeTest : public testing::Test,
   int change_count_ = 0;
 
   // In memory model type store needs to be able to post tasks.
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   testing::NiceMock<MockModelTypeChangeProcessor> mock_processor_;
 

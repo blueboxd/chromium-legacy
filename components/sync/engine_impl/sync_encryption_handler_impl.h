@@ -70,7 +70,6 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
   void EnableEncryptEverything() override;
   bool IsEncryptEverythingEnabled() const override;
   base::Time GetKeystoreMigrationTime() const override;
-  Cryptographer* GetCryptographerUnsafe() override;
   KeystoreKeysHandler* GetKeystoreKeysHandler() override;
   syncable::NigoriHandler* GetNigoriHandler() override;
 
@@ -80,12 +79,14 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
                          syncable::BaseTransaction* const trans) override;
   void UpdateNigoriFromEncryptedTypes(
       sync_pb::NigoriSpecifics* nigori,
-      syncable::BaseTransaction* const trans) const override;
+      const syncable::BaseTransaction* const trans) const override;
   // Can be called from any thread.
+  const Cryptographer* GetCryptographer(
+      const syncable::BaseTransaction* const trans) const override;
   ModelTypeSet GetEncryptedTypes(
-      syncable::BaseTransaction* const trans) const override;
+      const syncable::BaseTransaction* const trans) const override;
   PassphraseType GetPassphraseType(
-      syncable::BaseTransaction* const trans) const override;
+      const syncable::BaseTransaction* const trans) const override;
 
   // KeystoreKeysHandler implementation.
   bool NeedKeystoreKey() const override;
@@ -103,6 +104,10 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
   //
   // Writes the nigori to the Directory and updates the Cryptographer.
   void RestoreNigori(const SyncEncryptionHandler::NigoriState& nigori_state);
+
+  // Returns mutable Cryptographer, used only in tests to manipulate it
+  // directly.
+  Cryptographer* GetMutableCryptographerForTesting();
 
  private:
   friend class SyncEncryptionHandlerImplTest;
@@ -281,8 +286,8 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
 
   // Helper methods for ensuring transactions are held when accessing
   // |vault_unsafe_|.
-  Vault* UnlockVaultMutable(syncable::BaseTransaction* const trans);
-  const Vault& UnlockVault(syncable::BaseTransaction* const trans) const;
+  Vault* UnlockVaultMutable(const syncable::BaseTransaction* const trans);
+  const Vault& UnlockVault(const syncable::BaseTransaction* const trans) const;
 
   // Helper method for determining if migration of a nigori node should be
   // triggered or not. In case migration shouldn't be triggered the method will

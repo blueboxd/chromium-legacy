@@ -70,6 +70,23 @@ namespace blink {
 
 namespace {
 
+void MaybeRecordThirdPartyServiceWorkerUsage(
+    ExecutionContext* execution_context) {
+  DCHECK(execution_context);
+  // ServiceWorkerContainer is only supported on documents.
+  Document* document = To<Document>(execution_context);
+  DCHECK(document);
+
+  // Don't record the use counter if the frame is same-origin to the top frame,
+  // or if we can't tell whether the frame was ever cross-origin or not.
+  if (!document->TopFrameOrigin() ||
+      document->TopFrameOrigin()->CanAccess(document->GetSecurityOrigin())) {
+    return;
+  }
+
+  UseCounter::Count(document, WebFeature::kThirdPartyServiceWorker);
+}
+
 bool HasFiredDomContentLoaded(const Document& document) {
   return !document.GetTiming().DomContentLoadedEventStart().is_null();
 }
@@ -229,6 +246,7 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
       ServiceWorkerRegistration, ServiceWorkerErrorForUpdate>>(resolver);
 
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  MaybeRecordThirdPartyServiceWorkerUsage(execution_context);
 
   // The IDL definition is expected to restrict service worker to secure
   // contexts.
@@ -477,6 +495,7 @@ void ServiceWorkerContainer::SetController(
     return;
   controller_ = ServiceWorker::From(GetExecutionContext(), std::move(info));
   if (controller_) {
+    MaybeRecordThirdPartyServiceWorkerUsage(GetExecutionContext());
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kServiceWorkerControlledPage);
     GetExecutionContext()->GetScheduler()->RegisterStickyFeature(

@@ -115,7 +115,6 @@ const NSTimeInterval kSearchShortDelay = 0.100;
   UIView* findBarBackground = nil;
 
   findBarBackground = [[UIView alloc] initWithFrame:CGRectMake(0, 0, width, 1)];
-#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
   if (@available(iOS 13, *)) {
     // When iOS 12 is dropped, only the next line is needed for styling.
     // Every other check for |incognitoStyle| can be removed, as well as
@@ -124,7 +123,6 @@ const NSTimeInterval kSearchShortDelay = 0.100;
         self.isIncognito ? UIUserInterfaceStyleDark
                          : UIUserInterfaceStyleUnspecified;
   }
-#endif
   findBarBackground.backgroundColor = color::DarkModeDynamicColor(
       [UIColor colorNamed:kBackgroundColor], self.isIncognito,
       [UIColor colorNamed:kBackgroundDarkColor]);

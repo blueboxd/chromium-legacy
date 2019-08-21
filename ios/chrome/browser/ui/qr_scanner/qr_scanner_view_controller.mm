@@ -58,9 +58,7 @@ using base::UserMetricsAction;
 }
 
 - (CameraController*)buildCameraController {
-  return
-      [[QRScannerCameraController alloc] initWithCameraControllerDelegate:self
-                                                        qrScannerDelegate:self];
+  return [[QRScannerCameraController alloc] initWithQRScannerDelegate:self];
 }
 
 - (void)dismissForReason:(scannerViewController::DismissalReason)reason

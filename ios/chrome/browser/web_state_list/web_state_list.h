@@ -71,6 +71,9 @@ class WebStateList {
   // Returns true if the specified index is contained by the model.
   bool ContainsIndex(int index) const;
 
+  // Returns true if the list is currently mutating.
+  bool IsMutating() const;
+
   // Returns the currently active WebState or null if there is none.
   web::WebState* GetActiveWebState() const;
 

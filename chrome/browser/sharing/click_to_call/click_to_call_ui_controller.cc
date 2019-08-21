@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
+#include "chrome/browser/sharing/click_to_call/click_to_call_utils.h"
 #include "chrome/browser/sharing/sharing_device_capability.h"
 #include "chrome/browser/sharing/sharing_dialog.h"
 #include "chrome/browser/shell_integration.h"
@@ -22,7 +23,6 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
-#include "url/url_util.h"
 
 using SharingMessage = chrome_browser_sharing::SharingMessage;
 using App = ClickToCallUiController::App;
@@ -51,10 +51,9 @@ ClickToCallUiController::ClickToCallUiController(
 ClickToCallUiController::~ClickToCallUiController() = default;
 
 void ClickToCallUiController::OnDeviceSelected(
-    const GURL& url,
+    const std::string& phone_number,
     const syncer::DeviceInfo& device) {
-  phone_url_ = url;
-  OnDeviceChosen(device);
+  SendNumberToDevice(device, phone_number);
 }
 
 base::string16 ClickToCallUiController::GetTitle() {
@@ -88,16 +87,15 @@ void ClickToCallUiController::DoUpdateApps(UpdateAppsCallback callback) {
 }
 
 void ClickToCallUiController::OnDeviceChosen(const syncer::DeviceInfo& device) {
-  std::string phone_number_string(phone_url_.GetContent());
-  url::RawCanonOutputT<base::char16> unescaped_phone_number;
-  url::DecodeURLEscapeSequences(
-      phone_number_string.data(), phone_number_string.size(),
-      url::DecodeURLMode::kUTF8OrIsomorphic, &unescaped_phone_number);
+  SendNumberToDevice(device, GetUnescapedURLContent(phone_url_));
+}
 
+void ClickToCallUiController::SendNumberToDevice(
+    const syncer::DeviceInfo& device,
+    const std::string& phone_number) {
   SharingMessage sharing_message;
   sharing_message.mutable_click_to_call_message()->set_phone_number(
-      base::UTF16ToUTF8(base::string16(unescaped_phone_number.data(),
-                                       unescaped_phone_number.length())));
+      phone_number);
 
   SendMessageToDevice(device, std::move(sharing_message));
 }

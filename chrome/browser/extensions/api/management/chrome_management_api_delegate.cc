@@ -33,6 +33,7 @@
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/common/extensions/extension_metrics.h"
@@ -222,6 +223,7 @@ class ChromeAppForLinkDelegate : public extensions::AppForLinkDelegate {
     auto web_app_info = std::make_unique<WebApplicationInfo>();
     web_app_info->title = base::UTF8ToUTF16(title);
     web_app_info->app_url = launch_url;
+    web_app_info->open_as_window = false;
 
     if (!image_result.image.IsEmpty()) {
       WebApplicationInfo::IconInfo icon;
@@ -236,7 +238,7 @@ class ChromeAppForLinkDelegate : public extensions::AppForLinkDelegate {
     DCHECK(provider);
 
     provider->install_manager().InstallWebAppFromInfo(
-        std::move(web_app_info), /*no_network_install=*/false,
+        std::move(web_app_info), web_app::ForInstallableSite::kNo,
         WebappInstallSource::MANAGEMENT_API,
         base::BindOnce(OnGenerateAppForLinkCompleted,
                        base::RetainedRef(function)));

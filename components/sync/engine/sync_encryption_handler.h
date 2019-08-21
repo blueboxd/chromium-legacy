@@ -180,15 +180,6 @@ class SyncEncryptionHandler {
   // base::Time() in case migration isn't completed.
   virtual base::Time GetKeystoreMigrationTime() const = 0;
 
-  // Unsafe getter. Use only if sync is not up and running and there is no risk
-  // of other threads calling this. Returns the original cryptographer. This
-  // Cryptographer will always reflect the actual state of
-  // SyncEncryptionHandler (no needs to call this method again in case
-  // cryptographer state was changed).
-  // TODO(crbug.com/970213): remove this method or replace with normal getter
-  // for const Cryptographer.
-  virtual Cryptographer* GetCryptographerUnsafe() = 0;
-
   // Returns KeystoreKeysHandler, allowing to pass new keystore keys and to
   // check whether keystore keys need to be requested from the server.
   virtual KeystoreKeysHandler* GetKeystoreKeysHandler() = 0;

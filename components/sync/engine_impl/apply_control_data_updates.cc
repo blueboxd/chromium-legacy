@@ -35,7 +35,7 @@ namespace syncer {
 void ApplyNigoriUpdate(syncable::Directory* dir) {
   syncable::WriteTransaction trans(FROM_HERE, syncable::SYNCER, dir);
   syncable::MutableEntry entry(&trans, syncable::GET_TYPE_ROOT, NIGORI);
-  Cryptographer* cryptographer = dir->GetCryptographer(&trans);
+  const Cryptographer* cryptographer = dir->GetCryptographer(&trans);
 
   if (!entry.good()) {
     return;

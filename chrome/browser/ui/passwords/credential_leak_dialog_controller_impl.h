@@ -7,6 +7,8 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/passwords/credential_leak_dialog_controller.h"
+#include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
+#include "url/gurl.h"
 
 class CredentialLeakPrompt;
 class PasswordsLeakDialogDelegate;
@@ -15,8 +17,10 @@ class PasswordsLeakDialogDelegate;
 class CredentialLeakDialogControllerImpl
     : public CredentialLeakDialogController {
  public:
-  explicit CredentialLeakDialogControllerImpl(
-      PasswordsLeakDialogDelegate* delegate);
+  CredentialLeakDialogControllerImpl(
+      PasswordsLeakDialogDelegate* delegate,
+      password_manager::CredentialLeakType leak_type,
+      const GURL& origin);
   ~CredentialLeakDialogControllerImpl() override;
 
   // Pop up the credential leak dialog.
@@ -26,6 +30,12 @@ class CredentialLeakDialogControllerImpl
   bool IsShowingAccountChooser() const override;
   void OnCheckPasswords() override;
   void OnCloseDialog() override;
+  base::string16 GetAcceptButtonLabel() const override;
+  base::string16 GetCloseButtonLabel() const override;
+  base::string16 GetDescription() const override;
+  base::string16 GetTitle() const override;
+  bool ShouldCheckPasswords() const override;
+  bool ShouldShowCloseButton() const override;
 
  private:
   // Release |credential_leak_dialog_| and close the open dialog.
@@ -33,6 +43,8 @@ class CredentialLeakDialogControllerImpl
 
   CredentialLeakPrompt* credential_leak_dialog_;
   PasswordsLeakDialogDelegate* delegate_;
+  const password_manager::CredentialLeakType leak_type_;
+  const GURL origin_;
 
   DISALLOW_COPY_AND_ASSIGN(CredentialLeakDialogControllerImpl);
 };

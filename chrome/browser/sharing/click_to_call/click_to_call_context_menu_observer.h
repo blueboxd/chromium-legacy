@@ -14,7 +14,6 @@
 #include "base/optional.h"
 #include "components/renderer_context_menu/render_view_context_menu_observer.h"
 #include "ui/base/models/simple_menu_model.h"
-#include "url/gurl.h"
 
 class RenderViewContextMenuProxy;
 
@@ -40,10 +39,11 @@ class ClickToCallContextMenuObserver : public RenderViewContextMenuObserver {
   ~ClickToCallContextMenuObserver() override;
 
   // RenderViewContextMenuObserver implementation.
-  void InitMenu(const content::ContextMenuParams& params) override;
   bool IsCommandIdSupported(int command_id) override;
   bool IsCommandIdEnabled(int command_id) override;
   void ExecuteCommand(int command_id) override;
+
+  void BuildMenu(const std::string& phone_number);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ClickToCallContextMenuObserverTest,
@@ -63,7 +63,7 @@ class ClickToCallContextMenuObserver : public RenderViewContextMenuObserver {
 
   SubMenuDelegate sub_menu_delegate_{this};
 
-  GURL url_;
+  std::string phone_number_;
 
   std::unique_ptr<ui::SimpleMenuModel> sub_menu_model_;
 

@@ -187,7 +187,7 @@ bool SyncManagerImpl::VisiblePositionsDiffer(
 
 bool SyncManagerImpl::VisiblePropertiesDiffer(
     const syncable::EntryKernelMutation& mutation,
-    Cryptographer* cryptographer) const {
+    const Cryptographer* cryptographer) const {
   const syncable::EntryKernel& a = mutation.original;
   const syncable::EntryKernel& b = mutation.mutated;
   const sync_pb::EntitySpecifics& a_specifics = a.ref(SPECIFICS);
@@ -333,13 +333,12 @@ void SyncManagerImpl::Init(InitArgs* args) {
 
   DCHECK(backing_store);
 
-  // Note: NigoriHandler and Cryptographer passed to Directory are nullptrs iff
-  // USS implementation of Nigori is enabled.
+  // Note: NigoriHandler passed to Directory is nullptr iff USS implementation
+  // of Nigori is enabled.
   share_->directory = std::make_unique<syncable::Directory>(
       std::move(backing_store), args->unrecoverable_error_handler,
       report_unrecoverable_error_function_,
-      sync_encryption_handler_->GetNigoriHandler(),
-      sync_encryption_handler_->GetCryptographerUnsafe());
+      sync_encryption_handler_->GetNigoriHandler());
 
   DVLOG(1) << "AccountId: " << args->authenticated_account_id;
   if (!OpenDirectory(args)) {
@@ -790,7 +789,7 @@ void SyncManagerImpl::SetExtraChangeRecordData(
     int64_t id,
     ModelType type,
     ChangeReorderBuffer* buffer,
-    Cryptographer* cryptographer,
+    const Cryptographer* cryptographer,
     const syncable::EntryKernel& original,
     bool existed_before,
     bool exists_now) {
@@ -832,7 +831,7 @@ void SyncManagerImpl::HandleCalculateChangesChangeEventFromSyncer(
 
   ChangeReorderBuffer change_buffers[ModelType::NUM_ENTRIES];
 
-  Cryptographer* crypto = directory()->GetCryptographer(trans);
+  const Cryptographer* crypto = directory()->GetCryptographer(trans);
   const syncable::ImmutableEntryKernelMutationMap& mutations =
       write_transaction_info.Get().mutations;
   for (auto it = mutations.Get().begin(); it != mutations.Get().end(); ++it) {

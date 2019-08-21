@@ -159,11 +159,9 @@ class TestNetworkContext : public mojom::NetworkContext {
   void CreateHostResolver(
       const base::Optional<net::DnsConfigOverrides>& config_overrides,
       mojom::HostResolverRequest request) override {}
-  void NotifyExternalCacheHit(
-      const GURL& url,
-      const std::string& http_method,
-      const base::Optional<url::Origin>& top_frame_origin,
-      const url::Origin& frame_origin) override {}
+  void NotifyExternalCacheHit(const GURL& url,
+                              const std::string& http_method,
+                              const net::NetworkIsolationKey& key) override {}
   void VerifyCertForSignedExchange(
       const scoped_refptr<net::X509Certificate>& certificate,
       const GURL& url,

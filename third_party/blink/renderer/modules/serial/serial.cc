@@ -116,10 +116,11 @@ ScriptPromise Serial::requestPort(ScriptState* script_state,
   return resolver->Promise();
 }
 
-void Serial::GetPort(const base::UnguessableToken& token,
-                     device::mojom::blink::SerialPortRequest request) {
+void Serial::GetPort(
+    const base::UnguessableToken& token,
+    mojo::PendingReceiver<device::mojom::blink::SerialPort> receiver) {
   EnsureServiceConnection();
-  service_->GetPort(token, std::move(request));
+  service_->GetPort(token, std::move(receiver));
 }
 
 void Serial::Trace(Visitor* visitor) {
@@ -139,8 +140,8 @@ void Serial::EnsureServiceConnection() {
   auto task_runner =
       GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
   GetExecutionContext()->GetInterfaceProvider()->GetInterface(
-      mojo::MakeRequest(&service_, task_runner));
-  service_.set_connection_error_handler(
+      service_.BindNewPipeAndPassReceiver(task_runner));
+  service_.set_disconnect_handler(
       WTF::Bind(&Serial::OnServiceConnectionError, WrapWeakPersistent(this)));
 }
 

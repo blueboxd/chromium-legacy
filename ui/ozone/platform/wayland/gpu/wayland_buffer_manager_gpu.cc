@@ -42,20 +42,11 @@ void WaylandBufferManagerGpu::OnSubmission(gfx::AcceleratedWidget widget,
                                            uint32_t buffer_id,
                                            gfx::SwapResult swap_result) {
   DCHECK(io_thread_runner_->BelongsToCurrentThread());
-  DCHECK_NE(widget, gfx::kNullAcceleratedWidget);
-  auto* surface = GetSurface(widget);
-  // There can be a race between destruction and submitting the last frames. The
-  // surface can be destroyed by the time the host receives a request to destroy
-  // a buffer, and is able to call the OnSubmission for that specific buffer.
-  if (surface) {
-    // As long as mojo calls rerouted to the IO child thread, we have to reroute
-    // them back to the same thread, where the original commit buffer call came
-    // from.
-    commit_thread_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&WaylandSurfaceGpu::OnSubmission, base::Unretained(surface),
-                   buffer_id, swap_result));
-  }
+  // Return back to the same thread where the commit request came from.
+  commit_thread_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&WaylandBufferManagerGpu::SubmitSwapResultOnOriginThread,
+                 base::Unretained(this), widget, buffer_id, swap_result));
 }
 
 void WaylandBufferManagerGpu::OnPresentation(
@@ -63,37 +54,32 @@ void WaylandBufferManagerGpu::OnPresentation(
     uint32_t buffer_id,
     const gfx::PresentationFeedback& feedback) {
   DCHECK(io_thread_runner_->BelongsToCurrentThread());
-  DCHECK_NE(widget, gfx::kNullAcceleratedWidget);
-  auto* surface = GetSurface(widget);
-  // There can be a race between destruction and presenting the last frames. The
-  // surface can be destroyed by the time the host receives a request to destroy
-  // a buffer, and is able to call the OnPresentation for that specific buffer.
-  if (surface) {
-    // As long as mojo calls rerouted to the IO child thread, we have to reroute
-    // them back to the same thread, where the original commit buffer call came
-    // from.
-    commit_thread_runner_->PostTask(
-        FROM_HERE, base::Bind(&WaylandSurfaceGpu::OnPresentation,
-                              base::Unretained(surface), buffer_id, feedback));
-  }
+  // Return back to the same thread where the commit request came from.
+  commit_thread_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&WaylandBufferManagerGpu::SubmitPresentationtOnOriginThread,
+                 base::Unretained(this), widget, buffer_id, feedback));
 }
 
 void WaylandBufferManagerGpu::RegisterSurface(gfx::AcceleratedWidget widget,
                                               WaylandSurfaceGpu* surface) {
+  base::AutoLock scoped_lock(lock_);
   widget_to_surface_map_.emplace(widget, surface);
 }
 
 void WaylandBufferManagerGpu::UnregisterSurface(gfx::AcceleratedWidget widget) {
+  base::AutoLock scoped_lock(lock_);
   widget_to_surface_map_.erase(widget);
 }
 
 WaylandSurfaceGpu* WaylandBufferManagerGpu::GetSurface(
-    gfx::AcceleratedWidget widget) const {
-  WaylandSurfaceGpu* surface = nullptr;
+    gfx::AcceleratedWidget widget) {
+  base::AutoLock scoped_lock(lock_);
+
   auto it = widget_to_surface_map_.find(widget);
   if (it != widget_to_surface_map_.end())
-    surface = it->second;
-  return surface;
+    return it->second;
+  return nullptr;
 }
 
 void WaylandBufferManagerGpu::CreateDmabufBasedBuffer(
@@ -226,6 +212,31 @@ void WaylandBufferManagerGpu::BindHostInterface(
   buffer_manager_host_ptr_->SetWaylandBufferManagerGpuPtr(
       std::move(client_ptr_info));
   associated_binding_.Bind(std::move(request));
+}
+
+void WaylandBufferManagerGpu::SubmitSwapResultOnOriginThread(
+    gfx::AcceleratedWidget widget,
+    uint32_t buffer_id,
+    gfx::SwapResult swap_result) {
+  DCHECK(commit_thread_runner_->BelongsToCurrentThread());
+  DCHECK_NE(widget, gfx::kNullAcceleratedWidget);
+  auto* surface = GetSurface(widget);
+  // The surface might be destroyed by the time the swap result is provided.
+  if (surface)
+    surface->OnSubmission(buffer_id, swap_result);
+}
+
+void WaylandBufferManagerGpu::SubmitPresentationtOnOriginThread(
+    gfx::AcceleratedWidget widget,
+    uint32_t buffer_id,
+    const gfx::PresentationFeedback& feedback) {
+  DCHECK(commit_thread_runner_->BelongsToCurrentThread());
+  DCHECK_NE(widget, gfx::kNullAcceleratedWidget);
+  auto* surface = GetSurface(widget);
+  // The surface might be destroyed by the time the presentation feedback is
+  // provided.
+  if (surface)
+    surface->OnPresentation(buffer_id, feedback);
 }
 
 }  // namespace ui

@@ -136,6 +136,7 @@ bool GbmPixmapWayland::ScheduleOverlayPlane(
     bool enable_blend,
     std::unique_ptr<gfx::GpuFence> gpu_fence) {
   auto* surface = buffer_manager_->GetSurface(widget);
+  // This must never be hit.
   DCHECK(surface);
   GbmSurfacelessWayland* surfaceless =
       static_cast<GbmSurfacelessWayland*>(surface);

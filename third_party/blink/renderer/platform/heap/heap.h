@@ -617,17 +617,16 @@ Address ThreadHeap::Allocate(size_t size) {
 
 template <typename T>
 void Visitor::HandleWeakCell(Visitor* self, void* object) {
-  T** cell = reinterpret_cast<T**>(object);
-  T* contents = *cell;
-  if (contents) {
-    if (contents == reinterpret_cast<T*>(-1)) {
-      // '-1' means deleted value. This can happen when weak fields are deleted
-      // while incremental marking is running. Deleted values need to be
-      // preserved to avoid reviving objects in containers.
+  WeakMember<T>* weak_member = reinterpret_cast<WeakMember<T>*>(object);
+  if (weak_member->Get()) {
+    if (weak_member->IsHashTableDeletedValue()) {
+      // This can happen when weak fields are deleted while incremental marking
+      // is running. Deleted values need to be preserved to avoid reviving
+      // objects in containers.
       return;
     }
-    if (!ThreadHeap::IsHeapObjectAlive(contents))
-      *cell = nullptr;
+    if (!ThreadHeap::IsHeapObjectAlive(weak_member->Get()))
+      weak_member->Clear();
   }
 }
 

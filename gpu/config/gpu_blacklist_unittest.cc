@@ -48,6 +48,8 @@ class GpuBlacklistTest : public testing::Test {
             nullptr,                               // machine model info
             0,                                     // gpu_series size
             nullptr,                               // gpu_series
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},                    // intel_gpu_generation
             nullptr,                               // more conditions
         },
         0,        // exceptions count

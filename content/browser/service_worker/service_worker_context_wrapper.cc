@@ -277,18 +277,24 @@ void ServiceWorkerContextWrapper::Shutdown() {
     watcher_->Stop();
     watcher_ = nullptr;
   }
-  // TODO(https://crbug.com/824858): Make this RunOrPostTask. Some unit tests
-  // depend on this being a PostTask even if we are already on the core thread
-  // (in many unit tests the IO thread and UI thread are the same), or else the
-  // InitializeResourceContext() call by StoragePartitionImplMap() will run
-  // after the shutdown task and set the resource context back to non-null.
-  base::PostTask(
-      FROM_HERE, {GetCoreThreadId()},
-      base::BindOnce(&ServiceWorkerContextWrapper::ShutdownOnCoreThread, this));
+
+  // Use explicit feature check here instead of RunOrPostTaskOnThread(), since
+  // the feature may be disabled but in unit tests we are considered both on the
+  // UI and IO thread here, and not posting a task causes a race with callers
+  // setting the |resource_context_|.
+  if (ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled()) {
+    ShutdownOnCoreThread();
+  } else {
+    base::PostTask(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(&ServiceWorkerContextWrapper::ShutdownOnCoreThread,
+                       this));
+  }
 }
 
 void ServiceWorkerContextWrapper::InitializeResourceContext(
     ResourceContext* resource_context) {
+  DCHECK(!ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled());
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   resource_context_ = resource_context;
 }
@@ -323,6 +329,7 @@ BrowserContext* ServiceWorkerContextWrapper::browser_context() {
 }
 
 ResourceContext* ServiceWorkerContextWrapper::resource_context() {
+  DCHECK(!ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled());
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return resource_context_;
 }
@@ -1552,10 +1559,8 @@ void ServiceWorkerContextWrapper::FindRegistrationForScopeOnCoreThread(
 
 void ServiceWorkerContextWrapper::ShutdownOnCoreThread() {
   DCHECK_CURRENTLY_ON(GetCoreThreadId());
-  RunOrPostTaskOnThread(
-      FROM_HERE, BrowserThread::IO,
-      base::BindOnce(&ServiceWorkerContextWrapper::InitializeResourceContext,
-                     this, nullptr));
+  if (!ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled())
+    resource_context_ = nullptr;
   context_core_.reset();
 }
 

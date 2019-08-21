@@ -152,7 +152,8 @@ class CORE_EXPORT WorkerGlobalScope
       network::mojom::ReferrerPolicy response_referrer_policy,
       network::mojom::IPAddressSpace response_address_space,
       const Vector<CSPHeaderAndType>& response_csp_headers,
-      const Vector<String>* response_origin_trial_tokens) = 0;
+      const Vector<String>* response_origin_trial_tokens,
+      int64_t appcache_id) = 0;
 
   // These methods should be called in the scope of a pausable
   // task runner. ie. They should not be called when the context

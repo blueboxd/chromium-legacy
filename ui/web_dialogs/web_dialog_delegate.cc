@@ -32,6 +32,10 @@ bool WebDialogDelegate::OnDialogCloseRequested() {
   return true;
 }
 
+bool WebDialogDelegate::ShouldShowCloseButton() const {
+  return true;
+}
+
 void WebDialogDelegate::OnDialogCloseFromWebUI(
     const std::string& json_retval) {
   OnDialogClosed(json_retval);

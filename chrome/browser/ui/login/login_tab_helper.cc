@@ -5,9 +5,12 @@
 #include "chrome/browser/ui/login/login_tab_helper.h"
 
 #include "base/feature_list.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/ui/login/login_handler.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/login_delegate.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -81,6 +84,22 @@ void LoginTabHelper::DidFinishNavigation(
     url_for_delegate_ = GURL();
   }
 
+  // LoginTabHelper stores the navigation entry ID and navigation handle ID
+  // corresponding to the refresh that occurs when a user cancels a prompt. (The
+  // refresh is to retrieve the error page body from the server so that it can
+  // be displayed to the user.) Once a navigation has finished, such a refresh
+  // is no longer pending, so clear these fields.
+  navigation_entry_id_with_cancelled_prompt_ = 0;
+  int64_t navigation_handle_id_with_cancelled_prompt =
+      navigation_handle_id_with_cancelled_prompt_;
+  navigation_handle_id_with_cancelled_prompt_ = 0;
+  // If the finishing navigation corresponding to a refresh for a cancelled
+  // prompt, then return here to avoid showing a prompt again.
+  if (navigation_handle->GetNavigationId() ==
+      navigation_handle_id_with_cancelled_prompt) {
+    return;
+  }
+
   if (!navigation_handle->GetAuthChallengeInfo()) {
     return;
   }
@@ -135,6 +154,29 @@ bool LoginTabHelper::IsShowingPrompt() const {
   return !!delegate_;
 }
 
+content::NavigationThrottle::ThrottleCheckResult
+LoginTabHelper::WillProcessMainFrameUnauthorizedResponse(
+    content::NavigationHandle* navigation_handle) {
+  // If the user has just cancelled the auth prompt for this navigation, then
+  // the page is being refreshed to retrieve the 401 body from the server, so
+  // allow the refresh to proceed.
+  if (web_contents()->GetController().GetVisibleEntry()->GetUniqueID() ==
+      navigation_entry_id_with_cancelled_prompt_) {
+    // Note the navigation handle ID so that when this refresh navigation
+    // finishes, DidFinishNavigation declines to show another login prompt. We
+    // need the navigation handle ID (rather than the navigation entry ID) here
+    // because the navigation entry ID will change once the refresh finishes.
+    navigation_handle_id_with_cancelled_prompt_ =
+        navigation_handle->GetNavigationId();
+    return content::NavigationThrottle::PROCEED;
+  }
+
+  // Otherwise, rewrite the response to a blank page. DidFinishNavigation will
+  // show a login prompt on top of this blank page.
+  return {content::NavigationThrottle::CANCEL,
+          net::ERR_INVALID_AUTH_CREDENTIALS, "<html></html>"};
+}
+
 LoginTabHelper::LoginTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {}
 
@@ -161,6 +203,20 @@ void LoginTabHelper::HandleCredentials(
   // gone.
   if (challenge_.is_proxy) {
     web_contents()->DidChangeVisibleSecurityState();
+  }
+
+  // If the prompt has been cancelled, reload to retrieve the error page body
+  // from the server.
+  if (!credentials.has_value()) {
+    navigation_entry_id_with_cancelled_prompt_ =
+        web_contents()->GetController().GetVisibleEntry()->GetUniqueID();
+    // Post a task to reload instead of reloading directly. This accounts for
+    // the case when the prompt has been cancelled due to the tab
+    // closing. Reloading synchronously while a tab is closing causes a DCHECK
+    // failure.
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(&LoginTabHelper::Reload,
+                                  weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

@@ -49,7 +49,12 @@ gfx::RectF ToGfxRectF(const PP_FloatRect& r) {
   return gfx::RectF(r.point.x, r.point.y, r.size.width, r.size.height);
 }
 
+template <typename T>
+bool CompareTextRuns(const T& a, const T& b) {
+  return a.text_run_index < b.text_run_index;
 }
+
+}  // namespace
 
 PdfAccessibilityTree::PdfAccessibilityTree(
     content::RendererPpapiHost* host,
@@ -68,12 +73,41 @@ PdfAccessibilityTree::~PdfAccessibilityTree() {
 // static
 bool PdfAccessibilityTree::IsDataFromPluginValid(
     const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
-    const std::vector<PP_PrivateAccessibilityCharInfo>& chars) {
+    const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
+    const std::vector<ppapi::PdfAccessibilityLinkInfo>& links,
+    const std::vector<ppapi::PdfAccessibilityImageInfo>& images) {
   base::CheckedNumeric<uint32_t> char_length = 0;
   for (const PP_PrivateAccessibilityTextRunInfo& text_run : text_runs)
     char_length += text_run.len;
   if (!char_length.IsValid() || char_length.ValueOrDie() != chars.size())
     return false;
+
+  if (!std::is_sorted(links.begin(), links.end(),
+                      CompareTextRuns<ppapi::PdfAccessibilityLinkInfo>)) {
+    return false;
+  }
+  // Text run index of a |link| is out of bounds if it exceeds the size of
+  // |text_runs|. The index denotes the position of the link relative to the
+  // text runs. The index value equal to the size of |text_runs| indicates that
+  // the link should be after the last text run.
+  for (const ppapi::PdfAccessibilityLinkInfo& link : links) {
+    base::CheckedNumeric<uint32_t> index = link.text_run_index;
+    index += link.text_run_count;
+    if (!index.IsValid() || index.ValueOrDie() > text_runs.size())
+      return false;
+  }
+
+  if (!std::is_sorted(images.begin(), images.end(),
+                      CompareTextRuns<ppapi::PdfAccessibilityImageInfo>)) {
+    return false;
+  }
+  // Text run index of an |image| works on the same logic as the text run index
+  // of a |link| as mentioned above.
+  for (const ppapi::PdfAccessibilityImageInfo& image : images) {
+    if (image.text_run_index > text_runs.size())
+      return false;
+  }
+
   return true;
 }
 
@@ -121,15 +155,19 @@ void PdfAccessibilityTree::SetAccessibilityDocInfo(
 void PdfAccessibilityTree::SetAccessibilityPageInfo(
     const PP_PrivateAccessibilityPageInfo& page_info,
     const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
-    const std::vector<PP_PrivateAccessibilityCharInfo>& chars) {
+    const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
+    const std::vector<ppapi::PdfAccessibilityLinkInfo>& links,
+    const std::vector<ppapi::PdfAccessibilityImageInfo>& images) {
   content::RenderAccessibility* render_accessibility = GetRenderAccessibility();
   if (!render_accessibility)
     return;
 
   // If unsanitized data is found, don't trust the PPAPI process sending it and
   // stop creation of the accessibility tree.
-  if (!invalid_plugin_message_received_)
-    invalid_plugin_message_received_ = !IsDataFromPluginValid(text_runs, chars);
+  if (!invalid_plugin_message_received_) {
+    invalid_plugin_message_received_ =
+        !IsDataFromPluginValid(text_runs, chars, links, images);
+  }
   if (invalid_plugin_message_received_)
     return;
 

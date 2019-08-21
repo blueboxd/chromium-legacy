@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/base/big_buffer.h"
 #include "net/base/io_buffer.h"
 #include "net/disk_cache/disk_cache.h"
 #include "url/origin.h"
@@ -44,7 +45,7 @@ class CONTENT_EXPORT GeneratedCodeCache {
  public:
   using ReadDataCallback =
       base::RepeatingCallback<void(const base::Time&,
-                                   const std::vector<uint8_t>&)>;
+                                   mojo_base::BigBuffer data)>;
   using GetBackendCallback = base::OnceCallback<void(disk_cache::Backend*)>;
   static const int kResponseTimeSizeInBytes = sizeof(int64_t);
 

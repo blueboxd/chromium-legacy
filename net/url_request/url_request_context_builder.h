@@ -274,15 +274,6 @@ class NET_EXPORT URLRequestContextBuilder {
   // URLRequestContext.
   void SetHttpAuthHandlerFactory(
       std::unique_ptr<HttpAuthHandlerFactory> factory);
-  // Makes the created URLRequestContext use a shared HttpAuthHandlerFactory
-  // object. Not compatible with SetHttpAuthHandlerFactory(). The consumer must
-  // ensure the HttpAuthHandlerFactory outlives the URLRequestContext returned
-  // by the builder.
-  //
-  // TODO(mmenke): Evaluate if sharing is really needed. See:
-  // https://crbug.com/743251.
-  void set_shared_http_auth_handler_factory(
-      HttpAuthHandlerFactory* shared_http_auth_handler_factory);
 
   // By default HttpCache is enabled with a default constructed HttpCacheParams.
   void EnableHttpCache(const HttpCacheParams& params);
@@ -411,7 +402,6 @@ class NET_EXPORT URLRequestContextBuilder {
   std::unique_ptr<ProxyDelegate> proxy_delegate_;
   std::unique_ptr<CookieStore> cookie_store_;
   std::unique_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;
-  HttpAuthHandlerFactory* shared_http_auth_handler_factory_ = nullptr;
   std::unique_ptr<CertVerifier> cert_verifier_;
   CertVerifier* shared_cert_verifier_ = nullptr;
   std::unique_ptr<CTVerifier> ct_verifier_;

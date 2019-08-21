@@ -29,7 +29,8 @@ namespace syncable {
 bool ProcessUnsyncedChangesForEncryption(WriteTransaction* const trans) {
   NigoriHandler* nigori_handler = trans->directory()->GetNigoriHandler();
   ModelTypeSet encrypted_types = nigori_handler->GetEncryptedTypes(trans);
-  Cryptographer* cryptographer = trans->directory()->GetCryptographer(trans);
+  const Cryptographer* cryptographer =
+      trans->directory()->GetCryptographer(trans);
   DCHECK(cryptographer->is_ready());
 
   // Get list of all datatypes with unsynced changes. It's possible that our
@@ -97,7 +98,8 @@ bool SpecificsNeedsEncryption(ModelTypeSet encrypted_types,
 bool VerifyDataTypeEncryptionForTest(BaseTransaction* const trans,
                                      ModelType type,
                                      bool is_encrypted) {
-  Cryptographer* cryptographer = trans->directory()->GetCryptographer(trans);
+  const Cryptographer* cryptographer =
+      trans->directory()->GetCryptographer(trans);
   if (type == PASSWORDS || type == WIFI_CONFIGURATIONS || IsControlType(type)) {
     NOTREACHED();
     return true;
@@ -151,7 +153,8 @@ bool UpdateEntryWithEncryption(BaseTransaction* const trans,
                                const sync_pb::EntitySpecifics& new_specifics,
                                syncable::MutableEntry* entry) {
   NigoriHandler* nigori_handler = trans->directory()->GetNigoriHandler();
-  Cryptographer* cryptographer = trans->directory()->GetCryptographer(trans);
+  const Cryptographer* cryptographer =
+      trans->directory()->GetCryptographer(trans);
   ModelType type = GetModelTypeFromSpecifics(new_specifics);
   DCHECK_GE(type, FIRST_REAL_MODEL_TYPE);
   const sync_pb::EntitySpecifics& old_specifics = entry->GetSpecifics();

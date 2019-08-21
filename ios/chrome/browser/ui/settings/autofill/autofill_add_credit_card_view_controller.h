@@ -10,7 +10,7 @@
 #import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/settings/settings_root_table_view_controller.h"
 
-// The view controller for adding new credit card.
+// The view controller for the credit card editor.
 @interface AutofillAddCreditCardViewController : SettingsRootTableViewController
 
 // Initializes a AutofillAddCreditCardViewController with passed delegate.

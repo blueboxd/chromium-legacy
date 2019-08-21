@@ -87,8 +87,9 @@ void SerialService::RequestPort(
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void SerialService::GetPort(const base::UnguessableToken& token,
-                            device::mojom::SerialPortRequest request) {
+void SerialService::GetPort(
+    const base::UnguessableToken& token,
+    mojo::PendingReceiver<device::mojom::SerialPort> receiver) {
   SerialDelegate* delegate = GetContentClient()->browser()->GetSerialDelegate();
   if (!delegate)
     return;
@@ -102,7 +103,7 @@ void SerialService::GetPort(const base::UnguessableToken& token,
   device::mojom::SerialPortConnectionWatcherPtr watcher;
   watchers_.AddBinding(this, mojo::MakeRequest(&watcher));
   delegate->GetPortManager(render_frame_host_)
-      ->GetPort(token, std::move(request), std::move(watcher));
+      ->GetPort(token, std::move(receiver), std::move(watcher));
 }
 
 void SerialService::FinishGetPorts(

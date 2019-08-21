@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/timer/elapsed_timer.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check_factory.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
 
@@ -55,6 +56,10 @@ class LeakDetectionDelegate : public LeakDetectionDelegateInterface {
 
   // Current leak check-up being performed in the background.
   std::unique_ptr<LeakDetectionCheck> leak_check_;
+
+  // Timer measuring the time it takes from StartLeakCheck() until a call to
+  // OnLeakDetectionDone() with is_leaked = true.
+  std::unique_ptr<base::ElapsedTimer> is_leaked_timer_;
 };
 
 }  // namespace password_manager

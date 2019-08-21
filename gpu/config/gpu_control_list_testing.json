@@ -812,6 +812,65 @@
       "features": [
         "test_feature_0"
       ]
+    },
+    {
+      "id": 68,
+      "description": "GpuControlListEntryTest.GpuGeneration",
+      "intel_gpu_generation": {
+        "op": "<",
+        "value": "9"
+      },
+      "features": [
+        "test_feature_0"
+      ]
+    },
+    {
+      "id": 69,
+      "description": "GpuControlListEntryTest.GpuGenerationActive",
+      "intel_gpu_generation": {
+        "op": "<",
+        "value": "9"
+      },
+      "multi_gpu_category": "active",
+      "features": [
+        "test_feature_0"
+      ]
+    },
+    {
+      "id": 70,
+      "description": "GpuControlListEntryTest.GpuGenerationAny",
+      "intel_gpu_generation": {
+        "op": "<",
+        "value": "9"
+      },
+      "multi_gpu_category": "any",
+      "features": [
+        "test_feature_0"
+      ]
+    },
+    {
+      "id": 71,
+      "description": "GpuControlListEntryTest.GpuGenerationPrimary",
+      "intel_gpu_generation": {
+        "op": "<",
+        "value": "9"
+      },
+      "multi_gpu_category": "primary",
+      "features": [
+        "test_feature_0"
+      ]
+    },
+    {
+      "id": 72,
+      "description": "GpuControlListEntryTest.GpuGenerationSecondary",
+      "intel_gpu_generation": {
+        "op": "<",
+        "value": "9"
+      },
+      "multi_gpu_category": "secondary",
+      "features": [
+        "test_feature_0"
+      ]
     }
   ]
 }

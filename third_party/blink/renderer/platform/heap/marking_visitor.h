@@ -50,7 +50,7 @@ class PLATFORM_EXPORT MarkingVisitorBase : public Visitor {
   }
 
   void VisitWeak(void* object,
-                 void** object_slot,
+                 void* object_weak_ref,
                  TraceDescriptor desc,
                  WeakCallback callback) final {
     // Filter out already marked values. The write barrier for WeakMember
@@ -59,7 +59,7 @@ class PLATFORM_EXPORT MarkingVisitorBase : public Visitor {
     if (desc.base_object_payload != BlinkGC::kNotFullyConstructedObject &&
         HeapObjectHeader::FromPayload(desc.base_object_payload)->IsMarked())
       return;
-    RegisterWeakCallback(object_slot, callback);
+    RegisterWeakCallback(object_weak_ref, callback);
   }
 
   void VisitBackingStoreStrongly(void* object,

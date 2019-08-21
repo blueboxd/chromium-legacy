@@ -78,7 +78,7 @@ DirOpenResult SyncableDirectoryTest::ReopenDirectory() {
   // performance benefits of not writing to disk.
   dir_ = std::make_unique<Directory>(
       std::make_unique<TestDirectoryBackingStore>(kDirectoryName, &connection_),
-      MakeWeakHandle(handler_.GetWeakPtr()), base::Closure(), nullptr, nullptr);
+      MakeWeakHandle(handler_.GetWeakPtr()), base::Closure(), nullptr);
 
   DirOpenResult open_result =
       dir_->Open(kDirectoryName, &delegate_, NullTransactionObserver());
@@ -1833,7 +1833,7 @@ TEST_F(SyncableDirectoryTest, CatastrophicError) {
             return "test_cache_guid";
           })),
       MakeWeakHandle(unrecoverable_error_handler.GetWeakPtr()),
-      base::RepeatingClosure(), nullptr, nullptr);
+      base::RepeatingClosure(), nullptr);
   ASSERT_EQ(OPENED_NEW, dir.Open(kDirectoryName, directory_change_delegate(),
                                  NullTransactionObserver()));
   ASSERT_EQ(0, unrecoverable_error_handler.invocation_count());

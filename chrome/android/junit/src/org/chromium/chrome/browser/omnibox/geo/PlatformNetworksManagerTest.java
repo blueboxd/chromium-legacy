@@ -247,16 +247,6 @@ public class PlatformNetworksManagerTest {
     }
 
     @Test
-    public void testGetConnectedCell_JBMR1() {
-        ReflectionHelpers.setStaticField(
-                Build.VERSION.class, "SDK_INT", Build.VERSION_CODES.JELLY_BEAN_MR1);
-        VisibleCell visibleCell =
-                PlatformNetworksManager.getConnectedCell(mContext, mTelephonyManager);
-        assertEquals(LTE_CELL, visibleCell);
-        assertEquals(visibleCell.timestampMs(), Long.valueOf(CURRENT_TIME_MS - LTE_CELL_AGE));
-    }
-
-    @Test
     public void testGetConnectedCell_allPermissionsDenied() {
         ReflectionHelpers.setStaticField(Build.VERSION.class, "SDK_INT", Build.VERSION_CODES.M);
         allPermissionsDenied();
@@ -306,19 +296,6 @@ public class PlatformNetworksManagerTest {
                     break;
             }
         }
-    }
-
-    @Test
-    public void testGetAllVisibleCells_JBMR1_nullResult() {
-        ReflectionHelpers.setStaticField(
-                Build.VERSION.class, "SDK_INT", Build.VERSION_CODES.JELLY_BEAN_MR1);
-        when(mTelephonyManager.getAllCellInfo()).thenReturn(null);
-        // Null case should be handled and return an empty set.
-        PlatformNetworksManager.getAllVisibleCells(
-                mContext, mTelephonyManager, mVisibleCellCallback);
-        verify(mVisibleCellCallback).onResult(mVisibleCellsArgument.capture());
-
-        assertEquals(0, mVisibleCellsArgument.getValue().size());
     }
 
     @Test

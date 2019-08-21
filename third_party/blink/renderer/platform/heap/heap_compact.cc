@@ -166,7 +166,7 @@ void HeapCompact::MovableObjectFixups::AddOrFilter(MovableReference* slot) {
 
   auto interior_it = interior_fixups_.find(slot);
   CHECK(interior_fixups_.end() == interior_it);
-  interior_fixups_.insert({slot, nullptr});
+  interior_fixups_.emplace(slot, nullptr);
 #if DCHECK_IS_ON()
   interior_slot_to_object_.insert(slot, header->Payload());
 #endif  // DCHECK_IS_ON()

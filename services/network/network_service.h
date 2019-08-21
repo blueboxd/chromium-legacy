@@ -173,9 +173,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   void DumpWithoutCrashing(base::Time dump_request_time) override;
 #endif
 
-  // Returns the shared HttpAuthHandlerFactory for the NetworkService, creating
-  // one if needed.
-  net::HttpAuthHandlerFactory* GetHttpAuthHandlerFactory();
+  // Returns an HttpAuthHandlerFactory for the given NetworkContext.
+  std::unique_ptr<net::HttpAuthHandlerFactory> CreateHttpAuthHandlerFactory(
+      NetworkContext* network_context);
 
   // Notification that a URLLoader is about to start.
   void OnBeforeURLRequest();
@@ -276,9 +276,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   std::unique_ptr<net::HostResolver::Factory> host_resolver_factory_;
   std::unique_ptr<NetworkUsageAccumulator> network_usage_accumulator_;
 
-  // Must be above |http_auth_handler_factory_|, since it depends on this.
   net::HttpAuthPreferences http_auth_preferences_;
-  std::unique_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory_;
+  mojom::HttpAuthStaticParamsPtr http_auth_static_params_;
   std::unique_ptr<HttpAuthCacheCopier> http_auth_cache_copier_;
 
   // NetworkContexts created by CreateNetworkContext(). They call into the

@@ -58,6 +58,7 @@ interface CoreProbes {
   class FontFace;
   class HTMLDocumentParser;
   class XMLHttpRequest;
+  class HTMLPortalElement;
 
   void DidClearDocumentOfWindowObject([Keep] LocalFrame*);
   void WillInsertDOMNode([Keep] Node* parent);
@@ -166,6 +167,7 @@ interface CoreProbes {
   void ProduceCompilationCache(LocalFrame*, const ScriptSourceCode& source, v8::Local<v8::Script> script);
   void ConsumeCompilationCache(ExecutionContext*, const ScriptSourceCode& source, v8::ScriptCompiler::CachedData** cached_data);
   void NodeCreated([Keep] Node* node);
+  void PortalRemoteFrameCreated(Document*, HTMLPortalElement* portal_element);
 
   void PlayerEventsAdded(LocalFrame* frame, String player_id, const Vector<InspectorPlayerEvent>& events);
   void PlayerPropertiesChanged(LocalFrame* frame, String player_id, const Vector<InspectorPlayerProperty>& properties);

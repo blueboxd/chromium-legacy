@@ -784,16 +784,12 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_Success) {
   base::RunLoop run_loop;
 
   install_task_->InstallWebAppFromInfo(
-      std::move(web_app_info), /*no_network_install=*/false,
+      std::move(web_app_info), ForInstallableSite::kYes,
       WebappInstallSource::MENU_BROWSER_TAB,
       base::BindLambdaForTesting([&](const AppId& installed_app_id,
                                      InstallResultCode code) {
         EXPECT_EQ(InstallResultCode::kSuccess, code);
         EXPECT_EQ(app_id, installed_app_id);
-        EXPECT_FALSE(test_install_finalizer()
-                         .finalize_options_list()
-                         .at(0)
-                         .no_network_install);
 
         std::unique_ptr<WebApplicationInfo> final_web_app_info =
             test_install_finalizer().web_app_info();
@@ -801,35 +797,6 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_Success) {
 
         run_loop.Quit();
       }));
-
-  run_loop.Run();
-}
-
-TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_NoNetworkInstall) {
-  SetInstallFinalizerForTesting();
-
-  auto web_app_info = std::make_unique<WebApplicationInfo>();
-  web_app_info->app_url = GURL("https://example.com/path");
-  web_app_info->open_as_window = false;
-
-  base::RunLoop run_loop;
-
-  install_task_->InstallWebAppFromInfo(
-      std::move(web_app_info), /*no_network_install=*/true,
-      WebappInstallSource::MENU_BROWSER_TAB,
-      base::BindLambdaForTesting(
-          [&](const AppId& installed_app_id, InstallResultCode code) {
-            EXPECT_TRUE(test_install_finalizer()
-                            .finalize_options_list()
-                            .at(0)
-                            .no_network_install);
-
-            std::unique_ptr<WebApplicationInfo> final_web_app_info =
-                test_install_finalizer().web_app_info();
-            EXPECT_TRUE(final_web_app_info->open_as_window);
-
-            run_loop.Quit();
-          }));
 
   run_loop.Run();
 }
@@ -867,7 +834,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_GenerateIcons) {
   base::RunLoop run_loop;
 
   install_task_->InstallWebAppFromInfo(
-      std::move(web_app_info), /*no_network_install=*/true,
+      std::move(web_app_info), ForInstallableSite::kYes,
       WebappInstallSource::ARC,
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
@@ -888,7 +855,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_GenerateIcons) {
                 EXPECT_TRUE(icon.url.is_empty());
             }
 
-            EXPECT_TRUE(final_web_app_info->open_as_window);
+            EXPECT_FALSE(final_web_app_info->open_as_window);
 
             run_loop.Quit();
           }));

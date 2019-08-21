@@ -3065,6 +3065,14 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     createNewWebStateForURL:(const GURL&)URL
                   openerURL:(const GURL&)openerURL
             initiatedByUser:(BOOL)initiatedByUser {
+  // Under some circumstances, this callback may be triggered from WebKit
+  // synchronously as part of handling some other WebStateList mutation
+  // (typically deleting a WebState and then activating another as a side
+  // effect). See crbug.com/988504 for details. In this case, the request to
+  // create a new WebState is silently dropped.
+  if (self.tabModel.webStateList && self.tabModel.webStateList->IsMutating())
+    return nil;
+
   // Check if requested web state is a popup and block it if necessary.
   if (!initiatedByUser) {
     auto* helper = BlockedPopupTabHelper::FromWebState(webState);

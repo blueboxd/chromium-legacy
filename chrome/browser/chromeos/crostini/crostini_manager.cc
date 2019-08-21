@@ -2399,7 +2399,13 @@ void CrostiniManager::RemoveCrostini(std::string vm_name,
 
   auto abort_callback = base::BarrierClosure(
       restarters_by_id_.size(),
-      base::BindOnce(&CrostiniRemover::RemoveCrostini, crostini_remover));
+      base::BindOnce(
+          [](scoped_refptr<CrostiniRemover> remover) {
+            base::PostTask(
+                FROM_HERE, {content::BrowserThread::UI},
+                base::BindOnce(&CrostiniRemover::RemoveCrostini, remover));
+          },
+          crostini_remover));
 
   for (auto restarter_it : restarters_by_id_) {
     AbortRestartCrostini(restarter_it.first, abort_callback);

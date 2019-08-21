@@ -42,7 +42,6 @@ using syncable::Id;
 const char kNigoriTag[] = "google_chrome_nigori";
 
 class ApplyControlDataUpdatesTest : public ::testing::Test {
- public:
  protected:
   ApplyControlDataUpdatesTest() {}
   ~ApplyControlDataUpdatesTest() override {}
@@ -53,6 +52,10 @@ class ApplyControlDataUpdatesTest : public ::testing::Test {
   }
 
   void TearDown() override { dir_maker_.TearDown(); }
+
+  Cryptographer* GetCryptographer(const syncable::BaseTransaction* trans) {
+    return dir_maker_.GetCryptographer(trans);
+  }
 
   syncable::Directory* directory() { return dir_maker_.directory(); }
 
@@ -78,7 +81,7 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriUpdate) {
 
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
-    cryptographer = directory()->GetCryptographer(&trans);
+    cryptographer = GetCryptographer(&trans);
     EXPECT_EQ(encrypted_types,
               directory()->GetNigoriHandler()->GetEncryptedTypes(&trans));
   }
@@ -120,7 +123,7 @@ TEST_F(ApplyControlDataUpdatesTest, EncryptUnsyncedChanges) {
   encrypted_types.PutAll(SyncEncryptionHandler::SensitiveTypes());
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
-    cryptographer = directory()->GetCryptographer(&trans);
+    cryptographer = GetCryptographer(&trans);
     EXPECT_EQ(encrypted_types,
               directory()->GetNigoriHandler()->GetEncryptedTypes(&trans));
 
@@ -231,7 +234,7 @@ TEST_F(ApplyControlDataUpdatesTest, CannotEncryptUnsyncedChanges) {
   encrypted_types.PutAll(SyncEncryptionHandler::SensitiveTypes());
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
-    cryptographer = directory()->GetCryptographer(&trans);
+    cryptographer = GetCryptographer(&trans);
     EXPECT_EQ(encrypted_types,
               directory()->GetNigoriHandler()->GetEncryptedTypes(&trans));
 
@@ -318,7 +321,7 @@ TEST_F(ApplyControlDataUpdatesTest,
   KeyParams local_params = {KeyDerivationParams::CreateForPbkdf2(), "local"};
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
-    cryptographer = directory()->GetCryptographer(&trans);
+    cryptographer = GetCryptographer(&trans);
     EXPECT_EQ(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans),
               encrypted_types);
   }
@@ -354,7 +357,7 @@ TEST_F(ApplyControlDataUpdatesTest,
   // to use.
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
-    cryptographer = directory()->GetCryptographer(&trans);
+    cryptographer = GetCryptographer(&trans);
     directory()->GetNigoriHandler()->ApplyNigoriUpdate(*local_nigori, &trans);
   }
 
@@ -395,7 +398,7 @@ TEST_F(ApplyControlDataUpdatesTest,
   KeyParams local_params = {KeyDerivationParams::CreateForPbkdf2(), "local"};
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
-    cryptographer = directory()->GetCryptographer(&trans);
+    cryptographer = GetCryptographer(&trans);
     EXPECT_EQ(encrypted_types,
               directory()->GetNigoriHandler()->GetEncryptedTypes(&trans));
   }
@@ -431,7 +434,7 @@ TEST_F(ApplyControlDataUpdatesTest,
   // to use.
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
-    cryptographer = directory()->GetCryptographer(&trans);
+    cryptographer = GetCryptographer(&trans);
     directory()->GetNigoriHandler()->ApplyNigoriUpdate(*local_nigori, &trans);
   }
 
@@ -471,7 +474,7 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriConflictOldKeys) {
   KeyParams new_params = {KeyDerivationParams::CreateForPbkdf2(), "new"};
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
-    cryptographer = directory()->GetCryptographer(&trans);
+    cryptographer = GetCryptographer(&trans);
     EXPECT_EQ(encrypted_types,
               directory()->GetNigoriHandler()->GetEncryptedTypes(&trans));
   }
@@ -502,7 +505,7 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriConflictOldKeys) {
   // to use.
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
-    cryptographer = directory()->GetCryptographer(&trans);
+    cryptographer = GetCryptographer(&trans);
     directory()->GetNigoriHandler()->ApplyNigoriUpdate(*local_nigori, &trans);
   }
 
@@ -539,7 +542,7 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriConflictBothMigratedLocalCustom) {
   KeyParams new_params = {KeyDerivationParams::CreateForPbkdf2(), "new"};
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
-    cryptographer = directory()->GetCryptographer(&trans);
+    cryptographer = GetCryptographer(&trans);
     EXPECT_EQ(encrypted_types,
               directory()->GetNigoriHandler()->GetEncryptedTypes(&trans));
   }
@@ -579,7 +582,7 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriConflictBothMigratedLocalCustom) {
   // to use.
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
-    cryptographer = directory()->GetCryptographer(&trans);
+    cryptographer = GetCryptographer(&trans);
     directory()->GetNigoriHandler()->ApplyNigoriUpdate(*local_nigori, &trans);
   }
 
@@ -620,7 +623,7 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriConflictBothMigratedServerCustom) {
   KeyParams new_params = {KeyDerivationParams::CreateForPbkdf2(), "new"};
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
-    cryptographer = directory()->GetCryptographer(&trans);
+    cryptographer = GetCryptographer(&trans);
     EXPECT_EQ(encrypted_types,
               directory()->GetNigoriHandler()->GetEncryptedTypes(&trans));
   }
@@ -660,7 +663,7 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriConflictBothMigratedServerCustom) {
   // to use.
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
-    cryptographer = directory()->GetCryptographer(&trans);
+    cryptographer = GetCryptographer(&trans);
     directory()->GetNigoriHandler()->ApplyNigoriUpdate(*local_nigori, &trans);
   }
 
@@ -702,7 +705,7 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriConflictLocalMigrated) {
   KeyParams new_params = {KeyDerivationParams::CreateForPbkdf2(), "new"};
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
-    cryptographer = directory()->GetCryptographer(&trans);
+    cryptographer = GetCryptographer(&trans);
     EXPECT_EQ(encrypted_types,
               directory()->GetNigoriHandler()->GetEncryptedTypes(&trans));
   }
@@ -739,7 +742,7 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriConflictLocalMigrated) {
   // to use.
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
-    cryptographer = directory()->GetCryptographer(&trans);
+    cryptographer = GetCryptographer(&trans);
     directory()->GetNigoriHandler()->ApplyNigoriUpdate(*local_nigori, &trans);
   }
 
@@ -780,7 +783,7 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriConflictServerMigrated) {
   KeyParams new_params = {KeyDerivationParams::CreateForPbkdf2(), "new"};
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
-    cryptographer = directory()->GetCryptographer(&trans);
+    cryptographer = GetCryptographer(&trans);
     EXPECT_EQ(encrypted_types,
               directory()->GetNigoriHandler()->GetEncryptedTypes(&trans));
   }
@@ -818,7 +821,7 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriConflictServerMigrated) {
   // to use.
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
-    cryptographer = directory()->GetCryptographer(&trans);
+    cryptographer = GetCryptographer(&trans);
     directory()->GetNigoriHandler()->ApplyNigoriUpdate(*local_nigori, &trans);
   }
 
@@ -861,7 +864,7 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriApplyMarksDownloadCompleted) {
 
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
-    cryptographer = directory()->GetCryptographer(&trans);
+    cryptographer = GetCryptographer(&trans);
   }
 
   KeyParams params = {KeyDerivationParams::CreateForPbkdf2(), "foobar"};

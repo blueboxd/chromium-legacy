@@ -37,6 +37,7 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom-blink.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
@@ -54,10 +55,12 @@ class CORE_EXPORT ApplicationCacheHost
     : public GarbageCollectedFinalized<ApplicationCacheHost>,
       public mojom::blink::AppCacheFrontend {
  public:
-  // |interface_broker| can be null for workers and |task_runner| is null for
-  // kAppCacheForNone.
-  ApplicationCacheHost(mojom::blink::DocumentInterfaceBroker* interface_broker,
-                       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  // |interface_broker| can be null for Shared Worker.
+  // |interface_broker_proxy| can be null for Frame.
+  ApplicationCacheHost(
+      mojom::blink::DocumentInterfaceBroker* interface_broker,
+      const BrowserInterfaceBrokerProxy* interface_broker_proxy,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~ApplicationCacheHost() override;
   virtual void Detach();
 
@@ -134,7 +137,9 @@ class CORE_EXPORT ApplicationCacheHost
   base::UnguessableToken host_id_;
   mojom::blink::AppCacheInfo cache_info_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
   mojom::blink::DocumentInterfaceBroker* interface_broker_;
+  const BrowserInterfaceBrokerProxy* interface_broker_proxy_;
 
   // Invoked when CacheSelected() is called.
   base::OnceClosure select_cache_for_worker_completion_callback_;

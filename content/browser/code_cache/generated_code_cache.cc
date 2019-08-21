@@ -253,7 +253,7 @@ void GeneratedCodeCache::FetchEntry(const GURL& url,
   if (backend_state_ == kFailed) {
     CollectStatistics(CacheEntryStatus::kError);
     // Silently ignore the requests.
-    std::move(read_data_callback).Run(base::Time(), std::vector<uint8_t>());
+    std::move(read_data_callback).Run(base::Time(), mojo_base::BigBuffer());
     return;
   }
 
@@ -427,7 +427,7 @@ void GeneratedCodeCache::WriteDataCompleted(const std::string& key, int rv) {
 void GeneratedCodeCache::FetchEntryImpl(const std::string& key,
                                         ReadDataCallback read_data_callback) {
   if (backend_state_ != kInitialized) {
-    std::move(read_data_callback).Run(base::Time(), std::vector<uint8_t>());
+    std::move(read_data_callback).Run(base::Time(), mojo_base::BigBuffer());
     IssueQueuedOperationForEntry(key);
     return;
   }
@@ -450,7 +450,7 @@ void GeneratedCodeCache::OpenCompleteForReadData(
     disk_cache::EntryResult entry_result) {
   if (entry_result.net_error() != net::OK) {
     CollectStatistics(CacheEntryStatus::kMiss);
-    std::move(read_data_callback).Run(base::Time(), std::vector<uint8_t>());
+    std::move(read_data_callback).Run(base::Time(), mojo_base::BigBuffer());
     IssueQueuedOperationForEntry(key);
     return;
   }
@@ -481,7 +481,7 @@ void GeneratedCodeCache::ReadDataComplete(
     int rv) {
   if (rv != buffer->size()) {
     CollectStatistics(CacheEntryStatus::kMiss);
-    std::move(callback).Run(base::Time(), std::vector<uint8_t>());
+    std::move(callback).Run(base::Time(), mojo_base::BigBuffer());
   } else {
     // DiskCache ensures that the operations that are queued for an entry
     // go in order. Hence, we would either read an empty data or read the full
@@ -489,15 +489,17 @@ void GeneratedCodeCache::ReadDataComplete(
     // that case here.
     CollectStatistics(CacheEntryStatus::kHit);
     int64_t raw_response_time = 0;
-    std::vector<uint8_t> data;
+    base::span<const uint8_t> data;
     if (buffer->size() >= kResponseTimeSizeInBytes) {
       raw_response_time = *(reinterpret_cast<int64_t*>(buffer->data()));
-      data = std::vector<uint8_t>(buffer->data() + kResponseTimeSizeInBytes,
-                                  buffer->data() + buffer->size());
+      data = base::make_span(
+          reinterpret_cast<const uint8_t*>(buffer->data()) +
+              kResponseTimeSizeInBytes,
+          static_cast<size_t>(buffer->size()) - kResponseTimeSizeInBytes);
     }
     base::Time response_time = base::Time::FromDeltaSinceWindowsEpoch(
         base::TimeDelta::FromMicroseconds(raw_response_time));
-    std::move(callback).Run(response_time, data);
+    std::move(callback).Run(response_time, mojo_base::BigBuffer(data));
   }
   IssueQueuedOperationForEntry(key);
 }

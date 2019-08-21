@@ -50,7 +50,7 @@ class TestDataSourceDelegate : public DataSourceDelegate {
 
   // Overridden from DataSourceDelegate:
   void OnDataSourceDestroying(DataSource* device) override {}
-  void OnTarget(const std::string& mime_type) override {}
+  void OnTarget(const base::Optional<std::string>& mime_type) override {}
   void OnSend(const std::string& mime_type, base::ScopedFD fd) override {
     if (!data_.has_value()) {
       std::string test_data = "TestData";

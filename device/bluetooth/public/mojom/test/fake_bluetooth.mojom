@@ -149,6 +149,9 @@ interface FakeCentral {
   // ignored.
   SimulateAdvertisementReceived(ScanResult result) => ();
 
+  // Sets the state of this fake Central to |state|.
+  SetState(CentralState state) => ();
+
   // Sets the next GATT Connection request response for peripheral with
   // |address| to |code|. |code| could be an HCI Error Code from
   // BT 4.2 Vol 2 Part D 1.3 List Of Error Codes or a number outside that range

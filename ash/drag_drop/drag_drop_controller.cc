@@ -190,6 +190,7 @@ int DragDropController::StartDragAndDrop(
 
   drag_data_ = std::move(data);
   drag_operation_ = operation;
+  current_drag_actions_ = 0;
 
   start_location_ = screen_location;
   current_location_ = screen_location;
@@ -464,6 +465,13 @@ void DragDropController::DragUpdate(aura::Window* target,
         cursor = ui::CursorType::kGrabbing;
       ash::Shell::Get()->cursor_manager()->SetCursor(cursor);
     }
+  }
+
+  if (op != current_drag_actions_) {
+    current_drag_actions_ = op;
+
+    for (aura::client::DragDropClientObserver& observer : observers_)
+      observer.OnDragActionsChanged(op);
   }
 
   DCHECK(drag_image_.get());

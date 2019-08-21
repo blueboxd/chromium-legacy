@@ -41,7 +41,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                 // machine model info
             0,                                       // gpu_series size
             nullptr,                                 // gpu_series
-            &kMoreForEntry1_1440601243,              // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},          // intel_gpu_generation
+            &kMoreForEntry1_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -71,7 +73,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            &kMoreForEntry2_1440601243,             // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},          // intel_gpu_generation
+            &kMoreForEntry2_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -101,7 +105,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            &kMoreForEntry3_1440601243,             // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},          // intel_gpu_generation
+            &kMoreForEntry3_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -131,7 +137,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            &kMoreForEntry4_1440601243,             // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},          // intel_gpu_generation
+            &kMoreForEntry4_1440601243,  // more data
         },
         base::size(kExceptionsForEntry4),  // exceptions count
         kExceptionsForEntry4,              // exceptions
@@ -161,7 +169,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            &kMoreForEntry5_1440601243,             // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},          // intel_gpu_generation
+            &kMoreForEntry5_1440601243,  // more data
         },
         base::size(kExceptionsForEntry5),  // exceptions count
         kExceptionsForEntry5,              // exceptions
@@ -191,7 +201,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            &kMoreForEntry6_1440601243,             // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},          // intel_gpu_generation
+            &kMoreForEntry6_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -221,7 +233,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            &kMoreForEntry7_1440601243,             // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},          // intel_gpu_generation
+            &kMoreForEntry7_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -251,7 +265,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            &kMoreForEntry8_1440601243,             // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},          // intel_gpu_generation
+            &kMoreForEntry8_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -281,7 +297,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            &kMoreForEntry9_1440601243,             // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},          // intel_gpu_generation
+            &kMoreForEntry9_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -311,7 +329,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            &kMoreForEntry10_1440601243,            // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry10_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -341,7 +361,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                 // machine model info
             0,                                       // gpu_series size
             nullptr,                                 // gpu_series
-            &kMoreForEntry11_1440601243,             // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry11_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -371,7 +393,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                 // machine model info
             0,                                       // gpu_series size
             nullptr,                                 // gpu_series
-            &kMoreForEntry12_1440601243,             // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry12_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -401,7 +425,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                 // machine model info
             0,                                       // gpu_series size
             nullptr,                                 // gpu_series
-            &kMoreForEntry13_1440601243,             // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry13_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -431,7 +457,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                 // machine model info
             0,                                       // gpu_series size
             nullptr,                                 // gpu_series
-            &kMoreForEntry14_1440601243,             // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry14_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -461,7 +489,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                 // machine model info
             0,                                       // gpu_series size
             nullptr,                                 // gpu_series
-            &kMoreForEntry15_1440601243,             // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry15_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -491,7 +521,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            &kMoreForEntry16_1440601243,            // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry16_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -521,7 +553,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                      // machine model info
             0,                                            // gpu_series size
             nullptr,                                      // gpu_series
-            &kMoreForEntry17_1440601243,                  // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry17_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -551,7 +585,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                  // machine model info
             0,                                        // gpu_series size
             nullptr,                                  // gpu_series
-            &kMoreForEntry18_1440601243,              // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry18_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -581,7 +617,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                  // machine model info
             0,                                        // gpu_series size
             nullptr,                                  // gpu_series
-            &kMoreForEntry19_1440601243,              // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry19_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -611,7 +649,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                  // machine model info
             0,                                        // gpu_series size
             nullptr,                                  // gpu_series
-            &kMoreForEntry20_1440601243,              // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry20_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -641,7 +681,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            &kMoreForEntry21_1440601243,            // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry21_1440601243,  // more data
         },
         base::size(kExceptionsForEntry21),  // exceptions count
         kExceptionsForEntry21,              // exceptions
@@ -671,7 +713,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            &kMoreForEntry22_1440601243,            // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry22_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -701,7 +745,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            &kMoreForEntry23_1440601243,            // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry23_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -731,7 +777,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            &kMoreForEntry24_1440601243,            // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry24_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -762,7 +810,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                     // machine model info
             0,                                           // gpu_series size
             nullptr,                                     // gpu_series
-            &kMoreForEntry25_1440601243,                 // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry25_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -792,7 +842,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             &kMachineModelInfoForEntry26,           // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            &kMoreForEntry26_1440601243,            // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry26_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -822,7 +874,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            &kMoreForEntry27_1440601243,            // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry27_1440601243,  // more data
         },
         base::size(kExceptionsForEntry27),  // exceptions count
         kExceptionsForEntry27,              // exceptions
@@ -852,7 +906,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             &kMachineModelInfoForEntry28,           // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            &kMoreForEntry28_1440601243,            // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry28_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -882,7 +938,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             &kMachineModelInfoForEntry29,           // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            &kMoreForEntry29_1440601243,            // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry29_1440601243,  // more data
         },
         base::size(kExceptionsForEntry29),  // exceptions count
         kExceptionsForEntry29,              // exceptions
@@ -913,7 +971,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                     // machine model info
             0,                                           // gpu_series size
             nullptr,                                     // gpu_series
-            &kMoreForEntry30_1440601243,                 // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry30_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -944,7 +1004,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                     // machine model info
             0,                                           // gpu_series size
             nullptr,                                     // gpu_series
-            &kMoreForEntry31_1440601243,                 // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry31_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -975,7 +1037,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                     // machine model info
             0,                                           // gpu_series size
             nullptr,                                     // gpu_series
-            &kMoreForEntry32_1440601243,                 // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry32_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -1006,7 +1070,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                     // machine model info
             0,                                           // gpu_series size
             nullptr,                                     // gpu_series
-            &kMoreForEntry33_1440601243,                 // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry33_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -1037,7 +1103,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                     // machine model info
             0,                                           // gpu_series size
             nullptr,                                     // gpu_series
-            &kMoreForEntry34_1440601243,                 // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry34_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -1068,7 +1136,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                     // machine model info
             0,                                           // gpu_series size
             nullptr,                                     // gpu_series
-            &kMoreForEntry35_1440601243,                 // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry35_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -1098,7 +1168,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                  // machine model info
             0,                                        // gpu_series size
             nullptr,                                  // gpu_series
-            &kMoreForEntry36_1440601243,              // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry36_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -1129,7 +1201,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                     // machine model info
             0,                                           // gpu_series size
             nullptr,                                     // gpu_series
-            &kMoreForEntry37_1440601243,                 // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry37_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -1159,7 +1233,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                  // machine model info
             0,                                        // gpu_series size
             nullptr,                                  // gpu_series
-            &kMoreForEntry38_1440601243,              // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry38_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -1189,7 +1265,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            &kMoreForEntry39_1440601243,            // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry39_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -1219,7 +1297,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            &kMoreForEntry40_1440601243,            // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry40_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -1249,7 +1329,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            &kMoreForEntry41_1440601243,            // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry41_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -1279,7 +1361,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            &kMoreForEntry42_1440601243,            // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry42_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -1309,7 +1393,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            &kMoreForEntry43_1440601243,            // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry43_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -1339,7 +1425,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            &kMoreForEntry44_1440601243,            // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry44_1440601243,  // more data
         },
         base::size(kExceptionsForEntry44),  // exceptions count
         kExceptionsForEntry44,              // exceptions
@@ -1370,7 +1458,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                  // machine model info
             0,                                        // gpu_series size
             nullptr,                                  // gpu_series
-            &kMoreForEntry45_1440601243,              // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry45_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -1401,7 +1491,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                    // machine model info
             0,                                          // gpu_series size
             nullptr,                                    // gpu_series
-            &kMoreForEntry46_1440601243,                // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry46_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -1431,7 +1523,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            &kMoreForEntry47_1440601243,            // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry47_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -1461,7 +1555,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            &kMoreForEntry48_1440601243,            // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry48_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -1491,7 +1587,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                  // machine model info
             0,                                        // gpu_series size
             nullptr,                                  // gpu_series
-            &kMoreForEntry49_1440601243,              // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry49_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -1521,7 +1619,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                  // machine model info
             0,                                        // gpu_series size
             nullptr,                                  // gpu_series
-            &kMoreForEntry50_1440601243,              // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry50_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -1551,7 +1651,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            &kMoreForEntry51_1440601243,            // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry51_1440601243,  // more data
         },
         base::size(kExceptionsForEntry51),  // exceptions count
         kExceptionsForEntry51,              // exceptions
@@ -1581,7 +1683,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            &kMoreForEntry52_1440601243,            // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry52_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -1611,7 +1715,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                  // machine model info
             0,                                        // gpu_series size
             nullptr,                                  // gpu_series
-            &kMoreForEntry53_1440601243,              // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry53_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -1641,7 +1747,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            &kMoreForEntry54_1440601243,            // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry54_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -1671,7 +1779,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            &kMoreForEntry55_1440601243,            // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry55_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -1701,7 +1811,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            &kMoreForEntry56_1440601243,            // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry56_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -1731,7 +1843,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            &kMoreForEntry57_1440601243,            // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry57_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -1761,7 +1875,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            &kMoreForEntry58_1440601243,            // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry58_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -1791,7 +1907,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            &kMoreForEntry59_1440601243,            // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry59_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -1821,7 +1939,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                // machine model info
             base::size(kGpuSeriesForEntry60),       // gpu_series size
             kGpuSeriesForEntry60,                   // gpu_series
-            &kMoreForEntry60_1440601243,            // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry60_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -1851,7 +1971,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                  // machine model info
             base::size(kGpuSeriesForEntry61),         // gpu_series size
             kGpuSeriesForEntry61,                     // gpu_series
-            &kMoreForEntry61_1440601243,              // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry61_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -1881,7 +2003,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                               // machine model info
             base::size(kGpuSeriesForEntry62),      // gpu_series size
             kGpuSeriesForEntry62,                  // gpu_series
-            &kMoreForEntry62_1440601243,           // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry62_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -1911,7 +2035,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                   // machine model info
             base::size(kGpuSeriesForEntry63),          // gpu_series size
             kGpuSeriesForEntry63,                      // gpu_series
-            &kMoreForEntry63_1440601243,               // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry63_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -1941,7 +2067,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                     // machine model info
             base::size(kGpuSeriesForEntry64),            // gpu_series size
             kGpuSeriesForEntry64,                        // gpu_series
-            &kMoreForEntry64_1440601243,                 // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry64_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -1971,7 +2099,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            &kMoreForEntry65_1440601243,            // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry65_1440601243,  // more data
         },
         base::size(kExceptionsForEntry65),  // exceptions count
         kExceptionsForEntry65,              // exceptions
@@ -2001,7 +2131,9 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                  // machine model info
             0,                                        // gpu_series size
             nullptr,                                  // gpu_series
-            &kMoreForEntry66_1440601243,              // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry66_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -2031,11 +2163,173 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            &kMoreForEntry67_1440601243,            // more data
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},           // intel_gpu_generation
+            &kMoreForEntry67_1440601243,  // more data
+        },
+        0,        // exceptions count
+        nullptr,  // exceptions
+    },
+    {
+        68,  // id
+        "GpuControlListEntryTest.GpuGeneration",
+        base::size(kFeatureListForGpuControlTestingEntry68),  // features size
+        kFeatureListForGpuControlTestingEntry68,              // features
+        0,        // DisabledExtensions size
+        nullptr,  // DisabledExtensions
+        0,        // DisabledWebGLExtensions size
+        nullptr,  // DisabledWebGLExtensions
+        0,        // CrBugs size
+        nullptr,  // CrBugs
+        {
+            GpuControlList::kOsAny,  // os_type
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},                     // os_version
+            0x00,                                   // vendor_id
+            0,                                      // DeviceIDs size
+            nullptr,                                // DeviceIDs
+            GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
+            GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
+            nullptr,                                // driver info
+            nullptr,                                // GL strings
+            nullptr,                                // machine model info
+            0,                                      // gpu_series size
+            nullptr,                                // gpu_series
+            {GpuControlList::kLT, GpuControlList::kVersionStyleNumerical, "9",
+             nullptr},                    // intel_gpu_generation
+            &kMoreForEntry68_1440601243,  // more data
+        },
+        0,        // exceptions count
+        nullptr,  // exceptions
+    },
+    {
+        69,  // id
+        "GpuControlListEntryTest.GpuGenerationActive",
+        base::size(kFeatureListForGpuControlTestingEntry69),  // features size
+        kFeatureListForGpuControlTestingEntry69,              // features
+        0,        // DisabledExtensions size
+        nullptr,  // DisabledExtensions
+        0,        // DisabledWebGLExtensions size
+        nullptr,  // DisabledWebGLExtensions
+        0,        // CrBugs size
+        nullptr,  // CrBugs
+        {
+            GpuControlList::kOsAny,  // os_type
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},                       // os_version
+            0x00,                                     // vendor_id
+            0,                                        // DeviceIDs size
+            nullptr,                                  // DeviceIDs
+            GpuControlList::kMultiGpuCategoryActive,  // multi_gpu_category
+            GpuControlList::kMultiGpuStyleNone,       // multi_gpu_style
+            nullptr,                                  // driver info
+            nullptr,                                  // GL strings
+            nullptr,                                  // machine model info
+            0,                                        // gpu_series size
+            nullptr,                                  // gpu_series
+            {GpuControlList::kLT, GpuControlList::kVersionStyleNumerical, "9",
+             nullptr},                    // intel_gpu_generation
+            &kMoreForEntry69_1440601243,  // more data
+        },
+        0,        // exceptions count
+        nullptr,  // exceptions
+    },
+    {
+        70,  // id
+        "GpuControlListEntryTest.GpuGenerationAny",
+        base::size(kFeatureListForGpuControlTestingEntry70),  // features size
+        kFeatureListForGpuControlTestingEntry70,              // features
+        0,        // DisabledExtensions size
+        nullptr,  // DisabledExtensions
+        0,        // DisabledWebGLExtensions size
+        nullptr,  // DisabledWebGLExtensions
+        0,        // CrBugs size
+        nullptr,  // CrBugs
+        {
+            GpuControlList::kOsAny,  // os_type
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},                    // os_version
+            0x00,                                  // vendor_id
+            0,                                     // DeviceIDs size
+            nullptr,                               // DeviceIDs
+            GpuControlList::kMultiGpuCategoryAny,  // multi_gpu_category
+            GpuControlList::kMultiGpuStyleNone,    // multi_gpu_style
+            nullptr,                               // driver info
+            nullptr,                               // GL strings
+            nullptr,                               // machine model info
+            0,                                     // gpu_series size
+            nullptr,                               // gpu_series
+            {GpuControlList::kLT, GpuControlList::kVersionStyleNumerical, "9",
+             nullptr},                    // intel_gpu_generation
+            &kMoreForEntry70_1440601243,  // more data
+        },
+        0,        // exceptions count
+        nullptr,  // exceptions
+    },
+    {
+        71,  // id
+        "GpuControlListEntryTest.GpuGenerationPrimary",
+        base::size(kFeatureListForGpuControlTestingEntry71),  // features size
+        kFeatureListForGpuControlTestingEntry71,              // features
+        0,        // DisabledExtensions size
+        nullptr,  // DisabledExtensions
+        0,        // DisabledWebGLExtensions size
+        nullptr,  // DisabledWebGLExtensions
+        0,        // CrBugs size
+        nullptr,  // CrBugs
+        {
+            GpuControlList::kOsAny,  // os_type
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},                        // os_version
+            0x00,                                      // vendor_id
+            0,                                         // DeviceIDs size
+            nullptr,                                   // DeviceIDs
+            GpuControlList::kMultiGpuCategoryPrimary,  // multi_gpu_category
+            GpuControlList::kMultiGpuStyleNone,        // multi_gpu_style
+            nullptr,                                   // driver info
+            nullptr,                                   // GL strings
+            nullptr,                                   // machine model info
+            0,                                         // gpu_series size
+            nullptr,                                   // gpu_series
+            {GpuControlList::kLT, GpuControlList::kVersionStyleNumerical, "9",
+             nullptr},                    // intel_gpu_generation
+            &kMoreForEntry71_1440601243,  // more data
+        },
+        0,        // exceptions count
+        nullptr,  // exceptions
+    },
+    {
+        72,  // id
+        "GpuControlListEntryTest.GpuGenerationSecondary",
+        base::size(kFeatureListForGpuControlTestingEntry72),  // features size
+        kFeatureListForGpuControlTestingEntry72,              // features
+        0,        // DisabledExtensions size
+        nullptr,  // DisabledExtensions
+        0,        // DisabledWebGLExtensions size
+        nullptr,  // DisabledWebGLExtensions
+        0,        // CrBugs size
+        nullptr,  // CrBugs
+        {
+            GpuControlList::kOsAny,  // os_type
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},                          // os_version
+            0x00,                                        // vendor_id
+            0,                                           // DeviceIDs size
+            nullptr,                                     // DeviceIDs
+            GpuControlList::kMultiGpuCategorySecondary,  // multi_gpu_category
+            GpuControlList::kMultiGpuStyleNone,          // multi_gpu_style
+            nullptr,                                     // driver info
+            nullptr,                                     // GL strings
+            nullptr,                                     // machine model info
+            0,                                           // gpu_series size
+            nullptr,                                     // gpu_series
+            {GpuControlList::kLT, GpuControlList::kVersionStyleNumerical, "9",
+             nullptr},                    // intel_gpu_generation
+            &kMoreForEntry72_1440601243,  // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
     },
 };
-const size_t kGpuControlListTestingEntryCount = 67;
+const size_t kGpuControlListTestingEntryCount = 72;
 }  // namespace gpu

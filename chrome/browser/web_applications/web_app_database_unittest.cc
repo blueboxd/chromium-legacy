@@ -130,7 +130,7 @@ class WebAppDatabaseTest : public testing::Test {
 
   bool IsDatabaseRegistryEqualToRegistrar() {
     Registry registry = ReadRegistry();
-    return IsRegistryEqual(registrar_->registry(), registry);
+    return IsRegistryEqual(registrar_->registry_for_testing(), registry);
   }
 
   void WriteBatch(
@@ -206,7 +206,7 @@ TEST_F(WebAppDatabaseTest, OpenDatabaseAndReadRegistry) {
   Registry registry = WriteWebApps("https://example.com/path", 100);
 
   InitRegistrar();
-  EXPECT_TRUE(IsRegistryEqual(registrar_->registry(), registry));
+  EXPECT_TRUE(IsRegistryEqual(registrar_->registry_for_testing(), registry));
 }
 
 TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {

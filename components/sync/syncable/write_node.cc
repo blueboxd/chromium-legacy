@@ -122,7 +122,7 @@ void WriteNode::SetPasswordSpecifics(
     const sync_pb::PasswordSpecificsData& data) {
   DCHECK_EQ(GetModelType(), PASSWORDS);
 
-  Cryptographer* cryptographer = GetTransaction()->GetCryptographer();
+  const Cryptographer* cryptographer = GetTransaction()->GetCryptographer();
 
   // We have to do the idempotency check here (vs in UpdateEntryWithEncryption)
   // because Passwords have their encrypted data within the PasswordSpecifics,
@@ -158,7 +158,7 @@ void WriteNode::SetWifiConfigurationSpecifics(
     const sync_pb::WifiConfigurationSpecificsData& data) {
   DCHECK_EQ(GetModelType(), WIFI_CONFIGURATIONS);
 
-  Cryptographer* cryptographer = GetTransaction()->GetCryptographer();
+  const Cryptographer* cryptographer = GetTransaction()->GetCryptographer();
 
   // We have to do the idempotency check here (vs in UpdateEntryWithEncryption)
   // because Passwords have their encrypted data within the PasswordSpecifics,

@@ -45,7 +45,9 @@ ApplicationCacheHostForFrame::ApplicationCacheHostForFrame(
     DocumentLoader* document_loader,
     mojom::blink::DocumentInterfaceBroker* interface_broker,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : ApplicationCacheHost(interface_broker, std::move(task_runner)),
+    : ApplicationCacheHost(interface_broker,
+                           /*interface_broker_proxy=*/nullptr,
+                           std::move(task_runner)),
       local_frame_(document_loader->GetFrame()),
       document_loader_(document_loader) {}
 

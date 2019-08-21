@@ -181,7 +181,6 @@ UIImage* DefaultFaviconImage() {
   }
   _incognitoStyle = incognitoStyle;
 
-#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
   if (@available(iOS 13, *)) {
     // When iOS 12 is dropped, only the next line is needed for styling.
     // Every other check for |incognitoStyle| can be removed, as well as the
@@ -191,7 +190,6 @@ UIImage* DefaultFaviconImage() {
                                           : UIUserInterfaceStyleUnspecified;
     return;
   }
-#endif
   [self updateStyleForSelected:self.selected];
 }
 
@@ -246,7 +244,6 @@ UIImage* DefaultFaviconImage() {
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
 
-#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
   if (@available(iOS 13, *)) {
     // As of iOS 13 Beta 4, resizable images are flaky for dark mode.
     // This triggers the styling again, where the image is resolved instead of
@@ -258,7 +255,6 @@ UIImage* DefaultFaviconImage() {
       [self updateStyleForSelected:self.selected];
     }
   }
-#endif
 }
 
 #pragma mark - Private

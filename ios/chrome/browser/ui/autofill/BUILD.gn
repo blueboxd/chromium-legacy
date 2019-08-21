@@ -42,7 +42,7 @@ source_set("autofill") {
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/translate:translate",
     "//ios/chrome/browser/ui/autofill/cells",
-    "//ios/chrome/browser/ui/autofill/form_input_accessory",
+    "//ios/chrome/browser/ui/autofill/form_input_accessory:form_input_accessory_ui",
     "//ios/chrome/browser/ui/autofill/manual_fill:manual_fill",
     "//ios/chrome/browser/ui/autofill/manual_fill:manual_fill_ui",
     "//ios/chrome/browser/ui/collection_view/cells",
@@ -96,8 +96,6 @@ source_set("bridges") {
 source_set("autofill_ui") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "autofill_edit_accessory_view.h",
-    "autofill_edit_accessory_view.mm",
     "autofill_ui_type.h",
     "save_card_infobar_controller.h",
     "save_card_infobar_controller.mm",

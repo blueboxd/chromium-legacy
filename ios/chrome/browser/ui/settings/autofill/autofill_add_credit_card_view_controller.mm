@@ -7,8 +7,10 @@
 #include "base/feature_list.h"
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
+#include "ios/chrome/browser/ui/scanner/scanner_presenting.h"
+#import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_scanner_view_controller.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
@@ -38,7 +40,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 }  // namespace
 
-@interface AutofillAddCreditCardViewController ()
+@interface AutofillAddCreditCardViewController () <ScannerPresenting>
 
 // The AddCreditCardViewControllerDelegate for this ViewController.
 @property(nonatomic, weak) id<AddCreditCardViewControllerDelegate> delegate;
@@ -64,7 +66,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-  self.tableView.allowsSelection = NO;
+
   self.view.backgroundColor = UIColor.cr_systemGroupedBackgroundColor;
 
   self.navigationItem.title = l10n_util::GetNSString(
@@ -84,6 +86,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
              action:@selector(didTapAddButton:)];
   [self loadModel];
 }
+
+#pragma mark - ChromeTableViewController
 
 - (void)loadModel {
   [super loadModel];
@@ -141,15 +145,36 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addItem:expirationYearItem
       toSectionWithIdentifier:SectionIdentifierCreditCardDetails];
 
-  TableViewTextButtonItem* cameraButtonItem =
-      [[TableViewTextButtonItem alloc] initWithType:ItemTypeUseCameraButton];
-  cameraButtonItem.buttonBackgroundColor = UIColor.cr_systemBackgroundColor;
-  cameraButtonItem.buttonTextColor = [UIColor colorNamed:kBlueColor];
-  cameraButtonItem.buttonText = l10n_util::GetNSString(
+  TableViewTextItem* cameraButtonItem =
+      [[TableViewTextItem alloc] initWithType:ItemTypeUseCameraButton];
+  cameraButtonItem.textColor = [UIColor colorNamed:kBlueColor];
+  cameraButtonItem.text = l10n_util::GetNSString(
       IDS_IOS_AUTOFILL_ADD_CREDIT_CARD_OPEN_CAMERA_BUTTON_LABEL);
-  cameraButtonItem.textAlignment = NSTextAlignmentNatural;
+  cameraButtonItem.textAlignment = NSTextAlignmentCenter;
   [model addItem:cameraButtonItem
       toSectionWithIdentifier:SectionIdentifierCameraButton];
+}
+
+#pragma mark - UITableViewDelegate
+
+- (void)tableView:(UITableView*)tableView
+    didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
+  [super tableView:tableView didSelectRowAtIndexPath:indexPath];
+  if ([self.tableViewModel itemTypeForIndexPath:indexPath] ==
+      ItemTypeUseCameraButton) {
+    [self handleCameraButton];
+  }
+  [tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
+
+- (NSIndexPath*)tableView:(UITableView*)tableView
+    willSelectRowAtIndexPath:(NSIndexPath*)indexPath {
+  [super tableView:tableView willSelectRowAtIndexPath:indexPath];
+  if ([self.tableViewModel itemTypeForIndexPath:indexPath] ==
+      ItemTypeUseCameraButton) {
+    return indexPath;
+  }
+  return nil;
 }
 
 #pragma mark - Private
@@ -191,7 +216,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return text;
 }
 
-// Dimisses this view controller.
+// Dimisses this view controller when Cancel button is tapped.
 - (void)handleCancelButton:(id)sender {
   [self.delegate addCreditCardViewControllerDidCancel:self];
 }
@@ -211,6 +236,23 @@ typedef NS_ENUM(NSInteger, ItemType) {
   item.textFieldEnabled = YES;
   item.autofillUIType = autofillUIType;
   return item;
+}
+
+// Presents the credit card scanner camera screen.
+- (void)handleCameraButton {
+  CreditCardScannerViewController* scannerController =
+      [[CreditCardScannerViewController alloc]
+          initWithPresentationProvider:self];
+  scannerController.modalPresentationStyle = UIModalPresentationFullScreen;
+
+  [self presentViewController:scannerController animated:YES completion:nil];
+}
+
+#pragma mark - ScannerPresenting
+
+- (void)dismissScannerViewController:(UIViewController*)controller
+                          completion:(void (^)(void))completion {
+  [self dismissViewControllerAnimated:YES completion:completion];
 }
 
 @end

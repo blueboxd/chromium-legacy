@@ -44,13 +44,6 @@ const char kHTMLOfTestPage[] =
     "<head><title>TestPageTitle</title></head><body>hello</body>";
 NSString* const kTitleOfTestPage = @"TestPageTitle";
 
-// Closes all tabs in the normal TabModel.
-void CloseAllNormalTabs() {
-  TabModel* tabModel = chrome_test_util::GetMainController()
-                           .interfaceProvider.mainInterface.tabModel;
-  [tabModel closeAllTabs];
-}
-
 // Makes sure at least one tab is opened and opens the recent tab panel.
 void OpenRecentTabsPanel() {
   // At least one tab is needed to be able to open the recent tabs panel.
@@ -135,35 +128,6 @@ id<GREYMatcher> TitleOfTestPage() {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       assertWithMatcher:chrome_test_util::OmniboxText(
                             testPageURL.GetContent())];
-}
-
-// Tests restoring a tab from incognito when the normal WebStateList is empty.
-// TODO(crbug.com/989487): Test DISABLED, to be deleted.
-- (void)DISABLED_testRestoreTabFromIncognitoWithNoNormalTabsOpen {
-  const GURL testPageURL = web::test::HttpServer::MakeUrl(kURLOfTestPage);
-
-  // Open the test page in a new tab.
-  [ChromeEarlGrey loadURL:testPageURL];
-  [ChromeEarlGrey waitForWebStateContainingText:"hello"];
-
-  // Open a new incognito tab, then close the non-OTR tab.
-  [ChromeEarlGrey openNewIncognitoTab];
-  CloseAllNormalTabs();
-
-  // Open the Recent Tabs panel and check that the test page is present.
-  OpenRecentTabsPanel();
-  [[EarlGrey selectElementWithMatcher:TitleOfTestPage()]
-      assertWithMatcher:grey_notNil()];
-
-  // Tap on the entry for the test page in the Recent Tabs panel and check that
-  // a tab containing the test page was opened in the main WebStateList.
-  GREYAssertTrue([ChromeEarlGrey mainTabCount] == 0,
-                 @"Unexpected tabs in the main WebStateList");
-  [[EarlGrey selectElementWithMatcher:TitleOfTestPage()]
-      performAction:grey_tap()];
-  [ChromeEarlGrey waitForMainTabCount:1];
-  GREYAssertTrue([ChromeEarlGrey incognitoTabCount] == 1,
-                 @"Unexpected tab added to the incognito WebStateList");
 }
 
 // Tests that tapping "Show Full History" open the history.

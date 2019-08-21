@@ -85,18 +85,10 @@ SVGElement::~SVGElement() {
 
 void SVGElement::DetachLayoutTree(bool performing_reattach) {
   Element::DetachLayoutTree(performing_reattach);
-  if (SVGElement* element = CorrespondingElement())
-    element->RemoveInstanceMapping(this);
   // To avoid a noncollectable Blink GC reference cycle, we must clear the
   // ComputedStyle here. See http://crbug.com/878032#c11
   if (HasSVGRareData())
     SvgRareData()->ClearOverriddenComputedStyle();
-}
-
-void SVGElement::AttachLayoutTree(AttachContext& context) {
-  Element::AttachLayoutTree(context);
-  if (SVGElement* element = CorrespondingElement())
-    element->MapInstanceToElement(this);
 }
 
 TreeScope& SVGElement::TreeScopeForIdResolution() const {
@@ -1032,8 +1024,8 @@ void SVGElement::SynchronizeAnimatedSVGAttribute(
 }
 
 scoped_refptr<ComputedStyle> SVGElement::CustomStyleForLayoutObject() {
-  // TODO(http://crbug.com/953263): Eliminate isConnected check.
-  if (!CorrespondingElement() || !CorrespondingElement()->isConnected())
+  SVGElement* corresponding_element = CorrespondingElement();
+  if (!corresponding_element)
     return GetDocument().EnsureStyleResolver().StyleForElement(this);
 
   const ComputedStyle* style = nullptr;
@@ -1041,7 +1033,7 @@ scoped_refptr<ComputedStyle> SVGElement::CustomStyleForLayoutObject() {
     style = parent->GetComputedStyle();
 
   return GetDocument().EnsureStyleResolver().StyleForElement(
-      CorrespondingElement(), style, style);
+      corresponding_element, style, style);
 }
 
 bool SVGElement::LayoutObjectIsNeeded(const ComputedStyle& style) const {

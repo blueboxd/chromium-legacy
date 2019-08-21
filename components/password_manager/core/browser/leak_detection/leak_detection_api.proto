@@ -32,6 +32,10 @@ message LookupSingleLeakRequest {
 
   // The full hash of username and password which was encrypted using a
   // commutative cipher.
+  // The hashing algorithm used is Scrypt.
+  //
+  // Essentially:
+  // cipher_with_client_key(scrypt(username, password))
   //
   // The underlying username is expected to be canonicalized the same as
   // described for username_hash_prefix.
@@ -44,14 +48,16 @@ message LookupSingleLeakRequest {
 
 message LookupSingleLeakResponse {
   // The leaks that match the requested `username_hash_prefix`.
-  // A prefix of the hash of username and password that was discovered in a leak
-  // which was encrypted using a commutative cipher with a private key picked
-  // by the server.
+  // A prefix of the SHA256 hash of the encrypted hashed username and password
+  // pair that was discovered in a leak. It was encrypted using a commutative
+  // cipher with a private key picked by the server.
   // The prefix length can vary depending on the response size but will be long
   // enough in order to not cause any false positives. This is a pure bandwidth
   // optimization measure.
-  // The hashing algorithm and cipher used are the same as defined in the
-  // request.
+  //
+  // Essentially:
+  // prefix(sha256(cipher_with_server_key(scrypt(username, password))))
+  //
   // Note: There are no guarantees that the server key stays the same between
   // subsequent requests.
   repeated bytes encrypted_leak_match_prefix = 1;
@@ -61,5 +67,8 @@ message LookupSingleLeakResponse {
   // This enables the client to reverse their own encryption, giving the
   // client a server-side only encrypted leak entry which it can use to check
   // if `encrypted_leak_match_prefix` contains it.
+  //
+  // Essentially:
+  // cipher_with_server_key(cipher_with_client_key(scrypt(username, password)))
   bytes reencrypted_lookup_hash = 2;
 }

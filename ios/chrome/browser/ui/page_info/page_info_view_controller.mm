@@ -92,6 +92,8 @@ const CGFloat kButtonXOffset = kTextXPosition;
 
 }  // namespace
 
+#pragma mark - PageInfoModelBubbleBridge
+
 PageInfoModelBubbleBridge::PageInfoModelBubbleBridge()
     : controller_(nil), weak_ptr_factory_(this) {}
 
@@ -126,66 +128,46 @@ void PageInfoModelBubbleBridge::PerformLayout() {
   [controller_ performLayout];
 }
 
-@interface PageInfoViewController ()<UIGestureRecognizerDelegate> {
+#pragma mark - PageInfoViewController
+
+@interface PageInfoViewController () {
   // Scroll View inside the PageInfoView used to display content that exceeds
   // the available space.
-  UIScrollView* scrollView_;
+  UIScrollView* _scrollView;
   // Container View added inside the Scroll View. All content is added to this
-  // view instead of PopupMenuController.containerView_.
-  BidiContainerView* innerContainerView_;
+  // view.
+  BidiContainerView* _innerContainerView;
 
   // Origin of the arrow at the top of the popup window.
-  CGPoint origin_;
+  CGPoint _arrowOriginPoint;
 
   // Model for the data to display.
-  std::unique_ptr<PageInfoModel> model_;
+  std::unique_ptr<PageInfoModel> _model;
 
   // Thin bridge that pushes model-changed notifications from C++ to Cocoa.
-  std::unique_ptr<PageInfoModelObserver> bridge_;
+  std::unique_ptr<PageInfoModelObserver> _modelBridge;
 
   // Width of the view. Depends on the device (iPad/iPhone).
-  CGFloat viewWidth_;
+  CGFloat _viewWidth;
 
   // Width of the text fields.
-  CGFloat textWidth_;
+  CGFloat _textWidth;
 
   // YES when the popup has finished animating in. NO otherwise.
-  BOOL animateInCompleted_;
+  BOOL _displayAnimationCompleted;
 }
-
-// Adds the state image at a pre-determined x position and the given y. This
-// does not affect the next Y position because the image is placed next to
-// a text field that is larger and accounts for the image's size.
-- (void)addImageViewForInfo:(const PageInfoModel::SectionInfo&)info
-                 toSubviews:(NSMutableArray*)subviews
-                   atOffset:(CGFloat)offset;
-
-// Adds the title text field at the given x,y position, and returns the y
-// position for the next element.
-- (CGFloat)addHeadlineViewForInfo:(const PageInfoModel::SectionInfo&)info
-                       toSubviews:(NSMutableArray*)subviews
-                          atPoint:(CGPoint)point;
-
-// Adds the description text field at the given x,y position, and returns the y
-// position for the next element.
-- (CGFloat)addDescriptionViewForInfo:(const PageInfoModel::SectionInfo&)info
-                          toSubviews:(NSMutableArray*)subviews
-                             atPoint:(CGPoint)point;
-
-// Returns a button with title and action configured for |buttonAction|.
-- (UIButton*)buttonForAction:(PageInfoModel::ButtonAction)buttonAction;
-
-// Adds the the button |buttonAction| that explains the icons. Returns the y
-// position delta for the next offset.
-- (CGFloat)addButton:(PageInfoModel::ButtonAction)buttonAction
-          toSubviews:(NSMutableArray*)subviews
-            atOffset:(CGFloat)offset;
 
 @property(nonatomic, strong) UIView* containerView;
 @property(nonatomic, strong) UIView* popupContainer;
+// An invisible button added to the |containerView|. Closes the popup just like
+// the tap on the background. Exposed purely for voiceover purposes.
+@property(nonatomic, strong) UIButton* closeButton;
+
 @end
 
 @implementation PageInfoViewController
+
+#pragma mark public
 
 - (id)initWithModel:(PageInfoModel*)model
                   bridge:(PageInfoModelObserver*)bridge
@@ -195,50 +177,40 @@ void PageInfoModelBubbleBridge::PerformLayout() {
   DCHECK(provider);
   self = [super init];
   if (self) {
-    scrollView_ =
+    _scrollView =
         [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, 240, 128)];
-    [scrollView_ setMultipleTouchEnabled:YES];
-    [scrollView_ setClipsToBounds:YES];
-    [scrollView_ setShowsHorizontalScrollIndicator:NO];
-    [scrollView_ setIndicatorStyle:UIScrollViewIndicatorStyleBlack];
-    [scrollView_
+    [_scrollView setMultipleTouchEnabled:YES];
+    [_scrollView setClipsToBounds:YES];
+    [_scrollView setShowsHorizontalScrollIndicator:NO];
+    [_scrollView setIndicatorStyle:UIScrollViewIndicatorStyleBlack];
+    [_scrollView
         setAutoresizingMask:(UIViewAutoresizingFlexibleTrailingMargin() |
                              UIViewAutoresizingFlexibleTopMargin)];
 
-    innerContainerView_ =
+    _innerContainerView =
         [[BidiContainerView alloc] initWithFrame:CGRectMake(0, 0, 194, 327)];
-    [innerContainerView_
+    [_innerContainerView
         setAccessibilityLabel:@"Page Security Info Scroll Container"];
-    [innerContainerView_
+    [_innerContainerView
         setAutoresizingMask:(UIViewAutoresizingFlexibleTrailingMargin() |
                              UIViewAutoresizingFlexibleBottomMargin)];
 
-    model_.reset(model);
-    bridge_.reset(bridge);
-    origin_ = sourcePoint;
+    _model.reset(model);
+    _modelBridge.reset(bridge);
+    _arrowOriginPoint = sourcePoint;
     _dispatcher = dispatcher;
 
     UIInterfaceOrientation orientation =
         [[UIApplication sharedApplication] statusBarOrientation];
-    viewWidth_ = IsCompactWidth() ? kViewWidthCompact : kViewWidthRegular;
+    _viewWidth = IsCompactWidth() ? kViewWidthCompact : kViewWidthRegular;
     // Special case iPhone landscape.
     if (!IsIPadIdiom() && UIInterfaceOrientationIsLandscape(orientation))
-      viewWidth_ = kViewWidthiPhoneLandscape;
+      _viewWidth = kViewWidthiPhoneLandscape;
 
-    textWidth_ = viewWidth_ - (kImageSize + kImageSpacing + kFramePadding * 2 +
+    _textWidth = _viewWidth - (kImageSize + kImageSpacing + kFramePadding * 2 +
                                kScrollViewInset * 2);
 
-    UILongPressGestureRecognizer* touchDownRecognizer =
-        [[UILongPressGestureRecognizer alloc]
-            initWithTarget:self
-                    action:@selector(rootViewTapped:)];
-    // Setting the duration to .001 makes this similar to a control event
-    // UIControlEventTouchDown.
-    [touchDownRecognizer setMinimumPressDuration:.001];
-    [touchDownRecognizer setDelegate:self];
-
     _containerView = [[UIView alloc] init];
-    [_containerView addGestureRecognizer:touchDownRecognizer];
     [_containerView setBackgroundColor:[UIColor colorWithWhite:0
                                                          alpha:kShieldAlpha]];
     [_containerView setOpaque:NO];
@@ -247,14 +219,23 @@ void PageInfoModelBubbleBridge::PerformLayout() {
     _containerView.accessibilityIdentifier =
         kPageInfoViewAccessibilityIdentifier;
 
+    // Set up an invisible button that closes the popup.
+    _closeButton = [[UIButton alloc] init];
+    _closeButton.accessibilityLabel = l10n_util::GetNSString(IDS_DONE);
+    [_closeButton addTarget:dispatcher
+                     action:@selector(hidePageInfo)
+           forControlEvents:UIControlEventTouchDown];
+    [_containerView addSubview:_closeButton];
+
     _popupContainer = [[UIView alloc] initWithFrame:CGRectZero];
     [_popupContainer setBackgroundColor:UIColor.cr_systemBackgroundColor];
     [_popupContainer setClipsToBounds:YES];
+    _popupContainer.userInteractionEnabled = YES;
     [_containerView addSubview:_popupContainer];
 
-    [self.popupContainer addSubview:scrollView_];
-    [scrollView_ addSubview:innerContainerView_];
-    [scrollView_ setAccessibilityIdentifier:@"Page Security Scroll View"];
+    [self.popupContainer addSubview:_scrollView];
+    [_scrollView addSubview:_innerContainerView];
+    [_scrollView setAccessibilityIdentifier:@"Page Security Scroll View"];
     [provider presentPageInfoView:self.containerView];
     [self performLayout];
 
@@ -272,11 +253,11 @@ void PageInfoModelBubbleBridge::PerformLayout() {
   // Keep the new subviews in an array that gets replaced at the end.
   NSMutableArray* subviews = [NSMutableArray array];
 
-  int sectionCount = model_->GetSectionCount();
+  int sectionCount = _model->GetSectionCount();
   PageInfoModel::ButtonAction action = PageInfoModel::BUTTON_NONE;
 
   for (int i = 0; i < sectionCount; i++) {
-    PageInfoModel::SectionInfo info = model_->GetSectionInfo(i);
+    PageInfoModel::SectionInfo info = _model->GetSectionInfo(i);
 
     if (action == PageInfoModel::BUTTON_NONE &&
         info.button != PageInfoModel::BUTTON_NONE) {
@@ -286,7 +267,7 @@ void PageInfoModelBubbleBridge::PerformLayout() {
     }
 
     // Only certain sections have images. This affects the X position.
-    BOOL hasImage = model_->GetIconImage(info.icon_id) != nil;
+    BOOL hasImage = _model->GetIconImage(info.icon_id) != nil;
     CGFloat xPosition = (hasImage ? kTextXPosition : kTextXPositionNoImage);
 
     // Insert the image subview for sections that are appropriate.
@@ -330,8 +311,8 @@ void PageInfoModelBubbleBridge::PerformLayout() {
 
   // Add the bottom padding.
   offset += kVerticalSpacing;
-  CGRect frame =
-      CGRectMake(kInitialFramePosition, origin_.y, viewWidth_, offset);
+  CGRect frame = CGRectMake(kInitialFramePosition, _arrowOriginPoint.y,
+                            _viewWidth, offset);
 
   // Increase the size of the frame by the amount used for drawing rounded
   // corners and shadow.
@@ -345,10 +326,10 @@ void PageInfoModelBubbleBridge::PerformLayout() {
     frame.size.height = [[self containerView] superview].bounds.size.height -
                         kFrameBottomPadding - frame.origin.y;
 
-    [scrollView_ setScrollEnabled:YES];
-    [scrollView_ flashScrollIndicators];
+    [_scrollView setScrollEnabled:YES];
+    [_scrollView flashScrollIndicators];
   } else {
-    [scrollView_ setScrollEnabled:NO];
+    [_scrollView setScrollEnabled:NO];
   }
 
   CGRect containerBounds = [_containerView bounds];
@@ -362,34 +343,35 @@ void PageInfoModelBubbleBridge::PerformLayout() {
   CGRect innerFrame = CGRectMake(0, 0, popupFrame.size.width, offset);
 
   // If the initial animation has completed, animate the new frames.
-  if (animateInCompleted_) {
+  if (_displayAnimationCompleted) {
     [UIView cr_animateWithDuration:ios::material::kDuration3
                              delay:0
                              curve:ios::material::CurveEaseInOut
                            options:0
                         animations:^{
                           [_popupContainer setFrame:popupFrame];
-                          [scrollView_ setFrame:[_popupContainer bounds]];
-                          [innerContainerView_ setFrame:innerFrame];
+                          [_scrollView setFrame:[_popupContainer bounds]];
+                          [_innerContainerView setFrame:innerFrame];
                         }
                         completion:nil];
   } else {
     // Popup hasn't finished animating in yet. Set frames immediately.
     [_popupContainer setFrame:popupFrame];
-    [scrollView_ setFrame:[_popupContainer bounds]];
-    [innerContainerView_ setFrame:innerFrame];
+    [_scrollView setFrame:[_popupContainer bounds]];
+    [_innerContainerView setFrame:innerFrame];
   }
 
-  for (UIView* view in [innerContainerView_ subviews]) {
+  for (UIView* view in [_innerContainerView subviews]) {
     [view removeFromSuperview];
   }
 
   for (UIView* view in subviews) {
-    [innerContainerView_ addSubview:view];
-    [innerContainerView_ setSubviewNeedsAdjustmentForRTL:view];
+    [_innerContainerView addSubview:view];
+    [_innerContainerView setSubviewNeedsAdjustmentForRTL:view];
   }
 
-  [scrollView_ setContentSize:innerContainerView_.frame.size];
+  [_scrollView setContentSize:_innerContainerView.frame.size];
+  _closeButton.frame = _containerView.bounds;
 }
 
 - (void)dismiss {
@@ -398,140 +380,11 @@ void PageInfoModelBubbleBridge::PerformLayout() {
                                   nil);
 }
 
-#pragma mark - Helper methods to create subviews.
+#pragma mark - internal
 
-- (void)addImageViewForInfo:(const PageInfoModel::SectionInfo&)info
-                 toSubviews:(NSMutableArray*)subviews
-                   atOffset:(CGFloat)offset {
-  CGRect frame = CGRectMake(kFramePadding, offset, kImageSize, kImageSize);
-  UIImageView* imageView = [[UIImageView alloc] initWithFrame:frame];
-  imageView.tintColor = UIColor.cr_labelColor;
-  UIImage* image = [model_->GetIconImage(info.icon_id)->ToUIImage()
-      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-  [imageView setImage:image];
-  [subviews addObject:imageView];
-}
-
-- (CGFloat)addHeadlineViewForInfo:(const PageInfoModel::SectionInfo&)info
-                       toSubviews:(NSMutableArray*)subviews
-                          atPoint:(CGPoint)point {
-  CGRect frame = CGRectMake(point.x, point.y, textWidth_, kHeadlineHeight);
-  UILabel* label = [[UILabel alloc] initWithFrame:frame];
-  [label setTextAlignment:NSTextAlignmentNatural];
-  [label setText:base::SysUTF16ToNSString(info.headline)];
-  [label setTextColor:UIColor.cr_labelColor];
-  [label setFont:PageInfoHeadlineFont()];
-  [label setFrame:frame];
-  [label setLineBreakMode:NSLineBreakByTruncatingHead];
-  [subviews addObject:label];
-  return CGRectGetHeight(frame);
-}
-
-- (CGFloat)addDescriptionViewForInfo:(const PageInfoModel::SectionInfo&)info
-                          toSubviews:(NSMutableArray*)subviews
-                             atPoint:(CGPoint)point {
-  CGRect frame = CGRectMake(point.x, point.y, textWidth_, kImageSize);
-  UILabel* label = [[UILabel alloc] initWithFrame:frame];
-  [label setTextAlignment:NSTextAlignmentNatural];
-  NSString* description = base::SysUTF16ToNSString(info.description);
-  UIFont* font = [MDCTypography captionFont];
-  [label setTextColor:UIColor.cr_labelColor];
-  [label setText:description];
-  [label setFont:font];
-  [label setNumberOfLines:0];
-
-  // If the text is oversized, resize the text field.
-  CGSize constraintSize = CGSizeMake(textWidth_, CGFLOAT_MAX);
-  CGSize sizeToFit =
-      [description cr_boundingSizeWithSize:constraintSize font:font];
-  frame.size.height = sizeToFit.height;
-  [label setFrame:frame];
-  [subviews addObject:label];
-  return CGRectGetHeight(frame);
-}
-
-- (UIButton*)buttonForAction:(PageInfoModel::ButtonAction)buttonAction {
-  if (buttonAction == PageInfoModel::BUTTON_NONE) {
-    return nil;
-  }
-  UIButton* button = [[UIButton alloc] initWithFrame:CGRectZero];
-  int messageId;
-  NSString* accessibilityID = @"Reload button";
-  switch (buttonAction) {
-    case PageInfoModel::BUTTON_NONE:
-      NOTREACHED();
-      return nil;
-    case PageInfoModel::BUTTON_SHOW_SECURITY_HELP:
-      messageId = IDS_LEARN_MORE;
-      accessibilityID = @"Learn more";
-      [button addTarget:self.dispatcher
-                    action:@selector(showSecurityHelpPage)
-          forControlEvents:UIControlEventTouchUpInside];
-      break;
-    case PageInfoModel::BUTTON_RELOAD:
-      messageId = IDS_IOS_PAGE_INFO_RELOAD;
-      accessibilityID = @"Reload button";
-      [button addTarget:self.dispatcher
-                    action:@selector(hidePageInfo)
-          forControlEvents:UIControlEventTouchUpInside];
-      [button addTarget:self.dispatcher
-                    action:@selector(reload)
-          forControlEvents:UIControlEventTouchUpInside];
-      break;
-  };
-
-  NSString* title = l10n_util::GetNSStringWithFixup(messageId);
-  SetA11yLabelAndUiAutomationName(button, messageId, accessibilityID);
-  [button setTitle:title forState:UIControlStateNormal];
-  return button;
-}
-
-- (CGFloat)addButton:(PageInfoModel::ButtonAction)buttonAction
-          toSubviews:(NSMutableArray*)subviews
-            atOffset:(CGFloat)offset {
-  UIButton* button = [self buttonForAction:buttonAction];
-  if (!button) {
-    return 0;
-  }
-  // The size of the initial frame is irrelevant since it will be changed based
-  // on the size for the string inside.
-  CGRect frame = CGRectMake(kButtonXOffset, offset, 100, 10);
-
-  UIFont* font = [MDCTypography captionFont];
-  CGSize sizeWithFont =
-      [[[button titleLabel] text] cr_pixelAlignedSizeWithFont:font];
-  frame.size = sizeWithFont;
-  // According to iOS Human Interface Guidelines, minimal size of UIButton
-  // should be 44x44.
-  frame.size.height = std::max<CGFloat>(44, frame.size.height);
-
-  [button setFrame:frame];
-
-  [button.titleLabel setFont:font];
-  [button.titleLabel setTextAlignment:NSTextAlignmentLeft];
-  [button setTitleColor:[UIColor colorNamed:kBlueColor]
-               forState:UIControlStateNormal];
-  [button setTitleColor:[UIColor colorNamed:kBlueColor]
-               forState:UIControlStateSelected];
-
-  [subviews addObject:button];
-
-  return CGRectGetHeight([button frame]);
-}
-
-#pragma mark - UIGestureRecognizerDelegate Implemenation
-
-- (void)rootViewTapped:(UIGestureRecognizer*)sender {
-  CGPoint pt = [sender locationInView:_containerView];
-  if (!CGRectContainsPoint([_popupContainer frame], pt)) {
-    [self.dispatcher hidePageInfo];
-  }
-}
-
-- (BOOL)gestureRecognizer:(UIGestureRecognizer*)gestureRecognizer
-       shouldReceiveTouch:(UITouch*)touch {
-  CGPoint pt = [touch locationInView:_containerView];
-  return !CGRectContainsPoint([_popupContainer frame], pt);
+- (BOOL)accessibilityPerformEscape {
+  [self.dispatcher hidePageInfo];
+  return YES;
 }
 
 - (void)animatePageInfoViewIn:(CGPoint)sourcePoint {
@@ -575,11 +428,11 @@ void PageInfoModelBubbleBridge::PerformLayout() {
   [_containerView setAlpha:1];
 
   // Animate the contents of the info card.
-  CALayer* contentsLayer = [innerContainerView_ layer];
+  CALayer* contentsLayer = [_innerContainerView layer];
 
-  CGRect startFrame = CGRectOffset([innerContainerView_ frame], 0, -32);
+  CGRect startFrame = CGRectOffset([_innerContainerView frame], 0, -32);
   CAAnimation* contentSlideAnimation = FrameAnimationMake(
-      contentsLayer, startFrame, [innerContainerView_ frame]);
+      contentsLayer, startFrame, [_innerContainerView frame]);
   [contentSlideAnimation
       setTimingFunction:TimingFunction(ios::material::CurveEaseOut)];
   [contentSlideAnimation setDuration:ios::material::kDuration5];
@@ -589,8 +442,8 @@ void PageInfoModelBubbleBridge::PerformLayout() {
 
   [CATransaction begin];
   [CATransaction setCompletionBlock:^{
-    [innerContainerView_ setAlpha:1];
-    animateInCompleted_ = YES;
+    [_innerContainerView setAlpha:1];
+    _displayAnimationCompleted = YES;
   }];
   CAAnimation* contentFadeAnimation = OpacityAnimationMake(0.0, 1.0);
   [contentFadeAnimation
@@ -605,7 +458,7 @@ void PageInfoModelBubbleBridge::PerformLayout() {
   // needs to be set to zero and then one after the animation starts. If these
   // steps are not taken, there will be a visible flash/jump from the initial
   // spot during the animation.
-  [innerContainerView_ setAlpha:0];
+  [_innerContainerView setAlpha:0];
 }
 
 - (void)animatePageInfoViewOut {
@@ -626,6 +479,137 @@ void PageInfoModelBubbleBridge::PerformLayout() {
   [_popupContainer setAlpha:0];
   [_containerView setAlpha:0];
   [CATransaction commit];
+}
+
+#pragma mark - Helper methods to create subviews.
+
+// Adds the state image at a pre-determined x position and the given y. This
+// does not affect the next Y position because the image is placed next to
+// a text field that is larger and accounts for the image's size.
+- (void)addImageViewForInfo:(const PageInfoModel::SectionInfo&)info
+                 toSubviews:(NSMutableArray*)subviews
+                   atOffset:(CGFloat)offset {
+  CGRect frame = CGRectMake(kFramePadding, offset, kImageSize, kImageSize);
+  UIImageView* imageView = [[UIImageView alloc] initWithFrame:frame];
+  imageView.tintColor = UIColor.cr_labelColor;
+  UIImage* image = [_model->GetIconImage(info.icon_id)->ToUIImage()
+      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  [imageView setImage:image];
+  [subviews addObject:imageView];
+}
+
+// Adds the title text field at the given x,y position, and returns the y
+// position for the next element.
+- (CGFloat)addHeadlineViewForInfo:(const PageInfoModel::SectionInfo&)info
+                       toSubviews:(NSMutableArray*)subviews
+                          atPoint:(CGPoint)point {
+  CGRect frame = CGRectMake(point.x, point.y, _textWidth, kHeadlineHeight);
+  UILabel* label = [[UILabel alloc] initWithFrame:frame];
+  [label setTextAlignment:NSTextAlignmentNatural];
+  [label setText:base::SysUTF16ToNSString(info.headline)];
+  [label setTextColor:UIColor.cr_labelColor];
+  [label setFont:PageInfoHeadlineFont()];
+  [label setFrame:frame];
+  [label setLineBreakMode:NSLineBreakByTruncatingHead];
+  [subviews addObject:label];
+  return CGRectGetHeight(frame);
+}
+
+// Adds the description text field at the given x,y position, and returns the y
+// position for the next element.
+- (CGFloat)addDescriptionViewForInfo:(const PageInfoModel::SectionInfo&)info
+                          toSubviews:(NSMutableArray*)subviews
+                             atPoint:(CGPoint)point {
+  CGRect frame = CGRectMake(point.x, point.y, _textWidth, kImageSize);
+  UILabel* label = [[UILabel alloc] initWithFrame:frame];
+  [label setTextAlignment:NSTextAlignmentNatural];
+  NSString* description = base::SysUTF16ToNSString(info.description);
+  UIFont* font = [MDCTypography captionFont];
+  [label setTextColor:UIColor.cr_labelColor];
+  [label setText:description];
+  [label setFont:font];
+  [label setNumberOfLines:0];
+
+  // If the text is oversized, resize the text field.
+  CGSize constraintSize = CGSizeMake(_textWidth, CGFLOAT_MAX);
+  CGSize sizeToFit =
+      [description cr_boundingSizeWithSize:constraintSize font:font];
+  frame.size.height = sizeToFit.height;
+  [label setFrame:frame];
+  [subviews addObject:label];
+  return CGRectGetHeight(frame);
+}
+
+// Returns a button with title and action configured for |buttonAction|.
+- (UIButton*)buttonForAction:(PageInfoModel::ButtonAction)buttonAction {
+  if (buttonAction == PageInfoModel::BUTTON_NONE) {
+    return nil;
+  }
+  UIButton* button = [[UIButton alloc] initWithFrame:CGRectZero];
+  int messageId;
+  NSString* accessibilityID = @"Reload button";
+  switch (buttonAction) {
+    case PageInfoModel::BUTTON_NONE:
+      NOTREACHED();
+      return nil;
+    case PageInfoModel::BUTTON_SHOW_SECURITY_HELP:
+      messageId = IDS_LEARN_MORE;
+      accessibilityID = @"Learn more";
+      [button addTarget:self.dispatcher
+                    action:@selector(showSecurityHelpPage)
+          forControlEvents:UIControlEventTouchUpInside];
+      break;
+    case PageInfoModel::BUTTON_RELOAD:
+      messageId = IDS_IOS_PAGE_INFO_RELOAD;
+      accessibilityID = @"Reload button";
+      [button addTarget:self.dispatcher
+                    action:@selector(hidePageInfo)
+          forControlEvents:UIControlEventTouchUpInside];
+      [button addTarget:self.dispatcher
+                    action:@selector(reload)
+          forControlEvents:UIControlEventTouchUpInside];
+      break;
+  };
+
+  NSString* title = l10n_util::GetNSStringWithFixup(messageId);
+  SetA11yLabelAndUiAutomationName(button, messageId, accessibilityID);
+  [button setTitle:title forState:UIControlStateNormal];
+  return button;
+}
+
+// Adds the the button |buttonAction| that explains the icons. Returns the y
+// position delta for the next offset.
+- (CGFloat)addButton:(PageInfoModel::ButtonAction)buttonAction
+          toSubviews:(NSMutableArray*)subviews
+            atOffset:(CGFloat)offset {
+  UIButton* button = [self buttonForAction:buttonAction];
+  if (!button) {
+    return 0;
+  }
+  // The size of the initial frame is irrelevant since it will be changed based
+  // on the size for the string inside.
+  CGRect frame = CGRectMake(kButtonXOffset, offset, 100, 10);
+
+  UIFont* font = [MDCTypography captionFont];
+  CGSize sizeWithFont =
+      [[[button titleLabel] text] cr_pixelAlignedSizeWithFont:font];
+  frame.size = sizeWithFont;
+  // According to iOS Human Interface Guidelines, minimal size of UIButton
+  // should be 44x44.
+  frame.size.height = std::max<CGFloat>(44, frame.size.height);
+
+  [button setFrame:frame];
+
+  [button.titleLabel setFont:font];
+  [button.titleLabel setTextAlignment:NSTextAlignmentLeft];
+  [button setTitleColor:[UIColor colorNamed:kBlueColor]
+               forState:UIControlStateNormal];
+  [button setTitleColor:[UIColor colorNamed:kBlueColor]
+               forState:UIControlStateSelected];
+
+  [subviews addObject:button];
+
+  return CGRectGetHeight([button frame]);
 }
 
 @end

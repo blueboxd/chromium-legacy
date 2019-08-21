@@ -43,8 +43,8 @@
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
-
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "ui/base/resource/scale_factor.h"
 
 class SkMatrix;
 
@@ -76,7 +76,9 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
 
   static cc::ImageDecodeCache& SharedCCDecodeCache(SkColorType);
 
-  static scoped_refptr<Image> LoadPlatformResource(const char* name);
+  static scoped_refptr<Image> LoadPlatformResource(
+      int resource_id,
+      ui::ScaleFactor scale_factor = ui::SCALE_FACTOR_100P);
 
   static PaintImage ResizeAndOrientImage(
       const PaintImage&,

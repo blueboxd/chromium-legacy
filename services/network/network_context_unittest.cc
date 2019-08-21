@@ -1390,9 +1390,8 @@ TEST_F(NetworkContextTest, NotifyExternalCacheHit) {
   for (size_t i = 0; i < entry_urls.size(); i++) {
     GURL test_url(entry_urls[i]);
 
-    url::Origin origin = url::Origin::Create(GURL());
-    network_context->NotifyExternalCacheHit(test_url, test_url.scheme(),
-                                            base::nullopt, origin);
+    net::NetworkIsolationKey key;
+    network_context->NotifyExternalCacheHit(test_url, test_url.scheme(), key);
     EXPECT_EQ(i + 1, mock_cache.disk_cache()->GetExternalCacheHits().size());
 
     // Potentially a brittle check as the value sent to disk_cache is a "key."
@@ -1430,8 +1429,8 @@ TEST_F(NetworkContextTest, NotifyExternalCacheHit_Split) {
   for (size_t i = 0; i < entry_urls.size(); i++) {
     GURL test_url(entry_urls[i]);
 
-    network_context->NotifyExternalCacheHit(test_url, test_url.scheme(),
-                                            origin_a, origin_a);
+    net::NetworkIsolationKey key = net::NetworkIsolationKey(origin_a, origin_a);
+    network_context->NotifyExternalCacheHit(test_url, test_url.scheme(), key);
     EXPECT_EQ(i + 1, mock_cache.disk_cache()->GetExternalCacheHits().size());
 
     // Since this is splitting the cache, the key also includes the top-level

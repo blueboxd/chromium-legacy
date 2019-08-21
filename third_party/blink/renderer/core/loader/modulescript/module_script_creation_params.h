@@ -20,12 +20,17 @@ namespace blink {
 class ModuleScriptCreationParams {
   DISALLOW_NEW();
 
+  enum class ModuleType { kJavaScriptModule, kJSONModule };
+
  public:
-  ModuleScriptCreationParams(const KURL& response_url,
-                             const ParkableString& source_text,
-                             SingleCachedMetadataHandler* cache_handler,
-                             network::mojom::CredentialsMode credentials_mode)
+  ModuleScriptCreationParams(
+      const KURL& response_url,
+      const ModuleScriptCreationParams::ModuleType module_type,
+      const ParkableString& source_text,
+      SingleCachedMetadataHandler* cache_handler,
+      network::mojom::CredentialsMode credentials_mode)
       : response_url_(response_url),
+        module_type_(module_type),
         is_isolated_(false),
         source_text_(source_text),
         isolated_source_text_(),
@@ -38,9 +43,14 @@ class ModuleScriptCreationParams {
     String isolated_source_text =
         isolated_source_text_ ? isolated_source_text_.IsolatedCopy()
                               : GetSourceText().ToString().IsolatedCopy();
-    return ModuleScriptCreationParams(GetResponseUrl().Copy(),
+
+    return ModuleScriptCreationParams(GetResponseUrl().Copy(), module_type_,
                                       isolated_source_text,
                                       GetFetchCredentialsMode());
+  }
+
+  ModuleScriptCreationParams::ModuleType GetModuleType() const {
+    return module_type_;
   }
 
   const KURL& GetResponseUrl() const { return response_url_; }
@@ -63,16 +73,20 @@ class ModuleScriptCreationParams {
 
  private:
   // Creates an isolated copy.
-  ModuleScriptCreationParams(const KURL& response_url,
-                             const String& isolated_source_text,
-                             network::mojom::CredentialsMode credentials_mode)
+  ModuleScriptCreationParams(
+      const KURL& response_url,
+      const ModuleScriptCreationParams::ModuleType& module_type,
+      const String& isolated_source_text,
+      network::mojom::CredentialsMode credentials_mode)
       : response_url_(response_url),
+        module_type_(module_type),
         is_isolated_(true),
         source_text_(),
         isolated_source_text_(isolated_source_text),
         credentials_mode_(credentials_mode) {}
 
   const KURL response_url_;
+  const ModuleType module_type_;
 
   // Mutable because an isolated copy can become bound to a thread when
   // calling GetSourceText().

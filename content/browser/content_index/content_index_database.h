@@ -67,18 +67,43 @@ class CONTENT_EXPORT ContentIndexDatabase {
                 const std::string& description_id,
                 ContentIndexContext::GetEntryCallback callback);
 
-  // Block/Unblock DB operations for |origin|.
-  void BlockOrigin(const url::Origin& origin);
-  void UnblockOrigin(const url::Origin& origin);
+  // Deletes the entry and dispatches an event.
+  void DeleteItem(int64_t service_worker_registration_id,
+                  const url::Origin& origin,
+                  const std::string& description_id);
 
   // Called when the storage partition is shutting down.
   void Shutdown();
 
-  base::WeakPtr<ContentIndexDatabase> GetWeakPtrForIO() {
-    return weak_ptr_factory_io_.GetWeakPtr();
-  }
-
  private:
+  FRIEND_TEST_ALL_PREFIXES(ContentIndexDatabaseTest,
+                           BlockedOriginsCannotRegisterContent);
+  FRIEND_TEST_ALL_PREFIXES(ContentIndexDatabaseTest, UmaRecorded);
+
+  // public method IO counterparts.
+  void AddEntryOnIO(int64_t service_worker_registration_id,
+                    const url::Origin& origin,
+                    blink::mojom::ContentDescriptionPtr description,
+                    const std::vector<SkBitmap>& icons,
+                    const GURL& launch_url,
+                    blink::mojom::ContentIndexService::AddCallback callback);
+  void DeleteEntryOnIO(
+      int64_t service_worker_registration_id,
+      const url::Origin& origin,
+      const std::string& entry_id,
+      blink::mojom::ContentIndexService::DeleteCallback callback);
+  void GetDescriptionsOnIO(
+      int64_t service_worker_registration_id,
+      blink::mojom::ContentIndexService::GetDescriptionsCallback callback);
+  void GetIconsOnIO(int64_t service_worker_registration_id,
+                    const std::string& description_id,
+                    ContentIndexContext::GetIconsCallback callback);
+  void GetAllEntriesOnIO(ContentIndexContext::GetAllEntriesCallback callback);
+  void GetEntryOnIO(int64_t service_worker_registration_id,
+                    const std::string& description_id,
+                    ContentIndexContext::GetEntryCallback callback);
+
+  // Add Callbacks.
   void DidSerializeIcons(
       int64_t service_worker_registration_id,
       const url::Origin& origin,
@@ -89,29 +114,56 @@ class CONTENT_EXPORT ContentIndexDatabase {
   void DidAddEntry(blink::mojom::ContentIndexService::AddCallback callback,
                    ContentIndexEntry entry,
                    blink::ServiceWorkerStatusCode status);
+
+  // Delete Callbacks.
   void DidDeleteEntry(
       int64_t service_worker_registration_id,
       const url::Origin& origin,
       const std::string& entry_id,
       blink::mojom::ContentIndexService::DeleteCallback callback,
       blink::ServiceWorkerStatusCode status);
+
+  // GetDescriptions Callbacks.
   void DidGetDescriptions(
       blink::mojom::ContentIndexService::GetDescriptionsCallback callback,
       const std::vector<std::string>& data,
       blink::ServiceWorkerStatusCode status);
+
+  // GetIcons Callbacks.
   void DidGetSerializedIcons(ContentIndexContext::GetIconsCallback callback,
                              const std::vector<std::string>& data,
                              blink::ServiceWorkerStatusCode status);
   void DidDeserializeIcons(ContentIndexContext::GetIconsCallback callback,
                            std::unique_ptr<std::vector<SkBitmap>> icons);
+
+  // GetEntries Callbacks.
   void DidGetEntries(
       ContentIndexContext::GetAllEntriesCallback callback,
       const std::vector<std::pair<int64_t, std::string>>& user_data,
       blink::ServiceWorkerStatusCode status);
+
+  // GetEntry Callbacks.
   void DidGetEntry(int64_t service_worker_registration_id,
                    ContentIndexContext::GetEntryCallback callback,
                    const std::vector<std::string>& data,
                    blink::ServiceWorkerStatusCode status);
+
+  // DeleteItem Callbacks.
+  void DidDeleteItem(int64_t service_worker_registration_id,
+                     const url::Origin& origin,
+                     const std::string& description_id,
+                     blink::mojom::ContentIndexError error);
+  void StartActiveWorkerForDispatch(
+      const std::string& description_id,
+      blink::ServiceWorkerStatusCode service_worker_status,
+      scoped_refptr<ServiceWorkerRegistration> registration);
+  void DeliverMessageToWorker(
+      scoped_refptr<ServiceWorkerVersion> service_worker,
+      scoped_refptr<ServiceWorkerRegistration> registration,
+      const std::string& description_id,
+      blink::ServiceWorkerStatusCode service_worker_status);
+  void DidDispatchEvent(const url::Origin& origin,
+                        blink::ServiceWorkerStatusCode service_worker_status);
 
   // Callbacks on the UI thread to notify |provider_| of updates.
   void NotifyProviderContentAdded(std::vector<ContentIndexEntry> entries);
@@ -119,10 +171,15 @@ class CONTENT_EXPORT ContentIndexDatabase {
                                     const url::Origin& origin,
                                     const std::string& entry_id);
 
+  // Block/Unblock DB operations for |origin|.
+  void BlockOrigin(const url::Origin& origin);
+  void UnblockOrigin(const url::Origin& origin);
+
   // Lives on the UI thread.
   ContentIndexProvider* provider_;
 
   // A map from origins to how many times it's been blocked.
+  // Must be used on the IO thread.
   base::flat_map<url::Origin, int> blocked_origins_;
 
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;

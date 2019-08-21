@@ -16,15 +16,6 @@
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/animation/ink_drop.h"
 
-namespace {
-ClickToCallUiController* GetControllerFromWebContents(
-    content::WebContents* web_contents) {
-  if (!web_contents)
-    return nullptr;
-
-  return ClickToCallUiController::GetOrCreateFromWebContents(web_contents);
-}
-}  // namespace
 
 ClickToCallIconView::ClickToCallIconView(PageActionIconView::Delegate* delegate)
     : SharingIconView(delegate) {}
@@ -32,45 +23,25 @@ ClickToCallIconView::ClickToCallIconView(PageActionIconView::Delegate* delegate)
 ClickToCallIconView::~ClickToCallIconView() = default;
 
 views::BubbleDialogDelegateView* ClickToCallIconView::GetBubble() const {
-  auto* controller = GetControllerFromWebContents(GetWebContents());
+  auto* controller = GetController();
   return controller ? static_cast<ClickToCallDialogView*>(controller->dialog())
                     : nullptr;
 }
 
-bool ClickToCallIconView::Update() {
-  auto* controller = GetControllerFromWebContents(GetWebContents());
-  if (!controller)
-    return false;
-
-  if (should_show_error() != controller->send_failed()) {
-    set_should_show_error(controller->send_failed());
-    UpdateIconImage();
-  }
-
-  if (controller->is_loading())
-    StartLoadingAnimation();
-  else
-    StopLoadingAnimation(IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_SEND_SUCCESS);
-
-  const bool is_bubble_showing = IsBubbleShowing();
-
-  if (is_bubble_showing || isLoadingAnimationVisible() ||
-      last_controller_ != controller)
-    ResetSlideAnimation(/*show=*/false);
-
-  last_controller_ = controller;
-
-  const bool is_visible =
-      is_bubble_showing || isLoadingAnimationVisible() || label()->GetVisible();
-  const bool visibility_changed = GetVisible() != is_visible;
-
-  SetVisible(is_visible);
-  UpdateInkDrop(is_bubble_showing);
-  return visibility_changed;
-}
-
 const gfx::VectorIcon& ClickToCallIconView::GetVectorIcon() const {
   return vector_icons::kCallIcon;
+}
+
+SharingUiController* ClickToCallIconView::GetController() const {
+  content::WebContents* web_contents = GetWebContents();
+  if (!web_contents)
+    return nullptr;
+
+  return ClickToCallUiController::GetOrCreateFromWebContents(web_contents);
+}
+
+base::Optional<int> ClickToCallIconView::GetSuccessMessageId() const {
+  return IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_SEND_SUCCESS;
 }
 
 base::string16 ClickToCallIconView::GetTextForTooltipAndAccessibleName() const {

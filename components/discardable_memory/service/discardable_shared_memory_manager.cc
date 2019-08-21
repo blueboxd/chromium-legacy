@@ -157,6 +157,12 @@ int64_t GetDefaultMemoryLimit() {
   // Chromecast devices. Set value here as IsLowEndDevice() is used on some, but
   // not all Chromecast devices.
   int64_t max_default_memory_limit = 64 * kMegabyte;
+#elif defined(OS_FUCHSIA)
+  // Fuchsia doesn't implement MemoryPressureMonitor and the default limit is
+  // too high for some devices. Set it to the same value as for low-end devices.
+  // TODO(crbug.com/996030): Implement MemoryPressureMonitor for Fuchsia and
+  // remove this ifdef.
+  int64_t max_default_memory_limit = 64 * kMegabyte;
 #else
 #if defined(OS_ANDROID)
   // Limits the number of FDs used to 32, assuming a 4MB allocation size.

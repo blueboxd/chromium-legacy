@@ -70,6 +70,7 @@
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_util.h"
+#include "net/http/http_auth_preferences.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/url_request/url_request_context.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -85,9 +86,11 @@
 #include "storage/browser/quota/quota_manager.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+#include "net/android/http_auth_negotiate_android.h"
+#else
 #include "content/browser/host_zoom_map_impl.h"
-#endif  // !defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/browser/plugin_private_storage_helper.h"
@@ -831,6 +834,18 @@ class SSLErrorDelegate : public SSLErrorHandler::Delegate {
   network::mojom::NetworkContextClient::OnSSLCertificateErrorCallback response_;
   base::WeakPtrFactory<SSLErrorDelegate> weak_factory_{this};
 };
+
+#if defined(OS_ANDROID)
+void FinishGenerateNegotiateAuthToken(
+    std::unique_ptr<net::android::HttpAuthNegotiateAndroid> auth_negotiate,
+    std::unique_ptr<std::string> auth_token,
+    std::unique_ptr<net::HttpAuthPreferences> prefs,
+    network::mojom::NetworkContextClient::
+        OnGenerateHttpNegotiateAuthTokenCallback callback,
+    int result) {
+  std::move(callback).Run(result, *auth_token);
+}
+#endif
 
 }  // namespace
 
@@ -1738,6 +1753,35 @@ void StoragePartitionImpl::OnCookiesRead(
     ReportCookiesReadOnUI(destination, url, site_for_cookies, cookie_list);
   }
 }
+
+#if defined(OS_ANDROID)
+void StoragePartitionImpl::OnGenerateHttpNegotiateAuthToken(
+    const std::string& server_auth_token,
+    bool can_delegate,
+    const std::string& auth_negotiate_android_account_type,
+    const std::string& spn,
+    OnGenerateHttpNegotiateAuthTokenCallback callback) {
+  // The callback takes ownership of these unique_ptrs and destroys them when
+  // run.
+  auto prefs = std::make_unique<net::HttpAuthPreferences>();
+  prefs->set_auth_android_negotiate_account_type(
+      auth_negotiate_android_account_type);
+
+  auto auth_negotiate =
+      std::make_unique<net::android::HttpAuthNegotiateAndroid>(prefs.get());
+  net::android::HttpAuthNegotiateAndroid* auth_negotiate_raw =
+      auth_negotiate.get();
+  auth_negotiate->set_server_auth_token(server_auth_token);
+  auth_negotiate->set_can_delegate(can_delegate);
+
+  auto auth_token = std::make_unique<std::string>();
+  auth_negotiate_raw->GenerateAuthTokenAndroid(
+      nullptr, spn, std::string(), auth_token.get(),
+      base::BindOnce(&FinishGenerateNegotiateAuthToken,
+                     std::move(auth_negotiate), std::move(auth_token),
+                     std::move(prefs), std::move(callback)));
+}
+#endif
 
 #if defined(OS_CHROMEOS)
 void StoragePartitionImpl::OnTrustAnchorUsed() {

@@ -125,6 +125,7 @@ class ModuleScriptLoaderTest : public PageTestBase {
 
  public:
   ModuleScriptLoaderTest();
+  void SetUp() override;
 
   void InitializeForDocument();
   void InitializeForWorklet();
@@ -136,6 +137,11 @@ class ModuleScriptLoaderTest : public PageTestBase {
   void TestFetchInvalidURL(ModuleScriptCustomFetchType,
                            TestModuleScriptLoaderClient*);
   void TestFetchURL(ModuleScriptCustomFetchType, TestModuleScriptLoaderClient*);
+  void TestFetchDataURLJSONModule(ModuleScriptCustomFetchType custom_fetch_type,
+                                  TestModuleScriptLoaderClient* client);
+  void TestFetchDataURLInvalidJSONModule(
+      ModuleScriptCustomFetchType custom_fetch_type,
+      TestModuleScriptLoaderClient* client);
 
   ModuleScriptLoaderTestModulator* GetModulator() { return modulator_.Get(); }
 
@@ -160,6 +166,11 @@ class ModuleScriptLoaderTest : public PageTestBase {
   Persistent<ModuleScriptLoaderTestModulator> modulator_;
   Persistent<WorkletGlobalScope> global_scope_;
 };
+
+void ModuleScriptLoaderTest::SetUp() {
+  RuntimeEnabledFeatures::SetJSONModulesEnabled(true);
+  PageTestBase::SetUp(IntSize(500, 500));
+}
 
 ModuleScriptLoaderTest::ModuleScriptLoaderTest()
     : url_("https://example.test"),
@@ -205,12 +216,40 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
   modulator_ = MakeGarbageCollected<ModuleScriptLoaderTestModulator>(
       global_scope_->ScriptController()->GetScriptState());
 }
+// TODO(nhiroki): Add tests for workers.
 
 void ModuleScriptLoaderTest::TestFetchDataURL(
     ModuleScriptCustomFetchType custom_fetch_type,
     TestModuleScriptLoaderClient* client) {
   auto* registry = MakeGarbageCollected<ModuleScriptLoaderRegistry>();
   KURL url("data:text/javascript,export default 'grapes';");
+  ModuleScriptLoader::Fetch(ModuleScriptFetchRequest::CreateForTest(url),
+                            fetcher_, ModuleGraphLevel::kTopLevelModuleFetch,
+                            GetModulator(), custom_fetch_type, registry,
+                            client);
+}
+
+void ModuleScriptLoaderTest::TestFetchDataURLJSONModule(
+    ModuleScriptCustomFetchType custom_fetch_type,
+    TestModuleScriptLoaderClient* client) {
+  auto* registry = MakeGarbageCollected<ModuleScriptLoaderRegistry>();
+  KURL url(
+      "data:application/"
+      "json,{\"1\":{\"name\":\"MIKE\",\"surname\":\"TAYLOR\"},\"2\":{\"name\":"
+      "\"TOM\",\"surname\":\"JERRY\"}}");
+  ModuleScriptLoader::Fetch(ModuleScriptFetchRequest::CreateForTest(url),
+                            fetcher_, ModuleGraphLevel::kTopLevelModuleFetch,
+                            GetModulator(), custom_fetch_type, registry,
+                            client);
+}
+
+void ModuleScriptLoaderTest::TestFetchDataURLInvalidJSONModule(
+    ModuleScriptCustomFetchType custom_fetch_type,
+    TestModuleScriptLoaderClient* client) {
+  auto* registry = MakeGarbageCollected<ModuleScriptLoaderRegistry>();
+  KURL url(
+      "data:application/"
+      "json,{{{");
   ModuleScriptLoader::Fetch(ModuleScriptFetchRequest::CreateForTest(url),
                             fetcher_, ModuleGraphLevel::kTopLevelModuleFetch,
                             GetModulator(), custom_fetch_type, registry,
@@ -230,6 +269,36 @@ TEST_F(ModuleScriptLoaderTest, FetchDataURL) {
   ASSERT_TRUE(client->GetModuleScript());
   EXPECT_FALSE(client->GetModuleScript()->HasEmptyRecord());
   EXPECT_FALSE(client->GetModuleScript()->HasParseError());
+}
+
+TEST_F(ModuleScriptLoaderTest, FetchDataURLJSONModule) {
+  InitializeForDocument();
+  TestModuleScriptLoaderClient* client =
+      MakeGarbageCollected<TestModuleScriptLoaderClient>();
+  TestFetchDataURLJSONModule(ModuleScriptCustomFetchType::kNone, client);
+
+  // TODO(leszeks): This should finish synchronously, but currently due
+  // to the script resource/script streamer interaction, it does not.
+  RunUntilIdle();
+  EXPECT_TRUE(client->WasNotifyFinished());
+  ASSERT_TRUE(client->GetModuleScript());
+  EXPECT_FALSE(client->GetModuleScript()->HasEmptyRecord());
+  EXPECT_FALSE(client->GetModuleScript()->HasParseError());
+}
+
+TEST_F(ModuleScriptLoaderTest, FetchDataURLInvalidJSONModule) {
+  InitializeForDocument();
+  TestModuleScriptLoaderClient* client =
+      MakeGarbageCollected<TestModuleScriptLoaderClient>();
+  TestFetchDataURLInvalidJSONModule(ModuleScriptCustomFetchType::kNone, client);
+
+  // TODO(leszeks): This should finish synchronously, but currently due
+  // to the script resource/script streamer interaction, it does not.
+  RunUntilIdle();
+  EXPECT_TRUE(client->WasNotifyFinished());
+  ASSERT_TRUE(client->GetModuleScript());
+  EXPECT_TRUE(client->GetModuleScript()->HasEmptyRecord());
+  EXPECT_TRUE(client->GetModuleScript()->HasParseError());
 }
 
 TEST_F(ModuleScriptLoaderTest, FetchDataURL_OnWorklet) {
@@ -261,6 +330,72 @@ TEST_F(ModuleScriptLoaderTest, FetchDataURL_OnWorklet) {
   ASSERT_TRUE(client2->GetModuleScript());
   EXPECT_FALSE(client2->GetModuleScript()->HasEmptyRecord());
   EXPECT_FALSE(client2->GetModuleScript()->HasParseError());
+}
+
+TEST_F(ModuleScriptLoaderTest, FetchDataURLJSONModule_OnWorklet) {
+  InitializeForWorklet();
+  TestModuleScriptLoaderClient* client1 =
+      MakeGarbageCollected<TestModuleScriptLoaderClient>();
+  TestFetchDataURLJSONModule(ModuleScriptCustomFetchType::kWorkletAddModule,
+                             client1);
+
+  EXPECT_FALSE(client1->WasNotifyFinished())
+      << "ModuleScriptLoader should finish asynchronously.";
+  RunUntilIdle();
+
+  EXPECT_TRUE(client1->WasNotifyFinished());
+  ASSERT_TRUE(client1->GetModuleScript());
+  EXPECT_FALSE(client1->GetModuleScript()->HasEmptyRecord());
+  EXPECT_FALSE(client1->GetModuleScript()->HasParseError());
+
+  // Try to fetch the same URL again in order to verify the case where
+  // WorkletModuleResponsesMap serves a cache.
+  TestModuleScriptLoaderClient* client2 =
+      MakeGarbageCollected<TestModuleScriptLoaderClient>();
+  TestFetchDataURLJSONModule(ModuleScriptCustomFetchType::kWorkletAddModule,
+                             client2);
+
+  EXPECT_FALSE(client2->WasNotifyFinished())
+      << "ModuleScriptLoader should finish asynchronously.";
+  RunUntilIdle();
+
+  EXPECT_TRUE(client2->WasNotifyFinished());
+  ASSERT_TRUE(client2->GetModuleScript());
+  EXPECT_FALSE(client2->GetModuleScript()->HasEmptyRecord());
+  EXPECT_FALSE(client2->GetModuleScript()->HasParseError());
+}
+
+TEST_F(ModuleScriptLoaderTest, FetchDataURLInvalidJSONModule_OnWorklet) {
+  InitializeForWorklet();
+  TestModuleScriptLoaderClient* client1 =
+      MakeGarbageCollected<TestModuleScriptLoaderClient>();
+  TestFetchDataURLInvalidJSONModule(
+      ModuleScriptCustomFetchType::kWorkletAddModule, client1);
+
+  EXPECT_FALSE(client1->WasNotifyFinished())
+      << "ModuleScriptLoader should finish asynchronously.";
+  RunUntilIdle();
+
+  EXPECT_TRUE(client1->WasNotifyFinished());
+  ASSERT_TRUE(client1->GetModuleScript());
+  EXPECT_TRUE(client1->GetModuleScript()->HasEmptyRecord());
+  EXPECT_TRUE(client1->GetModuleScript()->HasParseError());
+
+  // Try to fetch the same URL again in order to verify the case where
+  // WorkletModuleResponsesMap serves a cache.
+  TestModuleScriptLoaderClient* client2 =
+      MakeGarbageCollected<TestModuleScriptLoaderClient>();
+  TestFetchDataURLInvalidJSONModule(
+      ModuleScriptCustomFetchType::kWorkletAddModule, client2);
+
+  EXPECT_FALSE(client2->WasNotifyFinished())
+      << "ModuleScriptLoader should finish asynchronously.";
+  RunUntilIdle();
+
+  EXPECT_TRUE(client2->WasNotifyFinished());
+  ASSERT_TRUE(client2->GetModuleScript());
+  EXPECT_TRUE(client2->GetModuleScript()->HasEmptyRecord());
+  EXPECT_TRUE(client2->GetModuleScript()->HasParseError());
 }
 
 void ModuleScriptLoaderTest::TestInvalidSpecifier(

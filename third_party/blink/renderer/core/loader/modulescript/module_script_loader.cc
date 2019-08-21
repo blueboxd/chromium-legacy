@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_loader.h"
 
+#include "third_party/blink/renderer/core/dom/dom_implementation.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetcher.h"
@@ -11,12 +12,14 @@
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_loader_registry.h"
 #include "third_party/blink/renderer/core/script/js_module_script.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
+#include "third_party/blink/renderer/core/script/value_wrapper_synthetic_module_script.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loading_log.h"
+#include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
@@ -225,12 +228,11 @@ void ModuleScriptLoader::NotifyFetchFinished(
     return;
   }
 
+  // Note: "conditions" referred in Step 9 is implemented in
+  // WasModuleLoadSuccessful() in module_script_fetcher.cc.
   // <spec step="9">If any of the following conditions are met, set
   // moduleMap[url] to null, asynchronously complete this algorithm with null,
   // and abort these steps: ...</spec>
-  //
-  // Note: the "conditions" are implemented in WasModuleLoadSuccessful() in
-  // module_script_fetcher.cc.
   if (!params.has_value()) {
     for (ConsoleMessage* error_message : error_messages) {
       ExecutionContext::From(modulator_->GetScriptState())
@@ -246,10 +248,24 @@ void ModuleScriptLoader::NotifyFetchFinished(
   // <spec step="12.2">Set module script to the result of creating a JavaScript
   // module script given source text, module map settings object, response's
   // url, and options.</spec>
-  module_script_ = JSModuleScript::Create(
-      params->GetSourceText(), params->CacheHandler(),
-      ScriptSourceLocationType::kExternalFile, modulator_,
-      params->GetResponseUrl(), params->GetResponseUrl(), options_);
+  switch (params->GetModuleType()) {
+    case ModuleScriptCreationParams::ModuleType::kJSONModule:
+      DCHECK(RuntimeEnabledFeatures::JSONModulesEnabled());
+      module_script_ = ValueWrapperSyntheticModuleScript::
+          CreateJSONWrapperSyntheticModuleScript(params, modulator_);
+      break;
+    case ModuleScriptCreationParams::ModuleType::kJavaScriptModule:
+      // Step 9. "Let source text be the result of UTF-8 decoding response's
+      // body." [spec text]
+      // Step 10. "Let module script be the result of creating
+      // a module script given source text, module map settings object,
+      // response's url, and options." [spec text]
+      module_script_ = JSModuleScript::Create(
+          params->GetSourceText(), params->CacheHandler(),
+          ScriptSourceLocationType::kExternalFile, modulator_,
+          params->GetResponseUrl(), params->GetResponseUrl(), options_);
+      break;
+  }
 
   AdvanceState(State::kFinished);
 }

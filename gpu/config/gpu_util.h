@@ -77,6 +77,9 @@ GPU_EXPORT bool EnableSwiftShaderIfNeeded(
 GPU_EXPORT GpuSeriesType GetGpuSeriesType(uint32_t vendor_id,
                                           uint32_t device_id);
 
+GPU_EXPORT std::string GetIntelGpuGeneration(uint32_t vendor_id,
+                                             uint32_t device_id);
+
 }  // namespace gpu
 
 #endif  // GPU_CONFIG_GPU_UTIL_H_

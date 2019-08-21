@@ -103,7 +103,6 @@
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
-#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
   if (@available(iOS 13, *)) {
     if ([self.traitCollection
             hasDifferentColorAppearanceComparedToTraitCollection:
@@ -117,7 +116,6 @@
       [self.collectionViewLayout invalidateLayout];
     }
   }
-#endif
 }
 
 #pragma mark MDCCollectionViewEditingDelegate

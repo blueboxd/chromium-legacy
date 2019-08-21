@@ -60,13 +60,6 @@ class CONTENT_EXPORT ChromeAppCacheService
       int process_id,
       mojo::PendingReceiver<blink::mojom::AppCacheBackend> receiver);
 
-  // TODO(crbug.com/955171): Remove this after migrating RenderProcessHostImpl
-  // from using service_manager::BinderRegistry to service_manager::BinderMap in
-  // its RegisterMojoInterfaces() method, since such change will remove the need
-  // of expecting an InterfaceRequest as parameters in these creational methods.
-  void CreateBackendForRequest(int process_id,
-                               blink::mojom::AppCacheBackendRequest request);
-
   void Shutdown();
 
   // AppCachePolicy overrides

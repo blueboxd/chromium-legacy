@@ -818,6 +818,11 @@ void RenderViewContextMenu::InitMenu() {
     AppendLinkItems();
     if (params_.media_type != WebContextMenuData::kMediaTypeNone)
       menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+  } else {
+    // Shown when non link item is highlighted to avoid showing click to call
+    // twice when you highlight a link of the form <a
+    // href="tel:+9876543210">+9876543210</a> and right click on it.
+    MaybeAppendClickToCallItem();
   }
 
   bool media_image = content_type_->SupportsGroup(
@@ -1301,17 +1306,7 @@ void RenderViewContextMenu::AppendLinkItems() {
       }
     }
 
-    // Context menu item for click to call.
-    if (active_web_contents &&
-        ShouldOfferClickToCall(active_web_contents->GetBrowserContext(),
-                               params_.link_url)) {
-      if (!click_to_call_context_menu_observer_) {
-        click_to_call_context_menu_observer_ =
-            std::make_unique<ClickToCallContextMenuObserver>(this);
-        observers_.AddObserver(click_to_call_context_menu_observer_.get());
-      }
-      click_to_call_context_menu_observer_->InitMenu(params_);
-    }
+    MaybeAppendClickToCallItem();
 
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVELINKAS,
@@ -1820,6 +1815,28 @@ void RenderViewContextMenu::AppendPictureInPictureItem() {
   if (base::FeatureList::IsEnabled(media::kPictureInPicture))
     menu_model_.AddCheckItemWithStringId(IDC_CONTENT_CONTEXT_PICTUREINPICTURE,
                                          IDS_CONTENT_CONTEXT_PICTUREINPICTURE);
+}
+
+void RenderViewContextMenu::MaybeAppendClickToCallItem() {
+  base::Optional<std::string> phone_number;
+  if (!params_.link_url.is_empty() &&
+      ShouldOfferClickToCallForURL(browser_context_, params_.link_url)) {
+    phone_number = GetUnescapedURLContent(params_.link_url);
+  } else if (!params_.selection_text.empty()) {
+    phone_number = ExtractPhoneNumberForClickToCall(
+        browser_context_, base::UTF16ToUTF8(params_.selection_text));
+  }
+
+  if (!phone_number || phone_number->empty())
+    return;
+
+  if (!click_to_call_context_menu_observer_) {
+    click_to_call_context_menu_observer_ =
+        std::make_unique<ClickToCallContextMenuObserver>(this);
+    observers_.AddObserver(click_to_call_context_menu_observer_.get());
+  }
+
+  click_to_call_context_menu_observer_->BuildMenu(*phone_number);
 }
 
 // Menu delegate functions -----------------------------------------------------

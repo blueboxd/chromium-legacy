@@ -41,19 +41,28 @@ public class BackgroundTaskSchedulerPrefsTest {
     private TaskInfo mTask1;
     private TaskInfo mTask2;
 
+    private class AllValidTestBackgroundTaskFactory implements BackgroundTaskFactory {
+        @Override
+        public BackgroundTask getBackgroundTaskFromTaskId(int taskId) {
+            return new TestBackgroundTask();
+        }
+    }
+
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         BackgroundTaskSchedulerUma.setInstanceForTesting(mUmaSpy);
         doNothing().when(mUmaSpy).assertNativeIsLoaded();
 
-        mTask1 = TaskInfo.createOneOffTask(
-                                 TaskIds.TEST, TestBackgroundTask.class, TimeUnit.DAYS.toMillis(1))
-                         .build();
-        mTask2 = TaskInfo.createOneOffTask(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID,
-                                 TestBackgroundTask.class, TimeUnit.DAYS.toMillis(1))
-                         .build();
-        BackgroundTaskSchedulerFactory.setBackgroundTaskFactory(new TestBackgroundTaskFactory());
+        TaskInfo.TimingInfo timingInfo1 =
+                TaskInfo.OneOffInfo.create().setWindowEndTimeMs(TimeUnit.DAYS.toMillis(1)).build();
+        mTask1 = TaskInfo.createTask(TaskIds.TEST, timingInfo1).build();
+        TaskInfo.TimingInfo timingInfo2 =
+                TaskInfo.OneOffInfo.create().setWindowEndTimeMs(TimeUnit.DAYS.toMillis(1)).build();
+        mTask2 = TaskInfo.createTask(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID, timingInfo2).build();
+
+        BackgroundTaskSchedulerFactory.setBackgroundTaskFactory(
+                new AllValidTestBackgroundTaskFactory());
     }
 
     @Test
@@ -70,9 +79,10 @@ public class BackgroundTaskSchedulerPrefsTest {
         BackgroundTaskSchedulerPrefs.addScheduledTask(mTask2);
         assertEquals("There should be 2 tasks in shared prefs.", 2,
                 BackgroundTaskSchedulerPrefs.getScheduledTaskIds().size());
-        TaskInfo task3 = TaskInfo.createOneOffTask(TaskIds.OMAHA_JOB_ID, TestBackgroundTask.class,
-                                         TimeUnit.DAYS.toMillis(1))
-                                 .build();
+
+        TaskInfo.TimingInfo timingInfo =
+                TaskInfo.OneOffInfo.create().setWindowEndTimeMs(TimeUnit.DAYS.toMillis(1)).build();
+        TaskInfo task3 = TaskInfo.createTask(TaskIds.OMAHA_JOB_ID, timingInfo).build();
 
         BackgroundTaskSchedulerPrefs.addScheduledTask(task3);
         assertEquals("There should be 3 tasks in shared prefs.", 3,

@@ -1181,11 +1181,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         Configuration config = getResources().getConfiguration();
         mUiMode = config.uiMode;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            mDensityDpi = config.densityDpi;
-        } else {
-            mDensityDpi = getResources().getDisplayMetrics().densityDpi;
-        }
+        mDensityDpi = config.densityDpi;
         mStarted = true;
     }
 
@@ -1941,15 +1937,13 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         }
         mUiMode = newConfig.uiMode;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            if (newConfig.densityDpi != mDensityDpi) {
-                if (!VrModuleProvider.getDelegate().onDensityChanged(
-                            mDensityDpi, newConfig.densityDpi)) {
-                    recreate();
-                    return;
-                }
-                mDensityDpi = newConfig.densityDpi;
+        if (newConfig.densityDpi != mDensityDpi) {
+            if (!VrModuleProvider.getDelegate().onDensityChanged(
+                        mDensityDpi, newConfig.densityDpi)) {
+                recreate();
+                return;
             }
+            mDensityDpi = newConfig.densityDpi;
         }
     }
 
@@ -2320,20 +2314,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     private boolean shouldDisableHardwareAcceleration() {
         // Low end devices should disable hardware acceleration for memory gains.
-        if (SysUtils.isLowEndDevice()) return true;
-
-        // Turning off hardware acceleration reduces crash rates. See http://crbug.com/651918
-        // GT-S7580 on JDQ39 accounts for 42% of crashes in libPowerStretch.so on dev and beta.
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.JELLY_BEAN_MR1
-                && Build.MODEL.equals("GT-S7580")) {
-            return true;
-        }
-        // SM-N9005 on JSS15J accounts for 44% of crashes in libPowerStretch.so on stable channel.
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.JELLY_BEAN_MR2
-                && Build.MODEL.equals("SM-N9005")) {
-            return true;
-        }
-        return false;
+        return SysUtils.isLowEndDevice();
     }
 
     private void enableHardwareAcceleration() {

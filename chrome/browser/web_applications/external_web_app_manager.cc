@@ -59,6 +59,12 @@ constexpr char kLaunchContainer[] = "launch_container";
 constexpr char kLaunchContainerTab[] = "tab";
 constexpr char kLaunchContainerWindow[] = "window";
 
+// kUninstallAndReplace is an optional array of strings which specifies App IDs
+// which the app is replacing. This will transfer OS attributes (e.g the source
+// app's shelf and app list positions on ChromeOS) and then uninstall the source
+// app.
+constexpr char kUninstallAndReplace[] = "uninstall_and_replace";
+
 #if defined(OS_CHROMEOS)
 // The sub-directory of the extensions directory in which to scan for external
 // web apps (as opposed to external extensions or external ARC apps).
@@ -175,6 +181,31 @@ std::vector<ExternalInstallOptions> ScanDir(const base::FilePath& dir,
       continue;
     }
 
+    value = dict->FindKey(kUninstallAndReplace);
+    std::vector<AppId> uninstall_and_replace_ids;
+    if (value) {
+      if (!value->is_list()) {
+        LOG(ERROR) << file.value() << " had an invalid "
+                   << kUninstallAndReplace;
+        continue;
+      }
+      const std::vector<base::Value>& uninstall_and_replace_values =
+          value->GetList();
+
+      bool had_error = false;
+      for (const auto& app_id_value : uninstall_and_replace_values) {
+        if (!app_id_value.is_string()) {
+          had_error = true;
+          LOG(ERROR) << file.value() << " had an invalid "
+                     << kUninstallAndReplace << " entry";
+          break;
+        }
+        uninstall_and_replace_ids.push_back(app_id_value.GetString());
+      }
+      if (had_error)
+        continue;
+    }
+
     ExternalInstallOptions install_options(
         std::move(app_url), launch_container,
         ExternalInstallSource::kExternalDefault);
@@ -182,6 +213,8 @@ std::vector<ExternalInstallOptions> ScanDir(const base::FilePath& dir,
     install_options.add_to_desktop = create_shortcuts;
     install_options.add_to_quick_launch_bar = create_shortcuts;
     install_options.require_manifest = true;
+    install_options.uninstall_and_replace =
+        std::move(uninstall_and_replace_ids);
 
     install_options_list.push_back(std::move(install_options));
   }

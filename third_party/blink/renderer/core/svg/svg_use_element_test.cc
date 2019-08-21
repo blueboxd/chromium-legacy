@@ -4,9 +4,7 @@
 
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 
-#include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
-#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/svg/svg_use_element.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
@@ -15,9 +13,9 @@ namespace blink {
 
 using LifecycleUpdateReason = DocumentLifecycle::LifecycleUpdateReason;
 
-class SVGElementTest : public PageTestBase {};
+class SVGUseElementTest : public PageTestBase {};
 
-TEST_F(SVGElementTest, InstanceRemovedWhenNonAttachedTargetRemoved) {
+TEST_F(SVGUseElementTest, InstanceInvalidatedWhenNonAttachedTargetRemoved) {
   GetDocument().body()->SetInnerHTMLFromString(R"HTML(
     <style></style>
     <svg>
@@ -40,16 +38,40 @@ TEST_F(SVGElementTest, InstanceRemovedWhenNonAttachedTargetRemoved) {
 
   // There should be no instance for #target anymore, since that element was
   // removed.
-  SVGUseElement* use = ToSVGUseElement(GetDocument().getElementById("use"));
+  auto* use = ToSVGUseElement(GetDocument().getElementById("use"));
   ASSERT_TRUE(use);
   ASSERT_TRUE(use->GetShadowRoot());
-  Element* instance = use->GetShadowRoot()->getElementById("target");
-  // TODO(https://crbug.com/953263): Change to ASSERT_FALSE once the issue
-  // is resolved. ASSERT_TRUE is used so we'll remember to update this test.
-  ASSERT_TRUE(instance);
+  ASSERT_FALSE(use->GetShadowRoot()->getElementById("target"));
+}
 
-  // TODO(https://crbug.com/953263): Remove when issue is resolved.
-  instance->EnsureComputedStyle();  // Don't crash.
+TEST_F(SVGUseElementTest,
+       InstanceInvalidatedWhenNonAttachedTargetMovedInDocument) {
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <svg>
+      <use id="use" href="#path"/>
+      <textPath id="path">
+        <textPath>
+          <a id="target" systemLanguage="th"></a>
+        </textPath>
+      </textPath>
+    </svg>
+  )HTML");
+  GetDocument().View()->UpdateAllLifecyclePhases(LifecycleUpdateReason::kTest);
+
+  // Move #target in the document (leaving it still "connected").
+  Element* target = GetDocument().getElementById("target");
+  ASSERT_TRUE(target);
+  GetDocument().body()->appendChild(target);
+
+  // This should cause a rebuild of the <use> shadow tree.
+  GetDocument().View()->UpdateAllLifecyclePhases(LifecycleUpdateReason::kTest);
+
+  // There should be no instance for #target anymore, since that element was
+  // removed.
+  auto* use = ToSVGUseElement(GetDocument().getElementById("use"));
+  ASSERT_TRUE(use);
+  ASSERT_TRUE(use->GetShadowRoot());
+  ASSERT_FALSE(use->GetShadowRoot()->getElementById("target"));
 }
 
 }  // namespace blink

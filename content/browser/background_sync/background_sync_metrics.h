@@ -81,6 +81,12 @@ class CONTENT_EXPORT BackgroundSyncMetrics {
   // Sync registration.
   static void CountUnregisterPeriodicSync(BackgroundSyncStatus status);
 
+  // Records whether the Chrome wakeup task actually resulted in us firing
+  // any sync events corresponding to |sync_type|.
+  static void RecordEventsFiredFromWakeupTask(
+      blink::mojom::BackgroundSyncType sync_type,
+      bool fired_events);
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(BackgroundSyncMetrics);
 };

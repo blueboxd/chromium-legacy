@@ -139,6 +139,21 @@ static void ConvertRequestDeviceOptions(
   }
 }
 
+ScriptPromise Bluetooth::getAvailability(ScriptState* script_state) {
+  ExecutionContext* context = GetExecutionContext();
+  CHECK(context->IsSecureContext());
+  EnsureServiceConnection();
+
+  // Subsequent steps are handled in the browser process.
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
+  service_->GetAvailability(
+      WTF::Bind([](ScriptPromiseResolver* resolver,
+                   bool result) { resolver->Resolve(result); },
+                WrapPersistent(resolver)));
+  return promise;
+}
+
 void Bluetooth::RequestDeviceCallback(
     ScriptPromiseResolver* resolver,
     mojom::blink::WebBluetoothResult result,
@@ -194,11 +209,7 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* script_state,
             "Must be handling a user gesture to show a permission request."));
   }
 
-  if (!service_) {
-      // See https://bit.ly/2S0zRAS for task types.
-      frame->GetInterfaceProvider().GetInterface(mojo::MakeRequest(
-          &service_, context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
-  }
+  EnsureServiceConnection();
 
   // In order to convert the arguments from service names and aliases to just
   // UUIDs, do the following substeps:
@@ -314,11 +325,7 @@ ScriptPromise Bluetooth::requestLEScan(ScriptState* script_state,
             "Must be handling a user gesture to show a permission request."));
   }
 
-  if (!service_) {
-    // See https://bit.ly/2S0zRAS for task types.
-    frame->GetInterfaceProvider().GetInterface(mojo::MakeRequest(
-        &service_, context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
-  }
+  EnsureServiceConnection();
 
   auto scan_options = mojom::blink::WebBluetoothRequestLEScanOptions::New();
   ConvertRequestLEScanOptions(options, scan_options, exception_state);
@@ -435,6 +442,16 @@ BluetoothDevice* Bluetooth::GetBluetoothDeviceRepresentingDevice(
     DCHECK(result.is_new_entry);
   }
   return device;
+}
+
+void Bluetooth::EnsureServiceConnection() {
+  if (!service_) {
+    // See https://bit.ly/2S0zRAS for task types.
+    auto* context = GetExecutionContext();
+    auto task_runner = context->GetTaskRunner(TaskType::kMiscPlatformAPI);
+    context->GetInterfaceProvider()->GetInterface(
+        mojo::MakeRequest(&service_, task_runner));
+  }
 }
 
 }  // namespace blink

@@ -22,6 +22,7 @@
 #include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_app_tab_helper.h"
 #include "chrome/common/chrome_features.h"
@@ -65,8 +66,8 @@ const Extension* InstallBookmarkApp(Profile* profile, WebApplicationInfo info) {
   DCHECK(provider);
   provider->install_manager().InstallWebAppFromInfo(
       std::make_unique<WebApplicationInfo>(info),
-      /*no_network_install=*/false,
-      /*install_source=*/WebappInstallSource::DEVTOOLS,
+      web_app::ForInstallableSite::kYes,
+      /*install_source=*/WebappInstallSource::OMNIBOX_INSTALL_ICON,
       base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                      web_app::InstallResultCode code) {
         DCHECK_EQ(web_app::InstallResultCode::kSuccess, code);

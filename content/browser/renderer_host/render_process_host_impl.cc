@@ -2145,13 +2145,6 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
   AddUIThreadInterface(
       registry.get(),
-      base::BindRepeating(
-          &ChromeAppCacheService::CreateBackendForRequest,
-          base::Unretained(storage_partition_impl_->GetAppCacheService()),
-          GetID()));
-
-  AddUIThreadInterface(
-      registry.get(),
       base::BindRepeating(&P2PSocketDispatcherHost::BindRequest,
                           base::Unretained(p2p_socket_dispatcher_host_.get())));
 

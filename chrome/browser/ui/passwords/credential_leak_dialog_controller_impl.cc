@@ -4,13 +4,21 @@
 
 #include "chrome/browser/ui/passwords/credential_leak_dialog_controller_impl.h"
 
-#include "base/logging.h"
+#include "chrome/browser/ui/passwords/credential_leak_dialog_utils.h"
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
 #include "chrome/browser/ui/passwords/passwords_leak_dialog_delegate.h"
 
+using password_manager::CredentialLeakFlags;
+using password_manager::CredentialLeakType;
+
 CredentialLeakDialogControllerImpl::CredentialLeakDialogControllerImpl(
-    PasswordsLeakDialogDelegate* delegate)
-    : credential_leak_dialog_(nullptr), delegate_(delegate) {}
+    PasswordsLeakDialogDelegate* delegate,
+    CredentialLeakType leak_type,
+    const GURL& origin)
+    : credential_leak_dialog_(nullptr),
+      delegate_(delegate),
+      leak_type_(leak_type),
+      origin_(origin) {}
 
 CredentialLeakDialogControllerImpl::~CredentialLeakDialogControllerImpl() {
   ResetDialog();
@@ -39,6 +47,31 @@ void CredentialLeakDialogControllerImpl::OnCloseDialog() {
     credential_leak_dialog_ = nullptr;
   }
   delegate_->OnLeakDialogHidden();
+}
+
+base::string16 CredentialLeakDialogControllerImpl::GetAcceptButtonLabel()
+    const {
+  return leak_dialog_utils::GetAcceptButtonLabel(leak_type_);
+}
+
+base::string16 CredentialLeakDialogControllerImpl::GetCloseButtonLabel() const {
+  return leak_dialog_utils::GetCloseButtonLabel();
+}
+
+base::string16 CredentialLeakDialogControllerImpl::GetDescription() const {
+  return leak_dialog_utils::GetDescription(leak_type_, origin_);
+}
+
+base::string16 CredentialLeakDialogControllerImpl::GetTitle() const {
+  return leak_dialog_utils::GetTitle(leak_type_);
+}
+
+bool CredentialLeakDialogControllerImpl::ShouldCheckPasswords() const {
+  return leak_dialog_utils::ShouldCheckPasswords(leak_type_);
+}
+
+bool CredentialLeakDialogControllerImpl::ShouldShowCloseButton() const {
+  return leak_dialog_utils::ShouldShowCloseButton(leak_type_);
 }
 
 void CredentialLeakDialogControllerImpl::ResetDialog() {

@@ -789,11 +789,6 @@ base::Time SyncEncryptionHandlerImpl::GetKeystoreMigrationTime() const {
   return keystore_migration_time_;
 }
 
-Cryptographer* SyncEncryptionHandlerImpl::GetCryptographerUnsafe() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return &vault_unsafe_.cryptographer;
-}
-
 KeystoreKeysHandler* SyncEncryptionHandlerImpl::GetKeystoreKeysHandler() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return this;
@@ -849,7 +844,7 @@ bool SyncEncryptionHandlerImpl::ApplyNigoriUpdate(
 
 void SyncEncryptionHandlerImpl::UpdateNigoriFromEncryptedTypes(
     sync_pb::NigoriSpecifics* nigori,
-    syncable::BaseTransaction* const trans) const {
+    const syncable::BaseTransaction* const trans) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   syncable::UpdateNigoriFromEncryptedTypes(UnlockVault(trans).encrypted_types,
                                            encrypt_everything_, nigori);
@@ -927,13 +922,18 @@ bool SyncEncryptionHandlerImpl::SetKeystoreKeys(
   return true;
 }
 
+const Cryptographer* SyncEncryptionHandlerImpl::GetCryptographer(
+    const syncable::BaseTransaction* const trans) const {
+  return &UnlockVault(trans).cryptographer;
+}
+
 ModelTypeSet SyncEncryptionHandlerImpl::GetEncryptedTypes(
-    syncable::BaseTransaction* const trans) const {
+    const syncable::BaseTransaction* const trans) const {
   return UnlockVault(trans).encrypted_types;
 }
 
 PassphraseType SyncEncryptionHandlerImpl::GetPassphraseType(
-    syncable::BaseTransaction* const trans) const {
+    const syncable::BaseTransaction* const trans) const {
   return UnlockVault(trans).passphrase_type;
 }
 
@@ -984,6 +984,10 @@ void SyncEncryptionHandlerImpl::RestoreNigori(
 
   // Update our state based on the saved nigori node.
   ApplyNigoriUpdate(nigori_state.nigori_specifics, trans.GetWrappedTrans());
+}
+
+Cryptographer* SyncEncryptionHandlerImpl::GetMutableCryptographerForTesting() {
+  return &vault_unsafe_.cryptographer;
 }
 
 // This function iterates over all encrypted types.  There are many scenarios in
@@ -1633,13 +1637,13 @@ void SyncEncryptionHandlerImpl::MergeEncryptedTypes(
 }
 
 SyncEncryptionHandlerImpl::Vault* SyncEncryptionHandlerImpl::UnlockVaultMutable(
-    syncable::BaseTransaction* const trans) {
+    const syncable::BaseTransaction* const trans) {
   DCHECK_EQ(user_share_->directory.get(), trans->directory());
   return &vault_unsafe_;
 }
 
 const SyncEncryptionHandlerImpl::Vault& SyncEncryptionHandlerImpl::UnlockVault(
-    syncable::BaseTransaction* const trans) const {
+    const syncable::BaseTransaction* const trans) const {
   DCHECK_EQ(user_share_->directory.get(), trans->directory());
   return vault_unsafe_;
 }

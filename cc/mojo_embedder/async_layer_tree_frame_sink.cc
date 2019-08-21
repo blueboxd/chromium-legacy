@@ -15,7 +15,6 @@
 #include "cc/base/histograms.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
 #include "components/viz/client/hit_test_data_provider.h"
-#include "components/viz/client/local_surface_id_provider.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/hit_test/hit_test_region_list.h"
@@ -84,7 +83,6 @@ AsyncLayerTreeFrameSink::AsyncLayerTreeFrameSink(
                          std::move(params->compositor_task_runner),
                          params->gpu_memory_buffer_manager),
       hit_test_data_provider_(std::move(params->hit_test_data_provider)),
-      local_surface_id_provider_(std::move(params->local_surface_id_provider)),
       synthetic_begin_frame_source_(
           std::move(params->synthetic_begin_frame_source)),
       pipes_(std::move(params->pipes)),
@@ -183,21 +181,12 @@ void AsyncLayerTreeFrameSink::SubmitCompositorFrame(
     pipeline_reporting_frame_times_.erase(it);
   }
 
-  if (!enable_surface_synchronization_) {
-    const viz::LocalSurfaceIdAllocation& local_surface_id_allocation =
-        local_surface_id_provider_->GetLocalSurfaceIdAllocationForFrame(frame);
-    local_surface_id_ = local_surface_id_allocation.local_surface_id();
-    frame.metadata.local_surface_id_allocation_time =
-        local_surface_id_allocation.allocation_time();
-  } else {
-    if (local_surface_id_ == last_submitted_local_surface_id_) {
-      DCHECK_EQ(last_submitted_device_scale_factor_,
-                frame.device_scale_factor());
-      DCHECK_EQ(last_submitted_size_in_pixels_.height(),
-                frame.size_in_pixels().height());
-      DCHECK_EQ(last_submitted_size_in_pixels_.width(),
-                frame.size_in_pixels().width());
-    }
+  if (local_surface_id_ == last_submitted_local_surface_id_) {
+    DCHECK_EQ(last_submitted_device_scale_factor_, frame.device_scale_factor());
+    DCHECK_EQ(last_submitted_size_in_pixels_.height(),
+              frame.size_in_pixels().height());
+    DCHECK_EQ(last_submitted_size_in_pixels_.width(),
+              frame.size_in_pixels().width());
   }
 
   base::Optional<viz::HitTestRegionList> hit_test_region_list;
@@ -296,7 +285,6 @@ void AsyncLayerTreeFrameSink::DidDeleteSharedBitmap(
 
 void AsyncLayerTreeFrameSink::ForceAllocateNewId() {
   DCHECK(!enable_surface_synchronization_);
-  local_surface_id_provider_->ForceAllocateNewId();
 }
 
 void AsyncLayerTreeFrameSink::DidReceiveCompositorFrameAck(

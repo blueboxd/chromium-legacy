@@ -168,7 +168,7 @@ void DataSource::SetActions(const base::flat_set<DndAction>& dnd_actions) {
   dnd_actions_ = dnd_actions;
 }
 
-void DataSource::Target(const std::string& mime_type) {
+void DataSource::Target(const base::Optional<std::string>& mime_type) {
   delegate_->OnTarget(mime_type);
 }
 

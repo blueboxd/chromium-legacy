@@ -17,6 +17,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/oom_intervention/oom_intervention.mojom.h"
 
@@ -108,7 +109,7 @@ class OomInterventionTabHelper
 
   InterventionState intervention_state_ = InterventionState::NOT_TRIGGERED;
 
-  mojo::Binding<blink::mojom::OomInterventionHost> binding_;
+  mojo::Receiver<blink::mojom::OomInterventionHost> receiver_{this};
 
   // The shared memory region that stores metrics written by the renderer
   // process. The memory is updated frequently and the browser should touch the

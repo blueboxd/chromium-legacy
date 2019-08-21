@@ -2303,7 +2303,7 @@
     },
     {
       "id": 225,
-      "description": "VPx decoding is too slow on Intel Broadwell, Skylake, and CherryView",
+      "description": "VPx decoding is too slow on Intel Broadwell, Skylake, and CherryTrail",
       "cr_bugs": [616318],
       "os": {
         "type": "win"
@@ -2311,7 +2311,7 @@
       "gpu_series": [
         "intel_broadwell",
         "intel_skylake",
-        "intel_cherryview"
+        "intel_cherrytrail"
       ],
       "features": [
         "disable_accelerated_vpx_decode"

@@ -30,7 +30,9 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.widget.ButtonCompat;
 
 import java.util.List;
@@ -75,14 +77,9 @@ public class AutofillUpstreamTest {
     }
 
     private void assertPrimaryButtonLabel(String buttonLabel) {
-        List<InfoBar> infobars = mActivityTestRule.getInfoBars();
-        if (hasAutofillSaveCardInfobar(infobars)) {
-            InfoBarLayout view = (InfoBarLayout) infobars.get(0).getView();
-            ButtonCompat primaryButton = view.getPrimaryButton();
-            Assert.assertEquals(buttonLabel, primaryButton.getText().toString());
-        } else {
-            Assert.fail("Save card infobar not found");
-        }
+        InfoBarLayout view = (InfoBarLayout) getAutofillSaveCardInfoBar().getView();
+        ButtonCompat primaryButton = view.getPrimaryButton();
+        Assert.assertEquals(buttonLabel, primaryButton.getText().toString());
     }
 
     private void waitForSaveCardInfoBar(final ViewGroup view) {
@@ -98,6 +95,23 @@ public class AutofillUpstreamTest {
     private boolean hasAutofillSaveCardInfobar(List<InfoBar> infobars) {
         return (infobars != null && infobars.size() == 1
                 && infobars.get(0) instanceof AutofillSaveCardInfoBar);
+    }
+
+    private AutofillSaveCardInfoBar getAutofillSaveCardInfoBar() {
+        List<InfoBar> infobars = mActivityTestRule.getInfoBars();
+        if (hasAutofillSaveCardInfobar(infobars)) {
+            return (AutofillSaveCardInfoBar) infobars.get(0);
+        }
+        Assert.fail("Save card infobar not found");
+        return null;
+    }
+
+    private PropertyModel getPropertyModelForDialog() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(
+                ()
+                        -> mActivityTestRule.getActivity()
+                                   .getModalDialogManager()
+                                   .getCurrentDialogForTest());
     }
 
     @Test
@@ -168,5 +182,69 @@ public class AutofillUpstreamTest {
         waitForSaveCardInfoBar(view);
 
         assertPrimaryButtonLabel(CONTINUE_BUTTON_LABEL);
+    }
+
+    @Test
+    @MediumTest
+    @Restriction(Restriction.RESTRICTION_TYPE_INTERNET)
+    public void testSaveCardInfoBarContinueButton_EmptyExpDate_launchesExpDateFixFlow()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        mActivityTestRule.startMainActivityWithURL(mServer.getURL(TEST_FORM_URL));
+        final WebContents webContents = mActivityTestRule.getActivity().getCurrentWebContents();
+
+        DOMUtils.clickNode(webContents, "fill_form");
+        // Clear the month and year field
+        DOMUtils.clickNode(webContents, "clear_expiration_date");
+        DOMUtils.clickNode(webContents, "submit");
+        final ViewGroup view = webContents.getViewAndroidDelegate().getContainerView();
+        waitForSaveCardInfoBar(view);
+        // Click on the continue button
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> getAutofillSaveCardInfoBar().onButtonClicked(true));
+        PropertyModel fixflowPromptPropertyModel = getPropertyModelForDialog();
+
+        // Verify that dialog is not null
+        Assert.assertNotNull(fixflowPromptPropertyModel);
+    }
+
+    @Test
+    @MediumTest
+    @Restriction(Restriction.RESTRICTION_TYPE_INTERNET)
+    public void testSaveCardInfoBarWithEmptyName()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        mActivityTestRule.startMainActivityWithURL(mServer.getURL(TEST_FORM_URL));
+        final WebContents webContents = mActivityTestRule.getActivity().getCurrentWebContents();
+
+        DOMUtils.clickNode(webContents, "fill_form");
+        // Clear the name field
+        DOMUtils.clickNode(webContents, "clear_name");
+        DOMUtils.clickNode(webContents, "submit");
+        final ViewGroup view = webContents.getViewAndroidDelegate().getContainerView();
+        waitForSaveCardInfoBar(view);
+
+        assertPrimaryButtonLabel(CONTINUE_BUTTON_LABEL);
+    }
+
+    @Test
+    @MediumTest
+    @Restriction(Restriction.RESTRICTION_TYPE_INTERNET)
+    public void testSaveCardInfoBarContinueButton_EmptyName_launchesNameFixFlow()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        mActivityTestRule.startMainActivityWithURL(mServer.getURL(TEST_FORM_URL));
+        final WebContents webContents = mActivityTestRule.getActivity().getCurrentWebContents();
+
+        DOMUtils.clickNode(webContents, "fill_form");
+        // Clear the name field
+        DOMUtils.clickNode(webContents, "clear_name");
+        DOMUtils.clickNode(webContents, "submit");
+        final ViewGroup view = webContents.getViewAndroidDelegate().getContainerView();
+        waitForSaveCardInfoBar(view);
+        // Click on the continue button
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> getAutofillSaveCardInfoBar().onButtonClicked(true));
+        PropertyModel fixflowPromptPropertyModel = getPropertyModelForDialog();
+
+        // Verify that dialog is not null
+        Assert.assertNotNull(fixflowPromptPropertyModel);
     }
 }

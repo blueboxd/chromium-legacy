@@ -155,6 +155,7 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/login/login_handler.h"
+#include "chrome/browser/ui/login/login_navigation_throttle.h"
 #include "chrome/browser/ui/prefs/pref_watcher.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/tab_contents/chrome_web_contents_view_delegate.h"
@@ -4151,6 +4152,8 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
       handle,
       std::make_unique<CertificateReportingServiceCertReporter>(web_contents),
       base::Bind(&SSLErrorHandler::HandleSSLError)));
+
+  throttles.push_back(std::make_unique<LoginNavigationThrottle>(handle));
 
   std::unique_ptr<content::NavigationThrottle> https_upgrade_timing_throttle =
       TypedNavigationTimingThrottle::MaybeCreateThrottleFor(handle);

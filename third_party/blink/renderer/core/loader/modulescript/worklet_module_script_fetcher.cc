@@ -45,9 +45,10 @@ void WorkletModuleScriptFetcher::NotifyFinished(Resource* resource) {
   base::Optional<ModuleScriptCreationParams> params;
   ScriptResource* script_resource = ToScriptResource(resource);
   HeapVector<Member<ConsoleMessage>> error_messages;
-  if (WasModuleLoadSuccessful(script_resource, &error_messages)) {
+  ModuleScriptCreationParams::ModuleType module_type;
+  if (WasModuleLoadSuccessful(script_resource, &error_messages, &module_type)) {
     params.emplace(script_resource->GetResponse().CurrentRequestUrl(),
-                   script_resource->SourceText(),
+                   module_type, script_resource->SourceText(),
                    script_resource->CacheHandler(),
                    script_resource->GetResourceRequest().GetCredentialsMode());
   }

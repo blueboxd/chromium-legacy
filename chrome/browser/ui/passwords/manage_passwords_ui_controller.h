@@ -89,7 +89,8 @@ class ManagePasswordsUIController
       const GURL& origin,
       const std::vector<const autofill::PasswordForm*>* federated_matches)
       override;
-  void OnCredentialLeak(const GURL& origin) override;
+  void OnCredentialLeak(password_manager::CredentialLeakType leak_dialog_type,
+                        const GURL& origin) override;
 
   // PasswordStore::Observer:
   void OnLoginsChanged(

@@ -186,11 +186,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void ComputeHttpCacheSize(base::Time start_time,
                             base::Time end_time,
                             ComputeHttpCacheSizeCallback callback) override;
-  void NotifyExternalCacheHit(
-      const GURL& url,
-      const std::string& http_method,
-      const base::Optional<url::Origin>& top_frame_origin,
-      const url::Origin& frame_origin) override;
+  void NotifyExternalCacheHit(const GURL& url,
+                              const std::string& http_method,
+                              const net::NetworkIsolationKey& key) override;
   void ClearHostCache(mojom::ClearDataFilterPtr filter,
                       ClearHostCacheCallback callback) override;
   void ClearHttpAuthCache(base::Time start_time,

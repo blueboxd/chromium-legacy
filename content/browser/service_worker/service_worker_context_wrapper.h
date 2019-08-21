@@ -86,7 +86,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
             URLLoaderFactoryGetter* url_loader_factory_getter);
   void Shutdown();
 
-  // Must be called on the IO thread.
+  // Non-ServiceWorkerOnUI only. Must be called on the IO thread.
   void InitializeResourceContext(ResourceContext* resource_context);
 
   // Deletes all files on disk and restarts the system asynchronously. This
@@ -103,9 +103,9 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   // UI thread.
   BrowserContext* browser_context();
 
-  // The ResourceContext for the associated BrowserContext. This should only
-  // be accessed on the IO thread, and can be null during initialization and
-  // shutdown.
+  // Non-ServiceWorkerOnUI only. The ResourceContext for the associated
+  // BrowserContext. This should only be accessed on the IO thread, and can be
+  // null during initialization and shutdown.
   ResourceContext* resource_context();
 
   // The process manager can be used on either UI or IO.
@@ -557,7 +557,8 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   // Raw pointer to the StoragePartitionImpl owning |this|.
   StoragePartitionImpl* storage_partition_ = nullptr;
 
-  // The ResourceContext associated with this context.
+  // Non-ServiceWorkerOnUI only. The ResourceContext associated with this
+  // context.
   ResourceContext* resource_context_ = nullptr;
 
   // The set of workers that are considered "running". For dispatching

@@ -8392,11 +8392,20 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_TITLE_MD" desc="The title of the auto-signin toast in Material Design mode.">
         Signing in as
       </message>
-      <message name="IDS_CREDENTIAL_LEAK_TITLE" desc="The title of the dialog for leaked credentials.">
+      <message name="IDS_CREDENTIAL_LEAK_CURRENT_SITE_TITLE" desc="The title of the dialog for credentials leaked only on current site.">
+        Change your password
+      </message>
+      <message name="IDS_CREDENTIAL_LEAK_MULTIPLE_SITES_TITLE" desc="The title of the dialog for credentials leaked on multiple sites.">
         Check your passwords
       </message>
-      <message name="IDS_CREDENTIAL_LEAK_MESSAGE" desc="The text that is used in credentials leak detection dialog.">
-        The password you entered was part of an online data breach. Chrome can help you to protect your saved passwords.
+      <message name="IDS_CREDENTIAL_LEAK_CURRENT_SITE_MESSAGE" desc="The text that is used in credential leak detection dialog when credentials were leaked only on current site.">
+        Chrome found this password on a public list of unsafe passwords that were part of a data breach. To keep your account safe, change your password on <ph name ="ORIGIN">$1<ex>example.com</ex></ph> now.
+      </message>
+      <message name="IDS_CREDENTIAL_LEAK_SAVED_MULTIPLE_SITES_MESSAGE" desc="The text that is used in credential leak detection dialog when credentials were saved in chrome and leaked on multiple sites.">
+        Chrome found this password on a public list of unsafe passwords that were part of a data breach. To keep your account safe, check your saved passwords now.
+      </message>
+      <message name="IDS_CREDENTIAL_LEAK_NOT_SAVED_MULTIPLE_SITES_MESSAGE" desc="The text that is used in credential leak detection dialog when credentials were not saved in chrome and leaked on multiple sites.">
+        Chrome found this password on a public list of unsafe passwords that were part of a data breach. To keep your account safe, check your saved passwords and change your password on <ph name ="ORIGIN">$1<ex>example.com</ex></ph>.
       </message>
       <message name="IDS_AUTO_SIGNIN_FIRST_RUN_TITLE_MANY_DEVICES" desc="The title of the dialog during the autosign-in first run experience for the Chrome syncing users.">
         Sign in easily across devices
@@ -8418,13 +8427,13 @@ Please help our engineers fix this problem. Tell us what happened right before y
         </message>
       </if>
       <if expr="use_titlecase">
-        <message name="IDS_CREDENTIAL_LEAK_OK" desc="The text of the OK button in the dialog for credentials leak detection.">
-          Check Passwords
+        <message name="IDS_LEAK_CHECK_CREDENTIALS" desc="The text of the OK button in the dialog for credentials leaked on multiple sites.">
+          Check Your Passwords
         </message>
       </if>
       <if expr="not use_titlecase">
-        <message name="IDS_CREDENTIAL_LEAK_OK" desc="The text of the OK button in the dialog for credentials leak detection.">
-          Check passwords
+        <message name="IDS_LEAK_CHECK_CREDENTIALS" desc="The text of the OK button in the dialog for credentials leaked on multiple sites.">
+          Check your passwords
         </message>
       </if>
 
@@ -9620,10 +9629,10 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_READ_AND_WRITE" desc="Text of the bubble showing what files and directories an origin can currently read and write to">
       <ph name="ORIGIN">$1<ex>example.com</ex></ph> can view and save your changes directly to the following files and folders
     </message>
-    <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_SAVE_CHANGES" desc="">
+    <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_SAVE_CHANGES" desc="Sub-heading for the files and directories with write access in the bubble showing what files and directories an origin can currently read and write to">
       Save changes
     </message>
-    <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_VIEW_CHANGES" desc="">
+    <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_VIEW_CHANGES" desc="Sub-heading for the files and directories with read access in the bubble showing what files and directories an origin can currently read and write to">
       View changes
     </message>
     <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_FILES_TEXT" desc="Text to display a list of files in the native file system usage bubble">

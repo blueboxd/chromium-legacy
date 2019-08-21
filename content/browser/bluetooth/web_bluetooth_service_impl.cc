@@ -28,7 +28,6 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -242,6 +241,42 @@ WebBluetoothServiceImpl::~WebBluetoothServiceImpl() {
 void WebBluetoothServiceImpl::SetClientConnectionErrorHandler(
     base::OnceClosure closure) {
   binding_.set_connection_error_handler(std::move(closure));
+}
+
+blink::mojom::WebBluetoothResult
+WebBluetoothServiceImpl::GetBluetoothAllowed() {
+  const url::Origin& requesting_origin =
+      render_frame_host_->GetLastCommittedOrigin();
+  const url::Origin& embedding_origin =
+      web_contents()->GetMainFrame()->GetLastCommittedOrigin();
+
+  // TODO(crbug.com/518042): Enforce correctly-delegated permissions instead of
+  // matching origins. When relaxing this, take care to handle non-sandboxed
+  // unique origins.
+  if (!embedding_origin.IsSameOriginWith(requesting_origin)) {
+    return blink::mojom::WebBluetoothResult::
+        REQUEST_DEVICE_FROM_CROSS_ORIGIN_IFRAME;
+  }
+  // IsSameOriginWith() no longer excludes opaque origins.
+  // TODO(https://crbug.com/994454): Exclude opaque origins explicitly.
+
+  // Some embedders that don't support Web Bluetooth indicate this by not
+  // returning a chooser.
+  // TODO(https://crbug.com/993829): Perform this check once there is a way to
+  // check if a platform is capable of producing a chooser and return a
+  // |blink::mojom::WebBluetoothResult::WEB_BLUETOOTH_NOT_SUPPORTED| error.
+  switch (GetContentClient()->browser()->AllowWebBluetooth(
+      web_contents()->GetBrowserContext(), requesting_origin,
+      embedding_origin)) {
+    case ContentBrowserClient::AllowWebBluetoothResult::BLOCK_POLICY:
+      return blink::mojom::WebBluetoothResult::
+          CHOOSER_NOT_SHOWN_API_LOCALLY_DISABLED;
+    case ContentBrowserClient::AllowWebBluetoothResult::BLOCK_GLOBALLY_DISABLED:
+      return blink::mojom::WebBluetoothResult::
+          CHOOSER_NOT_SHOWN_API_GLOBALLY_DISABLED;
+    case ContentBrowserClient::AllowWebBluetoothResult::ALLOW:
+      return blink::mojom::WebBluetoothResult::SUCCESS;
+  }
 }
 
 bool WebBluetoothServiceImpl::IsDevicePaired(
@@ -586,6 +621,34 @@ void WebBluetoothServiceImpl::NotifyCharacteristicValueChanged(
     iter->second->characteristic_client->RemoteCharacteristicValueChanged(
         value);
   }
+}
+
+void WebBluetoothServiceImpl::GetAvailability(
+    GetAvailabilityCallback callback) {
+  if (GetBluetoothAllowed() != blink::mojom::WebBluetoothResult::SUCCESS) {
+    std::move(callback).Run(/*result=*/false);
+    return;
+  }
+
+  if (!BluetoothAdapterFactoryWrapper::Get().IsLowEnergySupported()) {
+    std::move(callback).Run(/*result=*/false);
+    return;
+  }
+
+  auto get_availability_impl = base::BindOnce(
+      [](GetAvailabilityCallback callback, device::BluetoothAdapter* adapter) {
+        std::move(callback).Run(adapter->IsPresent());
+      },
+      std::move(callback));
+
+  auto* adapter = GetAdapter();
+  if (adapter) {
+    std::move(get_availability_impl).Run(adapter);
+    return;
+  }
+
+  BluetoothAdapterFactoryWrapper::Get().AcquireAdapter(
+      this, std::move(get_availability_impl));
 }
 
 void WebBluetoothServiceImpl::RequestDevice(

@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process_handle.h"
+#include "build/build_config.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/background_sync/background_sync_context_impl.h"
 #include "content/browser/bluetooth/bluetooth_allowed_devices_map.h"
@@ -235,6 +236,14 @@ class CONTENT_EXPORT StoragePartitionImpl
       const GURL& url,
       const GURL& site_for_cookies,
       const std::vector<net::CookieWithStatus>& cookie_list) override;
+#if defined(OS_ANDROID)
+  void OnGenerateHttpNegotiateAuthToken(
+      const std::string& server_auth_token,
+      bool can_delegate,
+      const std::string& auth_negotiate_android_account_type,
+      const std::string& spn,
+      OnGenerateHttpNegotiateAuthTokenCallback callback) override;
+#endif
 #if defined(OS_CHROMEOS)
   void OnTrustAnchorUsed() override;
 #endif

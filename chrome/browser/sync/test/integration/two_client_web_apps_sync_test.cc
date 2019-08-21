@@ -26,8 +26,8 @@ class TwoClientWebAppsSyncTest : public SyncTest {
     AppId app_id;
 
     WebAppProvider::Get(profile)->install_manager().InstallWebAppFromInfo(
-        std::make_unique<WebApplicationInfo>(info),
-        /*no_network_install=*/false, WebappInstallSource::DEVTOOLS,
+        std::make_unique<WebApplicationInfo>(info), ForInstallableSite::kYes,
+        WebappInstallSource::OMNIBOX_INSTALL_ICON,
         base::BindLambdaForTesting(
             [&run_loop, &app_id](const AppId& new_app_id,
                                  InstallResultCode code) {
@@ -51,8 +51,7 @@ class TwoClientWebAppsSyncTest : public SyncTest {
   bool AllProfilesHaveSameWebAppIds() {
     base::Optional<base::flat_set<AppId>> app_ids;
     for (Profile* profile : GetAllProfiles()) {
-      base::flat_set<AppId> profile_app_ids =
-          GetRegistrar(profile).GetAppIdsForTesting();
+      base::flat_set<AppId> profile_app_ids(GetRegistrar(profile).GetAppIds());
       if (!app_ids) {
         app_ids = profile_app_ids;
       } else {

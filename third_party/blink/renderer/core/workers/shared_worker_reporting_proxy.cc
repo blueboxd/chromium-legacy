@@ -63,18 +63,6 @@ void SharedWorkerReportingProxy::ReportConsoleMessage(
   // Not supported in SharedWorker.
 }
 
-void SharedWorkerReportingProxy::DidFetchScript(int64_t app_cache_id) {
-  DCHECK(!IsMainThread());
-  // TODO(nhiroki): Change the task type to kDOMManipulation here and elsewhere
-  // in this file. See the HTML spec:
-  // https://html.spec.whatwg.org/C/#worker-processing-model:dom-manipulation-task-source-2
-  PostCrossThreadTask(
-      *parent_execution_context_task_runners_->Get(TaskType::kInternalDefault),
-      FROM_HERE,
-      CrossThreadBindOnce(&WebSharedWorkerImpl::DidFetchScript,
-                          CrossThreadUnretained(worker_), app_cache_id));
-}
-
 void SharedWorkerReportingProxy::DidFailToFetchClassicScript() {
   // TODO(nhiroki): Add a runtime flag check for off-the-main-thread shared
   // worker script fetch. This function should be called only when the flag is

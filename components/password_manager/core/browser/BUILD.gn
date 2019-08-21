@@ -258,6 +258,8 @@ jumbo_static_library("browser") {
       "http_credentials_cleaner.h",
       "leak_detection_delegate.cc",
       "leak_detection_delegate.h",
+      "leak_detection_dialog_utils.cc",
+      "leak_detection_dialog_utils.h",
     ]
     deps += [
       "//components/password_manager/core/browser/leak_detection:leak_detection",

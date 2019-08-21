@@ -170,7 +170,7 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
   }
   SyncEncryptionHandlerObserverMock* observer() { return &observer_; }
   Cryptographer* GetCryptographer() {
-    return encryption_handler_->GetCryptographerUnsafe();
+    return encryption_handler_->GetMutableCryptographerForTesting();
   }
 
   sync_pb::NigoriSpecifics ReadNigoriSpecifics() {

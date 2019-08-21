@@ -696,13 +696,11 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   // of dark mode colors for all the colors in this view. However, this
   // override is not available on pre-iOS 13 devices, so the dark mode colors
   // must be provided manually.
-#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
   if (@available(iOS 13, *)) {
     self.remoteTabsViewController.overrideUserInterfaceStyle =
         UIUserInterfaceStyleDark;
     return;
   }
-#endif
   styler.cellTitleColor = UIColorFromRGB(kGridDarkThemeCellTitleColor);
   styler.headerFooterTitleColor = UIColorFromRGB(kGridDarkThemeCellTitleColor);
   styler.cellDetailColor = UIColorFromRGB(kGridDarkThemeCellDetailColor,

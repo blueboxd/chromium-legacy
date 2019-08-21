@@ -4,10 +4,7 @@
 
 package org.chromium.chrome.browser.omnibox;
 
-import static org.chromium.chrome.test.util.OmniboxTestUtils.buildSuggestionMap;
-
 import android.annotation.SuppressLint;
-import android.os.Build;
 import android.os.SystemClock;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
@@ -21,18 +18,11 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.EnormousTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.base.test.util.parameter.CommandLineParameter;
@@ -66,6 +56,11 @@ import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.test.util.UiUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.ServerCertificate;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.util.HashMap;
 import java.util.List;
@@ -74,6 +69,8 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.chromium.chrome.test.util.OmniboxTestUtils.buildSuggestionMap;
 
 /**
  * Tests of the Omnibox.
@@ -727,7 +724,6 @@ public class OmniboxTest {
     @MediumTest
     @Feature({"Omnibox"})
     @RetryOnFailure
-    @MinAndroidSdkLevel(Build.VERSION_CODES.JELLY_BEAN_MR1)
     @DisabledTest // https://crbug.com/950556
     public void testSuggestionDirectionSwitching() throws InterruptedException {
         final TextView urlBarView =

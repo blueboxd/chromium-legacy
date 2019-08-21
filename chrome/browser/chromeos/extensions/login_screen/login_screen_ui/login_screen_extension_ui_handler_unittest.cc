@@ -9,10 +9,12 @@
 #include "base/test/gtest_util.h"
 #include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/login_screen_extension_ui_create_options.h"
 #include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/login_screen_extension_ui_window.h"
+#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/ui/ash/test_login_screen.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/version_info/version_info.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -102,6 +104,12 @@ class LoginScreenExtensionUiHandlerUnittest : public testing::Test {
         profile_manager_.CreateTestingProfile(chrome::kInitialProfile);
     ASSERT_TRUE(test_profile);
 
+    // Mark the device as being enterprise managed by policy.
+    stub_install_attributes_ =
+        test_profile->ScopedCrosSettingsTestHelper()->InstallAttributes();
+    ASSERT_TRUE(stub_install_attributes_);
+    stub_install_attributes_->SetCloudManaged("domain.com", "device_id");
+
     extension_registry_ = extensions::ExtensionRegistry::Get(test_profile);
     ASSERT_TRUE(extension_registry_);
 
@@ -176,7 +184,7 @@ class LoginScreenExtensionUiHandlerUnittest : public testing::Test {
   void CheckCannotUseAPI(const extensions::Extension* extension) {
     ::testing::FLAGS_gtest_death_test_style = "fast";
     std::string error;
-    EXPECT_DCHECK_DEATH(
+    EXPECT_CHECK_DEATH(
         ui_handler_->Show(extension, kUrl, kCanBeClosedByUser, &error));
   }
 
@@ -186,6 +194,7 @@ class LoginScreenExtensionUiHandlerUnittest : public testing::Test {
 
   session_manager::SessionManager session_manager_;
   TestingProfileManager profile_manager_;
+  StubInstallAttributes* stub_install_attributes_ = nullptr;
   extensions::ExtensionRegistry* extension_registry_ = nullptr;
   scoped_refptr<const extensions::Extension> extension_;
 
@@ -358,7 +367,6 @@ TEST_F(LoginScreenExtensionUiHandlerDeathUnittest, NotAllowed) {
           .Build();
 
   CheckCannotUseAPI(other_profile_extension.get());
-  CheckCannotUseAPI(other_profile_extension.get());
 
   // |no_permission_extension| is enabled in the sign-in profile's extensions
   // registry, but doesn't have the needed "loginScreenUi" permission.
@@ -371,7 +379,10 @@ TEST_F(LoginScreenExtensionUiHandlerDeathUnittest, NotAllowed) {
   extension_registry_->AddEnabled(no_permission_extension);
 
   CheckCannotUseAPI(no_permission_extension.get());
-  CheckCannotUseAPI(no_permission_extension.get());
+
+  // Mark the device as unmanaged.
+  stub_install_attributes_->SetConsumerOwned();
+  CheckCannotUseAPI(extension_.get());
 }
 
 }  // namespace chromeos

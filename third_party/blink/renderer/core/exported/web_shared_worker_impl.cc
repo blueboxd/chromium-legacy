@@ -70,13 +70,8 @@
 
 namespace blink {
 
-WebSharedWorkerImpl::WebSharedWorkerImpl(
-    WebSharedWorkerClient* client,
-    const base::UnguessableToken& appcache_host_id)
-    : client_(client),
-      appcache_host_(MakeGarbageCollected<ApplicationCacheHostForWorker>(
-          appcache_host_id,
-          Thread::Current()->GetTaskRunner())) {
+WebSharedWorkerImpl::WebSharedWorkerImpl(WebSharedWorkerClient* client)
+    : client_(client) {
   DCHECK(IsMainThread());
 }
 
@@ -89,7 +84,6 @@ void WebSharedWorkerImpl::TerminateWorkerThread() {
   if (asked_to_terminate_)
     return;
   asked_to_terminate_ = true;
-  appcache_host_->Detach();
 
   if (!worker_thread_) {
     client_->WorkerScriptLoadFailed();
@@ -106,14 +100,6 @@ void WebSharedWorkerImpl::TerminateWorkerThread() {
 void WebSharedWorkerImpl::CountFeature(WebFeature feature) {
   DCHECK(IsMainThread());
   client_->CountFeature(feature);
-}
-
-void WebSharedWorkerImpl::DidFetchScript(int64_t app_cache_id) {
-  DCHECK(IsMainThread());
-  DCHECK(appcache_host_);
-  appcache_host_->SelectCacheForWorker(
-      app_cache_id, WTF::Bind(&WebSharedWorkerImpl::OnAppCacheSelected,
-                              weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WebSharedWorkerImpl::DidFailToFetchClassicScript() {
@@ -171,6 +157,7 @@ void WebSharedWorkerImpl::StartWorkerContext(
     const WebString& content_security_policy,
     mojom::ContentSecurityPolicyType policy_type,
     network::mojom::IPAddressSpace creation_address_space,
+    const base::UnguessableToken& appcache_host_id,
     const base::UnguessableToken& devtools_worker_token,
     mojo::ScopedMessagePipeHandle content_settings_handle,
     mojo::ScopedMessagePipeHandle interface_provider,
@@ -246,7 +233,8 @@ void WebSharedWorkerImpl::StartWorkerContext(
 
   reporting_proxy_ = MakeGarbageCollected<SharedWorkerReportingProxy>(
       this, ParentExecutionContextTaskRunners::Create());
-  worker_thread_ = std::make_unique<SharedWorkerThread>(*reporting_proxy_);
+  worker_thread_ =
+      std::make_unique<SharedWorkerThread>(*reporting_proxy_, appcache_host_id);
 
   auto thread_startup_data = WorkerBackingThreadStartupData::CreateDefault();
   thread_startup_data.atomics_wait_mode =
@@ -274,12 +262,6 @@ void WebSharedWorkerImpl::StartWorkerContext(
                                     devtools_agent_host_receiver.PassPipe());
 }
 
-void WebSharedWorkerImpl::OnAppCacheSelected() {
-  DCHECK(IsMainThread());
-  DCHECK(GetWorkerThread());
-  GetWorkerThread()->OnAppCacheSelected();
-}
-
 WorkerClients* WebSharedWorkerImpl::CreateWorkerClients() {
   auto* worker_clients = MakeGarbageCollected<WorkerClients>();
   CoreInitializer::GetInstance().ProvideLocalFileSystemToWorker(
@@ -293,9 +275,8 @@ void WebSharedWorkerImpl::TerminateWorkerContext() {
 }
 
 std::unique_ptr<WebSharedWorker> WebSharedWorker::Create(
-    WebSharedWorkerClient* client,
-    const base::UnguessableToken& appcache_host_id) {
-  return base::WrapUnique(new WebSharedWorkerImpl(client, appcache_host_id));
+    WebSharedWorkerClient* client) {
+  return base::WrapUnique(new WebSharedWorkerImpl(client));
 }
 
 }  // namespace blink

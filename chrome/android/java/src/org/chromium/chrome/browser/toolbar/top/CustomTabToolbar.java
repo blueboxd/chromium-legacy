@@ -17,7 +17,6 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.v4.text.BidiFormatter;
 import android.support.v4.view.MarginLayoutParamsCompat;
@@ -573,12 +572,10 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
         mMenuButton = null;
         // In addition to removing the menu button, we also need to remove the margin on the custom
         // action button.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            ViewGroup.MarginLayoutParams p =
-                    (ViewGroup.MarginLayoutParams) mCustomActionButtons.getLayoutParams();
-            p.setMarginEnd(0);
-            mCustomActionButtons.setLayoutParams(p);
-        }
+        ViewGroup.MarginLayoutParams p =
+                (ViewGroup.MarginLayoutParams) mCustomActionButtons.getLayoutParams();
+        p.setMarginEnd(0);
+        mCustomActionButtons.setLayoutParams(p);
     }
 
     private class LocationBarImpl implements LocationBar {

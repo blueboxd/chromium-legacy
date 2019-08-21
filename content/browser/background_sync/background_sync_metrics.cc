@@ -144,4 +144,13 @@ void BackgroundSyncMetrics::CountUnregisterPeriodicSync(
       static_cast<BackgroundSyncStatus>(BACKGROUND_SYNC_STATUS_MAX + 1));
 }
 
+// static
+void BackgroundSyncMetrics::RecordEventsFiredFromWakeupTask(
+    blink::mojom::BackgroundSyncType sync_type,
+    bool fired_events) {
+  base::UmaHistogramBoolean("BackgroundSync.WakeupTaskFiredEvents." +
+                                GetBackgroundSyncSuffix(sync_type),
+                            fired_events);
+}
+
 }  // namespace content

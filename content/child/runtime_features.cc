@@ -319,8 +319,8 @@ void SetIndividualRuntimeFeatures(
           features::kAllowContentInitiatedDataUrlNavigations));
 
 #if defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(features::kWebNfc))
-    WebRuntimeFeatures::EnableWebNfc(true);
+  WebRuntimeFeatures::EnableWebNfc(
+      base::FeatureList::IsEnabled(features::kWebNfc));
 #endif
 
 #if defined(OS_ANDROID)

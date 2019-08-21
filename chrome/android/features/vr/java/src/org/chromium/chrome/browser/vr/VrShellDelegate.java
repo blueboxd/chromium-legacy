@@ -1421,7 +1421,6 @@ public class VrShellDelegate
     @VisibleForTesting
     protected void onResume() {
         if (VrDelegate.DEBUG_LOGS) Log.i(TAG, "onResume");
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) return;
         if (!mTestWorkaroundDontCancelVrEntryOnResume) {
             mMaybeActivateAfterHeadsetInsertion = false;
         }

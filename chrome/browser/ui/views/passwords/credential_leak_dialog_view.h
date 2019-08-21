@@ -33,6 +33,7 @@ class CredentialLeakDialogView : public views::DialogDelegateView,
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   void WindowClosing() override;
   bool Accept() override;
+  int GetDialogButtons() const override;
 
   // Sets up the child views.
   void InitWindow();

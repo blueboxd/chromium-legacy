@@ -32,6 +32,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "third_party/blink/public/resources/grit/blink_resources.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
@@ -51,7 +52,8 @@ HRTFDatabase::HRTFDatabase(float sample_rate)
   for (int elevation = kMinElevation; elevation <= kMaxElevation;
        elevation += kRawElevationAngleSpacing) {
     std::unique_ptr<HRTFElevation> hrtf_elevation =
-        HRTFElevation::CreateForSubject("Composite", elevation, sample_rate);
+        HRTFElevation::CreateForSubject(IDR_AUDIO_SPATIALIZATION_COMPOSITE,
+                                        elevation, sample_rate);
     DCHECK(hrtf_elevation.get());
     if (!hrtf_elevation.get())
       return;

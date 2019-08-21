@@ -42,16 +42,28 @@ ExternalProtocolHandler::Delegate* g_external_protocol_handler_delegate =
     nullptr;
 
 constexpr const char* kDeniedSchemes[] = {
-    "afp", "data", "disk", "disks",
+    "afp",
+    "data",
+    "disk",
+    "disks",
     // ShellExecuting file:///C:/WINDOWS/system32/notepad.exe will simply
     // execute the file specified!  Hopefully we won't see any "file" schemes
     // because we think of file:// URLs as handled URLs, but better to be safe
     // than to let an attacker format the user's hard drive.
-    "file", "hcp", "javascript", "ms-help", "nntp", "res", "shell", "vbscript",
+    "file",
+    "hcp",
+    "ie.http",
+    "javascript",
+    "ms-help",
+    "nntp",
+    "res",
+    "shell",
+    "vbscript",
     // view-source is a special case in chrome. When it comes through an
     // iframe or a redirect, it looks like an external protocol, but we don't
     // want to shellexecute it.
-    "view-source", "vnd.ms.radio",
+    "view-source",
+    "vnd.ms.radio",
 };
 
 constexpr const char* kAllowedSchemes[] = {
@@ -153,8 +165,8 @@ void OnDefaultProtocolClientWorkerFinished(
   bool chrome_is_default_handler = state == shell_integration::IS_DEFAULT;
 
 #if !defined(OS_ANDROID)
-  if (web_contents &&
-      ShouldOfferClickToCall(web_contents->GetBrowserContext(), escaped_url)) {
+  if (web_contents && ShouldOfferClickToCallForURL(
+                          web_contents->GetBrowserContext(), escaped_url)) {
     // Handle tel links by opening the Click to Call dialog. This will call back
     // into LaunchUrlWithoutSecurityCheck if the user selects a system handler.
     ClickToCallUiController::ShowDialog(web_contents, escaped_url,

@@ -84,8 +84,9 @@ class WaylandDataSourceDelegate : public DataSourceDelegate {
 
   // Overridden from DataSourceDelegate:
   void OnDataSourceDestroying(DataSource* device) override { delete this; }
-  void OnTarget(const std::string& mime_type) override {
-    wl_data_source_send_target(data_source_resource_, mime_type.c_str());
+  void OnTarget(const base::Optional<std::string>& mime_type) override {
+    wl_data_source_send_target(data_source_resource_,
+                               mime_type ? mime_type->c_str() : nullptr);
     wl_client_flush(wl_resource_get_client(data_source_resource_));
   }
   void OnSend(const std::string& mime_type, base::ScopedFD fd) override {

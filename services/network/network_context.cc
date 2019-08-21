@@ -1354,14 +1354,10 @@ void NetworkContext::VerifyCertForSignedExchange(
 void NetworkContext::NotifyExternalCacheHit(
     const GURL& url,
     const std::string& http_method,
-    const base::Optional<url::Origin>& top_frame_origin,
-    const url::Origin& frame_origin) {
+    const net::NetworkIsolationKey& key) {
   net::HttpCache* cache =
       url_request_context_->http_transaction_factory()->GetCache();
-  net::NetworkIsolationKey key;
   if (cache) {
-    if (top_frame_origin)
-      key = net::NetworkIsolationKey(*top_frame_origin, frame_origin);
     cache->OnExternalCacheHit(url, http_method, key);
   }
 }
@@ -1757,8 +1753,8 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
         network_service_->host_resolver_manager());
     builder.set_host_resolver_factory(
         network_service_->host_resolver_factory());
-    builder.set_shared_http_auth_handler_factory(
-        network_service_->GetHttpAuthHandlerFactory());
+    builder.SetHttpAuthHandlerFactory(
+        network_service_->CreateHttpAuthHandlerFactory(this));
     builder.set_network_quality_estimator(
         network_service_->network_quality_estimator());
   }

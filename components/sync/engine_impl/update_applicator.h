@@ -30,7 +30,7 @@ class Entry;
 // failed updates until no remaining updates can be successfully applied.
 class UpdateApplicator {
  public:
-  explicit UpdateApplicator(Cryptographer* cryptographer);
+  explicit UpdateApplicator(const Cryptographer* cryptographer);
   ~UpdateApplicator();
 
   // Attempt to apply the specified updates.
@@ -52,7 +52,7 @@ class UpdateApplicator {
   bool SkipUpdate(const syncable::Entry& entry);
 
   // Used to decrypt sensitive sync nodes.
-  Cryptographer* cryptographer_;
+  const Cryptographer* cryptographer_;
 
   int updates_applied_;
   int encryption_conflicts_;

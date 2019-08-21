@@ -73,8 +73,10 @@ cca.mojo.MojoInterface = class {
    * Gets the mojo interface remote which could be used to communicate with
    * Camera device in Chrome.
    * @param {string} deviceId The id of the target camera device.
-   * @return {Promise<cros.mojom.CameraAppDeviceRemote>} The mojo interface
-   *     remote of the camera device.
+   * @return {Promise<?cros.mojom.CameraAppDeviceRemote>} The mojo interface
+   *     remote of the camera device. For non-v3 devices, it will return a null
+   *     remote.
+   * @throws {Error} Thrown for invalid input.
    */
   getDevice(deviceId) {
     if (this.devices_.has(deviceId)) {
@@ -83,11 +85,11 @@ cca.mojo.MojoInterface = class {
 
     let device = this.deviceProvider.getCameraAppDevice(deviceId).then(
         ({status, device}) => {
-          if (status !== cros.mojom.GetCameraAppDeviceStatus.SUCCESS) {
-            console.error(
-                'Failed to get CameraAppDevice, error code: ', status);
-            // TODO(wtlee): Handle by different status.
+          if (status === cros.mojom.GetCameraAppDeviceStatus.ERROR_INVALID_ID) {
+            throw new Error('Invalid device id: ' + deviceId);
           }
+          // For non-v3 devices, it will return the null remote. Otherwise, it
+          // should return a valid remote of camera device.
           return device;
         });
     this.devices_.set(deviceId, device);

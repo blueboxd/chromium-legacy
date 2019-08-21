@@ -19,7 +19,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "url/url_constants.h"
 
 ClickToCallContextMenuObserver::SubMenuDelegate::SubMenuDelegate(
     ClickToCallContextMenuObserver* parent)
@@ -51,9 +50,11 @@ ClickToCallContextMenuObserver::ClickToCallContextMenuObserver(
 
 ClickToCallContextMenuObserver::~ClickToCallContextMenuObserver() = default;
 
-void ClickToCallContextMenuObserver::InitMenu(
-    const content::ContextMenuParams& params) {
-  url_ = params.link_url;
+void ClickToCallContextMenuObserver::BuildMenu(
+    const std::string& phone_number) {
+  DCHECK(!phone_number.empty());
+
+  phone_number_ = phone_number;
   controller_->UpdateDevices();
   const std::vector<std::unique_ptr<syncer::DeviceInfo>>& devices =
       controller_->devices();
@@ -92,6 +93,7 @@ void ClickToCallContextMenuObserver::InitMenu(
         sub_menu_model_.get(), vector_icons::kCallIcon);
 #endif
   }
+  proxy_->AddSeparator();
 }
 
 void ClickToCallContextMenuObserver::BuildSubMenu() {
@@ -142,5 +144,5 @@ void ClickToCallContextMenuObserver::SendClickToCallMessage(
   LogClickToCallSelectedDeviceIndex(kSharingClickToCallUiContextMenu,
                                     chosen_device_index);
 
-  controller_->OnDeviceSelected(url_, *devices[chosen_device_index]);
+  controller_->OnDeviceSelected(phone_number_, *devices[chosen_device_index]);
 }

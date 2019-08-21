@@ -3138,6 +3138,13 @@ void NavigationRequest::OnCommitTimeout() {
   }
 #endif
 
+  PingNetworkService(base::BindOnce(
+      [](base::Time start_time) {
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "Navigation.CommitTimeout.NetworkServicePingTime",
+            base::Time::Now() - start_time);
+      },
+      base::Time::Now()));
   UMA_HISTOGRAM_ENUMERATION(
       "Navigation.CommitTimeout.NetworkServiceAvailability",
       GetNetworkServiceAvailability());

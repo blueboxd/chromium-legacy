@@ -506,7 +506,7 @@ class SyncerTest : public testing::Test,
   }
 
   Cryptographer* GetCryptographer(syncable::BaseTransaction* trans) {
-    return directory()->GetCryptographer(trans);
+    return test_user_share_.GetCryptographer(trans);
   }
 
   // Configures SyncCycleContext and NudgeTracker so Syncer won't call

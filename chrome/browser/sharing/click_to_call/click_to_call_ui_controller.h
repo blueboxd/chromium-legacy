@@ -32,7 +32,8 @@ class ClickToCallUiController
 
   ~ClickToCallUiController() override;
 
-  void OnDeviceSelected(const GURL& url, const syncer::DeviceInfo& device);
+  void OnDeviceSelected(const std::string& phone_number,
+                        const syncer::DeviceInfo& device);
 
   // Overridden from SharingUiController:
   base::string16 GetTitle() override;
@@ -54,6 +55,9 @@ class ClickToCallUiController
  private:
   friend class content::WebContentsUserData<ClickToCallUiController>;
 
+  // Sends |phone_number| to |device| as a SharingMessage.
+  void SendNumberToDevice(const syncer::DeviceInfo& device,
+                          const std::string& phone_number);
 
   GURL phone_url_;
   bool hide_default_handler_ = false;

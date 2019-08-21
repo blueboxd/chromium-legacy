@@ -6,7 +6,6 @@
 
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "base/barrier_closure.h"
-#include "components/exo/data_device.h"
 #include "components/exo/data_offer.h"
 #include "components/exo/data_source.h"
 #include "components/exo/seat.h"
@@ -42,6 +41,18 @@ uint32_t DndActionsToDragOperations(const base::flat_set<DndAction>& actions) {
   }
   return dnd_operations;
 }
+
+#if defined(OS_CHROMEOS)
+DndAction DragOperationsToPreferredDndAction(int op) {
+  if (op & ui::DragDropTypes::DragOperation::DRAG_COPY)
+    return DndAction::kCopy;
+
+  if (op & ui::DragDropTypes::DragOperation::DRAG_MOVE)
+    return DndAction::kMove;
+
+  return DndAction::kNone;
+}
+#endif
 
 DndAction DragOperationToDndAction(int op) {
   switch (op) {
@@ -255,6 +266,25 @@ void DragDropOperation::OnDragStarted() {
 }
 
 void DragDropOperation::OnDragEnded() {}
+
+#if defined(OS_CHROMEOS)
+void DragDropOperation::OnDragActionsChanged(int actions) {
+  if (!started_by_this_object_)
+    return;
+
+  DndAction dnd_action = DragOperationsToPreferredDndAction(actions);
+  // We send a mime type along with the action to indicate to the application
+  // that dropping is/is not currently possible. We do not currently know of
+  // any applications that care about the specific mime type until the drop is
+  // actually performed.
+  if (dnd_action != DndAction::kNone)
+    source_->get()->Target(mime_type_);
+  else
+    source_->get()->Target(base::nullopt);
+
+  source_->get()->Action(dnd_action);
+}
+#endif
 
 void DragDropOperation::OnSurfaceDestroying(Surface* surface) {
   if (surface == origin_->get() || surface == icon_->get()) {

@@ -143,8 +143,7 @@ class Profile : public content::BrowserContext {
   virtual base::FilePath GetPath() const = 0;
 
   // Return whether this context is off the record. Default is false.
-  // Note that for Chrome this does not imply Incognito as Guest sessions are
-  // also off the record.
+  // Note that for Chrome this covers BOTH Incognito mode and Guest sessions.
   bool IsOffTheRecord() override = 0;
   virtual bool IsOffTheRecord() const = 0;
 

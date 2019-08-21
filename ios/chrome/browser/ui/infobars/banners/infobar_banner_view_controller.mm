@@ -113,16 +113,14 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   [self.view.layer setShadowOpacity:kBannerViewShadowOpacity];
   // If dark mode is set when the banner is presented, the semantic color will
   // need to be set here.
-#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
   if (@available(iOS 13, *)) {
     [self.traitCollection performAsCurrentTraitCollection:^{
       [self.view.layer
           setShadowColor:[UIColor colorNamed:kToolbarShadowColor].CGColor];
     }];
+  } else {
+    [self.view.layer setShadowColor:[UIColor blackColor].CGColor];
   }
-#else
-  [self.view.layer setShadowColor:[UIColor blackColor].CGColor];
-#endif
   self.view.accessibilityIdentifier = kInfobarBannerViewIdentifier;
   self.view.isAccessibilityElement = YES;
   self.view.accessibilityLabel = [self accessibilityLabel];
@@ -273,7 +271,6 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
 // presented.
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
-#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
   if (@available(iOS 13, *)) {
     if ([self.traitCollection
             hasDifferentColorAppearanceComparedToTraitCollection:
@@ -284,7 +281,6 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
       }];
     }
   }
-#endif
 }
 
 #pragma mark - Public Methods

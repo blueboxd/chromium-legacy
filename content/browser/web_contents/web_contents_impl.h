@@ -1274,7 +1274,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       const GURL& url,
       const std::string& http_request,
       const std::string& mime_type,
-      const base::Optional<url::Origin>& top_frame_origin,
       ResourceType resource_type);
   void OnDidDisplayInsecureContent(RenderFrameHostImpl* source);
   void OnDidContainInsecureFormAction(RenderFrameHostImpl* source);

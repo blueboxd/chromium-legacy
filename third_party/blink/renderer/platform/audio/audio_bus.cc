@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/platform/audio/sinc_resampler.h"
 #include "third_party/blink/renderer/platform/audio/vector_math.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
+#include "ui/base/resource/scale_factor.h"
 
 namespace blink {
 
@@ -686,9 +687,9 @@ scoped_refptr<AudioBus> DecodeAudioFileData(const char* data, size_t size) {
   return nullptr;
 }
 
-scoped_refptr<AudioBus> AudioBus::GetDataResource(const char* name,
+scoped_refptr<AudioBus> AudioBus::GetDataResource(int resource_id,
                                                   float sample_rate) {
-  const WebData& resource = Platform::Current()->GetDataResource(name);
+  const WebData& resource = Platform::Current()->GetDataResource(resource_id);
   if (resource.IsEmpty())
     return nullptr;
 

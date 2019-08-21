@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/login_screen_extension_ui_window.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
+#include "chromeos/tpm/install_attributes.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_registry.h"
@@ -35,7 +36,8 @@ bool CanUseLoginScreenUiApi(const extensions::Extension* extension) {
              ->enabled_extensions()
              .Contains(extension->id()) &&
          extension->permissions_data()->HasAPIPermission(
-             extensions::APIPermission::kLoginScreenUi);
+             extensions::APIPermission::kLoginScreenUi) &&
+         InstallAttributes::Get()->IsEnterpriseManaged();
 }
 
 }  // namespace
@@ -75,7 +77,7 @@ bool LoginScreenExtensionUiHandler::Show(const extensions::Extension* extension,
                                          const std::string& resource_path,
                                          bool can_be_closed_by_user,
                                          std::string* error) {
-  DCHECK(CanUseLoginScreenUiApi(extension));
+  CHECK(CanUseLoginScreenUiApi(extension));
   if (!login_or_lock_screen_active_) {
     *error = kErrorNotOnLoginOrLockScreen;
     return false;
@@ -107,7 +109,7 @@ bool LoginScreenExtensionUiHandler::Show(const extensions::Extension* extension,
 bool LoginScreenExtensionUiHandler::Close(
     const extensions::Extension* extension,
     std::string* error) {
-  DCHECK(CanUseLoginScreenUiApi(extension));
+  CHECK(CanUseLoginScreenUiApi(extension));
   if (!RemoveWindowForExtension(extension->id())) {
     *error = kErrorNoExistingWindow;
     return false;

@@ -22,6 +22,8 @@ namespace {
 
 const PP_PrivateAccessibilityTextRunInfo kFirstTextRun = {
     15, 12, PP_MakeFloatRectFromXYWH(26.0f, 189.0f, 84.0f, 13.0f)};
+const PP_PrivateAccessibilityTextRunInfo kSecondTextRun = {
+    15, 16, PP_MakeFloatRectFromXYWH(28.0f, 117.0f, 152.0f, 19.0f)};
 const PP_PrivateAccessibilityCharInfo kDummyCharsData[] = {
     {'H', 12}, {'e', 6},  {'l', 5},  {'l', 4},  {'o', 8},  {',', 4},
     {' ', 4},  {'w', 12}, {'o', 6},  {'r', 6},  {'l', 4},  {'d', 9},
@@ -152,6 +154,8 @@ class PdfAccessibilityTreeTest : public content::RenderViewTest {
     page_info_.page_index = 0;
     page_info_.text_run_count = 0;
     page_info_.char_count = 0;
+    page_info_.link_count = 0;
+    page_info_.image_count = 0;
     page_info_.bounds = PP_MakeRectFromXYWH(0, 0, 1, 1);
   }
 
@@ -161,6 +165,8 @@ class PdfAccessibilityTreeTest : public content::RenderViewTest {
   PP_PrivateAccessibilityPageInfo page_info_;
   std::vector<PP_PrivateAccessibilityTextRunInfo> text_runs_;
   std::vector<PP_PrivateAccessibilityCharInfo> chars_;
+  std::vector<ppapi::PdfAccessibilityLinkInfo> links_;
+  std::vector<ppapi::PdfAccessibilityImageInfo> images_;
 };
 
 TEST_F(PdfAccessibilityTreeTest, TestEmptyPDFPage) {
@@ -175,7 +181,7 @@ TEST_F(PdfAccessibilityTreeTest, TestEmptyPDFPage) {
   pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
   pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
   pdf_accessibility_tree.SetAccessibilityPageInfo(page_info_, text_runs_,
-                                                  chars_);
+                                                  chars_, links_, images_);
 
   EXPECT_EQ(ax::mojom::Role::kDocument,
             pdf_accessibility_tree.GetRoot()->data().role);
@@ -198,7 +204,7 @@ TEST_F(PdfAccessibilityTreeTest, TestAccessibilityDisabledDuringPDFLoad) {
   render_frame->SetAccessibilityModeForTest(ui::AXMode());
 
   pdf_accessibility_tree.SetAccessibilityPageInfo(page_info_, text_runs_,
-                                                  chars_);
+                                                  chars_, links_, images_);
 }
 
 TEST_F(PdfAccessibilityTreeTest, TextRunsAndCharsMismatch) {
@@ -223,7 +229,148 @@ TEST_F(PdfAccessibilityTreeTest, TextRunsAndCharsMismatch) {
   pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
   pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
   pdf_accessibility_tree.SetAccessibilityPageInfo(page_info_, text_runs_,
-                                                  chars_);
+                                                  chars_, links_, images_);
+  // In case of invalid data, only the initialized data should be in the tree.
+  ASSERT_EQ(ax::mojom::Role::kUnknown,
+            pdf_accessibility_tree.GetRoot()->data().role);
+  ASSERT_EQ(0u, pdf_accessibility_tree.GetRoot()->children().size());
+}
+
+TEST_F(PdfAccessibilityTreeTest, UnsortedLinkVector) {
+  text_runs_.emplace_back(kFirstTextRun);
+  text_runs_.emplace_back(kSecondTextRun);
+  chars_.insert(chars_.end(), std::begin(kDummyCharsData),
+                std::end(kDummyCharsData));
+
+  ppapi::PdfAccessibilityLinkInfo link;
+  // Add first link in the vector.
+  link.text_run_index = 2;
+  link.text_run_count = 0;
+  links_.push_back(link);
+
+  // Add second link in the vector.
+  link.text_run_index = 0;
+  link.text_run_count = 1;
+  links_.push_back(link);
+
+  page_info_.text_run_count = text_runs_.size();
+  page_info_.char_count = chars_.size();
+  page_info_.link_count = links_.size();
+
+  content::RenderFrame* render_frame = view_->GetMainRenderFrame();
+  render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
+  ASSERT_TRUE(render_frame->GetRenderAccessibility());
+
+  FakeRendererPpapiHost host(view_->GetMainRenderFrame());
+  PP_Instance instance = 0;
+  pdf::PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+
+  pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
+  pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
+  pdf_accessibility_tree.SetAccessibilityPageInfo(page_info_, text_runs_,
+                                                  chars_, links_, images_);
+  // In case of invalid data, only the initialized data should be in the tree.
+  ASSERT_EQ(ax::mojom::Role::kUnknown,
+            pdf_accessibility_tree.GetRoot()->data().role);
+  ASSERT_EQ(0u, pdf_accessibility_tree.GetRoot()->children().size());
+}
+
+TEST_F(PdfAccessibilityTreeTest, OutOfBoundLink) {
+  text_runs_.emplace_back(kFirstTextRun);
+  text_runs_.emplace_back(kSecondTextRun);
+  chars_.insert(chars_.end(), std::begin(kDummyCharsData),
+                std::end(kDummyCharsData));
+
+  ppapi::PdfAccessibilityLinkInfo link;
+  link.text_run_index = 3;
+  link.text_run_count = 0;
+  links_.push_back(link);
+
+  page_info_.text_run_count = text_runs_.size();
+  page_info_.char_count = chars_.size();
+  page_info_.link_count = links_.size();
+
+  content::RenderFrame* render_frame = view_->GetMainRenderFrame();
+  render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
+  ASSERT_TRUE(render_frame->GetRenderAccessibility());
+
+  FakeRendererPpapiHost host(view_->GetMainRenderFrame());
+  PP_Instance instance = 0;
+  pdf::PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+
+  pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
+  pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
+  pdf_accessibility_tree.SetAccessibilityPageInfo(page_info_, text_runs_,
+                                                  chars_, links_, images_);
+  // In case of invalid data, only the initialized data should be in the tree.
+  ASSERT_EQ(ax::mojom::Role::kUnknown,
+            pdf_accessibility_tree.GetRoot()->data().role);
+  ASSERT_EQ(0u, pdf_accessibility_tree.GetRoot()->children().size());
+}
+
+TEST_F(PdfAccessibilityTreeTest, UnsortedImageVector) {
+  text_runs_.emplace_back(kFirstTextRun);
+  text_runs_.emplace_back(kSecondTextRun);
+  chars_.insert(chars_.end(), std::begin(kDummyCharsData),
+                std::end(kDummyCharsData));
+
+  ppapi::PdfAccessibilityImageInfo image;
+  // Add first image to the vector.
+  image.text_run_index = 1;
+  images_.push_back(image);
+
+  // Add second image to the vector.
+  image.text_run_index = 0;
+  images_.push_back(image);
+
+  page_info_.text_run_count = text_runs_.size();
+  page_info_.char_count = chars_.size();
+  page_info_.image_count = images_.size();
+
+  content::RenderFrame* render_frame = view_->GetMainRenderFrame();
+  render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
+  ASSERT_TRUE(render_frame->GetRenderAccessibility());
+
+  FakeRendererPpapiHost host(view_->GetMainRenderFrame());
+  PP_Instance instance = 0;
+  pdf::PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+
+  pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
+  pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
+  pdf_accessibility_tree.SetAccessibilityPageInfo(page_info_, text_runs_,
+                                                  chars_, links_, images_);
+  // In case of invalid data, only the initialized data should be in the tree.
+  ASSERT_EQ(ax::mojom::Role::kUnknown,
+            pdf_accessibility_tree.GetRoot()->data().role);
+  ASSERT_EQ(0u, pdf_accessibility_tree.GetRoot()->children().size());
+}
+
+TEST_F(PdfAccessibilityTreeTest, OutOfBoundImage) {
+  text_runs_.emplace_back(kFirstTextRun);
+  text_runs_.emplace_back(kSecondTextRun);
+  chars_.insert(chars_.end(), std::begin(kDummyCharsData),
+                std::end(kDummyCharsData));
+
+  ppapi::PdfAccessibilityImageInfo image;
+  image.text_run_index = 3;
+  images_.push_back(image);
+
+  page_info_.text_run_count = text_runs_.size();
+  page_info_.char_count = chars_.size();
+  page_info_.image_count = images_.size();
+
+  content::RenderFrame* render_frame = view_->GetMainRenderFrame();
+  render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
+  ASSERT_TRUE(render_frame->GetRenderAccessibility());
+
+  FakeRendererPpapiHost host(view_->GetMainRenderFrame());
+  PP_Instance instance = 0;
+  pdf::PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+
+  pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
+  pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
+  pdf_accessibility_tree.SetAccessibilityPageInfo(page_info_, text_runs_,
+                                                  chars_, links_, images_);
   // In case of invalid data, only the initialized data should be in the tree.
   ASSERT_EQ(ax::mojom::Role::kUnknown,
             pdf_accessibility_tree.GetRoot()->data().role);
@@ -246,7 +393,7 @@ TEST_F(PdfAccessibilityTreeTest, TestActionDataConversion) {
   pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
   pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
   pdf_accessibility_tree.SetAccessibilityPageInfo(page_info_, text_runs_,
-                                                  chars_);
+                                                  chars_, links_, images_);
 
   ui::AXNode* root_node = pdf_accessibility_tree.GetRoot();
   std::unique_ptr<ui::AXActionTarget> pdf_action_target =
@@ -308,7 +455,7 @@ TEST_F(PdfAccessibilityTreeTest, TestEmptyPdfAxActions) {
   pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
   pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
   pdf_accessibility_tree.SetAccessibilityPageInfo(page_info_, text_runs_,
-                                                  chars_);
+                                                  chars_, links_, images_);
 
   ui::AXNode* root_node = pdf_accessibility_tree.GetRoot();
   std::unique_ptr<ui::AXActionTarget> pdf_action_target =

@@ -44,8 +44,12 @@ struct InputData {
 
 class MockSurfaceGpu : public WaylandSurfaceGpu {
  public:
-  MockSurfaceGpu() = default;
-  ~MockSurfaceGpu() override = default;
+  MockSurfaceGpu(WaylandBufferManagerGpu* buffer_manager,
+                 gfx::AcceleratedWidget widget)
+      : buffer_manager_(buffer_manager), widget_(widget) {
+    buffer_manager_->RegisterSurface(widget_, this);
+  }
+  ~MockSurfaceGpu() { buffer_manager_->UnregisterSurface(widget_); }
 
   MOCK_METHOD2(OnSubmission,
                void(uint32_t buffer_id, const gfx::SwapResult& swap_result));
@@ -54,6 +58,9 @@ class MockSurfaceGpu : public WaylandSurfaceGpu {
                     const gfx::PresentationFeedback& feedback));
 
  private:
+  WaylandBufferManagerGpu* const buffer_manager_;
+  const gfx::AcceleratedWidget widget_;
+
   DISALLOW_COPY_AND_ASSIGN(MockSurfaceGpu);
 };
 
@@ -304,8 +311,7 @@ TEST_P(WaylandBufferManagerTest, EnsureCorrectOrderOfCallbacks) {
   const gfx::Rect bounds = gfx::Rect({0, 0}, kDefaultSize);
   window_->SetBounds(bounds);
 
-  MockSurfaceGpu mock_surface_gpu;
-  buffer_manager_gpu_->RegisterSurface(widget, &mock_surface_gpu);
+  MockSurfaceGpu mock_surface_gpu(buffer_manager_gpu_.get(), widget_);
 
   auto* linux_dmabuf = server_.zwp_linux_dmabuf_v1();
   EXPECT_CALL(*linux_dmabuf, CreateParams(_, _, _)).Times(2);

@@ -18,7 +18,7 @@ BaseTransaction::BaseTransaction(UserShare* share) : user_share_(share) {
 
 BaseTransaction::~BaseTransaction() {}
 
-Cryptographer* BaseTransaction::GetCryptographer() const {
+const Cryptographer* BaseTransaction::GetCryptographer() const {
   return GetDirectory()->GetCryptographer(this->GetWrappedTrans());
 }
 

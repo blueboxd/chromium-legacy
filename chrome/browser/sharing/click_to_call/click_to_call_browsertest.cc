@@ -16,6 +16,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
+#include "chrome/browser/sharing/click_to_call/click_to_call_utils.h"
 #include "chrome/browser/sharing/click_to_call/feature.h"
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/sharing_constants.h"
@@ -35,6 +36,10 @@
 
 namespace {
 const char kTelUrl[] = "tel:+9876543210";
+const char kNonTelUrl[] = "https://google.com";
+
+const char kTextWithPhoneNumber[] = "call 9876543210 now";
+const char kTextWithoutPhoneNumber[] = "abcde";
 }  // namespace
 
 // TODO(himanshujaju): refactor out SharingBrowserTest to be reused by other
@@ -48,11 +53,11 @@ class ClickToCallBrowserTest : public SyncTest {
 
   ~ClickToCallBrowserTest() override {}
 
-  void SetUpOnMainThread() override {
-    SyncTest::SetUpOnMainThread();
+  void SetUpOnMainThread() override { SyncTest::SetUpOnMainThread(); }
 
-    scoped_feature_list_.InitWithFeatures(
-        {kClickToCallUI, kSharingDeviceRegistration}, {});
+  void Init(const std::vector<base::Feature>& enabled_features,
+            const std::vector<base::Feature>& disabled_features) {
+    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
 
     ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -115,8 +120,10 @@ class ClickToCallBrowserTest : public SyncTest {
   // render_view_context_menu_test_util.cc
   std::unique_ptr<TestRenderViewContextMenu> InitRightClickMenu(
       const GURL& url,
-      const base::string16& link_text) {
+      const base::string16& link_text,
+      const base::string16& selection_text) {
     content::ContextMenuParams params;
+    params.selection_text = selection_text;
     params.media_type = blink::WebContextMenuData::MediaType::kMediaTypeNone;
     params.unfiltered_link_url = url;
     params.link_url = url;
@@ -143,14 +150,15 @@ class ClickToCallBrowserTest : public SyncTest {
     *fcm_token = it->second.fcm_token;
   }
 
-  void CheckLastSharingMessageSent(const std::string& fcm_token,
-                                   const GURL& url) const {
+  void CheckLastSharingMessageSent(
+      const std::string& fcm_token,
+      const std::string& expected_phone_number) const {
     EXPECT_EQ(fcm_token, gcm_service_->last_receiver_id());
     chrome_browser_sharing::SharingMessage sharing_message;
     sharing_message.ParseFromString(
         gcm_service_->last_web_push_message().payload);
     ASSERT_TRUE(sharing_message.has_click_to_call_message());
-    EXPECT_EQ(url.GetContent(),
+    EXPECT_EQ(expected_phone_number,
               sharing_message.click_to_call_message().phone_number());
   }
 
@@ -170,7 +178,10 @@ class ClickToCallBrowserTest : public SyncTest {
 
 // TODO(himanshujaju): Add UI checks.
 IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
-                       ContextMenu_SingleDeviceAvailable) {
+                       ContextMenu_TelLink_SingleDeviceAvailable) {
+  Init({kSharingDeviceRegistration, kClickToCallUI,
+        kClickToCallContextMenuForSelectedText},
+       {});
   SetUpDevices(/*count=*/1);
 
   auto devices = sharing_service()->GetDeviceCandidates(
@@ -179,7 +190,8 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
   ASSERT_EQ(1u, devices.size());
 
   std::unique_ptr<TestRenderViewContextMenu> menu =
-      InitRightClickMenu(GURL(kTelUrl), base::ASCIIToUTF16("Google"));
+      InitRightClickMenu(GURL(kTelUrl), base::ASCIIToUTF16("Google"),
+                         base::ASCIIToUTF16(kTextWithoutPhoneNumber));
 
   // Check click to call items in context menu
   ASSERT_TRUE(menu->IsItemPresent(
@@ -192,14 +204,18 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
                        0);
   std::string fcm_token;
   GetDeviceFCMToken(devices[0]->guid(), &fcm_token);
-  CheckLastSharingMessageSent(fcm_token, GURL(kTelUrl));
+  CheckLastSharingMessageSent(fcm_token, GetUnescapedURLContent(GURL(kTelUrl)));
 }
 
 IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, ContextMenu_NoDevicesAvailable) {
+  Init({kSharingDeviceRegistration, kClickToCallUI,
+        kClickToCallContextMenuForSelectedText},
+       {});
   AwaitQuiescence();
 
   std::unique_ptr<TestRenderViewContextMenu> menu =
-      InitRightClickMenu(GURL(kTelUrl), base::ASCIIToUTF16("Google"));
+      InitRightClickMenu(GURL(kTelUrl), base::ASCIIToUTF16("Google"),
+                         base::ASCIIToUTF16(kTextWithoutPhoneNumber));
   EXPECT_FALSE(menu->IsItemPresent(
       IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE));
   EXPECT_FALSE(menu->IsItemPresent(
@@ -208,11 +224,15 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, ContextMenu_NoDevicesAvailable) {
 
 IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
                        ContextMenu_DevicesAvailable_SyncTurnedOff) {
+  Init({kSharingDeviceRegistration, kClickToCallUI,
+        kClickToCallContextMenuForSelectedText},
+       {});
   SetUpDevices(/*count=*/1);
   GetSyncService(0)->GetUserSettings()->SetSyncRequested(false);
 
   std::unique_ptr<TestRenderViewContextMenu> menu =
-      InitRightClickMenu(GURL(kTelUrl), base::ASCIIToUTF16("Google"));
+      InitRightClickMenu(GURL(kTelUrl), base::ASCIIToUTF16("Google"),
+                         base::ASCIIToUTF16(kTextWithoutPhoneNumber));
   EXPECT_FALSE(menu->IsItemPresent(
       IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE));
   EXPECT_FALSE(menu->IsItemPresent(
@@ -220,7 +240,10 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
-                       ContextMenu_MultipleDevicesAvailable) {
+                       ContextMenu_TelLink_MultipleDevicesAvailable) {
+  Init({kSharingDeviceRegistration, kClickToCallUI,
+        kClickToCallContextMenuForSelectedText},
+       {});
   SetUpDevices(/*count=*/2);
 
   auto devices = sharing_service()->GetDeviceCandidates(
@@ -229,7 +252,8 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
   ASSERT_EQ(2u, devices.size());
 
   std::unique_ptr<TestRenderViewContextMenu> menu =
-      InitRightClickMenu(GURL(kTelUrl), base::ASCIIToUTF16("Google"));
+      InitRightClickMenu(GURL(kTelUrl), base::ASCIIToUTF16("Google"),
+                         base::ASCIIToUTF16(kTextWithoutPhoneNumber));
   EXPECT_FALSE(menu->IsItemPresent(
       IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE));
   ASSERT_TRUE(menu->IsItemPresent(
@@ -249,7 +273,72 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
 
     std::string fcm_token;
     GetDeviceFCMToken(device->guid(), &fcm_token);
-    CheckLastSharingMessageSent(fcm_token, GURL(kTelUrl));
+    CheckLastSharingMessageSent(fcm_token,
+                                GetUnescapedURLContent(GURL(kTelUrl)));
     device_id++;
   }
+}
+
+IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
+                       ContextMenu_HighlightedText_MultipleDevicesAvailable) {
+  Init({kSharingDeviceRegistration, kClickToCallUI,
+        kClickToCallContextMenuForSelectedText},
+       {});
+  SetUpDevices(/*count=*/2);
+
+  auto devices = sharing_service()->GetDeviceCandidates(
+      static_cast<int>(SharingDeviceCapability::kClickToCall));
+
+  ASSERT_EQ(2u, devices.size());
+
+  std::unique_ptr<TestRenderViewContextMenu> menu =
+      InitRightClickMenu(GURL(kNonTelUrl), base::ASCIIToUTF16("Google"),
+                         base::ASCIIToUTF16(kTextWithPhoneNumber));
+  EXPECT_FALSE(menu->IsItemPresent(
+      IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE));
+  ASSERT_TRUE(menu->IsItemPresent(
+      IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_MULTIPLE_DEVICES));
+
+  ui::MenuModel* sub_menu_model = nullptr;
+  int device_id = -1;
+  ASSERT_TRUE(menu->GetMenuModelAndItemIndex(kSubMenuFirstDeviceCommandId,
+                                             &sub_menu_model, &device_id));
+  EXPECT_EQ(2, sub_menu_model->GetItemCount());
+  EXPECT_EQ(0, device_id);
+
+  for (auto& device : devices) {
+    EXPECT_EQ(kSubMenuFirstDeviceCommandId + device_id,
+              sub_menu_model->GetCommandIdAt(device_id));
+    sub_menu_model->ActivatedAt(device_id);
+
+    std::string fcm_token;
+    GetDeviceFCMToken(device->guid(), &fcm_token);
+    base::Optional<std::string> expected_number =
+        ExtractPhoneNumberForClickToCall(GetProfile(0), kTextWithPhoneNumber);
+    ASSERT_TRUE(expected_number.has_value());
+    CheckLastSharingMessageSent(fcm_token, expected_number.value());
+    device_id++;
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(
+    ClickToCallBrowserTest,
+    ContextMenu_HighlightedText_DevicesAvailable_FeatureFlagOff) {
+  Init({kSharingDeviceRegistration, kClickToCallUI},
+       {kClickToCallContextMenuForSelectedText});
+  SetUpDevices(/*count=*/2);
+
+  auto devices = sharing_service()->GetDeviceCandidates(
+      static_cast<int>(SharingDeviceCapability::kClickToCall));
+
+  ASSERT_EQ(2u, devices.size());
+
+  std::unique_ptr<TestRenderViewContextMenu> menu =
+      InitRightClickMenu(GURL(kNonTelUrl), base::ASCIIToUTF16("Google"),
+                         base::ASCIIToUTF16(kTextWithPhoneNumber));
+
+  EXPECT_FALSE(menu->IsItemPresent(
+      IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE));
+  EXPECT_FALSE(menu->IsItemPresent(
+      IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_MULTIPLE_DEVICES));
 }

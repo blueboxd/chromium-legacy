@@ -7,7 +7,7 @@
 #include "base/ios/ios_util.h"
 #import "base/mac/foundation_util.h"
 #include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/ui/autofill/autofill_edit_accessory_view.h"
+#import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_view.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -30,26 +30,27 @@ using ::showcase_utils::Close;
 
 // Returns the GREYMatcher for the input accessory view's previus button.
 id<GREYMatcher> InputAccessoryViewPreviousButton() {
-  return grey_allOf(
-      grey_accessibilityLabel(l10n_util::GetNSString(IDS_ACCNAME_PREVIOUS)),
-      grey_accessibilityTrait(UIAccessibilityTraitButton),
-      grey_sufficientlyVisible(), nil);
+  return grey_allOf(grey_accessibilityLabel(l10n_util::GetNSString(
+                        IDS_IOS_AUTOFILL_ACCNAME_PREVIOUS_FIELD)),
+                    grey_accessibilityTrait(UIAccessibilityTraitButton),
+                    grey_sufficientlyVisible(), nil);
 }
 
 // Returns the GREYMatcher for the input accessory view's next button.
 id<GREYMatcher> InputAccessoryViewNextButton() {
   return grey_allOf(
-      grey_accessibilityLabel(l10n_util::GetNSString(IDS_ACCNAME_NEXT)),
+      grey_accessibilityLabel(
+          l10n_util::GetNSString(IDS_IOS_AUTOFILL_ACCNAME_NEXT_FIELD)),
       grey_accessibilityTrait(UIAccessibilityTraitButton),
       grey_kindOfClass([UIButton class]), grey_sufficientlyVisible(), nil);
 }
 
 // Returns the GREYMatcher for the input accessory view's close button.
 id<GREYMatcher> InputAccessoryViewCloseButton() {
-  return grey_allOf(
-      grey_accessibilityLabel(l10n_util::GetNSString(IDS_ACCNAME_CLOSE)),
-      grey_accessibilityTrait(UIAccessibilityTraitButton),
-      grey_sufficientlyVisible(), nil);
+  return grey_allOf(grey_accessibilityLabel(l10n_util::GetNSString(
+                        IDS_IOS_AUTOFILL_ACCNAME_HIDE_KEYBOARD)),
+                    grey_accessibilityTrait(UIAccessibilityTraitButton),
+                    grey_sufficientlyVisible(), nil);
 }
 
 void AssertTextFieldWithAccessibilityIDIsFirstResponder(
@@ -206,7 +207,7 @@ id<GREYMatcher> KeyboardNextKey() {
   // Initially, the input ​accessory view is not showing.
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(
-                                   kAutofillEditAccessoryViewAccessibilityID)]
+                                   kFormInputAccessoryViewAccessibilityID)]
       assertWithMatcher:grey_nil()];
 
   // Tap the name textfield.
@@ -220,7 +221,7 @@ id<GREYMatcher> KeyboardNextKey() {
   // Tapping the input accessory view's close button should've dismissed it.
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(
-                                   kAutofillEditAccessoryViewAccessibilityID)]
+                                   kFormInputAccessoryViewAccessibilityID)]
       assertWithMatcher:grey_nil()];
 }
 

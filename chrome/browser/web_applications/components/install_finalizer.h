@@ -38,7 +38,6 @@ class InstallFinalizer {
   struct FinalizeOptions {
     WebappInstallSource install_source = WebappInstallSource::COUNT;
     bool locally_installed = true;
-    bool no_network_install = false;
   };
 
   // Write the WebApp data to disk and register the app.

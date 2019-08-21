@@ -42,7 +42,6 @@
   UIColor* disabledColor = [UIColor colorNamed:kDisabledTintColor];
   UIColor* titleColor = [UIColor colorNamed:kSolidButtonTextColor];
 
-#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
   if (@available(iOS 13, *)) {
     // As of iOS 13 Beta 3, MDCFlatButton has a bug updating it's colors
     // automatically. Here the colors are resolved and passed instead.
@@ -57,7 +56,6 @@
     titleColor =
         [titleColor resolvedColorWithTraitCollection:self.traitCollection];
   }
-#endif
 
   self.underlyingColorHint = hintColor;
   self.inkColor = inkColor;
@@ -68,7 +66,6 @@
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
-#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
   if (@available(iOS 13, *)) {
     if ([self.traitCollection
             hasDifferentColorAppearanceComparedToTraitCollection:
@@ -78,6 +75,5 @@
       [self updateStyling];
     }
   }
-#endif
 }
 @end

@@ -59,12 +59,7 @@ TEST_F(UIKitUIUtilTest, UIViewControllerSupportedOrientationsTest) {
   // supportedInterfaceOrientations] returns UIInterfaceOrientationMaskAll.
   // However, this is only true if the application was built with the Xcode 11
   // SDK (in order to preserve old behavior).
-  UIInterfaceOrientationMask expectedMask =
-#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
-      UIInterfaceOrientationMaskAll;
-#else
-      UIInterfaceOrientationMaskAllButUpsideDown;
-#endif
+  UIInterfaceOrientationMask expectedMask = UIInterfaceOrientationMaskAll;
   EXPECT_EQ(expectedMask, [viewController supportedInterfaceOrientations]);
 }
 

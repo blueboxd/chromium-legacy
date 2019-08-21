@@ -65,13 +65,16 @@ public class BackgroundTaskSchedulerImplTest {
         mGcmNetworkManager = (ShadowGcmNetworkManager) Shadow.extract(
                 GcmNetworkManager.getInstance(ContextUtils.getApplicationContext()));
 
-        mTask = TaskInfo.createOneOffTask(
-                                TaskIds.TEST, TestBackgroundTask.class, TimeUnit.DAYS.toMillis(1))
+        TaskInfo.TimingInfo timingInfo =
+                TaskInfo.OneOffInfo.create().setWindowEndTimeMs(TimeUnit.DAYS.toMillis(1)).build();
+        mTask = TaskInfo.createTask(TaskIds.TEST, timingInfo).build();
+        TaskInfo.TimingInfo expirationTimingInfo =
+                TaskInfo.OneOffInfo.create()
+                        .setWindowEndTimeMs(TimeUnit.DAYS.toMillis(1))
+                        .setExpiresAfterWindowEndTime(true)
                         .build();
-        mExpirationTask = TaskInfo.createOneOffTask(TaskIds.TEST, TestBackgroundTask.class,
-                                          TimeUnit.DAYS.toMillis(1))
-                                  .setExpiresAfterWindowEndTime(true)
-                                  .build();
+        mExpirationTask = TaskInfo.createTask(TaskIds.TEST, expirationTimingInfo).build();
+
         BackgroundTaskSchedulerFactory.setBackgroundTaskFactory(new TestBackgroundTaskFactory());
     }
 

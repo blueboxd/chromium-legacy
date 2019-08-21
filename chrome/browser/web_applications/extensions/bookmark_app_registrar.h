@@ -43,7 +43,7 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
   base::Optional<GURL> GetAppScope(const web_app::AppId& app_id) const override;
   web_app::LaunchContainer GetAppLaunchContainer(
       const web_app::AppId& app_id) const override;
-  base::flat_set<web_app::AppId> GetAppIdsForTesting() const override;
+  std::vector<web_app::AppId> GetAppIds() const override;
 
   // ExtensionRegistryObserver:
   void OnExtensionUninstalled(content::BrowserContext* browser_context,

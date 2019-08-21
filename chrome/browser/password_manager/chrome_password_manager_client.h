@@ -116,7 +116,9 @@ class ChromePasswordManagerClient
   void AutofillHttpAuth(
       const autofill::PasswordForm& preferred_match,
       const password_manager::PasswordFormManagerForUI* form_manager) override;
-  void NotifyUserCredentialsWereLeaked(const GURL& origin) override;
+  void NotifyUserCredentialsWereLeaked(
+      password_manager::CredentialLeakType leak_type,
+      const GURL& origin) override;
   bool IsIsolationForPasswordSitesEnabled() const override;
 
   PrefService* GetPrefs() const override;

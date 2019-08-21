@@ -11,6 +11,7 @@ from .composition_parts import WithDebugInfo
 from .composition_parts import WithExtendedAttributes
 from .composition_parts import WithIdentifier
 from .composition_parts import WithOwner
+from .function_like import FunctionLike
 from .idl_member import IdlMember
 from .idl_type import IdlType
 
@@ -19,7 +20,7 @@ class Operation(IdlMember):
     """https://heycam.github.io/webidl/#idl-operations
     https://www.w3.org/TR/WebIDL-1/#idl-special-operations"""
 
-    class IR(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo,
+    class IR(FunctionLike.IR, WithExtendedAttributes, WithCodeGeneratorInfo,
              WithComponent, WithDebugInfo):
         def __init__(self,
                      identifier,
@@ -31,20 +32,19 @@ class Operation(IdlMember):
                      component=None,
                      components=None,
                      debug_info=None):
-            assert isinstance(arguments, (list, tuple)) and all(
-                isinstance(arg, Argument.IR) for arg in arguments)
-            assert isinstance(return_type, IdlType)
             assert isinstance(is_static, bool)
 
-            WithIdentifier.__init__(self, identifier)
+            FunctionLike.IR.__init__(
+                self,
+                identifier=identifier,
+                arguments=arguments,
+                return_type=return_type)
             WithExtendedAttributes.__init__(self, extended_attributes)
             WithCodeGeneratorInfo.__init__(self, code_generator_info)
             WithComponent.__init__(
                 self, component=component, components=components)
             WithDebugInfo.__init__(self, debug_info)
 
-            self.arguments = list(arguments)
-            self.return_type = return_type
             self.is_static = is_static
 
         def make_copy(self):
@@ -63,30 +63,6 @@ class Operation(IdlMember):
         """
         Returns True if 'static' is specified.
         @return bool
-        """
-        raise exceptions.NotImplementedError()
-
-    @property
-    def return_type(self):
-        """
-        Returns the type of return value.
-        @return IdlType
-        """
-        raise exceptions.NotImplementedError()
-
-    @property
-    def arguments(self):
-        """
-        Returns a list of arguments.
-        @return tuple(Argument)
-        """
-        raise exceptions.NotImplementedError()
-
-    @property
-    def overloaded_index(self):
-        """
-        Returns the index in the OperationGroup that |self| belongs to.
-        @return int
         """
         raise exceptions.NotImplementedError()
 

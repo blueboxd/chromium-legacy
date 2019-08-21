@@ -191,8 +191,8 @@ ScriptPromise SerialPort::open(ScriptState* script_state,
   device::mojom::blink::SerialPortClientPtr client_ptr;
   auto client_request = mojo::MakeRequest(&client_ptr);
 
-  parent_->GetPort(info_->token, mojo::MakeRequest(&port_));
-  port_.set_connection_error_handler(
+  parent_->GetPort(info_->token, port_.BindNewPipeAndPassReceiver());
+  port_.set_disconnect_handler(
       WTF::Bind(&SerialPort::OnConnectionError, WrapWeakPersistent(this)));
 
   open_resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -307,8 +307,7 @@ void SerialPort::close() {
     writable_ = nullptr;
   }
   port_.reset();
-  if (client_binding_.is_bound())
-    client_binding_.Unbind();
+  client_receiver_.reset();
 }
 
 void SerialPort::UnderlyingSourceClosed() {
@@ -340,8 +339,7 @@ void SerialPort::Trace(Visitor* visitor) {
 void SerialPort::Dispose() {
   // The binding holds a raw pointer to this object which must be released when
   // it becomes garbage.
-  if (client_binding_.is_bound())
-    client_binding_.Unbind();
+  client_receiver_.reset();
 }
 
 void SerialPort::OnReadError(device::mojom::blink::SerialReceiveError error) {
@@ -374,8 +372,7 @@ bool SerialPort::CreateDataPipe(mojo::ScopedDataPipeProducerHandle* producer,
 
 void SerialPort::OnConnectionError() {
   port_.reset();
-  if (client_binding_.is_bound())
-    client_binding_.Unbind();
+  client_receiver_.reset();
 
   // Move fields since rejecting a Promise can execute script.
   ScriptPromiseResolver* open_resolver = open_resolver_;
@@ -425,7 +422,7 @@ void SerialPort::OnOpen(
   ScriptState::Scope scope(script_state);
   InitializeReadableStream(script_state, std::move(readable_pipe));
   InitializeWritableStream(script_state, std::move(writable_pipe));
-  client_binding_.Bind(std::move(client_request));
+  client_receiver_.Bind(std::move(client_request));
   open_resolver_->Resolve();
   open_resolver_ = nullptr;
 }

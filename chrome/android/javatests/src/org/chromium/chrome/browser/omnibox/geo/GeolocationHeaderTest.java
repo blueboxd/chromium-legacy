@@ -6,16 +6,9 @@ package org.chromium.chrome.browser.omnibox.geo;
 
 import android.location.Location;
 import android.location.LocationManager;
-import android.os.Build;
 import android.os.SystemClock;
 import android.support.test.filters.SmallTest;
 import android.util.Base64;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
@@ -27,6 +20,11 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Tests for GeolocationHeader and GeolocationTracker.
@@ -188,10 +186,8 @@ public class GeolocationHeaderTest {
         location.setLongitude(LOCATION_LONG);
         location.setAccuracy(LOCATION_ACCURACY);
         location.setTime(time);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            location.setElapsedRealtimeNanos(SystemClock.elapsedRealtimeNanos()
-                    + 1000000 * (time - System.currentTimeMillis()));
-        }
+        location.setElapsedRealtimeNanos(
+                SystemClock.elapsedRealtimeNanos() + 1000000 * (time - System.currentTimeMillis()));
         return location;
     }
 

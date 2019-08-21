@@ -27,7 +27,9 @@ const GpuControlList::Conditions kExceptionsForEntry5[1] = {
         nullptr,                                          // machine model info
         0,                                                // gpu_series size
         nullptr,                                          // gpu_series
-        &kMoreForEntry5_572251052Exception0,              // more data
+        {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+         nullptr, nullptr},                   // intel_gpu_generation
+        &kMoreForEntry5_572251052Exception0,  // more data
     },
 };
 

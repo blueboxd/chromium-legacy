@@ -51,6 +51,39 @@ void SharingIconView::StopLoadingAnimation(base::Optional<int> string_id) {
   SchedulePaint();
 }
 
+bool SharingIconView::Update() {
+  auto* controller = GetController();
+  if (!controller)
+    return false;
+
+  if (should_show_error() != controller->send_failed()) {
+    set_should_show_error(controller->send_failed());
+    UpdateIconImage();
+  }
+
+  if (controller->is_loading())
+    StartLoadingAnimation();
+  else
+    StopLoadingAnimation(GetSuccessMessageId());
+
+  const bool is_bubble_showing = IsBubbleShowing();
+
+  if (is_bubble_showing || isLoadingAnimationVisible() ||
+      last_controller_ != controller) {
+    ResetSlideAnimation(/*show=*/false);
+  }
+
+  last_controller_ = controller;
+
+  const bool is_visible =
+      is_bubble_showing || isLoadingAnimationVisible() || label()->GetVisible();
+  const bool visibility_changed = GetVisible() != is_visible;
+
+  SetVisible(is_visible);
+  UpdateInkDrop(is_bubble_showing);
+  return visibility_changed;
+}
+
 void SharingIconView::UpdateLoaderColor() {
   loader_color_ = GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_ProminentButtonColor);

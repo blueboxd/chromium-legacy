@@ -23,9 +23,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   String url;
   blink::ResourceResponse response;
   wtf_size_t end;
-  String report_url;
-  String failure_reason;
-  unsigned failure_position = 0;
 
   std::string terminated(reinterpret_cast<const char*>(data), size);
 
@@ -43,7 +40,5 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
                                        size, &response, &end);
   blink::ParseServerTimingHeader(terminated.c_str());
   blink::ParseContentTypeOptionsHeader(terminated.c_str());
-  blink::ParseXSSProtectionHeader(terminated.c_str(), failure_reason,
-                                  failure_position, report_url);
   return 0;
 }

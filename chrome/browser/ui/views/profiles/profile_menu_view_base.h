@@ -86,12 +86,12 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
 
   static ProfileMenuViewBase* GetBubbleForTesting();
 
- protected:
   ProfileMenuViewBase(views::Button* anchor_button,
                       Browser* browser);
   ~ProfileMenuViewBase() override;
 
-  void Reset();
+  // This method is called once to add all menu items.
+  virtual void BuildMenu() = 0;
 
   // Initializes a new group of menu items. A separator is added before them if
   // |add_separator| is true.
@@ -127,8 +127,6 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
                                                 base::RepeatingClosure action);
   void AddViewItem(std::unique_ptr<views::View> view);
 
-  void RepopulateViewFromMenuItems();
-
   Browser* browser() const { return browser_; }
 
   // Return maximal height for the view after which it becomes scrollable.
@@ -144,10 +142,14 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
  private:
   friend class ProfileMenuViewExtensionsTest;
 
+  void Reset();
+  void RepopulateViewFromMenuItems();
+
   // Requests focus for a button when opened by keyboard.
   virtual void FocusButtonOnKeyboardOpen() {}
 
   // views::BubbleDialogDelegateView:
+  void Init() final;
   void WindowClosing() override;
   void OnThemeChanged() override;
   int GetDialogButtons() const override;

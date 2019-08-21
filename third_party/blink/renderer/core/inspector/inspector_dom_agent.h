@@ -58,6 +58,7 @@ class Element;
 class ExceptionState;
 class FloatQuad;
 class HTMLFrameOwnerElement;
+class HTMLPortalElement;
 class HTMLSlotElement;
 class V0InsertionPoint;
 class InspectedFrames;
@@ -266,6 +267,7 @@ class CORE_EXPORT InspectorDOMAgent final
   void PseudoElementCreated(PseudoElement*);
   void PseudoElementDestroyed(PseudoElement*);
   void NodeCreated(Node* node);
+  void PortalRemoteFrameCreated(HTMLPortalElement*);
 
   Node* NodeForId(int node_id);
   int BoundNodeId(Node*);

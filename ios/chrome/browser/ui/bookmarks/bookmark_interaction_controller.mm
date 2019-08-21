@@ -537,10 +537,8 @@ bookmarkHomeViewControllerWantsDismissal:(BookmarkHomeViewController*)controller
   BOOL useCustomPresentation = YES;
   if (IsCollectionsCardPresentationStyleEnabled()) {
     if (@available(iOS 13, *)) {
-#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
       [navController setModalPresentationStyle:UIModalPresentationFormSheet];
       useCustomPresentation = NO;
-#endif
     }
   }
 

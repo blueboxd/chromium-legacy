@@ -40,6 +40,7 @@
 
 namespace blink {
 
+class ApplicationCacheHostForWorker;
 class SharedWorkerThread;
 class WorkerClassicScriptLoader;
 
@@ -47,18 +48,10 @@ class CORE_EXPORT SharedWorkerGlobalScope final : public WorkerGlobalScope {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  // TODO(nhiroki): Merge Create() into the constructor after
-  // off-the-main-thread worker script fetch is enabled by default.
-  static SharedWorkerGlobalScope* Create(
-      std::unique_ptr<GlobalScopeCreationParams>,
-      SharedWorkerThread*,
-      base::TimeTicks time_origin);
-
-  // Do not call this. Use Create() instead. This is public only for
-  // MakeGarbageCollected.
   SharedWorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
                           SharedWorkerThread*,
-                          base::TimeTicks time_origin);
+                          base::TimeTicks time_origin,
+                          const base::UnguessableToken& appcache_host_id);
 
   ~SharedWorkerGlobalScope() override;
 
@@ -72,7 +65,8 @@ class CORE_EXPORT SharedWorkerGlobalScope final : public WorkerGlobalScope {
                   network::mojom::ReferrerPolicy response_referrer_policy,
                   network::mojom::IPAddressSpace response_address_space,
                   const Vector<CSPHeaderAndType>& response_csp_headers,
-                  const Vector<String>* response_origin_trial_tokens) override;
+                  const Vector<String>* response_origin_trial_tokens,
+                  int64_t appcache_id) override;
   void FetchAndRunClassicScript(
       const KURL& script_url,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
@@ -101,6 +95,8 @@ class CORE_EXPORT SharedWorkerGlobalScope final : public WorkerGlobalScope {
                              const v8_inspector::V8StackTraceId& stack_id);
 
   void ExceptionThrown(ErrorEvent*) override;
+
+  Member<ApplicationCacheHostForWorker> appcache_host_;
 };
 
 template <>

@@ -28,7 +28,6 @@ class HistogramBase;
 
 namespace viz {
 class HitTestDataProvider;
-class LocalSurfaceIdProvider;
 }  // namespace viz
 
 namespace cc {
@@ -92,7 +91,6 @@ class CC_MOJO_EMBEDDER_EXPORT AsyncLayerTreeFrameSink
     std::unique_ptr<viz::SyntheticBeginFrameSource>
         synthetic_begin_frame_source;
     std::unique_ptr<viz::HitTestDataProvider> hit_test_data_provider;
-    std::unique_ptr<viz::LocalSurfaceIdProvider> local_surface_id_provider;
     UnboundMessagePipes pipes;
     bool enable_surface_synchronization = false;
     bool wants_animate_only_begin_frames = false;
@@ -153,7 +151,6 @@ class CC_MOJO_EMBEDDER_EXPORT AsyncLayerTreeFrameSink
   bool needs_begin_frames_ = false;
   viz::LocalSurfaceId local_surface_id_;
   std::unique_ptr<viz::HitTestDataProvider> hit_test_data_provider_;
-  std::unique_ptr<viz::LocalSurfaceIdProvider> local_surface_id_provider_;
   std::unique_ptr<viz::ExternalBeginFrameSource> begin_frame_source_;
   std::unique_ptr<viz::SyntheticBeginFrameSource> synthetic_begin_frame_source_;
 

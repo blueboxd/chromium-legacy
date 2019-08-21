@@ -110,6 +110,10 @@ bool WebStateList::ContainsIndex(int index) const {
   return 0 <= index && index < count();
 }
 
+bool WebStateList::IsMutating() const {
+  return locked_;
+}
+
 web::WebState* WebStateList::GetActiveWebState() const {
   if (active_index_ != kInvalidIndex)
     return GetWebStateAt(active_index_);

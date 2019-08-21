@@ -150,9 +150,7 @@ public class NotificationBuilder implements ChromeNotificationBuilder {
 
     @Override
     public ChromeNotificationBuilder setShowWhen(boolean showWhen) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            mBuilder.setShowWhen(showWhen);
-        }
+        mBuilder.setShowWhen(showWhen);
         return this;
     }
 

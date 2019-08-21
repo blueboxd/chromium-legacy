@@ -341,7 +341,7 @@ struct EntryKernel {
   // encrypted specifics. If it is null or the specifics are not decryptsble,
   // they will be serialized as empty proto's.
   std::unique_ptr<base::DictionaryValue> ToValue(
-      Cryptographer* cryptographer) const;
+      const Cryptographer* cryptographer) const;
 
   size_t EstimateMemoryUsage() const;
 

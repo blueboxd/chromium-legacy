@@ -474,6 +474,9 @@ bool NetErrorHelperCore::IsReloadableError(
          // Do not trigger for requests that were blocked by the browser itself.
          info.error.reason() != net::ERR_BLOCKED_BY_CLIENT &&
          !info.was_failed_post &&
+         // Do not trigger for this error code because it is used by Chrome
+         // while an auth prompt is being displayed.
+         info.error.reason() != net::ERR_INVALID_AUTH_CREDENTIALS &&
          // Don't auto-reload non-http/https schemas.
          // https://crbug.com/471713
          url.SchemeIsHTTPOrHTTPS();

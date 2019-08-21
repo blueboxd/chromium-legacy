@@ -1158,5 +1158,10 @@
     "prefix": "cross-origin-embedder-policy",
     "base": "external/wpt/html/cross-origin-embedder-policy",
     "args": ["--enable-features=CrossOriginEmbedderPolicy"]
+  },
+  {
+    "prefix": "json-modules",
+    "base": "external/wpt/html/semantics/scripting-1/the-script-element/json-module",
+    "args": ["--enable-blink-features=JSONModules"]
   }
 ]

@@ -4575,17 +4575,14 @@ void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
     const GURL& url,
     const std::string& http_method,
     const std::string& mime_type,
-    const base::Optional<url::Origin>& top_frame_origin,
     ResourceType resource_type) {
   for (auto& observer : observers_)
     observer.DidLoadResourceFromMemoryCache(url, mime_type, resource_type);
 
   if (url.is_valid() && url.SchemeIsHTTPOrHTTPS()) {
     StoragePartition* partition = source->GetProcess()->GetStoragePartition();
-    const url::Origin& last_committed_origin = source->GetLastCommittedOrigin();
-
     partition->GetNetworkContext()->NotifyExternalCacheHit(
-        url, http_method, top_frame_origin, last_committed_origin);
+        url, http_method, source->network_isolation_key());
   }
 }
 

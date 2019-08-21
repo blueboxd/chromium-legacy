@@ -109,7 +109,7 @@ class MemberBase {
     SaveCreationThreadState();
   }
 
-  MemberBase(const MemberBase& other) : raw_(other.raw_) {
+  MemberBase(const MemberBase& other) : raw_(other) {
     SaveCreationThreadState();
     CheckPointer();
     WriteBarrier();
@@ -131,14 +131,14 @@ class MemberBase {
 
   template <typename U>
   MemberBase& operator=(const Persistent<U>& other) {
-    raw_ = other;
+    SetRaw(other);
     CheckPointer();
     WriteBarrier();
     return *this;
   }
 
   MemberBase& operator=(const MemberBase& other) {
-    raw_ = other;
+    SetRaw(other);
     CheckPointer();
     WriteBarrier();
     return *this;
@@ -146,7 +146,7 @@ class MemberBase {
 
   template <typename U>
   MemberBase& operator=(const MemberBase<U>& other) {
-    raw_ = other;
+    SetRaw(other);
     CheckPointer();
     WriteBarrier();
     return *this;
@@ -154,54 +154,56 @@ class MemberBase {
 
   template <typename U>
   MemberBase& operator=(U* other) {
-    raw_ = other;
+    SetRaw(other);
     CheckPointer();
     WriteBarrier();
     return *this;
   }
 
   MemberBase& operator=(WTF::HashTableDeletedValueType) {
-    raw_ = reinterpret_cast<T*>(-1);
+    SetRaw(reinterpret_cast<T*>(-1));
     return *this;
   }
 
   MemberBase& operator=(std::nullptr_t) {
-    raw_ = nullptr;
+    SetRaw(nullptr);
     return *this;
   }
 
   void Swap(MemberBase<T>& other) {
-    std::swap(raw_, other.raw_);
+    T* tmp = GetRaw();
+    SetRaw(other.GetRaw());
+    other.SetRaw(tmp);
     CheckPointer();
     WriteBarrier();
     other.WriteBarrier();
   }
 
-  explicit operator bool() const { return raw_; }
-  operator T*() const { return raw_; }
-  T* operator->() const { return raw_; }
-  T& operator*() const { return *raw_; }
+  explicit operator bool() const { return GetRaw(); }
+  operator T*() const { return GetRaw(); }
+  T* operator->() const { return GetRaw(); }
+  T& operator*() const { return *GetRaw(); }
 
-  T* Get() const { return raw_; }
+  T* Get() const { return GetRaw(); }
 
-  void Clear() { raw_ = nullptr; }
+  void Clear() { SetRaw(nullptr); }
 
   T* Release() {
-    T* result = raw_;
-    raw_ = nullptr;
+    T* result = GetRaw();
+    SetRaw(nullptr);
     return result;
   }
 
   bool IsHashTableDeletedValue() const {
-    return raw_ == reinterpret_cast<T*>(kHashTableDeletedRawValue);
+    return GetRaw() == reinterpret_cast<T*>(kHashTableDeletedRawValue);
   }
 
  protected:
   static constexpr intptr_t kHashTableDeletedRawValue = -1;
 
-  ALWAYS_INLINE void WriteBarrier() const {
+  void WriteBarrier() const {
     MarkingVisitor::WriteBarrier(
-        const_cast<typename std::remove_const<T>::type*>(this->raw_));
+        const_cast<typename std::remove_const<T>::type*>(GetRaw()));
   }
 
   void CheckPointer() {
@@ -210,20 +212,42 @@ class MemberBase {
     // propagated here if a MemberBase containing the deleted value is copied.
     if (IsHashTableDeletedValue())
       return;
-    pointer_verifier_.CheckPointer(raw_);
+    pointer_verifier_.CheckPointer(GetRaw());
 #endif  // DCHECK_IS_ON()
   }
 
   void SaveCreationThreadState() {
 #if DCHECK_IS_ON()
-    pointer_verifier_.SaveCreationThreadState(raw_);
+    pointer_verifier_.SaveCreationThreadState(GetRaw());
 #endif  // DCHECK_IS_ON()
+  }
+
+  ALWAYS_INLINE void SetRaw(T* raw) {
+    // TOOD(omerkatz): replace this cast with std::atomic_ref (C++20) once it
+    // becomes available
+    reinterpret_cast<std::atomic<T*>*>(&raw_)->store(raw,
+                                                     std::memory_order_relaxed);
+  }
+  ALWAYS_INLINE T* GetRaw() const { return raw_; }
+
+ private:
+  // Thread safe version of Get() for marking visitors.
+  // This is used to prevent data races between concurrent marking visitors
+  // and writes on the main thread.
+  T* GetSafe() const {
+    // TOOD(omerkatz): replace this cast with std::atomic_ref (C++20) once it
+    // becomes available
+    return reinterpret_cast<std::atomic<T*>*>(
+               const_cast<typename std::remove_const<T>::type**>(&raw_))
+        ->load(std::memory_order_relaxed);
   }
 
   T* raw_;
 #if DCHECK_IS_ON()
   MemberPointerVerifier<T, tracenessConfiguration> pointer_verifier_;
 #endif  // DCHECK_IS_ON()
+
+  friend class Visitor;
 };
 
 // Members are used in classes to contain strong pointers to other oilpan heap
@@ -379,10 +403,10 @@ class SameThreadCheckedMember : public Member<T> {
   }
 
  private:
-  void CheckPointer() { pointer_verifier_.CheckPointer(this->raw_); }
+  void CheckPointer() { pointer_verifier_.CheckPointer(this->GetRaw()); }
 
   void SaveCreationThreadState() {
-    pointer_verifier_.SaveCreationThreadState(this->raw_);
+    pointer_verifier_.SaveCreationThreadState(this->GetRaw());
   }
 
   MemberPointerVerifier<T, TracenessMemberConfiguration::kTraced>
@@ -434,14 +458,9 @@ class WeakMember : public MemberBase<T, TracenessMemberConfiguration::kTraced> {
   }
 
   WeakMember& operator=(std::nullptr_t) {
-    this->raw_ = nullptr;
+    this->SetRaw(nullptr);
     return *this;
   }
-
- private:
-  T** Cell() const { return const_cast<T**>(&this->raw_); }
-
-  friend class Visitor;
 };
 
 // UntracedMember is a pointer to an on-heap object that is not traced for some
@@ -474,27 +493,27 @@ class UntracedMember final
 
   template <typename U>
   UntracedMember& operator=(const Persistent<U>& other) {
-    this->raw_ = other;
+    this->SetRaw(other);
     this->CheckPointer();
     return *this;
   }
 
   template <typename U>
   UntracedMember& operator=(const Member<U>& other) {
-    this->raw_ = other;
+    this->SetRaw(other);
     this->CheckPointer();
     return *this;
   }
 
   template <typename U>
   UntracedMember& operator=(U* other) {
-    this->raw_ = other;
+    this->SetRaw(other);
     this->CheckPointer();
     return *this;
   }
 
   UntracedMember& operator=(std::nullptr_t) {
-    this->raw_ = nullptr;
+    this->SetRaw(nullptr);
     return *this;
   }
 };

@@ -1629,10 +1629,10 @@
       "vendor_id": "0x8086",
       "gpu_series": [
         "intel_sandybridge",
-        "intel_valleyview",
+        "intel_baytrail",
         "intel_ivybridge",
         "intel_haswell",
-        "intel_cherryview",
+        "intel_cherrytrail",
         "intel_broadwell",
         "intel_apollolake",
         "intel_skylake",

@@ -68,6 +68,14 @@ class TestNetworkContextClient : public network::mojom::NetworkContextClient {
       const GURL& url,
       const GURL& site_for_cookies,
       const std::vector<net::CookieWithStatus>& cookie_list) override {}
+#if defined(OS_ANDROID)
+  void OnGenerateHttpNegotiateAuthToken(
+      const std::string& server_auth_token,
+      bool can_delegate,
+      const std::string& auth_negotiate_android_account_type,
+      const std::string& spn,
+      OnGenerateHttpNegotiateAuthTokenCallback callback) override {}
+#endif
 #if defined(OS_CHROMEOS)
   void OnTrustAnchorUsed() override {}
 #endif

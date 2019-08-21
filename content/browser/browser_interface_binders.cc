@@ -60,6 +60,9 @@ void PopulateBinderMapWithContext(
     DedicatedWorkerHost* host,
     service_manager::BinderMapWithContext<const url::Origin&>* map) {
   // TODO(https://crbug.com/873661): Pass origin to FileSystemManager.
+  // TODO(nhiroki): GetProcessHost() may return nullptr. Instead, add
+  // SharedWorkerHost::BindFileSystemManager to check if the render process host
+  // is alive before accessing it.
   map->Add<blink::mojom::FileSystemManager>(
       base::BindRepeating(&RenderProcessHost::BindFileSystemManager,
                           base::Unretained(host->GetProcessHost())));
@@ -76,7 +79,12 @@ url::Origin GetContextForHost(SharedWorkerHost* host) {
 }
 
 void PopulateSharedWorkerBinders(SharedWorkerHost* host,
-                                 service_manager::BinderMap* map) {}
+                                 service_manager::BinderMap* map) {
+  // base::Unretained(host) is safe because the map is owned by
+  // SharedWorkerHost.
+  map->Add<blink::mojom::AppCacheBackend>(base::BindRepeating(
+      &SharedWorkerHost::CreateAppCacheBackend, base::Unretained(host)));
+}
 
 void PopulateBinderMapWithContext(
     SharedWorkerHost* host,

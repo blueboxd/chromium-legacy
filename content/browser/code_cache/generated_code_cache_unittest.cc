@@ -76,14 +76,14 @@ class GeneratedCodeCacheTest : public testing::Test {
   }
 
   void FetchEntryCallback(const base::Time& response_time,
-                          const std::vector<uint8_t>& data) {
+                          mojo_base::BigBuffer data) {
     if (data.size() == 0) {
       received_ = true;
       received_null_ = true;
       received_response_time_ = response_time;
       return;
     }
-    std::string str(data.begin(), data.end());
+    std::string str(data.data(), data.data() + data.size());
     received_ = true;
     received_null_ = false;
     received_data_ = str;

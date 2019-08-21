@@ -386,4 +386,15 @@ base::TimeDelta GetTimeSinceLastNetworkServiceCrash() {
   return base::Time::Now() - g_last_network_service_crash;
 }
 
+void PingNetworkService(base::OnceClosure closure) {
+  GetNetworkService();
+  // Unfortunately, QueryVersion requires a RepeatingCallback.
+  g_network_service_ptr->QueryVersion(base::BindRepeating(
+      [](base::OnceClosure closure, uint32_t) {
+        if (closure)
+          std::move(closure).Run();
+      },
+      base::Passed(std::move(closure))));
+}
+
 }  // namespace content

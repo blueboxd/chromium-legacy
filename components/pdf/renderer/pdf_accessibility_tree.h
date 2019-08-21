@@ -38,7 +38,9 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
 
   static bool IsDataFromPluginValid(
       const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
-      const std::vector<PP_PrivateAccessibilityCharInfo>& chars);
+      const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
+      const std::vector<ppapi::PdfAccessibilityLinkInfo>& links,
+      const std::vector<ppapi::PdfAccessibilityImageInfo>& images);
 
   void SetAccessibilityViewportInfo(
       const PP_PrivateAccessibilityViewportInfo& viewport_info);
@@ -47,7 +49,9 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
   void SetAccessibilityPageInfo(
       const PP_PrivateAccessibilityPageInfo& page_info,
       const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
-      const std::vector<PP_PrivateAccessibilityCharInfo>& chars);
+      const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
+      const std::vector<ppapi::PdfAccessibilityLinkInfo>& links,
+      const std::vector<ppapi::PdfAccessibilityImageInfo>& images);
   void HandleAction(const PP_PdfAccessibilityActionData& action_data);
 
   // PluginAXTreeSource implementation.

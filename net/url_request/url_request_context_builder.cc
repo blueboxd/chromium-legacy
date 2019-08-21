@@ -365,14 +365,7 @@ void URLRequestContextBuilder::set_proxy_delegate(
 
 void URLRequestContextBuilder::SetHttpAuthHandlerFactory(
     std::unique_ptr<HttpAuthHandlerFactory> factory) {
-  DCHECK(!shared_http_auth_handler_factory_);
   http_auth_handler_factory_ = std::move(factory);
-}
-
-void URLRequestContextBuilder::set_shared_http_auth_handler_factory(
-    HttpAuthHandlerFactory* shared_http_auth_handler_factory) {
-  DCHECK(!http_auth_handler_factory_);
-  shared_http_auth_handler_factory_ = shared_http_auth_handler_factory;
 }
 
 void URLRequestContextBuilder::SetHttpServerProperties(
@@ -457,11 +450,8 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   }
 
   if (http_auth_handler_factory_) {
-    DCHECK(!shared_http_auth_handler_factory_);
     storage->set_http_auth_handler_factory(
         std::move(http_auth_handler_factory_));
-  } else if (shared_http_auth_handler_factory_) {
-    context->set_http_auth_handler_factory(shared_http_auth_handler_factory_);
   } else {
     storage->set_http_auth_handler_factory(
         HttpAuthHandlerRegistryFactory::CreateDefault());

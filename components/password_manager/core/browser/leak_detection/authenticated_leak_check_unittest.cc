@@ -5,7 +5,9 @@
 #include "components/password_manager/core/browser/leak_detection/authenticated_leak_check.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/timer/elapsed_timer.h"
 #include "components/password_manager/core/browser/leak_detection/encryption_utils.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_request_factory.h"
@@ -31,6 +33,9 @@ constexpr char kTestEmail[] = "user@gmail.com";
 constexpr char kUsername[] = "username";
 constexpr char kPassword[] = "password123";
 constexpr char kExampleCom[] = "https://example.com";
+
+const int64_t kMockElapsedTime =
+    base::ScopedMockElapsedTimersForTest::kMockElapsedTime.InMilliseconds();
 
 class MockLeakDetectionRequest : public LeakDetectionRequestInterface {
  public:
@@ -92,6 +97,7 @@ class AuthenticatedLeakCheckTest : public testing::Test {
   MockLeakDetectionRequestFactory* request_factory() {
     return request_factory_;
   }
+  base::HistogramTester& histogram_tester() { return histogram_tester_; }
   AuthenticatedLeakCheck& leak_check() { return leak_check_; }
 
   // Brings |leak_check_| to the state right after the network request.
@@ -104,6 +110,8 @@ class AuthenticatedLeakCheckTest : public testing::Test {
   signin::IdentityTestEnvironment identity_test_env_;
   StrictMock<MockLeakDetectionDelegateInterface> delegate_;
   MockLeakDetectionRequestFactory* request_factory_;
+  base::HistogramTester histogram_tester_;
+  base::ScopedMockElapsedTimersForTest mock_elapsed_timers_;
   AuthenticatedLeakCheck leak_check_;
 };
 
@@ -117,6 +125,10 @@ PayloadAndCallback AuthenticatedLeakCheckTest::ImitateNetworkRequest() {
   // Crypto stuff is done here.
   task_env().RunUntilIdle();
 
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.LeakDetection.PrepareSingleLeakRequestTime",
+      kMockElapsedTime, 1);
+
   static constexpr char access_token[] = "access_token";
   auto network_request = std::make_unique<TestLeakDetectionRequest>();
   TestLeakDetectionRequest* raw_request = network_request.get();
@@ -126,6 +138,10 @@ PayloadAndCallback AuthenticatedLeakCheckTest::ImitateNetworkRequest() {
   // Return the access token.
   identity_env().WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
       access_token, base::Time::Max());
+
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.LeakDetection.ObtainAccessTokenTime", kMockElapsedTime,
+      1);
 
   return {std::move(raw_request->encrypted_payload_),
           std::move(raw_request->callback_)};
@@ -165,6 +181,10 @@ TEST_F(AuthenticatedLeakCheckTest, GetAccessTokenBeforeEncryption) {
   identity_env().WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
       access_token, base::Time::Max());
 
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.LeakDetection.ObtainAccessTokenTime", kMockElapsedTime,
+      1);
+
   auto network_request = std::make_unique<MockLeakDetectionRequest>();
   EXPECT_CALL(*network_request,
               LookupSingleLeak(_, access_token, ElementsAre(-67, 116, -87),
@@ -173,6 +193,10 @@ TEST_F(AuthenticatedLeakCheckTest, GetAccessTokenBeforeEncryption) {
       .WillOnce(Return(ByMove(std::move(network_request))));
   // Crypto stuff is done here.
   task_env().RunUntilIdle();
+
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.LeakDetection.PrepareSingleLeakRequestTime",
+      kMockElapsedTime, 1);
 }
 
 TEST_F(AuthenticatedLeakCheckTest, GetAccessTokenAfterEncryption) {
@@ -185,6 +209,10 @@ TEST_F(AuthenticatedLeakCheckTest, GetAccessTokenAfterEncryption) {
   // crypto stuff is done here.
   task_env().RunUntilIdle();
 
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.LeakDetection.PrepareSingleLeakRequestTime",
+      kMockElapsedTime, 1);
+
   const std::string access_token = "access_token";
   auto network_request = std::make_unique<MockLeakDetectionRequest>();
   EXPECT_CALL(*network_request,
@@ -196,6 +224,10 @@ TEST_F(AuthenticatedLeakCheckTest, GetAccessTokenAfterEncryption) {
   // Return the access token.
   identity_env().WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
       access_token, base::Time::Max());
+
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.LeakDetection.ObtainAccessTokenTime", kMockElapsedTime,
+      1);
 }
 
 TEST_F(AuthenticatedLeakCheckTest, GetAccessTokenFailure) {
@@ -209,6 +241,10 @@ TEST_F(AuthenticatedLeakCheckTest, GetAccessTokenFailure) {
   EXPECT_CALL(delegate(), OnError(LeakDetectionError::kTokenRequestFailure));
   identity_env().WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
       GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED));
+
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.LeakDetection.ObtainAccessTokenTime", kMockElapsedTime,
+      1);
 }
 
 // Perform the whole cycle of a leak check. The server returns data signalling
@@ -231,6 +267,14 @@ TEST_F(AuthenticatedLeakCheckTest, ParseResponse_NoLeak) {
                                               base::ASCIIToUTF16(kPassword)));
   std::move(payload_and_callback.callback).Run(std::move(response));
   task_env().RunUntilIdle();
+
+  // Expect one sample for each of the response time histograms.
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.LeakDetection.ReceiveSingleLeakResponseTime",
+      kMockElapsedTime, 1);
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.LeakDetection.AnalyzeSingleLeakResponseTime",
+      kMockElapsedTime, 1);
 }
 
 // Perform the whole cycle of a leak check. The server returns data signalling
@@ -252,6 +296,14 @@ TEST_F(AuthenticatedLeakCheckTest, ParseResponse_Leak) {
                                               base::ASCIIToUTF16(kPassword)));
   std::move(payload_and_callback.callback).Run(std::move(response));
   task_env().RunUntilIdle();
+
+  // Expect one sample for each of the response time histograms.
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.LeakDetection.ReceiveSingleLeakResponseTime",
+      kMockElapsedTime, 1);
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.LeakDetection.AnalyzeSingleLeakResponseTime",
+      kMockElapsedTime, 1);
 }
 
 }  // namespace password_manager

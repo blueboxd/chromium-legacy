@@ -141,3 +141,18 @@ status, this is probably what you want to do.
 
 TODO: Describe object file bisection, identify obj with symbol that no longer
 has the section.
+
+## Tips and tricks
+
+Finding what object files differ between two directories:
+
+```
+$ diff -u <(cd out.good && find . -name "*.o" -exec sha1sum {} \; | sort -k2) \
+          <(cd out.bad  && find . -name "*.o" -exec sha1sum {} \; | sort -k2)
+```
+
+Or with cmp:
+
+```
+$ find good -name "*.o" -exec bash -c 'cmp -s $0 ${0/good/bad} || echo $0' {} \;
+```

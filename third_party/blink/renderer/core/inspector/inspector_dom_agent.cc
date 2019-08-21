@@ -2118,6 +2118,11 @@ void InspectorDOMAgent::NodeCreated(Node* node) {
   }
 }
 
+void InspectorDOMAgent::PortalRemoteFrameCreated(
+    HTMLPortalElement* portal_element) {
+  InvalidateFrameOwnerElement(portal_element);
+}
+
 static ShadowRoot* ShadowRootForNode(Node* node, const String& type) {
   auto* element = DynamicTo<Element>(node);
   if (!element)

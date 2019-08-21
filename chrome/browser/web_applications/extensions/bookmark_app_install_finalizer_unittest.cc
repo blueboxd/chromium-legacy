@@ -343,13 +343,12 @@ TEST_F(BookmarkAppInstallFinalizerTest, SystemInstalledSucceeds) {
   run_loop.Run();
 }
 
-TEST_F(BookmarkAppInstallFinalizerTest, NoNetworkInstallSucceeds) {
+TEST_F(BookmarkAppInstallFinalizerTest, NoNetworkInstallForArc) {
   auto info = std::make_unique<WebApplicationInfo>();
   info->app_url = kWebAppUrl;
 
   web_app::InstallFinalizer::FinalizeOptions options;
   options.install_source = WebappInstallSource::ARC;
-  options.no_network_install = true;
 
   base::RunLoop run_loop;
   finalizer().FinalizeInstall(

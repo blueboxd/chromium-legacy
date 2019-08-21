@@ -11524,7 +11524,7 @@
     {
       'name': 'UsbDetachableWhitelist',
       'owners': ['vpalatin@chromium.org', 'poromov@chromium.org'],
-      'type': 'dict',
+      'type': 'list',
       'schema': {
         'type': 'array',
         'items': {

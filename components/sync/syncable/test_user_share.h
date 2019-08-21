@@ -15,11 +15,13 @@
 
 namespace syncer {
 
+class Cryptographer;
 class KeystoreKeysHandler;
 class SyncEncryptionHandler;
 class TestDirectorySetterUpper;
 
 namespace syncable {
+class BaseTransaction;
 class TestTransactionObserver;
 }
 
@@ -64,6 +66,8 @@ class TestUserShare {
 
   // Save and reload Directory to clear out temporary data in memory.
   bool Reload();
+
+  Cryptographer* GetCryptographer(const syncable::BaseTransaction* trans);
 
   // Non-null iff called between a call to SetUp() and TearDown().
   UserShare* user_share();

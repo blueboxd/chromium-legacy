@@ -280,6 +280,12 @@ bool WebDialogView::ShouldShowDialogTitle() const {
   return true;
 }
 
+bool WebDialogView::ShouldShowCloseButton() const {
+  if (delegate_)
+    return delegate_->ShouldShowCloseButton();
+  return true;
+}
+
 bool WebDialogView::HandleContextMenu(
     content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params) {

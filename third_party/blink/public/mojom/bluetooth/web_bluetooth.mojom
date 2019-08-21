@@ -178,6 +178,9 @@ struct WebBluetoothRemoteGATTDescriptor {
 // Web Bluetooth Interface that Blink can use to perform
 // Bluetooth GATT Operations on Bluetooth Devices.
 interface WebBluetoothService {
+  // Checks if Web Bluetooth is allowed and if a Bluetooth radio is available.
+  GetAvailability() => (bool is_available);
+
   RequestDevice(WebBluetoothRequestDeviceOptions options)
     => (WebBluetoothResult result, WebBluetoothDevice? device);
 

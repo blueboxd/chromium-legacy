@@ -809,6 +809,9 @@
       status: "experimental",
     },
     {
+      name: "JSONModules",
+    },
+    {
       name: "KeyboardFocusableScrollers",
       status: "experimental",
     },

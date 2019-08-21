@@ -505,13 +505,14 @@ void ChromePasswordManagerClient::AutofillHttpAuth(
 }
 
 void ChromePasswordManagerClient::NotifyUserCredentialsWereLeaked(
+    password_manager::CredentialLeakType leak_type,
     const GURL& origin) {
 #if defined(OS_ANDROID)
   // TODO(crbug.com/986317): Implement Android part of the feature.
 #else   // !defined(OS_ANDROID)
   PasswordsClientUIDelegate* manage_passwords_ui_controller =
       PasswordsClientUIDelegateFromWebContents(web_contents());
-  manage_passwords_ui_controller->OnCredentialLeak(origin);
+  manage_passwords_ui_controller->OnCredentialLeak(leak_type, origin);
 #endif  // defined(OS_ANDROID)
 }
 

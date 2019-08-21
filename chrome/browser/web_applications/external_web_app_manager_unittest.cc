@@ -52,7 +52,7 @@ constexpr char kAppUnmanagedUrl[] = "https://www.google.com/unmanaged";
 // Returns the chrome/test/data/web_app_default_apps/sub_dir directory that
 // holds the *.json data files from which ScanDirForExternalWebAppsForTesting
 // should extract URLs from.
-static base::FilePath test_dir(const std::string& sub_dir) {
+static base::FilePath GetTestDir(const std::string& sub_dir) {
   base::FilePath dir;
   if (!base::PathService::Get(chrome::DIR_TEST_DATA, &dir)) {
     ADD_FAILURE()
@@ -115,7 +115,7 @@ class ScanDirForExternalWebAppsTest : public testing::Test {
   std::vector<ExternalInstallOptions> ScanTestDirForExternalWebApps(
       const std::string& dir) {
     return ExternalWebAppManager::ScanDirForExternalWebAppsForTesting(
-        test_dir(dir), CreateProfile().get());
+        GetTestDir(dir), CreateProfile().get());
   }
 
   // Helper that creates simple test profile.
@@ -154,7 +154,7 @@ class ScanDirForExternalWebAppsTest : public testing::Test {
 
   void VerifySetOfApps(Profile* profile, const std::set<GURL>& expectations) {
     const auto install_options_list =
-        ScanApps(profile, test_dir(kUserTypesTestDir));
+        ScanApps(profile, GetTestDir(kUserTypesTestDir));
     ASSERT_EQ(expectations.size(), install_options_list.size());
     for (const auto& install_options : install_options_list)
       ASSERT_EQ(1u, expectations.count(install_options.url));
@@ -205,6 +205,7 @@ TEST_F(ScanDirForExternalWebAppsTest, GoodJson) {
     install_options.add_to_desktop = false;
     install_options.add_to_quick_launch_bar = false;
     install_options.require_manifest = true;
+    install_options.uninstall_and_replace.push_back("migrationsourceappid");
     test_install_options_list.push_back(std::move(install_options));
   }
 
@@ -288,8 +289,17 @@ TEST_F(ScanDirForExternalWebAppsTest, InvalidLaunchContainer) {
   const auto app_infos =
       ScanTestDirForExternalWebApps("invalid_launch_container");
 
-  // The invalidg_launch_container directory contains one JSON file which is
+  // The invalid_launch_container directory contains one JSON file which is
   // correct except for an invalid "launch_container" field.
+  EXPECT_EQ(0u, app_infos.size());
+}
+
+TEST_F(ScanDirForExternalWebAppsTest, InvalidUninstallAndReplace) {
+  const auto app_infos =
+      ScanTestDirForExternalWebApps("invalid_uninstall_and_replace");
+
+  // The invalid_uninstall_and_replace directory contains 2 JSON files which are
+  // correct except for invalid "uninstall_and_replace" fields.
   EXPECT_EQ(0u, app_infos.size());
 }
 
@@ -345,13 +355,13 @@ TEST_F(ScanDirForExternalWebAppsTest, UnmanagedUser) {
 
 TEST_F(ScanDirForExternalWebAppsTest, NonPrimaryProfile) {
   EXPECT_TRUE(
-      ScanApps(CreateProfile().get(), test_dir(kUserTypesTestDir)).empty());
+      ScanApps(CreateProfile().get(), GetTestDir(kUserTypesTestDir)).empty());
 }
 #else
 // No app is expected for non-ChromeOS builds.
 TEST_F(ScanDirForExternalWebAppsTest, NoApp) {
   EXPECT_TRUE(
-      ScanApps(CreateProfile().get(), test_dir(kUserTypesTestDir)).empty());
+      ScanApps(CreateProfile().get(), GetTestDir(kUserTypesTestDir)).empty());
 }
 #endif
 

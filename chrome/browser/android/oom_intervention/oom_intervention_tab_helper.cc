@@ -68,7 +68,6 @@ OomInterventionTabHelper::OomInterventionTabHelper(
     : content::WebContentsObserver(web_contents),
       decider_(OomInterventionDecider::GetForBrowserContext(
           web_contents->GetBrowserContext())),
-      binding_(this),
       scoped_observer_(this) {
   scoped_observer_.Add(crash_reporter::CrashMetricsReporter::GetInstance());
 }
@@ -284,7 +283,7 @@ void OomInterventionTabHelper::StartMonitoringIfNeeded() {
 
   auto* config = OomInterventionConfig::GetInstance();
   if (config->should_detect_in_renderer()) {
-    if (binding_.is_bound())
+    if (receiver_.is_bound())
       return;
     StartDetectionInRenderer();
   } else if (config->is_swap_monitor_enabled()) {
@@ -326,14 +325,12 @@ void OomInterventionTabHelper::StartDetectionInRenderer() {
   DCHECK(render_process_host);
   content::BindInterface(render_process_host,
                          mojo::MakeRequest(&intervention_));
-  DCHECK(!binding_.is_bound());
-  blink::mojom::OomInterventionHostPtr host;
-  binding_.Bind(mojo::MakeRequest(&host));
+  DCHECK(!receiver_.is_bound());
   blink::mojom::DetectionArgsPtr detection_args =
       config->GetRendererOomDetectionArgs();
-  intervention_->StartDetection(std::move(host), std::move(detection_args),
-                                renderer_pause_enabled, navigate_ads_enabled,
-                                purge_v8_memory_enabled);
+  intervention_->StartDetection(
+      receiver_.BindNewPipeAndPassRemote(), std::move(detection_args),
+      renderer_pause_enabled, navigate_ads_enabled, purge_v8_memory_enabled);
 }
 
 void OomInterventionTabHelper::OnNearOomDetected() {
@@ -366,8 +363,7 @@ void OomInterventionTabHelper::ResetInterventionState() {
 
 void OomInterventionTabHelper::ResetInterfaces() {
   intervention_.reset();
-  if (binding_.is_bound())
-    binding_.Close();
+  receiver_.reset();
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(OomInterventionTabHelper)

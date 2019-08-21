@@ -320,8 +320,7 @@ void SVGUseElement::BuildPendingResource() {
   // ExpandUseElementsInShadowTree().
   if (InUseShadowTree())
     return;
-  // FIXME: We should try to optimize this, to at least allow partial reclones.
-  UseShadowRoot().RemoveChildren(kOmitSubtreeModifiedEvent);
+  DetachShadowTree();
   ClearResourceReference();
   CancelShadowTreeRecreation();
   if (!isConnected())
@@ -329,7 +328,7 @@ void SVGUseElement::BuildPendingResource() {
   auto* target = DynamicTo<SVGElement>(ResolveTargetElement(kAddObserver));
   // TODO(fs): Why would the Element not be "connected" at this point?
   if (target && target->isConnected())
-    BuildShadowAndInstanceTree(*target);
+    AttachShadowTree(*target);
 
   DCHECK(!needs_shadow_tree_recreation_);
 }
@@ -424,7 +423,7 @@ Element* SVGUseElement::CreateInstanceTree(SVGElement& target_root) const {
   return instance_root;
 }
 
-void SVGUseElement::BuildShadowAndInstanceTree(SVGElement& target) {
+void SVGUseElement::AttachShadowTree(SVGElement& target) {
   DCHECK(!target_element_instance_);
   DCHECK(!needs_shadow_tree_recreation_);
   DCHECK(!InUseShadowTree());
@@ -443,8 +442,10 @@ void SVGUseElement::BuildShadowAndInstanceTree(SVGElement& target) {
 
   AddReferencesToFirstDegreeNestedUseElements(target);
 
+  // TODO(fs): Eliminate this branch. ExpandUseElementsInShadowTree() should be
+  // able to handle loading external resources correctly.
   if (InstanceTreeIsLoading()) {
-    CloneNonMarkupEventListeners();
+    PostProcessInstanceTree();
     return;
   }
 
@@ -462,10 +463,25 @@ void SVGUseElement::BuildShadowAndInstanceTree(SVGElement& target) {
   target_element_instance_ = To<SVGElement>(shadow_root.firstChild());
   DCHECK_EQ(target_element_instance_->parentNode(), shadow_root);
 
-  CloneNonMarkupEventListeners();
+  PostProcessInstanceTree();
 
   // Update relative length information.
   UpdateRelativeLengthsInformation();
+}
+
+void SVGUseElement::DetachShadowTree() {
+  ShadowRoot& shadow_root = UseShadowRoot();
+  // Tear down the mapping from the corresponding (original) element back to
+  // the instance.
+  for (SVGElement& instance :
+       Traversal<SVGElement>::DescendantsOf(shadow_root)) {
+    // When the instances of an element are invalidated the corresponding
+    // element is cleared, so it can be null here.
+    if (SVGElement* corresponding_element = instance.CorrespondingElement())
+      corresponding_element->RemoveInstanceMapping(&instance);
+  }
+  // FIXME: We should try to optimize this, to at least allow partial reclones.
+  shadow_root.RemoveChildren(kOmitSubtreeModifiedEvent);
 }
 
 LayoutObject* SVGUseElement::CreateLayoutObject(const ComputedStyle& style,
@@ -531,14 +547,18 @@ void SVGUseElement::AddReferencesToFirstDegreeNestedUseElements(
     AddReferenceTo(use_element);
 }
 
-void SVGUseElement::CloneNonMarkupEventListeners() {
-  for (SVGElement& element :
+void SVGUseElement::PostProcessInstanceTree() {
+  for (SVGElement& instance :
        Traversal<SVGElement>::DescendantsOf(UseShadowRoot())) {
-    if (EventTargetData* data =
-            element.CorrespondingElement()->GetEventTargetData()) {
+    SVGElement* corresponding_element = instance.CorrespondingElement();
+    // Transfer non-markup event listeners.
+    if (EventTargetData* data = corresponding_element->GetEventTargetData()) {
       data->event_listener_map.CopyEventListenersNotCreatedFromMarkupToTarget(
-          &element);
+          &instance);
     }
+    // Setup the mapping from the corresponding (original) element back to the
+    // instance.
+    corresponding_element->MapInstanceToElement(&instance);
   }
 }
 

@@ -556,13 +556,6 @@ base::Time NigoriSyncBridgeImpl::GetKeystoreMigrationTime() const {
   return base::Time();
 }
 
-Cryptographer* NigoriSyncBridgeImpl::GetCryptographerUnsafe() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // This method exposes Cryptographer to Directory, and it's redundant in case
-  // USS implementation is enabled.
-  return nullptr;
-}
-
 KeystoreKeysHandler* NigoriSyncBridgeImpl::GetKeystoreKeysHandler() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return this;

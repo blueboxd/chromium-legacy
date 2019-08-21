@@ -122,6 +122,10 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
   // have a title bar.  This is useful when presenting branded interfaces.
   virtual bool ShouldShowDialogTitle() const = 0;
 
+  // Returns true if the dialog should show a close button in the title bar.
+  // Default implementation returns true.
+  virtual bool ShouldShowCloseButton() const;
+
   // A callback to allow the delegate to inhibit context menu or show
   // customized menu.
   // Returns true iff you do NOT want the standard context menu to be

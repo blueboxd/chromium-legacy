@@ -27,6 +27,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_theme_engine.h"
+#include "third_party/blink/public/resources/grit/blink_image_resources.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
@@ -509,9 +510,9 @@ bool ThemePainterDefault::PaintSearchFieldCancelButton(
       input_layout_box, cancel_button_object, cancel_button_rect, r);
 
   DEFINE_STATIC_REF(Image, cancel_image,
-                    (Image::LoadPlatformResource("searchCancel")));
+                    (Image::LoadPlatformResource(IDR_SEARCH_CANCEL)));
   DEFINE_STATIC_REF(Image, cancel_pressed_image,
-                    (Image::LoadPlatformResource("searchCancelPressed")));
+                    (Image::LoadPlatformResource(IDR_SEARCH_CANCEL_PRESSED)));
   paint_info.context.DrawImage(
       LayoutTheme::IsPressed(cancel_button_object.GetNode())
           ? cancel_pressed_image

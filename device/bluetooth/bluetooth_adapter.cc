@@ -265,6 +265,11 @@ BluetoothAdapter::GetPendingAdvertisementsForTesting() const {
   return {};
 }
 
+void BluetoothAdapter::NotifyAdapterPresentChanged(bool present) {
+  for (auto& observer : observers_)
+    observer.AdapterPresentChanged(this, present);
+}
+
 void BluetoothAdapter::NotifyAdapterPoweredChanged(bool powered) {
   for (auto& observer : observers_)
     observer.AdapterPoweredChanged(this, powered);

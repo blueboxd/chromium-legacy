@@ -474,12 +474,10 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
   // MDCCollectionView doesn't support dynamic colors, so they have to be
   // resolved now.
   // TODO(crbug.com/984928): Clean up once dynamic color support is added.
-#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
   if (@available(iOS 13, *)) {
     return [ntp_home::kNTPBackgroundColor()
         resolvedColorWithTraitCollection:self.traitCollection];
   }
-#endif
   return ntp_home::kNTPBackgroundColor();
 }
 

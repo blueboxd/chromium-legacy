@@ -8,6 +8,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_for_context_dispose.h"
@@ -78,12 +79,12 @@ OomInterventionImpl::~OomInterventionImpl() {
 }
 
 void OomInterventionImpl::StartDetection(
-    mojom::blink::OomInterventionHostPtr host,
+    mojo::PendingRemote<mojom::blink::OomInterventionHost> host,
     mojom::blink::DetectionArgsPtr detection_args,
     bool renderer_pause_enabled,
     bool navigate_ads_enabled,
     bool purge_v8_memory_enabled) {
-  host_ = std::move(host);
+  host_.Bind(std::move(host));
 
   detection_args_ = std::move(detection_args);
   renderer_pause_enabled_ = renderer_pause_enabled;

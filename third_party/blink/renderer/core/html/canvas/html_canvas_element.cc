@@ -40,6 +40,7 @@
 #include "build/build_config.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/resources/grit/blink_image_resources.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
@@ -86,6 +87,7 @@
 #include "third_party/blink/renderer/platform/image-encoders/image_encoder_utils.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "ui/base/resource/scale_factor.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -641,12 +643,13 @@ void HTMLCanvasElement::NotifyListenersCanvasChanged() {
 static std::pair<blink::Image*, float> BrokenCanvas(float device_scale_factor) {
   if (device_scale_factor >= 2) {
     DEFINE_STATIC_REF(blink::Image, broken_canvas_hi_res,
-                      (blink::Image::LoadPlatformResource("brokenCanvas@2x")));
+                      (blink::Image::LoadPlatformResource(
+                          IDR_BROKENCANVAS, ui::SCALE_FACTOR_200P)));
     return std::make_pair(broken_canvas_hi_res, 2);
   }
 
   DEFINE_STATIC_REF(blink::Image, broken_canvas_lo_res,
-                    (blink::Image::LoadPlatformResource("brokenCanvas")));
+                    (blink::Image::LoadPlatformResource(IDR_BROKENCANVAS)));
   return std::make_pair(broken_canvas_lo_res, 1);
 }
 

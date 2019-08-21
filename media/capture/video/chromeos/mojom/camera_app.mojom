@@ -30,7 +30,7 @@ interface CameraAppDeviceProvider {
   // null.
   GetCameraAppDevice(string source_id)
       => (GetCameraAppDeviceStatus status,
-          pending_remote<CameraAppDevice> device);
+          pending_remote<CameraAppDevice>? device);
 };
 
 // Interface for communication between Chrome Camera App (Remote) and Chrome
@@ -58,7 +58,7 @@ interface CameraAppDeviceBridge {
   // is passed when it succeeds. Otherwise, the |device| would be null.
   GetCameraAppDevice(string device_id)
       => (GetCameraAppDeviceStatus status,
-          pending_remote<CameraAppDevice> device);
+          pending_remote<CameraAppDevice>? device);
 };
 
 // Interface for communication between Chrome Camera App (Remote) and camera

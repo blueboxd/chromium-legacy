@@ -182,6 +182,7 @@ class GPU_EXPORT GpuControlList {
     const MachineModelInfo* machine_model_info;
     size_t gpu_series_list_size;
     const GpuSeriesType* gpu_series_list;
+    Version intel_gpu_generation;
     const More* more;
 
     bool Contains(OsType os_type,

@@ -24,7 +24,18 @@ function setUp() {
   ];
   fileSystem.populate(filenames);
 
-  window.loadTimeData.getString = id => id;
+  window.loadTimeData.data = {
+    SIZE_BYTES: '$1 bytes',
+    SIZE_KB: '$1 KB',
+    SIZE_MB: '$1 MB',
+    SIZE_GB: '$1 GB',
+    SIZE_TB: '$1 TB',
+    SIZE_PB: '$1 PB',
+  };
+
+  window.loadTimeData.getString = id => {
+    return window.loadTimeData.data_[id] || id;
+  };
 }
 
 function testReadEntriesRecursively(callback) {
@@ -178,4 +189,53 @@ function testEntryDebugString() {
   assertEquals(
       '(VolumeEntry) / filesystem:downloads/',
       util.entryDebugString(volumeEntry));
+}
+
+/**
+ * Tests the formatting of util.bytesToString
+ */
+function testBytesToString() {
+  const KB = 2 ** 10;
+  const MB = 2 ** 20;
+  const GB = 2 ** 30;
+  const TB = 2 ** 40;
+  const PB = 2 ** 50;
+
+  // Up to 1KB is displayed as 'bytes'.
+  assertEquals(util.bytesToString(0), '0 bytes');
+  assertEquals(util.bytesToString(10), '10 bytes');
+  assertEquals(util.bytesToString(KB - 1), '1,023 bytes');
+  assertEquals(util.bytesToString(KB), '1 KB');
+
+  // Up to 1MB is displayed as a number of KBs.
+  assertEquals(util.bytesToString(2 * KB), '2 KB');
+  assertEquals(util.bytesToString(2 * KB + 1), '3 KB');
+  assertEquals(util.bytesToString(MB - KB), '1,023 KB');
+  assertEquals(util.bytesToString(MB - KB + 1), '1,024 KB');
+  assertEquals(util.bytesToString(MB - 1), '1,024 KB');
+  assertEquals(util.bytesToString(MB), '1 MB');
+
+  // Up to 1GB is displayed as a number of MBs.
+  assertEquals(util.bytesToString(2.55 * MB - 1), '2.5 MB');
+  assertEquals(util.bytesToString(2.55 * MB), '2.6 MB');
+  assertEquals(util.bytesToString(GB - 0.05 * MB - 1), '1,023.9 MB');
+  assertEquals(util.bytesToString(GB - 0.05 * MB), '1,024 MB');
+  assertEquals(util.bytesToString(GB - 1), '1,024 MB');
+  assertEquals(util.bytesToString(GB), '1 GB');
+
+  // Up to 1TB is displayed as a number of GBs.
+  assertEquals(util.bytesToString(2.55 * GB - 1), '2.5 GB');
+  assertEquals(util.bytesToString(2.55 * GB), '2.6 GB');
+  assertEquals(util.bytesToString(TB - 0.05 * GB - 1), '1,023.9 GB');
+  assertEquals(util.bytesToString(TB - 0.05 * GB), '1,024 GB');
+  assertEquals(util.bytesToString(TB - 1), '1,024 GB');
+  assertEquals(util.bytesToString(TB), '1 TB');
+
+  // Up to 1PB is displayed as a number of GBs.
+  assertEquals(util.bytesToString(2.55 * TB - 1), '2.5 TB');
+  assertEquals(util.bytesToString(2.55 * TB), '2.6 TB');
+  assertEquals(util.bytesToString(PB - 0.05 * TB - 1), '1,023.9 TB');
+  assertEquals(util.bytesToString(PB - 0.05 * TB), '1,024 TB');
+  assertEquals(util.bytesToString(PB - 1), '1,024 TB');
+  assertEquals(util.bytesToString(PB), '1 PB');
 }

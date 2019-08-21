@@ -213,7 +213,7 @@ class SyncManagerImpl
   // differ between the versions of an entry stored in |a| and |b|. A return
   // value of false means that it should be OK to ignore this change.
   bool VisiblePropertiesDiffer(const syncable::EntryKernelMutation& mutation,
-                               Cryptographer* cryptographer) const;
+                               const Cryptographer* cryptographer) const;
 
   // Opens the directory.
   bool OpenDirectory(InitArgs* args);
@@ -227,7 +227,7 @@ class SyncManagerImpl
   void SetExtraChangeRecordData(int64_t id,
                                 ModelType type,
                                 ChangeReorderBuffer* buffer,
-                                Cryptographer* cryptographer,
+                                const Cryptographer* cryptographer,
                                 const syncable::EntryKernel& original,
                                 bool existed_before,
                                 bool exists_now);

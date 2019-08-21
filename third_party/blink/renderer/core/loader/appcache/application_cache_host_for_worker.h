@@ -13,6 +13,7 @@ class ApplicationCacheHostForWorker final : public ApplicationCacheHost {
  public:
   ApplicationCacheHostForWorker(
       const base::UnguessableToken& appcache_host_id,
+      const BrowserInterfaceBrokerProxy* interface_broker_proxy,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~ApplicationCacheHostForWorker() override;
 };

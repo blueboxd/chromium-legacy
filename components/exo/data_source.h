@@ -42,7 +42,7 @@ class DataSource {
 
   // Notifies the client of the mime type that will be used by the
   // recipient. Only used during drag drop operations.
-  void Target(const std::string& mime_type);
+  void Target(const base::Optional<std::string>& mime_type);
 
   // Notifies the client of the dnd action that will be performed if the
   // currently running drag operation ends now. Only used during drag drop

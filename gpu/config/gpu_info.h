@@ -31,22 +31,28 @@ namespace gpu {
 enum class GpuSeriesType {
   kUnknown = 0,
   // Intel 6th gen
-  kIntelSandyBridge = 1,
+  kIntelSandybridge = 1,
   // Intel 7th gen
-  kIntelValleyView = 2,  // BayTrail
-  kIntelIvyBridge = 3,
+  kIntelBaytrail = 2,
+  kIntelIvybridge = 3,
   kIntelHaswell = 4,
   // Intel 8th gen
-  kIntelCherryView = 5,  // Braswell
+  kIntelCherrytrail = 5,
   kIntelBroadwell = 6,
   // Intel 9th gen
-  kIntelApolloLake = 7,
-  kIntelSkyLake = 8,
-  kIntelGeminiLake = 9,
-  kIntelKabyLake = 10,
-  kIntelCoffeeLake = 11,
+  kIntelApollolake = 7,
+  kIntelSkylake = 8,
+  kIntelGeminilake = 9,
+  kIntelKabylake = 10,
+  kIntelCoffeelake = 11,
+  kIntelWhiskeylake = 12,
+  kIntelCometlake = 13,
+  // Intel 10th gen
+  kIntelCannonlake = 14,
+  // Intel 11th gen
+  kIntelIcelake = 15,
   // Please also update |gpu_series_map| in process_json.py.
-  kMaxValue = kIntelCoffeeLake,
+  kMaxValue = kIntelIcelake,
 };
 
 // Video profile.  This *must* match media::VideoCodecProfile.

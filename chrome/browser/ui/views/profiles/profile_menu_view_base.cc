@@ -160,6 +160,12 @@ bool ProfileMenuViewBase::HandleContextMenu(
   return true;
 }
 
+void ProfileMenuViewBase::Init() {
+  Reset();
+  BuildMenu();
+  RepopulateViewFromMenuItems();
+}
+
 void ProfileMenuViewBase::WindowClosing() {
   DCHECK_EQ(g_profile_bubble_, this);
   if (anchor_button())

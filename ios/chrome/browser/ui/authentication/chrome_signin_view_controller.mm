@@ -347,7 +347,6 @@ enum AuthenticationState {
   UIColor* backgroundColor = [UIColor colorNamed:kBlueColor];
   UIColor* titleColor = [UIColor colorNamed:kSolidButtonTextColor];
 
-#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
   if (@available(iOS 13, *)) {
     // As of iOS 13 Beta 3, MDCFlatButton has a bug updating it's colors
     // automatically. Here the colors are resolved and passed instead.
@@ -358,7 +357,6 @@ enum AuthenticationState {
     titleColor =
         [titleColor resolvedColorWithTraitCollection:self.traitCollection];
   }
-#endif
 
   button.underlyingColorHint = hintColor;
   button.inkColor = [UIColor colorWithWhite:1 alpha:0.2f];
@@ -372,7 +370,6 @@ enum AuthenticationState {
   UIColor* backgroundColor = UIColor.cr_systemBackgroundColor;
   UIColor* titleColor = [UIColor colorNamed:kBlueColor];
 
-#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
   if (@available(iOS 13, *)) {
     // As of iOS 13 Beta 3, MDCFlatButton has a bug updating it's colors
     // automatically. Here the colors are resolved and passed instead.
@@ -383,7 +380,6 @@ enum AuthenticationState {
     titleColor =
         [titleColor resolvedColorWithTraitCollection:self.traitCollection];
   }
-#endif
 
   button.underlyingColorHint = hintColor;
   button.inkColor = [UIColor colorWithWhite:0 alpha:0.06f];
@@ -498,12 +494,10 @@ enum AuthenticationState {
 - (void)updateGradientColors {
   UIColor* backgroundColor = UIColor.cr_systemBackgroundColor;
 
-#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
   if (@available(iOS 13, *)) {
     backgroundColor =
         [backgroundColor resolvedColorWithTraitCollection:self.traitCollection];
   }
-#endif
 
   _gradientLayer.colors = @[
     (id)[backgroundColor colorWithAlphaComponent:0].CGColor,
@@ -1036,7 +1030,6 @@ enum AuthenticationState {
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
-#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
   if (@available(iOS 13, *)) {
     if ([self.traitCollection
             hasDifferentColorAppearanceComparedToTraitCollection:
@@ -1060,7 +1053,6 @@ enum AuthenticationState {
       [self setSecondaryButtonStyling:_secondaryButton];
     }
   }
-#endif
 }
 
 #pragma mark - Events

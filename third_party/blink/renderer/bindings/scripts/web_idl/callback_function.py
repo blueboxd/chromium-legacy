@@ -32,7 +32,10 @@ class CallbackFunction(UserDefinedType, FunctionLike, WithExtendedAttributes,
                 identifier=identifier,
                 kind=IdentifierIRMap.IR.Kind.CALLBACK_FUNCTION)
             FunctionLike.IR.__init__(
-                self, arguments=arguments, return_type=return_type)
+                self,
+                identifier=identifier,
+                arguments=arguments,
+                return_type=return_type)
             WithExtendedAttributes.__init__(self, extended_attributes)
             WithCodeGeneratorInfo.__init__(self, code_generator_info)
             WithComponent.__init__(self, component)

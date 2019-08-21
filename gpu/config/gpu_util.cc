@@ -654,8 +654,11 @@ GpuSeriesType GetGpuSeriesType(uint32_t vendor_id, uint32_t device_id) {
   // and we don't want to expose an extra bit other than the already recorded
   // vendor_id and device_id.
   if (vendor_id == 0x8086) {  // Intel
-    // https://en.wikipedia.org/wiki/List_of_Intel_graphics_processing_units
     // We only identify Intel 6th gen or newer.
+    // The device id can be referred to in the following locations:
+    // https://en.wikipedia.org/wiki/List_of_Intel_graphics_processing_units
+    // and the heade files in Mesa sources:
+    // include/pci_ids/i965_pci_ids.h
     uint32_t masked_device_id = device_id & 0xFF00;
     switch (masked_device_id) {
       case 0x0100:
@@ -663,44 +666,93 @@ GpuSeriesType GetGpuSeriesType(uint32_t vendor_id, uint32_t device_id) {
           case 0x0100:
           case 0x0110:
           case 0x0120:
-            return GpuSeriesType::kIntelSandyBridge;
+            return GpuSeriesType::kIntelSandybridge;
           case 0x0150:
             if (device_id == 0x0155 || device_id == 0x0157)
-              return GpuSeriesType::kIntelValleyView;
-            if (device_id == 0x0152 || device_id == 0x015A)
-              return GpuSeriesType::kIntelIvyBridge;
+              return GpuSeriesType::kIntelBaytrail;
+            if (device_id == 0x0152 || device_id == 0x015A
+                || device_id == 0x0156)
+              return GpuSeriesType::kIntelIvybridge;
             break;
           case 0x0160:
-            return GpuSeriesType::kIntelIvyBridge;
+            return GpuSeriesType::kIntelIvybridge;
           default:
             break;
         }
         break;
       case 0x0F00:
-        return GpuSeriesType::kIntelValleyView;
+        return GpuSeriesType::kIntelBaytrail;
       case 0x0400:
       case 0x0A00:
+      case 0x0C00:
       case 0x0D00:
         return GpuSeriesType::kIntelHaswell;
       case 0x2200:
-        return GpuSeriesType::kIntelCherryView;
+        return GpuSeriesType::kIntelCherrytrail;
       case 0x1600:
         return GpuSeriesType::kIntelBroadwell;
       case 0x5A00:
-        return GpuSeriesType::kIntelApolloLake;
+        if (device_id == 0x5A85 || device_id == 0x5A84)
+          return GpuSeriesType::kIntelApollolake;
+        return GpuSeriesType::kIntelCannonlake;
       case 0x1900:
-        return GpuSeriesType::kIntelSkyLake;
+        return GpuSeriesType::kIntelSkylake;
       case 0x3100:
-        return GpuSeriesType::kIntelGeminiLake;
+        return GpuSeriesType::kIntelGeminilake;
       case 0x5900:
-        return GpuSeriesType::kIntelKabyLake;
+        return GpuSeriesType::kIntelKabylake;
+      case 0x8700:
+        if (device_id == 0x87C0)
+          return GpuSeriesType::kIntelKabylake;
+        if (device_id == 0x87CA)
+          return GpuSeriesType::kIntelCoffeelake;
+        break;
       case 0x3E00:
-        return GpuSeriesType::kIntelCoffeeLake;
+        if (device_id == 0x3EA0 || device_id == 0x3EA1 || device_id == 0x3EA2
+            || device_id == 0x3EA4 || device_id == 0x3EA3)
+          return GpuSeriesType::kIntelWhiskeylake;
+        return GpuSeriesType::kIntelCoffeelake;
+      case 0x9B00:
+        return GpuSeriesType::kIntelCometlake;
+      case 0x8A00:
+        return GpuSeriesType::kIntelIcelake;
       default:
         break;
     }
   }
   return GpuSeriesType::kUnknown;
+}
+
+std::string GetIntelGpuGeneration(uint32_t vendor_id, uint32_t device_id) {
+  if (vendor_id == 0x8086) {
+    GpuSeriesType gpu_series = GetGpuSeriesType(vendor_id, device_id);
+    switch (gpu_series) {
+      case GpuSeriesType::kIntelSandybridge:
+        return "6";
+      case GpuSeriesType::kIntelBaytrail:
+      case GpuSeriesType::kIntelIvybridge:
+      case GpuSeriesType::kIntelHaswell:
+        return "7";
+      case GpuSeriesType::kIntelCherrytrail:
+      case GpuSeriesType::kIntelBroadwell:
+        return "8";
+      case GpuSeriesType::kIntelApollolake:
+      case GpuSeriesType::kIntelSkylake:
+      case GpuSeriesType::kIntelGeminilake:
+      case GpuSeriesType::kIntelKabylake:
+      case GpuSeriesType::kIntelCoffeelake:
+      case GpuSeriesType::kIntelWhiskeylake:
+      case GpuSeriesType::kIntelCometlake:
+        return "9";
+      case GpuSeriesType::kIntelCannonlake:
+        return "10";
+      case GpuSeriesType::kIntelIcelake:
+        return "11";
+      default:
+        break;
+    }
+  }
+  return "";
 }
 
 }  // namespace gpu

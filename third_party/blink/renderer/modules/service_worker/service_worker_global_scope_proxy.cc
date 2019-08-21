@@ -184,7 +184,7 @@ void ServiceWorkerGlobalScopeProxy::DidFailToLoadClassicScript() {
   Client().FailedToLoadClassicScript();
 }
 
-void ServiceWorkerGlobalScopeProxy::DidFetchScript(int64_t /* app_cache_id */) {
+void ServiceWorkerGlobalScopeProxy::DidFetchScript() {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   Client().WorkerScriptLoadedOnWorkerThread();
 }

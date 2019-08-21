@@ -22,8 +22,7 @@ class ServiceWorkerContextWrapper;
 // Content Index database should hold a reference to this.
 class CONTENT_EXPORT ContentIndexContextImpl
     : public ContentIndexContext,
-      public base::RefCountedThreadSafe<ContentIndexContextImpl,
-                                        BrowserThread::DeleteOnIOThread> {
+      public base::RefCountedThreadSafe<ContentIndexContextImpl> {
  public:
   ContentIndexContextImpl(
       BrowserContext* browser_context,
@@ -52,37 +51,11 @@ class CONTENT_EXPORT ContentIndexContextImpl
                          const std::string& description_id) override;
 
  private:
-  friend class base::DeleteHelper<ContentIndexContextImpl>;
-  friend class base::RefCountedThreadSafe<ContentIndexContextImpl,
-                                          BrowserThread::DeleteOnIOThread>;
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
+  friend class base::RefCountedThreadSafe<ContentIndexContextImpl>;
 
   ~ContentIndexContextImpl() override;
 
-  // Called after a user-initiated delete.
-  void DidDeleteItem(int64_t service_worker_registration_id,
-                     const url::Origin& origin,
-                     const std::string& description_id,
-                     blink::mojom::ContentIndexError error);
-
-  void StartActiveWorkerForDispatch(
-      const std::string& description_id,
-      blink::ServiceWorkerStatusCode service_worker_status,
-      scoped_refptr<ServiceWorkerRegistration> registration);
-
-  void DeliverMessageToWorker(
-      scoped_refptr<ServiceWorkerVersion> service_worker,
-      scoped_refptr<ServiceWorkerRegistration> registration,
-      const std::string& description_id,
-      blink::ServiceWorkerStatusCode service_worker_status);
-
-  void DidDispatchEvent(const url::Origin& origin,
-                        blink::ServiceWorkerStatusCode service_worker_status);
-
-  // Lives on the UI thread.
   ContentIndexProvider* provider_;
-
-  scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
   ContentIndexDatabase content_index_database_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentIndexContextImpl);

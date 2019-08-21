@@ -107,6 +107,9 @@ class CONTENT_EXPORT SharedWorkerHost
   void AllowCacheStorage(const GURL& url,
                          base::OnceCallback<void(bool)> callback);
 
+  void CreateAppCacheBackend(
+      mojo::PendingReceiver<blink::mojom::AppCacheBackend> receiver);
+
   // Terminates the given worker, i.e. based on a UI action.
   void TerminateWorker();
 

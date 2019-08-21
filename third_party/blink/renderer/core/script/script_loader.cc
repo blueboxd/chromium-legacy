@@ -172,8 +172,7 @@ enum class ShouldFireErrorEvent {
   kShouldFire,
 };
 
-ShouldFireErrorEvent ParseAndRegisterImportMap(ScriptElementBase& element,
-                                               const TextPosition& position) {
+ShouldFireErrorEvent ParseAndRegisterImportMap(ScriptElementBase& element) {
   Document& element_document = element.GetDocument();
   Document* context_document = element_document.ContextDocument();
   DCHECK(context_document);
@@ -212,12 +211,6 @@ ShouldFireErrorEvent ParseAndRegisterImportMap(ScriptElementBase& element,
 
   if (!import_map)
     return ShouldFireErrorEvent::kShouldFire;
-
-  // https://github.com/WICG/import-maps/issues/105
-  if (!element.AllowInlineScriptForCSP(element.GetNonceForElement(),
-                                       position.line_, import_map_text)) {
-    return ShouldFireErrorEvent::kShouldFire;
-  }
 
   modulator->RegisterImportMap(import_map);
   return ShouldFireErrorEvent::kDoNotFire;
@@ -433,7 +426,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 
   // Process the import map.
   if (is_import_map) {
-    if (ParseAndRegisterImportMap(*element_, position) ==
+    if (ParseAndRegisterImportMap(*element_) ==
         ShouldFireErrorEvent::kShouldFire) {
       element_document.GetTaskRunner(TaskType::kDOMManipulation)
           ->PostTask(FROM_HERE,

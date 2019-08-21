@@ -25,6 +25,7 @@ import android.view.View;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -377,6 +378,8 @@ public class TabGroupUiMediatorUnitTest {
         verifyNeverReset();
     }
 
+    // TODO(988199): Ignore this test until we have a conclusion from the attached bug.
+    @Ignore
     @Test
     public void tabClosure_LastTabInGroup_GroupUiVisible() {
         initAndAssertProperties(mTab2);

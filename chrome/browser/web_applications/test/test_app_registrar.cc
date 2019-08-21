@@ -126,8 +126,11 @@ const GURL& TestAppRegistrar::GetAppLaunchURL(const AppId&) const {
 }
 
 base::Optional<GURL> TestAppRegistrar::GetAppScope(const AppId& app_id) const {
-  NOTIMPLEMENTED();
-  return base::nullopt;
+  const auto& result = installed_apps_.find(app_id);
+  if (result == installed_apps_.end())
+    return base::nullopt;
+
+  return base::make_optional(result->second.install_url);
 }
 
 LaunchContainer TestAppRegistrar::GetAppLaunchContainer(
@@ -136,10 +139,10 @@ LaunchContainer TestAppRegistrar::GetAppLaunchContainer(
   return LaunchContainer::kTab;
 }
 
-base::flat_set<AppId> TestAppRegistrar::GetAppIdsForTesting() const {
-  base::flat_set<AppId> result;
+std::vector<AppId> TestAppRegistrar::GetAppIds() const {
+  std::vector<AppId> result;
   for (const std::pair<AppId, AppInfo>& it : installed_apps_) {
-    result.insert(it.first);
+    result.push_back(it.first);
   }
   return result;
 }

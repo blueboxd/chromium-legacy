@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/loader/modulescript/installed_service_worker_module_script_fetcher.h"
 
+#include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/workers/installed_scripts_manager.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
@@ -66,11 +67,19 @@ void InstalledServiceWorkerModuleScriptFetcher::Fetch(
     global_scope_->Initialize(response_url, response_referrer_policy,
                               script_data->GetResponseAddressSpace(),
                               response_content_security_policy->Headers(),
-                              script_data->CreateOriginTrialTokens().get());
+                              script_data->CreateOriginTrialTokens().get(),
+                              mojom::blink::kAppCacheNoCacheId);
   }
 
+  // TODO(sasebree). Figure out how to get the correct mime type for the
+  // ModuleScriptCreationParams here. Hard-coding application/javascript will
+  // cause JSON modules to break for service workers. We need to store the mime
+  // type of the service worker scripts in ServiceWorkerStorage, and pass it up
+  // to here via InstalledScriptManager.
   ModuleScriptCreationParams params(
-      fetch_params.Url(), ParkableString(script_data->TakeSourceText().Impl()),
+      fetch_params.Url(),
+      ModuleScriptCreationParams::ModuleType::kJavaScriptModule,
+      ParkableString(script_data->TakeSourceText().Impl()),
       nullptr /* cache_handler */,
       fetch_params.GetResourceRequest().GetCredentialsMode());
   client->NotifyFetchFinished(params, HeapVector<Member<ConsoleMessage>>());

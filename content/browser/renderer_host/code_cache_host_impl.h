@@ -75,7 +75,7 @@ class CONTENT_EXPORT CodeCacheHostImpl : public blink::mojom::CodeCacheHost {
   GeneratedCodeCache* GetCodeCache(blink::mojom::CodeCacheType cache_type);
   void OnReceiveCachedCode(FetchCachedCodeCallback callback,
                            const base::Time& response_time,
-                           const std::vector<uint8_t>& data);
+                           mojo_base::BigBuffer data);
   void OnCacheStorageOpenCallback(const GURL& url,
                                   base::Time expected_response_time,
                                   int64_t trace_id,

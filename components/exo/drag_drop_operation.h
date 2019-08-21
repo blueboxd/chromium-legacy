@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_EXO_DRAG_DROP_OPERATION_H_
 #define COMPONENTS_EXO_DRAG_DROP_OPERATION_H_
 
+#include "components/exo/data_device.h"
 #include "components/exo/data_offer_observer.h"
 #include "components/exo/data_source_observer.h"
 #include "components/exo/surface_observer.h"
@@ -33,7 +34,6 @@ class CopyOutputResult;
 
 namespace exo {
 class ScopedDataSource;
-enum class DndAction;
 
 // This class represents an ongoing drag-drop operation started by an exo
 // client. It manages its own lifetime. It will delete itself when the drag
@@ -67,6 +67,9 @@ class DragDropOperation : public DataSourceObserver,
   // aura::client::DragDropClientObserver:
   void OnDragStarted() override;
   void OnDragEnded() override;
+#if defined(OS_CHROMEOS)
+  void OnDragActionsChanged(int actions) override;
+#endif
 
  private:
   // A private constructor and destructor are used to prevent anyone else from

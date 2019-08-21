@@ -123,7 +123,6 @@ TestDirectory::TestDirectory(
     : Directory(base::WrapUnique(backing_store),
                 handler,
                 base::Closure(),
-                nullptr,
                 nullptr),
       backing_store_(backing_store) {}
 
@@ -328,7 +327,7 @@ TEST_F(OnDiskSyncableDirectoryTest,
           }),
           file_path_),
       MakeWeakHandle(unrecoverable_error_handler()->GetWeakPtr()),
-      base::Closure(), nullptr, nullptr);
+      base::Closure(), nullptr);
 
   ASSERT_TRUE(dir().get());
   ASSERT_EQ(OPENED_EXISTING,
@@ -544,7 +543,7 @@ TEST_F(SyncableDirectoryManagement, TestFileRelease) {
                       }),
                       path),
                   MakeWeakHandle(handler_.GetWeakPtr()), base::Closure(),
-                  nullptr, nullptr);
+                  nullptr);
     DirOpenResult result =
         dir.Open("ScopeTest", &delegate_, NullTransactionObserver());
     ASSERT_EQ(result, OPENED_NEW);

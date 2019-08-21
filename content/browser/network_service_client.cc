@@ -28,14 +28,12 @@
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "net/http/http_auth_preferences.h"
 #include "services/network/public/cpp/load_info_util.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/content_uri_utils.h"
-#include "net/android/http_auth_negotiate_android.h"
 #endif
 
 namespace content {
@@ -87,17 +85,6 @@ WebContents* GetWebContents(int process_id, int routing_id) {
   }
   return WebContents::FromFrameTreeNodeId(routing_id);
 }
-
-#if defined(OS_ANDROID)
-void FinishGenerateNegotiateAuthToken(
-    std::unique_ptr<net::android::HttpAuthNegotiateAndroid> auth_negotiate,
-    std::unique_ptr<std::string> auth_token,
-    std::unique_ptr<net::HttpAuthPreferences> prefs,
-    NetworkServiceClient::OnGenerateHttpNegotiateAuthTokenCallback callback,
-    int result) {
-  std::move(callback).Run(result, *auth_token);
-}
-#endif
 
 }  // namespace
 
@@ -278,35 +265,6 @@ void NetworkServiceClient::OnDataUseUpdate(
   GetContentClient()->browser()->OnNetworkServiceDataUseUpdate(
       network_traffic_annotation_id_hash, recv_bytes, sent_bytes);
 }
-
-#if defined(OS_ANDROID)
-void NetworkServiceClient::OnGenerateHttpNegotiateAuthToken(
-    const std::string& server_auth_token,
-    bool can_delegate,
-    const std::string& auth_negotiate_android_account_type,
-    const std::string& spn,
-    OnGenerateHttpNegotiateAuthTokenCallback callback) {
-  // The callback takes ownership of these unique_ptrs and destroys them when
-  // run.
-  auto prefs = std::make_unique<net::HttpAuthPreferences>();
-  prefs->set_auth_android_negotiate_account_type(
-      auth_negotiate_android_account_type);
-
-  auto auth_negotiate =
-      std::make_unique<net::android::HttpAuthNegotiateAndroid>(prefs.get());
-  net::android::HttpAuthNegotiateAndroid* auth_negotiate_raw =
-      auth_negotiate.get();
-  auth_negotiate->set_server_auth_token(server_auth_token);
-  auth_negotiate->set_can_delegate(can_delegate);
-
-  auto auth_token = std::make_unique<std::string>();
-  auth_negotiate_raw->GenerateAuthTokenAndroid(
-      nullptr, spn, std::string(), auth_token.get(),
-      base::BindOnce(&FinishGenerateNegotiateAuthToken,
-                     std::move(auth_negotiate), std::move(auth_token),
-                     std::move(prefs), std::move(callback)));
-}
-#endif
 
 void NetworkServiceClient::OnRawRequest(
     int32_t process_id,

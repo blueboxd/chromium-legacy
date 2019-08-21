@@ -519,7 +519,7 @@ void GetCommitIdsForType(syncable::BaseTransaction* trans,
 
   ModelTypeSet encrypted_types;
   bool passphrase_missing = false;
-  Cryptographer* cryptographer = dir->GetCryptographer(trans);
+  const Cryptographer* cryptographer = dir->GetCryptographer(trans);
   if (cryptographer) {
     encrypted_types = dir->GetNigoriHandler()->GetEncryptedTypes(trans);
     passphrase_missing = cryptographer->has_pending_keys();

@@ -66,13 +66,6 @@ interface NetworkServiceClient {
   OnDataUseUpdate(int32 network_traffic_annotation_id_hash, int64 recv_bytes,
                   int64 sent_bytes);
 
-  // Called to generate an auth token for SPNEGO authentication on Android.
-  [EnableIf=is_android]
-  OnGenerateHttpNegotiateAuthToken(string server_auth_token, bool can_delegate,
-                                   string auth_negotiate_android_account_type,
-                                   string spn) =>
-                                   (int32 result, string auth_token);
-
   // Called to send raw header information and information about excluded
   // cookies. Only called when |devtool_request_id| is available to the
   // URLLoader.

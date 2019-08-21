@@ -30,7 +30,7 @@ void MarkingVerifier::Visit(void* object, TraceDescriptor desc) {
 }
 
 void MarkingVerifier::VisitWeak(void* object,
-                                void** object_slot,
+                                void* object_weak_ref,
                                 TraceDescriptor desc,
                                 WeakCallback callback) {
   // Weak objects should have been cleared at this point. As a consequence, all

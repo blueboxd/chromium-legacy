@@ -79,6 +79,7 @@ class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
   NonClientFrameView* CreateNonClientFrameView(Widget* widget) override;
   views::View* GetInitiallyFocusedView() override;
   bool ShouldShowWindowTitle() const override;
+  bool ShouldShowCloseButton() const override;
   views::Widget* GetWidget() override;
   const views::Widget* GetWidget() const override;
 

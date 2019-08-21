@@ -4,10 +4,12 @@
 
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetcher.h"
 
+#include "third_party/blink/renderer/core/dom/dom_implementation.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -24,7 +26,8 @@ void ModuleScriptFetcher::Client::OnFailed() {
 // <specdef href="https://html.spec.whatwg.org/C/#fetch-a-single-module-script">
 bool ModuleScriptFetcher::WasModuleLoadSuccessful(
     Resource* resource,
-    HeapVector<Member<ConsoleMessage>>* error_messages) {
+    HeapVector<Member<ConsoleMessage>>* error_messages,
+    ModuleScriptCreationParams::ModuleType* module_type) {
   DCHECK(error_messages);
 
   if (resource) {
@@ -48,32 +51,39 @@ bool ModuleScriptFetcher::WasModuleLoadSuccessful(
   // <spec step="10">Let type be the result of extracting a MIME type from
   // response's header list.</spec>
   //
-  // <spec step="12">If type is a JavaScript MIME type, then:</spec>
-  //
   // Note: For historical reasons, fetching a classic script does not include
   // MIME type checking. In contrast, module scripts will fail to load if they
   // are not of a correct MIME type.
   // We use ResourceResponse::HttpContentType() instead of MimeType(), as
   // MimeType() may be rewritten by mime sniffer.
   //
-  // Non-JavaScript module is not yet implemented.
-  if (!MIMETypeRegistry::IsSupportedJavaScriptMIMEType(
+  // <spec step="12">If type is a JavaScript MIME type, then:</spec>
+  if (MIMETypeRegistry::IsSupportedJavaScriptMIMEType(
           response.HttpContentType())) {
-    String message =
-        "Failed to load module script: The server responded with a "
-        "non-JavaScript MIME type of \"" +
-        response.HttpContentType() +
-        "\". Strict MIME type checking is enforced for module scripts per "
-        "HTML spec.";
-    error_messages->push_back(ConsoleMessage::CreateForRequest(
-        mojom::ConsoleMessageSource::kJavaScript,
-        mojom::ConsoleMessageLevel::kError, message,
-        response.CurrentRequestUrl().GetString(), nullptr,
-        resource->InspectorId()));
-    return false;
+    *module_type = ModuleScriptCreationParams::ModuleType::kJavaScriptModule;
+    return true;
   }
-
-  return true;
+  // <spec step="13">If type is a JSON MIME type, then:</spec>
+  if (RuntimeEnabledFeatures::JSONModulesEnabled() &&
+      DOMImplementation::IsJSONMIMEType(response.HttpContentType())) {
+    *module_type = ModuleScriptCreationParams::ModuleType::kJSONModule;
+    return true;
+  }
+  String required_response_type = RuntimeEnabledFeatures::JSONModulesEnabled()
+                                      ? "JavaScript or JSON"
+                                      : "JavaScript";
+  String message =
+      "Failed to load module script: The server responded with a non-" +
+      required_response_type + " MIME type of \"" +
+      resource->GetResponse().HttpContentType() +
+      "\". Strict MIME type checking is enforced for module scripts per HTML "
+      "spec.";
+  error_messages->push_back(ConsoleMessage::CreateForRequest(
+      mojom::ConsoleMessageSource::kJavaScript,
+      mojom::ConsoleMessageLevel::kError, message,
+      response.CurrentRequestUrl().GetString(), /*loader=*/nullptr,
+      resource->InspectorId()));
+  return false;
 }
 
 }  // namespace blink

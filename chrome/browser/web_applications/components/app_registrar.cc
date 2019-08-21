@@ -5,6 +5,7 @@
 #include "chrome/browser/web_applications/components/app_registrar.h"
 
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registrar_observer.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
@@ -76,6 +77,27 @@ bool AppRegistrar::HasExternalAppWithInstallSource(
     ExternalInstallSource install_source) const {
   return ExternallyInstalledWebAppPrefs::HasAppIdWithInstallSource(
       profile()->GetPrefs(), app_id, install_source);
+}
+
+std::vector<web_app::AppId> AppRegistrar::FindAppsInScope(
+    const GURL& scope) const {
+  std::string scope_str = scope.spec();
+
+  std::vector<web_app::AppId> in_scope;
+  for (const auto& app_id : GetAppIds()) {
+    const base::Optional<GURL>& app_scope = GetAppScope(app_id);
+    if (!app_scope)
+      continue;
+
+    if (!base::StartsWith(app_scope->spec(), scope_str,
+                          base::CompareCase::SENSITIVE)) {
+      continue;
+    }
+
+    in_scope.push_back(app_id);
+  }
+
+  return in_scope;
 }
 
 }  // namespace web_app

@@ -112,4 +112,17 @@ TEST_F(BackgroundSyncMetricsTest, CountUnregisterPeriodicSync) {
                                        BACKGROUND_SYNC_STATUS_OK, 1);
 }
 
+TEST_F(BackgroundSyncMetricsTest, EventsFiredFromWakeupTask) {
+  BackgroundSyncMetrics::RecordEventsFiredFromWakeupTask(
+      BackgroundSyncType::ONE_SHOT,
+      /* events_fired= */ false);
+  histogram_tester_.ExpectBucketCount(
+      "BackgroundSync.WakeupTaskFiredEvents.OneShot", false, 1);
+  BackgroundSyncMetrics::RecordEventsFiredFromWakeupTask(
+      BackgroundSyncType::PERIODIC,
+      /* events_fired= */ true);
+  histogram_tester_.ExpectBucketCount(
+      "BackgroundSync.WakeupTaskFiredEvents.Periodic", true, 1);
+}
+
 }  // namespace content

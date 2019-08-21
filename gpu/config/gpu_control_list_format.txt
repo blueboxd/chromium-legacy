@@ -72,11 +72,14 @@
 //     include: "intel_sandybridge", "intel_valleyview", "intel_ivybridge",
 //     "intel_haswell", "intel_cherryview", "intel_broadwell",
 //     "intel_apollolake", "intel_skylake", "intel_geminilake",
-//     "intel_kabylake", "intel_coffeelake".
+//     "intel_kabylake", "intel_coffeelake", "intel_whiskeylake",
+//     "intel_cometlake", "intel_cannonlake", "intel_icelake".
 // 29. "hardware_overlay" is either "supported" or "unsupported". Currently it
 //     only applies on Windows where hardware overlays may be supported on
 //     certain Intel GPUs. By default it's "dont_care" and there is no need to
 //     specify that.
+// 30. "intel_gpu_generation" is a VERSION structure. Each Intel GPU has a
+//     specific integer (meaning generation) associated.
 //
 // VERSION includes "op", "style", "value", and "value2".  "op" can be any of
 // the following values: "=", "<", "<=", ">", ">=", "any", "between".  "style"

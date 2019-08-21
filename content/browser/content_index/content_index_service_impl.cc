@@ -18,21 +18,6 @@
 
 namespace content {
 
-namespace {
-
-void CreateOnIO(
-    mojo::PendingReceiver<blink::mojom::ContentIndexService> receiver,
-    const url::Origin& origin,
-    scoped_refptr<ContentIndexContextImpl> content_index_context) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  mojo::MakeSelfOwnedReceiver(std::make_unique<ContentIndexServiceImpl>(
-                                  origin, std::move(content_index_context)),
-                              std::move(receiver));
-}
-
-}  // namespace
-
 // static
 void ContentIndexServiceImpl::CreateForRequest(
     blink::mojom::ContentIndexServiceRequest request,
@@ -53,30 +38,28 @@ void ContentIndexServiceImpl::Create(
   auto* storage_partition = static_cast<StoragePartitionImpl*>(
       render_process_host->GetStoragePartition());
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(
-          &CreateOnIO, std::move(receiver), origin,
-          base::WrapRefCounted(storage_partition->GetContentIndexContext())));
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<ContentIndexServiceImpl>(
+          origin, storage_partition->GetContentIndexContext()),
+      std::move(receiver));
 }
 
 ContentIndexServiceImpl::ContentIndexServiceImpl(
     const url::Origin& origin,
     scoped_refptr<ContentIndexContextImpl> content_index_context)
     : origin_(origin),
-      content_index_context_(std::move(content_index_context)) {}
+      content_index_context_(std::move(content_index_context)) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
 
 ContentIndexServiceImpl::~ContentIndexServiceImpl() = default;
 
 void ContentIndexServiceImpl::GetIconSizes(
     blink::mojom::ContentCategory category,
     GetIconSizesCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&ContentIndexContextImpl::GetIconSizes,
-                     content_index_context_, category, std::move(callback)));
+  content_index_context_->GetIconSizes(category, std::move(callback));
 }
 
 void ContentIndexServiceImpl::Add(
@@ -85,7 +68,7 @@ void ContentIndexServiceImpl::Add(
     const std::vector<SkBitmap>& icons,
     const GURL& launch_url,
     AddCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   for (const auto& icon : icons) {
     if (icon.isNull() || icon.width() * icon.height() > kMaxIconResolution) {
@@ -111,7 +94,7 @@ void ContentIndexServiceImpl::Add(
 void ContentIndexServiceImpl::Delete(int64_t service_worker_registration_id,
                                      const std::string& content_id,
                                      DeleteCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   content_index_context_->database().DeleteEntry(
       service_worker_registration_id, origin_, content_id, std::move(callback));
@@ -120,7 +103,7 @@ void ContentIndexServiceImpl::Delete(int64_t service_worker_registration_id,
 void ContentIndexServiceImpl::GetDescriptions(
     int64_t service_worker_registration_id,
     GetDescriptionsCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   content_index_context_->database().GetDescriptions(
       service_worker_registration_id, std::move(callback));

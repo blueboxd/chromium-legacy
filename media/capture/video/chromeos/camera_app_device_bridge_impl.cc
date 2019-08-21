@@ -56,7 +56,7 @@ void CameraAppDeviceBridgeImpl::GetCameraAppDevice(
     GetCameraAppDeviceCallback callback) {
   if (!is_supported_) {
     std::move(callback).Run(cros::mojom::GetCameraAppDeviceStatus::ERROR_NON_V3,
-                            {});
+                            mojo::NullRemote());
     return;
   }
 

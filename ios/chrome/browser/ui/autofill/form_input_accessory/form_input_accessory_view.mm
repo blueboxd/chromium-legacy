@@ -8,7 +8,6 @@
 
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
-#include "components/autofill/core/common/autofill_features.h"
 #import "ios/chrome/browser/autofill/form_input_navigator.h"
 #import "ios/chrome/browser/ui/image_util/image_util.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
@@ -23,6 +22,9 @@
 #endif
 
 namespace {
+
+// Default Height for the accessory.
+const CGFloat kDefaultAccessoryHeight = 44;
 
 // The width for the white gradient UIView.
 constexpr CGFloat ManualFillGradientWidth = 44;
@@ -44,6 +46,9 @@ constexpr CGFloat ManualFillSeparatorHeight = 0.5;
 
 }  // namespace
 
+NSString* const kFormInputAccessoryViewAccessibilityID =
+    @"kFormInputAccessoryViewAccessibilityID";
+
 @interface FormInputAccessoryView ()
 
 // The navigation delegate if any.
@@ -64,6 +69,11 @@ constexpr CGFloat ManualFillSeparatorHeight = 0.5;
 @implementation FormInputAccessoryView
 
 #pragma mark - Public
+
+// Override |intrinsicContentSize| so Auto Layout hugs the content of this view.
+- (CGSize)intrinsicContentSize {
+  return CGSizeZero;
+}
 
 - (void)setUpWithLeadingView:(UIView*)leadingView
           customTrailingView:(UIView*)customTrailingView {
@@ -113,7 +123,10 @@ constexpr CGFloat ManualFillSeparatorHeight = 0.5;
           customTrailingView:(UIView*)customTrailingView
           navigationDelegate:(id<FormInputAccessoryViewDelegate>)delegate {
   DCHECK(!self.subviews.count);  // This should only be called once.
-  DCHECK(leadingView);
+
+  self.accessibilityIdentifier = kFormInputAccessoryViewAccessibilityID;
+
+  leadingView = leadingView ?: [[UIView alloc] init];
   self.leadingView = leadingView;
   leadingView.translatesAutoresizingMaskIntoConstraints = NO;
 
@@ -144,8 +157,13 @@ constexpr CGFloat ManualFillSeparatorHeight = 0.5;
   trailingView.translatesAutoresizingMaskIntoConstraints = NO;
   [self addSubview:trailingView];
 
+  NSLayoutConstraint* defaultHeightConstraint =
+      [self.heightAnchor constraintEqualToConstant:kDefaultAccessoryHeight];
+  defaultHeightConstraint.priority = UILayoutPriorityDefaultHigh;
+
   id<LayoutGuideProvider> layoutGuide = self.safeAreaLayoutGuide;
   [NSLayoutConstraint activateConstraints:@[
+    defaultHeightConstraint,
     [leadingViewContainer.topAnchor constraintEqualToAnchor:self.topAnchor],
     [leadingViewContainer.bottomAnchor
         constraintEqualToAnchor:self.bottomAnchor],
@@ -212,11 +230,6 @@ constexpr CGFloat ManualFillSeparatorHeight = 0.5;
     [leadingViewContainer.trailingAnchor
         constraintEqualToAnchor:trailingView.leadingAnchor],
   ]];
-}
-
-UIImage* ButtonImage(NSString* name) {
-  UIImage* rawImage = [UIImage imageNamed:name];
-  return StretchableImageFromUIImage(rawImage, 1, 0);
 }
 
 // Returns a view that shows navigation buttons.

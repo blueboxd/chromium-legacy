@@ -17,8 +17,8 @@
 #include "content/test/content_browser_test_utils_internal.h"
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
 
-// TODO(crbug.com/981913): This flakes on linux tsan.
-#if defined(THREAD_SANITIZER)
+// TODO(crbug.com/981913): This flakes on linux tsan and msan.
+#if defined(THREAD_SANITIZER) || defined(MEMORY_SANITIZER)
 #define MAYBE_TestSetCaretSetsSequentialFocusNavigationStartingPoint \
   DISABLED_TestSetCaretSetsSequentialFocusNavigationStartingPoint
 #else

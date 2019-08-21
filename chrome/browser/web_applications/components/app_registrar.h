@@ -6,10 +6,12 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_APP_REGISTRAR_H_
 
 #include <map>
+#include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
-#include "base/containers/flat_set.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -75,7 +77,7 @@ class AppRegistrar {
   // |app_id| from |install_source|.
   virtual bool HasExternalAppWithInstallSource(
       const AppId& app_id,
-      web_app::ExternalInstallSource install_source) const;
+      ExternalInstallSource install_source) const;
 
   // Searches for the first app id in the registry for which the |url| is in
   // scope.
@@ -95,12 +97,15 @@ class AppRegistrar {
   virtual base::Optional<GURL> GetAppScope(const AppId& app_id) const = 0;
   virtual LaunchContainer GetAppLaunchContainer(const AppId& app_id) const = 0;
 
+  virtual std::vector<AppId> GetAppIds() const = 0;
+
+  // Finds all apps that are installed under |scope|.
+  std::vector<AppId> FindAppsInScope(const GURL& scope) const;
+
   void AddObserver(AppRegistrarObserver* observer);
   void RemoveObserver(const AppRegistrarObserver* observer);
 
   void NotifyWebAppInstalled(const AppId& app_id);
-
-  virtual base::flat_set<AppId> GetAppIdsForTesting() const = 0;
 
  protected:
   Profile* profile() const { return profile_; }

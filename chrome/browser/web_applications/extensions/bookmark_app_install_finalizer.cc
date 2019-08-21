@@ -87,19 +87,17 @@ void BookmarkAppInstallFinalizer::FinalizeInstall(
       // InstallWebApp will OR the creation flags with FROM_BOOKMARK.
       crx_installer->set_creation_flags(Extension::WAS_INSTALLED_BY_DEFAULT);
       break;
+    case WebappInstallSource::ARC:
+      // Ensure that WebApk is not synced. There is some mechanism to propagate
+      // the local source of data in place of usual extension sync.
+      crx_installer->set_install_source(Manifest::EXTERNAL_PREF_DOWNLOAD);
+      break;
     case WebappInstallSource::COUNT:
       NOTREACHED();
       break;
     default:
       // All other install sources mean user-installed app. Do nothing.
       break;
-  }
-
-  if (options.no_network_install) {
-    // Ensure that this app is not synced. A no-network install means we have
-    // all data locally, so assume that there is some mechanism to propagate
-    // the local source of data in place of usual extension sync.
-    crx_installer->set_install_source(Manifest::EXTERNAL_PREF_DOWNLOAD);
   }
 
   crx_installer->InstallWebApp(web_app_info);

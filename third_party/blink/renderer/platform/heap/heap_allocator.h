@@ -317,7 +317,7 @@ class PLATFORM_EXPORT HeapAllocator {
  private:
   static Address MarkAsConstructed(Address address) {
     HeapObjectHeader::FromPayload(reinterpret_cast<void*>(address))
-        ->MarkFullyConstructed();
+        ->MarkFullyConstructed<HeapObjectHeader::AccessMode::kAtomic>();
     return address;
   }
 

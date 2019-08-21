@@ -20,6 +20,8 @@ namespace blink {
 
 namespace {
 
+static const char kStdScheme[] = "std";
+
 // TODO(https://crbug.com/928549): Audit and improve error messages throughout
 // this file.
 
@@ -71,9 +73,8 @@ String NormalizeSpecifierKey(const String& key_string,
       // url.</spec>
       //
       // TODO(hiroshige): Perhaps we should move this into ParsedSpecifier.
-      //
-      // TODO(hiroshige): Allow "std" URLs as keys.
-      if (!SchemeRegistry::IsFetchScheme(key.GetUrl().Protocol())) {
+      if (!SchemeRegistry::IsFetchScheme(key.GetUrl().Protocol()) &&
+          key.GetUrl().Protocol() != kStdScheme) {
         AddIgnoredKeyMessage(logger, key_string,
                              "Invalid key (non-fetch scheme)");
         return String();

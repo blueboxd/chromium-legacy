@@ -184,13 +184,12 @@ web_app::LaunchContainer BookmarkAppRegistrar::GetAppLaunchContainer(
   }
 }
 
-base::flat_set<web_app::AppId> BookmarkAppRegistrar::GetAppIdsForTesting()
-    const {
-  base::flat_set<web_app::AppId> app_ids;
+std::vector<web_app::AppId> BookmarkAppRegistrar::GetAppIds() const {
+  std::vector<web_app::AppId> app_ids;
   for (scoped_refptr<const Extension> app :
        ExtensionRegistry::Get(profile())->enabled_extensions()) {
     if (app->from_bookmark()) {
-      app_ids.insert(app->id());
+      app_ids.push_back(app->id());
     }
   }
   return app_ids;

@@ -64,6 +64,7 @@ include_rules = [
     "+third_party/ced/src/compact_enc_det/compact_enc_det.h",
     "+third_party/khronos",
     "+third_party/skia",
+    "+ui/base/resource/scale_factor.h",
     "+ui/gfx",
     "+url",
     "+webp",
@@ -84,9 +85,5 @@ specific_include_rules = {
     ],
     "ukm_time_aggregator_test.cc" : [
         "+components/ukm/test_ukm_recorder.h"
-    ],
-    "data_resource_helper.cc" : [
-        "+third_party/zlib/google/compression_utils.h",
-        "+ui/base/resource",
     ],
 }

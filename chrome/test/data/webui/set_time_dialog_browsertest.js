@@ -22,7 +22,9 @@ SetTimeDialogBrowserTest.prototype = {
   ],
 };
 
-TEST_F('SetTimeDialogBrowserTest', 'All', function() {
+// Fails on linux-chromeos-google-rel, flaky on other bots.
+// https://crbug.com/996000
+TEST_F('SetTimeDialogBrowserTest', 'DISABLED_All', function() {
   suite('SetTimeDialog', function() {
     let setTimeElement = null;
     let testBrowserProxy = null;

@@ -33,7 +33,7 @@ class BaseTransaction {
  public:
   // Provide access to the underlying syncable objects from BaseNode.
   virtual syncable::BaseTransaction* GetWrappedTrans() const = 0;
-  Cryptographer* GetCryptographer() const;
+  const Cryptographer* GetCryptographer() const;
   ModelTypeSet GetEncryptedTypes() const;
   PassphraseType GetPassphraseType() const;
 

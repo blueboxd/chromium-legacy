@@ -70,22 +70,26 @@ void TestProxyAuth(Browser* browser, const GURL& test_page) {
     auth_needed_waiter.Wait();
   }
 
-  // On HTTPS pages, no error page content should be renderer to avoid origin
+  // On HTTPS pages, no error page content should be rendered to avoid origin
   // confusion issues.
   if (https) {
-    EXPECT_EQ(true, content::EvalJs(contents, "document.body === null"));
+    EXPECT_EQ("<head></head><body></body>",
+              content::EvalJs(contents, "document.documentElement.innerHTML"));
   }
 
   // The URL should be hidden to avoid origin confusion issues.
   EXPECT_TRUE(browser->location_bar_model()->GetFormattedFullURL().empty());
 
-  // Cancel the prompt. On HTTPS pages, the error page content still shouldn't
-  // be shown.
+  // Cancel the prompt, which triggers a reload to read the error page content
+  // from the server. On HTTPS pages, the error page content still shouldn't be
+  // shown.
   {
     WindowedAuthCancelledObserver auth_cancelled_waiter(controller);
     LoginHandler* handler = observer.handlers().front();
+    content::TestNavigationObserver reload_observer(contents);
     handler->CancelAuth();
     auth_cancelled_waiter.Wait();
+    reload_observer.Wait();
     if (https) {
       EXPECT_EQ(true, content::EvalJs(contents, "document.body === null"));
     }
@@ -152,9 +156,12 @@ void TestCrossOriginPrompt(Browser* browser,
   EXPECT_EQ(expected_hostname, contents->GetVisibleURL().host());
 
   if (cancel_prompt) {
-    // Cancel and wait for the interstitial to detach.
+    // Cancel, which triggers a reload to get the error page content from the
+    // server.
     LoginHandler* handler = *observer.handlers().begin();
+    content::TestNavigationObserver reload_observer(contents);
     handler->CancelAuth();
+    reload_observer.Wait();
     EXPECT_EQ(expected_hostname, contents->GetVisibleURL().host());
   }
 }
@@ -468,7 +475,6 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestCancelAuth_Manual) {
   LoginPromptBrowserTestObserver observer;
   observer.Register(content::Source<NavigationController>(controller));
 
-  WindowedLoadStopObserver load_stop_waiter(controller, 1);
   WindowedAuthNeededObserver auth_needed_waiter(controller);
   browser()->OpenURL(OpenURLParams(kAuthURL, Referrer(),
                                    WindowOpenDisposition::CURRENT_TAB,
@@ -477,9 +483,11 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestCancelAuth_Manual) {
   WindowedAuthCancelledObserver auth_cancelled_waiter(controller);
   LoginHandler* handler = *observer.handlers().begin();
   ASSERT_TRUE(handler);
+  content::TestNavigationObserver reload_observer(
+      browser()->tab_strip_model()->GetActiveWebContents());
   handler->CancelAuth();
   auth_cancelled_waiter.Wait();
-  load_stop_waiter.Wait();
+  reload_observer.Wait();
   EXPECT_TRUE(observer.handlers().empty());
 }
 
@@ -1499,9 +1507,11 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
     ASSERT_TRUE(contents->GetURL().SchemeIs("http"));
     auth_needed_waiter.Wait();
     ASSERT_EQ(1u, observer.handlers().size());
-    // Cancel the auth prompt. This commits the navigation.
+    // Cancel the auth prompt, which triggers a reload.
     LoginHandler* handler = *observer.handlers().begin();
+    content::TestNavigationObserver reload_observer(contents);
     handler->CancelAuth();
+    reload_observer.Wait();
     EXPECT_EQ("127.0.0.1", contents->GetVisibleURL().host());
     EXPECT_EQ(auth_url, contents->GetLastCommittedURL());
   }
@@ -1532,10 +1542,9 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
 
     auth_needed_waiter.Wait();
     ASSERT_EQ(1u, observer.handlers().size());
-    const base::string16 kExpectedTitle =
-        base::ASCIIToUTF16("Denied: Missing Authorization Header");
-    content::TitleWatcher title_watcher(contents, kExpectedTitle);
-    EXPECT_EQ(kExpectedTitle, title_watcher.WaitAndGetTitle());
+    // The login prompt is displayed above an empty page.
+    EXPECT_EQ("<head></head><body></body>",
+              content::EvalJs(contents, "document.documentElement.innerHTML"));
   }
 }
 
@@ -1643,11 +1652,9 @@ IN_PROC_BROWSER_TEST_F(
   GURL test_page = embedded_test_server()->GetURL(kAuthBasicPage);
   ui_test_utils::NavigateToURL(browser(), test_page);
 
-  const base::string16 kExpectedTitle =
-      base::ASCIIToUTF16("Denied: Missing Authorization Header");
-  content::TitleWatcher title_watcher(contents, kExpectedTitle);
-  EXPECT_EQ(kExpectedTitle, title_watcher.WaitAndGetTitle());
-
+  // The login prompt should display above an empty page.
+  EXPECT_EQ("<head></head><body></body>",
+            content::EvalJs(contents, "document.documentElement.innerHTML"));
   EXPECT_EQ(0, observer.auth_cancelled_count());
 }
 
@@ -1668,11 +1675,9 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
   GURL test_page = embedded_test_server()->GetURL(kAuthBasicPage);
   ui_test_utils::NavigateToURL(browser(), test_page);
 
-  // Test that the 401 error page commits underneath the login prompt.
-  const base::string16 kExpectedTitle =
-      base::ASCIIToUTF16("Denied: Missing Authorization Header");
-  content::TitleWatcher title_watcher(contents, kExpectedTitle);
-  EXPECT_EQ(kExpectedTitle, title_watcher.WaitAndGetTitle());
+  // Test that the login prompt displays above an empty page.
+  EXPECT_EQ("<head></head><body></body>",
+            content::EvalJs(contents, "document.documentElement.innerHTML"));
 
   auth_needed_waiter.Wait();
   ASSERT_EQ(1u, observer.handlers().size());

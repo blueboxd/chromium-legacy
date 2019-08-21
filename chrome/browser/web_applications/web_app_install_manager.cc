@@ -71,13 +71,13 @@ void WebAppInstallManager::InstallWebAppFromManifestWithFallback(
 
 void WebAppInstallManager::InstallWebAppFromInfo(
     std::unique_ptr<WebApplicationInfo> web_application_info,
-    bool no_network_install,
+    ForInstallableSite for_installable_site,
     WebappInstallSource install_source,
     OnceInstallCallback callback) {
   auto task = std::make_unique<WebAppInstallTask>(
       profile(), finalizer(), data_retriever_factory_.Run());
   task->InstallWebAppFromInfo(
-      std::move(web_application_info), no_network_install, install_source,
+      std::move(web_application_info), for_installable_site, install_source,
       base::BindOnce(&WebAppInstallManager::OnTaskCompleted,
                      base::Unretained(this), task.get(), std::move(callback)));
 
@@ -108,7 +108,7 @@ void WebAppInstallManager::InstallOrUpdateWebAppFromSync(
     return;
   }
 
-  bool is_locally_installed = registrar()->IsInstalled(app_id);
+  bool is_locally_installed = registrar()->IsLocallyInstalled(app_id);
 #if defined(OS_CHROMEOS)
   // On Chrome OS, sync always locally installs an app.
   is_locally_installed = true;

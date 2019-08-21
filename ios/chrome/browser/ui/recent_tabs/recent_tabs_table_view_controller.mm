@@ -868,6 +868,9 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 
 - (void)openTabWithContentOfDistantTab:
     (synced_sessions::DistantTab const*)distantTab {
+  // Shouldn't reach this if in incognito.
+  DCHECK(!self.isIncognito);
+
   // It is reasonable to ignore this request if a modal UI is already showing
   // above recent tabs. This can happen when a user simultaneously taps a
   // distant tab and "enable sync". The sync settings UI appears first and we

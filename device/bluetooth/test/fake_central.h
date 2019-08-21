@@ -39,6 +39,7 @@ class FakeCentral : public mojom::FakeCentral, public device::BluetoothAdapter {
   void SimulateAdvertisementReceived(
       mojom::ScanResultPtr scan_result_ptr,
       SimulateAdvertisementReceivedCallback callback) override;
+  void SetState(mojom::CentralState state, SetStateCallback callback) override;
   void SetNextGATTConnectionResponse(
       const std::string& address,
       uint16_t code,

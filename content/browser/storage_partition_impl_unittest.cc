@@ -340,10 +340,10 @@ class RemoveCodeCacheTester {
   }
 
   void FetchEntryCallback(const base::Time& response_time,
-                          const std::vector<uint8_t>& data) {
+                          mojo_base::BigBuffer data) {
     if (!response_time.is_null()) {
       entry_exists_ = true;
-      received_data_ = std::string(data.begin(), data.end());
+      received_data_ = std::string(data.data(), data.data() + data.size());
     } else {
       entry_exists_ = false;
     }

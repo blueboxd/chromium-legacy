@@ -1036,6 +1036,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // false when it hasn't been initialized.
   bool render_process_has_died() const { return render_process_has_died_; }
 
+  // Returns the network isolation key used for subresources from the currently
+  // committed navigation. It is reset on each document commit.
+  const net::NetworkIsolationKey& network_isolation_key() const {
+    return network_isolation_key_;
+  }
+
  protected:
   friend class RenderFrameHostFactory;
 

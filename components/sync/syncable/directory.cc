@@ -27,6 +27,7 @@
 #include "components/sync/protocol/proto_memory_estimations.h"
 #include "components/sync/syncable/in_memory_directory_backing_store.h"
 #include "components/sync/syncable/model_neutral_mutable_entry.h"
+#include "components/sync/syncable/nigori_handler.h"
 #include "components/sync/syncable/on_disk_directory_backing_store.h"
 #include "components/sync/syncable/scoped_kernel_lock.h"
 #include "components/sync/syncable/scoped_parent_child_index_updater.h"
@@ -113,14 +114,12 @@ Directory::Directory(
     std::unique_ptr<DirectoryBackingStore> store,
     const WeakHandle<UnrecoverableErrorHandler>& unrecoverable_error_handler,
     const base::Closure& report_unrecoverable_error_function,
-    NigoriHandler* nigori_handler,
-    Cryptographer* cryptographer)
+    NigoriHandler* nigori_handler)
     : store_(std::move(store)),
       unrecoverable_error_handler_(unrecoverable_error_handler),
       report_unrecoverable_error_function_(report_unrecoverable_error_function),
       unrecoverable_error_set_(false),
       nigori_handler_(nigori_handler),
-      cryptographer_(cryptographer),
       invariant_check_level_(VERIFY_CHANGES) {}
 
 Directory::~Directory() {
@@ -1075,9 +1074,12 @@ NigoriHandler* Directory::GetNigoriHandler() {
   return nigori_handler_;
 }
 
-Cryptographer* Directory::GetCryptographer(const BaseTransaction* trans) {
-  DCHECK_EQ(this, trans->directory());
-  return cryptographer_;
+const Cryptographer* Directory::GetCryptographer(const BaseTransaction* trans) {
+  if (!nigori_handler_) {
+    // It's possible in some tests, that we have no |nigori_handler_|.
+    return nullptr;
+  }
+  return nigori_handler_->GetCryptographer(trans);
 }
 
 void Directory::ReportUnrecoverableError() {

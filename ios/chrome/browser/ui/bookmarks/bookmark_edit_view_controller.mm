@@ -472,9 +472,7 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
 
 - (void)textDidChangeForItem:(BookmarkTextFieldItem*)item {
   if (@available(iOS 13, *)) {
-#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
     self.modalInPresentation = YES;
-#endif
   }
   [self updateSaveButtonState];
   if (self.displayingValidURL != [self inputURLIsValid]) {

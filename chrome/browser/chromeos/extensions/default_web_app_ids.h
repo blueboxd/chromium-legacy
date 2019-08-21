@@ -34,6 +34,11 @@ constexpr char kOsSettingsAppId[] = "odknhmnlageboeamepcngndbggdpaobj";
 // web_app::GenerateAppIdFromURL(GURL("https://news.google.com/?lfhs=2")).
 constexpr char kGoogleNewsAppId[] = "kfgapjallbhpciobgmlhlhokknljkgho";
 
+// Generated as
+// web_app::GenerateAppIdFromURL(
+//     GURL("https://www.google.com/maps/_/sw/tt-install.html")).
+constexpr char kGoogleMapsAppId[] = "mnhkaebcjjhencmpkapnbdaogjamfbcj";
+
 }  // namespace default_web_apps
 }  // namespace chromeos
 

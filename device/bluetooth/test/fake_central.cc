@@ -119,6 +119,47 @@ void FakeCentral::SimulateAdvertisementReceived(
   std::move(callback).Run();
 }
 
+void FakeCentral::SetState(mojom::CentralState new_state,
+                           SetStateCallback callback) {
+  // In real devices, when a powered on adapter is added, we notify that it was
+  // added and then that it was powered on. When an adapter is removed, we
+  // notify that it was powered off and then that it was removed. The following
+  // logic simulates this behavior.
+  if (new_state == state_) {
+    std::move(callback).Run();
+    return;
+  }
+
+  const mojom::CentralState old_state = state_;
+  state_ = new_state;
+  auto notify_present_changed = [this]() {
+    NotifyAdapterPresentChanged(IsPresent());
+  };
+  auto notify_powered_changed = [this]() {
+    NotifyAdapterPoweredChanged(IsPowered());
+  };
+
+  switch (old_state) {
+    case mojom::CentralState::ABSENT:
+      notify_present_changed();
+      if (new_state == mojom::CentralState::POWERED_ON)
+        notify_powered_changed();
+      break;
+    case mojom::CentralState::POWERED_OFF:
+      if (new_state == mojom::CentralState::ABSENT)
+        notify_present_changed();
+      else
+        notify_powered_changed();
+      break;
+    case mojom::CentralState::POWERED_ON:
+      notify_powered_changed();
+      if (new_state == mojom::CentralState::ABSENT)
+        notify_present_changed();
+      break;
+  }
+  std::move(callback).Run();
+}
+
 void FakeCentral::SetNextGATTConnectionResponse(
     const std::string& address,
     uint16_t code,
@@ -460,14 +501,13 @@ bool FakeCentral::IsPresent() const {
 
 bool FakeCentral::IsPowered() const {
   switch (state_) {
+    case mojom::CentralState::ABSENT:
+    // SetState() calls IsPowered() to notify observers properly when an adapter
+    // being removed is simulated, so it should return false.
     case mojom::CentralState::POWERED_OFF:
       return false;
     case mojom::CentralState::POWERED_ON:
       return true;
-    case mojom::CentralState::ABSENT:
-      // Clients shouldn't call IsPowered() when the adapter is not present.
-      NOTREACHED();
-      return false;
   }
   NOTREACHED();
   return false;

@@ -56,7 +56,6 @@
 #include "components/metrics/single_sample_metrics.h"
 #include "components/viz/client/hit_test_data_provider.h"
 #include "components/viz/client/hit_test_data_provider_draw_quad.h"
-#include "components/viz/client/local_surface_id_provider.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/switches.h"
@@ -404,24 +403,6 @@ void CreateSingleSampleMetricsProvider(
       base::BindOnce(&CreateSingleSampleMetricsProvider, std::move(task_runner),
                      connector, std::move(request)));
 }
-
-class RendererLocalSurfaceIdProvider : public viz::LocalSurfaceIdProvider {
- public:
-  const viz::LocalSurfaceIdAllocation& GetLocalSurfaceIdAllocationForFrame(
-      const viz::CompositorFrame& frame) override {
-    auto new_surface_properties =
-        RenderWidgetSurfaceProperties::FromCompositorFrame(frame);
-    if (new_surface_properties != surface_properties_) {
-      parent_local_surface_id_allocator_.GenerateId();
-      surface_properties_ = new_surface_properties;
-    }
-    return parent_local_surface_id_allocator_
-        .GetCurrentLocalSurfaceIdAllocation();
-  }
-
- private:
-  RenderWidgetSurfaceProperties surface_properties_;
-};
 
 // This factory is used to defer binding of the InterfacePtr to the compositor
 // thread.
@@ -1888,8 +1869,6 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
     params.compositor_task_runner = main_thread_compositor_task_runner_;
   }
   params.enable_surface_synchronization = true;
-  params.local_surface_id_provider =
-      std::make_unique<RendererLocalSurfaceIdProvider>();
   if (!features::IsVizHitTestingSurfaceLayerEnabled()) {
     params.hit_test_data_provider =
         std::make_unique<viz::HitTestDataProviderDrawQuad>(

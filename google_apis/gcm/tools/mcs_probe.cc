@@ -214,7 +214,6 @@ class MCSProbe {
   net::NetLog net_log_;
   std::unique_ptr<net::FileNetLogObserver> logger_;
   MCSProbeAuthPreferences http_auth_preferences_;
-  std::unique_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory_;
 
   FakeGCMStatsRecorder recorder_;
   std::unique_ptr<GCMStore> gcm_store_;
@@ -340,15 +339,13 @@ void MCSProbe::InitializeNetworkState() {
     logger_->StartObserving(&net_log_, capture_mode);
   }
 
-  http_auth_handler_factory_ = net::HttpAuthHandlerRegistryFactory::Create(
-      &http_auth_preferences_, std::vector<std::string>{net::kBasicAuthScheme});
-
   net::URLRequestContextBuilder builder;
   builder.set_net_log(&net_log_);
   builder.set_host_resolver(
       net::HostResolver::CreateStandaloneResolver(&net_log_));
-  builder.set_shared_http_auth_handler_factory(
-      http_auth_handler_factory_.get());
+  builder.SetHttpAuthHandlerFactory(net::HttpAuthHandlerRegistryFactory::Create(
+      &http_auth_preferences_,
+      std::vector<std::string>{net::kBasicAuthScheme}));
   builder.set_proxy_resolution_service(
       net::ProxyResolutionService::CreateDirect());
 

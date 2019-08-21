@@ -126,9 +126,9 @@ void OnGetNetworkList(std::unique_ptr<net::NetworkInterfaceList> networks,
 // in the browser process.
 class NetworkServiceAuthNegotiateAndroid : public net::HttpNegotiateAuthSystem {
  public:
-  NetworkServiceAuthNegotiateAndroid(NetworkService* network_service,
+  NetworkServiceAuthNegotiateAndroid(NetworkContext* network_context,
                                      const net::HttpAuthPreferences* prefs)
-      : network_service_(network_service), auth_negotiate_(prefs) {}
+      : network_context_(network_context), auth_negotiate_(prefs) {}
   ~NetworkServiceAuthNegotiateAndroid() override = default;
 
   // HttpNegotiateAuthSystem implementation:
@@ -155,7 +155,7 @@ class NetworkServiceAuthNegotiateAndroid : public net::HttpNegotiateAuthSystem {
                         std::string* auth_token,
                         const net::NetLogWithSource& net_log,
                         net::CompletionOnceCallback callback) override {
-    network_service_->client()->OnGenerateHttpNegotiateAuthToken(
+    network_context_->client()->OnGenerateHttpNegotiateAuthToken(
         auth_negotiate_.server_auth_token(), auth_negotiate_.can_delegate(),
         auth_negotiate_.GetAuthAndroidNegotiateAccountType(), spn,
         base::BindOnce(&NetworkServiceAuthNegotiateAndroid::Finish,
@@ -177,15 +177,15 @@ class NetworkServiceAuthNegotiateAndroid : public net::HttpNegotiateAuthSystem {
     std::move(callback).Run(result);
   }
 
-  NetworkService* network_service_ = nullptr;
+  NetworkContext* network_context_ = nullptr;
   net::android::HttpAuthNegotiateAndroid auth_negotiate_;
   base::WeakPtrFactory<NetworkServiceAuthNegotiateAndroid> weak_factory_{this};
 };
 
 std::unique_ptr<net::HttpNegotiateAuthSystem> CreateAuthSystem(
-    NetworkService* network_service,
+    NetworkContext* network_context,
     const net::HttpAuthPreferences* prefs) {
-  return std::make_unique<NetworkServiceAuthNegotiateAndroid>(network_service,
+  return std::make_unique<NetworkServiceAuthNegotiateAndroid>(network_context,
                                                               prefs);
 }
 #endif
@@ -466,19 +466,8 @@ void NetworkService::DisableQuic() {
 
 void NetworkService::SetUpHttpAuth(
     mojom::HttpAuthStaticParamsPtr http_auth_static_params) {
-  DCHECK(!http_auth_handler_factory_);
-
-  http_auth_handler_factory_ = net::HttpAuthHandlerRegistryFactory::Create(
-      &http_auth_preferences_, http_auth_static_params->supported_schemes
-#if BUILDFLAG(USE_EXTERNAL_GSSAPI)
-      ,
-      http_auth_static_params->gssapi_library_name
-#endif
-#if defined(OS_ANDROID) && BUILDFLAG(USE_KERBEROS)
-      ,
-      base::BindRepeating(&CreateAuthSystem, this)
-#endif
-  );
+  DCHECK(!http_auth_static_params_);
+  http_auth_static_params_ = std::move(http_auth_static_params);
 }
 
 void NetworkService::ConfigureHttpAuthPrefs(
@@ -668,17 +657,29 @@ void NetworkService::DumpWithoutCrashing(base::Time dump_request_time) {
 }
 #endif
 
-net::HttpAuthHandlerFactory* NetworkService::GetHttpAuthHandlerFactory() {
-  if (!http_auth_handler_factory_) {
-    http_auth_handler_factory_ = net::HttpAuthHandlerFactory::CreateDefault(
+std::unique_ptr<net::HttpAuthHandlerFactory>
+NetworkService::CreateHttpAuthHandlerFactory(NetworkContext* network_context) {
+  if (!http_auth_static_params_) {
+    return net::HttpAuthHandlerFactory::CreateDefault(
         &http_auth_preferences_
 #if defined(OS_ANDROID) && BUILDFLAG(USE_KERBEROS)
         ,
-        base::BindRepeating(&CreateAuthSystem, this)
+        base::BindRepeating(&CreateAuthSystem, network_context)
 #endif
     );
   }
-  return http_auth_handler_factory_.get();
+
+  return net::HttpAuthHandlerRegistryFactory::Create(
+      &http_auth_preferences_, http_auth_static_params_->supported_schemes
+#if BUILDFLAG(USE_EXTERNAL_GSSAPI)
+      ,
+      http_auth_static_params_->gssapi_library_name
+#endif
+#if defined(OS_ANDROID) && BUILDFLAG(USE_KERBEROS)
+      ,
+      base::BindRepeating(&CreateAuthSystem, network_context)
+#endif
+  );
 }
 
 void NetworkService::OnBeforeURLRequest() {

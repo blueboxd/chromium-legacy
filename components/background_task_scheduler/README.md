@@ -62,6 +62,13 @@ no arguments.**
 A task must also have a unique ID, and it must be listed in `TaskIds` to ensure
 there is no overlap between different tasks.
 
+The connection between `TaskIds` and the corresponding `BackgroundTask` classes is done by injecting
+a `BackgroundTaskFactory` class in `BackgroundTaskSchedulerFactory`. For the //chrome embedder
+(which is the only one needing the association), the `ChromeBackgroundTaskFactory` [implementation]
+(https://cs.chromium.org/chromium/src/chrome/android/java/src/org/chromium/chrome/browser
+/background_task_scheduler/ChromeBackgroundTaskFactory.java) was created. Anyone that adds a new
+task id to `TaskIds` should add a case in this class to.
+
 ## How to schedule a task
 
 A task is scheduled by creating an object containing information about the task,
@@ -73,21 +80,29 @@ There are two main types of tasks; one-off tasks and periodic tasks. One-off
 tasks are only executed once, whereas periodic tasks are executed once per
 a defined interval.
 
+There are two steps in the process of creating a TaskInfo:
+
+ 1. the specific timing info is created; there are two objects available - `OneOffInfo` and
+ `PeriodicInfo`; each one of these objects has its own builder;
+ 2. the task info is created using the `createTask` method; other parameters can be set afterwards.
+
 As an example for how to create a one-off task that executes in 200 minutes,
 you can do the following:
 
 ```java
-TaskInfo.createOneOffTask(TaskIds.YOUR_FEATURE,
-                            MyBackgroundTask.class,
-                            TimeUnit.MINUTES.toMillis(200)).build();
+TaskInfo.TimingInfo oneOffInfo = TaskInfo.OneOffInfo.create()
+                                    .setWindowEndTimeMs(TimeUnit.MINUTES.toMillis(200)).build();
+TaskInfo taskInfo = TaskInfo.createTask(TaskIds.YOUR_FEATURE,
+                            oneOffInfo).build();
 ```
 
 For a periodic task that executes every 200 minutes, you can call:
 
 ```java
-TaskInfo.createPeriodicTask(TaskIds.YOUR_FEATURE,
-                              MyBackgroundTask.class,
-                              TimeUnit.MINUTES.toMillis(200)).build();
+TaskInfo.TimingInfo periodicInfo = TaskInfo.PeriodicInfo.create()
+                                    .setIntervalMs(TimeUnit.MINUTES.toMillis(200)).build();
+TaskInfo taskInfo = TaskInfo.createTask(TaskIds.YOUR_FEATURE,
+                            periodicInfo).build();
 ```
 
 Typically you will also set other required parameters such as what type of
@@ -95,12 +110,11 @@ network conditions are necessary and whether the task requires the device to
 be charging. They can be set on the builder like this:
 
 ```java
-TaskInfo.createOneOffTask(TaskIds.YOUR_FEATURE,
-                            MyBackgroundTask.class,
-                            /* windowStartTimeMs= */
-                            TimeUnit.MINUTES.toMillis(100)
-                            /* windowEndTimeMs= */
-                            TimeUnit.MINUTES.toMillis(200))
+TaskInfo.TimingInfo oneOffInfo = TaskInfo.OneOffInfo.create()
+                                    .setWindowStartTimeMs(TimeUnit.MINUTES.toMillis(100))
+                                    .setWindowEndTimeMs(TimeUnit.MINUTES.toMillis(200)).build();
+TaskInfo taskInfo = TaskInfo.createTask(TaskIds.YOUR_FEATURE,
+                            oneOffInfo)
                           .setRequiresCharging(true)
                           .setRequiredNetworkType(
                             TaskInfo.NETWORK_TYPE_UNMETERED)
@@ -137,10 +151,11 @@ Bundle myBundle = new Bundle();
 myBundle.putString("foo", "bar");
 myBundle.putLong("number", 1337L);
 
-TaskInfo.createOneOffTask(TaskIds.YOUR_FEATURE,
-                            MyBackgroundTask.class,
-                            TimeUnit.MINUTES.toMillis(100)
-                            TimeUnit.MINUTES.toMillis(200))
+TaskInfo.TimingInfo oneOffInfo = TaskInfo.OneOffInfo.create()
+                                    .setWindowStartTimeMs(TimeUnit.MINUTES.toMillis(100))
+                                    .setWindowEndTimeMs(TimeUnit.MINUTES.toMillis(200)).build();
+TaskInfo taskInfo = TaskInfo.createTask(TaskIds.YOUR_FEATURE,
+                            oneOffInfo)
                           .setExtras(myBundle)
                           .build();
 ```
@@ -157,6 +172,29 @@ boolean onStartTask(Context context,
   // Use |myExtras|.
   ...
 }
+```
+
+## Performing actions over TimingInfo objects
+
+To perform actions over the `TimingInfo` objects, based on their implementation, the Visitor design
+pattern was used. A public interface is exposed for this: `TimingInfoVisitor`. To use this
+interface, someone should create a class that would look like this:
+
+```java
+class ImplementedActionVisitor implements TaskInfo.TimingInfoVisitor {
+  @Override
+  public void visit(TaskInfo.OneOffInfo oneOffInfo) { ... }
+
+  @Override
+  public void visit(TaskInfo.PeriodicInfo periodicInfo) { ... }
+}
+```
+
+To use this visitor, someone would make the following calls:
+
+```java
+ImplementedActionVisitor visitor = new ImplementedActionVisitor();
+myTimingInfo.accept(visitor);
 ```
 
 ## Loading Native parts

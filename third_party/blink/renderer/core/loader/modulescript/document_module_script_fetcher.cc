@@ -35,13 +35,15 @@ void DocumentModuleScriptFetcher::NotifyFinished(Resource* resource) {
   ScriptResource* script_resource = ToScriptResource(resource);
 
   HeapVector<Member<ConsoleMessage>> error_messages;
-  if (!WasModuleLoadSuccessful(script_resource, &error_messages)) {
+  ModuleScriptCreationParams::ModuleType module_type;
+  if (!WasModuleLoadSuccessful(script_resource, &error_messages,
+                               &module_type)) {
     client_->NotifyFetchFinished(base::nullopt, error_messages);
     return;
   }
 
   ModuleScriptCreationParams params(
-      script_resource->GetResponse().CurrentRequestUrl(),
+      script_resource->GetResponse().CurrentRequestUrl(), module_type,
       script_resource->SourceText(), script_resource->CacheHandler(),
       script_resource->GetResourceRequest().GetCredentialsMode());
   client_->NotifyFetchFinished(params, error_messages);
@@ -77,9 +79,11 @@ bool DocumentModuleScriptFetcher::FetchIfLayeredAPI(
   }
 
   // TODO(hiroshige): Support V8 Code Cache for Layered API.
+  // TODO(sasebree). Support Non-JS Modules for Layered API.
   ModuleScriptCreationParams params(
-      layered_api_url, ParkableString(source_text.ReleaseImpl()),
-      nullptr /* cache_handler */,
+      layered_api_url,
+      ModuleScriptCreationParams::ModuleType::kJavaScriptModule,
+      ParkableString(source_text.ReleaseImpl()), nullptr /* cache_handler */,
       fetch_params.GetResourceRequest().GetCredentialsMode());
   client_->NotifyFetchFinished(params, HeapVector<Member<ConsoleMessage>>());
   return true;

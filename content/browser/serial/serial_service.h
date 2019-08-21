@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/device/public/mojom/serial.mojom.h"
 #include "third_party/blink/public/mojom/serial/serial.mojom.h"
 
@@ -31,8 +32,9 @@ class SerialService : public blink::mojom::SerialService,
   void GetPorts(GetPortsCallback callback) override;
   void RequestPort(std::vector<blink::mojom::SerialPortFilterPtr> filters,
                    RequestPortCallback callback) override;
-  void GetPort(const base::UnguessableToken& token,
-               device::mojom::SerialPortRequest request) override;
+  void GetPort(
+      const base::UnguessableToken& token,
+      mojo::PendingReceiver<device::mojom::SerialPort> receiver) override;
 
  private:
   void FinishGetPorts(GetPortsCallback callback,

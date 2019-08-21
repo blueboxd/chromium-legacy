@@ -54,9 +54,7 @@ class BLINK_EXPORT WebSharedWorker {
 
   // Instantiate a WebSharedWorker that interacts with the shared worker.
   // WebSharedWorkerClient given here should own this instance.
-  static std::unique_ptr<WebSharedWorker> Create(
-      WebSharedWorkerClient*,
-      const base::UnguessableToken& appcache_host_id);
+  static std::unique_ptr<WebSharedWorker> Create(WebSharedWorkerClient*);
 
   virtual void StartWorkerContext(
       const WebURL& script_url,
@@ -65,6 +63,7 @@ class BLINK_EXPORT WebSharedWorker {
       const WebString& content_security_policy,
       mojom::ContentSecurityPolicyType,
       network::mojom::IPAddressSpace,
+      const base::UnguessableToken& appcache_host_id,
       const base::UnguessableToken& devtools_worker_token,
       mojo::ScopedMessagePipeHandle content_settings_handle,
       mojo::ScopedMessagePipeHandle interface_provider,

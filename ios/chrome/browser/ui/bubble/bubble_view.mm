@@ -352,7 +352,6 @@ const CGFloat kControlPointEnd = 0.514375;
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
-#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
   if (@available(iOS 13, *)) {
     if ([self.traitCollection
             hasDifferentColorAppearanceComparedToTraitCollection:
@@ -362,7 +361,6 @@ const CGFloat kControlPointEnd = 0.514375;
       self.arrowLayer.fillColor = resolvedColor.CGColor;
     }
   }
-#endif
 }
 
 #pragma mark - Private sizes

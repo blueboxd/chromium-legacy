@@ -469,11 +469,14 @@ void StoragePartitionImplMap::PostCreateInitialization(
     partition->GetCacheStorageContext()->SetBlobParametersForCache(
         ChromeBlobStorageContext::GetFor(browser_context_));
 
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&ServiceWorkerContextWrapper::InitializeResourceContext,
-                       partition->GetServiceWorkerContext(),
-                       browser_context_->GetResourceContext()));
+    if (!ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled()) {
+      base::PostTask(
+          FROM_HERE, {BrowserThread::IO},
+          base::BindOnce(
+              &ServiceWorkerContextWrapper::InitializeResourceContext,
+              partition->GetServiceWorkerContext(),
+              browser_context_->GetResourceContext()));
+    }
 
     base::PostTask(FROM_HERE, {BrowserThread::IO},
                    base::BindOnce(&BackgroundFetchContext::InitializeOnIOThread,

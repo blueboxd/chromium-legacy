@@ -30,7 +30,11 @@ TEST(PdfAccessibilityTreeUnitTest, TextRunsAndCharsMismatch) {
   std::vector<PP_PrivateAccessibilityCharInfo> chars(
       std::begin(kDummyCharsData), std::end(kDummyCharsData));
 
-  ASSERT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars));
+  std::vector<ppapi::PdfAccessibilityLinkInfo> links;
+  std::vector<ppapi::PdfAccessibilityImageInfo> images;
+
+  ASSERT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
+                                                           links, images));
 }
 
 TEST(PdfAccessibilityTreeUnitTest, TextRunsAndCharsMatch) {
@@ -43,7 +47,100 @@ TEST(PdfAccessibilityTreeUnitTest, TextRunsAndCharsMatch) {
   std::vector<PP_PrivateAccessibilityCharInfo> chars(
       std::begin(kDummyCharsData), std::end(kDummyCharsData));
 
-  ASSERT_TRUE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars));
+  std::vector<ppapi::PdfAccessibilityLinkInfo> links;
+  std::vector<ppapi::PdfAccessibilityImageInfo> images;
+
+  ASSERT_TRUE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
+                                                          links, images));
+}
+
+TEST(PdfAccessibilityTreeUnitTest, UnsortedLinkVector) {
+  std::vector<PP_PrivateAccessibilityTextRunInfo> text_runs;
+  text_runs.emplace_back(kFirstTextRun);
+  text_runs.emplace_back(kSecondTextRun);
+
+  std::vector<PP_PrivateAccessibilityCharInfo> chars(
+      std::begin(kDummyCharsData), std::end(kDummyCharsData));
+
+  std::vector<ppapi::PdfAccessibilityLinkInfo> links;
+  std::vector<ppapi::PdfAccessibilityImageInfo> images;
+
+  ppapi::PdfAccessibilityLinkInfo link;
+  // Add first link in the vector.
+  link.text_run_index = 2;
+  link.text_run_count = 0;
+  links.push_back(link);
+
+  // Add second link in the vector.
+  link.text_run_index = 0;
+  link.text_run_count = 1;
+  links.push_back(link);
+
+  ASSERT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
+                                                           links, images));
+}
+
+TEST(PdfAccessibilityTreeUnitTest, OutOfBoundLink) {
+  std::vector<PP_PrivateAccessibilityTextRunInfo> text_runs;
+  text_runs.emplace_back(kFirstTextRun);
+  text_runs.emplace_back(kSecondTextRun);
+
+  std::vector<PP_PrivateAccessibilityCharInfo> chars(
+      std::begin(kDummyCharsData), std::end(kDummyCharsData));
+
+  std::vector<ppapi::PdfAccessibilityLinkInfo> links;
+  std::vector<ppapi::PdfAccessibilityImageInfo> images;
+
+  ppapi::PdfAccessibilityLinkInfo link;
+  link.text_run_index = 3;
+  link.text_run_count = 0;
+  links.push_back(link);
+
+  ASSERT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
+                                                           links, images));
+}
+
+TEST(PdfAccessibilityTreeUnitTest, UnsortedImageVector) {
+  std::vector<PP_PrivateAccessibilityTextRunInfo> text_runs;
+  text_runs.emplace_back(kFirstTextRun);
+  text_runs.emplace_back(kSecondTextRun);
+
+  std::vector<PP_PrivateAccessibilityCharInfo> chars(
+      std::begin(kDummyCharsData), std::end(kDummyCharsData));
+
+  std::vector<ppapi::PdfAccessibilityLinkInfo> links;
+  std::vector<ppapi::PdfAccessibilityImageInfo> images;
+
+  ppapi::PdfAccessibilityImageInfo image;
+  // Add first image to the vector.
+  image.text_run_index = 1;
+  images.push_back(image);
+
+  // Add second image to the vector.
+  image.text_run_index = 0;
+  images.push_back(image);
+
+  ASSERT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
+                                                           links, images));
+}
+
+TEST(PdfAccessibilityTreeUnitTest, OutOfBoundImage) {
+  std::vector<PP_PrivateAccessibilityTextRunInfo> text_runs;
+  text_runs.emplace_back(kFirstTextRun);
+  text_runs.emplace_back(kSecondTextRun);
+
+  std::vector<PP_PrivateAccessibilityCharInfo> chars(
+      std::begin(kDummyCharsData), std::end(kDummyCharsData));
+
+  std::vector<ppapi::PdfAccessibilityLinkInfo> links;
+  std::vector<ppapi::PdfAccessibilityImageInfo> images;
+
+  ppapi::PdfAccessibilityImageInfo image;
+  image.text_run_index = 3;
+  images.push_back(image);
+
+  ASSERT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
+                                                           links, images));
 }
 
 }  // namespace pdf

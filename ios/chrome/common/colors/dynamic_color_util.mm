@@ -13,14 +13,9 @@ namespace color {
 UIColor* DarkModeDynamicColor(UIColor* dynamicColor,
                               BOOL forceDark,
                               UIColor* darkColor) {
-  // This compiler guard is needed because the API to force dark colors also
-  // needs it. Without this, forced-dark pages would appear in light colors on
-  // iOS 13 before compiling with the iOS 13 SDK.
-#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
   if (@available(iOS 13, *)) {
     return dynamicColor;
   }
-#endif
   return forceDark ? darkColor : dynamicColor;
 }
 

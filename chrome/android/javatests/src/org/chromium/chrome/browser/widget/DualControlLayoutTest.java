@@ -4,9 +4,7 @@
 
 package org.chromium.chrome.browser.widget;
 
-import android.annotation.TargetApi;
 import android.content.Context;
-import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.SmallTest;
@@ -19,16 +17,14 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.Space;
 
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.widget.DualControlLayout.DualControlLayoutAlignment;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import org.chromium.base.test.util.MinAndroidSdkLevel;
-import org.chromium.chrome.R;
-import org.chromium.chrome.browser.widget.DualControlLayout.DualControlLayoutAlignment;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 /**
  * Tests for DualControlLayout.
@@ -61,8 +57,6 @@ public class DualControlLayoutTest {
     @Test
     @SmallTest
     @UiThreadTest
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-    @MinAndroidSdkLevel(Build.VERSION_CODES.JELLY_BEAN_MR1)
     public void testAlignSideBySide() {
         runLayoutTest(DualControlLayoutAlignment.START, false, false, false);
         runLayoutTest(DualControlLayoutAlignment.START, false, true, false);
@@ -97,7 +91,6 @@ public class DualControlLayoutTest {
     }
 
     /** Lays out two controls that fit on the same line. */
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     private void runLayoutTest(
             int alignment, boolean isRtl, boolean addSecondView, boolean addPadding) {
         DualControlLayout layout = new DualControlLayout(mContext, null);
@@ -203,7 +196,6 @@ public class DualControlLayoutTest {
     @Test
     @SmallTest
     @UiThreadTest
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     public void testStacked() {
         runStackedLayoutTest(DualControlLayoutAlignment.START, false, false);
         runStackedLayoutTest(DualControlLayoutAlignment.START, true, false);
@@ -222,7 +214,6 @@ public class DualControlLayoutTest {
     }
 
     /** Runs a test where the controls don't fit on the same line. */
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     private void runStackedLayoutTest(int alignment, boolean isRtl, boolean addPadding) {
         DualControlLayout layout = new DualControlLayout(mContext, null);
         if (addPadding) layout.setPadding(PADDING_LEFT, PADDING_TOP, PADDING_RIGHT, PADDING_BOTTOM);
@@ -281,8 +272,6 @@ public class DualControlLayoutTest {
     @Test
     @SmallTest
     @UiThreadTest
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-    @MinAndroidSdkLevel(Build.VERSION_CODES.JELLY_BEAN_MR1)
     public void testInflation() {
         // Check that the basic DualControlLayout has nothing going on.
         DualControlLayout layout = new DualControlLayout(mContext, null);

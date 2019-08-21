@@ -7,7 +7,10 @@
 #include <memory>
 #include <utility>
 
+#include "base/callback.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/timer/elapsed_timer.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_request_utils.h"
 #include "components/password_manager/core/browser/leak_detection/single_lookup_response.h"
@@ -36,6 +39,22 @@ CoreAccountId GetAccountForRequest(
       result = all_accounts.front();
   }
   return result.account_id;
+}
+
+// Wraps |callback| into another callback that measures the elapsed time between
+// construction and actual execution of the callback. Records the result to
+// |histogram|, which is expected to be a char literal.
+template <typename R, typename... Args>
+base::OnceCallback<R(Args...)> TimeCallback(
+    base::OnceCallback<R(Args...)> callback,
+    const char* histogram) {
+  return base::BindOnce(
+      [](const char* histogram, const base::ElapsedTimer& timer,
+         base::OnceCallback<R(Args...)> callback, Args... args) {
+        base::UmaHistogramTimes(histogram, timer.Elapsed());
+        return std::move(callback).Run(std::forward<Args>(args)...);
+      },
+      histogram, base::ElapsedTimer(), std::move(callback));
 }
 
 }  // namespace
@@ -180,13 +199,16 @@ void AuthenticatedLeakCheck::Start(const GURL& url,
   url_ = url;
   username_ = std::move(username);
   password_ = std::move(password);
-  payload_helper_->RequestAccessToken(
+  payload_helper_->RequestAccessToken(TimeCallback(
       base::BindOnce(&AuthenticatedLeakCheck::OnAccessTokenRequestCompleted,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr()),
+      "PasswordManager.LeakDetection.ObtainAccessTokenTime"));
   payload_helper_->PreparePayload(
       base::UTF16ToUTF8(username_), base::UTF16ToUTF8(password_),
-      base::BindOnce(&AuthenticatedLeakCheck::OnRequestDataReady,
-                     weak_ptr_factory_.GetWeakPtr()));
+      TimeCallback(
+          base::BindOnce(&AuthenticatedLeakCheck::OnRequestDataReady,
+                         weak_ptr_factory_.GetWeakPtr()),
+          "PasswordManager.LeakDetection.PrepareSingleLeakRequestTime"));
 }
 
 void AuthenticatedLeakCheck::OnAccessTokenRequestCompleted(
@@ -222,8 +244,10 @@ void AuthenticatedLeakCheck::DoLeakRequest(
   request_->LookupSingleLeak(
       url_loader_factory.get(), access_token,
       std::move(data.username_hash_prefix), std::move(data.encrypted_payload),
-      base::BindOnce(&AuthenticatedLeakCheck::OnLookupSingleLeakResponse,
-                     weak_ptr_factory_.GetWeakPtr()));
+      TimeCallback(
+          base::BindOnce(&AuthenticatedLeakCheck::OnLookupSingleLeakResponse,
+                         weak_ptr_factory_.GetWeakPtr()),
+          "PasswordManager.LeakDetection.ReceiveSingleLeakResponseTime"));
 }
 
 void AuthenticatedLeakCheck::OnLookupSingleLeakResponse(
@@ -239,8 +263,10 @@ void AuthenticatedLeakCheck::OnLookupSingleLeakResponse(
 
   AnalyzeResponseResult(
       std::move(response), encryption_key_,
-      base::BindOnce(&AuthenticatedLeakCheck::OnAnalyzeSingleLeakResponse,
-                     weak_ptr_factory_.GetWeakPtr()));
+      TimeCallback(
+          base::BindOnce(&AuthenticatedLeakCheck::OnAnalyzeSingleLeakResponse,
+                         weak_ptr_factory_.GetWeakPtr()),
+          "PasswordManager.LeakDetection.AnalyzeSingleLeakResponseTime"));
 }
 
 void AuthenticatedLeakCheck::OnAnalyzeSingleLeakResponse(bool is_leaked) {

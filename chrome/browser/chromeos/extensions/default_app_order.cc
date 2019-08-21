@@ -62,7 +62,9 @@ const char* const kDefaultAppOrder[] = {
     extension_misc::kGooglePhotosAppId,
     arc::kGoogleDuo,
     app_list::kDefaultPageBreak1,  // First default page break
+    // TODO(crbug.com/976578): Remove after M78.
     extension_misc::kGoogleMapsAppId,
+    default_web_apps::kGoogleMapsAppId,
     app_list::kInternalAppIdSettings,
     default_web_apps::kSettingsAppId,
     default_web_apps::kOsSettingsAppId,

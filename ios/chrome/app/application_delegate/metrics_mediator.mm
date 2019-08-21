@@ -107,12 +107,11 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
   base::TimeDelta startDuration =
       base::TimeTicks::Now() - [startupInformation appLaunchTime];
 
-  NSDate* startup = GTMAppLaunchDate();
-  base::TimeDelta startDurationFromprocess =
-      base::TimeDelta::FromSecondsD(-startup.timeIntervalSinceNow);
+  base::TimeDelta startDurationFromProcess =
+      base::TimeDelta::FromSecondsD(-GTMAppLaunchDate().timeIntervalSinceNow);
 
   UMA_HISTOGRAM_TIMES("Startup.ColdStartFromProcessCreationTime",
-                      startDurationFromprocess);
+                      startDurationFromProcess);
 
   if ([startupInformation startupParameters]) {
     UMA_HISTOGRAM_TIMES("Startup.ColdStartWithExternalURLTime", startDuration);

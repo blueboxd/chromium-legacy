@@ -139,13 +139,11 @@ newUserFeedbackController:(ios::ChromeBrowserState*)browserState
       initWithRootViewController:controller
                     browserState:browserState
                         delegate:delegate];
-#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
   // If the controller overrides overrideUserInterfaceStyle, respect that in the
   // SettingsNavigationController.
   if (@available(iOS 13.0, *)) {
     nc.overrideUserInterfaceStyle = controller.overrideUserInterfaceStyle;
   }
-#endif
   return nc;
 }
 
@@ -256,13 +254,7 @@ initWithRootViewController:(UIViewController*)rootViewController
                   delegate:(id<SettingsNavigationControllerDelegate>)delegate {
   DCHECK(browserState);
   DCHECK(!browserState->IsOffTheRecord());
-#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
   self = [super initWithRootViewController:rootViewController];
-#else
-  self = rootViewController
-             ? [super initWithRootViewController:rootViewController]
-             : [super init];
-#endif
   if (self) {
     mainBrowserState_ = browserState;
     delegate_ = delegate;
@@ -274,13 +266,11 @@ initWithRootViewController:(UIViewController*)rootViewController
         !unified_consent::IsUnifiedConsentFeatureEnabled();
     [self setModalPresentationStyle:UIModalPresentationFormSheet];
     [self setModalTransitionStyle:UIModalTransitionStyleCoverVertical];
-#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
     // TODO(crbug.com/980037) Remove this and properly handle swipe to dismiss
     // settings.
     if (@available(iOS 13, *)) {
       self.modalInPresentation = YES;
     }
-#endif
   }
   return self;
 }

@@ -7,17 +7,15 @@
 
 #import "ios/chrome/browser/ui/qr_scanner/qr_scanner_camera_controller_delegate.h"
 
+@class CameraController;
+
 // The QRScannerCameraController manages the AVCaptureSession, its inputs,
 // outputs, and notifications for the QRScannerViewController.
 @interface QRScannerCameraController : CameraController
 
-// Initializes the QR scanner camera controller with the camera controller
-// delegate and the QR scanner delegate.
-- (instancetype)initWithCameraControllerDelegate:
-                    (id<CameraControllerDelegate>)cameraControllerDelegate
-                               qrScannerDelegate:
-                                   (id<QRScannerCameraControllerDelegate>)
-                                       qrScannerDelegate
+// Initializes the QR scanner delegate.
+- (instancetype)initWithQRScannerDelegate:
+    (id<QRScannerCameraControllerDelegate>)qrScannerDelegate
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithDelegate:(id<CameraControllerDelegate>)delegate

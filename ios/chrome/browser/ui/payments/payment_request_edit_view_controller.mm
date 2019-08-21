@@ -8,8 +8,8 @@
 #import "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/ui/autofill/autofill_edit_accessory_view.h"
 #import "ios/chrome/browser/ui/autofill/cells/legacy_autofill_edit_item.h"
+#import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_view.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
@@ -98,17 +98,18 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
 
 }  // namespace
 
-@interface PaymentRequestEditViewController ()<
-    AutofillEditAccessoryDelegate,
+@interface PaymentRequestEditViewController () <
+    FormInputAccessoryViewDelegate,
     PaymentRequestEditViewControllerActions,
     UIPickerViewDataSource,
     UIPickerViewDelegate,
     UITextFieldDelegate> {
   // The currently focused cell. May be nil.
   __weak LegacyAutofillEditCell* _currentEditingCell;
-
-  AutofillEditAccessoryView* _accessoryView;
 }
+
+// The accessory view when editing any of text fields.
+@property(nonatomic, strong) FormInputAccessoryView* formInputAccessoryView;
 
 // The map of section identifiers to the fields definitions for the editor.
 @property(nonatomic, strong)
@@ -229,7 +230,7 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
                          style:(CollectionViewControllerStyle)style {
   self = [super initWithLayout:layout style:style];
   if (self) {
-    _accessoryView = [[AutofillEditAccessoryView alloc] initWithDelegate:self];
+    _formInputAccessoryView = [[FormInputAccessoryView alloc] init];
     _options = [[NSMutableDictionary alloc] init];
     _pickerViews = [[NSMutableDictionary alloc] init];
   }
@@ -238,6 +239,9 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
 
 - (void)viewDidLoad {
   [super viewDidLoad];
+
+  [self.formInputAccessoryView setUpWithLeadingView:nil
+                                 navigationDelegate:self];
 
   self.collectionView.accessibilityIdentifier =
       kPaymentRequestEditCollectionViewAccessibilityID;
@@ -439,7 +443,7 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
 
 - (void)textFieldDidBeginEditing:(UITextField*)textField {
   _currentEditingCell = AutofillEditCellForTextField(textField);
-  [textField setInputAccessoryView:_accessoryView];
+  [textField setInputAccessoryView:self.formInputAccessoryView];
   [self updateAccessoryViewButtonsStates];
 }
 
@@ -463,9 +467,9 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
   DCHECK([_currentEditingCell textField] == textField);
   LegacyAutofillEditCell* nextCell = [self nextTextFieldWithOffset:1];
   if (nextCell)
-    [self nextPressed];
+    [nextCell.textField becomeFirstResponder];
   else
-    [self closePressed];
+    [[_currentEditingCell textField] resignFirstResponder];
 
   return NO;
 }
@@ -519,25 +523,23 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
   return NO;
 }
 
-#pragma mark - AutofillEditAccessoryDelegate
+#pragma mark - FormInputAccessoryViewDelegate
 
-- (void)nextPressed {
-  LegacyAutofillEditCell* nextCell = [self nextTextFieldWithOffset:1];
-  if (nextCell)
-    [nextCell.textField becomeFirstResponder];
+- (void)formInputAccessoryViewDidTapNextButton:(FormInputAccessoryView*)sender {
+  [self moveToAnotherCellWithOffset:1];
 }
 
-- (void)previousPressed {
-  LegacyAutofillEditCell* previousCell = [self nextTextFieldWithOffset:-1];
-  if (previousCell)
-    [previousCell.textField becomeFirstResponder];
+- (void)formInputAccessoryViewDidTapPreviousButton:
+    (FormInputAccessoryView*)sender {
+  [self moveToAnotherCellWithOffset:-1];
 }
 
-- (void)closePressed {
+- (void)formInputAccessoryViewDidTapCloseButton:
+    (FormInputAccessoryView*)sender {
   [[_currentEditingCell textField] resignFirstResponder];
 }
 
-#pragma mark - UIPickerViewDataSource methods
+#pragma mark - UIPickerViewDataSource
 
 - (NSInteger)numberOfComponentsInPickerView:(UIPickerView*)pickerView {
   NSArray<NSArray<NSString*>*>* options =
@@ -741,6 +743,13 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
 
 #pragma mark - Helper methods
 
+// Jumps to the cell at the passed offset, If such cell exists.
+- (void)moveToAnotherCellWithOffset:(NSInteger)offset {
+  LegacyAutofillEditCell* cell = [self nextTextFieldWithOffset:offset];
+  if (cell)
+    [cell.textField becomeFirstResponder];
+}
+
 - (NSIndexPath*)indexPathWithSectionOffset:(NSInteger)offset
                                   fromPath:(NSIndexPath*)indexPath {
   DCHECK(indexPath);
@@ -771,10 +780,9 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
 
 - (void)updateAccessoryViewButtonsStates {
   LegacyAutofillEditCell* previousCell = [self nextTextFieldWithOffset:-1];
-  [[_accessoryView previousButton] setEnabled:previousCell != nil];
-
   LegacyAutofillEditCell* nextCell = [self nextTextFieldWithOffset:1];
-  [[_accessoryView nextButton] setEnabled:nextCell != nil];
+  [self.formInputAccessoryView.previousButton setEnabled:previousCell != nil];
+  [self.formInputAccessoryView.nextButton setEnabled:nextCell != nil];
 }
 
 - (void)addOrRemoveErrorMessage:(NSString*)errorMessage

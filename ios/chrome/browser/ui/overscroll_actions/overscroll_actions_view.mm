@@ -963,7 +963,6 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
 // CGColor doesn't support iOS 13 dynamic colors, so those must be resolved
 // more often.
 - (void)updateLayerColors {
-#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
   if (@available(iOS 13, *)) {
     [self.traitCollection performAsCurrentTraitCollection:^{
       _selectionCircleLayer.fillColor =
@@ -971,7 +970,6 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
     }];
     return;
   }
-#endif
 
   // Fallback for iOS 12.
   if (self.incognito) {

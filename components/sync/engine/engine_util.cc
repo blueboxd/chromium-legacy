@@ -26,7 +26,7 @@ bool EndsWithSpace(const std::string& string) {
 
 std::unique_ptr<sync_pb::PasswordSpecificsData> DecryptPasswordSpecifics(
     const sync_pb::EntitySpecifics& specifics,
-    Cryptographer* crypto) {
+    const Cryptographer* crypto) {
   if (!specifics.has_password())
     return nullptr;
   const sync_pb::PasswordSpecifics& password_specifics = specifics.password();
@@ -44,7 +44,7 @@ std::unique_ptr<sync_pb::PasswordSpecificsData> DecryptPasswordSpecifics(
 
 std::unique_ptr<sync_pb::WifiConfigurationSpecificsData>
 DecryptWifiConfigurationSpecifics(const sync_pb::EntitySpecifics& specifics,
-                                  Cryptographer* crypto) {
+                                  const Cryptographer* crypto) {
   if (!specifics.has_wifi_configuration())
     return nullptr;
   const sync_pb::WifiConfigurationSpecifics& wifi_configuration_specifics =

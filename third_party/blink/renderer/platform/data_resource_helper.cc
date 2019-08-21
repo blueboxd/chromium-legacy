@@ -4,31 +4,33 @@
 
 #include "third_party/blink/renderer/platform/data_resource_helper.h"
 
-#include "ui/base/resource/resource_bundle.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 
 namespace blink {
 
 String UncompressResourceAsString(int resource_id) {
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  std::string uncompressed = bundle.DecompressDataResourceScaled(
-      resource_id, bundle.GetMaxScaleFactor());
-  return String::FromUTF8(uncompressed);
+  Vector<char> blob = UncompressResourceAsBinary(resource_id);
+  // Vector::data() may return nullptr. We'd like to return an empty string,
+  // not a null string.
+  if (blob.size() > 0u)
+    return String::FromUTF8(blob.data(), blob.size());
+  return g_empty_string;
 }
 
 String UncompressResourceAsASCIIString(int resource_id) {
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  std::string uncompressed = bundle.DecompressDataResourceScaled(
-      resource_id, bundle.GetMaxScaleFactor());
-  return String(uncompressed.c_str(), uncompressed.size());
+  Vector<char> blob = UncompressResourceAsBinary(resource_id);
+  // Vector::data() may return nullptr. We'd like to return an empty string,
+  // not a null string.
+  if (blob.size() > 0u)
+    return String(blob.data(), blob.size());
+  return g_empty_string;
 }
 
 Vector<char> UncompressResourceAsBinary(int resource_id) {
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  std::string uncompressed = bundle.DecompressDataResourceScaled(
-      resource_id, bundle.GetMaxScaleFactor());
-  Vector<char> result;
-  result.Append(uncompressed.data(), uncompressed.size());
-  return result;
+  WebData data = Platform::Current()->UncompressDataResource(resource_id);
+  const SharedBuffer& shared_buffer = data;
+  return shared_buffer.CopyAs<Vector<char>>();
 }
 
 }  // namespace blink

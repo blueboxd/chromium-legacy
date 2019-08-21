@@ -14,6 +14,7 @@
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/system_connector.h"
@@ -166,7 +167,7 @@ void ApkWebAppInstaller::DoInstall() {
   GURL app_url = web_app_info_->app_url;
 
   provider->install_manager().InstallWebAppFromInfo(
-      std::move(web_app_info_), /*no_network_install=*/true,
+      std::move(web_app_info_), web_app::ForInstallableSite::kYes,
       WebappInstallSource::ARC,
       base::BindOnce(&ApkWebAppInstaller::OnWebAppCreated,
                      base::Unretained(this), std::move(app_url)));

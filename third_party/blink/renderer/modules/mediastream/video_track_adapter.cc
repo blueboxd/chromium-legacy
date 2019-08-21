@@ -265,7 +265,7 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::AddCallbacks(
   VideoTrackCallbacks track_callbacks = {std::move(frame_callback),
                                          std::move(settings_callback),
                                          std::move(format_callback)};
-  callbacks_.insert({track, std::move(track_callbacks)});
+  callbacks_.emplace(track, std::move(track_callbacks));
 }
 
 void VideoTrackAdapter::VideoFrameResolutionAdapter::RemoveCallbacks(

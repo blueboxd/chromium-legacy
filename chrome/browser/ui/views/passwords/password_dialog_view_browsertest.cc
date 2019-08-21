@@ -33,10 +33,12 @@
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
 
-using ::testing::Field;
 using net::test_server::BasicHttpResponse;
 using net::test_server::HttpRequest;
 using net::test_server::HttpResponse;
+using password_manager::CredentialLeakFlags;
+using password_manager::CredentialLeakType;
+using ::testing::Field;
 
 namespace {
 
@@ -424,8 +426,10 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest, PopupAutoSigninPrompt) {
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest, PopupCredentialsLeakedPrompt) {
+  CredentialLeakType leak_type = CredentialLeakFlags::kPasswordSaved |
+                                 CredentialLeakFlags::kPasswordUsedOnOtherSites;
   GURL origin("https://example.com");
-  controller()->OnCredentialLeak(origin);
+  controller()->OnCredentialLeak(leak_type, origin);
   ASSERT_TRUE(controller()->current_credential_leak_prompt());
   EXPECT_EQ(password_manager::ui::INACTIVE_STATE, controller()->GetState());
   CredentialLeakDialogView* dialog =

@@ -87,7 +87,8 @@ WritableStreamDefaultWriter::WritableStreamDefaultWriter(
   // https://streams.spec.whatwg.org/#default-writer-constructor 2. If !
   //  IsWritableStreamLocked(stream) is true, throw a TypeError exception.
   if (WritableStreamNative::IsLocked(stream)) {
-    exception_state.ThrowTypeError("Illegal constructor");
+    exception_state.ThrowTypeError(
+        "Cannot create writer when WritableStream is locked");
     return;
   }
   //  4. Set stream.[[writer]] to this.

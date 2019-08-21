@@ -148,35 +148,9 @@ are considered security vulnerabilities in more detail.
 <a name="TOC-Are-XSS-filter-bypasses-considered-security-bugs-"></a>
 ## Are XSS filter bypasses considered security bugs?
 
-No. Chromium contains a reflected XSS filter (called XSSAuditor) that is a
-best-effort second line of defense against reflected XSS flaws found in web
-sites. We do not treat these bypasses as security bugs in Chromium because the
-underlying security issue is in the web site itself. Instead, we treat them as
-functional bugs in Chromium.
-
-We do appreciate reports of XSSAuditor bypasses, and endeavor to close them.
-When reporting an XSSAuditor bypass, two pieces of information are essential:
-*    The exact URL (and for POSTs, the request body) triggering the reflection.
-*    The view-source: of the page showing the reflection in the page text.
-
-Please do not provide links to vulnerable production sites seen in the wild,
-as that forces us to embargo the information in the bug.
-
-Note that the XSSAuditor is not able to defend against persistent XSS or
-DOM-based XSS. Nor is it able to defend against injections deep inside
-existing JavaScript blocks, [for
-example](https://bugs.chromium.org/p/chromium/issues/detail?id=135029), since
-the XSSAuditor is part of the HTML parser, not the JavaScript parser.
-
-There will also be a number of infrequently occurring reflected XSS corner
-case in an HTML context that it will never be able to cover. Among
-these are:
-*    Multiple unsanitized variables injected into the page.
-*    Unexpected server side transformation or decoding of the payload.
-
-XSSAuditor bypasses are not considered under the security vulnerability rewards
-program; the [severity guidelines](severity-guidelines.md) outline the types of
-bugs that are considered security vulnerabilities in more detail.
+No. Chromium once contained a reflected XSS filter called the [XSSAuditor](https://www.chromium.org/developers/design-documents/xss-auditor)
+that was a best-effort second line of defense against reflected XSS flaws found
+in web sites. The XSS Auditor was [removed in Chrome 78](https://groups.google.com/a/chromium.org/forum/#!msg/blink-dev/TuYw-EZhO9g/blGViehIAwAJ).
 
 <a name="TOC-Why-aren-t-physically-local-attacks-in-Chrome-s-threat-model-"></a>
 ## Why aren't physically-local attacks in Chrome's threat model?

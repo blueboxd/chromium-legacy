@@ -61,8 +61,8 @@ AppId WebAppControllerBrowserTest::InstallWebApp(
   auto* provider = web_app::WebAppProvider::Get(profile());
   DCHECK(provider);
   provider->install_manager().InstallWebAppFromInfo(
-      std::move(web_app_info),
-      /*no_network_install=*/true, WebappInstallSource::OMNIBOX_INSTALL_ICON,
+      std::move(web_app_info), ForInstallableSite::kYes,
+      WebappInstallSource::OMNIBOX_INSTALL_ICON,
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, web_app::InstallResultCode code) {
             EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);

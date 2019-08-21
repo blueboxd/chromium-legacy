@@ -243,12 +243,15 @@ void ManagePasswordsUIController::OnPasswordAutofilled(
   }
 }
 
-void ManagePasswordsUIController::OnCredentialLeak(const GURL& origin) {
+void ManagePasswordsUIController::OnCredentialLeak(
+    const password_manager::CredentialLeakType leak_type,
+    const GURL& origin) {
   // Existing dialog shouldn't be closed.
   if (dialog_controller_) {
     return;
   }
-  auto* raw_controller = new CredentialLeakDialogControllerImpl(this);
+  auto* raw_controller =
+      new CredentialLeakDialogControllerImpl(this, leak_type, origin);
   dialog_controller_.reset(raw_controller);
   raw_controller->ShowCredentialLeakPrompt(
       CreateCredentialLeakPrompt(raw_controller));

@@ -65,9 +65,11 @@ const char* const kEventNames[] = {"Checking",    "Error",    "NoUpdate",
 
 ApplicationCacheHost::ApplicationCacheHost(
     mojom::blink::DocumentInterfaceBroker* interface_broker,
+    const BrowserInterfaceBrokerProxy* interface_broker_proxy,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : task_runner_(std::move(task_runner)),
-      interface_broker_(interface_broker) {}
+      interface_broker_(interface_broker),
+      interface_broker_proxy_(interface_broker_proxy) {}
 
 ApplicationCacheHost::~ApplicationCacheHost() = default;
 
@@ -258,6 +260,9 @@ bool ApplicationCacheHost::BindBackend() {
   receiver_.Bind(frontend_remote.InitWithNewPipeAndPassReceiver(),
                  task_runner_);
 
+  // For Frame.
+  // TODO(nhiroki): Deprecate this, and instead use |interface_broker_proxy_|
+  // like Shared Worker.
   if (interface_broker_) {
     interface_broker_->RegisterAppCacheHost(
         backend_host_.BindNewPipeAndPassReceiver(std::move(task_runner_)),
@@ -265,11 +270,12 @@ bool ApplicationCacheHost::BindBackend() {
     return true;
   }
 
-  // Once we have 'WebContextInterfaceBroker', we can call this function through
-  // it like render frame.
-  // Refer to the design document, 'https://bit.ly/2GT0rZv'.
-  Platform::Current()->GetInterfaceProvider()->GetInterface(
-      backend_remote_.BindNewPipeAndPassReceiver());
+  // For Shared Worker.
+  DCHECK(interface_broker_proxy_);
+  mojo::PendingReceiver<mojom::blink::AppCacheBackend> receiver =
+      backend_remote_.BindNewPipeAndPassReceiver(task_runner_);
+  interface_broker_proxy_->GetInterface(std::move(receiver));
+
   backend_remote_->RegisterHost(
       backend_host_.BindNewPipeAndPassReceiver(std::move(task_runner_)),
       std::move(frontend_remote), host_id_);

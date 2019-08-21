@@ -1146,21 +1146,16 @@ public class ChromeBrowserProvider extends ContentProvider {
         // If the calling user is different than current one, we need to post a
         // task to notify change, otherwise, a system level hidden permission
         // INTERACT_ACROSS_USERS_FULL is needed.
-        // The related APIs were added in API 17, it should be safe to fallback to
-        // normal way for notifying change, because caller can't be other users in
-        // devices whose API level is less than API 17.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            UserHandle callingUserHandle = Binder.getCallingUserHandle();
-            if (callingUserHandle != null
-                    && !callingUserHandle.equals(android.os.Process.myUserHandle())) {
-                PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
-                    @Override
-                    public void run() {
-                        getContext().getContentResolver().notifyChange(uri, null);
-                    }
-                });
-                return;
-            }
+        UserHandle callingUserHandle = Binder.getCallingUserHandle();
+        if (callingUserHandle != null
+                && !callingUserHandle.equals(android.os.Process.myUserHandle())) {
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
+                @Override
+                public void run() {
+                    getContext().getContentResolver().notifyChange(uri, null);
+                }
+            });
+            return;
         }
         getContext().getContentResolver().notifyChange(uri, null);
     }

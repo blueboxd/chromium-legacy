@@ -23,12 +23,9 @@
 
 #pragma mark - Lifecycle
 
-- (instancetype)initWithCameraControllerDelegate:
-                    (id<CameraControllerDelegate>)cameraControllerDelegate
-                               qrScannerDelegate:
-                                   (id<QRScannerCameraControllerDelegate>)
-                                       qrScannerDelegate {
-  self = [super initWithDelegate:cameraControllerDelegate];
+- (instancetype)initWithQRScannerDelegate:
+    (id<QRScannerCameraControllerDelegate>)qrScannerDelegate {
+  self = [super initWithDelegate:qrScannerDelegate];
   if (self) {
     _qrScannerDelegate = qrScannerDelegate;
   }

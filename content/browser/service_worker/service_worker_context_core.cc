@@ -33,6 +33,7 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/service_worker/service_worker_version.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -51,7 +52,7 @@
 
 namespace content {
 namespace {
-
+ 
 void CheckFetchHandlerOfInstalledServiceWorker(
     ServiceWorkerContext::CheckHasServiceWorkerCallback callback,
     scoped_refptr<ServiceWorkerRegistration> registration) {
@@ -509,15 +510,34 @@ ServiceWorkerContextCore::GetLoaderFactoryBundleForUpdateCheck() {
   // Update the default factory in the bundle with a newly cloned network
   // factory before update check because the old default factory may be invalid
   // due to crash of network service.
-  network::mojom::URLLoaderFactoryPtr network_factory_ptr;
-  loader_factory_getter_->CloneNetworkFactory(
-      mojo::MakeRequest(&network_factory_ptr));
-  auto pending_factory_bundle =
-      std::make_unique<blink::URLLoaderFactoryBundleInfo>();
-  pending_factory_bundle->pending_default_factory() =
-      network_factory_ptr.PassInterface();
-  loader_factory_bundle_for_update_check_->Update(
-      std::move(pending_factory_bundle));
+  // TODO(crbug.com/995763): This should call WillCreateURLLoaderFactory().
+
+  if (ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled()) {
+    StoragePartitionImpl* storage_partition = wrapper()->storage_partition();
+    if (storage_partition) {
+      mojo::PendingRemote<network::mojom::URLLoaderFactory> remote;
+      scoped_refptr<network::SharedURLLoaderFactory> network_factory =
+          storage_partition->GetURLLoaderFactoryForBrowserProcess();
+      network_factory->Clone(remote.InitWithNewPipeAndPassReceiver());
+
+      auto pending_factory_bundle =
+          std::make_unique<blink::URLLoaderFactoryBundleInfo>();
+      pending_factory_bundle->pending_default_factory() = std::move(remote);
+      loader_factory_bundle_for_update_check_->Update(
+          std::move(pending_factory_bundle));
+    }
+  } else {
+    network::mojom::URLLoaderFactoryPtr network_factory_ptr;
+    loader_factory_getter_->CloneNetworkFactory(
+        mojo::MakeRequest(&network_factory_ptr));
+    auto pending_factory_bundle =
+        std::make_unique<blink::URLLoaderFactoryBundleInfo>();
+    pending_factory_bundle->pending_default_factory() =
+        network_factory_ptr.PassInterface();
+    loader_factory_bundle_for_update_check_->Update(
+        std::move(pending_factory_bundle));
+  }
+
   return loader_factory_bundle_for_update_check_;
 }
 

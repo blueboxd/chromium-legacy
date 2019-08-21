@@ -5,7 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SERIAL_SERIAL_PORT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SERIAL_SERIAL_PORT_H_
 
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/serial.mojom-blink.h"
 #include "third_party/blink/public/mojom/serial/serial.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -79,8 +80,8 @@ class SerialPort final : public ScriptWrappable,
   Member<Serial> parent_;
 
   uint32_t buffer_size_ = 0;
-  device::mojom::blink::SerialPortPtr port_;
-  mojo::Binding<device::mojom::blink::SerialPortClient> client_binding_{this};
+  mojo::Remote<device::mojom::blink::SerialPort> port_;
+  mojo::Receiver<device::mojom::blink::SerialPortClient> client_receiver_{this};
 
   Member<ReadableStream> readable_;
   Member<SerialPortUnderlyingSource> underlying_source_;

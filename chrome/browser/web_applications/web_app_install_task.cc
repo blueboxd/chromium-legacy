@@ -111,7 +111,7 @@ void WebAppInstallTask::InstallWebAppFromManifestWithFallback(
 
 void WebAppInstallTask::InstallWebAppFromInfo(
     std::unique_ptr<WebApplicationInfo> web_application_info,
-    bool no_network_install,
+    ForInstallableSite for_installable_site,
     WebappInstallSource install_source,
     InstallManager::OnceInstallCallback callback) {
   DCHECK(AreWebAppsUserInstallable(profile_));
@@ -124,19 +124,10 @@ void WebAppInstallTask::InstallWebAppFromInfo(
   install_source_ = install_source;
   background_installation_ = true;
 
-  // |for_installable_site| arg is determined by fetching a manifest and running
-  // the eligibility check on it. If we don't hit the network, assume that the
-  // app represetned by |web_application_info| is installable.
-  RecordInstallEvent(no_network_install ? ForInstallableSite::kYes
-                                        : ForInstallableSite::kNo);
+  RecordInstallEvent(for_installable_site);
 
   InstallFinalizer::FinalizeOptions options;
   options.install_source = install_source;
-  if (no_network_install) {
-    options.no_network_install = true;
-    // We should only install windowed apps via this method.
-    web_application_info->open_as_window = true;
-  }
 
   install_finalizer_->FinalizeInstall(*web_application_info, options,
                                       std::move(callback));

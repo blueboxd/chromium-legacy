@@ -48,7 +48,7 @@ class WebAppInstallManager final : public InstallManager {
       OnceInstallCallback callback) override;
   void InstallWebAppFromInfo(
       std::unique_ptr<WebApplicationInfo> web_application_info,
-      bool no_network_install,
+      ForInstallableSite for_installable_site,
       WebappInstallSource install_source,
       OnceInstallCallback callback) override;
   void InstallWebAppWithParams(content::WebContents* web_contents,

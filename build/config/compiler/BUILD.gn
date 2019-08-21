@@ -1245,6 +1245,7 @@ config("runtime_library") {
 # flags are guaranteed to appear on the compile command line after -Wall.
 config("default_warnings") {
   cflags = []
+  cflags_c = []
   cflags_cc = []
   ldflags = []
 
@@ -1509,6 +1510,10 @@ config("default_warnings") {
           # Ignore warnings about MSVC optimization pragmas.
           # TODO(thakis): Only for no_chromium_code? http://crbug.com/912662
           "-Wno-ignored-pragma-optimize",
+        ]
+        cflags_c += [
+          # TODO(https://crbug.com/995993): Clean up and enable.
+          "-Wno-implicit-fallthrough",
         ]
         if (llvm_force_head_revision) {
           cflags += [

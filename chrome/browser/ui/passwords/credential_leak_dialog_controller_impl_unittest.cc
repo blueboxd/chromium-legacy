@@ -26,7 +26,10 @@ class MockCredentialLeakPrompt : public CredentialLeakPrompt {
 
 class CredentialLeakDialogControllerTest : public testing::Test {
  public:
-  CredentialLeakDialogControllerTest() : controller_(&ui_controller_mock_) {}
+  CredentialLeakDialogControllerTest()
+      : controller_(&ui_controller_mock_,
+                    password_manager::CreateLeakTypeFromBools(true, true, true),
+                    GURL("https://example.com")) {}
 
   PasswordsLeakDialogDelegateMock& ui_controller_mock() {
     return ui_controller_mock_;

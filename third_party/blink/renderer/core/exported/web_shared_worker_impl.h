@@ -41,7 +41,6 @@
 #include "third_party/blink/public/mojom/csp/content_security_policy.mojom-blink.h"
 #include "third_party/blink/public/web/web_shared_worker_client.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/loader/appcache/application_cache_host_for_worker.h"
 #include "third_party/blink/renderer/core/workers/shared_worker_reporting_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
@@ -63,8 +62,7 @@ class WebURL;
 // WebSharedWorkerClient::WorkerContextDestroyed().
 class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker {
  public:
-  WebSharedWorkerImpl(WebSharedWorkerClient*,
-                      const base::UnguessableToken& appcache_host_id);
+  explicit WebSharedWorkerImpl(WebSharedWorkerClient*);
   ~WebSharedWorkerImpl() override;
 
   // WebSharedWorker methods:
@@ -75,6 +73,7 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker {
       const WebString& content_security_policy,
       mojom::ContentSecurityPolicyType,
       network::mojom::IPAddressSpace,
+      const base::UnguessableToken& appcache_host_id,
       const base::UnguessableToken& devtools_worker_token,
       mojo::ScopedMessagePipeHandle content_settings_handle,
       mojo::ScopedMessagePipeHandle interface_provider,
@@ -85,7 +84,6 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker {
 
   // Callback methods for SharedWorkerReportingProxy.
   void CountFeature(WebFeature);
-  void DidFetchScript(int64_t app_cache_id);
   void DidFailToFetchClassicScript();
   void DidEvaluateClassicScript(bool success);
   void DidCloseWorkerGlobalScope();
@@ -98,8 +96,6 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker {
   // Shuts down the worker thread. This may synchronously destroy |this|.
   void TerminateWorkerThread();
 
-  void OnAppCacheSelected();
-
   WorkerClients* CreateWorkerClients();
 
   void ConnectTaskOnWorkerThread(MessagePortChannel);
@@ -111,8 +107,6 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker {
   WebSharedWorkerClient* client_;
 
   bool asked_to_terminate_ = false;
-
-  Persistent<ApplicationCacheHostForWorker> appcache_host_;
 
   base::WeakPtrFactory<WebSharedWorkerImpl> weak_ptr_factory_{this};
 };

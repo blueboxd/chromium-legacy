@@ -62,6 +62,7 @@ class WebStateListTestObserver : public WebStateListObserver {
                           web::WebState* web_state,
                           int index,
                           bool activating) override {
+    EXPECT_TRUE(web_state_list->IsMutating());
     web_state_inserted_called_ = true;
   }
 
@@ -69,6 +70,7 @@ class WebStateListTestObserver : public WebStateListObserver {
                      web::WebState* web_state,
                      int from_index,
                      int to_index) override {
+    EXPECT_TRUE(web_state_list->IsMutating());
     web_state_moved_called_ = true;
   }
 
@@ -82,6 +84,7 @@ class WebStateListTestObserver : public WebStateListObserver {
   void WebStateDetachedAt(WebStateList* web_state_list,
                           web::WebState* web_state,
                           int index) override {
+    EXPECT_TRUE(web_state_list->IsMutating());
     web_state_detached_called_ = true;
   }
 

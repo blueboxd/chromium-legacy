@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/stl_util.h"
+#include "third_party/blink/public/resources/grit/blink_image_resources.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/fonts/font_family.h"
@@ -55,7 +56,7 @@ void DrawIcon(cc::PaintCanvas* canvas,
   // Note that |icon_image| will be a 0x0 image when running
   // blink_platform_unittests.
   DEFINE_STATIC_REF(Image, icon_image,
-                    (Image::LoadPlatformResource("placeholderIcon")));
+                    (Image::LoadPlatformResource(IDR_PLACEHOLDER_ICON)));
 
   // Note that the |icon_image| is not scaled according to dest_rect / src_rect,
   // and is always drawn at the same size. This is so that placeholder icons are

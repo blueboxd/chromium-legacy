@@ -138,20 +138,12 @@ ProfileMenuView::ProfileMenuView(views::Button* anchor_button,
   GetViewAccessibility().OverrideName(GetAccessibleWindowTitle());
   chrome::RecordDialogCreation(chrome::DialogIdentifier::PROFILE_CHOOSER);
   base::RecordAction(base::UserMetricsAction("ProfileChooser_Show"));
+  set_close_on_deactivate(close_on_deactivate_for_testing_);
 }
 
 ProfileMenuView::~ProfileMenuView() = default;
 
-void ProfileMenuView::Reset() {
-  ProfileMenuViewBase::Reset();
-  first_profile_button_ = nullptr;
-  lock_button_ = nullptr;
-}
-
-void ProfileMenuView::Init() {
-  Reset();
-  set_close_on_deactivate(close_on_deactivate_for_testing_);
-
+void ProfileMenuView::BuildMenu() {
   avatar_menu_.reset(new AvatarMenu(
       &g_browser_process->profile_manager()->GetProfileAttributesStorage(),
       this, browser()));
@@ -163,18 +155,12 @@ void ProfileMenuView::Init() {
     dice_accounts_ =
         signin_ui_util::GetAccountsForDicePromos(browser()->profile());
   }
-
-  ShowView(avatar_menu_.get());
+  AddProfileMenuView(avatar_menu_.get());
 }
 
 void ProfileMenuView::OnAvatarMenuChanged(
     AvatarMenu* avatar_menu) {
   // TODO(crbug.com/993752): Remove AvatarMenu observer.
-}
-
-void ProfileMenuView::ShowView(AvatarMenu* avatar_menu) {
-  AddProfileMenuView(avatar_menu);
-  RepopulateViewFromMenuItems();
 }
 
 void ProfileMenuView::FocusButtonOnKeyboardOpen() {
@@ -227,14 +213,9 @@ void ProfileMenuView::OnGuestProfileButtonClicked() {
 }
 
 void ProfileMenuView::OnManageProfilesButtonClicked() {
-  // If this is a guest session, close all the guest browser windows.
-  if (browser()->profile()->IsGuestSession()) {
-    profiles::CloseGuestProfileWindows();
-  } else {
-    base::RecordAction(base::UserMetricsAction("ProfileChooser_ManageClicked"));
-    UserManager::Show(base::FilePath(),
-                      profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
-  }
+  base::RecordAction(base::UserMetricsAction("ProfileChooser_ManageClicked"));
+  UserManager::Show(base::FilePath(),
+                    profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
   PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_OPEN_USER_MANAGER);
 }
 
@@ -696,14 +677,19 @@ void ProfileMenuView::AddOptionsView(bool display_lock,
     }
   }
 
-  base::string16 text = l10n_util::GetStringUTF16(
-      is_guest ? IDS_PROFILES_EXIT_GUEST : IDS_PROFILES_MANAGE_USERS_BUTTON);
-  const gfx::VectorIcon& settings_icon =
-      is_guest ? kCloseAllIcon : vector_icons::kSettingsIcon;
-  CreateAndAddButton(
-      CreateVectorIcon(settings_icon), text,
-      base::BindRepeating(&ProfileMenuView::OnManageProfilesButtonClicked,
-                          base::Unretained(this)));
+  if (is_guest) {
+    CreateAndAddButton(
+        CreateVectorIcon(kCloseAllIcon),
+        l10n_util::GetStringUTF16(IDS_PROFILES_EXIT_GUEST),
+        base::BindRepeating(&ProfileMenuView::OnExitProfileButtonClicked,
+                            base::Unretained(this)));
+  } else {
+    CreateAndAddButton(
+        CreateVectorIcon(vector_icons::kSettingsIcon),
+        l10n_util::GetStringUTF16(IDS_PROFILES_MANAGE_USERS_BUTTON),
+        base::BindRepeating(&ProfileMenuView::OnManageProfilesButtonClicked,
+                            base::Unretained(this)));
+  }
 
   if (display_lock) {
     lock_button_ = CreateAndAddButton(

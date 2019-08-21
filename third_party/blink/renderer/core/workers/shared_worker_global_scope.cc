@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
+#include "third_party/blink/renderer/core/loader/appcache/application_cache_host_for_worker.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/workers/shared_worker_thread.h"
@@ -49,22 +50,15 @@
 
 namespace blink {
 
-// static
-SharedWorkerGlobalScope* SharedWorkerGlobalScope::Create(
-    std::unique_ptr<GlobalScopeCreationParams> creation_params,
-    SharedWorkerThread* thread,
-    base::TimeTicks time_origin) {
-  DCHECK_EQ(creation_params->off_main_thread_fetch_option,
-            OffMainThreadWorkerScriptFetchOption::kEnabled);
-  return MakeGarbageCollected<SharedWorkerGlobalScope>(
-      std::move(creation_params), thread, time_origin);
-}
-
 SharedWorkerGlobalScope::SharedWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     SharedWorkerThread* thread,
-    base::TimeTicks time_origin)
+    base::TimeTicks time_origin,
+    const base::UnguessableToken& appcache_host_id)
     : WorkerGlobalScope(std::move(creation_params), thread, time_origin) {
+  appcache_host_ = MakeGarbageCollected<ApplicationCacheHostForWorker>(
+      appcache_host_id, GetBrowserInterfaceBrokerProxy(),
+      GetTaskRunner(TaskType::kInternalLoading));
 }
 
 SharedWorkerGlobalScope::~SharedWorkerGlobalScope() = default;
@@ -79,7 +73,8 @@ void SharedWorkerGlobalScope::Initialize(
     network::mojom::ReferrerPolicy response_referrer_policy,
     network::mojom::IPAddressSpace response_address_space,
     const Vector<CSPHeaderAndType>& response_csp_headers,
-    const Vector<String>* response_origin_trial_tokens) {
+    const Vector<String>* response_origin_trial_tokens,
+    int64_t appcache_id) {
   // Step 12.3. "Set worker global scope's url to response's url."
   InitializeURL(response_url);
 
@@ -106,6 +101,11 @@ void SharedWorkerGlobalScope::Initialize(
   // This should be called after OriginTrialContext::AddTokens() to install
   // origin trial features in JavaScript's global object.
   ScriptController()->PrepareForEvaluation();
+
+  DCHECK(appcache_host_);
+  appcache_host_->SelectCacheForWorker(
+      appcache_id, WTF::Bind(&SharedWorkerGlobalScope::OnAppCacheSelected,
+                             WrapWeakPersistent(this)));
 }
 
 // https://html.spec.whatwg.org/C/#worker-processing-model
@@ -199,7 +199,7 @@ void SharedWorkerGlobalScope::DidFetchClassicScript(
     ReportingProxy().DidFailToFetchClassicScript();
     return;
   }
-  ReportingProxy().DidFetchScript(classic_script_loader->AppCacheID());
+  ReportingProxy().DidFetchScript();
   probe::ScriptImported(this, classic_script_loader->Identifier(),
                         classic_script_loader->SourceText());
 
@@ -216,7 +216,8 @@ void SharedWorkerGlobalScope::DidFetchClassicScript(
              classic_script_loader->GetContentSecurityPolicy()
                  ? classic_script_loader->GetContentSecurityPolicy()->Headers()
                  : Vector<CSPHeaderAndType>(),
-             classic_script_loader->OriginTrialTokens());
+             classic_script_loader->OriginTrialTokens(),
+             classic_script_loader->AppCacheID());
 
   // Step 12.7. "Asynchronously complete the perform the fetch steps with
   // response."
@@ -233,6 +234,7 @@ void SharedWorkerGlobalScope::ExceptionThrown(ErrorEvent* event) {
 }
 
 void SharedWorkerGlobalScope::Trace(blink::Visitor* visitor) {
+  visitor->Trace(appcache_host_);
   WorkerGlobalScope::Trace(visitor);
 }
 

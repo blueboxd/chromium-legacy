@@ -266,15 +266,13 @@ void FindFormElements(content::RenderFrame* render_frame,
   WebVector<WebFormElement> forms;
   doc.Forms(forms);
 
-  for (size_t i = 0; i < forms.size(); ++i) {
-    WebFormElement fe = forms[i];
-
+  for (const WebFormElement& form : forms) {
     // Action URL must match.
-    if (data.action != form_util::GetCanonicalActionForForm(fe))
+    if (data.action != form_util::GetCanonicalActionForForm(form))
       continue;
 
     std::vector<WebFormControlElement> control_elements =
-        form_util::ExtractAutofillableElementsInForm(fe);
+        form_util::ExtractAutofillableElementsInForm(form);
     FormInputElementMap cur_map;
     if (FindFormInputElements(control_elements, data, ambiguous_or_empty_names,
                               &cur_map))
@@ -306,11 +304,6 @@ bool DoUsernamesMatch(const base::string16& potential_suggestion,
                                                          potential_suggestion);
 }
 
-// Returns whether the given |element| is editable.
-bool IsElementAutocompletable(const WebInputElement& element) {
-  return IsElementEditable(element);
-}
-
 // Returns whether the |username_element| is allowed to be autofilled.
 //
 // Note that if the user interacts with the |password_field| and the
@@ -319,8 +312,7 @@ bool IsElementAutocompletable(const WebInputElement& element) {
 // if it has been classified as username by accident.
 bool IsUsernameAmendable(const WebInputElement& username_element,
                          bool is_password_field_selected) {
-  return !username_element.IsNull() &&
-         IsElementAutocompletable(username_element) &&
+  return !username_element.IsNull() && IsElementEditable(username_element) &&
          (!is_password_field_selected || username_element.IsAutofilled() ||
           username_element.Value().IsEmpty());
 }
@@ -558,8 +550,7 @@ WebInputElement FindUsernameElementPrecedingPasswordElement(
     --iter;
     const WebInputElement* input = ToWebInputElement(&*iter);
     if (input && input->IsTextField() && !input->IsPasswordFieldForAutofill() &&
-        IsElementAutocompletable(*input) &&
-        form_util::IsWebElementVisible(*input)) {
+        IsElementEditable(*input) && form_util::IsWebElementVisible(*input)) {
       return *input;
     }
   }
@@ -772,8 +763,7 @@ bool PasswordAutofillAgent::FillSuggestion(
 
   if (!FindPasswordInfoForElement(*element, &username_element,
                                   &password_element, &password_info) ||
-      (!password_element.IsNull() &&
-       !IsElementAutocompletable(password_element))) {
+      (!password_element.IsNull() && !IsElementEditable(password_element))) {
     return false;
   }
 
@@ -852,8 +842,7 @@ bool PasswordAutofillAgent::PreviewSuggestion(
 
   if (!FindPasswordInfoForElement(*element, &username_element,
                                   &password_element, &password_info) ||
-      (!password_element.IsNull() &&
-       !IsElementAutocompletable(password_element))) {
+      (!password_element.IsNull() && !IsElementEditable(password_element))) {
     return false;
   }
 
@@ -1019,13 +1008,9 @@ bool PasswordAutofillAgent::ShowSuggestions(const WebInputElement& element,
     return false;
   }
 
-  // If autocomplete='off' is set on the form elements, no suggestion dialog
-  // should be shown. However, return |true| to indicate that this is a known
-  // password form and that the request to show suggestions has been handled (as
-  // a no-op).
-  if (!element.IsTextField() || !IsElementAutocompletable(element) ||
-      (!password_element.IsNull() &&
-       !IsElementAutocompletable(password_element))) {
+  // Check that all fillable elements are editable.
+  if (!element.IsTextField() || !IsElementEditable(element) ||
+      (!password_element.IsNull() && !IsElementEditable(password_element))) {
     return true;
   }
 
@@ -1771,7 +1756,7 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
   }
 
   // Don't fill username if password can't be set.
-  if (!IsElementAutocompletable(main_element)) {
+  if (!IsElementEditable(main_element)) {
     if (logger) {
       logger->LogMessage(
           Logger::STRING_FAILED_TO_FILL_NO_AUTOCOMPLETEABLE_ELEMENT);
@@ -1814,7 +1799,7 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
       // placeholder texts (e.g. "username or email") nor there is server-side
       // data that this value is placeholder.
       current_username = username_element.Value().Utf16();
-    } else if (IsElementAutocompletable(username_element)) {
+    } else if (IsElementEditable(username_element)) {
       current_username = fill_data.username_field.value;
     }
   }
@@ -1855,8 +1840,7 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
     password_generation_agent_->OnFieldAutofilled(password_element);
 
   // Input matches the username, fill in required values.
-  if (!username_element.IsNull() &&
-      IsElementAutocompletable(username_element)) {
+  if (!username_element.IsNull() && IsElementEditable(username_element)) {
     if (!username.empty() && (username_element.Value().IsEmpty() ||
                               prefilled_placeholder_username)) {
       AutofillField(username, username_element);

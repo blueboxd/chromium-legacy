@@ -69,7 +69,6 @@ public class TabGroupUiMediator {
     private final TabModelSelectorTabObserver mTabModelSelectorTabObserver;
     private final TabModelSelectorObserver mTabModelSelectorObserver;
     private boolean mIsTabGroupUiVisible;
-    private boolean mIsClosingAGroup;
 
     TabGroupUiMediator(
             BottomControlsCoordinator.BottomControlsVisibilityController visibilityController,
@@ -89,8 +88,10 @@ public class TabGroupUiMediator {
             @Override
             public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
                 if (!mIsTabGroupUiVisible) return;
-                if (type == TabSelectionType.FROM_CLOSE && !mIsClosingAGroup) return;
+                if (type == TabSelectionType.FROM_CLOSE) return;
                 if (getRelatedTabsForId(lastId).contains(tab)) return;
+                // TODO(995956): Optimization we can do here if we decided always hide the strip if
+                // related tab size down to 1.
                 resetTabStripWithRelatedTabsForId(tab.getId());
             }
 
@@ -101,7 +102,7 @@ public class TabGroupUiMediator {
                                           .getCurrentTabModelFilter()
                                           .getRelatedTabList(tab.getId());
 
-                mIsClosingAGroup = group.size() == 0;
+                if (group.size() == 1) resetTabStripWithRelatedTabsForId(Tab.INVALID_TAB_ID);
             }
 
             @Override
@@ -116,6 +117,11 @@ public class TabGroupUiMediator {
                 Tab currentTab = mTabModelSelector.getCurrentTab();
                 if (currentTab == null) return;
                 resetTabStripWithRelatedTabsForId(currentTab.getId());
+            }
+
+            @Override
+            public void tabClosureUndone(Tab tab) {
+                if (!mIsTabGroupUiVisible) resetTabStripWithRelatedTabsForId(tab.getId());
             }
         };
         mOverviewModeObserver = new EmptyOverviewModeObserver() {
@@ -140,7 +146,7 @@ public class TabGroupUiMediator {
                                                .getRelatedTabList(tab.getId());
                 int numTabs = listOfTabs.size();
                 // This is set to zero because the UI is hidden.
-                if (!mIsTabGroupUiVisible) numTabs = 0;
+                if (!mIsTabGroupUiVisible || numTabs == 1) numTabs = 0;
                 RecordHistogram.recordCountHistogram("TabStrip.TabCountOnPageLoad", numTabs);
             }
         };

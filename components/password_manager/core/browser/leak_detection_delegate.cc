@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/leak_detection_delegate.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/save_password_progress_logger.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check.h"
@@ -34,8 +35,10 @@ void LeakDetectionDelegate::StartLeakCheck(const autofill::PasswordForm& form) {
 
   leak_check_ = leak_factory_->TryCreateLeakCheck(
       this, client_->GetIdentityManager(), client_->GetURLLoaderFactory());
-  if (leak_check_)
+  if (leak_check_) {
+    is_leaked_timer_ = std::make_unique<base::ElapsedTimer>();
     leak_check_->Start(form.origin, form.username_value, form.password_value);
+  }
 }
 
 void LeakDetectionDelegate::OnLeakDetectionDone(bool is_leaked,
@@ -47,8 +50,16 @@ void LeakDetectionDelegate::OnLeakDetectionDone(bool is_leaked,
     BrowserSavePasswordProgressLogger logger(client_->GetLogManager());
     logger.LogBoolean(Logger::STRING_LEAK_DETECTION_FINISHED, is_leaked);
   }
-  if (is_leaked)
-    client_->NotifyUserCredentialsWereLeaked(url);
+  if (is_leaked) {
+    DCHECK(is_leaked_timer_);
+    base::UmaHistogramTimes(
+        "PasswordManager.LeakDetection.NotifyIsLeakedTime",
+        std::exchange(is_leaked_timer_, nullptr)->Elapsed());
+    client_->NotifyUserCredentialsWereLeaked(
+        password_manager::CreateLeakTypeFromBools(
+            /*is_saved=*/false, /*is_reused=*/false, /*is_syncing=*/false),
+        url);
+  }
 }
 
 void LeakDetectionDelegate::OnError(LeakDetectionError error) {

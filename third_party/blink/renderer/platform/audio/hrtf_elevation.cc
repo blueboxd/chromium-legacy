@@ -68,24 +68,23 @@ const int kElevationIndexTable[kElevationIndexTableSize] = {
 // Lazily load a concatenated HRTF database for given subject and store it in a
 // local hash table to ensure quick efficient future retrievals.
 static scoped_refptr<AudioBus> GetConcatenatedImpulseResponsesForSubject(
-    const String& subject_name) {
-  typedef HashMap<String, scoped_refptr<AudioBus>> AudioBusMap;
+    int subject_resource_id) {
+  typedef HashMap<int, scoped_refptr<AudioBus>> AudioBusMap;
   DEFINE_THREAD_SAFE_STATIC_LOCAL(AudioBusMap, audio_bus_map, ());
   DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, ());
 
   MutexLocker locker(mutex);
   scoped_refptr<AudioBus> bus;
-  AudioBusMap::iterator iterator = audio_bus_map.find(subject_name);
+  AudioBusMap::iterator iterator = audio_bus_map.find(subject_resource_id);
   if (iterator == audio_bus_map.end()) {
     scoped_refptr<AudioBus> concatenated_impulse_responses(
-        AudioBus::GetDataResource(subject_name.Utf8().c_str(),
-                                  kResponseSampleRate));
+        AudioBus::GetDataResource(subject_resource_id, kResponseSampleRate));
     DCHECK(concatenated_impulse_responses);
     if (!concatenated_impulse_responses)
       return nullptr;
 
     bus = concatenated_impulse_responses;
-    audio_bus_map.Set(subject_name, bus);
+    audio_bus_map.Set(subject_resource_id, bus);
   } else
     bus = iterator->value;
 
@@ -107,7 +106,7 @@ bool HRTFElevation::CalculateKernelsForAzimuthElevation(
     int azimuth,
     int elevation,
     float sample_rate,
-    const String& subject_name,
+    int subject_resource_id,
     std::unique_ptr<HRTFKernel>& kernel_l,
     std::unique_ptr<HRTFKernel>& kernel_r) {
   // Valid values for azimuth are 0 -> 345 in 15 degree increments.
@@ -128,7 +127,7 @@ bool HRTFElevation::CalculateKernelsForAzimuthElevation(
   int positive_elevation = elevation < 0 ? elevation + 360 : elevation;
 
   scoped_refptr<AudioBus> bus(
-      GetConcatenatedImpulseResponsesForSubject(subject_name));
+      GetConcatenatedImpulseResponsesForSubject(subject_resource_id));
 
   if (!bus)
     return false;
@@ -220,7 +219,7 @@ static int g_max_elevations[] = {
 };
 
 std::unique_ptr<HRTFElevation> HRTFElevation::CreateForSubject(
-    const String& subject_name,
+    int subject_resource_id,
     int elevation,
     float sample_rate) {
   bool is_elevation_good =
@@ -243,7 +242,7 @@ std::unique_ptr<HRTFElevation> HRTFElevation::CreateForSubject(
 
     bool success = CalculateKernelsForAzimuthElevation(
         raw_index * kAzimuthSpacing, actual_elevation, sample_rate,
-        subject_name, kernel_list_l->at(interpolated_index),
+        subject_resource_id, kernel_list_l->at(interpolated_index),
         kernel_list_r->at(interpolated_index));
     if (!success)
       return nullptr;

@@ -46,13 +46,6 @@ void ChromeAppCacheService::CreateBackend(
                  std::move(receiver));
 }
 
-void ChromeAppCacheService::CreateBackendForRequest(
-    int process_id,
-    blink::mojom::AppCacheBackendRequest request) {
-  // Implicit conversion to mojo::PendingReceiver<T>.
-  CreateBackend(process_id, std::move(request));
-}
-
 void ChromeAppCacheService::Shutdown() {
   receivers_.Clear();
   partition_ = nullptr;

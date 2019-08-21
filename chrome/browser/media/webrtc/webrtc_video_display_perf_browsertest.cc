@@ -463,16 +463,9 @@ IN_PROC_BROWSER_TEST_P(WebRtcVideoDisplayPerfBrowserTest,
   TestVideoDisplayPerf("VP9");
 }
 
-// Fails consistently on Win7 builders.  crbug.com/993020.
-#if defined(OS_WIN)
-#define MAYBE_MANUAL_TestVideoDisplayPerfH264 \
-  DISABLED_MANUAL_TestVideoDisplayPerfH264
-#else
-#define MAYBE_MANUAL_TestVideoDisplayPerfH264 MANUAL_TestVideoDisplayPerfH264
-#endif
 #if BUILDFLAG(RTC_USE_H264)
 IN_PROC_BROWSER_TEST_P(WebRtcVideoDisplayPerfBrowserTest,
-                       MAYBE_MANUAL_TestVideoDisplayPerfH264) {
+                       MANUAL_TestVideoDisplayPerfH264) {
   if (!base::FeatureList::IsEnabled(content::kWebRtcH264WithOpenH264FFmpeg)) {
     LOG(WARNING) << "Run-time feature WebRTC-H264WithOpenH264FFmpeg disabled. "
                     "Skipping WebRtcVideoDisplayPerfBrowserTest.MANUAL_"

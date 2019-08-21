@@ -19,7 +19,7 @@ class MarkingVerifier final : public Visitor {
 
   void Visit(void* object, TraceDescriptor desc) final;
   void VisitWeak(void* object,
-                 void** object_slot,
+                 void* object_weak_ref,
                  TraceDescriptor desc,
                  WeakCallback callback) final;
 

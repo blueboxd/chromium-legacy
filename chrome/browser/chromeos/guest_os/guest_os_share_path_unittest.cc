@@ -297,21 +297,7 @@ class GuestOsSharePathTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(GuestOsSharePathTest);
 };
 
-TEST_F(GuestOsSharePathTest, SuccessDownloadsRoot) {
-  features_.InitWithFeatures({}, {chromeos::features::kMyFilesVolume});
-  SetUpVolume();
-  guest_os_share_path_->SharePath(
-      "vm-running", root_, PERSIST_NO,
-      base::BindOnce(&GuestOsSharePathTest::SharePathCallback,
-                     base::Unretained(this), "vm-running", Persist::NO,
-                     SeneschalClientCalled::YES,
-                     &vm_tools::seneschal::SharePathRequest::DOWNLOADS, "",
-                     Success::YES, ""));
-  run_loop()->Run();
-}
-
 TEST_F(GuestOsSharePathTest, SuccessMyFilesRoot) {
-  features_.InitWithFeatures({chromeos::features::kMyFilesVolume}, {});
   SetUpVolume();
   base::FilePath my_files =
       file_manager::util::GetMyFilesFolderForProfile(profile());
@@ -326,7 +312,6 @@ TEST_F(GuestOsSharePathTest, SuccessMyFilesRoot) {
 }
 
 TEST_F(GuestOsSharePathTest, SuccessNoPersist) {
-  features_.InitWithFeatures({chromeos::features::kMyFilesVolume}, {});
   SetUpVolume();
   guest_os_share_path_->SharePath(
       "vm-running", share_path_, PERSIST_NO,
@@ -339,7 +324,6 @@ TEST_F(GuestOsSharePathTest, SuccessNoPersist) {
 }
 
 TEST_F(GuestOsSharePathTest, SuccessPersist) {
-  features_.InitWithFeatures({chromeos::features::kMyFilesVolume}, {});
   SetUpVolume();
   guest_os_share_path_->SharePath(
       "vm-running", share_path_, PERSIST_YES,
@@ -352,7 +336,6 @@ TEST_F(GuestOsSharePathTest, SuccessPersist) {
 }
 
 TEST_F(GuestOsSharePathTest, SuccessPluginVm) {
-  features_.InitWithFeatures({chromeos::features::kMyFilesVolume}, {});
   SetUpVolume();
   guest_os_share_path_->SharePath(
       "PvmDefault", share_path_, PERSIST_NO,
@@ -533,8 +516,7 @@ TEST_F(GuestOsSharePathTest, FailRemovableRoot) {
 }
 
 TEST_F(GuestOsSharePathTest, SharePathErrorSeneschal) {
-  features_.InitWithFeatures(
-      {chromeos::features::kMyFilesVolume, features::kCrostini}, {});
+  features_.InitWithFeatures({features::kCrostini}, {});
   GetFakeUserManager()->LoginUser(account_id_);
   SetUpVolume();
   vm_tools::concierge::StartVmResponse start_vm_response;
@@ -594,8 +576,7 @@ TEST_F(GuestOsSharePathTest, SharePathErrorNotUnderDownloads) {
 }
 
 TEST_F(GuestOsSharePathTest, SharePathVmToBeRestarted) {
-  features_.InitWithFeatures(
-      {chromeos::features::kMyFilesVolume, features::kCrostini}, {});
+  features_.InitWithFeatures({features::kCrostini}, {});
   GetFakeUserManager()->LoginUser(account_id_);
   SetUpVolume();
   guest_os_share_path_->SharePath(
@@ -717,7 +698,6 @@ TEST_F(GuestOsSharePathTest, RegisterPersistedPaths) {
 }
 
 TEST_F(GuestOsSharePathTest, UnsharePathSuccess) {
-  features_.InitWithFeatures({chromeos::features::kMyFilesVolume}, {});
   SetUpVolume();
   DictionaryPrefUpdate update(profile()->GetPrefs(),
                               prefs::kGuestOSPathsSharedToVms);
@@ -735,7 +715,6 @@ TEST_F(GuestOsSharePathTest, UnsharePathSuccess) {
 }
 
 TEST_F(GuestOsSharePathTest, UnsharePathRoot) {
-  features_.InitWithFeatures({chromeos::features::kMyFilesVolume}, {});
   SetUpVolume();
   guest_os_share_path_->UnsharePath(
       "vm-running", root_, true,
@@ -860,7 +839,6 @@ TEST_F(GuestOsSharePathTest, GetPersistedSharedPaths) {
 }
 
 TEST_F(GuestOsSharePathTest, ShareOnMountSuccessParentMount) {
-  features_.InitWithFeatures({chromeos::features::kMyFilesVolume}, {});
   SetUpVolume();
   crostini::CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
       crostini::kCrostiniDefaultVmName);
@@ -876,7 +854,6 @@ TEST_F(GuestOsSharePathTest, ShareOnMountSuccessParentMount) {
 }
 
 TEST_F(GuestOsSharePathTest, ShareOnMountSuccessSelfMount) {
-  features_.InitWithFeatures({chromeos::features::kMyFilesVolume}, {});
   SetUpVolume();
   crostini::CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
       crostini::kCrostiniDefaultVmName);
@@ -924,7 +901,6 @@ TEST_F(GuestOsSharePathTest, ShareOnMountVolumeUnrelated) {
 }
 
 TEST_F(GuestOsSharePathTest, UnshareOnUnmountSuccessParentMount) {
-  features_.InitWithFeatures({chromeos::features::kMyFilesVolume}, {});
   SetUpVolume();
   crostini::CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
       crostini::kCrostiniDefaultVmName);
@@ -938,7 +914,6 @@ TEST_F(GuestOsSharePathTest, UnshareOnUnmountSuccessParentMount) {
 }
 
 TEST_F(GuestOsSharePathTest, UnshareOnUnmountSuccessSelfMount) {
-  features_.InitWithFeatures({chromeos::features::kMyFilesVolume}, {});
   SetUpVolume();
   crostini::CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
       crostini::kCrostiniDefaultVmName);
@@ -954,7 +929,6 @@ TEST_F(GuestOsSharePathTest, UnshareOnUnmountSuccessSelfMount) {
 }
 
 TEST_F(GuestOsSharePathTest, UnshareOnDeleteMountExists) {
-  features_.InitWithFeatures({chromeos::features::kMyFilesVolume}, {});
   SetUpVolume();
   crostini::CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
       crostini::kCrostiniDefaultVmName);
@@ -967,7 +941,6 @@ TEST_F(GuestOsSharePathTest, UnshareOnDeleteMountExists) {
 }
 
 TEST_F(GuestOsSharePathTest, UnshareOnDeleteMountRemoved) {
-  features_.InitWithFeatures({chromeos::features::kMyFilesVolume}, {});
   SetUpVolume();
   crostini::CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
       crostini::kCrostiniDefaultVmName);

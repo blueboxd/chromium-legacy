@@ -366,6 +366,7 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
   multi_gpu_category = ''
   multi_gpu_style = ''
   gpu_series_list = None
+  intel_gpu_generation = None
   driver_vendor = ''
   driver_version = None
   gl_renderer = ''
@@ -425,6 +426,8 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
       multi_gpu_style = entry[key]
     elif key == 'gpu_series':
       gpu_series_list = entry[key]
+    elif key == 'intel_gpu_generation':
+      intel_gpu_generation = entry[key]
     elif key == 'driver_vendor':
       driver_vendor = entry[key]
     elif key == 'driver_version':
@@ -496,6 +499,7 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
                            data_file, data_helper_file)
   write_gpu_series_list(entry_id, is_exception, exception_id, gpu_series_list,
                         data_file, data_helper_file)
+  write_version(intel_gpu_generation, 'intel_gpu_generation', data_file)
   # group a bunch of less used conditions
   if (gl_version != None or pixel_shader_version != None or in_process_gpu or
       gl_reset_notification_strategy != None or direct_rendering_version != None
@@ -518,17 +522,21 @@ def write_gpu_series_list(entry_id, is_exception, exception_id, gpu_series_list,
     data_helper_file.write('const GpuSeriesType %s[%d] = {\n' %
                            (var_name, len(gpu_series_list)))
     gpu_series_map = {
-      'intel_sandybridge': 'kIntelSandyBridge',
-      'intel_valleyview': 'kIntelValleyView',
-      'intel_ivybridge': 'kIntelIvyBridge',
+      'intel_sandybridge': 'kIntelSandybridge',
+      'intel_baytrail': 'kIntelBaytrail',
+      'intel_ivybridge': 'kIntelIvybridge',
       'intel_haswell': 'kIntelHaswell',
-      'intel_cherryview': 'kIntelCherryView',
+      'intel_cherrytrail': 'kIntelCherrytrail',
       'intel_broadwell': 'kIntelBroadwell',
-      'intel_apollolake': 'kIntelApolloLake',
-      'intel_skylake': 'kIntelSkyLake',
-      'intel_geminilake': 'kIntelGeminiLake',
-      'intel_kabylake': 'kIntelKabyLake',
-      'intel_coffeelake': 'kIntelCoffeeLake',
+      'intel_apollolake': 'kIntelApollolake',
+      'intel_skylake': 'kIntelSkylake',
+      'intel_geminilake': 'kIntelGeminilake',
+      'intel_kabylake': 'kIntelKabylake',
+      'intel_coffeelake': 'kIntelCoffeelake',
+      'intel_whiskeylake': 'kIntelWhiskeylake',
+      'intel_cometlake': 'kIntelCometlake',
+      'intel_cannonlake': 'kIntelCannonlake',
+      'intel_icelake': 'kIntelIcelake'
     }
     for series in gpu_series_list:
       assert series in gpu_series_map

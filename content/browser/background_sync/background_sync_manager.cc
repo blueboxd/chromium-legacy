@@ -1820,9 +1820,21 @@ void BackgroundSyncManager::FireReadyEventsImpl(
   if (to_fire.empty()) {
     if (reschedule)
       ScheduleDelayedProcessingOfRegistrations(sync_type);
+    else {
+      // This method has been called from a Chrome wakeup task.
+      BackgroundSyncMetrics::RecordEventsFiredFromWakeupTask(
+          sync_type, /* events_fired= */ false);
+    }
+
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   std::move(callback));
     return;
+  }
+
+  if (!reschedule) {
+    // This method has been called from a Chrome wakeup task.
+    BackgroundSyncMetrics::RecordEventsFiredFromWakeupTask(
+        sync_type, /* events_fired= */ true);
   }
 
   base::TimeTicks start_time = base::TimeTicks::Now();

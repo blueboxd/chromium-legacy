@@ -8,12 +8,9 @@
 #include "chrome/browser/ui/passwords/credential_leak_dialog_controller.h"
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
-#include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
-#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -35,7 +32,8 @@ std::unique_ptr<views::View> CreateIllustration() {
 
 // Creates the content containing the title and description for the dialog
 // rendered below the illustration.
-std::unique_ptr<views::View> CreateContent() {
+std::unique_ptr<views::View> CreateContent(const base::string16& title,
+                                           const base::string16& description) {
   auto content = std::make_unique<views::View>();
   content->SetLayoutManager(std::make_unique<BoxLayout>(
       BoxLayout::Orientation::kVertical, gfx::Insets(),
@@ -46,15 +44,13 @@ std::unique_ptr<views::View> CreateContent() {
           views::CONTROL, views::CONTROL)));
 
   auto title_label = std::make_unique<views::Label>(
-      l10n_util::GetStringUTF16(IDS_CREDENTIAL_LEAK_TITLE),
-      views::style::CONTEXT_DIALOG_TITLE, views::style::STYLE_PRIMARY);
+      title, views::style::CONTEXT_DIALOG_TITLE, views::style::STYLE_PRIMARY);
   title_label->SetMultiLine(true);
   title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   content->AddChildView(std::move(title_label));
 
   auto description_label = std::make_unique<views::Label>(
-      l10n_util::GetStringUTF16(IDS_CREDENTIAL_LEAK_MESSAGE),
-      views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT);
+      description, views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT);
   description_label->SetMultiLine(true);
   description_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   content->AddChildView(std::move(description_label));
@@ -99,8 +95,8 @@ gfx::Size CredentialLeakDialogView::CalculatePreferredSize() const {
 
 base::string16 CredentialLeakDialogView::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  return l10n_util::GetStringUTF16(
-      button == ui::DIALOG_BUTTON_OK ? IDS_CREDENTIAL_LEAK_OK : IDS_CLOSE);
+  return button == ui::DIALOG_BUTTON_OK ? controller_->GetAcceptButtonLabel()
+                                        : controller_->GetCloseButtonLabel();
 }
 
 void CredentialLeakDialogView::WindowClosing() {
@@ -110,10 +106,16 @@ void CredentialLeakDialogView::WindowClosing() {
 }
 
 bool CredentialLeakDialogView::Accept() {
-  if (controller_) {
+  if (controller_ && controller_->ShouldCheckPasswords()) {
     controller_->OnCheckPasswords();
   }
   return true;
+}
+
+int CredentialLeakDialogView::GetDialogButtons() const {
+  return controller_->ShouldShowCloseButton()
+             ? ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL
+             : ui::DIALOG_BUTTON_OK;
 }
 
 void CredentialLeakDialogView::InitWindow() {
@@ -121,7 +123,8 @@ void CredentialLeakDialogView::InitWindow() {
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       0 /* between_child_spacing */));
   std::unique_ptr<views::View> illustration = CreateIllustration();
-  std::unique_ptr<views::View> content = CreateContent();
+  std::unique_ptr<views::View> content =
+      CreateContent(controller_->GetTitle(), controller_->GetDescription());
   AddChildView(std::move(illustration));
   AddChildView(std::move(content));
 }

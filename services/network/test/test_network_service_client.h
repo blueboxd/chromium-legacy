@@ -41,14 +41,6 @@ class TestNetworkServiceClient : public network::mojom::NetworkServiceClient {
   void OnDataUseUpdate(int32_t network_traffic_annotation_id_hash,
                        int64_t recv_bytes,
                        int64_t sent_bytes) override;
-#if defined(OS_ANDROID)
-  void OnGenerateHttpNegotiateAuthToken(
-      const std::string& server_auth_token,
-      bool can_delegate,
-      const std::string& auth_negotiate_android_account_type,
-      const std::string& spn,
-      OnGenerateHttpNegotiateAuthTokenCallback callback) override;
-#endif
   void OnRawRequest(
       int32_t process_id,
       int32_t routing_id,

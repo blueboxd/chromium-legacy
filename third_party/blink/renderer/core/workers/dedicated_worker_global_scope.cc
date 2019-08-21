@@ -33,6 +33,7 @@
 #include <memory>
 #include "base/feature_list.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/post_message_helper.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
@@ -86,9 +87,12 @@ DedicatedWorkerGlobalScope* DedicatedWorkerGlobalScope::Create(
   // Initialize().
   // Pass dummy origin trial tokens here as it is already set to outside's
   // origin trial tokens in DedicatedWorkerGlobalScope's constructor.
+  // Pass kAppCacheNoCacheId here as on-the-main-thread script fetch doesn't
+  // have its own appcache and instead depends on the parent frame's one.
   global_scope->Initialize(response_script_url, response_referrer_policy,
                            response_address_space, Vector<CSPHeaderAndType>(),
-                           nullptr /* response_origin_trial_tokens */);
+                           nullptr /* response_origin_trial_tokens */,
+                           mojom::blink::kAppCacheNoCacheId);
   return global_scope;
 }
 
@@ -116,7 +120,8 @@ void DedicatedWorkerGlobalScope::Initialize(
     network::mojom::ReferrerPolicy response_referrer_policy,
     network::mojom::IPAddressSpace response_address_space,
     const Vector<CSPHeaderAndType>& /* response_csp_headers */,
-    const Vector<String>* /* response_origin_trial_tokens */) {
+    const Vector<String>* /* response_origin_trial_tokens */,
+    int64_t appcache_id) {
   // Step 12.3. "Set worker global scope's url to response's url."
   InitializeURL(response_url);
 
@@ -145,6 +150,9 @@ void DedicatedWorkerGlobalScope::Initialize(
   // DedicatedWorkerGlobalScope inherits the outside's OriginTrialTokens in the
   // constructor instead of the response origin trial tokens.
   ScriptController()->PrepareForEvaluation();
+
+  // TODO(https://crbug.com/945673): Notify an application cache host of
+  // |appcache_id| here to support AppCache with PlzDedicatedWorker.
 }
 
 // https://html.spec.whatwg.org/C/#worker-processing-model
@@ -270,7 +278,7 @@ void DedicatedWorkerGlobalScope::DidFetchClassicScript(
     ReportingProxy().DidFailToFetchClassicScript();
     return;
   }
-  ReportingProxy().DidFetchScript(classic_script_loader->AppCacheID());
+  ReportingProxy().DidFetchScript();
   probe::ScriptImported(this, classic_script_loader->Identifier(),
                         classic_script_loader->SourceText());
 
@@ -289,7 +297,8 @@ void DedicatedWorkerGlobalScope::DidFetchClassicScript(
   Initialize(classic_script_loader->ResponseURL(), response_referrer_policy,
              classic_script_loader->ResponseAddressSpace(),
              Vector<CSPHeaderAndType>(),
-             nullptr /* response_origin_trial_tokens */);
+             nullptr /* response_origin_trial_tokens */,
+             classic_script_loader->AppCacheID());
 
   // Step 12.7. "Asynchronously complete the perform the fetch steps with
   // response."

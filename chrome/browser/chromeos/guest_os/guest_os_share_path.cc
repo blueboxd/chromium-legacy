@@ -219,7 +219,7 @@ void GuestOsSharePath::CallSeneschalSharePath(const std::string& vm_name,
   base::FilePath drivefs_mount_point_path;
   base::FilePath drivefs_mount_name;
 
-  // Allow MyFiles|Downloads directory and subdirs.
+  // Allow MyFiles directory and subdirs.
   bool allowed_path = false;
   base::FilePath my_files =
       file_manager::util::GetMyFilesFolderForProfile(profile_);
@@ -227,13 +227,8 @@ void GuestOsSharePath::CallSeneschalSharePath(const std::string& vm_name,
   base::FilePath removable_media(file_manager::util::kRemovableMediaPath);
   if (my_files == path || my_files.AppendRelativePath(path, &relative_path)) {
     allowed_path = true;
-    if (base::FeatureList::IsEnabled(chromeos::features::kMyFilesVolume)) {
-      request.set_storage_location(
-          vm_tools::seneschal::SharePathRequest::MY_FILES);
-    } else {
-      request.set_storage_location(
-          vm_tools::seneschal::SharePathRequest::DOWNLOADS);
-    }
+    request.set_storage_location(
+        vm_tools::seneschal::SharePathRequest::MY_FILES);
     request.set_owner_id(crostini::CryptohomeIdForProfile(profile_));
   } else if (base::FeatureList::IsEnabled(chromeos::features::kDriveFs) &&
              integration_service &&

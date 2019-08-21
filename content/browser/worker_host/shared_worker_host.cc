@@ -317,6 +317,20 @@ void SharedWorkerHost::AllowCacheStorage(
           GetRenderFrameIDsForWorker()));
 }
 
+void SharedWorkerHost::CreateAppCacheBackend(
+    mojo::PendingReceiver<blink::mojom::AppCacheBackend> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RenderProcessHost* worker_process_host = GetProcessHost();
+  if (!worker_process_host)
+    return;
+  auto* storage_partition_impl = static_cast<StoragePartitionImpl*>(
+      worker_process_host->GetStoragePartition());
+  if (!storage_partition_impl)
+    return;
+  storage_partition_impl->GetAppCacheService()->CreateBackend(
+      worker_process_host->GetID(), std::move(receiver));
+}
+
 void SharedWorkerHost::TerminateWorker() {
   switch (phase_) {
     case Phase::kInitial:

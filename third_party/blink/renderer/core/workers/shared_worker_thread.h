@@ -40,15 +40,14 @@ struct GlobalScopeCreationParams;
 
 class CORE_EXPORT SharedWorkerThread : public WorkerThread {
  public:
-  explicit SharedWorkerThread(WorkerReportingProxy&);
+  SharedWorkerThread(WorkerReportingProxy&,
+                     const base::UnguessableToken& appcache_host_id);
   ~SharedWorkerThread() override;
 
   WorkerBackingThread& GetWorkerBackingThread() override {
     return *worker_backing_thread_;
   }
   void ClearWorkerBackingThread() override;
-
-  void OnAppCacheSelected();
 
  private:
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
@@ -58,9 +57,8 @@ class CORE_EXPORT SharedWorkerThread : public WorkerThread {
     return WebThreadType::kSharedWorkerThread;
   }
 
-  void OnAppCacheSelectedOnWorkerThread();
-
   std::unique_ptr<WorkerBackingThread> worker_backing_thread_;
+  const base::UnguessableToken appcache_host_id_;
 };
 
 }  // namespace blink

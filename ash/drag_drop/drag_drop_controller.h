@@ -116,6 +116,7 @@ class ASH_EXPORT DragDropController : public aura::client::DragDropClient,
   gfx::Vector2d drag_image_offset_;
   std::unique_ptr<ui::OSExchangeData> drag_data_;
   int drag_operation_;
+  int current_drag_actions_ = 0;
 
   // Window that is currently under the drag cursor.
   aura::Window* drag_window_;

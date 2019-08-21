@@ -419,17 +419,10 @@ public class WebApkUma {
         long minFreeBytes = 0;
 
         // Retrieve platform-appropriate values first
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            minFreePercent = Settings.Global.getInt(
-                    resolver, sysStorageThresholdPercentage, defaultThresholdPercentage);
-            minFreeBytes = Settings.Global.getLong(
-                    resolver, sysStorageThresholdMaxBytes, defaultThresholdMaxBytes);
-        } else {
-            minFreePercent = Settings.Secure.getInt(
-                    resolver, sysStorageThresholdPercentage, defaultThresholdPercentage);
-            minFreeBytes = Settings.Secure.getLong(
-                    resolver, sysStorageThresholdMaxBytes, defaultThresholdMaxBytes);
-        }
+        minFreePercent = Settings.Global.getInt(
+                resolver, sysStorageThresholdPercentage, defaultThresholdPercentage);
+        minFreeBytes = Settings.Global.getLong(
+                resolver, sysStorageThresholdMaxBytes, defaultThresholdMaxBytes);
 
         long minFreePercentInBytes = (partitionTotalBytes * minFreePercent) / 100;
 

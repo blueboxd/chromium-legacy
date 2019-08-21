@@ -114,7 +114,6 @@ constexpr NSUInteger kUIViewAnimationCurveToOptionsShift = 16;
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
 
-#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
   if (@available(iOS 13, *)) {
     if ([self.traitCollection
             hasDifferentColorAppearanceComparedToTraitCollection:
@@ -125,7 +124,6 @@ constexpr NSUInteger kUIViewAnimationCurveToOptionsShift = 16;
       }];
     }
   }
-#endif
 }
 
 - (void)loadView {
@@ -282,7 +280,6 @@ constexpr NSUInteger kUIViewAnimationCurveToOptionsShift = 16;
     UIView* stackHolder = [[UIView alloc] init];
     stackHolder.layer.cornerRadius = kTextFieldCornerRadius;
     stackHolder.layer.borderColor = UIColor.cr_separatorColor.CGColor;
-#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
     if (@available(iOS 13, *)) {
       // Use performAsCurrentTraitCollection to get the correct CGColor for the
       // given dynamic color and current userInterfaceStyle.
@@ -290,7 +287,6 @@ constexpr NSUInteger kUIViewAnimationCurveToOptionsShift = 16;
         stackHolder.layer.borderColor = UIColor.cr_separatorColor.CGColor;
       }];
     }
-#endif
     stackHolder.layer.borderWidth = 1.0 / [UIScreen mainScreen].scale;
     stackHolder.clipsToBounds = YES;
     stackHolder.backgroundColor = UIColor.cr_secondarySystemBackgroundColor;

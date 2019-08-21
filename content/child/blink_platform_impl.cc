@@ -361,11 +361,6 @@ struct DataResource {
 };
 
 const DataResource kDataResources[] = {
-    {"missingImage", IDR_BROKENIMAGE, ui::SCALE_FACTOR_100P, false},
-    {"missingImage@2x", IDR_BROKENIMAGE, ui::SCALE_FACTOR_200P, false},
-    {"searchCancel", IDR_SEARCH_CANCEL, ui::SCALE_FACTOR_100P, false},
-    {"searchCancelPressed", IDR_SEARCH_CANCEL_PRESSED, ui::SCALE_FACTOR_100P,
-     false},
     {"generatePassword", IDR_PASSWORD_GENERATION_ICON, ui::SCALE_FACTOR_100P,
      false},
     {"generatePasswordHover", IDR_PASSWORD_GENERATION_ICON_HOVER,
@@ -374,11 +369,6 @@ const DataResource kDataResources[] = {
      ui::SCALE_FACTOR_NONE, true},
     {"DocumentXMLTreeViewer.js", IDR_DOCUMENTXMLTREEVIEWER_JS,
      ui::SCALE_FACTOR_NONE, true},
-    {"placeholderIcon", IDR_PLACEHOLDER_ICON, ui::SCALE_FACTOR_100P, false},
-    {"brokenCanvas", IDR_BROKENCANVAS, ui::SCALE_FACTOR_100P, false},
-    {"brokenCanvas@2x", IDR_BROKENCANVAS, ui::SCALE_FACTOR_200P, false},
-    {"Composite", IDR_AUDIO_SPATIALIZATION_COMPOSITE, ui::SCALE_FACTOR_NONE,
-     false},
 };
 
 class NestedMessageLoopRunnerImpl

@@ -103,14 +103,15 @@ class SVGUseElement final : public SVGGraphicsElement,
     kDontAddObserver,
   };
   Element* ResolveTargetElement(ObserveBehavior);
-  void BuildShadowAndInstanceTree(SVGElement& target);
+  void AttachShadowTree(SVGElement& target);
+  void DetachShadowTree();
   void ClearInstanceRoot();
   Element* CreateInstanceTree(SVGElement& target_root) const;
   void ClearResourceReference();
   bool HasCycleUseReferencing(const ContainerNode& target_instance,
                               const SVGElement& new_target) const;
   void ExpandUseElementsInShadowTree();
-  void CloneNonMarkupEventListeners();
+  void PostProcessInstanceTree();
   void AddReferencesToFirstDegreeNestedUseElements(SVGElement& target);
 
   void InvalidateDependentShadowTrees();

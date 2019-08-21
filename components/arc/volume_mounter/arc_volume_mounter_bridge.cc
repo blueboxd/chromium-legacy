@@ -96,8 +96,7 @@ ArcVolumeMounterBridge::~ArcVolumeMounterBridge() {
 
 // Sends MountEvents of all existing MountPoints in cros-disks.
 void ArcVolumeMounterBridge::SendAllMountEvents() {
-  if (base::FeatureList::IsEnabled(chromeos::features::kMyFilesVolume))
-    SendMountEventForMyFiles();
+  SendMountEventForMyFiles();
 
   for (const auto& keyValue : DiskMountManager::GetInstance()->mount_points()) {
     OnMountEvent(DiskMountManager::MountEvent::MOUNTING,

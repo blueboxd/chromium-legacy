@@ -64,6 +64,9 @@ class TestDirectorySetterUpper {
   // invariant checks and perform the SaveChanges action on the directory.
   virtual void TearDown();
 
+  // Returns mutable version of Cryptographer owned by |encryption_handler_|.
+  Cryptographer* GetCryptographer(const syncable::BaseTransaction* trans);
+
   syncable::Directory* directory() { return directory_.get(); }
 
   SyncEncryptionHandler* encryption_handler() { return &encryption_handler_; }

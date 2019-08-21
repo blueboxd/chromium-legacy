@@ -188,6 +188,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   void AppendProtocolHandlerSubMenu();
   void AppendPasswordItems();
   void AppendPictureInPictureItem();
+  void MaybeAppendClickToCallItem();
 
   // Command enabled query functions.
   bool IsReloadEnabled() const;

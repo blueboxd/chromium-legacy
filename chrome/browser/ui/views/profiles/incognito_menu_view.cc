@@ -38,24 +38,7 @@ IncognitoMenuView::IncognitoMenuView(views::Button* anchor_button,
 
 IncognitoMenuView::~IncognitoMenuView() = default;
 
-void IncognitoMenuView::Reset() {
-  ProfileMenuViewBase::Reset();
-  exit_button_ = nullptr;
-}
-
-void IncognitoMenuView::Init() {
-  Reset();
-  AddIncognitoWindowCountView();
-  RepopulateViewFromMenuItems();
-}
-
-base::string16 IncognitoMenuView::GetAccessibleWindowTitle() const {
-  return l10n_util::GetPluralStringFUTF16(
-      IDS_INCOGNITO_BUBBLE_ACCESSIBLE_TITLE,
-      BrowserList::GetIncognitoSessionsActiveForProfile(browser()->profile()));
-}
-
-void IncognitoMenuView::AddIncognitoWindowCountView() {
+void IncognitoMenuView::BuildMenu() {
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   int incognito_window_count =
       BrowserList::GetIncognitoSessionsActiveForProfile(browser()->profile());
@@ -84,6 +67,12 @@ void IncognitoMenuView::AddIncognitoWindowCountView() {
       l10n_util::GetStringUTF16(IDS_INCOGNITO_PROFILE_MENU_CLOSE_BUTTON),
       base::BindRepeating(&IncognitoMenuView::OnExitButtonClicked,
                           base::Unretained(this)));
+}
+
+base::string16 IncognitoMenuView::GetAccessibleWindowTitle() const {
+  return l10n_util::GetPluralStringFUTF16(
+      IDS_INCOGNITO_BUBBLE_ACCESSIBLE_TITLE,
+      BrowserList::GetIncognitoSessionsActiveForProfile(browser()->profile()));
 }
 
 void IncognitoMenuView::OnExitButtonClicked() {

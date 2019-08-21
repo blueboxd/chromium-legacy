@@ -49,13 +49,11 @@
   self.started = YES;
 
   self.viewController.longPressDelegate = self.longPressDelegate;
-#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
   if (@available(iOS 13, *)) {
     self.viewController.overrideUserInterfaceStyle =
         self.browserState->IsOffTheRecord() ? UIUserInterfaceStyleDark
                                             : UIUserInterfaceStyleUnspecified;
   }
-#endif
 
   self.mediator = [[ToolbarMediator alloc] init];
   self.mediator.incognito = self.browserState->IsOffTheRecord();

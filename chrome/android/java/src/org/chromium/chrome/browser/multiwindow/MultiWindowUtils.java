@@ -165,7 +165,6 @@ public class MultiWindowUtils implements ActivityStateListener {
      * @see Context#startActivity(Intent, Bundle)
      */
     public static Bundle getOpenInOtherWindowActivityOptions(Activity activity) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) return null;
         if (!getInstance().isInMultiDisplayMode(activity)) return null;
         Display defaultDisplay = DisplayAndroidManager.getDefaultDisplayForContext(activity);
         DisplayManager displayManager =

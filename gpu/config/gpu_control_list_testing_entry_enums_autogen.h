@@ -80,6 +80,11 @@ enum GpuControlListTestingEntryEnum {
   kGpuControlListEntryTest_GpuSeriesInException = 64,
   kGpuControlListEntryTest_MultipleDrivers = 65,
   kGpuControlListEntryTest_HardwareOverlay = 66,
+  kGpuControlListEntryTest_GpuGeneration = 67,
+  kGpuControlListEntryTest_GpuGenerationActive = 68,
+  kGpuControlListEntryTest_GpuGenerationAny = 69,
+  kGpuControlListEntryTest_GpuGenerationPrimary = 70,
+  kGpuControlListEntryTest_GpuGenerationSecondary = 71,
 };
 }  // namespace gpu
 

@@ -173,7 +173,7 @@ syncable::Id FindLocalIdToUpdate(syncable::BaseTransaction* trans,
 UpdateAttemptResponse AttemptToUpdateEntry(
     syncable::WriteTransaction* const trans,
     syncable::MutableEntry* const entry,
-    Cryptographer* cryptographer) {
+    const Cryptographer* cryptographer) {
   DCHECK(entry->good());
   if (!entry->GetIsUnappliedUpdate())
     return SUCCESS;  // No work to do.

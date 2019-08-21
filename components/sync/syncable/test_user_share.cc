@@ -58,6 +58,11 @@ bool TestUserShare::Reload() {
   return true;
 }
 
+Cryptographer* TestUserShare::GetCryptographer(
+    const syncable::BaseTransaction* trans) {
+  return dir_maker_->GetCryptographer(trans);
+}
+
 UserShare* TestUserShare::user_share() {
   return user_share_.get();
 }

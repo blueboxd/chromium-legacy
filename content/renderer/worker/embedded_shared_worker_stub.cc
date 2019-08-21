@@ -110,13 +110,13 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
             std::move(controller_info), subresource_loader_factory_bundle_);
   }
 
-  impl_ = blink::WebSharedWorker::Create(this, appcache_host_id);
+  impl_ = blink::WebSharedWorker::Create(this);
   impl_->StartWorkerContext(
       url_, blink::WebString::FromUTF8(info->name),
       blink::WebString::FromUTF8(user_agent),
       blink::WebString::FromUTF8(info->content_security_policy),
       info->content_security_policy_type, info->creation_address_space,
-      devtools_worker_token, content_settings.PassPipe(),
+      appcache_host_id, devtools_worker_token, content_settings.PassPipe(),
       interface_provider.PassInterface().PassHandle(),
       browser_interface_broker.PassPipe(), pause_on_start);
 

@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/layout/layout_iframe.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -366,7 +367,7 @@ HTMLPortalElement::InsertionNotificationRequest HTMLPortalElement::InsertedInto(
     DocumentPortals::From(GetDocument()).OnPortalInserted(this);
     Navigate();
   }
-
+  probe::PortalRemoteFrameCreated(&GetDocument(), this);
   return result;
 }
 

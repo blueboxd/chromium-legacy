@@ -36,7 +36,8 @@ void CameraAppDeviceProviderImpl::GetCameraAppDeviceWithDeviceId(
     const base::Optional<std::string>& device_id) {
   if (!device_id.has_value()) {
     std::move(callback).Run(
-        cros::mojom::GetCameraAppDeviceStatus::ERROR_INVALID_ID, {});
+        cros::mojom::GetCameraAppDeviceStatus::ERROR_INVALID_ID,
+        mojo::NullRemote());
     return;
   }
 

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_SHARING_SHARING_ICON_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_SHARING_SHARING_ICON_VIEW_H_
 
+#include "chrome/browser/sharing/sharing_ui_controller.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -34,6 +35,7 @@ class SharingIconView : public PageActionIconView {
   bool IsTriggerableEvent(const ui::Event& event) override;
   double WidthMultiplier() const override;
   const gfx::VectorIcon& GetVectorIconBadge() const override;
+  bool Update() override;
 
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
@@ -47,8 +49,11 @@ class SharingIconView : public PageActionIconView {
   void set_should_show_error(bool should_show_error) {
     should_show_error_ = should_show_error;
   }
+  virtual SharingUiController* GetController() const = 0;
+  virtual base::Optional<int> GetSuccessMessageId() const = 0;
 
  private:
+  SharingUiController* last_controller_ = nullptr;
   std::unique_ptr<gfx::ThrobAnimation> loading_animation_;
   bool should_show_error_ = false;
   SkColor loader_color_;

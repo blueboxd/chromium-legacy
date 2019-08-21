@@ -528,6 +528,10 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
     return articles_emitter_.GetUpdateCounters();
   }
 
+  Cryptographer* GetCryptographer(const syncable::BaseTransaction* trans) {
+    return dir_maker_.GetCryptographer(trans);
+  }
+
  protected:
   void ApplyBookmarkUpdates(StatusController* status) {
     update_handler_map_.find(BOOKMARKS)->second->ApplyUpdates(status);
@@ -948,7 +952,7 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest, DecryptablePassword) {
     // Storing the cryptographer separately is bad, but for this test we
     // know it's safe.
     syncable::ReadTransaction trans(FROM_HERE, directory());
-    cryptographer = directory()->GetCryptographer(&trans);
+    cryptographer = GetCryptographer(&trans);
   }
 
   KeyParams params = {KeyDerivationParams::CreateForPbkdf2(), "foobar"};
@@ -1039,7 +1043,7 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest, SomeUndecryptablePassword) {
     data.set_origin("http://example.com/1");
     {
       syncable::ReadTransaction trans(FROM_HERE, directory());
-      cryptographer = directory()->GetCryptographer(&trans);
+      cryptographer = GetCryptographer(&trans);
 
       KeyParams params = {KeyDerivationParams::CreateForPbkdf2(), "foobar"};
       cryptographer->AddKey(params);

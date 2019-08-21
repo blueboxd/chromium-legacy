@@ -23,6 +23,43 @@
 
 namespace arc {
 
+namespace {
+base::Optional<media::VideoFrameLayout> CreateVideoFrameLayout(
+    media::VideoPixelFormat format,
+    const gfx::Size& coded_size,
+    const gfx::GpuMemoryBufferHandle& gmb_handle) {
+  const size_t num_planes = gmb_handle.native_pixmap_handle.planes.size();
+
+  std::vector<media::VideoFrameLayout::Plane> layout_planes(num_planes);
+  for (size_t i = 0; i < num_planes; i++) {
+    const auto& plane = gmb_handle.native_pixmap_handle.planes[i];
+    if (!base::IsValueInRangeForNumericType<int32_t>(plane.stride)) {
+      DLOG(ERROR) << "Invalid stride";
+      return base::nullopt;
+    }
+    if (!base::IsValueInRangeForNumericType<size_t>(plane.offset)) {
+      DLOG(ERROR) << "Invalid offset";
+      return base::nullopt;
+    }
+    if (!base::IsValueInRangeForNumericType<size_t>(plane.size)) {
+      DLOG(ERROR) << "Invalid size";
+      return base::nullopt;
+    }
+
+    // convert uint32_t -> int32_t.
+    layout_planes[i].stride = base::checked_cast<int32_t>(plane.stride);
+    // convert uint64_t -> size_t
+    layout_planes[i].offset = base::checked_cast<size_t>(plane.offset);
+    // convert uint64_t -> size_t
+    layout_planes[i].size = base::checked_cast<size_t>(plane.size);
+  }
+
+  gfx::Size frame_size(layout_planes[0].stride, coded_size.height());
+  return media::VideoFrameLayout::CreateWithPlanes(format, frame_size,
+                                                   std::move(layout_planes));
+}
+}  // namespace
+
 GpuArcVideoEncodeAccelerator::GpuArcVideoEncodeAccelerator(
     const gpu::GpuPreferences& gpu_preferences)
     : gpu_preferences_(gpu_preferences),
@@ -137,8 +174,42 @@ void GpuArcVideoEncodeAccelerator::EncodeDmabuf(
     int64_t timestamp,
     bool force_keyframe,
     EncodeCallback callback) {
-  client_->NotifyError(Error::kInvalidArgumentError);
-  NOTIMPLEMENTED();
+  if (format != media::PIXEL_FORMAT_NV12) {
+    DLOG(ERROR) << "Formats other than NV12 are unsupported. format=" << format;
+    client_->NotifyError(Error::kInvalidArgumentError);
+    return;
+  }
+
+  auto gmb_handle =
+      CreateGpuMemoryBufferHandle(format, coded_size_, std::move(fd), planes);
+  if (!gmb_handle) {
+    DLOG(ERROR) << "Failed to create GpuMemoryBufferHandle";
+    client_->NotifyError(Error::kInvalidArgumentError);
+    return;
+  }
+
+  auto layout = CreateVideoFrameLayout(format, coded_size_, *gmb_handle);
+  if (!layout) {
+    DLOG(ERROR) << "Failed to create VideoFrameLayout.";
+    client_->NotifyError(Error::kInvalidArgumentError);
+    return;
+  }
+
+  std::vector<base::ScopedFD> scoped_fds;
+  for (auto& plane : gmb_handle->native_pixmap_handle.planes) {
+    scoped_fds.push_back(std::move(plane.fd));
+  }
+  auto frame = media::VideoFrame::WrapExternalDmabufs(
+      *layout, gfx::Rect(visible_size_), visible_size_, std::move(scoped_fds),
+      base::TimeDelta::FromMicroseconds(timestamp));
+  if (!frame) {
+    DLOG(ERROR) << "Failed to create VideoFrame";
+    client_->NotifyError(Error::kInvalidArgumentError);
+    return;
+  }
+
+  frame->AddDestructionObserver(std::move(callback));
+  accelerator_->Encode(std::move(frame), force_keyframe);
 }
 
 void GpuArcVideoEncodeAccelerator::EncodeSharedMemory(
@@ -154,7 +225,6 @@ void GpuArcVideoEncodeAccelerator::EncodeSharedMemory(
     return;
   }
 
-  base::Optional<media::VideoFrameLayout> layout;
   auto gmb_handle = CreateGpuMemoryBufferHandle(
       format, coded_size_, base::ScopedFD(HANDLE_EINTR(dup(fd.get()))), planes);
   if (!gmb_handle) {
@@ -163,39 +233,7 @@ void GpuArcVideoEncodeAccelerator::EncodeSharedMemory(
     return;
   }
 
-  const size_t num_planes = gmb_handle->native_pixmap_handle.planes.size();
-  // This is guaranteed because format is I420 here.
-  DCHECK_EQ(num_planes, 3u);
-  std::vector<media::VideoFrameLayout::Plane> layout_planes(num_planes);
-  for (size_t i = 0; i < num_planes; i++) {
-    const auto& plane = gmb_handle->native_pixmap_handle.planes[i];
-    if (!base::IsValueInRangeForNumericType<int32_t>(plane.stride)) {
-      DLOG(ERROR) << "Invalid stride";
-      client_->NotifyError(Error::kInvalidArgumentError);
-      return;
-    }
-    if (!base::IsValueInRangeForNumericType<size_t>(plane.offset)) {
-      DLOG(ERROR) << "Invalid offset";
-      client_->NotifyError(Error::kInvalidArgumentError);
-      return;
-    }
-    if (!base::IsValueInRangeForNumericType<size_t>(plane.size)) {
-      DLOG(ERROR) << "Invalid size";
-      client_->NotifyError(Error::kInvalidArgumentError);
-      return;
-    }
-
-    // convert uint32_t -> int32_t.
-    layout_planes[i].stride = base::checked_cast<int32_t>(plane.stride);
-    // convert uint64_t -> size_t
-    layout_planes[i].offset = base::checked_cast<size_t>(plane.offset);
-    // convert uint64_t -> size_t
-    layout_planes[i].size = base::checked_cast<size_t>(plane.size);
-  }
-
-  layout = media::VideoFrameLayout::CreateWithPlanes(
-      format, gfx::Size(layout_planes[0].stride, coded_size_.height()),
-      std::move(layout_planes));
+  auto layout = CreateVideoFrameLayout(format, coded_size_, *gmb_handle);
   if (!layout) {
     DLOG(ERROR) << "Failed to create VideoFrameLayout.";
     client_->NotifyError(Error::kInvalidArgumentError);

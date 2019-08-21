@@ -35,6 +35,9 @@ class ProfileMenuView : public ProfileMenuViewBase, public AvatarMenuObserver {
                      signin_metrics::AccessPoint access_point);
   ~ProfileMenuView() override;
 
+  // ProfileMenuViewBase:
+  void BuildMenu() override;
+
  private:
   friend class ProfileMenuViewExtensionsTest;
 
@@ -42,7 +45,6 @@ class ProfileMenuView : public ProfileMenuViewBase, public AvatarMenuObserver {
   void FocusButtonOnKeyboardOpen() override;
 
   // views::BubbleDialogDelegateView:
-  void Init() override;
   void OnWidgetClosing(views::Widget* widget) override;
   base::string16 GetAccessibleWindowTitle() const override;
 
@@ -70,11 +72,6 @@ class ProfileMenuView : public ProfileMenuViewBase, public AvatarMenuObserver {
   // to flaky tests where unexpected UI events are triggering this behavior.
   // Tests set this to "false" for more consistent operation.
   static bool close_on_deactivate_for_testing_;
-
-  void Reset();
-
-  // Shows the bubble view.
-  void ShowView(AvatarMenu* avatar_menu);
 
   // Adds the profile chooser view.
   void AddProfileMenuView(AvatarMenu* avatar_menu);

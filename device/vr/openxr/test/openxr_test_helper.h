@@ -8,6 +8,9 @@
 #include <d3d11.h>
 #include <unknwn.h>
 #include <wrl.h>
+#include <array>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "base/synchronization/lock.h"
@@ -35,26 +38,50 @@ class OpenXrTestHelper : public device::ServiceTestHook {
   XrSystemId GetSystemId();
   XrSession GetSession();
   XrSwapchain GetSwapchain();
+  XrResult GetActionStateBoolean(XrAction action,
+                                 XrActionStateBoolean* data) const;
+  XrResult GetActionStateVector2f(XrAction action,
+                                  XrActionStateVector2f* data) const;
+  XrResult GetActionStatePose(XrAction action, XrActionStatePose* data) const;
   XrSpace CreateLocalSpace();
   XrSpace CreateViewSpace();
+  XrAction CreateAction(XrActionSet action_set,
+                        const XrActionCreateInfo& create_info);
+  XrActionSet CreateActionSet(const XrActionSetCreateInfo& createInfo);
+  XrSpace CreateActionSpace();
+  XrPath GetPath(const char* path_string);
 
   XrResult BeginSession();
   XrResult EndSession();
 
+  XrResult BindActionAndPath(XrActionSuggestedBinding binding);
+
   void SetD3DDevice(ID3D11Device* d3d_device);
+  XrResult SyncActionData(XrActionSet action_set);
   const std::vector<Microsoft::WRL::ComPtr<ID3D11Texture2D>>&
   GetSwapchainTextures() const;
+  void GetPose(XrPosef* pose);
+  std::string PathToString(XrPath path) const;
+  bool UpdateData();
+
   uint32_t NextSwapchainImageIndex();
   XrTime NextPredictedDisplayTime();
 
-  void GetPose(XrPosef* pose);
-
   // Methods that validate the parameter with the current state of the runtime.
+  XrResult ValidateAction(XrAction action) const;
+  XrResult ValidateActionCreateInfo(
+      const XrActionCreateInfo& create_info) const;
+  XrResult ValidateActionSet(XrActionSet action_set) const;
+  XrResult ValidateActionSetCreateInfo(
+      const XrActionSetCreateInfo& create_info) const;
+  XrResult ValidateActionSpaceCreateInfo(
+      const XrActionSpaceCreateInfo& create_info) const;
   XrResult ValidateInstance(XrInstance instance) const;
   XrResult ValidateSystemId(XrSystemId system_id) const;
   XrResult ValidateSession(XrSession session) const;
   XrResult ValidateSwapchain(XrSwapchain swapchain) const;
   XrResult ValidateSpace(XrSpace space) const;
+  XrResult ValidatePath(XrPath path) const;
   XrResult ValidatePredictedDisplayTime(XrTime time) const;
   XrResult ValidateXrPosefIsIdentity(const XrPosef& pose) const;
 
@@ -73,6 +100,14 @@ class OpenXrTestHelper : public device::ServiceTestHook {
   static const XrEnvironmentBlendMode kEnvironmentBlendMode;
 
  private:
+  struct ActionProperties {
+    XrPath binding;
+    XrActionType type;
+    ActionProperties() : binding(XR_NULL_PATH), type(XR_ACTION_TYPE_MAX_ENUM) {}
+  };
+
+  XrResult UpdateAction(XrAction action);
+
   // Properties of the mock OpenXR runtime that doesn't change throughout the
   // lifetime of the instance. However, these aren't static because they are
   // initialized to an invalid value and set to their actual value in their
@@ -91,6 +126,28 @@ class OpenXrTestHelper : public device::ServiceTestHook {
   uint32_t acquired_swapchain_texture_;
   uint32_t next_action_space_;
   XrTime next_predicted_display_time_;
+
+  // paths_ is used to keep tracked of strings that already has a corresponding
+  // path.
+  std::vector<std::string> paths_;
+  // ActionProperties has an
+  // index_in_action_state_arr member which can help index into the following
+  // *_action_states_ vector and retrieve data.
+  std::unordered_map<XrAction, ActionProperties> actions_;
+  std::unordered_map<XrActionSet, std::vector<XrAction>> action_sets_;
+  std::unordered_map<XrAction, XrActionStateBoolean> boolean_action_states_;
+  std::unordered_map<XrAction, XrActionStateVector2f> v2f_action_states_;
+  std::unordered_map<XrAction, XrActionStatePose> pose_action_state_;
+
+  // action_names_, action_localized_names_, action_set_names_,
+  // action_set_localized_names_ are used to make sure that there won't be any
+  // duplicate which is specified in the spec. They are all independent.
+  std::unordered_set<std::string> action_names_;
+  std::unordered_set<std::string> action_localized_names_;
+  std::unordered_set<std::string> action_set_names_;
+  std::unordered_set<std::string> action_set_localized_names_;
+
+  std::array<device::ControllerFrameData, device::kMaxTrackedDevices> data_arr_;
 
   device::VRTestHook* test_hook_ GUARDED_BY(lock_) = nullptr;
   base::Lock lock_;

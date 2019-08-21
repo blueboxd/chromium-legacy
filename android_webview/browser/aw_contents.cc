@@ -1304,17 +1304,19 @@ bool AwContents::IsOriginAllowedForOnPostMessage(url::Origin& origin) {
   return GetJsJavaConfiguratorHost()->IsOriginAllowedForOnPostMessage(origin);
 }
 
-void AwContents::OnPostMessage(JNIEnv* env,
-                               const base::android::JavaRef<jstring>& message,
-                               const base::android::JavaRef<jstring>& origin,
-                               jboolean is_main_frame,
-                               const base::android::JavaRef<jintArray>& ports) {
+void AwContents::OnPostMessage(
+    JNIEnv* env,
+    const base::android::JavaRef<jstring>& message,
+    const base::android::JavaRef<jstring>& origin,
+    jboolean is_main_frame,
+    const base::android::JavaRef<jobject>& reply_proxy,
+    const base::android::JavaRef<jintArray>& ports) {
   const ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return;
-  // TODO(ctzsm): Implement the replyPort (0 below).
+
   Java_AwContents_onPostMessage(env, obj, message, origin, is_main_frame,
-                                /* MOJO_HANDLE_INVALID */ 0, ports);
+                                reply_proxy, ports);
 }
 
 void AwContents::ClearView(JNIEnv* env, const JavaParamRef<jobject>& obj) {

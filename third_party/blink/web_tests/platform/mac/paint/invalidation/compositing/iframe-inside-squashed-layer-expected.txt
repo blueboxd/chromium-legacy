@@ -22,29 +22,29 @@
       "drawsContent": false
     },
     {
-      "name": "LayoutBlockFlow DIV id='foo'",
+      "name": "LayoutNGBlockFlow DIV id='foo'",
       "bounds": [200, 1000],
       "contentsOpaque": true,
       "backgroundColor": "#D3D3D3",
       "transform": 1
     },
     {
-      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV)",
+      "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV)",
       "position": [8, 0],
       "bounds": [300, 654],
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'test1'",
-          "rect": [8, 508, 31, 18],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'test1'",
-          "rect": [8, 508, 31, 18],
-          "reason": "disappeared"
-        },
-        {
           "object": "LayoutView #document",
+          "rect": [0, 500, 300, 150],
+          "reason": "chunk appeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'test1'",
+          "rect": [8, 508, 31, 18],
+          "reason": "geometry"
+        },
+        {
+          "object": "VerticalScrollbar",
           "rect": [285, 500, 15, 150],
           "reason": "chunk appeared"
         }

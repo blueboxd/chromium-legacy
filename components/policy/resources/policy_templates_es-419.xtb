@@ -805,11 +805,11 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Se pueden especificar opciones de configuración particulares en las propiedades de JSON:
 
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Si se establece como <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, los usuarios podrán activar el flujo de Powerwash para instalar la actualización del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Si se establece como <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, los usuarios podrán activar la función de Powerwash para instalar la actualización del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: Si se establece como <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, los usuarios podrán invocar el flujo de actualización del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> que preserva el estado en todo el dispositivo (lo que incluye la inscripción de empresas), pero pierde los datos del usuario. Este flujo de actualización está disponible a partir de la versión 68.
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: Si se establece como <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, los usuarios podrán invocar la función de actualización del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> que preserva el estado en todo el dispositivo (lo que incluye la inscripción de la empresa), pero pierde los datos del usuario. Esta función de actualización está disponible a partir de la versión 68.
 
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: Controla cómo se ejecutan las actualizaciones automáticas del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> para el firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> vulnerable. Todos los flujos conservan el estado del dispositivo local.
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: Controla cómo se ejecutan las actualizaciones automáticas del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> para el firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> vulnerable. Todos las funciones conservan el estado del dispositivo local.
         Si se establece como 1 o no se establece, no se aplicarán las actualizaciones del firmware TPM.
         Si se establece como 2, se actualizará el firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> en el próximo reinicio después de que el usuario reconozca la actualización.
         Si se establece como 3, se actualizará el firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> en el próximo reinicio.
@@ -1620,15 +1620,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
           Si la política no se establece o se establece en false, los usuarios podrán transferir archivos a Google Drive.</translation>
 <translation id="3915395663995367577">URL a un archivo proxy .pac</translation>
-<translation id="3920892052017026701">Establece el porcentaje del nivel de la batería en el que debe comenzar la carga.
-
-          La batería comienza a cargarse cuando se agota el nivel personalizado para el comienzo de la carga.
-
-          El valor de DeviceBatteryChargeCustomStartCharging debe ser menor al de DeviceBatteryChargeCustomStopCharging.
-
-          Solo se usa esta política si se establece DeviceBatteryChargeMode como personalizada.
-
-          Si esta política no se configura o no se establece, se aplicará el modo de carga estándar para la batería.</translation>
 <translation id="3925377537407648234">Establecer la resolución de pantalla y el factor de escalas</translation>
 <translation id="3939893074578116847">Envía paquetes de red al servidor de administración para controlar el estado en
       línea, lo que permite que el servidor detecte si el dispositivo está sin
@@ -3557,15 +3548,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Si esta política se establece en 0, se utilizará el tamaño de caché predeterminado y el usuario no podrá modificarlo.
 
       Si esta política no se establece, se utilizará el tamaño de caché predeterminado y el usuario podrá anular el valor con la marca "--disk-cache-size".</translation>
-<translation id="759389052790680884">Establece el porcentaje del nivel de la batería en el que se debe detener la carga.
-
-          Cuando se alcance este valor, se detendrá la carga de la batería.
-
-          El valor de DeviceBatteryChargeCustomStartCharging debe ser menor al de DeviceBatteryChargeCustomStopCharging.
-
-          Solo se usa esta política si se establece DeviceBatteryChargeMode como personalizada.
-
-          Si esta política no se configura o no se establece, se aplicará el modo de carga estándar para la batería.</translation>
 <translation id="759957074386651883">Configuración de Navegación segura</translation>
 <translation id="7604169113182304895">Las apps de Android pueden respetar esta lista de forma voluntaria, pero no puedes forzarlas a que lo hagan.</translation>
 <translation id="7612157962821894603">Marcas que se deben aplicar al iniciar <ph name="PRODUCT_NAME" /> en todo el sistema</translation>
@@ -3661,9 +3643,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="7750991880413385988">Abrir la página Nueva pestaña</translation>
 <translation id="7754704193130578113">Preguntar ubicación antes de descargar</translation>
 <translation id="7761446981238915769">Configura la lista de apps instaladas en la pantalla de acceso</translation>
-<translation id="7763479091692861127"> Los tipos de conexiones que se pueden utilizar para las actualizaciones del SO. Estas actualizaciones pueden constituir una carga para la conexión debido a su tamaño y podrían implicar costos adicionales. Por lo tanto, están inhabilitadas de forma predeterminada para los tipos de conexión que se consideran caros, que por el momento incluyen WiMax, Bluetooth y Celular.
-
-      Los identificadores de tipos de conexión reconocidos son "ethernet", "wifi", "wimax", "bluetooth" y "celular".</translation>
 <translation id="7763614521440615342">Mostrar sugerencias de contenido en la página Nueva pestaña</translation>
 <translation id="7765879851993224640">Permitir el acceso mediante Smart Lock</translation>
 <translation id="7772346342637974431">Especifica el período sin intervención del usuario que debe transcurrir para que se muestre un cuadro de diálogo de advertencia cuando el dispositivo esté funcionando con batería.
@@ -3971,7 +3950,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="8405691014775178834">Permite que el usuario acceda con permisos de administrador a los contenedores de Crostini.
 
       Si se establece esta política como verdadera o no se establece, el usuario tendrá acceso con permisos de administrador a los contenedores de Crostini.
-      Si se establece como falsa, el usuario no tendrá acceso con permisos de administrador a ningún contenedor de Crostini, ya sea existente o nuevo.</translation>
+      Si se establece como falsa, el usuario no tendrá acceso con permisos de administrador a ningún contenedor de Crostini, ya sea nuevo o existente.</translation>
 <translation id="8417305981081876834">Establecer la longitud máxima del PIN de pantalla bloqueada</translation>
 <translation id="841977920223099909">Activador de advertencia de la protección de la contraseña</translation>
 <translation id="8424255554404582727">Establecer la rotación predeterminada de la pantalla que se volverá a aplicar en cada reinicio</translation>

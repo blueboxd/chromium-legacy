@@ -103,7 +103,7 @@ class LocationBarCoordinatorTest : public PlatformTest {
     PlatformTest::TearDown();
   }
 
-  web::TestWebThreadBundle web_thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   LocationBarCoordinator* coordinator_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   FakeWebStateListDelegate web_state_list_delegate_;

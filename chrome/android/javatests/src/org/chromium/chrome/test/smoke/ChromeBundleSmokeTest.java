@@ -28,7 +28,6 @@ import org.chromium.chrome.test.pagecontroller.utils.UiAutomatorUtils;
 @SmallTest
 @RunWith(BaseJUnit4ClassRunner.class)
 public class ChromeBundleSmokeTest {
-    private static final String PACKAGE_NAME_ARG = "PackageUnderTest";
     private static final String TARGET_ACTIVITY =
             "org.chromium.chrome.features.test_dummy.TestDummyActivity";
 
@@ -41,8 +40,8 @@ public class ChromeBundleSmokeTest {
 
     @Before
     public void setUp() {
-        // TODO (tiborg): Adjust this as needed according to https://crrev.com/c/1585142.
-        mPackageName = InstrumentationRegistry.getArguments().getString(PACKAGE_NAME_ARG);
+        mPackageName = InstrumentationRegistry.getArguments().getString(
+                ChromeUiApplicationTestRule.PACKAGE_NAME_ARG);
         Assert.assertNotNull("Must specify bundle under test", mPackageName);
         mChromeUiRule.launchIntoNewTabPageOnFirstRun();
     }

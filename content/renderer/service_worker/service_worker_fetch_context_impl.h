@@ -6,7 +6,6 @@
 #define CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_FETCH_CONTEXT_IMPL_H_
 
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -47,7 +46,8 @@ class CONTENT_EXPORT ServiceWorkerFetchContextImpl final
       std::unique_ptr<URLLoaderThrottleProvider> throttle_provider,
       std::unique_ptr<WebSocketHandshakeThrottleProvider>
           websocket_handshake_throttle_provider,
-      blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request,
+      mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
+          preference_watcher_receiver,
       mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
           pending_subresource_loader_updater);
 
@@ -106,14 +106,15 @@ class CONTENT_EXPORT ServiceWorkerFetchContextImpl final
   std::unique_ptr<WebSocketHandshakeThrottleProvider>
       websocket_handshake_throttle_provider_;
 
-  mojo::Binding<blink::mojom::RendererPreferenceWatcher>
-      preference_watcher_binding_;
+  mojo::Receiver<blink::mojom::RendererPreferenceWatcher>
+      preference_watcher_receiver_{this};
   mojo::Receiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
       subresource_loader_updater_{this};
 
   // These mojo objects are kept while starting up the worker thread. Valid
   // until InitializeOnWorkerThread().
-  blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request_;
+  mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
+      preference_watcher_pending_receiver_;
   mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
       pending_subresource_loader_updater_;
 

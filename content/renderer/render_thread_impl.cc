@@ -1890,7 +1890,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
   params.enable_surface_synchronization = true;
   params.local_surface_id_provider =
       std::make_unique<RendererLocalSurfaceIdProvider>();
-  if (features::IsVizHitTestingDrawQuadEnabled()) {
+  if (!features::IsVizHitTestingSurfaceLayerEnabled()) {
     params.hit_test_data_provider =
         std::make_unique<viz::HitTestDataProviderDrawQuad>(
             true /* should_ask_for_child_region */,

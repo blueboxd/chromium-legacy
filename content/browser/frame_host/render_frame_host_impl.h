@@ -1009,6 +1009,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void GetFileSystemManager(
       mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver);
 
+  void GetIdleManager(
+      mojo::PendingReceiver<blink::mojom::IdleManager> receiver);
+
   // https://mikewest.github.io/corpp/#initialize-embedder-policy-for-global
   network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy()
       const {
@@ -1485,8 +1488,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void BindPresentationServiceRequest(
       blink::mojom::PresentationServiceRequest request);
-
-  void BindIdleManagerRequest(blink::mojom::IdleManagerRequest request);
 
   void BindSmsReceiverRequest(blink::mojom::SmsReceiverRequest request);
 

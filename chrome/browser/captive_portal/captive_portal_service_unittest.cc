@@ -280,7 +280,7 @@ class CaptivePortalServiceTest : public testing::Test,
   // after the test.
   const CaptivePortalService::TestingState old_captive_portal_testing_state_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   // Note that the construction order of these matters.
   std::unique_ptr<TestingProfile> profile_;

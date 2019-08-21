@@ -128,6 +128,10 @@ extern const char kManifestRulesCountHistogram[];
 extern const char kUpdateDynamicRulesStatusHistogram[];
 extern const char kReadDynamicRulesJSONStatusHistogram[];
 
+// Placeholder text to use for getBadgeText extension function call, when the
+// badge text is set to the DNR action count.
+extern const char kActionCountPlaceholderBadgeText[];
+
 }  // namespace declarative_net_request
 }  // namespace extensions
 

@@ -8,13 +8,23 @@ import "mojo/public/mojom/base/string16.mojom";
 import "services/network/public/mojom/proxy_config.mojom";
 
 // For JavaScript postMessage() API, implemented by browser.
-interface JsApiHandler {
-  // Called from renderer, browser receives |message| and possible |ports| with
-  // the current frame |origin|.
+interface JsToJavaMessaging {
+  // Called from renderer, browser receives |message| and possible |ports|.
   // The |message| is an opaque type and the contents are defined by the client
   // of this API.
   PostMessage(mojo_base.mojom.String16 message,
               array<handle<message_pipe>> ports);
+
+  // When there is a new JavaToJsMessaging created in renderer, we need to send
+  // it to browser, so browser could send message back to Js.
+  SetJavaToJsMessaging(pending_remote<JavaToJsMessaging> java_to_js_messaging);
+};
+
+// For Java to reply back to injected JavaScript object. Implemented by
+// renderer.
+interface JavaToJsMessaging {
+  // Called from browser, to send message from Java to JavaScript.
+  OnPostMessage(mojo_base.mojom.String16 message);
 };
 
 // For browser to configure renderer, implemented by renderer.

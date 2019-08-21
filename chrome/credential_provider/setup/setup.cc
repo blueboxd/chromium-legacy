@@ -84,7 +84,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
   base::FilePath log_file_path = cmdline->GetSwitchValuePath("log-file");
   if (!log_file_path.empty()) {
     settings.logging_dest = logging::LOG_TO_FILE;
-    settings.log_file = log_file_path.value().c_str();
+    settings.log_file_path = log_file_path.value().c_str();
   }
 
   logging::InitLogging(settings);

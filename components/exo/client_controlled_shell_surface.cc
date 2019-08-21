@@ -397,14 +397,7 @@ void ClientControlledShellSurface::SetSystemUiVisibility(bool autohide) {
 void ClientControlledShellSurface::SetAlwaysOnTop(bool always_on_top) {
   TRACE_EVENT1("exo", "ClientControlledShellSurface::SetAlwaysOnTop",
                "always_on_top", always_on_top);
-
-  if (!widget_)
-    CreateShellSurfaceWidget(ui::SHOW_STATE_NORMAL);
-
-  widget_->GetNativeWindow()->SetProperty(aura::client::kZOrderingKey,
-                                          always_on_top
-                                              ? ui::ZOrderLevel::kFloatingWindow
-                                              : ui::ZOrderLevel::kNormal);
+  pending_always_on_top_ = always_on_top;
 }
 
 void ClientControlledShellSurface::SetImeBlocked(bool ime_blocked) {
@@ -1039,6 +1032,12 @@ void ClientControlledShellSurface::OnPostWidgetCommit() {
   orientation_ = pending_orientation_;
   if (expected_orientation_ == orientation_)
     orientation_compositor_lock_.reset();
+
+  widget_->GetNativeWindow()->SetProperty(aura::client::kZOrderingKey,
+                                          pending_always_on_top_
+                                          ? ui::ZOrderLevel::kFloatingWindow
+                                          : ui::ZOrderLevel::kNormal);
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////

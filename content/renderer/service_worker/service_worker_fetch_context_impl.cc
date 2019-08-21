@@ -30,7 +30,8 @@ ServiceWorkerFetchContextImpl::ServiceWorkerFetchContextImpl(
     std::unique_ptr<URLLoaderThrottleProvider> throttle_provider,
     std::unique_ptr<WebSocketHandshakeThrottleProvider>
         websocket_handshake_throttle_provider,
-    blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request,
+    mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
+        preference_watcher_receiver,
     mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
         pending_subresource_loader_updater)
     : renderer_preferences_(renderer_preferences),
@@ -41,8 +42,8 @@ ServiceWorkerFetchContextImpl::ServiceWorkerFetchContextImpl(
       throttle_provider_(std::move(throttle_provider)),
       websocket_handshake_throttle_provider_(
           std::move(websocket_handshake_throttle_provider)),
-      preference_watcher_binding_(this),
-      preference_watcher_request_(std::move(preference_watcher_request)),
+      preference_watcher_pending_receiver_(
+          std::move(preference_watcher_receiver)),
       pending_subresource_loader_updater_(
           std::move(pending_subresource_loader_updater)) {}
 
@@ -59,7 +60,8 @@ void ServiceWorkerFetchContextImpl::InitializeOnWorkerThread(
   resource_dispatcher_ = std::make_unique<ResourceDispatcher>();
   resource_dispatcher_->set_terminate_sync_load_event(
       terminate_sync_load_event_);
-  preference_watcher_binding_.Bind(std::move(preference_watcher_request_));
+  preference_watcher_receiver_.Bind(
+      std::move(preference_watcher_pending_receiver_));
   subresource_loader_updater_.Bind(
       std::move(pending_subresource_loader_updater_));
 

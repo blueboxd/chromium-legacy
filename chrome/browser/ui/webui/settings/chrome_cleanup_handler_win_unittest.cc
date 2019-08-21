@@ -20,7 +20,7 @@ namespace settings {
 using safe_browsing::MockChromeCleanerProcess;
 
 TEST(ChromeCleanupHandlerTest, GetExtensionsNamesFromIds) {
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager profile_manager_(TestingBrowserProcess::GetGlobal());
 
   // Set up the testing profile to get the extensions registry from it.

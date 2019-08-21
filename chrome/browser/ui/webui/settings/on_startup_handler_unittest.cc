@@ -67,7 +67,7 @@ class OnStartupHandlerTest : public testing::Test {
   content::TestWebUI* web_ui() { return &web_ui_; }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager profile_manager_;
   std::unique_ptr<TestOnStartupHandler> handler_;
   Profile* profile_;

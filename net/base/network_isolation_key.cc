@@ -74,7 +74,7 @@ bool NetworkIsolationKey::IsTransient() const {
          (use_frame_origin_ && frame_origin_->opaque());
 }
 
-bool NetworkIsolationKey::ToValue(base::Value* out_value) {
+bool NetworkIsolationKey::ToValue(base::Value* out_value) const {
   if (IsEmpty()) {
     *out_value = base::Value(base::Value::Type::LIST);
     return true;

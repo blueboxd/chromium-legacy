@@ -163,11 +163,11 @@ class WebUIMojoTest : public WebIntTest {
       // WebState owns CRWWebUIManager. When WebState is destroyed,
       // CRWWebUIManager is autoreleased and will be destroyed upon autorelease
       // pool purge. However in this test, WebTest destructor is called before
-      // PlatformTest, thus CRWWebUIManager outlives the WebThreadBundle.
+      // PlatformTest, thus CRWWebUIManager outlives the WebTaskenvironment.
       // However, CRWWebUIManager owns a URLFetcherImpl, which DCHECKs that its
       // destructor is called on UI web thread. Hence, URLFetcherImpl has to
-      // outlive the WebThreadBundle, since [NSThread mainThread] will not be
-      // WebThread::UI once WebThreadBundle is destroyed.
+      // outlive the WebTaskenvironment, since [NSThread mainThread] will not be
+      // WebThread::UI once WebTaskenvironment is destroyed.
       web_state_.reset();
       ui_handler_.reset();
       WebUIIOSControllerFactory::DeregisterFactory(factory_.get());

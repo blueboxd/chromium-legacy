@@ -187,7 +187,7 @@ class NetworkServiceBrowserTest : public ContentBrowserTest {
 // Verifies that WebUI pages with WebUI bindings can't make network requests.
 IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest, WebUIBindingsNoHttp) {
   GURL test_url(GetWebUIURL("webui/"));
-  NavigateToURL(shell(), test_url);
+  EXPECT_TRUE(NavigateToURL(shell(), test_url));
   RenderProcessHostKillWaiter kill_waiter(
       shell()->web_contents()->GetMainFrame()->GetProcess());
   ASSERT_FALSE(CheckCanLoadHttp());
@@ -197,7 +197,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest, WebUIBindingsNoHttp) {
 // Verifies that WebUI pages without WebUI bindings can make network requests.
 IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest, NoWebUIBindingsHttp) {
   GURL test_url(GetWebUIURL("webui/nobinding/"));
-  NavigateToURL(shell(), test_url);
+  EXPECT_TRUE(NavigateToURL(shell(), test_url));
   ASSERT_TRUE(CheckCanLoadHttp());
 }
 
@@ -206,7 +206,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest, NoWebUIBindingsHttp) {
 IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest,
                        FileSystemBindingsCorrectOrigin) {
   GURL test_url(GetWebUIURL("webui/nobinding/"));
-  NavigateToURL(shell(), test_url);
+  EXPECT_TRUE(NavigateToURL(shell(), test_url));
 
   // Note: must be filesystem scheme (obviously).
   //       file: is not a safe web scheme (see IsWebSafeScheme),
@@ -379,7 +379,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest, SyncXHROnCrash) {
       network_service_test.PassInterface();
 
   net::EmbeddedTestServer http_server;
-  net::test_server::RegisterDefaultHandlers(&http_server);
+  http_server.AddDefaultHandlers(GetTestDataFilePath());
   http_server.RegisterRequestMonitor(base::BindLambdaForTesting(
       [&](const net::test_server::HttpRequest& request) {
         if (request.relative_url == "/hung") {
@@ -390,7 +390,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest, SyncXHROnCrash) {
       }));
   EXPECT_TRUE(http_server.Start());
 
-  NavigateToURL(shell(), http_server.GetURL("/empty.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), http_server.GetURL("/empty.html")));
 
   FetchResource(http_server.GetURL("/hung"), true);
   // If the renderer is hung the test will hang.
@@ -406,7 +406,8 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest, SyncCookieGetOnCrash) {
                                       &network_service_test);
   network_service_test->CrashOnGetCookieList();
 
-  NavigateToURL(shell(), embedded_test_server()->GetURL("/empty.html"));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/empty.html")));
 
   ASSERT_TRUE(
       content::ExecuteScript(shell()->web_contents(), "document.cookie"));
@@ -439,7 +440,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceInProcessBrowserTest, Basic) {
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(
           shell()->web_contents()->GetBrowserContext()));
-  NavigateToURL(shell(), test_url);
+  EXPECT_TRUE(NavigateToURL(shell(), test_url));
   ASSERT_EQ(net::OK,
             LoadBasicRequest(partition->GetNetworkContext(), test_url));
 }
@@ -468,7 +469,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceInvalidLogBrowserTest, Basic) {
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(
           shell()->web_contents()->GetBrowserContext()));
-  NavigateToURL(shell(), test_url);
+  EXPECT_TRUE(NavigateToURL(shell(), test_url));
   ASSERT_EQ(net::OK,
             LoadBasicRequest(partition->GetNetworkContext(), test_url));
 }

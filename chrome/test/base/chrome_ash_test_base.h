@@ -17,7 +17,7 @@ class ChromeAshTestBase : public ash::AshTestBase {
   ~ChromeAshTestBase() override;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAshTestBase);
 };

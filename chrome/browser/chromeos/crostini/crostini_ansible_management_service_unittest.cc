@@ -49,7 +49,7 @@ class CrostiniAnsibleManagementServiceTest : public testing::Test {
     fake_cicerone_client_->InstallLinuxPackageProgress(signal);
   }
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<CrostiniAnsibleManagementService>
       crostini_ansible_management_service_;

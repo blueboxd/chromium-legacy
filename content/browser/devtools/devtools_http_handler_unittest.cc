@@ -131,7 +131,7 @@ class DevToolsHttpHandlerTest : public testing::Test {
  private:
   std::unique_ptr<ContentClient> content_client_;
   std::unique_ptr<ContentBrowserClient> browser_content_client_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(DevToolsHttpHandlerTest, TestStartStop) {

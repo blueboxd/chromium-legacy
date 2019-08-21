@@ -180,7 +180,7 @@ class PlatformVerificationFlowTest : public ::testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   StrictMock<MockAttestationFlow> mock_attestation_flow_;
   cryptohome::MockAsyncMethodCaller mock_async_caller_;
   chromeos::FakeCryptohomeClient fake_cryptohome_client_;

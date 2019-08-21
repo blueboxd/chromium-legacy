@@ -158,7 +158,7 @@ class UserManagerTest : public testing::Test {
   std::unique_ptr<WallpaperControllerClient> wallpaper_controller_client_;
   TestWallpaperController test_wallpaper_controller_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   ScopedCrosSettingsTestHelper settings_helper_;
   std::unique_ptr<ScopedTestingLocalState> local_state_;

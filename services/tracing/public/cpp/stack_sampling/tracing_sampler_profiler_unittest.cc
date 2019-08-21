@@ -249,29 +249,27 @@ class TestModule : public base::ModuleCache::Module {
 }  // namespace
 
 TEST_F(TracingSampleProfilerTest, OnSampleCompleted) {
-  TracingSamplerProfiler::CreateForCurrentThread();
+  auto profiler = TracingSamplerProfiler::CreateOnMainThread();
   BeginTrace();
   base::RunLoop().RunUntilIdle();
   WaitForEvents();
   EndTracing();
   base::RunLoop().RunUntilIdle();
   ValidateReceivedEvents();
-  TracingSamplerProfiler::DeleteForCurrentThreadForTesting();
 }
 
 TEST_F(TracingSampleProfilerTest, JoinRunningTracing) {
   BeginTrace();
-  TracingSamplerProfiler::CreateForCurrentThread();
+  auto profiler = TracingSamplerProfiler::CreateOnMainThread();
   base::RunLoop().RunUntilIdle();
   WaitForEvents();
   EndTracing();
   base::RunLoop().RunUntilIdle();
   ValidateReceivedEvents();
-  TracingSamplerProfiler::DeleteForCurrentThreadForTesting();
 }
 
 TEST_F(TracingSampleProfilerTest, TestStartupTracing) {
-  TracingSamplerProfiler::CreateForCurrentThread();
+  auto profiler = TracingSamplerProfiler::CreateOnMainThread();
   TracingSamplerProfiler::SetupStartupTracing();
   base::RunLoop().RunUntilIdle();
   WaitForEvents();
@@ -302,13 +300,12 @@ TEST_F(TracingSampleProfilerTest, TestStartupTracing) {
     EXPECT_LT(first_profile_ts,
               start_tracing_ts.since_origin().InMicroseconds());
   }
-  TracingSamplerProfiler::DeleteForCurrentThreadForTesting();
 }
 
 TEST_F(TracingSampleProfilerTest, JoinStartupTracing) {
   TracingSamplerProfiler::SetupStartupTracing();
   base::RunLoop().RunUntilIdle();
-  TracingSamplerProfiler::CreateForCurrentThread();
+  auto profiler = TracingSamplerProfiler::CreateOnMainThread();
   WaitForEvents();
   auto start_tracing_ts = TRACE_TIME_TICKS_NOW();
   BeginTrace();
@@ -337,15 +334,13 @@ TEST_F(TracingSampleProfilerTest, JoinStartupTracing) {
     EXPECT_LT(first_profile_ts,
               start_tracing_ts.since_origin().InMicroseconds());
   }
-  TracingSamplerProfiler::DeleteForCurrentThreadForTesting();
 }
 
 TEST_F(TracingSampleProfilerTest, SamplingChildThread) {
   base::Thread sampled_thread("sampling_profiler_test");
   sampled_thread.Start();
   sampled_thread.task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&TracingSamplerProfiler::CreateForCurrentThread));
+      FROM_HERE, base::BindOnce(&TracingSamplerProfiler::CreateOnChildThread));
   BeginTrace();
   base::RunLoop().RunUntilIdle();
   WaitForEvents();
@@ -353,8 +348,7 @@ TEST_F(TracingSampleProfilerTest, SamplingChildThread) {
   ValidateReceivedEvents();
   sampled_thread.task_runner()->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &TracingSamplerProfiler::DeleteForCurrentThreadForTesting));
+      base::BindOnce(&TracingSamplerProfiler::DeleteOnChildThreadForTesting));
   base::RunLoop().RunUntilIdle();
 }
 

@@ -49,7 +49,7 @@ constexpr char kProfileId[] = "Default";
 class NotificationPlatformBridgeWinTest : public testing::Test {
  public:
   NotificationPlatformBridgeWinTest()
-      : thread_bundle_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   ~NotificationPlatformBridgeWinTest() override = default;
 
@@ -91,7 +91,7 @@ class NotificationPlatformBridgeWinTest : public testing::Test {
     return toast2;
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NotificationPlatformBridgeWinTest);

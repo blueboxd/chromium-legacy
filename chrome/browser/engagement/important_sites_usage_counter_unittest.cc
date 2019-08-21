@@ -88,7 +88,7 @@ class ImportantSitesUsageCounterTest : public testing::Test {
   const std::vector<ImportantDomainInfo>& domain_info() { return domain_info_; }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   base::ScopedTempDir temp_dir_;
   scoped_refptr<QuotaManager> quota_manager_;

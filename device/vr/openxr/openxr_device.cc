@@ -4,6 +4,8 @@
 
 #include "device/vr/openxr/openxr_device.h"
 
+#include <string>
+
 #include "base/bind_helpers.h"
 #include "device/vr/openxr/openxr_api_wrapper.h"
 #include "device/vr/openxr/openxr_render_loop.h"
@@ -12,10 +14,21 @@ namespace device {
 
 namespace {
 
+constexpr char kDisplayName[] = "OpenXR";
+
+constexpr bool kHasPosition = true;
+constexpr bool kHasExternalDisplay = true;
+constexpr bool kCanPresent = true;
+
 constexpr float kFramebufferScale = 1.0f;
 constexpr float kFov = 45.0f;
-constexpr uint32_t kDimension = 1024;
 constexpr float kInterpupillaryDistance = 0.1f;  // 10cm
+
+constexpr unsigned int kRenderWidth = 1024;
+constexpr unsigned int kRenderHeight = 1024;
+
+constexpr gfx::Vector3dF kLeftOffset = {-kInterpupillaryDistance * 0.5, 0, 0};
+constexpr gfx::Vector3dF kRightOffset = {kInterpupillaryDistance * 0.5, 0, 0};
 
 // OpenXR doesn't give out display info until you start a session.
 // However our mojo interface expects display info right away to support WebVR.
@@ -25,12 +38,12 @@ mojom::VRDisplayInfoPtr CreateFakeVRDisplayInfo(device::mojom::XRDeviceId id) {
   mojom::VRDisplayInfoPtr display_info = mojom::VRDisplayInfo::New();
 
   display_info->id = id;
-  display_info->display_name = std::string("OpenXR");
+  display_info->display_name = kDisplayName;
 
   display_info->capabilities = mojom::VRDisplayCapabilities::New();
-  display_info->capabilities->has_position = true;
-  display_info->capabilities->has_external_display = true;
-  display_info->capabilities->can_present = true;
+  display_info->capabilities->has_position = kHasPosition;
+  display_info->capabilities->has_external_display = kHasExternalDisplay;
+  display_info->capabilities->can_present = kCanPresent;
 
   display_info->webvr_default_framebuffer_scale = kFramebufferScale;
   display_info->webxr_default_framebuffer_scale = kFramebufferScale;
@@ -41,15 +54,15 @@ mojom::VRDisplayInfoPtr CreateFakeVRDisplayInfo(device::mojom::XRDeviceId id) {
   display_info->left_eye->field_of_view =
       mojom::VRFieldOfView::New(kFov, kFov, kFov, kFov);
   display_info->right_eye->field_of_view =
-      display_info->left_eye->field_of_view->Clone();
+      display_info->left_eye->field_of_view.Clone();
 
-  display_info->left_eye->render_width = kDimension;
-  display_info->left_eye->render_height = kDimension;
-  display_info->right_eye->render_width = kDimension;
-  display_info->right_eye->render_width = kDimension;
+  display_info->left_eye->offset = kLeftOffset;
+  display_info->right_eye->offset = kRightOffset;
 
-  display_info->left_eye->offset = {-kInterpupillaryDistance * 0.5, 0, 0};
-  display_info->right_eye->offset = {kInterpupillaryDistance * 0.5, 0, 0};
+  display_info->left_eye->render_width = kRenderWidth;
+  display_info->left_eye->render_height = kRenderHeight;
+  display_info->right_eye->render_width = kRenderWidth;
+  display_info->right_eye->render_height = kRenderHeight;
 
   return display_info;
 }
@@ -70,7 +83,6 @@ OpenXrDevice::OpenXrDevice()
       gamepad_provider_factory_binding_(this),
       compositor_host_binding_(this),
       weak_ptr_factory_(this) {
-  render_loop_ = std::make_unique<OpenXrRenderLoop>();
   SetVRDisplayInfo(CreateFakeVRDisplayInfo(GetId()));
 }
 
@@ -78,7 +90,7 @@ OpenXrDevice::~OpenXrDevice() {
   // Wait for the render loop to stop before completing destruction. This will
   // ensure that the render loop doesn't get shutdown while it is processing
   // any requests.
-  if (render_loop_->IsRunning()) {
+  if (render_loop_ && render_loop_->IsRunning()) {
     render_loop_->Stop();
   }
 }
@@ -95,10 +107,20 @@ mojom::XRCompositorHostPtr OpenXrDevice::BindCompositorHost() {
   return ret;
 }
 
+void OpenXrDevice::EnsureRenderLoop() {
+  if (!render_loop_) {
+    auto on_info_changed = base::BindRepeating(&OpenXrDevice::SetVRDisplayInfo,
+                                               weak_ptr_factory_.GetWeakPtr());
+    render_loop_ =
+        std::make_unique<OpenXrRenderLoop>(std::move(on_info_changed));
+  }
+}
+
 void OpenXrDevice::RequestSession(
     mojom::XRRuntimeSessionOptionsPtr options,
     mojom::XRRuntime::RequestSessionCallback callback) {
   DCHECK(options->immersive);
+  EnsureRenderLoop();
 
   if (!render_loop_->IsRunning()) {
     render_loop_->Start();
@@ -158,12 +180,12 @@ void OpenXrDevice::OnRequestSessionResult(
       base::BindOnce(&OpenXrDevice::OnPresentingControllerMojoConnectionError,
                      base::Unretained(this)));
 
-  uint32_t width, height;
-  render_loop_->GetViewSize(&width, &height);
-  display_info_->left_eye->render_width = width;
-  display_info_->right_eye->render_width = width;
-  display_info_->left_eye->render_height = height;
-  display_info_->right_eye->render_height = height;
+  EnsureRenderLoop();
+  gfx::Size view_size = render_loop_->GetViewSize();
+  display_info_->left_eye->render_width = view_size.width();
+  display_info_->right_eye->render_width = view_size.width();
+  display_info_->left_eye->render_height = view_size.height();
+  display_info_->right_eye->render_height = view_size.height();
   session->display_info = display_info_.Clone();
 
   std::move(callback).Run(std::move(session), std::move(session_controller));
@@ -171,9 +193,12 @@ void OpenXrDevice::OnRequestSessionResult(
 
 void OpenXrDevice::OnPresentingControllerMojoConnectionError() {
   // This method is called when the rendering process exit presents.
-  render_loop_->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&XRCompositorCommon::ExitPresent,
-                                base::Unretained(render_loop_.get())));
+
+  if (render_loop_) {
+    render_loop_->task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(&XRCompositorCommon::ExitPresent,
+                                  base::Unretained(render_loop_.get())));
+  }
   OnExitPresent();
   exclusive_controller_binding_.Close();
 }
@@ -185,6 +210,7 @@ void OpenXrDevice::SetFrameDataRestricted(bool restricted) {
 
 void OpenXrDevice::GetIsolatedXRGamepadProvider(
     mojom::IsolatedXRGamepadProviderRequest provider_request) {
+  EnsureRenderLoop();
   if (render_loop_->IsRunning()) {
     render_loop_->task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&XRCompositorCommon::RequestGamepadProvider,
@@ -197,6 +223,7 @@ void OpenXrDevice::GetIsolatedXRGamepadProvider(
 
 void OpenXrDevice::CreateImmersiveOverlay(
     mojom::ImmersiveOverlayRequest overlay_request) {
+  EnsureRenderLoop();
   if (render_loop_->IsRunning()) {
     render_loop_->task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&XRCompositorCommon::RequestOverlay,

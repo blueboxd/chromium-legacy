@@ -111,17 +111,29 @@ cr.define('cr.icon', function() {
                               getUrlForCss(path);
   }
 
-  /**
-   * A regular expression for identifying favicon URLs.
-   * @const {!RegExp}
-   */
-  const FAVICON_URL_REGEX = /\.(ico|png)$/i;
+  function getBaseFaviconUrl() {
+    const faviconUrl = new URL('chrome://favicon2/');
+    faviconUrl.searchParams.set('size', '16');
+    faviconUrl.searchParams.set('scale_factor', 'SCALEFACTORx');
+    return faviconUrl;
+  }
 
   /**
-   * Creates a CSS -webkit-image-set for a favicon request.
+   * Creates a CSS -webkit-image-set for a favicon.
    *
-   * @param {string} url Either the URL of the original page or of the favicon
-   *     itself.
+   * @param {string} url URL of the favicon
+   * @return {string} -webkit-image-set for the favicon
+   */
+  /* #export */ function getFavicon(url) {
+    const faviconUrl = getBaseFaviconUrl();
+    faviconUrl.searchParams.set('icon_url', url);
+    return getImageSet(faviconUrl.toString());
+  }
+
+  /**
+   * Creates a CSS -webkit-image-set for a favicon request based on a page URL.
+   *
+   * @param {string} url URL of the original page
    * @param {boolean} isSyncedUrlForHistoryUi Should be set to true only if the
    *     caller is an UI aimed at displaying user history, and the requested url
    *     is known to be present in Chrome sync data.
@@ -130,25 +142,18 @@ cr.define('cr.icon', function() {
    *
    * @return {string} -webkit-image-set for the favicon.
    */
-  /* #export */ function getFavicon(
+  /* #export */ function getFaviconForPageURL(
       url, isSyncedUrlForHistoryUi, remoteIconUrlForUma = '') {
     // Note: URL param keys used below must match those in the description of
     // chrome://favicon2 format in components/favicon_base/favicon_url_parser.h.
-    const faviconUrl = new URL('chrome://favicon2/');
-    faviconUrl.searchParams.set('size', '16');
-    faviconUrl.searchParams.set('scale_factor', 'SCALEFACTORx');
-
-    if (FAVICON_URL_REGEX.test(url)) {
-      faviconUrl.searchParams.set('icon_url', url);
-    } else {
-      faviconUrl.searchParams.set('page_url', url);
-      // TODO(dbeam): use the presence of 'allow_google_server_fallback' to
-      // indicate true, otherwise false.
-      const fallback = isSyncedUrlForHistoryUi ? '1' : '0';
-      faviconUrl.searchParams.set('allow_google_server_fallback', fallback);
-      if (isSyncedUrlForHistoryUi) {
-        faviconUrl.searchParams.set('icon_url', remoteIconUrlForUma);
-      }
+    const faviconUrl = getBaseFaviconUrl();
+    faviconUrl.searchParams.set('page_url', url);
+    // TODO(dbeam): use the presence of 'allow_google_server_fallback' to
+    // indicate true, otherwise false.
+    const fallback = isSyncedUrlForHistoryUi ? '1' : '0';
+    faviconUrl.searchParams.set('allow_google_server_fallback', fallback);
+    if (isSyncedUrlForHistoryUi) {
+      faviconUrl.searchParams.set('icon_url', remoteIconUrlForUma);
     }
 
     return getImageSet(faviconUrl.toString());
@@ -157,6 +162,7 @@ cr.define('cr.icon', function() {
   // #cr_define_end
   return {
     getFavicon: getFavicon,
+    getFaviconForPageURL: getFaviconForPageURL,
     getFileIconUrl: getFileIconUrl,
     getImage: getImage,
     getUrlForCss: getUrlForCss,

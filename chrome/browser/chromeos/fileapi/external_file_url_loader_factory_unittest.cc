@@ -49,7 +49,7 @@ constexpr char kExpectedFileContents[] =
 class ExternalFileURLLoaderFactoryTest : public testing::Test {
  protected:
   ExternalFileURLLoaderFactoryTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         integration_service_factory_callback_(base::BindRepeating(
             &ExternalFileURLLoaderFactoryTest::CreateDriveIntegrationService,
             base::Unretained(this))),
@@ -142,7 +142,7 @@ class ExternalFileURLLoaderFactoryTest : public testing::Test {
         drive_cache_dir_.GetPath(), fake_file_system_);
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   content::TestServiceManagerContext context_;
   drive::DriveIntegrationServiceFactory::FactoryCallback
       integration_service_factory_callback_;

@@ -36,7 +36,7 @@ ScopedDeviceSettingsTestHelper::~ScopedDeviceSettingsTestHelper() {
 }
 
 DeviceSettingsTestBase::DeviceSettingsTestBase()
-    : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+    : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
 
 DeviceSettingsTestBase::~DeviceSettingsTestBase() {
   CHECK(teardown_called_);

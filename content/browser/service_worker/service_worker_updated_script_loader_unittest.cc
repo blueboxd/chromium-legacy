@@ -72,7 +72,7 @@ class MockHTTPServer {
 class ServiceWorkerUpdatedScriptLoaderTest : public testing::Test {
  public:
   ServiceWorkerUpdatedScriptLoaderTest()
-      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP),
         kScriptURL(kNormalScriptURL) {
     feature_list_.InitAndEnableFeature(
         blink::features::kServiceWorkerImportedScriptUpdateCheck);
@@ -182,7 +182,7 @@ class ServiceWorkerUpdatedScriptLoaderTest : public testing::Test {
   }
 
  protected:
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   base::test::ScopedFeatureList feature_list_;
 
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;

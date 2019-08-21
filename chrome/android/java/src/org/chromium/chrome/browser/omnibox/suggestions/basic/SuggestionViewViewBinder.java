@@ -156,7 +156,7 @@ public class SuggestionViewViewBinder {
                     drawableId = R.drawable.ic_suggestion_magnifier;
                     break;
                 case SuggestionIcon.HISTORY:
-                    drawableId = R.drawable.ic_suggestion_history;
+                    drawableId = R.drawable.ic_history_googblue_24dp;
                     break;
                 case SuggestionIcon.VOICE:
                     drawableId = R.drawable.btn_mic;

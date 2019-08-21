@@ -1710,8 +1710,8 @@ void RenderViewImpl::DidCommitProvisionalHistoryLoad() {
 }
 
 void RenderViewImpl::RegisterRendererPreferenceWatcher(
-    blink::mojom::RendererPreferenceWatcherPtr watcher) {
-  renderer_preference_watchers_.AddPtr(std::move(watcher));
+    mojo::PendingRemote<blink::mojom::RendererPreferenceWatcher> watcher) {
+  renderer_preference_watchers_.Add(std::move(watcher));
 }
 
 int RenderViewImpl::HistoryBackListCount() {
@@ -1938,10 +1938,8 @@ void RenderViewImpl::OnSetRendererPrefs(
 
   renderer_preferences_ = renderer_prefs;
 
-  renderer_preference_watchers_.ForAllPtrs(
-      [&renderer_prefs](blink::mojom::RendererPreferenceWatcher* watcher) {
-        watcher->NotifyUpdate(renderer_prefs.Clone());
-      });
+  for (auto& watcher : renderer_preference_watchers_)
+    watcher->NotifyUpdate(renderer_prefs.Clone());
 
   UpdateFontRenderingFromRendererPrefs();
   UpdateThemePrefs();

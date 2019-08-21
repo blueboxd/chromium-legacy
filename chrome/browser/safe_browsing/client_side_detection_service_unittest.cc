@@ -238,7 +238,7 @@ class ClientSideDetectionServiceTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<ClientSideDetectionService> csd_service_;
 
   network::TestURLLoaderFactory test_url_loader_factory_;

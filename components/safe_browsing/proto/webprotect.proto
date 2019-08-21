@@ -23,7 +23,16 @@ message MalwareDeepScanningClientRequest {
 }
 
 // DLP-specific scanning information.
-message DlpDeepScanningClientRequest {}
+message DlpDeepScanningClientRequest {
+  // Where the content comes from, so that the proper rules can be triggered.
+  enum ContentSource {
+    CONTENT_SOURCE_UNKNOWN = 0;
+    FILE_DOWNLOAD = 1;
+    FILE_UPLOAD = 2;
+    WEB_CONTENT_UPLOAD = 3;
+  }
+  optional ContentSource content_source = 1;
+}
 
 // Scanning configuration sent from Chrome.
 message DeepScanningClientRequest {
@@ -41,7 +50,7 @@ message DeepScanningClientRequest {
 }
 
 // Malware-specific response given back for scanned content.
-message MalwareDeepScanningClientResponse {
+message MalwareDeepScanningVerdict {
   enum Verdict {
     VERDICT_UNSPECIFIED = 0;
     CLEAN = 1;
@@ -52,17 +61,39 @@ message MalwareDeepScanningClientResponse {
   optional Verdict verdict = 1;
 }
 
-// DLP-specific response given back for scanned content.
-message DlpDeepScanningClientResponse {}
+message DlpDeepScanningVerdict {
+  // The status of the deep scanning verdict. When status is SUCCESS and
+  // triggered_rules below is empty, then the content is clean.
+  enum Status {
+    STATUS_UNKNOWN = 0;
+    SUCCESS = 1;
+    FAILURE = 2;
+  }
+  optional Status status = 1;
+
+  message TriggeredRule {
+    enum Action {
+      ACTION_UNKNOWN = 0;
+      REPORT_ONLY = 1;
+      WARN = 2;
+      BLOCK = 3;
+    }
+    optional Action action = 1;
+
+    optional string rule_name = 2;
+
+    optional int64 rule_id = 3;
+  }
+  // Only relevant when status is SUCCESS above.
+  repeated TriggeredRule triggered_rules = 2;
+}
 
 message DeepScanningClientResponse {
-  // Malware scan specific response info.
-  optional MalwareDeepScanningClientResponse malware_scan_response = 1;
-
-  // DLP scan specific response info.
-  optional DlpDeepScanningClientResponse dlp_scan_response = 2;
-
   // Token used to correlate requests and responses. This is different than the
   // FCM token, in that it is unique for each request.
-  optional string token = 3;
+  optional string token = 1;
+
+  optional MalwareDeepScanningVerdict malware_scan_verdict = 2;
+
+  optional DlpDeepScanningVerdict dlp_scan_verdict = 3;
 }

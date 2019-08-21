@@ -70,9 +70,7 @@ void GeometryMapperTransformCache::Update(
   root_of_2d_translation_ = &node;
   to_2d_translation_root_ = FloatSize();
 
-  TransformationMatrix local = node.Matrix();
-  local.ApplyTransformOrigin(node.Origin());
-
+  TransformationMatrix local = node.MatrixWithOriginApplied();
   bool is_plane_root = !local.IsFlat() || !local.IsInvertible();
   if (is_plane_root && root_of_2d_translation_ == &node) {
     // We don't need plane root transform because the plane root is the same
@@ -123,9 +121,7 @@ void GeometryMapperTransformCache::UpdateScreenTransform(
     screen_transform_->to_screen.Translate(translation.Width(),
                                            translation.Height());
   } else {
-    TransformationMatrix local = node.Matrix();
-    local.ApplyTransformOrigin(node.Origin());
-    screen_transform_->to_screen.Multiply(local);
+    screen_transform_->to_screen.Multiply(node.MatrixWithOriginApplied());
   }
 
   auto to_screen_flattened = screen_transform_->to_screen;

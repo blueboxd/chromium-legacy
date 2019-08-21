@@ -1123,7 +1123,7 @@ void WizardController::OnChangedMetricsReportingState(bool enabled) {
   if (!enabled)
     return;
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  base::PostTask(FROM_HERE, {base::MayBlock()},
+  base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
                  base::BindOnce(&breakpad::InitCrashReporter, std::string()));
 #endif
 }

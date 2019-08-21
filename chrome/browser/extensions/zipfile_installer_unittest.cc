@@ -98,7 +98,7 @@ struct UnzipFileFilterTestCase {
 class ZipFileInstallerTest : public testing::Test {
  public:
   ZipFileInstallerTest()
-      : browser_threads_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : browser_threads_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         data_decoder_(test_connector_factory_.RegisterInstance(
             data_decoder::mojom::kServiceName)),
         connector_(test_connector_factory_.CreateConnector()) {
@@ -168,7 +168,7 @@ class ZipFileInstallerTest : public testing::Test {
   std::unique_ptr<TestingProfile> profile_;
   ExtensionService* extension_service_;
 
-  content::TestBrowserThreadBundle browser_threads_;
+  content::BrowserTaskEnvironment browser_threads_;
   std::unique_ptr<content::InProcessUtilityThreadHelper>
       in_process_utility_thread_helper_;
   MockExtensionRegistryObserver observer_;

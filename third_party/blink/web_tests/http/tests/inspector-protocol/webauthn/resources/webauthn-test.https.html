@@ -31,6 +31,7 @@ async function registerCredential(options = {}) {
   options = Object.assign({
     authenticatorSelection: {
       requireResidentKey: false,
+      userVerification: "discouraged",
     },
     rp: {
       id: "devtools.test",

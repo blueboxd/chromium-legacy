@@ -47,7 +47,7 @@ class ChromeInfoMapTest : public testing::Test {
   ChromeInfoMapTest() = default;
 
  private:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 // Tests API access permissions given both extension and app URLs.

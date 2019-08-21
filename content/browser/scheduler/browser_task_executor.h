@@ -87,7 +87,7 @@ class CONTENT_EXPORT BrowserTaskExecutor : public base::TaskExecutor {
   // and the base::TaskExecutor APIs are non-functional but won't crash if
   // called. In unittests however we need to clean up, so
   // BrowserTaskExecutor::ResetForTesting should be
-  // called (~TestBrowserThreadBundle() takes care of this).
+  // called (~BrowserTaskEnvironment() takes care of this).
   static void Shutdown();
 
   // Unregister and delete the TaskExecutor after a test.

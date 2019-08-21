@@ -63,6 +63,12 @@ class WPTMetadataBuilder(object):
             with open(filename, "w") as metadata_file:
                 metadata_file.write(file_contents)
 
+        # Finally, output a stamp file with the same name as the output
+        # directory. The stamp file is empty, it's only used for its mtime.
+        # This makes the GN build system happy (see crbug.com/995112).
+        with open(self.metadata_output_dir + ".stamp", "w"):
+            pass
+
     def get_test_names_for_metadata(self):
         """Determines which tests in the expectation file need metadata.
 

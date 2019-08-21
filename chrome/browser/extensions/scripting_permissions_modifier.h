@@ -104,11 +104,10 @@ class ScriptingPermissionsModifier {
   // Note: we pass in |permissions| explicitly here, as this is used during
   // permission initialization, where the active permissions on the extension
   // may not be the permissions to compare against.
-  static void WithholdPermissionsIfNecessary(
+  static std::unique_ptr<const PermissionSet> WithholdPermissionsIfNecessary(
       const Extension& extension,
       const ExtensionPrefs& extension_prefs,
-      const PermissionSet& permissions,
-      std::unique_ptr<const PermissionSet>* granted_permissions_out);
+      const PermissionSet& permissions);
 
   // Returns the subset of active permissions which can be withheld.
   std::unique_ptr<const PermissionSet> GetRevokablePermissions() const;

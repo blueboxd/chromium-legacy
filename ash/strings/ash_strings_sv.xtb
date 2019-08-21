@@ -333,6 +333,7 @@
 <translation id="6043212731627905357">Skärmen kan inte användas med <ph name="DEVICE_TYPE" /> (det finns inte stöd för skärmen).</translation>
 <translation id="6043994281159824495">Logga ut nu</translation>
 <translation id="6047696787498798094">Skärmdelningen avbryts när du byter till en annan användare. Vill du fortsätta?</translation>
+<translation id="6054305421211936131">Logga in med smartkort</translation>
 <translation id="6062360702481658777">Du loggas ut automatiskt om <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="6064337552080329342">Lösenordet kunde inte verifieras. Försök igen.</translation>
 <translation id="607652042414456612">Din dator kan upptäckas av Bluetooth-enheter som finns i närheten och den visas som <ph name="NAME" /> med adressen <ph name="ADDRESS" /></translation>
@@ -360,6 +361,7 @@
 <translation id="6459472438155181876">Utökar skärmen till <ph name="DISPLAY_NAME" /></translation>
 <translation id="6482559668224714696">Helskärmsförstoring</translation>
 <translation id="6490471652906364588">USB-C-enhet (höger port)</translation>
+<translation id="649452524636452238">Pinkod till smartkort</translation>
 <translation id="6501401484702599040">Skärmen castas till <ph name="RECEIVER_NAME" /></translation>
 <translation id="6521655319214113338">Inmatning för handskrift</translation>
 <translation id="6528179044667508675">Stör ej</translation>
@@ -389,6 +391,7 @@
 <translation id="6857811139397017780">Aktivera <ph name="NETWORKSERVICE" /></translation>
 <translation id="6910714959251846841">Den här uppdateringen kräver att en Powerwash görs av enheten. Läs mer om den senaste uppdateringen av <ph name="SYSTEM_APP_NAME" />.</translation>
 <translation id="6911468394164995108">Anslut till andra ...</translation>
+<translation id="6919251195245069855">Det smarta kortet kändes inte igen. Försök igen.</translation>
 <translation id="6972754398087986839">Komma igång</translation>
 <translation id="6981982820502123353">Tillgänglighet</translation>
 <translation id="698231206551913481">Alla filer inklusive lokal data som tillhör den här användaren tas bort permanent när användaren tas bort.</translation>

@@ -129,6 +129,7 @@
 #include "components/user_manager/user.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
+#include "ui/resources/grit/webui_resources.h"
 #else  // !defined(OS_CHROMEOS)
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ui/webui/settings/settings_default_browser_handler.h"
@@ -472,6 +473,8 @@ void SettingsUI::InitOSWebUIHandlers(Profile* profile,
     html_source->AddInteger(
         "fingerprintReaderLocation",
         static_cast<int32_t>(chromeos::quick_unlock::GetFingerprintLocation()));
+    html_source->AddResourcePath("finger_print.json",
+                                 IDR_LOGIN_FINGER_PRINT_TABLET_ANIMATION);
   }
   html_source->AddBoolean("lockScreenNotificationsEnabled",
                           ash::features::IsLockScreenNotificationsEnabled());

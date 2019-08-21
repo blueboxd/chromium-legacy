@@ -30,7 +30,7 @@ class ClearDataItemTest : public PlatformTest {
   }
 
   std::unique_ptr<TestChromeBrowserState> browser_state_;
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
 };
 
 // Test that if the counter is not set, then [item hasCounter] returns false.

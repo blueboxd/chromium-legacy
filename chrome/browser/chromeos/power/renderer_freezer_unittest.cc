@@ -153,7 +153,7 @@ class RendererFreezerTest : public testing::Test {
   std::unique_ptr<RendererFreezer> renderer_freezer_;
 
  private:
-  content::TestBrowserThreadBundle browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererFreezerTest);
 };

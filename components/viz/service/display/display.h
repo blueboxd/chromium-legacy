@@ -90,16 +90,9 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
       base::TimeDelta::FromMilliseconds(50);
   static constexpr uint32_t kDrawToSwapUsBuckets = 50;
 
-  // TODO(cblume, crbug.com/900973): |enable_shared_images| is a temporary
-  // solution that unblocks us until SharedImages are threadsafe in WebView.
-#if defined(ANDROID)
-  static constexpr bool kEnableSharedImages = false;
-#else
-  static constexpr bool kEnableSharedImages = true;
-#endif
   void Initialize(DisplayClient* client,
                   SurfaceManager* surface_manager,
-                  bool enable_shared_images = kEnableSharedImages);
+                  bool enable_shared_images);
 
   void AddObserver(DisplayObserver* observer);
   void RemoveObserver(DisplayObserver* observer);

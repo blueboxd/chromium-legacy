@@ -331,7 +331,7 @@ class FileSystemProviderRequestManagerTest : public testing::Test {
                                               notification_manager_.get()));
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<FakeNotificationManager> notification_manager_;
   std::unique_ptr<RequestManager> request_manager_;

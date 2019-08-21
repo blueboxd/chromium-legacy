@@ -108,7 +108,7 @@ class ChromeSigninProxyingURLLoaderFactoryTest : public testing::Test {
     proxying_factory_.reset();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<network::SimpleURLLoader> loader_;
   std::unique_ptr<ProxyingURLLoaderFactory> proxying_factory_;
   network::TestURLLoaderFactory test_factory_;

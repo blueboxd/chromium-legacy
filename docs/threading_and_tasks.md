@@ -631,7 +631,7 @@ To test code that uses `base::ThreadTaskRunnerHandle`,
 instantiate a
 [`base::test::TaskEnvironment`](https://cs.chromium.org/chromium/src/base/test/scoped_task_environment.h)
 for the scope of the test. If you need BrowserThreads, use
-`content::TestBrowserThreadBundle` instead of
+`content::BrowserTaskEnvironment` instead of
 `base::test::TaskEnvironment`.
 
 Tests can run the `base::test::TaskEnvironment`'s message pump using a

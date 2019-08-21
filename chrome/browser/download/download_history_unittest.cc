@@ -452,7 +452,7 @@ class DownloadHistoryTest : public testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::vector<std::unique_ptr<StrictMockDownloadItem>> items_;
   std::unique_ptr<content::MockDownloadManager> manager_;
   FakeHistoryAdapter* history_ = nullptr;

@@ -23,7 +23,7 @@ class CrOSComponentInstallerMetadataTest : public testing::Test {
   ~CrOSComponentInstallerMetadataTest() override {}
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CrOSComponentInstallerMetadataTest);

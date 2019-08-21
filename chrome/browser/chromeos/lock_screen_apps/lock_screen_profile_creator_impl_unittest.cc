@@ -348,7 +348,7 @@ class LockScreenProfileCreatorImplTest : public testing::Test {
 
   base::ScopedTempDir user_data_dir_;
   ScopedTestingLocalState local_state_;
-  content::TestBrowserThreadBundle threads_;
+  content::BrowserTaskEnvironment threads_;
 
   chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
   chromeos::ScopedTestUserManager test_user_manager_;

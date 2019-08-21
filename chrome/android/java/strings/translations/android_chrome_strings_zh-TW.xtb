@@ -141,7 +141,6 @@
 <translation id="200815880754187296">其他應用程式佔 <ph name="KILOBYTES" /> KB</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# 個檔案}other{# 個檔案}}</translation>
 <translation id="2017836877785168846">將歷史記錄和自動即時查詢從網址列中清除。</translation>
-<translation id="2018707881002649255">你在下方選取的聯絡人資訊將會提供給 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 這個網站。</translation>
 <translation id="2021896219286479412">全螢幕網站控制</translation>
 <translation id="2038563949887743358">開啟「要求電腦版網站」</translation>
 <translation id="2041019821020695769">如要讓 Chrome 傳送通知，請一併在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中開啟通知功能。</translation>
@@ -243,7 +242,6 @@
 <translation id="2777555524387840389">還剩 <ph name="SECONDS" /> 秒</translation>
 <translation id="2779651927720337254">失敗</translation>
 <translation id="2781151931089541271">還剩 1 秒</translation>
-<translation id="2796941233371040292">這裡沒有任何已儲存的資料</translation>
 <translation id="2801022321632964776">更新後即可在 Chrome 最新版本中使用你偏好的語言</translation>
 <translation id="2810645512293415242">網頁內容經過簡化，不僅節省數據用量，更加快載入速度。</translation>
 <translation id="281504910091592009">你可以查看及管理 <ph name="BEGIN_LINK" />Google 帳戶<ph name="END_LINK" />中儲存的密碼</translation>
@@ -271,6 +269,7 @@
 <translation id="2962095958535813455">已切換成無痕式分頁</translation>
 <translation id="2968755619301702150">憑證檢視器</translation>
 <translation id="2979025552038692506">選取的無痕式分頁</translation>
+<translation id="2987620471460279764">從其他裝置分享的文字</translation>
 <translation id="2989523299700148168">最近造訪過</translation>
 <translation id="2996291259634659425">建立通關密語</translation>
 <translation id="2996809686854298943">必須要有網址</translation>
@@ -399,7 +398,7 @@
 <translation id="4060598801229743805">選項位於畫面頂端</translation>
 <translation id="4062305924942672200">法律資訊</translation>
 <translation id="4084682180776658562">書籤</translation>
-<translation id="4084712963632273211">發佈者：<ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />由 Google 所提供<ph name="END_DEEMPHASIZED" /></translation>
+<translation id="4084712963632273211">發布者：<ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />由 Google 所提供<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537">下載內容佔 <ph name="MEGABYTES" /> MB</translation>
 <translation id="4095146165863963773">要刪除應用程式資料嗎？</translation>
 <translation id="4099578267706723511">將使用統計資料及當機報告傳送給 Google，助我們一臂之力，讓 Chrome 更臻完美。</translation>
@@ -554,6 +553,7 @@
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{無法完成 1 項下載作業。}other{無法完成 # 項下載作業。}}</translation>
 <translation id="5170568018924773124">在資料夾中顯示</translation>
 <translation id="5184329579814168207">在 Chrome 中開啟</translation>
+<translation id="5193988420012215838">已複製到剪貼簿</translation>
 <translation id="5199929503336119739">工作資料夾</translation>
 <translation id="5202089186707505116">要允許這個網站存取你的 VR 感應器嗎？</translation>
 <translation id="5210286577605176222">跳至上一個分頁</translation>
@@ -702,6 +702,7 @@
 舉例來說，部分網站可能會以顯示廣告的方式回應這類要求，而這些廣告並非根據您所造訪的其他網站記錄而產生。許多網站仍會收集您的瀏覽資料，並將這些資料用於下列目的：提高網站安全性、在網站上提供更相關的內容、廣告和推薦項目，以及產生報告統計資料。</translation>
 <translation id="624789221780392884">可進行更新</translation>
 <translation id="6255999984061454636">內容建議</translation>
+<translation id="6264430811215618931"><ph name="ORIGIN" /> 已將簡訊傳送至你的手機。你確認簡訊內容後，網站即可辨認你的身分。</translation>
 <translation id="6277522088822131679">列印網頁時發生問題，請再試一次。</translation>
 <translation id="6295158916970320988">所有網站</translation>
 <translation id="629730747756840877">帳戶</translation>
@@ -717,7 +718,6 @@
 <translation id="6364438453358674297">從歷史記錄中移除建議項目？</translation>
 <translation id="6369229450655021117">在這裡，你可以搜尋網路、與好友分享內容及查看開啟的網頁</translation>
 <translation id="6378173571450987352">詳細資料：依使用資料量排序</translation>
-<translation id="6383961787135158834">清除網站儲存的資料…</translation>
 <translation id="6388207532828177975">清除並重設</translation>
 <translation id="6393863479814692971">Chrome 需要相關權限，才能讓這個網站使用你的攝影機和麥克風。</translation>
 <translation id="6395288395575013217">連結</translation>

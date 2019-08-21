@@ -85,7 +85,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   WebHitTestResult HitTestResultAt(const gfx::Point&) override;
 
   // WebFrameWidgetBase overrides:
-  void SetLayerTreeView(WebLayerTreeView*, cc::AnimationHost*) override;
+  void SetAnimationHost(cc::AnimationHost*) override;
   bool ForSubframe() const override { return false; }
   void SetRootGraphicsLayer(GraphicsLayer*) override;
   GraphicsLayer* RootGraphicsLayer() const override;

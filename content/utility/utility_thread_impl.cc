@@ -46,18 +46,18 @@ class ServiceBinderImpl {
       : main_thread_task_runner_(std::move(main_thread_task_runner)) {}
   ~ServiceBinderImpl() = default;
 
-  void BindServiceInterface(mojo::GenericPendingReceiver receiver) {
+  void BindServiceInterface(mojo::GenericPendingReceiver* receiver) {
     // We watch for and terminate on PEER_CLOSED, but we also terminate if the
     // watcher is cancelled (meaning the local endpoint was closed rather than
     // the peer). Hence any breakage of the service pipe leads to termination.
     auto watcher = std::make_unique<mojo::SimpleWatcher>(
         FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC);
-    watcher->Watch(receiver.pipe(), MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+    watcher->Watch(receiver->pipe(), MOJO_HANDLE_SIGNAL_PEER_CLOSED,
                    MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
                    base::BindRepeating(&ServiceBinderImpl::OnServicePipeClosed,
                                        base::Unretained(this), watcher.get()));
     service_pipe_watchers_.insert(std::move(watcher));
-    HandleServiceRequestOnIOThread(std::move(receiver),
+    HandleServiceRequestOnIOThread(std::move(*receiver),
                                    main_thread_task_runner_.get());
   }
 

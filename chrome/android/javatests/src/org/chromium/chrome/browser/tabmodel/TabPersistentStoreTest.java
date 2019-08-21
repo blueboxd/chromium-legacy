@@ -171,7 +171,7 @@ public class TabPersistentStoreTest {
         private final TabModelOrderController mTabModelOrderController;
 
         public TestTabModelSelector() throws Exception {
-            super(new MockTabCreatorManager());
+            super(new MockTabCreatorManager(), false);
             ((MockTabCreatorManager) getTabCreatorManager()).initialize(this);
             mTabPersistentStoreObserver = new MockTabPersistentStoreObserver();
             mTabPersistentStore =
@@ -202,7 +202,7 @@ public class TabPersistentStoreTest {
                     new IncognitoTabModelImplCreator(getTabCreatorManager().getTabCreator(false),
                             getTabCreatorManager().getTabCreator(true), null,
                             mTabModelOrderController, null, mTabPersistentStore, this));
-            initialize(false, regularTabModel, incognitoTabModel);
+            initialize(regularTabModel, incognitoTabModel);
         }
 
         @Override

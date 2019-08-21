@@ -57,6 +57,7 @@
 <translation id="2746543609216772311">El valor debe ser igual o posterior a <ph name="MINIMUM_DATE_OR_TIME" />.</translation>
 <translation id="2759744352195237655">botón emergente</translation>
 <translation id="2761667185364618470">Selecciona esta casilla de verificación si quieres continuar</translation>
+<translation id="2844350028562914727">detalles</translation>
 <translation id="2896972712917208084">grupo de selección</translation>
 <translation id="2908441821576996758">Introduce una lista de direcciones de correo electrónico separada por comas</translation>
 <translation id="2940813599313844715">objeto</translation>
@@ -154,6 +155,7 @@
 <translation id="6166809985690652833">epílogo</translation>
 <translation id="6209276755895393898">Parece que es: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">glosario</translation>
+<translation id="6281763101136022427">URL</translation>
 <translation id="6310801910862476708">Salir del modo imagen en imagen</translation>
 <translation id="6398862346408813489">Mostrar panel para seleccionar el mes</translation>
 <translation id="6404546809543547843">control deslizante de duración de audio</translation>
@@ -236,6 +238,7 @@
 <translation id="860475260694818407">índice</translation>
 <translation id="8613126697340063924">reproducción de control remoto</translation>
 <translation id="862370744433916922">subtítulo</translation>
+<translation id="8711688047404765493">salida</translation>
 <translation id="8750798805984357768">Selecciona una de estas opciones</translation>
 <translation id="8808573423886751634">capítulo</translation>
 <translation id="8845239796550121995">Se está enviando contenido a tu TV</translation>

@@ -85,12 +85,6 @@ DawnTextureFormat AsDawnEnum<DawnTextureFormat>(
   }
 
   // Normal 16 bit formats
-  if (webgpu_enum == "r16unorm") {
-    return DAWN_TEXTURE_FORMAT_R16_UNORM;
-  }
-  if (webgpu_enum == "r16snorm") {
-    return DAWN_TEXTURE_FORMAT_R16_SNORM;
-  }
   if (webgpu_enum == "r16uint") {
     return DAWN_TEXTURE_FORMAT_R16_UINT;
   }
@@ -122,12 +116,6 @@ DawnTextureFormat AsDawnEnum<DawnTextureFormat>(
   }
   if (webgpu_enum == "r32float") {
     return DAWN_TEXTURE_FORMAT_R32_FLOAT;
-  }
-  if (webgpu_enum == "rg16unorm") {
-    return DAWN_TEXTURE_FORMAT_RG16_UNORM;
-  }
-  if (webgpu_enum == "rg16snorm") {
-    return DAWN_TEXTURE_FORMAT_RG16_SNORM;
   }
   if (webgpu_enum == "rg16uint") {
     return DAWN_TEXTURE_FORMAT_RG16_UINT;
@@ -177,12 +165,6 @@ DawnTextureFormat AsDawnEnum<DawnTextureFormat>(
   }
   if (webgpu_enum == "rg32float") {
     return DAWN_TEXTURE_FORMAT_RG32_FLOAT;
-  }
-  if (webgpu_enum == "rgba16unorm") {
-    return DAWN_TEXTURE_FORMAT_RGBA16_UNORM;
-  }
-  if (webgpu_enum == "rgba16snorm") {
-    return DAWN_TEXTURE_FORMAT_RGBA16_SNORM;
   }
   if (webgpu_enum == "rgba16uint") {
     return DAWN_TEXTURE_FORMAT_RGBA16_UINT;

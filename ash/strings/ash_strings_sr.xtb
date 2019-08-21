@@ -333,6 +333,7 @@
 <translation id="6043212731627905357">Овај монитор није компатибилан са уређајем <ph name="DEVICE_TYPE" /> (монитор није подржан).</translation>
 <translation id="6043994281159824495">Одјави ме одмах</translation>
 <translation id="6047696787498798094">Дељење екрана ће се прекинути када пребаците на другог корисника. Желите ли да наставите?</translation>
+<translation id="6054305421211936131">Пријавите се помоћу паметне картице</translation>
 <translation id="6062360702481658777">Аутоматски ћете бити одјављени за <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="6064337552080329342">Жао нам је, верификација лозинке није успела. Пробајте поново.</translation>
 <translation id="607652042414456612">Оближњи Bluetooth уређаји могу да открију рачунар и он ће се приказивати као „<ph name="NAME" />“ са адресом <ph name="ADDRESS" /></translation>
@@ -360,6 +361,7 @@
 <translation id="6459472438155181876">Проширивање екрана у <ph name="DISPLAY_NAME" /></translation>
 <translation id="6482559668224714696">Лупа за цео екран</translation>
 <translation id="6490471652906364588">Уређај са USB прикључком типа C (десни порт)</translation>
+<translation id="649452524636452238">PIN паметне картице</translation>
 <translation id="6501401484702599040">Екран се пребацује на <ph name="RECEIVER_NAME" /></translation>
 <translation id="6521655319214113338">Унос рукописа</translation>
 <translation id="6528179044667508675">Не узнемиравај</translation>
@@ -389,6 +391,7 @@
 <translation id="6857811139397017780">Активирај <ph name="NETWORKSERVICE" /></translation>
 <translation id="6910714959251846841">Ово ажурирање захтева да обавите powerwash на уређају. Сазнајте више о најновијем ажурирању за: <ph name="SYSTEM_APP_NAME" />.</translation>
 <translation id="6911468394164995108">Придружи ме другој...</translation>
+<translation id="6919251195245069855">Нисмо успели да препознамо паметну картицу. Пробајте поново.</translation>
 <translation id="6972754398087986839">Започнимо</translation>
 <translation id="6981982820502123353">Приступачност</translation>
 <translation id="698231206551913481">Све датотеке и локални подаци повезани са овим корисником ће бити трајно избрисани када уклоните овог корисника.</translation>

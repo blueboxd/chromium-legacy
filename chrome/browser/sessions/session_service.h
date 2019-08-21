@@ -68,12 +68,6 @@ class SessionService : public sessions::BaseSessionServiceDelegate,
                        public BrowserListObserver {
   friend class SessionServiceTestHelper;
  public:
-  // Used to distinguish an application from a ordinary content window.
-  enum AppType {
-    TYPE_APP,
-    TYPE_NORMAL
-  };
-
   // Creates a SessionService for the specified profile.
   explicit SessionService(Profile* profile);
   // For testing.
@@ -173,9 +167,7 @@ class SessionService : public sessions::BaseSessionServiceDelegate,
   // Sets the type of window. In order for the contents of a window to be
   // tracked SetWindowType must be invoked with a type we track
   // (ShouldRestoreOfWindowType returns true).
-  void SetWindowType(const SessionID& window_id,
-                     Browser::Type type,
-                     AppType app_type);
+  void SetWindowType(const SessionID& window_id, Browser::Type type);
 
   // Sets the application name of the specified window.
   void SetWindowAppName(const SessionID& window_id,
@@ -251,10 +243,10 @@ class SessionService : public sessions::BaseSessionServiceDelegate,
 
   void Init();
 
-  // Returns true if a window of given |window_type| and |app_type| should get
+  // Returns true if a window of given |window_type| should get
   // restored upon session restore.
-  bool ShouldRestoreWindowOfType(sessions::SessionWindow::WindowType type,
-                                 AppType app_type) const;
+  bool ShouldRestoreWindowOfType(
+      sessions::SessionWindow::WindowType type) const;
 
   // Removes unrestorable windows from the previous windows list.
   void RemoveUnusedRestoreWindows(

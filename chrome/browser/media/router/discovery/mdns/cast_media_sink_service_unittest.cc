@@ -146,11 +146,11 @@ class CastMediaSinkServiceTest : public ::testing::Test {
     EXPECT_CALL(test_dns_sd_registry_, UnregisterDnsSdListener(_));
     media_sink_service_.reset();
     task_runner_->RunUntilIdle();
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
 
   base::MockCallback<OnSinksDiscoveredCallback> mock_sink_discovered_ui_cb_;

@@ -46,7 +46,6 @@ void HandleStoreRegistrationUserDataStatus(
 CookieStoreManager::CookieStoreManager(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
     : service_worker_context_(std::move(service_worker_context)),
-      cookie_change_listener_binding_(this),
       registration_user_data_key_(kSubscriptionsUserKey) {
   service_worker_context_->AddObserver(this);
 }
@@ -85,13 +84,10 @@ void CookieStoreManager::ListenToCookieChanges(
   DCHECK(!cookie_manager_) << __func__ << " already called";
   cookie_manager_ = std::move(cookie_manager);
 
-  DCHECK(!cookie_change_listener_binding_.is_bound());
-  ::network::mojom::CookieChangeListenerPtr cookie_change_listener;
-  cookie_change_listener_binding_.Bind(
-      mojo::MakeRequest(&cookie_change_listener));
-
+  DCHECK(!cookie_change_listener_receiver_.is_bound());
   // TODO(pwnall): Switch to an API with subscription confirmation.
-  cookie_manager_->AddGlobalChangeListener(std::move(cookie_change_listener));
+  cookie_manager_->AddGlobalChangeListener(
+      cookie_change_listener_receiver_.BindNewPipeAndPassRemote());
   std::move(callback).Run(true);
 }
 

@@ -25,7 +25,7 @@ class ChromeMetricsServiceAccessorTest : public testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   ScopedTestingLocalState testing_local_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeMetricsServiceAccessorTest);

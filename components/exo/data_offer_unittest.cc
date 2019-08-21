@@ -422,7 +422,7 @@ TEST_F(DataOfferTest, SetClipboardDataPlainText) {
 
   TestFileHelper file_helper;
   {
-    ui::ScopedClipboardWriter writer(ui::ClipboardType::kCopyPaste);
+    ui::ScopedClipboardWriter writer(ui::ClipboardBuffer::kCopyPaste);
     writer.WriteText(base::UTF8ToUTF16("Test data"));
   }
   data_offer.SetClipboardData(&file_helper,
@@ -455,7 +455,7 @@ TEST_F(DataOfferTest, SetClipboardDataHTML) {
 
   TestFileHelper file_helper;
   {
-    ui::ScopedClipboardWriter writer(ui::ClipboardType::kCopyPaste);
+    ui::ScopedClipboardWriter writer(ui::ClipboardBuffer::kCopyPaste);
     writer.WriteHTML(base::UTF8ToUTF16("Test data"), "");
   }
   data_offer.SetClipboardData(&file_helper,
@@ -487,7 +487,7 @@ TEST_F(DataOfferTest, SetClipboardDataRTF) {
 
   TestFileHelper file_helper;
   {
-    ui::ScopedClipboardWriter writer(ui::ClipboardType::kCopyPaste);
+    ui::ScopedClipboardWriter writer(ui::ClipboardBuffer::kCopyPaste);
     writer.WriteRTF("Test data");
   }
   data_offer.SetClipboardData(&file_helper,

@@ -18,13 +18,14 @@ import com.google.android.libraries.feed.api.host.storage.JournalStorageDirect;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.SequencedTaskRunner;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.feed.tooltip.BasicTooltipSupportedApi;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
-
-import java.util.concurrent.Executors;
 
 /** Holds singleton {@link ProcessScope} and some of the scope's host implementations. */
 public class FeedProcessScopeFactory {
@@ -157,7 +158,11 @@ public class FeedProcessScopeFactory {
         NetworkClient networkClient = sTestNetworkClient == null ?
             new FeedNetworkBridge(profile) : sTestNetworkClient;
         sFeedLoggingBridge = new FeedLoggingBridge(profile);
-        sProcessScope = new ProcessScopeBuilder(configHostApi, Executors.newSingleThreadExecutor(),
+
+        SequencedTaskRunner sequencedTaskRunner =
+                PostTask.createSequencedTaskRunner(TaskTraits.USER_VISIBLE_MAY_BLOCK);
+
+        sProcessScope = new ProcessScopeBuilder(configHostApi, sequencedTaskRunner::postTask,
                 sFeedLoggingBridge, networkClient, schedulerBridge, DebugBehavior.SILENT,
                 ContextUtils.getApplicationContext(), applicationInfo,
                 new BasicTooltipSupportedApi())
@@ -196,7 +201,10 @@ public class FeedProcessScopeFactory {
         ApplicationInfo applicationInfo =
                 new ApplicationInfo.Builder(ContextUtils.getApplicationContext()).build();
 
-        sProcessScope = new ProcessScopeBuilder(configHostApi, Executors.newSingleThreadExecutor(),
+        SequencedTaskRunner sequencedTaskRunner =
+                PostTask.createSequencedTaskRunner(TaskTraits.USER_VISIBLE_MAY_BLOCK);
+
+        sProcessScope = new ProcessScopeBuilder(configHostApi, sequencedTaskRunner::postTask,
                 sFeedLoggingBridge, networkClient, sFeedScheduler, DebugBehavior.SILENT,
                 ContextUtils.getApplicationContext(), applicationInfo,
                 new BasicTooltipSupportedApi())

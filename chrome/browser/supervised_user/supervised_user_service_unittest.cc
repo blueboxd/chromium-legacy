@@ -212,7 +212,7 @@ class SupervisedUserServiceTest : public ::testing::Test {
 
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
       identity_test_environment_adaptor_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
   SupervisedUserService* supervised_user_service_;
 };
@@ -502,7 +502,7 @@ TEST_F(SupervisedUserServiceExtensionTest,
        DISABLED_ExtensionManagementPolicyProviderWithSUInitiatedInstalls) {
   // Enable supervised user initiated installs.
   // TODO(crbug.com/846380): ScopedFeatureList must be initialized before the
-  // TestBrowserThreadBundle in ExtensionServiceTestBase to avoid races between
+  // BrowserTaskEnvironment in ExtensionServiceTestBase to avoid races between
   // threads.
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(

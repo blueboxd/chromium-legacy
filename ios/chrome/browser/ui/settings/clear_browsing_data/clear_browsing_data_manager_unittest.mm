@@ -103,7 +103,7 @@ class ClearBrowsingDataManagerTest : public PlatformTest {
   }
 
  protected:
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   TableViewModel* model_;
   std::unique_ptr<BrowsingDataRemover> remover_;

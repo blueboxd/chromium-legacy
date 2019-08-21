@@ -108,13 +108,13 @@ DOMArrayBuffer* NDEFRecord::toArrayBuffer() const {
 ScriptValue NDEFRecord::toJSON(ScriptState* script_state,
                                ExceptionState& exception_state) const {
   if (record_type_.IsEmpty())
-    return ScriptValue();
+    return ScriptValue::CreateNull(script_state);
 
   device::mojom::blink::NDEFRecordType type =
       StringToNDEFRecordType(record_type_);
   if (type != device::mojom::blink::NDEFRecordType::JSON &&
       type != device::mojom::blink::NDEFRecordType::OPAQUE_RECORD) {
-    return ScriptValue();
+    return ScriptValue::CreateNull(script_state);
   }
 
   ScriptState::Scope scope(script_state);
@@ -123,7 +123,7 @@ ScriptValue NDEFRecord::toJSON(ScriptState* script_state,
       String::FromUTF8WithLatin1Fallback(data_.data(), data_.size()),
       exception_state);
   if (exception_state.HadException())
-    return ScriptValue();
+    return ScriptValue::CreateNull(script_state);
   return ScriptValue(script_state, json_object);
 }
 

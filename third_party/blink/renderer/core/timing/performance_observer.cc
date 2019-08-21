@@ -206,12 +206,22 @@ void PerformanceObserver::observe(const PerformanceObserverInit* observer_init,
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kLayoutShiftExplicitlyRequested);
   }
+  if (filter_options_ & PerformanceEntry::kElement) {
+    UseCounter::Count(GetExecutionContext(),
+                      WebFeature::kElementTimingExplicitlyRequested);
+  }
+  if (filter_options_ & PerformanceEntry::kLargestContentfulPaint) {
+    UseCounter::Count(GetExecutionContext(),
+                      WebFeature::kLargestContentfulPaintExplicitlyRequested);
+  }
   if (is_registered_)
     performance_->UpdatePerformanceObserverFilterOptions();
   else
     performance_->RegisterPerformanceObserver(*this);
   is_registered_ = true;
   if (is_buffered) {
+    UseCounter::Count(GetExecutionContext(),
+                      WebFeature::kPerformanceObserverBufferedFlag);
     performance_->ActivateObserver(*this);
   }
 }

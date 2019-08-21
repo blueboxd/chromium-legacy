@@ -94,7 +94,7 @@ class SiteDataSizeCollectorTest : public testing::Test {
 
  protected:
   int64_t fetched_size_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
   scoped_refptr<MockBrowsingDataCookieHelper>
       mock_browsing_data_cookie_helper_;

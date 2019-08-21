@@ -137,7 +137,7 @@ class FileSystemApiConsentProviderTest : public testing::Test {
   chromeos::FakeChromeUserManager*
       user_manager_;  // Owned by the scope enabler.
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_enabler_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<Volume> download_volume_;
 };

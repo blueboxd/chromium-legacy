@@ -37,7 +37,7 @@ TEST(DownloadPrefsTest, Prerequisites) {
 TEST(DownloadPrefsTest, NoAutoOpenForDisallowedFileTypes) {
   const base::FilePath kDangerousFilePath(FILE_PATH_LITERAL("/b/very-bad.swf"));
 
-  content::TestBrowserThreadBundle threads_are_required_for_testing_profile;
+  content::BrowserTaskEnvironment threads_are_required_for_testing_profile;
   TestingProfile profile;
   DownloadPrefs prefs(&profile);
 
@@ -48,7 +48,7 @@ TEST(DownloadPrefsTest, NoAutoOpenForDisallowedFileTypes) {
 TEST(DownloadPrefsTest, NoAutoOpenForFilesWithNoExtension) {
   const base::FilePath kFileWithNoExtension(FILE_PATH_LITERAL("abcd"));
 
-  content::TestBrowserThreadBundle threads_are_required_for_testing_profile;
+  content::BrowserTaskEnvironment threads_are_required_for_testing_profile;
   TestingProfile profile;
   DownloadPrefs prefs(&profile);
 
@@ -62,7 +62,7 @@ TEST(DownloadPrefsTest, AutoOpenForSafeFiles) {
   const base::FilePath kAnotherSafeFilePath(
       FILE_PATH_LITERAL("/ok/not-bad.txt"));
 
-  content::TestBrowserThreadBundle threads_are_required_for_testing_profile;
+  content::BrowserTaskEnvironment threads_are_required_for_testing_profile;
   TestingProfile profile;
   DownloadPrefs prefs(&profile);
 
@@ -76,7 +76,7 @@ TEST(DownloadPrefsTest, AutoOpenPrefSkipsDangerousFileTypesInPrefs) {
   const base::FilePath kSafeFilePath(
       FILE_PATH_LITERAL("/good/nothing-wrong.txt"));
 
-  content::TestBrowserThreadBundle threads_are_required_for_testing_profile;
+  content::BrowserTaskEnvironment threads_are_required_for_testing_profile;
   TestingProfile profile;
   // This sets .swf files and .txt files as auto-open file types.
   profile.GetPrefs()->SetString(prefs::kDownloadExtensionsToOpen, "swf:txt");
@@ -87,7 +87,7 @@ TEST(DownloadPrefsTest, AutoOpenPrefSkipsDangerousFileTypesInPrefs) {
 }
 
 TEST(DownloadPrefsTest, PrefsInitializationSkipsInvalidFileTypes) {
-  content::TestBrowserThreadBundle threads_are_required_for_testing_profile;
+  content::BrowserTaskEnvironment threads_are_required_for_testing_profile;
   TestingProfile profile;
   profile.GetPrefs()->SetString(prefs::kDownloadExtensionsToOpen,
                                 "swf:txt::.foo:baz");
@@ -112,7 +112,7 @@ TEST(DownloadPrefsTest, PrefsInitializationSkipsInvalidFileTypes) {
 }
 
 TEST(DownloadPrefsTest, AutoOpenCheckIsCaseInsensitive) {
-  content::TestBrowserThreadBundle threads_are_required_for_testing_profile;
+  content::BrowserTaskEnvironment threads_are_required_for_testing_profile;
   TestingProfile profile;
   profile.GetPrefs()->SetString(prefs::kDownloadExtensionsToOpen,
                                 "txt:Foo:BAR");
@@ -129,7 +129,7 @@ TEST(DownloadPrefsTest, AutoOpenCheckIsCaseInsensitive) {
 }
 
 TEST(DownloadPrefsTest, MissingDefaultPathCorrected) {
-  content::TestBrowserThreadBundle threads_are_required_for_testing_profile;
+  content::BrowserTaskEnvironment threads_are_required_for_testing_profile;
   TestingProfile profile;
   profile.GetPrefs()->SetFilePath(prefs::kDownloadDefaultDirectory,
                                   base::FilePath());
@@ -143,7 +143,7 @@ TEST(DownloadPrefsTest, MissingDefaultPathCorrected) {
 }
 
 TEST(DownloadPrefsTest, RelativeDefaultPathCorrected) {
-  content::TestBrowserThreadBundle threads_are_required_for_testing_profile;
+  content::BrowserTaskEnvironment threads_are_required_for_testing_profile;
   TestingProfile profile;
 
   profile.GetPrefs()->SetFilePath(prefs::kDownloadDefaultDirectory,
@@ -158,7 +158,7 @@ TEST(DownloadPrefsTest, RelativeDefaultPathCorrected) {
 }
 
 TEST(DownloadPrefsTest, DefaultPathChangedToInvalidValue) {
-  content::TestBrowserThreadBundle threads_are_required_for_testing_profile;
+  content::BrowserTaskEnvironment threads_are_required_for_testing_profile;
   TestingProfile profile;
   profile.GetPrefs()->SetFilePath(prefs::kDownloadDefaultDirectory,
                                   profile.GetPath());
@@ -185,7 +185,7 @@ void ExpectValidDownloadDir(Profile* profile,
 }
 
 TEST(DownloadPrefsTest, DownloadDirSanitization) {
-  content::TestBrowserThreadBundle threads_are_required_for_testing_profile;
+  content::BrowserTaskEnvironment threads_are_required_for_testing_profile;
   content::TestServiceManagerContext service_manager_context;
   TestingProfile profile(base::FilePath("/home/chronos/u-0123456789abcdef"));
   DownloadPrefs prefs(&profile);

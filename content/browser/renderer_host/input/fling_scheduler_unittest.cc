@@ -110,7 +110,7 @@ class FlingSchedulerTest : public testing::Test,
   std::unique_ptr<FakeFlingScheduler> fling_scheduler_;
 
  private:
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestBrowserContext> browser_context_;
   RenderWidgetHostImpl* widget_host_;
   MockRenderProcessHost* process_host_;

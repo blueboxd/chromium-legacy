@@ -129,7 +129,7 @@ class ArcCertInstallerTest : public testing::Test {
   MockRemoteCommandsQueueObserver* observer() { return &observer_; }
 
  private:
-  content::TestBrowserThreadBundle browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   // ArcServiceManager needs to be created before ArcPolicyBridge (since the
   // Bridge depends on the Manager), and it needs to be destroyed after Profile

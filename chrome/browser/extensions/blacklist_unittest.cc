@@ -34,7 +34,7 @@ class BlacklistTest : public testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   TestExtensionPrefs test_prefs_;
 };

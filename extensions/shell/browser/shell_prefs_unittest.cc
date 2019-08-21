@@ -40,7 +40,7 @@ class ShellPrefsTest : public testing::Test {
   ~ShellPrefsTest() override {}
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   PrefsTestBrowserContext browser_context_;
 };
 

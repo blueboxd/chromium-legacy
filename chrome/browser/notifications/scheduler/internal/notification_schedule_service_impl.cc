@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "chrome/browser/notifications/scheduler/internal/notification_scheduler.h"
+#include "chrome/browser/notifications/scheduler/internal/stats.h"
 #include "chrome/browser/notifications/scheduler/public/notification_params.h"
 
 namespace notifications {
@@ -60,6 +61,7 @@ void NotificationScheduleServiceImpl::OnStopTask(SchedulerTaskTime task_time) {
 
 void NotificationScheduleServiceImpl::OnUserAction(
     const UserActionData& action_data) {
+  stats::LogUserAction(action_data);
   scheduler_->OnUserAction(action_data);
 }
 

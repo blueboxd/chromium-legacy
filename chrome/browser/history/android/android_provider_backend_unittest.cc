@@ -246,7 +246,7 @@ class AndroidProviderBackendTest : public testing::Test {
     return true;
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   AndroidProviderBackendNotifier notifier_;
   scoped_refptr<HistoryBackend> history_backend_;

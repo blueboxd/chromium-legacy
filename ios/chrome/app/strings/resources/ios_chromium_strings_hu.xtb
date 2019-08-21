@@ -21,7 +21,6 @@
 <translation id="2915596697727466327">A Chromium a Face ID segítségével ellenőrzi a jogosultságot a jelszavakhoz való hozzáféréshez.</translation>
 <translation id="3256316712990552818">A Chromiumra másolva</translation>
 <translation id="3413120535237193088">Ha az összes eszközén szeretné elérni könyvjelzőit, jelentkezzen be a Chromiumba.</translation>
-<translation id="3473048256428424907">A Chromium QR-olvasójának bekapcsolása</translation>
 <translation id="3605252743693911722">Jelentkezzen be a Chromiumba, hogy az összes eszközén hozzáférhessen könyvjelzőihez, jelszavaihoz és más beállításaihoz.</translation>
 <translation id="3805899903892079518">A Chromium nem fér hozzá az Ön képeihez és videóihoz. Engedélyezés iOS-en: Beállítások &gt; Adatvédelem &gt; Fényképek.</translation>
 <translation id="4024541897090868497">Ha az összes eszközén szeretne hozzáférni lapjaihoz, jelentkezzen be a Chromiumba.</translation>
@@ -29,7 +28,6 @@
 <translation id="4241912885070669028">Kijelentkezik egy <ph name="SIGNOUT_MANAGED_DOMAIN" /> által felügyelt fiókból. Ezzel törli az eszközön található Chromium-adatokat, amelyek azonban Google-fiókjában megmaradnak.</translation>
 <translation id="4555020257205549924">Ha a funkció be van kapcsolva, a Chromium felajánlja a más nyelveken írt oldalak lefordítását a Google Fordító segítségével. <ph name="BEGIN_LINK" />További információ<ph name="END_LINK" />.</translation>
 <translation id="4787850887676698916">A más eszközökön futó Chromium böngészőben megnyitott lapok itt jelennek meg.</translation>
-<translation id="495292094137889840">A Chromium QR-olvasójának használata</translation>
 <translation id="4999538639245140991">Mivel kijelentkezik a(z) <ph name="SIGNOUT_MANAGED_DOMAIN" /> által felügyelt fiókból, törli az eszközön található Chromium-adatokat. Ezek az adatok Google-fiókjában továbbra is megmaradnak.</translation>
 <translation id="5231355151045086930">Kijelentkezés a Chromiumból</translation>
 <translation id="5862307444128926510">Üdvözli a Chromium!</translation>

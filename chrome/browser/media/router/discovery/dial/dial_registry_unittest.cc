@@ -78,7 +78,7 @@ class MockDialRegistry : public DialRegistry {
 class DialRegistryTest : public testing::Test {
  public:
   DialRegistryTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         registry_(new MockDialRegistry()),
         first_device_("first", GURL("http://127.0.0.1/dd.xml"), Now()),
         second_device_("second", GURL("http://127.0.0.2/dd.xml"), Now()),
@@ -109,7 +109,7 @@ class DialRegistryTest : public testing::Test {
     registry_->clock()->Advance(duration);
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   std::unique_ptr<MockDialRegistry> registry_;
   MockDialObserver mock_observer_;

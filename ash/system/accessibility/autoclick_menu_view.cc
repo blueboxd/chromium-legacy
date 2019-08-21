@@ -9,7 +9,6 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
-#include "ash/style/default_color_constants.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/top_shortcut_button.h"
 #include "base/metrics/histogram_macros.h"
@@ -33,7 +32,6 @@ namespace {
 const int kPanelPositionButtonSize = 36;
 const int kPanelPositionButtonPadding = 14;
 const int kSeparatorHeight = 16;
-const SkColor kAutoclickMenuButtonColorActive = SkColorSetRGB(138, 180, 248);
 const SkColor kAutoclickMenuButtonIconColorActive = SkColorSetRGB(32, 33, 36);
 
 }  // namespace
@@ -89,8 +87,11 @@ class AutoclickMenuButton : public TopShortcutButton {
       gfx::Rect rect(GetContentsBounds());
       cc::PaintFlags flags;
       flags.setAntiAlias(true);
-      flags.setColor(toggled_ ? kAutoclickMenuButtonColorActive
-                              : kUnifiedMenuButtonColor);
+      flags.setColor(AshColorProvider::Get()->GetControlsLayerColor(
+          toggled_
+              ? AshColorProvider::ControlsLayerType::kActiveControlBackground
+              : AshColorProvider::ControlsLayerType::kInactiveControlBackground,
+          AshColorProvider::AshColorMode::kDark));
       flags.setStyle(cc::PaintFlags::kFill_Style);
       canvas->DrawCircle(gfx::PointF(rect.CenterPoint()), size_ / 2, flags);
     }
@@ -218,9 +219,9 @@ AutoclickMenuView::AutoclickMenuView(AutoclickEventType type,
   AddChildView(action_button_container);
 
   views::Separator* separator = new views::Separator();
-  separator->SetColor(AshColorProvider::Get()->DeprecatedGetContentLayerColor(
+  separator->SetColor(AshColorProvider::Get()->GetContentLayerColor(
       AshColorProvider::ContentLayerType::kSeparator,
-      kSeparatorOnDarkBackgroundColor));
+      AshColorProvider::AshColorMode::kDark));
   separator->SetPreferredHeight(kSeparatorHeight);
   int total_height = kUnifiedTopShortcutSpacing * 2 + kTrayItemSize;
   int separator_spacing = (total_height - kSeparatorHeight) / 2;

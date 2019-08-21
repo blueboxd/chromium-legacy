@@ -30,7 +30,7 @@ namespace content {
 
 TEST(ScopedDoNotUseUIDefaultQueueFromIO, MAYBE_BadPostFromIO) {
   EXPECT_DCHECK_DEATH({
-    TestBrowserThreadBundle thread_bundle;
+    BrowserTaskEnvironment task_environment;
     base::RunLoop run_loop;
 
     base::PostTask(
@@ -47,7 +47,7 @@ TEST(ScopedDoNotUseUIDefaultQueueFromIO, MAYBE_BadPostFromIO) {
 }
 
 TEST(ScopedDoNotUseUIDefaultQueueFromIO, PostFromIO) {
-  TestBrowserThreadBundle thread_bundle;
+  BrowserTaskEnvironment task_environment;
 
   base::RunLoop run_loop;
 
@@ -75,8 +75,8 @@ TEST(ScopedDoNotUseUIDefaultQueueFromIO, PostFromIO) {
 }
 
 TEST(ScopedDoNotUseUIDefaultQueueFromIO, PostFromUI) {
-  TestBrowserThreadBundle thread_bundle(
-      TestBrowserThreadBundle::REAL_IO_THREAD);
+  BrowserTaskEnvironment task_environment(
+      BrowserTaskEnvironment::REAL_IO_THREAD);
   base::RunLoop run_loop;
 
   base::PostTask(

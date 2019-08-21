@@ -277,7 +277,7 @@ class CastRemotingConnectorTest : public ::testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   FakeMediaRouter media_router_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   std::unique_ptr<CastRemotingConnector> connector_;

@@ -130,7 +130,7 @@ class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
 class NavigationURLLoaderImplTest : public testing::Test {
  public:
   NavigationURLLoaderImplTest()
-      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP),
         network_change_notifier_(
             net::test::MockNetworkChangeNotifier::Create()) {
     // Because the network service is enabled we need a system Connector or
@@ -295,7 +295,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
   }
 
  protected:
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestBrowserContext> browser_context_;
   std::unique_ptr<net::test::MockNetworkChangeNotifier>
       network_change_notifier_;

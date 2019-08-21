@@ -113,7 +113,7 @@ class TestChangeStream : public mojom::WebUIGraphChangeStream {
 }  // namespace
 
 TEST(WebUIGraphDumpImplTest, ChangeStream) {
-  content::TestBrowserThreadBundle browser_thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
 
   GraphImpl graph;
   MockMultiplePagesWithMultipleProcessesGraph mock_graph(&graph);
@@ -135,7 +135,7 @@ TEST(WebUIGraphDumpImplTest, ChangeStream) {
   TestChangeStream change_stream;
   impl_proxy->SubscribeToChanges(change_stream.GetProxy());
 
-  browser_thread_bundle.RunUntilIdle();
+  task_environment.RunUntilIdle();
 
   // Validate that the initial graph state dump is complete.
   EXPECT_EQ(0u, change_stream.num_changes());
@@ -184,7 +184,7 @@ TEST(WebUIGraphDumpImplTest, ChangeStream) {
       NodeBase::GetSerializationId(mock_graph.child_frame.get());
   mock_graph.child_frame.reset();
 
-  browser_thread_bundle.RunUntilIdle();
+  task_environment.RunUntilIdle();
 
   EXPECT_EQ(1u, change_stream.num_changes());
   EXPECT_FALSE(base::Contains(change_stream.id_set(), child_frame_id));
@@ -194,7 +194,7 @@ TEST(WebUIGraphDumpImplTest, ChangeStream) {
   ASSERT_TRUE(main_page_it != change_stream.page_map().end());
   EXPECT_EQ(kAnotherURL, main_page_it->second->main_frame_url);
 
-  browser_thread_bundle.RunUntilIdle();
+  task_environment.RunUntilIdle();
 }
 
 }  // namespace performance_manager

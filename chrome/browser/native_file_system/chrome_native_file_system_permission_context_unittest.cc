@@ -114,7 +114,7 @@ class ChromeNativeFileSystemPermissionContextTest : public testing::Test {
   const base::FilePath kTestPath =
       base::FilePath(FILE_PATH_LITERAL("/foo/bar"));
 
-  content::TestBrowserThreadBundle task_environment_;
+  content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   scoped_refptr<ChromeNativeFileSystemPermissionContext> permission_context_;
   content::RenderViewHostTestEnabler render_view_host_test_enabler_;

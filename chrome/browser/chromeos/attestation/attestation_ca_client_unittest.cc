@@ -82,7 +82,7 @@ class AttestationCAClientTest : public ::testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory>

@@ -101,7 +101,7 @@ class CWVSyncControllerTest : public TestWithLocaleAndResources {
         &browser_state_);
   }
 
-  web::TestWebThreadBundle web_thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   ios_web_view::WebViewBrowserState browser_state_;
   CWVSyncController* sync_controller_ = nil;
   syncer::SyncServiceObserver* sync_service_observer_ = nullptr;

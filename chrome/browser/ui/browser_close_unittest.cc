@@ -174,7 +174,7 @@ class BrowserCloseTest : public testing::Test {
   std::map<Profile*, std::vector<TestBrowserWindow*>> browser_windows_;
   std::map<Profile*, std::vector<Browser*>> browsers_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager profile_manager_;
   int name_index_;
 };

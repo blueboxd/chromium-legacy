@@ -10,6 +10,10 @@ source_set("memory_pressure") {
     "multi_source_memory_pressure_monitor.h",
     "system_memory_pressure_evaluator.cc",
     "system_memory_pressure_evaluator.h",
+    "system_memory_pressure_evaluator_chromeos.cc",
+    "system_memory_pressure_evaluator_chromeos.h",
+    "system_memory_pressure_evaluator_mac.cc",
+    "system_memory_pressure_evaluator_mac.h",
     "system_memory_pressure_evaluator_win.cc",
     "system_memory_pressure_evaluator_win.h",
   ]
@@ -24,6 +28,8 @@ source_set("unittests") {
   sources = [
     "memory_pressure_voter_unittest.cc",
     "multi_source_memory_pressure_monitor_unittest.cc",
+    "system_memory_pressure_evaluator_chromeos_unittest.cc",
+    "system_memory_pressure_evaluator_mac_unittest.cc",
     "system_memory_pressure_evaluator_win_unittest.cc",
   ]
 

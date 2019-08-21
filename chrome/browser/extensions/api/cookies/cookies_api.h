@@ -19,7 +19,7 @@
 #include "chrome/common/extensions/api/cookies.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/cookies/canonical_cookie.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "url/gurl.h"
@@ -60,10 +60,10 @@ class CookiesEventRouter : public BrowserListObserver {
 
   void MaybeStartListening();
   void BindToCookieManager(
-      mojo::Binding<network::mojom::CookieChangeListener>* binding,
+      mojo::Receiver<network::mojom::CookieChangeListener>* receiver,
       Profile* profile);
   void OnConnectionError(
-      mojo::Binding<network::mojom::CookieChangeListener>* binding);
+      mojo::Receiver<network::mojom::CookieChangeListener>* receiver);
   void OnCookieChange(bool otr,
                       const net::CanonicalCookie& canonical_cookie,
                       network::mojom::CookieChangeCause cause);
@@ -81,10 +81,10 @@ class CookiesEventRouter : public BrowserListObserver {
   // profiles, we need a pair of bindings, as well as a pair of
   // CookieChangeListener instances.
   CookieChangeListener listener_{this, false};
-  mojo::Binding<network::mojom::CookieChangeListener> binding_{&listener_};
+  mojo::Receiver<network::mojom::CookieChangeListener> receiver_{&listener_};
 
   CookieChangeListener otr_listener_{this, true};
-  mojo::Binding<network::mojom::CookieChangeListener> otr_binding_{
+  mojo::Receiver<network::mojom::CookieChangeListener> otr_receiver_{
       &otr_listener_};
 
   DISALLOW_COPY_AND_ASSIGN(CookiesEventRouter);

@@ -214,7 +214,7 @@ void AuthCallback(media::OutputDeviceStatus* status_out,
 // 2. the AudioOutputDelegate is created.
 // 3. when the delegate calls OnStreamCreated, this is propagated to the client.
 TEST(OldRenderFrameAudioOutputStreamFactoryTest, CreateStream) {
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   AudioOutputStreamProviderPtr provider;
   MockClient client;
   media::AudioOutputDelegate::EventHandler* event_handler = nullptr;
@@ -261,7 +261,7 @@ TEST(OldRenderFrameAudioOutputStreamFactoryTest, CreateStream) {
 }
 
 TEST(OldRenderFrameAudioOutputStreamFactoryTest, NotAuthorized_Denied) {
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   AudioOutputStreamProviderPtr output_provider;
   auto factory_context = std::make_unique<MockContext>(false);
   AudioOutputStreamFactoryPtr factory_ptr = factory_context->CreateFactory();
@@ -280,7 +280,7 @@ TEST(OldRenderFrameAudioOutputStreamFactoryTest, NotAuthorized_Denied) {
 
 TEST(OldRenderFrameAudioOutputStreamFactoryTest,
      ConnectionError_DeletesStream) {
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   AudioOutputStreamProviderPtr provider;
   MockClient client;
   bool delegate_is_destructed = false;
@@ -311,7 +311,7 @@ TEST(OldRenderFrameAudioOutputStreamFactoryTest,
 }
 
 TEST(OldRenderFrameAudioOutputStreamFactoryTest, DelegateError_DeletesStream) {
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   AudioOutputStreamProviderPtr provider;
   MockClient client;
   bool delegate_is_destructed = false;

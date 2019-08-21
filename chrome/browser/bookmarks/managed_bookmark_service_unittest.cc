@@ -37,7 +37,7 @@ using testing::_;
 TEST(ManagedBookmarkServiceNoPolicyTest, EmptyManagedNode) {
   // Verifies that the managed node is empty and invisible when the policy is
   // not set.
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   TestingProfile profile;
 
   // Make sure the policy isn't set.
@@ -151,7 +151,7 @@ class ManagedBookmarkServiceTest : public testing::Test {
     return dict->GetString("url", &url) && node->url() == url;
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   sync_preferences::TestingPrefServiceSyncable* prefs_;
   bookmarks::MockBookmarkModelObserver observer_;

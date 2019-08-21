@@ -69,7 +69,7 @@ class ChildProcessSecurityPolicyTestBrowserClient
 class ChildProcessSecurityPolicyTest : public testing::Test {
  public:
   ChildProcessSecurityPolicyTest()
-      : thread_bundle_(TestBrowserThreadBundle::REAL_IO_THREAD),
+      : task_environment_(BrowserTaskEnvironment::REAL_IO_THREAD),
         old_browser_client_(nullptr) {}
 
   void SetUp() override {
@@ -216,7 +216,7 @@ class ChildProcessSecurityPolicyTest : public testing::Test {
   BrowserContext* browser_context() { return &browser_context_; }
 
  private:
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   TestBrowserContext browser_context_;
   ChildProcessSecurityPolicyTestBrowserClient test_browser_client_;
   ContentBrowserClient* old_browser_client_;

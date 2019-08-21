@@ -193,7 +193,7 @@ class SearchEngineTableViewControllerTest
               expected_checked, section, row);
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   base::HistogramTester histogram_tester_;
   TemplateURLService* template_url_service_;  // weak

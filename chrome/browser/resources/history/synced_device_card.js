@@ -115,7 +115,7 @@ Polymer({
       for (let i = 0; i < this.tabs.length; i++) {
         // Entries on this UI are coming strictly from sync, so we can set
         // |isSyncedUrlForHistoryUi| to true on the getFavicon call below.
-        icons[i].style.backgroundImage = cr.icon.getFavicon(
+        icons[i].style.backgroundImage = cr.icon.getFaviconForPageURL(
             this.tabs[i].url, true, this.tabs[i].remoteIconUrlForUma);
       }
     });

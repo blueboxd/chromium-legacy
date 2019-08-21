@@ -187,7 +187,7 @@ void SharingService::SendMessageToDevice(
       FROM_HERE, {base::TaskPriority::BEST_EFFORT, content::BrowserThread::UI},
       base::BindOnce(&SharingService::InvokeSendMessageCallback,
                      weak_ptr_factory_.GetWeakPtr(), message_guid,
-                     /*success=*/false),
+                     SharingSendMessageResult::kAckTimeout),
       kSendMessageTimeout);
 
   fcm_sender_->SendMessageToDevice(
@@ -204,9 +204,10 @@ void SharingService::SetDeviceInfoTrackerForTesting(
 
 void SharingService::OnMessageSent(base::TimeTicks start_time,
                                    const std::string& message_guid,
+                                   SharingSendMessageResult result,
                                    base::Optional<std::string> message_id) {
-  if (!message_id) {
-    InvokeSendMessageCallback(message_guid, /*success=*/false);
+  if (result != SharingSendMessageResult::kSuccessful) {
+    InvokeSendMessageCallback(message_guid, result);
     return;
   }
 
@@ -227,11 +228,13 @@ void SharingService::OnAckReceived(const std::string& message_id) {
 
   std::string message_guid = std::move(iter->second);
   message_guids_.erase(iter);
-  InvokeSendMessageCallback(message_guid, /*success=*/true);
+  InvokeSendMessageCallback(message_guid,
+                            SharingSendMessageResult::kSuccessful);
 }
 
-void SharingService::InvokeSendMessageCallback(const std::string& message_guid,
-                                               bool result) {
+void SharingService::InvokeSendMessageCallback(
+    const std::string& message_guid,
+    SharingSendMessageResult result) {
   auto iter = send_message_callbacks_.find(message_guid);
   if (iter == send_message_callbacks_.end())
     return;
@@ -239,7 +242,7 @@ void SharingService::InvokeSendMessageCallback(const std::string& message_guid,
   SendMessageCallback callback = std::move(iter->second);
   send_message_callbacks_.erase(iter);
   std::move(callback).Run(result);
-  LogSendSharingMessageSuccess(result);
+  LogSendSharingMessageResult(result);
 }
 
 void SharingService::RegisterHandler(

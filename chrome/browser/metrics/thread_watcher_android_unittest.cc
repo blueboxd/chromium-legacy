@@ -42,7 +42,7 @@ TEST(ThreadWatcherAndroidTest, ApplicationStatusNotification) {
   // Do not delay the ThreadWatcherList initialization for this test.
   ThreadWatcherList::g_initialize_delay_seconds = 0;
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
 
   std::unique_ptr<WatchDogThread> watchdog_thread_(new WatchDogThread());
   watchdog_thread_->StartAndWaitForTesting();

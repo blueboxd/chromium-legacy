@@ -45,11 +45,17 @@ class WorkerNetworkIsolationKeyBrowserTest : public ContentBrowserTest {
   // Does a cross-process navigation to clear the in-memory cache.
   // We are relying on this navigation to discard the old process.
   void CrossProcessNavigation() {
+    // Content browsertests start on a blank page where the process may be
+    // reused for subsequent navigations.  Since this function may be called in
+    // such a state, first perform a navigation that will "use up" the blank
+    // process and then navigate to a WebUI which will require a process swap.
+    EXPECT_TRUE(
+        NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
     RenderProcessHost* process =
         shell()->web_contents()->GetMainFrame()->GetProcess();
     RenderProcessHostWatcher process_watcher(
         process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-    NavigateToURL(shell(), GetWebUIURL("version"));
+    EXPECT_TRUE(NavigateToURL(shell(), GetWebUIURL("gpu")));
     process_watcher.Wait();
   }
 

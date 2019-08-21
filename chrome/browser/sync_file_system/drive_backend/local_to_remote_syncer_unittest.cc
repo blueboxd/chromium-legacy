@@ -54,7 +54,7 @@ const int kRetryLimit = 100;
 class LocalToRemoteSyncerTest : public testing::Test {
  public:
   LocalToRemoteSyncerTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
   ~LocalToRemoteSyncerTest() override {}
 
   void SetUp() override {
@@ -248,7 +248,7 @@ class LocalToRemoteSyncerTest : public testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir database_dir_;
   std::unique_ptr<leveldb::Env> in_memory_env_;
 

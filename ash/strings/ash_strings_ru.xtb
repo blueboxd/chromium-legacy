@@ -333,6 +333,7 @@
 <translation id="6043212731627905357">Монитор не совместим с устройством <ph name="DEVICE_TYPE" />.</translation>
 <translation id="6043994281159824495">Выйти</translation>
 <translation id="6047696787498798094">Если перейти к другому пользователю, доступ к экрану будет закрыт. Продолжить?</translation>
+<translation id="6054305421211936131">Войти с помощью смарт-карты</translation>
 <translation id="6062360702481658777">Выход из системы будет выполнен автоматически через <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="6064337552080329342">Не удалось подтвердить пароль. Повторите попытку.</translation>
 <translation id="607652042414456612">Расположенные поблизости устройства Bluetooth видят ваш компьютер под именем <ph name="NAME" /> с адресом <ph name="ADDRESS" />.</translation>
@@ -360,6 +361,7 @@
 <translation id="6459472438155181876">Расширение экрана на <ph name="DISPLAY_NAME" /></translation>
 <translation id="6482559668224714696">Полноэкранная лупа</translation>
 <translation id="6490471652906364588">Устройство USB-C (порт справа)</translation>
+<translation id="649452524636452238">PIN-код для смарт-карты</translation>
 <translation id="6501401484702599040">Трансляция содержимого экрана: <ph name="RECEIVER_NAME" /></translation>
 <translation id="6521655319214113338">Рукописный ввод</translation>
 <translation id="6528179044667508675">Не беспокоить</translation>
@@ -389,6 +391,7 @@
 <translation id="6857811139397017780">Активировать <ph name="NETWORKSERVICE" /></translation>
 <translation id="6910714959251846841">Чтобы установить это обновление, необходимо сбросить настройки устройства до заводских. Подробнее о последнем обновлении <ph name="SYSTEM_APP_NAME" />…</translation>
 <translation id="6911468394164995108">Подключиться к другой сети...</translation>
+<translation id="6919251195245069855">Не удалось распознать смарт-карту. Повторите попытку.</translation>
 <translation id="6972754398087986839">Начать</translation>
 <translation id="6981982820502123353">Специальные возможности</translation>
 <translation id="698231206551913481">После удаления пользователя все связанные с ним файлы и локальные данные также будут удалены.</translation>

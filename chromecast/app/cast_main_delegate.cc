@@ -83,7 +83,7 @@ bool CastMainDelegate::BasicStartupComplete(int* exit_code) {
     base::PathService::Get(FILE_CAST_ANDROID_LOG, &log_file);
     settings.logging_dest =
         logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
-    settings.log_file = log_file.value().c_str();
+    settings.log_file_path = log_file.value().c_str();
     settings.delete_old = logging::DELETE_OLD_LOG_FILE;
   }
 #endif  // defined(OS_ANDROID)

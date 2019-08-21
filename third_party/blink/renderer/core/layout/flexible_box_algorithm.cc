@@ -35,6 +35,42 @@
 #include "third_party/blink/renderer/core/layout/min_max_size.h"
 
 namespace blink {
+namespace {
+
+ItemPosition BoxAlignmentToItemPosition(EBoxAlignment alignment) {
+  switch (alignment) {
+    case EBoxAlignment::kBaseline:
+      return ItemPosition::kBaseline;
+    case EBoxAlignment::kCenter:
+      return ItemPosition::kCenter;
+    case EBoxAlignment::kStretch:
+      return ItemPosition::kStretch;
+    case EBoxAlignment::kStart:
+      return ItemPosition::kFlexStart;
+    case EBoxAlignment::kEnd:
+      return ItemPosition::kFlexEnd;
+  }
+}
+
+ContentPosition BoxPackToContentPosition(EBoxPack box_pack) {
+  switch (box_pack) {
+    case EBoxPack::kCenter:
+      return ContentPosition::kCenter;
+    case EBoxPack::kJustify:
+      return ContentPosition::kFlexStart;
+    case EBoxPack::kStart:
+      return ContentPosition::kFlexStart;
+    case EBoxPack::kEnd:
+      return ContentPosition::kFlexEnd;
+  }
+}
+
+ContentDistributionType BoxPackToContentDistribution(EBoxPack box_pack) {
+  return box_pack == EBoxPack::kJustify ? ContentDistributionType::kSpaceBetween
+                                        : ContentDistributionType::kDefault;
+}
+
+}  // namespace
 
 FlexItem::FlexItem(LayoutBox* box,
                    LayoutUnit flex_base_content_size,
@@ -510,6 +546,7 @@ bool FlexLayoutAlgorithm::IsColumnFlow() const {
   return StyleRef().ResolvedIsColumnFlexDirection();
 }
 
+// static
 bool FlexLayoutAlgorithm::IsHorizontalFlow(const ComputedStyle& style) {
   if (style.IsHorizontalWritingMode())
     return !style.ResolvedIsColumnFlexDirection();
@@ -522,9 +559,10 @@ bool FlexLayoutAlgorithm::IsLeftToRightFlow() const {
            IsFlippedLinesWritingMode(style_->GetWritingMode());
   }
   return style_->IsLeftToRightDirection() ^
-         (style_->FlexDirection() == EFlexDirection::kRowReverse);
+         style_->ResolvedIsRowReverseFlexDirection();
 }
 
+// static
 const StyleContentAlignmentData&
 FlexLayoutAlgorithm::ContentAlignmentNormalBehavior() {
   // The justify-content property applies along the main axis, but since
@@ -614,6 +652,7 @@ TransformedWritingMode FlexLayoutAlgorithm::GetTransformedWritingMode() const {
   return GetTransformedWritingMode(*style_);
 }
 
+// static
 TransformedWritingMode FlexLayoutAlgorithm::GetTransformedWritingMode(
     const ComputedStyle& style) {
   WritingMode mode = style.GetWritingMode();
@@ -647,23 +686,30 @@ TransformedWritingMode FlexLayoutAlgorithm::GetTransformedWritingMode(
   return TransformedWritingMode::kTopToBottomWritingMode;
 }
 
+// static
 StyleContentAlignmentData FlexLayoutAlgorithm::ResolvedJustifyContent(
     const ComputedStyle& style) {
-  ContentPosition position =
-      style.ResolvedJustifyContentPosition(ContentAlignmentNormalBehavior());
+  const bool is_webkit_box = (style.Display() == EDisplay::kWebkitBox ||
+                              style.Display() == EDisplay::kWebkitInlineBox);
+  ContentPosition position = is_webkit_box
+                                 ? BoxPackToContentPosition(style.BoxPack())
+                                 : style.ResolvedJustifyContentPosition(
+                                       ContentAlignmentNormalBehavior());
   ContentDistributionType distribution =
-      style.ResolvedJustifyContentDistribution(
-          ContentAlignmentNormalBehavior());
+      is_webkit_box ? BoxPackToContentDistribution(style.BoxPack())
+                    : style.ResolvedJustifyContentDistribution(
+                          ContentAlignmentNormalBehavior());
   OverflowAlignment overflow = style.JustifyContentOverflowAlignment();
   // For flex, justify-content: stretch behaves as flex-start:
   // https://drafts.csswg.org/css-align/#distribution-flex
-  if (distribution == ContentDistributionType::kStretch) {
+  if (!is_webkit_box && distribution == ContentDistributionType::kStretch) {
     position = ContentPosition::kFlexStart;
     distribution = ContentDistributionType::kDefault;
   }
   return StyleContentAlignmentData(position, distribution, overflow);
 }
 
+// static
 StyleContentAlignmentData FlexLayoutAlgorithm::ResolvedAlignContent(
     const ComputedStyle& style) {
   ContentPosition position =
@@ -674,12 +720,19 @@ StyleContentAlignmentData FlexLayoutAlgorithm::ResolvedAlignContent(
   return StyleContentAlignmentData(position, distribution, overflow);
 }
 
+// static
 ItemPosition FlexLayoutAlgorithm::AlignmentForChild(
     const ComputedStyle& flexbox_style,
     const ComputedStyle& child_style) {
+  const bool is_webkit_box =
+      (flexbox_style.Display() == EDisplay::kWebkitBox ||
+       flexbox_style.Display() == EDisplay::kWebkitInlineBox);
   ItemPosition align =
-      child_style.ResolvedAlignSelf(ItemPosition::kStretch, &flexbox_style)
-          .GetPosition();
+      is_webkit_box
+          ? BoxAlignmentToItemPosition(flexbox_style.BoxAlign())
+          : child_style
+                .ResolvedAlignSelf(ItemPosition::kStretch, &flexbox_style)
+                .GetPosition();
   DCHECK_NE(align, ItemPosition::kAuto);
   DCHECK_NE(align, ItemPosition::kNormal);
 
@@ -697,6 +750,7 @@ ItemPosition FlexLayoutAlgorithm::AlignmentForChild(
   return align;
 }
 
+// static
 LayoutUnit FlexLayoutAlgorithm::InitialContentPositionOffset(
     LayoutUnit available_free_space,
     const StyleContentAlignmentData& data,
@@ -720,6 +774,7 @@ LayoutUnit FlexLayoutAlgorithm::InitialContentPositionOffset(
   return LayoutUnit();
 }
 
+// static
 LayoutUnit FlexLayoutAlgorithm::ContentDistributionSpaceBetweenChildren(
     LayoutUnit available_free_space,
     const StyleContentAlignmentData& data,

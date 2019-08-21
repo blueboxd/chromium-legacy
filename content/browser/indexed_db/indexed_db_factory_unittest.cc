@@ -63,13 +63,13 @@ void CreateAndBindTransactionPlaceholder(
 class IndexedDBFactoryTest : public testing::Test {
  public:
   IndexedDBFactoryTest()
-      : thread_bundle_(std::make_unique<TestBrowserThreadBundle>()),
+      : task_environment_(std::make_unique<BrowserTaskEnvironment>()),
         quota_manager_proxy_(
             base::MakeRefCounted<MockQuotaManagerProxy>(nullptr, nullptr)) {}
 
   explicit IndexedDBFactoryTest(
-      std::unique_ptr<TestBrowserThreadBundle> thread_bundle)
-      : thread_bundle_(std::move(thread_bundle)),
+      std::unique_ptr<BrowserTaskEnvironment> task_environment)
+      : task_environment_(std::move(task_environment)),
         quota_manager_proxy_(
             base::MakeRefCounted<MockQuotaManagerProxy>(nullptr, nullptr)) {}
 
@@ -192,8 +192,8 @@ class IndexedDBFactoryTest : public testing::Test {
 
   IndexedDBFactoryImpl* factory() const { return context_->GetIDBFactory(); }
 
-  TestBrowserThreadBundle* thread_bundle() const {
-    return thread_bundle_.get();
+  BrowserTaskEnvironment* task_environment() const {
+    return task_environment_.get();
   }
 
   IndexedDBOriginState* OriginStateFromHandle(
@@ -202,7 +202,7 @@ class IndexedDBFactoryTest : public testing::Test {
   }
 
  private:
-  std::unique_ptr<TestBrowserThreadBundle> thread_bundle_;
+  std::unique_ptr<BrowserTaskEnvironment> task_environment_;
 
   base::ScopedTempDir temp_dir_;
   scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;
@@ -214,7 +214,7 @@ class IndexedDBFactoryTest : public testing::Test {
 class IndexedDBFactoryTestWithMockTime : public IndexedDBFactoryTest {
  public:
   IndexedDBFactoryTestWithMockTime()
-      : IndexedDBFactoryTest(std::make_unique<TestBrowserThreadBundle>(
+      : IndexedDBFactoryTest(std::make_unique<BrowserTaskEnvironment>(
             base::test::TaskEnvironment::TimeSource::MOCK_TIME)) {}
 
  private:
@@ -312,7 +312,7 @@ TEST_F(IndexedDBFactoryTestWithMockTime, PreCloseTasksStart) {
   EXPECT_EQ(IndexedDBOriginState::ClosingState::kPreCloseGracePeriod,
             factory()->GetOriginFactory(origin)->closing_stage());
 
-  thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(2));
+  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(2));
 
   // The factory should be closed, as the pre close tasks are delayed.
   EXPECT_FALSE(factory()->GetOriginFactory(origin));

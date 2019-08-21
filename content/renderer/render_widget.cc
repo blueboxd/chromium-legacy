@@ -29,6 +29,7 @@
 #include "cc/animation/animation_host.h"
 #include "cc/base/switches.h"
 #include "cc/input/touch_action.h"
+#include "cc/paint/paint_worklet_layer_painter.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/ukm_manager.h"
@@ -522,8 +523,7 @@ void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
   input_handler_ = std::make_unique<RenderWidgetInputHandler>(this, this);
 
   LayerTreeView* layer_tree_view = InitializeLayerTreeView();
-  web_widget->SetLayerTreeView(layer_tree_view,
-                               layer_tree_view->animation_host());
+  web_widget->SetAnimationHost(layer_tree_view->animation_host());
 
   blink::scheduler::WebThreadScheduler* main_thread_scheduler = nullptr;
   if (render_thread_impl)

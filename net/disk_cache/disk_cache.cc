@@ -311,13 +311,6 @@ void FlushCacheThreadForTesting() {
   BackendImpl::FlushForTesting();
 }
 
-net::Error Backend::OpenOrCreateEntry(const std::string& key,
-                                      net::RequestPriority priority,
-                                      EntryWithOpened* entry_struct,
-                                      CompletionOnceCallback callback) {
-  return net::ERR_NOT_IMPLEMENTED;
-}
-
 int64_t Backend::CalculateSizeOfEntriesBetween(
     base::Time initial_time,
     base::Time end_time,
@@ -330,5 +323,65 @@ uint8_t Backend::GetEntryInMemoryData(const std::string& key) {
 }
 
 void Backend::SetEntryInMemoryData(const std::string& key, uint8_t data) {}
+
+EntryResult::EntryResult() = default;
+EntryResult::~EntryResult() = default;
+
+EntryResult::EntryResult(EntryResult&& other) {
+  net_error_ = other.net_error_;
+  entry_ = std::move(other.entry_);
+  opened_ = other.opened_;
+
+  other.net_error_ = net::ERR_FAILED;
+  other.opened_ = false;
+}
+
+EntryResult& EntryResult::operator=(EntryResult&& other) {
+  net_error_ = other.net_error_;
+  entry_ = std::move(other.entry_);
+  opened_ = other.opened_;
+
+  other.net_error_ = net::ERR_FAILED;
+  other.opened_ = false;
+  return *this;
+}
+
+// static
+EntryResult EntryResult::MakeOpened(Entry* new_entry) {
+  DCHECK(new_entry);
+
+  EntryResult result;
+  result.net_error_ = net::OK;
+  result.entry_.reset(new_entry);
+  result.opened_ = true;
+  return result;
+}
+
+// static
+EntryResult EntryResult::MakeCreated(Entry* new_entry) {
+  DCHECK(new_entry);
+
+  EntryResult result;
+  result.net_error_ = net::OK;
+  result.entry_.reset(new_entry);
+  result.opened_ = false;
+  return result;
+}
+
+// static
+EntryResult EntryResult::MakeError(net::Error status) {
+  DCHECK_NE(status, net::OK);
+
+  EntryResult result;
+  result.net_error_ = status;
+  return result;
+}
+
+Entry* EntryResult::ReleaseEntry() {
+  Entry* ret = entry_.release();
+  net_error_ = net::ERR_FAILED;
+  opened_ = false;
+  return ret;
+}
 
 }  // namespace disk_cache

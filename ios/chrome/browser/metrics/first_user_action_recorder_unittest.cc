@@ -29,7 +29,7 @@ class FirstUserActionRecorderTest : public PlatformTest {
     is_pad_ = IsIPadIdiom();
   }
 
-  web::TestWebThreadBundle web_thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   bool is_pad_;
   std::unique_ptr<FirstUserActionRecorder> recorder_;
   std::unique_ptr<base::HistogramTester> histogram_tester_;

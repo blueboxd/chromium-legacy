@@ -174,7 +174,7 @@ class SiteInstanceTest : public testing::Test {
   BrowserContext* context() { return &context_; }
 
  private:
-  TestBrowserThreadBundle test_browser_thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   TestBrowserContext context_;
 
   SiteInstanceTestBrowserClient browser_client_;

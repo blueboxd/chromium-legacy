@@ -419,15 +419,7 @@ struct LegacyCacheStorageCache::QueryCacheContext {
         query_types(query_types),
         matches(std::make_unique<QueryCacheResults>()) {}
 
-  ~QueryCacheContext() {
-    // If the CacheStorageCache is deleted before a backend operation to open
-    // an entry completes, the callback won't be run and the resulting entry
-    // will be leaked unless we close it here.
-    if (enumerated_entry) {
-      enumerated_entry->Close();
-      enumerated_entry = nullptr;
-    }
-  }
+  ~QueryCacheContext() = default;
 
   // Input to QueryCache
   blink::mojom::FetchAPIRequestPtr request;
@@ -438,7 +430,6 @@ struct LegacyCacheStorageCache::QueryCacheContext {
 
   // Iteration state
   std::unique_ptr<disk_cache::Backend::Iterator> backend_iterator;
-  disk_cache::Entry* enumerated_entry = nullptr;
 
   // Output of QueryCache
   std::unique_ptr<std::vector<QueryCacheResult>> matches;
@@ -993,19 +984,17 @@ void LegacyCacheStorageCache::QueryCache(
        !query_cache_context->options->ignore_search)) {
     // There is no need to scan the entire backend, just open the exact
     // URL.
-    disk_cache::Entry** entry_ptr = &query_cache_context->enumerated_entry;
 
     // Create a callback that is copyable, even though it can only be called
     // once. BindRepeating() cannot be used directly because
     // |query_cache_context| is not copyable.
-    net::CompletionRepeatingCallback open_entry_callback =
-        base::AdaptCallbackForRepeating(base::BindOnce(
-            &LegacyCacheStorageCache::QueryCacheDidOpenFastPath,
-            weak_ptr_factory_.GetWeakPtr(), std::move(query_cache_context)));
-    int rv = backend_->OpenEntry(request_url, net::HIGHEST, entry_ptr,
-                                 open_entry_callback);
-    if (rv != net::ERR_IO_PENDING)
-      std::move(open_entry_callback).Run(rv);
+    auto open_entry_callback = base::AdaptCallbackForRepeating(base::BindOnce(
+        &LegacyCacheStorageCache::QueryCacheDidOpenFastPath,
+        weak_ptr_factory_.GetWeakPtr(), std::move(query_cache_context)));
+    disk_cache::EntryResult result =
+        backend_->OpenEntry(request_url, net::HIGHEST, open_entry_callback);
+    if (result.net_error() != net::ERR_IO_PENDING)
+      std::move(open_entry_callback).Run(std::move(result));
     return;
   }
 
@@ -1015,21 +1004,19 @@ void LegacyCacheStorageCache::QueryCache(
 
 void LegacyCacheStorageCache::QueryCacheDidOpenFastPath(
     std::unique_ptr<QueryCacheContext> query_cache_context,
-    int rv) {
-  if (rv != net::OK) {
+    disk_cache::EntryResult result) {
+  if (result.net_error() != net::OK) {
     QueryCacheContext* results = query_cache_context.get();
     std::move(results->callback)
         .Run(CacheStorageError::kSuccess,
              std::move(query_cache_context->matches));
     return;
   }
-  QueryCacheFilterEntry(std::move(query_cache_context), rv);
+  QueryCacheFilterEntry(std::move(query_cache_context), std::move(result));
 }
 
 void LegacyCacheStorageCache::QueryCacheOpenNextEntry(
     std::unique_ptr<QueryCacheContext> query_cache_context) {
-  DCHECK_EQ(nullptr, query_cache_context->enumerated_entry);
-
   query_cache_recursive_depth_ += 1;
   auto cleanup = base::ScopedClosureRunner(base::BindOnce(
       [](CacheStorageCacheHandle handle) {
@@ -1054,19 +1041,17 @@ void LegacyCacheStorageCache::QueryCacheOpenNextEntry(
 
   disk_cache::Backend::Iterator& iterator =
       *query_cache_context->backend_iterator;
-  disk_cache::Entry** enumerated_entry = &query_cache_context->enumerated_entry;
 
   // Create a callback that is copyable, even though it can only be called once.
   // BindRepeating() cannot be used directly because |query_cache_context| is
   // not copyable.
-  net::CompletionRepeatingCallback open_entry_callback =
-      base::AdaptCallbackForRepeating(base::BindOnce(
-          &LegacyCacheStorageCache::QueryCacheFilterEntry,
-          weak_ptr_factory_.GetWeakPtr(), std::move(query_cache_context)));
+  auto open_entry_callback = base::AdaptCallbackForRepeating(base::BindOnce(
+      &LegacyCacheStorageCache::QueryCacheFilterEntry,
+      weak_ptr_factory_.GetWeakPtr(), std::move(query_cache_context)));
 
-  int rv = iterator.OpenNextEntry(enumerated_entry, open_entry_callback);
+  disk_cache::EntryResult result = iterator.OpenNextEntry(open_entry_callback);
 
-  if (rv == net::ERR_IO_PENDING)
+  if (result.net_error() == net::ERR_IO_PENDING)
     return;
 
   // In most cases we can immediately invoke the callback when there is no
@@ -1074,33 +1059,33 @@ void LegacyCacheStorageCache::QueryCacheOpenNextEntry(
   // when iterating a large cache.  Only invoke the callback synchronously
   // if we have not recursed past a threshold depth.
   if (query_cache_recursive_depth_ <= kMaxQueryCacheRecursiveDepth) {
-    std::move(open_entry_callback).Run(rv);
+    std::move(open_entry_callback).Run(std::move(result));
     return;
   }
 
   scheduler_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(std::move(open_entry_callback), rv));
+      FROM_HERE,
+      base::BindOnce(std::move(open_entry_callback), std::move(result)));
 }
 
 void LegacyCacheStorageCache::QueryCacheFilterEntry(
     std::unique_ptr<QueryCacheContext> query_cache_context,
-    int rv) {
-  if (rv == net::ERR_FAILED) {
+    disk_cache::EntryResult result) {
+  if (result.net_error() == net::ERR_FAILED) {
     // This is the indicator that iteration is complete.
     query_cache_context->backend_iterator.reset();
     QueryCacheOpenNextEntry(std::move(query_cache_context));
     return;
   }
 
-  if (rv < 0) {
+  if (result.net_error() < 0) {
     std::move(query_cache_context->callback)
         .Run(MakeErrorStorage(ErrorStorageType::kQueryCacheFilterEntryFailed),
              std::move(query_cache_context->matches));
     return;
   }
 
-  disk_cache::ScopedEntryPtr entry(query_cache_context->enumerated_entry);
-  query_cache_context->enumerated_entry = nullptr;
+  disk_cache::ScopedEntryPtr entry(result.ReleaseEntry());
 
   if (backend_state_ == BACKEND_CLOSED) {
     std::move(query_cache_context->callback)
@@ -1399,26 +1384,19 @@ void LegacyCacheStorageCache::WriteSideDataImpl(
   // disk_cache backend.
   callback = WrapCallbackWithHandle(std::move(callback));
 
-  std::unique_ptr<disk_cache::Entry*> scoped_entry_ptr(
-      new disk_cache::Entry*());
-  disk_cache::Entry** entry_ptr = scoped_entry_ptr.get();
-
   // Create a callback that is copyable, even though it can only be called once.
-  // BindRepeating() cannot be used directly because |callback| and
-  // |scoped_entry_ptr| are not copyable.
-  net::CompletionRepeatingCallback open_entry_callback =
-      base::AdaptCallbackForRepeating(
-          base::BindOnce(&LegacyCacheStorageCache::WriteSideDataDidOpenEntry,
-                         weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                         expected_response_time, trace_id, buffer, buf_len,
-                         std::move(scoped_entry_ptr)));
+  // BindRepeating() cannot be used directly because |callback| is not copyable.
+  auto open_entry_callback = base::AdaptCallbackForRepeating(
+      base::BindOnce(&LegacyCacheStorageCache::WriteSideDataDidOpenEntry,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     expected_response_time, trace_id, buffer, buf_len));
 
   // Use LOWEST priority here as writing side data is less important than
   // loading resources on the page.
-  int rv = backend_->OpenEntry(url.spec(), net::LOWEST, entry_ptr,
-                               open_entry_callback);
-  if (rv != net::ERR_IO_PENDING)
-    std::move(open_entry_callback).Run(rv);
+  disk_cache::EntryResult result =
+      backend_->OpenEntry(url.spec(), net::LOWEST, open_entry_callback);
+  if (result.net_error() != net::ERR_IO_PENDING)
+    std::move(open_entry_callback).Run(std::move(result));
 }
 
 void LegacyCacheStorageCache::WriteSideDataDidOpenEntry(
@@ -1427,24 +1405,25 @@ void LegacyCacheStorageCache::WriteSideDataDidOpenEntry(
     int64_t trace_id,
     scoped_refptr<net::IOBuffer> buffer,
     int buf_len,
-    std::unique_ptr<disk_cache::Entry*> entry_ptr,
-    int rv) {
+    disk_cache::EntryResult result) {
   TRACE_EVENT_WITH_FLOW0("CacheStorage",
                          "LegacyCacheStorageCache::WriteSideDataDidOpenEntry",
                          TRACE_ID_GLOBAL(trace_id),
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
-  if (rv != net::OK) {
+
+  if (result.net_error() != net::OK) {
     std::move(callback).Run(CacheStorageError::kErrorNotFound);
     return;
   }
 
-  // Moving the entry into a ScopedWritableEntry which will doom the entry
-  // before closing unless we tell it that writing has successfully completed
-  // via WritingCompleted.
-  ScopedWritableEntry entry(*entry_ptr);
+  // Give the ownership of entry to a ScopedWritableEntry which will doom the
+  // entry before closing unless we tell it that writing has successfully
+  // completed via WritingCompleted.
+  ScopedWritableEntry entry(result.ReleaseEntry());
+  disk_cache::Entry* entry_ptr = entry.get();
 
   ReadMetadata(
-      *entry_ptr,
+      entry_ptr,
       base::BindOnce(&LegacyCacheStorageCache::WriteSideDataDidReadMetaData,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                      expected_response_time, trace_id, buffer, buf_len,
@@ -1643,42 +1622,38 @@ void LegacyCacheStorageCache::PutDidDeleteEntry(
     return;
   }
 
-  std::unique_ptr<disk_cache::Entry*> scoped_entry_ptr(
-      new disk_cache::Entry*());
-  disk_cache::Entry** entry_ptr = scoped_entry_ptr.get();
   const blink::mojom::FetchAPIRequest& request_ = *(put_context->request);
   disk_cache::Backend* backend_ptr = backend_.get();
 
   // Create a callback that is copyable, even though it can only be called once.
-  // BindRepeating() cannot be used directly because |scoped_entry_ptr| and
-  // |put_context| are not copyable.
-  net::CompletionRepeatingCallback create_entry_callback =
-      base::AdaptCallbackForRepeating(
-          base::BindOnce(&LegacyCacheStorageCache::PutDidCreateEntry,
-                         weak_ptr_factory_.GetWeakPtr(),
-                         std::move(scoped_entry_ptr), std::move(put_context)));
+  // BindRepeating() cannot be used directly because |put_context| is not
+  // copyable.
+  auto create_entry_callback = base::AdaptCallbackForRepeating(
+      base::BindOnce(&LegacyCacheStorageCache::PutDidCreateEntry,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(put_context)));
 
   DCHECK(scheduler_->IsRunningExclusiveOperation());
-  int rv = backend_ptr->CreateEntry(request_.url.spec(), net::HIGHEST,
-                                    entry_ptr, create_entry_callback);
+  disk_cache::EntryResult result = backend_ptr->CreateEntry(
+      request_.url.spec(), net::HIGHEST, create_entry_callback);
 
-  if (rv != net::ERR_IO_PENDING)
-    std::move(create_entry_callback).Run(rv);
+  if (result.net_error() != net::ERR_IO_PENDING)
+    std::move(create_entry_callback).Run(std::move(result));
 }
 
 void LegacyCacheStorageCache::PutDidCreateEntry(
-    std::unique_ptr<disk_cache::Entry*> entry_ptr,
     std::unique_ptr<PutContext> put_context,
-    int rv) {
+    disk_cache::EntryResult result) {
   TRACE_EVENT_WITH_FLOW0("CacheStorage",
                          "LegacyCacheStorageCache::PutDidCreateEntry",
                          TRACE_ID_GLOBAL(put_context->trace_id),
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
+  int rv = result.net_error();
+
   // Moving the entry into a ScopedWritableEntry which will doom the entry
   // before closing unless we tell it that writing has successfully completed
   // via WritingCompleted.
-  put_context->cache_entry.reset(*entry_ptr);
+  put_context->cache_entry.reset(result.ReleaseEntry());
 
   base::UmaHistogramSparse("ServiceWorkerCache.DiskCacheCreateEntryResult",
                            std::abs(rv));

@@ -103,7 +103,7 @@ class FakeTransport : public media::cast::CastTransport {
 class CastRemotingSenderTest : public ::testing::Test {
  protected:
   CastRemotingSenderTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         expecting_error_callback_run_(false) {
     media::cast::FrameSenderConfig video_config =
         media::cast::GetDefaultVideoSenderConfig();
@@ -258,7 +258,7 @@ class CastRemotingSenderTest : public ::testing::Test {
  private:
   void OnError() { CHECK(expecting_error_callback_run_); }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   media::cast::CastTransportRtpConfig transport_config_;
   FakeTransport transport_;
   std::unique_ptr<CastRemotingSender> remoting_sender_;

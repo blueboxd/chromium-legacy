@@ -51,7 +51,7 @@ class AbortObserver {
 class IndexedDBTransactionTest : public testing::Test {
  public:
   IndexedDBTransactionTest()
-      : thread_bundle_(std::make_unique<TestBrowserThreadBundle>()),
+      : task_environment_(std::make_unique<BrowserTaskEnvironment>()),
         backing_store_(new IndexedDBFakeBackingStore()),
         factory_(new MockIndexedDBFactory()),
         lock_manager_(kIndexedDBLockLevelCount) {}
@@ -123,7 +123,7 @@ class IndexedDBTransactionTest : public testing::Test {
   }
 
  protected:
-  std::unique_ptr<TestBrowserThreadBundle> thread_bundle_;
+  std::unique_ptr<BrowserTaskEnvironment> task_environment_;
   std::unique_ptr<IndexedDBFakeBackingStore> backing_store_;
   std::unique_ptr<IndexedDBDatabase> db_;
   std::unique_ptr<MockIndexedDBFactory> factory_;

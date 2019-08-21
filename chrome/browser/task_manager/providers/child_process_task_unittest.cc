@@ -77,7 +77,7 @@ class ChildProcessTaskTest
   std::map<base::ProcessHandle, Task*> provided_tasks_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildProcessTaskTest);
 };

@@ -31,6 +31,10 @@ const base::Feature kPartitionConnectionsByNetworkIsolationKey{
     "PartitionConnectionsByNetworkIsolationKey",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kPartitionHttpServerPropertiesByNetworkIsolationKey{
+    "PartitionHttpServerPropertiesByNetworkIsolationKey",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kPartitionSSLSessionsByNetworkIsolationKey{
     "PartitionSSLSessionsByNetworkIsolationKey",
     base::FEATURE_DISABLED_BY_DEFAULT};

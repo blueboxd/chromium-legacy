@@ -61,9 +61,9 @@ class ActiveTabTrackerTest : public ::testing::Test {
   base::SimpleTestTickClock* clock() { return &clock_; }
 
  private:
-  // A |TestBrowserThreadBundle| is needed for creating and using
+  // A |BrowserTaskEnvironment| is needed for creating and using
   // |WebContents|es in a unit test.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
   base::SimpleTestTickClock clock_;
 };

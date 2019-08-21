@@ -26,6 +26,8 @@ class WebrtcVideoEncoderProxy : public WebrtcVideoEncoder {
   ~WebrtcVideoEncoderProxy() override;
 
   // WebrtcVideoEncoder interface.
+  void SetLosslessEncode(bool want_lossless) override;
+  void SetLosslessColor(bool want_lossless) override;
   void Encode(std::unique_ptr<webrtc::DesktopFrame> frame,
               const FrameParams& params,
               EncodeCallback done) override;

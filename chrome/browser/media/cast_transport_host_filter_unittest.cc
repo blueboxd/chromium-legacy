@@ -18,8 +18,7 @@ namespace {
 class CastTransportHostFilterTest : public testing::Test {
  public:
   CastTransportHostFilterTest()
-      : browser_thread_bundle_(
-            content::TestBrowserThreadBundle::IO_MAINLOOP) {
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {
     filter_ = new cast::CastTransportHostFilter();
     static_cast<cast::CastTransportHostFilter*>(filter_.get())
         ->InitializeNoOpWakeLockForTesting();
@@ -36,7 +35,7 @@ class CastTransportHostFilterTest : public testing::Test {
   }
 
   base::DictionaryValue options_;
-  content::TestBrowserThreadBundle browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   scoped_refptr<content::BrowserMessageFilter> filter_;
   net::IPEndPoint receive_endpoint_;
 };

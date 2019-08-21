@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/core/frame/fullscreen_controller.h"
 
 #include "base/memory/ptr_util.h"
-#include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/public/web/web_fullscreen_options.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/core/dom/document.h"

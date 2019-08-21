@@ -111,7 +111,7 @@ class IndexedDBDatabaseTest : public ::testing::Test {
   bool error_called_ = false;
 
  private:
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   DisjointRangeLockManager lock_manager_;
 
   base::WeakPtrFactory<IndexedDBDatabaseTest> weak_factory_{this};
@@ -560,7 +560,7 @@ class IndexedDBDatabaseOperationTest : public testing::Test {
 
  private:
   // Needs to outlive |db_|.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
  protected:
   std::unique_ptr<IndexedDBFakeBackingStore> backing_store_;

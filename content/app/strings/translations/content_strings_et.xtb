@@ -57,6 +57,7 @@
 <translation id="2746543609216772311">Väärtus peab olema <ph name="MINIMUM_DATE_OR_TIME" /> või hilisem.</translation>
 <translation id="2759744352195237655">hüpikunupp</translation>
 <translation id="2761667185364618470">Märkige see ruut, kui soovite jätkata.</translation>
+<translation id="2844350028562914727">üksikasjad</translation>
 <translation id="2896972712917208084">raadionuppude grupp</translation>
 <translation id="2908441821576996758">Sisestage meiliaadresside loend komadega eraldatult.</translation>
 <translation id="2940813599313844715">objekt</translation>
@@ -154,6 +155,7 @@
 <translation id="6166809985690652833">järelsõna</translation>
 <translation id="6209276755895393898">Näib olevat: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">sõnastik</translation>
+<translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">Välju režiimist Pilt pildis</translation>
 <translation id="6398862346408813489">Kuu valikupaneeli kuvamine</translation>
 <translation id="6404546809543547843">heli ajamõõdik</translation>
@@ -236,6 +238,7 @@
 <translation id="860475260694818407">sisukord</translation>
 <translation id="8613126697340063924">kaugesituse juhtimine</translation>
 <translation id="862370744433916922">alapealkiri</translation>
+<translation id="8711688047404765493">väljund</translation>
 <translation id="8750798805984357768">Tehke üks nendest valikutest.</translation>
 <translation id="8808573423886751634">peatükk</translation>
 <translation id="8845239796550121995">Kantakse nüüd üle telerisse</translation>

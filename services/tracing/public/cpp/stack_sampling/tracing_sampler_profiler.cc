@@ -457,7 +457,14 @@ TracingSamplerProfiler::TracingProfileBuilder::GetCallstackIDAndMaybeEmit(
 }
 
 // static
-void TracingSamplerProfiler::CreateForCurrentThread() {
+std::unique_ptr<TracingSamplerProfiler>
+TracingSamplerProfiler::CreateOnMainThread() {
+  return std::make_unique<TracingSamplerProfiler>(
+      (base::PlatformThread::CurrentId()));
+}
+
+// static
+void TracingSamplerProfiler::CreateOnChildThread() {
   auto* slot = GetThreadLocalStorageProfilerSlot();
   if (slot->Get())
     return;
@@ -468,7 +475,7 @@ void TracingSamplerProfiler::CreateForCurrentThread() {
 }
 
 // static
-void TracingSamplerProfiler::DeleteForCurrentThreadForTesting() {
+void TracingSamplerProfiler::DeleteOnChildThreadForTesting() {
   auto* profiler = GetThreadLocalStorageProfilerSlot()->Get();
   if (profiler) {
     delete static_cast<TracingSamplerProfiler*>(profiler);

@@ -55,7 +55,7 @@ class SyncableFileOperationRunnerTest : public testing::Test {
   // Use the current thread as IO thread so that we can directly call
   // operations in the tests.
   SyncableFileOperationRunnerTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         in_memory_env_(
             leveldb_chrome::NewMemEnv("SyncableFileOperationRunnerTest")),
         file_system_(GURL("http://example.com"),
@@ -143,7 +143,7 @@ class SyncableFileOperationRunnerTest : public testing::Test {
     return base::CreateTemporaryFileInDir(dir_.GetPath(), path);
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   base::ScopedTempDir dir_;
   std::unique_ptr<leveldb::Env> in_memory_env_;

@@ -517,9 +517,9 @@ void PermissionsUpdater::InitializePermissions(const Extension* extension) {
     bounded_active = bounded_wrapper.get();
   }
 
-  std::unique_ptr<const PermissionSet> granted_permissions;
-  ScriptingPermissionsModifier::WithholdPermissionsIfNecessary(
-      *extension, *prefs, *bounded_active, &granted_permissions);
+  std::unique_ptr<const PermissionSet> granted_permissions =
+      ScriptingPermissionsModifier::WithholdPermissionsIfNecessary(
+          *extension, *prefs, *bounded_active);
 
   if (GetDelegate())
     GetDelegate()->InitializePermissions(extension, &granted_permissions);

@@ -128,8 +128,8 @@ class Separator : public views::View {
     AddChildView(child);
     child->SetBorder(views::CreateSolidSidedBorder(
         0, 0, kUnifiedNotificationSeparatorThickness, 0,
-        AshColorProvider::Get()->DeprecatedGetContentLayerColor(
-            ContentLayerType::kSeparator, kSeparatorOnDarkBackgroundColor)));
+        AshColorProvider::Get()->GetContentLayerColor(
+            ContentLayerType::kSeparator, AshColorMode::kDark)));
   }
 
   DISALLOW_COPY_AND_ASSIGN(Separator);

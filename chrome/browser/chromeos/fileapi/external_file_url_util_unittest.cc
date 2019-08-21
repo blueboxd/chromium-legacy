@@ -18,7 +18,7 @@ namespace chromeos {
 namespace {
 
 // Sets up ProfileManager for testing and marks the current thread as UI by
-// TestBrowserThreadBundle. We need the thread since Profile objects must be
+// BrowserTaskEnvironment. We need the thread since Profile objects must be
 // touched from UI and hence has CHECK/DCHECKs for it.
 class ExternalFileURLUtilTest : public testing::Test {
  protected:
@@ -41,7 +41,7 @@ class ExternalFileURLUtilTest : public testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager testing_profile_manager_;
 };
 

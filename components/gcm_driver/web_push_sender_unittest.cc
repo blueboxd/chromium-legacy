@@ -45,13 +45,16 @@ class WebPushSenderTest : public testing::Test {
   WebPushSender* sender() { return sender_.get(); }
   network::TestURLLoaderFactory& loader() { return test_url_loader_factory_; }
 
-  void OnMessageSent(base::Optional<std::string>* message_id_out,
+  void OnMessageSent(SendWebPushMessageResult* result_out,
+                     base::Optional<std::string>* message_id_out,
+                     SendWebPushMessageResult result,
                      base::Optional<std::string> message_id) {
+    *result_out = result;
     *message_id_out = message_id;
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   std::unique_ptr<WebPushSender> sender_;
 };
@@ -73,10 +76,12 @@ TEST_F(WebPushSenderTest, SendMessageTest) {
           private_key_info.begin(), private_key_info.end()));
   ASSERT_TRUE(private_key);
 
+  SendWebPushMessageResult result;
   base::Optional<std::string> message_id;
-  sender()->SendMessage("fcm_token", private_key.get(), CreateMessage(),
-                        base::BindOnce(&WebPushSenderTest::OnMessageSent,
-                                       base::Unretained(this), &message_id));
+  sender()->SendMessage(
+      "fcm_token", private_key.get(), CreateMessage(),
+      base::BindOnce(&WebPushSenderTest::OnMessageSent, base::Unretained(this),
+                     &result, &message_id));
 
   ASSERT_EQ(loader().NumPending(), 1);
 
@@ -118,6 +123,7 @@ TEST_F(WebPushSenderTest, SendMessageTest) {
       pendingRequest->request.url, network::URLLoaderCompletionStatus(net::OK),
       response_head, "");
 
+  ASSERT_EQ(SendWebPushMessageResult::kSuccessful, result);
   ASSERT_EQ("message_id", message_id);
 }
 
@@ -147,7 +153,8 @@ TEST_P(WebPushUrgencyTest, SetUrgencyTest) {
   WebPushMessage message = CreateMessage();
   message.urgency = GetParam().urgency;
 
-  sender()->SendMessage("token", private_key.get(), message, base::DoNothing());
+  sender()->SendMessage("token", private_key.get(), std::move(message),
+                        base::DoNothing());
   ASSERT_EQ(loader().NumPending(), 1);
   net::HttpRequestHeaders headers =
       loader().GetPendingRequest(0)->request.headers;
@@ -161,7 +168,31 @@ INSTANTIATE_TEST_SUITE_P(
     WebPushUrgencyTest,
     testing::ValuesIn(kWebPushUrgencyTestData));
 
-TEST_F(WebPushSenderTest, ServerErrorTest) {
+struct WebPushHttpStatusTestData {
+  const net::Error error_code;
+  const net::HttpStatusCode http_status;
+  const SendWebPushMessageResult expected_result;
+} kWebPushHttpStatusTestData[] = {
+    {net::ERR_INSUFFICIENT_RESOURCES, net::HTTP_OK,
+     SendWebPushMessageResult::kVapidKeyInvalid},
+    {net::ERR_ABORTED, net::HTTP_OK, SendWebPushMessageResult::kNetworkError},
+    {net::OK, net::HTTP_OK,
+     SendWebPushMessageResult::kParseResponseFailed},  // As no header is set
+    {net::OK, net::HTTP_INTERNAL_SERVER_ERROR,
+     SendWebPushMessageResult::kServerError},
+    {net::OK, net::HTTP_NOT_FOUND, SendWebPushMessageResult::kDeviceGone},
+    {net::OK, net::HTTP_GONE, SendWebPushMessageResult::kDeviceGone},
+    {net::OK, net::HTTP_BAD_REQUEST,
+     SendWebPushMessageResult::kPayloadTooLarge},
+    {net::OK, net::HTTP_REQUEST_ENTITY_TOO_LARGE,
+     SendWebPushMessageResult::kPayloadTooLarge},
+};
+
+class WebPushHttpStatusTest
+    : public WebPushSenderTest,
+      public testing::WithParamInterface<WebPushHttpStatusTestData> {};
+
+TEST_P(WebPushHttpStatusTest, HttpStatusTest) {
   std::string private_key_info;
   ASSERT_TRUE(base::Base64Decode(kPrivateKey, &private_key_info));
   std::unique_ptr<crypto::ECPrivateKey> private_key =
@@ -169,18 +200,26 @@ TEST_F(WebPushSenderTest, ServerErrorTest) {
           private_key_info.begin(), private_key_info.end()));
   ASSERT_TRUE(private_key);
 
+  SendWebPushMessageResult result;
   base::Optional<std::string> message_id;
-  sender()->SendMessage("fcm_token", private_key.get(), CreateMessage(),
-                        base::BindOnce(&WebPushSenderTest::OnMessageSent,
-                                       base::Unretained(this), &message_id));
+  sender()->SendMessage(
+      "fcm_token", private_key.get(), CreateMessage(),
+      base::BindOnce(&WebPushSenderTest::OnMessageSent, base::Unretained(this),
+                     &result, &message_id));
 
   ASSERT_EQ(loader().NumPending(), 1);
   loader().SimulateResponseForPendingRequest(
       loader().GetPendingRequest(0)->request.url,
-      network::URLLoaderCompletionStatus(net::OK),
-      network::CreateResourceResponseHead(net::HTTP_INTERNAL_SERVER_ERROR), "");
+      network::URLLoaderCompletionStatus(GetParam().error_code),
+      network::CreateResourceResponseHead(GetParam().http_status), "");
 
+  ASSERT_EQ(GetParam().expected_result, result);
   ASSERT_FALSE(message_id);
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    WebPushHttpStatusTest,
+    testing::ValuesIn(kWebPushHttpStatusTestData));
 
 }  // namespace gcm

@@ -90,7 +90,7 @@ class DMTokenStorageTest : public testing::Test {
       closure.Run();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   ScopedTestingLocalState scoped_testing_local_state_;
   std::unique_ptr<DMTokenStorage> dm_token_storage_;
 };

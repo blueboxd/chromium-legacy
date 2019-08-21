@@ -30,7 +30,7 @@ class MockLogReceiver : public autofill::LogReceiver {
 
 class PasswordManagerLogRouterFactoryTest : public testing::Test {
  public:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   content::TestBrowserContext browser_context_;
 
   void SetUp() override {

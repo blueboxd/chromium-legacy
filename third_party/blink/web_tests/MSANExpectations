@@ -336,3 +336,6 @@ crbug.com/856601 [ Linux ] webaudio/Analyser/realtimeanalyser-freq-data.html [ P
 crbug.com/856601 [ Linux ] external/wpt/secure-contexts/idlharness.any.serviceworker.html [ Pass Timeout ]
 crbug.com/993953 [ Linux ] http/tests/devtools/wasm-isolated-code-cache/wasm-cache-test.js [ Pass Timeout ]
 crbug.com/993953 [ Linux ] virtual/wasm-site-isolated-code-cache/http/tests/devtools/wasm-isolated-code-cache/wasm-cache-test.js [ Pass Timeout ]
+
+# Sheriff 2019-08-20
+crbug.com/995817 [ Linux ] virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/interfaces-sw.https.html [ Pass Timeout ]

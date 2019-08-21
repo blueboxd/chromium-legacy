@@ -68,7 +68,7 @@ class RemoteDatabaseManagerTest : public testing::Test {
                                                      group_name, params));
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<base::FieldTrialList> field_trials_;
   TestSafeBrowsingApiHandler api_handler_;
   scoped_refptr<RemoteSafeBrowsingDatabaseManager> db_;

@@ -9,7 +9,7 @@
 #include "net/base/url_util.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
-#include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/websocket.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
@@ -64,10 +64,9 @@ void WebSocketFactory::OnSSLCertificateError(
     int net_error,
     const net::SSLInfo& ssl_info,
     bool fatal) {
-  NetworkService* network_service = context_->network_service();
-  network_service->client()->OnSSLCertificateError(process_id, render_frame_id,
-                                                   url, net_error, ssl_info,
-                                                   fatal, std::move(callback));
+  context_->client()->OnSSLCertificateError(process_id, render_frame_id, url,
+                                            net_error, ssl_info, fatal,
+                                            std::move(callback));
 }
 
 void WebSocketFactory::Remove(WebSocket* impl) {

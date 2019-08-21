@@ -46,7 +46,7 @@ class ExternalCacheImplTest : public testing::Test,
                               public ExternalCacheDelegate {
  public:
   ExternalCacheImplTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD),
+      : task_environment_(content::BrowserTaskEnvironment::REAL_IO_THREAD),
         test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)) {}
@@ -119,7 +119,7 @@ class ExternalCacheImplTest : public testing::Test,
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;

@@ -125,7 +125,7 @@ class NTPHomeMediatorTest : public PlatformTest {
     }
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   id consumer_;
   id logo_vendor_;

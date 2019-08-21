@@ -6347,7 +6347,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   RenderWidgetUserActivationStateTest
 #endif
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       RenderWidgetUserActivationStateTest) {
+                       MAYBE_RenderWidgetUserActivationStateTest) {
   base::test::ScopedFeatureList scoped_feature_list_;
   scoped_feature_list_.InitAndEnableFeature(
       features::kBrowserVerifiedUserActivation);
@@ -6573,11 +6573,11 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
   // path hit testing for the iframe in V2 hit testing.
   // When VizDisplayCompositor is enabled, HitTestDataProviderDrawQuad will
   // override LTHI's hit test data.
-  if (features::IsVizHitTestingDrawQuadEnabled()) {
+  if (!features::IsVizHitTestingSurfaceLayerEnabled()) {
     // In V1 hit testing, we expect slow path and the submitted region should be
     // equivalent to the unclipped iframe bounds.
     expected_flags = kSlowHitTestFlags;
-  } else if (features::IsVizHitTestingSurfaceLayerEnabled()) {
+  } else {
     // In V2 hit testing fast path, we expect precise clipped iframe bounds in
     // its own space.
     expected_transformed_region = gfx::ScaleToEnclosingRect(
@@ -6617,7 +6617,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
   gfx::Transform expected_transform;
   gfx::Rect expected_region = gfx::ScaleToEnclosingRect(
       gfx::Rect(200, 200), device_scale_factor, device_scale_factor);
-  if (!features::IsVizHitTestingDrawQuadEnabled()) {
+  if (features::IsVizHitTestingSurfaceLayerEnabled()) {
     expected_region = gfx::ScaleToEnclosingRect(
         gfx::Rect(100 / 1.414, 100), device_scale_factor, device_scale_factor);
   }
@@ -6749,9 +6749,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
   EXPECT_EQ(expected_region.ToString(), hit_test_data[2].rect.ToString());
   EXPECT_TRUE(
       expected_transform2.ApproximatelyEqual(hit_test_data[2].transform()));
-  if (features::IsVizHitTestingDrawQuadEnabled())
+  if (!features::IsVizHitTestingSurfaceLayerEnabled())
     EXPECT_EQ(kSlowHitTestFlags, hit_test_data[2].flags);
-  else if (features::IsVizHitTestingSurfaceLayerEnabled())
+  else
     EXPECT_EQ(kFastHitTestFlags, hit_test_data[2].flags);
 }
 

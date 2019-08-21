@@ -114,7 +114,7 @@ class BrowserThemePackTest : public ::testing::Test {
 
   ScopedSetSupportedScaleFactors scoped_set_supported_scale_factors_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   scoped_refptr<BrowserThemePack> theme_pack_;
 };
 

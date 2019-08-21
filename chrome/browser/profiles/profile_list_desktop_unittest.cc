@@ -84,7 +84,7 @@ class ProfileListDesktopTest : public testing::Test {
   int change_count() const { return mock_observer_->change_count(); }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager manager_;
   std::unique_ptr<MockObserver> mock_observer_;
   std::unique_ptr<AvatarMenu> avatar_menu_;

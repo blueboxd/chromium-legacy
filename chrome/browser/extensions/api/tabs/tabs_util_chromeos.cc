@@ -19,7 +19,7 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "ui/aura/window.h"
 #include "ui/base/clipboard/clipboard.h"
-#include "ui/base/clipboard/clipboard_types.h"
+#include "ui/base/clipboard/clipboard_buffer.h"
 
 namespace extensions {
 namespace tabs_util {
@@ -50,7 +50,7 @@ void SetLockedFullscreenState(Browser* browser, bool locked) {
 
   // Reset the clipboard and kill dev tools when entering or exiting locked
   // fullscreen (security concerns).
-  ui::Clipboard::GetForCurrentThread()->Clear(ui::ClipboardType::kCopyPaste);
+  ui::Clipboard::GetForCurrentThread()->Clear(ui::ClipboardBuffer::kCopyPaste);
   content::DevToolsAgentHost::DetachAllClients();
 
   // Disable ARC while in the locked fullscreen mode.

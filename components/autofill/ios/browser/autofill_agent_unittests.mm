@@ -105,7 +105,7 @@ class AutofillAgentTests : public PlatformTest {
                                           webState:&test_web_state_];
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   web::TestBrowserState test_browser_state_;
   web::TestWebState test_web_state_;
   web::FakeWebFrame* fake_main_frame_ = nullptr;

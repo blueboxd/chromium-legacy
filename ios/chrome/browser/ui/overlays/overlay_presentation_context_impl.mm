@@ -133,10 +133,16 @@ void OverlayPresentationContextImpl::CancelOverlayUI(
     OverlayPresenter* presenter,
     OverlayRequest* request) {
   DCHECK_EQ(presenter_, presenter);
+
+  // No cleanup required if there is no UI state for |request|.  This can
+  // occur when cancelling an OverlayRequest whose UI has never been
+  // presented.
+  OverlayRequestUIState* state = GetRequestUIState(request);
+  if (!state)
+    return;
+
   // If the coordinator is not presenting the overlay UI for |state|, it can
   // be deleted immediately.
-  OverlayRequestUIState* state = GetRequestUIState(request);
-  DCHECK(state);
   if (!state->has_callback()) {
     states_.erase(request);
     return;

@@ -32,7 +32,7 @@ class PinStoragePrefsUnitTest : public testing::Test {
         ->pin_storage_prefs();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
 
   DISALLOW_COPY_AND_ASSIGN(PinStoragePrefsUnitTest);

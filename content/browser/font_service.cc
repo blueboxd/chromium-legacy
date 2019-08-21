@@ -12,6 +12,14 @@ namespace content {
 
 namespace {
 
+base::SequencedTaskRunner* GetServiceTaskRunner() {
+  static base::NoDestructor<scoped_refptr<base::SequencedTaskRunner>>
+      task_runner{base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(), base::WithBaseSyncPrimitives(),
+           base::TaskPriority::USER_BLOCKING})};
+  return task_runner->get();
+}
+
 void BindToBackgroundFontService(
     mojo::PendingReceiver<font_service::mojom::FontService> receiver) {
   static base::NoDestructor<font_service::FontServiceApp> service;
@@ -22,11 +30,9 @@ void BindToBackgroundFontService(
 
 void ConnectToFontService(
     mojo::PendingReceiver<font_service::mojom::FontService> receiver) {
-  base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                   base::WithBaseSyncPrimitives(),
-                                   base::TaskPriority::USER_BLOCKING})
-      ->PostTask(FROM_HERE, base::BindOnce(&BindToBackgroundFontService,
-                                           std::move(receiver)));
+  GetServiceTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&BindToBackgroundFontService, std::move(receiver)));
 }
 
 }  // namespace content

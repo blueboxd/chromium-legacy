@@ -80,7 +80,7 @@ class DriveBackendSyncTest : public testing::Test,
                              public RemoteFileSyncService::Observer {
  public:
   DriveBackendSyncTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         pending_remote_changes_(0),
         pending_local_changes_(0) {}
   ~DriveBackendSyncTest() override {}
@@ -605,7 +605,7 @@ class DriveBackendSyncTest : public testing::Test,
     return sync_worker()->context_->metadata_database_.get();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   base::ScopedTempDir base_dir_;
   std::unique_ptr<leveldb::Env> in_memory_env_;

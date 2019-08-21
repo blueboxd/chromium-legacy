@@ -3307,6 +3307,22 @@
       "features": [
         "disable_delayed_copy_nv12"
       ]
+    },
+    {
+      "id": 309,
+      "cr_bugs": [993233],
+      "description": "Don't use video processor scaling on non-Intel GPUs.",
+      "os": {
+        "type" : "win"
+      },
+      "exceptions": [
+        {
+          "vendor_id": "0x8086"
+        }
+      ],
+      "features": [
+          "disable_vp_scaling"
+      ]
     }
   ]
 }

@@ -24,7 +24,7 @@ VrTestSuite::~VrTestSuite() = default;
 void VrTestSuite::Initialize() {
   base::TestSuite::Initialize();
 
-  thread_bundle_ = std::make_unique<content::TestBrowserThreadBundle>();
+  task_environment_ = std::make_unique<content::BrowserTaskEnvironment>();
 
   mojo::core::Init();
 

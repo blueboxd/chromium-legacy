@@ -1171,7 +1171,7 @@ void ChromeBrowserMainParts::PostCreateThreads() {
 #if !defined(OS_ANDROID)
   base::PostTask(
       FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&tracing::TracingSamplerProfiler::CreateForCurrentThread));
+      base::BindOnce(&tracing::TracingSamplerProfiler::CreateOnChildThread));
 #endif
 
   tracing::SetupBackgroundTracingFieldTrial();

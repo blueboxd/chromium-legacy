@@ -39,7 +39,7 @@ class PnaclHostTest : public testing::Test {
       : host_(NULL),
         temp_callback_count_(0),
         write_callback_count_(0),
-        thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+        task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
   void SetUp() override {
     host_ = PnaclHost::GetInstance();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -108,7 +108,7 @@ class PnaclHostTest : public testing::Test {
   PnaclHost* host_;
   int temp_callback_count_;
   int write_callback_count_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
 };
 

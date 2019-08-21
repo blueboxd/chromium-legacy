@@ -135,10 +135,10 @@ class StringConsoleMessagesDelegate : public ConsoleMessagesDelegate {
 class ClearSiteDataHandlerTest : public testing::Test {
  public:
   ClearSiteDataHandlerTest()
-      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {}
 
  private:
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(ClearSiteDataHandlerTest);
 };

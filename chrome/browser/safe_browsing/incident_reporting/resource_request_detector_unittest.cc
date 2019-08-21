@@ -148,7 +148,7 @@ class ResourceRequestDetectorTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
  public:
   StrictMock<safe_browsing::MockIncidentReceiver>* mock_incident_receiver_;

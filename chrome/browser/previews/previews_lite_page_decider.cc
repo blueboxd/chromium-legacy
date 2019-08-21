@@ -190,8 +190,9 @@ PreviewsLitePageDecider::PreviewsLitePageDecider(
             "Requests a small resource to test network connectivity to a "
             "Google domain."
           trigger:
-            "Requested when Lite mode and Previews are enabled on startup and "
-            "on every network change."
+            "Requested when Lite mode and Previews are enabled at any of the "
+            "following events: on startup, on every network change, and every "
+            "30 seconds (experiment configurable) to maintain a hot connection."
           data: "None."
           destination: GOOGLE_OWNED_SERVICE
         }
@@ -218,7 +219,9 @@ PreviewsLitePageDecider::PreviewsLitePageDecider(
       retry_policy, timeout_policy, traffic_annotation,
       10 /* max_cache_entries */,
       base::TimeDelta::FromHours(24) /* revalidate_cache_after */);
-  litepages_service_prober_->SendNowIfInactive(
+  // Note: probing will only occur when |ShouldSendNextProbe| return true.
+  litepages_service_prober_->RepeatedlyProbe(
+      previews::params::LitePageRedirectPreviewProbeInterval(),
       true /* send_only_in_foreground */);
 }
 
@@ -485,7 +488,9 @@ bool PreviewsLitePageDecider::ShouldSendNextProbe() {
   return data_reduction_proxy::DataReductionProxySettings::
              IsDataSaverEnabledByUser(pref_service_) &&
          previews::params::ArePreviewsAllowed() &&
-         previews::params::IsLitePageServerPreviewsEnabled();
+         previews::params::IsLitePageServerPreviewsEnabled() &&
+         // Only probe if we rely on it for triggering.
+         previews::params::LitePageRedirectOnlyTriggerOnSuccessfulProbe();
 }
 
 bool PreviewsLitePageDecider::IsResponseSuccess(

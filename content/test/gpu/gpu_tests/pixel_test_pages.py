@@ -861,14 +861,21 @@ class PixelTestPages(object):
         'pixel_canvas_low_latency_2d.html',
         base_name + '_CanvasLowLatency2D',
         test_rect=[0, 0, 100, 100],
-        revision=8,
+        revision=9,
         browser_args=browser_args),
+
+      PixelTestPage(
+        'pixel_canvas_low_latency_2d.html',
+        base_name + '_CanvasLowLatency2DSwapChain',
+        test_rect=[0, 0, 100, 100],
+        revision=1,
+        browser_args=browser_args + ['--enable-canvas2d-swap-chain']),
 
       PixelTestPage(
         'pixel_canvas_low_latency_2d.html',
         base_name + '_CanvasUnacceleratedLowLatency2D',
         test_rect=[0, 0, 100, 100],
-        revision=3,
+        revision=4,
         browser_args=browser_args + unaccelerated_args),
 
       PixelTestPage(
@@ -877,6 +884,23 @@ class PixelTestPages(object):
         test_rect=[0, 0, 200, 200],
         revision=0, # not used
         browser_args=browser_args,
+        tolerance=0,
+        expected_colors=[
+          SCALE_FACTOR_OVERRIDES,
+          {
+            'comment': 'green',
+            'location': [1, 1],
+            'size': [98, 98],
+            'color': [0, 255, 0],
+          },
+        ]),
+
+      PixelTestPage(
+        'pixel_canvas_low_latency_webgl.html',
+        base_name + '_CanvasLowLatencyWebGLSwapChain',
+        test_rect=[0, 0, 200, 200],
+        revision=0, # not used
+        browser_args=browser_args + ['--enable-webgl-swap-chain'],
         tolerance=0,
         expected_colors=[
           SCALE_FACTOR_OVERRIDES,
@@ -1053,7 +1077,11 @@ class PixelTestPages(object):
 
   @staticmethod
   def DirectCompositionPages(base_name):
-    browser_args = ['--enable-direct-composition-video-overlays']
+    browser_args = [
+      '--enable-direct-composition-video-overlays',
+      # All bots are connected with a power source, however, we want to to test
+      # with the code path that's enabled with battery power.
+      '--disable_vp_scaling=1']
     browser_args_Underlay = browser_args + [
       '--enable-features=DirectCompositionUnderlays']
     browser_args_Nonroot = browser_args +[

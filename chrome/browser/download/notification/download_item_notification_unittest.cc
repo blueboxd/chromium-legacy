@@ -132,7 +132,7 @@ class DownloadItemNotificationTest : public testing::Test {
         *download_item_notification_->notification_, /*metadata=*/nullptr);
   }
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   std::unique_ptr<TestingProfileManager> profile_manager_;
   Profile* profile_;

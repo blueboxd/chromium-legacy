@@ -31,27 +31,27 @@ DIST_SUBSTR = '%DISTRIBUTION%'
 
 # Matches a chrome theme source URL.
 _THEME_SOURCE = lazy_re.compile(
-    '(?P<baseurl>chrome://theme/IDR_[A-Z0-9_]*)(?P<query>\?.*)?')
+    r'(?P<baseurl>chrome://theme/IDR_[A-Z0-9_]*)(?P<query>\?.*)?')
 # Pattern for matching CSS url() function.
-_CSS_URL_PATTERN = 'url\((?P<quote>"|\'|)(?P<filename>[^"\'()]*)(?P=quote)\)'
+_CSS_URL_PATTERN = r'url\((?P<quote>"|\'|)(?P<filename>[^"\'()]*)(?P=quote)\)'
 # Matches CSS url() functions with the capture group 'filename'.
 _CSS_URL = lazy_re.compile(_CSS_URL_PATTERN)
 # Matches one or more CSS image urls used in given properties.
 _CSS_IMAGE_URLS = lazy_re.compile(
-    '(?P<attribute>content|background|[\w-]*-image):\s*' +
-        '(?P<urls>(' + _CSS_URL_PATTERN + '\s*,?\s*)+)')
+    r'(?P<attribute>content|background|[\w-]*-image):\s*'
+        r'(?P<urls>(' + _CSS_URL_PATTERN + r'\s*,?\s*)+)')
 # Matches CSS image sets.
 _CSS_IMAGE_SETS = lazy_re.compile(
-    '(?P<attribute>content|background|[\w-]*-image):[ ]*' +
-        '-webkit-image-set\((?P<images>' +
-        '(\s*,?\s*url\((?P<quote>"|\'|)[^"\'()]*(?P=quote)\)[ ]*[0-9.]*x)*)\)',
+    r'(?P<attribute>content|background|[\w-]*-image):[ ]*'
+        r'-webkit-image-set\((?P<images>'
+        r'(\s*,?\s*url\((?P<quote>"|\'|)[^"\'()]*(?P=quote)\)[ ]*[0-9.]*x)*)\)',
     re.MULTILINE)
 # Matches a single image in a CSS image set with the capture group scale.
-_CSS_IMAGE_SET_IMAGE = lazy_re.compile('\s*,?\s*' +
-    'url\((?P<quote>"|\'|)[^"\'()]*(?P=quote)\)[ ]*(?P<scale>[0-9.]*x)',
+_CSS_IMAGE_SET_IMAGE = lazy_re.compile(r'\s*,?\s*'
+    r'url\((?P<quote>"|\'|)[^"\'()]*(?P=quote)\)[ ]*(?P<scale>[0-9.]*x)',
     re.MULTILINE)
 _HTML_IMAGE_SRC = lazy_re.compile(
-    '<img[^>]+src=\"(?P<filename>[^">]*)\"[^>]*>')
+    r'<img[^>]+src=\"(?P<filename>[^">]*)\"[^>]*>')
 
 def GetImageList(
     base_path, filename, scale_factors, distribution,

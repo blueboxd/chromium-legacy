@@ -34,7 +34,7 @@ class ArcNetHostImplTest : public testing::Test {
   TestingPrefServiceSimple* pref_service() { return &pref_service_; }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<ArcServiceManager> arc_service_manager_;
   TestingPrefServiceSimple pref_service_;
   std::unique_ptr<TestBrowserContext> context_;

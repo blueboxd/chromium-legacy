@@ -48,7 +48,7 @@ class ChromeStabilityMetricsProviderTest : public testing::Test {
 
  private:
   std::unique_ptr<TestingPrefServiceSimple> prefs_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeStabilityMetricsProviderTest);
 };

@@ -20,6 +20,7 @@
 #include "base/timer/timer.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/webauth/authenticator_environment_impl.h"
+#include "content/browser/webauth/virtual_authenticator_request_delegate.h"
 #include "content/browser/webauth/virtual_fido_discovery_factory.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
@@ -532,12 +533,18 @@ AuthenticatorCommon::~AuthenticatorCommon() {
   render_frame_host_->GetRoutingID();
 }
 
-void AuthenticatorCommon::UpdateRequestDelegate() {
-  DCHECK(!request_delegate_);
-  DCHECK(!relying_party_id_.empty());
-  request_delegate_ =
-      GetContentClient()->browser()->GetWebAuthenticationRequestDelegate(
-          render_frame_host_, relying_party_id_);
+std::unique_ptr<AuthenticatorRequestClientDelegate>
+AuthenticatorCommon::CreateRequestDelegate(std::string relying_party_id) {
+  DCHECK(!relying_party_id.empty());
+  auto* frame_tree_node =
+      static_cast<RenderFrameHostImpl*>(render_frame_host_)->frame_tree_node();
+  if (AuthenticatorEnvironmentImpl::GetInstance()->GetVirtualFactoryFor(
+          frame_tree_node)) {
+    return std::make_unique<VirtualAuthenticatorRequestDelegate>(
+        frame_tree_node);
+  }
+  return GetContentClient()->browser()->GetWebAuthenticationRequestDelegate(
+      render_frame_host_, relying_party_id_);
 }
 
 void AuthenticatorCommon::StartMakeCredentialRequest() {
@@ -712,7 +719,7 @@ void AuthenticatorCommon::MakeCredential(
   caller_origin_ = caller_origin;
   relying_party_id_ = options->relying_party.id;
 
-  UpdateRequestDelegate();
+  request_delegate_ = CreateRequestDelegate(relying_party_id_);
   if (!request_delegate_) {
     InvokeCallbackAndCleanup(std::move(callback),
                              blink::mojom::AuthenticatorStatus::PENDING_REQUEST,
@@ -894,7 +901,7 @@ void AuthenticatorCommon::GetAssertion(
   caller_origin_ = caller_origin;
   relying_party_id_ = options->relying_party_id;
 
-  UpdateRequestDelegate();
+  request_delegate_ = CreateRequestDelegate(relying_party_id_);
   if (!request_delegate_) {
     InvokeCallbackAndCleanup(std::move(callback),
                              blink::mojom::AuthenticatorStatus::PENDING_REQUEST,
@@ -968,13 +975,10 @@ void AuthenticatorCommon::IsUserVerifyingPlatformAuthenticatorAvailable(
   // Use |request_delegate_| if a request is currently in progress; or create a
   // temporary request delegate otherwise.
   //
-  // Note that |GetWebAuthenticationRequestDelegate| may return nullptr if
-  // there is an active |request_delegate_| already.
+  // Note that |CreateRequestDelegate| may return nullptr if there is an active
+  // |request_delegate_| already.
   std::unique_ptr<AuthenticatorRequestClientDelegate> maybe_request_delegate =
-      request_delegate_
-          ? nullptr
-          : GetContentClient()->browser()->GetWebAuthenticationRequestDelegate(
-                render_frame_host_, relying_party_id);
+      request_delegate_ ? nullptr : CreateRequestDelegate(relying_party_id);
   AuthenticatorRequestClientDelegate* request_delegate_ptr =
       request_delegate_ ? request_delegate_.get()
                         : maybe_request_delegate.get();

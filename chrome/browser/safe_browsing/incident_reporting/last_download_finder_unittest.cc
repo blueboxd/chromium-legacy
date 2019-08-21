@@ -286,7 +286,7 @@ class LastDownloadFinderTest : public testing::Test {
     callback.Run(std::unique_ptr<ClientIncidentReport_DownloadDetails>());
   }
 
-  content::TestBrowserThreadBundle browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   int profile_number_;
 

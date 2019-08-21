@@ -77,7 +77,7 @@ scoped_refptr<Extension> LoadExtension(const std::string& filename,
 class UserScriptListenerTest : public testing::Test {
  public:
   UserScriptListenerTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         profile_manager_(
             new TestingProfileManager(TestingBrowserProcess::GetGlobal())) {}
 
@@ -134,7 +134,7 @@ class UserScriptListenerTest : public testing::Test {
     return throttle;
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   content::RenderViewHostTestEnabler rvh_test_enabler_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   UserScriptListener listener_;

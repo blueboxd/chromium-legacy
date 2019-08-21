@@ -27,6 +27,7 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -177,23 +178,37 @@ class TabListRecyclerView extends RecyclerView {
     }
 
     void setShadowVisibility(boolean shouldShowShadow) {
-        if (!(getParent() instanceof FrameLayout)) return;
-
         if (mShadowImageView == null) {
             Context context = getContext();
             mShadowImageView = new ImageView(context);
             mShadowImageView.setImageDrawable(AppCompatResources.getDrawable(
                     context, org.chromium.chrome.R.drawable.modern_toolbar_shadow));
-            Resources res = context.getResources();
-            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-                    LayoutParams.MATCH_PARENT,
-                    res.getDimensionPixelSize(org.chromium.chrome.R.dimen.toolbar_shadow_height),
-                    Gravity.TOP);
-            params.topMargin = mShadowTopMargin;
             mShadowImageView.setScaleType(ImageView.ScaleType.FIT_XY);
-            mShadowImageView.setLayoutParams(params);
-            FrameLayout parent = (FrameLayout) getParent();
-            parent.addView(mShadowImageView);
+            Resources res = context.getResources();
+            if (getParent() instanceof FrameLayout) {
+                // Add shadow for grid tab switcher.
+                FrameLayout.LayoutParams params =
+                        new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT,
+                                res.getDimensionPixelSize(
+                                        org.chromium.chrome.R.dimen.toolbar_shadow_height),
+                                Gravity.TOP);
+                params.topMargin = mShadowTopMargin;
+                mShadowImageView.setLayoutParams(params);
+                FrameLayout parent = (FrameLayout) getParent();
+                parent.addView(mShadowImageView);
+            } else if (getParent() instanceof RelativeLayout) {
+                // Add shadow for tab grid dialog.
+                RelativeLayout parent = (RelativeLayout) getParent();
+                View toolbar = parent.getChildAt(0);
+                if (!(toolbar instanceof TabGroupUiToolbarView)) return;
+
+                RelativeLayout.LayoutParams params =
+                        new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                                res.getDimensionPixelSize(
+                                        org.chromium.chrome.R.dimen.toolbar_shadow_height));
+                params.addRule(RelativeLayout.BELOW, toolbar.getId());
+                parent.addView(mShadowImageView, params);
+            }
         }
 
         if (shouldShowShadow && mShadowImageView.getVisibility() != VISIBLE) {

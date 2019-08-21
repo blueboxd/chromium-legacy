@@ -564,7 +564,8 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
         AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
             alternative_service1, expiration, {version_}));
     http_server_properties_.SetAlternativeServices(
-        url::SchemeHostPort(url_), alternative_service_info_vector);
+        url::SchemeHostPort(url_), NetworkIsolationKey(),
+        alternative_service_info_vector);
 
     HostPortPair host_port_pair2(kServer2HostName, kDefaultServerPort);
     url::SchemeHostPort server2("https", kServer2HostName, kDefaultServerPort);
@@ -576,7 +577,7 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
             alternative_service2, expiration, {version_}));
 
     http_server_properties_.SetAlternativeServices(
-        server2, alternative_service_info_vector2);
+        server2, NetworkIsolationKey(), alternative_service_info_vector2);
     // Verify that the properties of both QUIC servers are stored in the
     // HTTP properties map.
     EXPECT_EQ(2U, http_server_properties_.server_info_map_for_testing().size());

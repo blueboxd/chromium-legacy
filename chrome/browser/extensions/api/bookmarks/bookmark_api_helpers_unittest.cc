@@ -65,7 +65,7 @@ class ExtensionBookmarksTest : public testing::Test {
         folder_, 0, base::ASCIIToUTF16("CNet"), GURL("http://cnet.com"));
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   bookmarks::ManagedBookmarkService* managed_;
   BookmarkModel* model_;

@@ -23,7 +23,7 @@ class CookieSettingsFactoryTest : public testing::Test {
         kHttpsSite("https://example.com") {}
 
  protected:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   content_settings::CookieSettings* cookie_settings_;
   const GURL kBlockedSite;

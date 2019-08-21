@@ -360,7 +360,7 @@ class LockScreenValueStoreMigratorImplTest : public testing::Test {
     extension_waiters_[extension_id].Quit();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   std::unique_ptr<content::TestBrowserContext> context_;

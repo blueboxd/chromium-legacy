@@ -54,7 +54,7 @@ class SafeBrowsingPrefsTest : public ::testing::Test {
   TestingPrefServiceSimple prefs_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 // TODO(crbug.com/881476) disabled for flaky crashes.

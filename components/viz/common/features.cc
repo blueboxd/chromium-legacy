@@ -67,10 +67,6 @@ bool IsVizHitTestingDebugEnabled() {
       switches::kEnableVizHitTestDebug);
 }
 
-bool IsVizHitTestingDrawQuadEnabled() {
-  return !IsVizHitTestingSurfaceLayerEnabled();
-}
-
 // VizHitTestSurfaceLayer is enabled when this feature is explicitly enabled on
 // chrome://flags, or when it is enabled by finch and chrome://flags does not
 // conflict.

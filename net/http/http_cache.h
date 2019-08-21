@@ -50,6 +50,7 @@ class ApplicationStatusListener;
 namespace disk_cache {
 class Backend;
 class Entry;
+class EntryResult;
 }  // namespace disk_cache
 
 namespace net {
@@ -617,6 +618,11 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   static void OnPendingOpComplete(const base::WeakPtr<HttpCache>& cache,
                                   PendingOp* pending_op,
                                   int result);
+
+  // Variant for Open/Create method family, which has a different signature.
+  static void OnPendingCreationOpComplete(const base::WeakPtr<HttpCache>& cache,
+                                          PendingOp* pending_op,
+                                          disk_cache::EntryResult result);
 
   // Processes the backend creation notification.
   void OnBackendCreated(int result, PendingOp* pending_op);

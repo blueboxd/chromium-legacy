@@ -120,7 +120,7 @@ class ResponsivenessWatcherTest : public testing::Test {
     watcher_ = scoped_refptr<FakeWatcher>(
         new FakeWatcher(/*register_message_loop_observer=*/false));
     watcher_->SetUp();
-    test_browser_thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void TearDown() override {
@@ -131,7 +131,7 @@ class ResponsivenessWatcherTest : public testing::Test {
  protected:
   // This member sets up BrowserThread::IO and BrowserThread::UI. It must be the
   // first member, as other members may depend on these abstractions.
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   scoped_refptr<FakeWatcher> watcher_;
 };
@@ -203,8 +203,7 @@ TEST_F(ResponsivenessWatcherTest, NativeEvents) {
 class ResponsivenessWatcherRealIOThreadTest : public testing::Test {
  public:
   ResponsivenessWatcherRealIOThreadTest()
-      : test_browser_thread_bundle_(
-            content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
+      : task_environment_(content::BrowserTaskEnvironment::REAL_IO_THREAD) {}
 
   void SetUp() override {
     // Watcher's constructor posts a task to IO thread. We need to let those
@@ -212,7 +211,7 @@ class ResponsivenessWatcherRealIOThreadTest : public testing::Test {
     watcher_ = scoped_refptr<FakeWatcher>(
         new FakeWatcher(/*register_message_loop_observer=*/true));
     watcher_->SetUp();
-    test_browser_thread_bundle_.RunIOThreadUntilIdle();
+    task_environment_.RunIOThreadUntilIdle();
   }
 
   void TearDown() override {
@@ -221,14 +220,14 @@ class ResponsivenessWatcherRealIOThreadTest : public testing::Test {
 
     // Destroy a task onto the IO thread, which posts back to the UI thread
     // to complete destruction.
-    test_browser_thread_bundle_.RunIOThreadUntilIdle();
-    test_browser_thread_bundle_.RunUntilIdle();
+    task_environment_.RunIOThreadUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
  protected:
   // This member sets up BrowserThread::IO and BrowserThread::UI. It must be the
   // first member, as other members may depend on these abstractions.
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   scoped_refptr<FakeWatcher> watcher_;
 };

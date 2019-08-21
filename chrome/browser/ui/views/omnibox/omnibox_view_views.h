@@ -272,7 +272,7 @@ class OmniboxViewViews : public OmniboxView,
                       const ui::KeyEvent& key_event) override;
   void OnBeforeUserAction(views::Textfield* sender) override;
   void OnAfterUserAction(views::Textfield* sender) override;
-  void OnAfterCutOrCopy(ui::ClipboardType clipboard_type) override;
+  void OnAfterCutOrCopy(ui::ClipboardBuffer clipboard_buffer) override;
   void OnWriteDragData(ui::OSExchangeData* data) override;
   void OnGetDragOperationsForTextfield(int* drag_operations) override;
   void AppendDropFormats(

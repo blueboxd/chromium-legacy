@@ -742,10 +742,10 @@ class HashTable final {
   }
 
   HashTable(const HashTable&);
-  HashTable(HashTable&&);
+  HashTable(HashTable&&) noexcept;
   void swap(HashTable&);
   HashTable& operator=(const HashTable&);
-  HashTable& operator=(HashTable&&);
+  HashTable& operator=(HashTable&&) noexcept;
 
   // When the hash table is empty, just return the same iterator for end as
   // for begin.  This is more efficient because we don't have to skip all the
@@ -1924,7 +1924,7 @@ template <typename Key,
           typename KeyTraits,
           typename Allocator>
 HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
-    HashTable(HashTable&& other)
+    HashTable(HashTable&& other) noexcept
     : table_(nullptr),
       table_size_(0),
       key_count_(0),
@@ -2003,7 +2003,7 @@ template <typename Key,
           typename Allocator>
 HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>&
 HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
-operator=(HashTable&& other) {
+operator=(HashTable&& other) noexcept {
   swap(other);
   return *this;
 }

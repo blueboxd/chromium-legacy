@@ -70,7 +70,7 @@ class LRURendererCacheTest : public testing::Test {
     lru_cache_->SetFactoryForTesting(&factory_);
   }
 
-  content::TestBrowserThreadBundle threads_;
+  content::BrowserTaskEnvironment threads_;
   content::TestBrowserContext browser_context_;
   MockFactory factory_;
   std::unique_ptr<LRURendererCache> lru_cache_;

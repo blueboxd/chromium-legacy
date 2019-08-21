@@ -142,7 +142,7 @@ class ManagePasswordsBubbleModelTest : public ::testing::Test {
   std::vector<std::unique_ptr<autofill::PasswordForm>> GetCurrentForms() const;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   content::RenderViewHostTestEnabler rvh_enabler_;
   TestingProfile profile_;
   std::unique_ptr<content::WebContents> test_web_contents_;

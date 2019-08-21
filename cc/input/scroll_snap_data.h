@@ -30,8 +30,6 @@ enum class SnapAxis : unsigned {
 enum class SearchAxis : unsigned { kX, kY };
 
 // See https://www.w3.org/TR/css-scroll-snap-1/#snap-strictness
-// TODO(sunyunjia): Add kNone for SnapStrictness to match the spec.
-// crbug.com/791663
 enum class SnapStrictness : unsigned { kProximity, kMandatory };
 
 // See https://www.w3.org/TR/css-scroll-snap-1/#scroll-snap-align
@@ -55,9 +53,7 @@ struct ScrollSnapType {
     return !(*this == other);
   }
 
-  // Whether the scroll-snap-type is none or the snap-strictness field has the
-  // value None.
-  // TODO(sunyunjia): Consider combining is_none with SnapStrictness.
+  // Represents whether the scroll-snap-type is none.
   bool is_none;
 
   SnapAxis axis;

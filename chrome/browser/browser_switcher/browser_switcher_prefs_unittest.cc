@@ -77,7 +77,7 @@ class BrowserSwitcherPrefsTest : public testing::Test {
   BrowserSwitcherPrefs* prefs() { return prefs_.get(); }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   sync_preferences::TestingPrefServiceSyncable prefs_backend_;
 

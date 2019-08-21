@@ -10,36 +10,32 @@
       protocol: "ctap2",
       transport: "usb",
       hasResidentKey: true,
-      hasUserVerification: false,
+      hasUserVerification: true,
     },
   })).result.authenticatorId;
 
-  // TODO(nsatragno): content_shell does not support registering resident
-  // credentials through navigator.credentials.create(). Update this test to use
-  // registerCredential() once that feature is supported.
-  const userHandle = btoa("nina");
-  const credentialId = btoa("cred-1");
-  await dp.WebAuthn.addCredential({
-    authenticatorId,
-    credential: {
-      credentialId: credentialId,
-      rpId: "devtools.test",
-      privateKey: await session.evaluateAsync("generateBase64Key()"),
-      signCount: 1,
-      isResidentCredential: true,
-      userHandle: userHandle,
-    }
-  });
+  // Register a resident credential.
+  let result = (await session.evaluateAsync(`registerCredential({
+    authenticatorSelection: {
+      requireResidentKey: true,
+    },
+  })`));
+  testRunner.log(result.status);
+
+  // Convert the credential ID from base64url to base64.
+  let credentialId = result.credential.id.replace(/-/g, "+").replace(/_/g, "/");
+  credentialId += "=".repeat(4 - credentialId.length % 4);
 
   // Get the registered credential.
   let credential =
       (await dp.WebAuthn.getCredential({authenticatorId, credentialId})).result.credential;
 
-  testRunner.log("credentialId: " + atob(credential.credentialId));
+  testRunner.log("credentialId: " +
+      (credential.credentialId == credentialId ? "matches" : "does not match"));
   testRunner.log("isResidentCredential: " + credential.isResidentCredential);
   testRunner.log("rpId: " + credential.rpId);
   testRunner.log("signCount: " + credential.signCount);
-  testRunner.log("userHandle: " + atob(credential.userHandle));
+  testRunner.log("userHandle: " + credential.userHandle);
 
   // We should be able to parse the private key.
   let keyData =

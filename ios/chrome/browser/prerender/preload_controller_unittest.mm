@@ -103,7 +103,7 @@ class PreloadControllerTest : public PlatformTest {
         net::NetworkChangeNotifier::CONNECTION_3G);
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<TestNetworkChangeNotifier> network_change_notifier_;
   std::unique_ptr<net::TestURLFetcherFactory> test_url_fetcher_factory_;

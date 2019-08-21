@@ -43,7 +43,7 @@ class FileSystemProviderQueueTest : public testing::Test {
   FileSystemProviderQueueTest() {}
   ~FileSystemProviderQueueTest() override {}
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(FileSystemProviderQueueTest, NewToken) {

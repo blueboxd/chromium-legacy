@@ -117,7 +117,7 @@ class UpdateScreenUnitTest : public testing::Test {
   }
 
   // Test versions of core browser infrastructure.
-  content::TestBrowserThreadBundle threads_;
+  content::BrowserTaskEnvironment threads_;
   ScopedTestingLocalState local_state_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateScreenUnitTest);

@@ -1244,31 +1244,29 @@ int32_t BackendImpl::GetEntryCount() const {
   return not_deleted;
 }
 
-net::Error BackendImpl::OpenOrCreateEntry(const std::string& key,
-                                          net::RequestPriority request_priority,
-                                          EntryWithOpened* entry_struct,
-                                          CompletionOnceCallback callback) {
+EntryResult BackendImpl::OpenOrCreateEntry(
+    const std::string& key,
+    net::RequestPriority request_priority,
+    EntryResultCallback callback) {
   DCHECK(!callback.is_null());
-  background_queue_.OpenOrCreateEntry(key, entry_struct, std::move(callback));
-  return net::ERR_IO_PENDING;
+  background_queue_.OpenOrCreateEntry(key, std::move(callback));
+  return EntryResult::MakeError(net::ERR_IO_PENDING);
 }
 
-net::Error BackendImpl::OpenEntry(const std::string& key,
-                                  net::RequestPriority request_priority,
-                                  Entry** entry,
-                                  CompletionOnceCallback callback) {
+EntryResult BackendImpl::OpenEntry(const std::string& key,
+                                   net::RequestPriority request_priority,
+                                   EntryResultCallback callback) {
   DCHECK(!callback.is_null());
-  background_queue_.OpenEntry(key, entry, std::move(callback));
-  return net::ERR_IO_PENDING;
+  background_queue_.OpenEntry(key, std::move(callback));
+  return EntryResult::MakeError(net::ERR_IO_PENDING);
 }
 
-net::Error BackendImpl::CreateEntry(const std::string& key,
-                                    net::RequestPriority request_priority,
-                                    Entry** entry,
-                                    CompletionOnceCallback callback) {
+EntryResult BackendImpl::CreateEntry(const std::string& key,
+                                     net::RequestPriority request_priority,
+                                     EntryResultCallback callback) {
   DCHECK(!callback.is_null());
-  background_queue_.CreateEntry(key, entry, std::move(callback));
-  return net::ERR_IO_PENDING;
+  background_queue_.CreateEntry(key, std::move(callback));
+  return EntryResult::MakeError(net::ERR_IO_PENDING);
 }
 
 net::Error BackendImpl::DoomEntry(const std::string& key,
@@ -1324,13 +1322,11 @@ class BackendImpl::IteratorImpl : public Backend::Iterator {
       background_queue_->EndEnumeration(std::move(iterator_));
   }
 
-  net::Error OpenNextEntry(Entry** next_entry,
-                           net::CompletionOnceCallback callback) override {
+  EntryResult OpenNextEntry(EntryResultCallback callback) override {
     if (!background_queue_)
-      return net::ERR_FAILED;
-    background_queue_->OpenNextEntry(iterator_.get(), next_entry,
-                                     std::move(callback));
-    return net::ERR_IO_PENDING;
+      return EntryResult::MakeError(net::ERR_FAILED);
+    background_queue_->OpenNextEntry(iterator_.get(), std::move(callback));
+    return EntryResult::MakeError(net::ERR_IO_PENDING);
   }
 
  private:

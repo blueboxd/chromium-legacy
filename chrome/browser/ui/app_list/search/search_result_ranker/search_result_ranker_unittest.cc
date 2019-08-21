@@ -87,7 +87,7 @@ MATCHER_P2(HasIdScore, id, score, "") {
 class SearchResultRankerTest : public testing::Test {
  public:
   SearchResultRankerTest()
-      : thread_bundle_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
   ~SearchResultRankerTest() override {}
 
   // testing::Test overrides:
@@ -137,9 +137,9 @@ class SearchResultRankerTest : public testing::Test {
 
   history::HistoryService* history_service() { return history_service_.get(); }
 
-  void Wait() { thread_bundle_.RunUntilIdle(); }
+  void Wait() { task_environment_.RunUntilIdle(); }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   // This is used only to make the ownership clear for the TestSearchResult
   // objects that the return value of MakeSearchResults() contains raw pointers

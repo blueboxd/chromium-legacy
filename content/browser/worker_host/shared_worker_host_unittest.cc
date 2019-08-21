@@ -135,7 +135,7 @@ class SharedWorkerHostTest : public testing::Test {
   }
 
  protected:
-  TestBrowserThreadBundle test_browser_thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   TestBrowserContext browser_context_;
   std::unique_ptr<network::mojom::URLLoaderFactory>
       default_mock_url_loader_factory_;

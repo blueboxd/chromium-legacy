@@ -333,6 +333,7 @@
 <translation id="6043212731627905357">Denne skjermen liker ikke <ph name="DEVICE_TYPE" /> (skjermen støttes ikke).</translation>
 <translation id="6043994281159824495">Logg av nå</translation>
 <translation id="6047696787498798094">Skjermdelingen stopper hvis du bytter til en annen bruker.</translation>
+<translation id="6054305421211936131">Logg på med smartkort</translation>
 <translation id="6062360702481658777">Du logges automatisk av om <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="6064337552080329342">Beklager, men passordet ditt kunne ikke bekreftes. Prøv på nytt.</translation>
 <translation id="607652042414456612">Datamaskinen din kan registreres av Bluetooth-enheter i nærheten, og vises med navnet «<ph name="NAME" />» og adressen <ph name="ADDRESS" /></translation>
@@ -360,6 +361,7 @@
 <translation id="6459472438155181876">Utvider skjermen til <ph name="DISPLAY_NAME" /></translation>
 <translation id="6482559668224714696">Lupe for hele skjermen</translation>
 <translation id="6490471652906364588">USB-C-enhet (porten på høyre side)</translation>
+<translation id="649452524636452238">PIN-koden til smartkortet</translation>
 <translation id="6501401484702599040">Caster skjermen til <ph name="RECEIVER_NAME" /></translation>
 <translation id="6521655319214113338">Håndskrift-inndata</translation>
 <translation id="6528179044667508675">Ikke forstyrr</translation>
@@ -389,6 +391,7 @@
 <translation id="6857811139397017780">Aktiver <ph name="NETWORKSERVICE" /></translation>
 <translation id="6910714959251846841">Denne oppdateringen krever en powerwash av enheten din. Finn ut mer om den nyeste <ph name="SYSTEM_APP_NAME" />-oppdateringen.</translation>
 <translation id="6911468394164995108">Koble til annet</translation>
+<translation id="6919251195245069855">Smartkortet ditt ble ikke gjenkjent. Prøv på nytt.</translation>
 <translation id="6972754398087986839">Kom i gang</translation>
 <translation id="6981982820502123353">Tilgjengelighet</translation>
 <translation id="698231206551913481">Alle filer og lokale data som er tilknyttet denne brukeren, slettes permanent når brukeren fjernes.</translation>

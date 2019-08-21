@@ -28,7 +28,7 @@ class TabManagerDelegateTest : public testing::Test {
   ~TabManagerDelegateTest() override {}
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 constexpr bool kIsFocused = true;

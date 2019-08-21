@@ -15,17 +15,9 @@ namespace blink {
 // static
 unsigned DocumentStyleEnvironmentVariables::GenerateHashFromName(
     const AtomicString& name) {
-  StringHasher hasher;
-
-  if (name.Is8Bit()) {
-    String name_str = String(name);
-    name_str.Ensure16Bit();
-    hasher.AddCharacters(name_str.Characters16(), name_str.length());
-  } else {
-    hasher.AddCharacters(name.Characters16(), name.length());
-  }
-
-  return hasher.GetHash();
+  if (name.Is8Bit())
+    return StringHasher::ComputeHash(name.Characters8(), name.length());
+  return StringHasher::ComputeHash(name.Characters16(), name.length());
 }
 
 // static

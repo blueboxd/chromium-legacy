@@ -132,7 +132,7 @@ class TabMenuBridgeTest : public ::testing::Test {
 
   NSMenuItem* SeparatorItem() { return [NSMenuItem separatorItem]; }
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<content::RenderViewHostTestEnabler> rvh_test_enabler_;

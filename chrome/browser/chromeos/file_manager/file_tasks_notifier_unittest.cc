@@ -173,7 +173,7 @@ class FileTasksNotifierTest : public testing::Test {
   const base::FilePath& my_files() { return my_files_; }
 
  private:
-  content::TestBrowserThreadBundle threads_;
+  content::BrowserTaskEnvironment threads_;
   FakeDriveFs fake_drivefs_;
   mojo::Binding<drivefs::mojom::DriveFs> drivefs_binding_;
   std::unique_ptr<TestingProfile> profile_;

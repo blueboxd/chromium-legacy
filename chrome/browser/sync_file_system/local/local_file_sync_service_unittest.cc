@@ -108,7 +108,7 @@ class LocalFileSyncServiceTest
       public LocalFileSyncService::Observer {
  protected:
   LocalFileSyncServiceTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD),
+      : task_environment_(content::BrowserTaskEnvironment::REAL_IO_THREAD),
         num_changes_(0) {}
 
   void SetUp() override {
@@ -197,7 +197,7 @@ class LocalFileSyncServiceTest
     return file_system_->backend()->change_tracker()->num_changes();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<leveldb::Env> in_memory_env_;

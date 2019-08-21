@@ -43,7 +43,7 @@ void QueueReport(FeedbackUploader* uploader, const std::string& report_data) {
 class FeedbackUploaderDispatchTest : public ::testing::Test {
  protected:
   FeedbackUploaderDispatchTest()
-      : browser_thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         shared_url_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)) {}
@@ -75,7 +75,7 @@ class FeedbackUploaderDispatchTest : public ::testing::Test {
   content::BrowserContext* context() { return &context_; }
 
  private:
-  content::TestBrowserThreadBundle browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   content::TestBrowserContext context_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;

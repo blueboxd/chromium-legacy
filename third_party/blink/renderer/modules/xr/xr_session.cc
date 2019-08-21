@@ -61,6 +61,8 @@ const char kNoSpaceSpecified[] = "No XRSpace specified.";
 
 const char kHitTestNotSupported[] = "Device does not support hit-test!";
 
+const char kAnchorsNotSupported[] = "Device does not support anchors!";
+
 const char kDeviceDisconnected[] = "The XR device has been disconnected.";
 
 const double kDegToRad = M_PI / 180.0;
@@ -353,6 +355,17 @@ ScriptPromise XRSession::requestReferenceSpace(ScriptState* script_state,
                             requested_type);
 
   return promise;
+}
+
+ScriptPromise XRSession::createAnchor(ScriptState* script_state,
+                                      XRPose* pose,
+                                      XRSpace* space) {
+  // TODO(https://crbug.com/992033): Implement anchor creation from a session
+  // instead of rejecting the promise.
+  return ScriptPromise::RejectWithDOMException(
+      script_state,
+      MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
+                                         kAnchorsNotSupported));
 }
 
 int XRSession::requestAnimationFrame(V8XRFrameRequestCallback* callback) {

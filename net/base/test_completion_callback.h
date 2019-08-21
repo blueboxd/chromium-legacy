@@ -60,6 +60,11 @@ class TestCompletionCallbackBaseInternal {
 };
 
 template <typename R>
+struct NetErrorIsPendingHelper {
+  bool operator()(R status) const { return status == ERR_IO_PENDING; }
+};
+
+template <typename R, typename IsPendingHelper = NetErrorIsPendingHelper<R>>
 class TestCompletionCallbackTemplate
     : public TestCompletionCallbackBaseInternal {
  public:
@@ -67,12 +72,13 @@ class TestCompletionCallbackTemplate
 
   R WaitForResult() {
     TestCompletionCallbackBaseInternal::WaitForResult();
-    return result_;
+    return std::move(result_);
   }
 
   R GetResult(R result) {
-    if (ERR_IO_PENDING != result)
-      return result;
+    IsPendingHelper check_pending;
+    if (!check_pending(result))
+      return std::move(result);
     return WaitForResult();
   }
 
@@ -81,7 +87,7 @@ class TestCompletionCallbackTemplate
 
   // Override this method to gain control as the callback is running.
   virtual void SetResult(R result) {
-    result_ = result;
+    result_ = std::move(result);
     DidSetResult();
   }
 

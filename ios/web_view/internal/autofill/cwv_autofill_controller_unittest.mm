@@ -56,7 +56,7 @@ NSString* const kTestFieldValue = @"FieldValue";
 class CWVAutofillControllerTest : public TestWithLocaleAndResources {
  protected:
   CWVAutofillControllerTest()
-      : web_thread_bundle_(web::TestWebThreadBundle::IO_MAINLOOP),
+      : task_environment_(web::WebTaskEnvironment::IO_MAINLOOP),
         browser_state_(/*off_the_record=*/false) {
     web::SetWebClient(&web_client_);
 
@@ -93,7 +93,7 @@ class CWVAutofillControllerTest : public TestWithLocaleAndResources {
   }
 
   web::WebClient web_client_;
-  web::TestWebThreadBundle web_thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   ios_web_view::WebViewBrowserState browser_state_;
   web::TestWebState test_web_state_;
   web::FakeWebFramesManager* fake_web_frames_manager_;

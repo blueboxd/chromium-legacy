@@ -2338,6 +2338,8 @@ Unknown properties are collapsed to zero. -->
   <int value="26" label="Omnibox, Search History"/>
   <int value="27" label="Omnibox, Search Suggest"/>
   <int value="28" label="Omnibox, Personalzied Suggestion"/>
+  <int value="29" label="Zero State Local File"/>
+  <int value="30" label="Drive Quick Access"/>
 </enum>
 
 <enum name="AppListSearchResultDisplayType">
@@ -7218,6 +7220,7 @@ Unknown properties are collapsed to zero. -->
   <int value="5" label="Shared Image"/>
   <int value="6" label="Direct Gpu Memory Buffer"/>
   <int value="7" label="Passthrough"/>
+  <int value="8" label="Swap Chain"/>
 </enum>
 
 <enum name="CanvasResourceProviderUsage">
@@ -17770,10 +17773,11 @@ Called by update_net_error_codes.py.-->
   <int value="575" label="BuiltinCertificateVerifierEnabled"/>
   <int value="576" label="CrostiniRootAccessAllowed"/>
   <int value="577" label="VmManagementCliAllowed"/>
-  <int value="578" label="CheckURLsInRealTime"/>
+  <int value="578" label="SafeBrowsingRealTimeLookupEnabled"/>
   <int value="579" label="CACertificateManagementAllowed"/>
   <int value="580" label="PasswordLeakDetectionEnabled"/>
   <int value="581" label="LockScreenMediaPlaybackEnabled"/>
+  <int value="582" label="DnsOverHttpsMode"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -24332,6 +24336,9 @@ Called by update_net_error_codes.py.-->
   <int value="3001" label="XMLHttpRequestSynchronousInCrossOriginSubframe"/>
   <int value="3002" label="XMLHttpRequestSynchronousInSameOriginSubframe"/>
   <int value="3003" label="XMLHttpRequestSynchronousInWorker"/>
+  <int value="3004" label="PerformanceObserverBufferedFlag"/>
+  <int value="3005" label="WakeLockAcquireScreenLock"/>
+  <int value="3006" label="WakeLockAcquireSystemLock"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -35058,6 +35065,7 @@ from previous Chrome versions.
   <int value="-989671895" label="OfflineIndicatorAlwaysHttpProbe:enabled"/>
   <int value="-987470173" label="ClickToCallOpenDialerDirectly:disabled"/>
   <int value="-984052166" label="DoodlesOnLocalNtp:enabled"/>
+  <int value="-983342281" label="TabSwitcherLongpressMenu:disabled"/>
   <int value="-981237342" label="SyncUSSAutofillWalletMetadata:disabled"/>
   <int value="-980260493" label="NTPSnippets:disabled"/>
   <int value="-979313250" label="enable-google-branded-context-menu"/>
@@ -35787,6 +35795,7 @@ from previous Chrome versions.
   <int value="36422284"
       label="AutofillSaveCardDialogUnlabeledExpirationDate:enabled"/>
   <int value="37024318" label="disable-affiliation-based-matching"/>
+  <int value="38904620" label="TabSwitcherLongpressMenu:enabled"/>
   <int value="42098736" label="TranslateAndroidManualTrigger:disabled"/>
   <int value="42844603" label="AndroidSurfaceControl:disabled"/>
   <int value="43951968" label="DesktopPWAsCustomTabUI:enabled"/>
@@ -43262,6 +43271,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="Chrome process launch failed"/>
 </enum>
 
+<enum name="NotificationSchedulerUserActionType">
+  <int value="0" label="Click"/>
+  <int value="1" label="Button Click"/>
+  <int value="2" label="Dismiss"/>
+</enum>
+
 <enum name="NotifierType">
   <int value="0" label="Application"/>
   <int value="1" label="Arc++"/>
@@ -47845,7 +47860,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="PasswordManager"/>
   <int value="4" label="Proxy"/>
   <int value="5" label="Extensions"/>
-  <int value="6" label="RestoreOnStartupGroup"/>
+  <int value="6" label="RestoreOnStartup"/>
   <int value="7" label="DefaultSearchProvider"/>
   <int value="8" label="ImageSettings"/>
   <int value="9" label="CookiesSettings"/>
@@ -47869,10 +47884,10 @@ Called by update_net_trust_anchors.py.-->
   <int value="27" label="ChromeReportingExtension"/>
   <int value="28" label="BrowserSwitcher"/>
   <int value="29" label="PluginVm"/>
-  <int value="30" label="DeviceSAML"/>
-  <int value="31" label="DeviceLoginScreenOrigins"/>
+  <int value="30" label="SAML"/>
+  <int value="31" label="LoginScreenOrigins"/>
   <int value="32" label="UserAndDeviceReporting"/>
-  <int value="33" label="DeviceWiFi"/>
+  <int value="33" label="WiFi"/>
   <int value="34" label="Kiosk"/>
   <int value="35" label="DateAndTime"/>
   <int value="36" label="Display"/>
@@ -53322,6 +53337,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Network error"/>
   <int value="4" label="Server error"/>
   <int value="5" label="Failed to parse response"/>
+  <int value="6" label="VAPID key is invalid"/>
+  <int value="7" label="Device is no longer registered"/>
+  <int value="8" label="Payload is too large"/>
 </enum>
 
 <enum name="ServiceProcessEventType">
@@ -54048,6 +54066,15 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Ack"/>
   <int value="3" label="ClickToCall"/>
   <int value="4" label="SharedClipboard"/>
+</enum>
+
+<enum name="SharingSendMessageResult">
+  <int value="0" label="Successful"/>
+  <int value="1" label="Device is not found"/>
+  <int value="2" label="Network error"/>
+  <int value="3" label="Payload is too large"/>
+  <int value="4" label="Timeout waiting for ack"/>
+  <int value="5" label="Other internal error"/>
 </enum>
 
 <enum name="SharingVapidKeyCreationResult">

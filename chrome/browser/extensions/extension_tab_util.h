@@ -45,7 +45,8 @@ class ExtensionTabUtil {
   };
 
   enum ScrubTabBehavior {
-    kScrubTab,
+    kScrubTabFully,
+    kScrubTabUrlToOrigin,
     kDontScrubTab,
   };
 
@@ -67,9 +68,8 @@ class ExtensionTabUtil {
    public:
     virtual ~Delegate() {}
     // Platform specific scrubbing of tab info for |extension|.
-    virtual void ScrubTabForExtension(const Extension* extension,
-                                      content::WebContents* contents,
-                                      api::tabs::Tab* tab) = 0;
+    virtual ExtensionTabUtil::ScrubTabBehavior GetScrubTabBehavior(
+        const Extension* extension) = 0;
   };
 
   // Opens a new tab given an extension function |function| and creation
@@ -137,12 +137,23 @@ class ExtensionTabUtil {
   // startup.
   static void SetPlatformDelegate(std::unique_ptr<Delegate> delegate);
 
+  // Gets the level of scrubbing of tab data that needs to happen for a given
+  // extension and web contents. This is the preferred way to get
+  // ScrubTabBehavior.
+  static ScrubTabBehavior GetScrubTabBehavior(const Extension* extension,
+                                              content::WebContents* contents);
+  // Only use this if there is no access to a specific WebContents, such as when
+  // the tab has been closed and there is no active WebContents anymore.
+  static ScrubTabBehavior GetScrubTabBehavior(const Extension* extension,
+                                              const GURL& url);
+
   // Removes any privacy-sensitive fields from a Tab object if appropriate,
   // given the permissions of the extension and the tab in question.  The
   // tab object is modified in place.
   static void ScrubTabForExtension(const Extension* extension,
                                    content::WebContents* contents,
-                                   api::tabs::Tab* tab);
+                                   api::tabs::Tab* tab,
+                                   ScrubTabBehavior scrub_tab_behavior);
 
   // Gets the |tab_strip_model| and |tab_index| for the given |web_contents|.
   static bool GetTabStripModel(const content::WebContents* web_contents,

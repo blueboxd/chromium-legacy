@@ -77,7 +77,7 @@ class NewTabPageTabHelperTest : public PlatformTest {
   }
 
   id delegate_;
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<WebStateList> web_state_list_;

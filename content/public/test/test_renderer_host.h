@@ -164,11 +164,11 @@ class RenderViewHostTestEnabler {
 class RenderViewHostTestHarness : public testing::Test {
  public:
   // Constructs a RenderViewHostTestHarness which uses |args| to initialize its
-  // TestBrowserThreadBundle.
+  // BrowserTaskEnvironment.
   template <typename... Args>
   RenderViewHostTestHarness(Args... args)
       : RenderViewHostTestHarness(
-            std::make_unique<TestBrowserThreadBundle>(args...)) {}
+            std::make_unique<BrowserTaskEnvironment>(args...)) {}
 
   ~RenderViewHostTestHarness() override;
 
@@ -241,7 +241,7 @@ class RenderViewHostTestHarness : public testing::Test {
   // context.
   virtual BrowserContext* GetBrowserContext();
 
-  TestBrowserThreadBundle* thread_bundle() { return thread_bundle_.get(); }
+  BrowserTaskEnvironment* task_environment() { return task_environment_.get(); }
 
 #if defined(USE_AURA)
   aura::Window* root_window() { return aura_test_helper_->root_window(); }
@@ -254,9 +254,9 @@ class RenderViewHostTestHarness : public testing::Test {
   // The template constructor has to be in the header but it delegates to this
   // constructor to initialize all other members out-of-line.
   explicit RenderViewHostTestHarness(
-      std::unique_ptr<TestBrowserThreadBundle> thread_bundle);
+      std::unique_ptr<BrowserTaskEnvironment> task_environment);
 
-  std::unique_ptr<TestBrowserThreadBundle> thread_bundle_;
+  std::unique_ptr<BrowserTaskEnvironment> task_environment_;
 
   std::unique_ptr<ContentBrowserSanityChecker> sanity_checker_;
 

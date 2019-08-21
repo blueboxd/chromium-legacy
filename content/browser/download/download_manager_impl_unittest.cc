@@ -546,7 +546,7 @@ class DownloadManagerTest : public testing::Test {
   std::vector<GURL> download_urls_;
 
  private:
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<MockDownloadManagerDelegate> mock_download_manager_delegate_;
   std::unique_ptr<MockDownloadManagerObserver> observer_;
   std::unique_ptr<TestBrowserContext> browser_context_;

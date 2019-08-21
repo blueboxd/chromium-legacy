@@ -6,9 +6,11 @@
 #define CHROME_BROWSER_OPTIMIZATION_GUIDE_OPTIMIZATION_GUIDE_WEB_CONTENTS_OBSERVER_H_
 
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -17,6 +19,7 @@ class NavigationHandle;
 }  // namespace content
 
 class OptimizationGuideKeyedService;
+class OptimizationGuideNavigationData;
 
 // Observes navigation events.
 class OptimizationGuideWebContentsObserver
@@ -25,6 +28,12 @@ class OptimizationGuideWebContentsObserver
           OptimizationGuideWebContentsObserver> {
  public:
   ~OptimizationGuideWebContentsObserver() override;
+
+  // Gets the OptimizationGuideNavigationData associated with
+  // |navigation_handle|. If one does not exist already, one will be created for
+  // it.
+  OptimizationGuideNavigationData* GetOrCreateOptimizationGuideNavigationData(
+      content::NavigationHandle* navigation_handle);
 
  private:
   friend class content::WebContentsUserData<
@@ -38,10 +47,25 @@ class OptimizationGuideWebContentsObserver
       content::NavigationHandle* navigation_handle) override;
   void DidRedirectNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
+
+  // Synchronously flushes the metrics for the navigation with ID
+  // |navigation_id| and then removes any data associated with it, including its
+  // entry in |inflight_optimization_guide_navigation_datas_|.
+  void FlushMetricsAndRemoveOptimizationGuideNavigationData(
+      int64_t navigation_id);
+
+  // The data related to a given navigation ID.
+  std::unordered_map<int64_t, OptimizationGuideNavigationData>
+      inflight_optimization_guide_navigation_datas_;
 
   // Initialized in constructor. It may be null if the
   // OptimizationGuideKeyedService feature is not enabled.
   OptimizationGuideKeyedService* optimization_guide_keyed_service_ = nullptr;
+
+  base::WeakPtrFactory<OptimizationGuideWebContentsObserver> weak_factory_{
+      this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

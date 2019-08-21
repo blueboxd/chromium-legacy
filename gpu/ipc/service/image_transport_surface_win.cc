@@ -42,6 +42,7 @@ scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
           workarounds.disable_nv12_dynamic_textures;
       settings.disable_larger_than_screen_overlays =
           workarounds.disable_larger_than_screen_overlays;
+      settings.disable_vp_scaling = workarounds.disable_vp_scaling;
       auto vsync_callback = delegate->GetGpuVSyncCallback();
       auto dc_surface = base::MakeRefCounted<gl::DirectCompositionSurfaceWin>(
           std::move(vsync_provider), std::move(vsync_callback), surface_handle,

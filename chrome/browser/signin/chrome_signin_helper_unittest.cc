@@ -103,11 +103,11 @@ class TestResponseAdapter : public signin::ResponseAdapter,
 class ChromeSigninHelperTest : public testing::Test {
  protected:
   ChromeSigninHelperTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   ~ChromeSigninHelperTest() override {}
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<net::TestDelegate> test_request_delegate_;
 };
 

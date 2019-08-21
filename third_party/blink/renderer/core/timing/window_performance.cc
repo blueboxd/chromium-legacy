@@ -401,11 +401,8 @@ void WindowPerformance::AddElementTiming(const AtomicString& name,
       name, url, rect, MonotonicTimeToDOMHighResTimeStamp(start_time),
       MonotonicTimeToDOMHighResTimeStamp(load_time), identifier,
       intrinsic_size.Width(), intrinsic_size.Height(), id, element);
-  if (HasObserverFor(PerformanceEntry::kElement)) {
-    UseCounter::Count(GetExecutionContext(),
-                      WebFeature::kElementTimingExplicitlyRequested);
+  if (HasObserverFor(PerformanceEntry::kElement))
     NotifyObserversOfEntry(*entry);
-  }
   if (!IsElementTimingBufferFull())
     AddElementTimingBuffer(*entry);
 }

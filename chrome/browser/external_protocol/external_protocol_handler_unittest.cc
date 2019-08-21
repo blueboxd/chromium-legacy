@@ -172,7 +172,7 @@ class ExternalProtocolHandlerTest : public testing::Test {
     EXPECT_EQ(expected_action == Action::BLOCK, delegate_.has_blocked());
   }
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   base::RunLoop run_loop_;
   FakeExternalProtocolHandlerDelegate delegate_;

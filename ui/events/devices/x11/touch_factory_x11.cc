@@ -345,7 +345,7 @@ void TouchFactory::CacheTouchscreenIds(int device_id) {
                    });
   // Internal displays will have a vid and pid of 0. Ignore them.
   if (it != touchscreens.end() && it->vendor_id && it->product_id)
-    touchscreen_ids_.insert(std::make_pair(it->vendor_id, it->product_id));
+    touchscreen_ids_.emplace(it->vendor_id, it->product_id);
 }
 
 }  // namespace ui

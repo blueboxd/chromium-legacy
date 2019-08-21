@@ -282,7 +282,7 @@ class BackgroundLoaderOfflinerTest : public testing::Test {
   void OnProgress(const SavePageRequest& request, int64_t bytes);
   void OnCancel(const SavePageRequest& request);
   void OnCanDownload(bool allowed);
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   content::RenderViewHostTestEnabler rvhte_;
   TestingProfile profile_;
   std::unique_ptr<OfflinerPolicy> policy_;
@@ -301,7 +301,7 @@ class BackgroundLoaderOfflinerTest : public testing::Test {
 };
 
 BackgroundLoaderOfflinerTest::BackgroundLoaderOfflinerTest()
-    : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+    : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
       load_termination_listener_(nullptr),
       model_(nullptr),
       completion_callback_called_(false),

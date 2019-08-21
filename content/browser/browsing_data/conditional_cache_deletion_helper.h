@@ -66,7 +66,7 @@ class CONTENT_EXPORT ConditionalCacheDeletionHelper {
   friend class base::DeleteHelper<ConditionalCacheDeletionHelper>;
   ~ConditionalCacheDeletionHelper();
 
-  void IterateOverEntries(int error);
+  void IterateOverEntries(disk_cache::EntryResult result);
 
   disk_cache::Backend* cache_;
   const base::Callback<bool(const disk_cache::Entry*)> condition_;
@@ -76,7 +76,6 @@ class CONTENT_EXPORT ConditionalCacheDeletionHelper {
   SEQUENCE_CHECKER(sequence_checker_);
 
   std::unique_ptr<disk_cache::Backend::Iterator> iterator_;
-  disk_cache::Entry* current_entry_;
   disk_cache::Entry* previous_entry_;
 
   DISALLOW_COPY_AND_ASSIGN(ConditionalCacheDeletionHelper);

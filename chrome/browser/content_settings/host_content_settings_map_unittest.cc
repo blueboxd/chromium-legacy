@@ -95,7 +95,7 @@ class HostContentSettingsMapTest : public testing::Test {
         ->pref_name();
   }
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 // Wrapper to TestingProfile to reduce test boilerplates, by keeping a fixed

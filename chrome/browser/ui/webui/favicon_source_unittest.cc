@@ -140,7 +140,7 @@ class FaviconSourceTestBase : public testing::Test {
 
  protected:
   const scoped_refptr<base::RefCountedBytes> kDummyIconBytes;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   ui::TestNativeTheme theme_;
   TestingProfile profile_;
   MockHistoryUiFaviconRequestHandler* mock_history_ui_favicon_request_handler_;

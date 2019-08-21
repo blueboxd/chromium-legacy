@@ -54,7 +54,7 @@ class WebStateListFaviconDriverObserverTest : public PlatformTest {
   }
 
  private:
-  web::TestWebThreadBundle test_web_thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<ios::ChromeBrowserState> browser_state_;
   FakeWebStateListDelegate web_state_list_delegate_;
   WebStateList web_state_list_;

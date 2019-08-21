@@ -190,7 +190,7 @@ class AppCacheServiceImplTest : public testing::Test {
   const url::Origin kOrigin;
   const GURL kManifestUrl;
 
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<AppCacheServiceImpl> service_;
   int delete_result_;
   int delete_completion_count_;

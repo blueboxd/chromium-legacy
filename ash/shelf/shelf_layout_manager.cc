@@ -1050,6 +1050,10 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
       shelf_bounds.InsetsFrom(target_bounds.shelf_bounds_in_shelf)));
   shelf_widget_->GetContentsView()->Layout();
 
+  // Never show the navigation widget outside of an active session.
+  if (!state_.IsActiveSessionState())
+    nav_widget->Hide();
+
   // Setting visibility during an animation causes the visibility property to
   // animate. Set the visibility property without an animation.
   if (target_bounds.opacity) {

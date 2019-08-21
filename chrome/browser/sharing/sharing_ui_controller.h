@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
+#include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/ui/page_action/page_action_icon_container.h"
 #include "components/sync_device_info/device_info.h"
 #include "ui/gfx/image/image.h"
@@ -107,7 +108,7 @@ class SharingUiController {
 
   // Called after a message got sent to a device. Shows a new error dialog if
   // |success| is false and updates the omnibox icon.
-  void OnMessageSentToDevice(int dialog_id, bool success);
+  void OnMessageSentToDevice(int dialog_id, SharingSendMessageResult result);
 
   void OnAppsReceived(int dialog_id, std::vector<App> apps);
 

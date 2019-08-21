@@ -27,6 +27,7 @@ public class ToggleTabStackButton
     private TabSwitcherDrawable mTabSwitcherButtonDrawableLight;
     private TabCountProvider mTabCountProvider;
     private OnClickListener mTabSwitcherListener;
+    private OnLongClickListener mTabSwitcherLongClickListener;
 
     public ToggleTabStackButton(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -58,6 +59,16 @@ public class ToggleTabStackButton
      */
     void setOnTabSwitcherClickHandler(OnClickListener listener) {
         mTabSwitcherListener = listener;
+    }
+
+    /**
+     * Sets the OnLongClickListern that will be notified when the TabSwitcher button is long
+     *         pressed.
+     * @param listener The callback that will be notified when the TabSwitcher button is long
+     *         pressed.
+     */
+    void setOnTabSwitcherLongClickHandler(OnLongClickListener listener) {
+        mTabSwitcherLongClickListener = listener;
     }
 
     /**
@@ -97,7 +108,12 @@ public class ToggleTabStackButton
 
     @Override
     public boolean onLongClick(View v) {
-        CharSequence description = getResources().getString(org.chromium.chrome.R.string.open_tabs);
-        return AccessibilityUtil.showAccessibilityToast(getContext(), v, description);
+        if (mTabSwitcherLongClickListener != null && isLongClickable()) {
+            return mTabSwitcherLongClickListener.onLongClick(v);
+        } else {
+            CharSequence description =
+                    getResources().getString(org.chromium.chrome.R.string.open_tabs);
+            return AccessibilityUtil.showAccessibilityToast(getContext(), v, description);
+        }
     }
 }

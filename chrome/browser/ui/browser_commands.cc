@@ -95,7 +95,7 @@
 #include "net/base/escape.h"
 #include "printing/buildflags/buildflags.h"
 #include "rlz/buildflags/buildflags.h"
-#include "ui/base/clipboard/clipboard_types.h"
+#include "ui/base/clipboard/clipboard_buffer.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "url/gurl.h"
@@ -1287,7 +1287,7 @@ bool IsDebuggerAttachedToCurrentTab(Browser* browser) {
 }
 
 void CopyURL(Browser* browser) {
-  ui::ScopedClipboardWriter scw(ui::ClipboardType::kCopyPaste);
+  ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste);
   scw.WriteText(base::UTF8ToUTF16(browser->tab_strip_model()
                                       ->GetActiveWebContents()
                                       ->GetVisibleURL()

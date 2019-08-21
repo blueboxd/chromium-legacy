@@ -178,7 +178,7 @@ class PreviewsLitePageDeciderPrefTest : public ChromeRenderViewHostTestHarness {
             profile(),
             std::make_unique<data_reduction_proxy::DataStoreImpl>(
                 profile()->GetPath()),
-            thread_bundle()->GetMainThreadTaskRunner());
+            task_environment()->GetMainThreadTaskRunner());
 
     decider_ = std::make_unique<PreviewsLitePageDecider>(
         web_contents()->GetBrowserContext());

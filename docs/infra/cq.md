@@ -14,26 +14,32 @@ test suites which a given CL affects, and ensures that they all pass.
 
 ## Options
 
-* `COMMIT=false`
+The Chromium CQ supports a variety of options that can change what it checks.
+
+> These options are supported via git footers. They must appear in the last
+> paragraph of your commit message to be used. See `git help footers` or
+> [git_footers.py][1] for more information.
+
+* `Commit: false`
 
   You can mark a CL with this if you are working on experimental code and do not
   want to risk accidentally submitting it via the CQ. The CQ will immediately
   stop processing the change if it contains this option.
 
-* `CQ_INCLUDE_TRYBOTS=<trybots>`
+* `Cq-Include-Trybots: <trybots>`
 
   This flag allows you to specify some additional bots to run for this CL, in
   addition to the default bots. The format for the list of trybots is
   "bucket:trybot1,trybot2;bucket2:trybot3".
 
-* `NOPRESUBMIT=true`
+* `No-Presubmit: true`
 
   If you want to skip the presubmit check, you can add this line, and the commit
   queue won't run the presubmit for your change. This should only be used when
   there's a bug in the PRESUBMIT scripts. Please check that there's a bug filed
   against the bad script, and if there isn't, [file one](https://crbug.com/new).
 
-* `NOTREECHECKS=true`
+* `No-Tree-Checks: true`
 
   Add this line if you want to skip the tree status checks. This means the CQ
   will commit a CL even if the tree is closed. Obviously this is strongly
@@ -41,12 +47,12 @@ test suites which a given CL affects, and ensures that they all pass.
   cases this is acceptable, primarily to fix build breakages (i.e., your CL will
   help in reopening the tree).
 
-* `NOTRY=true`
+* `No-Try: true`
 
   This should only be used for reverts to green the tree, since it skips try
   bots and might therefore break the tree. You shouldn't use this otherwise.
 
-* `TBR=<username>`
+* `Tbr: <username>`
 
   [See policy](https://chromium.googlesource.com/chromium/src/+/master/docs/code_reviews.md#TBR-To-Be-Reviewed)
   of when it's acceptable to use TBR ("To be reviewed"). If a change has a TBR
@@ -56,7 +62,7 @@ test suites which a given CL affects, and ensures that they all pass.
 
 ### What exactly does the CQ run?
 
-CQ runs the jobs specified in [cq.cfg](../../infra/config/branch/cq.cfg). See
+CQ runs the jobs specified in [commit-queue.cfg][2]. See
 [`cq_builders.md`](cq_builders.md) for an auto generated file with links to
 information about the builders on the CQ.
 
@@ -125,6 +131,20 @@ There are several requirements for a builder to be added to the Commit Queue.
 
 Please email dpranke@chromium.org, who will approve new build configurations.
 
+### How do I ensure a trybot runs on all changes to a specific directory?
+
+Several builders are included in the CQ only for changes that affect specific
+directories. These used to be configured via Cq-Include-Trybots footers
+injected at CL upload time. They are now configured via `location_regexp` fields
+in [commit-queue.cfg][2], e.g.
+
+```
+  builders {
+    name: "chromium/try/my-specific-trybot"
+    location_regexp: ".+/{+]/path/to/my/specific/directory/.+"
+  }
+```
+
 ## Flakiness
 
 The CQ can sometimes be flaky. Flakiness is when a test on the CQ fails, but
@@ -152,3 +172,7 @@ without retries, pretty much no CL would ever pass the CQ.
 
 Have other questions? Run into any issues with the CQ? Email
 infra-dev@chromium.org, or file a [trooper bug](https://g.co/bugatrooper).
+
+
+[1]: https://chromium.googlesource.com/chromium/tools/depot_tools/+/HEAD/git_footers.py
+[2]: ../../infra/config/commit-queue.cfg

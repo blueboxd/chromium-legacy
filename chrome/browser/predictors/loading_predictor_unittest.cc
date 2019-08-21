@@ -90,7 +90,7 @@ class LoadingPredictorTest : public testing::Test {
  protected:
   virtual void SetPreference();
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<LoadingPredictor> predictor_;
   StrictMock<MockResourcePrefetchPredictor>* mock_predictor_;

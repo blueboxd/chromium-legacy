@@ -65,7 +65,7 @@ class BandwidthManagementTableViewControllerTest
         initWithBrowserState:chrome_browser_state_.get()];
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   net::TestNetLog net_log_;
   IOSChromeScopedTestingLocalState local_state_;
 

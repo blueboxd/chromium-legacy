@@ -15,10 +15,10 @@ namespace blink {
 BlinkTransferableMessage::BlinkTransferableMessage() = default;
 BlinkTransferableMessage::~BlinkTransferableMessage() = default;
 
-BlinkTransferableMessage::BlinkTransferableMessage(BlinkTransferableMessage&&) =
-    default;
+BlinkTransferableMessage::BlinkTransferableMessage(
+    BlinkTransferableMessage&&) noexcept = default;
 BlinkTransferableMessage& BlinkTransferableMessage::operator=(
-    BlinkTransferableMessage&&) = default;
+    BlinkTransferableMessage&&) noexcept = default;
 
 scoped_refptr<blink::StaticBitmapImage> ToStaticBitmapImage(
     const SkBitmap& sk_bitmap) {

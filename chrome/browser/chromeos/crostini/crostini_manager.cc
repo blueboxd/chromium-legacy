@@ -352,8 +352,17 @@ class CrostiniManager::CrostiniRestarter
       FinishRestart(result);
       return;
     }
-    // If default termina/penguin, then do sshfs mount and reshare folders,
-    // else we are finished.
+    // If default termina/penguin, then do device sharing, sshfs mount and
+    // reshare folders, else we are finished.
+    auto vm_info = crostini_manager_->GetVmInfo(vm_name_);
+    if (vm_info && !vm_info->usb_devices_shared &&
+        vm_name_ == kCrostiniDefaultVmName &&
+        chromeos::CrosUsbDetector::Get()) {
+      // Connect shared devices to the vm.
+      chromeos::CrosUsbDetector::Get()->ConnectSharedDevicesOnVmStartup(
+          vm_name_);
+      vm_info->usb_devices_shared = true;
+    }
     auto info = crostini_manager_->GetContainerInfo(vm_name_, container_name_);
     if (vm_name_ == kCrostiniDefaultVmName &&
         container_name_ == kCrostiniDefaultContainerName && info &&
@@ -2418,12 +2427,6 @@ void CrostiniManager::FinishRestart(CrostiniRestarter* restarter,
   restarters_by_container_.erase(range.first, range.second);
   for (const auto& pending_restarter : pending_restarters) {
     pending_restarter->RunCallback(result);
-  }
-
-  if (chromeos::CrosUsbDetector::Get()) {
-    // Mount shared devices
-    chromeos::CrosUsbDetector::Get()->ConnectSharedDevicesOnVmStartup(
-        restarter->vm_name());
   }
 }
 

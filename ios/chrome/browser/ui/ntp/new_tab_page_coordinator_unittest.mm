@@ -78,7 +78,7 @@ class NewTabPageCoordinatorTest : public PlatformTest {
   id delegate_;
   std::unique_ptr<WebStateList> web_state_list_;
   FakeWebStateListDelegate web_state_list_delegate_;
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   NewTabPageCoordinator* coordinator_;

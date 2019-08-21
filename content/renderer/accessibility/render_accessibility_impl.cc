@@ -135,7 +135,6 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(RenderFrameImpl* render_frame,
                                                  ui::AXMode mode)
     : RenderFrameObserver(render_frame),
       render_frame_(render_frame),
-      pref_watcher_binding_(this),
       tree_source_(render_frame, mode),
       serializer_(&tree_source_),
       plugin_tree_source_(nullptr),
@@ -175,12 +174,10 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(RenderFrameImpl* render_frame,
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           ::switches::kEnableExperimentalAccessibilityLabelsDebugging);
 
-  blink::mojom::RendererPreferenceWatcherPtr pref_watcher_ptr;
-  pref_watcher_binding_.Bind(mojo::MakeRequest(&pref_watcher_ptr));
-
-  if (render_frame->render_view())
+  if (render_frame->render_view()) {
     render_frame_->render_view()->RegisterRendererPreferenceWatcher(
-        std::move(pref_watcher_ptr));
+        pref_watcher_receiver_.BindNewPipeAndPassRemote());
+  }
 }
 
 RenderAccessibilityImpl::~RenderAccessibilityImpl() = default;

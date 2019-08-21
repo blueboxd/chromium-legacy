@@ -32,33 +32,6 @@ class TestNetworkServiceClient : public network::mojom::NetworkServiceClient {
   }
 
   // network::mojom::NetworkServiceClient implementation:
-  void OnAuthRequired(
-      const base::Optional<base::UnguessableToken>& window_id,
-      uint32_t process_id,
-      uint32_t routing_id,
-      uint32_t request_id,
-      const GURL& url,
-      bool first_auth_attempt,
-      const net::AuthChallengeInfo& auth_info,
-      const base::Optional<ResourceResponseHead>& head,
-      mojom::AuthChallengeResponderPtr auth_challenge_responder) override;
-  void OnCertificateRequested(
-      const base::Optional<base::UnguessableToken>& window_id,
-      uint32_t process_id,
-      uint32_t routing_id,
-      uint32_t request_id,
-      const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
-      mojom::ClientCertificateResponderPtr client_cert_responder) override;
-  void OnSSLCertificateError(uint32_t process_id,
-                             uint32_t routing_id,
-                             const GURL& url,
-                             int net_error,
-                             const net::SSLInfo& ssl_info,
-                             bool fatal,
-                             OnSSLCertificateErrorCallback response) override;
-#if defined(OS_CHROMEOS)
-  void OnTrustAnchorUsed(const std::string& username_hash) override;
-#endif
   void OnFileUploadRequested(uint32_t process_id,
                              bool async,
                              const std::vector<base::FilePath>& file_paths,

@@ -82,7 +82,7 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
  public:
   DiceSigninUiUtilTest()
       : BrowserWithTestWindowTest(
-            content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+            content::BrowserTaskEnvironment::IO_MAINLOOP) {}
   ~DiceSigninUiUtilTest() override = default;
 
   struct CreateDiceTurnSyncOnHelperParams {

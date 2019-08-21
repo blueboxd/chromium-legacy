@@ -421,7 +421,7 @@ class FileManagerFileTasksComplexTest : public testing::Test {
     base::RunLoop run_loop_;
   };
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
   chromeos::ScopedTestUserManager test_user_manager_;
   TestingProfile test_profile_;

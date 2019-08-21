@@ -38,7 +38,7 @@ class TestSpellCheckHostChromeImpl {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile testing_profile_;
   std::unique_ptr<SpellcheckService> spellcheck_;
 

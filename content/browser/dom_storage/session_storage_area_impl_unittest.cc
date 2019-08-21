@@ -110,7 +110,7 @@ class SessionStorageAreaImplTest : public testing::Test {
   }
 
  protected:
-  TestBrowserThreadBundle test_browser_thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   const std::string test_namespace_id1_;
   const std::string test_namespace_id2_;
   const url::Origin test_origin1_;

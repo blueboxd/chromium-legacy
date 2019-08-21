@@ -30,8 +30,8 @@ namespace ui {
 class COMPONENT_EXPORT(BASE_CLIPBOARD) ScopedClipboardWriter {
  public:
   // Create an instance that is a simple wrapper around the clipboard of the
-  // given type.
-  explicit ScopedClipboardWriter(ClipboardType type);
+  // given buffer.
+  explicit ScopedClipboardWriter(ClipboardBuffer buffer);
 
   ~ScopedClipboardWriter();
 
@@ -74,7 +74,7 @@ class COMPONENT_EXPORT(BASE_CLIPBOARD) ScopedClipboardWriter {
   // vector, and pass it to Clipboard::WriteObjects() during object destruction.
   Clipboard::ObjectMap objects_;
 
-  const ClipboardType type_;
+  const ClipboardBuffer buffer_;
 
   SkBitmap bitmap_;
 

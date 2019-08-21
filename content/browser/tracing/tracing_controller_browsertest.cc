@@ -112,7 +112,7 @@ class TracingControllerTest : public ContentBrowserTest {
   }
 
   void Navigate(Shell* shell) {
-    NavigateToURL(shell, GetTestUrl("", "title.html"));
+    EXPECT_TRUE(NavigateToURL(shell, GetTestUrl("", "title1.html")));
   }
 
   std::unique_ptr<base::DictionaryValue> GenerateMetadataDict() {

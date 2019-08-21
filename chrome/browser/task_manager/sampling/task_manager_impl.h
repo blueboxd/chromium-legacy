@@ -20,12 +20,15 @@
 #include "base/time/time.h"
 #include "chrome/browser/task_manager/providers/task_provider.h"
 #include "chrome/browser/task_manager/providers/task_provider_observer.h"
-#include "chrome/browser/task_manager/sampling/arc_shared_sampler.h"
 #include "chrome/browser/task_manager/sampling/task_group.h"
 #include "chrome/browser/task_manager/task_manager_interface.h"
 #include "gpu/ipc/common/memory_stats.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/global_memory_dump.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/task_manager/sampling/arc_shared_sampler.h"
+#endif  // defined(OS_CHROMEOS)
 
 namespace task_manager {
 

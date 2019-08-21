@@ -70,10 +70,10 @@ class ExternalRegistryLoaderUnittest : public testing::Test {
   ~ExternalRegistryLoaderUnittest() override {}
 
  protected:
-  void RunUntilIdle() { thread_bundle_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalRegistryLoaderUnittest);
 };

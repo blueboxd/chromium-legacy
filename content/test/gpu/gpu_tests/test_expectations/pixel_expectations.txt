@@ -231,3 +231,13 @@ crbug.com/976861 [ linux intel-0x5912 ] Pixel_OffscreenCanvasTransferToImageBitm
 
 # Flakily produces a ~50% blank image
 crbug.com/983600 [ mojave amd-0x6821 ] Pixel_CSSFilterEffects_NoOverlays [ RetryOnFailure ]
+
+# Skip swap chain tests on non-Windows
+[ android ] Pixel_CanvasLowLatency2DSwapChain [ Skip ]
+[ android ] Pixel_CanvasLowLatencyWebGLSwapChain [ Skip ]
+[ chromeos ] Pixel_CanvasLowLatency2DSwapChain [ Skip ]
+[ chromeos ] Pixel_CanvasLowLatencyWebGLSwapChain [ Skip ]
+[ linux ] Pixel_CanvasLowLatency2DSwapChain [ Skip ]
+[ linux ] Pixel_CanvasLowLatencyWebGLSwapChain [ Skip ]
+[ mac ] Pixel_CanvasLowLatency2DSwapChain [ Skip ]
+[ mac ] Pixel_CanvasLowLatencyWebGLSwapChain [ Skip ]

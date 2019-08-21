@@ -993,7 +993,8 @@ HttpStreamFactory::JobController::GetAlternativeServiceInfoInternal(
   HttpServerProperties& http_server_properties =
       *session_->http_server_properties();
   const AlternativeServiceInfoVector alternative_service_info_vector =
-      http_server_properties.GetAlternativeServiceInfos(origin);
+      http_server_properties.GetAlternativeServiceInfos(
+          origin, request_info.network_isolation_key);
   if (alternative_service_info_vector.empty())
     return AlternativeServiceInfo();
 

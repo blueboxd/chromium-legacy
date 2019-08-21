@@ -266,12 +266,12 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
                   QueryCacheCallback callback);
   void QueryCacheDidOpenFastPath(
       std::unique_ptr<QueryCacheContext> query_cache_context,
-      int rv);
+      disk_cache::EntryResult result);
   void QueryCacheOpenNextEntry(
       std::unique_ptr<QueryCacheContext> query_cache_context);
   void QueryCacheFilterEntry(
       std::unique_ptr<QueryCacheContext> query_cache_context,
-      int rv);
+      disk_cache::EntryResult result);
   void QueryCacheDidReadMetadata(
       std::unique_ptr<QueryCacheContext> query_cache_context,
       disk_cache::ScopedEntryPtr entry,
@@ -334,8 +334,7 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
                                  int64_t trace_id,
                                  scoped_refptr<net::IOBuffer> buffer,
                                  int buf_len,
-                                 std::unique_ptr<disk_cache::Entry*> entry_ptr,
-                                 int rv);
+                                 disk_cache::EntryResult result);
   void WriteSideDataDidReadMetaData(
       ErrorCallback callback,
       base::Time expected_response_time,
@@ -369,9 +368,8 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
                               blink::mojom::QuotaStatusCode status_code,
                               int64_t usage,
                               int64_t quota);
-  void PutDidCreateEntry(std::unique_ptr<disk_cache::Entry*> entry_ptr,
-                         std::unique_ptr<PutContext> put_context,
-                         int rv);
+  void PutDidCreateEntry(std::unique_ptr<PutContext> put_context,
+                         disk_cache::EntryResult result);
   void PutDidWriteHeaders(std::unique_ptr<PutContext> put_context,
                           int expected_bytes,
                           int rv);

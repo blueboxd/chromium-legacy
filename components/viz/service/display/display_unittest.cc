@@ -236,7 +236,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
   gfx::ColorSpace color_space_2 = gfx::ColorSpace::CreateSCRGBLinear();
 
   StubDisplayClient client;
-  display_->Initialize(&client, manager_.surface_manager());
+  display_->Initialize(&client, manager_.surface_manager(), true);
   display_->SetColorSpace(color_space_1);
 
   EXPECT_FALSE(scheduler_->damaged);
@@ -528,7 +528,7 @@ void DisplayTest::LatencyInfoCapTest(bool over_capacity) {
   SetUpSoftwareDisplay(RendererSettings());
 
   StubDisplayClient client;
-  display_->Initialize(&client, manager_.surface_manager());
+  display_->Initialize(&client, manager_.surface_manager(), true);
 
   id_allocator_.GenerateId();
   LocalSurfaceId local_surface_id(
@@ -610,7 +610,7 @@ TEST_F(DisplayTest, DisableSwapUntilResize) {
   SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
-  display_->Initialize(&client, manager_.surface_manager());
+  display_->Initialize(&client, manager_.surface_manager(), true);
 
   display_->SetLocalSurfaceId(local_surface_id1, 1.f);
 
@@ -687,7 +687,7 @@ TEST_F(DisplayTest, ContextLossInformsClient) {
   SetUpGpuDisplay(RendererSettings());
 
   CountLossDisplayClient client;
-  display_->Initialize(&client, manager_.surface_manager());
+  display_->Initialize(&client, manager_.surface_manager(), true);
 
   // Verify DidLoseOutputSurface callback is hooked up correctly.
   EXPECT_EQ(0, client.loss_count());
@@ -710,7 +710,7 @@ TEST_F(DisplayTest, CompositorFrameDamagesCorrectDisplay) {
   // Set up first display.
   SetUpSoftwareDisplay(settings);
   StubDisplayClient client;
-  display_->Initialize(&client, manager_.surface_manager());
+  display_->Initialize(&client, manager_.surface_manager(), true);
   display_->SetLocalSurfaceId(local_surface_id, 1.f);
 
   // Set up second frame sink + display.
@@ -728,7 +728,7 @@ TEST_F(DisplayTest, CompositorFrameDamagesCorrectDisplay) {
   manager_.RegisterBeginFrameSource(begin_frame_source2.get(),
                                     kAnotherFrameSinkId);
   StubDisplayClient client2;
-  display2->Initialize(&client2, manager_.surface_manager());
+  display2->Initialize(&client2, manager_.surface_manager(), true);
   display2->SetLocalSurfaceId(local_surface_id, 1.f);
 
   display_->Resize(gfx::Size(100, 100));
@@ -762,7 +762,7 @@ TEST_F(DisplayTest, DrawOcclusionWithNonCoveringDrawQuad) {
   SetUpGpuDisplay(RendererSettings());
 
   StubDisplayClient client;
-  display_->Initialize(&client, manager_.surface_manager());
+  display_->Initialize(&client, manager_.surface_manager(), true);
 
   CompositorFrame frame = MakeDefaultCompositorFrame();
   gfx::Rect rect1(0, 0, 100, 100);
@@ -983,7 +983,7 @@ TEST_F(DisplayTest, CompositorFrameWithOverlapDrawQuad) {
   SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
-  display_->Initialize(&client, manager_.surface_manager());
+  display_->Initialize(&client, manager_.surface_manager(), true);
 
   CompositorFrame frame = MakeDefaultCompositorFrame();
   gfx::Rect rect1(0, 0, 100, 100);
@@ -1114,7 +1114,7 @@ TEST_F(DisplayTest, DrawOcclusionWithSkipRect) {
   SetUpGpuDisplay(RendererSettings());
 
   StubDisplayClient client;
-  display_->Initialize(&client, manager_.surface_manager());
+  display_->Initialize(&client, manager_.surface_manager(), true);
 
   CompositorFrame frame = MakeDefaultCompositorFrame();
   gfx::Rect more_then_minimum_size(
@@ -1239,7 +1239,7 @@ TEST_F(DisplayTest, OcclusionIgnoringSkipRect) {
   SetUpGpuDisplay(RendererSettings());
 
   StubDisplayClient client;
-  display_->Initialize(&client, manager_.surface_manager());
+  display_->Initialize(&client, manager_.surface_manager(), true);
 
   CompositorFrame frame = MakeDefaultCompositorFrame();
   gfx::Rect rect1(0, 0, 50, 50);
@@ -1301,7 +1301,7 @@ TEST_F(DisplayTest, CompositorFrameWithTransformer) {
   SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
-  display_->Initialize(&client, manager_.surface_manager());
+  display_->Initialize(&client, manager_.surface_manager(), true);
 
   // Rect 2, 3, 4 are contained in rect 1 only after applying the half scale
   // matrix. They are repetition of CompositorFrameWithOverlapDrawQuad.
@@ -1572,7 +1572,7 @@ TEST_F(DisplayTest, CompositorFrameWithEpsilonScaleTransform) {
   SetUpGpuDisplay(RendererSettings());
 
   StubDisplayClient client;
-  display_->Initialize(&client, manager_.surface_manager());
+  display_->Initialize(&client, manager_.surface_manager(), true);
 
   CompositorFrame frame = MakeDefaultCompositorFrame();
   gfx::Rect rect(0, 0, 100, 100);
@@ -1684,7 +1684,7 @@ TEST_F(DisplayTest, CompositorFrameWithNegativeScaleTransform) {
   SetUpGpuDisplay(RendererSettings());
 
   StubDisplayClient client;
-  display_->Initialize(&client, manager_.surface_manager());
+  display_->Initialize(&client, manager_.surface_manager(), true);
 
   CompositorFrame frame = MakeDefaultCompositorFrame();
   gfx::Rect rect(0, 0, 100, 100);
@@ -1808,7 +1808,7 @@ TEST_F(DisplayTest, CompositorFrameWithRotation) {
   SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
-  display_->Initialize(&client, manager_.surface_manager());
+  display_->Initialize(&client, manager_.surface_manager(), true);
 
   // rect 2 is inside rect 1 initially.
   CompositorFrame frame = MakeDefaultCompositorFrame();
@@ -1937,7 +1937,7 @@ TEST_F(DisplayTest, CompositorFrameWithPerspective) {
   SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
-  display_->Initialize(&client, manager_.surface_manager());
+  display_->Initialize(&client, manager_.surface_manager(), true);
 
   // rect 2 is inside rect 1 initially.
   CompositorFrame frame = MakeDefaultCompositorFrame();
@@ -2013,7 +2013,7 @@ TEST_F(DisplayTest, CompositorFrameWithOpacityChange) {
   SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
-  display_->Initialize(&client, manager_.surface_manager());
+  display_->Initialize(&client, manager_.surface_manager(), true);
 
   CompositorFrame frame = MakeDefaultCompositorFrame();
   gfx::Rect rect1(0, 0, 100, 100);
@@ -2080,7 +2080,7 @@ TEST_F(DisplayTest, CompositorFrameWithOpaquenessChange) {
   SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
-  display_->Initialize(&client, manager_.surface_manager());
+  display_->Initialize(&client, manager_.surface_manager(), true);
 
   CompositorFrame frame = MakeDefaultCompositorFrame();
   gfx::Rect rect1(0, 0, 100, 100);
@@ -2148,7 +2148,7 @@ TEST_F(DisplayTest, CompositorFrameZTranslate) {
   SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
-  display_->Initialize(&client, manager_.surface_manager());
+  display_->Initialize(&client, manager_.surface_manager(), true);
 
   CompositorFrame frame = MakeDefaultCompositorFrame();
   gfx::Rect rect1(0, 0, 100, 100);
@@ -2203,7 +2203,7 @@ TEST_F(DisplayTest, CompositorFrameWithTranslateTransformer) {
   SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
-  display_->Initialize(&client, manager_.surface_manager());
+  display_->Initialize(&client, manager_.surface_manager(), true);
 
   // rect 2 and 3 are outside rect 1 initially.
   CompositorFrame frame = MakeDefaultCompositorFrame();
@@ -2324,7 +2324,7 @@ TEST_F(DisplayTest, CompositorFrameWithCombinedSharedQuadState) {
   SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
-  display_->Initialize(&client, manager_.surface_manager());
+  display_->Initialize(&client, manager_.surface_manager(), true);
 
   // rect 3 is inside of combined rect of rect 1 and rect 2.
   CompositorFrame frame = MakeDefaultCompositorFrame();
@@ -2452,7 +2452,7 @@ TEST_F(DisplayTest, CompositorFrameWithMultipleRenderPass) {
   SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
-  display_->Initialize(&client, manager_.surface_manager());
+  display_->Initialize(&client, manager_.surface_manager(), true);
 
   // rect 3 is inside of combined rect of rect 1 and rect 2.
   CompositorFrame frame = MakeDefaultCompositorFrame();
@@ -2526,7 +2526,7 @@ TEST_F(DisplayTest, CompositorFrameWithCoveredRenderPass) {
   SetUpGpuDisplay(RendererSettings());
 
   StubDisplayClient client;
-  display_->Initialize(&client, manager_.surface_manager());
+  display_->Initialize(&client, manager_.surface_manager(), true);
 
   // rect 3 is inside of combined rect of rect 1 and rect 2.
   CompositorFrame frame = MakeDefaultCompositorFrame();
@@ -2597,7 +2597,7 @@ TEST_F(DisplayTest, CompositorFrameWithClip) {
   SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
-  display_->Initialize(&client, manager_.surface_manager());
+  display_->Initialize(&client, manager_.surface_manager(), true);
 
   CompositorFrame frame = MakeDefaultCompositorFrame();
   gfx::Rect rect1(0, 0, 100, 100);
@@ -2714,7 +2714,7 @@ TEST_F(DisplayTest, CompositorFrameWithCopyRequest) {
   SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
-  display_->Initialize(&client, manager_.surface_manager());
+  display_->Initialize(&client, manager_.surface_manager(), true);
 
   CompositorFrame frame = MakeDefaultCompositorFrame();
   gfx::Rect rect1(0, 0, 100, 100);
@@ -2762,7 +2762,7 @@ TEST_F(DisplayTest, CompositorFrameWithRenderPass) {
   SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
-  display_->Initialize(&client, manager_.surface_manager());
+  display_->Initialize(&client, manager_.surface_manager(), true);
 
   CompositorFrame frame = MakeDefaultCompositorFrame();
   gfx::Rect rect1(0, 0, 100, 100);
@@ -2942,7 +2942,7 @@ TEST_F(DisplayTest, CompositorFrameWithMultipleDrawQuadInSharedQuadState) {
   SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
-  display_->Initialize(&client, manager_.surface_manager());
+  display_->Initialize(&client, manager_.surface_manager(), true);
 
   CompositorFrame frame = MakeDefaultCompositorFrame();
   gfx::Rect rect1(0, 0, 100, 100);
@@ -3120,7 +3120,7 @@ TEST_F(DisplayTest, CompositorFrameWithNonInvertibleTransform) {
   SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
-  display_->Initialize(&client, manager_.surface_manager());
+  display_->Initialize(&client, manager_.surface_manager(), true);
   CompositorFrame frame = MakeDefaultCompositorFrame();
   gfx::Rect rect1(0, 0, 100, 100);
   gfx::Rect rect2(10, 10, 50, 50);
@@ -3223,7 +3223,7 @@ TEST_F(DisplayTest, DrawOcclusionWithLargeDrawQuad) {
   SetUpGpuDisplay(RendererSettings());
 
   StubDisplayClient client;
-  display_->Initialize(&client, manager_.surface_manager());
+  display_->Initialize(&client, manager_.surface_manager(), true);
 
   CompositorFrame frame = MakeDefaultCompositorFrame();
   // The size of this DrawQuad will be 237790x237790 > 2^32 (uint32_t.max())
@@ -3269,7 +3269,7 @@ TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
   // Set up first display.
   SetUpSoftwareDisplay(settings);
   StubDisplayClient client;
-  display_->Initialize(&client, manager_.surface_manager());
+  display_->Initialize(&client, manager_.surface_manager(), true);
   display_->SetLocalSurfaceId(local_surface_id, 1.f);
 
   // Create frame sink for a sub surface.
@@ -3380,7 +3380,7 @@ TEST_F(DisplayTest, BeginFrameThrottling) {
   SetUpGpuDisplay(RendererSettings());
 
   StubDisplayClient client;
-  display_->Initialize(&client, manager_.surface_manager());
+  display_->Initialize(&client, manager_.surface_manager(), true);
   display_->SetLocalSurfaceId(
       id_allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id(),
       1.f);
@@ -3457,7 +3457,7 @@ TEST_F(DisplayTest, BeginFrameThrottlingMultipleSurfaces) {
   SetUpGpuDisplay(RendererSettings());
 
   StubDisplayClient client;
-  display_->Initialize(&client, manager_.surface_manager());
+  display_->Initialize(&client, manager_.surface_manager(), true);
   display_->SetLocalSurfaceId(
       id_allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id(),
       1.f);
@@ -3534,7 +3534,7 @@ TEST_F(DisplayTest, DontThrottleWhenParentBlocked) {
   SetUpGpuDisplay(RendererSettings());
 
   StubDisplayClient client;
-  display_->Initialize(&client, manager_.surface_manager());
+  display_->Initialize(&client, manager_.surface_manager(), true);
   display_->SetLocalSurfaceId(
       id_allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id(),
       1.f);
@@ -3624,7 +3624,7 @@ TEST_F(DisplayTest, InvalidPresentationTimestamps) {
   // Set up first display.
   SetUpSoftwareDisplay(settings);
   StubDisplayClient client;
-  display_->Initialize(&client, manager_.surface_manager());
+  display_->Initialize(&client, manager_.surface_manager(), true);
   display_->SetLocalSurfaceId(local_surface_id, 1.f);
   display_->Resize(gfx::Size(25, 25));
 
@@ -3698,7 +3698,7 @@ TEST_F(DisplayTest, DrawOcclusionWithRoundedCornerDoesNotOcclude) {
   SetUpGpuDisplay(RendererSettings());
 
   StubDisplayClient client;
-  display_->Initialize(&client, manager_.surface_manager());
+  display_->Initialize(&client, manager_.surface_manager(), true);
 
   CompositorFrame frame = MakeDefaultCompositorFrame();
 
@@ -3755,7 +3755,7 @@ TEST_F(DisplayTest, DrawOcclusionWithRoundedCornerDoesOcclude) {
   SetUpGpuDisplay(RendererSettings());
 
   StubDisplayClient client;
-  display_->Initialize(&client, manager_.surface_manager());
+  display_->Initialize(&client, manager_.surface_manager(), true);
 
   // The quad with rounded corner completely covers the quad below it.
   CompositorFrame frame = MakeDefaultCompositorFrame();
@@ -3810,7 +3810,7 @@ TEST_F(DisplayTest, DrawOcclusionWithRoundedCornerPartialOcclude) {
   SetUpGpuDisplay(RendererSettings());
 
   StubDisplayClient client;
-  display_->Initialize(&client, manager_.surface_manager());
+  display_->Initialize(&client, manager_.surface_manager(), true);
 
   // The quad with rounded corner completely covers the quad below it.
   CompositorFrame frame = MakeDefaultCompositorFrame();

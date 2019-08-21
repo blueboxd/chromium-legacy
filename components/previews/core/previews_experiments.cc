@@ -239,6 +239,11 @@ base::TimeDelta LitePageRedirectPreviewPresolveInterval() {
       features::kLitePageServerPreviews, "preresolve_interval_in_seconds", 60));
 }
 
+base::TimeDelta LitePageRedirectPreviewProbeInterval() {
+  return base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
+      features::kLitePageServerPreviews, "probe_interval_in_seconds", 30));
+}
+
 net::EffectiveConnectionType GetECTThresholdForPreview(
     previews::PreviewsType type) {
   switch (type) {

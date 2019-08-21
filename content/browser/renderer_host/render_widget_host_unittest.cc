@@ -715,7 +715,7 @@ class RenderWidgetHostTest : public testing::Test {
  private:
   SyntheticWebTouchEvent touch_event_;
 
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   viz::mojom::CompositorFrameSinkClientPtr renderer_compositor_frame_sink_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostTest);

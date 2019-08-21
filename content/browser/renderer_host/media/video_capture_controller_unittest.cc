@@ -202,7 +202,7 @@ class VideoCaptureControllerTest
         base::TimeDelta(), frame_feedback_id);
   }
 
-  TestBrowserThreadBundle bundle_;
+  BrowserTaskEnvironment bundle_;
   scoped_refptr<media::VideoCaptureBufferPool> buffer_pool_;
   std::unique_ptr<MockVideoCaptureControllerEventHandler> client_a_;
   std::unique_ptr<MockVideoCaptureControllerEventHandler> client_b_;

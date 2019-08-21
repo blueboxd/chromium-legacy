@@ -149,7 +149,6 @@
 <translation id="2921219216347069551">Az oldal megosztása sikertelen</translation>
 <translation id="2923448633003185837">Beillesztés és ugrás</translation>
 <translation id="292639812446257861">Megjelölés olvasatlanként</translation>
-<translation id="2933759065870693102">Vaku</translation>
 <translation id="2958718410589002129">Jelszavak</translation>
 <translation id="2969979262385602596">Nem sikerült bejelentkezni. Kérjük, próbálja újra később.</translation>
 <translation id="298306318844797842">Fizetési mód hozzáadása…</translation>
@@ -305,6 +304,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5317780077021120954">Mentés</translation>
 <translation id="5327248766486351172">Név</translation>
 <translation id="5388358297987318779">Kép megnyitása</translation>
+<translation id="5407969256130905701">Módosítások elvetése</translation>
 <translation id="5409365236829784218">A fájl megnyitásához nincs telepítve alkalmazás.</translation>
 <translation id="5416022985862681400">Legutóbbi 7 nap</translation>
 <translation id="5433691172869980887">Felhasználónév vágólapra másolva</translation>
@@ -510,6 +510,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="8428213095426709021">Beállítások</translation>
 <translation id="8458397775385147834">1 elem törölve</translation>
 <translation id="8487700953926739672">Offline elérhető</translation>
+<translation id="8490978609246021741">Módosítások mentése</translation>
 <translation id="8503813439785031346">Felhasználónév</translation>
 <translation id="850600235656508448">Megnyitás inkognitómódban</translation>
 <translation id="8517375800490286174">Nyílt forráskódú licencek</translation>

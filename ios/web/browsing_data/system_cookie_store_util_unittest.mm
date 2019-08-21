@@ -76,7 +76,7 @@ using SystemCookieStoreUtilTest = PlatformTest;
 // Tests that web::CreateSystemCookieStore returns a SystemCookieStore object
 // that is backed by the correct internal cookiestore based on the iOS version.
 TEST_F(SystemCookieStoreUtilTest, CreateSystemCookieStore) {
-  web::TestWebThreadBundle thread_bundle;
+  web::WebTaskEnvironment task_environment;
   net::ScopedTestingCookieStoreIOSClient scoped_cookie_store_ios_client(
       std::make_unique<net::TestCookieStoreIOSClient>());
 

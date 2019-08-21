@@ -306,10 +306,10 @@ TEST_F(InputMethodUtilTest, TestGetInputMethodDescriptorFromId) {
 
 TEST_F(InputMethodUtilTest, TestGetInputMethodIdsForLanguageCode) {
   std::multimap<std::string, std::string> language_code_to_ids_map;
-  language_code_to_ids_map.insert(std::make_pair("ja", pinyin_ime_id));
-  language_code_to_ids_map.insert(std::make_pair("ja", pinyin_ime_id));
-  language_code_to_ids_map.insert(std::make_pair("ja", "xkb:jp:jpn"));
-  language_code_to_ids_map.insert(std::make_pair("fr", "xkb:fr:fra"));
+  language_code_to_ids_map.emplace("ja", pinyin_ime_id);
+  language_code_to_ids_map.emplace("ja", pinyin_ime_id);
+  language_code_to_ids_map.emplace("ja", "xkb:jp:jpn");
+  language_code_to_ids_map.emplace("fr", "xkb:fr:fra");
 
   std::vector<std::string> result;
   EXPECT_TRUE(util_.GetInputMethodIdsFromLanguageCodeInternal(

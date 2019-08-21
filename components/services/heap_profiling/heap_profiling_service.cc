@@ -121,7 +121,8 @@ mojo::PendingRemote<mojom::ProfilingService> LaunchService(
         helper) {
   mojo::PendingRemote<mojom::ProfilingService> remote;
   auto task_runner = base::CreateSingleThreadTaskRunner(
-      {base::TaskPriority::BEST_EFFORT, base::WithBaseSyncPrimitives()},
+      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+       base::WithBaseSyncPrimitives()},
       base::SingleThreadTaskRunnerThreadMode::DEDICATED);
   task_runner->PostTask(
       FROM_HERE,

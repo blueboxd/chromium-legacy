@@ -161,7 +161,7 @@ class HeartbeatSchedulerTest : public testing::Test {
         .Times(AnyNumber());
   }
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   MockGCMDriver gcm_driver_;
   chromeos::ScopedTestingCrosSettings scoped_testing_cros_settings_;
   testing::NiceMock<policy::MockCloudPolicyClient> cloud_policy_client_;

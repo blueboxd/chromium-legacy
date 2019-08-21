@@ -79,7 +79,7 @@ class PartnerBookmarksShimTest : public testing::Test {
 
   std::unique_ptr<TestingProfile> profile_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   BookmarkModel* model_;
   MockObserver observer_;

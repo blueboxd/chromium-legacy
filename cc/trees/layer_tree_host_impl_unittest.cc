@@ -13405,16 +13405,14 @@ TEST_F(LayerTreeHostImplTest, UpdatePageScaleFactorOnActiveTree) {
   // SetPageScaleOnActiveTree also updates the factors in property trees.
   EXPECT_TRUE(active_tree_node->local.IsScale2d());
   EXPECT_EQ(gfx::Vector2dF(2.f, 2.f), active_tree_node->local.Scale2d());
-  EXPECT_TRUE(active_tree_node->pre_local.IsIdentity());
-  EXPECT_TRUE(active_tree_node->post_local.IsIdentity());
+  EXPECT_EQ(gfx::Point3F(), active_tree_node->origin);
   EXPECT_EQ(host_impl_->active_tree()->current_page_scale_factor(), 2.f);
 
   TransformNode* pending_tree_node =
       host_impl_->pending_tree()->property_trees()->transform_tree.Node(
           page_scale_layer->transform_tree_index());
   EXPECT_TRUE(pending_tree_node->local.IsIdentity());
-  EXPECT_TRUE(pending_tree_node->pre_local.IsIdentity());
-  EXPECT_TRUE(pending_tree_node->post_local.IsIdentity());
+  EXPECT_EQ(gfx::Point3F(), pending_tree_node->origin);
   EXPECT_EQ(host_impl_->pending_tree()->current_page_scale_factor(), 2.f);
 
   host_impl_->pending_tree()->UpdateDrawProperties();
@@ -13423,8 +13421,7 @@ TEST_F(LayerTreeHostImplTest, UpdatePageScaleFactorOnActiveTree) {
           page_scale_layer->transform_tree_index());
   EXPECT_TRUE(pending_tree_node->local.IsScale2d());
   EXPECT_EQ(gfx::Vector2dF(2.f, 2.f), pending_tree_node->local.Scale2d());
-  EXPECT_TRUE(pending_tree_node->pre_local.IsIdentity());
-  EXPECT_TRUE(pending_tree_node->post_local.IsIdentity());
+  EXPECT_EQ(gfx::Point3F(), pending_tree_node->origin);
 
   host_impl_->ActivateSyncTree();
   host_impl_->active_tree()->UpdateDrawProperties();
@@ -13433,8 +13430,7 @@ TEST_F(LayerTreeHostImplTest, UpdatePageScaleFactorOnActiveTree) {
           page_scale_layer->transform_tree_index());
   EXPECT_TRUE(active_tree_node->local.IsScale2d());
   EXPECT_EQ(gfx::Vector2dF(2.f, 2.f), active_tree_node->local.Scale2d());
-  EXPECT_TRUE(active_tree_node->pre_local.IsIdentity());
-  EXPECT_TRUE(active_tree_node->post_local.IsIdentity());
+  EXPECT_EQ(gfx::Point3F(), active_tree_node->origin);
 }
 
 TEST_F(LayerTreeHostImplTest, SubLayerScaleForNodeInSubtreeOfPageScaleLayer) {

@@ -18,7 +18,7 @@
 #include "build/build_config.h"
 
 namespace web {
-class TestWebThreadBundle;
+class WebTaskEnvironment;
 }
 
 namespace base {
@@ -187,7 +187,7 @@ class BASE_EXPORT MessageLoopCurrent {
   friend class Thread;
   friend class sequence_manager::internal::SequenceManagerImpl;
   friend class MessageLoopTaskRunnerTest;
-  friend class web::TestWebThreadBundle;
+  friend class web::WebTaskEnvironment;
 
   sequence_manager::internal::SequenceManagerImpl* current_;
 };

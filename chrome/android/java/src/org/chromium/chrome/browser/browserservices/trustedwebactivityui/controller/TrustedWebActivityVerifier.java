@@ -11,6 +11,7 @@ import android.support.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
+import org.chromium.base.Promise;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.browserservices.Origin;
@@ -103,7 +104,7 @@ public class TrustedWebActivityVerifier implements NativeInitObserver, Destroyab
                 assert false : "Shouldn't observe navigation when TWAs are disabled";
                 return;
             }
-            verify(new Origin(navigation.getUrl()));
+            verifyVisitedOrigin(new Origin(navigation.getUrl()));
         }
     };
 
@@ -114,7 +115,7 @@ public class TrustedWebActivityVerifier implements NativeInitObserver, Destroyab
                     // When a link with target="_blank" is followed and the user navigates back, we
                     // don't get the onDidFinishNavigation event (because the original page wasn't
                     // navigated away from, it was only ever hidden). https://crbug.com/942088
-                    verify(new Origin(tab.getUrl()));
+                    verifyVisitedOrigin(new Origin(tab.getUrl()));
                 }
             };
 
@@ -184,7 +185,7 @@ public class TrustedWebActivityVerifier implements NativeInitObserver, Destroyab
         }
 
         collectTrustedOrigins(initialOrigin);
-        verify(initialOrigin);
+        verifyVisitedOrigin(initialOrigin);
 
         // This doesn't belong here, but doesn't deserve a separate class. Do extract it if more
         // PostMessage-related code appears.
@@ -205,15 +206,32 @@ public class TrustedWebActivityVerifier implements NativeInitObserver, Destroyab
         }
     }
 
-    /** Returns whether the given |url| is on an Origin that the package has been verified for. */
+    /**
+     * Returns whether the given |url| is on an Origin that the package has been previously
+     * verified for.
+     */
     public boolean isPageOnVerifiedOrigin(String url) {
         return mOriginVerifier.wasPreviouslyVerified(new Origin(url));
     }
 
     /**
-     * Perform verification for the given origin.
+     * Verifies an arbitrary url.
+     * Returns a {@link Promise<Boolean>} with boolean telling whether verification succeeded.
      */
-    private void verify(Origin origin) {
+    public Promise<Boolean> verifyOrigin(String url) {
+        if (mOriginVerifier.wasPreviouslyVerified(new Origin(url))) {
+            return Promise.fulfilled(true);
+        }
+        Promise<Boolean> promise = new Promise<>();
+        mOriginVerifier.start((packageName, origin, verified, online) ->  promise.fulfill(verified),
+                new Origin(url));
+        return promise;
+    }
+
+    /**
+     * Perform verification for the origin the user is currently on.
+     */
+    private void verifyVisitedOrigin(Origin origin) {
         if (mOriginsToVerify.contains(origin)) {
             // Do verification bypassing the cache.
             updateState(origin, VerificationStatus.PENDING);

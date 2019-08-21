@@ -165,8 +165,7 @@ const base::TimeDelta kPeriodicCollectionInterval =
 class PerfCollectorTest : public testing::Test {
  public:
   PerfCollectorTest()
-      : test_browser_thread_bundle_(
-            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   void SaveProfile(std::unique_ptr<SampledProfile> sampled_profile) {
     cached_profile_data_.resize(cached_profile_data_.size() + 1);
@@ -193,10 +192,10 @@ class PerfCollectorTest : public testing::Test {
   }
 
  protected:
-  // test_browser_thread_bundle_ must be the first member (or at least before
+  // task_environment_ must be the first member (or at least before
   // any member that cares about tasks) to be initialized first and destroyed
   // last.
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   std::vector<SampledProfile> cached_profile_data_;
 
@@ -213,7 +212,7 @@ TEST_F(PerfCollectorTest, CheckSetup) {
                    ->IncognitoLaunched());
   EXPECT_TRUE(TestIncognitoObserver::CreateWithIncognitoLaunched(true)
                   ->IncognitoLaunched());
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_GT(perf_collector_->max_frequencies_mhz().size(), 0u);
 }
 
@@ -225,7 +224,7 @@ TEST_F(PerfCollectorTest, NoCollectionWhenProfileCacheFull) {
 
   // Advance the clock by a periodic collection interval. We shouldn't find a
   // profile because the cache is full.
-  test_browser_thread_bundle_.FastForwardBy(kPeriodicCollectionInterval);
+  task_environment_.FastForwardBy(kPeriodicCollectionInterval);
   EXPECT_TRUE(cached_profile_data_.empty());
 }
 
@@ -236,7 +235,7 @@ TEST_F(PerfCollectorTest, IncognitoWindowOpened) {
   PerfStatProto perf_stat_proto = GetExamplePerfStatProto();
   EXPECT_GT(perf_data_proto.ByteSize(), 0);
   EXPECT_GT(perf_stat_proto.ByteSize(), 0);
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   auto sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
@@ -248,11 +247,11 @@ TEST_F(PerfCollectorTest, IncognitoWindowOpened) {
       TestPerfCollector::PerfProtoType::PERF_TYPE_DATA, true,
       perf_data_proto.SerializeAsString());
 
-  // Run the TestBrowserThreadBundle queue until it's empty as the above
+  // Run the BrowserTaskEnvironment queue until it's empty as the above
   // ParseOutputProtoIfValid call posts a task to asynchronously collect process
   // and thread types and the profile cache will be updated asynchronously via
   // another PostTask request after this collection completes.
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_EQ(1U, cached_profile_data_.size());
 
@@ -275,7 +274,7 @@ TEST_F(PerfCollectorTest, IncognitoWindowOpened) {
       std::move(incognito_observer), std::move(sampled_profile),
       TestPerfCollector::PerfProtoType::PERF_TYPE_STAT, false,
       perf_stat_proto.SerializeAsString());
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_EQ(1U, cached_profile_data_.size());
 
@@ -298,7 +297,7 @@ TEST_F(PerfCollectorTest, IncognitoWindowOpened) {
       std::move(incognito_observer), std::move(sampled_profile),
       TestPerfCollector::PerfProtoType::PERF_TYPE_DATA, true,
       perf_data_proto.SerializeAsString());
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(cached_profile_data_.empty());
 
@@ -310,7 +309,7 @@ TEST_F(PerfCollectorTest, IncognitoWindowOpened) {
       std::move(incognito_observer), std::move(sampled_profile),
       TestPerfCollector::PerfProtoType::PERF_TYPE_STAT, false,
       perf_stat_proto.SerializeAsString());
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(cached_profile_data_.empty());
 
@@ -325,7 +324,7 @@ TEST_F(PerfCollectorTest, IncognitoWindowOpened) {
       std::move(incognito_observer), std::move(sampled_profile),
       TestPerfCollector::PerfProtoType::PERF_TYPE_DATA, true,
       perf_data_proto.SerializeAsString());
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_EQ(1U, cached_profile_data_.size());
 
@@ -653,7 +652,7 @@ class PerfCollectorCollectionParamsTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   base::FieldTrialList field_trial_list_;
 

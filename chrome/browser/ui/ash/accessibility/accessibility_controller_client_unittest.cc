@@ -74,7 +74,7 @@ class AccessibilityControllerClientTest : public testing::Test {
   ~AccessibilityControllerClientTest() override = default;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   content::TestServiceManagerContext context_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityControllerClientTest);

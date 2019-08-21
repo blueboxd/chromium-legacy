@@ -72,7 +72,7 @@ class OverscrollActionsTabHelperTest : public PlatformTest {
                                   willDecelerate:NO];
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<ios::ChromeBrowserState> browser_state_;
   web::TestWebState web_state_;
   FakeOverscrollActionsControllerDelegate* overscroll_delegate_;

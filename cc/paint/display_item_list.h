@@ -106,9 +106,8 @@ class CC_PAINT_EXPORT DisplayItemList
     if (usage_hint_ == kToBeReleasedAsPaintOpBuffer)
       return;
 
-    gfx::Rect clipped_rect = ClipRectToPaintableArea(visual_rect);
-    visual_rects_.resize(paint_op_buffer_.size(), clipped_rect);
-    GrowCurrentBeginItemVisualRect(clipped_rect);
+    visual_rects_.resize(paint_op_buffer_.size(), visual_rect);
+    GrowCurrentBeginItemVisualRect(visual_rect);
   }
 
   void EndPaintOfPairedBegin() {
@@ -200,19 +199,10 @@ class CC_PAINT_EXPORT DisplayItemList
   FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, TraceEmptyVisualRect);
   FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, AsValueWithNoOps);
   FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, AsValueWithOps);
-  FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, ClippedToPaintableArea);
   friend gpu::raster::RasterImplementation;
   friend gpu::raster::RasterImplementationGLES;
 
   ~DisplayItemList();
-
-  static inline gfx::Rect ClipRectToPaintableArea(
-      const gfx::Rect& visual_rect) {
-    gfx::Rect clipped(visual_rect);
-    clipped.Intersect(gfx::Rect(0, 0, std::numeric_limits<int>::max(),
-                                std::numeric_limits<int>::max()));
-    return clipped;
-  }
 
   void Reset();
 
@@ -223,11 +213,8 @@ class CC_PAINT_EXPORT DisplayItemList
   // given visual rect with the begin display item's visual rect.
   void GrowCurrentBeginItemVisualRect(const gfx::Rect& visual_rect) {
     DCHECK_EQ(usage_hint_, kTopLevelDisplayItemList);
-
-    if (!begin_paired_indices_.empty()) {
-      gfx::Rect clipped_rect = ClipRectToPaintableArea(visual_rect);
-      visual_rects_[begin_paired_indices_.back().first].Union(clipped_rect);
-    }
+    if (!begin_paired_indices_.empty())
+      visual_rects_[begin_paired_indices_.back().first].Union(visual_rect);
   }
 
   // RTree stores indices into the paint op buffer.

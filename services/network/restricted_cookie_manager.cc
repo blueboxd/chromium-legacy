@@ -17,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/message.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
@@ -81,7 +82,7 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
            const GURL& site_for_cookies,
            const url::Origin& top_frame_origin,
            net::CookieOptions options,
-           mojom::CookieChangeListenerPtr mojo_listener)
+           mojo::PendingRemote<mojom::CookieChangeListener> mojo_listener)
       : restricted_cookie_manager_(restricted_cookie_manager),
         url_(url),
         site_for_cookies_(site_for_cookies),
@@ -103,7 +104,7 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
 
   ~Listener() { DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_); }
 
-  mojom::CookieChangeListenerPtr& mojo_listener() {
+  mojo::Remote<mojom::CookieChangeListener>& mojo_listener() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return mojo_listener_;
   }
@@ -148,7 +149,7 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
   // CanonicalCookie::IncludeForRequestURL options for this listener's interest.
   const net::CookieOptions options_;
 
-  mojom::CookieChangeListenerPtr mojo_listener_;
+  mojo::Remote<mojom::CookieChangeListener> mojo_listener_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -388,7 +389,7 @@ void RestrictedCookieManager::AddChangeListener(
     const GURL& url,
     const GURL& site_for_cookies,
     const url::Origin& top_frame_origin,
-    mojom::CookieChangeListenerPtr mojo_listener,
+    mojo::PendingRemote<mojom::CookieChangeListener> mojo_listener,
     AddChangeListenerCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!ValidateAccessToCookiesAt(url)) {
@@ -402,7 +403,7 @@ void RestrictedCookieManager::AddChangeListener(
       cookie_store_, this, url, site_for_cookies, top_frame_origin, net_options,
       std::move(mojo_listener));
 
-  listener->mojo_listener().set_connection_error_handler(
+  listener->mojo_listener().set_disconnect_handler(
       base::BindOnce(&RestrictedCookieManager::RemoveChangeListener,
                      weak_ptr_factory_.GetWeakPtr(),
                      // Safe because this owns the listener, so the listener is

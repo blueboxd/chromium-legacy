@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/flat_set.h"
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -73,24 +74,35 @@ void RemapProxyPolicies(PolicyMap* policies) {
   }
 }
 
-// Returns a list of string values of |policy|. Returns an empty array if
-// the values are not strings.
-std::set<std::string> GetStringListPolicyItems(const PolicyBundle& bundle,
-                                               const PolicyNamespace& space,
-                                               const std::string& policy) {
+// Returns the string values of |policy|. Returns an empty set if the values are
+// not strings.
+base::flat_set<std::string> GetStringListPolicyItems(
+    const PolicyBundle& bundle,
+    const PolicyNamespace& space,
+    const std::string& policy) {
   const PolicyMap& chrome_policies = bundle.Get(space);
   const base::Value* items_ptr = chrome_policies.GetValue(policy);
 
-  std::set<std::string> items;
+  if (!items_ptr)
+    return base::flat_set<std::string>();
 
-  if (items_ptr) {
-    for (const auto& item : items_ptr->GetList()) {
-      if (item.is_string())
-        items.emplace(item.GetString());
-    }
+  // Count the items to allocate the right-sized vector for them.
+  const auto& item_list = items_ptr->GetList();
+  const auto item_count =
+      std::count_if(item_list.begin(), item_list.end(),
+                    [](const auto& item) { return item.is_string(); });
+
+  // Allocate the storage.
+  std::vector<std::string> item_vector;
+  item_vector.reserve(item_count);
+
+  // Populate it.
+  for (const auto& item : item_list) {
+    if (item.is_string())
+      item_vector.emplace_back(item.GetString());
   }
 
-  return items;
+  return base::flat_set<std::string>(std::move(item_vector));
 }
 
 }  // namespace
@@ -223,10 +235,11 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
   }
 
   // Merges all the mergeable policies
-  std::set<std::string> policy_lists_to_merge = GetStringListPolicyItems(
+  base::flat_set<std::string> policy_lists_to_merge = GetStringListPolicyItems(
       bundle, chrome_namespace, key::kPolicyListMultipleSourceMergeList);
-  std::set<std::string> policy_dictionaries_to_merge = GetStringListPolicyItems(
-      bundle, chrome_namespace, key::kPolicyDictionaryMultipleSourceMergeList);
+  base::flat_set<std::string> policy_dictionaries_to_merge =
+      GetStringListPolicyItems(bundle, chrome_namespace,
+                               key::kPolicyDictionaryMultipleSourceMergeList);
 
   auto& chrome_policies = bundle.Get(chrome_namespace);
 

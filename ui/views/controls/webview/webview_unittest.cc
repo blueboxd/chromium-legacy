@@ -194,7 +194,7 @@ class WebViewUnitTest : public views::test::WidgetTest {
     web_view->fullscreen_native_view_for_testing_ = native_view;
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
  private:
   std::unique_ptr<content::RenderViewHostTestEnabler> rvh_enabler_;

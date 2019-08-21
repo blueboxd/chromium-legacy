@@ -58,7 +58,7 @@ class AutofillProfileTableViewControllerTest
     waiter.Wait();  // Wait for completion of the asynchronous operation.
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
 };
 

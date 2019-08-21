@@ -237,7 +237,7 @@ class AppInstallEventLogManagerTest : public testing::Test {
   }
 
   TestLogTaskRunnerWrapper log_task_runner_wrapper_;
-  content::TestBrowserThreadBundle browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   extensions::QuotaService::ScopedDisablePurgeForTesting
       disable_purge_for_testing_;
   TestingProfile profile_;

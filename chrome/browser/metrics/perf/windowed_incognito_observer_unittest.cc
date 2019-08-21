@@ -85,7 +85,7 @@ class WindowedIncognitoMonitorTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   // The associated testing browser profile.
   std::unique_ptr<TestingProfile> profile_;

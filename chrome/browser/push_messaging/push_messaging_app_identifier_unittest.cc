@@ -55,7 +55,7 @@ class PushMessagingAppIdentifierTest : public testing::Test {
   PushMessagingAppIdentifier different_sw_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
 };
 

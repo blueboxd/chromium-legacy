@@ -17,6 +17,14 @@ class WebrtcVideoEncoderProxy::Core {
         main_task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
   ~Core() = default;
 
+  void SetLosslessEncode(bool want_lossless) {
+    encoder_->SetLosslessEncode(want_lossless);
+  }
+
+  void SetLosslessColor(bool want_lossless) {
+    encoder_->SetLosslessColor(want_lossless);
+  }
+
   void Encode(std::unique_ptr<webrtc::DesktopFrame> frame,
               const FrameParams& params,
               EncodeCallback done) {
@@ -45,6 +53,18 @@ WebrtcVideoEncoderProxy::WebrtcVideoEncoderProxy(
 
 WebrtcVideoEncoderProxy::~WebrtcVideoEncoderProxy() {
   encode_task_runner_->DeleteSoon(FROM_HERE, core_.release());
+}
+
+void WebrtcVideoEncoderProxy::SetLosslessEncode(bool want_lossless) {
+  encode_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&Core::SetLosslessEncode,
+                                base::Unretained(core_.get()), want_lossless));
+}
+
+void WebrtcVideoEncoderProxy::SetLosslessColor(bool want_lossless) {
+  encode_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&Core::SetLosslessColor,
+                                base::Unretained(core_.get()), want_lossless));
 }
 
 void WebrtcVideoEncoderProxy::Encode(

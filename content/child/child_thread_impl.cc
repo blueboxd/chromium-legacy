@@ -358,7 +358,13 @@ class ChildProcessImpl : public mojom::ChildProcess {
 
   void BindServiceInterface(mojo::GenericPendingReceiver receiver) override {
     if (service_binder_)
-      service_binder_.Run(std::move(receiver));
+      service_binder_.Run(&receiver);
+
+    if (receiver) {
+      main_thread_task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(&ChildThreadImpl::BindServiceInterface,
+                                    weak_main_thread_, std::move(receiver)));
+    }
   }
 
   void BindReceiver(mojo::GenericPendingReceiver receiver) override {
@@ -876,6 +882,12 @@ void ChildThreadImpl::RunService(
     const std::string& service_name,
     mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
   DLOG(ERROR) << "Ignoring unhandled request to run service: " << service_name;
+}
+
+void ChildThreadImpl::BindServiceInterface(
+    mojo::GenericPendingReceiver receiver) {
+  DLOG(ERROR) << "Ignoring unhandled request to bind service interface: "
+              << *receiver.interface_name();
 }
 
 void ChildThreadImpl::OnBindReceiver(mojo::GenericPendingReceiver receiver) {}

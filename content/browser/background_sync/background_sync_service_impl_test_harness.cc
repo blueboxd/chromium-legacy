@@ -84,7 +84,7 @@ void BackgroundSyncServiceImplTestHarness::ErrorCallback(
 }
 
 BackgroundSyncServiceImplTestHarness::BackgroundSyncServiceImplTestHarness()
-    : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {
+    : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {
   default_sync_registration_ = blink::mojom::SyncRegistrationOptions::New();
 }
 

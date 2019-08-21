@@ -109,28 +109,36 @@
 }
 
 - (void)autofillController:(CWVAutofillController*)autofillController
-    decidePolicyForLocalStorageOfCreditCard:(CWVCreditCard*)creditCard
-                            decisionHandler:
-                                (void (^)(CWVStoragePolicy))decisionHandler {
+    saveCreditCardWithSaver:(CWVCreditCardSaver*)saver {
+  CWVCreditCard* creditCard = saver.creditCard;
   NSString* cardSummary = [NSString
       stringWithFormat:@"%@ %@ %@/%@", creditCard.cardHolderFullName,
                        creditCard.cardNumber, creditCard.expirationMonth,
                        creditCard.expirationYear];
+  NSArray<NSString*>* legalMessages =
+      [saver.legalMessages valueForKey:@"string"];
+  NSString* message = [[legalMessages arrayByAddingObject:cardSummary]
+      componentsJoinedByString:@"\n"];
   UIAlertController* alertController = [UIAlertController
-      alertControllerWithTitle:@"Update Password"
-                       message:cardSummary
+      alertControllerWithTitle:@"Save card?"
+                       message:message
                 preferredStyle:UIAlertControllerStyleActionSheet];
-  UIAlertAction* allowAction =
-      [UIAlertAction actionWithTitle:@"Allow"
-                               style:UIAlertActionStyleDefault
-                             handler:^(UIAlertAction* _Nonnull action) {
-                               decisionHandler(CWVStoragePolicyAllow);
-                             }];
+  UIAlertAction* allowAction = [UIAlertAction
+      actionWithTitle:@"Allow"
+                style:UIAlertActionStyleDefault
+              handler:^(UIAlertAction* _Nonnull action) {
+                [saver acceptWithRiskData:self.riskDataLoader.riskData
+                        completionHandler:^(BOOL cardSaved) {
+                          if (!cardSaved) {
+                            NSLog(@"Failed to save: %@", saver.creditCard);
+                          }
+                        }];
+              }];
   UIAlertAction* cancelAction =
       [UIAlertAction actionWithTitle:@"Cancel"
                                style:UIAlertActionStyleCancel
                              handler:^(UIAlertAction* _Nonnull action) {
-                               decisionHandler(CWVStoragePolicyReject);
+                               [saver decline];
                              }];
   [alertController addAction:allowAction];
   [alertController addAction:cancelAction];

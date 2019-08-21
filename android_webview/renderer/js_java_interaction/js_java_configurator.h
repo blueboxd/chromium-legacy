@@ -33,6 +33,8 @@ class JsJavaConfigurator : public mojom::JsJavaConfigurator,
 
   // RenderFrameObserver implementation
   void DidClearWindowObject() override;
+  void WillReleaseScriptContext(v8::Local<v8::Context> context,
+                                int32_t world_id) override;
   void OnDestruct() override;
 
  private:

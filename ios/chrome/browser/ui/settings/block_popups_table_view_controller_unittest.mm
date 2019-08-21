@@ -75,7 +75,7 @@ class BlockPopupsTableViewControllerTest
                                       std::string()));
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   UINavigationController* navigation_controller_;
 };

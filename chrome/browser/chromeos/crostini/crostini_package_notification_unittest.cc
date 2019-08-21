@@ -35,11 +35,10 @@ class CrostiniPackageNotificationTest : public testing::Test {
 
   void SetUp() override {
     DBusThreadManager::Initialize();
-    test_browser_thread_bundle_ =
-        std::make_unique<content::TestBrowserThreadBundle>(
-            base::test::TaskEnvironment::MainThreadType::UI,
-            base::test::TaskEnvironment::ThreadPoolExecutionMode::ASYNC,
-            content::TestBrowserThreadBundle::REAL_IO_THREAD);
+    task_environment_ = std::make_unique<content::BrowserTaskEnvironment>(
+        base::test::TaskEnvironment::MainThreadType::UI,
+        base::test::TaskEnvironment::ThreadPoolExecutionMode::ASYNC,
+        content::BrowserTaskEnvironment::REAL_IO_THREAD);
 
     profile_ = std::make_unique<TestingProfile>();
     crostini_test_helper_ =
@@ -51,12 +50,12 @@ class CrostiniPackageNotificationTest : public testing::Test {
     service_.reset();
     crostini_test_helper_.reset();
     profile_.reset();
-    test_browser_thread_bundle_.reset();
+    task_environment_.reset();
     DBusThreadManager::Shutdown();
   }
 
  protected:
-  std::unique_ptr<content::TestBrowserThreadBundle> test_browser_thread_bundle_;
+  std::unique_ptr<content::BrowserTaskEnvironment> task_environment_;
   std::unique_ptr<CrostiniTestHelper> crostini_test_helper_;
   std::unique_ptr<CrostiniPackageService> service_;
   std::unique_ptr<TestingProfile> profile_;

@@ -142,7 +142,7 @@ class MediaInternalsVideoCaptureDeviceTest : public testing::Test,
   }
 
  protected:
-  const content::TestBrowserThreadBundle thread_bundle_;
+  const content::BrowserTaskEnvironment task_environment_;
   MediaInternals::UpdateCallback update_cb_;
 };
 
@@ -255,7 +255,7 @@ class MediaInternalsAudioLogTest
     return params;
   }
 
-  const content::TestBrowserThreadBundle thread_bundle_;
+  const content::BrowserTaskEnvironment task_environment_;
 };
 
 TEST_P(MediaInternalsAudioLogTest, AudioLogCreateStartStopErrorClose) {

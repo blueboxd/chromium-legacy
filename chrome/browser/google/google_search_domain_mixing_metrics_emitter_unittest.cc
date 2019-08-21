@@ -19,7 +19,7 @@
 class GoogleSearchDomainMixingMetricsEmitterTest : public testing::Test {
  public:
   GoogleSearchDomainMixingMetricsEmitterTest()
-      : thread_bundle_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   void SetUp() override {
     GoogleSearchDomainMixingMetricsEmitter::RegisterProfilePrefs(
@@ -41,7 +41,7 @@ class GoogleSearchDomainMixingMetricsEmitterTest : public testing::Test {
     emitter_->SetTimerForTesting(std::move(timer));
 
     emitter_->SetUIThreadTaskRunnerForTesting(
-        thread_bundle_.GetMainThreadTaskRunner());
+        task_environment_.GetMainThreadTaskRunner());
   }
 
   // Sets up test history such that domain mixing metrics for the day starting
@@ -76,7 +76,7 @@ class GoogleSearchDomainMixingMetricsEmitterTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingPrefServiceSimple prefs_;
   base::ScopedTempDir history_dir_;
   std::unique_ptr<history::HistoryService> history_service_;
@@ -103,7 +103,7 @@ TEST_F(GoogleSearchDomainMixingMetricsEmitterTest, FirstStart) {
   // The next metric calculation should be scheduled at 4am on the next day,
   // i.e. 16 hours from |now|.
   EXPECT_EQ(base::TimeDelta::FromHours(16),
-            thread_bundle_.NextMainThreadPendingTaskDelay());
+            task_environment_.NextMainThreadPendingTaskDelay());
 }
 
 TEST_F(GoogleSearchDomainMixingMetricsEmitterTest, Waits10SecondsAfterStart) {
@@ -117,7 +117,7 @@ TEST_F(GoogleSearchDomainMixingMetricsEmitterTest, Waits10SecondsAfterStart) {
   emitter_->Start();
 
   EXPECT_EQ(base::TimeDelta::FromSeconds(10),
-            thread_bundle_.NextMainThreadPendingTaskDelay());
+            task_environment_.NextMainThreadPendingTaskDelay());
 }
 
 TEST_F(GoogleSearchDomainMixingMetricsEmitterTest, WaitsUntilNeeded) {
@@ -132,7 +132,7 @@ TEST_F(GoogleSearchDomainMixingMetricsEmitterTest, WaitsUntilNeeded) {
   emitter_->Start();
 
   EXPECT_EQ(base::TimeDelta::FromHours(23),
-            thread_bundle_.NextMainThreadPendingTaskDelay());
+            task_environment_.NextMainThreadPendingTaskDelay());
 }
 
 TEST_F(GoogleSearchDomainMixingMetricsEmitterTest, EmitsMetricsOnStart) {
@@ -152,7 +152,7 @@ TEST_F(GoogleSearchDomainMixingMetricsEmitterTest, EmitsMetricsOnStart) {
   emitter_->Start();
 
   base::HistogramTester tester;
-  thread_bundle_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   BlockUntilHistoryProcessesPendingRequests(history_service_.get());
   VerifyHistograms(tester);
 }
@@ -174,7 +174,7 @@ TEST_F(GoogleSearchDomainMixingMetricsEmitterTest, EmitsMetricsWhenTimerFires) {
   emitter_->Start();
 
   // Wait for the first run to be done.
-  thread_bundle_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   BlockUntilHistoryProcessesPendingRequests(history_service_.get());
 
   // last_metrics_time is expected to have been incremented.
@@ -195,7 +195,7 @@ TEST_F(GoogleSearchDomainMixingMetricsEmitterTest, EmitsMetricsWhenTimerFires) {
   timer_->Fire();
 
   base::HistogramTester tester;
-  thread_bundle_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
   BlockUntilHistoryProcessesPendingRequests(history_service_.get());
   VerifyHistograms(tester);
 

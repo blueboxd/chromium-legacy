@@ -145,7 +145,7 @@ TEST_F(InstantServiceTest, DoesToggleShortcutsVisibility) {
   EXPECT_TRUE(instant_service_->ToggleShortcutsVisibility(false));
   EXPECT_FALSE(pref_service->GetBoolean(prefs::kNtpShortcutsVisible));
   EXPECT_FALSE(instant_service_->most_visited_info_->is_visible);
-  thread_bundle()->RunUntilIdle();
+  task_environment()->RunUntilIdle();
 
   // Show shortcuts, and check that a notification was sent.
   EXPECT_CALL(mock_observer, MostVisitedInfoChanged(testing::_)).Times(1);
@@ -301,7 +301,7 @@ TEST_F(InstantServiceTest, LocalBackgroundImageCopyCreated) {
 
   instant_service_->SelectLocalBackgroundImage(path);
 
-  thread_bundle()->RunUntilIdle();
+  task_environment()->RunUntilIdle();
 
   bool file_exists = base::PathExists(copy_path);
 
@@ -323,7 +323,7 @@ TEST_F(InstantServiceTest,
   SetUserSelectedDefaultSearchProvider("https://www.search.com");
   instant_service_->UpdateThemeInfo();
 
-  thread_bundle()->RunUntilIdle();
+  task_environment()->RunUntilIdle();
 
   bool file_exists = base::PathExists(path);
 
@@ -347,7 +347,7 @@ TEST_F(InstantServiceTest, SettingUrlRemovesLocalBackgroundImageCopy) {
   instant_service_->SetCustomBackgroundInfo(kUrl, "", "", GURL(), "");
   instant_service_->UpdateThemeInfo();
 
-  thread_bundle()->RunUntilIdle();
+  task_environment()->RunUntilIdle();
 
   bool file_exists = base::PathExists(path);
 
@@ -438,7 +438,7 @@ TEST_F(InstantServiceTest, SetLocalImage) {
   base::ThreadPoolInstance::Get()->FlushForTesting();
 
   instant_service_->SelectLocalBackgroundImage(path);
-  thread_bundle()->RunUntilIdle();
+  task_environment()->RunUntilIdle();
 
   ThemeBackgroundInfo* theme_info = instant_service_->GetInitializedThemeInfo();
   EXPECT_TRUE(base::StartsWith(theme_info->custom_background_url.spec(),
@@ -463,7 +463,7 @@ TEST_F(InstantServiceTest, SyncPrefOverridesAndRemovesLocalImage) {
   base::ThreadPoolInstance::Get()->FlushForTesting();
 
   instant_service_->SelectLocalBackgroundImage(path);
-  thread_bundle()->RunUntilIdle();
+  task_environment()->RunUntilIdle();
 
   EXPECT_TRUE(
       pref_service->GetBoolean(prefs::kNtpCustomBackgroundLocalToDevice));
@@ -473,7 +473,7 @@ TEST_F(InstantServiceTest, SyncPrefOverridesAndRemovesLocalImage) {
   pref_service->SetUserPref(
       prefs::kNtpCustomBackgroundDict,
       std::make_unique<base::Value>(GetBackgroundInfoAsDict(kUrl)));
-  thread_bundle()->RunUntilIdle();
+  task_environment()->RunUntilIdle();
 
   ThemeBackgroundInfo* theme_info = instant_service_->GetInitializedThemeInfo();
   EXPECT_EQ(kUrl, theme_info->custom_background_url);
@@ -576,7 +576,7 @@ TEST_F(InstantServiceTest, LocalImageDoesNotHaveAttribution) {
   base::ThreadPoolInstance::Get()->FlushForTesting();
 
   instant_service_->SelectLocalBackgroundImage(path);
-  thread_bundle()->RunUntilIdle();
+  task_environment()->RunUntilIdle();
 
   theme_info = instant_service_->GetInitializedThemeInfo();
   EXPECT_TRUE(base::StartsWith(theme_info->custom_background_url.spec(),
@@ -603,7 +603,7 @@ TEST_F(InstantServiceTest, TestUpdateCustomBackgroundColor) {
   // Background color will not update if no background is set.
   instant_service_->UpdateCustomBackgroundColorAsync(
       base::TimeTicks::Now(), image, image_fetcher::RequestMetadata());
-  thread_bundle()->RunUntilIdle();
+  task_environment()->RunUntilIdle();
   EXPECT_FALSE(CheckBackgroundColor(
       SK_ColorRED,
       pref_service->GetDictionary(prefs::kNtpCustomBackgroundDict)));
@@ -621,7 +621,7 @@ TEST_F(InstantServiceTest, TestUpdateCustomBackgroundColor) {
   // Background color will not update if background timestamp has changed.
   instant_service_->UpdateCustomBackgroundColorAsync(
       base::TimeTicks::Now(), image, image_fetcher::RequestMetadata());
-  thread_bundle()->RunUntilIdle();
+  task_environment()->RunUntilIdle();
   EXPECT_FALSE(CheckBackgroundColor(
       SK_ColorRED,
       pref_service->GetDictionary(prefs::kNtpCustomBackgroundDict)));
@@ -630,7 +630,7 @@ TEST_F(InstantServiceTest, TestUpdateCustomBackgroundColor) {
   instant_service_->UpdateCustomBackgroundColorAsync(
       instant_service_->GetBackgroundUpdatedTimestampForTesting(), image,
       image_fetcher::RequestMetadata());
-  thread_bundle()->RunUntilIdle();
+  task_environment()->RunUntilIdle();
   EXPECT_TRUE(CheckBackgroundColor(
       SK_ColorRED,
       pref_service->GetDictionary(prefs::kNtpCustomBackgroundDict)));
@@ -665,13 +665,13 @@ TEST_F(InstantServiceTest, LocalImageDoesNotUpdateCustomBackgroundColor) {
       instant_service_->GetBackgroundUpdatedTimestampForTesting();
 
   instant_service_->SelectLocalBackgroundImage(path);
-  thread_bundle()->RunUntilIdle();
+  task_environment()->RunUntilIdle();
 
   // Background color will not update if a local image was uploaded in the
   // meantime.
   instant_service_->UpdateCustomBackgroundColorAsync(
       time_set, image, image_fetcher::RequestMetadata());
-  thread_bundle()->RunUntilIdle();
+  task_environment()->RunUntilIdle();
   EXPECT_FALSE(CheckBackgroundColor(
       SK_ColorRED,
       pref_service->GetDictionary(prefs::kNtpCustomBackgroundDict)));
@@ -690,7 +690,7 @@ TEST_F(InstantServiceTest, SetCustomBackgroundCollectionId) {
 
   instant_service_->AddValidBackdropCollectionForTesting(kValidId);
   instant_service_->SetCustomBackgroundInfo(GURL(), "", "", GURL(), kValidId);
-  thread_bundle()->RunUntilIdle();
+  task_environment()->RunUntilIdle();
 
   ThemeBackgroundInfo* theme_info = instant_service_->GetInitializedThemeInfo();
   EXPECT_EQ(kValidId, theme_info->collection_id);
@@ -700,7 +700,7 @@ TEST_F(InstantServiceTest, SetCustomBackgroundCollectionId) {
   CollectionImage image2;
   instant_service_->SetNextCollectionImageForTesting(image2);
   instant_service_->SetCustomBackgroundInfo(GURL(), "", "", GURL(), kInvalidId);
-  thread_bundle()->RunUntilIdle();
+  task_environment()->RunUntilIdle();
 
   theme_info = instant_service_->GetInitializedThemeInfo();
   EXPECT_EQ(std::string(), theme_info->collection_id);
@@ -720,7 +720,7 @@ TEST_F(InstantServiceTest, CollectionIdTakePriorityOverBackgroundURL) {
   instant_service_->AddValidBackdropCollectionForTesting(kValidId);
 
   instant_service_->SetCustomBackgroundInfo(kUrl, "", "", GURL(), kValidId);
-  thread_bundle()->RunUntilIdle();
+  task_environment()->RunUntilIdle();
 
   ThemeBackgroundInfo* theme_info = instant_service_->GetInitializedThemeInfo();
   EXPECT_EQ(kValidId, theme_info->collection_id);
@@ -745,7 +745,7 @@ TEST_F(InstantServiceTest, RefreshesBackgroundAfter24Hours) {
 
   instant_service_->AddValidBackdropCollectionForTesting(kValidId);
   instant_service_->SetCustomBackgroundInfo(GURL(), "", "", GURL(), kValidId);
-  thread_bundle()->RunUntilIdle();
+  task_environment()->RunUntilIdle();
 
   ThemeBackgroundInfo* theme_info = instant_service_->GetInitializedThemeInfo();
   EXPECT_EQ(kValidId, theme_info->collection_id);
@@ -758,7 +758,7 @@ TEST_F(InstantServiceTest, RefreshesBackgroundAfter24Hours) {
 
   // Should not refresh background.
   theme_info = instant_service_->GetInitializedThemeInfo();
-  thread_bundle()->RunUntilIdle();
+  task_environment()->RunUntilIdle();
   EXPECT_EQ(kValidId, theme_info->collection_id);
   EXPECT_EQ(kImageUrl1, theme_info->custom_background_url);
   EXPECT_TRUE(instant_service_->IsCustomBackgroundSet());
@@ -767,7 +767,7 @@ TEST_F(InstantServiceTest, RefreshesBackgroundAfter24Hours) {
 
   // Should refresh background after >24 hours.
   theme_info = instant_service_->GetInitializedThemeInfo();
-  thread_bundle()->RunUntilIdle();
+  task_environment()->RunUntilIdle();
   EXPECT_EQ(kValidId, theme_info->collection_id);
   EXPECT_EQ(kImageUrl2, theme_info->custom_background_url);
   EXPECT_TRUE(instant_service_->IsCustomBackgroundSet());

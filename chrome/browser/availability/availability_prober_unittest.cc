@@ -88,7 +88,7 @@ class TestAvailabilityProber : public AvailabilityProber {
 class AvailabilityProberTest : public testing::Test {
  public:
   AvailabilityProberTest()
-      : thread_bundle_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)),
@@ -129,17 +129,17 @@ class AvailabilityProberTest : public testing::Test {
             AvailabilityProber::ClientName::kLitepages, kTestUrl,
             AvailabilityProber::HttpMethod::kGet, headers, retry_policy,
             timeout_policy, TRAFFIC_ANNOTATION_FOR_TESTS, 1,
-            kCacheRevalidateAfter, thread_bundle_.GetMockTickClock(),
-            thread_bundle_.GetMockClock());
+            kCacheRevalidateAfter, task_environment_.GetMockTickClock(),
+            task_environment_.GetMockClock());
     prober->SetOnCompleteCallback(base::BindRepeating(
         &AvailabilityProberTest::OnProbeComplete, base::Unretained(this)));
     return prober;
   }
 
-  void RunUntilIdle() { thread_bundle_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
   void FastForward(base::TimeDelta delta) {
-    thread_bundle_.FastForwardBy(delta);
+    task_environment_.FastForwardBy(delta);
   }
 
   void MakeResponseAndWait(net::HttpStatusCode http_status,
@@ -198,7 +198,7 @@ class AvailabilityProberTest : public testing::Test {
   base::Optional<bool> callback_result() { return callback_result_; }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   TestDelegate test_delegate_;

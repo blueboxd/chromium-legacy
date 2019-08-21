@@ -67,7 +67,7 @@ class CrosSettingsTest : public testing::Test {
     DeviceSettingsService::Get()->SetSessionManager(
         &fake_session_manager_client_, owner_key_util_);
     DeviceSettingsService::Get()->Load();
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void TearDown() override {
@@ -92,7 +92,7 @@ class CrosSettingsTest : public testing::Test {
     DCHECK(service);
 
     service->OnTPMTokenReady(true);
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     DCHECK(service->IsOwner());
     return service;
   }
@@ -101,14 +101,14 @@ class CrosSettingsTest : public testing::Test {
     device_policy_.Build();
     fake_session_manager_client_.set_device_policy(device_policy_.GetBlob());
     DeviceSettingsService::Get()->OwnerKeySet(true);
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void ExpectPref(const std::string& pref, const base::Value& expected_value) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     // RunUntilIdle ensures that any changes recently made to CrosSettings will
     // be complete by the time that we make the assertions below.
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
     // ExpectPref checks that the given pref has the given value, and that the
     // value is TRUSTED - that means is not just a best-effort value that is
@@ -131,8 +131,8 @@ class CrosSettingsTest : public testing::Test {
                                                 NULL);
   }
 
-  content::TestBrowserThreadBundle thread_bundle_{
-      content::TestBrowserThreadBundle::IO_MAINLOOP};
+  content::BrowserTaskEnvironment task_environment_{
+      content::BrowserTaskEnvironment::IO_MAINLOOP};
 
   ScopedTestingLocalState local_state_;
   ScopedStubInstallAttributes scoped_install_attributes_;
@@ -182,7 +182,7 @@ TEST_F(CrosSettingsTest, SetWhitelistWithListOps) {
   base::ListValue original_list;
   original_list.AppendString(kOwner);
   oss->Set(kAccountsPrefUsers, original_list);
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   base::ListValue modified_list;
   modified_list.AppendString(kOwner);
@@ -207,7 +207,7 @@ TEST_F(CrosSettingsTest, SetWhitelistWithListOps2) {
   original_list.AppendString(kUser1);
   original_list.AppendString(kUser2);
   oss->Set(kAccountsPrefUsers, original_list);
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   base::ListValue modified_list;
   modified_list.AppendString(kOwner);
@@ -303,7 +303,7 @@ TEST_F(CrosSettingsTest, FindEmailInList) {
   list.AppendString("Upper@example.com");
 
   oss->Set(kAccountsPrefUsers, list);
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(IsWhitelisted("user@example.com"));
   EXPECT_FALSE(IsWhitelisted("us.er@example.com"));
@@ -334,7 +334,7 @@ TEST_F(CrosSettingsTest, FindEmailInListWildcard) {
   list.AppendString("*@example.com");
 
   oss->Set(kAccountsPrefUsers, list);
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   bool wildcard_match = false;
   EXPECT_TRUE(CrosSettings::Get()->FindEmailInList(

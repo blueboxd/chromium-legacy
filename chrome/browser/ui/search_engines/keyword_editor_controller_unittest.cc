@@ -81,7 +81,7 @@ class KeywordEditorControllerTest : public testing::Test,
   const TemplateURLServiceFactoryTestUtil* util() const { return &util_; }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   std::unique_ptr<KeywordEditorController> controller_;
   TemplateURLServiceFactoryTestUtil util_;

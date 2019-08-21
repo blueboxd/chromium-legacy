@@ -149,7 +149,6 @@
 <translation id="2921219216347069551">Неможливо поділитися</translation>
 <translation id="2923448633003185837">Вставити й перейти</translation>
 <translation id="292639812446257861">Позначити як непрочитані</translation>
-<translation id="2933759065870693102">Ліхтарик</translation>
 <translation id="2958718410589002129">Паролі</translation>
 <translation id="2969979262385602596">Не вдалося ввійти. Спробуйте пізніше.</translation>
 <translation id="298306318844797842">Додати спосіб оплати…</translation>
@@ -305,6 +304,7 @@
 <translation id="5317780077021120954">Зберегти</translation>
 <translation id="5327248766486351172">Назва</translation>
 <translation id="5388358297987318779">Відкрити зображення</translation>
+<translation id="5407969256130905701">Відхилити зміни</translation>
 <translation id="5409365236829784218">Немає встановлених програм, які можуть відкрити цей файл.</translation>
 <translation id="5416022985862681400">Останні 7 днів</translation>
 <translation id="5433691172869980887">Ім’я користувача скопійовано</translation>
@@ -510,6 +510,7 @@
 <translation id="8428213095426709021">Налаштування</translation>
 <translation id="8458397775385147834">Видалено 1 елемент</translation>
 <translation id="8487700953926739672">Доступ у режимі офлайн</translation>
+<translation id="8490978609246021741">Зберегти зміни</translation>
 <translation id="8503813439785031346">Ім’я користувача</translation>
 <translation id="850600235656508448">Відкрити в режимі анонімного перегляду</translation>
 <translation id="8517375800490286174">Ліцензії ПЗ з відкритим кодом</translation>

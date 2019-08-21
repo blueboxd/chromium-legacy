@@ -145,9 +145,9 @@ class ListHashSet {
 
   ListHashSet();
   ListHashSet(const ListHashSet&);
-  ListHashSet(ListHashSet&&);
+  ListHashSet(ListHashSet&&) noexcept;
   ListHashSet& operator=(const ListHashSet&);
-  ListHashSet& operator=(ListHashSet&&);
+  ListHashSet& operator=(ListHashSet&&) noexcept;
   ~ListHashSet();
 
   void Swap(ListHashSet&);
@@ -776,7 +776,8 @@ inline ListHashSet<T, inlineCapacity, U, V>::ListHashSet(
 }
 
 template <typename T, size_t inlineCapacity, typename U, typename V>
-inline ListHashSet<T, inlineCapacity, U, V>::ListHashSet(ListHashSet&& other)
+inline ListHashSet<T, inlineCapacity, U, V>::ListHashSet(
+    ListHashSet&& other) noexcept
     : head_(nullptr), tail_(nullptr) {
   Swap(other);
 }
@@ -791,7 +792,7 @@ ListHashSet<T, inlineCapacity, U, V>::operator=(const ListHashSet& other) {
 
 template <typename T, size_t inlineCapacity, typename U, typename V>
 inline ListHashSet<T, inlineCapacity, U, V>&
-ListHashSet<T, inlineCapacity, U, V>::operator=(ListHashSet&& other) {
+ListHashSet<T, inlineCapacity, U, V>::operator=(ListHashSet&& other) noexcept {
   Swap(other);
   return *this;
 }

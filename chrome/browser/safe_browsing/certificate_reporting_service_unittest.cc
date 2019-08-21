@@ -366,7 +366,7 @@ TEST_F(CertificateReportingServiceReporterOnIOThreadTest,
 class CertificateReportingServiceTest : public ::testing::Test {
  public:
   CertificateReportingServiceTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD),
+      : task_environment_(content::BrowserTaskEnvironment::REAL_IO_THREAD),
         io_task_runner_(
             base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})) {}
 
@@ -441,7 +441,7 @@ class CertificateReportingServiceTest : public ::testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 

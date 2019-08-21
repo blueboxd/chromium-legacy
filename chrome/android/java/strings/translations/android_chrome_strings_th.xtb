@@ -141,7 +141,6 @@
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB จากแอปอื่นๆ</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# ไฟล์}other{# ไฟล์}}</translation>
 <translation id="2017836877785168846">ล้างประวัติการเข้าชมและการเติมข้อความอัตโนมัติในแถบที่อยู่เว็บ</translation>
-<translation id="2018707881002649255">ระบบจะแชร์รายชื่อติดต่อที่คุณเลือกไว้ด้านล่างกับเว็บไซต์ <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /></translation>
 <translation id="2021896219286479412">ส่วนควบคุมเว็บไซต์แบบเต็มหน้าจอ</translation>
 <translation id="2038563949887743358">เปิดการขอเว็บไซต์เดสก์ท็อป</translation>
 <translation id="2041019821020695769">หากต้องการให้ Chrome ส่งการแจ้งเตือนให้คุณ ให้เปิดการแจ้งเตือนใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /> ด้วย</translation>
@@ -243,7 +242,6 @@
 <translation id="2777555524387840389">เหลือ <ph name="SECONDS" /> วิ</translation>
 <translation id="2779651927720337254">ล้มเหลว</translation>
 <translation id="2781151931089541271">เหลือ 1 วิ</translation>
-<translation id="2796941233371040292">พื้นที่เก็บข้อมูลนี้ไม่มีข้อมูล</translation>
 <translation id="2801022321632964776">อัปเดตเพื่อใช้ภาษาของคุณใน Chrome เวอร์ชันล่าสุด</translation>
 <translation id="2810645512293415242">ลดรายละเอียดหน้าเว็บเพื่อประหยัดเน็ตมือถือและโหลดได้เร็วขึ้น</translation>
 <translation id="281504910091592009">ดูและจัดการรหัสผ่านที่บันทึกไว้ใน<ph name="BEGIN_LINK" />บัญชี Google<ph name="END_LINK" /></translation>
@@ -271,6 +269,7 @@
 <translation id="2962095958535813455">สลับเป็นแท็บไม่ระบุตัวตนแล้ว</translation>
 <translation id="2968755619301702150">เครื่องมือดูใบรับรอง</translation>
 <translation id="2979025552038692506">แท็บที่ไม่ระบุตัวตนที่เลือก</translation>
+<translation id="2987620471460279764">ข้อความแชร์มาจากอุปกรณ์อื่น</translation>
 <translation id="2989523299700148168">เข้าชมล่าสุด</translation>
 <translation id="2996291259634659425">สร้างรหัสผ่าน</translation>
 <translation id="2996809686854298943">ต้องระบุ URL</translation>
@@ -554,6 +553,7 @@
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{การดาวน์โหลดล้มเหลว 1 รายการ}other{การดาวน์โหลดล้มเหลว # รายการ}}</translation>
 <translation id="5170568018924773124">แสดงในโฟลเดอร์</translation>
 <translation id="5184329579814168207">เปิดใน Chrome</translation>
+<translation id="5193988420012215838">คัดลอกไปยังคลิปบอร์ดแล้ว</translation>
 <translation id="5199929503336119739">โปรไฟล์งาน</translation>
 <translation id="5202089186707505116">อนุญาตให้เว็บไซต์นี้เข้าถึงเซ็นเซอร์ VR ไหม</translation>
 <translation id="5210286577605176222">ข้ามไปยังแท็บก่อนหน้า</translation>
@@ -702,6 +702,7 @@
 ตัวอย่างเช่น บางเว็บไซต์อาจตอบสนองต่อคำขอนี้โดยแสดงให้คุณเห็นโฆษณาที่ไม่ได้อิงอยู่กับเว็บไซต์อื่นๆ ที่คุณเข้าชม เว็บไซต์จำนวนมากจะยังคงรวบรวมและใช้ข้อมูลการท่องเว็บของคุณเพื่อปรับปรุงความปลอดภัย เพื่อแสดงเนื้อหา โฆษณา และคำแนะนำ และเพื่อสร้างสถิติในการรายงาน เป็นต้น</translation>
 <translation id="624789221780392884">พร้อมอัปเดต</translation>
 <translation id="6255999984061454636">การแนะนำเนื้อหา</translation>
+<translation id="6264430811215618931"><ph name="ORIGIN" /> ส่ง SMS ไปยังหมายเลขโทรศัพท์ของคุณ หากคุณยืนยัน เว็บไซต์จะรู้ได้ว่าเป็นคุณ</translation>
 <translation id="6277522088822131679">เกิดปัญหาในการพิมพ์หน้านี้ โปรดลองอีกครั้ง</translation>
 <translation id="6295158916970320988">เว็บไซต์ทั้งหมด</translation>
 <translation id="629730747756840877">บัญชี</translation>
@@ -717,7 +718,6 @@
 <translation id="6364438453358674297">ต้องการนำคำแนะนำออกจากประวัติการเข้าชมใช่ไหม</translation>
 <translation id="6369229450655021117">คุณจะค้นหาเว็บ แชร์กับเพื่อนๆ และดูหน้าเว็บที่เปิดอยู่ได้จากที่นี่</translation>
 <translation id="6378173571450987352">รายละเอียด: จัดเรียงตามปริมาณเน็ตมือถือที่ใช้</translation>
-<translation id="6383961787135158834">ล้างพื้นที่เก็บข้อมูลเว็บไซต์…</translation>
 <translation id="6388207532828177975">ล้างข้อมูลและรีเซ็ต</translation>
 <translation id="6393863479814692971">Chrome ต้องการสิทธิ์เข้าถึงไมโครโฟนและกล้องถ่ายรูปของคุณสำหรับไซต์นี้</translation>
 <translation id="6395288395575013217">ลิงก์</translation>

@@ -4,6 +4,7 @@
 
 module blink.mojom;
 
+import "mojo/public/mojom/base/read_only_buffer.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "services/network/public/mojom/cookie_manager.mojom";
@@ -32,7 +33,7 @@ import "url/mojom/url.mojom";
 interface ServiceWorkerHost {
   // Sets V8 code cache |data| for the given service worker script |url|, which
   // may be the main script or an imported script.
-  SetCachedMetadata(url.mojom.Url url, array<uint8> data);
+  SetCachedMetadata(url.mojom.Url url, mojo_base.mojom.ReadOnlyBuffer data);
 
   // Clears V8 code cache for |url| set by the above |SetCachedMetadata| before.
   ClearCachedMetadata(url.mojom.Url url);

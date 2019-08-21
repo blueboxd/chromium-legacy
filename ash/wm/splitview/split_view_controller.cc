@@ -1039,38 +1039,33 @@ void SplitViewController::OnOverviewModeEnding(
     return;
   }
 
+  // If split view mode is active but only has one snapped window when overview
+  // mode is ending, retrieve the first snappable window in the overview window
+  // grid and snap it.
   OverviewGrid* current_grid =
       overview_session->GetGridWithRootWindow(root_window);
   if (!current_grid || current_grid->empty())
     return;
-
-  // If split view mode is active but only has one snapped window when overview
-  // mode is ending, retrieve the first snappable window in the overview window
-  // grid and snap it.
-  const auto& windows = current_grid->window_list();
-  if (windows.size() > 0) {
-    for (const auto& overview_item : windows) {
-      aura::Window* window = overview_item->GetWindow();
-      if (CanSnapInSplitview(window) && window != GetDefaultSnappedWindow()) {
-        // Remove the overview item before snapping because the overview session
-        // is unavailable to retrieve outside this function after
-        // OnOverviewEnding is notified.
-        overview_item->RestoreWindow(/*reset_transform=*/false);
-        overview_session->RemoveItem(overview_item.get());
-        SnapWindow(window, (default_snap_position_ == LEFT) ? RIGHT : LEFT);
-        // If ending overview causes a window to snap, also do not do exiting
-        // overview animation.
-        overview_session->SetWindowListNotAnimatedWhenExiting(root_window);
-        return;
-      }
+  for (const auto& overview_item : current_grid->window_list()) {
+    aura::Window* window = overview_item->GetWindow();
+    if (CanSnapInSplitview(window) && window != GetDefaultSnappedWindow()) {
+      // Remove the overview item before snapping because the overview session
+      // is unavailable to retrieve outside this function after OnOverviewEnding
+      // is notified.
+      overview_item->RestoreWindow(/*reset_transform=*/false);
+      overview_session->RemoveItem(overview_item.get());
+      SnapWindow(window, (default_snap_position_ == LEFT) ? RIGHT : LEFT);
+      // If ending overview causes a window to snap, also do not do exiting
+      // overview animation.
+      overview_session->SetWindowListNotAnimatedWhenExiting(root_window);
+      return;
     }
-
-    // Arriving here we know there is no window in the window grid can be
-    // snapped, in this case end the splitview mode and show cannot snap
-    // toast.
-    EndSplitView();
-    ShowAppCannotSnapToast();
   }
+
+  // Arriving here we know there is no window in the window grid can be snapped,
+  // in this case end the splitview mode and show cannot snap toast.
+  EndSplitView();
+  ShowAppCannotSnapToast();
 }
 
 void SplitViewController::OnDisplayMetricsChanged(

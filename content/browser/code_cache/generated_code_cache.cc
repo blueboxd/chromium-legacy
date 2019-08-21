@@ -370,37 +370,33 @@ void GeneratedCodeCache::WriteDataImpl(
     return;
   }
 
-  scoped_refptr<base::RefCountedData<disk_cache::EntryWithOpened>>
-      entry_struct = new base::RefCountedData<disk_cache::EntryWithOpened>();
-  net::CompletionOnceCallback callback =
+  disk_cache::EntryResultCallback callback =
       base::BindOnce(&GeneratedCodeCache::CompleteForWriteData,
-                     weak_ptr_factory_.GetWeakPtr(), buffer, key, entry_struct);
+                     weak_ptr_factory_.GetWeakPtr(), buffer, key);
 
-  int result = backend_->OpenOrCreateEntry(key, net::LOW, &entry_struct->data,
-                                           std::move(callback));
-  if (result != net::ERR_IO_PENDING) {
-    CompleteForWriteData(buffer, key, entry_struct, result);
+  disk_cache::EntryResult result =
+      backend_->OpenOrCreateEntry(key, net::LOW, std::move(callback));
+  if (result.net_error() != net::ERR_IO_PENDING) {
+    CompleteForWriteData(buffer, key, std::move(result));
   }
 }
 
 void GeneratedCodeCache::CompleteForWriteData(
     scoped_refptr<net::IOBufferWithSize> buffer,
     const std::string& key,
-    scoped_refptr<base::RefCountedData<disk_cache::EntryWithOpened>>
-        entry_struct,
-    int rv) {
-  if (rv != net::OK) {
+    disk_cache::EntryResult entry_result) {
+  if (entry_result.net_error() != net::OK) {
     CollectStatistics(CacheEntryStatus::kError);
     IssueQueuedOperationForEntry(key);
     return;
   }
 
-  DCHECK(entry_struct->data.entry);
   int result = net::ERR_FAILED;
+  bool opened = entry_result.opened();
   {
-    disk_cache::ScopedEntryPtr disk_entry(entry_struct->data.entry);
+    disk_cache::ScopedEntryPtr disk_entry(entry_result.ReleaseEntry());
 
-    if (entry_struct->data.opened) {
+    if (opened) {
       CollectStatistics(CacheEntryStatus::kUpdate);
     } else {
       CollectStatistics(CacheEntryStatus::kCreate);
@@ -436,39 +432,35 @@ void GeneratedCodeCache::FetchEntryImpl(const std::string& key,
     return;
   }
 
-  scoped_refptr<base::RefCountedData<disk_cache::Entry*>> entry_ptr =
-      new base::RefCountedData<disk_cache::Entry*>();
-
-  net::CompletionOnceCallback callback = base::BindOnce(
-      &GeneratedCodeCache::OpenCompleteForReadData,
-      weak_ptr_factory_.GetWeakPtr(), read_data_callback, key, entry_ptr);
+  disk_cache::EntryResultCallback callback =
+      base::BindOnce(&GeneratedCodeCache::OpenCompleteForReadData,
+                     weak_ptr_factory_.GetWeakPtr(), read_data_callback, key);
 
   // This is a part of loading cycle and hence should run with a high priority.
-  int result = backend_->OpenEntry(key, net::HIGHEST, &entry_ptr->data,
-                                   std::move(callback));
-  if (result != net::ERR_IO_PENDING) {
-    OpenCompleteForReadData(read_data_callback, key, entry_ptr, result);
+  disk_cache::EntryResult result =
+      backend_->OpenEntry(key, net::HIGHEST, std::move(callback));
+  if (result.net_error() != net::ERR_IO_PENDING) {
+    OpenCompleteForReadData(read_data_callback, key, std::move(result));
   }
 }
 
 void GeneratedCodeCache::OpenCompleteForReadData(
     ReadDataCallback read_data_callback,
     const std::string& key,
-    scoped_refptr<base::RefCountedData<disk_cache::Entry*>> entry,
-    int rv) {
-  if (rv != net::OK) {
+    disk_cache::EntryResult entry_result) {
+  if (entry_result.net_error() != net::OK) {
     CollectStatistics(CacheEntryStatus::kMiss);
     std::move(read_data_callback).Run(base::Time(), std::vector<uint8_t>());
     IssueQueuedOperationForEntry(key);
     return;
   }
 
-  // There should be a valid entry if the open was successful.
-  DCHECK(entry->data);
   int result = net::ERR_FAILED;
   scoped_refptr<net::IOBufferWithSize> buffer;
   {
-    disk_cache::ScopedEntryPtr disk_entry(entry->data);
+    disk_cache::ScopedEntryPtr disk_entry(entry_result.ReleaseEntry());
+    // There should be a valid entry if the open was successful.
+    DCHECK(disk_entry);
     int size = disk_entry->GetDataSize(kDataIndex);
     buffer = base::MakeRefCounted<net::IOBufferWithSize>(size);
     net::CompletionOnceCallback callback = base::BindOnce(
@@ -571,30 +563,26 @@ void GeneratedCodeCache::SetLastUsedTimeForTest(
   // yet opened.
   DCHECK_EQ(backend_state_, kInitialized);
 
-  scoped_refptr<base::RefCountedData<disk_cache::Entry*>> entry_ptr =
-      new base::RefCountedData<disk_cache::Entry*>();
-
-  net::CompletionOnceCallback callback = base::BindOnce(
-      &GeneratedCodeCache::OpenCompleteForSetLastUsedForTest,
-      weak_ptr_factory_.GetWeakPtr(), entry_ptr, time, user_callback);
+  disk_cache::EntryResultCallback callback =
+      base::BindOnce(&GeneratedCodeCache::OpenCompleteForSetLastUsedForTest,
+                     weak_ptr_factory_.GetWeakPtr(), time, user_callback);
 
   std::string key = GetCacheKey(resource_url, origin_lock);
-  int result = backend_->OpenEntry(key, net::LOWEST, &entry_ptr->data,
-                                   std::move(callback));
-  if (result != net::ERR_IO_PENDING) {
-    OpenCompleteForSetLastUsedForTest(entry_ptr, time, user_callback, result);
+  disk_cache::EntryResult result =
+      backend_->OpenEntry(key, net::LOWEST, std::move(callback));
+  if (result.net_error() != net::ERR_IO_PENDING) {
+    OpenCompleteForSetLastUsedForTest(time, user_callback, std::move(result));
   }
 }
 
 void GeneratedCodeCache::OpenCompleteForSetLastUsedForTest(
-    scoped_refptr<base::RefCountedData<disk_cache::Entry*>> entry,
     base::Time time,
     base::RepeatingCallback<void(void)> callback,
-    int rv) {
-  DCHECK_EQ(rv, net::OK);
-  DCHECK(entry->data);
+    disk_cache::EntryResult result) {
+  DCHECK_EQ(result.net_error(), net::OK);
   {
-    disk_cache::ScopedEntryPtr disk_entry(entry->data);
+    disk_cache::ScopedEntryPtr disk_entry(result.ReleaseEntry());
+    DCHECK(disk_entry);
     disk_entry->SetLastUsedTimeForTest(time);
   }
   std::move(callback).Run();

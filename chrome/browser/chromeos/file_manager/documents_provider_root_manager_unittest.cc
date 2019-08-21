@@ -105,7 +105,7 @@ class DocumentsProviderRootManagerTest : public testing::Test {
   std::unique_ptr<DocumentsProviderRootManager> root_manager_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   arc::FakeFileSystemInstance file_system_instance_;
   std::unique_ptr<arc::ArcServiceManager> arc_service_manager_;
   std::unique_ptr<TestingProfile> profile_;

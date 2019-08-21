@@ -107,7 +107,7 @@
               </div>
               <div class="middle two-line no-min-width"
                   on-click="onAccountManagerTap_"
-                  actionable>
+                  actionable$="[[isAccountManagerEnabled_]]">
                 <div class="flex text-elide settings-box-text">
                   <span id="profile-name">[[profileName_]]</span>
                   <div id="profile-label" class="secondary">
@@ -115,6 +115,7 @@
                   </div>
                 </div>
                 <cr-icon-button class="subpage-arrow"
+                    hidden="[[!isAccountManagerEnabled_]]"
                     id="account-manager-subpage-trigger"
                     aria-label="$i18n{accountManagerSubMenuLabel}"
                     aria-describedby="profile-name"></cr-icon-button>

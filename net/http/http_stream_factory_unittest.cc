@@ -22,6 +22,7 @@
 #include "build/build_config.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/features.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/port_util.h"
 #include "net/base/privacy_mode.h"
 #include "net/base/proxy_server.h"
@@ -75,6 +76,7 @@
 #include "net/third_party/quiche/src/quic/test_tools/mock_random.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "url/origin.h"
 
 // This file can be included from net/http even though
 // it is in net/websockets because it doesn't
@@ -1229,7 +1231,8 @@ TEST_F(HttpStreamFactoryTest, OnlyOnePreconnectToProxyServer) {
       HttpServerProperties http_server_properties;
       if (set_http_server_properties) {
         url::SchemeHostPort spdy_server("https", "myproxy.org", 443);
-        http_server_properties.SetSupportsSpdy(spdy_server, true);
+        http_server_properties.SetSupportsSpdy(spdy_server,
+                                               NetworkIsolationKey(), true);
       }
 
       SpdySessionDependencies session_deps;
@@ -1313,7 +1316,8 @@ TEST_F(HttpStreamFactoryTest, ProxyServerPreconnectDifferentPrivacyModes) {
   HttpServerProperties http_server_properties;
 
   url::SchemeHostPort spdy_server("https", "myproxy.org", 443);
-  http_server_properties.SetSupportsSpdy(spdy_server, true);
+  http_server_properties.SetSupportsSpdy(spdy_server, NetworkIsolationKey(),
+                                         true);
 
   SpdySessionDependencies session_deps;
   HttpNetworkSession::Params session_params =
@@ -1707,7 +1711,8 @@ TEST_F(HttpStreamFactoryTest, RequestHttpStreamOverProxyWithPreconnects) {
   // Set up the proxy server as a server that supports request priorities.
   auto http_server_properties = std::make_unique<HttpServerProperties>();
   url::SchemeHostPort spdy_server("https", "myproxy.org", 443);
-  http_server_properties->SetSupportsSpdy(spdy_server, true);
+  http_server_properties->SetSupportsSpdy(spdy_server, NetworkIsolationKey(),
+                                          true);
   session_deps.http_server_properties = std::move(http_server_properties);
 
   StaticSocketDataProvider socket_data;
@@ -1986,7 +1991,8 @@ TEST_F(HttpStreamFactoryTest, RequestSpdyHttpStreamHttpURL) {
 
   HttpServerProperties* http_server_properties =
       session->spdy_session_pool()->http_server_properties();
-  EXPECT_FALSE(http_server_properties->GetSupportsSpdy(scheme_host_port));
+  EXPECT_FALSE(http_server_properties->GetSupportsSpdy(scheme_host_port,
+                                                       NetworkIsolationKey()));
 
   // Now request a stream.
   HttpRequestInfo request_info;
@@ -2013,7 +2019,84 @@ TEST_F(HttpStreamFactoryTest, RequestSpdyHttpStreamHttpURL) {
       0, GetSocketPoolGroupCount(session->GetSocketPool(
              HttpNetworkSession::NORMAL_SOCKET_POOL, ProxyServer::Direct())));
   EXPECT_FALSE(waiter.used_proxy_info().is_direct());
-  EXPECT_TRUE(http_server_properties->GetSupportsSpdy(scheme_host_port));
+  EXPECT_TRUE(http_server_properties->GetSupportsSpdy(scheme_host_port,
+                                                      NetworkIsolationKey()));
+}
+
+// Same as above, but checks HttpServerProperties is updated using the correct
+// NetworkIsolationKey. When/if NetworkIsolationKey is enabled by default, this
+// should probably be merged into the above test.
+TEST_F(HttpStreamFactoryTest,
+       RequestSpdyHttpStreamHttpURLWithNetworkIsolationKey) {
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
+  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPartitionHttpServerPropertiesByNetworkIsolationKey);
+
+  url::SchemeHostPort scheme_host_port("http", "myproxy.org", 443);
+  auto session_deps = std::make_unique<SpdySessionDependencies>(
+      ProxyResolutionService::CreateFixedFromPacResult(
+          "HTTPS myproxy.org:443", TRAFFIC_ANNOTATION_FOR_TESTS));
+  std::unique_ptr<ProxyResolutionService> proxy_resolution_service =
+      ProxyResolutionService::CreateFixedFromPacResult(
+          "HTTPS myproxy.org:443", TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  MockRead mock_read(SYNCHRONOUS, ERR_IO_PENDING);
+  SequencedSocketData socket_data(base::make_span(&mock_read, 1),
+                                  base::span<MockWrite>());
+  socket_data.set_connect_data(MockConnect(ASYNC, OK));
+  session_deps->socket_factory->AddSocketDataProvider(&socket_data);
+
+  SSLSocketDataProvider ssl_socket_data(ASYNC, OK);
+  ssl_socket_data.next_proto = kProtoHTTP2;
+  session_deps->socket_factory->AddSSLSocketDataProvider(&ssl_socket_data);
+  session_deps->proxy_resolution_service = std::move(proxy_resolution_service);
+
+  std::unique_ptr<HttpNetworkSession> session(
+      SpdySessionDependencies::SpdyCreateSession(session_deps.get()));
+
+  HttpServerProperties* http_server_properties =
+      session->spdy_session_pool()->http_server_properties();
+  EXPECT_FALSE(http_server_properties->GetSupportsSpdy(scheme_host_port,
+                                                       kNetworkIsolationKey1));
+
+  // Now request a stream.
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("http://www.google.com");
+  request_info.load_flags = 0;
+  request_info.network_isolation_key = kNetworkIsolationKey1;
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  SSLConfig ssl_config;
+  StreamRequestWaiter waiter;
+  std::unique_ptr<HttpStreamRequest> request(
+      session->http_stream_factory()->RequestStream(
+          request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
+          /* enable_ip_based_pooling = */ true,
+          /* enable_alternative_services = */ true, NetLogWithSource()));
+  waiter.WaitForStream();
+  EXPECT_TRUE(waiter.stream_done());
+  EXPECT_TRUE(nullptr == waiter.websocket_stream());
+  ASSERT_TRUE(nullptr != waiter.stream());
+
+  EXPECT_EQ(1, GetSpdySessionCount(session.get()));
+  EXPECT_EQ(
+      0, GetSocketPoolGroupCount(session->GetSocketPool(
+             HttpNetworkSession::NORMAL_SOCKET_POOL, ProxyServer::Direct())));
+  EXPECT_FALSE(waiter.used_proxy_info().is_direct());
+  EXPECT_TRUE(http_server_properties->GetSupportsSpdy(scheme_host_port,
+                                                      kNetworkIsolationKey1));
+  // Other NetworkIsolationKeys should not be recorded as supporting SPDY.
+  EXPECT_FALSE(http_server_properties->GetSupportsSpdy(scheme_host_port,
+                                                       NetworkIsolationKey()));
+  EXPECT_FALSE(http_server_properties->GetSupportsSpdy(scheme_host_port,
+                                                       kNetworkIsolationKey2));
 }
 
 // Tests that when a new SpdySession is established, duplicated idle H2 sockets

@@ -184,7 +184,7 @@ class NativeMediaFileUtilTest : public testing::Test {
     return file_system_context_->operation_runner();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
  private:
   base::ScopedTempDir data_dir_;

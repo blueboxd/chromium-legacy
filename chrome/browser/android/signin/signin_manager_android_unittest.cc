@@ -98,7 +98,7 @@ class SigninManagerAndroidTest : public ::testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager profile_manager_;
   TestingProfile* profile_;  // Owned by |profile_manager_|.
 

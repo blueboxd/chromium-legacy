@@ -46,7 +46,7 @@ class ResourcePrefetchPredictorTablesTest : public testing::Test {
   void TestDeleteData();
   void TestDeleteAllData();
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   TestingProfile profile_;
   std::unique_ptr<PredictorDatabase> db_;

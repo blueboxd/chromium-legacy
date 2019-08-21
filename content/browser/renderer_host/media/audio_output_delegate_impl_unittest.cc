@@ -155,8 +155,8 @@ class AudioOutputDelegateTest : public testing::Test {
     // AudioOutputDelegate mainly interacts with the IO and audio threads,
     // but interacts with UI for bad messages, so using these threads should
     // approximate the real conditions of AudioOutputDelegate well.
-    thread_bundle_ = std::make_unique<TestBrowserThreadBundle>(
-        TestBrowserThreadBundle::Options::REAL_IO_THREAD);
+    task_environment_ = std::make_unique<BrowserTaskEnvironment>(
+        BrowserTaskEnvironment::Options::REAL_IO_THREAD);
 
     audio_manager_.reset(new media::FakeAudioManager(
         std::make_unique<media::AudioThreadImpl>(), &log_factory_));
@@ -583,7 +583,7 @@ class AudioOutputDelegateTest : public testing::Test {
   }
 
  protected:
-  std::unique_ptr<TestBrowserThreadBundle> thread_bundle_;
+  std::unique_ptr<BrowserTaskEnvironment> task_environment_;
   std::unique_ptr<media::AudioManager> audio_manager_;
   StrictMock<MockAudioMirroringManager> mirroring_manager_;
   StrictMock<MockEventHandler> event_handler_;

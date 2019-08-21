@@ -94,7 +94,7 @@ class ProfileStatisticsTest : public testing::Test {
   TestingProfileManager* manager() { return &manager_; }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager manager_;
 };
 

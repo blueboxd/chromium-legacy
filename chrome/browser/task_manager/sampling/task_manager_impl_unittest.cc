@@ -92,7 +92,7 @@ class TaskManagerImplTest : public testing::Test, public TaskManagerObserver {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::vector<std::unique_ptr<FakeTask>> tasks_;
   DISALLOW_COPY_AND_ASSIGN(TaskManagerImplTest);
 };

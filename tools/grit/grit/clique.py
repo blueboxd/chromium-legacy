@@ -66,7 +66,7 @@ class UberClique(object):
       # can trigger some build environments (Visual Studio, we're
       # looking at you) to consider invocation of grit to have failed,
       # so we make sure never to output that word.
-      extract = re.sub('(?i)error', 'REDACTED', text[0:40])[0:40]
+      extract = re.sub(r'(?i)error', 'REDACTED', text[0:40])[0:40]
       ellipsis = ''
       if len(text) > 40:
         ellipsis = '...'
@@ -312,7 +312,7 @@ class MessageClique(object):
   CONSTANT_TRANSLATION = tclib.Translation(text='TTTTTT')
 
   # A pattern to match messages that are empty or whitespace only.
-  WHITESPACE_MESSAGE = lazy_re.compile(u'^\s*$')
+  WHITESPACE_MESSAGE = lazy_re.compile(r'^\s*$')
 
   def __init__(self, uber_clique, message, translateable=True,
                custom_type=None):
@@ -419,7 +419,7 @@ class MessageClique(object):
     translation if requested.
 
     Args:
-      lang_re: re.compile('fr|en')
+      lang_re: re.compile(r'fr|en')
       include_pseudo: True
 
     Return:

@@ -398,6 +398,16 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         tests_run = get_tests_run(['--repeat-each', '2', '--order', 'natural'] + tests_to_run)
         self.assertEqual(tests_run, ['passes/image.html', 'passes/image.html', 'passes/text.html', 'passes/text.html'])
 
+    def test_gtest_repeat(self):
+        tests_to_run = ['passes/image.html', 'passes/text.html']
+        tests_run = get_tests_run(['--gtest_repeat', '2', '--order', 'natural'] + tests_to_run)
+        self.assertEqual(tests_run, ['passes/image.html', 'passes/text.html', 'passes/image.html', 'passes/text.html'])
+
+    def test_gtest_repeat_overrides_iterations(self):
+        tests_to_run = ['passes/image.html', 'passes/text.html']
+        tests_run = get_tests_run(['--iterations', '4', '--gtest_repeat', '2', '--order', 'natural'] + tests_to_run)
+        self.assertEqual(tests_run, ['passes/image.html', 'passes/text.html', 'passes/image.html', 'passes/text.html'])
+
     def test_ignore_flag(self):
         # Note that passes/image.html is expected to be run since we specified it directly.
         tests_run = get_tests_run(['-i', 'passes', 'passes/image.html'])
@@ -427,6 +437,12 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
     def test_isolated_script_test_also_run_disabled_tests(self):
         self.assertEqual(
             sorted(get_tests_run(['--isolated-script-test-also-run-disabled-tests', 'passes'])),
+            sorted(get_tests_run(['--skipped=ignore', 'passes']))
+        )
+
+    def test_gtest_also_run_disabled_tests(self):
+        self.assertEqual(
+            sorted(get_tests_run(['--gtest_also_run_disabled_tests', 'passes'])),
             sorted(get_tests_run(['--skipped=ignore', 'passes']))
         )
 
@@ -503,6 +519,11 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
             ['--isolated-script-test-filter=passes/text.html::passes/image.html', 'passes/error.html'],
             host=host
         )
+        self.assertEqual(sorted(tests_run), ['passes/error.html', 'passes/image.html', 'passes/text.html'])
+
+    def test_gtest_filter(self):
+        host = MockHost()
+        tests_run = get_tests_run(['--gtest_filter=passes/text.html:passes/image.html', 'passes/error.html'], host=host)
         self.assertEqual(sorted(tests_run), ['passes/error.html', 'passes/image.html', 'passes/text.html'])
 
     def test_sharding_even(self):

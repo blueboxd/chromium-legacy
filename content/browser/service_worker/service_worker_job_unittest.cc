@@ -128,7 +128,7 @@ void RequestTermination(
 class ServiceWorkerJobTest : public testing::Test {
  public:
   ServiceWorkerJobTest()
-      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   void SetUp() override {
     helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
@@ -158,7 +158,7 @@ class ServiceWorkerJobTest : public testing::Test {
           blink::ServiceWorkerStatusCode::kOk);
   ServiceWorkerProviderHost* CreateControllee();
 
-  TestBrowserThreadBundle browser_thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   std::vector<ServiceWorkerRemoteProviderEndpoint> remote_endpoints_;
 };

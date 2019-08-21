@@ -16,7 +16,6 @@
 #include "content/public/renderer/render_accessibility.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/renderer/accessibility/blink_ax_tree_source.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
 #include "third_party/blink/public/web/web_ax_context.h"
 #include "third_party/blink/public/web/web_ax_object.h"
@@ -187,8 +186,9 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   // Manages the automatic image annotations, if enabled.
   std::unique_ptr<AXImageAnnotator> ax_image_annotator_;
 
-  // The Mojo binding for this object as a RenderPreferenceWatcher.
-  mojo::Binding<blink::mojom::RendererPreferenceWatcher> pref_watcher_binding_;
+  // The Mojo receiver for this object as a RenderPreferenceWatcher.
+  mojo::Receiver<blink::mojom::RendererPreferenceWatcher>
+      pref_watcher_receiver_{this};
 
   // Events from Blink are collected until they are ready to be
   // sent to the browser.

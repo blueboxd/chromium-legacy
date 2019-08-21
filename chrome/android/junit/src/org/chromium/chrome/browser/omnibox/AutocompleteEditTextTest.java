@@ -978,16 +978,13 @@ public class AutocompleteEditTextTest {
             verifyOnPopulateAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED,
                     "hello world", "", 11, 7, 7, -1, -1);
             mInOrder.verify(mVerifier).onAutocompleteTextStateChanged(false);
-            verifyOnPopulateAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED,
-                    "hello world", "", 11, 7, 7, -1, -1);
-            assertVerifierCallCounts(2, 2);
         } else {
             mInOrder.verify(mVerifier).onAutocompleteTextStateChanged(false);
             mInOrder.verify(mVerifier).onUpdateSelection(7, 7);
             verifyOnPopulateAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED,
                     "hello world", "", 11, 7, 7, -1, -1);
-            assertVerifierCallCounts(2, 1);
         }
+        assertVerifierCallCounts(2, 1);
         mInOrder.verifyNoMoreInteractions();
         assertFalse(mAutocomplete.shouldAutocomplete());
         assertTexts("hello world", "");
@@ -1057,9 +1054,7 @@ public class AutocompleteEditTextTest {
             verifyOnPopulateAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED,
                     "hello", "", 5, 3, 3, -1, -1);
             mInOrder.verify(mVerifier).onAutocompleteTextStateChanged(false);
-            verifyOnPopulateAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED,
-                    "hello", "", 5, 3, 3, -1, -1);
-            assertVerifierCallCounts(2, 3);
+            assertVerifierCallCounts(2, 2);
         } else {
             mInOrder.verify(mVerifier).onAutocompleteTextStateChanged(true);
             verifyOnPopulateAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED, "hello",
@@ -1170,26 +1165,16 @@ public class AutocompleteEditTextTest {
 
         assertTrue(mAutocomplete.requestFocus());
 
-        if (!isUsingSpannableModel()) mInOrder.verify(mVerifier).onUpdateSelection(len, len);
+        mInOrder.verify(mVerifier).onUpdateSelection(len, len);
         verifyOnPopulateAccessibilityEvent(
                 AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED, url, "", 18, 18, 18, -1, -1);
-        if (isUsingSpannableModel()) {
-            verifyOnPopulateAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED,
-                    url, "", 18, 0, 18, -1, -1);
-        }
         mInOrder.verify(mVerifier).onUpdateSelection(0, len);
         verifyOnPopulateAccessibilityEvent(
                 AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED, url, "", 18, 0, 18, -1, -1);
         verifyOnPopulateAccessibilityEvent(
                 AccessibilityEvent.TYPE_VIEW_FOCUSED, url, "", 2, -1, -1, -1, -1);
 
-        if (isUsingSpannableModel()) {
-            // TODO(https://crbug.com/935785): Remove this exception when double announcement is
-            // fixed; we expect to see same results as with non-spannable model.
-            assertVerifierCallCounts(1, 4);
-        } else {
-            assertVerifierCallCounts(2, 3);
-        }
+        assertVerifierCallCounts(2, 3);
         mInOrder.verifyNoMoreInteractions();
     }
 
@@ -1307,5 +1292,52 @@ public class AutocompleteEditTextTest {
         mInputConnection.endBatchEdit();
 
         assertEquals("google.com", mAutocomplete.getText().toString());
+    }
+
+    // crbug.com/759876
+    @Test
+    @EnableFeatures(ChromeFeatureList.SPANNABLE_INLINE_AUTOCOMPLETE)
+    public void testTextSelectionGetsAnnouncedAgainOnFocusWithSpannableModel() {
+        internalTestTextSelectionGetsAnnouncedAgainOnFocus();
+    }
+
+    @Test
+    @DisableFeatures(ChromeFeatureList.SPANNABLE_INLINE_AUTOCOMPLETE)
+    public void testTextSelectionGetsAnnouncedAgainOnFocusWithoutSpannableModel() {
+        internalTestTextSelectionGetsAnnouncedAgainOnFocus();
+    }
+
+    private void internalTestTextSelectionGetsAnnouncedAgainOnFocus() {
+        final String text = "hello";
+        final int len = text.length();
+
+        assertTrue(mInputConnection.commitText(text, len));
+        mAutocomplete.setSelection(0, len);
+
+        verifyOnPopulateAccessibilityEvent(
+                AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED, text, "", -1, 0, -1, 0, len);
+        verifyOnPopulateAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED,
+                text, "", len, len, len, -1, -1);
+        verifyOnPopulateAccessibilityEvent(
+                AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED, text, "", len, 0, len, -1, -1);
+        mInOrder.verifyNoMoreInteractions();
+        assertVerifierCallCounts(3, 3);
+
+        assertTrue(mFocusPlaceHolder.requestFocus());
+        mInOrder.verifyNoMoreInteractions();
+        assertVerifierCallCounts(0, 0);
+
+        // We left EditText with selected content. We should get the same event sent again now.
+        mAutocomplete.setSelectAllOnFocus(true);
+        assertTrue(mAutocomplete.requestFocus());
+
+        mInOrder.verify(mVerifier).onUpdateSelection(0, len);
+        verifyOnPopulateAccessibilityEvent(
+                AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED, text, "", len, 0, len, -1, -1);
+        verifyOnPopulateAccessibilityEvent(
+                AccessibilityEvent.TYPE_VIEW_FOCUSED, text, "", 2, -1, -1, -1, -1);
+
+        assertVerifierCallCounts(2, 3);
+        mInOrder.verifyNoMoreInteractions();
     }
 }

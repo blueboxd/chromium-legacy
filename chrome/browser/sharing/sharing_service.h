@@ -18,6 +18,8 @@
 #include "chrome/browser/sharing/ping_message_handler.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_device_registration.h"
+#include "chrome/browser/sharing/sharing_fcm_sender.h"
+#include "components/gcm_driver/web_push_common.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "net/base/backoff_entry.h"
@@ -39,7 +41,6 @@ class SyncService;
 }  // namespace syncer
 
 class SharingFCMHandler;
-class SharingFCMSender;
 class SharingMessageHandler;
 class SharingSyncPreference;
 class VapidKeyManager;
@@ -51,7 +52,8 @@ class SharingService : public KeyedService,
                        syncer::SyncServiceObserver,
                        AckMessageHandler::AckMessageObserver {
  public:
-  using SendMessageCallback = base::OnceCallback<void(bool)>;
+  using SendMessageCallback =
+      base::OnceCallback<void(SharingSendMessageResult)>;
 
   enum class State {
     // Device is unregistered with FCM and Sharing is unavailable.
@@ -128,8 +130,10 @@ class SharingService : public KeyedService,
   void OnDeviceUnregistered(SharingDeviceRegistrationResult result);
   void OnMessageSent(base::TimeTicks start_time,
                      const std::string& message_guid,
+                     SharingSendMessageResult result,
                      base::Optional<std::string> message_id);
-  void InvokeSendMessageCallback(const std::string& message_guid, bool result);
+  void InvokeSendMessageCallback(const std::string& message_guid,
+                                 SharingSendMessageResult result);
 
   // Returns true if required sync feature is enabled.
   bool IsSyncEnabled() const;

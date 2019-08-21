@@ -18,7 +18,6 @@ class IOBuffer;
 
 namespace disk_cache {
 
-class Entry;
 class SimpleEntryImpl;
 
 // SimpleEntryOperation stores the information regarding operations in
@@ -41,20 +40,27 @@ class SimpleEntryOperation {
     TYPE_DOOM = 9,
   };
 
+  // Whether an open/create method has returned an entry (optimistically)
+  // already, or if it still needs to be delivered via a callback.
+  enum EntryResultState {
+    ENTRY_ALREADY_RETURNED = 0,
+    ENTRY_NEEDS_CALLBACK = 1,
+  };
+
   SimpleEntryOperation(SimpleEntryOperation&& other);
   ~SimpleEntryOperation();
 
   static SimpleEntryOperation OpenOperation(SimpleEntryImpl* entry,
-                                            CompletionOnceCallback,
-                                            Entry** out_entry);
+                                            EntryResultState result_state,
+                                            EntryResultCallback);
   static SimpleEntryOperation CreateOperation(SimpleEntryImpl* entry,
-                                              CompletionOnceCallback callback,
-                                              Entry** out_entry);
+                                              EntryResultState result_state,
+                                              EntryResultCallback);
   static SimpleEntryOperation OpenOrCreateOperation(
       SimpleEntryImpl* entry,
       OpenEntryIndexEnum index_state,
-      CompletionOnceCallback callback,
-      EntryWithOpened* entry_struct);
+      EntryResultState result_state,
+      EntryResultCallback);
   static SimpleEntryOperation CloseOperation(SimpleEntryImpl* entry);
   static SimpleEntryOperation ReadOperation(SimpleEntryImpl* entry,
                                             int index,
@@ -95,9 +101,12 @@ class SimpleEntryOperation {
     return static_cast<EntryOperationType>(type_);
   }
   CompletionOnceCallback ReleaseCallback() { return std::move(callback_); }
+  EntryResultCallback ReleaseEntryResultCallback() {
+    return std::move(entry_callback_);
+  }
 
-  Entry** out_entry() { return out_entry_; }
-  EntryWithOpened* entry_struct() { return entry_struct_; }
+  EntryResultState entry_result_state() { return entry_result_state_; }
+
   OpenEntryIndexEnum index_state() const { return index_state_; }
   int index() const { return index_; }
   int offset() const { return offset_; }
@@ -112,8 +121,6 @@ class SimpleEntryOperation {
   SimpleEntryOperation(SimpleEntryImpl* entry,
                        net::IOBuffer* buf,
                        CompletionOnceCallback callback,
-                       Entry** out_entry,
-                       EntryWithOpened* entry_struct,
                        int offset,
                        int64_t sparse_offset,
                        int length,
@@ -130,9 +137,8 @@ class SimpleEntryOperation {
   CompletionOnceCallback callback_;
 
   // Used in open and create operations.
-  Entry** out_entry_;
-  // Used in the combined OpenOrCreateOperation.
-  EntryWithOpened* entry_struct_;
+  EntryResultCallback entry_callback_;
+  EntryResultState entry_result_state_;
 
   // Used in write and read operations.
   const int offset_;

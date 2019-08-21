@@ -96,7 +96,7 @@ void SetPolicy(policy::PolicyMap* map,
 class AppInstallEventLoggerTest : public testing::Test {
  protected:
   AppInstallEventLoggerTest()
-      : browser_thread_bundle_(
+      : task_environment_(
             base::test::TaskEnvironment::MainThreadType::UI,
             base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED) {}
 
@@ -124,7 +124,7 @@ class AppInstallEventLoggerTest : public testing::Test {
 
   void TearDown() override {
     logger_.reset();
-    browser_thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     chromeos::PowerManagerClient::Shutdown();
     chromeos::NetworkHandler::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
@@ -162,7 +162,7 @@ class AppInstallEventLoggerTest : public testing::Test {
     event_.set_event_type(em::AppInstallReportLogEvent::SUCCESS);
   }
 
-  content::TestBrowserThreadBundle browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   TestingPrefServiceSimple pref_service_;
 
@@ -254,7 +254,7 @@ TEST_F(AppInstallEventLoggerTest, AddSetsDiskSpaceInfo) {
   EXPECT_CALL(*disk_mount_manager_, disks());
   EXPECT_CALL(delegate_,
               Add(std::set<std::string>{kPackageName}, MatchProto(event_)));
-  browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 // Adds an event without a timestamp, requesting that disk space information be
@@ -286,7 +286,7 @@ TEST_F(AppInstallEventLoggerTest, AddSetsTimestampAndDiskSpaceInfo) {
   EXPECT_CALL(delegate_, Add(std::set<std::string>{kPackageName},
                              MatchEventExceptTimestamp(event_)))
       .WillOnce(SaveTimestamp<1>(&timestamp));
-  browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_LE(before, timestamp);
   EXPECT_GE(after, timestamp);
@@ -345,7 +345,7 @@ TEST_F(AppInstallEventLoggerTest, UpdatePolicy) {
   EXPECT_CALL(delegate_, Add(std::set<std::string>{kPackageName, kPackageName3},
                              MatchEventExceptTimestamp(event_)));
   EXPECT_CALL(*disk_mount_manager_, disks());
-  browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   Mock::VerifyAndClearExpectations(&delegate_);
 
   // To avoid extra logging.

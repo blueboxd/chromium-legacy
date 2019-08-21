@@ -127,7 +127,7 @@ class EasyUnlockServiceRegularTest : public testing::Test {
   }
 
   // Must outlive TestingProfiles.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   std::unique_ptr<TestingProfile> profile_;
   chromeos::FakeChromeUserManager* fake_chrome_user_manager_;

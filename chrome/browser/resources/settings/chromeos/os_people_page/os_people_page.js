@@ -337,7 +337,9 @@ Polymer({
    * @private
    */
   onAccountManagerTap_: function(e) {
-    settings.navigateTo(settings.routes.ACCOUNT_MANAGER);
+    if (this.isAccountManagerEnabled_) {
+      settings.navigateTo(settings.routes.ACCOUNT_MANAGER);
+    }
   },
 
   /**

@@ -43,11 +43,11 @@ enum BrowserThreadState {
 
 struct BrowserThreadGlobals {
   BrowserThreadGlobals() {
-    // A few unit tests which do not use a TestBrowserThreadBundle still invoke
+    // A few unit tests which do not use a BrowserTaskEnvironment still invoke
     // code that reaches into CurrentlyOn()/IsThreadInitialized(). This can
     // result in instantiating BrowserThreadGlobals off the main thread.
     // |main_thread_checker_| being bound incorrectly would then result in a
-    // flake in the next test that instantiates a TestBrowserThreadBundle in the
+    // flake in the next test that instantiates a BrowserTaskEnvironment in the
     // same process. Detaching here postpones binding |main_thread_checker_| to
     // the first invocation of BrowserThreadImpl::BrowserThreadImpl() and works
     // around this issue.
@@ -235,9 +235,9 @@ BrowserThread::GetTaskRunnerForThread(ID identifier) {
   // would silently no-op. If you need to support posting early, gate it on
   // BrowserThread::IsThreadInitialized(). If you hit this check in unittests,
   // you most likely posted a task outside the scope of a
-  // TestBrowserThreadBundle (which also completely resets the state after
-  // shutdown in ~TestBrowserThreadBundle(), ref. ResetGlobalsForTesting(),
-  // making sure TestBrowserThreadBundle is the first member of your test
+  // BrowserTaskEnvironment (which also completely resets the state after
+  // shutdown in ~BrowserTaskEnvironment(), ref. ResetGlobalsForTesting(),
+  // making sure BrowserTaskEnvironment is the first member of your test
   // fixture and thus outlives everything is usually the right solution).
   DCHECK_GE(base::subtle::NoBarrier_Load(&globals.states[identifier]),
             BrowserThreadState::RUNNING);

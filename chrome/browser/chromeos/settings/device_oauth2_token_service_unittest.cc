@@ -172,7 +172,7 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
     inline void operator()(DeviceOAuth2TokenService* ptr) const { delete ptr; }
   };
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   ScopedStubInstallAttributes scoped_stub_install_attributes_;
   ScopedTestingLocalState scoped_testing_local_state_;
   ScopedTestDeviceSettingsService scoped_device_settings_service_;

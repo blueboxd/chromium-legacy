@@ -2674,5 +2674,85 @@ TEST_F(LayerTreeImplTest, ElementIdToAnimationMapsTrackOnlyOnSyncTree) {
   EXPECT_EQ(filter_map.size(), 1u);
 }
 
+class LayerTreeImplOcclusionSettings : public LayerTreeSettings {
+ public:
+  explicit LayerTreeImplOcclusionSettings(bool enabled) {
+    enable_occlusion = enabled;
+    minimum_occlusion_tracking_size = gfx::Size(1, 1);
+  }
+};
+
+class LayerTreeImplOcclusionTest : public LayerTreeImplTest {
+ public:
+  explicit LayerTreeImplOcclusionTest(bool enable_occlusion)
+      : LayerTreeImplTest(LayerTreeImplOcclusionSettings(enable_occlusion)),
+        enable_occlusion_(enable_occlusion) {}
+
+  void TestOcclusion() {
+    LayerImpl* root = root_layer();
+    root->SetBounds(gfx::Size(100, 100));
+    // Create a 50x50 layer in the center of our root bounds.
+    {
+      std::unique_ptr<LayerImpl> bottom_layer =
+          LayerImpl::Create(host_impl().active_tree(), 123);
+      bottom_layer->test_properties()->position = gfx::PointF(25, 25);
+      bottom_layer->SetBounds(gfx::Size(50, 50));
+      bottom_layer->SetDrawsContent(true);
+      bottom_layer->SetContentsOpaque(true);
+      root->test_properties()->AddChild(std::move(bottom_layer));
+    }
+
+    // Create a full-bounds 100x100 layer which occludes the 50x50 layer.
+    {
+      std::unique_ptr<LayerImpl> occluding_layer =
+          LayerImpl::Create(host_impl().active_tree(), 1234);
+      occluding_layer->SetBounds(gfx::Size(100, 100));
+      occluding_layer->SetDrawsContent(true);
+      occluding_layer->SetContentsOpaque(true);
+      root->test_properties()->AddChild(std::move(occluding_layer));
+    }
+
+    host_impl().active_tree()->SetDeviceViewportSize(root->bounds());
+    host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
+
+    LayerTreeImpl* active_tree = host_impl().active_tree();
+    LayerImpl* bottom_layer = active_tree->LayerById(123);
+    if (enable_occlusion_) {
+      // With occlusion on, the root is fully occluded, as is the bottom layer.
+      EXPECT_TRUE(active_tree->UnoccludedScreenSpaceRegion().IsEmpty());
+      EXPECT_TRUE(bottom_layer->draw_properties()
+                      .occlusion_in_content_space.HasOcclusion());
+    } else {
+      // With occlusion off, the full root should be unoccluded and the bottom
+      // layer should have no occlusion.
+      EXPECT_TRUE(active_tree->UnoccludedScreenSpaceRegion().Contains(
+          gfx::Rect(root->bounds())));
+      EXPECT_FALSE(bottom_layer->draw_properties()
+                       .occlusion_in_content_space.HasOcclusion());
+    }
+  }
+
+ private:
+  bool enable_occlusion_;
+};
+
+class LayerTreeImplOcclusionDisabledTest : public LayerTreeImplOcclusionTest {
+ public:
+  LayerTreeImplOcclusionDisabledTest() : LayerTreeImplOcclusionTest(false) {}
+};
+
+class LayerTreeImplOcclusionEnabledTest : public LayerTreeImplOcclusionTest {
+ public:
+  LayerTreeImplOcclusionEnabledTest() : LayerTreeImplOcclusionTest(true) {}
+};
+
+TEST_F(LayerTreeImplOcclusionDisabledTest, OcclusionDisabled) {
+  TestOcclusion();
+}
+
+TEST_F(LayerTreeImplOcclusionEnabledTest, OcclusionEnabled) {
+  TestOcclusion();
+}
+
 }  // namespace
 }  // namespace cc

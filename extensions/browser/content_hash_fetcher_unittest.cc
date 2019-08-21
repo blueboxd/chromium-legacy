@@ -99,7 +99,7 @@ class ContentHashFetcherTest : public ExtensionsTest {
   ContentHashFetcherTest()
       // We need a real IO thread to be able to entercept the network request
       // for the missing verified_contents.json file.
-      : ExtensionsTest(content::TestBrowserThreadBundle::REAL_IO_THREAD),
+      : ExtensionsTest(content::BrowserTaskEnvironment::REAL_IO_THREAD),
         test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)) {}

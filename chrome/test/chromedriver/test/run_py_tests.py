@@ -227,6 +227,10 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'ChromeDriverSecureContextTest.testRemoveVirtualAuthenticator',
         'ChromeDriverSecureContextTest.testAddCredential',
         'ChromeDriverSecureContextTest.testGetCredentials',
+        'ChromeDriverSecureContextTest.testRemoveAllCredentials',
+        'ChromeDriverSecureContextTest.testSetUserVerified',
+        # Covered by Desktop tests; can't create 2 browsers in Android
+        'SupportIPv4AndIPv6.testSupportIPv4AndIPv6',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
@@ -374,9 +378,22 @@ class ChromeDriverBaseTestWithWebServer(ChromeDriverBaseTest):
   def GlobalSetUp():
     ChromeDriverBaseTestWithWebServer._http_server = webserver.WebServer(
         chrome_paths.GetTestData())
+    ChromeDriverBaseTestWithWebServer._sync_server = webserver.SyncWebServer()
+    if _ANDROID_PACKAGE_KEY:
+      ChromeDriverBaseTestWithWebServer._device = (
+          device_utils.DeviceUtils.HealthyDevices()[0])
+      http_host_port = (
+          ChromeDriverBaseTestWithWebServer._http_server._server.server_port)
+      sync_host_port = (
+          ChromeDriverBaseTestWithWebServer._sync_server._server.server_port)
+      forwarder.Forwarder.Map(
+          [(http_host_port, http_host_port), (sync_host_port, sync_host_port)],
+          ChromeDriverBaseTestWithWebServer._device)
 
   @staticmethod
   def GlobalTearDown():
+    if _ANDROID_PACKAGE_KEY:
+      forwarder.Forwarder.UnmapAllDevicePorts(ChromeDriverTest._device)
     ChromeDriverBaseTestWithWebServer._http_server.Shutdown()
 
   @staticmethod
@@ -384,26 +401,35 @@ class ChromeDriverBaseTestWithWebServer(ChromeDriverBaseTest):
     return ChromeDriverBaseTestWithWebServer._http_server.GetUrl() + file_path
 
 
+class ChromeDriverTestWithCustomCapability(ChromeDriverBaseTestWithWebServer):
+
+  def testEagerMode(self):
+    send_response = threading.Event()
+    def waitAndRespond():
+        send_response.wait(10)
+        self._sync_server.RespondWithContent('#')
+    thread = threading.Thread(target=waitAndRespond)
+
+    self._http_server.SetDataForPath('/top.html',
+     """
+     <html><body>
+     <div id='top'>
+       <img src='%s'>
+     </div>
+     </body></html>""" % self._sync_server.GetUrl())
+    eager_driver = self.CreateDriver(page_load_strategy='eager')
+    thread.start()
+    start_eager = time.time()
+    eager_driver.Load(self._http_server.GetUrl() + '/top.html')
+    stop_eager = time.time()
+    send_response.set()
+    eager_time = stop_eager - start_eager
+    self.assertTrue(eager_time < 9)
+    thread.join()
+
+
 class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
   """End to end tests for ChromeDriver."""
-
-  @staticmethod
-  def GlobalSetUp():
-    ChromeDriverBaseTestWithWebServer.GlobalSetUp()
-    ChromeDriverTest._sync_server = webserver.SyncWebServer()
-    if _ANDROID_PACKAGE_KEY:
-      ChromeDriverTest._device = device_utils.DeviceUtils.HealthyDevices()[0]
-      http_host_port = ChromeDriverTest._http_server._server.server_port
-      sync_host_port = ChromeDriverTest._sync_server._server.server_port
-      forwarder.Forwarder.Map(
-          [(http_host_port, http_host_port), (sync_host_port, sync_host_port)],
-          ChromeDriverTest._device)
-
-  @staticmethod
-  def GlobalTearDown():
-    if _ANDROID_PACKAGE_KEY:
-      forwarder.Forwarder.UnmapAllDevicePorts(ChromeDriverTest._device)
-    ChromeDriverBaseTestWithWebServer.GlobalTearDown()
 
   def setUp(self):
     self._driver = self.CreateDriver()
@@ -1044,30 +1070,6 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
   def testPageLoadStrategyIsNormalByDefault(self):
     self.assertEquals('normal',
                       self._driver.capabilities['pageLoadStrategy'])
-
-  def testEagerMode(self):
-    send_response = threading.Event()
-    def waitAndRespond():
-        send_response.wait(10)
-        self._sync_server.RespondWithContent('#')
-    thread = threading.Thread(target=waitAndRespond)
-
-    self._http_server.SetDataForPath('/top.html',
-     """
-     <html><body>
-     <div id='top'>
-       <img src='%s'>
-     </div>
-     </body></html>""" % self._sync_server.GetUrl())
-    eager_driver = self.CreateDriver(page_load_strategy='eager')
-    thread.start()
-    start_eager = time.time()
-    eager_driver.Load(self._http_server.GetUrl() + '/top.html')
-    stop_eager = time.time()
-    send_response.set()
-    eager_time = stop_eager - start_eager
-    self.assertTrue(eager_time < 9)
-    thread.join()
 
   def testClearElement(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
@@ -2021,7 +2023,9 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTest):
   # The example attestation private key from the U2F spec at
   # https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-u2f-raw-message-formats-v1.2-ps-20170411.html#registration-example
   # PKCS.8 encoded without encryption, as a base64url string.
-  privateKey = "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQg8_zMDQDYAxlU-Qhk1Dwkf0v18GZca1DMF3SaJ9HPdmShRANCAASNYX5lyVCOZLzFZzrIKmeZ2jwURmgsJYxGP__fWN_S-j5sN4tT15XEpN_7QZnt14YvI6uvAgO0uJEboFaZlOEB"
+  privateKey = ("MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQg8_zMDQDYAxlU-Q"
+                "hk1Dwkf0v18GZca1DMF3SaJ9HPdmShRANCAASNYX5lyVCOZLzFZzrIKmeZ2jwU"
+                "RmgsJYxGP__fWN_S-j5sN4tT15XEpN_7QZnt14YvI6uvAgO0uJEboFaZlOEB")
 
   @staticmethod
   def GlobalSetUp():
@@ -2194,6 +2198,79 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTest):
                       self.UrlSafeBase64Decode(credentials[0]['userHandle']))
     self.assertEquals(1, credentials[0]['signCount'])
     self.assertTrue(credentials[0]['privateKey'])
+
+  def testRemoveAllCredentials(self):
+    register_credential_script = """
+      let done = arguments[0];
+      registerCredential().then(done);
+    """
+    self._driver.Load(self.GetHttpsUrlForFile(
+        '/chromedriver/webauthn_test.html', 'chromedriver.test'))
+    authenticatorId = self._driver.AddVirtualAuthenticator(
+        protocol = 'ctap2',
+        transport = 'usb',
+        hasResidentKey = True,
+        hasUserVerification = True,
+    )['authenticatorId']
+
+    # Register a credential via the webauthn API.
+    result = self._driver.ExecuteAsyncScript(register_credential_script)
+    self.assertEquals('OK', result['status'])
+    credentialId = result['credential']['rawId']
+
+    # Attempting to register with the credential ID on excludeCredentials should
+    # fail.
+    exclude_credentials_script = """
+      let done = arguments[0];
+      registerCredential({
+        excludeCredentials: [{
+          type: "public-key",
+          id: Uint8Array.from(%s),
+          transports: ["usb"],
+        }],
+      }).then(done);
+    """ % (credentialId)
+    result = self._driver.ExecuteAsyncScript(exclude_credentials_script)
+    self.assertEquals("InvalidStateError: The user attempted to register an "
+                      "authenticator that contains one of the credentials "
+                      "already registered with the relying party.",
+                      result['status'])
+
+    # The registration should succeed after clearing the credentials.
+    self._driver.RemoveAllCredentials(authenticatorId)
+    result = self._driver.ExecuteAsyncScript(exclude_credentials_script)
+    self.assertEquals('OK', result['status'])
+
+  def testSetUserVerified(self):
+    register_uv_script = """
+      let done = arguments[0];
+      registerCredential({
+        authenticatorSelection: {
+          userVerification: "required",
+        },
+      }).then(done);
+    """
+    self._driver.Load(self.GetHttpsUrlForFile(
+        '/chromedriver/webauthn_test.html', 'chromedriver.test'))
+    authenticatorId = self._driver.AddVirtualAuthenticator(
+        protocol = 'ctap2',
+        transport = 'usb',
+        hasResidentKey = True,
+        hasUserVerification = True,
+    )['authenticatorId']
+
+    # Configure the virtual authenticator to fail user verification.
+    self._driver.SetUserVerified(authenticatorId, False)
+
+    # Attempting to register a credential with UV required should fail.
+    result = self._driver.ExecuteAsyncScript(register_uv_script)
+    self.assertTrue(result['status'].startswith("NotAllowedError"),
+                    "Expected %s to be a NotAllowedError" % (result['status']))
+
+    # Trying again after setting userVerified to True should succeed.
+    self._driver.SetUserVerified(authenticatorId, True)
+    result = self._driver.ExecuteAsyncScript(register_uv_script)
+    self.assertEquals("OK", result['status'])
 
 # Tests in the following class are expected to be moved to ChromeDriverTest
 # class when we no longer support the legacy mode.
@@ -2643,7 +2720,8 @@ class ChromeDriverAndroidTest(ChromeDriverBaseTest):
           if (('stable' in v['channel'] and 'stable' in _ANDROID_PACKAGE_KEY) or
               ('beta' in v['channel'] and 'beta' in _ANDROID_PACKAGE_KEY)):
             omaha = map(int, v['version'].split('.'))
-            device = map(int, self._driver.capabilities['version'].split('.'))
+            device = map(int,
+              self._driver.capabilities['browserVersion'].split('.'))
             self.assertTrue(omaha <= device)
             return
       raise RuntimeError('Malformed omaha JSON')
@@ -3812,12 +3890,12 @@ if __name__ == '__main__':
   # TODO(johnchen@chromium.org): Investigate feasibility of combining
   # multiple GlobalSetup and GlobalTearDown, and reducing the number of HTTP
   # servers used for the test.
-  ChromeDriverTest.GlobalSetUp()
+  ChromeDriverBaseTestWithWebServer.GlobalSetUp()
   ChromeDriverSecureContextTest.GlobalSetUp()
   HeadlessInvalidCertificateTest.GlobalSetUp()
   MobileEmulationCapabilityTest.GlobalSetUp()
   result = unittest.TextTestRunner(stream=sys.stdout, verbosity=2).run(tests)
-  ChromeDriverTest.GlobalTearDown()
+  ChromeDriverBaseTestWithWebServer.GlobalTearDown()
   ChromeDriverSecureContextTest.GlobalTearDown()
   HeadlessInvalidCertificateTest.GlobalTearDown()
   MobileEmulationCapabilityTest.GlobalTearDown()

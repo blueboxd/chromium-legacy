@@ -373,7 +373,7 @@ Status ExecutePerformActions(Session* session,
 Status ProcessInputActionSequence(
     Session* session,
     const base::DictionaryValue* action_sequence,
-    std::unique_ptr<base::DictionaryValue>* result);
+    std::vector<std::unique_ptr<base::DictionaryValue>>* action_list);
 
 Status ExecuteReleaseActions(Session* session,
                              WebView* web_view,

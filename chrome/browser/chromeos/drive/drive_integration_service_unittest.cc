@@ -24,7 +24,7 @@ class DriveIntegrationServiceTest : public testing::Test {
   void SetUp() override { ASSERT_TRUE(profile_manager_.SetUp()); }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   content::TestServiceManagerContext context_;
   // DriveIntegrationService depends on DriveNotificationManager which depends
   // on InvalidationService. On Chrome OS, the InvalidationServiceFactory

@@ -248,7 +248,7 @@ class VisitedLinkTest : public testing::Test {
 
   std::unique_ptr<VisitedLinkMaster> master_;
   TestVisitedLinkDelegate delegate_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 // This test creates and reads some databases to make sure the data is

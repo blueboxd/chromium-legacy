@@ -8,6 +8,7 @@
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
 
 #include "base/time/time.h"
+#include "chrome/browser/sharing/sharing_send_message_result.h"
 
 enum class SharingDeviceRegistrationResult;
 
@@ -87,13 +88,11 @@ void LogSharingMessageAckTime(base::TimeDelta time);
 // Logs to UMA the |type| of dialog shown for Click to Call.
 void LogClickToCallDialogShown(SharingClickToCallDialogType type);
 
-// Logs to UMA whether a SharingMessage was sent successfully by the Sharing
-// service. For |success| to be true, an ack message must be received before the
-// timeout. This should not be called for sending ack messages.
-void LogSendSharingMessageSuccess(bool success);
+// Logs to UMA result of sending a SharingMessage. This should not be called for
+// sending ack messages.
+void LogSendSharingMessageResult(SharingSendMessageResult result);
 
-// Logs to UMA whether an ack message was sent successfully by the Sharing
-// service.
-void LogSendSharingAckMessageSuccess(bool success);
+// Logs to UMA result of sendin an ack of a SharingMessage.
+void LogSendSharingAckMessageResult(SharingSendMessageResult result);
 
 #endif  // CHROME_BROWSER_SHARING_SHARING_METRICS_H_

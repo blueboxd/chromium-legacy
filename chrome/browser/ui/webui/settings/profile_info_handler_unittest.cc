@@ -101,7 +101,7 @@ class ProfileInfoHandlerTest : public testing::Test {
   TestProfileInfoHandler* handler() const { return handler_.get(); }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager profile_manager_;
   content::TestWebUI web_ui_;
 

@@ -52,6 +52,17 @@ void PerfResultReporter::AddResult(const std::string& metric_suffix,
               iter->second.units, iter->second.important);
 }
 
+bool PerfResultReporter::GetMetricInfo(const std::string& metric_suffix,
+                                       MetricInfo* out) {
+  auto iter = metric_map_.find(metric_suffix);
+  if (iter == metric_map_.end()) {
+    return false;
+  }
+
+  *out = iter->second;
+  return true;
+}
+
 void PerfResultReporter::RegisterMetric(const std::string& metric_suffix,
                                         const std::string& units,
                                         bool important) {

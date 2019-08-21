@@ -24,11 +24,10 @@ using testing::StartsWith;
 class NtpBackgroundServiceTest : public testing::Test {
  public:
   NtpBackgroundServiceTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-                &test_url_loader_factory_)) {
-  }
+                &test_url_loader_factory_)) {}
 
   ~NtpBackgroundServiceTest() override {}
 
@@ -56,7 +55,7 @@ class NtpBackgroundServiceTest : public testing::Test {
 
  private:
   // Required to run tests from UI and threads.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;

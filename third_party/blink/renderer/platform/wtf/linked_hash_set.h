@@ -121,7 +121,7 @@ class LinkedHashSetNodeBase {
   LinkedHashSetNodeBase(const LinkedHashSetNodeBase& other)
       : prev_(nullptr), next_(nullptr) {}
 
-  LinkedHashSetNodeBase(LinkedHashSetNodeBase&& other)
+  LinkedHashSetNodeBase(LinkedHashSetNodeBase&& other) noexcept
       : prev_(other.prev_), next_(other.next_) {
     other.prev_ = nullptr;
     other.next_ = nullptr;
@@ -151,7 +151,7 @@ class LinkedHashSetNode : public LinkedHashSetNodeBase {
                     LinkedHashSetNodeBase* next)
       : LinkedHashSetNodeBase(prev, next), value_(std::move(value)) {}
 
-  LinkedHashSetNode(LinkedHashSetNode&& other)
+  LinkedHashSetNode(LinkedHashSetNode&& other) noexcept
       : LinkedHashSetNodeBase(std::move(other)),
         value_(std::move(other.value_)) {}
 
@@ -214,9 +214,9 @@ class LinkedHashSet {
 
   LinkedHashSet();
   LinkedHashSet(const LinkedHashSet&);
-  LinkedHashSet(LinkedHashSet&&);
+  LinkedHashSet(LinkedHashSet&&) noexcept;
   LinkedHashSet& operator=(const LinkedHashSet&);
-  LinkedHashSet& operator=(LinkedHashSet&&);
+  LinkedHashSet& operator=(LinkedHashSet&&) noexcept;
 
   // Needs finalization. The anchor needs to unlink itself from the chain.
   ~LinkedHashSet();
@@ -724,7 +724,7 @@ inline LinkedHashSet<T, U, V, W>::LinkedHashSet(const LinkedHashSet& other)
 }
 
 template <typename T, typename U, typename V, typename W>
-inline LinkedHashSet<T, U, V, W>::LinkedHashSet(LinkedHashSet&& other)
+inline LinkedHashSet<T, U, V, W>::LinkedHashSet(LinkedHashSet&& other) noexcept
     : anchor_() {
   Swap(other);
 }
@@ -739,7 +739,7 @@ inline LinkedHashSet<T, U, V, W>& LinkedHashSet<T, U, V, W>::operator=(
 
 template <typename T, typename U, typename V, typename W>
 inline LinkedHashSet<T, U, V, W>& LinkedHashSet<T, U, V, W>::operator=(
-    LinkedHashSet&& other) {
+    LinkedHashSet&& other) noexcept {
   Swap(other);
   return *this;
 }

@@ -149,7 +149,6 @@
 <translation id="2921219216347069551">Impossível Partilhar Página</translation>
 <translation id="2923448633003185837">Colar e ir</translation>
 <translation id="292639812446257861">Marcar como não lidas</translation>
-<translation id="2933759065870693102">Lanterna</translation>
 <translation id="2958718410589002129">Palavras-passe</translation>
 <translation id="2969979262385602596">Falha ao iniciar sessão. Tente nov. mais tarde.</translation>
 <translation id="298306318844797842">Adicionar método de pagamento…</translation>
@@ -305,6 +304,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="5327248766486351172">Nome</translation>
 <translation id="5388358297987318779">Abrir Imagem</translation>
+<translation id="5407969256130905701">Rejeitar alterações</translation>
 <translation id="5409365236829784218">Não existem aplicações instaladas que possam abrir este ficheiro.</translation>
 <translation id="5416022985862681400">Últimos 7 dias</translation>
 <translation id="5433691172869980887">Nome de utilizador copiado</translation>
@@ -510,6 +510,7 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="8428213095426709021">Definições</translation>
 <translation id="8458397775385147834">1 item eliminado</translation>
 <translation id="8487700953926739672">Disponível offline</translation>
+<translation id="8490978609246021741">Guardar alterações</translation>
 <translation id="8503813439785031346">Nome de utilizador</translation>
 <translation id="850600235656508448">Abrir no modo de navegação anónima</translation>
 <translation id="8517375800490286174">Licenças de Código Aberto</translation>

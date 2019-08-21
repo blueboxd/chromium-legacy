@@ -73,7 +73,7 @@ class NetworkPrefStateObserverTest : public testing::Test {
     return profile;
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   FakeChromeUserManager* fake_user_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;
   TestingProfileManager profile_manager_;

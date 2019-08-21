@@ -56,7 +56,7 @@ class SyncEncryptionTableViewControllerTest
         initWithBrowserState:chrome_browser_state_.get()];
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
 };
 

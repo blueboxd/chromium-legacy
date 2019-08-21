@@ -50,7 +50,7 @@ std::unique_ptr<KeyedService> CreateTestingTemplateURLService(
 class SearchEngineTabHelperTest : public ChromeWebTest {
  protected:
   SearchEngineTabHelperTest()
-      : ChromeWebTest(web::TestWebThreadBundle::Options::IO_MAINLOOP) {}
+      : ChromeWebTest(web::WebTaskEnvironment::Options::IO_MAINLOOP) {}
 
   void SetUp() override {
     WebTestWithWebState::SetUp();

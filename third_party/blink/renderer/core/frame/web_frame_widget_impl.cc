@@ -162,7 +162,6 @@ void WebFrameWidgetImpl::Close() {
 
   WebFrameWidgetBase::Close();
 
-  layer_tree_view_ = nullptr;
   animation_host_ = nullptr;
   root_layer_ = nullptr;
   root_graphics_layer_ = nullptr;
@@ -968,10 +967,8 @@ Element* WebFrameWidgetImpl::FocusedElement() const {
   return document->FocusedElement();
 }
 
-void WebFrameWidgetImpl::SetLayerTreeView(WebLayerTreeView* layer_tree_view,
-                                          cc::AnimationHost* animation_host) {
+void WebFrameWidgetImpl::SetAnimationHost(cc::AnimationHost* animation_host) {
   DCHECK(Client());
-  layer_tree_view_ = layer_tree_view;
   animation_host_ = animation_host;
 
   GetPage()->AnimationHostInitialized(*animation_host_,

@@ -115,7 +115,7 @@ class NativeMessagingTest : public ::testing::Test,
  protected:
   NativeMessagingTest()
       : current_channel_(version_info::Channel::DEV),
-        thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+        task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         channel_closed_(false) {}
 
   void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
@@ -177,7 +177,7 @@ class NativeMessagingTest : public ::testing::Test,
   ScopedCurrentChannel current_channel_;
   std::unique_ptr<NativeMessageHost> native_message_host_;
   std::unique_ptr<base::RunLoop> run_loop_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
 
   std::string last_message_;

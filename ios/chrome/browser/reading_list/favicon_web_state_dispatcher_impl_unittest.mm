@@ -39,7 +39,7 @@ class FaviconWebStateDispatcherTest : public PlatformTest,
   }
 
  private:
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   bool web_state_destroyed_;
 };

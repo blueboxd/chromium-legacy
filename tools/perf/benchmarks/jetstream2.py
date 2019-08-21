@@ -38,7 +38,7 @@ class Jetstream2(press._PressBenchmark): # pylint: disable=protected-access
   """
   @classmethod
   def Name(cls):
-    return 'UNSCHEDULED_jetstream2'
+    return 'jetstream2'
 
   def CreateStorySet(self, options):
     return page_sets.Jetstream2StorySet()

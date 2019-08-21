@@ -111,7 +111,7 @@ class PlatformNotificationServiceTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
 
   std::unique_ptr<NotificationDisplayServiceTester> display_service_tester_;

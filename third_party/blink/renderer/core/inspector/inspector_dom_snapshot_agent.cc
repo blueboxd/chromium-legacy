@@ -471,8 +471,6 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node, int parent_index) {
       if (InspectorDOMAgent::GetPseudoElementType(element->GetPseudoId(),
                                                   &pseudo_type)) {
         SetRare(nodes->getPseudoType(nullptr), index, pseudo_type);
-        if (node->GetLayoutObject())
-          VisitPseudoLayoutChildren(node, index);
       }
     } else {
       VisitPseudoElements(element, index);
@@ -542,15 +540,6 @@ void InspectorDOMSnapshotAgent::VisitContainerChildren(Node* container,
   }
 }
 
-void InspectorDOMSnapshotAgent::VisitPseudoLayoutChildren(Node* pseudo_node,
-                                                           int index) {
-  for (LayoutObject* child = pseudo_node->GetLayoutObject()->SlowFirstChild();
-       child; child = child->NextSibling()) {
-    if (child->IsAnonymous())
-      BuildLayoutTreeNode(child, pseudo_node, index);
-  }
-}
-
 void InspectorDOMSnapshotAgent::VisitPseudoElements(Element* parent,
                                                     int parent_index) {
   for (PseudoId pseudo_id :
@@ -579,6 +568,18 @@ int InspectorDOMSnapshotAgent::BuildLayoutTreeNode(LayoutObject* layout_object,
                                                    int node_index) {
   if (!layout_object)
     return -1;
+
+  if (node->GetPseudoId()) {
+    // For pseudo elements, visit the children of the layout object.
+    // Combinding ::before { content: 'hello' } and ::first-letter would produce
+    // two boxes for the ::before node, one for 'hello' and one for 'ello'.
+    for (LayoutObject* child = layout_object->SlowFirstChild(); child;
+         child = child->NextSibling()) {
+      if (child->IsAnonymous())
+        BuildLayoutTreeNode(child, node, node_index);
+    }
+  }
+
   auto* layout_tree_snapshot = document_->getLayout();
   auto* text_box_snapshot = document_->getTextBoxes();
 

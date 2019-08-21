@@ -260,8 +260,6 @@ int LegacyDOMSnapshotAgent::VisitNode(Node* node,
       if (InspectorDOMAgent::GetPseudoElementType(element->GetPseudoId(),
                                                   &pseudo_type)) {
         value->setPseudoType(pseudo_type);
-        if (node->GetLayoutObject())
-          VisitPseudoLayoutChildren(node, index);
       }
     } else {
       value->setPseudoElementIndexes(
@@ -324,15 +322,6 @@ LegacyDOMSnapshotAgent::VisitContainerChildren(
   return children;
 }
 
-void LegacyDOMSnapshotAgent::VisitPseudoLayoutChildren(Node* pseudo_node,
-                                                       int index) {
-  for (LayoutObject* child = pseudo_node->GetLayoutObject()->SlowFirstChild();
-       child; child = child->NextSibling()) {
-    if (child->IsAnonymous())
-      VisitLayoutTreeNode(child, pseudo_node, index);
-  }
-}
-
 std::unique_ptr<protocol::Array<int>>
 LegacyDOMSnapshotAgent::VisitPseudoElements(
     Element* parent,
@@ -378,6 +367,15 @@ int LegacyDOMSnapshotAgent::VisitLayoutTreeNode(LayoutObject* layout_object,
                                                 int node_index) {
   if (!layout_object)
     return -1;
+
+  if (node->GetPseudoId()) {
+    // For pseudo elements, visit the children of the layout object.
+    for (LayoutObject* child = layout_object->SlowFirstChild(); child;
+         child = child->NextSibling()) {
+      if (child->IsAnonymous())
+        VisitLayoutTreeNode(child, node, node_index);
+    }
+  }
 
   auto layout_tree_node =
       protocol::DOMSnapshot::LayoutTreeNode::create()

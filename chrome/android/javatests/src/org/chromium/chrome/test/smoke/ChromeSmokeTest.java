@@ -18,6 +18,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.ScalableTimeout;
+import org.chromium.chrome.test.pagecontroller.rules.ChromeUiApplicationTestRule;
 import org.chromium.chrome.test.pagecontroller.utils.IUi2Locator;
 import org.chromium.chrome.test.pagecontroller.utils.Ui2Locators;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -28,7 +29,6 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 @SmallTest
 @RunWith(BaseJUnit4ClassRunner.class)
 public class ChromeSmokeTest {
-    private static final String PACKAGE_NAME_ARG = "PackageUnderTest";
     private static final String DATA_URL = "data:,Hello";
     private static final String ACTIVITY_NAME = "org.chromium.chrome.browser.ChromeTabbedActivity";
 
@@ -38,9 +38,8 @@ public class ChromeSmokeTest {
 
     @Before
     public void setUp() {
-        // TODO (aluo): Adjust this as needed according to https://crrev.com/c/1585142
         mPackageName = InstrumentationRegistry.getArguments().getString(
-                PACKAGE_NAME_ARG, "org.chromium.chrome");
+                ChromeUiApplicationTestRule.PACKAGE_NAME_ARG, "org.chromium.chrome");
     }
 
     @Test

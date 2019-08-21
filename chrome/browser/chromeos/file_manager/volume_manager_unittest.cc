@@ -256,7 +256,7 @@ class VolumeManagerTest : public testing::Test {
     main_profile_.reset();
     disk_mount_manager_.reset();
     chromeos::PowerManagerClient::Shutdown();
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   Profile* profile() const { return main_profile_->profile(); }
@@ -264,7 +264,7 @@ class VolumeManagerTest : public testing::Test {
     return main_profile_->volume_manager();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   content::TestServiceManagerContext context_;
   std::unique_ptr<FakeDiskMountManager> disk_mount_manager_;
   std::unique_ptr<ProfileEnvironment> main_profile_;

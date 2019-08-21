@@ -55,20 +55,20 @@ class FakeGCMDriver : public gcm::FakeGCMDriver {
   FakeGCMDriver() {}
   ~FakeGCMDriver() override {}
 
-  void SendWebPushMessage(
-      const std::string& app_id,
-      const std::string& authorized_entity,
-      const std::string& p256dh,
-      const std::string& auth_secret,
-      const std::string& fcm_token,
-      crypto::ECPrivateKey* vapid_key,
-      gcm::WebPushMessage message,
-      gcm::GCMDriver::SendWebPushMessageCallback callback) override {
+  void SendWebPushMessage(const std::string& app_id,
+                          const std::string& authorized_entity,
+                          const std::string& p256dh,
+                          const std::string& auth_secret,
+                          const std::string& fcm_token,
+                          crypto::ECPrivateKey* vapid_key,
+                          gcm::WebPushMessage message,
+                          gcm::WebPushCallback callback) override {
     p256dh_ = p256dh;
     auth_secret_ = auth_secret;
     fcm_token_ = fcm_token;
     if (should_respond_)
-      std::move(callback).Run(base::make_optional(kMessageId));
+      std::move(callback).Run(gcm::SendWebPushMessageResult::kSuccessful,
+                              base::make_optional(kMessageId));
   }
 
   gcm::GCMEncryptionProvider* GetEncryptionProviderInternal() override {
@@ -179,11 +179,13 @@ class SharingServiceTest : public testing::Test {
     SharingSyncPreference::RegisterProfilePrefs(prefs_.registry());
   }
 
-  void OnMessageSent(bool success) {
-    send_message_success_ = base::make_optional(success);
+  void OnMessageSent(SharingSendMessageResult result) {
+    send_message_result_ = base::make_optional(result);
   }
 
-  base::Optional<bool> send_message_success() { return send_message_success_; }
+  base::Optional<SharingSendMessageResult> send_message_result() {
+    return send_message_result_;
+  }
 
  protected:
   static std::unique_ptr<syncer::DeviceInfo> CreateFakeDeviceInfo(
@@ -215,7 +217,7 @@ class SharingServiceTest : public testing::Test {
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
-  content::TestBrowserThreadBundle task_environment_{
+  content::BrowserTaskEnvironment task_environment_{
       TaskEnvironment::TimeSource::MOCK_TIME};
 
   syncer::FakeDeviceInfoTracker device_info_tracker_;
@@ -234,7 +236,7 @@ class SharingServiceTest : public testing::Test {
 
  private:
   std::unique_ptr<SharingService> sharing_service_ = nullptr;
-  base::Optional<bool> send_message_success_;
+  base::Optional<SharingSendMessageResult> send_message_result_;
 };
 
 }  // namespace
@@ -368,8 +370,7 @@ TEST_F(SharingServiceTest, SendMessageToDeviceSuccess) {
   ack_message.mutable_ack_message()->set_original_message_id(kMessageId);
   ack_message_handler->OnMessage(ack_message);
 
-  EXPECT_TRUE(send_message_success().has_value());
-  EXPECT_TRUE(*send_message_success());
+  EXPECT_EQ(SharingSendMessageResult::kSuccessful, send_message_result());
 }
 
 TEST_F(SharingServiceTest, SendMessageToDeviceFCMNotResponding) {
@@ -394,8 +395,7 @@ TEST_F(SharingServiceTest, SendMessageToDeviceFCMNotResponding) {
 
   // Advance time so send message will expire.
   task_environment_.FastForwardBy(kSendMessageTimeout);
-  EXPECT_TRUE(send_message_success().has_value());
-  EXPECT_FALSE(*send_message_success());
+  EXPECT_EQ(SharingSendMessageResult::kAckTimeout, send_message_result());
 
   // Simulate ack message received by AckMessageHandler, which will be
   // disregarded.
@@ -407,8 +407,7 @@ TEST_F(SharingServiceTest, SendMessageToDeviceFCMNotResponding) {
   ack_message.mutable_ack_message()->set_original_message_id(kMessageId);
   ack_message_handler->OnMessage(ack_message);
 
-  EXPECT_TRUE(send_message_success().has_value());
-  EXPECT_FALSE(*send_message_success());
+  EXPECT_EQ(SharingSendMessageResult::kAckTimeout, send_message_result());
 }
 
 TEST_F(SharingServiceTest, SendMessageToDeviceExpired) {
@@ -430,8 +429,7 @@ TEST_F(SharingServiceTest, SendMessageToDeviceExpired) {
 
   // Advance time so send message will expire.
   task_environment_.FastForwardBy(kSendMessageTimeout);
-  EXPECT_TRUE(send_message_success().has_value());
-  EXPECT_FALSE(*send_message_success());
+  EXPECT_EQ(SharingSendMessageResult::kAckTimeout, send_message_result());
 
   // Simulate ack message received by AckMessageHandler, which will be
   // disregarded.
@@ -443,8 +441,7 @@ TEST_F(SharingServiceTest, SendMessageToDeviceExpired) {
   ack_message.mutable_ack_message()->set_original_message_id(kMessageId);
   ack_message_handler->OnMessage(ack_message);
 
-  EXPECT_TRUE(send_message_success().has_value());
-  EXPECT_FALSE(*send_message_success());
+  EXPECT_EQ(SharingSendMessageResult::kAckTimeout, send_message_result());
 }
 
 TEST_F(SharingServiceTest, DeviceRegistration) {

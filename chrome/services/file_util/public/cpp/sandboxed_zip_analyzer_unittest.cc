@@ -73,7 +73,7 @@ class SandboxedZipAnalyzerTest : public ::testing::Test {
   };
 
   SandboxedZipAnalyzerTest()
-      : browser_thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   void SetUp() override {
     ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &dir_test_data_));
@@ -182,7 +182,7 @@ class SandboxedZipAnalyzerTest : public ::testing::Test {
 #endif  // OS_MACOSX
 
   base::FilePath dir_test_data_;
-  content::TestBrowserThreadBundle browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 // static

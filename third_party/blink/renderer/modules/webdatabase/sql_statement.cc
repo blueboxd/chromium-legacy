@@ -90,7 +90,7 @@ SQLStatement::SQLStatement(Database* database,
 
   if (HasCallback() || HasErrorCallback()) {
     probe::AsyncTaskScheduled(database->GetExecutionContext(), "SQLStatement",
-                              this);
+                              &async_task_id_);
   }
 }
 
@@ -123,7 +123,7 @@ bool SQLStatement::PerformCallback(SQLTransaction* transaction) {
   SQLErrorData* error = backend_->SqlError();
 
   probe::AsyncTask async_task(transaction->GetDatabase()->GetExecutionContext(),
-                              this);
+                              &async_task_id_);
 
   // Call the appropriate statement callback and track if it resulted in an
   // error, because then we need to jump to the transaction error callback.

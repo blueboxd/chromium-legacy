@@ -56,7 +56,7 @@ class ScopedSurfaceRequestManagerUnitTest : public testing::Test {
 
   ScopedSurfaceRequestManager* manager_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedSurfaceRequestManagerUnitTest);
 };

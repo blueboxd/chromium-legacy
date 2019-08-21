@@ -5,6 +5,7 @@
 module blink.mojom;
 
 import "skia/public/mojom/bitmap.mojom";
+import "third_party/blink/public/mojom/manifest/manifest.mojom";
 import "url/mojom/url.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 
@@ -35,14 +36,24 @@ enum ContentCategory {
   AUDIO,
 };
 
+// Similar to ImageResource. These are developer provided fields that are
+// unprocessed so the same description can be returned when queried.
+// TODO(crbug.com/973844): Use ImageResource directly or the equivalent
+// after spec issues have been ironed out.
+struct ContentIconDefinition {
+  string src;
+  string? sizes;
+  string? type;
+};
+
 struct ContentDescription {
   string id;
   string title;
   string description;
   ContentCategory category;
+  array<ContentIconDefinition> icons;
 
   // Passed as a string so the same description can be returned when queried.
-  string icon_url;
   string launch_url;
 };
 

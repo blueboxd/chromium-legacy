@@ -62,8 +62,7 @@ class ServiceWorkerContextWrapperTest : public testing::Test {
   ServiceWorkerStorage* storage() { return context()->storage(); }
 
  protected:
-  TestBrowserThreadBundle browser_thread_bundle_{
-      TestBrowserThreadBundle::IO_MAINLOOP};
+  BrowserTaskEnvironment task_environment_{BrowserTaskEnvironment::IO_MAINLOOP};
   base::ScopedTempDir user_data_directory_;
   std::unique_ptr<TestBrowserContext> browser_context_;
   scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter_;

@@ -7,6 +7,7 @@
 
 #include "cc/cc_export.h"
 #include "cc/paint/element_id.h"
+#include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/transform.h"
@@ -32,23 +33,11 @@ struct CC_EXPORT TransformNode {
 
   // The local transform information is combined to form to_parent (ignoring
   // snapping) as follows:
-  //
-  //   to_parent = M_post_local * T_scroll * M_local * M_pre_local.
-  //
-  // The pre/post may seem odd when read LTR, but we multiply our points from
-  // the right, so the pre_local matrix affects the result "first". This lines
-  // up with the notions of pre/post used in skia and gfx::Transform.
-  //
-  // TODO(vollick): The values labeled with "will be moved..." take up a lot of
-  // space, but are only necessary for animated or scrolled nodes (otherwise
-  // we'll just use the baked to_parent). These values will be ultimately stored
-  // directly on the transform/scroll display list items when that's possible,
-  // or potentially in a scroll tree.
-  //
-  // TODO(vollick): will be moved when accelerated effects are implemented.
-  gfx::Transform pre_local;
+  //   to_parent =
+  //       T_post_translation * T_origin * T_scroll * M_local * -T_origin.
   gfx::Transform local;
-  gfx::Transform post_local;
+  gfx::Point3F origin;
+  gfx::Vector2dF post_translation;
 
   gfx::Transform to_parent;
 
@@ -124,7 +113,6 @@ struct CC_EXPORT TransformNode {
   // We need to track changes to to_screen transform to compute the damage rect.
   bool transform_changed : 1;
 
-  // TODO(vollick): will be moved when accelerated effects are implemented.
   gfx::ScrollOffset scroll_offset;
 
   // This value stores the snapped amount whenever we snap. If the snap is due
@@ -132,7 +120,6 @@ struct CC_EXPORT TransformNode {
   // otherwise we may need it to undo the snapping next frame.
   gfx::Vector2dF snap_amount;
 
-  // TODO(vollick): will be moved when accelerated effects are implemented.
   gfx::Vector2dF source_offset;
   gfx::Vector2dF source_to_parent;
 
@@ -148,10 +135,7 @@ struct CC_EXPORT TransformNode {
     is_invertible = to_parent.IsInvertible();
   }
 
-  void update_pre_local_transform(const gfx::Point3F& transform_origin);
-
-  void update_post_local_transform(const gfx::PointF& position,
-                                   const gfx::Point3F& transform_origin);
+  void UpdatePostTranslation(const gfx::PointF& position);
 
   void AsValueInto(base::trace_event::TracedValue* value) const;
 };

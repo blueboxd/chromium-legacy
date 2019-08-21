@@ -99,7 +99,7 @@ class FilePicker : public ui::SelectFileDialog::Listener {
 
 // Flaky, see crbug.com/853079.
 TEST_F(SelectFileDialogImplGtkTest, DISABLED_SelectExistingFolder) {
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   ScopedTestingLocalState local_state(TestingBrowserProcess::GetGlobal());
 
   FilePicker file_picker(ui::SelectFileDialog::SELECT_EXISTING_FOLDER);
@@ -114,7 +114,7 @@ TEST_F(SelectFileDialogImplGtkTest, DISABLED_SelectExistingFolder) {
 
 // Flaky, see crbug.com/853079.
 TEST_F(SelectFileDialogImplGtkTest, DISABLED_SelectUploadFolder) {
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   ScopedTestingLocalState local_state(TestingBrowserProcess::GetGlobal());
 
   FilePicker file_picker(ui::SelectFileDialog::SELECT_UPLOAD_FOLDER);
@@ -129,7 +129,7 @@ TEST_F(SelectFileDialogImplGtkTest, DISABLED_SelectUploadFolder) {
 
 // Flaky, see crbug.com/853079.
 TEST_F(SelectFileDialogImplGtkTest, DISABLED_SelectFolder) {
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   ScopedTestingLocalState local_state(TestingBrowserProcess::GetGlobal());
 
   FilePicker file_picker(ui::SelectFileDialog::SELECT_FOLDER);

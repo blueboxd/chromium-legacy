@@ -6,9 +6,8 @@
 namespace device {
 
 XRStandardGamepadBuilder::XRStandardGamepadBuilder(
-    device::mojom::XRHandedness handedness,
-    double axis_deadzone)
-    : handedness_(handedness), axis_deadzone_(axis_deadzone) {}
+    device::mojom::XRHandedness handedness)
+    : handedness_(handedness) {}
 
 XRStandardGamepadBuilder::~XRStandardGamepadBuilder() = default;
 
@@ -35,7 +34,6 @@ base::Optional<Gamepad> XRStandardGamepadBuilder::GetGamepad() const {
   }
 
   GamepadBuilder builder("", GamepadMapping::kXrStandard, handedness_);
-  builder.SetAxisDeadzone(axis_deadzone_);
   builder.AddButton(primary_button_.value());
 
   const bool has_optional_buttons = !optional_button_data_.empty();

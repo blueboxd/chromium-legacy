@@ -90,7 +90,7 @@ class DevToolsBackgroundServicesContextTest
       DevToolsBackgroundServicesContextImpl::EventObserver {
  public:
   DevToolsBackgroundServicesContextTest()
-      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP),
         embedded_worker_test_helper_(base::FilePath() /* in memory */) {}
 
   ~DevToolsBackgroundServicesContextTest() override = default;
@@ -171,7 +171,7 @@ class DevToolsBackgroundServicesContextTest
         devtools::proto::BackgroundService::BACKGROUND_FETCH);
 
     // Wait for the messages to propagate to the browser client.
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void StopRecording() {
@@ -183,7 +183,7 @@ class DevToolsBackgroundServicesContextTest
         devtools::proto::BackgroundService::BACKGROUND_FETCH);
 
     // Wait for the messages to propagate to the browser client.
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void ClearLoggedBackgroundServiceEvents() {
@@ -191,7 +191,7 @@ class DevToolsBackgroundServicesContextTest
         devtools::proto::BackgroundService::BACKGROUND_FETCH);
   }
 
-  TestBrowserThreadBundle thread_bundle_;  // Must be first member.
+  BrowserTaskEnvironment task_environment_;  // Must be first member.
   url::Origin origin_ = url::Origin::Create(GURL("https://example.com"));
   int64_t service_worker_registration_id_ =
       blink::mojom::kInvalidServiceWorkerRegistrationId;
@@ -353,7 +353,7 @@ TEST_F(DevToolsBackgroundServicesContextTest, RecordingExpiration) {
               OnRecordingStateChanged(
                   false, devtools::proto::BackgroundService::BACKGROUND_FETCH));
 
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // The expiration time entry should be cleared.
   EXPECT_TRUE(GetExpirationTime().is_null());
@@ -382,7 +382,7 @@ TEST_F(DevToolsBackgroundServicesContextTest, EventObserverCalled) {
   {
     EXPECT_CALL(*this, OnEventReceived(_)).Times(0);
     LogTestBackgroundServiceEvent("f1");
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   StartRecording();
@@ -390,7 +390,7 @@ TEST_F(DevToolsBackgroundServicesContextTest, EventObserverCalled) {
   {
     EXPECT_CALL(*this, OnEventReceived(_));
     LogTestBackgroundServiceEvent("f2");
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 }
 

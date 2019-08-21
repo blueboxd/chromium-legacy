@@ -85,7 +85,7 @@ class FirebaseUtilsTest : public PlatformTest {
 
  protected:
   IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   id firapp_;
   base::HistogramTester histogram_tester_;
 };

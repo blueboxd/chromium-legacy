@@ -39,9 +39,8 @@ class ModuleDatabaseTest : public testing::Test {
   ModuleDatabaseTest()
       : dll1_(kDll1),
         dll2_(kDll2),
-        test_browser_thread_bundle_(
-            base::test::TaskEnvironment::MainThreadType::UI,
-            base::test::TaskEnvironment::TimeSource::MOCK_TIME),
+        task_environment_(base::test::TaskEnvironment::MainThreadType::UI,
+                          base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         scoped_testing_local_state_(TestingBrowserProcess::GetGlobal()),
         module_database_(std::make_unique<ModuleDatabase>(
             /* third_party_blocking_policy_enabled = */ false)) {
@@ -56,7 +55,7 @@ class ModuleDatabaseTest : public testing::Test {
 
     // Clear the outstanding delayed tasks that were posted by the
     // ModuleDatabase instance.
-    test_browser_thread_bundle_.FastForwardUntilNoTasksRemain();
+    task_environment_.FastForwardUntilNoTasksRemain();
   }
 
   const ModuleDatabase::ModuleMap& modules() {
@@ -65,11 +64,11 @@ class ModuleDatabaseTest : public testing::Test {
 
   ModuleDatabase* module_database() { return module_database_.get(); }
 
-  void RunSchedulerUntilIdle() { test_browser_thread_bundle_.RunUntilIdle(); }
+  void RunSchedulerUntilIdle() { task_environment_.RunUntilIdle(); }
 
   void FastForwardToIdleTimer() {
-    test_browser_thread_bundle_.FastForwardBy(ModuleDatabase::kIdleTimeout);
-    test_browser_thread_bundle_.RunUntilIdle();
+    task_environment_.FastForwardBy(ModuleDatabase::kIdleTimeout);
+    task_environment_.RunUntilIdle();
   }
 
   const base::FilePath dll1_;
@@ -77,7 +76,7 @@ class ModuleDatabaseTest : public testing::Test {
 
  private:
   // Must be before |module_database_|.
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   ScopedTestingLocalState scoped_testing_local_state_;
 

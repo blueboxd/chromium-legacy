@@ -44,6 +44,7 @@ class HostWindowProxy::Core
   // ClientSessionControl interface.
   const std::string& client_jid() const override;
   void DisconnectSession(protocol::ErrorCode error) override;
+  void OnLocalKeyPressed(uint32_t usb_keycode) override;
   void OnLocalPointerMoved(const webrtc::DesktopVector& position,
                            ui::EventType type) override;
   void SetDisableInputs(bool disable_inputs) override;
@@ -159,6 +160,17 @@ void HostWindowProxy::Core::DisconnectSession(protocol::ErrorCode error) {
 
   if (client_session_control_.get())
     client_session_control_->DisconnectSession(error);
+}
+
+void HostWindowProxy::Core::OnLocalKeyPressed(uint32_t usb_keycode) {
+  if (!caller_task_runner_->BelongsToCurrentThread()) {
+    caller_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&Core::OnLocalKeyPressed, this, usb_keycode));
+    return;
+  }
+
+  if (client_session_control_.get())
+    client_session_control_->OnLocalKeyPressed(usb_keycode);
 }
 
 void HostWindowProxy::Core::OnLocalPointerMoved(

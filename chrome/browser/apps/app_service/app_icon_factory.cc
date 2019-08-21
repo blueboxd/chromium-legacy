@@ -190,8 +190,9 @@ void RunCallbackWithCompressedDataFromExtension(
   }
 
   // Try and load data from the resource file.
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&CompressedDataFromResource, std::move(ext_resource)),
       base::BindOnce(&RunCallbackWithCompressedData, size_hint_in_dip,
                      default_icon_resource, is_placeholder_icon,
@@ -230,7 +231,9 @@ void RunCallbackWithImageSkia(int size_hint_in_dip,
 
     processed_image.MakeThreadSafe();
     base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+        FROM_HERE,
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskPriority::USER_VISIBLE},
         base::BindOnce(&EncodeImage, processed_image),
         base::BindOnce(&RunCallbackWithCompressedData, size_hint_in_dip,
                        default_icon_resource, is_placeholder_icon, icon_effects,

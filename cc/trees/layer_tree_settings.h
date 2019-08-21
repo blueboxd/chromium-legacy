@@ -168,6 +168,10 @@ class CC_EXPORT LayerTreeSettings {
   // go away and CC should send Blink fractional values:
   // https://crbug.com/414283.
   bool commit_fractional_scroll_deltas = false;
+
+  // When false, we do not check for occlusion and all quads are drawn.
+  // Defaults to true.
+  bool enable_occlusion = true;
 };
 
 }  // namespace cc

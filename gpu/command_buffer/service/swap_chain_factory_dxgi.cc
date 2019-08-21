@@ -391,10 +391,15 @@ SwapChainFactoryDXGI::SwapChainBackings SwapChainFactoryDXGI::CreateSwapChain(
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     uint32_t usage) {
-  if (format != viz::RGBA_8888 && format != viz::RGBA_F16) {
-    DLOG(ERROR) << gfx::BufferFormatToString(viz::BufferFormat(format))
-                << " format is not supported by swap chain.";
-    return {nullptr, nullptr};
+  switch (format) {
+    case viz::RGBA_8888:
+    case viz::BGRA_8888:
+    case viz::RGBA_F16:
+      break;
+    default:
+      DLOG(ERROR) << gfx::BufferFormatToString(viz::BufferFormat(format))
+                  << " format is not supported by swap chain.";
+      return {nullptr, nullptr};
   }
 
   Microsoft::WRL::ComPtr<IDXGIDevice> dxgi_device;

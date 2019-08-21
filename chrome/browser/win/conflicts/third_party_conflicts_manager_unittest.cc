@@ -77,7 +77,7 @@ class ThirdPartyConflictsManagerTest : public testing::Test,
   void RemoveObserver(ModuleDatabaseObserver* observer) override {}
 
  private:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   ScopedTestingLocalState scoped_testing_local_state_;
 
   // Temp directory used to host module list.

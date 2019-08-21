@@ -57,6 +57,7 @@
 <translation id="2746543609216772311">Стойността трябва да е <ph name="MINIMUM_DATE_OR_TIME" /> или по-късно.</translation>
 <translation id="2759744352195237655">бутон с изскачащ прозорец</translation>
 <translation id="2761667185364618470">Моля, поставете отметка в това квадратче, ако искате да продължите.</translation>
+<translation id="2844350028562914727">подробности</translation>
 <translation id="2896972712917208084">група бутони за избор</translation>
 <translation id="2908441821576996758">Моля, въведете списък с имейл адреси, разделени със запетаи.</translation>
 <translation id="2940813599313844715">обект</translation>
@@ -154,6 +155,7 @@
 <translation id="6166809985690652833">послеслов</translation>
 <translation id="6209276755895393898">Изглежда, че това е: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">терминологичен речник</translation>
+<translation id="6281763101136022427">url адрес</translation>
 <translation id="6310801910862476708">Изход от „Картина в картината“</translation>
 <translation id="6398862346408813489">Показване на панела за избиране на месец</translation>
 <translation id="6404546809543547843">времеви плъзгач за аудиозаписа</translation>
@@ -236,6 +238,7 @@
 <translation id="860475260694818407">съдържание</translation>
 <translation id="8613126697340063924">управление на отдалеченото възпроизвеждане</translation>
 <translation id="862370744433916922">подзаглавие</translation>
+<translation id="8711688047404765493">изход</translation>
 <translation id="8750798805984357768">Моля, изберете една от тези опции.</translation>
 <translation id="8808573423886751634">глава</translation>
 <translation id="8845239796550121995">В момента се предава към телевизора ви</translation>

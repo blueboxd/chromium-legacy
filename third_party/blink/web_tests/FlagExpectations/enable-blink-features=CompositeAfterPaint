@@ -138,6 +138,11 @@ crbug.com/907601 virtual/threaded/fast/scrolling/events/scrollend-event-fired-af
 # Single pixel difference around one of the radiused borders.
 Bug(none) external/wpt/css/filter-effects/backdrop-filter-reference-filter.html [ Failure ]
 
+# Scrolling with the mouse wheel does not work.
+crbug.com/979352 virtual/threaded/fast/scrolling/non-composited-scroller-in-scrolled-absolute-scroller.html [ Failure ]
+crbug.com/979352 virtual/threaded/fast/scrolling/non-composited-scroller-in-scrolled-position-fixed-scroller.html [ Failure ]
+crbug.com/979352 virtual/threaded/fast/scrolling/non-composited-scroller-in-sticky.html [ Failure ]
+
 # Less invalidations or different invalidations without pixel failures.
 # Some might be good. Some might be under-invalidations for which under-invalidation
 # checking failed.

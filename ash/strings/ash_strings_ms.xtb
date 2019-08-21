@@ -334,6 +334,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="6043212731627905357">Monitor ini tidak serasi dengan <ph name="DEVICE_TYPE" /> anda (monitor tidak disokong).</translation>
 <translation id="6043994281159824495">Log keluar sekarang</translation>
 <translation id="6047696787498798094">Perkongsian skrin akan berhenti apabila anda beralih kepada pengguna lain. Adakah anda ingin meneruskan?</translation>
+<translation id="6054305421211936131">Daftar masuk dengan kad pintar</translation>
 <translation id="6062360702481658777">Anda akan dilog keluar secara automatik dalam masa <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="6064337552080329342">Maaf, kata laluan anda tidak dapat disahkan. Sila cuba semula.</translation>
 <translation id="607652042414456612">Komputer anda boleh ditemui oleh peranti Bluetooth yang berdekatan sebagai "<ph name="NAME" />" dengan alamat <ph name="ADDRESS" /></translation>
@@ -361,6 +362,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="6459472438155181876">Melanjutkan skrin ke <ph name="DISPLAY_NAME" /></translation>
 <translation id="6482559668224714696">Penggadang skrin penuh</translation>
 <translation id="6490471652906364588">Peranti USB-C (port kanan)</translation>
+<translation id="649452524636452238">PIN kad pintar</translation>
 <translation id="6501401484702599040">Menghantar skrin ke <ph name="RECEIVER_NAME" /></translation>
 <translation id="6521655319214113338">Input tulisan tangan</translation>
 <translation id="6528179044667508675">Jangan ganggu</translation>
@@ -390,6 +392,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="6857811139397017780">Aktifkan <ph name="NETWORKSERVICE" /></translation>
 <translation id="6910714959251846841">Kemas kini ini memerlukan powerwash dijalankan pada peranti anda. Ketahui lebih lanjut tentang kemas kini <ph name="SYSTEM_APP_NAME" /> yang terbaharu.</translation>
 <translation id="6911468394164995108">Sertai yang lain...</translation>
+<translation id="6919251195245069855">Tidak dapat mengecam kad pintar anda. Cuba lagi.</translation>
 <translation id="6972754398087986839">Bermula</translation>
 <translation id="6981982820502123353">Kebolehcapaian</translation>
 <translation id="698231206551913481">Semua fail dan data yang berkaitan dengan pengguna ini akan dipadamkan secara kekal selepas pengguna ini dialih keluar.</translation>

@@ -15,7 +15,7 @@ class WindowsFilename(clique.CustomType):
   illegal characters out of translations.
   '''
 
-  BANNED = lazy_re.compile('\+|:|\/|\\\\|\*|\?|\"|\<|\>|\|')
+  BANNED = lazy_re.compile(r'\+|:|\/|\\\\|\*|\?|\"|\<|\>|\|')
 
   def Validate(self, message):
     return not self.BANNED.search(message.GetPresentableContent())

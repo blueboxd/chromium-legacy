@@ -89,7 +89,7 @@ class ArcTimerStore {
 class ArcTimerTest : public testing::Test {
  public:
   ArcTimerTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {
     chromeos::PowerManagerClient::InitializeFake();
     timer_bridge_ = ArcTimerBridge::GetForBrowserContextForTesting(&context_);
     // This results in ArcTimerBridge::OnInstanceReady being called.
@@ -125,7 +125,7 @@ class ArcTimerTest : public testing::Test {
   bool StoreReadFds(const std::vector<clockid_t> clocks,
                     std::vector<base::ScopedFD> read_fds);
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   ArcServiceManager arc_service_manager_;
   TestBrowserContext context_;
   FakeTimerInstance timer_instance_;

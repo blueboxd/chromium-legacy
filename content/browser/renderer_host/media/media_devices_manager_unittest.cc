@@ -225,7 +225,7 @@ void VerifyDeviceAndGroupID(
 class MediaDevicesManagerTest : public ::testing::Test {
  public:
   MediaDevicesManagerTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         video_capture_device_factory_(nullptr) {}
   ~MediaDevicesManagerTest() override { audio_manager_->Shutdown(); }
 
@@ -329,7 +329,7 @@ class MediaDevicesManagerTest : public ::testing::Test {
 
   // Must outlive MediaDevicesManager as ~MediaDevicesManager() verifies it's
   // running on the IO thread.
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
 
   std::unique_ptr<MediaDevicesManager> media_devices_manager_;
   scoped_refptr<VideoCaptureManager> video_capture_manager_;

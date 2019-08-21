@@ -18,8 +18,10 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/safe_browsing/password_protection/metrics_util.h"
 #include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
@@ -103,7 +105,7 @@ class PageInfoBubbleViewSyncBrowserTest : public SyncTest {
     username = info.email;
 #endif
     if (username.empty()) {
-      username = "user@example.com";
+      username = "user@gmail.com";
     }
 
     std::unique_ptr<ProfileSyncServiceHarness> harness =
@@ -124,12 +126,19 @@ class PageInfoBubbleViewSyncBrowserTest : public SyncTest {
     account_info.account_id = current_info.account_id;
     account_info.gaia = current_info.gaia;
     account_info.email = current_info.email;
-    account_info.hosted_domain = "domain.com";
+    account_info.hosted_domain = kNoHostedDomainFound;
     signin::UpdateAccountInfoForAccount(
         IdentityManagerFactory::GetForProfile(browser()->profile()),
         account_info);
 
     ASSERT_TRUE(harness->SetupSync());
+  }
+
+  const base::string16 GetPageInfoBubbleViewDetailText() {
+    PageInfoBubbleView* page_info_bubble_view =
+        static_cast<PageInfoBubbleView*>(
+            PageInfoBubbleView::GetPageInfoBubbleForTesting());
+    return page_info_bubble_view->details_text();
   }
 
   DISALLOW_COPY_AND_ASSIGN(PageInfoBubbleViewSyncBrowserTest);
@@ -140,6 +149,8 @@ class PageInfoBubbleViewSyncBrowserTest : public SyncTest {
 IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewSyncBrowserTest,
                        VerifySignInPasswordReusePageInfoBubble) {
   Profile* profile = browser()->profile();
+  // PageInfo calls GetPasswordProtectionReusedPasswordAccountType which checks
+  // to see if the account is syncing.
   SetupSyncForAccount(profile);
 
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -150,11 +161,12 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewSyncBrowserTest,
   // SB_THREAT_TYPE_GAIA_PASSWORD_REUSE.
   safe_browsing::ChromePasswordProtectionService* service = safe_browsing::
       ChromePasswordProtectionService::GetPasswordProtectionService(profile);
+  service->set_username("user@gmail.com");
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   safe_browsing::ReusedPasswordAccountType account_type;
   account_type.set_account_type(
-      safe_browsing::ReusedPasswordAccountType::GSUITE);
+      safe_browsing::ReusedPasswordAccountType::GMAIL);
   account_type.set_is_account_syncing(true);
   service->ShowModalWarning(
       contents, safe_browsing::RequestOutcome::UNKNOWN,
@@ -175,6 +187,9 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewSyncBrowserTest,
   ASSERT_EQ(
       security_state::MALICIOUS_CONTENT_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE,
       visible_security_state->malicious_content_status);
+  ASSERT_EQ(
+      l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SYNC),
+      GetPageInfoBubbleViewDetailText());
 
   // Verify these two buttons are showing.
   EXPECT_TRUE(change_password_button->GetVisible());

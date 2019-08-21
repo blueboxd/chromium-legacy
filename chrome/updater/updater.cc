@@ -104,14 +104,14 @@ void InitLogging(const base::CommandLine& command_line) {
   base::FilePath log_dir;
   GetProductDirectory(&log_dir);
   const auto log_file = log_dir.Append(FILE_PATH_LITERAL("updater.log"));
-  settings.log_file = log_file.value().c_str();
+  settings.log_file_path = log_file.value().c_str();
   settings.logging_dest = logging::LOG_TO_ALL;
   logging::InitLogging(settings);
   logging::SetLogItems(true,    // enable_process_id
                        true,    // enable_thread_id
                        true,    // enable_timestamp
                        false);  // enable_tickcount
-  VLOG(1) << "Log file " << settings.log_file;
+  VLOG(1) << "Log file " << settings.log_file_path;
 }
 
 void InitializeUpdaterMain() {

@@ -108,7 +108,7 @@ void ServiceWorkerScriptCacheMap::SetResources(
 
 void ServiceWorkerScriptCacheMap::WriteMetadata(
     const GURL& url,
-    const std::vector<uint8_t>& data,
+    base::span<const uint8_t> data,
     net::CompletionOnceCallback callback) {
   if (!context_) {
     std::move(callback).Run(net::ERR_ABORTED);

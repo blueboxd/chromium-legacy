@@ -333,6 +333,7 @@
 <translation id="6043212731627905357">این نمایشگر با <ph name="DEVICE_TYPE" /> سازگار نیست (نمایشگر پشتیبانی نمی‌شود).</translation>
 <translation id="6043994281159824495">خروج از سیستم هم‌اکنون</translation>
 <translation id="6047696787498798094">زمانی که به یک کاربر دیگر جابه‌جا می‌شوید، اشتراک‌گذاری صفحه نمایش متوقف می‌شود. می‌خواهید ادامه دهید؟</translation>
+<translation id="6054305421211936131">ورود به سیستم با کارت هوشمند</translation>
 <translation id="6062360702481658777">به صورت خودکار در عرض <ph name="LOGOUT_TIME_LEFT" /> از سیستم خارج می‌شوید.</translation>
 <translation id="6064337552080329342">متأسفانه، گذرواژه شما تأیید نشد. لطفاً دوباره امتحان کنید.</translation>
 <translation id="607652042414456612">رایانه شما توسط دستگاه‌های بلوتوث نزدیک قابل شناسایی است و با نام «<ph name="NAME" />» و آدرس <ph name="ADDRESS" /> نشان داده می‌شود</translation>
@@ -360,6 +361,7 @@
 <translation id="6459472438155181876">گسترش صفحه به <ph name="DISPLAY_NAME" /></translation>
 <translation id="6482559668224714696">ذره‌بین تمام‌صفحه</translation>
 <translation id="6490471652906364588">‏دستگاه USB-C (درگاه سمت راست)</translation>
+<translation id="649452524636452238">پین کارت هوشمند</translation>
 <translation id="6501401484702599040">ارسال محتوای صفحه به <ph name="RECEIVER_NAME" /></translation>
 <translation id="6521655319214113338">ورودی دست‌نویس</translation>
 <translation id="6528179044667508675">مزاحم نشوید</translation>
@@ -389,6 +391,7 @@
 <translation id="6857811139397017780">فعال سازی <ph name="NETWORKSERVICE" /></translation>
 <translation id="6910714959251846841">‏این به‌روزرسانی نیاز به انجام powerwash دستگاهتان دارد. درباره جدیدترین به‌روزرسانی <ph name="SYSTEM_APP_NAME" /> بیشتر بدانید.</translation>
 <translation id="6911468394164995108">پیوستن به شبکه دیگر…</translation>
+<translation id="6919251195245069855">کارت هوشمندتان تشخیص داده نشد. دوباره امتحان کنید.</translation>
 <translation id="6972754398087986839">شروع به کار</translation>
 <translation id="6981982820502123353">قابلیت دسترسی</translation>
 <translation id="698231206551913481">اگر کاربر حذف شود، همه فایل‌ها و داده‌های محلی مربوط به او به‌طور دائم حذف خواهند شد.</translation>

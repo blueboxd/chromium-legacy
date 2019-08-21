@@ -151,7 +151,7 @@ class TriggerManagerTest : public ::testing::Test {
  private:
   TriggerManager trigger_manager_;
   MockThreatDetailsFactory mock_threat_details_factory_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   content::TestBrowserContext browser_context_;
   content::TestWebContentsFactory web_contents_factory_;
   TestingPrefServiceSimple pref_service_;

@@ -82,7 +82,8 @@ size_t ScriptCachedMetadataHandler::GetCodeCacheSize() const {
 
 void ScriptCachedMetadataHandler::SendToPlatform() {
   if (cached_metadata_) {
-    const Vector<uint8_t>& serialized_data = cached_metadata_->SerializedData();
+    base::span<const uint8_t> serialized_data =
+        cached_metadata_->SerializedData();
     sender_->Send(serialized_data.data(), serialized_data.size());
   } else {
     sender_->Send(nullptr, 0);

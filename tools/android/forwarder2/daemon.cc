@@ -44,7 +44,7 @@ void InitLoggingForDaemon(const std::string& log_file) {
   settings.logging_dest = log_file.empty() ? logging::LOG_TO_SYSTEM_DEBUG_LOG |
                                                  logging::LOG_TO_STDERR
                                            : logging::LOG_TO_FILE;
-  settings.log_file = log_file.c_str();
+  settings.log_file_path = log_file.c_str();
   settings.lock_log = logging::DONT_LOCK_LOG_FILE;
   CHECK(logging::InitLogging(settings));
 }

@@ -201,7 +201,7 @@ class SwReporterInstallerTest : public ::testing::Test {
 
   // |ComponentReady| asserts that it is run on the UI thread, so we must
   // create test threads before calling it.
-  content::TestBrowserThreadBundle threads_;
+  content::BrowserTaskEnvironment threads_;
 
   // Bound callback to the |SwReporterComponentReady| method.
   OnComponentReadyCallback on_component_ready_callback_;
@@ -742,7 +742,7 @@ class SwReporterOnDemandFetcherTest : public ::testing::Test,
 
   bool component_can_be_updated_ = false;
   bool error_callback_called_ = false;
-  content::TestBrowserThreadBundle threads_;
+  content::BrowserTaskEnvironment threads_;
 
   DISALLOW_COPY_AND_ASSIGN(SwReporterOnDemandFetcherTest);
 };

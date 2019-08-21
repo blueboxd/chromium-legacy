@@ -80,7 +80,7 @@ class AlwaysOnVpnManagerTest : public testing::Test {
   TestingPrefServiceSimple* pref_service() { return &pref_service_; }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingPrefServiceSimple pref_service_;
 
   DISALLOW_COPY_AND_ASSIGN(AlwaysOnVpnManagerTest);

@@ -90,8 +90,8 @@ const ShadowDetails& ShadowDetails::Get(int elevation, int corner_radius) {
   if (iter != g_shadow_cache.Get().end())
     return iter->second;
 
-  auto insertion = g_shadow_cache.Get().insert(std::make_pair(
-      std::make_pair(elevation, corner_radius), ShadowDetails()));
+  auto insertion = g_shadow_cache.Get().emplace(
+      std::make_pair(elevation, corner_radius), ShadowDetails());
   DCHECK(insertion.second);
   ShadowDetails* shadow = &insertion.first->second;
   shadow->values = ShadowValue::MakeMdShadowValues(elevation);

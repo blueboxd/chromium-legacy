@@ -96,7 +96,7 @@ class ArcBootPhaseMonitorBridgeTest : public testing::Test {
         user_manager::UserManager::Get());
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   user_manager::ScopedUserManager scoped_user_manager_;
   std::unique_ptr<ArcServiceManager> arc_service_manager_;
   std::unique_ptr<ArcSessionManager> arc_session_manager_;

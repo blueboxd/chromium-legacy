@@ -84,7 +84,7 @@ class WebUIDataSourceTest : public testing::Test {
     source_ = base::WrapRefCounted(source_impl);
   }
 
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   scoped_refptr<WebUIDataSourceImpl> source_;
 };
 

@@ -9,6 +9,7 @@
 
 #include "base/optional.h"
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/geometry/dom_point_read_only.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -17,6 +18,7 @@ namespace blink {
 
 class XRSession;
 class XRSpace;
+class XRPose;
 
 class XRPlane : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -40,6 +42,10 @@ class XRPlane : public ScriptWrappable {
   String orientation() const;
   HeapVector<Member<DOMPointReadOnly>> polygon() const;
   double lastChangedTime() const;
+
+  ScriptPromise createAnchor(ScriptState* script_state,
+                             XRPose* pose,
+                             XRSpace* space);
 
   // Updates plane data from passed in |plane_data|. The resulting instance
   // should be equivalent to the instance that would be create by calling

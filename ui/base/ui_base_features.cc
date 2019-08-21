@@ -30,7 +30,7 @@ const base::Feature kInputMethodSettingsUiUpdate = {
 
 // Allows system caption style for WebVTT Captions.
 const base::Feature kSystemCaptionStyle{"SystemCaptionStyle",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Allows system keyboard event capture via the keyboard lock API.
 const base::Feature kSystemKeyboardLock{"SystemKeyboardLock",

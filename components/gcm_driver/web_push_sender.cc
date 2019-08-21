@@ -14,7 +14,6 @@
 #include "components/gcm_driver/common/gcm_message.h"
 #include "components/gcm_driver/crypto/json_web_token_util.h"
 #include "components/gcm_driver/crypto/p256_key_util.h"
-#include "components/gcm_driver/web_push_metrics.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/cors/cors.h"
@@ -46,7 +45,6 @@ const char kContentCodingAes128Gcm[] = "aes128gcm";
 
 // Other constants.
 const char kContentEncodingOctetStream[] = "application/octet-stream";
-const int kMaximumBodySize = 4096;
 
 base::Optional<std::string> GetAuthHeader(crypto::ECPrivateKey* vapid_key,
                                           int time_to_live) {
@@ -149,8 +147,8 @@ WebPushSender::~WebPushSender() = default;
 
 void WebPushSender::SendMessage(const std::string& fcm_token,
                                 crypto::ECPrivateKey* vapid_key,
-                                const WebPushMessage& message,
-                                SendMessageCallback callback) {
+                                WebPushMessage message,
+                                WebPushCallback callback) {
   DCHECK(!fcm_token.empty());
   DCHECK(vapid_key);
   DCHECK_LE(message.time_to_live, message.kMaximumTTL);
@@ -158,9 +156,9 @@ void WebPushSender::SendMessage(const std::string& fcm_token,
   base::Optional<std::string> auth_header =
       GetAuthHeader(vapid_key, message.time_to_live);
   if (!auth_header) {
-    LOG(ERROR) << "Failed to create JWT";
-    LogSendWebPushMessageResult(SendWebPushMessageResult::kCreateJWTFailed);
-    std::move(callback).Run(base::nullopt);
+    DLOG(ERROR) << "Failed to create JWT";
+    InvokeWebPushCallback(std::move(callback),
+                          SendWebPushMessageResult::kCreateJWTFailed);
     return;
   }
 
@@ -173,56 +171,80 @@ void WebPushSender::SendMessage(const std::string& fcm_token,
       base::BindOnce(&WebPushSender::OnMessageSent,
                      weak_ptr_factory_.GetWeakPtr(), std::move(url_loader),
                      std::move(callback)),
-      kMaximumBodySize);
+      message.payload.size());
 }
 
 void WebPushSender::OnMessageSent(
     std::unique_ptr<network::SimpleURLLoader> url_loader,
-    SendMessageCallback callback,
+    WebPushCallback callback,
     std::unique_ptr<std::string> response_body) {
   int net_error = url_loader->NetError();
+  if (net_error == net::ERR_INSUFFICIENT_RESOURCES) {
+    DLOG(ERROR) << "VAPID key invalid";
+    InvokeWebPushCallback(std::move(callback),
+                          SendWebPushMessageResult::kVapidKeyInvalid);
+    return;
+  }
+
   if (net_error != net::OK) {
-    LOG(ERROR) << "Network Error: " << net_error;
-    LogSendWebPushMessageResult(SendWebPushMessageResult::kNetworkError);
-    std::move(callback).Run(base::nullopt);
+    DLOG(ERROR) << "Network Error: " << net_error;
+    InvokeWebPushCallback(std::move(callback),
+                          SendWebPushMessageResult::kNetworkError);
     return;
   }
 
   scoped_refptr<net::HttpResponseHeaders> response_headers =
       url_loader->ResponseInfo()->headers;
   if (!url_loader->ResponseInfo() || !response_headers) {
-    LOG(ERROR) << "Response info not found";
-    LogSendWebPushMessageResult(SendWebPushMessageResult::kServerError);
-    std::move(callback).Run(base::nullopt);
+    DLOG(ERROR) << "Response info not found";
+    InvokeWebPushCallback(std::move(callback),
+                          SendWebPushMessageResult::kServerError);
     return;
   }
 
   int response_code = response_headers->response_code();
+  if (response_code == net::HTTP_NOT_FOUND || response_code == net::HTTP_GONE) {
+    DLOG(ERROR) << "Device no longer registered";
+    InvokeWebPushCallback(std::move(callback),
+                          SendWebPushMessageResult::kDeviceGone);
+    return;
+  }
+
+  // Note: FCM is not following spec and returns 400 for payload too large.
+  if (response_code == net::HTTP_REQUEST_ENTITY_TOO_LARGE ||
+      response_code == net::HTTP_BAD_REQUEST) {
+    DLOG(ERROR) << "Payload too large";
+    InvokeWebPushCallback(std::move(callback),
+                          SendWebPushMessageResult::kPayloadTooLarge);
+    return;
+  }
+
   if (!network::cors::IsOkStatus(response_code)) {
-    LOG(ERROR) << "HTTP Error: " << response_code;
-    LogSendWebPushMessageResult(SendWebPushMessageResult::kServerError);
-    std::move(callback).Run(base::nullopt);
+    DLOG(ERROR) << "HTTP Error: " << response_code;
+    InvokeWebPushCallback(std::move(callback),
+                          SendWebPushMessageResult::kServerError);
     return;
   }
 
   std::string location;
   if (!response_headers->EnumerateHeader(nullptr, "location", &location)) {
-    LOG(ERROR) << "Failed to get location header from response";
-    LogSendWebPushMessageResult(SendWebPushMessageResult::kParseResponseFailed);
-    std::move(callback).Run(base::nullopt);
+    DLOG(ERROR) << "Failed to get location header from response";
+    InvokeWebPushCallback(std::move(callback),
+                          SendWebPushMessageResult::kParseResponseFailed);
     return;
   }
 
   size_t slash_pos = location.rfind("/");
   if (slash_pos == std::string::npos) {
-    LOG(ERROR) << "Failed to parse message_id from location header";
-    LogSendWebPushMessageResult(SendWebPushMessageResult::kParseResponseFailed);
-    std::move(callback).Run(base::nullopt);
+    DLOG(ERROR) << "Failed to parse message_id from location header";
+    InvokeWebPushCallback(std::move(callback),
+                          SendWebPushMessageResult::kParseResponseFailed);
     return;
   }
 
-  LogSendWebPushMessageResult(SendWebPushMessageResult::kSuccessful);
-  std::move(callback).Run(base::make_optional(location.substr(slash_pos + 1)));
+  InvokeWebPushCallback(std::move(callback),
+                        SendWebPushMessageResult::kSuccessful,
+                        location.substr(slash_pos + 1));
 }
 
 }  // namespace gcm

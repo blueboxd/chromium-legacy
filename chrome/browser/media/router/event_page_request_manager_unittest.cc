@@ -105,7 +105,7 @@ class EventPageRequestManagerTest : public ::testing::Test {
  private:
   std::unique_ptr<TestingProfile> profile_;
   base::HistogramTester histogram_tester_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(EventPageRequestManagerTest);
 };

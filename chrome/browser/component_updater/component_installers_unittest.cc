@@ -61,7 +61,7 @@ const base::FilePath::CharType kDataPath[] =
 
 // TODO(viettrungluu): Separate out into two separate tests; use a test fixture.
 TEST(ComponentInstallerTest, PepperFlashCheck) {
-  content::TestBrowserThreadBundle test_browser_thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
 
   ppapi::PpapiGlobals::PerThreadForTest per_thread_for_test;
   ppapi::TestGlobals test_globals(per_thread_for_test);

@@ -74,7 +74,7 @@ void LogOpen(OpenLog* log, int file_handle, base::File::Error result) {
 
 TEST(ScopedFileOpenerTest, AbortWhileOpening) {
   TestingProvidedFileSystem file_system;
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   OpenLog log;
   {
     ScopedFileOpener file_opener(&file_system, base::FilePath(),
@@ -93,7 +93,7 @@ TEST(ScopedFileOpenerTest, AbortWhileOpening) {
 
 TEST(ScopedFileOpenerTest, CloseAfterOpening) {
   TestingProvidedFileSystem file_system;
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   OpenLog log;
   {
     ScopedFileOpener file_opener(&file_system, base::FilePath(),
@@ -114,7 +114,7 @@ TEST(ScopedFileOpenerTest, CloseAfterOpening) {
 
 TEST(ScopedFileOpenerTest, CloseAfterAborting) {
   TestingProvidedFileSystem file_system;
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   OpenLog log;
   {
     ScopedFileOpener file_opener(&file_system, base::FilePath(),

@@ -141,7 +141,6 @@
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB を他のアプリで使用中</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# 件のファイル}other{# 件のファイル}}</translation>
 <translation id="2017836877785168846">アドレスバーの履歴とオートコンプリート データを削除します。</translation>
-<translation id="2018707881002649255">以下で選択する連絡先がウェブサイト <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> と共有されます。</translation>
 <translation id="2021896219286479412">全画面表示時のサイトの操作項目</translation>
 <translation id="2038563949887743358">[PC 版サイトを見る] をオンにします</translation>
 <translation id="2041019821020695769">Chrome に通知の送信を許可するには、<ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />でも通知をオンにしてください。</translation>
@@ -243,7 +242,6 @@
 <translation id="2777555524387840389">残り <ph name="SECONDS" /> 秒</translation>
 <translation id="2779651927720337254">失敗</translation>
 <translation id="2781151931089541271">残り 1 秒</translation>
-<translation id="2796941233371040292">ストレージ データはありません</translation>
 <translation id="2801022321632964776">Chrome を更新し、最新バージョンでお使いの言語を入手してください</translation>
 <translation id="2810645512293415242">簡易版ページを使用してデータの保存と読み込みを高速化します。</translation>
 <translation id="281504910091592009"><ph name="BEGIN_LINK" />Google アカウント<ph name="END_LINK" />での保存パスワードの表示と管理</translation>
@@ -271,6 +269,7 @@
 <translation id="2962095958535813455">シークレット タブに切り替えました</translation>
 <translation id="2968755619301702150">証明書ビューア</translation>
 <translation id="2979025552038692506">選択したシークレット タブ</translation>
+<translation id="2987620471460279764">他のデバイスからテキストが共有されました</translation>
 <translation id="2989523299700148168">最近のアクセス</translation>
 <translation id="2996291259634659425">パスフレーズの作成</translation>
 <translation id="2996809686854298943">URLが必要です</translation>
@@ -554,6 +553,7 @@
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 件のダウンロードが失敗しました。}other{# 件のダウンロードが失敗しました。}}</translation>
 <translation id="5170568018924773124">フォルダを開く</translation>
 <translation id="5184329579814168207">Chromeで開く</translation>
+<translation id="5193988420012215838">クリップボードにコピーされました</translation>
 <translation id="5199929503336119739">仕事用プロファイル</translation>
 <translation id="5202089186707505116">このサイトによる VR センサーへのアクセスを許可しますか？</translation>
 <translation id="5210286577605176222">前のタブに移動する</translation>
@@ -702,6 +702,7 @@
 たとえば一部のウェブサイトでは、このリクエストに対して、ユーザーが過去にアクセスしたウェブサイトとは関係のない広告が表示されます。トラッキングを拒否しても、実際のところ多くのウェブサイトではユーザーの閲覧データが収集され利用されています。その用途としては、セキュリティの強化や、コンテンツ、サービス、広告、おすすめの表示、レポート統計情報の作成などが挙げられます。</translation>
 <translation id="624789221780392884">アップデート準備完了</translation>
 <translation id="6255999984061454636">おすすめのコンテンツ</translation>
+<translation id="6264430811215618931"><ph name="ORIGIN" /> からあなたの電話番号にテキスト メッセージが送信されました。確認すると、ご本人であることがサイトで認識されます。</translation>
 <translation id="6277522088822131679">ページの印刷中に問題が発生しました。もう一度お試しください。</translation>
 <translation id="6295158916970320988">すべてのサイト</translation>
 <translation id="629730747756840877">アカウント</translation>
@@ -717,7 +718,6 @@
 <translation id="6364438453358674297">履歴から候補を削除しますか？</translation>
 <translation id="6369229450655021117">ここからウェブを検索したり、友だちと共有したり、開いたページを表示したりできます</translation>
 <translation id="6378173571450987352">詳細: データ使用量の順</translation>
-<translation id="6383961787135158834">サイトのストレージ データを削除...</translation>
 <translation id="6388207532828177975">データを削除してリセット</translation>
 <translation id="6393863479814692971">このサイトを利用するには、Chrome でカメラとマイクの使用を許可する必要があります。</translation>
 <translation id="6395288395575013217">リンク</translation>

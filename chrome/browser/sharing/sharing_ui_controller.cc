@@ -8,7 +8,6 @@
 
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_dialog.h"
-#include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -102,12 +101,14 @@ void SharingUiController::SendMessageToDevice(
                  weak_ptr_factory_.GetWeakPtr(), last_dialog_id_));
 }
 
-void SharingUiController::OnMessageSentToDevice(int dialog_id, bool success) {
+void SharingUiController::OnMessageSentToDevice(
+    int dialog_id,
+    SharingSendMessageResult result) {
   if (dialog_id != last_dialog_id_)
     return;
 
   is_loading_ = false;
-  send_failed_ = !success;
+  send_failed_ = result != SharingSendMessageResult::kSuccessful;
   UpdateIcon();
 
   if (send_failed_ && web_contents_ == GetCurrentWebContents(web_contents_))

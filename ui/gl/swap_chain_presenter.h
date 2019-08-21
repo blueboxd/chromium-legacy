@@ -11,6 +11,7 @@
 #include <wrl/client.h>
 
 #include "base/containers/circular_deque.h"
+#include "base/power_monitor/power_monitor.h"
 #include "base/win/scoped_handle.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gl/dc_renderer_layer_params.h"
@@ -23,12 +24,12 @@ class GLImageMemory;
 // SwapChainPresenter holds a swap chain, direct composition visuals, and other
 // associated resources for a single overlay layer.  It is updated by calling
 // PresentToSwapChain(), and can update or recreate resources as necessary.
-class SwapChainPresenter {
+class SwapChainPresenter : public base::PowerObserver {
  public:
   SwapChainPresenter(DCLayerTree* layer_tree,
                      Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
                      Microsoft::WRL::ComPtr<IDCompositionDevice2> dcomp_device);
-  ~SwapChainPresenter();
+  ~SwapChainPresenter() override;
 
   // Present the given overlay to swap chain.  Returns true on success.
   bool PresentToSwapChain(const ui::DCRendererLayerParams& overlay);
@@ -145,6 +146,13 @@ class SwapChainPresenter {
   // decode swap chain.
   void RecordPresentationStatistics();
 
+  // base::PowerObserver
+  void OnPowerStateChange(bool on_battery_power) override;
+
+  // If connected with a power source, let the Intel video processor to do
+  // the upscaling because it produces better results.
+  bool ShouldUseVideoProcessorScaling();
+
   // Layer tree instance that owns this swap chain presenter.
   DCLayerTree* layer_tree_ = nullptr;
 
@@ -221,6 +229,7 @@ class SwapChainPresenter {
   Microsoft::WRL::ComPtr<IDXGIResource> decode_resource_;
   Microsoft::WRL::ComPtr<IDXGIDecodeSwapChain> decode_swap_chain_;
   Microsoft::WRL::ComPtr<IUnknown> decode_surface_;
+  bool is_on_battery_power_;
 
   DISALLOW_COPY_AND_ASSIGN(SwapChainPresenter);
 };

@@ -41,7 +41,7 @@ class SharedImageInterface;
 }
 
 namespace viz {
-class ContextProviderCommandBuffer;
+class ContextProvider;
 }  // namespace viz
 
 namespace media {
@@ -140,8 +140,7 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
   virtual VideoEncodeAccelerator::SupportedProfiles
   GetVideoEncodeAcceleratorSupportedProfiles() = 0;
 
-  virtual scoped_refptr<viz::ContextProviderCommandBuffer>
-  GetMediaContextProvider() = 0;
+  virtual scoped_refptr<viz::ContextProvider> GetMediaContextProvider() = 0;
 
   // Sets the current pipeline rendering color space.
   virtual void SetRenderingColorSpace(const gfx::ColorSpace& color_space) = 0;

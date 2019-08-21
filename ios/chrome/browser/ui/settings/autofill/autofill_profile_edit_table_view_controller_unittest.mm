@@ -79,7 +79,7 @@ class AutofillProfileEditTableViewControllerTest : public PlatformTest {
     [autofill_profile_edit_controller_ loadViewIfNeeded];
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   autofill::PersonalDataManager* personal_data_manager_;
   AutofillProfileEditTableViewController* autofill_profile_edit_controller_;

@@ -449,11 +449,17 @@ TEST_F(BlockPainterTouchActionTest, ScrolledHitTestChunkProperties) {
   EXPECT_THAT(RootPaintController().GetDisplayItemList(),
               ElementsAre(IsSameId(&scrolling_client, kDocumentBackgroundType),
                           IsSameId(scroller, DisplayItem::kHitTest),
+                          IsSameId(scroller, DisplayItem::kScrollHitTest),
                           IsSameId(child, DisplayItem::kHitTest)));
 
-  HitTestData scroller_hit_test_data;
-  scroller_hit_test_data.touch_action_rects.emplace_back(
+  HitTestData scroller_touch_action_hit_test_data;
+  scroller_touch_action_hit_test_data.touch_action_rects.emplace_back(
       LayoutRect(0, 0, 100, 100));
+  const auto& scrolling_contents_properties =
+      scroller->FirstFragment().ContentsProperties();
+  HitTestData scroll_hit_test_data;
+  scroll_hit_test_data.SetScrollHitTest(
+      &scrolling_contents_properties.Transform(), IntRect(0, 0, 100, 100));
   HitTestData scrolled_hit_test_data;
   scrolled_hit_test_data.touch_action_rects.emplace_back(
       LayoutRect(0, 0, 200, 50));
@@ -469,9 +475,13 @@ TEST_F(BlockPainterTouchActionTest, ScrolledHitTestChunkProperties) {
                        PaintChunk::Id(*scroller->Layer(),
                                       kNonScrollingBackgroundChunkType),
                        scroller->FirstFragment().LocalBorderBoxProperties(),
-                       scroller_hit_test_data),
+                       scroller_touch_action_hit_test_data),
+          IsPaintChunk(2, 3,
+                       PaintChunk::Id(*scroller, DisplayItem::kScrollHitTest),
+                       scroller->FirstFragment().LocalBorderBoxProperties(),
+                       scroll_hit_test_data),
           IsPaintChunk(
-              2, 3,
+              3, 4,
               PaintChunk::Id(*scroller, kScrollingContentsBackgroundChunkType),
               scroller->FirstFragment().ContentsProperties(),
               scrolled_hit_test_data)));
@@ -481,7 +491,7 @@ TEST_F(BlockPainterTouchActionTest, ScrolledHitTestChunkProperties) {
   // The hit test rect for the scroller itself should not be scrolled.
   EXPECT_FALSE(scroller_paint_chunk.properties.Transform().ScrollNode());
 
-  const auto& scrolled_paint_chunk = paint_chunks[2];
+  const auto& scrolled_paint_chunk = paint_chunks[3];
   EXPECT_EQ(IntRect(0, 0, 200, 50), scrolled_paint_chunk.bounds);
   // The hit test rect for the scrolled contents should be scrolled.
   EXPECT_TRUE(scrolled_paint_chunk.properties.Transform().ScrollNode());

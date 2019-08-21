@@ -30,15 +30,14 @@ namespace extensions {
 class ExternalPolicyLoaderTest : public testing::Test {
  public:
   ExternalPolicyLoaderTest()
-      : test_browser_thread_bundle_(
-            content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   ~ExternalPolicyLoaderTest() override {}
 
  private:
   // Needed to satisfy BrowserThread::CurrentlyOn(BrowserThread::UI) checks in
   // ExternalProviderImpl.
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 class MockExternalPolicyProviderVisitor

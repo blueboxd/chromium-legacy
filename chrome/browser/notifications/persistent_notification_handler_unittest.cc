@@ -86,7 +86,7 @@ class PersistentNotificationHandlerTest : public ::testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfileWithPermissionManager profile_;
   NotificationDisplayServiceTester display_service_tester_;
 

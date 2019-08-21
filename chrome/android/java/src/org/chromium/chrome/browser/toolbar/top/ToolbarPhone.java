@@ -1931,6 +1931,13 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     }
 
     @Override
+    void setOnTabSwitcherLongClickHandler(OnLongClickListener listener) {
+        if (mToggleTabStackButton != null) {
+            mToggleTabStackButton.setOnTabSwitcherLongClickHandler(listener);
+        }
+    }
+
+    @Override
     public boolean shouldIgnoreSwipeGesture() {
         return super.shouldIgnoreSwipeGesture() || mUrlExpansionPercent > 0f
                 || mNtpSearchBoxTranslation.y < 0f;

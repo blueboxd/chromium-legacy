@@ -35,6 +35,7 @@ import "services/network/public/mojom/tcp_socket.mojom";
 import "services/network/public/mojom/udp_socket.mojom";
 import "services/network/public/mojom/url_loader.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
+import "services/network/public/mojom/url_response_head.mojom";
 import "services/network/public/mojom/websocket.mojom";
 import "services/proxy_resolver/public/mojom/proxy_resolver.mojom";
 import "url/mojom/origin.mojom";
@@ -514,10 +515,106 @@ struct URLLoaderFactoryParams {
   bool is_trusted;
 };
 
+// The |credentials| output parameter is given to URLRequest::SetAuth()
+// through this mojo interface. It is not set when URLRequest::CancelAuth()
+// needs to be called.
+interface AuthChallengeResponder {
+   OnAuthCredentials(AuthCredentials? credentials);
+};
+
+// This interface enables the UI to send client certificate selections back to
+// the network service.
+//
+// Defining an interface for this purpose, rather than using a union in the
+// response of OnCertificateRequested, enables the NetworkServiceClient to learn
+// of the URLLoader destruction via the connection error handler.
+interface ClientCertificateResponder {
+  // Use the selected certificate and continue the URLRequest.
+  //
+  // - |provider_name| corresponds to the return value of
+  //   net::SSLPrivateKey::GetProviderName().
+  // - |algorithm_preferences| corresponds to the return value of
+  //   net::SSLPrivateKey::GetAlgorithmPreferences().
+  ContinueWithCertificate(network.mojom.X509Certificate x509_certificate,
+                          string provider_name,
+                          array<uint16> algorithm_preferences,
+                          SSLPrivateKey ssl_private_key);
+
+  // Affirmatively select no certificate (this is cached and can affect future
+  // URLRequests). Does not cancel the URLRequest.
+  //
+  // The connection is continued with no client cert.
+  // net::URLRequest::ContinueWithCertificate(nullptr, nullptr) needs to be
+  // called.
+  ContinueWithoutCertificate();
+
+  // Cancel the URLRequest. The request is aborted.
+  // net::URLRequest::CancelWithError() needs to be called.
+  CancelRequest();
+};
+
+// The content/browser implementation of this SSLPrivateKey interface wraps the
+// scoped_refptr<net::SSLPrivateKey> that is received from
+// SSLClientAuthDelegate::ContinueWithCertificate(), and this mojo interface is
+// sent from content/browser to services/network so that services/network can
+// have its own net::SSLPrivateKey implementation that internally uses this mojo
+// interface.
+// The |algorithm| and |input| parameters correspond to the |algorithm| and
+// |input| parameters in net::SSLPrivateKey::Sign().
+// The |net_error| and |signature| parameters correspond to the parameters in
+// net::SSLPrivateKey::SignCallback.
+interface SSLPrivateKey {
+  Sign(uint16 algorithm,
+       array<uint8> input) => (int32 net_error, array<uint8> signature);
+};
+
 // Callback interface for NetworkContext when routing identifiers aren't
 // available. Otherwise generally callbacks from the network service go on
 // NetworkServiceClient.
 interface NetworkContextClient {
+  // Called when we receive an authentication failure.
+  // The |auth_challenge_responder| will respond to auth challenge with
+  // credentials. |head| can provide response headers for the response
+  // which has elicited this auth request, if applicable.
+  //
+  // |window_id| or else |process_id| and |routing_id| indicates
+  // the frame making the request, see
+  // network::ResourceRequest::fetch_window_id.
+  OnAuthRequired(mojo_base.mojom.UnguessableToken? window_id,
+                 uint32 process_id,
+                 uint32 routing_id,
+                 uint32 request_id,
+                 url.mojom.Url url,
+                 bool first_auth_attempt,
+                 AuthChallengeInfo auth_info,
+                 URLResponseHead? head,
+                 AuthChallengeResponder auth_challenge_responder);
+
+  // Called when an SSL certificate requested message is received for client
+  // authentication.
+  //
+  // Rather than using one response for multiple purposes, the caller expects
+  // exactly one response (or disconnect) to be sent back via |cert_responder|.
+  //
+  // |window_id| or else |process_id| and |routing_id| indicates the frame
+  // making the request, see network::ResourceRequest::fetch_window_id.
+  OnCertificateRequested(mojo_base.mojom.UnguessableToken? window_id,
+                         uint32 process_id,
+                         uint32 routing_id,
+                         uint32 request_id,
+                         network.mojom.SSLCertRequestInfo cert_info,
+                         ClientCertificateResponder cert_responder);
+
+  // Called when an SSL certificate is encountered.
+  // The callback argument is a net::ERROR value. If it's net::OK, then the
+  // request is resumed. Otherwise it's cancelled with the given error.
+  OnSSLCertificateError(uint32 process_id,
+                        uint32 routing_id,
+                        url.mojom.Url url,
+                        int32 net_error,
+                        SSLInfo ssl_info,
+                        bool fatal) => (int32 net_error);
+
   // Checks if network error reports could be sent for the given origins.
   // Replies with the origins that are allowed.
   OnCanSendReportingReports(array<url.mojom.Origin> origins) =>
@@ -579,6 +676,10 @@ interface NetworkContextClient {
       bool is_service_worker, int32 process_id, int32 routing_id,
       url.mojom.Url url, url.mojom.Url site_for_cookies,
       array<CookieWithStatus> cookie_list);
+
+  // Notification that a trust anchor was used for the given user.
+  [EnableIf=is_chromeos]
+  OnTrustAnchorUsed();
 };
 
 // Represents a distinct context for making network requests, with its own
@@ -600,7 +701,7 @@ interface NetworkContext {
   //
   // The CookieManager must only be passed to trusted processes. Whenever
   // possible, a RestrictedCookieManager should be handed out instead.
-  GetCookieManager(CookieManager& cookie_manager);
+  GetCookieManager(pending_receiver<CookieManager> cookie_manager);
 
   // Gets a RestrictedCookieManager scoped to a given origin, and applying
   // settings configured on the CookieManager associated with this domain.

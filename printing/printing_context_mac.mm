@@ -161,6 +161,7 @@ gfx::Size PrintingContextMac::GetPdfPaperSizeDeviceUnits() {
 PrintingContext::Result PrintingContextMac::UseDefaultSettings() {
   DCHECK(!in_print_job_);
 
+  ResetSettings();
   print_info_.reset([[NSPrintInfo sharedPrintInfo] copy]);
   settings_->set_ranges(GetPageRangesFromPrintInfo());
   InitPrintSettingsFromPrintInfo();
@@ -485,7 +486,7 @@ PrintingContext::Result PrintingContextMac::DocumentDone() {
   if (status != noErr)
     OnError();
 
-  ResetSettings();
+  DeleteSettings();
   return OK;
 }
 

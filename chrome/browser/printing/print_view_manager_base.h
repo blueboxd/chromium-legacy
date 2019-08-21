@@ -66,6 +66,10 @@ class PrintViewManagerBase : public content::NotificationObserver,
 
   base::string16 RenderSourceName();
 
+  content::RenderFrameHost* GetPrintingRFHForTesting() const {
+    return printing_rfh_;
+  }
+
  protected:
   explicit PrintViewManagerBase(content::WebContents* web_contents);
 

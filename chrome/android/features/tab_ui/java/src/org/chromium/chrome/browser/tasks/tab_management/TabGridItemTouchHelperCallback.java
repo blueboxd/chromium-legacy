@@ -157,7 +157,7 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
                 assert selectedViewHolder != null;
                 View selectedItemView = selectedViewHolder.itemView;
                 onTabMergeToGroup(mSelectedTabIndex, mHoveredTabIndex);
-                mRecyclerView.removeView(selectedItemView);
+                mRecyclerView.getLayoutManager().removeView(selectedItemView);
                 RecordUserAction.record("GridTabSwitcher.Drag.AddToGroupOrCreateGroup");
             }
             mModel.updateSelectedTabForMergeToGroup(mSelectedTabIndex, false);
@@ -176,7 +176,7 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
                 assert ungroupViewHolder != null;
                 View ungroupItemView = ungroupViewHolder.itemView;
                 filter.moveTabOutOfGroup(mModel.get(mUnGroupTabIndex).get(TabProperties.TAB_ID));
-                mRecyclerView.removeView(ungroupItemView);
+                mRecyclerView.getLayoutManager().removeView(ungroupItemView);
                 RecordUserAction.record("TabGridDialog.Drag.RemoveFromGroup");
             }
             mHoveredTabIndex = TabModel.INVALID_TAB_INDEX;
@@ -219,6 +219,7 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
             if (recyclerView.getAdapter().getItemCount() == 1) return;
             boolean isHoveredOnUngroupBar = viewHolder.itemView.getBottom() + dY
                     > recyclerView.getBottom() - mUngroupThreshold;
+            if (mSelectedTabIndex == TabModel.INVALID_TAB_INDEX) return;
             mUnGroupTabIndex = isHoveredOnUngroupBar ? viewHolder.getAdapterPosition()
                                                      : TabModel.INVALID_TAB_INDEX;
             mTabGridDialogHandler.updateUngroupBarStatus(isHoveredOnUngroupBar

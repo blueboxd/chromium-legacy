@@ -52,7 +52,7 @@ class ITunesUrlsHandlerTabHelperTest : public PlatformTest {
                                 fake_launcher_.launchedProductParams != nil);
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   FakeStoreKitLauncher* fake_launcher_;
   web::TestWebState web_state_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;

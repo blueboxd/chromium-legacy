@@ -333,6 +333,7 @@
 <translation id="6043212731627905357">Ce moniteur ne fonctionne pas avec votre <ph name="DEVICE_TYPE" /> (il n'est pas compatible).</translation>
 <translation id="6043994281159824495">Se déconnecter maintenant</translation>
 <translation id="6047696787498798094">Le partage d'écran s'arrête lorsque vous passez à un autre utilisateur. Voulez-vous continuer ?</translation>
+<translation id="6054305421211936131">Se connecter avec une carte à puce</translation>
 <translation id="6062360702481658777">Vous allez être déconnecté automatiquement dans <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="6064337552080329342">Mot de passe incorrect. Veuillez réessayer.</translation>
 <translation id="607652042414456612">Votre ordinateur est visible par les appareils Bluetooth situés à proximité sous le nom "<ph name="NAME" />", associé à l'adresse <ph name="ADDRESS" />.</translation>
@@ -360,6 +361,7 @@
 <translation id="6459472438155181876">Extension de l'écran pour <ph name="DISPLAY_NAME" /></translation>
 <translation id="6482559668224714696">Loupe plein écran</translation>
 <translation id="6490471652906364588">Appareil USB de type C (port situé sur la droite de l'appareil)</translation>
+<translation id="649452524636452238">Code de la carte à puce</translation>
 <translation id="6501401484702599040">Diffusion de l'écran sur "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="6521655319214113338">Écriture manuscrite</translation>
 <translation id="6528179044667508675">Ne pas déranger</translation>
@@ -389,6 +391,7 @@
 <translation id="6857811139397017780">Activer <ph name="NETWORKSERVICE" /></translation>
 <translation id="6910714959251846841">Cette mise à jour nécessite que vous utilisiez la fonctionnalité Powerwash sur votre appareil. Obtenez de plus amples informations sur la dernière mise à jour <ph name="SYSTEM_APP_NAME" />.</translation>
 <translation id="6911468394164995108">Autre réseau…</translation>
+<translation id="6919251195245069855">Impossible de reconnaître votre carte à puce. Veuillez réessayer.</translation>
 <translation id="6972754398087986839">Démarrer</translation>
 <translation id="6981982820502123353">Accessibilité</translation>
 <translation id="698231206551913481">L'ensemble des données locales et des fichiers associés à cet utilisateur seront définitivement supprimés en même temps que ce dernier.</translation>

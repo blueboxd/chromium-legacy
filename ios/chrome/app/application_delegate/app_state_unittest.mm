@@ -331,7 +331,7 @@ class AppStateTest : public BlockCleanupTest {
   }
 
  private:
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   AppState* app_state_;
   id browser_launcher_mock_;
   id startup_information_mock_;
@@ -352,11 +352,10 @@ class AppStateTest : public BlockCleanupTest {
 class AppStateWithThreadTest : public PlatformTest {
  protected:
   AppStateWithThreadTest()
-      : thread_bundle_(web::TestWebThreadBundle::REAL_IO_THREAD) {
-  }
+      : task_environment_(web::WebTaskEnvironment::REAL_IO_THREAD) {}
 
  private:
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
 };
 
 #pragma mark - Tests.

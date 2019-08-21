@@ -28,6 +28,7 @@ MojoInterfaceInterceptor* MojoInterfaceInterceptor::Create(
     ExecutionContext* context,
     const String& interface_name,
     const String& scope,
+    bool use_browser_interface_broker,
     ExceptionState& exception_state) {
   bool process_scope = scope == "process";
   if (process_scope && !context->IsDocument()) {
@@ -37,8 +38,9 @@ MojoInterfaceInterceptor* MojoInterfaceInterceptor::Create(
     return nullptr;
   }
 
-  return MakeGarbageCollected<MojoInterfaceInterceptor>(context, interface_name,
-                                                        process_scope);
+  return MakeGarbageCollected<MojoInterfaceInterceptor>(
+      context, interface_name, process_scope,
+      UseBrowserInterfaceBroker(use_browser_interface_broker));
 }
 
 MojoInterfaceInterceptor::~MojoInterfaceInterceptor() = default;
@@ -78,6 +80,27 @@ void MojoInterfaceInterceptor::start(ExceptionState& exception_state) {
     return;
   }
 
+  // This should replace TestApi usage below when all InterfaceProvider clients
+  // are converted to use BrowserInterfaceBroker. See crbug.com/936482.
+  if (use_browser_interface_broker_) {
+    ExecutionContext* context = GetExecutionContext();
+
+    if (!context)
+      return;
+
+    BrowserInterfaceBrokerProxy* proxy =
+        context->GetBrowserInterfaceBrokerProxy();
+
+    CHECK(proxy);
+    started_ = true;
+    proxy->SetBinderForTesting(
+        interface_name,
+        WTF::BindRepeating(&MojoInterfaceInterceptor::OnInterfaceRequest,
+                           WrapWeakPersistent(this)));
+    return;
+  }
+
+  // TODO(crbug.com/994843): remove when no longer used.
   service_manager::InterfaceProvider::TestApi test_api(interface_provider);
   if (test_api.HasBinderForName(interface_name)) {
     exception_state.ThrowDOMException(
@@ -95,7 +118,7 @@ void MojoInterfaceInterceptor::start(ExceptionState& exception_state) {
 }
 
 void MojoInterfaceInterceptor::stop() {
-  if (!started_)
+  if (!started_ || use_browser_interface_broker_)
     return;
 
   started_ = false;
@@ -139,12 +162,15 @@ void MojoInterfaceInterceptor::ContextDestroyed(ExecutionContext*) {
   stop();
 }
 
-MojoInterfaceInterceptor::MojoInterfaceInterceptor(ExecutionContext* context,
-                                                   const String& interface_name,
-                                                   bool process_scope)
+MojoInterfaceInterceptor::MojoInterfaceInterceptor(
+    ExecutionContext* context,
+    const String& interface_name,
+    bool process_scope,
+    UseBrowserInterfaceBroker use_browser_interface_broker)
     : ContextLifecycleObserver(context),
       interface_name_(interface_name),
-      process_scope_(process_scope) {}
+      process_scope_(process_scope),
+      use_browser_interface_broker_(use_browser_interface_broker) {}
 
 service_manager::InterfaceProvider*
 MojoInterfaceInterceptor::GetInterfaceProvider() const {

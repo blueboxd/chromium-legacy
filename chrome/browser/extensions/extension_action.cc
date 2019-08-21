@@ -253,16 +253,15 @@ gfx::Image ExtensionAction::GetPlaceholderIconImage() const {
 }
 
 std::string ExtensionAction::GetDisplayBadgeText(int tab_id) const {
+  return UseDNRActionCountAsBadgeText(tab_id)
+             ? base::NumberToString(GetDNRActionCount(tab_id))
+             : GetExplicitlySetBadgeText(tab_id);
+}
+
+bool ExtensionAction::UseDNRActionCountAsBadgeText(int tab_id) const {
   // Tab specific badge text set by an extension overrides the automatically set
   // action count.
-  if (HasBadgeText(tab_id))
-    return GetExplicitlySetBadgeText(tab_id);
-  if (HasDNRActionCount(tab_id))
-    return base::NumberToString(GetDNRActionCount(tab_id));
-
-  // Return the default badge text or an empty string if there is no badge text
-  // set for this tab.
-  return GetExplicitlySetBadgeText(kDefaultTabId);
+  return !HasBadgeText(tab_id) && HasDNRActionCount(tab_id);
 }
 
 bool ExtensionAction::HasPopupUrl(int tab_id) const {

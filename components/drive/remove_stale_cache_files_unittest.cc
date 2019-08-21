@@ -47,7 +47,7 @@ class RemoveStaleCacheFilesTest : public testing::Test {
     ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->Initialize());
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
 
   std::unique_ptr<ResourceMetadataStorage, test_util::DestroyHelperForTests>

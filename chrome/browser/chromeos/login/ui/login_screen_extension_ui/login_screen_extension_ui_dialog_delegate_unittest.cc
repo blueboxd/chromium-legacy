@@ -34,7 +34,7 @@ namespace chromeos {
 using LoginScreenExtensionUiDialogDelegateUnittest = testing::Test;
 
 TEST_F(LoginScreenExtensionUiDialogDelegateUnittest, Test) {
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   scoped_refptr<const extensions::Extension> extension =
       extensions::ExtensionBuilder(kExtensionName).SetID(kExtensionId).Build();

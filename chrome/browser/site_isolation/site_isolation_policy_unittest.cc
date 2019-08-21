@@ -27,7 +27,7 @@ class SiteIsolationPolicyTest : public testing::Test {
   TestingProfileManager* manager() { return &manager_; }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager manager_;
 
   DISALLOW_COPY_AND_ASSIGN(SiteIsolationPolicyTest);

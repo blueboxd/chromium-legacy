@@ -305,17 +305,17 @@ void OffscreenCanvas::DiscardResourceProvider() {
 CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
   if (!ResourceProvider()) {
     bool can_use_gpu = false;
-    CanvasResourceProvider::PresentationMode presentation_mode =
+    uint8_t presentation_mode =
         CanvasResourceProvider::kDefaultPresentationMode;
     if (Is3d()) {
       if (RuntimeEnabledFeatures::WebGLImageChromiumEnabled()) {
-        presentation_mode =
+        presentation_mode |=
             CanvasResourceProvider::kAllowImageChromiumPresentationMode;
       }
       can_use_gpu = SharedGpuContext::IsGpuCompositingEnabled();
     } else {
       if (RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled()) {
-        presentation_mode =
+        presentation_mode |=
             CanvasResourceProvider::kAllowImageChromiumPresentationMode;
       }
       if (SharedGpuContext::IsGpuCompositingEnabled() &&

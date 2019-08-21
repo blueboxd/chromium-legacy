@@ -41,8 +41,8 @@ TransformNode::TransformNode(const TransformNode&) = default;
 
 bool TransformNode::operator==(const TransformNode& other) const {
   return id == other.id && parent_id == other.parent_id &&
-         element_id == other.element_id && pre_local == other.pre_local &&
-         local == other.local && post_local == other.post_local &&
+         element_id == other.element_id && local == other.local &&
+         origin == other.origin && post_translation == other.post_translation &&
          to_parent == other.to_parent &&
          source_node_id == other.source_node_id &&
          sorting_context_id == other.sorting_context_id &&
@@ -76,30 +76,17 @@ bool TransformNode::operator==(const TransformNode& other) const {
          starting_animation_scale == other.starting_animation_scale;
 }
 
-void TransformNode::update_pre_local_transform(
-    const gfx::Point3F& transform_origin) {
-  pre_local.MakeIdentity();
-  pre_local.Translate3d(-transform_origin.x(), -transform_origin.y(),
-                        -transform_origin.z());
-}
-
-void TransformNode::update_post_local_transform(
-    const gfx::PointF& position,
-    const gfx::Point3F& transform_origin) {
-  post_local.MakeIdentity();
-  post_local.Translate3d(
-      position.x() + source_offset.x() + transform_origin.x(),
-      position.y() + source_offset.y() + transform_origin.y(),
-      transform_origin.z());
+void TransformNode::UpdatePostTranslation(const gfx::PointF& position) {
+  post_translation = position.OffsetFromOrigin() + source_offset;
 }
 
 void TransformNode::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetInteger("id", id);
   value->SetInteger("parent_id", parent_id);
   element_id.AddToTracedValue(value);
-  MathUtil::AddToTracedValue("pre_local", pre_local, value);
   MathUtil::AddToTracedValue("local", local, value);
-  MathUtil::AddToTracedValue("post_local", post_local, value);
+  MathUtil::AddToTracedValue("origin", origin, value);
+  MathUtil::AddToTracedValue("post_translation", post_translation, value);
   value->SetInteger("source_node_id", source_node_id);
   value->SetInteger("sorting_context_id", sorting_context_id);
   value->SetInteger("flattens_inherited_transform",

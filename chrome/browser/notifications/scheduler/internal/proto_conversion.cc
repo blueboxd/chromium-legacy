@@ -305,15 +305,12 @@ void ScheduleParamsFromProto(proto::ScheduleParams* proto,
 }  // namespace
 
 void IconEntryToProto(IconEntry* entry, notifications::proto::Icon* proto) {
-  proto->mutable_uuid()->swap(entry->uuid);
   proto->mutable_icon()->swap(entry->data);
 }
 
 void IconEntryFromProto(proto::Icon* proto, notifications::IconEntry* entry) {
-  DCHECK(proto->has_uuid());
   DCHECK(proto->has_icon());
   entry->data.swap(*proto->mutable_icon());
-  entry->uuid.swap(*proto->mutable_uuid());
 }
 
 void ClientStateToProto(ClientState* client_state,

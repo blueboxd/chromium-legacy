@@ -36,7 +36,7 @@ class DevToolsFileSystemIndexerTest : public testing::Test {
     indexing_done_ = false;
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   scoped_refptr<DevToolsFileSystemIndexer> indexer_;
   std::set<std::string> search_results_;
   bool indexing_done_;

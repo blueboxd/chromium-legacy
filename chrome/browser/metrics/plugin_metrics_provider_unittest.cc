@@ -66,7 +66,7 @@ TEST_F(PluginMetricsProviderTest, IsPluginProcess) {
 }
 
 TEST_F(PluginMetricsProviderTest, Plugins) {
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
 
   PluginMetricsProvider provider(prefs());
 
@@ -118,7 +118,7 @@ TEST_F(PluginMetricsProviderTest, Plugins) {
 }
 
 TEST_F(PluginMetricsProviderTest, RecordCurrentStateWithDelay) {
-  content::TestBrowserThreadBundle thread_bundle(
+  content::BrowserTaskEnvironment task_environment(
       base::test::TaskEnvironment::TimeSource::MOCK_TIME);
 
   PluginMetricsProvider provider(prefs());
@@ -126,14 +126,14 @@ TEST_F(PluginMetricsProviderTest, RecordCurrentStateWithDelay) {
   EXPECT_TRUE(provider.RecordCurrentStateWithDelay());
   EXPECT_FALSE(provider.RecordCurrentStateWithDelay());
 
-  thread_bundle.FastForwardBy(PluginMetricsProvider::GetRecordStateDelay());
+  task_environment.FastForwardBy(PluginMetricsProvider::GetRecordStateDelay());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(provider.RecordCurrentStateWithDelay());
 }
 
 TEST_F(PluginMetricsProviderTest, RecordCurrentStateIfPending) {
-  content::TestBrowserThreadBundle thread_bundle(
+  content::BrowserTaskEnvironment task_environment(
       base::test::TaskEnvironment::TimeSource::MOCK_TIME);
 
   PluginMetricsProvider provider(prefs());
@@ -152,7 +152,7 @@ TEST_F(PluginMetricsProviderTest, RecordCurrentStateIfPending) {
 }
 
 TEST_F(PluginMetricsProviderTest, ProvideStabilityMetricsWhenPendingTask) {
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
 
   PluginMetricsProvider provider(prefs());
 

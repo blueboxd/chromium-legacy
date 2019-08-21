@@ -36,22 +36,124 @@ class SkiaOutputDeviceBufferQueue::Image {
 
   SkSurface* BeginWriteSkia();
   void EndWriteSkia();
-  gl::GLImage* GetImage() const;
+  void BeginPresent();
+  void EndPresent();
+  gl::GLImage* GetGLImage() const;
   std::unique_ptr<gfx::GpuFence> CreateFence();
   void ResetFence();
 
  private:
-  gpu::Mailbox mailbox;
+  gpu::SharedImageFactory* const factory_;
+  gpu::SharedImageRepresentationFactory* const representation_factory_;
+  gpu::Mailbox mailbox_;
+
   std::unique_ptr<gpu::SharedImageRepresentationSkia> skia_representation_;
   std::unique_ptr<gpu::SharedImageRepresentationGLTexture> gl_representation_;
   base::Optional<gpu::SharedImageRepresentationSkia::ScopedWriteAccess>
       scoped_write_access_;
+  base::Optional<gpu::SharedImageRepresentationGLTexture::ScopedAccess>
+      scoped_read_access_;
   std::vector<GrBackendSemaphore> end_semaphores_;
   std::unique_ptr<gl::GLFence> fence_;
 
-  gpu::SharedImageFactory* factory_;
-  gpu::SharedImageRepresentationFactory* representation_factory_;
+  DISALLOW_COPY_AND_ASSIGN(Image);
 };
+
+SkiaOutputDeviceBufferQueue::Image::Image(
+    gpu::SharedImageFactory* factory,
+    gpu::SharedImageRepresentationFactory* representation_factory)
+    : factory_(factory), representation_factory_(representation_factory) {}
+
+SkiaOutputDeviceBufferQueue::Image::~Image() {
+  scoped_read_access_.reset();
+  scoped_write_access_.reset();
+  skia_representation_.reset();
+  gl_representation_.reset();
+
+  if (!mailbox_.IsZero())
+    factory_->DestroySharedImage(mailbox_);
+}
+
+bool SkiaOutputDeviceBufferQueue::Image::Initialize(
+    const gfx::Size& size,
+    const gfx::ColorSpace& color_space,
+    ResourceFormat format,
+    SkiaOutputSurfaceDependency* deps,
+    uint32_t shared_image_usage) {
+  mailbox_ = gpu::Mailbox::GenerateForSharedImage();
+  if (factory_->CreateSharedImage(mailbox_, format, size, color_space,
+                                  shared_image_usage)) {
+    skia_representation_ = representation_factory_->ProduceSkia(
+        mailbox_, deps->GetSharedContextState());
+    gl_representation_ = representation_factory_->ProduceGLTexture(mailbox_);
+
+    return true;
+  }
+
+  mailbox_.SetZero();
+  return false;
+}
+
+SkSurface* SkiaOutputDeviceBufferQueue::Image::BeginWriteSkia() {
+  DCHECK(!scoped_write_access_);
+  DCHECK(!scoped_read_access_);
+  DCHECK(end_semaphores_.empty());
+
+  std::vector<GrBackendSemaphore> begin_semaphores;
+  SkSurfaceProps surface_props{0, kUnknown_SkPixelGeometry};
+
+  // TODO(vasilyt): Props and MSAA
+  scoped_write_access_.emplace(skia_representation_.get(),
+                               0 /* final_msaa_count */, surface_props,
+                               &begin_semaphores, &end_semaphores_);
+  DCHECK(scoped_write_access_->success());
+  if (!begin_semaphores.empty()) {
+    scoped_write_access_->surface()->wait(begin_semaphores.size(),
+                                          begin_semaphores.data());
+  }
+
+  return scoped_write_access_->surface();
+}
+
+void SkiaOutputDeviceBufferQueue::Image::EndWriteSkia() {
+  DCHECK(scoped_write_access_);
+  GrFlushInfo flush_info = {
+      .fFlags = kNone_GrFlushFlags,
+      .fNumSemaphores = end_semaphores_.size(),
+      .fSignalSemaphores = end_semaphores_.data(),
+  };
+  scoped_write_access_->surface()->flush(
+      SkSurface::BackendSurfaceAccess::kPresent, flush_info);
+  scoped_write_access_.reset();
+  end_semaphores_.clear();
+}
+
+void SkiaOutputDeviceBufferQueue::Image::BeginPresent() {
+  DCHECK(!scoped_write_access_);
+  DCHECK(!scoped_read_access_);
+  scoped_read_access_.emplace(gl_representation_.get(),
+                              GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
+}
+
+void SkiaOutputDeviceBufferQueue::Image::EndPresent() {
+  DCHECK(scoped_read_access_);
+  scoped_read_access_.reset();
+  // If the GpuFence was created for ScheduleOverlayPlane we can release it now.
+  fence_.reset();
+  return;
+}
+
+gl::GLImage* SkiaOutputDeviceBufferQueue::Image::GetGLImage() const {
+  auto* texture = gl_representation_->GetTexture();
+  return texture->GetLevelImage(texture->target(), 0);
+}
+
+std::unique_ptr<gfx::GpuFence>
+SkiaOutputDeviceBufferQueue::Image::CreateFence() {
+  if (!fence_)
+    fence_ = gl::GLFence::CreateForGpuFence();
+  return fence_->GetGpuFence();
+}
 
 SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
     scoped_refptr<gl::GLSurface> gl_surface,
@@ -127,10 +229,8 @@ void SkiaOutputDeviceBufferQueue::PageFlipComplete() {
     if (displayed_image_)
       available_images_.push_back(std::move(displayed_image_));
     displayed_image_ = std::move(in_flight_images_.front());
-    // If the GpuFence was created for ScheduleOverlayPlane we can release it
-    // now
     if (displayed_image_)
-      displayed_image_->ResetFence();
+      displayed_image_->EndPresent();
   }
 
   in_flight_images_.pop_front();
@@ -148,9 +248,8 @@ void SkiaOutputDeviceBufferQueue::FreeAllSurfaces() {
 }
 
 gl::GLImage* SkiaOutputDeviceBufferQueue::GetOverlayImage() {
-  if (current_image_) {
-    return current_image_->GetImage();
-  }
+  if (current_image_)
+    return current_image_->GetGLImage();
   return nullptr;
 }
 
@@ -165,6 +264,10 @@ SkiaOutputDeviceBufferQueue::SubmitOverlayGpuFence() {
 void SkiaOutputDeviceBufferQueue::SwapBuffers(
     BufferPresentedCallback feedback,
     std::vector<ui::LatencyInfo> latency_info) {
+  // BeginPain() is not called after last SwapBuffer(), if |current_image_| is
+  // nullptr.
+  if (current_image_)
+    current_image_->BeginPresent();
   in_flight_images_.push_back(std::move(current_image_));
 
   StartSwapBuffers({});
@@ -241,88 +344,6 @@ void SkiaOutputDeviceBufferQueue::EndPaint(
     const GrBackendSemaphore& semaphore) {
   auto* image = GetCurrentImage();
   image->EndWriteSkia();
-}
-
-SkSurface* SkiaOutputDeviceBufferQueue::Image::BeginWriteSkia() {
-  DCHECK(!scoped_write_access_);
-  DCHECK(end_semaphores_.empty());
-
-  std::vector<GrBackendSemaphore> begin_semaphores;
-  SkSurfaceProps surface_props{0, kUnknown_SkPixelGeometry};
-
-  // TODO(vasilyt): Props and MSAA
-  scoped_write_access_.emplace(skia_representation_.get(),
-                               0 /* final_msaa_count */, surface_props,
-                               &begin_semaphores, &end_semaphores_);
-  DCHECK(scoped_write_access_->success());
-  if (!begin_semaphores.empty()) {
-    scoped_write_access_->surface()->wait(begin_semaphores.size(),
-                                          begin_semaphores.data());
-  }
-
-  return scoped_write_access_->surface();
-}
-
-void SkiaOutputDeviceBufferQueue::Image::EndWriteSkia() {
-  DCHECK(scoped_write_access_);
-  GrFlushInfo flush_info = {
-      .fFlags = kNone_GrFlushFlags,
-      .fNumSemaphores = end_semaphores_.size(),
-      .fSignalSemaphores = end_semaphores_.data(),
-  };
-  scoped_write_access_->surface()->flush(
-      SkSurface::BackendSurfaceAccess::kPresent, flush_info);
-  scoped_write_access_.reset();
-  end_semaphores_.clear();
-}
-
-gl::GLImage* SkiaOutputDeviceBufferQueue::Image::GetImage() const {
-  auto* texture = gl_representation_->GetTexture();
-  return texture->GetLevelImage(texture->target(), 0);
-}
-
-bool SkiaOutputDeviceBufferQueue::Image::Initialize(
-    const gfx::Size& size,
-    const gfx::ColorSpace& color_space,
-    ResourceFormat format,
-    SkiaOutputSurfaceDependency* deps,
-    uint32_t shared_image_usage) {
-  mailbox = gpu::Mailbox::GenerateForSharedImage();
-  if (factory_->CreateSharedImage(mailbox, format, size, color_space,
-                                  shared_image_usage)) {
-    skia_representation_ = representation_factory_->ProduceSkia(
-        mailbox, deps->GetSharedContextState());
-    gl_representation_ = representation_factory_->ProduceGLTexture(mailbox);
-
-    return true;
-  }
-
-  mailbox.SetZero();
-  return false;
-}
-
-SkiaOutputDeviceBufferQueue::Image::Image(
-    gpu::SharedImageFactory* factory,
-    gpu::SharedImageRepresentationFactory* representation_factory)
-    : factory_(factory), representation_factory_(representation_factory) {}
-
-SkiaOutputDeviceBufferQueue::Image::~Image() {
-  skia_representation_.reset();
-  gl_representation_.reset();
-
-  if (!mailbox.IsZero())
-    factory_->DestroySharedImage(mailbox);
-}
-
-std::unique_ptr<gfx::GpuFence>
-SkiaOutputDeviceBufferQueue::Image::CreateFence() {
-  if (!fence_)
-    fence_ = gl::GLFence::CreateForGpuFence();
-  return fence_->GetGpuFence();
-}
-
-void SkiaOutputDeviceBufferQueue::Image::ResetFence() {
-  fence_.reset();
 }
 
 }  // namespace viz

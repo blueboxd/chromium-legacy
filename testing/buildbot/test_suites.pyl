@@ -3798,7 +3798,8 @@
           # out/Debug or out/Release. Reference this file relatively to
           # it.
           '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json',
-          '--extra-browser-args=--use-angle=d3d11 --use-cmd-decoder=validating',
+          # On dual-GPU devices we want the high-performance GPU to be active
+          '--extra-browser-args=--use-angle=d3d11 --use-cmd-decoder=validating --force_high_performance_gpu',
         ],
         'telemetry_test_name': 'webgl_conformance',
         'swarming': {
@@ -3818,7 +3819,8 @@
           # out/Debug or out/Release. Reference this file relatively to
           # it.
           '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json',
-          '--extra-browser-args=--use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough',
+          # On dual-GPU devices we want the high-performance GPU to be active
+          '--extra-browser-args=--use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu',
         ],
         'swarming': {
           # These tests currently take about an hour and fifteen minutes
@@ -3837,7 +3839,8 @@
           # out/Debug or out/Release. Reference this file relatively to
           # it.
           '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json',
-          '--extra-browser-args=--use-gl=angle --use-angle=gles --use-cmd-decoder=passthrough',
+          # On dual-GPU devices we want the high-performance GPU to be active
+          '--extra-browser-args=--use-gl=angle --use-angle=gles --use-cmd-decoder=passthrough --force_high_performance_gpu',
         ],
         'swarming': {
           # These tests currently take about an hour and fifteen minutes
@@ -3856,6 +3859,8 @@
           # out/Debug or out/Release. Reference this file relatively to
           # it.
           '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json',
+          # On dual-GPU devices we want the high-performance GPU to be active
+          '--extra-browser-args=--force_high_performance_gpu',
         ],
         'swarming': {
           # These tests currently take about an hour and fifteen minutes
@@ -3869,7 +3874,8 @@
       'webgl_conformance_d3d11_validating': {
         'telemetry_test_name': 'webgl_conformance',
         'args': [
-          '--extra-browser-args=--use-gl=angle --use-angle=d3d11 --use-cmd-decoder=validating',
+          # On dual-GPU devices we want the high-performance GPU to be active
+          '--extra-browser-args=--use-gl=angle --use-angle=d3d11 --use-cmd-decoder=validating --force_high_performance_gpu',
         ],
         'swarming': {
           'shards': 2,
@@ -3881,7 +3887,8 @@
       'webgl_conformance_d3d9_passthrough': {
         'telemetry_test_name': 'webgl_conformance',
         'args': [
-          '--extra-browser-args=--use-angle=d3d9 --use-cmd-decoder=passthrough',
+          # On dual-GPU devices we want the high-performance GPU to be active
+          '--extra-browser-args=--use-angle=d3d9 --use-cmd-decoder=passthrough --force_high_performance_gpu',
         ],
         'swarming': {
           'shards': 2,
@@ -3893,7 +3900,8 @@
       'webgl_conformance_d3d9_validating': {
         'telemetry_test_name': 'webgl_conformance',
         'args': [
-          '--extra-browser-args=--use-gl=angle --use-angle=d3d9 --use-cmd-decoder=validating',
+          # On dual-GPU devices we want the high-performance GPU to be active
+          '--extra-browser-args=--use-gl=angle --use-angle=d3d9 --use-cmd-decoder=validating --force_high_performance_gpu',
         ],
         'swarming': {
           'shards': 2,
@@ -3905,7 +3913,8 @@
       'webgl_conformance_gl_passthrough': {
         'telemetry_test_name': 'webgl_conformance',
         'args': [
-          '--extra-browser-args=--use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough',
+          # On dual-GPU devices we want the high-performance GPU to be active
+          '--extra-browser-args=--use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu',
         ],
         'swarming': {
           'shards': 2,
@@ -3923,7 +3932,8 @@
           '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json',
         ],
         'args': [
-          '--extra-browser-args=--use-gl=angle --use-angle=gles --use-cmd-decoder=passthrough',
+          # On dual-GPU devices we want the high-performance GPU to be active
+          '--extra-browser-args=--use-gl=angle --use-angle=gles --use-cmd-decoder=passthrough --force_high_performance_gpu',
         ],
         'swarming': {
           'shards': 6,
@@ -3947,6 +3957,10 @@
           '--remote=127.0.0.1',
           '--remote-ssh-port=9222',
         ],
+        'args': [
+          # On dual-GPU devices we want the high-performance GPU to be active
+          '--extra-browser-args=--force_high_performance_gpu',
+        ],
         'swarming': {
           'shards': 2,
         },
@@ -3960,7 +3974,8 @@
       'webgl_conformance_vulkan_passthrough': {
         'telemetry_test_name': 'webgl_conformance',
         'args': [
-          '--extra-browser-args=--use-angle=vulkan --use-cmd-decoder=passthrough',
+          # On dual-GPU devices we want the high-performance GPU to be active
+          '--extra-browser-args=--use-angle=vulkan --use-cmd-decoder=passthrough --force_high_performance_gpu',
         ],
         'swarming': {
           'shards': 2,

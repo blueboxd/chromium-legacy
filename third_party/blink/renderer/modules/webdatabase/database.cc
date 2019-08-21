@@ -33,6 +33,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/probe/async_task_id.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/modules/webdatabase/change_version_data.h"
 #include "third_party/blink/renderer/modules/webdatabase/change_version_wrapper.h"
@@ -291,21 +292,25 @@ bool Database::OpenAndVerifyVersion(bool set_version_in_new_database,
     if (success && IsNew()) {
       STORAGE_DVLOG(1)
           << "Scheduling DatabaseCreationCallbackTask for database " << this;
+      auto task_id = std::make_unique<probe::AsyncTaskId>();
       probe::AsyncTaskScheduled(GetExecutionContext(), "openDatabase",
-                                creation_callback);
+                                task_id.get());
       GetExecutionContext()
           ->GetTaskRunner(TaskType::kDatabaseAccess)
-          ->PostTask(FROM_HERE, WTF::Bind(&Database::RunCreationCallback,
-                                          WrapPersistent(this),
-                                          WrapPersistent(creation_callback)));
+          ->PostTask(
+              FROM_HERE,
+              WTF::Bind(&Database::RunCreationCallback, WrapPersistent(this),
+                        WrapPersistent(creation_callback), std::move(task_id)));
     }
   }
 
   return success;
 }
 
-void Database::RunCreationCallback(V8DatabaseCallback* creation_callback) {
-  probe::AsyncTask async_task(GetExecutionContext(), creation_callback);
+void Database::RunCreationCallback(
+    V8DatabaseCallback* creation_callback,
+    std::unique_ptr<probe::AsyncTaskId> task_id) {
+  probe::AsyncTask async_task(GetExecutionContext(), task_id.get());
   creation_callback->InvokeAndReportException(nullptr, this);
 }
 

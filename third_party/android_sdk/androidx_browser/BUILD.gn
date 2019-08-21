@@ -23,7 +23,11 @@ android_library("androidx_browser_java") {
     "./src/browser/src/main/java/androidx/browser/trusted/TrustedWebActivityServiceWrapper.java",
     "./src/browser/src/main/java/androidx/browser/trusted/TrustedWebActivityServiceConnectionManager.java",
     "./src/browser/src/main/java/androidx/browser/trusted/TrustedWebActivityService.java",
-    "./src/browser/src/main/java/androidx/browser/trusted/TrustedWebActivityBuilder.java",
+    "./src/browser/src/main/java/androidx/browser/trusted/TrustedWebActivityIntent.java",
+    "./src/browser/src/main/java/androidx/browser/trusted/TrustedWebActivityIntentBuilder.java",
+    "./src/browser/src/main/java/androidx/browser/trusted/sharing/ShareData.java",
+    "./src/browser/src/main/java/androidx/browser/trusted/sharing/ShareTarget.java",
+    "./src/browser/src/main/java/androidx/browser/trusted/splashscreens/SplashScreenParamKey.java",
   ]
   deps = [
     "//third_party/android_deps:android_support_v7_appcompat_java",

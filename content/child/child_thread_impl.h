@@ -143,6 +143,8 @@ class CONTENT_EXPORT ChildThreadImpl
       const std::string& service_name,
       mojo::PendingReceiver<service_manager::mojom::Service> receiver);
 
+  virtual void BindServiceInterface(mojo::GenericPendingReceiver receiver);
+
   virtual void OnBindReceiver(mojo::GenericPendingReceiver receiver);
 
  protected:
@@ -274,7 +276,7 @@ struct ChildThreadImpl::Options {
   scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner;
 
   using ServiceBinder =
-      base::RepeatingCallback<void(mojo::GenericPendingReceiver)>;
+      base::RepeatingCallback<void(mojo::GenericPendingReceiver*)>;
   ServiceBinder service_binder;
 
  private:

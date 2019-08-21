@@ -66,6 +66,7 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
   cell.detailTextLabel.text = self.detailText;
   cell.detailTextLabel.textColor = self.detailTextColor;
   cell.leadingImageView.image = self.leadingImage;
+  cell.leadingImageView.tintColor = self.leadingImageTintColor;
   cell.trailingImageView.image = self.trailingImage;
   cell.trailingImageView.tintColor = self.trailingImageTintColor;
   cell.cellType = self.cellType;
@@ -144,6 +145,8 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
   SetUILabelScaledFont(_detailTextLabel, [MDCTypography body1Font]);
   _detailTextLabel.numberOfLines = 0;
   _detailTextLabel.lineBreakMode = NSLineBreakByWordWrapping;
+
+  self.tintColor = [UIColor colorNamed:kBlueColor];
 }
 
 // Set constraints on subviews.
@@ -241,6 +244,7 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
   self.textLabel.text = nil;
   self.detailTextLabel.text = nil;
   self.leadingImageView.image = nil;
+  self.leadingImageView.tintColor = nil;
   self.trailingImageView.image = nil;
   self.trailingImageView.tintColor = nil;
   self.cellType = PaymentsTextCellTypeNormal;

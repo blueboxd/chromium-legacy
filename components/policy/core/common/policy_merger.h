@@ -7,17 +7,15 @@
 
 #include <stddef.h>
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/policy_export.h"
 
 namespace policy {
-
-extern const char* const kDictionaryPoliciesToMerge[];
 
 // Abstract class that provides an interface to apply custom merging logic on a
 // set of policies.
@@ -35,7 +33,7 @@ class POLICY_EXPORT PolicyMerger {
 // multiple sources concatenated without duplicates.
 class POLICY_EXPORT PolicyListMerger : public PolicyMerger {
  public:
-  explicit PolicyListMerger(std::set<std::string> policies_to_merge);
+  explicit PolicyListMerger(base::flat_set<std::string> policies_to_merge);
   ~PolicyListMerger() override;
 
   // Merges the list policies from |policies| that have multiple sources.
@@ -52,7 +50,7 @@ class POLICY_EXPORT PolicyListMerger : public PolicyMerger {
   // remain unchanged if there is nothing to merge.
   void DoMerge(PolicyMap::Entry* policy) const;
 
-  const std::set<std::string> policies_to_merge_;
+  const base::flat_set<std::string> policies_to_merge_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyListMerger);
 };
@@ -63,12 +61,14 @@ class POLICY_EXPORT PolicyListMerger : public PolicyMerger {
 // using the key coming from the highest priority source.
 class POLICY_EXPORT PolicyDictionaryMerger : public PolicyMerger {
  public:
-  explicit PolicyDictionaryMerger(std::set<std::string> policies_to_merge);
+  explicit PolicyDictionaryMerger(
+      base::flat_set<std::string> policies_to_merge);
   ~PolicyDictionaryMerger() override;
 
   // Merges the dictionary policies from |policies| that have multiple sources.
   void Merge(PolicyMap::PolicyMapType* policies) const override;
-  void SetAllowedPoliciesForTesting(std::set<std::string> allowed_policies);
+  void SetAllowedPoliciesForTesting(
+      base::flat_set<std::string> allowed_policies);
 
  private:
   // Returns True if |policy_name| is in the list of policies to merge and if
@@ -81,8 +81,8 @@ class POLICY_EXPORT PolicyDictionaryMerger : public PolicyMerger {
   // intact if there is nothing to merge.
   void DoMerge(PolicyMap::Entry* policy) const;
 
-  const std::set<std::string> policies_to_merge_;
-  std::set<std::string> allowed_policies_;
+  const base::flat_set<std::string> policies_to_merge_;
+  base::flat_set<std::string> allowed_policies_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyDictionaryMerger);
 };

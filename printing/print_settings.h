@@ -62,9 +62,6 @@ class PRINTING_EXPORT PrintSettings {
   PrintSettings();
   ~PrintSettings();
 
-  // Reinitialize the settings to the default values.
-  void Clear();
-
   void SetCustomMargins(const PageMargins& requested_margins_in_points);
   const PageMargins& requested_custom_margins_in_points() const {
     return requested_custom_margins_in_points_;
@@ -214,32 +211,32 @@ class PRINTING_EXPORT PrintSettings {
   PageRanges ranges_;
 
   // Indicates if the user only wants to print the current selection.
-  bool selection_only_;
+  bool selection_only_ = false;
 
   // Indicates what kind of margins should be applied to the printable area.
-  MarginType margin_type_;
+  MarginType margin_type_ = DEFAULT_MARGINS;
 
   // Strings to be printed as headers and footers if requested by the user.
   base::string16 title_;
   base::string16 url_;
 
   // True if the user wants headers and footers to be displayed.
-  bool display_header_footer_;
+  bool display_header_footer_ = false;
 
   // True if the user wants to print CSS backgrounds.
-  bool should_print_backgrounds_;
+  bool should_print_backgrounds_ = false;
 
   // True if the user wants to print with collate.
-  bool collate_;
+  bool collate_ = false;
 
   // True if the user wants to print with collate.
-  ColorModel color_;
+  ColorModel color_ = UNKNOWN_COLOR_MODEL;
 
   // Number of copies user wants to print.
-  int copies_;
+  int copies_ = 0;
 
   // Duplex type user wants to use.
-  DuplexMode duplex_mode_;
+  DuplexMode duplex_mode_ = UNKNOWN_DUPLEX_MODE;
 
   // Printer device name as opened by the OS.
   base::string16 device_name_;
@@ -256,35 +253,35 @@ class PRINTING_EXPORT PrintSettings {
   gfx::Size dpi_;
 
   // Scale factor
-  double scale_factor_;
+  double scale_factor_ = 1.0;
 
   // True if PDF should be printed as a raster PDF
-  bool rasterize_pdf_;
+  bool rasterize_pdf_ = false;
 
   // Is the orientation landscape or portrait.
-  bool landscape_;
+  bool landscape_ = false;
 
   // True if this printer supports AlphaBlend.
-  bool supports_alpha_blend_;
+  bool supports_alpha_blend_ = true;
 
 #if defined(OS_WIN)
   // True to print text with GDI.
-  bool print_text_with_gdi_;
+  bool print_text_with_gdi_ = false;
 
-  PrinterType printer_type_;
+  PrinterType printer_type_ = PrinterType::TYPE_NONE;
 #endif
 
-  bool is_modifiable_;
+  bool is_modifiable_ = true;
 
   // If margin type is custom, this is what was requested.
   PageMargins requested_custom_margins_in_points_;
 
   // Number of pages per sheet.
-  int pages_per_sheet_;
+  int pages_per_sheet_ = 1;
 
 #if defined(OS_CHROMEOS)
   // Whether to send user info.
-  bool send_user_info_;
+  bool send_user_info_ = false;
 
   // Username if it's required by the printer.
   std::string username_;

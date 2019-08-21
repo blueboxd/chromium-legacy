@@ -198,7 +198,7 @@ void RecordStringAndRunClosure(std::string* result,
 class EasyUnlockTpmKeyManagerTest : public testing::Test {
  public:
   EasyUnlockTpmKeyManagerTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         user_manager_(new FakeChromeUserManager()),
         user_manager_enabler_(base::WrapUnique(user_manager_)),
         profile_manager_(TestingBrowserProcess::GetGlobal()) {}
@@ -340,7 +340,7 @@ class EasyUnlockTpmKeyManagerTest : public testing::Test {
   const AccountId test_account_id_ = AccountId::FromUserEmail(kTestUserId);
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   // The NSS system slot used by EasyUnlockTPMKeyManagers in tests.
   std::unique_ptr<crypto::ScopedTestSystemNSSKeySlot> test_system_slot_;

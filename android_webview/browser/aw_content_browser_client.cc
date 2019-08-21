@@ -703,9 +703,9 @@ bool AwContentBrowserClient::BindAssociatedInterfaceRequestFromFrame(
         render_frame_host);
     return true;
   }
-  if (interface_name == mojom::JsApiHandler::Name_) {
-    JsApiHandlerFactory::BindJsApiHandler(
-        mojo::PendingAssociatedReceiver<mojom::JsApiHandler>(
+  if (interface_name == mojom::JsToJavaMessaging::Name_) {
+    JsApiHandlerFactory::BindJsToJavaMessaging(
+        mojo::PendingAssociatedReceiver<mojom::JsToJavaMessaging>(
             std::move(*handle)),
         render_frame_host);
     return true;

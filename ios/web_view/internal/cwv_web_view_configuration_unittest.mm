@@ -20,7 +20,7 @@ namespace ios_web_view {
 
 class CWVWebViewConfigurationTest : public TestWithLocaleAndResources {
  protected:
-  web::TestWebThreadBundle web_thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
 };
 
 // Test CWVWebViewConfiguration initialization.

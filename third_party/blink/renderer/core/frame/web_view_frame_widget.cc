@@ -171,10 +171,9 @@ bool WebViewFrameWidget::ScrollFocusedEditableElementIntoView() {
   return web_view_->ScrollFocusedEditableElementIntoView();
 }
 
-void WebViewFrameWidget::SetLayerTreeView(WebLayerTreeView*,
-                                          cc::AnimationHost*) {
-  // The WebViewImpl already has its LayerTreeView, the WebWidgetClient
-  // thus does not initialize and set another one here.
+void WebViewFrameWidget::SetAnimationHost(cc::AnimationHost*) {
+  // The WebViewImpl already has its AnimationHost, the WebWidgetClient thus
+  // does not initialize and set another one here.
   NOTREACHED();
 }
 

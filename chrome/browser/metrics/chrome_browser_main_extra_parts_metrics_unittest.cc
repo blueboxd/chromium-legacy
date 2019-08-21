@@ -38,7 +38,7 @@ class ChromeBrowserMainExtraPartsMetricsTest : public testing::Test {
 
  private:
   // Provides a message loop and allows the use of the task scheduler
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   content::TestServiceManagerContext service_manager_context_;
 
   // Dummy screen required by a ChromeBrowserMainExtraPartsMetrics test target.

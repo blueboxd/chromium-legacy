@@ -30,23 +30,24 @@ public abstract class TabModelSelectorBase implements TabModelSelector {
     private TabModelFilterProvider mTabModelFilterProvider = new TabModelFilterProvider();
 
     private int mActiveModelIndex;
-    private final ObserverList<TabModelSelectorObserver> mObservers =
-            new ObserverList<TabModelSelectorObserver>();
+    private final ObserverList<TabModelSelectorObserver> mObservers = new ObserverList<>();
     private boolean mTabStateInitialized;
+    private boolean mStartIncognito;
 
     private final TabCreatorManager mTabCreatorManager;
 
-    protected TabModelSelectorBase(TabCreatorManager tabCreatorManager) {
+    protected TabModelSelectorBase(TabCreatorManager tabCreatorManager, boolean startIncognito) {
         mTabCreatorManager = tabCreatorManager;
+        mStartIncognito = startIncognito;
     }
 
-    protected final void initialize(boolean startIncognito, TabModel... models) {
+    protected final void initialize(TabModel... models) {
         // Only normal and incognito supported for now.
         assert mTabModels.isEmpty();
         assert models.length > 0;
 
         Collections.addAll(mTabModels, models);
-        mActiveModelIndex = getModelIndex(startIncognito);
+        mActiveModelIndex = getModelIndex(mStartIncognito);
         assert mActiveModelIndex != MODEL_NOT_FOUND;
         mTabModelFilterProvider = new TabModelFilterProvider(mTabModels);
 
@@ -84,6 +85,10 @@ public abstract class TabModelSelectorBase implements TabModelSelector {
 
     @Override
     public void selectModel(boolean incognito) {
+        if (mTabModels.size() == 0) {
+            mStartIncognito = incognito;
+            return;
+        }
         int newIndex = getModelIndex(incognito);
         assert newIndex != MODEL_NOT_FOUND;
         if (newIndex == mActiveModelIndex) return;
@@ -150,6 +155,7 @@ public abstract class TabModelSelectorBase implements TabModelSelector {
 
     @Override
     public boolean isIncognitoSelected() {
+        if (mTabModels.size() == 0) return mStartIncognito;
         return getCurrentModel().isIncognito();
     }
 

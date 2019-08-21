@@ -18,7 +18,9 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/time/default_clock.h"
 #include "base/time/time.h"
+#include "chrome/browser/heavy_ad_intervention/heavy_ad_blocklist.h"
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/page_load_metrics/observers/ad_metrics/frame_data.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_tester.h"
@@ -27,6 +29,9 @@
 #include "chrome/browser/subresource_filter/subresource_filter_test_harness.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/page_load_metrics/test/page_load_metrics_test_util.h"
+#include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
+#include "components/blacklist/opt_out_blacklist/opt_out_blacklist_delegate.h"
+#include "components/blacklist/opt_out_blacklist/opt_out_store.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/core/common/load_policy.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -43,6 +48,7 @@
 #include "content/public/test/test_navigation_throttle.h"
 #include "content/public/test/test_navigation_throttle_inserter.h"
 #include "content/public/test/test_renderer_host.h"
+#include "content/public/test/web_contents_tester.h"
 #include "net/base/host_port_pair.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -250,9 +256,15 @@ void TestHistograms(const base::HistogramTester& histograms,
 
 }  // namespace
 
-class AdsPageLoadMetricsObserverTest : public SubresourceFilterTestHarness {
+class AdsPageLoadMetricsObserverTest
+    : public SubresourceFilterTestHarness,
+      public blacklist::OptOutBlacklistDelegate {
  public:
-  AdsPageLoadMetricsObserverTest() {}
+  AdsPageLoadMetricsObserverTest()
+      : test_blocklist_(std::make_unique<HeavyAdBlocklist>(
+            nullptr,
+            base::DefaultClock::GetInstance(),
+            this)) {}
 
   void SetUp() override {
     SubresourceFilterTestHarness::SetUp();
@@ -368,6 +380,8 @@ class AdsPageLoadMetricsObserverTest : public SubresourceFilterTestHarness {
     return test_ukm_recorder_;
   }
 
+  HeavyAdBlocklist* blocklist() { return test_blocklist_.get(); }
+
   void OverrideVisibilityTrackerWithMockClock() {
     clock_ = std::make_unique<base::SimpleTestTickClock>();
     clock_->SetNowTicks(base::TimeTicks::Now());
@@ -411,7 +425,8 @@ class AdsPageLoadMetricsObserverTest : public SubresourceFilterTestHarness {
   }
 
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) {
-    auto observer = std::make_unique<AdsPageLoadMetricsObserver>(clock_.get());
+    auto observer = std::make_unique<AdsPageLoadMetricsObserver>(
+        clock_.get(), test_blocklist_.get());
     ads_observer_ = observer.get();
     tracker->AddObserver(std::move(observer));
     // Swap out the ScopedVisibilityTracker to use the test clock.
@@ -421,6 +436,7 @@ class AdsPageLoadMetricsObserverTest : public SubresourceFilterTestHarness {
     }
   }
 
+  std::unique_ptr<HeavyAdBlocklist> test_blocklist_;
   base::HistogramTester histogram_tester_;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder_;
   std::unique_ptr<page_load_metrics::PageLoadMetricsObserverTester> tester_;
@@ -1580,4 +1596,80 @@ TEST_F(AdsPageLoadMetricsObserverTest,
   histogram_tester().ExpectUniqueSample(
       SuffixedHistogram("HeavyAds.ComputedType"),
       FrameData::HeavyAdStatus::kNone, 1);
+}
+
+TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdBlocklistFull_NotFired) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kHeavyAdIntervention);
+
+  // Five interventions are allowed to occur, per origin per day. Add five
+  // entries to the blocklist.
+  for (int i = 0; i < 5; i++)
+    blocklist()->AddEntry(GURL(kNonAdUrl).host(), true, 0);
+
+  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
+  RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
+
+  // Add enough data to trigger the intervention.
+  ResourceDataUpdate(ad_frame, ResourceCached::NOT_CACHED,
+                     (heavy_ad_thresholds::kMaxNetworkBytes / 1024) + 1);
+
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("HeavyAds.InterventionType"), 0);
+}
+
+TEST_F(AdsPageLoadMetricsObserverTest,
+       HeavyAdBlocklistDisabled_InterventionNotBlocked) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures({features::kHeavyAdIntervention},
+                                {features::kHeavyAdBlocklist});
+
+  // Fill up the blocklist to verify the blocklist logic is correctly ignored
+  // when disabled.
+  for (int i = 0; i < 5; i++)
+    blocklist()->AddEntry(GURL(kNonAdUrl).host(), true, 0);
+
+  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
+  RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
+
+  // Add enough data to trigger the intervention.
+  ResourceDataUpdate(ad_frame, ResourceCached::NOT_CACHED,
+                     (heavy_ad_thresholds::kMaxNetworkBytes / 1024) + 1);
+
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("HeavyAds.InterventionType"), 1);
+}
+
+TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdBlocklist_InterventionReported) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kHeavyAdIntervention);
+
+  // Five interventions are allowed to occur, per origin per day. Add four
+  // entries to the blocklist.
+  for (int i = 0; i < 4; i++)
+    blocklist()->AddEntry(GURL(kNonAdUrl).host(), true, 0);
+
+  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
+  RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
+
+  // Add enough data to trigger the intervention.
+  ResourceDataUpdate(ad_frame, ResourceCached::NOT_CACHED,
+                     (heavy_ad_thresholds::kMaxNetworkBytes / 1024) + 1);
+
+  // Verify the intervention triggered.
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("HeavyAds.InterventionType"),
+      FrameData::HeavyAdStatus::kNetwork, 1);
+
+  // Verify the blocklist blocks the next intervention.
+  ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
+
+  // Add enough data to trigger the intervention.
+  ResourceDataUpdate(ad_frame, ResourceCached::NOT_CACHED,
+                     (heavy_ad_thresholds::kMaxNetworkBytes / 1024) + 1);
+
+  // Verify the intervention did not occur again.
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("HeavyAds.InterventionType"),
+      FrameData::HeavyAdStatus::kNetwork, 1);
 }

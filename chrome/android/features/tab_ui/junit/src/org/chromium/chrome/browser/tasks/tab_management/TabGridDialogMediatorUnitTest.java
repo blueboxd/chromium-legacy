@@ -45,7 +45,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.util.browser.Features;
@@ -82,6 +81,8 @@ public class TabGridDialogMediatorUnitTest {
     @Mock
     Resources mResources;
     @Mock
+    TabGridDialogParent.AnimationParams mAnimationParams;
+    @Mock
     Rect mRect;
     @Mock
     View mView;
@@ -96,7 +97,7 @@ public class TabGridDialogMediatorUnitTest {
     @Mock
     TabSwitcherMediator.ResetHandler mTabSwitcherResetHandler;
     @Mock
-    TabGridDialogMediator.AnimationOriginProvider mAnimationOriginProvider;
+    TabGridDialogMediator.AnimationParamsProvider mAnimationParamsProvider;
     @Mock
     TabModelFilterProvider mTabModelFilterProvider;
     @Mock
@@ -153,13 +154,15 @@ public class TabGridDialogMediatorUnitTest {
         doReturn(DIALOG_TITLE2)
                 .when(mResources)
                 .getQuantityString(R.plurals.bottom_tab_grid_title_placeholder, 2, 2);
-        doReturn(mRect).when(mAnimationOriginProvider).getAnimationOriginRect(anyInt());
+        doReturn(mAnimationParams)
+                .when(mAnimationParamsProvider)
+                .getAnimationParamsForIndex(anyInt());
         doReturn(mTabCreator).when(mTabCreatorManager).getTabCreator(anyBoolean());
 
         mModel = new PropertyModel(TabGridSheetProperties.ALL_KEYS);
         mMediator =
                 new TabGridDialogMediator(mContext, mDialogResetHandler, mModel, mTabModelSelector,
-                        mTabCreatorManager, mTabSwitcherResetHandler, mAnimationOriginProvider);
+                        mTabCreatorManager, mTabSwitcherResetHandler, mAnimationParamsProvider);
     }
 
     @After
@@ -182,13 +185,13 @@ public class TabGridDialogMediatorUnitTest {
     @Test
     public void onClickAdd_HasCurrentTab() {
         // Mock that the animation source Rect is not null.
-        mModel.set(TabGridSheetProperties.ANIMATION_SOURCE_RECT, mRect);
+        mModel.set(TabGridSheetProperties.ANIMATION_PARAMS, mAnimationParams);
         mMediator.setCurrentTabIdForTest(TAB1_ID);
 
         View.OnClickListener listener = mModel.get(TabGridSheetProperties.ADD_CLICK_LISTENER);
         listener.onClick(mView);
 
-        assertThat(mModel.get(TabGridSheetProperties.ANIMATION_SOURCE_RECT), equalTo(null));
+        assertThat(mModel.get(TabGridSheetProperties.ANIMATION_PARAMS), equalTo(null));
         verify(mDialogResetHandler).resetWithListOfTabs(null);
         verify(mTabCreator)
                 .createNewTab(
@@ -224,12 +227,12 @@ public class TabGridDialogMediatorUnitTest {
     @Test
     public void tabAddition() {
         Tab newTab = prepareTab(TAB3_ID, TAB3_TITLE);
-        // Mock that the animation source Rect is not null.
-        mModel.set(TabGridSheetProperties.ANIMATION_SOURCE_RECT, mRect);
+        // Mock that the animation params is not null.
+        mModel.set(TabGridSheetProperties.ANIMATION_PARAMS, mAnimationParams);
 
         mTabModelObserverCaptor.getValue().didAddTab(newTab, TabLaunchType.FROM_CHROME_UI);
 
-        assertThat(mModel.get(TabGridSheetProperties.ANIMATION_SOURCE_RECT), equalTo(null));
+        assertThat(mModel.get(TabGridSheetProperties.ANIMATION_PARAMS), equalTo(null));
         verify(mDialogResetHandler).resetWithListOfTabs(null);
     }
 
@@ -279,14 +282,14 @@ public class TabGridDialogMediatorUnitTest {
         doReturn(new ArrayList<>()).when(mTabGroupModelFilter).getRelatedTabList(TAB1_ID);
         // As last tab in the group, tab1 is definitely the current tab for the dialog.
         mMediator.setCurrentTabIdForTest(TAB1_ID);
-        // Assume the dialog is showing and the source Rect is not null.
-        mModel.set(TabGridSheetProperties.ANIMATION_SOURCE_RECT, mRect);
+        // Assume the dialog is showing and the source animation params is not null.
+        mModel.set(TabGridSheetProperties.ANIMATION_PARAMS, mAnimationParams);
         mModel.set(TabGridSheetProperties.IS_DIALOG_VISIBLE, true);
 
         mTabModelObserverCaptor.getValue().willCloseTab(mTab1, false);
 
         assertThat(mMediator.getCurrentTabIdForTest(), equalTo(Tab.INVALID_TAB_ID));
-        assertThat(mModel.get(TabGridSheetProperties.ANIMATION_SOURCE_RECT), equalTo(null));
+        assertThat(mModel.get(TabGridSheetProperties.ANIMATION_PARAMS), equalTo(null));
         verify(mDialogResetHandler).resetWithListOfTabs(null);
         verify(mTabSwitcherResetHandler, never())
                 .resetWithTabList(mTabGroupModelFilter, false, false);
@@ -346,59 +349,80 @@ public class TabGridDialogMediatorUnitTest {
 
     @Test
     public void tabSelection() {
+        mModel.set(TabGridSheetProperties.ANIMATION_PARAMS, mAnimationParams);
+
         mTabModelObserverCaptor.getValue().didSelectTab(
                 mTab1, TabSelectionType.FROM_USER, Tab.INVALID_TAB_ID);
 
-        assertThat(mModel.get(TabGridSheetProperties.ANIMATION_SOURCE_RECT), equalTo(null));
+        assertThat(mModel.get(TabGridSheetProperties.ANIMATION_PARAMS), equalTo(null));
         verify(mDialogResetHandler).resetWithListOfTabs(null);
     }
 
     @Test
-    public void hideDialog_Animation() {
-        FeatureUtilities.setIsTabToGtsAnimationEnabledForTesting(true);
+    public void hideDialog_FadeOutAnimation() {
+        // Mock that the animation source Rect is null.
+        mModel.set(TabGridSheetProperties.ANIMATION_PARAMS, null);
 
-        // Mock that the dialog is showing and animation source Rect is null.
+        mMediator.hideDialog(false);
+
+        // Animation params should not be specified.
+        assertThat(mModel.get(TabGridSheetProperties.ANIMATION_PARAMS), equalTo(null));
+        verify(mDialogResetHandler).resetWithListOfTabs(eq(null));
+    }
+
+    @Test
+    public void hideDialog_ZoomOutAnimation() {
+        // Mock that the animation source Rect is null.
+        mModel.set(TabGridSheetProperties.ANIMATION_PARAMS, null);
+
+        mMediator.hideDialog(true);
+
+        // Animation params should be specified.
+        assertThat(mModel.get(TabGridSheetProperties.ANIMATION_PARAMS), equalTo(mAnimationParams));
+        verify(mDialogResetHandler).resetWithListOfTabs(eq(null));
+    }
+
+    @Test
+    public void hideDialog_onReset() {
         mModel.set(TabGridSheetProperties.IS_DIALOG_VISIBLE, true);
-        mModel.set(TabGridSheetProperties.ANIMATION_SOURCE_RECT, null);
 
         mMediator.onReset(null);
 
         assertThat(mModel.get(TabGridSheetProperties.IS_DIALOG_VISIBLE), equalTo(false));
-        // Animation source Rect should be updated with specific Rect.
-        assertThat(mModel.get(TabGridSheetProperties.ANIMATION_SOURCE_RECT), equalTo(null));
-
-        FeatureUtilities.setIsTabToGtsAnimationEnabledForTesting(null);
     }
 
     @Test
-    public void hideDialog_NoAnimation() {
-        FeatureUtilities.setIsTabToGtsAnimationEnabledForTesting(false);
-
-        // Mock that the dialog is showing and animation source Rect is null.
-        mModel.set(TabGridSheetProperties.IS_DIALOG_VISIBLE, true);
-        mModel.set(TabGridSheetProperties.ANIMATION_SOURCE_RECT, null);
-
-        mMediator.onReset(null);
-
-        assertThat(mModel.get(TabGridSheetProperties.IS_DIALOG_VISIBLE), equalTo(false));
-        // Animation source Rect should be updated with specific Rect.
-        assertThat(mModel.get(TabGridSheetProperties.ANIMATION_SOURCE_RECT), equalTo(mRect));
-
-        FeatureUtilities.setIsTabToGtsAnimationEnabledForTesting(null);
-    }
-
-    @Test
-    public void showDialog() {
+    public void showDialog_FromGTS() {
         // Mock that the dialog is hidden and animation source Rect and header title are all null.
         mModel.set(TabGridSheetProperties.IS_DIALOG_VISIBLE, false);
-        mModel.set(TabGridSheetProperties.ANIMATION_SOURCE_RECT, null);
+        mModel.set(TabGridSheetProperties.ANIMATION_PARAMS, null);
         mModel.set(TabGridSheetProperties.HEADER_TITLE, null);
 
         mMediator.onReset(TAB1_ID);
 
         assertThat(mModel.get(TabGridSheetProperties.IS_DIALOG_VISIBLE), equalTo(true));
         // Animation source Rect should be updated with specific Rect.
-        assertThat(mModel.get(TabGridSheetProperties.ANIMATION_SOURCE_RECT), equalTo(mRect));
+        assertThat(mModel.get(TabGridSheetProperties.ANIMATION_PARAMS), equalTo(mAnimationParams));
+        // Dialog title should be updated.
+        assertThat(mModel.get(TabGridSheetProperties.HEADER_TITLE), equalTo(DIALOG_TITLE1));
+    }
+
+    @Test
+    public void showDialog_FromStrip() {
+        // For strip we don't play zoom-in/zoom-out for show/hide dialog, and thus
+        // the animationParamsProvider is null.
+        mMediator = new TabGridDialogMediator(mContext, mDialogResetHandler, mModel,
+                mTabModelSelector, mTabCreatorManager, mTabSwitcherResetHandler, null);
+        // Mock that the dialog is hidden and animation source Rect and header title are all null.
+        mModel.set(TabGridSheetProperties.IS_DIALOG_VISIBLE, false);
+        mModel.set(TabGridSheetProperties.ANIMATION_PARAMS, null);
+        mModel.set(TabGridSheetProperties.HEADER_TITLE, null);
+
+        mMediator.onReset(TAB1_ID);
+
+        assertThat(mModel.get(TabGridSheetProperties.IS_DIALOG_VISIBLE), equalTo(true));
+        // Animation params should not be specified.
+        assertThat(mModel.get(TabGridSheetProperties.ANIMATION_PARAMS), equalTo(null));
         // Dialog title should be updated.
         assertThat(mModel.get(TabGridSheetProperties.HEADER_TITLE), equalTo(DIALOG_TITLE1));
     }

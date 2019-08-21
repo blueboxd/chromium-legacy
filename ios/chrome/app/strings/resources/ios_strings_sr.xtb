@@ -149,7 +149,6 @@
 <translation id="2921219216347069551">Дељење странице није могуће</translation>
 <translation id="2923448633003185837">Налепи и иди</translation>
 <translation id="292639812446257861">Означи као непрочитано</translation>
-<translation id="2933759065870693102">Блиц</translation>
 <translation id="2958718410589002129">Лозинке</translation>
 <translation id="2969979262385602596">Пријављивање није успело. Пробајте поново касније.</translation>
 <translation id="298306318844797842">Додајте начин плаћања...</translation>
@@ -305,6 +304,7 @@
 <translation id="5317780077021120954">Сачувај</translation>
 <translation id="5327248766486351172">Назив</translation>
 <translation id="5388358297987318779">Отвори слику</translation>
+<translation id="5407969256130905701">Одбаци промене</translation>
 <translation id="5409365236829784218">Није инсталирана ниједна апликација за отварање ове датотеке.</translation>
 <translation id="5416022985862681400">Последњих 7 дана</translation>
 <translation id="5433691172869980887">Корисничко име је копирано</translation>
@@ -510,6 +510,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="8428213095426709021">Подешавања</translation>
 <translation id="8458397775385147834">1 ставка је избрисана</translation>
 <translation id="8487700953926739672">Доступно ван мреже</translation>
+<translation id="8490978609246021741">Сачувај промене</translation>
 <translation id="8503813439785031346">Корисничко име</translation>
 <translation id="850600235656508448">Отвори у режиму без архивирања</translation>
 <translation id="8517375800490286174">Лиценце отвореног кода</translation>

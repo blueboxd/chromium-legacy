@@ -4,6 +4,7 @@
 
 module blink.mojom;
 
+import "mojo/public/mojom/base/read_only_buffer.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "third_party/blink/public/mojom/fetch/fetch_api_response.mojom";
 import "third_party/blink/public/mojom/fetch/fetch_api_request.mojom";
@@ -122,7 +123,7 @@ interface CacheStorageCache {
   // Sets |side_data| if there is an entry of which key is |url| and the entry
   // has the same |response_time|.
   SetSideData(url.mojom.Url url, mojo_base.mojom.Time response_time,
-              array<uint8> side_data, int64 trace_id) => (CacheStorageError result);
+              mojo_base.mojom.ReadOnlyBuffer side_data, int64 trace_id) => (CacheStorageError result);
 };
 
 // Handles global CacheStorage methods, directly relates to methods available on

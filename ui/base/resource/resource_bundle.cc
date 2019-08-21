@@ -563,7 +563,7 @@ gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
   }
 
   // The load was successful, so cache the image.
-  auto inserted = images_.insert(std::make_pair(resource_id, image));
+  auto inserted = images_.emplace(resource_id, image);
   DCHECK(inserted.second);
   return inserted.first->second;
 }
@@ -733,14 +733,14 @@ const gfx::FontList& ResourceBundle::GetFontListWithTypefaceAndDelta(
   // to the existing entry that the insertion collided with.
   const FontKey sized_key(typeface, size_delta, gfx::Font::NORMAL,
                           gfx::Font::Weight::NORMAL);
-  auto sized = font_cache_.insert(std::make_pair(sized_key, base_font_list));
+  auto sized = font_cache_.emplace(sized_key, base_font_list);
   if (sized.second)
     sized.first->second = base.DeriveWithSizeDelta(size_delta);
   if (styled_key == sized_key) {
     return sized.first->second;
   }
 
-  auto styled = font_cache_.insert(std::make_pair(styled_key, base_font_list));
+  auto styled = font_cache_.emplace(styled_key, base_font_list);
   DCHECK(styled.second);  // Otherwise font_cache_.find(..) would have found it.
   styled.first->second = sized.first->second.Derive(
       0, sized.first->second.GetFontStyle() | style, weight);

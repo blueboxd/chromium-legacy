@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/xr/xr_plane.h"
 
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/modules/xr/type_converters.h"
 #include "third_party/blink/renderer/modules/xr/xr_plane_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_reference_space.h"
@@ -70,6 +71,18 @@ HeapVector<Member<DOMPointReadOnly>> XRPlane::polygon() const {
   // array (`let polygon = plane.polygon`) - the stored array won't be affected
   // by the changes to the plane that could happen in frames >N.
   return polygon_;
+}
+
+ScriptPromise XRPlane::createAnchor(ScriptState* script_state,
+                                    XRPose* pose,
+                                    XRSpace* space) {
+  // TODO(https://crbug.com/992033): Implement anchor creation from a plane
+  // instead of rejecting the promise. This'll cause the string literal used
+  // below to be removed.
+  return ScriptPromise::RejectWithDOMException(
+      script_state,
+      MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
+                                         "Device does not support anchors!"));
 }
 
 void XRPlane::Update(const device::mojom::blink::XRPlaneDataPtr& plane_data,

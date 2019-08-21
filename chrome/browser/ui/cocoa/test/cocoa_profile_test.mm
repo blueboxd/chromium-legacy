@@ -28,7 +28,7 @@
 #include "ui/views/test/widget_test.h"
 
 CocoaProfileTest::CocoaProfileTest()
-    : thread_bundle_(new content::TestBrowserThreadBundle),
+    : task_environment_(new content::BrowserTaskEnvironment),
       views_helper_(std::make_unique<ChromeTestViewsDelegate>()),
       profile_manager_(TestingBrowserProcess::GetGlobal()),
       profile_(nullptr) {}

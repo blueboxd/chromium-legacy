@@ -34,7 +34,7 @@ class FileIconSourceTest : public testing::Test {
   FileIconSourceTest() = default;
 
  private:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 const struct FetchFileIconExpectation {

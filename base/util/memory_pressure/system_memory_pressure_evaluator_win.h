@@ -96,9 +96,6 @@ class SystemMemoryPressureEvaluator
   // be called on any thread.
   MemoryPressureLevel CalculateCurrentPressureLevel();
 
-  // Gets the most recently cast vote.
-  MemoryPressureLevel current_vote_for_testing() const { return current_vote_; }
-
   // Gets system memory status. This is virtual as a unittesting hook. Returns
   // true if the system call succeeds, false otherwise. Can be called on any
   // thread.
@@ -118,12 +115,6 @@ class SystemMemoryPressureEvaluator
   // |CheckMemoryPressure| to apply hysteresis on the raw results of
   // |CalculateCurrentPressureLevel|.
   int moderate_pressure_repeat_count_;
-
-  // In charge of forwarding votes from here to the
-  // MemoryPressureVoteAggregator.
-  std::unique_ptr<MemoryPressureVoter> voter_;
-
-  MemoryPressureLevel current_vote_;
 
   // Ensures that this object is used from a single sequence.
   SEQUENCE_CHECKER(sequence_checker_);

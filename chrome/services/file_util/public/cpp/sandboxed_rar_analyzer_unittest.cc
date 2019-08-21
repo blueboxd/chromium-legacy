@@ -47,7 +47,7 @@ class SandboxedRarAnalyzerTest : public testing::Test {
 
  public:
   SandboxedRarAnalyzerTest()
-      : browser_thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   void AnalyzeFile(const base::FilePath& path,
                    safe_browsing::ArchiveAnalyzerResults* results) {
@@ -121,7 +121,7 @@ class SandboxedRarAnalyzerTest : public testing::Test {
     DISALLOW_COPY_AND_ASSIGN(ResultsGetter);
   };
 
-  content::TestBrowserThreadBundle browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 // static

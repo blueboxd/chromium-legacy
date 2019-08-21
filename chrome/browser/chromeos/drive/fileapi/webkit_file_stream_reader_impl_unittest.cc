@@ -37,8 +37,7 @@ class WebkitFileStreamReaderImplTest : public ::testing::Test {
   // Because the testee should live on IO thread, the main thread is
   // reused as IO thread, and UI thread will be run on background.
   WebkitFileStreamReaderImplTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
-  }
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   void SetUp() override {
     worker_thread_ =
@@ -63,7 +62,7 @@ class WebkitFileStreamReaderImplTest : public ::testing::Test {
                       base::Unretained(this));
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   std::unique_ptr<base::Thread> worker_thread_;
 

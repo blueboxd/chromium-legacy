@@ -141,7 +141,6 @@
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB af andre apps</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# fil}one{# fil}other{# filer}}</translation>
 <translation id="2017836877785168846">Nulstiller historikken og autofuldførelser i adresselinjen.</translation>
-<translation id="2018707881002649255">De kontakter, du vælger nedenfor, deles med websitet <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="2021896219286479412">Kontrolelementer på website i fuld skærm</translation>
 <translation id="2038563949887743358">Slå computerversionen af websitet til</translation>
 <translation id="2041019821020695769">Aktivér også notifikationer i <ph name="BEGIN_LINK" />Android-indstillingerne<ph name="END_LINK" /> for at give Chrome tilladelse til at sende dig notifikationer.</translation>
@@ -243,7 +242,6 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> sekunder tilbage</translation>
 <translation id="2779651927720337254">mislykkedes</translation>
 <translation id="2781151931089541271">1 sekund tilbage</translation>
-<translation id="2796941233371040292">Der er ingen lagerdata her</translation>
 <translation id="2801022321632964776">Opdater til den nyeste version af Chrome for at bruge dit eget sprog</translation>
 <translation id="2810645512293415242">Forenklet side, der sparer data og indlæses hurtigere.</translation>
 <translation id="281504910091592009">Se og administrer gemte adgangskoder på din <ph name="BEGIN_LINK" />Google-konto<ph name="END_LINK" /></translation>
@@ -271,6 +269,7 @@
 <translation id="2962095958535813455">Skiftet til inkognitofaner</translation>
 <translation id="2968755619301702150">Certifikatfremviser</translation>
 <translation id="2979025552038692506">Valgt inkognitofane</translation>
+<translation id="2987620471460279764">Tekst, der er delt fra en anden enhed</translation>
 <translation id="2989523299700148168">Besøgt for nylig</translation>
 <translation id="2996291259634659425">Opret adgangssætning</translation>
 <translation id="2996809686854298943">En webadresse er påkrævet</translation>
@@ -554,6 +553,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 download mislykkedes.}one{# download mislykkedes.}other{# downloads mislykkedes.}}</translation>
 <translation id="5170568018924773124">Vis i mappe</translation>
 <translation id="5184329579814168207">Åbn i Chrome</translation>
+<translation id="5193988420012215838">Kopieret til din udklipsholder</translation>
 <translation id="5199929503336119739">Arbejdsprofil</translation>
 <translation id="5202089186707505116">Vil du give dette website adgang til dine VR-sensorer?</translation>
 <translation id="5210286577605176222">Gå til den forrige fane</translation>
@@ -702,6 +702,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, som ikke er baseret på andre websites, du har besøgt. Mange websites vil fortsat indsamle og bruge browserdata til f.eks. at forbedre sikkerheden, til at levere indhold, annoncer og anbefalinger og til at generere rapporteringsstatistik.</translation>
 <translation id="624789221780392884">Opdateringen er klar</translation>
 <translation id="6255999984061454636">Indholdsforslag</translation>
+<translation id="6264430811215618931"><ph name="ORIGIN" /> har sendt en sms til dit telefonnummer. Hvis du bekræfter, kan websitet se, at det er dig.</translation>
 <translation id="6277522088822131679">Der opstod et problem med udskrivning af siden. Prøv igen.</translation>
 <translation id="6295158916970320988">Alle websites</translation>
 <translation id="629730747756840877">Konto</translation>
@@ -717,7 +718,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6364438453358674297">Vil du fjerne forslaget fra historikken?</translation>
 <translation id="6369229450655021117">Herfra kan du søge på nettet, dele indhold med venner og se åbne sider</translation>
 <translation id="6378173571450987352">Info: Sorteret efter mængden af brugte data</translation>
-<translation id="6383961787135158834">Ryd websitelagerplads…</translation>
 <translation id="6388207532828177975">Ryd og nulstil</translation>
 <translation id="6393863479814692971">Chrome skal have tilladelse til at bruge dit kamera og din mikrofon på dette website.</translation>
 <translation id="6395288395575013217">LINK</translation>

@@ -118,7 +118,7 @@ class BitmapFetcherServiceTest : public testing::Test,
   const GURL url2_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
 };
 

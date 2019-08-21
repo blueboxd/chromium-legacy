@@ -828,7 +828,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="2463034609187171371">Activer des suites de chiffrement DHE dans TLS</translation>
 <translation id="2463365186486772703">Paramètres régionaux de l'application</translation>
 <translation id="2466131534462628618">L'authentification de portail captif ignore le proxy</translation>
-<translation id="2466697858869282874">Configure la disponibilité et le comportement de la fonctionnalité de mise à jour du micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+<translation id="2466697858869282874">Permet de configurer la disponibilité et le comportement de la fonctionnalité de mise à jour du micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
       Les paramètres individuels peuvent être spécifiés dans les propriétés JSON :
 
@@ -838,9 +838,9 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
       <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" /> : contrôle l'application des mises à jour automatiques du micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" /> pour les micrologiciels <ph name="TPM_FIRMWARE_UPDATE_TPM" /> vulnérables. Tous les flux préservent l'état de l'appareil local.
         Si vous définissez cette règle sur 1 ou que vous ne la définissez pas, les mises à jour du micrologiciel TPM ne sont pas appliquées.
-        Si vous définissez cette règle sur 2, le micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" /> est mis à jour lors du prochain redémarrage, une fois que l'utilisateur a pris connaissance de la mise à jour.
-        Si vous définissez cette règle sur 3, le micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" /> est mis à jour lors du prochain redémarrage.
-        Si vous définissez cette règle sur 4, le micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" /> est mis à jour après l'inscription, avant que l'utilisateur se connecte.
+        Si vous définissez cette règle sur 2, le micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" /> sera mis à jour lors du prochain redémarrage, une fois que l'utilisateur aura pris connaissance de la mise à jour.
+        Si vous définissez cette règle sur 3, le micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" /> sera mis à jour lors du prochain redémarrage.
+        Si vous définissez cette règle sur 4, le micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" /> sera mis à jour après l'inscription, avant que l'utilisateur se connecte.
         Cette option est disponible à partir de la version 75.
 
       Si cette règle n'est pas définie, la fonctionnalité de mise à jour du micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" /> n'est pas disponible.</translation>
@@ -1666,15 +1666,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
           Si ce paramètre est défini sur "False" ou s'il n'est pas défini, les utilisateurs ont la possibilité de transférer des fichiers vers Google Drive.</translation>
 <translation id="3915395663995367577">URL d'un fichier .pac de proxy</translation>
-<translation id="3920892052017026701">Permet de personnaliser le pourcentage auquel la batterie doit commencer à être rechargée.
-
-          La batterie commence à se charger lorsqu'elle atteint le niveau défini.
-
-          La valeur de la règle DeviceBatteryChargeCustomStartCharging doit être inférieure à celle de la règle DeviceBatteryChargeCustomStopCharging.
-
-          Cette règle n'est utilisée que si la règle DeviceBatteryChargeMode est personnalisée.
-
-          Si cette règle n'est pas configurée ni définie, le mode standard de recharge de la batterie est alors appliqué.</translation>
 <translation id="3925377537407648234">Régler la résolution d'affichage et le facteur d'adaptation</translation>
 <translation id="3939893074578116847">Envoyer des paquets réseau au serveur de gestion pour contrôler l'état en ligne, afin de lui permettre
       de détecter si l'appareil est hors connexion
@@ -3078,7 +3069,7 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 <translation id="6544897973797372144">Si cette règle est définie sur "True", et si la règle ChromeOsReleaseChannel n'est pas spécifiée, les utilisateurs du domaine correspondant sont autorisés à modifier la version de l'appareil. Si elle est définie sur "False", l'appareil est verrouillé sur la dernière version configurée.
 
       La règle ChromeOsReleaseChannel prévaut sur la version sélectionnée par l'utilisateur. Toutefois, si cette dernière est plus stable que la version installée sur l'appareil, elle n'est remplacée qu'une fois que la version la plus stable atteint un numéro supérieur à celui de la version installée sur l'appareil.</translation>
-<translation id="6549567350270907557">Si ce paramètre est activé, les utilisateurs peuvent demander à <ph name="PRODUCT_NAME" /> de contrôler si les identifiants saisis ont été touchés par une fuite.
+<translation id="6549567350270907557">Si ce paramètre est activé, les utilisateurs peuvent demander à <ph name="PRODUCT_NAME" /> de contrôler si les identifiants saisis ont fait l'objet d'une fuite.
 
               Si cette règle est activée ou désactivée, les utilisateurs ne peuvent pas la modifier ni l'ignorer dans <ph name="PRODUCT_NAME" />. Si cette règle n'est pas définie, la vérification de fuite est autorisée (l'utilisateur peut la désactiver).</translation>
 <translation id="6553143066970470539">Niveau de luminosité de l'écran (%)</translation>
@@ -3668,15 +3659,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si la valeur de cette règle est définie sur 0, la taille du cache par défaut est utilisée, mais l'utilisateur n'est pas en mesure de la modifier.
 
       Si cette règle n'est pas définie, la taille par défaut est utilisée, et l'utilisateur est en mesure de la remplacer à l'aide de l'indicateur "--disk-cache-size".</translation>
-<translation id="759389052790680884">Permet de personnaliser le pourcentage auquel la recharge de la batterie doit s'arrêter.
-
-          Une fois ce pourcentage atteint, la recharge s'arrête.
-
-          La valeur de la règle DeviceBatteryChargeCustomStartCharging doit être inférieure à celle de la règle DeviceBatteryChargeCustomStopCharging.
-
-          Cette règle n'est utilisée que si la règle DeviceBatteryChargeMode est personnalisée.
-
-          Si cette règle n'est pas configurée ni définie, le mode standard de recharge de la batterie est alors appliqué.</translation>
 <translation id="759957074386651883">Paramètres de navigation sécurisée</translation>
 <translation id="7604169113182304895">Les applications Android peuvent avoir été volontairement conçues pour respecter cette liste, mais vous ne pouvez pas les forcer à effectuer cette opération.</translation>
 <translation id="7612157962821894603">Options système à appliquer au démarrage de <ph name="PRODUCT_NAME" /></translation>
@@ -3778,9 +3760,6 @@ au maximum si un utilisateur se sert de l'appareil.
 <translation id="7750991880413385988">Ouvrir la page Nouvel onglet</translation>
 <translation id="7754704193130578113">Toujours demander où enregistrer les fichiers</translation>
 <translation id="7761446981238915769">Configurez la liste des applications installées sur l'écran de connexion.</translation>
-<translation id="7763479091692861127"> Types de connexions autorisés pour les mises à jour du système d'exploitation. En raison de leur taille, les mises à jour du système d'exploitation peuvent considérablement ralentir la connexion et impliquent parfois des frais supplémentaires. C'est pourquoi elles ne sont pas activées par défaut pour les types de connexion jugés onéreux, tels que WiMax, Bluetooth et Cellulaire.
-
-      Les identifiants des types de connexion reconnus sont "ethernet", "wifi", "wimax", "bluetooth" et "cellular".</translation>
 <translation id="7763614521440615342">Afficher des recommandations de contenus sur la page "Nouvel onglet"</translation>
 <translation id="7765879851993224640">Autorise la connexion avec Smart Lock.</translation>
 <translation id="7772346342637974431">Délai d'inactivité de l'utilisateur au terme duquel un message d'avertissement s'affiche (en cas d'utilisation de la batterie).

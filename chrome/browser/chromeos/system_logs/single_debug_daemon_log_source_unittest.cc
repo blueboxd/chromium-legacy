@@ -54,7 +54,7 @@ class SingleDebugDaemonLogSourceTest : public ::testing::Test {
   }
 
   // Creates the necessary browser threads.
-  content::TestBrowserThreadBundle browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   // Used to verify that OnFetchComplete was called the correct number of times.
   int num_callback_calls_;

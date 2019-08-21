@@ -23,8 +23,10 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/timer/timer.h"
+#include "net/base/features.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_timing_info.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/request_priority.h"
 #include "net/nqe/network_quality_estimator_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -161,8 +163,16 @@ class CancelingTestRequest : public TestRequest {
 class ResourceSchedulerTest : public testing::Test {
  protected:
   ResourceSchedulerTest() : field_trial_list_(nullptr) {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(
+        net::features::kPartitionHttpServerPropertiesByNetworkIsolationKey);
+    // This has to be done after initializing the feature list, since the value
+    // of the feature is cached.
+    context_ = std::make_unique<net::TestURLRequestContext>(true);
+    context_->set_network_quality_estimator(&network_quality_estimator_);
+    context_->Init();
+
     InitializeScheduler();
-    context_.set_network_quality_estimator(&network_quality_estimator_);
   }
 
   ~ResourceSchedulerTest() override { CleanupScheduler(); }
@@ -217,7 +227,7 @@ class ResourceSchedulerTest : public testing::Test {
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       int child_id,
       int route_id) {
-    std::unique_ptr<net::URLRequest> url_request(context_.CreateRequest(
+    std::unique_ptr<net::URLRequest> url_request(context_->CreateRequest(
         GURL(url), priority, nullptr, traffic_annotation));
     return url_request;
   }
@@ -242,7 +252,8 @@ class ResourceSchedulerTest : public testing::Test {
       int child_id,
       int route_id) {
     return GetNewTestRequest(url, priority, TRAFFIC_ANNOTATION_FOR_TESTS,
-                             child_id, route_id, true);
+                             child_id, route_id, true,
+                             net::NetworkIsolationKey());
   }
 
   std::unique_ptr<TestRequest> NewRequest(const char* url,
@@ -269,7 +280,7 @@ class ResourceSchedulerTest : public testing::Test {
       net::RequestPriority priority,
       const net::NetworkTrafficAnnotationTag& traffic_annotation) {
     return GetNewTestRequest(url, priority, traffic_annotation, kBrowserChildId,
-                             kBrowserRouteId, true);
+                             kBrowserRouteId, true, net::NetworkIsolationKey());
   }
 
   std::unique_ptr<TestRequest> NewSyncRequest(const char* url,
@@ -290,7 +301,16 @@ class ResourceSchedulerTest : public testing::Test {
       int child_id,
       int route_id) {
     return GetNewTestRequest(url, priority, TRAFFIC_ANNOTATION_FOR_TESTS,
-                             child_id, route_id, false);
+                             child_id, route_id, false,
+                             net::NetworkIsolationKey());
+  }
+
+  std::unique_ptr<TestRequest> NewRequestWithNetworkIsolationKey(
+      const char* url,
+      net::RequestPriority priority,
+      const net::NetworkIsolationKey& network_isolation_key) {
+    return GetNewTestRequest(url, priority, TRAFFIC_ANNOTATION_FOR_TESTS,
+                             kChildId, kRouteId, true, network_isolation_key);
   }
 
   std::unique_ptr<TestRequest> GetNewTestRequest(
@@ -299,9 +319,12 @@ class ResourceSchedulerTest : public testing::Test {
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       int child_id,
       int route_id,
-      bool is_async) {
+      bool is_async,
+      const net::NetworkIsolationKey& network_isolation_key) {
     std::unique_ptr<net::URLRequest> url_request(NewURLRequestWithChildAndRoute(
         url, priority, traffic_annotation, child_id, route_id));
+    url_request->set_network_isolation_key(network_isolation_key);
+
     auto scheduled_request = scheduler_->ScheduleRequest(
         child_id, route_id, is_async, url_request.get());
     auto request = std::make_unique<TestRequest>(
@@ -498,7 +521,7 @@ class ResourceSchedulerTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<ResourceScheduler> scheduler_;
   net::TestNetworkQualityEstimator network_quality_estimator_;
-  net::TestURLRequestContext context_;
+  std::unique_ptr<net::TestURLRequestContext> context_;
   ResourceSchedulerParamsManager resource_scheduler_params_manager_;
   base::FieldTrialList field_trial_list_;
   base::SimpleTestTickClock tick_clock_;
@@ -545,8 +568,9 @@ TEST_F(ResourceSchedulerTest, OneLowLoadsUntilCriticalComplete) {
 
 TEST_F(ResourceSchedulerTest, MaxRequestsPerHostForSpdyWhenNotDelayable) {
   InitializeScheduler();
-  context_.http_server_properties()->SetSupportsSpdy(
-      url::SchemeHostPort("https", "spdyhost", 443), true);
+  context_->http_server_properties()->SetSupportsSpdy(
+      url::SchemeHostPort("https", "spdyhost", 443), net::NetworkIsolationKey(),
+      true);
 
   // Add more than max-per-host low-priority requests.
   std::vector<std::unique_ptr<TestRequest>> requests;
@@ -556,6 +580,48 @@ TEST_F(ResourceSchedulerTest, MaxRequestsPerHostForSpdyWhenNotDelayable) {
   // No throttling.
   for (const auto& request : requests)
     EXPECT_TRUE(request->started());
+}
+
+TEST_F(ResourceSchedulerTest,
+       MaxRequestsPerHostForSpdyWhenNotDelayableWithNetworkIsolationKey) {
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
+  const net::NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
+  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
+  const net::NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+
+  InitializeScheduler();
+  context_->http_server_properties()->SetSupportsSpdy(
+      url::SchemeHostPort("https", "spdyhost", 443), kNetworkIsolationKey1,
+      true);
+
+  // Add more than max-per-host low-priority requests.
+  std::vector<std::unique_ptr<TestRequest>> requests;
+  for (size_t i = 0; i < kMaxNumDelayableRequestsPerHostPerClient + 1; ++i) {
+    requests.push_back(NewRequestWithNetworkIsolationKey(
+        "https://spdyhost/low", net::LOWEST, kNetworkIsolationKey1));
+    // No throttling.
+    EXPECT_TRUE(requests.back()->started());
+  }
+  requests.clear();
+
+  // Requests with different NetworkIsolationKeys should be throttled as if they
+  // don't support H2.
+
+  for (size_t i = 0; i < kMaxNumDelayableRequestsPerHostPerClient + 1; ++i) {
+    requests.push_back(NewRequestWithNetworkIsolationKey(
+        "https://spdyhost/low", net::LOWEST, net::NetworkIsolationKey()));
+    EXPECT_EQ(i < kMaxNumDelayableRequestsPerHostPerClient,
+              requests.back()->started());
+  }
+  requests.clear();
+
+  for (size_t i = 0; i < kMaxNumDelayableRequestsPerHostPerClient + 1; ++i) {
+    requests.push_back(NewRequestWithNetworkIsolationKey(
+        "https://spdyhost/low", net::LOWEST, kNetworkIsolationKey2));
+    EXPECT_EQ(i < kMaxNumDelayableRequestsPerHostPerClient,
+              requests.back()->started());
+  }
+  requests.clear();
 }
 
 TEST_F(ResourceSchedulerTest, BackgroundRequestStartsImmediately) {
@@ -1060,8 +1126,9 @@ TEST_F(ResourceSchedulerTest, NewSpdyHostInDelayableRequests) {
   }
   std::unique_ptr<TestRequest> low1(NewRequest("http://host/low", net::LOWEST));
   EXPECT_FALSE(low1->started());
-  context_.http_server_properties()->SetSupportsSpdy(
-      url::SchemeHostPort("http", "spdyhost1", 8080), true);
+  context_->http_server_properties()->SetSupportsSpdy(
+      url::SchemeHostPort("http", "spdyhost1", 8080),
+      net::NetworkIsolationKey(), true);
   low1_spdy.reset();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(low1->started());
@@ -1072,8 +1139,9 @@ TEST_F(ResourceSchedulerTest, NewSpdyHostInDelayableRequests) {
       NewRequest("http://spdyhost2:8080/low", net::IDLE));
   // Reprioritize a request after we learn the server supports SPDY.
   EXPECT_TRUE(low2_spdy->started());
-  context_.http_server_properties()->SetSupportsSpdy(
-      url::SchemeHostPort("http", "spdyhost2", 8080), true);
+  context_->http_server_properties()->SetSupportsSpdy(
+      url::SchemeHostPort("http", "spdyhost2", 8080),
+      net::NetworkIsolationKey(), true);
   ChangeRequestPriority(low2_spdy.get(), net::LOWEST);
   base::RunLoop().RunUntilIdle();
   std::unique_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
@@ -1105,8 +1173,9 @@ TEST_F(ResourceSchedulerTest,
   }
   std::unique_ptr<TestRequest> low1(NewRequest("http://host/low", net::LOWEST));
   EXPECT_FALSE(low1->started());
-  context_.http_server_properties()->SetSupportsSpdy(
-      url::SchemeHostPort("http", "spdyhost1", 8080), true);
+  context_->http_server_properties()->SetSupportsSpdy(
+      url::SchemeHostPort("http", "spdyhost1", 8080),
+      net::NetworkIsolationKey(), true);
   low1_spdy.reset();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(low1->started());
@@ -1117,8 +1186,9 @@ TEST_F(ResourceSchedulerTest,
       NewRequest("http://spdyhost2:8080/low", net::IDLE));
   // Reprioritize a request after we learn the server supports SPDY.
   EXPECT_TRUE(low2_spdy->started());
-  context_.http_server_properties()->SetSupportsSpdy(
-      url::SchemeHostPort("http", "spdyhost2", 8080), true);
+  context_->http_server_properties()->SetSupportsSpdy(
+      url::SchemeHostPort("http", "spdyhost2", 8080),
+      net::NetworkIsolationKey(), true);
   ChangeRequestPriority(low2_spdy.get(), net::LOWEST);
   base::RunLoop().RunUntilIdle();
   std::unique_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
@@ -1678,8 +1748,9 @@ TEST_F(ResourceSchedulerTest,
       net::EFFECTIVE_CONNECTION_TYPE_2G);
 
   InitializeScheduler();
-  context_.http_server_properties()->SetSupportsSpdy(
-      url::SchemeHostPort("https", "spdyhost", 443), true);
+  context_->http_server_properties()->SetSupportsSpdy(
+      url::SchemeHostPort("https", "spdyhost", 443), net::NetworkIsolationKey(),
+      true);
 
   // Should be in sync with resource_scheduler.cc for effective connection type
   // of 2G.
@@ -1708,6 +1779,70 @@ TEST_F(ResourceSchedulerTest,
   }
 }
 
+TEST_F(
+    ResourceSchedulerTest,
+    MaxRequestsPerHostForSpdyWhenDelayableSlowConnectionsWithNetworkIsolationKey) {
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
+  const net::NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
+  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
+  const net::NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+
+  ConfigureDelayRequestsOnMultiplexedConnectionsFieldTrial();
+  network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
+      net::EFFECTIVE_CONNECTION_TYPE_2G);
+
+  InitializeScheduler();
+  context_->http_server_properties()->SetSupportsSpdy(
+      url::SchemeHostPort("https", "spdyhost", 443), kNetworkIsolationKey1,
+      true);
+
+  // Should be in sync with resource_scheduler.cc for effective connection type
+  // of 2G.
+  const size_t kDefaultMaxNumDelayableRequestsPerClient = 8;
+
+  ASSERT_LT(kMaxNumDelayableRequestsPerHostPerClient,
+            kDefaultMaxNumDelayableRequestsPerClient);
+
+  // Add more than kMaxNumDelayableRequestsPerHostPerClient low-priority
+  // requests. They should all be allowed.
+  std::vector<std::unique_ptr<TestRequest>> requests;
+  for (size_t i = 0; i < kMaxNumDelayableRequestsPerHostPerClient + 1; ++i) {
+    requests.push_back(NewRequestWithNetworkIsolationKey(
+        "https://spdyhost/low", net::LOWEST, kNetworkIsolationKey1));
+    EXPECT_TRUE(requests[i]->started());
+  }
+
+  // Requests to SPDY servers should not be subject to
+  // kMaxNumDelayableRequestsPerHostPerClient limit. They should only be subject
+  // to kDefaultMaxNumDelayableRequestsPerClient limit.
+  for (size_t i = kMaxNumDelayableRequestsPerHostPerClient + 1;
+       i < kDefaultMaxNumDelayableRequestsPerClient + 1; i++) {
+    EXPECT_EQ(i, requests.size());
+    requests.push_back(NewRequestWithNetworkIsolationKey(
+        "https://spdyhost/low", net::LOWEST, kNetworkIsolationKey1));
+    EXPECT_EQ(i < kDefaultMaxNumDelayableRequestsPerClient,
+              requests[i]->started());
+  }
+  requests.clear();
+
+  // Requests with other NetworkIsolationKeys are subject to the
+  // kMaxNumDelayableRequestsPerHostPerClient limit.
+  for (size_t i = 0; i < kMaxNumDelayableRequestsPerHostPerClient + 1; ++i) {
+    requests.push_back(NewRequestWithNetworkIsolationKey(
+        "https://spdyhost/low", net::LOWEST, net::NetworkIsolationKey()));
+    EXPECT_EQ(i < kMaxNumDelayableRequestsPerHostPerClient,
+              requests[i]->started());
+  }
+  requests.clear();
+
+  for (size_t i = 0; i < kMaxNumDelayableRequestsPerHostPerClient + 1; ++i) {
+    requests.push_back(NewRequestWithNetworkIsolationKey(
+        "https://spdyhost/low", net::LOWEST, kNetworkIsolationKey2));
+    EXPECT_EQ(i < kMaxNumDelayableRequestsPerHostPerClient,
+              requests[i]->started());
+  }
+}
+
 // Verify that when |delay_requests_on_multiplexed_connections| is false, spdy
 // hosts are not subject to kMaxNumDelayableRequestsPerHostPerClient or
 // kDefaultMaxNumDelayableRequestsPerClient limits.
@@ -1718,8 +1853,9 @@ TEST_F(ResourceSchedulerTest,
       net::EFFECTIVE_CONNECTION_TYPE_4G);
 
   InitializeScheduler();
-  context_.http_server_properties()->SetSupportsSpdy(
-      url::SchemeHostPort("https", "spdyhost", 443), true);
+  context_->http_server_properties()->SetSupportsSpdy(
+      url::SchemeHostPort("https", "spdyhost", 443), net::NetworkIsolationKey(),
+      true);
 
   // Should be in sync with resource_scheduler.cc for effective connection type
   // of 4G.

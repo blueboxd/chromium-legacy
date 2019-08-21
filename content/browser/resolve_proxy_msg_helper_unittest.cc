@@ -114,7 +114,7 @@ class ResolveProxyMsgHelperTest : public testing::Test, public IPC::Listener {
     return true;
   }
 
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
 
   scoped_refptr<TestResolveProxyMsgHelper> helper_;
   std::unique_ptr<PendingResult> pending_result_;

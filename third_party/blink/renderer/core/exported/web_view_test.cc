@@ -54,7 +54,6 @@
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_keyboard_event.h"
-#include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/public_buildflags.h"
@@ -513,8 +512,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
   {
     // Copy the steps done from WebViewHelper::InitializeWithOpener() to set up
     // the appropriate pointers!
-    web_view->MainFrameWidget()->SetLayerTreeView(
-        web_widget_client.layer_tree_view(),
+    web_view->MainFrameWidget()->SetAnimationHost(
         web_widget_client.animation_host());
     blink::WebFrameWidget::CreateForMainFrame(&web_widget_client, frame);
     web_view->DidAttachLocalMainFrame();

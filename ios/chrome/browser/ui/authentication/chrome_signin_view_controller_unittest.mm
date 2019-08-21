@@ -365,7 +365,7 @@ class ChromeSigninViewControllerTest
 
   bool unified_consent_enabled_;
   unified_consent::ScopedUnifiedConsent scoped_unified_consent_;
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> context_;
   FakeChromeIdentity* identity_;
   UIWindow* window_;

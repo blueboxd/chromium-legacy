@@ -53,7 +53,8 @@ class LocaleTemplateUrlLoaderTest : public testing::Test {
   TemplateURLService* model() { return test_util_->model(); }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;  // To set up BrowserThreads.
+  content::BrowserTaskEnvironment
+      task_environment_;  // To set up BrowserThreads.
   std::unique_ptr<LocaleTemplateUrlLoader> loader_;
   std::unique_ptr<TemplateURLServiceTestUtil> test_util_;
 

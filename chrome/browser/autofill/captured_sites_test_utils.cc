@@ -25,6 +25,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/app_modal/javascript_app_modal_dialog.h"
@@ -390,6 +391,7 @@ void TestRecipeReplayer::SetUpCommandLine(base::CommandLine* command_line) {
   command_line->AppendSwitchASCII(
       network::switches::kIgnoreCertificateErrorsSPKIList,
       kWebPageReplayCertSPKI);
+  command_line->AppendSwitch(switches::kStartMaximized);
 }
 
 void TestRecipeReplayer::Setup() {

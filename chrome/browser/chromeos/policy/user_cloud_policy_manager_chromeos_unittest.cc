@@ -348,7 +348,7 @@ class UserCloudPolicyManagerChromeOSTest
 
   // Required by the refresh scheduler that's created by the manager and
   // for the cleanup of URLRequestContextGetter in the |signin_profile_|.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   // Convenience policy objects.
   em::PolicyData policy_data_;

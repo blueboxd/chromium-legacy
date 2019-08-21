@@ -129,7 +129,7 @@ class FileCacheTest : public testing::Test {
     return path;
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   base::FilePath cache_files_dir_;
 

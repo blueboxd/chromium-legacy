@@ -109,7 +109,7 @@ std::unique_ptr<media::AudioInputDelegate> CreateFakeDelegate(
 class OldOldRenderFrameAudioInputStreamFactoryTest : public testing::Test {
  public:
   OldOldRenderFrameAudioInputStreamFactoryTest()
-      : thread_bundle_(base::in_place),
+      : task_environment_(base::in_place),
         audio_manager_(std::make_unique<media::TestAudioThread>()),
         audio_system_(&audio_manager_),
         media_stream_manager_(&audio_system_, audio_manager_.GetTaskRunner()),
@@ -125,21 +125,21 @@ class OldOldRenderFrameAudioInputStreamFactoryTest : public testing::Test {
     audio_manager_.Shutdown();
 
     // UniqueAudioInputStreamFactoryPtr uses DeleteOnIOThread and must run
-    // before |thread_bundle_| tear down.
+    // before |task_environment_| tear down.
     factory_handle_.reset();
 
     // Shutdown BrowserThread::IO before tearing down members.
-    thread_bundle_.reset();
+    task_environment_.reset();
   }
 
-  // |thread_bundle_| needs to be up before the members below (as they use
+  // |task_environment_| needs to be up before the members below (as they use
   // BrowserThreads for their initialization) but then needs to be torn down
   // before them as some verify they're town down in a single-threaded
   // environment (while
   // !BrowserThread::IsThreadInitiaslized(BrowserThread::IO)).
-  base::Optional<TestBrowserThreadBundle> thread_bundle_;
+  base::Optional<BrowserTaskEnvironment> task_environment_;
 
-  // These members need to be torn down after |thread_bundle_|.
+  // These members need to be torn down after |task_environment_|.
   media::MockAudioManager audio_manager_;
   media::AudioSystemImpl audio_system_;
   MediaStreamManager media_stream_manager_;

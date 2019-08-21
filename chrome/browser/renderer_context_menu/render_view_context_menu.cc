@@ -799,7 +799,7 @@ void RenderViewContextMenu::WriteURLToClipboard(const GURL& url) {
   if (url.is_empty() || !url.is_valid())
     return;
 
-  ui::ScopedClipboardWriter scw(ui::ClipboardType::kCopyPaste);
+  ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste);
   scw.WriteText(FormatURLForClipboard(url));
 }
 
@@ -2567,7 +2567,7 @@ bool RenderViewContextMenu::IsPasteEnabled() const {
   std::vector<base::string16> types;
   bool ignore;
   ui::Clipboard::GetForCurrentThread()->ReadAvailableTypes(
-      ui::ClipboardType::kCopyPaste, &types, &ignore);
+      ui::ClipboardBuffer::kCopyPaste, &types, &ignore);
   return !types.empty();
 }
 
@@ -2577,7 +2577,7 @@ bool RenderViewContextMenu::IsPasteAndMatchStyleEnabled() const {
 
   return ui::Clipboard::GetForCurrentThread()->IsFormatAvailable(
       ui::ClipboardFormatType::GetPlainTextType(),
-      ui::ClipboardType::kCopyPaste);
+      ui::ClipboardBuffer::kCopyPaste);
 }
 
 bool RenderViewContextMenu::IsPrintPreviewEnabled() const {
@@ -2787,7 +2787,7 @@ void RenderViewContextMenu::ExecExitFullscreen() {
 }
 
 void RenderViewContextMenu::ExecCopyLinkText() {
-  ui::ScopedClipboardWriter scw(ui::ClipboardType::kCopyPaste);
+  ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste);
   scw.WriteText(params_.link_text);
 }
 

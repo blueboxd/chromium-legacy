@@ -63,7 +63,7 @@ class SiteSettingsHelperTest : public testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(SiteSettingsHelperTest, CheckExceptionOrder) {
@@ -490,7 +490,7 @@ class SiteSettingsHelperChooserExceptionTest : public testing::Test {
   device::FakeUsbDeviceManager device_manager_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
 };
 

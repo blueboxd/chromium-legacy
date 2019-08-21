@@ -270,7 +270,6 @@
 <translation id="426015154560005552">அரபிக் விசைப்பலகை</translation>
 <translation id="4261901459838235729">Google விளக்கக்காட்சி</translation>
 <translation id="4290535918735525311">Linuxஸுடன் 1 கோப்புறை பகிரப்பட்டது</translation>
-<translation id="42981349822642051">விரி</translation>
 <translation id="4298972503445160211">டேனிஷ் விசைப்பலகை</translation>
 <translation id="4299729908419173967">பிரேசிலியன்</translation>
 <translation id="4309915981827077375">பொதுவான தகவல்</translation>
@@ -368,11 +367,11 @@
 <translation id="5253070652067921974">உருவாக்கியவர்</translation>
 <translation id="5257456363153333584">தட்டாம்பூச்சி</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />எங்கிருந்தும் கோப்புகளை அணுகலாம் (ஆஃப்லைனில் இருந்தாலும்).<ph name="MARKUP_2" />
-    Google இயக்ககத்தில் உள்ள கோப்புகள் புதுப்பித்த நிலையில் இருக்கும், அவற்றை எந்தச் சாதனத்திலிருந்தும் அணுகலாம்.<ph name="MARKUP_3" />
+    Google இயக்ககத்தில் உள்ள கோப்புகள் சமீபத்திய மாற்றங்களுடன் இருக்கும், அவற்றை எந்தச் சாதனத்திலிருந்தும் அணுகலாம்.<ph name="MARKUP_3" />
     <ph name="MARKUP_4" />உங்கள் கோப்புகள் பாதுகாப்பாக இருக்கும்.<ph name="MARKUP_5" />
     சாதனத்திற்கு எந்தவிதப் பாதிப்பு ஏற்பட்டாலும், உங்கள் கோப்புகள் Google இயக்ககத்தில் பாதுகாப்பாகச் சேமிக்கப்பட்டிருக்கும்.<ph name="MARKUP_6" />
-    <ph name="MARKUP_7" />ஒரே இடத்திலிருந்து கோப்புகளைப்<ph name="MARKUP_8" />
-    பகிரலாம், உருவாக்கலாம் மற்றும் கூட்டுப்பணியாற்றலாம்.<ph name="MARKUP_9" /></translation>
+    <ph name="MARKUP_7" />ஒரே இடத்தில் கோப்புகளைப் பகிரலாம், உருவாக்கலாம்,<ph name="MARKUP_8" />
+     மேலும் பிறருடன் இணைந்து திருத்தலாம்.<ph name="MARKUP_9" /></translation>
 <translation id="5275973617553375938">Google இயக்கத்திலிருந்து மீட்கப்பட்ட கோப்புகள்</translation>
 <translation id="5288481194217812690"><ph name="FILENAME" /></translation>
 <translation id="5317780077021120954">சேமி</translation>

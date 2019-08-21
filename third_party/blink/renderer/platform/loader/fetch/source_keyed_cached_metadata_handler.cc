@@ -236,10 +236,11 @@ void SourceKeyedCachedMetadataHandler::SendToPlatform() {
                            sizeof(num_entries));
     for (const auto& metadata : cached_metadata_map_) {
       serialized_data.Append(metadata.key.data(), kKeySize);
-      size_t entry_size = metadata.value->SerializedData().size();
+      base::span<const uint8_t> data = metadata.value->SerializedData();
+      size_t entry_size = data.size();
       serialized_data.Append(reinterpret_cast<const uint8_t*>(&entry_size),
                              sizeof(entry_size));
-      serialized_data.AppendVector(metadata.value->SerializedData());
+      serialized_data.Append(data.data(), data.size());
     }
     sender_->Send(serialized_data.data(), serialized_data.size());
   }

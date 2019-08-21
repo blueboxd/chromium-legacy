@@ -22,8 +22,12 @@ namespace platform {
 struct ChromeUdpSocket : public UdpSocket {
  public:
   ChromeUdpSocket(std::unique_ptr<network::UDPSocket> udp_socket,
+                  TaskRunner* task_runner,
+                  Client* client,
                   const IPEndpoint& local_endpoint);
   ~ChromeUdpSocket() final;
+
+  ErrorOr<UdpPacket> ReceiveMessage();
 
   // Implementations of UdpSocket methods.
   bool IsIPv4() const final;
@@ -32,7 +36,6 @@ struct ChromeUdpSocket : public UdpSocket {
   Error SetMulticastOutboundInterface(NetworkInterfaceIndex ifindex) final;
   Error JoinMulticastGroup(const IPAddress& address,
                            NetworkInterfaceIndex ifindex) final;
-  ErrorOr<UdpPacket> ReceiveMessage() final;
   Error SendMessage(const void* data,
                     size_t length,
                     const IPEndpoint& dest) final;

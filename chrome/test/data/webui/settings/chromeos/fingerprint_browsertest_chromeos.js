@@ -159,7 +159,7 @@ suite('settings-fingerprint-list', function() {
       assertTrue(dialog.$$('#dialog').open);
       assertEquals(0, dialog.percentComplete_);
       assertEquals(settings.FingerprintSetupStep.LOCATE_SCANNER, dialog.step_);
-      assertFalse(dialog.$$('#scannerLocation').hidden);
+      assertFalse(dialog.$$('#scannerLocationLottie').hidden);
       assertTrue(dialog.$$('#arc').hidden);
       // Message should be shown for LOCATE_SCANNER step.
       assertEquals(
@@ -171,7 +171,7 @@ suite('settings-fingerprint-list', function() {
           settings.FingerprintResultType.SUCCESS, false, 20 /* percent */);
       assertEquals(20, dialog.percentComplete_);
       assertEquals(settings.FingerprintSetupStep.MOVE_FINGER, dialog.step_);
-      assertTrue(dialog.$$('#scannerLocation').hidden);
+      assertTrue(dialog.$$('#scannerLocationLottie').hidden);
       assertFalse(dialog.$$('#arc').hidden);
 
       // Verify that by sending a scan problem, the div that contains the
@@ -254,7 +254,7 @@ suite('settings-fingerprint-list', function() {
           assertTrue(dialog.$$('#dialog').open);
           assertFalse(isVisible(addAnotherButton));
           assertEquals(settings.FingerprintSetupStep.MOVE_FINGER, dialog.step_);
-          assertTrue(dialog.$$('#scannerLocation').hidden);
+          assertTrue(dialog.$$('#scannerLocationLottie').hidden);
           assertFalse(dialog.$$('#arc').hidden);
 
           browserProxy.scanReceived(

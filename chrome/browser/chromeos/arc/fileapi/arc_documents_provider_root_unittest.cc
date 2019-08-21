@@ -198,7 +198,7 @@ class ArcDocumentsProviderRootTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   FakeFileSystemInstance fake_file_system_;
 
   // Use the same initialization/destruction order as

@@ -5,13 +5,14 @@
 #include "base/allocator/partition_allocator/random.h"
 
 #include "base/allocator/partition_allocator/spin_lock.h"
+#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/rand_util.h"
 
 namespace base {
 
 // This is the same PRNG as used by tcmalloc for mapping address randomness;
-// see http://burtleburtle.net/bob/rand/smallprng.html
+// see http://burtleburtle.net/bob/rand/smallprng.html.
 struct RandomContext {
   subtle::SpinLock lock;
   bool initialized;
@@ -21,12 +22,11 @@ struct RandomContext {
   uint32_t d;
 };
 
-RandomContext* GetRandomContext() {
-  static NoDestructor<RandomContext> s_RandomContext;
-  return s_RandomContext.get();
-}
+namespace {
 
-uint32_t RandomValue(RandomContext* x) {
+RandomContext* GetRandomContext() {
+  static NoDestructor<RandomContext> g_random_context;
+  RandomContext* x = g_random_context.get();
   subtle::SpinLock::Guard guard(x->lock);
   if (UNLIKELY(!x->initialized)) {
     const uint64_t r1 = RandUint64();
@@ -37,7 +37,14 @@ uint32_t RandomValue(RandomContext* x) {
     x->d = static_cast<uint32_t>(r2 >> 32);
     x->initialized = true;
   }
+  return x;
+}
 
+}  // namespace
+
+uint32_t RandomValue() {
+  RandomContext* x = GetRandomContext();
+  subtle::SpinLock::Guard guard(x->lock);
 #define rot(x, k) (((x) << (k)) | ((x) >> (32 - (k))))
   uint32_t e = x->a - rot(x->b, 27);
   x->a = x->b ^ rot(x->c, 17);
@@ -48,7 +55,7 @@ uint32_t RandomValue(RandomContext* x) {
 #undef rot
 }
 
-void SetRandomPageBaseSeed(int64_t seed) {
+void SetMmapSeedForTesting(uint64_t seed) {
   RandomContext* x = GetRandomContext();
   subtle::SpinLock::Guard guard(x->lock);
   x->a = x->b = static_cast<uint32_t>(seed);

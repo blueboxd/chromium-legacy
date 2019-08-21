@@ -220,7 +220,7 @@ class ArcPolicyBridgeTestBase {
   TestingProfile* profile() { return profile_; }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   data_decoder::TestingJsonParser::ScopedFactoryOverride factory_override_;
   content::TestServiceManagerContext service_manager_context_;
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;

@@ -181,7 +181,7 @@ class ExtensionSpecialStoragePolicyTest : public testing::Test {
     }
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   scoped_refptr<ExtensionSpecialStoragePolicy> policy_;
 };
 

@@ -124,11 +124,11 @@ div.status-entry:last-child {
 }
 
 body > header {
+  align-items: center;
   padding: 12px;
 }
 
-body > header,
-.reload-show-unset-section {
+.header-row {
   align-items: center;
   display: flex;
   height: 56px;

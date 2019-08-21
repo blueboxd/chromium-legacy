@@ -2803,6 +2803,7 @@ test("unit_tests") {
     "../browser/autocomplete/chrome_autocomplete_scheme_classifier_unittest.cc",
     "../browser/autocomplete/search_provider_unittest.cc",
     "../browser/autocomplete/shortcuts_provider_extension_unittest.cc",
+    "../browser/autofill/autofill_gstatic_reader_unittest.cc",
     "../browser/availability/availability_prober_unittest.cc",
     "../browser/background_fetch/background_fetch_delegate_impl_unittest.cc",
     "../browser/background_fetch/background_fetch_permission_context_unittest.cc",
@@ -2883,6 +2884,7 @@ test("unit_tests") {
     "../browser/google/google_search_domain_mixing_metrics_emitter_factory_unittest.cc",
     "../browser/google/google_search_domain_mixing_metrics_emitter_unittest.cc",
     "../browser/google/google_update_settings_unittest.cc",
+    "../browser/heavy_ad_intervention/heavy_ad_blocklist_unittest.cc",
     "../browser/history/android/android_cache_database_unittest.cc",
     "../browser/history/android/android_history_provider_service_unittest.cc",
     "../browser/history/android/android_provider_backend_unittest.cc",
@@ -2948,6 +2950,7 @@ test("unit_tests") {
     "../browser/net/file_downloader_unittest.cc",
     "../browser/net/net_error_tab_helper_unittest.cc",
     "../browser/net/probe_message_unittest.cc",
+    "../browser/net/secure_dns_policy_handler_unittest.cc",
     "../browser/notifications/metrics/notification_metrics_logger_unittest.cc",
     "../browser/notifications/notification_channels_provider_android_unittest.cc",
     "../browser/notifications/notification_permission_context_unittest.cc",
@@ -2961,6 +2964,7 @@ test("unit_tests") {
     "../browser/notifications/stub_notification_center_mac.h",
     "../browser/notifications/stub_notification_center_mac.mm",
     "../browser/optimization_guide/optimization_guide_hints_manager_unittest.cc",
+    "../browser/optimization_guide/optimization_guide_navigation_data_unittest.cc",
     "../browser/page_load_metrics/metrics_web_contents_observer_unittest.cc",
     "../browser/page_load_metrics/observers/aborts_page_load_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/ad_metrics/ads_page_load_metrics_observer_unittest.cc",
@@ -3963,9 +3967,13 @@ test("unit_tests") {
 
     if (include_js_tests) {
       deps += [ "//chrome/test/data/webui:unit_tests_js" ]
+
+      # Only list files here (not directories). See https://crbug.com/912946
       data += [
-        "$root_out_dir/test_data/chrome/renderer/resources/extensions/",
-        "$root_out_dir/test_data/ui/webui/",
+        "$root_out_dir/test_data/chrome/renderer/resources/extensions/notifications_custom_bindings.gtestjs",
+        "$root_out_dir/test_data/chrome/renderer/resources/extensions/notifications_custom_bindings.js",
+        "$root_out_dir/test_data/chrome/renderer/resources/extensions/notifications_test_util.js",
+        "$root_out_dir/test_data/ui/webui/resources/js/cr.js",
       ]
     }
   }
@@ -4630,54 +4638,60 @@ test("unit_tests") {
     ]
   }
 
-  if (enable_print_preview) {
-    sources += [
-      "../browser/printing/print_job_unittest.cc",
-      "../browser/printing/print_preview_dialog_controller_unittest.cc",
-      "../browser/printing/print_preview_test.cc",
-      "../browser/printing/print_preview_test.h",
-      "../browser/printing/print_test_utils.cc",
-      "../browser/printing/print_test_utils.h",
-      "../browser/printing/print_view_manager_unittest.cc",
-      "../browser/printing/test_print_job.cc",
-      "../browser/printing/test_print_job.h",
-      "../browser/printing/test_printer_query.cc",
-      "../browser/printing/test_printer_query.h",
-      "../browser/ui/webui/print_preview/extension_printer_handler_unittest.cc",
-      "../browser/ui/webui/print_preview/pdf_printer_handler_unittest.cc",
-      "../browser/ui/webui/print_preview/pdf_printer_handler_win_unittest.cc",
-      "../browser/ui/webui/print_preview/print_preview_handler_unittest.cc",
-      "../browser/ui/webui/print_preview/print_preview_ui_unittest.cc",
-      "../browser/ui/webui/print_preview/print_preview_utils_unittest.cc",
-    ]
+  if (enable_basic_printing) {
+    sources += [ "../browser/printing/print_job_unittest.cc" ]
 
     deps += [
-      "//ipc",
       "//printing",
       "//printing:test_support",
     ]
 
-    if (!is_chromeos) {
+    if (enable_print_preview) {
       sources += [
-        "../browser/printing/cloud_print/cloud_print_proxy_service_unittest.cc",
-        "../common/cloud_print/cloud_print_helpers_unittest.cc",
-        "../common/service_process_util_mac_unittest.mm",
-        "../common/service_process_util_unittest.cc",
-        "../service/cloud_print/cloud_print_service_helpers_unittest.cc",
-        "../service/cloud_print/cloud_print_token_store_unittest.cc",
-        "../service/cloud_print/cloud_print_url_fetcher_unittest.cc",
-        "../service/cloud_print/connector_settings_unittest.cc",
-        "../service/cloud_print/printer_job_handler_unittest.cc",
-        "../service/cloud_print/printer_job_queue_handler_unittest.cc",
-        "../service/net/in_process_network_connection_tracker_unittest.cc",
-        "../service/service_ipc_server_unittest.cc",
-        "../service/service_process_prefs_unittest.cc",
+        "../browser/printing/print_preview_dialog_controller_unittest.cc",
+        "../browser/printing/print_preview_test.cc",
+        "../browser/printing/print_preview_test.h",
+        "../browser/printing/print_test_utils.cc",
+        "../browser/printing/print_test_utils.h",
+        "../browser/printing/print_view_manager_unittest.cc",
+        "../browser/printing/test_print_job.cc",
+        "../browser/printing/test_print_job.h",
+        "../browser/printing/test_printer_query.cc",
+        "../browser/printing/test_printer_query.h",
+        "../browser/ui/webui/print_preview/extension_printer_handler_unittest.cc",
+        "../browser/ui/webui/print_preview/pdf_printer_handler_unittest.cc",
+        "../browser/ui/webui/print_preview/pdf_printer_handler_win_unittest.cc",
+        "../browser/ui/webui/print_preview/print_preview_handler_unittest.cc",
+        "../browser/ui/webui/print_preview/print_preview_ui_unittest.cc",
+        "../browser/ui/webui/print_preview/print_preview_utils_unittest.cc",
       ]
+
+      deps += [ "//ipc" ]
+
+      if (!is_chromeos) {
+        sources += [
+          "../browser/printing/cloud_print/cloud_print_proxy_service_unittest.cc",
+          "../common/cloud_print/cloud_print_helpers_unittest.cc",
+          "../common/service_process_util_mac_unittest.mm",
+          "../common/service_process_util_unittest.cc",
+          "../service/cloud_print/cloud_print_service_helpers_unittest.cc",
+          "../service/cloud_print/cloud_print_token_store_unittest.cc",
+          "../service/cloud_print/cloud_print_url_fetcher_unittest.cc",
+          "../service/cloud_print/connector_settings_unittest.cc",
+          "../service/cloud_print/printer_job_handler_unittest.cc",
+          "../service/cloud_print/printer_job_queue_handler_unittest.cc",
+          "../service/net/in_process_network_connection_tracker_unittest.cc",
+          "../service/service_ipc_server_unittest.cc",
+          "../service/service_process_prefs_unittest.cc",
+        ]
+      } else {
+        sources += [
+          "../browser/ui/webui/print_preview/local_printer_handler_chromeos_unittest.cc",
+          "../browser/ui/webui/settings/chromeos/cups_printers_handler_unittest.cc",
+        ]
+      }
     } else {
-      sources += [
-        "../browser/ui/webui/print_preview/local_printer_handler_chromeos_unittest.cc",
-        "../browser/ui/webui/settings/chromeos/cups_printers_handler_unittest.cc",
-      ]
+      sources += [ "../browser/printing/print_view_manager_basic_unittest.cc" ]
     }
   }
 
@@ -5031,6 +5045,7 @@ test("unit_tests") {
       "../browser/ui/app_list/search/search_result_ranker/recurrence_ranker_unittest.cc",
       "../browser/ui/app_list/search/search_result_ranker/recurrence_ranker_util_unittest.cc",
       "../browser/ui/app_list/search/search_result_ranker/search_result_ranker_unittest.cc",
+      "../browser/ui/app_list/search/search_utils/sequence_matcher_unittest.cc",
       "../browser/ui/app_list/search/settings_shortcut/settings_shortcut_provider_unittest.cc",
       "../browser/ui/app_list/search/settings_shortcut/settings_shortcut_result_unittest.cc",
       "../browser/ui/app_list/search/tests/app_search_provider_unittest.cc",
@@ -5040,6 +5055,8 @@ test("unit_tests") {
       "../browser/ui/app_list/search/tests/tokenized_string_char_iterator_unittest.cc",
       "../browser/ui/app_list/search/tests/tokenized_string_match_unittest.cc",
       "../browser/ui/app_list/search/tests/tokenized_string_unittest.cc",
+      "../browser/ui/app_list/search/tests/zero_state_file_provider_unittest.cc",
+      "../browser/ui/app_list/search/tests/zero_state_file_result_unittest.cc",
       "../browser/ui/app_list/test/fake_app_list_model_updater.cc",
       "../browser/ui/app_list/test/fake_app_list_model_updater.h",
     ]

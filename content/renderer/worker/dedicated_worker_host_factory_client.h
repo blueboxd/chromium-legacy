@@ -59,7 +59,8 @@ class DedicatedWorkerHostFactoryClient final
 
   scoped_refptr<WebWorkerFetchContextImpl> CreateWorkerFetchContext(
       blink::mojom::RendererPreferences renderer_preference,
-      blink::mojom::RendererPreferenceWatcherRequest watcher_request);
+      mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
+          watcher_receiver);
 
  private:
   // Implements blink::mojom::DedicatedWorkerHostFactoryClient.

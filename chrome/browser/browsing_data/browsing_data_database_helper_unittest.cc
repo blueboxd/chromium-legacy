@@ -14,7 +14,7 @@ namespace {
 using storage::DatabaseIdentifier;
 
 class CannedBrowsingDataDatabaseHelperTest : public testing::Test {
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(CannedBrowsingDataDatabaseHelperTest, Empty) {

@@ -206,7 +206,9 @@ class GpuIntegrationTest(
         # expectations, and since minidump symbolization is slow
         # (upwards of one minute on a fast laptop), symbolizing all the
         # stacks could slow down the tests' running time unacceptably.
-        self.browser.LogSymbolizedUnsymbolizedMinidumps(logging.ERROR)
+        # We also don't do this if the browser failed to startup.
+        if self.browser is not None:
+          self.browser.LogSymbolizedUnsymbolizedMinidumps(logging.ERROR)
         # This failure might have been caused by a browser or renderer
         # crash, so restart the browser to make sure any state doesn't
         # propagate to the next test iteration.

@@ -58,6 +58,8 @@
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_manager_utils.h"
+#include "chrome/browser/heavy_ad_intervention/heavy_ad_service.h"
+#include "chrome/browser/heavy_ad_intervention/heavy_ad_service_factory.h"
 #include "chrome/browser/media/media_device_id_salt.h"
 #include "chrome/browser/native_file_system/chrome_native_file_system_permission_context.h"
 #include "chrome/browser/native_file_system/native_file_system_permission_context_factory.h"
@@ -741,6 +743,8 @@ void ProfileImpl::DoFinalInit() {
   BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(this);
   model->AddObserver(new BookmarkModelLoadedObserver(this));
 #endif
+
+  HeavyAdServiceFactory::GetForBrowserContext(this)->Initialize(GetPath());
 
   // Page Load Capping was remove in M74, so the database file should be removed
   // when users upgrade Chrome.

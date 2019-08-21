@@ -73,7 +73,7 @@ class TabModelListTest : public PlatformTest {
   }
 
  private:
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(TabModelListTest);

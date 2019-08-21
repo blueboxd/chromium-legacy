@@ -1404,7 +1404,7 @@ TEST_P(PeopleHandlerDiceUnifiedConsentTest, StoredAccountsList) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kNoFirstRun);
   ASSERT_FALSE(first_run::IsChromeFirstRun());
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
 
   // Decode test parameters.
   bool dice_enabled;

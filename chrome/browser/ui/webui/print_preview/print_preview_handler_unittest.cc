@@ -416,7 +416,7 @@ class PrintPreviewHandlerTest : public testing::Test {
   std::vector<PrinterInfo>& printers() { return printers_; }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<content::TestWebUI> web_ui_;
   content::RenderViewHostTestEnabler rvh_test_enabler_;

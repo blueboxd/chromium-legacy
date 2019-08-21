@@ -1172,7 +1172,7 @@ std::unique_ptr<cc::LayerTreeFrameSink> Window::CreateLayerTreeFrameSink() {
   bool root_accepts_events =
       (event_targeting_policy_ == EventTargetingPolicy::kTargetOnly) ||
       (event_targeting_policy_ == EventTargetingPolicy::kTargetAndDescendants);
-  if (features::IsVizHitTestingDrawQuadEnabled()) {
+  if (!features::IsVizHitTestingSurfaceLayerEnabled()) {
     params.hit_test_data_provider =
         std::make_unique<viz::HitTestDataProviderDrawQuad>(
             true /* should_ask_for_child_region */, root_accepts_events);

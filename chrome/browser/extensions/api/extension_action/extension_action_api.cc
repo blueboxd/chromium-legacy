@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
@@ -165,8 +166,10 @@ void ExtensionActionAPI::DispatchExtensionActionClicked(
 
   if (event_name) {
     std::unique_ptr<base::ListValue> args(new base::ListValue());
+    ExtensionTabUtil::ScrubTabBehavior scrub_tab_behavior =
+        ExtensionTabUtil::GetScrubTabBehavior(extension, web_contents);
     args->Append(ExtensionTabUtil::CreateTabObject(
-                     web_contents, ExtensionTabUtil::kScrubTab, extension)
+                     web_contents, scrub_tab_behavior, extension)
                      ->ToValue());
 
     DispatchEventToExtension(web_contents->GetBrowserContext(),
@@ -467,10 +470,19 @@ ExtensionActionGetPopupFunction::RunExtensionAction() {
 
 ExtensionFunction::ResponseAction
 ExtensionActionGetBadgeTextFunction::RunExtensionAction() {
-  // TODO(crbug.com/990224): Return a placeholder value if the extension has
-  // called setActionCountAsBadgeText(true).
-  return RespondNow(OneArgument(std::make_unique<base::Value>(
-      extension_action_->GetExplicitlySetBadgeText(tab_id_))));
+  // Return a placeholder value if the extension has called
+  // setActionCountAsBadgeText(true) and the badge count shown for this tab is
+  // the number of actions matched.
+  std::string badge_text =
+      extension_action_->UseDNRActionCountAsBadgeText(tab_id_)
+          ? declarative_net_request::kActionCountPlaceholderBadgeText
+          : extension_action_->GetExplicitlySetBadgeText(tab_id_);
+
+  // TODO(crbug.com/990224): Document this behavior once
+  // chrome.declarativeNetRequest.setActionCountAsBadgeText is promoted to beta
+  // from trunk.
+  return RespondNow(
+      OneArgument(std::make_unique<base::Value>(std::move(badge_text))));
 }
 
 ExtensionFunction::ResponseAction

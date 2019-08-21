@@ -244,7 +244,7 @@ class TemplateURLServiceSyncTest : public testing::Test {
       syncer::SyncChangeList changes);
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   // We keep two TemplateURLServices to test syncing between them.
   std::unique_ptr<TemplateURLServiceTestUtil> test_util_a_;
   std::unique_ptr<TemplateURLServiceTestUtil> test_util_b_;

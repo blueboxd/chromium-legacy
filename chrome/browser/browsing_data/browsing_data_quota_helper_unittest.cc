@@ -111,7 +111,7 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
     fetching_completed_ = true;
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   scoped_refptr<storage::QuotaManager> quota_manager_;
 
   base::ScopedTempDir dir_;

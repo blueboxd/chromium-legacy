@@ -76,7 +76,7 @@ GURL GetScopeForId(const std::string& origin, int64_t id) {
 BackgroundFetchTestBase::BackgroundFetchTestBase()
     // Using REAL_IO_THREAD would give better coverage for thread safety, but
     // at time of writing EmbeddedWorkerTestHelper didn't seem to support that.
-    : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
+    : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP),
       delegate_(browser_context_.GetBackgroundFetchDelegate()),
       embedded_worker_test_helper_(base::FilePath()),
       origin_(url::Origin::Create(GURL(kTestOrigin))),

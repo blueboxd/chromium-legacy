@@ -630,19 +630,20 @@ bool PNGImageReader::ParseSize(const FastSharedBufferReader& reader) {
     } else if (IsChunk(chunk, "fdAT")) {
       ignore_animation_ = true;
     } else {
-      bool ihdr = IsChunk(chunk, "IHDR");
-      auto is_necessary = [](const png_byte* chunk) {
-        for (const char* tag :
-             {"PLTE", "IEND", "tRNS", "cHRM", "iCCP", "sRGB", "gAMA"}) {
+      auto is_necessary_ancillary = [](const png_byte* chunk) {
+        for (const char* tag : {"tRNS", "cHRM", "iCCP", "sRGB", "gAMA"}) {
           if (IsChunk(chunk, tag))
             return true;
         }
         return false;
       };
-      if (ihdr || is_necessary(chunk)) {
+      // Determine if the chunk type of |chunk| is "critical".
+      // (Ancillary bit == 0; the chunk is required for display).
+      bool is_critical_chunk = (chunk[4] & 1u << 5) == 0;
+      if (is_critical_chunk || is_necessary_ancillary(chunk)) {
         png_process_data(png_, info_, const_cast<png_byte*>(chunk), 8);
         ProcessData(reader, read_offset_ + 8, length + 4);
-        if (ihdr) {
+        if (IsChunk(chunk, "IHDR")) {
           parsed_ihdr_ = true;
           ihdr_offset_ = read_offset_;
           width_ = png_get_image_width(png_, info_);

@@ -72,7 +72,7 @@ class AudioOutputAuthorizationHandlerTest : public RenderViewHostTestHarness {
  public:
   AudioOutputAuthorizationHandlerTest()
       : RenderViewHostTestHarness(
-            content::TestBrowserThreadBundle::REAL_IO_THREAD) {
+            content::BrowserTaskEnvironment::REAL_IO_THREAD) {
     // Not threadsafe, thus set before threads are started:
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseFakeDeviceForMediaStream);

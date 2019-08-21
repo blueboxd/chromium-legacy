@@ -34,7 +34,7 @@ class WakeOnWifiObserverTest : public ::testing::Test {
 
  private:
   // Must outlive |profile_|.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
  protected:
   StrictMock<MockNetworkDeviceHandler> mock_network_device_handler_;

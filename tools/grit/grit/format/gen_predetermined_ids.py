@@ -21,9 +21,9 @@ import sys
 #   #define IDS_FOO_MESSAGE 1234
 # With generate whitelist flag:
 #   #define IDS_FOO_MESSAGE (::ui::WhitelistedResource<1234>(), 1234)
-RESOURCE_EXTRACT_REGEX = re.compile('^#define (\S*).* (\d+)\)?$', re.MULTILINE)
+RESOURCE_EXTRACT_REGEX = re.compile(r'^#define (\S*).* (\d+)\)?$', re.MULTILINE)
 
-ORDERED_RESOURCE_IDS_REGEX = re.compile('^Resource=(\d*)$', re.MULTILINE)
+ORDERED_RESOURCE_IDS_REGEX = re.compile(r'^Resource=(\d*)$', re.MULTILINE)
 
 
 def _GetResourceNameIdPairsIter(string_to_scan):

@@ -186,7 +186,7 @@ class LocalStorageContextMojoTest : public testing::Test {
   base::FilePath TempPath() { return temp_path_.GetPath(); }
 
  private:
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir temp_path_;
   std::map<std::vector<uint8_t>, std::vector<uint8_t>> mock_data_;
   FakeLevelDBDatabase db_;

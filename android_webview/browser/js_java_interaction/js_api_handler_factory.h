@@ -33,19 +33,20 @@ class JsApiHandlerFactory : public content::WebContentsObserver,
 
   // Finds the corresponding JsApiHandler from |render_frame_host| and
   // dispatches the |pending_receiver| to it.
-  static void BindJsApiHandler(
-      mojo::PendingAssociatedReceiver<mojom::JsApiHandler> pending_receiver,
+  static void BindJsToJavaMessaging(
+      mojo::PendingAssociatedReceiver<mojom::JsToJavaMessaging>
+          pending_receiver,
       content::RenderFrameHost* render_frame_host);
 
   // content::WebContentsObserver
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
 
- private:
-  explicit JsApiHandlerFactory(content::WebContents* web_contents);
-
   JsApiHandler* JsApiHandlerForFrame(
       content::RenderFrameHost* render_frame_host);
+
+ private:
+  explicit JsApiHandlerFactory(content::WebContents* web_contents);
 
   std::map<content::RenderFrameHost*, std::unique_ptr<JsApiHandler>> frame_map_;
 

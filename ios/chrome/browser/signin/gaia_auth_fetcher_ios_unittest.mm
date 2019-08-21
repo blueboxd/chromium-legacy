@@ -94,7 +94,7 @@ class GaiaAuthFetcherIOSTest : public PlatformTest {
     return wkWebviewBridge->GetWKWebView();
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   // BrowserState, required for WKWebView creation.
   std::unique_ptr<ios::ChromeBrowserState> browser_state_;
   MockGaiaConsumer consumer_;

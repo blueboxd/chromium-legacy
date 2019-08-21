@@ -74,6 +74,8 @@ struct ShortcutMatch {
   const ShortcutsDatabase::Shortcut* shortcut;
   base::string16 contents;
   AutocompleteMatch::Type type;
+
+  AutocompleteMatch::Type GetDemotionType() const { return type; }
 };
 
 // Sorts |matches| by destination, taking into account demotions based on

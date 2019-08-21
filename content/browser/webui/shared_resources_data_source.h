@@ -34,6 +34,7 @@ class SharedResourcesDataSource : public URLDataSource {
       const std::string& origin) override;
 #if defined(OS_CHROMEOS)
   void DisablePolymer2ForHost(const std::string& host) override;
+  std::string GetContentSecurityPolicyWorkerSrc() override;
 #endif  // defined (OS_CHROMEOS)
 
  private:

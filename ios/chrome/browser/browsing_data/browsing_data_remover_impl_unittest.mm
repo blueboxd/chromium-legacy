@@ -101,7 +101,7 @@ class BrowsingDataRemoverImplTest : public PlatformTest {
   }
 
  protected:
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<ios::ChromeBrowserState> browser_state_;
   BrowsingDataRemoverImpl browsing_data_remover_;
 

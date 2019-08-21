@@ -44,6 +44,7 @@ namespace ash {
 
 class AssistantContainerView;
 class AssistantController;
+class ProactiveSuggestionsView;
 
 class ASH_EXPORT AssistantUiController
     : public views::WidgetObserver,
@@ -140,11 +141,21 @@ class ASH_EXPORT AssistantUiController
   // Calculate and update the usable work area.
   void UpdateUsableWorkArea(aura::Window* root_window);
 
-  // Construct |container_view_| and add keyboard/display observers.
+  // Constructs/resets |container_view_|.
   void CreateContainerView();
-
-  // Reset |container_view_| and remove keyboard/display observers.
   void ResetContainerView();
+
+  // Constructs/resets |proactive_suggestions_view_|.
+  void CreateProactiveSuggestionsView();
+  void ResetProactiveSuggestionsView();
+
+  // Returns the root window for |container_view_| if it exists, otherwise
+  // |proactive_suggestions_view_|. Note that this method may only be called
+  // when one of these views exist.
+  aura::Window* GetRootWindow();
+
+  // Adds/removes observers used for calculating usable work area as needed.
+  void UpdateUsableWorkAreaObservers();
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
 
@@ -153,8 +164,9 @@ class ASH_EXPORT AssistantUiController
 
   AssistantUiModel model_;
 
-  AssistantContainerView* container_view_ =
-      nullptr;  // Owned by view hierarchy.
+  // Owned by view hierarchy.
+  AssistantContainerView* container_view_ = nullptr;
+  ProactiveSuggestionsView* proactive_suggestions_view_ = nullptr;
 
   std::unique_ptr<views::EventMonitor> event_monitor_;
 
@@ -163,6 +175,9 @@ class ASH_EXPORT AssistantUiController
   // When hidden, Assistant automatically closes itself to finish the previous
   // session. We delay this behavior to allow the user an opportunity to resume.
   base::OneShotTimer auto_close_timer_;
+
+  // Whether the UI controller is observing changes to the usable work area.
+  bool is_observing_usable_work_area_ = false;
 
   base::WeakPtrFactory<AssistantUiController> weak_factory_{this};
 

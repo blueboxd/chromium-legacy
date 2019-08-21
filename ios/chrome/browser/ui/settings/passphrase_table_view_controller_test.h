@@ -42,7 +42,7 @@ class PassphraseTableViewControllerTest : public ChromeTableViewControllerTest {
 
   void SetUpNavigationController(UIViewController* test_controller);
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
 
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   // Weak, owned by chrome_browser_state_.

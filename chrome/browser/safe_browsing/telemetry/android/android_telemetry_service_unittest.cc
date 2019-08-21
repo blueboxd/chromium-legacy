@@ -95,7 +95,7 @@ class AndroidTelemetryServiceTest : public testing::Test {
   void ResetProfile() { telemetry_service_->profile_ = profile(); }
 
  protected:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingBrowserProcess* browser_process_;
   std::unique_ptr<download::MockDownloadItem> download_item_;
   base::HistogramTester histograms_;

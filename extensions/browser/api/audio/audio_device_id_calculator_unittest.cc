@@ -52,7 +52,7 @@ class AudioDeviceIdCalculatorTest : public testing::Test {
   content::BrowserContext* browser_context() { return &browser_context_; }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   content::TestBrowserContext browser_context_;
   TestExtensionsBrowserClientWithPrefService test_browser_client_;
 

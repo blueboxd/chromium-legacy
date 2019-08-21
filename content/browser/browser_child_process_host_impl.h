@@ -19,6 +19,8 @@
 #include "base/synchronization/waitable_event_watcher.h"
 #include "build/build_config.h"
 #include "content/browser/child_process_launcher.h"
+#include "content/common/child_process.mojom.h"
+#include "content/common/child_process_host_impl.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/common/child_process_host_delegate.h"
@@ -131,6 +133,11 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   }
 
   IPC::Channel* child_channel() const { return channel_; }
+
+  mojom::ChildProcess* child_process() const {
+    return static_cast<ChildProcessHostImpl*>(child_process_host_.get())
+        ->child_process();
+  }
 
   typedef std::list<BrowserChildProcessHostImpl*> BrowserChildProcessList;
  private:

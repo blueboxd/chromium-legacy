@@ -102,7 +102,7 @@ class SyncedPrintersManagerTest : public testing::Test {
   }
 
   // Must outlive |profile_|.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   // Must outlive |manager_|.
   TestingProfile profile_;

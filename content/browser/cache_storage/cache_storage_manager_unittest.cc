@@ -264,7 +264,7 @@ class TestCacheStorageContext : public CacheStorageContextWithManager {
 class CacheStorageManagerTest : public testing::Test {
  public:
   CacheStorageManagerTest()
-      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP),
         blob_storage_context_(nullptr),
         observers_(
             base::MakeRefCounted<CacheStorageContextImpl::ObserverList>()),
@@ -804,7 +804,7 @@ class CacheStorageManagerTest : public testing::Test {
   // Temporary directory must be allocated first so as to be destroyed last.
   base::ScopedTempDir temp_dir_;
 
-  TestBrowserThreadBundle browser_thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   TestBrowserContext browser_context_;
   storage::BlobStorageContext* blob_storage_context_;
 

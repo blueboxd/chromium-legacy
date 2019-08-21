@@ -21,7 +21,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::RunLoop;
-using content::TestBrowserThreadBundle;
+using content::BrowserTaskEnvironment;
 using error_page::DnsProbeStatus;
 
 namespace chrome_browser_net {
@@ -98,7 +98,7 @@ class DnsProbeServiceTest : public testing::Test {
   }
 
   base::SimpleTestTickClock tick_clock_;
-  TestBrowserThreadBundle bundle_;
+  BrowserTaskEnvironment bundle_;
   std::unique_ptr<FakeHostResolverNetworkContext> network_context_;
   std::unique_ptr<FakeDnsConfigChangeManager> dns_config_change_manager_;
   std::unique_ptr<DnsProbeService> service_;

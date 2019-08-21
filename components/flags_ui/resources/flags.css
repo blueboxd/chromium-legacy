@@ -187,6 +187,7 @@ button {
 }
 
 #search {
+  background: var(--input-background);
   border: 1px solid transparent;
   border-radius: 3px;
   box-sizing: border-box;
@@ -194,12 +195,6 @@ button {
   font-size: .8125rem;
   padding: 12px 36px;
   width: 100%;
-}
-
-@media (prefers-color-scheme: dark) {
-  #search {
-    background: var(--input-background);
-  }
 }
 
 #search:focus {

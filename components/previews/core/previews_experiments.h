@@ -145,6 +145,9 @@ GURL LitePageRedirectProbeURL();
 // The duration in between preresolving the lite page redirect server.
 base::TimeDelta LitePageRedirectPreviewPresolveInterval();
 
+// The duration in between probes to the lite page redirect server.
+base::TimeDelta LitePageRedirectPreviewProbeInterval();
+
 // The maximum number of seconds to loadshed the Previews server for.
 int PreviewServerLoadshedMaxSeconds();
 

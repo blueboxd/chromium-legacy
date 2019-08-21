@@ -195,6 +195,7 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
                     const gfx::Rect& content_rect,
                     VideoCaptureOverlay::OnceRenderer overlay_renderer,
                     scoped_refptr<media::VideoFrame> frame,
+                    base::TimeTicks request_time,
                     std::unique_ptr<CopyOutputResult> result);
 
   // Places the frame in the |delivery_queue_| and calls MaybeDeliverFrame(),

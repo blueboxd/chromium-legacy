@@ -30,7 +30,7 @@ constexpr char kTestAccount[] = "user@test.com";
 class WallpaperPrivateApiUnittest : public testing::Test {
  public:
   WallpaperPrivateApiUnittest()
-      : thread_bundle_(std::make_unique<content::TestBrowserThreadBundle>()),
+      : task_environment_(std::make_unique<content::BrowserTaskEnvironment>()),
         fake_user_manager_(new chromeos::FakeChromeUserManager()),
         scoped_user_manager_(base::WrapUnique(fake_user_manager_)) {}
 
@@ -51,7 +51,7 @@ class WallpaperPrivateApiUnittest : public testing::Test {
   }
 
  private:
-  std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle_;
+  std::unique_ptr<content::BrowserTaskEnvironment> task_environment_;
 
   chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
 

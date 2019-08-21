@@ -16,7 +16,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
+#include "device/gamepad/dualshock4_controller.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
+#include "device/gamepad/hid_haptic_gamepad.h"
+#include "device/gamepad/hid_writer_linux.h"
 #include "device/udev_linux/udev.h"
 
 #if defined(OS_CHROMEOS)
@@ -542,18 +545,19 @@ void GamepadDeviceLinux::InitializeHidraw(base::ScopedFD fd) {
   bool is_dualshock4 = false;
   bool is_hid_haptic = false;
   if (GetHidrawDevinfo(hidraw_fd_, &bus_type_, &vendor_id, &product_id)) {
-    is_dualshock4 =
-        Dualshock4ControllerLinux::IsDualshock4(vendor_id, product_id);
-    is_hid_haptic = HidHapticGamepadLinux::IsHidHaptic(vendor_id, product_id);
+    is_dualshock4 = Dualshock4Controller::IsDualshock4(vendor_id, product_id);
+    is_hid_haptic = HidHapticGamepad::IsHidHaptic(vendor_id, product_id);
     DCHECK_LE(is_dualshock4 + is_hid_haptic, 1);
   }
 
-  if (is_dualshock4 && !dualshock4_)
-    dualshock4_ = std::make_unique<Dualshock4ControllerLinux>(hidraw_fd_);
+  if (is_dualshock4 && !dualshock4_) {
+    dualshock4_ = std::make_unique<Dualshock4Controller>(
+        std::make_unique<HidWriterLinux>(hidraw_fd_));
+  }
 
   if (is_hid_haptic && !hid_haptics_) {
-    hid_haptics_ =
-        HidHapticGamepadLinux::Create(vendor_id, product_id, hidraw_fd_);
+    hid_haptics_ = HidHapticGamepad::Create(
+        vendor_id, product_id, std::make_unique<HidWriterLinux>(hidraw_fd_));
   }
 }
 

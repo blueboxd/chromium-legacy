@@ -314,7 +314,7 @@ bool ImageWriterTestUtils::FillFile(const base::FilePath& file,
 }
 
 ImageWriterUnitTestBase::ImageWriterUnitTestBase()
-    : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
+    : task_environment_(content::BrowserTaskEnvironment::REAL_IO_THREAD) {}
 ImageWriterUnitTestBase::~ImageWriterUnitTestBase() {
 }
 

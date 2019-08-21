@@ -44,7 +44,8 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     bool pause_on_start,
     const base::UnguessableToken& devtools_worker_token,
     const blink::mojom::RendererPreferences& renderer_preferences,
-    blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request,
+    mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
+        preference_watcher_receiver,
     mojo::PendingRemote<blink::mojom::WorkerContentSettingsProxy>
         content_settings,
     blink::mojom::ServiceWorkerProviderInfoForClientPtr
@@ -63,7 +64,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
       host_(std::move(host)),
       url_(info->url),
       renderer_preferences_(renderer_preferences),
-      preference_watcher_request_(std::move(preference_watcher_request)) {
+      preference_watcher_receiver_(std::move(preference_watcher_receiver)) {
   DCHECK(main_script_load_params);
   DCHECK(subresource_loader_factory_bundle_info);
 
@@ -177,7 +178,7 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext() {
       WebWorkerFetchContextImpl::Create(
           service_worker_provider_context_.get(),
           std::move(renderer_preferences_),
-          std::move(preference_watcher_request_),
+          std::move(preference_watcher_receiver_),
           subresource_loader_factory_bundle_->Clone(),
           std::move(fallback_factory));
 

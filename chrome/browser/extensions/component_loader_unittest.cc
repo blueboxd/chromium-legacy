@@ -96,7 +96,7 @@ class ComponentLoaderTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   MockExtensionService extension_service_;
   ComponentLoader component_loader_;

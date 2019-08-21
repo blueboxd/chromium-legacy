@@ -139,7 +139,7 @@ class FeedbackUploaderTest : public testing::Test {
  private:
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   content::TestBrowserContext context_;
   std::unique_ptr<MockFeedbackUploader> uploader_;
 

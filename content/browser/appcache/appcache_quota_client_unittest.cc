@@ -157,7 +157,7 @@ class AppCacheQuotaClientTest : public testing::Test {
     delete_status_ = status;
   }
 
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   int64_t usage_;
   std::set<url::Origin> origins_;
   blink::mojom::QuotaStatusCode delete_status_;

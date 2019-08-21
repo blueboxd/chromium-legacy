@@ -334,6 +334,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="6043212731627905357">See monitor ei toimi teie seadmega <ph name="DEVICE_TYPE" /> (seda monitori ei toetata).</translation>
 <translation id="6043994281159824495">Logi nüüd välja</translation>
 <translation id="6047696787498798094">Teisele kasutajale lülitumine peatab ekraani jagamise. Kas soovite jätkata?</translation>
+<translation id="6054305421211936131">Logi sisse kiipkaardiga</translation>
 <translation id="6062360702481658777">Teid logitakse automaatselt välja <ph name="LOGOUT_TIME_LEFT" /> pärast.</translation>
 <translation id="6064337552080329342">Kahjuks ei õnnestunud teie parooli kinnitada. Proovige uuesti.</translation>
 <translation id="607652042414456612">Lähedal olevad Bluetoothi seadmed saavad teie arvuti tuvastada ja see kuvatakse nimega „<ph name="NAME" />” ja aadressiga <ph name="ADDRESS" /></translation>
@@ -361,6 +362,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="6459472438155181876">Ekraani laiendamine seadmesse <ph name="DISPLAY_NAME" /></translation>
 <translation id="6482559668224714696">Täisekraani luup</translation>
 <translation id="6490471652906364588">C-tüüpi USB-seade (parempoolne port)</translation>
+<translation id="649452524636452238">Kiipkaardi PIN-kood</translation>
 <translation id="6501401484702599040">Ekraani ülekandmine seadmesse <ph name="RECEIVER_NAME" /></translation>
 <translation id="6521655319214113338">Käsitsikirjasisend</translation>
 <translation id="6528179044667508675">Mitte segada</translation>
@@ -390,6 +392,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="6857811139397017780">Aktiveeri <ph name="NETWORKSERVICE" /></translation>
 <translation id="6910714959251846841">Värskenduse jaoks on vajalik seadme powerwash. Vaadake lisateavet operatsioonisüsteemi <ph name="SYSTEM_APP_NAME" /> uusima värskenduse kohta.</translation>
 <translation id="6911468394164995108">Liitu muu võrguga ...</translation>
+<translation id="6919251195245069855">Teie kiipkaarti ei õnnestunud tuvastada. Proovige uuesti.</translation>
 <translation id="6972754398087986839">Alustamine</translation>
 <translation id="6981982820502123353">Juurdepääsetavus</translation>
 <translation id="698231206551913481">Kõik selle kasutajaga seotud failid ja kohalikud andmed kustutatakse jäädavalt kohe, kui see kasutaja eemaldatakse.</translation>

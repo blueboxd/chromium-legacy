@@ -62,6 +62,9 @@ class ContentPasswordManagerDriver
   void AutofillDataReceived(
       const autofill::FormsPredictionsMap& predictions) override;
   void GeneratedPasswordAccepted(const base::string16& password) override;
+  void GeneratedPasswordAccepted(const autofill::FormData& form_data,
+                                 uint32_t generation_element_id,
+                                 const base::string16& password) override;
   void FillSuggestion(const base::string16& username,
                       const base::string16& password) override;
   void FillIntoFocusedField(bool is_password,

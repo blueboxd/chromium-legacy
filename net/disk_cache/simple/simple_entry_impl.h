@@ -77,18 +77,14 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   void SetActiveEntryProxy(
       std::unique_ptr<ActiveEntryProxy> active_entry_proxy);
 
-  // Adds another reader/writer to this entry, if possible, returning |this| to
-  // |entry|.
-  net::Error OpenEntry(Entry** entry, CompletionOnceCallback callback);
+  // Adds another reader/writer to this entry, if possible.
+  EntryResult OpenEntry(EntryResultCallback callback);
 
-  // Creates this entry, if possible. Returns |this| to |entry|.
-  net::Error CreateEntry(Entry** entry, CompletionOnceCallback callback);
+  // Creates this entry, if possible.
+  EntryResult CreateEntry(EntryResultCallback callback);
 
-  // Opens an existing entry or creates a new one. Returns |this| to
-  // |entry_struct->entry|, and sets |entry_struct->opened| based on what op was
-  // actually performed.
-  net::Error OpenOrCreateEntry(EntryWithOpened* entry_struct,
-                               CompletionOnceCallback callback);
+  // Opens an existing entry or creates a new one.
+  EntryResult OpenOrCreateEntry(EntryResultCallback callback);
 
   // Identical to Backend::Doom() except that it accepts a
   // CompletionOnceCallback.
@@ -203,6 +199,7 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   // clients don't get notified after they deleted the backend (which they would
   // not expect).
   void PostClientCallback(CompletionOnceCallback callback, int result);
+  void PostClientCallback(EntryResultCallback callback, EntryResult result);
 
   // Clears entry state enough to prepare it for re-use. This will generally
   // put it back into STATE_UNINITIALIZED, except if the entry is doomed and
@@ -210,25 +207,18 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   // case it will be put into STATE_FAILURE.
   void ResetEntry();
 
-  // Return this entry to a user of the API in |out_entry|. Increments the user
-  // count.
-  void ReturnEntryToCaller(Entry** out_entry);
+  // Adjust ownership before return of this entry to a user of the API.
+  // Increments the user count.
+  void ReturnEntryToCaller();
 
   // Like above, but for asynchronous return after the event loop runs again,
   // also invoking the callback per the usual net convention.
   // The return is cancelled if the backend is deleted in the interim.
-  //
-  // |out_opened| may be null.
-  void ReturnEntryToCallerAsync(Entry** out_entry,
-                                bool* out_opened,
-                                bool opened,
-                                CompletionOnceCallback callback);
+  void ReturnEntryToCallerAsync(bool is_open, EntryResultCallback callback);
 
   // Portion of the above that runs off the event loop.
-  void FinishReturnEntryToCallerAsync(Entry** out_entry,
-                                      bool* out_opened,
-                                      bool opened,
-                                      CompletionOnceCallback callback);
+  void FinishReturnEntryToCallerAsync(bool is_open,
+                                      EntryResultCallback callback);
 
   // Remove |this| from the Backend and the index, either because
   // SimpleSynchronousEntry has detected an error or because we are about to
@@ -242,13 +232,16 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   // the last reference.
   void RunNextOperationIfNeeded();
 
-  void OpenEntryInternal(CompletionOnceCallback callback, Entry** out_entry);
+  void OpenEntryInternal(SimpleEntryOperation::EntryResultState result_state,
+                         EntryResultCallback callback);
 
-  void CreateEntryInternal(CompletionOnceCallback callback, Entry** out_entry);
+  void CreateEntryInternal(SimpleEntryOperation::EntryResultState result_state,
+                           EntryResultCallback callback);
 
-  void OpenOrCreateEntryInternal(OpenEntryIndexEnum index_state,
-                                 CompletionOnceCallback callback,
-                                 EntryWithOpened* entry_struct);
+  void OpenOrCreateEntryInternal(
+      OpenEntryIndexEnum index_state,
+      SimpleEntryOperation::EntryResultState result_state,
+      EntryResultCallback callback);
 
   void CloseInternal();
 
@@ -284,16 +277,14 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   void DoomEntryInternal(CompletionOnceCallback callback);
 
   // Called after a SimpleSynchronousEntry has completed CreateEntry() or
-  // OpenEntry(). If |in_sync_entry| is non-NULL, creation is successful and we
-  // can return |this| SimpleEntryImpl to |*out_entry|. Runs
-  // |completion_callback|.
+  // OpenEntry(). If |in_results| is used to denote whether that was successful,
+  // Posts either the produced entry or an error code to |completion_callback|.
   void CreationOperationComplete(
-      CompletionOnceCallback completion_callback,
+      SimpleEntryOperation::EntryResultState result_state,
+      EntryResultCallback completion_callback,
       const base::TimeTicks& start_time,
       const base::Time index_last_used_time,
       std::unique_ptr<SimpleEntryCreationResults> in_results,
-      Entry** out_entry,
-      bool* out_opened,
       net::NetLogEventType end_event_type);
 
   // Called after we've closed and written the EOF record to our entry. Until

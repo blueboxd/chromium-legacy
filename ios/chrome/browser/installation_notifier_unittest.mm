@@ -122,7 +122,7 @@ class InstallationNotifierTest : public PlatformTest {
                 50 + jitter * expectedDelayInMSec);
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   __weak InstallationNotifier* installationNotifier_;
   __weak FakeDispatcher* dispatcher_;
   MockNotificationReceiver* notificationReceiver1_;

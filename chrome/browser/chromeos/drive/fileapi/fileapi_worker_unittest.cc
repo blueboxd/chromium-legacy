@@ -126,7 +126,7 @@ void VerifyRead(const std::string& expected_data,
 
 class FileApiWorkerTest : public testing::Test {
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(FileApiWorkerTest, RunFileSystemCallbackSuccess) {

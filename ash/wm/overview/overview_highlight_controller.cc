@@ -20,6 +20,7 @@
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/compositor_extra/shadow.h"
+#include "ui/gfx/transform_util.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -383,13 +384,9 @@ void OverviewHighlightController::UpdateFocusWidget(
   gfx::RectF previous_bounds =
       gfx::RectF(highlight_window->GetBoundsInScreen());
   highlight_widget_->SetWidgetBoundsInScreen(target_screen_bounds);
-  gfx::RectF current_bounds = gfx::RectF(target_screen_bounds);
-  gfx::Transform transform(previous_bounds.width() / current_bounds.width(),
-                           0.f, 0.f,
-                           previous_bounds.height() / current_bounds.height(),
-                           previous_bounds.x() - current_bounds.x(),
-                           previous_bounds.y() - current_bounds.y());
-  highlight_window->SetTransform(transform);
+  const gfx::RectF current_bounds = gfx::RectF(target_screen_bounds);
+  highlight_window->SetTransform(
+      gfx::TransformBetweenRects(current_bounds, previous_bounds));
   ScopedOverviewAnimationSettings settings(OVERVIEW_ANIMATION_SELECTION_WINDOW,
                                            highlight_window);
   highlight_window->SetTransform(gfx::Transform());

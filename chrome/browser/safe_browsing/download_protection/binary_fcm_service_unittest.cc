@@ -37,7 +37,7 @@ class BinaryFCMServiceTest : public ::testing::Test {
   Profile* profile() { return &profile_; }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   std::unique_ptr<BinaryFCMService> binary_fcm_service_;
 };

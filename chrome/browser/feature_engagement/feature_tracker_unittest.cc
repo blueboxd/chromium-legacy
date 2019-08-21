@@ -96,7 +96,7 @@ class FeatureTrackerTest : public testing::Test {
   std::unique_ptr<MockTestFeatureTracker> mock_feature_tracker_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(FeatureTrackerTest);
 };
@@ -162,7 +162,7 @@ class FeatureTrackerParamsTest : public testing::Test {
   base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(FeatureTrackerParamsTest);
 };

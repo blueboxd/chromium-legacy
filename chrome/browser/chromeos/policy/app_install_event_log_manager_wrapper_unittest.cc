@@ -122,7 +122,7 @@ class AppInstallEventLogManagerWrapperTest : public testing::Test {
                     ->IsDefaultValue());
   }
 
-  content::TestBrowserThreadBundle browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
 
   const base::FilePath log_file_path_;

@@ -141,7 +141,6 @@
 <translation id="200815880754187296"><ph name="KILOBYTES" /> kB – muud rakendused</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# fail}other{# faili}}</translation>
 <translation id="2017836877785168846">Kustutab aadressiribalt ajaloo ja automaatse täitmise teabe.</translation>
-<translation id="2018707881002649255">Allpool valitud kontakte jagatakse veebisaidiga <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="2021896219286479412">Saidi juhtelemendid täisekraanil</translation>
 <translation id="2038563949887743358">Valiku Taotle arvutisaiti sisselülitamine</translation>
 <translation id="2041019821020695769">Selleks et lubada Chrome'il teile märguandeid saata, lülitage märguanded <ph name="BEGIN_LINK" />Androidi seadetes<ph name="END_LINK" /> ka sisse.</translation>
@@ -243,7 +242,6 @@
 <translation id="2777555524387840389">Jäänud on <ph name="SECONDS" /> sekundit</translation>
 <translation id="2779651927720337254">ebaõnnestus</translation>
 <translation id="2781151931089541271">Jäänud on 1 sekund</translation>
-<translation id="2796941233371040292">Siin ei ole salvestusruumi andmeid</translation>
 <translation id="2801022321632964776">Oma keele kasutamiseks värskendage Chrome uusimale versioonile</translation>
 <translation id="2810645512293415242">Lihtsustatud leht andmemahu säästmiseks ja laadimise kiirendamiseks.</translation>
 <translation id="281504910091592009">Vaadake ja hallake salvestatud paroole oma <ph name="BEGIN_LINK" />Google'i kontol<ph name="END_LINK" /></translation>
@@ -271,6 +269,7 @@
 <translation id="2962095958535813455">Inkognito režiimi vahelehed on aktiveeritud</translation>
 <translation id="2968755619301702150">Sertifikaadikuvaja</translation>
 <translation id="2979025552038692506">Valitud inkognito vaheleht</translation>
+<translation id="2987620471460279764">Muust seadmest jagatud tekst</translation>
 <translation id="2989523299700148168">Hiljuti külastatud</translation>
 <translation id="2996291259634659425">Parooli loomine</translation>
 <translation id="2996809686854298943">Vaja on URL-i</translation>
@@ -554,6 +553,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 allalaadimine ebaõnnestus.}other{# allalaadimist ebaõnnestus.}}</translation>
 <translation id="5170568018924773124">Kuva kaustas</translation>
 <translation id="5184329579814168207">Ava Chrome'is</translation>
+<translation id="5193988420012215838">Kopeeritud lõikelauale</translation>
 <translation id="5199929503336119739">Tööprofiil</translation>
 <translation id="5202089186707505116">Kas anda sellele saidile juurdepääs teie VR-anduritele?</translation>
 <translation id="5210286577605176222">Eelmisele vahelehele liikumine</translation>
@@ -702,6 +702,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teile reklaame, mis ei põhine muudel külastatud veebisaitidel. Paljud veebisaidid koguvad ning kasutavad endiselt teie sirvimisandmeid, näiteks turvalisuse parandamiseks, sisu, reklaamide ja soovituste pakkumiseks ning aruandlusstatistika loomiseks.</translation>
 <translation id="624789221780392884">Värskendus on valmis</translation>
 <translation id="6255999984061454636">Sisu soovitused</translation>
+<translation id="6264430811215618931"><ph name="ORIGIN" /> saatis tekstsõnumi teie telefoninumbrile. Kinnitamisel saab sait teid tuvastada.</translation>
 <translation id="6277522088822131679">Lehe printimisel ilmnes probleem. Proovige uuesti.</translation>
 <translation id="6295158916970320988">Kõik saidid</translation>
 <translation id="629730747756840877">Konto</translation>
@@ -717,7 +718,6 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="6364438453358674297">Kas eemaldada soovitus ajaloost?</translation>
 <translation id="6369229450655021117">Siin saab otsida veebis, jagada sõpradega ja näha avatud lehekülgi</translation>
 <translation id="6378173571450987352">Üksikasjad: sorditud kasutatud andmemahu alusel</translation>
-<translation id="6383961787135158834">Tühj. saidi salvestusr.</translation>
 <translation id="6388207532828177975">Kustuta ja lähtesta</translation>
 <translation id="6393863479814692971">Chrome vajab selle saidi puhul luba, et teie kaamerale ja mikrofonile juurde pääseda.</translation>
 <translation id="6395288395575013217">LINK</translation>

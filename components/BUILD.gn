@@ -136,6 +136,7 @@ test("components_unittests") {
     "//components/security_state/core:unit_tests",
     "//components/send_tab_to_self:unit_tests",
     "//components/services/heap_profiling/public/cpp:unit_tests",
+    "//components/services/storage:tests",
     "//components/services/unzip:unit_tests",
     "//components/sessions:unit_tests",
     "//components/signin/core/browser:unit_tests",

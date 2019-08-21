@@ -143,7 +143,7 @@ class ResourceReporterTest : public testing::Test {
   base::test::FakeMemoryPressureMonitor* monitor() { return &monitor_; }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   base::test::FakeMemoryPressureMonitor monitor_;
 

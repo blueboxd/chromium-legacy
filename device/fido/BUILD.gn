@@ -225,6 +225,8 @@ component("fido") {
       "win/authenticator.h",
       "win/discovery.cc",
       "win/discovery.h",
+      "win/logging.cc",
+      "win/logging.h",
       "win/type_conversions.cc",
       "win/type_conversions.h",
       "win/webauthn_api.cc",

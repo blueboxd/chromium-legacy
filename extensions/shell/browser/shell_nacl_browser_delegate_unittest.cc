@@ -16,7 +16,7 @@ using ShellNaClBrowserDelegateTest = testing::Test;
 
 // Verifies that the returned version string has a valid format.
 TEST_F(ShellNaClBrowserDelegateTest, VersionString) {
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   content::TestBrowserContext browser_context;
   ShellNaClBrowserDelegate delegate(&browser_context);
 

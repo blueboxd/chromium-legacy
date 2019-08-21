@@ -13,8 +13,7 @@ namespace {
 // Blocked devices, taken from the gamepad blocklist.
 constexpr std::pair<uint16_t, uint16_t> kBlockedDevices[] = {
     {0x045e, 0x0922},  // Microsoft keyboard
-    {0x056a, 0x50b8},  // Wacom touchpad
-    {0x06cb, 0x000f},  // Synaptics touchpad
+    {0x05ac, 0x3232},  // Apple(?) bluetooth mouse
     {0x17ef, 0x6099},  // Lenovo keyboard
 };
 constexpr size_t kBlockedDevicesLength = base::size(kBlockedDevices);
@@ -22,6 +21,8 @@ constexpr size_t kBlockedDevicesLength = base::size(kBlockedDevices);
 // Known devices from blocked vendors, taken from usb.ids.
 // http://www.linux-usb.org/usb.ids
 constexpr std::pair<uint16_t, uint16_t> kBlockedVendorDevices[] = {
+    {0x056a, 0x50b8},  // Wacom touchpad
+    {0x06cb, 0x000f},  // Synaptics touchpad
     {0x2833, 0x0001},  // Oculus Rift DK1 head tracker
     {0x2833, 0x0021},  // Oculus Rift DK2 USB hub
     {0x2833, 0x0031},  // Oculus Rift CV1 subdevice

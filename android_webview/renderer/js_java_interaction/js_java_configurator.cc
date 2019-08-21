@@ -5,6 +5,7 @@
 #include "android_webview/renderer/js_java_interaction/js_java_configurator.h"
 
 #include "android_webview/renderer/js_java_interaction/js_binding.h"
+#include "content/public/common/isolated_world_ids.h"
 #include "content/public/renderer/render_frame.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -41,6 +42,18 @@ void JsJavaConfigurator::DidClearWindowObject() {
 
   base::AutoReset<bool> flag_entry(&inside_did_clear_window_object_, true);
   js_binding_ = JsBinding::Install(render_frame(), js_object_name_);
+}
+
+void JsJavaConfigurator::WillReleaseScriptContext(
+    v8::Local<v8::Context> context,
+    int32_t world_id) {
+  // We created v8 global objects only in the main world, should clear them only
+  // when this is for main world.
+  if (world_id != content::ISOLATED_WORLD_ID_GLOBAL)
+    return;
+
+  if (js_binding_)
+    js_binding_->ReleaseV8GlobalObjects();
 }
 
 void JsJavaConfigurator::OnDestruct() {

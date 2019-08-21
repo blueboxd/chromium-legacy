@@ -66,12 +66,12 @@ class TestScheduler : public CacheStorageScheduler {
 class CacheStorageSchedulerTest : public testing::Test {
  protected:
   CacheStorageSchedulerTest()
-      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP),
         task1_(&scheduler_),
         task2_(&scheduler_),
         task3_(&scheduler_) {}
 
-  TestBrowserThreadBundle browser_thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   TestScheduler scheduler_;
   TestTask task1_;
   TestTask task2_;

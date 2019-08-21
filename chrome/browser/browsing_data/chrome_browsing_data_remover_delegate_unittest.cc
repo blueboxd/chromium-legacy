@@ -1125,7 +1125,7 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
 
     // Make sure the Network Service is started before making a NetworkContext.
     content::GetNetworkService();
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
     auto network_context = std::make_unique<network::NetworkContext>(
         network::NetworkService::GetNetworkServiceForTesting(),
@@ -1231,7 +1231,7 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
   // Cached pointer to BrowsingDataRemover for access to testing methods.
   content::BrowsingDataRemover* remover_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   network::mojom::NetworkContextPtr network_context_ptr_;
   network::NetworkContext* network_context_;
   std::unique_ptr<TestingProfile> profile_;

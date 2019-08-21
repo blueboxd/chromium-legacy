@@ -27,7 +27,8 @@ class SwapChainPresenter;
 class DCLayerTree {
  public:
   DCLayerTree(bool disable_nv12_dynamic_textures,
-              bool disable_larger_than_screen_overlays);
+              bool disable_larger_than_screen_overlays,
+              bool disable_vp_scaling);
   ~DCLayerTree();
 
   // Returns true on success.
@@ -60,6 +61,8 @@ class DCLayerTree {
     return disable_larger_than_screen_overlays_;
   }
 
+  bool disable_vp_scaling() const { return disable_vp_scaling_; }
+
   const Microsoft::WRL::ComPtr<ID3D11VideoDevice>& video_device() const {
     return video_device_;
   }
@@ -83,6 +86,7 @@ class DCLayerTree {
  private:
   const bool disable_nv12_dynamic_textures_;
   const bool disable_larger_than_screen_overlays_;
+  const bool disable_vp_scaling_;
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device_;
   Microsoft::WRL::ComPtr<IDCompositionDevice2> dcomp_device_;

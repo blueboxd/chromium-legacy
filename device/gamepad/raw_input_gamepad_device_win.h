@@ -17,12 +17,13 @@
 
 #include "base/memory/weak_ptr.h"
 #include "device/gamepad/abstract_haptic_gamepad.h"
-#include "device/gamepad/dualshock4_controller_win.h"
 #include "device/gamepad/hid_dll_functions_win.h"
-#include "device/gamepad/hid_haptic_gamepad_win.h"
 #include "device/gamepad/public/cpp/gamepad.h"
 
 namespace device {
+
+class HidHapticGamepad;
+class Dualshock4Controller;
 
 class RawInputGamepadDeviceWin final : public AbstractHapticGamepad {
  public:
@@ -138,10 +139,10 @@ class RawInputGamepadDeviceWin final : public AbstractHapticGamepad {
   PHIDP_PREPARSED_DATA preparsed_data_ = nullptr;
 
   // Dualshock4-specific functionality (e.g., haptics), if available.
-  std::unique_ptr<Dualshock4ControllerWin> dualshock4_;
+  std::unique_ptr<Dualshock4Controller> dualshock4_;
 
   // A controller that uses a HID output report for vibration effects.
-  std::unique_ptr<HidHapticGamepadWin> hid_haptics_;
+  std::unique_ptr<HidHapticGamepad> hid_haptics_;
 
   base::WeakPtrFactory<RawInputGamepadDeviceWin> weak_factory_{this};
 };

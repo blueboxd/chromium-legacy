@@ -83,7 +83,7 @@ class WebDatabaseHostImplTest : public ::testing::Test {
   BrowserContext* browser_context() { return &browser_context_; }
 
  private:
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   TestBrowserContext browser_context_;
   std::unique_ptr<MockRenderProcessHost> render_process_host_;
   std::unique_ptr<WebDatabaseHostImpl> host_;

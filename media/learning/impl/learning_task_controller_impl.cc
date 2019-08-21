@@ -75,6 +75,10 @@ void LearningTaskControllerImpl::CancelObservation(base::UnguessableToken id) {
   helper_->CancelObservation(id);
 }
 
+const LearningTask& LearningTaskControllerImpl::GetLearningTask() {
+  return task_;
+}
+
 void LearningTaskControllerImpl::AddFinishedExample(LabelledExample example,
                                                     ukm::SourceId source_id) {
   // Verify that we have a trainer and that we got the right number of features.

@@ -193,10 +193,13 @@ void PasswordGenerationPopupControllerImpl::PasswordAccepted() {
   if (state_ != kOfferGeneration)
     return;
 
-  driver_->GetPasswordManager()->OnGeneratedPasswordAccepted(
-      driver_.get(), form_.form_data, generation_element_id_,
-      current_password_);
-  Hide();
+  base::WeakPtr<PasswordGenerationPopupControllerImpl> weak_this = GetWeakPtr();
+  driver_->GeneratedPasswordAccepted(form_.form_data, generation_element_id_,
+                                     current_password_);
+  // |this| can be destroyed here because GeneratedPasswordAccepted pops up
+  // another UI and generates some event to close the dropdown.
+  if (weak_this)
+    weak_this->Hide();
 }
 
 void PasswordGenerationPopupControllerImpl::Show(GenerationUIState state) {

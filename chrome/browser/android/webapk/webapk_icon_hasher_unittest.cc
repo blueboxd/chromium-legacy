@@ -73,7 +73,7 @@ class WebApkIconHasherRunner {
 class WebApkIconHasherTest : public ::testing::Test {
  public:
   WebApkIconHasherTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
   ~WebApkIconHasherTest() override {}
 
  protected:
@@ -82,7 +82,7 @@ class WebApkIconHasherTest : public ::testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebApkIconHasherTest);

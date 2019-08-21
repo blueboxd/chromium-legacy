@@ -20,6 +20,7 @@
 namespace gfx {
 class Quaternion;
 class Point3F;
+class Size;
 }  // namespace gfx
 
 namespace device {
@@ -32,6 +33,7 @@ class OpenXrApiWrapper {
  public:
   OpenXrApiWrapper();
   ~OpenXrApiWrapper();
+  bool IsInitialized() const;
 
   static std::unique_ptr<OpenXrApiWrapper> Create();
 
@@ -49,18 +51,19 @@ class OpenXrApiWrapper {
   XrResult GetHeadPose(base::Optional<gfx::Quaternion>* orientation,
                        base::Optional<gfx::Point3F>* position) const;
 
+  bool HasPosition() const;
+  gfx::Size GetViewSize() const;
+  const XrView& GetView(uint32_t index) const;
   XrTime GetPredictedDisplayTime() const;
+  XrResult GetLuid(LUID* luid) const;
+  std::string GetRuntimeName() const;
 
   static void DEVICE_VR_EXPORT SetTestHook(VRTestHook* hook);
-
-  void GetViewSize(uint32_t* width, uint32_t* height) const;
-  XrResult GetLuid(LUID* luid) const;
 
  private:
   void Reset();
   bool Initialize();
   void Uninitialize();
-  bool IsInitialized() const;
 
   XrResult InitializeSystem();
   XrResult PickEnvironmentBlendMode(XrSystemId system);
@@ -69,7 +72,6 @@ class OpenXrApiWrapper {
       const Microsoft::WRL::ComPtr<ID3D11Device>& d3d_device);
   XrResult CreateSwapchain();
   XrResult CreateSpace(XrReferenceSpaceType type, XrSpace* space);
-  XrResult CreateViewSpace();
   XrResult CreateGamepadHelper(
       std::unique_ptr<OpenXrGamepadHelper>* gamepad_helper);
 

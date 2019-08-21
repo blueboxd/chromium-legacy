@@ -11,8 +11,10 @@
 #include "base/callback.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/values.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
@@ -35,6 +37,7 @@
 #import "ios/web_view/internal/autofill/cwv_autofill_form_internal.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_suggestion_internal.h"
 #import "ios/web_view/internal/autofill/cwv_credit_card_internal.h"
+#import "ios/web_view/internal/autofill/cwv_credit_card_saver_internal.h"
 #import "ios/web_view/internal/autofill/cwv_credit_card_verifier_internal.h"
 #include "ios/web_view/internal/autofill/web_view_autocomplete_history_manager_factory.h"
 #import "ios/web_view/internal/autofill/web_view_autofill_client_ios.h"
@@ -94,6 +97,10 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
 
   // The |webState| which this autofill controller should observe.
   web::WebState* _webState;
+
+  // The current credit card saver. Can be nil if no save attempt is pending.
+  // Held weak because |_delegate| is responsible for maintaing its lifetime.
+  __weak CWVCreditCardSaver* _saver;
 
   // The current credit card verifier. Can be nil if no verification is pending.
   // Held weak because |_delegate| is responsible for maintaing its lifetime.
@@ -414,25 +421,60 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
 }
 
 - (void)confirmSaveCreditCardLocally:(const autofill::CreditCard&)creditCard
+               saveCreditCardOptions:
+                   (autofill::AutofillClient::SaveCreditCardOptions)
+                       saveCreditCardOptions
                             callback:(autofill::AutofillClient::
                                           LocalSaveCardPromptCallback)callback {
-  if ([_delegate respondsToSelector:@selector
-                 (autofillController:decidePolicyForLocalStorageOfCreditCard
-                                       :decisionHandler:)]) {
-    CWVCreditCard* card = [[CWVCreditCard alloc] initWithCreditCard:creditCard];
-    __block autofill::AutofillClient::LocalSaveCardPromptCallback
-        scopedCallback = std::move(callback);
-    [_delegate autofillController:self
-        decidePolicyForLocalStorageOfCreditCard:card
-                                decisionHandler:^(CWVStoragePolicy policy) {
-                                  if (policy == CWVStoragePolicyAllow) {
-                                    if (scopedCallback)
-                                      std::move(scopedCallback)
-                                          .Run(autofill::AutofillClient::
-                                                   ACCEPTED);
-                                  }
-                                }];
+  if (![_delegate respondsToSelector:@selector(autofillController:
+                                          saveCreditCardWithSaver:)]) {
+    return;
   }
+
+  CWVCreditCardSaver* saver = [[CWVCreditCardSaver alloc]
+            initWithCreditCard:creditCard
+                   saveOptions:saveCreditCardOptions
+             willUploadToCloud:NO
+             legalMessageLines:autofill::LegalMessageLines()
+      uploadSavePromptCallback:autofill::AutofillClient::
+                                   UploadSaveCardPromptCallback()
+       localSavePromptCallback:std::move(callback)];
+  [_delegate autofillController:self saveCreditCardWithSaver:saver];
+  _saver = saver;
+}
+
+- (void)confirmSaveCreditCardToCloud:(const autofill::CreditCard&)creditCard
+                        legalMessage:
+                            (std::unique_ptr<base::DictionaryValue>)legalMessage
+               saveCreditCardOptions:
+                   (autofill::AutofillClient::SaveCreditCardOptions)
+                       saveCreditCardOptions
+                            callback:
+                                (autofill::AutofillClient::
+                                     UploadSaveCardPromptCallback)callback {
+  if (![_delegate respondsToSelector:@selector(autofillController:
+                                          saveCreditCardWithSaver:)]) {
+    return;
+  }
+  autofill::LegalMessageLines legalMessageLines;
+  if (!autofill::LegalMessageLine::Parse(*legalMessage, &legalMessageLines,
+                                         /*escape_apostrophes=*/true)) {
+    return;
+  }
+  CWVCreditCardSaver* saver = [[CWVCreditCardSaver alloc]
+            initWithCreditCard:creditCard
+                   saveOptions:saveCreditCardOptions
+             willUploadToCloud:YES
+             legalMessageLines:legalMessageLines
+      uploadSavePromptCallback:std::move(callback)
+       localSavePromptCallback:autofill::AutofillClient::
+                                   LocalSaveCardPromptCallback()];
+  [_delegate autofillController:self saveCreditCardWithSaver:saver];
+  _saver = saver;
+}
+
+- (void)handleCreditCardUploadCompleted:(BOOL)cardSaved {
+  [_saver handleCreditCardUploadCompleted:cardSaved];
 }
 
 - (void)
@@ -463,7 +505,11 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
 }
 
 - (void)loadRiskData:(base::OnceCallback<void(const std::string&)>)callback {
-  [_verifier loadRiskData:std::move(callback)];
+  if (_verifier) {
+    [_verifier loadRiskData:std::move(callback)];
+  } else if (_saver) {
+    [_saver loadRiskData:std::move(callback)];
+  }
 }
 
 - (void)propagateAutofillPredictionsForForms:

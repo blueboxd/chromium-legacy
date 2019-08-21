@@ -68,7 +68,7 @@ TEST(StoragePartitionConfigTest, OperatorLess) {
 }
 
 TEST(StoragePartitionImplMapTest, GarbageCollect) {
-  TestBrowserThreadBundle thread_bundle;
+  BrowserTaskEnvironment task_environment;
   TestBrowserContext browser_context;
   StoragePartitionImplMap storage_partition_impl_map(&browser_context);
 

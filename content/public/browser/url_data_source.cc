@@ -91,6 +91,10 @@ std::string URLDataSource::GetContentSecurityPolicyImgSrc() {
   return std::string();
 }
 
+std::string URLDataSource::GetContentSecurityPolicyWorkerSrc() {
+  return std::string();
+}
+
 bool URLDataSource::ShouldDenyXFrameOptions() {
   return true;
 }

@@ -91,7 +91,7 @@ class ControllerTest : public content::RenderViewHostTestHarness {
     mock_service_ = service.get();
 
     controller_ = std::make_unique<Controller>(
-        web_contents(), &fake_client_, thread_bundle()->GetMockTickClock(),
+        web_contents(), &fake_client_, task_environment()->GetMockTickClock(),
         std::move(service));
     controller_->SetWebControllerForTest(std::move(web_controller));
 
@@ -195,8 +195,8 @@ class ControllerTest : public content::RenderViewHostTestHarness {
 
   UiDelegate* GetUiDelegate() { return controller_.get(); }
 
-  // |thread_bundle_| must be the first field, to make sure that everything runs
-  // in the same task environment.
+  // |task_environment_| must be the first field, to make sure that everything
+  // runs in the same task environment.
   base::test::ScopedFeatureList scoped_feature_list_;
   base::TimeTicks now_;
   std::vector<AutofillAssistantState> states_;
@@ -715,13 +715,13 @@ TEST_F(ControllerTest, KeepCheckingForElement) {
   EXPECT_EQ(AutofillAssistantState::STARTING, controller_->GetState());
 
   for (int i = 0; i < 3; i++) {
-    thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+    task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
     EXPECT_EQ(AutofillAssistantState::STARTING, controller_->GetState());
   }
 
   EXPECT_CALL(*mock_web_controller_, OnElementCheck(_, _))
       .WillRepeatedly(RunOnceCallback<1>(true));
-  thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   EXPECT_EQ(AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT,
             controller_->GetState());
@@ -754,7 +754,7 @@ TEST_F(ControllerTest, ScriptTimeoutError) {
   Start("http://a.example.com/path");
   for (int i = 0; i < 30; i++) {
     EXPECT_EQ(AutofillAssistantState::STARTING, controller_->GetState());
-    thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+    task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
   }
   EXPECT_EQ(AutofillAssistantState::STOPPED, controller_->GetState());
   EXPECT_EQ("I give up", controller_->GetStatusMessage());
@@ -788,13 +788,13 @@ TEST_F(ControllerTest, ScriptTimeoutWarning) {
   // Warning after 4s, script succeeds and the client continues to wait.
   for (int i = 0; i < 4; i++) {
     EXPECT_EQ(AutofillAssistantState::STARTING, controller_->GetState());
-    thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+    task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
   }
   EXPECT_EQ(AutofillAssistantState::STARTING, controller_->GetState());
   EXPECT_EQ("This is slow", controller_->GetStatusMessage());
   for (int i = 0; i < 10; i++) {
     EXPECT_EQ(AutofillAssistantState::STARTING, controller_->GetState());
-    thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+    task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
   }
 }
 
@@ -934,7 +934,7 @@ TEST_F(ControllerTest, WaitForNavigationActionTimesOut) {
 
   // No navigation event happened within the action timeout and the script ends.
   EXPECT_THAT(processed_actions_capture, SizeIs(0));
-  thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   ASSERT_THAT(processed_actions_capture, SizeIs(2));
   EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[0].status());
@@ -972,7 +972,7 @@ TEST_F(ControllerTest, WaitForNavigationActionStartWithinTimeout) {
           GURL("http://a.example.com/path"), web_contents()->GetMainFrame());
   simulator->SetTransition(ui::PAGE_TRANSITION_LINK);
   simulator->Start();
-  thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   // Navigation finishes and the script ends.
   EXPECT_THAT(processed_actions_capture, SizeIs(0));

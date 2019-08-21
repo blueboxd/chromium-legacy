@@ -568,7 +568,7 @@ void ChromeBrowserMainPartsWin::PostProfileInit() {
       !ModuleBlacklistCacheUpdater::IsBlockingEnabled())
     ThirdPartyConflictsManager::DisableThirdPartyModuleBlocking(
         base::CreateTaskRunner(
-            {base::TaskPriority::BEST_EFFORT,
+            {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
              base::MayBlock()})
             .get());

@@ -111,7 +111,7 @@ class WilcoDtcSupportdNotificationControllerTest
   }
 
   // CreateTestingProfile must be called on Chrome_UIThread
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager profile_manager_;
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
   std::unique_ptr<WilcoDtcSupportdNotificationController>

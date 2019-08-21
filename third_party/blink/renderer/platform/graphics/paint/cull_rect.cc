@@ -58,7 +58,7 @@ static void MapRect(const TransformPaintPropertyNode& transform,
     float_rect.Move(-transform.Translation2D());
     rect = EnclosingIntRect(float_rect);
   } else {
-    rect = transform.Matrix().Inverse().MapRect(rect);
+    rect = transform.MatrixWithOriginApplied().Inverse().MapRect(rect);
   }
 }
 

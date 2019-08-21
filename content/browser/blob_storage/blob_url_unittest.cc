@@ -72,7 +72,7 @@ const storage::FileSystemType kFileSystemType =
 class BlobURLTest : public testing::Test {
  public:
   BlobURLTest()
-      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP),
         blob_data_(new BlobDataBuilder("uuid")),
         blob_uuid_(blob_data_->uuid()),
         response_error_code_(net::OK),
@@ -295,7 +295,7 @@ class BlobURLTest : public testing::Test {
   base::Time temp_file_system_file_modification_time1_;
   base::Time temp_file_system_file_modification_time2_;
 
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
 
   storage::BlobStorageContext blob_context_;

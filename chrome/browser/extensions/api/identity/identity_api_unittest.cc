@@ -17,7 +17,7 @@ namespace extensions {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 // Tests that all accounts in extensions is only enabled when Dice is enabled.
 TEST(IdentityApiTest, DiceAllAccountsExtensions) {
-  content::TestBrowserThreadBundle test_thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(kExtensionsAllAccountsFeature);
 
@@ -43,7 +43,7 @@ TEST(IdentityApiTest, DiceAllAccountsExtensions) {
 #endif
 
 TEST(IdentityApiTest, AllAccountsExtensionDisabled) {
-  content::TestBrowserThreadBundle test_thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(kExtensionsAllAccountsFeature);

@@ -1683,6 +1683,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
         // Non-download navigation was cancelled because WKWebView has opened a
         // Universal Link and called webView:didFailProvisionalNavigation:.
         self.navigationManagerImpl->DiscardNonCommittedItems();
+        [self.navigationStates removeNavigation:navigation];
       }
       self.webStateImpl->SetIsLoading(false);
       return;

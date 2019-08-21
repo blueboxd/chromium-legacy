@@ -57,7 +57,9 @@
 
 @media (prefers-color-scheme: dark) {
   .overlay-dialog::backdrop {
-    background-color: rgb(var(--dark-mode-dialog-rgb));
+    /* Equivalent to --dark-mode-dialog-rgb. CSS variables cannot be used in
+     * pseudo elements. */
+    background-color: rgb(41, 42, 45);
   }
 }
 

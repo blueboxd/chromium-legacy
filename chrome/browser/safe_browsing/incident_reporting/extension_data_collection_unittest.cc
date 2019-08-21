@@ -145,7 +145,7 @@ class ExtensionDataCollectionTest : public testing::Test {
     // uses it in destructor.
     test_user_manager_.reset();
     // Finish any pending tasks before deleting the TestingBrowserProcess.
-    browser_thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 #endif
     profile_manager_.reset();
     TestingBrowserProcess::DeleteInstance();
@@ -179,7 +179,7 @@ class ExtensionDataCollectionTest : public testing::Test {
     return std::make_unique<ExtensionTestingProfile>(profile);
   }
 
-  content::TestBrowserThreadBundle browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
 
  private:

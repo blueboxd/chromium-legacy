@@ -15,11 +15,13 @@
 #include "device/vr/test/test_hook.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/quaternion.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace device {
 
 namespace {
 
+constexpr char kDefaultRuntimeName[] = "OpenXR";
 constexpr XrSystemId kInvalidSystem = -1;
 // Only supported view configuration:
 constexpr XrViewConfigurationType kSupportedViewConfiguration =
@@ -324,8 +326,7 @@ XrResult OpenXrApiWrapper::CreateSwapchain() {
 
   XrResult xr_result;
 
-  uint32_t width, height;
-  GetViewSize(&width, &height);
+  gfx::Size view_size = GetViewSize();
 
   XrSwapchainCreateInfo swapchain_create_info = {XR_TYPE_SWAPCHAIN_CREATE_INFO};
   swapchain_create_info.arraySize = 1;
@@ -334,8 +335,8 @@ XrResult OpenXrApiWrapper::CreateSwapchain() {
   // WebVR and WebXR textures are double wide, meaning the texture contains
   // both the left and the right eye, so the width of the swapchain texture
   // needs to be doubled.
-  swapchain_create_info.width = width * 2;
-  swapchain_create_info.height = height;
+  swapchain_create_info.width = view_size.width() * 2;
+  swapchain_create_info.height = view_size.height();
   swapchain_create_info.mipCount = 1;
   swapchain_create_info.faceCount = 1;
   swapchain_create_info.sampleCount = GetRecommendedSwapchainSampleCount();
@@ -475,8 +476,7 @@ XrResult OpenXrApiWrapper::UpdateProjectionLayers() {
   RETURN_IF_XR_FAILED(xrLocateViews(session_, &view_locate_info, &view_state,
                                     views_.size(), &view_count, views_.data()));
 
-  uint32_t width, height;
-  GetViewSize(&width, &height);
+  gfx::Size view_size = GetViewSize();
 
   DCHECK(view_count <= views_.size());
   DCHECK(view_count <= layer_projection_views_.size());
@@ -494,14 +494,27 @@ XrResult OpenXrApiWrapper::UpdateProjectionLayers() {
     // Since we're in double wide mode, the texture
     // array only has one texture and is always index 0.
     layer_projection_view.subImage.imageArrayIndex = 0;
-    layer_projection_view.subImage.imageRect.extent.width = width;
-    layer_projection_view.subImage.imageRect.extent.height = height;
+    layer_projection_view.subImage.imageRect.extent.width = view_size.width();
+    layer_projection_view.subImage.imageRect.extent.height = view_size.height();
     // x coordinates is 0 for first view, 0 + i*width for ith view.
-    layer_projection_view.subImage.imageRect.offset.x = width * view_index;
+    layer_projection_view.subImage.imageRect.offset.x =
+        view_size.width() * view_index;
     layer_projection_view.subImage.imageRect.offset.y = 0;
   }
 
   return xr_result;
+}
+
+bool OpenXrApiWrapper::HasPosition() const {
+  DCHECK(IsInitialized());
+
+  XrSystemProperties system_properties = {XR_TYPE_SYSTEM_PROPERTIES};
+  if (XR_SUCCEEDED(
+          xrGetSystemProperties(instance_, system_, &system_properties))) {
+    return system_properties.trackingProperties.positionTracking;
+  }
+
+  return false;
 }
 
 // Returns the next predicted display time in nanoseconds.
@@ -558,14 +571,14 @@ XrResult OpenXrApiWrapper::GetLuid(LUID* luid) const {
   return xr_result;
 }
 
-void OpenXrApiWrapper::GetViewSize(uint32_t* width, uint32_t* height) const {
+gfx::Size OpenXrApiWrapper::GetViewSize() const {
   DCHECK(IsInitialized());
   CHECK(view_configs_.size() == kNumViews);
 
-  *width = std::max(view_configs_[0].recommendedImageRectWidth,
-                    view_configs_[1].recommendedImageRectWidth);
-  *height = std::max(view_configs_[0].recommendedImageRectHeight,
-                     view_configs_[1].recommendedImageRectHeight);
+  return gfx::Size(std::max(view_configs_[0].recommendedImageRectWidth,
+                            view_configs_[1].recommendedImageRectWidth),
+                   std::max(view_configs_[0].recommendedImageRectHeight,
+                            view_configs_[1].recommendedImageRectHeight));
 }
 
 uint32_t OpenXrApiWrapper::GetRecommendedSwapchainSampleCount() const {
@@ -582,6 +595,28 @@ uint32_t OpenXrApiWrapper::GetRecommendedSwapchainSampleCount() const {
 
   return std::min_element(start, end, compareSwapchainCounts)
       ->recommendedSwapchainSampleCount;
+}
+
+std::string OpenXrApiWrapper::GetRuntimeName() const {
+  DCHECK(HasInstance());
+
+  XrInstanceProperties instance_properties = {XR_TYPE_INSTANCE_PROPERTIES};
+  if (XR_SUCCEEDED(xrGetInstanceProperties(instance_, &instance_properties))) {
+    return instance_properties.runtimeName;
+  } else {
+    return kDefaultRuntimeName;
+  }
+}
+
+const XrView& OpenXrApiWrapper::GetView(uint32_t index) const {
+  DCHECK(HasSession());
+
+  // XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO so the OpenXR runtime must have
+  // returned two view configurations.
+  DCHECK(views_.size() == kNumViews);
+  DCHECK(index < kNumViews);
+
+  return views_[index];
 }
 
 VRTestHook* OpenXrApiWrapper::test_hook_ = nullptr;

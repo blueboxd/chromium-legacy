@@ -141,6 +141,8 @@ class InfoTable extends GamepadTable {
     this.mapping_cell = this.AddRow(["mapping", gamepad.mapping])[1];
     this.index_cell = this.AddRow(["index", gamepad.index])[1];
     this.profiles_cell = this.AddRow(["profiles", this.profiles_string])[1];
+
+    this.timestamp_cell = this.AddRow(["timestamp", gamepad.timestamp])[1];
   }
 
   update(gamepad, profiles) {
@@ -161,6 +163,11 @@ class InfoTable extends GamepadTable {
       this.profiles_cell.innerHTML = profiles_string;
       this.profiles_string = profiles_string;
     }
+
+    // Most recent time that this gamepad's input state (buttons + axes) has
+    // changed. Measured as milliseconds relative to the page's navigation
+    // start.
+    this.timestamp_cell.innerHTML = gamepad.timestamp.toFixed(3);
   }
 }
 

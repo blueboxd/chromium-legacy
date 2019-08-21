@@ -418,7 +418,7 @@ class OfflinePageRequestHandlerTest : public testing::Test {
   void CreateFileWithContentOnIO(const std::string& content,
                                  const base::Closure& callback);
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager profile_manager_;
   TestingProfile* profile_;
   std::unique_ptr<content::WebContents> web_contents_;
@@ -435,7 +435,7 @@ class OfflinePageRequestHandlerTest : public testing::Test {
   // fresh GCM token automatically. These two lines mock out InstanceID (the
   // component which actually requests the token from play services). Without
   // this, each test takes an extra 30s waiting on the token (because
-  // content::TestBrowserThreadBundle tries to finish all pending tasks before
+  // content::BrowserTaskEnvironment tries to finish all pending tasks before
   // ending the test).
   instance_id::InstanceIDAndroid::ScopedBlockOnAsyncTasksForTesting
       block_async_;
@@ -464,7 +464,7 @@ class OfflinePageRequestHandlerTest : public testing::Test {
 };
 
 OfflinePageRequestHandlerTest::OfflinePageRequestHandlerTest()
-    : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD),
+    : task_environment_(content::BrowserTaskEnvironment::REAL_IO_THREAD),
       profile_manager_(TestingBrowserProcess::GetGlobal()),
       last_offline_id_(0),
       response_(net::ERR_IO_PENDING),

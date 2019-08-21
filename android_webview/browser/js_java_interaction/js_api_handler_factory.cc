@@ -36,8 +36,8 @@ JsApiHandlerFactory* JsApiHandlerFactory::FromWebContents(
 }
 
 // static
-void JsApiHandlerFactory::BindJsApiHandler(
-    mojo::PendingAssociatedReceiver<mojom::JsApiHandler> pending_receiver,
+void JsApiHandlerFactory::BindJsToJavaMessaging(
+    mojo::PendingAssociatedReceiver<mojom::JsToJavaMessaging> pending_receiver,
     content::RenderFrameHost* render_frame_host) {
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);

@@ -1421,7 +1421,7 @@ bool LayerTreeImpl::UpdateDrawProperties(
     }
   }
 
-  {
+  if (settings().enable_occlusion) {
     TRACE_EVENT2("cc,benchmark",
                  "LayerTreeImpl::UpdateDrawProperties::Occlusion", "IsActive",
                  IsActiveTree(), "SourceFrameNumber", source_frame_number_);
@@ -1478,6 +1478,10 @@ bool LayerTreeImpl::UpdateDrawProperties(
 
     unoccluded_screen_space_region_ =
         occlusion_tracker.ComputeVisibleRegionInScreen(this);
+  } else {
+    // No occlusion, entire root content rect is unoccluded.
+    unoccluded_screen_space_region_ =
+        Region(RootRenderSurface()->content_rect());
   }
 
   // Resourceless draw do not need tiles and should not affect existing tile

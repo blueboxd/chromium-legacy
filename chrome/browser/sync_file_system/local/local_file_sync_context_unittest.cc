@@ -58,7 +58,7 @@ const char kOrigin2[] = "http://chromium.org";
 class LocalFileSyncContextTest : public testing::Test {
  protected:
   LocalFileSyncContextTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD),
+      : task_environment_(content::BrowserTaskEnvironment::REAL_IO_THREAD),
         status_(SYNC_FILE_ERROR_FAILED),
         file_error_(base::File::FILE_ERROR_FAILED),
         async_modify_finished_(false),
@@ -346,7 +346,7 @@ class LocalFileSyncContextTest : public testing::Test {
   std::unique_ptr<leveldb::Env> in_memory_env_;
 
   // These need to remain until the very end.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;

@@ -23,6 +23,9 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
 
   map->Add<blink::mojom::FileSystemManager>(base::BindRepeating(
       &RenderFrameHostImpl::GetFileSystemManager, base::Unretained(host)));
+
+  map->Add<blink::mojom::IdleManager>(base::BindRepeating(
+      &RenderFrameHostImpl::GetIdleManager, base::Unretained(host)));
 }
 
 void PopulateBinderMapWithContext(
@@ -48,7 +51,10 @@ const url::Origin& GetContextForHost(DedicatedWorkerHost* host) {
 }
 
 void PopulateDedicatedWorkerBinders(DedicatedWorkerHost* host,
-                                    service_manager::BinderMap* map) {}
+                                    service_manager::BinderMap* map) {
+  map->Add<blink::mojom::IdleManager>(base::BindRepeating(
+      &DedicatedWorkerHost::CreateIdleManager, base::Unretained(host)));
+}
 
 void PopulateBinderMapWithContext(
     DedicatedWorkerHost* host,

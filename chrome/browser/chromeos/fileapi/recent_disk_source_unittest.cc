@@ -90,7 +90,7 @@ class RecentDiskSourceTest : public testing::Test {
     return files;
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   const GURL origin_;
   std::unique_ptr<TestingProfile> profile_;
   base::ScopedTempDir temp_dir_;

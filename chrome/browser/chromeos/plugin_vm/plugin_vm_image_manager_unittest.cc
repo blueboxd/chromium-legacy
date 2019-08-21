@@ -125,7 +125,7 @@ class PluginVmImageManagerTest : public testing::Test {
 
   void ProcessImageUntilImporting() {
     manager_->StartDownload();
-    test_browser_thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void ProcessImageUntilConfigured() {
@@ -135,7 +135,7 @@ class PluginVmImageManagerTest : public testing::Test {
     manager_->SetDownloadedPluginVmImageArchiveForTesting(
         fake_downloaded_plugin_vm_image_archive_);
     manager_->StartImport();
-    test_browser_thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   base::FilePath CreateZipFile() {
@@ -145,7 +145,7 @@ class PluginVmImageManagerTest : public testing::Test {
     return zip_file_path;
   }
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<PluginVmTestHelper> plugin_vm_test_helper_;
   PluginVmImageManager* manager_;
@@ -192,12 +192,12 @@ TEST_F(PluginVmImageManagerTest, DownloadPluginVmImageParamsTest) {
   EXPECT_EQ(GURL(kUrl), params->request_params.url);
 
   // Finishing image processing.
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   // Faking downloaded file for testing.
   manager_->SetDownloadedPluginVmImageArchiveForTesting(
       fake_downloaded_plugin_vm_image_archive_);
   manager_->StartImport();
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(PluginVmImageManagerTest, OnlyOneImageIsProcessedTest) {
@@ -211,7 +211,7 @@ TEST_F(PluginVmImageManagerTest, OnlyOneImageIsProcessedTest) {
 
   EXPECT_TRUE(manager_->IsProcessingImage());
 
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   // Faking downloaded file for testing.
   manager_->SetDownloadedPluginVmImageArchiveForTesting(
       fake_downloaded_plugin_vm_image_archive_);
@@ -222,7 +222,7 @@ TEST_F(PluginVmImageManagerTest, OnlyOneImageIsProcessedTest) {
 
   EXPECT_TRUE(manager_->IsProcessingImage());
 
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(manager_->IsProcessingImage());
 
@@ -260,7 +260,7 @@ TEST_F(PluginVmImageManagerTest, CanProceedWithANewImageWhenFailedTest) {
   manager_->StartDownload();
   std::string guid = manager_->GetCurrentDownloadGuidForTesting();
   download_service_->SetFailedDownload(guid, false);
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(manager_->IsProcessingImage());
 
@@ -276,7 +276,7 @@ TEST_F(PluginVmImageManagerTest, CancelledDownloadTest) {
 
   manager_->StartDownload();
   manager_->CancelDownload();
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   // Finishing image processing as it should really happen.
   manager_->OnDownloadCancelled();
 
@@ -292,7 +292,7 @@ TEST_F(PluginVmImageManagerTest, ImportNonExistingImageTest) {
   ProcessImageUntilImporting();
   // Should fail as fake downloaded file isn't set.
   manager_->StartImport();
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   histogram_tester_->ExpectUniqueSample(kPluginVmImageDownloadedSizeHistogram,
                                         kDownloadedPluginVmImageSizeInMb, 1);
@@ -313,7 +313,7 @@ TEST_F(PluginVmImageManagerTest, CancelledImportTest) {
       fake_downloaded_plugin_vm_image_archive_);
   manager_->StartImport();
   manager_->CancelImport();
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(PluginVmImageManagerTest, EmptyPluginVmImageUrlTest) {

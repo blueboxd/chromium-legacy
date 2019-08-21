@@ -427,9 +427,10 @@ TEST_F(IDBRequestTest, ConnectionsAfterStopping) {
 class AsyncTraceStateForTesting : public IDBRequest::AsyncTraceState {
  public:
   AsyncTraceStateForTesting() : IDBRequest::AsyncTraceState() {}
-  AsyncTraceStateForTesting(AsyncTraceStateForTesting&& other)
+  AsyncTraceStateForTesting(AsyncTraceStateForTesting&& other) noexcept
       : IDBRequest::AsyncTraceState(std::move(other)) {}
-  AsyncTraceStateForTesting& operator=(AsyncTraceStateForTesting&& rhs) {
+  AsyncTraceStateForTesting& operator=(
+      AsyncTraceStateForTesting&& rhs) noexcept {
     AsyncTraceState::operator=(std::move(rhs));
     return *this;
   }

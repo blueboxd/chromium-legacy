@@ -22,8 +22,11 @@ class WeakLearningTaskController : public LearningTaskController {
  public:
   WeakLearningTaskController(
       base::WeakPtr<LearningSessionImpl> weak_session,
-      base::SequenceBound<LearningTaskController>* controller)
-      : weak_session_(std::move(weak_session)), controller_(controller) {}
+      base::SequenceBound<LearningTaskController>* controller,
+      const LearningTask& task)
+      : weak_session_(std::move(weak_session)),
+        controller_(controller),
+        task_(task) {}
 
   ~WeakLearningTaskController() override {
     if (!weak_session_)
@@ -63,8 +66,11 @@ class WeakLearningTaskController : public LearningTaskController {
                       id);
   }
 
+  const LearningTask& GetLearningTask() override { return task_; }
+
   base::WeakPtr<LearningSessionImpl> weak_session_;
   base::SequenceBound<LearningTaskController>* controller_;
+  LearningTask task_;
 
   // Set of ids that have been started but not completed / cancelled yet.
   std::set<base::UnguessableToken> outstanding_ids_;
@@ -92,23 +98,25 @@ void LearningSessionImpl::SetTaskControllerFactoryCBForTesting(
 
 std::unique_ptr<LearningTaskController> LearningSessionImpl::GetController(
     const std::string& task_name) {
-  auto iter = task_map_.find(task_name);
-  if (iter == task_map_.end())
+  auto iter = controller_map_.find(task_name);
+  if (iter == controller_map_.end())
     return nullptr;
 
   // If there were any way to replace / destroy a controller other than when we
   // destroy |this|, then this wouldn't be such a good idea.
   return std::make_unique<WeakLearningTaskController>(
-      weak_factory_.GetWeakPtr(), &iter->second);
+      weak_factory_.GetWeakPtr(), &iter->second, task_map_[task_name]);
 }
 
 void LearningSessionImpl::RegisterTask(
     const LearningTask& task,
     SequenceBoundFeatureProvider feature_provider) {
-  DCHECK(task_map_.count(task.name) == 0);
-  task_map_.emplace(
+  DCHECK(controller_map_.count(task.name) == 0);
+  controller_map_.emplace(
       task.name,
       controller_factory_.Run(task_runner_, task, std::move(feature_provider)));
+
+  task_map_.emplace(task.name, task);
 }
 
 }  // namespace learning

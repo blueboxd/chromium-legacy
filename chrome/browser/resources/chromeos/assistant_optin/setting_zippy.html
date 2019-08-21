@@ -13,7 +13,7 @@
     <template is="dom-if" if="[[expandStyle]]">
       <cr-expand-button expanded="{{expanded_}}">
         <div id="container" class="flex layout horizontal"
-            popupStyle$="[[popupStyle]]">
+            expandStyle$="[[expandStyle]]">
           <div class="icon">
             <webview class="icon-view" src="[[iconSrc]]" tabindex="-1">
             </webview>
@@ -22,8 +22,7 @@
             <div class="sub-title">
               <content select=".zippy-title"></content>
             </div>
-            <div class="content" toggleStyle$="[[toggleStyle]]"
-                popupStyle$="[[popupStyle]]">
+            <div class="content">
               <content select=".zippy-description, .learn-more-link"></content>
             </div>
           </div>
@@ -37,7 +36,7 @@
     </template>
     <template is="dom-if" if="[[!expandStyle]]">
       <div id="container" class="flex layout horizontal"
-          popupStyle$="[[popupStyle]]">
+          expandStyle$="[[expandStyle]]">
         <div class="icon">
           <webview class="icon-view" src="[[iconSrc]]" tabindex="-1"></webview>
         </div>
@@ -45,8 +44,7 @@
           <div class="sub-title">
             <content select=".zippy-title"></content>
           </div>
-          <div class="content" toggleStyle$="[[toggleStyle]]"
-              popupStyle$="[[popupStyle]]">
+          <div id="description" class="content">
             <content select=".zippy-description, .learn-more-link"></content>
           </div>
         </div>

@@ -109,7 +109,7 @@ TEST(NetworkChangeManagerClientTest, ConnectionTypeFromShill) {
 TEST(NetworkChangeManagerClientTest,
      NetworkChangeNotifierConnectionTypeUpdated) {
   // Create a NetworkChangeNotifier with a non-NONE connection type.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<net::NetworkChangeNotifierPosix> network_change_notifier(
       static_cast<net::NetworkChangeNotifierPosix*>(
           net::NetworkChangeNotifier::Create().release()));
@@ -216,7 +216,7 @@ class NetworkChangeManagerClientUpdateTest : public testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   NetworkState default_network_;
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   std::unique_ptr<NetworkChangeManagerClient> proxy_;

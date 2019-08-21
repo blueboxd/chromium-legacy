@@ -3684,6 +3684,30 @@ TEST_F(AXPlatformNodeWinTest, TestUIAGetPropertyValue_Histogram) {
   }
 }
 
+TEST_F(AXPlatformNodeWinTest, UIAGetPropertyValueIsDialog) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.child_ids = {2, 3};
+
+  AXNodeData alert_dialog;
+  alert_dialog.id = 2;
+  alert_dialog.role = ax::mojom::Role::kAlertDialog;
+
+  AXNodeData dialog;
+  dialog.id = 3;
+  dialog.role = ax::mojom::Role::kDialog;
+
+  Init(root, alert_dialog, dialog);
+
+  EXPECT_UIA_BOOL_EQ(GetRootIRawElementProviderSimple(), UIA_IsDialogPropertyId,
+                     false);
+  EXPECT_UIA_BOOL_EQ(GetIRawElementProviderSimpleFromChildIndex(0),
+                     UIA_IsDialogPropertyId, true);
+  EXPECT_UIA_BOOL_EQ(GetIRawElementProviderSimpleFromChildIndex(1),
+                     UIA_IsDialogPropertyId, true);
+}
+
 TEST_F(AXPlatformNodeWinTest, TestUIAGetControllerForPropertyId) {
   AXNodeData root;
   root.id = 1;

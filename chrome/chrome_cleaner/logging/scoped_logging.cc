@@ -65,7 +65,7 @@ ScopedLogging::ScopedLogging(base::FilePath::StringPieceType suffix) {
 
   logging::LoggingSettings logging_settings;
   logging_settings.logging_dest = logging::LOG_TO_FILE;
-  logging_settings.log_file = log_file_path.value().c_str();
+  logging_settings.log_file_path = log_file_path.value().c_str();
 
   bool success = logging::InitLogging(logging_settings);
   DCHECK(success);

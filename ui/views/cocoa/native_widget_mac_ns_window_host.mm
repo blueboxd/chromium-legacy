@@ -302,7 +302,7 @@ NativeWidgetMacNSWindowHost::NativeWidgetMacNSWindowHost(NativeWidgetMac* owner)
       remote_ns_window_host_binding_(this) {
   DCHECK(GetIdToWidgetHostImplMap().find(widget_id_) ==
          GetIdToWidgetHostImplMap().end());
-  GetIdToWidgetHostImplMap().insert(std::make_pair(widget_id_, this));
+  GetIdToWidgetHostImplMap().emplace(widget_id_, this);
   DCHECK(owner);
 }
 

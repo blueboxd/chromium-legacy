@@ -221,7 +221,7 @@ class FormSuggestionControllerTest : public PlatformTest {
   FormInputAccessoryMediator* accessory_mediator_;
 
   // The associated test Web Threads.
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
 
   // The fake WebState to simulate navigation and JavaScript events.
   web::TestWebState test_web_state_;

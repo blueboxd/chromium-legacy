@@ -90,7 +90,7 @@ class VersionUpdaterCrosTest : public ::testing::Test {
     NetworkHandler::Shutdown();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<VersionUpdater> version_updater_;
   FakeUpdateEngineClient* fake_update_engine_client_;  // Not owned.
 

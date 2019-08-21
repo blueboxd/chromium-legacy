@@ -36,8 +36,6 @@ FeaturePodButton* NightLightFeaturePodController::CreateButton() {
       Shell::Get()->session_controller()->ShouldEnableSettings());
   button_->SetLabel(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NIGHT_LIGHT_BUTTON_LABEL));
-  button_->SetIconTooltip(l10n_util::GetStringUTF16(
-      IDS_ASH_STATUS_TRAY_NIGHT_LIGHT_TOGGLE_TOOLTIP));
   button_->SetLabelTooltip(l10n_util::GetStringUTF16(
       IDS_ASH_STATUS_TRAY_NIGHT_LIGHT_SETTINGS_TOOLTIP));
   UpdateButton();
@@ -76,6 +74,12 @@ void NightLightFeaturePodController::UpdateButton() {
   button_->SetSubLabel(l10n_util::GetStringUTF16(
       is_enabled ? IDS_ASH_STATUS_TRAY_NIGHT_LIGHT_ON_STATE
                  : IDS_ASH_STATUS_TRAY_NIGHT_LIGHT_OFF_STATE));
+
+  base::string16 tooltip_state = l10n_util::GetStringUTF16(
+      is_enabled ? IDS_ASH_STATUS_TRAY_NIGHT_LIGHT_ENABLED_STATE_TOOLTIP
+                 : IDS_ASH_STATUS_TRAY_NIGHT_LIGHT_DISABLED_STATE_TOOLTIP);
+  button_->SetIconTooltip(l10n_util::GetStringFUTF16(
+      IDS_ASH_STATUS_TRAY_NIGHT_LIGHT_TOGGLE_TOOLTIP, tooltip_state));
 }
 
 }  // namespace ash

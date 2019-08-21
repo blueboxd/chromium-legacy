@@ -85,7 +85,7 @@ class IncognitoWindowTrackerEventTest : public testing::Test {
   std::unique_ptr<FakeIncognitoWindowTracker> incognito_window_tracker_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(IncognitoWindowTrackerEventTest);
 };
@@ -169,7 +169,7 @@ class IncognitoWindowTrackerTest : public testing::Test {
  private:
   std::unique_ptr<TestingProfileManager> testing_profile_manager_;
   base::test::ScopedFeatureList scoped_feature_list_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(IncognitoWindowTrackerTest);
 };

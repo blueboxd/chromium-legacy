@@ -60,7 +60,7 @@ class TraceWrapperV8Reference {
   }
 
   // Move support.
-  TraceWrapperV8Reference(TraceWrapperV8Reference&& other)
+  TraceWrapperV8Reference(TraceWrapperV8Reference&& other) noexcept
       : handle_(std::move(other.handle_)) {
     WriteBarrier();
   }

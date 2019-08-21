@@ -94,7 +94,7 @@ class ProfileReportGeneratorTest : public ::testing::Test {
   ProfileReportGenerator generator_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager profile_manager_;
   TestingProfile* profile_;
 

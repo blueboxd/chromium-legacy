@@ -309,7 +309,7 @@ class CookieManagerTest : public testing::Test {
         std::move(store), nullptr /* netlog */);
     cookie_service_ = std::make_unique<CookieManager>(
         cookie_monster_.get(), std::move(cleanup_store), nullptr);
-    cookie_service_->AddRequest(mojo::MakeRequest(&cookie_service_ptr_));
+    cookie_service_->AddReceiver(mojo::MakeRequest(&cookie_service_ptr_));
     service_wrapper_ =
         std::make_unique<SynchronousCookieManager>(cookie_service_ptr_.get());
     cookie_service_ptr_.set_connection_error_handler(base::BindOnce(
@@ -1684,8 +1684,9 @@ class CookieChangeListener : public mojom::CookieChangeListener {
     mojom::CookieChangeCause cause;
   };
 
-  CookieChangeListener(mojom::CookieChangeListenerRequest request)
-      : run_loop_(nullptr), binding_(this, std::move(request)) {}
+  CookieChangeListener(
+      mojo::PendingReceiver<mojom::CookieChangeListener> receiver)
+      : run_loop_(nullptr), receiver_(this, std::move(receiver)) {}
 
   // Blocks until the listener observes a cookie change.
   void WaitForChange() {
@@ -1717,7 +1718,7 @@ class CookieChangeListener : public mojom::CookieChangeListener {
   // Loop to signal on receiving a notification if not null.
   base::RunLoop* run_loop_;
 
-  mojo::Binding<mojom::CookieChangeListener> binding_;
+  mojo::Receiver<mojom::CookieChangeListener> receiver_;
 };
 
 TEST_F(CookieManagerTest, AddCookieChangeListener) {
@@ -1727,13 +1728,12 @@ TEST_F(CookieManagerTest, AddCookieChangeListener) {
   const std::string listener_cookie_name("Cookie_Name");
   ASSERT_EQ(listener_url.host(), listener_url_host);
 
-  mojom::CookieChangeListenerPtr listener_ptr;
-  mojom::CookieChangeListenerRequest request(mojo::MakeRequest(&listener_ptr));
-
-  CookieChangeListener listener(std::move(request));
+  mojo::PendingRemote<mojom::CookieChangeListener> listener_remote;
+  CookieChangeListener listener(
+      listener_remote.InitWithNewPipeAndPassReceiver());
 
   cookie_service_client()->AddCookieChangeListener(
-      listener_url, listener_cookie_name, std::move(listener_ptr));
+      listener_url, listener_cookie_name, std::move(listener_remote));
 
   EXPECT_EQ(0u, listener.observed_changes().size());
 
@@ -1809,12 +1809,11 @@ TEST_F(CookieManagerTest, AddGlobalChangeListener) {
   const std::string kThisETLDP1 = "this.com";
   const std::string kThatHost = "www.that.com";
 
-  mojom::CookieChangeListenerPtr listener_ptr;
-  mojom::CookieChangeListenerRequest request(mojo::MakeRequest(&listener_ptr));
+  mojo::PendingRemote<mojom::CookieChangeListener> listener_remote;
+  CookieChangeListener listener(
+      listener_remote.InitWithNewPipeAndPassReceiver());
 
-  CookieChangeListener listener(std::move(request));
-
-  cookie_service_client()->AddGlobalChangeListener(std::move(listener_ptr));
+  cookie_service_client()->AddGlobalChangeListener(std::move(listener_remote));
 
   EXPECT_EQ(0u, listener.observed_changes().size());
 
@@ -1893,19 +1892,17 @@ TEST_F(CookieManagerTest, ListenerDestroyed) {
   ASSERT_EQ(listener_url.host(), listener_url_host);
   const std::string listener_cookie_name("Cookie_Name");
 
-  mojom::CookieChangeListenerPtr listener1_ptr;
-  mojom::CookieChangeListenerRequest request1(
-      mojo::MakeRequest(&listener1_ptr));
-  auto listener1 = std::make_unique<CookieChangeListener>(std::move(request1));
+  mojo::PendingRemote<mojom::CookieChangeListener> listener1_remote;
+  auto listener1 = std::make_unique<CookieChangeListener>(
+      listener1_remote.InitWithNewPipeAndPassReceiver());
   cookie_service_client()->AddCookieChangeListener(
-      listener_url, listener_cookie_name, std::move(listener1_ptr));
+      listener_url, listener_cookie_name, std::move(listener1_remote));
 
-  mojom::CookieChangeListenerPtr listener2_ptr;
-  mojom::CookieChangeListenerRequest request2(
-      mojo::MakeRequest(&listener2_ptr));
-  auto listener2 = std::make_unique<CookieChangeListener>(std::move(request2));
+  mojo::PendingRemote<mojom::CookieChangeListener> listener2_remote;
+  auto listener2 = std::make_unique<CookieChangeListener>(
+      listener2_remote.InitWithNewPipeAndPassReceiver());
   cookie_service_client()->AddCookieChangeListener(
-      listener_url, listener_cookie_name, std::move(listener2_ptr));
+      listener_url, listener_cookie_name, std::move(listener2_remote));
 
   // Add a cookie and receive a notification on both interfaces.
   service_wrapper()->SetCanonicalCookie(

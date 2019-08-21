@@ -118,6 +118,10 @@ class TabController {
   // stacking tabs; if it is empty, no clipping is needed.
   virtual bool ShouldPaintTab(const Tab* tab, float scale, SkPath* clip) = 0;
 
+  // Returns the background offset used by inactive tabs to match the frame
+  // image.
+  virtual int GetBackgroundOffset() const = 0;
+
   // Returns the thickness of the stroke around the active tab in DIP.  Returns
   // 0 if there is no stroke.
   virtual int GetStrokeThickness() const = 0;

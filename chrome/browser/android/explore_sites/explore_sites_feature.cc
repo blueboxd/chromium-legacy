@@ -20,6 +20,7 @@ const char kExploreSitesVariationMostLikelyTile[] = "mostLikelyTile";
 
 const char kExploreSitesMostLikelyVariationParameterName[] =
     "mostLikelyVariation";
+const char kExploreSitesHeadersExperimentParameterName[] = "exp";
 
 const char kExploreSitesMostLikelyVariationIconArrow[] = "arrowIcon";
 const char kExploreSitesMostLikelyVariationIconDots[] = "dotsIcon";
@@ -29,6 +30,8 @@ const char kExploreSitesDenseVariationParameterName[] = "denseVariation";
 const char kExploreSitesDenseVariationOriginal[] = "original";
 const char kExploreSitesDenseVariationDenseTitleBottom[] = "titleBottom";
 const char kExploreSitesDenseVariationDenseTitleRight[] = "titleRight";
+
+const char kExploreSitesGamesTopExperiment[] = "games-top";
 
 ExploreSitesVariation GetExploreSitesVariation() {
   if (base::FeatureList::IsEnabled(kExploreSites)) {

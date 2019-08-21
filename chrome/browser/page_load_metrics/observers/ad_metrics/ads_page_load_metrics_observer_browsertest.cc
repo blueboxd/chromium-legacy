@@ -31,6 +31,7 @@
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
 #include "components/subresource_filter/core/mojom/subresource_filter.mojom.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -635,8 +636,11 @@ class AdsPageLoadMetricsObserverResourceBrowserTest
     : public subresource_filter::SubresourceFilterBrowserTest {
  public:
   AdsPageLoadMetricsObserverResourceBrowserTest() {
-    scoped_feature_list_.InitWithFeatures(
-        {subresource_filter::kAdTagging, features::kHeavyAdIntervention}, {});
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {{subresource_filter::kAdTagging, {}},
+         {features::kHeavyAdIntervention, {}},
+         {features::kHeavyAdBlocklist, {{"host-threshold", "1"}}}},
+        {});
   }
 
   ~AdsPageLoadMetricsObserverResourceBrowserTest() override {}
@@ -946,9 +950,6 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
 // have a heavy ad.
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
                        HeavyAdInterventionNoHeavyAd_FieldTrialNotActive) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeatureWithParameters(
-      features::kHeavyAdIntervention, {});
   base::HistogramTester histogram_tester;
 
   auto incomplete_resource_response =
@@ -978,6 +979,73 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   EXPECT_FALSE(base::FieldTrialList::IsTrialActive(
       base::FeatureList::GetFieldTrial(features::kHeavyAdIntervention)
           ->trial_name()));
+}
+
+// Verifies that when the blacklist is at threshold, the heavy ad intervention
+// does not trigger.
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
+                       HeavyAdInterventionBlacklistFull_InterventionBlocked) {
+  base::HistogramTester histogram_tester;
+  auto large_resource_1 =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          embedded_test_server(), "/ads_observer/incomplete_resource.js",
+          false /*relative_url_is_prefix*/);
+  auto large_resource_2 =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          embedded_test_server(), "/ads_observer/incomplete_resource.js",
+          false /*relative_url_is_prefix*/);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Create a navigation observer that will watch for the intervention to
+  // navigate the frame.
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::TestNavigationObserver first_frame_observer(web_contents, 3);
+
+  auto waiter = CreateAdsPageLoadMetricsTestWaiter();
+
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "foo.com", "/ad_tagging/frame_factory.html"));
+
+  EXPECT_TRUE(ExecJs(
+      web_contents,
+      "createAdFrame('/ads_observer/ad_with_incomplete_resource.html', '');"));
+
+  // Load a resource large enough to trigger the intervention.
+  LoadLargeResource(large_resource_1.get(),
+                    heavy_ad_thresholds::kMaxNetworkBytes);
+  waiter->AddMinimumNetworkBytesExpectation(
+      heavy_ad_thresholds::kMaxNetworkBytes);
+  waiter->Wait();
+
+  histogram_tester.ExpectUniqueSample(
+      "PageLoad.Clients.Ads.HeavyAds.InterventionType",
+      FrameData::HeavyAdStatus::kNetwork, 1);
+
+  // Wait for the intervention page navigation to finish on the frame.
+  first_frame_observer.Wait();
+
+  // Check that the ad frame was navigated to the intervention page.
+  EXPECT_FALSE(first_frame_observer.last_navigation_succeeded());
+  EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT,
+            first_frame_observer.last_net_error_code());
+
+  EXPECT_TRUE(ExecJs(
+      web_contents,
+      "createAdFrame('/ads_observer/ad_with_incomplete_resource.html', '');"));
+
+  // Load a resource large enough to trigger the intervention.
+  LoadLargeResource(large_resource_2.get(),
+                    heavy_ad_thresholds::kMaxNetworkBytes);
+  waiter->AddMinimumNetworkBytesExpectation(
+      2 * heavy_ad_thresholds::kMaxNetworkBytes);
+  waiter->Wait();
+
+  // Check that the intervention did not trigger on this frame.
+  histogram_tester.ExpectUniqueSample(
+      "PageLoad.Clients.Ads.HeavyAds.InterventionType",
+      FrameData::HeavyAdStatus::kNetwork, 1);
 }
 
 // Verify that UKM metrics are recorded correctly.

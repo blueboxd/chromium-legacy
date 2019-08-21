@@ -25,12 +25,12 @@ class BrowserViewWranglerTest : public PlatformTest {
     chrome_browser_state_ = test_cbs_builder.Build();
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
 };
 
 TEST_F(BrowserViewWranglerTest, TestInitNilObserver) {
-  // |thread_bundle_| must outlive all objects created by BVC, because those
+  // |task_environment_| must outlive all objects created by BVC, because those
   // objects may rely on threading API in dealloc.
   @autoreleasepool {
     BrowserViewWrangler* wrangler = [[BrowserViewWrangler alloc]

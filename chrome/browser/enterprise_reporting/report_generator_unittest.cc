@@ -177,7 +177,7 @@ class ReportGeneratorTest : public ::testing::Test {
  private:
   ReportGenerator generator_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager profile_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ReportGeneratorTest);

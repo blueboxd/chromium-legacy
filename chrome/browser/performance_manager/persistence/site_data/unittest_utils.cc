@@ -58,7 +58,7 @@ void TestWithPerformanceManager::TearDown() {
   // Make sure destruction unregisters the instance.
   EXPECT_EQ(nullptr, PerformanceManager::GetInstance());
 
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 }  // namespace testing

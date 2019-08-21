@@ -284,7 +284,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
   }
 
  protected:
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
 
   base::ScopedTempDir temp_dir_;
   scoped_refptr<MockSpecialStoragePolicy> special_storage_policy_;

@@ -3544,7 +3544,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     MANIFEST_WITH_INTERCEPT
   };
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   std::unique_ptr<MockAppCacheService> service_;
   scoped_refptr<AppCacheGroup> group_;

@@ -45,8 +45,8 @@ class FakeGCMProfileService::CustomFakeGCMDriver
                           const std::string& auth_secret,
                           const std::string& fcm_token,
                           crypto::ECPrivateKey* vapid_key,
-                          gcm::WebPushMessage message,
-                          SendWebPushMessageCallback callback) override;
+                          WebPushMessage message,
+                          WebPushCallback callback) override;
 
  protected:
   // FakeGCMDriver overrides:
@@ -169,8 +169,8 @@ void FakeGCMProfileService::CustomFakeGCMDriver::SendWebPushMessage(
     const std::string& auth_secret,
     const std::string& fcm_token,
     crypto::ECPrivateKey* vapid_key,
-    gcm::WebPushMessage message,
-    SendWebPushMessageCallback callback) {
+    WebPushMessage message,
+    WebPushCallback callback) {
   if (service_->collect_) {
     service_->last_receiver_id_ = fcm_token;
     service_->last_web_push_message_ = std::move(message);

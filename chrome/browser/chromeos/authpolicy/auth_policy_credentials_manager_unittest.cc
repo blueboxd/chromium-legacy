@@ -127,7 +127,7 @@ class AuthPolicyCredentialsManagerTest : public testing::Test {
     testing::Mock::VerifyAndClearExpectations(mock_user_manager());
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   AccountId account_id_;
   std::unique_ptr<TestingProfile> profile_;
 

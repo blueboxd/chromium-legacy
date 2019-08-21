@@ -405,7 +405,7 @@ class DiceTurnSyncOnHelperTestBase : public testing::Test {
   bool expected_sync_settings_shown_ = false;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   ScopedTestingLocalState local_state_;
   std::string account_id_;

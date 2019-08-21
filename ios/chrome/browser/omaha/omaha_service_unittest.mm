@@ -96,7 +96,7 @@ class OmahaServiceTest : public PlatformTest {
  private:
   bool need_update_;
   IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(OmahaServiceTest);
 };

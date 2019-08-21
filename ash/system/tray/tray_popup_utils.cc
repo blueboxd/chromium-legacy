@@ -226,9 +226,9 @@ views::LabelButton* TrayPopupUtils::CreateTrayPopupButton(
 views::Separator* TrayPopupUtils::CreateVerticalSeparator() {
   views::Separator* separator = new views::Separator();
   separator->SetPreferredHeight(24);
-  separator->SetColor(AshColorProvider::Get()->DeprecatedGetContentLayerColor(
+  separator->SetColor(AshColorProvider::Get()->GetContentLayerColor(
       AshColorProvider::ContentLayerType::kSeparator,
-      kSeparatorOnLightBackgroundColor));
+      AshColorProvider::AshColorMode::kLight));
   return separator;
 }
 
@@ -319,9 +319,9 @@ gfx::Rect TrayPopupUtils::GetInkDropBounds(TrayPopupInkDropStyle ink_drop_style,
 
 views::Separator* TrayPopupUtils::CreateListItemSeparator(bool left_inset) {
   views::Separator* separator = new views::Separator();
-  separator->SetColor(AshColorProvider::Get()->DeprecatedGetContentLayerColor(
+  separator->SetColor(AshColorProvider::Get()->GetContentLayerColor(
       AshColorProvider::ContentLayerType::kSeparator,
-      kSeparatorOnLightBackgroundColor));
+      AshColorProvider::AshColorMode::kLight));
   separator->SetBorder(views::CreateEmptyBorder(
       kMenuSeparatorVerticalPadding - views::Separator::kThickness,
       left_inset

@@ -183,8 +183,7 @@ TEST_F(FileSystemOperationRunnerTest, CancelWithInvalidId) {
 class MultiThreadFileSystemOperationRunnerTest : public testing::Test {
  public:
   MultiThreadFileSystemOperationRunnerTest()
-      : thread_bundle_(
-            content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   void SetUp() override {
     ASSERT_TRUE(base_.CreateUniqueTempDir());
@@ -222,7 +221,7 @@ class MultiThreadFileSystemOperationRunnerTest : public testing::Test {
 
  private:
   base::ScopedTempDir base_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   scoped_refptr<FileSystemContext> file_system_context_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiThreadFileSystemOperationRunnerTest);

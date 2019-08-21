@@ -164,7 +164,7 @@ class DeviceLocalAccountExternalPolicyLoaderTest : public testing::Test {
   void VerifyAndResetVisitorCallExpectations();
   void SetForceInstallListPolicy();
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   base::FilePath cache_dir_;
   policy::MockCloudPolicyStore store_;
@@ -186,7 +186,7 @@ class DeviceLocalAccountExternalPolicyLoaderTest : public testing::Test {
 
 DeviceLocalAccountExternalPolicyLoaderTest::
     DeviceLocalAccountExternalPolicyLoaderTest()
-    : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+    : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
       test_shared_loader_factory_(
           base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
               &test_url_loader_factory_)) {}

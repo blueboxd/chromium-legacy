@@ -32,7 +32,7 @@ class FingerprintStorageUnitTest : public testing::Test {
                                      records_number);
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
 
   DISALLOW_COPY_AND_ASSIGN(FingerprintStorageUnitTest);

@@ -138,7 +138,7 @@ class EventBasedStatusReportingServiceTest : public testing::Test {
   void SetConnectionType(network::mojom::ConnectionType type) {
     network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
         type);
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   arc::mojom::AppHost* app_host() { return arc_test_.arc_app_list_prefs(); }
@@ -169,7 +169,7 @@ class EventBasedStatusReportingServiceTest : public testing::Test {
   base::HistogramTester histogram_tester_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   ArcAppTest arc_test_;
   std::unique_ptr<TestingProfile> profile_;
   TestingConsumerStatusReportingService*

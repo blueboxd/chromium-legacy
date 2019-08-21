@@ -135,7 +135,7 @@ class SupervisedUserSettingsServiceTest : public ::testing::Test {
 
   void TearDown() override { settings_service_.Shutdown(); }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::DictionaryValue split_items_;
   std::unique_ptr<base::Value> atomic_setting_value_;
   SupervisedUserSettingsService settings_service_;

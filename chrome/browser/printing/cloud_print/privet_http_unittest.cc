@@ -986,7 +986,7 @@ TEST_P(PrivetLocalPrintTest, LocalPrintRetryOnInvalidJobID) {
 class PrivetHttpWithServerTest : public ::testing::Test {
  protected:
   PrivetHttpWithServerTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         shared_url_loader_factory_(
             base::MakeRefCounted<network::TestSharedURLLoaderFactory>()) {}
 
@@ -1004,7 +1004,7 @@ class PrivetHttpWithServerTest : public ::testing::Test {
         "test", server_->host_port_pair(), shared_url_loader_factory_);
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<EmbeddedTestServer> server_;
   std::unique_ptr<PrivetHTTPClientImpl> client_;
   scoped_refptr<network::TestSharedURLLoaderFactory> shared_url_loader_factory_;

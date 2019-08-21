@@ -19,8 +19,8 @@ class PLATFORM_EXPORT SegmentStream : public SkStream {
   SegmentStream();
   SegmentStream(const SegmentStream&) = delete;
   SegmentStream& operator=(const SegmentStream&) = delete;
-  SegmentStream(SegmentStream&&);
-  SegmentStream& operator=(SegmentStream&&);
+  SegmentStream(SegmentStream&&) noexcept;
+  SegmentStream& operator=(SegmentStream&&) noexcept;
 
   ~SegmentStream() override;
 

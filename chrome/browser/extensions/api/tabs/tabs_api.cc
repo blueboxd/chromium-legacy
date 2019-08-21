@@ -266,6 +266,17 @@ bool ExtensionHasLockedFullscreenPermission(const Extension* extension) {
       APIPermission::kLockWindowFullscreenPrivate);
 }
 
+std::unique_ptr<api::tabs::Tab> CreateTabObjectHelper(
+    WebContents* contents,
+    const Extension* extension,
+    TabStripModel* tab_strip,
+    int tab_index) {
+  ExtensionTabUtil::ScrubTabBehavior scrub_tab_behavior =
+      ExtensionTabUtil::GetScrubTabBehavior(extension, contents);
+  return ExtensionTabUtil::CreateTabObject(contents, scrub_tab_behavior,
+                                           extension, tab_strip, tab_index);
+}
+
 }  // namespace
 
 void ZoomModeToZoomSettings(ZoomController::ZoomMode zoom_mode,
@@ -831,10 +842,9 @@ ExtensionFunction::ResponseAction TabsGetSelectedFunction::Run() {
   WebContents* contents = tab_strip->GetActiveWebContents();
   if (!contents)
     return RespondNow(Error(tabs_constants::kNoSelectedTabError));
-  return RespondNow(ArgumentList(
-      tabs::Get::Results::Create(*ExtensionTabUtil::CreateTabObject(
-          contents, ExtensionTabUtil::kScrubTab, extension(), tab_strip,
-          tab_strip->active_index()))));
+  return RespondNow(
+      ArgumentList(tabs::Get::Results::Create(*CreateTabObjectHelper(
+          contents, extension(), tab_strip, tab_strip->active_index()))));
 }
 
 ExtensionFunction::ResponseAction TabsGetAllInWindowFunction::Run() {
@@ -1021,10 +1031,9 @@ ExtensionFunction::ResponseAction TabsQueryFunction::Run() {
       if (loading_status_set && loading != web_contents->IsLoading())
         continue;
 
-      result->Append(ExtensionTabUtil::CreateTabObject(
-                         web_contents, ExtensionTabUtil::kScrubTab, extension(),
-                         tab_strip, i)
-                         ->ToValue());
+      result->Append(
+          CreateTabObjectHelper(web_contents, extension(), tab_strip, i)
+              ->ToValue());
     }
   }
 
@@ -1088,10 +1097,9 @@ ExtensionFunction::ResponseAction TabsDuplicateFunction::Run() {
     return RespondNow(Error(kUnknownErrorDoNotUse));
   }
 
-  return RespondNow(ArgumentList(
-      tabs::Get::Results::Create(*ExtensionTabUtil::CreateTabObject(
-          new_contents, ExtensionTabUtil::kScrubTab, extension(), new_tab_strip,
-          new_tab_index))));
+  return RespondNow(
+      ArgumentList(tabs::Get::Results::Create(*CreateTabObjectHelper(
+          new_contents, extension(), new_tab_strip, new_tab_index))));
 }
 
 ExtensionFunction::ResponseAction TabsGetFunction::Run() {
@@ -1109,8 +1117,7 @@ ExtensionFunction::ResponseAction TabsGetFunction::Run() {
   }
 
   return RespondNow(ArgumentList(tabs::Get::Results::Create(
-      *ExtensionTabUtil::CreateTabObject(contents, ExtensionTabUtil::kScrubTab,
-                                         extension(), tab_strip, tab_index))));
+      *CreateTabObjectHelper(contents, extension(), tab_strip, tab_index))));
 }
 
 ExtensionFunction::ResponseAction TabsGetCurrentFunction::Run() {
@@ -1121,8 +1128,8 @@ ExtensionFunction::ResponseAction TabsGetCurrentFunction::Run() {
   WebContents* caller_contents = GetSenderWebContents();
   std::unique_ptr<base::ListValue> results;
   if (caller_contents && ExtensionTabUtil::GetTabId(caller_contents) >= 0) {
-    results = tabs::Get::Results::Create(*ExtensionTabUtil::CreateTabObject(
-        caller_contents, ExtensionTabUtil::kScrubTab, extension()));
+    results = tabs::Get::Results::Create(
+        *CreateTabObjectHelper(caller_contents, extension(), nullptr, -1));
   }
   return RespondNow(results ? ArgumentList(std::move(results)) : NoArguments());
 }
@@ -1364,9 +1371,8 @@ ExtensionFunction::ResponseValue TabsUpdateFunction::GetResult() {
   if (!has_callback())
     return NoArguments();
 
-  return ArgumentList(
-      tabs::Get::Results::Create(*ExtensionTabUtil::CreateTabObject(
-          web_contents_, ExtensionTabUtil::kScrubTab, extension())));
+  return ArgumentList(tabs::Get::Results::Create(
+      *CreateTabObjectHelper(web_contents_, extension(), nullptr, -1)));
 }
 
 void TabsUpdateFunction::OnExecuteCodeFinished(
@@ -1499,9 +1505,8 @@ bool TabsMoveFunction::MoveTab(int tab_id,
           *new_index, std::move(web_contents), TabStripModel::ADD_NONE);
 
       if (has_callback()) {
-        tab_values->Append(ExtensionTabUtil::CreateTabObject(
-                               web_contents_raw, ExtensionTabUtil::kScrubTab,
-                               extension(), target_tab_strip, *new_index)
+        tab_values->Append(CreateTabObjectHelper(web_contents_raw, extension(),
+                                                 target_tab_strip, *new_index)
                                ->ToValue());
       }
 
@@ -1521,9 +1526,8 @@ bool TabsMoveFunction::MoveTab(int tab_id,
         source_tab_strip->MoveWebContentsAt(tab_index, *new_index, false);
 
   if (has_callback()) {
-    tab_values->Append(ExtensionTabUtil::CreateTabObject(
-                           contents, ExtensionTabUtil::kScrubTab, extension(),
-                           source_tab_strip, *new_index)
+    tab_values->Append(CreateTabObjectHelper(contents, extension(),
+                                             source_tab_strip, *new_index)
                            ->ToValue());
   }
 
@@ -2118,9 +2122,8 @@ ExtensionFunction::ResponseAction TabsDiscardFunction::Run() {
 
   // Create the Tab object and return it in case of success.
   if (contents) {
-    return RespondNow(ArgumentList(
-        tabs::Discard::Results::Create(*ExtensionTabUtil::CreateTabObject(
-            contents, ExtensionTabUtil::kScrubTab, extension()))));
+    return RespondNow(ArgumentList(tabs::Discard::Results::Create(
+        *CreateTabObjectHelper(contents, extension(), nullptr, -1))));
   }
 
   // Return appropriate error message otherwise.

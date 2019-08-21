@@ -4,16 +4,17 @@
 
 #include "chrome/browser/sessions/session_service_utils.h"
 
-// TODO(crbug.com/990158): Add mappings for Browser::Type APP and DEVTOOLS.
 sessions::SessionWindow::WindowType WindowTypeForBrowserType(
     Browser::Type type) {
   switch (type) {
     case Browser::TYPE_NORMAL:
       return sessions::SessionWindow::TYPE_NORMAL;
     case Browser::TYPE_POPUP:
-    case Browser::TYPE_APP:
-    case Browser::TYPE_DEVTOOLS:
       return sessions::SessionWindow::TYPE_POPUP;
+    case Browser::TYPE_APP:
+      return sessions::SessionWindow::TYPE_APP;
+    case Browser::TYPE_DEVTOOLS:
+      return sessions::SessionWindow::TYPE_DEVTOOLS;
   }
   NOTREACHED();
   return sessions::SessionWindow::TYPE_NORMAL;
@@ -26,6 +27,10 @@ Browser::Type BrowserTypeForWindowType(
       return Browser::TYPE_NORMAL;
     case sessions::SessionWindow::TYPE_POPUP:
       return Browser::TYPE_POPUP;
+    case sessions::SessionWindow::TYPE_APP:
+      return Browser::TYPE_APP;
+    case sessions::SessionWindow::TYPE_DEVTOOLS:
+      return Browser::TYPE_DEVTOOLS;
   }
   NOTREACHED();
   return Browser::TYPE_NORMAL;

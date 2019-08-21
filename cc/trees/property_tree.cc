@@ -476,7 +476,10 @@ gfx::Vector2dF StickyPositionOffset(TransformTree* tree, TransformNode* node) {
 }
 
 void TransformTree::UpdateLocalTransform(TransformNode* node) {
-  gfx::Transform transform = node->post_local;
+  gfx::Transform transform;
+  transform.Translate3d(node->post_translation.x() + node->origin.x(),
+                        node->post_translation.y() + node->origin.y(),
+                        node->origin.z());
   if (NeedsSourceToParentUpdate(node)) {
     gfx::Transform to_parent;
     ComputeTranslation(node->source_node_id, node->parent_id, &to_parent);
@@ -526,7 +529,7 @@ void TransformTree::UpdateLocalTransform(TransformNode* node) {
                           fixed_position_adjustment.y());
   transform.Translate(StickyPositionOffset(this, node));
   transform.PreconcatTransform(node->local);
-  transform.PreconcatTransform(node->pre_local);
+  transform.Translate3d(gfx::Point3F() - node->origin);
 
   node->set_to_parent(transform);
   node->needs_local_transform_update = false;

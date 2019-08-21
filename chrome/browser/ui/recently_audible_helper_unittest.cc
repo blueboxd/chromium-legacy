@@ -108,7 +108,7 @@ class RecentlyAudibleHelperTest : public testing::Test {
 
   // Environment for creating WebContents.
   std::unique_ptr<content::TestWebContentsFactory> test_web_contents_factory_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile testing_profile_;
 
   // A test WebContents and its associated helper.

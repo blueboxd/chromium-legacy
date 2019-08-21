@@ -1460,4 +1460,14 @@ TEST(AnimatedPNGTests, TrnsMeansAlpha) {
   ASSERT_TRUE(frame->HasAlpha());
 }
 
+TEST(PNGTests, CriticalPrivateChunkBeforeIHDR) {
+  auto decoder = CreatePNGDecoder();
+  scoped_refptr<SharedBuffer> data =
+      ReadFile(kDecodersTestingDir, "private-critical-chunk-before-ihdr.png");
+  EXPECT_FALSE(data->IsEmpty());
+  decoder->SetData(data.get(), true);
+  EXPECT_FALSE(decoder->IsSizeAvailable());
+  EXPECT_TRUE(decoder->Failed());
+}
+
 }  // namespace blink

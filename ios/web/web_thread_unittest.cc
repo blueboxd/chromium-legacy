@@ -21,7 +21,7 @@ class WebThreadTest : public PlatformTest {
     std::move(continuation).Run();
   }
 
-  web::TestWebThreadBundle web_thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
 };
 
 TEST_F(WebThreadTest, PostTask) {

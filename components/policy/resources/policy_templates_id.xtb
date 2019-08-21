@@ -103,7 +103,7 @@ Jika kebijakan ini tidak disetel, setelan default-nya dinonaktifkan bagi penggun
       Jika kebijakan ini tidak disetel, direktori cache default akan digunakan dan pengguna dapat menggantikannya dengan tanda baris perintah '--disk-cache-dir'.</translation>
 <translation id="113521240853905588">Mengonfigurasi bahasa yang dapat digunakan sebagai bahasa pilihan oleh <ph name="PRODUCT_OS_NAME" />.
 
-      Jika kebijakan ini ditetapkan, pengguna hanya dapat menambahkan satu bahasa dari pilihan yang tercantum di kebijakan ini ke daftar bahasa pilihan. Jika kebijakan ini tidak ditetapkan atau ditetapkan ke daftar kosong, pengguna dapat menentukan bahasa apa pun sebagai bahasa pilihan. Jika kebijakan ini ditetapkan ke daftar yang memuat nilai yang tidak valid, semua nilai yang tidak valid akan diabaikan. Jika sebelumnya pengguna menambahkan beberapa bahasa yang tidak diizinkan oleh kebijakan ini ke daftar bahasa pilihan, bahasa tersebut akan dihapus. Jika pengguna pernah mengonfigurasi <ph name="PRODUCT_OS_NAME" /> untuk ditampilkan dalam salah satu bahasa yang tidak diizinkan oleh kebijakan ini, bahasa tampilan akan dialihkan ke bahasa UI yang diizinkan saat pengguna login kembali. Jika tidak, <ph name="PRODUCT_OS_NAME" /> akan beralih ke nilai valid pertama yang ditentukan oleh kebijakan ini, atau ke lokal fallback (saat ini en-US), jika kebijakan ini hanya memuat entri yang tidak valid.</translation>
+      Jika kebijakan ini ditetapkan, pengguna hanya dapat menambahkan satu bahasa dari pilihan yang tercantum di kebijakan ini ke daftar bahasa pilihan. Jika kebijakan ini tidak ditetapkan atau ditetapkan ke daftar kosong, pengguna dapat menentukan bahasa apa pun sebagai bahasa pilihan. Jika kebijakan ini ditetapkan ke daftar yang memuat nilai yang tidak valid, semua nilai yang tidak valid akan diabaikan. Jika sebelumnya pengguna menambahkan beberapa bahasa yang tidak diizinkan oleh kebijakan ini ke daftar bahasa pilihan, bahasa tersebut akan dihapus. Jika pengguna pernah mengonfigurasi <ph name="PRODUCT_OS_NAME" /> untuk ditampilkan dalam salah satu bahasa yang tidak diizinkan oleh kebijakan ini, bahasa tampilan akan dialihkan ke bahasa UI yang diizinkan saat pengguna login kembali. Jika tidak, <ph name="PRODUCT_OS_NAME" /> akan beralih ke nilai valid pertama yang ditentukan oleh kebijakan ini, atau ke lokal pengganti (saat ini en-US), jika kebijakan ini hanya memuat entri yang tidak valid.</translation>
 <translation id="1135264353752122851">Mengonfigurasi tata letak keyboard yang diizinkan untuk sesi pengguna <ph name="PRODUCT_OS_NAME" />.
 
       Jika kebijakan ini disetel, pengguna hanya dapat memilih salah satu metode masukan yang ditentukan oleh kebijakan ini. Jika kebijakan ini tidak disetel atau disetel ke daftar kosong, pengguna dapat memilih semua metode masukan yang didukung. Jika metode masukan saat ini tidak diizinkan oleh kebijakan ini, metode masukan akan dialihkan ke tata letak keyboard hardware (jika diizinkan) atau entri valid pertama di daftar ini. Semua metode masukan yang tidak valid atau tidak didukung di daftar ini akan diabaikan.</translation>
@@ -479,11 +479,11 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
       Dari M73 Anda dapat memblokir URL 'javascript://*'. Namun, kebijakan ini hanya akan memengaruhi JavaScript yang diketik di kolom URL (atau, misalnya, bookmarklet). Perlu diperhatikan bahwa URL JavaScript dalam halaman, selama merupakan data yang dimuat secara dinamis, tidak tunduk pada kebijakan ini. Misalnya, jika Anda memblokir 'example.com/abc', halaman 'example.com' akan tetap dapat memuat 'example.com/abc' melalui XMLHTTPRequest.
 
       Jika kebijakan ini tidak disetel, tidak ada URL yang akan dimasukkan ke daftar hitam di browser.</translation>
-<translation id="1859859319036806634">Peringatan: TLS versi fallback akan dihapus dari <ph name="PRODUCT_NAME" /> setelah versi 52 (sekitar bulan September 2016) dan kebijakan ini tidak akan berlaku lagi.
+<translation id="1859859319036806634">Peringatan: TLS versi pengganti akan dihapus dari <ph name="PRODUCT_NAME" /> setelah versi 52 (sekitar bulan September 2016) dan kebijakan ini tidak akan berlaku lagi.
 
-      Jika penyambungan TLS gagal, <ph name="PRODUCT_NAME" /> akan terlebih dahulu mencoba ulang sambungan dengan versi TLS yang lebih rendah guna memperbaiki bug di server HTTPS. Setelan yang mengonfigurasi versi tempat proses fallback ini akan berhenti. Jika server menjalankan negosiasi versi dengan tepat (tanpa memutuskan sambungan), setelan ini tidak akan berlaku. Namun demikian, sambungan yang dihasilkan tetap harus mematuhi SSLVersionMin.
+      Jika penyambungan TLS gagal, <ph name="PRODUCT_NAME" /> akan terlebih dahulu mencoba ulang sambungan dengan versi TLS yang lebih rendah guna memperbaiki bug di server HTTPS. Setelan yang mengonfigurasi versi tempat proses pengganti ini akan berhenti. Jika server menjalankan negosiasi versi dengan tepat (tanpa memutuskan sambungan), setelan ini tidak akan berlaku. Namun demikian, sambungan yang dihasilkan tetap harus mematuhi SSLVersionMin.
 
-      Jika kebijakan ini tidak dikonfigurasi atau jika disetel ke "tls1.2", <ph name="PRODUCT_NAME" /> akan berhenti menjalankan fallback ini. Perhatikan bahwa tindakan ini tidak menonaktifkan dukungan untuk TLS versi lebih lama, hanya jika <ph name="PRODUCT_NAME" /> akan memperbaiki server berisi bug yang tidak dapat melakukan negosiasi versi dengan tepat.
+      Jika kebijakan ini tidak dikonfigurasi atau jika disetel ke "tls1.2", <ph name="PRODUCT_NAME" /> akan berhenti menjalankan pengganti ini. Perhatikan bahwa tindakan ini tidak menonaktifkan dukungan untuk TLS versi lebih lama, hanya jika <ph name="PRODUCT_NAME" /> akan memperbaiki server berisi bug yang tidak dapat melakukan negosiasi versi dengan tepat.
 
       Sebaliknya, jika kompatibilitas dengan server berisi bug harus dipertahankan, kebijakan ini akan disetel ke "tls1.1". Hal ini merupakan ukuran sementara dan server harus segera diperbaiki.</translation>
 <translation id="1864382791685519617">Memungkinkan prediksi jaringan dalam <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan ini.
@@ -1128,7 +1128,7 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
           Nilai kebijakan harus ditentukan dalam milidetik. Nilai dijepit hingga kurang dari atau setara dengan penundaan mematikan layar (jika disetel) dan penundaan waktu menganggur.</translation>
 <translation id="2977997796833930843">Perhatikan bahwa kebijakan ini tidak digunakan lagi dan akan dihapus di masa mendatang.
 
-          Kebijakan ini memberikan nilai fallback untuk kebijakan <ph name="IDLE_ACTION_AC_POLICY_NAME" /> dan <ph name="IDLE_ACTION_BATTERY_POLICY_NAME" /> yang lebih spesifik. Jika kebijakan ini ditetapkan, nilainya akan digunakan jika masing-masing kebijakan yang lebih spesifik tidak ditetapkan.
+          Kebijakan ini memberikan nilai pengganti untuk kebijakan <ph name="IDLE_ACTION_AC_POLICY_NAME" /> dan <ph name="IDLE_ACTION_BATTERY_POLICY_NAME" /> yang lebih spesifik. Jika kebijakan ini ditetapkan, nilainya akan digunakan jika masing-masing kebijakan yang lebih spesifik tidak ditetapkan.
 
           Jika kebijakan ini tidak ditetapkan, perilaku kebijakan yang lebih spesifik tetap tidak terpengaruh.</translation>
 <translation id="2987155890997901449">Aktifkan ARC</translation>
@@ -1616,15 +1616,6 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 
           Jika tidak disetel atau disetel ke False, pengguna akan dapat mentransfer file ke Google Drive.</translation>
 <translation id="3915395663995367577">URL untuk proxy file .pac</translation>
-<translation id="3920892052017026701">Menetapkan nilai awal pengisian daya baterai kustom dalam persen.
-
-          Baterai akan memulai pengisian daya jika sudah mencapai nilai awal pengisian daya baterai kustom.
-
-          DeviceBatteryChargeCustomStartCharging harus lebih kecil daripada DeviceBatteryChargeCustomStopCharging.
-
-          Kebijakan ini hanya digunakan jika DeviceBatteryChargeMode ditetapkan ke kustom.
-
-          Jika kebijakan ini tidak dikonfigurasi atau tidak ditetapkan, mode pengisian daya baterai standar akan diterapkan.</translation>
 <translation id="3925377537407648234">Setel faktor skala dan resolusi tampilan</translation>
 <translation id="3939893074578116847">Kirimkan paket jaringan ke server pengelolaan untuk memantau status online,
       untuk memungkinkan server mendeteksi jika perangkat sedang offline.
@@ -2956,7 +2947,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="6544897973797372144">Jika kebijakan ini disetel ke True dan kebijakan ChromeOsReleaseChannel tidak ditentukan, maka pengguna domain yang mendaftar akan diizinkan mengubah saluran rilis perangkat. Jika kebijakan ini disetel ke false, perangkat akan dikunci pada saluran apa pun yang disetel terakhir kali.
 
       Saluran yang dipilih pengguna akan ditimpa oleh kebijakan ChromeOsReleaseChannel, namun jika saluran kebijakan lebih stabil dari saluran kebijakan yang telah terpasang pada perangkat, maka saluran ini hanya akan beralih setelah versi saluran yang lebih stabil mencapai jumlah versi yang lebih tinggi dari saluran kebijakan yang telah terpasang pada perangkat.</translation>
-<translation id="6549567350270907557">Jika setelan ini diaktifkan, pengguna dapat memeriksa <ph name="PRODUCT_NAME" /> apakah kredensial yang dimasukkan adalah bagian dari kebocoran.
+<translation id="6549567350270907557">Jika setelan ini diaktifkan, pengguna dapat membuat <ph name="PRODUCT_NAME" /> memeriksa apakah kredensial yang dimasukkan adalah bagian dari kebocoran.
 
               Jika kebijakan ini diaktifkan atau dinonaktifkan, pengguna tidak dapat mengubah atau menggantinya di <ph name="PRODUCT_NAME" />. Jika kebijakan ini tidak ditetapkan, pemeriksaan kebocoran diizinkan (tetapi dapat dinonaktifkan oleh pengguna).</translation>
 <translation id="6553143066970470539">Persentase kecerahan layar</translation>
@@ -3533,15 +3524,6 @@ Nilai kebijakan harus ditentukan dalam persen di rentang 0-100.</translation>
       Jika nilai kebijakan ini 0, ukuran cache default akan digunakan namun pengguna tidak akan dapat mengubahnya.
 
       Jika kebijakan ini tidak disetel, ukuran default akan digunakan dan pengguna dapat menimpanya dengan tanda --disk-cache-size.</translation>
-<translation id="759389052790680884">Menetapkan nilai akhir pengisian daya baterai kustom dalam persen.
-
-          Baterai akan berhenti mengisi daya jika sudah mencapai nilai akhir pengisian daya baterai kustom.
-
-          DeviceBatteryChargeCustomStartCharging harus lebih kecil daripada DeviceBatteryChargeCustomStopCharging.
-
-          Kebijakan ini hanya digunakan jika DeviceBatteryChargeMode ditetapkan ke kustom.
-
-          Jika kebijakan ini tidak dikonfigurasi atau tidak ditetapkan, mode pengisian daya baterai standar akan diterapkan.</translation>
 <translation id="759957074386651883">Setelan Safe Browsing</translation>
 <translation id="7604169113182304895">Aplikasi Android dapat memilih untuk menerima daftar ini secara sukarela. Anda tidak dapat memaksa aplikasi untuk menerimanya.</translation>
 <translation id="7612157962821894603">Tanda di seluruh sistem yang akan diterapkan pada waktu mulai <ph name="PRODUCT_NAME" /></translation>
@@ -3637,9 +3619,6 @@ Cara yang diharapkan terkait penggunaan kebijakan ini adalah merotasi konfiguras
 <translation id="7750991880413385988">Buka Halaman Tab Baru</translation>
 <translation id="7754704193130578113">Tanyakan lokasi penyimpanan setiap file sebelum mendownload</translation>
 <translation id="7761446981238915769">Konfigurasi daftar aplikasi yang terpasang di layar masuk</translation>
-<translation id="7763479091692861127"> Jenis sambungan yang diizinkan penggunaannya untuk pembaruan OS. Pembaruan OS berpotensi memberikan beban berat pada koneksi Internet karena ukurannya dan mungkin mengakibatkan biaya tambahan. Oleh karena itu, koneksi secara default tidak aktif untuk jenis koneksi yang dianggap mahal, yang meliputi WiMax, Bluetooth, dan Seluler untuk saat ini.
-
-      Pengenal jenis koneksi yang diketahui saat ini adalah "ethernet", "wifi", "wimax", "bluetooth", dan "cellular".</translation>
 <translation id="7763614521440615342">Tampilkan saran konten di halaman Tab Baru</translation>
 <translation id="7765879851993224640">Izinkan Smart Lock Signin digunakan.</translation>
 <translation id="7772346342637974431">Menetapkan durasi waktu tanpa input pengguna setelah dialog peringatan ditampilkan saat dijalankan dengan daya baterai.

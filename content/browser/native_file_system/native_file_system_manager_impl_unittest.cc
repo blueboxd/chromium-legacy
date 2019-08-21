@@ -70,7 +70,7 @@ class NativeFileSystemManagerImplTest : public testing::Test {
       kTestOrigin, kTestURL, kProcessId, kFrameId};
 
   base::test::ScopedFeatureList scoped_feature_list_;
-  TestBrowserThreadBundle task_environment_;
+  BrowserTaskEnvironment task_environment_;
 
   base::ScopedTempDir dir_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;

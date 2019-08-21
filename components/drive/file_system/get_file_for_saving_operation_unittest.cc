@@ -61,8 +61,7 @@ class GetFileForSavingOperationTest : public OperationTestBase {
  protected:
   // FileWriteWatcher requires TYPE_IO message loop to run.
   GetFileForSavingOperationTest()
-      : OperationTestBase(content::TestBrowserThreadBundle::IO_MAINLOOP) {
-  }
+      : OperationTestBase(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   void SetUp() override {
     OperationTestBase::SetUp();

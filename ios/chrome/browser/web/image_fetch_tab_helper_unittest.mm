@@ -33,7 +33,7 @@ class ImageFetchTabHelperTest : public web::WebTestWithWebState {
  protected:
   ImageFetchTabHelperTest()
       : web::WebTestWithWebState(
-            web::TestWebThreadBundle::Options::IO_MAINLOOP) {}
+            web::WebTaskEnvironment::Options::IO_MAINLOOP) {}
 
   void SetUp() override {
     WebTestWithWebState::SetUp();

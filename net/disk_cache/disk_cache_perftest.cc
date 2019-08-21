@@ -112,9 +112,7 @@ class WriteHandler {
  protected:
   void CreateNextEntry();
 
-  void CreateCallback(std::unique_ptr<disk_cache::Entry*> unique_entry_ptr,
-                      int data_len,
-                      int result);
+  void CreateCallback(int data_len, disk_cache::EntryResult result);
   void WriteDataCallback(disk_cache::Entry* entry,
                          int next_offset,
                          int data_len,
@@ -149,25 +147,21 @@ void WriteHandler::Run() {
 void WriteHandler::CreateNextEntry() {
   ASSERT_GT(kNumEntries, next_entry_index_);
   TestEntry test_entry = test_->entries()[next_entry_index_++];
-  disk_cache::Entry** entry_ptr = new disk_cache::Entry*();
-  std::unique_ptr<disk_cache::Entry*> unique_entry_ptr(entry_ptr);
-  net::CompletionRepeatingCallback callback =
+  auto callback =
       base::BindRepeating(&WriteHandler::CreateCallback, base::Unretained(this),
-                          base::Passed(&unique_entry_ptr), test_entry.data_len);
-  int result =
-      cache_->CreateEntry(test_entry.key, net::HIGHEST, entry_ptr, callback);
-  if (result != net::ERR_IO_PENDING)
-    callback.Run(result);
+                          test_entry.data_len);
+  disk_cache::EntryResult result =
+      cache_->CreateEntry(test_entry.key, net::HIGHEST, callback);
+  if (result.net_error() != net::ERR_IO_PENDING)
+    callback.Run(std::move(result));
 }
 
-void WriteHandler::CreateCallback(std::unique_ptr<disk_cache::Entry*> entry_ptr,
-                                  int data_len,
-                                  int result) {
-  if (CheckForErrorAndCancel(result))
+void WriteHandler::CreateCallback(int data_len,
+                                  disk_cache::EntryResult result) {
+  if (CheckForErrorAndCancel(result.net_error()))
     return;
 
-  disk_cache::Entry* entry = *entry_ptr;
-
+  disk_cache::Entry* entry = result.ReleaseEntry();
   net::CompletionRepeatingCallback callback = base::BindRepeating(
       &WriteHandler::WriteDataCallback, base::Unretained(this), entry, 0,
       data_len, kHeadersSize);
@@ -243,9 +237,8 @@ class ReadHandler {
   void OpenNextEntry(int parallel_operation_index);
 
   void OpenCallback(int parallel_operation_index,
-                    std::unique_ptr<disk_cache::Entry*> unique_entry_ptr,
                     int data_len,
-                    int result);
+                    disk_cache::EntryResult result);
   void ReadDataCallback(int parallel_operation_index,
                         disk_cache::Entry* entry,
                         int next_offset,
@@ -280,26 +273,22 @@ void ReadHandler::Run() {
 void ReadHandler::OpenNextEntry(int parallel_operation_index) {
   ASSERT_GT(kNumEntries, next_entry_index_);
   TestEntry test_entry = test_->entries()[next_entry_index_++];
-  disk_cache::Entry** entry_ptr = new disk_cache::Entry*();
-  std::unique_ptr<disk_cache::Entry*> unique_entry_ptr(entry_ptr);
-  net::CompletionRepeatingCallback callback =
+  auto callback =
       base::BindRepeating(&ReadHandler::OpenCallback, base::Unretained(this),
-                          parallel_operation_index,
-                          base::Passed(&unique_entry_ptr), test_entry.data_len);
-  int result =
-      cache_->OpenEntry(test_entry.key, net::HIGHEST, entry_ptr, callback);
-  if (result != net::ERR_IO_PENDING)
-    callback.Run(result);
+                          parallel_operation_index, test_entry.data_len);
+  disk_cache::EntryResult result =
+      cache_->OpenEntry(test_entry.key, net::HIGHEST, callback);
+  if (result.net_error() != net::ERR_IO_PENDING)
+    callback.Run(std::move(result));
 }
 
 void ReadHandler::OpenCallback(int parallel_operation_index,
-                               std::unique_ptr<disk_cache::Entry*> entry_ptr,
                                int data_len,
-                               int result) {
-  if (CheckForErrorAndCancel(result))
+                               disk_cache::EntryResult result) {
+  if (CheckForErrorAndCancel(result.net_error()))
     return;
 
-  disk_cache::Entry* entry = *entry_ptr;
+  disk_cache::Entry* entry = result.ReleaseEntry();
 
   EXPECT_EQ(data_len, entry->GetDataSize(1));
 
@@ -525,13 +514,15 @@ TEST_F(DiskCachePerfTest, SimpleCacheInitialReadPortion) {
 
   disk_cache::Entry* cache_entry[kBatchSize];
   for (int i = 0; i < kBatchSize; ++i) {
-    net::TestCompletionCallback cb;
-    int rv = cache_->CreateEntry(base::NumberToString(i), net::HIGHEST,
-                                 &cache_entry[i], cb.callback());
-    ASSERT_EQ(net::OK, cb.GetResult(rv));
+    TestEntryResultCompletionCallback cb_create;
+    disk_cache::EntryResult result = cb_create.GetResult(cache_->CreateEntry(
+        base::NumberToString(i), net::HIGHEST, cb_create.callback()));
+    ASSERT_EQ(net::OK, result.net_error());
+    cache_entry[i] = result.ReleaseEntry();
 
-    rv = cache_entry[i]->WriteData(0, 0, buffer1.get(), kHeadersSize,
-                                   cb.callback(), false);
+    net::TestCompletionCallback cb;
+    int rv = cache_entry[i]->WriteData(0, 0, buffer1.get(), kHeadersSize,
+                                       cb.callback(), false);
     ASSERT_EQ(kHeadersSize, cb.GetResult(rv));
     rv = cache_entry[i]->WriteData(1, 0, buffer2.get(), kBodySize,
                                    cb.callback(), false);

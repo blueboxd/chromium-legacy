@@ -595,7 +595,7 @@ class SSLErrorHandlerDateInvalidTest : public ChromeRenderViewHostTestHarness {
  public:
   SSLErrorHandlerDateInvalidTest()
       : ChromeRenderViewHostTestHarness(
-            content::TestBrowserThreadBundle::REAL_IO_THREAD),
+            content::BrowserTaskEnvironment::REAL_IO_THREAD),
         field_trial_test_(new network_time::FieldTrialTest()),
         clock_(new base::SimpleTestClock),
         tick_clock_(new base::SimpleTestTickClock),

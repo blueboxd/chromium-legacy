@@ -63,7 +63,7 @@ class PaymentRequestUnitTestBase {
   }
 
  private:
-  web::TestWebThreadBundle web_thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   web::TestWebState web_state_;
   std::unique_ptr<PrefService> pref_service_;
   autofill::TestPersonalDataManager personal_data_manager_;

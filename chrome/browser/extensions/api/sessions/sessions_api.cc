@@ -100,7 +100,13 @@ api::tabs::Tab CreateTabModelHelper(
   tab_struct.index = index;
   tab_struct.pinned = pinned;
   tab_struct.active = active;
-  ExtensionTabUtil::ScrubTabForExtension(extension, nullptr, &tab_struct);
+
+  ExtensionTabUtil::ScrubTabBehavior scrub_tab_behavior =
+      ExtensionTabUtil::GetScrubTabBehavior(extension, url);
+  if (scrub_tab_behavior != ExtensionTabUtil::kDontScrubTab) {
+    ExtensionTabUtil::ScrubTabForExtension(extension, nullptr, &tab_struct,
+                                           scrub_tab_behavior);
+  }
   return tab_struct;
 }
 
@@ -275,6 +281,12 @@ SessionsGetDevicesFunction::CreateWindowModel(
     case sessions::SessionWindow::TYPE_POPUP:
       type = api::windows::WINDOW_TYPE_POPUP;
       break;
+    case sessions::SessionWindow::TYPE_APP:
+      type = api::windows::WINDOW_TYPE_APP;
+      break;
+    case sessions::SessionWindow::TYPE_DEVTOOLS:
+      type = api::windows::WINDOW_TYPE_DEVTOOLS;
+      break;
   }
 
   api::windows::WindowState state = api::windows::WINDOW_STATE_NONE;
@@ -383,8 +395,10 @@ ExtensionFunction::ResponseAction SessionsGetDevicesFunction::Run() {
 
 ExtensionFunction::ResponseValue SessionsRestoreFunction::GetRestoredTabResult(
     content::WebContents* contents) {
+  ExtensionTabUtil::ScrubTabBehavior scrub_tab_behavior =
+      ExtensionTabUtil::GetScrubTabBehavior(extension(), contents);
   std::unique_ptr<api::tabs::Tab> tab(ExtensionTabUtil::CreateTabObject(
-      contents, ExtensionTabUtil::kScrubTab, extension()));
+      contents, scrub_tab_behavior, extension()));
   std::unique_ptr<api::sessions::Session> restored_session(
       CreateSessionModelHelper(base::Time::Now().ToTimeT(), std::move(tab),
                                std::unique_ptr<api::windows::Window>()));

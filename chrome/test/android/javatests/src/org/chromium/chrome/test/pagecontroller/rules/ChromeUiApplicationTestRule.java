@@ -21,8 +21,8 @@ import org.chromium.chrome.test.pagecontroller.utils.UiLocationException;
  * Test rule that provides access to a Chrome application.
  */
 public class ChromeUiApplicationTestRule extends ExternalResource {
-    // TODO(aluo): Adjust according to https://crrev.com/c/1585142.
-    public static final String PACKAGE_NAME_ARG = "PackageUnderTest";
+    public static final String PACKAGE_NAME_ARG = "org.chromium.chrome.test.pagecontroller.rules."
+            + "ChromeUiApplicationTestRule.PackageUnderTest";
     private static final String TAG = "ChromeUiAppTR";
 
     private String mPackageName;

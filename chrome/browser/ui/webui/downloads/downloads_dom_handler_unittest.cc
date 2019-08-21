@@ -57,7 +57,7 @@ class DownloadsDOMHandlerTest : public testing::Test {
 
  private:
   // NOTE: The initialization order of these members matters.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
 
   testing::NiceMock<content::MockDownloadManager> manager_;

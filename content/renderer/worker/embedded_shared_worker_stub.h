@@ -64,7 +64,8 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
       bool pause_on_start,
       const base::UnguessableToken& devtools_worker_token,
       const blink::mojom::RendererPreferences& renderer_preferences,
-      blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request,
+      mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
+          preference_watcher_receiver,
       mojo::PendingRemote<blink::mojom::WorkerContentSettingsProxy>
           content_settings,
       blink::mojom::ServiceWorkerProviderInfoForClientPtr
@@ -110,7 +111,8 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
   blink::mojom::RendererPreferences renderer_preferences_;
   // Set on ctor and passed to the fetch context created when
   // CreateWorkerFetchContext() is called.
-  blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request_;
+  mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
+      preference_watcher_receiver_;
   std::unique_ptr<blink::WebSharedWorker> impl_;
 
   using PendingChannel =

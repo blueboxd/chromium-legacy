@@ -41,7 +41,7 @@ class PrinterCapabilitiesTest : public testing::Test {
   TestPrintBackend* print_backend() { return test_backend_.get(); }
 
  private:
-  content::TestBrowserThreadBundle test_browser_threads_;
+  content::BrowserTaskEnvironment test_browser_threads_;
   scoped_refptr<TestPrintBackend> test_backend_;
 };
 

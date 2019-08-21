@@ -10,8 +10,9 @@
 namespace blink {
 
 CloneableMessage::CloneableMessage() = default;
-CloneableMessage::CloneableMessage(CloneableMessage&&) = default;
-CloneableMessage& CloneableMessage::operator=(CloneableMessage&&) = default;
+CloneableMessage::CloneableMessage(CloneableMessage&&) noexcept = default;
+CloneableMessage& CloneableMessage::operator=(CloneableMessage&&) noexcept =
+    default;
 CloneableMessage::~CloneableMessage() = default;
 
 CloneableMessage CloneableMessage::ShallowClone() const {

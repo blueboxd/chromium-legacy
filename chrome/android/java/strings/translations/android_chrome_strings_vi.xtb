@@ -141,7 +141,6 @@
 <translation id="200815880754187296">Các ứng dụng khác chiếm <ph name="KILOBYTES" /> KB</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# tệp}other{# tệp}}</translation>
 <translation id="2017836877785168846">Xóa lịch sử duyệt web và nội dung tự động hoàn thành trong thanh địa chỉ.</translation>
-<translation id="2018707881002649255">Những người liên hệ bạn chọn bên dưới sẽ được chia sẻ với trang web <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="2021896219286479412">Kiểm soát trang toàn màn hình</translation>
 <translation id="2038563949887743358">Bật Yêu cầu trang web cho máy tính</translation>
 <translation id="2041019821020695769">Để Chrome có thể gửi cho bạn thông báo, hãy bật cả thông báo trong phần <ph name="BEGIN_LINK" />Cài đặt của Android<ph name="END_LINK" />.</translation>
@@ -243,7 +242,6 @@
 <translation id="2777555524387840389">Còn <ph name="SECONDS" /> giây</translation>
 <translation id="2779651927720337254">không tải xuống được</translation>
 <translation id="2781151931089541271">Còn 1 giây</translation>
-<translation id="2796941233371040292">Không có dữ liệu lưu trữ tại đây</translation>
 <translation id="2801022321632964776">Hãy cập nhật để dùng ngôn ngữ của bạn trong phiên bản Chrome mới nhất</translation>
 <translation id="2810645512293415242">Trang đơn giản giúp lưu dữ liệu và tải nhanh hơn.</translation>
 <translation id="281504910091592009">Xem và quản lý các mật khẩu đã lưu trong <ph name="BEGIN_LINK" />Tài khoản Google<ph name="END_LINK" /> của bạn</translation>
@@ -271,6 +269,7 @@
 <translation id="2962095958535813455">Đã chuyển sang tab ẩn danh</translation>
 <translation id="2968755619301702150">Trình xem chứng chỉ</translation>
 <translation id="2979025552038692506">Tab ẩn danh được chọn</translation>
+<translation id="2987620471460279764">Văn bản được chia sẻ từ thiết bị khác</translation>
 <translation id="2989523299700148168">Đã truy cập gần đây</translation>
 <translation id="2996291259634659425">Tạo cụm mật khẩu</translation>
 <translation id="2996809686854298943">Cần có URL</translation>
@@ -554,6 +553,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{Không tải được 1 tệp xuống.}other{Không tải được # tệp xuống.}}</translation>
 <translation id="5170568018924773124">Hiển thị trong thư mục</translation>
 <translation id="5184329579814168207">Mở trong Chrome</translation>
+<translation id="5193988420012215838">Đã sao chép vào khay nhớ tạm</translation>
 <translation id="5199929503336119739">Hồ sơ công việc</translation>
 <translation id="5202089186707505116">Cho phép trang web này sử dụng các cảm biến thực tế ảo?</translation>
 <translation id="5210286577605176222">Quay về tab trước</translation>
@@ -702,6 +702,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cách hiển thị cho bạn các quảng cáo không dựa trên các trang web khác mà bạn đã truy cập. Nhiều trang web sẽ vẫn thu thập và sử dụng dữ liệu duyệt web của bạn — ví dụ: để tăng cường bảo mật, cung cấp nội dung, quảng cáo và đề xuất, đồng thời tạo số liệu thống kê báo cáo.</translation>
 <translation id="624789221780392884">Bản cập nhật đã sẵn sàng</translation>
 <translation id="6255999984061454636">Đề xuất nội dung</translation>
+<translation id="6264430811215618931"><ph name="ORIGIN" /> đã gửi một tin nhắn văn bản tới số điện thoại của bạn. Nếu bạn xác nhận, trang web sẽ biết được đó là bạn.</translation>
 <translation id="6277522088822131679">Đã xảy ra sự cố khi in trang này. Vui lòng thử lại.</translation>
 <translation id="6295158916970320988">Tất cả các trang web</translation>
 <translation id="629730747756840877">Tài khoản</translation>
@@ -717,7 +718,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6364438453358674297">Xóa đề xuất khỏi lịch sử?</translation>
 <translation id="6369229450655021117">Từ đây, bạn có thể tìm kiếm trên web, chia sẻ với bạn bè và xem các trang đang mở</translation>
 <translation id="6378173571450987352">Thông tin chi tiết: Sắp xếp theo lượng dữ liệu đã dùng</translation>
-<translation id="6383961787135158834">Xóa dữ liệu trang trong bộ nhớ...</translation>
 <translation id="6388207532828177975">Xóa và đặt lại</translation>
 <translation id="6393863479814692971">Chrome cần có quyền truy cập máy ảnh và micrô của bạn cho trang web này.</translation>
 <translation id="6395288395575013217">LIÊN KẾT</translation>

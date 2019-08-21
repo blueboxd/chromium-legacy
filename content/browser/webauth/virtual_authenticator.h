@@ -77,6 +77,11 @@ class CONTENT_EXPORT VirtualAuthenticator
   }
   const std::string& unique_id() const { return unique_id_; }
 
+  bool is_user_verifying_platform_authenticator() const {
+    return attachment_ == device::AuthenticatorAttachment::kPlatform &&
+           has_user_verification_;
+  }
+
   // Constructs a VirtualFidoDevice instance that will perform cryptographic
   // operations on behalf of, and using the state stored in this virtual
   // authenticator.

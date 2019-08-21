@@ -69,7 +69,7 @@ class UserTypeFilterTest : public testing::Test {
 
  private:
   // To support context of browser threads.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(UserTypeFilterTest);
 };

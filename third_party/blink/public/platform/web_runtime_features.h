@@ -89,6 +89,7 @@ class WebRuntimeFeatures {
       bool);
   BLINK_PLATFORM_EXPORT static void EnableWasmCodeCache(bool);
   BLINK_PLATFORM_EXPORT static void EnableCanvas2dImageChromium(bool);
+  BLINK_PLATFORM_EXPORT static void EnableCanvas2dSwapChain(bool);
   BLINK_PLATFORM_EXPORT static void EnableCSSHexAlphaColor(bool);
   BLINK_PLATFORM_EXPORT static void EnableSameSiteByDefaultCookies(bool);
   BLINK_PLATFORM_EXPORT static void EnableScrollTopLeftInterop(bool);

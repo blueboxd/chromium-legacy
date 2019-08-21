@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/modules/idle/idle_options.h"
@@ -108,8 +108,8 @@ void IdleDetector::StartMonitoring() {
       GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
 
   if (!service_) {
-    GetExecutionContext()->GetInterfaceProvider()->GetInterface(
-        service_.BindNewPipeAndPassReceiver());
+    GetExecutionContext()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+        service_.BindNewPipeAndPassReceiver(task_runner));
   }
 
   mojo::PendingRemote<mojom::blink::IdleMonitor> idle_monitor_remote;

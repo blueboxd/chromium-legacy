@@ -77,7 +77,7 @@ class MetricsReportingHandlerTest : public testing::Test {
   policy::MockConfigurationPolicyProvider* provider() { return &provider_; }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   content::TestWebUI test_web_ui_;
   std::unique_ptr<ScopedTestingLocalState> local_state_;
   std::unique_ptr<TestingMetricsReportingHandler> handler_;

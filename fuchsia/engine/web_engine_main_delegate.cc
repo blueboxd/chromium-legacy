@@ -31,7 +31,7 @@ void InitLoggingFromCommandLine(const base::CommandLine& command_line) {
   }
   if (command_line.HasSwitch(switches::kLogFile)) {
     settings.logging_dest |= logging::LOG_TO_FILE;
-    settings.log_file =
+    settings.log_file_path =
         command_line.GetSwitchValueASCII(switches::kLogFile).c_str();
     settings.delete_old = logging::DELETE_OLD_LOG_FILE;
   }

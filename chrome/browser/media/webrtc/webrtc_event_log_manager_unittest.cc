@@ -778,7 +778,7 @@ class WebRtcEventLogManagerTestBase : public ::testing::Test {
   }
 
   // Testing utilities.
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::test::ScopedFeatureList scoped_feature_list_;
   base::test::ScopedCommandLine scoped_command_line_;
   base::SimpleTestClock frozen_clock_;

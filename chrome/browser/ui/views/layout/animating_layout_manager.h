@@ -79,7 +79,7 @@ class AnimatingLayoutManager : public views::LayoutManagerBase {
   gfx::Tween::Type tween_type() const { return tween_type_; }
   AnimatingLayoutManager& SetTweenType(gfx::Tween::Type tween_type);
 
-  bool is_animating() const { return current_offset_ < 1.0; }
+  bool is_animating() const { return is_animating_; }
 
   // Sets the owned (non-animating) layout manager which defines the target
   // layout that will be animated to when it changes.
@@ -164,6 +164,9 @@ class AnimatingLayoutManager : public views::LayoutManagerBase {
   // Used to suspend re-evaluation of the target layout during certain internal
   // operations.
   bool suspend_recalculation_ = false;
+
+  // Used to determine when to fire animation events.
+  bool is_animating_ = false;
 
   // Where in the animation the last layout recalculation happened.
   double starting_offset_ = 0.0;

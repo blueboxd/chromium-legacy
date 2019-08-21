@@ -63,7 +63,7 @@ class PolicyInfoTest : public ::testing::Test {
   policy::MockPolicyService* policy_service() { return policy_service_; }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
   policy::PolicyMap policy_map_;
   policy::PolicyMap extension_policy_map_;

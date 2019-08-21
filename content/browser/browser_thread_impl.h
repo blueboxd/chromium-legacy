@@ -29,7 +29,7 @@ class TestBrowserThread;
 // accepting tasks by then however).
 //
 // Very few users should use this directly. To mock BrowserThreads, tests should
-// use TestBrowserThreadBundle instead.
+// use BrowserTaskEnvironment instead.
 class CONTENT_EXPORT BrowserThreadImpl : public BrowserThread {
  public:
   ~BrowserThreadImpl();

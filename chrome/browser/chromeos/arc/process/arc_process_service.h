@@ -72,8 +72,8 @@ class ArcProcessService : public KeyedService,
   using OptionalArcProcessList = base::Optional<std::vector<ArcProcess>>;
   using RequestProcessListCallback =
       base::OnceCallback<void(OptionalArcProcessList)>;
-  using RequestMemoryInfoCallback = base::OnceCallback<void(
-      std::unique_ptr<memory_instrumentation::GlobalMemoryDump>)>;
+  using RequestMemoryInfoCallback =
+      base::OnceCallback<void(std::vector<mojom::ArcMemoryDumpPtr>)>;
 
   ArcProcessService(content::BrowserContext* context,
                     ArcBridgeService* bridge_service);
@@ -124,9 +124,8 @@ class ArcProcessService : public KeyedService,
   void OnReceiveProcessList(
       RequestProcessListCallback callback,
       std::vector<mojom::RunningAppProcessInfoPtr> processes);
-  void OnReceiveMemoryInfo(
-      RequestMemoryInfoCallback callback,
-      memory_instrumentation::mojom::GlobalMemoryDumpPtr dump);
+  void OnReceiveMemoryInfo(RequestMemoryInfoCallback callback,
+                           std::vector<mojom::ArcMemoryDumpPtr> process_dumps);
   void OnGetSystemProcessList(RequestMemoryInfoCallback callback,
                               std::vector<ArcProcess> processes);
   // ConnectionObserver<mojom::ProcessInstance> overrides.

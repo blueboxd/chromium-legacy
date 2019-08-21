@@ -99,9 +99,12 @@ class PnaclTranslationCacheEntry
   void CloseEntry(int rv);
   // Call the user callback, and signal to the cache to delete this.
   void Finish(int rv);
-  // Used as the callback for all operations to the backend. Handle state
-  // transitions, track bytes transferred, and call the other helper methods.
+  // Used as the callback for all operations to the backend except those that
+  // first open/create entries. Handle state transitions, track bytes
+  // transferred, and call the other helper methods.
   void DispatchNext(int rv);
+  // Like above but for first opening or creating of |entry_|.
+  void SaveEntryAndDispatchNext(disk_cache::EntryResult result);
 
   base::WeakPtr<PnaclTranslationCache> cache_;
   std::string key_;
@@ -174,19 +177,21 @@ void PnaclTranslationCacheEntry::Start() {
 // OpenEntry, CreateEntry, WriteEntry, ReadEntry and CloseEntry are only called
 // from DispatchNext, so they know that cache_ is still valid.
 void PnaclTranslationCacheEntry::OpenEntry() {
-  int rv = cache_->backend()->OpenEntry(
-      key_, net::HIGHEST, &entry_,
-      base::BindOnce(&PnaclTranslationCacheEntry::DispatchNext, this));
-  if (rv != net::ERR_IO_PENDING)
-    DispatchNext(rv);
+  disk_cache::EntryResult result = cache_->backend()->OpenEntry(
+      key_, net::HIGHEST,
+      base::BindOnce(&PnaclTranslationCacheEntry::SaveEntryAndDispatchNext,
+                     this));
+  if (result.net_error() != net::ERR_IO_PENDING)
+    SaveEntryAndDispatchNext(std::move(result));
 }
 
 void PnaclTranslationCacheEntry::CreateEntry() {
-  int rv = cache_->backend()->CreateEntry(
-      key_, net::HIGHEST, &entry_,
-      base::BindOnce(&PnaclTranslationCacheEntry::DispatchNext, this));
-  if (rv != net::ERR_IO_PENDING)
-    DispatchNext(rv);
+  disk_cache::EntryResult result = cache_->backend()->CreateEntry(
+      key_, net::HIGHEST,
+      base::BindOnce(&PnaclTranslationCacheEntry::SaveEntryAndDispatchNext,
+                     this));
+  if (result.net_error() != net::ERR_IO_PENDING)
+    SaveEntryAndDispatchNext(std::move(result));
 }
 
 void PnaclTranslationCacheEntry::WriteEntry(int offset, int len) {
@@ -312,6 +317,13 @@ void PnaclTranslationCacheEntry::DispatchNext(int rv) {
       step_ = UNINITIALIZED;
       break;
   }
+}
+
+void PnaclTranslationCacheEntry::SaveEntryAndDispatchNext(
+    disk_cache::EntryResult result) {
+  int rv = result.net_error();
+  entry_ = result.ReleaseEntry();
+  DispatchNext(rv);
 }
 
 //////////////////////////////////////////////////////////////////////

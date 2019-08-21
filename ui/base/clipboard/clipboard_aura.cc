@@ -427,15 +427,15 @@ ClipboardAura::~ClipboardAura() {
 
 void ClipboardAura::OnPreShutdown() {}
 
-uint64_t ClipboardAura::GetSequenceNumber(ClipboardType type) const {
+uint64_t ClipboardAura::GetSequenceNumber(ClipboardBuffer buffer) const {
   DCHECK(CalledOnValidThread());
   return clipboard_internal_->sequence_number();
 }
 
 bool ClipboardAura::IsFormatAvailable(const ClipboardFormatType& format,
-                                      ClipboardType type) const {
+                                      ClipboardBuffer buffer) const {
   DCHECK(CalledOnValidThread());
-  DCHECK(IsSupportedClipboardType(type));
+  DCHECK(IsSupportedClipboardBuffer(buffer));
   if (ClipboardFormatType::GetPlainTextType().Equals(format) ||
       ClipboardFormatType::GetUrlType().Equals(format))
     return clipboard_internal_->IsFormatAvailable(AuraClipboardFormat::kText);
@@ -451,13 +451,13 @@ bool ClipboardAura::IsFormatAvailable(const ClipboardFormatType& format,
   return data && data->custom_data_format() == format.ToString();
 }
 
-void ClipboardAura::Clear(ClipboardType type) {
+void ClipboardAura::Clear(ClipboardBuffer buffer) {
   DCHECK(CalledOnValidThread());
-  DCHECK(IsSupportedClipboardType(type));
+  DCHECK(IsSupportedClipboardBuffer(buffer));
   clipboard_internal_->Clear();
 }
 
-void ClipboardAura::ReadAvailableTypes(ClipboardType type,
+void ClipboardAura::ReadAvailableTypes(ClipboardBuffer buffer,
                                        std::vector<base::string16>* types,
                                        bool* contains_filenames) const {
   DCHECK(CalledOnValidThread());
@@ -468,16 +468,16 @@ void ClipboardAura::ReadAvailableTypes(ClipboardType type,
 
   types->clear();
   *contains_filenames = false;
-  if (IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), type))
+  if (IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), buffer))
     types->push_back(
         base::UTF8ToUTF16(ClipboardFormatType::GetPlainTextType().ToString()));
-  if (IsFormatAvailable(ClipboardFormatType::GetHtmlType(), type))
+  if (IsFormatAvailable(ClipboardFormatType::GetHtmlType(), buffer))
     types->push_back(
         base::UTF8ToUTF16(ClipboardFormatType::GetHtmlType().ToString()));
-  if (IsFormatAvailable(ClipboardFormatType::GetRtfType(), type))
+  if (IsFormatAvailable(ClipboardFormatType::GetRtfType(), buffer))
     types->push_back(
         base::UTF8ToUTF16(ClipboardFormatType::GetRtfType().ToString()));
-  if (IsFormatAvailable(ClipboardFormatType::GetBitmapType(), type))
+  if (IsFormatAvailable(ClipboardFormatType::GetBitmapType(), buffer))
     types->push_back(base::UTF8ToUTF16(kMimeTypePNG));
 
   if (clipboard_internal_->IsFormatAvailable(AuraClipboardFormat::kCustom) &&
@@ -488,18 +488,19 @@ void ClipboardAura::ReadAvailableTypes(ClipboardType type,
   }
 }
 
-void ClipboardAura::ReadText(ClipboardType type, base::string16* result) const {
+void ClipboardAura::ReadText(ClipboardBuffer buffer,
+                             base::string16* result) const {
   DCHECK(CalledOnValidThread());
   clipboard_internal_->ReadText(result);
 }
 
-void ClipboardAura::ReadAsciiText(ClipboardType type,
+void ClipboardAura::ReadAsciiText(ClipboardBuffer buffer,
                                   std::string* result) const {
   DCHECK(CalledOnValidThread());
   clipboard_internal_->ReadAsciiText(result);
 }
 
-void ClipboardAura::ReadHTML(ClipboardType type,
+void ClipboardAura::ReadHTML(ClipboardBuffer buffer,
                              base::string16* markup,
                              std::string* src_url,
                              uint32_t* fragment_start,
@@ -508,17 +509,17 @@ void ClipboardAura::ReadHTML(ClipboardType type,
   clipboard_internal_->ReadHTML(markup, src_url, fragment_start, fragment_end);
 }
 
-void ClipboardAura::ReadRTF(ClipboardType type, std::string* result) const {
+void ClipboardAura::ReadRTF(ClipboardBuffer buffer, std::string* result) const {
   DCHECK(CalledOnValidThread());
   clipboard_internal_->ReadRTF(result);
 }
 
-SkBitmap ClipboardAura::ReadImage(ClipboardType type) const {
+SkBitmap ClipboardAura::ReadImage(ClipboardBuffer buffer) const {
   DCHECK(CalledOnValidThread());
   return clipboard_internal_->ReadImage();
 }
 
-void ClipboardAura::ReadCustomData(ClipboardType clipboard_type,
+void ClipboardAura::ReadCustomData(ClipboardBuffer buffer,
                                    const base::string16& type,
                                    base::string16* result) const {
   DCHECK(CalledOnValidThread());
@@ -537,9 +538,10 @@ void ClipboardAura::ReadData(const ClipboardFormatType& format,
   clipboard_internal_->ReadData(format.ToString(), result);
 }
 
-void ClipboardAura::WriteObjects(ClipboardType type, const ObjectMap& objects) {
+void ClipboardAura::WriteObjects(ClipboardBuffer buffer,
+                                 const ObjectMap& objects) {
   DCHECK(CalledOnValidThread());
-  DCHECK(IsSupportedClipboardType(type));
+  DCHECK(IsSupportedClipboardBuffer(buffer));
   for (const auto& object : objects)
     DispatchObject(static_cast<ObjectType>(object.first), object.second);
   ClipboardDataBuilder::CommitToClipboard(clipboard_internal_.get());

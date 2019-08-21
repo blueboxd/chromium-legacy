@@ -41,7 +41,7 @@ class ArcAppShortcutsRequestTest : public testing::Test {
   std::unique_ptr<TestingProfile> profile_;
   ArcAppTest arc_app_test_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppShortcutsRequestTest);
 };

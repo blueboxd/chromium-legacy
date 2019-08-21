@@ -300,7 +300,7 @@ class MHTMLGenerationTest : public ContentBrowserTest,
   }
 
   void GenerateMHTML(MHTMLGenerationParams& params, const GURL& url) {
-    NavigateToURL(shell(), url);
+    EXPECT_TRUE(NavigateToURL(shell(), url));
     GenerateMHTMLForCurrentPage(params);
   }
 
@@ -360,7 +360,7 @@ class MHTMLGenerationTest : public ContentBrowserTest,
     // are met (this is mostly a sanity check - a failure to meet
     // expectations would probably mean that there is a test bug
     // (i.e. that we got called with wrong expected_foo argument).
-    NavigateToURL(shell(), url);
+    EXPECT_TRUE(NavigateToURL(shell(), url));
     if (!skip_verification_of_original_page) {
       AssertExpectationsAboutCurrentTab(expected_number_of_frames,
                                         expected_substrings,
@@ -377,7 +377,8 @@ class MHTMLGenerationTest : public ContentBrowserTest,
     // met (i.e. if the same expectations are met for "after"
     // [saved version of the page] as for the "before"
     // [the original version of the page].
-    NavigateToURL(shell(), net::FilePathToFileURL(params.file_path));
+    EXPECT_TRUE(
+        NavigateToURL(shell(), net::FilePathToFileURL(params.file_path)));
     AssertExpectationsAboutCurrentTab(expected_number_of_frames,
                                       expected_substrings,
                                       forbidden_substrings_in_saved_page);
@@ -478,7 +479,8 @@ IN_PROC_BROWSER_TEST_P(MHTMLGenerationTest,
   scoped_refptr<RespondAndDisconnectMockWriter> mock_writer =
       base::MakeRefCounted<RespondAndDisconnectMockWriter>();
 
-  NavigateToURL(shell(), embedded_test_server()->GetURL("/simple_page.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/simple_page.html")));
   base::FilePath path(temp_dir_.GetPath());
   path = path.Append(FILE_PATH_LITERAL("test.mht"));
 
@@ -503,8 +505,7 @@ IN_PROC_BROWSER_TEST_P(MHTMLGenerationTest,
 IN_PROC_BROWSER_TEST_P(MHTMLGenerationTest, MAYBE_InvalidPath) {
   base::FilePath path(FILE_PATH_LITERAL("/invalid/file/path"));
 
-  GenerateMHTML(path, embedded_test_server()->GetURL(
-                          "/download/local-about-blank-subframes.html"));
+  GenerateMHTML(path, embedded_test_server()->GetURL("/page_with_image.html"));
 
   EXPECT_EQ(file_size(), -1);  // Expecting that the callback reported failure.
 

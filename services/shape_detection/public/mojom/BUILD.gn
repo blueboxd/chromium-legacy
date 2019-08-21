@@ -8,9 +8,9 @@ mojom("mojom") {
   sources = [
     "barcodedetection.mojom",
     "barcodedetection_provider.mojom",
-    "constants.mojom",
     "facedetection.mojom",
     "facedetection_provider.mojom",
+    "shape_detection_service.mojom",
     "textdetection.mojom",
   ]
 

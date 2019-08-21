@@ -67,9 +67,9 @@ base::FilePath CastAudioJson::GetFilePathForTuning() {
 }
 
 CastAudioJsonProviderImpl::CastAudioJsonProviderImpl()
-    : cast_audio_watcher_(
-          base::SequenceBound<FileWatcher>(base::CreateSequencedTaskRunner(
-              {base::MayBlock(), base::TaskPriority::LOWEST}))) {}
+    : cast_audio_watcher_(base::SequenceBound<FileWatcher>(
+          base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                           base::TaskPriority::LOWEST}))) {}
 
 CastAudioJsonProviderImpl::~CastAudioJsonProviderImpl() = default;
 

@@ -28,10 +28,10 @@ class PLATFORM_EXPORT DisplayItemList
  public:
   DisplayItemList(size_t initial_size_bytes)
       : ContiguousContainer(kMaximumDisplayItemSize, initial_size_bytes) {}
-  DisplayItemList(DisplayItemList&& source)
+  DisplayItemList(DisplayItemList&& source) noexcept
       : ContiguousContainer(std::move(source)) {}
 
-  DisplayItemList& operator=(DisplayItemList&& source) {
+  DisplayItemList& operator=(DisplayItemList&& source) noexcept {
     ContiguousContainer::operator=(std::move(source));
     return *this;
   }

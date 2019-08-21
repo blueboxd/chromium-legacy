@@ -1111,6 +1111,10 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   void DirtyStackingContextZOrderLists();
 
+  bool NeedsVisualOverflowRecalcForTesting() const {
+    return needs_visual_overflow_recalc_;
+  }
+
   PhysicalOffset OffsetForInFlowRelPosition() const {
     return rare_data_ ? rare_data_->offset_for_in_flow_rel_position
                       : PhysicalOffset();

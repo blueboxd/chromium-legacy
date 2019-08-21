@@ -36,7 +36,7 @@
 #include "content/renderer/render_widget.h"
 #include "content/renderer/render_widget_delegate.h"
 #include "ipc/ipc_platform_file.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
@@ -210,7 +210,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // Registers a watcher to observe changes in the
   // blink::mojom::RendererPreferences.
   void RegisterRendererPreferenceWatcher(
-      blink::mojom::RendererPreferenceWatcherPtr watcher);
+      mojo::PendingRemote<blink::mojom::RendererPreferenceWatcher> watcher);
 
   // IPC::Listener implementation (via RenderWidget inheritance).
   bool OnMessageReceived(const IPC::Message& msg) override;
@@ -545,7 +545,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   blink::mojom::RendererPreferences renderer_preferences_;
   // These are observing changes in |renderer_preferences_|. This is used for
   // keeping WorkerFetchContext in sync.
-  mojo::InterfacePtrSet<blink::mojom::RendererPreferenceWatcher>
+  mojo::RemoteSet<blink::mojom::RendererPreferenceWatcher>
       renderer_preference_watchers_;
 
   // Whether content state (such as form state, scroll position and page

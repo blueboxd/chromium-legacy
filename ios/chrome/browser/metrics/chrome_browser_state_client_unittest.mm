@@ -33,7 +33,7 @@ class ChromeBrowserStateClientTest : public PlatformTest {
   void SetUp() override { PlatformTest::SetUp(); }
 
  private:
-  web::TestWebThreadBundle test_web_thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
 };
 

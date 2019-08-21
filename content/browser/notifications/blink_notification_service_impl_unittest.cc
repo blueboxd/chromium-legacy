@@ -114,7 +114,7 @@ class BlinkNotificationServiceImplTest : public ::testing::Test {
   // Using REAL_IO_THREAD would give better coverage for thread safety, but
   // at time of writing EmbeddedWorkerTestHelper didn't seem to support that.
   BlinkNotificationServiceImplTest()
-      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP),
         embedded_worker_helper_(
             std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath())),
         mock_platform_service_(&browser_context_),
@@ -420,7 +420,7 @@ class BlinkNotificationServiceImplTest : public ::testing::Test {
  protected:
   void OnMojoError(const std::string& error) { bad_messages_.push_back(error); }
 
-  TestBrowserThreadBundle thread_bundle_;  // Must be first member.
+  BrowserTaskEnvironment task_environment_;  // Must be first member.
 
   std::unique_ptr<EmbeddedWorkerTestHelper> embedded_worker_helper_;
 

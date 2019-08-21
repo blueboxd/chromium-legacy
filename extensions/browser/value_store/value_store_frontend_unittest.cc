@@ -64,7 +64,7 @@ class ValueStoreFrontendTest : public testing::Test {
   std::unique_ptr<ValueStoreFrontend> storage_;
   base::ScopedTempDir temp_dir_;
   base::FilePath db_path_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(ValueStoreFrontendTest, GetExistingData) {

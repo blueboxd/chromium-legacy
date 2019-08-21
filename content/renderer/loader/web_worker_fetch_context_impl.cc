@@ -29,7 +29,6 @@
 #include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "content/renderer/service_worker/service_worker_subresource_loader.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/common/features.h"
@@ -152,7 +151,8 @@ class WebWorkerFetchContextImpl::Factory : public blink::WebURLLoaderFactory {
 scoped_refptr<WebWorkerFetchContextImpl> WebWorkerFetchContextImpl::Create(
     ServiceWorkerProviderContext* provider_context,
     blink::mojom::RendererPreferences renderer_preferences,
-    blink::mojom::RendererPreferenceWatcherRequest watcher_request,
+    mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
+        watcher_receiver,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
         fallback_factory_info) {
@@ -178,7 +178,7 @@ scoped_refptr<WebWorkerFetchContextImpl> WebWorkerFetchContextImpl::Create(
 
   scoped_refptr<WebWorkerFetchContextImpl> worker_fetch_context =
       base::AdoptRef(new WebWorkerFetchContextImpl(
-          std::move(renderer_preferences), std::move(watcher_request),
+          std::move(renderer_preferences), std::move(watcher_receiver),
           std::move(service_worker_client_request),
           std::move(service_worker_worker_client_registry_ptr_info),
           std::move(service_worker_container_host),
@@ -203,7 +203,8 @@ scoped_refptr<WebWorkerFetchContextImpl> WebWorkerFetchContextImpl::Create(
 
 WebWorkerFetchContextImpl::WebWorkerFetchContextImpl(
     blink::mojom::RendererPreferences renderer_preferences,
-    blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request,
+    mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
+        preference_watcher_receiver,
     blink::mojom::ServiceWorkerWorkerClientRequest
         service_worker_client_request,
     blink::mojom::ServiceWorkerWorkerClientRegistryPtrInfo
@@ -227,8 +228,8 @@ WebWorkerFetchContextImpl::WebWorkerFetchContextImpl(
       fallback_factory_info_(std::move(fallback_factory_info)),
       thread_safe_sender_(thread_safe_sender),
       renderer_preferences_(std::move(renderer_preferences)),
-      preference_watcher_binding_(this),
-      preference_watcher_request_(std::move(preference_watcher_request)),
+      preference_watcher_pending_receiver_(
+          std::move(preference_watcher_receiver)),
       throttle_provider_(std::move(throttle_provider)),
       websocket_handshake_throttle_provider_(
           std::move(websocket_handshake_throttle_provider)),
@@ -330,7 +331,7 @@ void WebWorkerFetchContextImpl::InitializeOnWorkerThread(
     blink::AcceptLanguagesWatcher* watcher) {
   DCHECK(!resource_dispatcher_);
   DCHECK(!binding_.is_bound());
-  DCHECK(!preference_watcher_binding_.is_bound());
+  DCHECK(!preference_watcher_receiver_.is_bound());
   resource_dispatcher_ = std::make_unique<ResourceDispatcher>();
   resource_dispatcher_->set_terminate_sync_load_event(
       terminate_sync_load_event_);
@@ -347,8 +348,10 @@ void WebWorkerFetchContextImpl::InitializeOnWorkerThread(
         std::move(service_worker_worker_client_registry_info_));
   }
 
-  if (preference_watcher_request_.is_pending())
-    preference_watcher_binding_.Bind(std::move(preference_watcher_request_));
+  if (preference_watcher_pending_receiver_.is_valid()) {
+    preference_watcher_receiver_.Bind(
+        std::move(preference_watcher_pending_receiver_));
+  }
 
   if (pending_service_worker_container_host_) {
     service_worker_container_host_.Bind(
@@ -542,9 +545,11 @@ WebWorkerFetchContextImpl::CloneForNestedWorkerInternal(
     std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory_info,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  blink::mojom::RendererPreferenceWatcherPtr preference_watcher;
+  mojo::PendingRemote<blink::mojom::RendererPreferenceWatcher>
+      preference_watcher;
   auto new_context = base::AdoptRef(new WebWorkerFetchContextImpl(
-      renderer_preferences_, mojo::MakeRequest(&preference_watcher),
+      renderer_preferences_,
+      preference_watcher.InitWithNewPipeAndPassReceiver(),
       std::move(service_worker_client_request),
       std::move(service_worker_worker_client_registry_ptr_info),
       std::move(service_worker_container_host), std::move(loader_factory_info),
@@ -559,7 +564,7 @@ WebWorkerFetchContextImpl::CloneForNestedWorkerInternal(
   new_context->ancestor_frame_id_ = ancestor_frame_id_;
   new_context->frame_request_blocker_ = frame_request_blocker_;
   new_context->top_frame_origin_ = top_frame_origin_;
-  child_preference_watchers_.AddPtr(std::move(preference_watcher));
+  child_preference_watchers_.Add(std::move(preference_watcher));
   return new_context;
 }
 
@@ -605,10 +610,8 @@ void WebWorkerFetchContextImpl::NotifyUpdate(
       renderer_preferences_.accept_languages != new_prefs->accept_languages)
     accept_languages_watcher_->NotifyUpdate();
   renderer_preferences_ = *new_prefs;
-  child_preference_watchers_.ForAllPtrs(
-      [&new_prefs](blink::mojom::RendererPreferenceWatcher* watcher) {
-        watcher->NotifyUpdate(new_prefs.Clone());
-      });
+  for (auto& watcher : child_preference_watchers_)
+    watcher->NotifyUpdate(new_prefs.Clone());
 }
 
 blink::WebString WebWorkerFetchContextImpl::GetAcceptLanguages() const {

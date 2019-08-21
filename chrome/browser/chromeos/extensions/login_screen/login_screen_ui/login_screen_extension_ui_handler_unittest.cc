@@ -180,7 +180,7 @@ class LoginScreenExtensionUiHandlerUnittest : public testing::Test {
         ui_handler_->Show(extension, kUrl, kCanBeClosedByUser, &error));
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   content::TestServiceManagerContext context_;
   const extensions::ScopedCurrentChannel scoped_current_channel_;
 

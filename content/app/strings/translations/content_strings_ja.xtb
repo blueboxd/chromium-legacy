@@ -57,6 +57,7 @@
 <translation id="2746543609216772311"><ph name="MINIMUM_DATE_OR_TIME" /> 以降の値を指定する必要があります。</translation>
 <translation id="2759744352195237655">ポップアップ ボタン</translation>
 <translation id="2761667185364618470">次に進むにはこのチェックボックスをオンにしてください。</translation>
+<translation id="2844350028562914727">詳細</translation>
 <translation id="2896972712917208084">ラジオボタン グループ</translation>
 <translation id="2908441821576996758">メール アドレスのカンマ区切りリストを入力してください。</translation>
 <translation id="2940813599313844715">オブジェクト</translation>
@@ -154,6 +155,7 @@
 <translation id="6166809985690652833">後書き</translation>
 <translation id="6209276755895393898"><ph name="DESCRIPTION" /> の画像のようです</translation>
 <translation id="6213469881011901533">用語集</translation>
+<translation id="6281763101136022427">URL</translation>
 <translation id="6310801910862476708">ピクチャー イン ピクチャーを終了</translation>
 <translation id="6398862346408813489">月選択パネルを表示</translation>
 <translation id="6404546809543547843">オーディオ再生バー</translation>
@@ -236,6 +238,7 @@
 <translation id="860475260694818407">目次</translation>
 <translation id="8613126697340063924">リモート再生をコントロール</translation>
 <translation id="862370744433916922">副題</translation>
+<translation id="8711688047404765493">出力</translation>
 <translation id="8750798805984357768">これらのオプションから 1 つ選択してください。</translation>
 <translation id="8808573423886751634">章</translation>
 <translation id="8845239796550121995">テレビにキャストしています</translation>

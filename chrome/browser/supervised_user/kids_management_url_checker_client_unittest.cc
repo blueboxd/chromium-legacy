@@ -142,7 +142,7 @@ class KidsManagementURLCheckerClientTest : public testing::Test {
                void(const GURL& url,
                     safe_search_api::ClientClassification classification));
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile* test_profile_;
   std::unique_ptr<TestingProfileManager> test_profile_manager_;
   std::unique_ptr<KidsManagementURLCheckerClient> url_classifier_;

@@ -282,6 +282,8 @@ void UserMediaClient::CancelUserMediaRequest(
 
 void UserMediaClient::DeleteAllUserMediaRequests() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (frame_)
+    frame_->SetIsCapturingMediaCallback(LocalFrame::IsCapturingMediaCallback());
   user_media_processor_->StopAllProcessing();
   is_processing_request_ = false;
   pending_request_infos_.clear();

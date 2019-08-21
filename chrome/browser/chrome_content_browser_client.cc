@@ -399,6 +399,7 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/crash/content/app/breakpad_linux.h"
+#include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "services/service_manager/public/mojom/interface_provider_spec.mojom.h"
 #elif defined(OS_LINUX)
@@ -2563,8 +2564,17 @@ std::string ChromeContentBrowserClient::GetWebBluetoothBlocklist() {
 
 #if defined(OS_CHROMEOS)
 void ChromeContentBrowserClient::OnTrustAnchorUsed(
-    const std::string& username_hash) {
-  policy::PolicyCertServiceFactory::SetUsedPolicyCertificates(username_hash);
+    content::BrowserContext* browser_context) {
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+  if (user_manager) {
+    const user_manager::User* user =
+        chromeos::ProfileHelper::Get()->GetUserByProfile(
+            Profile::FromBrowserContext(browser_context));
+    if (user && !user->username_hash().empty()) {
+      policy::PolicyCertServiceFactory::SetUsedPolicyCertificates(
+          user->username_hash());
+    }
+  }
 }
 #endif
 
@@ -5080,7 +5090,7 @@ bool ChromeContentBrowserClient::IsSafeRedirectTarget(
 
 void ChromeContentBrowserClient::RegisterRendererPreferenceWatcher(
     content::BrowserContext* browser_context,
-    blink::mojom::RendererPreferenceWatcherPtr watcher) {
+    mojo::PendingRemote<blink::mojom::RendererPreferenceWatcher> watcher) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
   PrefWatcher::Get(profile)->RegisterRendererPreferenceWatcher(
       std::move(watcher));

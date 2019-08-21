@@ -53,8 +53,9 @@ FeedContentDatabase::FeedContentDatabase(
     leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
     const base::FilePath& database_folder)
     : database_status_(InitStatus::kNotInitialized),
-      task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
+      task_runner_(
+          base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                           base::TaskPriority::USER_VISIBLE})),
       storage_database_(proto_database_provider->GetDB<ContentStorageProto>(
           leveldb_proto::ProtoDbType::FEED_CONTENT_DATABASE,
           database_folder.AppendASCII(kContentDatabaseFolder),
@@ -165,7 +166,7 @@ void FeedContentDatabase::PerformNextOperation(
     ConfirmationCallback callback) {
   DCHECK(!content_mutation->Empty());
 
-  ContentOperation operation = content_mutation->TakeFristOperation();
+  ContentOperation operation = content_mutation->TakeFirstOperation();
 
   switch (operation.type()) {
     case ContentOperation::CONTENT_DELETE:

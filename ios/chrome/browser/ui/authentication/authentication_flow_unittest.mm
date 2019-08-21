@@ -102,7 +102,7 @@ class AuthenticationFlowTest : public PlatformTest {
     [performer_ verify];
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   AuthenticationFlow* authentication_flow_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   ChromeIdentity* identity1_;

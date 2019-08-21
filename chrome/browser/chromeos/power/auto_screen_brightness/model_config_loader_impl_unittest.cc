@@ -55,7 +55,7 @@ class TestObserver : public ModelConfigLoader::Observer {
 class ModelConfigLoaderImplTest : public testing::Test {
  public:
   ModelConfigLoaderImplTest()
-      : thread_bundle_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
     CHECK(temp_dir_.CreateUniqueTempDir());
     temp_params_path_ = temp_dir_.GetPath().Append("model_params.json");
   }
@@ -78,7 +78,7 @@ class ModelConfigLoaderImplTest : public testing::Test {
 
     test_observer_ = std::make_unique<TestObserver>();
     model_config_loader_->AddObserver(test_observer_.get());
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
  protected:
@@ -95,7 +95,7 @@ class ModelConfigLoaderImplTest : public testing::Test {
         << " to " << temp_params_path_;
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   base::ScopedTempDir temp_dir_;
   base::FilePath temp_params_path_;

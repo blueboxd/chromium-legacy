@@ -1618,15 +1618,6 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 
          Se não está definida como "false", os usuários podem transferir arquivos para o Google Drive.</translation>
 <translation id="3915395663995367577">URL de um arquivo proxy .pac</translation>
-<translation id="3920892052017026701">Configurar o início do carregamento personalizado da bateria, em porcentagem.
-
-          A bateria começará a ser carregada quando se esgotar até chegar ao valor do início personalizado de carregamento.
-
-          DeviceBatteryChargeCustomStartCharging precisa ser menor que DeviceBatteryChargeCustomStopCharging.
-
-          Esta política será usada apenas se DeviceBatteryChargeMode estiver definida como personalizada.
-
-          Se esta política não for configurada ou estiver indefinida, o modo de carga padrão da bateria será aplicado.</translation>
 <translation id="3925377537407648234">Define resolução de tela e fator de escala</translation>
 <translation id="3939893074578116847">Enviar pacotes de rede ao servidor de gerenciamento para monitorar o status on-line, a fim de permitir
       que o servidor detecte se o dispositivo está off-line.
@@ -2966,7 +2957,7 @@ Se esta configuração estiver desativada ou se nenhum valor for definido, o Mod
       O canal selecionado pelo usuário será substituído pela política ChromeOsReleaseChannel, mas se o canal da política for mais estável que aquele instalado no dispositivo, o canal só vai mudar depois que a versão do canal mais estável atingir um número de versão superior à que está instalada no dispositivo.</translation>
 <translation id="6549567350270907557">Se essa configuração estiver ativada, os usuários poderão usar o <ph name="PRODUCT_NAME" /> para verificar se as credenciais digitadas foram comprometidas em um vazamento.
 
-              Se esta política estiver ativada ou desativada, o usuário não poderá alterá-la ou substitui-la no <ph name="PRODUCT_NAME" />. Se esta política não for definida, a verificação de vazamento será permitida, mas poderá ser desativada pelo usuário.</translation>
+              Se esta política estiver ativada ou desativada, o usuário não poderá alterá-la ou substituí-la no <ph name="PRODUCT_NAME" />. Se esta política não for definida, a verificação de vazamento será permitida, mas poderá ser desativada pelo usuário.</translation>
 <translation id="6553143066970470539">Porcentagem de brilho da tela</translation>
 <translation id="6559057113164934677">Não permitir que nenhum site acesse minha câmera e meu microfone</translation>
 <translation id="6561396069801924653">Mostrar opções de acessibilidade no menu da bandeja do sistema</translation>
@@ -3540,15 +3531,6 @@ Essas políticas são ignoradas se a Área de trabalho remota do Google Chrome n
       Se o valor desta política for 0, o tamanho de cache padrão será usado, porém o usuário não poderá alterá-lo.
 
       Se esta política não for definida, o tamanho padrão será usado e o usuário poderá modificá-lo com a sinalização --disk-cache-size.</translation>
-<translation id="759389052790680884">Configurar a parada personalizada do carregamento da bateria, em porcentagem.
-
-          A bateria para de carregar ao atingir o valor de parada de carga personalizada.
-
-          DeviceBatteryChargeCustomStartCharging precisa ser menor que DeviceBatteryChargeCustomStopCharging.
-
-          Esta política será usada apenas se DeviceBatteryChargeMode estiver definida como personalizada.
-
-          Se esta política não for configurada ou estiver indefinida, o modo de carga padrão da bateria será aplicado.</translation>
 <translation id="759957074386651883">Configurações da política Safe Browsing</translation>
 <translation id="7604169113182304895">Os apps Android podem optar voluntariamente por respeitar essa lista. Não é possível forçá-los a respeitá-la.</translation>
 <translation id="7612157962821894603">Sinalizações amplas do sistema que devem ser aplicadas na inicialização do <ph name="PRODUCT_NAME" /></translation>
@@ -3645,9 +3627,6 @@ Se esta política não for definida, o renderizador padrão será usado para tod
 <translation id="7750991880413385988">Abrir Nova guia</translation>
 <translation id="7754704193130578113">Perguntar onde salvar cada arquivo antes de fazer download</translation>
 <translation id="7761446981238915769">Configurar a lista de apps instalados na tela de login</translation>
-<translation id="7763479091692861127"> Os tipos de conexão que podem ser usados para atualizações do sistema operacional. As atualizações do sistema operacional podem colocar grande pressão sobre a conexão, devido a seu tamanho, e poderão incorrer em custos adicionais. Portanto, por padrão, não são ativadas para tipos de conexão considerados dispendiosos, o que inclui WiMax, Bluetooth, WiMax e Cellular, no momento.
-
-      Os identificadores de tipos de conexão reconhecidos são "ethernet", "wifi", "WiMAX", "bluetooth" e "celular".</translation>
 <translation id="7763614521440615342">Mostrar sugestões de conteúdo na página "Nova guia"</translation>
 <translation id="7765879851993224640">Permitir que o login do Smart Lock seja usado.</translation>
 <translation id="7772346342637974431">Especifica o tempo que o usuário precisa ficar sem interagir para que uma caixa de diálogo de aviso seja mostrada enquanto o dispositivo funciona com alimentação da bateria.

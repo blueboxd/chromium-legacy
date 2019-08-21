@@ -138,7 +138,7 @@ class TabModelTest
     return [[SessionWindowIOS alloc] initWithSessions:sessions selectedIndex:1];
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
   web::ScopedTestingWebClient web_client_;
   SessionWindowIOS* session_window_;

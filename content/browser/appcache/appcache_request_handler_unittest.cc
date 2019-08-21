@@ -705,7 +705,7 @@ class AppCacheRequestHandlerTest : public ::testing::Test {
   }
 
   // Data members --------------------------------------------------
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
 
   base::OnceClosure test_finished_cb_;
   base::stack<base::OnceClosure> task_stack_;

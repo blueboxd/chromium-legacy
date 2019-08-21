@@ -63,7 +63,7 @@ class TestWithPerformanceManager : public ::testing::Test {
 
  private:
   std::unique_ptr<PerformanceManager> performance_manager_;
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWithPerformanceManager);
 };

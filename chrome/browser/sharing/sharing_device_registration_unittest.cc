@@ -160,7 +160,7 @@ class SharingDeviceRegistrationTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle task_environment_{
+  content::BrowserTaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
   sync_preferences::TestingPrefServiceSyncable prefs_;

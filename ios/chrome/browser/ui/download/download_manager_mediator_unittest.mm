@@ -55,7 +55,7 @@ class DownloadManagerMediatorTest : public PlatformTest {
   id application_;
 
  private:
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   web::FakeDownloadTask task_;
 };
 

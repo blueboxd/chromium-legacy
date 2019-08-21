@@ -387,7 +387,7 @@ class ProxyConfigServiceImplTest : public testing::Test {
     EXPECT_EQ(net::ProxyConfigService::CONFIG_VALID, availability);
   }
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
   std::unique_ptr<ProxyConfigServiceImpl> config_service_impl_;
   TestingPrefServiceSimple pref_service_;

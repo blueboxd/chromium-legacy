@@ -38,7 +38,7 @@ class MockNotificationTriggerScheduler : public NotificationTriggerScheduler {
 class NotificationTriggerSchedulerTest : public testing::Test {
  protected:
   NotificationTriggerSchedulerTest()
-      : thread_bundle_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   class ProfileTestData {
    public:
@@ -58,7 +58,7 @@ class NotificationTriggerSchedulerTest : public testing::Test {
     MockNotificationTriggerScheduler* scheduler_;
   };
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(NotificationTriggerSchedulerTest,
@@ -92,6 +92,6 @@ TEST_F(NotificationTriggerSchedulerTest,
   EXPECT_CALL(*data2.scheduler_,
               TriggerNotificationsForStoragePartition(partition2));
 
-  thread_bundle_.FastForwardBy(delta);
+  task_environment_.FastForwardBy(delta);
   base::RunLoop().RunUntilIdle();
 }

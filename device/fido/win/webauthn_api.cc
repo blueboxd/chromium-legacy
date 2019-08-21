@@ -12,8 +12,10 @@
 #include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_piece_forward.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/device_event_log/device_event_log.h"
+#include "device/fido/win/logging.h"
 #include "device/fido/win/type_conversions.h"
 
 namespace device {
@@ -315,14 +317,24 @@ AuthenticatorMakeCredentialBlocking(WinWebAuthnApi* webauthn_api,
             webauthn_api->FreeCredentialAttestation(ptr);
           });
 
+  FIDO_LOG(DEBUG) << "WebAuthNAuthenticatorMakeCredential("
+                  << "rp=" << rp_info << ", user=" << user_info
+                  << ", cose_credential_parameters="
+                  << cose_credential_parameters
+                  << ", client_data=" << client_data << ", options=" << options
+                  << ")";
   HRESULT hresult = webauthn_api->AuthenticatorMakeCredential(
       h_wnd, &rp_info, &user_info, &cose_credential_parameters, &client_data,
       &options, &credential_attestation);
   if (hresult != S_OK) {
+    FIDO_LOG(DEBUG) << "WebAuthNAuthenticatorMakeCredential()="
+                    << webauthn_api->GetErrorName(hresult);
     return {WinErrorNameToCtapDeviceResponseCode(
                 base::as_u16cstr(webauthn_api->GetErrorName(hresult))),
             base::nullopt};
   }
+  FIDO_LOG(DEBUG) << "WebAuthNAuthenticatorMakeCredential()="
+                  << *credential_attestation;
   return {CtapDeviceResponseCode::kSuccess,
           ToAuthenticatorMakeCredentialResponse(*credential_attestation)};
 }
@@ -410,13 +422,19 @@ AuthenticatorGetAssertionBlocking(WinWebAuthnApi* webauthn_api,
         webauthn_api->FreeAssertion(ptr);
       });
 
+  FIDO_LOG(DEBUG) << "WebAuthNAuthenticatorGetAssertion("
+                  << "rp_id=\"" << rp_id16 << "\", client_data=" << client_data
+                  << ", options=" << options << ")";
   HRESULT hresult = webauthn_api->AuthenticatorGetAssertion(
       h_wnd, base::as_wcstr(rp_id16), &client_data, &options, &assertion);
   if (hresult != S_OK) {
+    FIDO_LOG(DEBUG) << "WebAuthNAuthenticatorGetAssertion()="
+                    << webauthn_api->GetErrorName(hresult);
     return {WinErrorNameToCtapDeviceResponseCode(
                 base::as_u16cstr(webauthn_api->GetErrorName(hresult))),
             base::nullopt};
   }
+  FIDO_LOG(DEBUG) << "WebAuthNAuthenticatorGetAssertion()=" << *assertion;
   return {CtapDeviceResponseCode::kSuccess,
           ToAuthenticatorGetAssertionResponse(*assertion)};
 }

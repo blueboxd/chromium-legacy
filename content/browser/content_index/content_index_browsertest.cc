@@ -88,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(ContentIndexTest, GetIcons) {
   {
     // Don't load any icons.
     provider()->set_icon_sizes({});
-    RunScript("addContent('id1')");
+    RunScript("addContent('id1', [{src: '/single_face.jpg'}])");
     base::RunLoop().RunUntilIdle();
 
     auto registration_data = provider()->GetRegistrationDataFromId("id1");
@@ -99,7 +99,7 @@ IN_PROC_BROWSER_TEST_F(ContentIndexTest, GetIcons) {
   {
     // Load one icon.
     provider()->set_icon_sizes({{42, 42}});
-    RunScript("addContent('id2')");
+    RunScript("addContent('id2', [{src: '/single_face.jpg'}])");
     base::RunLoop().RunUntilIdle();
 
     auto registration_data = provider()->GetRegistrationDataFromId("id2");
@@ -114,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(ContentIndexTest, GetIcons) {
   {
     // Load two icons.
     provider()->set_icon_sizes({{42, 42}, {24, 24}});
-    RunScript("addContent('id3')");
+    RunScript("addContent('id3', [{src: '/single_face.jpg'}])");
     base::RunLoop().RunUntilIdle();
 
     auto registration_data = provider()->GetRegistrationDataFromId("id3");
@@ -132,6 +132,34 @@ IN_PROC_BROWSER_TEST_F(ContentIndexTest, GetIcons) {
     EXPECT_EQ(icons[1].width(), 42);
     EXPECT_EQ(icons[1].height(), 42);
   }
+}
+
+IN_PROC_BROWSER_TEST_F(ContentIndexTest, RegistrationWithoutIcons) {
+  // Don't load any icons.
+  provider()->set_icon_sizes({});
+  // Registering without icons is ok since the browser doesn't need any.
+  RunScript("addContent('id1')");
+}
+
+IN_PROC_BROWSER_TEST_F(ContentIndexTest, BestIconIsChosen) {
+  // Load one icon.
+  provider()->set_icon_sizes({{42, 42}});
+
+  // If the first resource is chosen, the registration would fail since the
+  // resource does not exist.
+  RunScript(R"(
+    addContent('id3', [
+      {
+        src: '/MISSING_IMAGE.png',
+        sizes: '2x2',
+        type: 'image/png',
+      },
+      {
+        src: '/single_face.jpg',
+        sizes: '42x42',
+        type: 'image/jpg',
+      },
+    ]))");
 }
 
 }  // namespace

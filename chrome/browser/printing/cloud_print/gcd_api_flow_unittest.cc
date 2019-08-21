@@ -82,7 +82,7 @@ class GCDApiFlowTest : public testing::Test {
   MockDelegate* mock_delegate_;
 
  private:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   signin::IdentityTestEnvironment identity_test_environment_;
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
       test_shared_url_loader_factory_;

@@ -468,7 +468,7 @@ class SiteSettingsHandlerTest : public testing::Test {
   const std::string kFlash;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   TestingProfile* incognito_profile_;
   content::TestWebUI web_ui_;

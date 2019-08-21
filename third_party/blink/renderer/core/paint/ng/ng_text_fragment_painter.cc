@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/style/applied_text_decoration.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/fonts/character_range.h"
+#include "third_party/blink/renderer/platform/graphics/dom_node_id.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 
@@ -266,8 +267,7 @@ void NGTextFragmentPainter::PaintSymbol(const PaintInfo& paint_info,
 // This is copied from InlineTextBoxPainter::PaintSelection() but lacks of
 // ltr, expanding new line wrap or so which uses InlineTextBox functions.
 void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
-                                  const PhysicalOffset& paint_offset,
-                                  DOMNodeId node_id) {
+                                  const PhysicalOffset& paint_offset) {
   const auto& text_fragment =
       To<NGPhysicalTextFragment>(fragment_.PhysicalFragment());
   const ComputedStyle& style = fragment_.Style();
@@ -396,6 +396,12 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
   if (style.GetTextEmphasisMark() != TextEmphasisMark::kNone) {
     text_painter.SetEmphasisMark(style.TextEmphasisMarkString(),
                                  style.GetTextEmphasisPosition());
+  }
+
+  DOMNodeId node_id = kInvalidDOMNodeId;
+  if (Node* node = text_fragment.GetNode()) {
+    if (auto* layout_text = ToLayoutTextOrNull(node->GetLayoutObject()))
+      node_id = layout_text->EnsureNodeId();
   }
 
   unsigned length = text_fragment.Text().length();

@@ -261,7 +261,7 @@ class ExtensionSettingsSyncTest : public testing::Test {
   }
 
   // Needed so that the DCHECKs for running on FILE or UI threads pass.
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<TestingProfile> profile_;

@@ -46,7 +46,7 @@ TestWebThread::~TestWebThread() {
   //   1) TestWebThread::Stop()
   //   2) ~MessageLoop()
   //   3) ~TestWebThread()
-  // (~TestWebThreadBundle() does this).
+  // (~WebTaskEnvironment() does this).
   WebThreadImpl::ResetGlobalsForTesting(identifier_);
 }
 

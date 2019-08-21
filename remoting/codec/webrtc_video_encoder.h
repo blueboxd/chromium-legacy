@@ -78,6 +78,10 @@ class WebrtcVideoEncoder {
 
   virtual ~WebrtcVideoEncoder() {}
 
+  // Request that the encoder provide lossless encoding, or color, if possible.
+  virtual void SetLosslessEncode(bool want_lossless) {}
+  virtual void SetLosslessColor(bool want_lossless) {}
+
   // Encode an image stored in |frame|. If frame.updated_region() is empty
   // then the encoder may return a frame (e.g. to top-off previously-encoded
   // portions of the frame to higher quality) or return nullptr to indicate that

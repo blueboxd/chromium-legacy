@@ -26,9 +26,6 @@
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/safe_conversions.h"
 #include "components/prefs/pref_service.h"
-#include "ui/gfx/image/image.h"
-#include "ui/gfx/paint_vector_icon.h"
-#include "ui/views/controls/menu/menu_config.h"
 
 namespace ash {
 
@@ -45,13 +42,6 @@ bool CanUserModifyShelfAutoHide(PrefService* prefs) {
 bool IsFullScreenMode(int64_t display_id) {
   auto* controller = Shell::GetRootWindowControllerWithDisplayId(display_id);
   return controller && controller->GetWindowForFullscreenMode();
-}
-
-// Create a vector icon with the correct size and color for the menu.
-gfx::ImageSkia GetIcon(const gfx::VectorIcon& icon) {
-  const views::MenuConfig& menu_config = views::MenuConfig::instance();
-  return gfx::CreateVectorIcon(icon, menu_config.touchable_icon_size,
-                               menu_config.touchable_icon_color);
 }
 
 }  // namespace
@@ -154,8 +144,9 @@ void ShelfContextMenuModel::AddShelfAndWallpaperItems() {
     auto string_id = is_autohide_set
                          ? IDS_ASH_SHELF_CONTEXT_MENU_ALWAYS_SHOW_SHELF
                          : IDS_ASH_SHELF_CONTEXT_MENU_AUTO_HIDE;
-    auto icon = GetIcon(is_autohide_set ? kAlwaysShowShelfIcon : kAutoHideIcon);
-    AddItemWithStringIdAndIcon(MENU_AUTO_HIDE, string_id, icon);
+    AddItemWithStringIdAndIcon(
+        MENU_AUTO_HIDE, string_id,
+        is_autohide_set ? kAlwaysShowShelfIcon : kAutoHideIcon);
   }
 
   // Only allow shelf alignment modifications by the owner or user. In tablet
@@ -173,15 +164,14 @@ void ShelfContextMenuModel::AddShelfAndWallpaperItems() {
     alignment_submenu_->AddRadioItemWithStringId(
         MENU_ALIGNMENT_RIGHT, IDS_ASH_SHELF_CONTEXT_MENU_ALIGN_RIGHT, group);
 
-    AddSubMenuWithStringIdAndIcon(
-        MENU_ALIGNMENT_MENU, IDS_ASH_SHELF_CONTEXT_MENU_POSITION,
-        alignment_submenu_.get(), GetIcon(kShelfPositionIcon));
+    AddSubMenuWithStringIdAndIcon(MENU_ALIGNMENT_MENU,
+                                  IDS_ASH_SHELF_CONTEXT_MENU_POSITION,
+                                  alignment_submenu_.get(), kShelfPositionIcon);
   }
 
   if (Shell::Get()->wallpaper_controller()->CanOpenWallpaperPicker()) {
     AddItemWithStringIdAndIcon(MENU_CHANGE_WALLPAPER,
-                               IDS_AURA_SET_DESKTOP_WALLPAPER,
-                               GetIcon(kWallpaperIcon));
+                               IDS_AURA_SET_DESKTOP_WALLPAPER, kWallpaperIcon);
   }
 }
 

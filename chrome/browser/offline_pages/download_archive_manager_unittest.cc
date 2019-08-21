@@ -35,7 +35,7 @@ class DownloadArchiveManagerTest : public testing::Test {
   DownloadArchiveManager* archive_manager() { return archive_manager_.get(); }
 
  private:
-  content::TestBrowserThreadBundle browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   sync_preferences::TestingPrefServiceSyncable prefs_;
   std::unique_ptr<DownloadArchiveManager> archive_manager_;
   DISALLOW_COPY_AND_ASSIGN(DownloadArchiveManagerTest);

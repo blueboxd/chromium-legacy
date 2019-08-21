@@ -463,7 +463,7 @@ public class CustomTabTabPersistencePolicyTest {
         CustomTabActivity activity = new CustomTabActivity();
         ApplicationStatus.onStateChangeForTesting(activity, ActivityState.CREATED);
         TabModelSelectorImpl selector = new TabModelSelectorImpl(
-                activity, activity, buildTestPersistencePolicy(), false, false);
+                activity, activity, buildTestPersistencePolicy(), false, false, false);
         selector.initializeForTesting(normalTabModel, incognitoTabModel);
         ApplicationStatus.onStateChangeForTesting(activity, ActivityState.DESTROYED);
         return selector;

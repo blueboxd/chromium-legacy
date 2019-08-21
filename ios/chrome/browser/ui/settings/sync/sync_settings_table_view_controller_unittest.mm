@@ -205,7 +205,7 @@ class SyncSettingsTableViewControllerTest
   }
 
   unified_consent::ScopedUnifiedConsent unified_consent_disabled_;
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   // Weak, owned by |profile_|.
   NiceMock<SyncSetupServiceMock>* mock_sync_setup_service_;

@@ -178,7 +178,9 @@ StackingNotificationCounterView::StackingNotificationCounterView(
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStretch);
 
-  count_label_->SetEnabledColor(kStackingNotificationCounterLabelColor);
+  count_label_->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kTextSecondary,
+      AshColorProvider::AshColorMode::kLight));
   count_label_->SetFontList(views::Label::GetDefaultFontList().Derive(
       1, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
   AddChildView(count_label_);
@@ -252,9 +254,9 @@ void StackingNotificationCounterView::OnPaint(gfx::Canvas* canvas) {
   canvas->DrawSharpLine(
       gfx::PointF(bounds.bottom_left() - gfx::Vector2d(0, 1)),
       gfx::PointF(bounds.bottom_right() - gfx::Vector2d(0, 1)),
-      AshColorProvider::Get()->DeprecatedGetContentLayerColor(
+      AshColorProvider::Get()->GetContentLayerColor(
           AshColorProvider::ContentLayerType::kSeparator,
-          kSeparatorOnLightBackgroundColor));
+          AshColorProvider::AshColorMode::kLight));
 }
 
 const char* StackingNotificationCounterView::GetClassName() const {

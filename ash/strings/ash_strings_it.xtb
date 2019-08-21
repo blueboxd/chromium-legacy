@@ -334,6 +334,7 @@
 <translation id="6043212731627905357">Questo monitor non è compatibile con il tuo dispositivo <ph name="DEVICE_TYPE" /> (il monitor non è supportato).</translation>
 <translation id="6043994281159824495">Esci ora</translation>
 <translation id="6047696787498798094">La condivisione dello schermo verrà interrotta se cambi utente. Vuoi continuare?</translation>
+<translation id="6054305421211936131">Accedi con la smart card</translation>
 <translation id="6062360702481658777">Verrai disconnesso automaticamente tra <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="6064337552080329342">Impossibile verificare la password. Riprova.</translation>
 <translation id="607652042414456612">Il tuo computer è rilevabile per i dispositivi Bluetooth nelle vicinanze e verrà visualizzato come "<ph name="NAME" />" con l'indirizzo <ph name="ADDRESS" /></translation>
@@ -361,6 +362,7 @@
 <translation id="6459472438155181876">Estensione dello schermo su <ph name="DISPLAY_NAME" /></translation>
 <translation id="6482559668224714696">Lente d'ingrandimento a schermo intero</translation>
 <translation id="6490471652906364588">Dispositivo USB-C (porta a destra)</translation>
+<translation id="649452524636452238">PIN della smart card</translation>
 <translation id="6501401484702599040">Trasmissione dello schermo a <ph name="RECEIVER_NAME" /> in corso</translation>
 <translation id="6521655319214113338">Scrittura a mano libera</translation>
 <translation id="6528179044667508675">Non disturbare</translation>
@@ -390,6 +392,7 @@
 <translation id="6857811139397017780">Attiva <ph name="NETWORKSERVICE" /></translation>
 <translation id="6910714959251846841">Questo aggiornamento richiede il powerwash del dispositivo. Leggi ulteriori informazioni sull'ultimo aggiornamento di <ph name="SYSTEM_APP_NAME" />.</translation>
 <translation id="6911468394164995108">Connetti a un'altra...</translation>
+<translation id="6919251195245069855">Impossibile riconoscere la smart card. Riprova.</translation>
 <translation id="6972754398087986839">Inizia</translation>
 <translation id="6981982820502123353">Accessibilità</translation>
 <translation id="698231206551913481">Tutti i file e i dati locali associati a questo utente verranno eliminati definitivamente in seguito alla rimozione dell'utente.</translation>

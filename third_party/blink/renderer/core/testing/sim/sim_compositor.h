@@ -35,10 +35,7 @@ class SimCompositor final : public content::StubLayerTreeViewDelegate {
   content::LayerTreeView& layer_tree_view() { return *layer_tree_view_; }
 
   // When the compositor asks for a main frame, this WebViewImpl will have its
-  // lifecycle updated and be painted. The WebLayerTreeView that is being used
-  // to composite the WebViewImpl is passed separately as the underlying
-  // content::LayerTreeView type, in order to bypass the Web* API surface
-  // provided to blink.
+  // lifecycle updated and be painted.
   // The WebWidget client is overridden (via the WebViewClient) to control
   // BeginMainFrame scheduling since this test suite does not use the
   // compositor's scheduler. The SimCompositor wants to monitor and verify

@@ -21,9 +21,9 @@
   AuditsTestRunner.dumpStartAuditState();
   AuditsTestRunner.getRunButton().click();
 
-  const results = await AuditsTestRunner.waitForResults();
+  const {lhr} = await AuditsTestRunner.waitForResults();
   TestRunner.addResult(`\n=============== Audits run ===============`);
-  TestRunner.addResult(Object.keys(results.audits).sort().join('\n'));
+  TestRunner.addResult(Object.keys(lhr.audits).sort().join('\n'));
 
   TestRunner.completeTest();
 })();

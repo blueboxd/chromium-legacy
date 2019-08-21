@@ -10,6 +10,7 @@ import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.widget.ImageButton;
 
 import org.chromium.base.VisibleForTesting;
@@ -112,6 +113,7 @@ public class TopToolbarCoordinator implements Toolbar {
      * @param controlsVisibilityDelegate The delegate to handle visibility of browser controls.
      * @param layoutManager A {@link LayoutManager} instance used to watch for scene changes.
      * @param tabSwitcherClickHandler The click handler for the tab switcher button.
+     * @param tabSwitcherLongClickHandler The long click handler for the tab switcher button.
      * @param newTabClickHandler The click handler for the new tab button.
      * @param bookmarkClickHandler The click handler for the bookmarks button.
      * @param customTabsBackClickHandler The click handler for the custom tabs back button.
@@ -119,8 +121,8 @@ public class TopToolbarCoordinator implements Toolbar {
     public void initializeWithNative(TabModelSelector tabModelSelector,
             BrowserStateBrowserControlsVisibilityDelegate controlsVisibilityDelegate,
             LayoutManager layoutManager, OnClickListener tabSwitcherClickHandler,
-            OnClickListener newTabClickHandler, OnClickListener bookmarkClickHandler,
-            OnClickListener customTabsBackClickHandler) {
+            OnLongClickListener tabSwitcherLongClickHandler, OnClickListener newTabClickHandler,
+            OnClickListener bookmarkClickHandler, OnClickListener customTabsBackClickHandler) {
         if (mTabSwitcherModeCoordinatorPhone != null) {
             mTabSwitcherModeCoordinatorPhone.setOnTabSwitcherClickHandler(tabSwitcherClickHandler);
             mTabSwitcherModeCoordinatorPhone.setOnNewTabClickHandler(newTabClickHandler);
@@ -132,6 +134,7 @@ public class TopToolbarCoordinator implements Toolbar {
         getLocationBar().setUrlToPageUrl();
         mToolbarLayout.setBrowserControlsVisibilityDelegate(controlsVisibilityDelegate);
         mToolbarLayout.setOnTabSwitcherClickHandler(tabSwitcherClickHandler);
+        mToolbarLayout.setOnTabSwitcherLongClickHandler(tabSwitcherLongClickHandler);
         mToolbarLayout.setBookmarkClickHandler(bookmarkClickHandler);
         mToolbarLayout.setCustomTabCloseClickHandler(customTabsBackClickHandler);
         mToolbarLayout.setLayoutUpdateHost(layoutManager);

@@ -56,9 +56,9 @@
 <translation id="1240347957665416060">तुमच्या डिव्हाइसचे नाव</translation>
 <translation id="1250759482327835220">पुढील वेळेस जलद पेमेंट करण्यासाठी, तुमच्या Google खात्यावर तुमचे कार्ड आणि बिलिंग पत्ता सेव्ह करा.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (सिंक केलेले)</translation>
-<translation id="1256368399071562588">&lt;p&gt;जर तुम्ही एखाद्या वेबसाइटला भेट देण्याचा प्रयत्न केला आणि ती उघडली नाही, तर सगळ्यात आधी ट्रबलशूटिंग पायऱ्यांद्वारे या एररवर उपाय काढण्याचा प्रयत्न करा:&lt;/p&gt;
+<translation id="1256368399071562588">&lt;p&gt;जर तुम्ही एखाद्या वेबसाइटला भेट देण्याचा प्रयत्न केला आणि ती उघडली नाही, तर सगळ्यात आधी ट्रबलशूटिंग स्टेप्सद्धारे या एररवर उपाय काढण्याचा प्रयत्न करा:&lt;/p&gt;
     &lt;ol&gt;
-    &lt;li&gt;अक्षरांतील चुकांसाठी वेब अॅड्रेस तपासा.&lt;/li&gt;
+    &lt;li&gt;अक्षरातील चुकांसाठी वेब अॅड्रेस तपासा.&lt;/li&gt;
     &lt;li&gt;तुमचे इंटरनेट कनेक्शन नेहमीप्रमाणे चालत असल्याची खात्री करा.&lt;/li&gt;
     &lt;li&gt;वेबसाइटच्या मालकाशी संपर्क साधा.&lt;/li&gt;
     &lt;/ol&gt;</translation>
@@ -75,11 +75,11 @@
 <translation id="132301787627749051">क्लिपबोर्ड इमेज शोधा</translation>
 <translation id="1323433172918577554">अधिक दाखवा</translation>
 <translation id="132390688737681464">पत्ते भरा आणि सेव्ह करा</translation>
-<translation id="1333989956347591814">तुमचे पुढील क्रियाकलाप <ph name="BEGIN_EMPHASIS" />अद्याप दिसतील<ph name="END_EMPHASIS" />:
+<translation id="1333989956347591814">तुमच्या पुढील अॅक्टिव्हिटी <ph name="BEGIN_EMPHASIS" />अद्याप दिसतील<ph name="END_EMPHASIS" />:
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />तुम्ही पाहत असलेल्या वेबसाइट
-          <ph name="LIST_ITEM" />आपला नियोक्ता किंवा शाळा
-          <ph name="LIST_ITEM" />आपला इंटरनेट सेवा पुरवठादार
+          <ph name="LIST_ITEM" />तुमचा एम्पलॉयर किंवा शाळा
+          <ph name="LIST_ITEM" />तुमचा इंटरनेट सेवा पुरवठादार
         <ph name="END_LIST" /></translation>
 <translation id="1339601241726513588">नावनोंदणी डोमेन:</translation>
 <translation id="1340482604681802745">घेण्याचा पत्ता</translation>
@@ -150,7 +150,7 @@
 <translation id="1663943134801823270">कार्ड आणि पत्ते Chrome कडील आहेत. तुम्ही त्यांना <ph name="BEGIN_LINK" />सेटिंग्‍ज<ph name="END_LINK" /> मधून व्यवस्थापित करू शकता.</translation>
 <translation id="1669987054044193553">निश्चित करा आणि सेव्ह करा</translation>
 <translation id="1671391448414634642">आतापासून <ph name="SOURCE_LANGUAGE" />मधील पेज <ph name="TARGET_LANGUAGE" />मध्ये भाषांतरित केली जातील.</translation>
-<translation id="1676269943528358898"><ph name="SITE" /> तुमची माहिती संरक्षित करण्यासाठी सामान्यतः एंक्रिप्शन वापरते. Google Chrome ने यावेळी <ph name="SITE" /> शी कनेक्‍ट करण्‍याचा प्रयत्न केला तेव्‍हा, वेबसाइटने असामान्य आणि अयोग्य क्रेडेन्शियल परत पाठविले. एकतर आक्रमणकर्ता <ph name="SITE" /> असल्याची बतावणी करण्याचा प्रयत्न करतो तेव्‍हा किंवा वाय-फाय साइन इन स्क्रीनने कनेक्शनमध्ये व्यत्यय आणले तेव्‍हा हे घडू शकते. कोणत्याही डेटाची अदलाबदल करण्यापूर्वी Google Chrome ने कनेक्शन थांबविल्यामुळे तुमची माहिती अद्याप सुरक्षित आहे.</translation>
+<translation id="1676269943528358898"><ph name="SITE" /> तुमची माहिती संरक्षित करण्यासाठी सामान्यतः एंक्रिप्शन वापरते. Google Chrome ने यावेळी <ph name="SITE" /> शी कनेक्‍ट करण्‍याचा प्रयत्न केला तेव्‍हा, वेबसाइटने असामान्य आणि अयोग्य क्रेडेंशियल परत पाठवले. एकतर आक्रमणकर्ता <ph name="SITE" /> असल्याची बतावणी करण्याचा प्रयत्न करतो तेव्‍हा किंवा वाय-फाय साइन इन स्क्रीनने कनेक्शनमध्ये व्यत्यय आणले तेव्‍हा हे घडू शकते. कोणत्याही डेटाची अदलाबदल करण्यापूर्वी Google Chrome ने कनेक्शन थांबविल्यामुळे तुमची माहिती अद्याप सुरक्षित आहे.</translation>
 <translation id="168841957122794586">सर्व्हर सर्टिफिकेटमध्ये एक कमकुवत क्रिप्टोग्राफिक की आहे.</translation>
 <translation id="1697532407822776718">तुम्ही पूर्णपणे तयार आहात!</translation>
 <translation id="1703835215927279855">Letter</translation>
@@ -171,7 +171,7 @@
 <translation id="1753706481035618306">पृष्ठ क्रमांक</translation>
 <translation id="1763864636252898013">हा सर्व्हर हे <ph name="DOMAIN" /> असल्याचे सिद्ध करू शकला नाही; त्याचे सुरक्षितता सर्टिफिकेट तुम्हाला डिव्हाइसच्या ऑपरेटिंग सिस्टमद्वारे विश्वसनीय नाही. हे कदाचित एका चुकीच्या कॉन्फिगरेशनमुळे किंवा हल्लेखोराने तुमचे कनेक्शन इंटरसेप्ट केल्यामुळे झाले असू शकते.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Windows नेटवर्क निदान चालवून पहा<ph name="END_LINK" />.</translation>
-<translation id="1783075131180517613">कृपया तुमचे सिंक केलेली सांकेतिक पासफ्रेज अपडेट करा.</translation>
+<translation id="1783075131180517613">कृपया तुमचे सिंक सांकेतिक पासफ्रेझ अपडेट करा.</translation>
 <translation id="1787142507584202372">तुमचे खुले टॅब येथे दिसतात</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1800473098294731951">B9</translation>
@@ -248,6 +248,7 @@
 <translation id="2202020181578195191">वैध समाप्ती वर्ष एंटर करा</translation>
 <translation id="2212735316055980242">धोरण आढळले नाही</translation>
 <translation id="2213606439339815911">एंट्री आणत आहे...</translation>
+<translation id="2215727959747642672">फाइलचे संपादन</translation>
 <translation id="2218879909401188352">सध्या <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />वर असलेले आक्रमणकर्ता तुमच्या डिव्हाइसला हानी पोहोचवणारे धोकादायक ॲप इंस्टॉल करू शकतात, तुमच्या मोबाइल बिलामध्ये लपलेले शुल्क जोडू शकतात किंवा तुमची वैयक्तिक माहिती चोरू शकतात. <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जाणून घ्या<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">इंटरनेट नाही</translation>
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />निदान ॲप<ph name="END_LINK" /> वापरून आपल्या कनेक्शनचे निराकरण करा</translation>
@@ -310,6 +311,7 @@
 <translation id="2501278716633472235">परत जा</translation>
 <translation id="2503184589641749290">स्वीकारली जाणारी डेबिट आणि प्रीपेड कार्डे</translation>
 <translation id="2505268675989099013">खात्याचे संरक्षण करा</translation>
+<translation id="2515335152965840738">दुर्लक्ष करा</translation>
 <translation id="2515629240566999685">आपल्या क्षेत्रातील सिग्नल तपासणे</translation>
 <translation id="2523886232349826891">फक्त या डिव्हाइसवर सेव्ह केले जाईल</translation>
 <translation id="2524461107774643265">अधिक माहिती जोडा</translation>
@@ -361,6 +363,7 @@
 <translation id="2799020568854403057">पुढील साइटमध्ये हानिकारक ॲप आहे</translation>
 <translation id="2799223571221894425">पुन्हा लाँच करा</translation>
 <translation id="2803306138276472711">Google सुरक्षित ब्राउझिंगला अलीकडे <ph name="SITE" /> वर <ph name="BEGIN_LINK" />मालवेअर आढळले आहे<ph name="END_LINK" />. सामान्यतः सुरक्षित असलेल्या वेबसाइट काहीवेळा मालवेअरमुळे संक्रमित झालेल्या असतात.</translation>
+<translation id="2815364696811431560">साइट सोडा</translation>
 <translation id="2824775600643448204">पत्ता आणि शोध बार</translation>
 <translation id="2826760142808435982">कनेक्शन <ph name="CIPHER" /> वापरून आणि महत्त्वाचे एक्स्चेंज तंत्र म्हणून <ph name="KX" /> वापर एंक्रिप्ट आणि अॉथेंटिकेट केले आहे.</translation>
 <translation id="2835170189407361413">फॉर्म क्लिअर करा</translation>
@@ -455,7 +458,7 @@
 <translation id="3366477098757335611">कार्डे पाहा</translation>
 <translation id="3369192424181595722">घड्याळ एरर</translation>
 <translation id="337363190475750230">तरतूद रद्द केली</translation>
-<translation id="3377188786107721145">धोरण विश्लेषण एरर</translation>
+<translation id="3377188786107721145">धोरण पार्स एरर</translation>
 <translation id="3380365263193509176">अज्ञात एरर</translation>
 <translation id="3380864720620200369">क्लायंट आयडी:</translation>
 <translation id="3387261909427947069">पेमेंट पद्धती</translation>
@@ -597,22 +600,22 @@
 <translation id="4215751373031079683">7x9 (Envelope)</translation>
 <translation id="4220128509585149162">क्रॅश होते</translation>
 <translation id="422022731706691852"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> वरील हल्लेखोर कदाचित तुमच्या ब्राउझ करण्याच्या अनुभवाला हानिकारक असे प्रोग्राम (उदाहरणार्थ, तुमचे होमपेज बदलणे किंवा तुम्ही भेट दिलेल्या साइटवर जास्तीच्या जाहिराती दाखवणे) इंस्टॉल करण्यासाठी तुम्हाला फसवण्याचा प्रयत्न करू शकतात. <ph name="BEGIN_LEARN_MORE_LINK" />आणखी जाणून घ्या<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="4221630205957821124">&lt;h4&gt;पायरी १: पोर्टलमध्ये साइन इन करा&lt;/h4&gt;
+<translation id="4221630205957821124">&lt;h4&gt;स्टेप १: पोर्टलमध्ये साइन इन करा&lt;/h4&gt;
     &lt;p&gt;कॅफे किंवा एअरपोर्टवर असणाऱ्या वाय-फाय नेटवर्कसाठी तुम्ही साइन इन करणे आवश्यक असते. साइन इन पेज पाहण्यासाठी, &lt;code&gt;http://&lt;/code&gt; वापरत असलेल्या पेजला भेट द्या.&lt;/p&gt;
     &lt;ol&gt;
     &lt;li&gt;&lt;code&gt;http://&lt;/code&gt;, उदा: &lt;a href="http://example.com" target="_blank"&gt;http://example.com&lt;/a&gt; ने सुरुवात होणाऱ्या कोणत्याही वेबसाइटवर जा.&lt;/li&gt;
     &lt;li&gt;उघडणाऱ्या साइन इन पेजवर, इंटरनेट वापरण्यासाठी साइन इन करा.&lt;/li&gt;
     &lt;/ol&gt;
-    &lt;h4&gt;पायरी २: पेज गुप्त मोडमध्ये उघडा (फक्त कॉंप्युटरसाठी)&lt;/h4&gt;
+    &lt;h4&gt;स्टेप २: पेज गुप्त मोडमध्ये उघडा (फक्त कॉंप्युटरसाठी)&lt;/h4&gt;
     &lt;p&gt;असे पेज उघडा, ज्‍यावर तुम्‍ही गुप्‍त मोड विंडोमध्‍ये आला होतात.&lt;/p&gt;
     &lt;p&gt;जर पेज उघडले, तर समजावे की, lChrome एक्स्टेंशन योग्यरीत्या काम करत नाही. ही एरर निघून जाण्यासाठी, एक्स्टेंशन बंद करा.&lt;/p&gt;
-    &lt;h4&gt;पायरी ३: तुमची ऑपरेटिंग सिस्टम अपडेट करा&lt;/h4&gt;
-    &lt;p&gt;तुमचे डिव्हाइस अप-टू-डेट असल्याची खात्री करा.&lt;/p&gt;
-    &lt;h4&gt;पायरी ४: तुमचे अँटीव्हायरस तात्‍पुरते बंद करा&lt;/h4&gt;
+    &lt;h4&gt;स्टेप ३: तुमची ऑपरेटिंग सिस्टम अपडेट करा&lt;/h4&gt;
+    &lt;p&gt;तुमचे डिव्हाइस अप टू डेट असल्याची खात्री करा.&lt;/p&gt;
+    &lt;h4&gt;स्टेप ४: तुमचे अँटीव्हायरस तात्‍पुरते बंद करा&lt;/h4&gt;
     &lt;p&gt;जर तुमचे अँटीव्हायरस सॉफ्टवेअर "HTTPS सुरक्षा" किंवा "HTTPS स्कॅनिंग" सुविधा देणारे असेल, तर तुम्हाला ही एरर दिसेल. Chrome ला सुरक्षा पुरवण्यापासून अँटीव्हायरसद्वारे प्रतिबंध केला जात आहे.&lt;/p&gt;
     &lt;p&gt;यावर उपाय म्हणून, अँटीव्हायरस सॉफ्टवेअर बंद करा. जर सॉफ्टवेअर बंद केल्यानंतर तुमचे पेज उघडले, तर जेव्हा तुम्ही सुरक्षित साइट वापरता, तेव्हा हे सॉफ्टवेअर बंद करा.&lt;/p&gt;
     &lt;p&gt;तुमचे काम पूर्ण झाले की, तुमचा अँटीव्हायरस प्रोग्राम पुन्हा सुरू करण्याचे लक्षात ठेवा.&lt;/p&gt;
-    &lt;h4&gt;पायरी ५: आणखी मदत मिळवा&lt;/h4&gt;
+    &lt;h4&gt;स्टेप ५: आणखी मदत मिळवा&lt;/h4&gt;
     &lt;p&gt;जर अजूनही तुम्हाला हीच एरर दिसत असेल, तर वेबसाइटच्या मालकाशी संपर्क करा.&lt;/p&gt;</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />नेटवर्क निदान चालवून पहा<ph name="END_LINK" />.</translation>
 <translation id="4235360514405112390">वैध</translation>
@@ -864,6 +867,7 @@
 <translation id="560412284261940334">व्यवस्थापन समर्थित नाही</translation>
 <translation id="5605670050355397069">Ledger</translation>
 <translation id="5607240918979444548">Architecture-C</translation>
+<translation id="5608165884683734521">ही साइट बनावट किंवा कपटपूर्ण असू शकते. आता सोडून देण्याची Chrome शिफारस करते.</translation>
 <translation id="5610142619324316209">कनेक्शन तपासणे</translation>
 <translation id="5610807607761827392">तुम्ही कार्ड आणि पत्ते <ph name="BEGIN_LINK" />सेटिंग्ज<ph name="END_LINK" /> मध्ये व्यवस्थापित करू शकता.</translation>
 <translation id="5617949217645503996"><ph name="HOST_NAME" /> नी आपल्‍याला अनेक वेळा पुनर्निर्देशित केले.</translation>
@@ -963,7 +967,7 @@
 <translation id="6177128806592000436">या साइटवरील तुमचे कनेक्शन सुरक्षित नाही</translation>
 <translation id="6203231073485539293">तुमचे इंटरनेट कनेक्शन तपासा</translation>
 <translation id="6218753634732582820">Chromium वरून पत्ता काढून टाकायचा?</translation>
-<translation id="6221345481584921695">Google सुरक्षित ब्राउझिंगला अलीकडे <ph name="SITE" /> वर <ph name="BEGIN_LINK" />मालवेअर आढळले आहे<ph name="END_LINK" />. सामान्यतः सुरक्षित असलेल्या वेबसाइट काहीवेळा मालवेअरमुळे संक्रमित झालेल्या असतात. एक ज्ञात मालवेअर वितरक असलेल्या, <ph name="SUBRESOURCE_HOST" /> कडून दुर्भावनापूर्ण आशय येते.</translation>
+<translation id="6221345481584921695">Google सुरक्षित ब्राउझिंगला अलीकडे <ph name="SITE" /> वर <ph name="BEGIN_LINK" />मालवेअर आढळले आहे<ph name="END_LINK" />. सामान्यतः सुरक्षित असलेल्या वेबसाइट काहीवेळा मालवेअरमुळे संक्रमित झालेल्या असतात. एक ज्ञात मालवेअर वितरक असलेल्या, <ph name="SUBRESOURCE_HOST" /> कडून दुर्भावनापूर्ण सामग्री येते.</translation>
 <translation id="6240447795304464094">Google Pay लोगो</translation>
 <translation id="6251924700383757765">गोपनीयता धोरण</translation>
 <translation id="6254436959401408446">हे पृष्‍ठ उघडण्‍यासाठी पुरेशी मेमरी नाही</translation>
@@ -1118,6 +1122,7 @@
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> आणि <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> आणखी}other{<ph name="PAYMENT_METHOD_PREVIEW" /> आणि <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> आणखी}}</translation>
 <translation id="7153618581592392745">फिकट जांभळा</translation>
 <translation id="717330890047184534">Gaia आयडी:</translation>
+<translation id="7174545416324379297">मर्ज केले</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> आणि <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> आणखी}other{<ph name="SHIPPING_OPTION_PREVIEW" /> आणि <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> आणखी}}</translation>
 <translation id="7177397715882417099">तुम्ही जात आहात तो सर्व्हर, <ph name="ORIGIN" />, ने विनंती केली आहे की
     सुरक्षितता धोरण त्याच्या सर्व विनंत्यांना लागू होईल. परंतु धोरण डिलिव्हर
@@ -1141,7 +1146,7 @@
 <translation id="7251437084390964440">नेटवर्क कॉन्फिगरेशन ONC स्टँडर्डचे पालन करत नाही. कॉन्फिगरेशनचे भाग कदाचित इंपोर्ट करता येणार नाहीत.
 अतिरिक्त तपशील:
 <ph name="DEBUG_INFO" /></translation>
-<translation id="725866823122871198">तुमच्या कॉंप्युटरची तारीख आणि वेळ (<ph name="DATE_AND_TIME" />) चुकीची असल्यामुळे <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> सह खाजगी कनेक्शन इंस्टॉल केले जाऊ शकत नाही.</translation>
+<translation id="725866823122871198">तुमच्या कॉंप्युटरची तारीख आणि वेळ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> चुकीची असल्यामुळे (<ph name="DATE_AND_TIME" />)सह खाजगी कनेक्शन इंस्टॉल केले जाऊ शकत नाही.</translation>
 <translation id="7260504762447901703">अॅक्सेस रद्द करा</translation>
 <translation id="726226871651201355">&lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt; वर पुढे सुरू ठेवायचे का?</translation>
 <translation id="7271803869921933038">स्वीकारली जाणारी प्रीपेड कार्डे</translation>
@@ -1173,11 +1178,11 @@
 <translation id="7407424307057130981">&lt;p&gt;जर तुमच्या Windows कॉंप्युटरवर Superfish सॉफ्टवेअर असेल, तर तुम्हाला हा एरर दिसेल.&lt;/p&gt;
     &lt;p&gt;सॉफ्टवेअरला तात्पुरत्या स्वरुपात बंद करण्यासाठी या पायऱ्यांनुसार कृती करा, जेणेकरून तुम्‍ही ते वेबवर मिळवू शकाल. तुमच्याकडे अॅडमिनिस्ट्रेटरचे अधिकार असणे आवश्यक आहे.&lt;/p&gt;
     &lt;ol&gt;
-    &lt;li&gt;&lt;strong&gt;सुरू&lt;/strong&gt; वरवर क्लिक करा, मग स्थानिक सेवा शोधा आणि&lt;strong&gt;"स्थानिक सेवा पाहा"&lt;/strong&gt; निवडा
+    &lt;li&gt;&lt;strong&gt;सुरू&lt;/strong&gt; वर क्लिक करा, मग स्थानिक सेवा शोधा आणि&lt;strong&gt;"स्थानिक सेवा पाहा"&lt;/strong&gt; निवडा
     &lt;li&gt;&lt;strong&gt;व्हिज्युअल डिस्कव्हरी&lt;/strong&gt; निवडा
     &lt;li&gt;&lt;strong&gt;स्टार्टअप प्रकार&lt;/strong&gt; मध्‍ये, &lt;strong&gt;बंद&lt;/strong&gt; निवडा
-    &lt;li&gt;&lt;strong&gt;सेवा स्थिती&lt;/strong&gt; मध्‍ये, &lt;strong&gt;थांबवा&lt;/strong&gt; वरवर क्लिक करा
-    &lt;li&gt;&lt;strong&gt;लागू करा&lt;/strong&gt; वरवर क्लिक करा, मग &lt;strong&gt;ओके&lt;/strong&gt; वरवर क्लिक करा
+    &lt;li&gt;&lt;strong&gt;सेवा स्थिती&lt;/strong&gt; मध्‍ये, &lt;strong&gt;थांबवा&lt;/strong&gt; वर क्लिक करा
+    &lt;li&gt;&lt;strong&gt;लागू करा&lt;/strong&gt; वर क्लिक करा, मग &lt;strong&gt;ओके&lt;/strong&gt; वर क्लिक करा
     &lt;li&gt;तुमच्या कॉंप्युटरवरून सॉफ्टवेअर कायमस्वरूपी कसे काढून टाकावे याबाबत शिकण्यासाठी&lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Chrome मदत केंद्र&lt;/a&gt; ला भेट द्या.
     &lt;/ol&gt;</translation>
 <translation id="741007362987735528">Wide-Format</translation>
@@ -1270,7 +1275,7 @@
 <translation id="782886543891417279">तुम्ही वापरत असलेल्या (<ph name="WIFI_NAME" />) वाय-फाय च्या लॉग इन पेजला तुमच्या भेट देण्याची आवश्यकता असू शकते.</translation>
 <translation id="7836231406687464395">Postfix (Envelope)</translation>
 <translation id="7844689747373518809">{COUNT,plural, =0{काहीही नाही}=1{एक अ‍ॅप <ph name="EXAMPLE_APP_1" />}=2{२ अ‍ॅप्स <ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />}other{# अ‍ॅप्स <ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />}}</translation>
-<translation id="785549533363645510">तथापि, तुम्ही अदृश्य नाही. गुप्त झाल्याने तुमचे ब्राउझिंग आपला नियोक्ता, आपला इंटरनेट सेवा पुरवठादार, किंवा तुम्ही भेट देता त्या वेबसाइटपासून लपत नाही.</translation>
+<translation id="785549533363645510">तथापि, तुम्ही अदृश्य नाही. गुप्त झाल्याने तुमचे ब्राउझिंग तुमचा नियोक्ता, तुमचा इंटरनेट सेवा पुरवठादार, किंवा तुम्ही भेट देता त्या वेबसाइटपासून लपत नाही.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">साइट सोडायची?</translation>
 <translation id="7878176543348854470">डेबिट आणि प्रीपेड कार्डे स्वीकरली जातात.</translation>
@@ -1326,7 +1331,7 @@
 <translation id="8184538546369750125">सार्वत्रिक डीफॉल्‍ट वापरा (अनुमती द्या)</translation>
 <translation id="8194797478851900357">&amp;हलवा पूर्ववत करा</translation>
 <translation id="8197543752516192074">पेजचे भाषांतर करा</translation>
-<translation id="8201077131113104583"><ph name="EXTENSION_ID" /> ID असलेल्या एक्स्टेंशनासाठी चुकीची अपडेट URL.</translation>
+<translation id="8201077131113104583">"<ph name="EXTENSION_ID" />"असलेल्या एक्स्टेंशनसाठी अवैध अपडेट URL.</translation>
 <translation id="8202097416529803614">ऑर्डर सारांश</translation>
 <translation id="8202370299023114387">विरोध</translation>
 <translation id="8206978196348664717">Prc4 (Envelope)</translation>
@@ -1390,6 +1395,7 @@
 <translation id="8553075262323480129">भाषांतर करण्यात अयशस्वी कारण पृष्ठाची भाषा निर्धारित करणे शक्य नाही.</translation>
 <translation id="8557066899867184262">CVV तुमच्या कार्डाच्या मागील बाजूस दिलेला असतो.</translation>
 <translation id="8559762987265718583">आपल्या डिव्हाइसची तारीख आणि वेळ (<ph name="DATE_AND_TIME" />) चुकीची असल्याने <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> सह खाजगी कनेक्शन इंस्टॉल केले जाऊ शकले नाही.</translation>
+<translation id="8561575143530093465"><ph name="SAFETY_TIP" /> संशयास्पद साइट</translation>
 <translation id="8564985650692024650">जर तुम्ही तुमच्या <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> पासवर्डचा इतर साइटवर पुन्हा वापर केला असेल तर Chromium तुम्हाला तो रीसेट करण्याची शिफारस करतो.</translation>
 <translation id="8571890674111243710"><ph name="LANGUAGE" /> मध्ये पृष्ठ अनुवादित करत आहे...</translation>
 <translation id="858637041960032120">फोन नंबर जोडा</translation>
@@ -1441,6 +1447,7 @@
 <translation id="8938939909778640821">स्वीकारलेली क्रेडिट आणि प्रीपेड कार्डे</translation>
 <translation id="8943282376843390568">लिंबू</translation>
 <translation id="8957210676456822347">बंद पोर्टल प्राधिकृतता</translation>
+<translation id="8962950042226115166">संशयास्पद साइट</translation>
 <translation id="8968766641738584599">कार्ड सेव्ह करा</translation>
 <translation id="8971063699422889582">सर्व्हरचे सर्टिफिकेट एक्स्पायर झाले आहे.</translation>
 <translation id="8975012916872825179">फोन नंबर, ईमेल ॲड्रेस आणि शिपिंग पत्ते यांसारखी माहिती समाविष्ट आहे</translation>
@@ -1473,9 +1480,8 @@
 <translation id="9078964945751709336">अधिक माहिती आवश्यक आहे</translation>
 <translation id="9080712759204168376">मागणी सारांश</translation>
 <translation id="9089260154716455634">कामाच्या तासानंतरचे धोरण:</translation>
-<translation id="9093075372111400787">प्रगत पर्याय बंद करा</translation>
 <translation id="9095388113577226029">आणखी भाषा...</translation>
-<translation id="9103872766612412690"><ph name="SITE" /> तुमची माहिती संरक्षित करण्यासाठी सामान्यतः एंक्रिप्शन वापरते. Chromium ने यावेळी <ph name="SITE" /> शी कनेक्‍ट करण्‍याचा प्रयत्न केला तेव्‍हा, वेबसाइटने असामान्य आणि अयोग्य क्रेडेन्शियल परत पाठविले. एकतर आक्रमणकर्ता <ph name="SITE" /> असल्याची बतावणी करण्याचा प्रयत्न करतो तेव्‍हा किंवा वाय-फाय साइन इन स्क्रीनने कनेक्शनमध्ये व्यत्यय आणले तेव्‍हा हे घडू शकते. कोणत्याही डेटाची अदलाबदल करण्यापूर्वी Chromium ने कनेक्शन थांबविल्यामुळे तुमची माहिती अद्याप सुरक्षित आहे.</translation>
+<translation id="9103872766612412690"><ph name="SITE" /> तुमची माहिती संरक्षित करण्यासाठी सामान्यतः एंक्रिप्शन वापरते. Chromium ने यावेळी <ph name="SITE" /> शी कनेक्‍ट करण्‍याचा प्रयत्न केला तेव्‍हा, वेबसाइटने असामान्य आणि अयोग्य क्रेडेंशियल परत पाठवले. एकतर आक्रमणकर्ता <ph name="SITE" /> असल्याची बतावणी करण्याचा प्रयत्न करतो तेव्‍हा किंवा वाय-फाय साइन इन स्क्रीनने कनेक्शनमध्ये व्यत्यय आणले तेव्‍हा हे घडू शकते. कोणत्याही डेटाची अदलाबदल करण्यापूर्वी Chromium ने कनेक्शन थांबविल्यामुळे तुमची माहिती अद्याप सुरक्षित आहे.</translation>
 <translation id="9106062320799175032">बिलिंग पत्ता जोडा</translation>
 <translation id="9114524666733003316">कार्डची निश्चिती करत आहे...</translation>
 <translation id="9128870381267983090">नेटवर्कशी कनेक्ट करा</translation>

@@ -249,50 +249,40 @@ bool IsMakeCredentialOptionMapFormatCorrect(
     const cbor::Value::MapValue& option_map) {
   return std::all_of(
       option_map.begin(), option_map.end(), [](const auto& param) {
-        if (!param.first.is_string())
-          return false;
-
-        const auto& key = param.first.GetString();
-        return ((key == kResidentKeyMapKey || key == kUserVerificationMapKey) &&
-                param.second.is_bool());
+        return param.first.is_string() &&
+               (param.first.GetString() == kResidentKeyMapKey ||
+                param.first.GetString() == kUserVerificationMapKey) &&
+               param.second.is_bool();
       });
 }
 
 bool AreMakeCredentialRequestMapKeysCorrect(
     const cbor::Value::MapValue& request_map) {
-  return std::all_of(request_map.begin(), request_map.end(),
-                     [](const auto& param) {
-                       if (!param.first.is_integer())
-                         return false;
-
-                       const auto& key = param.first.GetInteger();
-                       return (key <= 9u && key >= 1u);
-                     });
+  return std::all_of(
+      request_map.begin(), request_map.end(), [](const auto& param) {
+        return (param.first.is_integer() && 1u <= param.first.GetInteger() &&
+                param.first.GetInteger() <= 9u);
+      });
 }
 
 bool IsGetAssertionOptionMapFormatCorrect(
     const cbor::Value::MapValue& option_map) {
   return std::all_of(
       option_map.begin(), option_map.end(), [](const auto& param) {
-        if (!param.first.is_string())
-          return false;
-
-        const auto& key = param.first.GetString();
-        return (key == kUserPresenceMapKey || key == kUserVerificationMapKey) &&
+        return param.first.is_string() &&
+               (param.first.GetString() == kUserPresenceMapKey ||
+                param.first.GetString() == kUserVerificationMapKey) &&
                param.second.is_bool();
       });
 }
 
 bool AreGetAssertionRequestMapKeysCorrect(
     const cbor::Value::MapValue& request_map) {
-  return std::all_of(request_map.begin(), request_map.end(),
-                     [](const auto& param) {
-                       if (!param.first.is_integer())
-                         return false;
-
-                       const auto& key = param.first.GetInteger();
-                       return (key <= 7u || key >= 1u);
-                     });
+  return std::all_of(
+      request_map.begin(), request_map.end(), [](const auto& param) {
+        return (param.first.is_integer() && 1u <= param.first.GetInteger() &&
+                param.first.GetInteger() <= 7u);
+      });
 }
 
 base::Optional<std::vector<uint8_t>> GetPINBytestring(

@@ -62,7 +62,7 @@ class ResponsivenessCalculatorTest : public testing::Test {
  protected:
   // This member sets up BrowserThread::IO and BrowserThread::UI. It must be the
   // first member, as other members may depend on these abstractions.
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   std::unique_ptr<FakeCalculator> calculator_;
   base::TimeTicks last_calculation_time_;

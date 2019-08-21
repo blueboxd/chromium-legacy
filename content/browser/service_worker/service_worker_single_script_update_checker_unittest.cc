@@ -62,7 +62,7 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
   };
 
   ServiceWorkerSingleScriptUpdateCheckerTest()
-      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP),
         browser_context_(std::make_unique<TestBrowserContext>()) {
     BrowserContext::EnsureResourceContextInitialized(browser_context_.get());
     base::RunLoop().RunUntilIdle();
@@ -159,7 +159,7 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
   }
 
  protected:
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<TestBrowserContext> browser_context_;

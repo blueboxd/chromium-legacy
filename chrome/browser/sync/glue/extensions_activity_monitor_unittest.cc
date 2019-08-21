@@ -72,7 +72,7 @@ class SyncChromeExtensionsActivityMonitorTest : public testing::Test {
   ~SyncChromeExtensionsActivityMonitorTest() override {}
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
  protected:
   ExtensionsActivityMonitor monitor_;

@@ -871,10 +871,11 @@ void TabStrip::FrameColorsChanged() {
   SchedulePaint();
 }
 
-void TabStrip::SetBackgroundOffset(int offset) {
-  for (int i = 0; i < tab_count(); ++i)
-    tab_at(i)->set_background_offset(offset);
-  new_tab_button_->set_background_offset(offset);
+void TabStrip::SetBackgroundOffset(int background_offset) {
+  if (background_offset != background_offset_) {
+    background_offset_ = background_offset;
+    SchedulePaint();
+  }
 }
 
 bool TabStrip::IsRectInWindowCaption(const gfx::Rect& rect) {
@@ -1645,6 +1646,10 @@ bool TabStrip::ShouldPaintTab(const Tab* tab, float scale, SkPath* clip) {
     clip->offset(SkIntToScalar(previous_bounds.x() - current_bounds.x()), 0);
   }
   return true;
+}
+
+int TabStrip::GetBackgroundOffset() const {
+  return background_offset_;
 }
 
 int TabStrip::GetStrokeThickness() const {
@@ -2970,12 +2975,12 @@ void TabStrip::ButtonPressed(views::Button* sender, const ui::Event& event) {
 
       const ui::MouseEvent& mouse = static_cast<const ui::MouseEvent&>(event);
       if (mouse.IsOnlyMiddleMouseButton()) {
-        if (ui::Clipboard::IsSupportedClipboardType(
-                ui::ClipboardType::kSelection)) {
+        if (ui::Clipboard::IsSupportedClipboardBuffer(
+                ui::ClipboardBuffer::kSelection)) {
           ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
           CHECK(clipboard);
           base::string16 clipboard_text;
-          clipboard->ReadText(ui::ClipboardType::kSelection, &clipboard_text);
+          clipboard->ReadText(ui::ClipboardBuffer::kSelection, &clipboard_text);
           if (!clipboard_text.empty())
             controller_->CreateNewTabWithLocation(clipboard_text);
         }

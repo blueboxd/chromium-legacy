@@ -154,7 +154,7 @@ class TestIPCSender : public IPC::Sender {
 class ExtensionWebRequestTest : public testing::Test {
  public:
   ExtensionWebRequestTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         profile_manager_(TestingBrowserProcess::GetGlobal()) {}
 
  protected:
@@ -162,7 +162,7 @@ class ExtensionWebRequestTest : public testing::Test {
     ASSERT_TRUE(profile_manager_.SetUp());
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   TestingProfileManager profile_manager_;
 };

@@ -1090,14 +1090,15 @@ TEST_F(HitTestQueryTest, ChildHitTestAskFlag) {
                                HitTestRegionFlags::kHitTestMouse);
 }
 
-// One embedder with nested OOPIFs.
+// One embedder with nested OOPIFs. When the mid-level iframe has kHitTestAsk
+// flag we should do async hit test and skip checking its descendants.
 //
 //  +e-------------+
 //  |   +c---------|     Point   maps to
 //  | 1 |    2     |     -----   -------
 //  |   |          |       1        e
 //  |   |+b--------|       2        c
-//  |   ||         |       3        b
+//  |   ||         |       3        c
 //  |   ||   3     |
 //  +--------------+
 //
@@ -1143,17 +1144,21 @@ TEST_F(HitTestQueryTest, NestedOOPIFs) {
   Target target2 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point2);
   EXPECT_EQ(target2.frame_sink_id, c_id);
+  // point2 + transform_e_to_c  = (2, 2).
   EXPECT_EQ(target2.location_in_target, gfx::PointF(2, 2));
   EXPECT_EQ(target2.flags, HitTestRegionFlags::kHitTestChildSurface |
                                HitTestRegionFlags::kHitTestAsk |
                                HitTestRegionFlags::kHitTestMouse);
 
-  // b is the deepest OOPIF for point3, return b with ask flag.
+  // b is the deepest OOPIF for point3, but c has the ask flag. Return c
+  // accordingly.
   Target target3 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point3);
-  EXPECT_EQ(target3.frame_sink_id, b_id);
-  EXPECT_EQ(target3.location_in_target, gfx::PointF(2, 2));
-  EXPECT_EQ(target3.flags, HitTestRegionFlags::kHitTestAsk |
+  EXPECT_EQ(target3.frame_sink_id, c_id);
+  // point3 + transform_e_to_c  = (2, 102).
+  EXPECT_EQ(target3.location_in_target, gfx::PointF(2, 102));
+  EXPECT_EQ(target3.flags, HitTestRegionFlags::kHitTestChildSurface |
+                               HitTestRegionFlags::kHitTestAsk |
                                HitTestRegionFlags::kHitTestMouse);
 }
 

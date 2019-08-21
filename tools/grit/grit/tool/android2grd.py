@@ -34,12 +34,12 @@ _CHAR_LIMIT = lazy_re.compile(r'\[CHAR-LIMIT=(\d+)\]')
 
 # Finds String.Format() style format specifiers such as "%-5.2f".
 _FORMAT_SPECIFIER = lazy_re.compile(
-  '%'
-  '([1-9][0-9]*\$|<)?'            # argument_index
-  '([-#+ 0,(]*)'                  # flags
-  '([0-9]+)?'                     # width
-  '(\.[0-9]+)?'                   # precision
-  '([bBhHsScCdoxXeEfgGaAtT%n])')  # conversion
+  r'%'
+  r'([1-9][0-9]*\$|<)?'            # argument_index
+  r'([-#+ 0,(]*)'                  # flags
+  r'([0-9]+)?'                     # width
+  r'(\.[0-9]+)?'                   # precision
+  r'([bBhHsScCdoxXeEfgGaAtT%n])')  # conversion
 
 
 class Android2Grd(interface.Tool):

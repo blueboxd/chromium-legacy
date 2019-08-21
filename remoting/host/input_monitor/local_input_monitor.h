@@ -31,6 +31,7 @@ class LocalInputMonitor {
   using PointerMoveCallback =
       base::RepeatingCallback<void(const webrtc::DesktopVector&,
                                    ui::EventType)>;
+  using KeyPressedCallback = base::RepeatingCallback<void(uint32_t)>;
 
   virtual ~LocalInputMonitor() = default;
 
@@ -43,7 +44,7 @@ class LocalInputMonitor {
 
   // Start monitoring and notify using |client_session_control|.  In this mode
   // the LocalInputMonitor will listen for session disconnect hotkeys and mouse
-  // events (and touch, on some platforms) for input filtering.
+  // and keyboard events (and touch, on some platforms) for input filtering.
   virtual void StartMonitoringForClientSession(
       base::WeakPtr<ClientSessionControl> client_session_control) = 0;
 
@@ -54,7 +55,7 @@ class LocalInputMonitor {
   // |on_keyboard_input| is called for each keypress detected.
   // |on_error| is called if any of the child input monitors fail.
   virtual void StartMonitoring(PointerMoveCallback on_pointer_input,
-                               base::RepeatingClosure on_keyboard_input,
+                               KeyPressedCallback on_keyboard_input,
                                base::RepeatingClosure on_error) = 0;
 
  protected:

@@ -78,6 +78,10 @@ enum SearchResultType {
   // A result from omnibox for the personalized suggestion.
   // Currently, it is used for the user's recent query.
   OMNIBOX_SUGGEST_PERSONALIZED,
+  // A zero-state result representing a local file.
+  ZERO_STATE_FILE,
+  // A result from the Drive QuickAccess provider.
+  DRIVE_QUICK_ACCESS,
   // Boundary is always last.
   SEARCH_RESULT_TYPE_BOUNDARY
 };

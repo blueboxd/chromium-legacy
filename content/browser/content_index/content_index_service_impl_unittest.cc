@@ -52,7 +52,7 @@ class ContentIndexServiceImplTest : public ::testing::Test {
   }
 
  private:
-  TestBrowserThreadBundle thread_bundle_;  // Must be first member
+  BrowserTaskEnvironment task_environment_;  // Must be first member
   std::unique_ptr<ContentIndexServiceImpl> service_;
   FakeMojoMessageDispatchContext fake_dispatch_context_;
   mojo::test::BadMessageObserver bad_message_observer_;

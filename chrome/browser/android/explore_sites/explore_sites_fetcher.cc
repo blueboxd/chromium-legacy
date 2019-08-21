@@ -46,7 +46,6 @@ namespace {
 // proto format.
 const char kRequestContentType[] = "application/x-protobuf";
 const char kRequestMethod[] = "GET";
-const char kExperiment[] = "exp";
 
 constexpr net::NetworkTrafficAnnotationTag traffic_annotation =
     net::DefineNetworkTrafficAnnotation("explore_sites", R"(
@@ -162,7 +161,10 @@ void ExploreSitesFetcher::Start() {
 
   // Get field trial value, if any.
   std::string tag = base::GetFieldTrialParamValueByFeature(
-      chrome::android::kExploreSites, kExperiment);
+      chrome::android::kExploreSites,
+      chrome::android::explore_sites::
+          kExploreSitesHeadersExperimentParameterName);
+
   if (!tag.empty()) {
     resource_request->headers.SetHeader("X-Google-Chrome-Experiment-Tag", tag);
   }

@@ -263,7 +263,7 @@ class BrowsingDataMediaLicenseHelperTest : public testing::Test {
     done_cb.Run();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
   scoped_refptr<BrowsingDataMediaLicenseHelper> helper_;
 

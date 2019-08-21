@@ -109,7 +109,7 @@ class QuotaServiceTest : public testing::Test {
   std::string extension_b_;
   std::string extension_c_;
   std::unique_ptr<QuotaService> service_;
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 class QuotaLimitHeuristicTest : public testing::Test {

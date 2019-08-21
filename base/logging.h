@@ -26,6 +26,10 @@
 #include "base/template_util.h"
 #include "build/build_config.h"
 
+#if defined(OS_CHROMEOS)
+#include <cstdio>
+#endif
+
 //
 // Optional message capabilities
 // -----------------------------
@@ -214,11 +218,18 @@ struct BASE_EXPORT LoggingSettings {
   // destinations.
   uint32_t logging_dest = LOG_DEFAULT;
 
-  // The three settings below have an effect only when LOG_TO_FILE is
+  // The four settings below have an effect only when LOG_TO_FILE is
   // set in |logging_dest|.
-  const PathChar* log_file = nullptr;
+  const PathChar* log_file_path = nullptr;
   LogLockingState lock_log = LOCK_LOG_FILE;
   OldFileDeletionState delete_old = APPEND_TO_OLD_LOG_FILE;
+#if defined(OS_CHROMEOS)
+  // Contains an optional file that logs should be written to. If present,
+  // |log_file_path| will be ignored, and the logging system will take ownership
+  // of the FILE. If there's an error writing to this file, no fallback paths
+  // will be opened.
+  FILE* log_file = nullptr;
+#endif
 };
 
 // Define different names for the BaseInitLoggingImpl() function depending on
@@ -990,6 +1001,14 @@ class BASE_EXPORT ErrnoLogMessage {
 //       statements, there's no guarantee that it will stay closed
 //       after this call.
 BASE_EXPORT void CloseLogFile();
+
+#if defined(OS_CHROMEOS)
+// Returns a new file handle that will write to the same destination as the
+// currently open log file. Returns nullptr if logging to a file is disabled,
+// or if opening the file failed. This is intended to be used to initialize
+// logging in child processes that are unable to open files.
+BASE_EXPORT FILE* DuplicateLogFILE();
+#endif
 
 // Async signal safe logging mechanism.
 BASE_EXPORT void RawLog(int level, const char* message);

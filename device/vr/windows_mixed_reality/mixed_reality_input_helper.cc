@@ -54,10 +54,10 @@ MixedRealityInputHelper::ControllerState::~ControllerState() = default;
 namespace {
 
 // Helpers for WebVR Gamepad
-constexpr double kDeadzoneMinimum = 0.1;
+constexpr double kThumbstickDeadzone = 0.15;
 
-double ApplyAxisDeadzone(double value) {
-  return std::fabs(value) < kDeadzoneMinimum ? 0 : value;
+double ApplyAxisDeadzone(double value, double deadzone) {
+  return std::fabs(value) < deadzone ? 0 : value;
 }
 
 void AddButton(mojom::XRGamepadPtr& gamepad,
@@ -78,8 +78,12 @@ void AddButton(mojom::XRGamepadPtr& gamepad,
 // have an X and Y.
 void AddAxes(mojom::XRGamepadPtr& gamepad,
              const GamepadBuilder::ButtonData& data) {
-  gamepad->axes.push_back(ApplyAxisDeadzone(data.x_axis));
-  gamepad->axes.push_back(ApplyAxisDeadzone(data.y_axis));
+  const double deadzone =
+      data.type == GamepadBuilder::ButtonData::Type::kThumbstick
+          ? kThumbstickDeadzone
+          : 0.0;
+  gamepad->axes.push_back(ApplyAxisDeadzone(data.x_axis, deadzone));
+  gamepad->axes.push_back(ApplyAxisDeadzone(data.y_axis, deadzone));
 }
 
 void AddButtonWithAxes(mojom::XRGamepadPtr& gamepad,
@@ -236,7 +240,7 @@ base::Optional<Gamepad> GetWebXRGamepad(ParsedInputState& input_state) {
   if (input_state.source_state && input_state.source_state->description)
     handedness = input_state.source_state->description->handedness;
 
-  XRStandardGamepadBuilder builder(handedness, kDeadzoneMinimum);
+  XRStandardGamepadBuilder builder(handedness);
   builder.SetPrimaryButton(input_state.button_data[ButtonName::kSelect]);
   builder.SetSecondaryButton(input_state.button_data[ButtonName::kGrip]);
 

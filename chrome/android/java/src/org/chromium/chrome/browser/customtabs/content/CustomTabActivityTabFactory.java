@@ -58,8 +58,8 @@ public class CustomTabActivityTabFactory {
 
     /** Creates a {@link TabModelSelector} for the custom tab. */
     public TabModelSelectorImpl createTabModelSelector() {
-        mTabModelSelector =
-                new TabModelSelectorImpl(mActivity, mActivity, mPersistencePolicy, false, false);
+        mTabModelSelector = new TabModelSelectorImpl(
+                mActivity, mActivity, mPersistencePolicy, false, false, false);
         return mTabModelSelector;
     }
 

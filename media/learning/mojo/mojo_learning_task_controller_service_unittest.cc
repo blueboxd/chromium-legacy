@@ -36,6 +36,10 @@ class MojoLearningTaskControllerServiceTest : public ::testing::Test {
       cancel_args_.id_ = id;
     }
 
+    const LearningTask& GetLearningTask() override {
+      return LearningTask::Empty();
+    }
+
     struct {
       base::UnguessableToken id_;
       FeatureVector features_;

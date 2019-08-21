@@ -163,7 +163,7 @@ class SessionStorageNamespaceImplMojoTest
   }
 
  protected:
-  TestBrowserThreadBundle test_browser_thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   TestBrowserContext browser_context_;
   const std::string test_namespace_id1_;
   const std::string test_namespace_id2_;

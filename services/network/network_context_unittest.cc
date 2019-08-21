@@ -840,14 +840,15 @@ TEST_F(NetworkContextTest, HttpServerPropertiesToDisk) {
 
   // Wait for properties to load from disk, and sanity check initial state.
   task_environment_.RunUntilIdle();
-  EXPECT_FALSE(network_context->url_request_context()
-                   ->http_server_properties()
-                   ->GetSupportsSpdy(kSchemeHostPort));
+  EXPECT_FALSE(
+      network_context->url_request_context()
+          ->http_server_properties()
+          ->GetSupportsSpdy(kSchemeHostPort, net::NetworkIsolationKey()));
 
   // Set a property.
   network_context->url_request_context()
       ->http_server_properties()
-      ->SetSupportsSpdy(kSchemeHostPort, true);
+      ->SetSupportsSpdy(kSchemeHostPort, net::NetworkIsolationKey(), true);
   // Deleting the context will cause it to flush state. Wait for the pref
   // service to flush to disk.
   network_context.reset();
@@ -861,9 +862,10 @@ TEST_F(NetworkContextTest, HttpServerPropertiesToDisk) {
   // Wait for properties to load from disk.
   task_environment_.RunUntilIdle();
 
-  EXPECT_TRUE(network_context->url_request_context()
-                  ->http_server_properties()
-                  ->GetSupportsSpdy(kSchemeHostPort));
+  EXPECT_TRUE(
+      network_context->url_request_context()
+          ->http_server_properties()
+          ->GetSupportsSpdy(kSchemeHostPort, net::NetworkIsolationKey()));
 
   // Now check that ClearNetworkingHistorySince clears the data.
   base::RunLoop run_loop2;
@@ -871,9 +873,10 @@ TEST_F(NetworkContextTest, HttpServerPropertiesToDisk) {
       base::Time::Now() - base::TimeDelta::FromHours(1),
       run_loop2.QuitClosure());
   run_loop2.Run();
-  EXPECT_FALSE(network_context->url_request_context()
-                   ->http_server_properties()
-                   ->GetSupportsSpdy(kSchemeHostPort));
+  EXPECT_FALSE(
+      network_context->url_request_context()
+          ->http_server_properties()
+          ->GetSupportsSpdy(kSchemeHostPort, net::NetworkIsolationKey()));
 
   // Destroy the network context and let any pending writes complete before
   // destroying |temp_dir|, to avoid leaking any files.
@@ -890,24 +893,27 @@ TEST_F(NetworkContextTest, ClearHttpServerPropertiesInMemory) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(mojom::NetworkContextParams::New());
 
-  EXPECT_FALSE(network_context->url_request_context()
-                   ->http_server_properties()
-                   ->GetSupportsSpdy(kSchemeHostPort));
+  EXPECT_FALSE(
+      network_context->url_request_context()
+          ->http_server_properties()
+          ->GetSupportsSpdy(kSchemeHostPort, net::NetworkIsolationKey()));
   network_context->url_request_context()
       ->http_server_properties()
-      ->SetSupportsSpdy(kSchemeHostPort, true);
-  EXPECT_TRUE(network_context->url_request_context()
-                  ->http_server_properties()
-                  ->GetSupportsSpdy(kSchemeHostPort));
+      ->SetSupportsSpdy(kSchemeHostPort, net::NetworkIsolationKey(), true);
+  EXPECT_TRUE(
+      network_context->url_request_context()
+          ->http_server_properties()
+          ->GetSupportsSpdy(kSchemeHostPort, net::NetworkIsolationKey()));
 
   base::RunLoop run_loop;
   network_context->ClearNetworkingHistorySince(
       base::Time::Now() - base::TimeDelta::FromHours(1),
       run_loop.QuitClosure());
   run_loop.Run();
-  EXPECT_FALSE(network_context->url_request_context()
-                   ->http_server_properties()
-                   ->GetSupportsSpdy(kSchemeHostPort));
+  EXPECT_FALSE(
+      network_context->url_request_context()
+          ->http_server_properties()
+          ->GetSupportsSpdy(kSchemeHostPort, net::NetworkIsolationKey()));
 }
 
 // Checks that ClearNetworkingHistorySince() clears network quality prefs.
@@ -1311,16 +1317,19 @@ TEST_F(NetworkContextTest, ClearHttpCache) {
   ASSERT_TRUE(backend);
 
   for (const auto& url : entry_urls) {
-    disk_cache::Entry* entry = nullptr;
+    disk_cache::EntryResult result;
     base::RunLoop run_loop;
-    if (backend->CreateEntry(
-            url, net::HIGHEST, &entry,
-            base::Bind([](base::OnceClosure quit_loop,
-                          int rv) { std::move(quit_loop).Run(); },
-                       run_loop.QuitClosure())) == net::ERR_IO_PENDING) {
+
+    result = backend->CreateEntry(
+        url, net::HIGHEST,
+        base::BindLambdaForTesting([&](disk_cache::EntryResult got_result) {
+          result = std::move(got_result);
+          run_loop.Quit();
+        }));
+    if (result.net_error() == net::ERR_IO_PENDING)
       run_loop.Run();
-    }
-    entry->Close();
+
+    result.ReleaseEntry()->Close();
   }
   EXPECT_EQ(entry_urls.size(), static_cast<size_t>(backend->GetEntryCount()));
   base::RunLoop run_loop;

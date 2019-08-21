@@ -461,7 +461,6 @@ CookieStore::CookieStore(
     : ContextLifecycleObserver(execution_context),
       backend_(std::move(backend)),
       subscription_backend_(std::move(subscription_backend)),
-      change_listener_binding_(this),
       default_cookie_url_(DefaultCookieURL(execution_context)),
       default_site_for_cookies_(DefaultSiteForCookies(execution_context)),
       default_top_frame_origin_(DefaultTopFrameOrigin(execution_context)) {
@@ -617,24 +616,21 @@ void CookieStore::OnGetCookieChangeSubscriptionResult(
 }
 
 void CookieStore::StartObserving() {
-  if (change_listener_binding_ || !backend_)
+  if (change_listener_receiver_.is_bound() || !backend_)
     return;
 
   // See https://bit.ly/2S0zRAS for task types.
   auto task_runner =
       GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
-  network::mojom::blink::CookieChangeListenerPtr change_listener;
-  change_listener_binding_.Bind(
-      mojo::MakeRequest(&change_listener, task_runner), task_runner);
-  backend_->AddChangeListener(default_cookie_url_, default_site_for_cookies_,
-                              default_top_frame_origin_,
-                              std::move(change_listener), {});
+  backend_->AddChangeListener(
+      default_cookie_url_, default_site_for_cookies_, default_top_frame_origin_,
+      change_listener_receiver_.BindNewPipeAndPassRemote(task_runner), {});
 }
 
 void CookieStore::StopObserving() {
-  if (!change_listener_binding_.is_bound())
+  if (!change_listener_receiver_.is_bound())
     return;
-  change_listener_binding_.Close();
+  change_listener_receiver_.reset();
 }
 
 }  // namespace blink

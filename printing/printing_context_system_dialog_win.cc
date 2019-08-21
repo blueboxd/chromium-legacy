@@ -67,7 +67,7 @@ void PrintingContextSystemDialogWin::AskUserForSettings(
   }
 
   if (ShowPrintDialog(&dialog_options) != S_OK) {
-    ResetSettings();
+    DeleteSettings();
     std::move(callback).Run(FAILED);
     return;
   }
@@ -113,7 +113,7 @@ bool PrintingContextSystemDialogWin::InitializeSettingsWithRanges(
   if (!(GetDeviceCaps(context(), RASTERCAPS) & RC_STRETCHDIB) ||
       !(GetDeviceCaps(context(), RASTERCAPS) & RC_BITMAP64)) {
     NOTREACHED();
-    ResetSettings();
+    DeleteSettings();
     return false;
   }
 

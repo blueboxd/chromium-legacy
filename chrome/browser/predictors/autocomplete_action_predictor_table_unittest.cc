@@ -54,7 +54,7 @@ class AutocompleteActionPredictorTableTest : public testing::Test {
   AutocompleteActionPredictorTable::Rows test_db_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   std::unique_ptr<PredictorDatabase> db_;
 };

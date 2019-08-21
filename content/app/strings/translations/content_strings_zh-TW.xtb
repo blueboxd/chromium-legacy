@@ -57,6 +57,7 @@
 <translation id="2746543609216772311">必須輸入 <ph name="MINIMUM_DATE_OR_TIME" /> 或之後的值。</translation>
 <translation id="2759744352195237655">彈出式按鈕</translation>
 <translation id="2761667185364618470">如果你要繼續執行，請勾選這個核取方塊。</translation>
+<translation id="2844350028562914727">詳細資料</translation>
 <translation id="2896972712917208084">圓形按鈕群組</translation>
 <translation id="2908441821576996758">請輸入以逗號分隔的電子郵件地址清單。</translation>
 <translation id="2940813599313844715">物件</translation>
@@ -154,6 +155,7 @@
 <translation id="6166809985690652833">後記</translation>
 <translation id="6209276755895393898">圖片內容似乎是：<ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">詞彙解釋</translation>
+<translation id="6281763101136022427">網址</translation>
 <translation id="6310801910862476708">離開子母畫面</translation>
 <translation id="6398862346408813489">顯示月份選取面板</translation>
 <translation id="6404546809543547843">音訊時間點拖曳工具</translation>
@@ -236,6 +238,7 @@
 <translation id="860475260694818407">目錄</translation>
 <translation id="8613126697340063924">控制遠端播放</translation>
 <translation id="862370744433916922">副標題</translation>
+<translation id="8711688047404765493">輸出</translation>
 <translation id="8750798805984357768">請選取其中一個選項。</translation>
 <translation id="8808573423886751634">章節</translation>
 <translation id="8845239796550121995">正在投放到電視上</translation>

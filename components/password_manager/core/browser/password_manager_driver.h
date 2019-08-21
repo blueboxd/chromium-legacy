@@ -55,7 +55,15 @@ class PasswordManagerDriver
       const autofill::FormsPredictionsMap& predictions) {}
 
   // Notifies the driver that the user has accepted a generated password.
+  // TODO(crbug/936011): delete this method. The UI should call the one below.
   virtual void GeneratedPasswordAccepted(const base::string16& password) = 0;
+
+  // Notifies the password manager that the user has accepted a generated
+  // password. The password manager can bring up some disambiguation UI in
+  // response.
+  virtual void GeneratedPasswordAccepted(const autofill::FormData& form_data,
+                                         uint32_t generation_element_id,
+                                         const base::string16& password) {}
 
   // Tells the driver to fill the form with the |username| and |password|.
   virtual void FillSuggestion(const base::string16& username,

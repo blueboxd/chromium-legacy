@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.widget.textbubble;
 
 import android.content.Context;
 import android.graphics.Rect;
-import android.os.Build;
 import android.os.Handler;
 import android.support.annotation.StringRes;
 import android.view.LayoutInflater;
@@ -47,7 +46,6 @@ public class TextBubble implements AnchoredPopupWindow.LayoutObserver {
 
     protected final Context mContext;
     private final Handler mHandler;
-    private final View mRootView;
 
     /** The actual {@link PopupWindow}.  Internalized to prevent API leakage. */
     private final AnchoredPopupWindow mPopupWindow;
@@ -73,7 +71,7 @@ public class TextBubble implements AnchoredPopupWindow.LayoutObserver {
      * How long to wait before automatically dismissing the bubble.  {@link #NO_TIMEOUT} is the
      * default and means the bubble will stay visible indefinitely.
      */
-    private long mAutoDismissTimeoutMs;
+    private long mAutoDismissTimeoutMs = NO_TIMEOUT;
 
     // Content specific variables.
     /** The string to show in the bubble. */
@@ -172,7 +170,6 @@ public class TextBubble implements AnchoredPopupWindow.LayoutObserver {
     public TextBubble(Context context, View rootView, String contentString,
             String accessibilityString, boolean showArrow, RectProvider anchorRectProvider) {
         mContext = context;
-        mRootView = rootView.getRootView();
         mString = contentString;
         mAccessibilityString = accessibilityString;
 
@@ -199,6 +196,7 @@ public class TextBubble implements AnchoredPopupWindow.LayoutObserver {
         mPopupWindow.setAnimationStyle(R.style.TextBubbleAnimation);
 
         addOnDismissListener(mDismissListener);
+        if (AccessibilityUtil.isAccessibilityEnabled()) setDismissOnTouchInteraction(true);
 
         // Set predefined styles for the TextBubble.
         mDrawable.setBubbleColor(ApiCompatibilityUtils.getColor(
@@ -214,7 +212,6 @@ public class TextBubble implements AnchoredPopupWindow.LayoutObserver {
         }
 
         mPopupWindow.show();
-        announceForAccessibility();
         sBubbles.add(this);
     }
 
@@ -275,6 +272,8 @@ public class TextBubble implements AnchoredPopupWindow.LayoutObserver {
      *                  {@link #NO_TIMEOUT} for no timeout.
      */
     public void setAutoDismissTimeout(long timeoutMs) {
+        if (AccessibilityUtil.isAccessibilityEnabled()) return;
+
         mAutoDismissTimeoutMs = timeoutMs;
         mHandler.removeCallbacks(mDismissRunnable);
         if (mPopupWindow.isShowing() && mAutoDismissTimeoutMs != NO_TIMEOUT) {
@@ -288,6 +287,10 @@ public class TextBubble implements AnchoredPopupWindow.LayoutObserver {
      *                {@code false}.
      */
     public void setDismissOnTouchInteraction(boolean dismiss) {
+        // For accessibility mode, since there is no timeout value, the bubble can be dismissed
+        // only on touch interaction.
+        if (AccessibilityUtil.isAccessibilityEnabled()) dismiss = true;
+
         mPopupWindow.setDismissOnTouchInteraction(dismiss);
     }
 
@@ -335,28 +338,5 @@ public class TextBubble implements AnchoredPopupWindow.LayoutObserver {
      */
     protected void setText(TextView view) {
         view.setText(AccessibilityUtil.isAccessibilityEnabled() ? mAccessibilityString : mString);
-    }
-
-    /**
-     * Announce an accessibility event about the bubble text.
-     */
-    private void announceForAccessibility() {
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                if (!mPopupWindow.isShowing() || mContentView == null) return;
-
-                View view = null;
-                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
-                    view = mContentView;
-                } else {
-                    // For Android J and K, send the accessibility event from root view.
-                    // See https://crbug.com/773387.
-                    view = mRootView;
-                }
-                if (view == null) return;
-                view.announceForAccessibility(mAccessibilityString);
-            }
-        });
     }
 }

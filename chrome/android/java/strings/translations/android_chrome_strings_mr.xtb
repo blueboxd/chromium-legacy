@@ -86,7 +86,7 @@
 <translation id="1620510694547887537">कॅमेरा</translation>
 <translation id="1623104350909869708">या पृष्ठास अतिरिक्त संवाद तयार करण्यापासून प्रतिबंधित करा</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{1 निवडलेला आयटम काढून टाका}other{# निवडलेले आयटम काढून टाका}}</translation>
-<translation id="164269334534774161">तुम्ही <ph name="CREATION_TIME" /> पासून या पेजाची ऑफलाइन प्रत पाहत आहात</translation>
+<translation id="164269334534774161">तुम्ही <ph name="CREATION_TIME" /> पासून या पेजची ऑफलाइन प्रत पाहत आहात</translation>
 <translation id="1644574205037202324">इतिहास</translation>
 <translation id="1647391597548383849">तुमचा कॅमेरा अॅक्सेस करा</translation>
 <translation id="1660204651932907780">साइटना ध्वनी प्ले करण्याची परवानगी द्या (शिफारस केलेले)</translation>
@@ -141,7 +141,6 @@
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB अन्य अ‍ॅप्स</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# फाइल}other{# फायली}}</translation>
 <translation id="2017836877785168846">ॲड्रेस बारमधील इतिहास आणि आपोआप पूर्ण केलेले साफ करते.</translation>
-<translation id="2018707881002649255">तुम्ही खाली निवडलेले संपर्क <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> वेबसाइटसोबत शेअर केले जातील.</translation>
 <translation id="2021896219286479412">फुल स्क्रीन साइट नियंत्रणे</translation>
 <translation id="2038563949887743358">डेस्कटॉप साइट विनंती चालू करा</translation>
 <translation id="2041019821020695769">Chrome ने तुम्हाला सूचना पाठवण्यासाठी, <ph name="BEGIN_LINK" />Android सेटिंग्ज<ph name="END_LINK" /> मध्ये देखील सूचना सुरू करा.</translation>
@@ -211,7 +210,7 @@
 <translation id="2523184218357549926">तुम्ही भेट दिलेल्या पेजच्या URL Google ला पाठवते</translation>
 <translation id="2532336938189706096">वेब दृश्य</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> आयटम हटवले</translation>
-<translation id="2536728043171574184">या पेजाची ऑफलाइन प्रत पाहत आहे</translation>
+<translation id="2536728043171574184">या पेजची ऑफलाइन प्रत पाहत आहे</translation>
 <translation id="2546283357679194313">कुकीज आणि साइट डेटा</translation>
 <translation id="2567385386134582609">इमेज</translation>
 <translation id="257088987046510401">थीम</translation>
@@ -243,7 +242,6 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> सेकंद शिल्लक</translation>
 <translation id="2779651927720337254">अयशस्वी झाले</translation>
 <translation id="2781151931089541271">1 सेकंद शिल्लक</translation>
-<translation id="2796941233371040292">येथे कोणताही स्टोरेज डेटा नाही</translation>
 <translation id="2801022321632964776">Chrome च्या नवीनतम आवृत्तीमध्ये तुमची भाषा मिळवण्यासाठी अपडेट करा</translation>
 <translation id="2810645512293415242">डेटा सेव्ह करण्यासाठी आणि तो लवकर लोड होण्यासाठी पेज सुलभ केले.</translation>
 <translation id="281504910091592009">तुमच्या <ph name="BEGIN_LINK" />Google खात्यामध्ये<ph name="END_LINK" /> सेव्ह केलेले पासवर्ड पाहा आणि व्यवस्थापित करा</translation>
@@ -271,6 +269,7 @@
 <translation id="2962095958535813455">गुप्त टॅबवर स्विच केले</translation>
 <translation id="2968755619301702150">सर्टिफिकेट दर्शक</translation>
 <translation id="2979025552038692506">निवडलेला गुप्त टॅब</translation>
+<translation id="2987620471460279764">मजकूर इतर डिव्हाइसवरून शेअर केला आहे</translation>
 <translation id="2989523299700148168">अलीकडे भेट दिलेले</translation>
 <translation id="2996291259634659425">सांकेतिक पासफ्रेझ तयार करा</translation>
 <translation id="2996809686854298943">URL आवश्यक आहे</translation>
@@ -342,7 +341,7 @@
 <translation id="3568688522516854065">तुमच्या इतर डिव्हाइसवरून तुमचे टॅब मिळविण्यासाठी, साइन इन करा आणि सिंक सुरू करा</translation>
 <translation id="3587482841069643663">सर्व</translation>
 <translation id="358794129225322306">साइटला एकाहून अधिक फायली आपोआप डाउनलोड करू द्या.</translation>
-<translation id="3590487821116122040">Chrome साइट स्टोरेज यास महत्त्व देत नाही (उदा. ज्या साइटमध्ये सेटिंग्ज सेव्ह केलेल्या नसतात किंवा  सहसा भेट देत नाही अशा साइट)</translation>
+<translation id="3590487821116122040">Chrome साइट स्टोरेज यास महत्त्व देत नाही (उदा. ज्या साइटमध्ये सेटिंग्ज सेव्ह केलेल्या नसतात किंवा तुम्ही सहसा भेट देत नाही अशा साइट)</translation>
 <translation id="3599863153486145794">साइन-इन केलेल्या सर्व डिव्हाइसमधून इतिहास साफ करते. तुमच्या Google खात्यामध्ये <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> वर कदाचित ब्राउझिंगचे इतर फॉर्म असतील.</translation>
 <translation id="3600792891314830896">ध्वनी प्ले करणाऱ्या साइट म्यूट करा</translation>
 <translation id="3616113530831147358">ऑडिओ</translation>
@@ -554,6 +553,7 @@
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{एक डाउनलोड होऊ शकला नाही.}other{# डाउनलोड होऊ शकले नाहीत.}}</translation>
 <translation id="5170568018924773124">फोल्डरमध्ये दर्शवा</translation>
 <translation id="5184329579814168207">Chrome मध्ये उघडा</translation>
+<translation id="5193988420012215838">तुमच्या क्लिपबोर्डवर कॉपी केले</translation>
 <translation id="5199929503336119739">कार्य प्रोफाइल</translation>
 <translation id="5202089186707505116">या साइटला तुमचे VR सेन्सर ॲक्सेस करण्याची अनुमती द्यायची का?</translation>
 <translation id="5210286577605176222">मागील टॅबवर जा</translation>
@@ -702,6 +702,7 @@
 उदाहरणार्थ, काही वेबसाइट तुम्ही भेट दिलेल्‍या इतर वेबसाइटवर आधारित नसलेल्‍या जाहिराती तुम्हाला दर्शवून या विनंतीस प्रतिसाद देऊ शकतात. अनेक वेबसाइट अद्यापही आपला ब्राउझिंग डेटा संकलित करून त्‍याचा वापर करतील - उदाहरणार्थ त्‍यांच्‍या वेबसाइटवर सुरक्षितता सुधारणे, आशय, जाहिराती आणि शिफारशी प्रदान करणे आणि अहवाल आकडेवारी व्‍युत्‍पन्न करणे.</translation>
 <translation id="624789221780392884">अपडेट तयार</translation>
 <translation id="6255999984061454636">आशय सूचना</translation>
+<translation id="6264430811215618931"><ph name="ORIGIN" /> ने तुमच्या फोन नंबरवर एसएमएस पाठवला आहे. तुम्ही खात्री केल्यास, हे तुम्हीच आहात ते साइटला ओळखता येईल.</translation>
 <translation id="6277522088822131679">पृष्‍ठ प्रिंट करण्‍यात एक समस्‍या होती. कृपया पुन्‍हा प्रयत्न करा.</translation>
 <translation id="6295158916970320988">सर्व साइट</translation>
 <translation id="629730747756840877">खाते</translation>
@@ -717,7 +718,6 @@
 <translation id="6364438453358674297">इतिहासातून सूचना काढून टाकायची?</translation>
 <translation id="6369229450655021117">येथून तुम्ही वेबवर शोधू शकता, मित्रमैत्रिणींसोबत शेअर करू शकता आणि उघडी असलेली पेज पाहू शकता</translation>
 <translation id="6378173571450987352">तपशील: वापरलेल्या डेटाच्या प्रमाणानुसार क्रमाने लावलेला</translation>
-<translation id="6383961787135158834">साइट स्टोरेज साफ करा...</translation>
 <translation id="6388207532828177975">साफ आणि रीसेट करा</translation>
 <translation id="6393863479814692971">या साइटसाठी Chromeला तुमचा कॅमेरा आणि मायक्रोफोन अॅक्सेस करण्याची परवानगी आवश्यक आहे.</translation>
 <translation id="6395288395575013217">लिंक</translation>

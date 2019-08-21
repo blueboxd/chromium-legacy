@@ -69,7 +69,7 @@ class InputMethodPersistenceTest : public testing::Test {
                   language_prefs::kPreferredKeyboardLayout));
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   sync_preferences::TestingPrefServiceSyncable* mock_user_prefs_;
   MockInputMethodManagerImpl mock_manager_;
   TestingProfileManager mock_profile_manager_;

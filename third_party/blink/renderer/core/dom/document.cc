@@ -7944,8 +7944,7 @@ mojom::blink::DocumentInterfaceBroker* Document::GetDocumentInterfaceBroker() {
   return &GetFrame()->GetDocumentInterfaceBroker();
 }
 
-const BrowserInterfaceBrokerProxy* Document::GetBrowserInterfaceBrokerProxy()
-    const {
+BrowserInterfaceBrokerProxy* Document::GetBrowserInterfaceBrokerProxy() {
   if (!GetFrame())
     return nullptr;
 

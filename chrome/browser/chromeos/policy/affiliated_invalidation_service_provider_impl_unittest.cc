@@ -186,7 +186,7 @@ class AffiliatedInvalidationServiceProviderImplTest
   invalidation::FakeInvalidationService* profile_invalidation_service_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::test::ScopedFeatureList feature_list_;
   chromeos::FakeChromeUserManager* fake_user_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;

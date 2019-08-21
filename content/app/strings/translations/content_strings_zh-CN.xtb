@@ -57,6 +57,7 @@
 <translation id="2746543609216772311">指定的值不得早于<ph name="MINIMUM_DATE_OR_TIME" />。</translation>
 <translation id="2759744352195237655">弹出式按钮</translation>
 <translation id="2761667185364618470">如果要继续，请选中此框。</translation>
+<translation id="2844350028562914727">详细信息</translation>
 <translation id="2896972712917208084">单选按钮组</translation>
 <translation id="2908441821576996758">请输入用逗号分隔的电子邮件地址的列表。</translation>
 <translation id="2940813599313844715">对象</translation>
@@ -154,6 +155,7 @@
 <translation id="6166809985690652833">后记</translation>
 <translation id="6209276755895393898">似乎是：<ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">词汇表</translation>
+<translation id="6281763101136022427">网址</translation>
 <translation id="6310801910862476708">退出“画中画”模式</translation>
 <translation id="6398862346408813489">显示月份选择面板</translation>
 <translation id="6404546809543547843">音频时间进度条</translation>
@@ -236,6 +238,7 @@
 <translation id="860475260694818407">目录</translation>
 <translation id="8613126697340063924">控制远程播放</translation>
 <translation id="862370744433916922">副标题</translation>
+<translation id="8711688047404765493">输出</translation>
 <translation id="8750798805984357768">请从这些选项中选择一个。</translation>
 <translation id="8808573423886751634">章节</translation>
 <translation id="8845239796550121995">现在正投射到您的电视上</translation>

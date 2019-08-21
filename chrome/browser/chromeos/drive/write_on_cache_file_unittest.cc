@@ -59,7 +59,7 @@ class TestFileSystem : public DummyFileSystem {
 }  // namespace
 
 TEST(WriteOnCacheFileTest, PrepareFileForWritingSuccess) {
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   TestFileSystem test_file_system;
 
   FileError error = FILE_ERROR_FAILED;
@@ -80,7 +80,7 @@ TEST(WriteOnCacheFileTest, PrepareFileForWritingSuccess) {
 }
 
 TEST(WriteOnCacheFileTest, PrepareFileForWritingCreateFail) {
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   TestFileSystem test_file_system;
 
   FileError error = FILE_ERROR_FAILED;

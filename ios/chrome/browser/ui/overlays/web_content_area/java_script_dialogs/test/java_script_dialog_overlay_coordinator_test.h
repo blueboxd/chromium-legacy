@@ -50,7 +50,7 @@ class JavaScriptDialogOverlayCoordinatorTest : public PlatformTest {
   UIViewController* GetAlertViewController();
 
  private:
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   ScopedKeyWindow scoped_key_window_;
   FakeWebStateListDelegate web_state_list_delegate_;
   WebStateList web_state_list_;

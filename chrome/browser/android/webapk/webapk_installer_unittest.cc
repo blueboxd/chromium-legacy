@@ -270,7 +270,7 @@ class WebApkInstallerTest : public ::testing::Test {
       WebApkResponseBuilder;
 
   WebApkInstallerTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
   ~WebApkInstallerTest() override {}
 
   void SetUp() override {
@@ -338,7 +338,7 @@ class WebApkInstallerTest : public ::testing::Test {
   }
 
   std::unique_ptr<TestingProfile> profile_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   net::EmbeddedTestServer test_server_;
 
   // Builds response to the WebAPK creation request.

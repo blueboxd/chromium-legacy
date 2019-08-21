@@ -309,7 +309,7 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir temp_user_data_dir_;
 
   mojo::NamedPlatformChannel::ServerName startup_server_name_;
@@ -354,7 +354,7 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
 };
 
 CloudPrintProxyPolicyStartupTest::CloudPrintProxyPolicyStartupTest()
-    : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD) {
+    : task_environment_(content::BrowserTaskEnvironment::REAL_IO_THREAD) {
   // Although is really a unit test which runs in the browser_tests binary, it
   // doesn't get the unit setup which normally happens in the unit test binary.
   ChromeUnitTestSuite::InitializeProviders();

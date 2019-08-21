@@ -78,7 +78,7 @@ class NavigationEntryTest : public testing::Test {
   scoped_refptr<SiteInstanceImpl> instance_;
 
  private:
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   TestBrowserContext browser_context_;
 };
 

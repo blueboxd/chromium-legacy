@@ -555,14 +555,14 @@ void LocalDOMWindow::SchedulePostMessage(
                  WTF::Bind(&LocalDOMWindow::DispatchPostMessage,
                            WrapPersistent(this), WrapPersistent(event),
                            std::move(target), std::move(location)));
-  probe::AsyncTaskScheduled(document(), "postMessage", event);
+  probe::AsyncTaskScheduled(document(), "postMessage", event->async_task_id());
 }
 
 void LocalDOMWindow::DispatchPostMessage(
     MessageEvent* event,
     scoped_refptr<const SecurityOrigin> intended_target_origin,
     std::unique_ptr<SourceLocation> location) {
-  probe::AsyncTask async_task(document(), event);
+  probe::AsyncTask async_task(document(), event->async_task_id());
   if (!IsCurrentlyDisplayedInFrame())
     return;
 

@@ -41,7 +41,7 @@ class TriggeredProfileResetterTest : public testing::Test {
     trial->group();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
 
   void SetRegTimestampAndToolName(const base::string16& toolname,

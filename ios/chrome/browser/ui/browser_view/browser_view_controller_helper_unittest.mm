@@ -52,7 +52,7 @@ class BrowserViewControllerHelperTest : public PlatformTest {
     helper_ = [[BrowserViewControllerHelper alloc] init];
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<ToolbarTestWebState> web_state_;
   BrowserViewControllerHelper* helper_;

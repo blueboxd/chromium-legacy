@@ -59,7 +59,7 @@ class ChromeExtensionCookies
 
   // Test-only method to get the raw underlying test store. This can only be
   // called when the UI thread and the IO thread are actually the same thread
-  // (e.g. if TestBrowserThreadBundle is in use).
+  // (e.g. if BrowserTaskEnvironment is in use).
   net::CookieStore* GetCookieStoreForTesting();
 
  private:

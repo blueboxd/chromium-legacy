@@ -43,11 +43,12 @@ class AwProxyingRestrictedCookieManager
                           const GURL& site_for_cookies,
                           const url::Origin& top_frame_origin,
                           SetCanonicalCookieCallback callback) override;
-  void AddChangeListener(const GURL& url,
-                         const GURL& site_for_cookies,
-                         const url::Origin& top_frame_origin,
-                         network::mojom::CookieChangeListenerPtr listener,
-                         AddChangeListenerCallback callback) override;
+  void AddChangeListener(
+      const GURL& url,
+      const GURL& site_for_cookies,
+      const url::Origin& top_frame_origin,
+      mojo::PendingRemote<network::mojom::CookieChangeListener> listener,
+      AddChangeListenerCallback callback) override;
 
   void SetCookieFromString(const GURL& url,
                            const GURL& site_for_cookies,

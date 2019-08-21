@@ -324,7 +324,7 @@ def FixupNamedParam(function, param_name, param_value):
 
 
 def PathFromRoot(path):
-  '''Takes a path relative to the root directory for GRIT (the one that grit.py
+  r'''Takes a path relative to the root directory for GRIT (the one that grit.py
   resides in) and returns a path that is either absolute or relative to the
   current working directory (i.e .a path you can use to open the file).
 
@@ -574,8 +574,8 @@ class Substituter(object):
       A regular expression object.
     '''
     if self.dirty_:
-      components = ['\[%s\]' % (k,) for k in self.substitutions_]
-      self.exp = re.compile("(%s)" % ('|'.join(components),))
+      components = [r'\[%s\]' % (k,) for k in self.substitutions_]
+      self.exp = re.compile(r'(%s)' % ('|'.join(components),))
       self.dirty_ = False
     return self.exp
 

@@ -99,8 +99,8 @@ class WaylandBufferManagerHost::Surface {
   }
 
   bool CreateBuffer(const gfx::Size& size, uint32_t buffer_id) {
-    auto result = buffers_.insert(std::make_pair(
-        buffer_id, std::make_unique<WaylandBuffer>(size, buffer_id)));
+    auto result = buffers_.emplace(
+        buffer_id, std::make_unique<WaylandBuffer>(size, buffer_id));
     return result.second;
   }
 

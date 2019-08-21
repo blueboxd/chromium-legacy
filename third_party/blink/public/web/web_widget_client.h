@@ -36,13 +36,15 @@
 #include "cc/input/event_listener_properties.h"
 #include "cc/input/layer_selection_bound.h"
 #include "cc/input/overscroll_behavior.h"
+#include "cc/layers/layer.h"
+#include "cc/paint/paint_worklet_layer_painter.h"
+#include "cc/trees/layer_tree_host.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
 #include "third_party/blink/public/platform/web_intrinsic_sizing_info.h"
-#include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
@@ -55,6 +57,7 @@ class SkBitmap;
 
 namespace cc {
 struct ElementId;
+class LayerTreeMutator;
 class ScopedDeferMainFrameUpdate;
 class PaintImage;
 struct ViewportLayers;

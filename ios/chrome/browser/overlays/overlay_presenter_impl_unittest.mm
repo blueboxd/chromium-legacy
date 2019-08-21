@@ -102,7 +102,7 @@ class OverlayPresenterImplTest : public PlatformTest {
   void DeleteBrowser() { browser_ = nullptr; }
 
  private:
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   FakeWebStateListDelegate web_state_list_delegate_;
   WebStateList web_state_list_;
   FakeOverlayPresentationContext presentation_context_;

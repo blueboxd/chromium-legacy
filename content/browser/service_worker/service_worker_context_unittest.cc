@@ -159,7 +159,7 @@ class ServiceWorkerContextTest : public ServiceWorkerContextCoreObserver,
                                  public testing::Test {
  public:
   ServiceWorkerContextTest()
-      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   void SetUp() override {
     helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
@@ -205,7 +205,7 @@ class ServiceWorkerContextTest : public ServiceWorkerContextCoreObserver,
   }
 
  protected:
-  TestBrowserThreadBundle browser_thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   std::vector<NotificationLog> notifications_;
 };

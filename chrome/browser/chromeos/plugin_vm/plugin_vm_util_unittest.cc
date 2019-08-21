@@ -22,7 +22,7 @@ class PluginVmUtilTest : public testing::Test {
   PluginVmUtilTest() = default;
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> testing_profile_;
   std::unique_ptr<PluginVmTestHelper> test_helper_;
 

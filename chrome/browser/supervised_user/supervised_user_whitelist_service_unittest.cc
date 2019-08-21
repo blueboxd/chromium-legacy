@@ -158,7 +158,7 @@ class SupervisedUserWhitelistServiceTest : public testing::Test {
       site_lists_changed_callback_.Run();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
 
 #if !defined(OS_ANDROID)

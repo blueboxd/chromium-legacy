@@ -203,8 +203,6 @@ PerformanceEntryVector Performance::getEntriesByTypeInternal(
         entries.push_back(resource);
       break;
     case PerformanceEntry::kElement:
-      UseCounter::Count(GetExecutionContext(),
-                        WebFeature::kElementTimingExplicitlyRequested);
       for (const auto& element : element_timing_buffer_)
         entries.push_back(element);
       break;
@@ -254,8 +252,6 @@ PerformanceEntryVector Performance::getEntriesByTypeInternal(
         entries.push_back(layout_shift);
       break;
     case PerformanceEntry::kLargestContentfulPaint:
-      UseCounter::Count(GetExecutionContext(),
-                        WebFeature::kLargestContentfulPaintExplicitlyRequested);
       entries.AppendVector(largest_contentful_paint_buffer_);
       break;
     case PerformanceEntry::kInvalid:

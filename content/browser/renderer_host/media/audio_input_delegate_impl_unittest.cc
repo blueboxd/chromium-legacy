@@ -149,7 +149,7 @@ class MockMediaStreamProviderListener : public MediaStreamProviderListener {
 class AudioInputDelegateTest : public testing::Test {
  public:
   AudioInputDelegateTest()
-      : thread_bundle_(base::in_place),
+      : task_environment_(base::in_place),
         audio_manager_(std::make_unique<media::TestAudioThread>(true)),
         audio_system_(&audio_manager_),
         media_stream_manager_(&audio_system_, audio_manager_.GetTaskRunner()) {
@@ -163,7 +163,7 @@ class AudioInputDelegateTest : public testing::Test {
     audio_manager_.Shutdown();
 
     // MediaStreamManager expects to outlive the IO thread.
-    thread_bundle_.reset();
+    task_environment_.reset();
   }
 
  protected:
@@ -219,7 +219,7 @@ class AudioInputDelegateTest : public testing::Test {
     run_loop.Run();
   }
 
-  base::Optional<TestBrowserThreadBundle> thread_bundle_;
+  base::Optional<BrowserTaskEnvironment> task_environment_;
   media::MockAudioManager audio_manager_;
   media::AudioSystemImpl audio_system_;
   MediaStreamManager media_stream_manager_;

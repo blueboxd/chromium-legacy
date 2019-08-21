@@ -75,7 +75,7 @@ class SubresourceFilterContentSettingsManagerTest : public testing::Test {
  private:
   base::ScopedTempDir scoped_dir_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::HistogramTester histogram_tester_;
   TestingProfile testing_profile_;
 

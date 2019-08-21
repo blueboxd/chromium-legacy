@@ -35,7 +35,6 @@ class TestSystemMemoryPressureEvaluator : public SystemMemoryPressureEvaluator {
  public:
   using SystemMemoryPressureEvaluator::CalculateCurrentPressureLevel;
   using SystemMemoryPressureEvaluator::CheckMemoryPressure;
-  using SystemMemoryPressureEvaluator::current_vote_for_testing;
 
   static const DWORDLONG kMBBytes = 1024 * 1024;
 
@@ -223,7 +222,7 @@ TEST_F(WinSystemMemoryPressureEvaluatorTest, CheckMemoryPressure) {
   evaluator.CheckMemoryPressure();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE,
-            evaluator.current_vote_for_testing());
+            evaluator.current_vote());
 
   // Setting the memory level to 80% should produce a moderate pressure level.
   EXPECT_CALL(
@@ -234,7 +233,7 @@ TEST_F(WinSystemMemoryPressureEvaluatorTest, CheckMemoryPressure) {
   evaluator.CheckMemoryPressure();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE,
-            evaluator.current_vote_for_testing());
+            evaluator.current_vote());
   testing::Mock::VerifyAndClearExpectations(&evaluator);
 
   // Check that the event gets reposted after a while.
@@ -253,7 +252,7 @@ TEST_F(WinSystemMemoryPressureEvaluatorTest, CheckMemoryPressure) {
     evaluator.CheckMemoryPressure();
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE,
-              evaluator.current_vote_for_testing());
+              evaluator.current_vote());
     testing::Mock::VerifyAndClearExpectations(&evaluator);
   }
 
@@ -266,7 +265,7 @@ TEST_F(WinSystemMemoryPressureEvaluatorTest, CheckMemoryPressure) {
   evaluator.CheckMemoryPressure();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL,
-            evaluator.current_vote_for_testing());
+            evaluator.current_vote());
   testing::Mock::VerifyAndClearExpectations(&evaluator);
 
   // Calling it again should immediately produce a second call.
@@ -277,7 +276,7 @@ TEST_F(WinSystemMemoryPressureEvaluatorTest, CheckMemoryPressure) {
   evaluator.CheckMemoryPressure();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL,
-            evaluator.current_vote_for_testing());
+            evaluator.current_vote());
   testing::Mock::VerifyAndClearExpectations(&evaluator);
 
   // When lowering the pressure again there should be a notification and the
@@ -290,7 +289,7 @@ TEST_F(WinSystemMemoryPressureEvaluatorTest, CheckMemoryPressure) {
   evaluator.CheckMemoryPressure();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE,
-            evaluator.current_vote_for_testing());
+            evaluator.current_vote());
   testing::Mock::VerifyAndClearExpectations(&evaluator);
 
   // Check that the event gets reposted after a while.
@@ -304,7 +303,7 @@ TEST_F(WinSystemMemoryPressureEvaluatorTest, CheckMemoryPressure) {
     evaluator.CheckMemoryPressure();
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE,
-              evaluator.current_vote_for_testing());
+              evaluator.current_vote());
     testing::Mock::VerifyAndClearExpectations(&evaluator);
   }
 
@@ -313,7 +312,7 @@ TEST_F(WinSystemMemoryPressureEvaluatorTest, CheckMemoryPressure) {
   evaluator.CheckMemoryPressure();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE,
-            evaluator.current_vote_for_testing());
+            evaluator.current_vote());
   testing::Mock::VerifyAndClearExpectations(&evaluator);
 }
 

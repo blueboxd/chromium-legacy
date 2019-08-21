@@ -10,7 +10,6 @@
 
 #include "cc/layers/picture_layer.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
-#include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/animation/animation.h"
@@ -50,11 +49,6 @@
 namespace blink {
 
 namespace {
-
-void* AsyncId(uint64_t identifier) {
-  // This value should be odd to avoid collisions with regular pointers.
-  return reinterpret_cast<void*>((identifier << 1) | 1);
-}
 
 std::unique_ptr<TracedValue> InspectorParseHtmlBeginData(Document* document,
                                                          unsigned start_line) {
@@ -150,8 +144,6 @@ void InspectorTraceEvents::DidReceiveData(uint64_t identifier,
                        TRACE_EVENT_SCOPE_THREAD, "data",
                        inspector_receive_data_event::Data(
                            loader, identifier, frame, encoded_data_length));
-  probe::AsyncTask async_task(frame ? frame->GetDocument() : nullptr,
-                              AsyncId(identifier), "data");
 }
 
 void InspectorTraceEvents::DidFinishLoading(uint64_t identifier,
@@ -160,14 +152,11 @@ void InspectorTraceEvents::DidFinishLoading(uint64_t identifier,
                                             int64_t encoded_data_length,
                                             int64_t decoded_body_length,
                                             bool should_report_corb_blocking) {
-  LocalFrame* frame = loader ? loader->GetFrame() : nullptr;
   TRACE_EVENT_INSTANT1(
       "devtools.timeline", "ResourceFinish", TRACE_EVENT_SCOPE_THREAD, "data",
       inspector_resource_finish_event::Data(loader, identifier, finish_time,
                                             false, encoded_data_length,
                                             decoded_body_length));
-  probe::AsyncTask async_task(frame ? frame->GetDocument() : nullptr,
-                              AsyncId(identifier));
 }
 
 void InspectorTraceEvents::DidFailLoading(uint64_t identifier,

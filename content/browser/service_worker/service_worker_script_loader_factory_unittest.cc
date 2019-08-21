@@ -24,7 +24,7 @@ namespace content {
 class ServiceWorkerScriptLoaderFactoryTest : public testing::Test {
  public:
   ServiceWorkerScriptLoaderFactoryTest()
-      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {}
   ~ServiceWorkerScriptLoaderFactoryTest() override = default;
 
   void SetUp() override {
@@ -71,7 +71,7 @@ class ServiceWorkerScriptLoaderFactoryTest : public testing::Test {
     return loader;
   }
 
-  TestBrowserThreadBundle browser_thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   GURL scope_;
   GURL script_url_;

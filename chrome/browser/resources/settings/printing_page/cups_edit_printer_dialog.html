@@ -65,16 +65,20 @@
                 <option value="ipps">
                   $i18n{printerProtocolIpps}
                 </option>
-                <option value="http">
+                <option value="http"
+                    disabled="[[isAutoconfPrinter_(pendingPrinter_.*)]]">
                   $i18n{printerProtocolHttp}
                 </option>
-                <option value="https">
+                <option value="https"
+                    disabled="[[isAutoconfPrinter_(pendingPrinter_.*)]]">
                   $i18n{printerProtocolHttps}
                 </option>
-                <option value="socket">
+                <option value="socket"
+                    disabled="[[isAutoconfPrinter_(pendingPrinter_.*)]]">
                   $i18n{printerProtocolAppSocket}
                 </option>
-                <option value="lpd">
+                <option value="lpd"
+                    disabled="[[isAutoconfPrinter_(pendingPrinter_.*)]]">
                   $i18n{printerProtocolLpd}
                 </option>
                 <option value="usb" disabled="[[networkProtocolActive_]]">

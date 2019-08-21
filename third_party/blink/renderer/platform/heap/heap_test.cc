@@ -144,7 +144,7 @@ class KeyWithCopyingMoveConstructor final {
   }
   KeyWithCopyingMoveConstructor(const KeyWithCopyingMoveConstructor&) = default;
   // The move constructor delegates to the copy constructor intentionally.
-  KeyWithCopyingMoveConstructor(KeyWithCopyingMoveConstructor&& x)
+  KeyWithCopyingMoveConstructor(KeyWithCopyingMoveConstructor&& x) noexcept
       : KeyWithCopyingMoveConstructor(x) {}
   KeyWithCopyingMoveConstructor& operator=(
       const KeyWithCopyingMoveConstructor&) = default;

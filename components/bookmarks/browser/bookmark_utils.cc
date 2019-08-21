@@ -149,8 +149,8 @@ std::string TruncateUrl(const std::string& url) {
 GURL GetUrlFromClipboard() {
   base::string16 url_text;
 #if !defined(OS_IOS)
-  ui::Clipboard::GetForCurrentThread()->ReadText(ui::ClipboardType::kCopyPaste,
-                                                 &url_text);
+  ui::Clipboard::GetForCurrentThread()->ReadText(
+      ui::ClipboardBuffer::kCopyPaste, &url_text);
 #endif
   return GURL(url_text);
 }
@@ -293,7 +293,7 @@ void PasteFromClipboard(BookmarkModel* model,
     return;
 
   BookmarkNodeData bookmark_data;
-  if (!bookmark_data.ReadFromClipboard(ui::ClipboardType::kCopyPaste)) {
+  if (!bookmark_data.ReadFromClipboard(ui::ClipboardBuffer::kCopyPaste)) {
     GURL url = GetUrlFromClipboard();
     if (!url.is_valid())
       return;

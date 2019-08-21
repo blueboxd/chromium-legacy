@@ -31,7 +31,7 @@ struct TestTraits {
                 trait_helpers::AreValidTraits<ValidTrait, ArgTypes...>::value>>
   constexpr TestTraits(ArgTypes... args)
       : required_trait(trait_helpers::GetEnum<RequiredTrait>(args...)),
-        boolean_trait(trait_helpers::HasTrait<BooleanTrait>(args...)) {}
+        boolean_trait(trait_helpers::HasTrait<BooleanTrait, ArgTypes...>()) {}
 
   const RequiredTrait required_trait;
   const bool boolean_trait;

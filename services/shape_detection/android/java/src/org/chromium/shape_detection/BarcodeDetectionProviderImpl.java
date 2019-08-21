@@ -11,7 +11,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.mojo.bindings.InterfaceRequest;
 import org.chromium.mojo.system.MojoException;
-import org.chromium.services.service_manager.InterfaceFactory;
 import org.chromium.shape_detection.mojom.BarcodeDetection;
 import org.chromium.shape_detection.mojom.BarcodeDetectionProvider;
 import org.chromium.shape_detection.mojom.BarcodeDetectorOptions;
@@ -50,21 +49,13 @@ public class BarcodeDetectionProviderImpl implements BarcodeDetectionProvider {
     @Override
     public void onConnectionError(MojoException e) {}
 
-    /**
-     * A factory class to register BarcodeDetectionProvider interface.
-     */
-    public static class Factory implements InterfaceFactory<BarcodeDetectionProvider> {
-        public Factory() {}
-
-        @Override
-        public BarcodeDetectionProvider createImpl() {
-            if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(
-                        ContextUtils.getApplicationContext())
-                    != ConnectionResult.SUCCESS) {
-                Log.e(TAG, "Google Play Services not available");
-                return null;
-            }
-            return new BarcodeDetectionProviderImpl();
+    public static BarcodeDetectionProvider create() {
+        if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(
+                    ContextUtils.getApplicationContext())
+                != ConnectionResult.SUCCESS) {
+            Log.e(TAG, "Google Play Services not available");
+            return null;
         }
+        return new BarcodeDetectionProviderImpl();
     }
 }

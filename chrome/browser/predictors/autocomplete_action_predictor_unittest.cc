@@ -306,7 +306,7 @@ class AutocompleteActionPredictorTest : public testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<AutocompleteActionPredictor> predictor_;
 };

@@ -4,11 +4,29 @@
 
 #include "components/optimization_guide/test_hints_component_creator.h"
 
+#include <memory>
+
+#include "base/base64.h"
 #include "base/files/file_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/version.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+
+std::string GetDefaultHintVersionString() {
+  optimization_guide::proto::Version hint_version;
+  hint_version.mutable_generation_timestamp()->set_seconds(123);
+  hint_version.set_hint_source(
+      optimization_guide::proto::HINT_SOURCE_OPTIMIZATION_HINTS_COMPONENT);
+  std::string hint_version_string;
+  hint_version.SerializeToString(&hint_version_string);
+  base::Base64Encode(hint_version_string, &hint_version_string);
+  return hint_version_string;
+}
+
+}  // namespace
 
 namespace optimization_guide {
 namespace testing {
@@ -33,6 +51,7 @@ TestHintsComponentCreator::CreateHintsComponentInfoWithPageHints(
     optimization_guide::proto::Hint* hint = config.add_hints();
     hint->set_key(page_hint_site);
     hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+    hint->set_version(GetDefaultHintVersionString());
 
     optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
     page_hint->set_page_pattern(page_pattern);
@@ -50,6 +69,20 @@ TestHintsComponentCreator::CreateHintsComponentInfoWithPageHints(
     }
   }
 
+  // Always stick something with no hint version in here.
+  optimization_guide::proto::Hint* no_version_hint = config.add_hints();
+  no_version_hint->set_key("noversion.com");
+  no_version_hint->set_key_representation(
+      optimization_guide::proto::HOST_SUFFIX);
+  no_version_hint->add_page_hints()->set_page_pattern("*");
+  // Always stick something with a bad hint version in here.
+  optimization_guide::proto::Hint* bad_version_hint = config.add_hints();
+  bad_version_hint->set_key("badversion.com");
+  bad_version_hint->set_key_representation(
+      optimization_guide::proto::HOST_SUFFIX);
+  bad_version_hint->set_version("notaversion");
+  bad_version_hint->add_page_hints()->set_page_pattern("*");
+
   return WriteConfigToFileAndReturnHintsComponentInfo(config);
 }
 
@@ -63,6 +96,7 @@ TestHintsComponentCreator::CreateHintsComponentInfoWithExperimentalPageHints(
     optimization_guide::proto::Hint* hint = config.add_hints();
     hint->set_key(page_hint_site);
     hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+    hint->set_version(GetDefaultHintVersionString());
 
     optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
     page_hint->set_page_pattern("*");
@@ -80,6 +114,19 @@ TestHintsComponentCreator::CreateHintsComponentInfoWithExperimentalPageHints(
       resource_loading_hint->set_resource_pattern(resource_blocking_pattern);
     }
   }
+  // Always stick something with no hint version in here.
+  optimization_guide::proto::Hint* no_version_hint = config.add_hints();
+  no_version_hint->set_key("noversion.com");
+  no_version_hint->set_key_representation(
+      optimization_guide::proto::HOST_SUFFIX);
+  no_version_hint->add_page_hints()->set_page_pattern("*");
+  // Always stick something with a bad hint version in here.
+  optimization_guide::proto::Hint* bad_version_hint = config.add_hints();
+  bad_version_hint->set_key("badversion.com");
+  bad_version_hint->set_key_representation(
+      optimization_guide::proto::HOST_SUFFIX);
+  bad_version_hint->set_version("notaversion");
+  bad_version_hint->add_page_hints()->set_page_pattern("*");
 
   return WriteConfigToFileAndReturnHintsComponentInfo(config);
 }
@@ -95,6 +142,7 @@ TestHintsComponentCreator::CreateHintsComponentInfoWithMixPageHints(
     optimization_guide::proto::Hint* hint = config.add_hints();
     hint->set_key(page_hint_site);
     hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+    hint->set_version(GetDefaultHintVersionString());
 
     optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
     page_hint->set_page_pattern("*");
@@ -129,6 +177,19 @@ TestHintsComponentCreator::CreateHintsComponentInfoWithMixPageHints(
       }
     }
   }
+  // Always stick something with no hint version in here.
+  optimization_guide::proto::Hint* no_version_hint = config.add_hints();
+  no_version_hint->set_key("noversion.com");
+  no_version_hint->set_key_representation(
+      optimization_guide::proto::HOST_SUFFIX);
+  no_version_hint->add_page_hints()->set_page_pattern("*");
+  // Always stick something with a bad hint version in here.
+  optimization_guide::proto::Hint* bad_version_hint = config.add_hints();
+  bad_version_hint->set_key("badversion.com");
+  bad_version_hint->set_key_representation(
+      optimization_guide::proto::HOST_SUFFIX);
+  bad_version_hint->set_version("notaversion");
+  bad_version_hint->add_page_hints()->set_page_pattern("*");
 
   return WriteConfigToFileAndReturnHintsComponentInfo(config);
 }

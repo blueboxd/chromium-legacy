@@ -279,7 +279,7 @@ class BaseSearchProviderTest : public testing::Test,
   const base::string16 keyword_term_;
   GURL keyword_url_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   network::TestURLLoaderFactory test_url_loader_factory_;
   TestingProfile profile_;

@@ -103,7 +103,7 @@ class MockServiceWorkerObject : public blink::mojom::ServiceWorkerObject {
 class ServiceWorkerObjectHostTest : public testing::Test {
  public:
   ServiceWorkerObjectHostTest()
-      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   void Initialize(std::unique_ptr<EmbeddedWorkerTestHelper> helper) {
     helper_ = std::move(helper);
@@ -198,7 +198,7 @@ class ServiceWorkerObjectHostTest : public testing::Test {
     return registration_info;
   }
 
-  TestBrowserThreadBundle browser_thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;

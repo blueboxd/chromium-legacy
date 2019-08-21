@@ -80,7 +80,8 @@ int ToKeyModifiers(std::string key) {
 ActionsParser::ActionsParser(base::Value pointer_actions_value)
     : longest_action_sequence_(0),
       pointer_actions_value_(std::move(pointer_actions_value)),
-      action_index_(0) {}
+      action_index_(0),
+      use_testdriver_api_(true) {}
 
 ActionsParser::~ActionsParser() {}
 
@@ -90,15 +91,18 @@ bool ActionsParser::ParsePointerActionSequence() {
     return false;
   }
 
+  int index = 0;
   for (const auto& pointer_actions : pointer_actions_value_.GetList()) {
     if (!pointer_actions.is_dict()) {
       error_message_ =
           std::string("pointer actions is missing or not a dictionary");
       return false;
-    } else if (!ParsePointerActions(pointer_actions)) {
+    } else if (!ParsePointerActions(pointer_actions, index)) {
       return false;
     }
-    action_index_++;
+    index++;
+    if (source_type_ == "pointer" || !use_testdriver_api_)
+      action_index_++;
   }
 
   gesture_params_.gesture_source_type =
@@ -138,14 +142,18 @@ bool ActionsParser::ParsePointerActionSequence() {
   return true;
 }
 
-bool ActionsParser::ParsePointerActions(const base::Value& pointer) {
+bool ActionsParser::ParsePointerActions(const base::Value& pointer, int index) {
   int pointer_id = -1;
   // If the json format of each pointer has "type" element, it is from the new
   // Action API, otherwise it is from gpuBenchmarking.pointerActionSequence
   // API. We have to keep both formats for now, but later on once we switch to
   // the new Action API in all tests, we will remove the old format.
   const base::Value* type_key = pointer.FindKey("type");
-  if (type_key) {
+  if (index == 0)
+    use_testdriver_api_ = type_key != nullptr;
+
+  if (use_testdriver_api_) {
+    DCHECK_NE(nullptr, type_key);
     if (!type_key->is_string()) {
       error_message_ =
           std::string("action sequence type is missing or not a string");
@@ -224,6 +232,7 @@ bool ActionsParser::ParsePointerActions(const base::Value& pointer) {
     }
     pointer_id = action_index_;
   } else {
+    DCHECK_EQ(nullptr, type_key);
     const std::string* pointer_type = pointer.FindStringKey("source");
     if (!pointer_type) {
       error_message_ = std::string("source type is missing or not a string");

@@ -186,8 +186,7 @@ class FakeOAuth2AccessTokenManagerDelegate
 class UploadJobTestBase : public testing::Test, public UploadJob::Delegate {
  public:
   UploadJobTestBase()
-      : test_browser_thread_bundle_(
-            content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         access_token_manager_(&token_manager_delegate_) {}
 
   // policy::UploadJob::Delegate:
@@ -247,7 +246,7 @@ class UploadJobTestBase : public testing::Test, public UploadJob::Delegate {
     return upload_job;
   }
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::RunLoop run_loop_;
   net::EmbeddedTestServer test_server_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;

@@ -225,6 +225,57 @@ TEST_F(AnimatingLayoutManagerSteppingTest,
   EnsureLayout(expected);
 }
 
+TEST_F(AnimatingLayoutManagerSteppingTest, TestEvents) {
+  class EventWatcher : public AnimatingLayoutManager::Observer {
+   public:
+    ~EventWatcher() override {}
+
+    explicit EventWatcher(AnimatingLayoutManager* layout) {
+      scoped_observer_.Add(layout);
+    }
+
+    void OnLayoutIsAnimatingChanged(AnimatingLayoutManager* source,
+                                    bool is_animating) override {
+      events_.push_back(is_animating);
+    }
+
+    const std::vector<bool> events() const { return events_; }
+
+   private:
+    std::vector<bool> events_;
+    ScopedObserver<AnimatingLayoutManager, Observer> scoped_observer_{this};
+  };
+
+  layout()->SetShouldAnimateBounds(true);
+  auto* const test_layout =
+      layout()->SetTargetLayoutManager(std::make_unique<TestLayoutManager>());
+  test_layout->SetLayout(layout1());
+  layout()->ResetLayout();
+  view()->SetSize(view()->GetPreferredSize());
+
+  EXPECT_FALSE(layout()->is_animating());
+  EventWatcher watcher(layout());
+  test_layout->SetLayout(layout2());
+
+  // Invalidating the layout forces a recalculation, which starts the animation.
+  const std::vector<bool> expected1{true};
+  view()->InvalidateLayout();
+  EXPECT_TRUE(layout()->is_animating());
+  EXPECT_EQ(expected1, watcher.events());
+
+  // Advance to completion.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(1000));
+  EXPECT_TRUE(layout()->is_animating());
+  EXPECT_EQ(expected1, watcher.events());
+
+  // Final layout clears the |is_animating| state because the views are now in
+  // their final configuration.
+  const std::vector<bool> expected2{true, false};
+  view()->Layout();
+  EXPECT_FALSE(layout()->is_animating());
+  EXPECT_EQ(expected2, watcher.events());
+}
+
 TEST_F(AnimatingLayoutManagerSteppingTest,
        HostInvalidate_NoAnimateBounds_NoAnimation) {
   layout()->SetShouldAnimateBounds(false);
@@ -595,7 +646,7 @@ class ImmediateLayoutManager : public LayoutManager {
   }
 
   void Layout(View* view) override {
-    DCHECK_EQ(host_, view);
+    EXPECT_EQ(host_, view);
     for (View* child : host_->children()) {
       if (use_preferred_size_) {
         const gfx::Size preferred = child->GetPreferredSize();

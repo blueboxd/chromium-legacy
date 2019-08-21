@@ -149,7 +149,6 @@
 <translation id="2921219216347069551">পৃষ্ঠা শেয়ার করা যায়নি</translation>
 <translation id="2923448633003185837">পেস্ট করে শুরু করুন</translation>
 <translation id="292639812446257861">অপঠিত হিসেবে চিহ্নিত করুন</translation>
-<translation id="2933759065870693102">টর্চ</translation>
 <translation id="2958718410589002129">পাসওয়ার্ড</translation>
 <translation id="2969979262385602596">সাইন-ইন করা যায়নি৷ অনুগ্রহ করে পরে আবার চেষ্টা করুন৷</translation>
 <translation id="298306318844797842">পেমেন্টের পদ্ধতি যোগ করুন...</translation>
@@ -305,6 +304,7 @@
 <translation id="5317780077021120954">সেভ করুন</translation>
 <translation id="5327248766486351172">নাম</translation>
 <translation id="5388358297987318779">ইমেজ খুলুন</translation>
+<translation id="5407969256130905701">পরিবর্তনগুলি বাতিল করুন</translation>
 <translation id="5409365236829784218">এই ফাউলটি খুলতে পারে এমন কোনো অ্যাপ্লিকেশন এখানে ডাউনলোড করা নেই৷</translation>
 <translation id="5416022985862681400">গত ৭ দিনে</translation>
 <translation id="5433691172869980887">ইউজারনেম কপি করা হয়েছে</translation>
@@ -511,6 +511,7 @@
 <translation id="8428213095426709021">সেটিংস</translation>
 <translation id="8458397775385147834">১টি আইটেম মোছা হয়েছে</translation>
 <translation id="8487700953926739672">অফলাইনে উপলব্ধ</translation>
+<translation id="8490978609246021741">পরিবর্তনগুলি সেভ করুন</translation>
 <translation id="8503813439785031346">ইউজারনেম</translation>
 <translation id="850600235656508448">ছদ্মবেশী ট্যাবে খুলুন</translation>
 <translation id="8517375800490286174">ওপেন সোর্স লাইসেন্স</translation>

@@ -112,7 +112,7 @@ class SafeBrowsingDatabaseManagerTest : public testing::Test {
   scoped_refptr<SafeBrowsingDatabaseManager> db_manager_;
 
  private:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(SafeBrowsingDatabaseManagerTest, CheckApiBlacklistUrlWrongScheme) {

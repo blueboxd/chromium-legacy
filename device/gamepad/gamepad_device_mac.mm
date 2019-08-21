@@ -7,7 +7,10 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/stl_util.h"
+#include "device/gamepad/dualshock4_controller.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
+#include "device/gamepad/hid_haptic_gamepad.h"
+#include "device/gamepad/hid_writer_mac.h"
 
 #import <Foundation/Foundation.h>
 
@@ -76,11 +79,12 @@ GamepadDeviceMac::GamepadDeviceMac(int location_id,
       device_ref_(device_ref),
       ff_device_ref_(nullptr),
       ff_effect_ref_(nullptr) {
-  if (Dualshock4ControllerMac::IsDualshock4(vendor_id, product_id)) {
-    dualshock4_ = std::make_unique<Dualshock4ControllerMac>(device_ref);
-  } else if (HidHapticGamepadMac::IsHidHaptic(vendor_id, product_id)) {
-    hid_haptics_ =
-        HidHapticGamepadMac::Create(vendor_id, product_id, device_ref);
+  if (Dualshock4Controller::IsDualshock4(vendor_id, product_id)) {
+    dualshock4_ = std::make_unique<Dualshock4Controller>(
+        std::make_unique<HidWriterMac>(device_ref));
+  } else if (HidHapticGamepad::IsHidHaptic(vendor_id, product_id)) {
+    hid_haptics_ = HidHapticGamepad::Create(
+        vendor_id, product_id, std::make_unique<HidWriterMac>(device_ref));
   } else if (device_ref) {
     ff_device_ref_ = CreateForceFeedbackDevice(device_ref);
     if (ff_device_ref_) {

@@ -216,11 +216,11 @@ TEST_P(DataPackTest, Write) {
   std::string fifteen("fifteen");
 
   std::map<uint16_t, base::StringPiece> resources;
-  resources.insert(std::make_pair(1, base::StringPiece(one)));
-  resources.insert(std::make_pair(2, base::StringPiece(two)));
-  resources.insert(std::make_pair(15, base::StringPiece(fifteen)));
-  resources.insert(std::make_pair(3, base::StringPiece(three)));
-  resources.insert(std::make_pair(4, base::StringPiece(four)));
+  resources.emplace(1, base::StringPiece(one));
+  resources.emplace(2, base::StringPiece(two));
+  resources.emplace(15, base::StringPiece(fifteen));
+  resources.emplace(3, base::StringPiece(three));
+  resources.emplace(4, base::StringPiece(four));
   ASSERT_TRUE(DataPack::WritePack(file, resources, GetParam()));
 
   // Now try to read the data back in.
@@ -256,13 +256,13 @@ TEST_P(DataPackTest, WriteWithAliases) {
   std::string fifteen("fifteen");
 
   std::map<uint16_t, base::StringPiece> resources;
-  resources.insert(std::make_pair(1, base::StringPiece(one)));
-  resources.insert(std::make_pair(2, base::StringPiece(two)));
-  resources.insert(std::make_pair(15, base::StringPiece(fifteen)));
-  resources.insert(std::make_pair(3, base::StringPiece(three)));
-  resources.insert(std::make_pair(4, base::StringPiece(four)));
-  resources.insert(std::make_pair(10, base::StringPiece(one)));
-  resources.insert(std::make_pair(11, base::StringPiece(three)));
+  resources.emplace(1, base::StringPiece(one));
+  resources.emplace(2, base::StringPiece(two));
+  resources.emplace(15, base::StringPiece(fifteen));
+  resources.emplace(3, base::StringPiece(three));
+  resources.emplace(4, base::StringPiece(four));
+  resources.emplace(10, base::StringPiece(one));
+  resources.emplace(11, base::StringPiece(three));
   ASSERT_TRUE(DataPack::WritePack(file, resources, GetParam()));
 
   // Now try to read the data back in.

@@ -30,7 +30,7 @@ class BackgroundSyncNetworkObserverTest : public testing::Test {
   void OnConnectionChanged() { network_changed_count_++; }
 
  protected:
-  TestBrowserThreadBundle browser_thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
 
   std::unique_ptr<BackgroundSyncNetworkObserver> network_observer_;
   int network_changed_count_;

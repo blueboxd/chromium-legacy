@@ -75,11 +75,11 @@ class BrowserWithTestWindowTest : public testing::Test {
   struct HostedApp {};
 
   struct ValidTraits {
-    explicit ValidTraits(content::TestBrowserThreadBundle::ValidTraits);
+    explicit ValidTraits(content::BrowserTaskEnvironment::ValidTraits);
     explicit ValidTraits(HostedApp);
     explicit ValidTraits(Browser::Type);
 
-    // TODO(alexclarke): Make content::TestBrowserThreadBundle::ValidTraits
+    // TODO(alexclarke): Make content::BrowserTaskEnvironment::ValidTraits
     // imply this.
     explicit ValidTraits(base::test::TaskEnvironment::ValidTrait);
   };
@@ -93,12 +93,12 @@ class BrowserWithTestWindowTest : public testing::Test {
           base::trait_helpers::AreValidTraits<ValidTraits, ArgTypes...>::value>>
   NOINLINE BrowserWithTestWindowTest(const ArgTypes... args)
       : BrowserWithTestWindowTest(
-            std::make_unique<content::TestBrowserThreadBundle>(
+            std::make_unique<content::BrowserTaskEnvironment>(
                 base::trait_helpers::Exclude<HostedApp, Browser::Type>::Filter(
                     args)...),
             base::trait_helpers::GetEnum<Browser::Type, Browser::TYPE_NORMAL>(
                 args...),
-            base::trait_helpers::HasTrait<HostedApp>(args...)) {}
+            base::trait_helpers::HasTrait<HostedApp, ArgTypes...>()) {}
 
   ~BrowserWithTestWindowTest() override;
 
@@ -118,8 +118,8 @@ class BrowserWithTestWindowTest : public testing::Test {
 
   TestingProfileManager* profile_manager() { return profile_manager_.get(); }
 
-  content::TestBrowserThreadBundle* thread_bundle() {
-    return thread_bundle_.get();
+  content::BrowserTaskEnvironment* task_environment() {
+    return task_environment_.get();
   }
 
   network::TestURLLoaderFactory* test_url_loader_factory() {
@@ -194,12 +194,12 @@ class BrowserWithTestWindowTest : public testing::Test {
   // The template constructor has to be in the header but it delegates to this
   // constructor to initialize all other members out-of-line.
   BrowserWithTestWindowTest(
-      std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle,
+      std::unique_ptr<content::BrowserTaskEnvironment> task_environment,
       Browser::Type browser_type,
       bool hosted_app);
 
   // We need to create a MessageLoop, otherwise a bunch of things fails.
-  std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle_;
+  std::unique_ptr<content::BrowserTaskEnvironment> task_environment_;
 
 #if defined(OS_CHROMEOS)
   chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;

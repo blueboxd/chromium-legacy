@@ -20,14 +20,11 @@ constexpr SkColor kUnifiedMenuBackgroundColor =
 constexpr SkColor kUnifiedMenuBackgroundColorWithBlur =
     SkColorSetA(kUnifiedMenuBackgroundColor, 0x99);  // 60%
 
-// Colors of separator on light/dark background.
-constexpr SkColor kSeparatorOnLightBackgroundColor =
-    SkColorSetA(SK_ColorBLACK, 0x23);  // 14%
-constexpr SkColor kSeparatorOnDarkBackgroundColor =
-    SkColorSetA(SK_ColorWHITE, 0x23);  // 14%
-
 constexpr SkColor kNotificationBackgroundColor = SK_ColorWHITE;
 constexpr SkColor kUnifiedMenuTextColor = gfx::kGoogleGrey100;
+constexpr SkColor kUnifiedMenuButtonColor =
+    SkColorSetA(gfx::kGoogleGrey200, 0x14);
+constexpr SkColor kUnifiedMenuButtonColorActive = gfx::kGoogleBlueDark600;
 
 //----------------------------------End----------------------------------------
 

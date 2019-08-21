@@ -255,33 +255,33 @@ class API_AVAILABLE(macos(10.11)) MTLLibraryCache {
   }
 #define PROXY_METHOD0_SLOW(R, fn)                                  \
   -(R)fn {                                                         \
-    TRACE_EVENT0("gpu", "MTLDevice::" #fn);                        \
+    TRACE_EVENT0("gpu", "-[MTLDevice " #fn "]");                   \
     gl::ScopedProgressReporter scoped_reporter(progressReporter_); \
     return [device_ fn];                                           \
   }
 #define PROXY_METHOD1_SLOW(R, fn, A0)                              \
   -(R)fn : (A0)a0 {                                                \
-    TRACE_EVENT0("gpu", "MTLDevice::" #fn);                        \
+    TRACE_EVENT0("gpu", "-[MTLDevice " #fn ":]");                  \
     gl::ScopedProgressReporter scoped_reporter(progressReporter_); \
     return [device_ fn:a0];                                        \
   }
 #define PROXY_METHOD2_SLOW(R, fn, A0, a1, A1)                      \
   -(R)fn : (A0)a0 a1 : (A1)a1 {                                    \
-    TRACE_EVENT0("gpu", "MTLDevice::" #fn);                        \
+    TRACE_EVENT0("gpu", "-[MTLDevice " #fn ":" #a1 ":]");          \
     gl::ScopedProgressReporter scoped_reporter(progressReporter_); \
     return [device_ fn:a0 a1:a1];                                  \
   }
 #define PROXY_METHOD3_SLOW(R, fn, A0, a1, A1, a2, A2)              \
   -(R)fn : (A0)a0 a1 : (A1)a1 a2 : (A2)a2 {                        \
-    TRACE_EVENT0("gpu", "MTLDevice::" #fn);                        \
+    TRACE_EVENT0("gpu", "-[MTLDevice " #fn ":" #a1 ":" #a2 ":]");  \
     gl::ScopedProgressReporter scoped_reporter(progressReporter_); \
     return [device_ fn:a0 a1:a1 a2:a2];                            \
   }
-#define PROXY_METHOD4_SLOW(R, fn, A0, a1, A1, a2, A2, a3, A3)      \
-  -(R)fn : (A0)a0 a1 : (A1)a1 a2 : (A2)a2 a3 : (A3)a3 {            \
-    TRACE_EVENT0("gpu", "MTLDevice::" #fn);                        \
-    gl::ScopedProgressReporter scoped_reporter(progressReporter_); \
-    return [device_ fn:a0 a1:a1 a2:a2 a3:a3];                      \
+#define PROXY_METHOD4_SLOW(R, fn, A0, a1, A1, a2, A2, a3, A3)             \
+  -(R)fn : (A0)a0 a1 : (A1)a1 a2 : (A2)a2 a3 : (A3)a3 {                   \
+    TRACE_EVENT0("gpu", "-[MTLDevice " #fn ":" #a1 ":" #a2 ":" #a3 ":]"); \
+    gl::ScopedProgressReporter scoped_reporter(progressReporter_);        \
+    return [device_ fn:a0 a1:a1 a2:a2 a3:a3];                             \
   }
 
 // Disable availability warnings for the calls to |device_| in the macros. (The
@@ -386,7 +386,7 @@ PROXY_METHOD2_SLOW(nullable id<MTLLibrary>,
     newLibraryWithSource:(NSString*)source
                  options:(nullable MTLCompileOptions*)options
                    error:(__autoreleasing NSError**)error {
-  TRACE_EVENT0("gpu", "MTLDevice::newLibraryWithSource");
+  TRACE_EVENT0("gpu", "-[MTLDevice newLibraryWithSource:options:error:]");
 
   // Capture the shader's source in a crash key in case newLibraryWithSource
   // hangs.
@@ -438,7 +438,8 @@ PROXY_METHOD3_SLOW(void,
     newRenderPipelineStateWithDescriptor:
         (MTLRenderPipelineDescriptor*)descriptor
                                    error:(__autoreleasing NSError**)error {
-  TRACE_EVENT0("gpu", "MTLDevice::newRenderPipelineStateWithDescriptor");
+  TRACE_EVENT0("gpu",
+               "-[MTLDevice newRenderPipelineStateWithDescriptor:error:]");
   // Capture the vertex and shader source being used. Skia's use pattern is to
   // compile two MTLLibraries before creating a MTLRenderPipelineState -- one
   // with vertexMain and the other with fragmentMain. The two immediately

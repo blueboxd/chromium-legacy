@@ -219,7 +219,7 @@ class DownloadTaskImplTest : public PlatformTest {
     task_->RemoveObserver(&callback_waiter);
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   TestBrowserState browser_state_;
   TestWebState web_state_;
   testing::StrictMock<FakeDownloadTaskImplDelegate> task_delegate_;

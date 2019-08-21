@@ -191,7 +191,7 @@ class JobSchedulerTest : public testing::Test {
     return JobScheduler::kMaxJobCount[JobScheduler::METADATA_QUEUE];
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   std::unique_ptr<EventLogger> logger_;
   std::unique_ptr<CancelTestableFakeDriveService> fake_drive_service_;

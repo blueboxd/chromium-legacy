@@ -47,7 +47,7 @@ class NonRecordingSiteDataCacheTest : public testing::Test {
   const url::Origin kTestOrigin =
       url::Origin::Create(GURL("http://www.foo.com"));
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   // Ensure that the database used by the data store owned by
   // |recording_data_cache_| gets created in memory. This avoid having to wait

@@ -155,7 +155,7 @@ void NavigateShareTargetPost(
 }
 }  // namespace webapk
 
-void JNI_WebApkPostShareTargetNavigator_LoadViewForShareTargetPost(
+static void JNI_WebApkPostShareTargetNavigator_NativeLoadViewForShareTargetPost(
     JNIEnv* env,
     const jboolean java_is_multipart_encoding,
     const JavaParamRef<jobjectArray>& java_names,

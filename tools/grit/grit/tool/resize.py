@@ -50,7 +50,7 @@ PROJECT_TEMPLATE = '''\
       Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
       UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}">
       <File
-        RelativePath=".\[[DIALOG_NAME]].rc">
+        RelativePath=".\\[[DIALOG_NAME]].rc">
       </File>
     </Filter>
   </Files>

@@ -180,7 +180,8 @@ class TemplateURLServiceTest : public testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;  // To set up BrowserThreads.
+  content::BrowserTaskEnvironment
+      task_environment_;  // To set up BrowserThreads.
   std::unique_ptr<TemplateURLServiceTestUtil> test_util_;
 
   DISALLOW_COPY_AND_ASSIGN(TemplateURLServiceTest);

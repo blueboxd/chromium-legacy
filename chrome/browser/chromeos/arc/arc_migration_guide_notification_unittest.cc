@@ -20,7 +20,7 @@ using ::testing::HasSubstr;
 using ::testing::Not;
 
 TEST_F(ArcMigrationGuideNotificationTest, BatteryPercent) {
-  content::TestBrowserThreadBundle browser_thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   TestingProfile profile;
 
   // Set a high battery state.

@@ -47,7 +47,7 @@ class PresentationMediaSinksObserverTest : public ::testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
  public:
   MockMediaRouter router_;

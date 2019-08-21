@@ -149,7 +149,6 @@
 <translation id="2921219216347069551">Lehte ei saa jagada</translation>
 <translation id="2923448633003185837">Kleebi ja mine</translation>
 <translation id="292639812446257861">Märgi mitteloetuks</translation>
-<translation id="2933759065870693102">Lamp</translation>
 <translation id="2958718410589002129">Paroolid</translation>
 <translation id="2969979262385602596">Sisselogimine ebaõnnestus. Proovige hiljem uuesti.</translation>
 <translation id="298306318844797842">Makseviisi lisamine …</translation>
@@ -305,6 +304,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5317780077021120954">Salvesta</translation>
 <translation id="5327248766486351172">Nimi</translation>
 <translation id="5388358297987318779">Ava kujutis</translation>
+<translation id="5407969256130905701">Loobu muudatustest</translation>
 <translation id="5409365236829784218">Pole installitud rakendust, mis suudaks selle faili avada.</translation>
 <translation id="5416022985862681400">Viimased 7 päeva</translation>
 <translation id="5433691172869980887">Kasutajanimi on kopeeritud</translation>
@@ -510,6 +510,7 @@ Teie andmed krüpteeriti <ph name="TIME" /> teie sünkroonimisparooliga. Sisesta
 <translation id="8428213095426709021">Seaded</translation>
 <translation id="8458397775385147834">1 üksus on kustutatud</translation>
 <translation id="8487700953926739672">Võrguühenduseta saadaval</translation>
+<translation id="8490978609246021741">Salvesta muudatused</translation>
 <translation id="8503813439785031346">Kasutajanimi</translation>
 <translation id="850600235656508448">Ava inkognito režiimis</translation>
 <translation id="8517375800490286174">Avatud lähtekoodi litsentsid</translation>

@@ -12,7 +12,7 @@ suite('SiteFavicon', function() {
   });
 
   function assertIconEquals(expected) {
-    const background = siteFavicon.style.backgroundImage;
+    const background = siteFavicon.$.favicon.style.backgroundImage;
     assertEquals(background, expected);
   }
 

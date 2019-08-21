@@ -60,7 +60,7 @@ class MediaRouterAndroidTest : public testing::Test {
  protected:
   // For the checks that MediaRouter calls are running on the UI thread.
   // Needs to be the first member variable to be destroyed last.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   std::unique_ptr<MediaRouterAndroid> router_;
   MockMediaRouterAndroidBridge* mock_bridge_;

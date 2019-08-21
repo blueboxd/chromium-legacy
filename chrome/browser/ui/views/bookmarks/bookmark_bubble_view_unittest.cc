@@ -33,7 +33,7 @@ class BookmarkBubbleViewTest : public BrowserWithTestWindowTest {
   // and IO tasks on separate threads.
   BookmarkBubbleViewTest()
       : BrowserWithTestWindowTest(
-            content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
+            content::BrowserTaskEnvironment::REAL_IO_THREAD) {}
 
   // testing::Test:
   void SetUp() override {

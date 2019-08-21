@@ -12,6 +12,9 @@
 
 namespace blink {
 
+// BrowserInterfaceBrokerProxy provides access to interfaces exposed by the
+// browser to the renderer. It is intended to replace document- and
+// worker-scoped InterfaceProvider (see crbug.com/718652).
 class BLINK_COMMON_EXPORT BrowserInterfaceBrokerProxy {
  public:
   BrowserInterfaceBrokerProxy() = default;
@@ -23,8 +26,17 @@ class BLINK_COMMON_EXPORT BrowserInterfaceBrokerProxy {
   void GetInterface(const std::string& name,
                     mojo::ScopedMessagePipeHandle pipe) const;
 
+  void SetBinderForTesting(
+      const std::string& name,
+      base::RepeatingCallback<void(mojo::ScopedMessagePipeHandle)> binder);
+
  private:
   mojo::Remote<blink::mojom::BrowserInterfaceBroker> broker_;
+
+  using BinderMap =
+      std::map<std::string,
+               base::RepeatingCallback<void(mojo::ScopedMessagePipeHandle)>>;
+  BinderMap binder_map_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserInterfaceBrokerProxy);
 };

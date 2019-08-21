@@ -36,13 +36,13 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.ResetHand
             TabContentManager tabContentManager, TabCreatorManager tabCreatorManager,
             ViewGroup containerView, TabSwitcherMediator.ResetHandler resetHandler,
             TabListMediator.GridCardOnClickListenerProvider gridCardOnClickListenerProvider,
-            TabGridDialogMediator.AnimationOriginProvider animationOriginProvider) {
+            TabGridDialogMediator.AnimationParamsProvider animationParamsProvider) {
         mContext = context;
 
         mToolbarPropertyModel = new PropertyModel(TabGridSheetProperties.ALL_KEYS);
 
         mMediator = new TabGridDialogMediator(context, this, mToolbarPropertyModel,
-                tabModelSelector, tabCreatorManager, resetHandler, animationOriginProvider);
+                tabModelSelector, tabCreatorManager, resetHandler, animationParamsProvider);
 
         mTabListCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
                 tabModelSelector, tabContentManager::getTabThumbnailWithCallback, null, false, null,

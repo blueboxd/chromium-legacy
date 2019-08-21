@@ -3416,7 +3416,8 @@ void SpdySession::OnAltSvc(
   }
 
   http_server_properties_->SetAlternativeServices(
-      scheme_host_port, alternative_service_info_vector);
+      scheme_host_port, spdy_session_key_.network_isolation_key(),
+      alternative_service_info_vector);
 }
 
 bool SpdySession::OnUnknownFrame(spdy::SpdyStreamId stream_id,

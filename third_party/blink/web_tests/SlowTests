@@ -190,7 +190,7 @@ crbug.com/528419 http/tests/devtools/elements/styles-2/pseudo-elements.js [ Slow
 
 crbug.com/802029 fast/dom/shadow/focus-controller-recursion-crash.html [ Slow ]
 
-crbug.com/614910 virtual/gpu-rasterization/images/color-profile-filter.html [ Slow ]
+crbug.com/614910 virtual/gpu-rasterization/images/yuv-decode-eligible/color-profile-filter.html [ Slow ]
 
 crbug.com/623798 paint/images/animated-gif-last-frame-crash.html [ Slow ]
 
@@ -482,7 +482,7 @@ crbug.com/874695 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-twice.
 crbug.com/874695 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-overridesexpires.html [ Slow ]
 crbug.com/874695 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-twice.html [ Slow ]
 crbug.com/874695 http/tests/xmlhttprequest/web-apps/013.html [ Slow ]
-crbug.com/874695 images/color-profile-layer-filter.html [ Slow ]
+crbug.com/874695 images/yuv-decode-eligible/color-profile-layer-filter.html [ Slow ]
 crbug.com/874695 images/image-page-injected-script-crash.html [ Slow ]
 crbug.com/874695 inspector-protocol/accessibility/accessibility-nameSources-input-buttons.js [ Slow ]
 crbug.com/874695 inspector-protocol/debugger/debugger-evaluate-in-worker-while-pause-in-page.js [ Slow ]
@@ -553,7 +553,7 @@ crbug.com/874695 svg/animations/svg-animation-policy-once.html [ Slow ]
 crbug.com/874695 virtual/android/fullscreen/full-screen-restrictions.html [ Slow ]
 crbug.com/874695 virtual/android/fullscreen/video-specified-size.html [ Slow ]
 crbug.com/874695 virtual/display-compositor-pixel-dump/fast/canvas/display-compositor-pixel-dump/OffscreenCanvas-opaque-background-compositing.html [ Slow ]
-crbug.com/874695 virtual/exotic-color-space/images/color-profile-layer-filter.html [ Slow ]
+crbug.com/874695 virtual/exotic-color-space/images/yuv-decode-eligible/color-profile-layer-filter.html [ Slow ]
 crbug.com/874695 virtual/exotic-color-space/images/image-page-injected-script-crash.html [ Slow ]
 crbug.com/874695 virtual/gpu/fast/canvas/canvas-blending-image-over-color.html [ Slow ]
 crbug.com/874695 virtual/gpu/fast/canvas/canvas-composite-canvas.html [ Slow ]
@@ -572,7 +572,7 @@ crbug.com/874695 virtual/gpu/fast/canvas/OffscreenCanvas-text-rendering-in-worke
 crbug.com/874695 virtual/gpu/fast/canvas/OffscreenCanvas-transform-shadow-in-worker.html [ Slow ]
 crbug.com/874695 virtual/gpu-rasterization/images/color-profile-group.html [ Slow ]
 crbug.com/874695 virtual/gpu-rasterization/images/color-profile-image-filter-all.html [ Slow ]
-crbug.com/874695 virtual/gpu-rasterization/images/color-profile-layer-filter.html [ Slow ]
+crbug.com/874695 virtual/gpu-rasterization/images/yuv-decode-eligible/color-profile-layer-filter.html [ Slow ]
 crbug.com/874695 virtual/gpu-rasterization/images/color-profile-mask-image-svg.html [ Slow ]
 crbug.com/874695 virtual/gpu-rasterization/images/image-page-injected-script-crash.html [ Slow ]
 crbug.com/874695 virtual/gpu-rasterization/images/webp-color-profile-lossless.html [ Slow ]

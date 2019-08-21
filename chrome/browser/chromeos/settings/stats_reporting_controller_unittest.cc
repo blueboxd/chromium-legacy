@@ -92,8 +92,8 @@ class StatsReportingControllerTest : public testing::Test {
     StatsReportingController::Shutdown();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_{
-      content::TestBrowserThreadBundle::IO_MAINLOOP};
+  content::BrowserTaskEnvironment task_environment_{
+      content::BrowserTaskEnvironment::IO_MAINLOOP};
   TestingPrefServiceSimple local_state_;
   ScopedStubInstallAttributes scoped_install_attributes_;
   FakeSessionManagerClient fake_session_manager_client_;

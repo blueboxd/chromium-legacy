@@ -85,7 +85,7 @@ class BackgroundFetchTestBase : public ::testing::Test {
   scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context() const;
 
  protected:
-  TestBrowserThreadBundle thread_bundle_;  // Must be first member.
+  BrowserTaskEnvironment task_environment_;  // Must be first member.
 
  private:
   BackgroundFetchTestBrowserContext browser_context_;

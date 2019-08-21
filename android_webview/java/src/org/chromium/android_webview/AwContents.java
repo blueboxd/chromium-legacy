@@ -2519,16 +2519,16 @@ public class AwContents implements SmartClipProvider {
      * WebMessageListener}.
      */
     @CalledByNative
-    public void onPostMessage(
-            String message, String sourceOrigin, boolean isMainFrame, int replyPort, int[] ports) {
+    public void onPostMessage(String message, String sourceOrigin, boolean isMainFrame,
+            JsReplyProxy replyProxy, int[] ports) {
         if (mWebMessageListener == null) return;
         MessagePort[] messagePorts = new MessagePort[ports.length];
         for (int i = 0; i < ports.length; ++i) {
             messagePorts[i] = convertRawHandleToMessagePort(ports[i]);
         }
-        MessagePort replyMessagePort = convertRawHandleToMessagePort(replyPort);
+
         mWebMessageListener.onPostMessage(
-                message, Uri.parse(sourceOrigin), isMainFrame, replyMessagePort, messagePorts);
+                message, Uri.parse(sourceOrigin), isMainFrame, replyProxy, messagePorts);
     }
 
     private static MessagePort convertRawHandleToMessagePort(int rawHandle) {

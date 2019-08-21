@@ -1003,8 +1003,6 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   GetLabelStyle(&style);
 
   SkColor icon_color = color_utils::DeriveDefaultIconColor(style.foreground);
-  if (GetMenuController() && GetMenuController()->use_touchable_layout())
-    icon_color = config.touchable_icon_color;
 
   // Render the check.
   if (type_ == CHECKBOX && delegate->IsItemChecked(GetCommand())) {

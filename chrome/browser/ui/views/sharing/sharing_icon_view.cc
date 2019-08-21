@@ -44,7 +44,7 @@ void SharingIconView::StopLoadingAnimation(base::Optional<int> string_id) {
   if (!loading_animation_)
     return;
 
-  if (!show_error_)
+  if (!should_show_error_)
     AnimateIn(string_id);
 
   loading_animation_.reset();
@@ -154,8 +154,12 @@ bool SharingIconView::IsTriggerableEvent(const ui::Event& event) {
 }
 
 const gfx::VectorIcon& SharingIconView::GetVectorIconBadge() const {
-  return show_error_ ? kBlockedBadgeIcon : gfx::kNoneIcon;
+  return should_show_error_ ? kBlockedBadgeIcon : gfx::kNoneIcon;
 }
 
 void SharingIconView::OnExecuting(
     PageActionIconView::ExecuteSource execute_source) {}
+
+bool SharingIconView::isLoadingAnimationVisible() {
+  return loading_animation_.get();
+}

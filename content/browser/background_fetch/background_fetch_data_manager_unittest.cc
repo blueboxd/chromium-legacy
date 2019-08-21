@@ -2217,7 +2217,7 @@ TEST_F(BackgroundFetchDataManagerTest, Cleanup) {
 
   // Cleanup should delete the registration.
   background_fetch_data_manager_->Cleanup();
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(0u,
             GetRegistrationUserDataByKeyPrefix(sw_id, kUserDataPrefix).size());
 

@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/layout/layout_video.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_image.h"
 #include "third_party/blink/renderer/core/loader/importance_attribute.h"
+#include "third_party/blink/renderer/core/probe/async_task_id.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -198,7 +199,7 @@ class ImageLoader::Task {
         referrer_policy_(referrer_policy),
         request_url_(request_url) {
     ExecutionContext& context = loader_->GetElement()->GetDocument();
-    probe::AsyncTaskScheduled(&context, "Image", this);
+    probe::AsyncTaskScheduled(&context, "Image", &async_task_id_);
     v8::Isolate* isolate = V8PerIsolateData::MainThreadIsolate();
     v8::HandleScope scope(isolate);
     // If we're invoked from C++ without a V8 context on the stack, we should
@@ -216,7 +217,7 @@ class ImageLoader::Task {
     if (!loader_)
       return;
     ExecutionContext& context = loader_->GetElement()->GetDocument();
-    probe::AsyncTask async_task(&context, this);
+    probe::AsyncTask async_task(&context, &async_task_id_);
     if (script_state_ && script_state_->ContextIsValid()) {
       ScriptState::Scope scope(script_state_);
       loader_->DoUpdateFromElement(should_bypass_main_world_csp_,
@@ -244,6 +245,7 @@ class ImageLoader::Task {
   WeakPersistent<ScriptState> script_state_;
   network::mojom::ReferrerPolicy referrer_policy_;
   KURL request_url_;
+  probe::AsyncTaskId async_task_id_;
   base::WeakPtrFactory<Task> weak_factory_{this};
 };
 

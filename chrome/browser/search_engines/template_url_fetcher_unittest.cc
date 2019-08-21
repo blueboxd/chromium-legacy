@@ -103,7 +103,8 @@ class TemplateURLFetcherTest : public testing::Test {
   int requests_completed() const { return requests_completed_; }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;  // To set up BrowserThreads.
+  content::BrowserTaskEnvironment
+      task_environment_;  // To set up BrowserThreads.
   TemplateURLServiceTestUtil test_util_;
   std::unique_ptr<TemplateURLFetcher> template_url_fetcher_;
   content::URLLoaderInterceptor url_loader_interceptor_;
@@ -120,7 +121,7 @@ class TemplateURLFetcherTest : public testing::Test {
 };
 
 TemplateURLFetcherTest::TemplateURLFetcherTest()
-    : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+    : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
       url_loader_interceptor_(
           base::BindRepeating(&TemplateURLFetcherTest::HandleRequest,
                               base::Unretained(this))),

@@ -167,7 +167,7 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
 
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  auto inserted = images_.insert(std::make_pair(resource_id, image));
+  auto inserted = images_.emplace(resource_id, image);
   DCHECK(inserted.second);
   return inserted.first->second;
 }

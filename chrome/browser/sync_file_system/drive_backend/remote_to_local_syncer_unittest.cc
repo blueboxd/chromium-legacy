@@ -50,7 +50,7 @@ class RemoteToLocalSyncerTest : public testing::Test {
   typedef FakeRemoteChangeProcessor::URLToFileChangesMap URLToFileChangesMap;
 
   RemoteToLocalSyncerTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
   ~RemoteToLocalSyncerTest() override {}
 
   void SetUp() override {
@@ -229,7 +229,7 @@ class RemoteToLocalSyncerTest : public testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir database_dir_;
   std::unique_ptr<leveldb::Env> in_memory_env_;
 

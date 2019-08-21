@@ -243,6 +243,7 @@
 <translation id="2202020181578195191">കാലഹരണപ്പെടുന്ന ശരിയായ വർഷം നല്‍കുക</translation>
 <translation id="2212735316055980242">നയം കണ്ടെത്തിയില്ല</translation>
 <translation id="2213606439339815911">എൻട്രികൾ ലഭ്യമാക്കുന്നു...</translation>
+<translation id="2215727959747642672">ഫയൽ എഡിറ്റിംഗ്</translation>
 <translation id="2218879909401188352">നിലവിൽ <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> എന്നതിലുള്ള അക്രമികൾക്ക് നിങ്ങളുടെ ഉപകരണം കേടുവരുത്തുന്ന ആപ്പുകൾ ഇൻസ്‌റ്റാൾ ചെയ്യാനോ മൊബൈൽ ബില്ലിലേക്ക് നിങ്ങളറിയാതെ നിരക്കുകൾ ചേർക്കാനോ നിങ്ങളുടെ വ്യക്തിഗത വിവരങ്ങൾ മോഷ്‌ടിക്കാനോ കഴിയും. <ph name="BEGIN_LEARN_MORE_LINK" />കൂടുതലറിയുക<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">ഇന്റർനെറ്റ് ഇല്ല</translation>
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />ഡയഗണോസ്‌റ്റിക്‌സ് ആപ്പ്<ph name="END_LINK" /> ഉപയോഗിച്ച് കണകഷൻ പ്രശ്‌നം പരിഹരിക്കുക</translation>
@@ -302,6 +303,7 @@
 <translation id="2501278716633472235">പിന്നോട്ട് പോകുക</translation>
 <translation id="2503184589641749290">ഡെബിറ്റ് കാർഡുകളും പ്രീപെയ്ഡ് കാർഡുകളും സ്വീകരിക്കുന്നു</translation>
 <translation id="2505268675989099013">അക്കൗണ്ട് പരിരക്ഷിക്കുക</translation>
+<translation id="2515335152965840738">അവഗണിക്കുക</translation>
 <translation id="2515629240566999685">നിങ്ങളുടെ ഏരിയയിലെ സിഗ്‌നൽ പരിശോധിക്കുന്നു</translation>
 <translation id="2523886232349826891">ഈ ഉപകരണത്തിൽ മാത്രം സംരക്ഷിക്കപ്പെടും</translation>
 <translation id="2524461107774643265">കൂടുതൽ വിവരങ്ങൾ ചേർക്കുക</translation>
@@ -353,6 +355,7 @@
 <translation id="2799020568854403057">നിങ്ങൾ പോകുന്ന സൈറ്റിൽ ദോഷകരമായ ആപ്പുകളുണ്ട്</translation>
 <translation id="2799223571221894425">വീണ്ടും സമാരംഭിക്കുക</translation>
 <translation id="2803306138276472711"><ph name="SITE" /> എന്നതിൽ Google സുരക്ഷിത ബ്രൗസിംഗ് ഈയിടെ <ph name="BEGIN_LINK" />മാൽവെയർ കണ്ടെത്തി<ph name="END_LINK" />. സാധാരണ നിലയിൽ സുരക്ഷിതമായ വെബ്സൈറ്റുകളിൽ ചിലപ്പോൾ മാൽവെയർ ഉണ്ടായേക്കാം.</translation>
+<translation id="2815364696811431560">സൈറ്റ് വിടുക</translation>
 <translation id="2824775600643448204">വിലാസവും തിരയൽ ബാറും</translation>
 <translation id="2826760142808435982"><ph name="CIPHER" /> ഉപയോഗിച്ച് കണക്ഷൻ എൻക്രിപ്‌റ്റുചെയ്‌ത് പ്രാമാണീകരിക്കുന്നു, ഒപ്പം പ്രധാന എക്‌സേഞ്ച് മെക്കാനിസമായി <ph name="KX" /> ഉപയോഗിക്കുന്നു.</translation>
 <translation id="2835170189407361413">ഫോം മായ്‌ക്കുക</translation>
@@ -856,6 +859,7 @@
 <translation id="560412284261940334">മാനേജുമെന്റ് പിന്തുണയ്‌ക്കുന്നില്ല</translation>
 <translation id="5605670050355397069">ലെഡ്‌ജർ</translation>
 <translation id="5607240918979444548">ആര്‍ക്കിടെക്ച്ചര്‍-C</translation>
+<translation id="5608165884683734521">ഈ സൈറ്റ് വ്യാജമോ വഞ്ചനാപരമോ ആകാം. ഈ സൈറ്റ് ഇപ്പോൾ വിടാൻ Chrome ശുപാർശ ചെയ്യുന്നു.</translation>
 <translation id="5610142619324316209">കണക്ഷൻ പരിശോധിക്കുന്നു</translation>
 <translation id="5610807607761827392">നിങ്ങൾക്ക് <ph name="BEGIN_LINK" />ക്രമീകരണത്തിൽ<ph name="END_LINK" /> കാർഡുകളും വിലാസങ്ങളും മാനേജ് ചെയ്യാം.</translation>
 <translation id="5617949217645503996"><ph name="HOST_NAME" />, നിരവധി തവണ നിങ്ങളെ റീഡയറക്‌ടുചെയ്‌തു.</translation>
@@ -1109,6 +1113,7 @@
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> എന്നതും മറ്റ് <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> എണ്ണവും}other{<ph name="PAYMENT_METHOD_PREVIEW" /> എന്നതും മറ്റ് <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> എണ്ണവും}}</translation>
 <translation id="7153618581592392745">ലാവെൻഡർ</translation>
 <translation id="717330890047184534">Gaia ഐഡി:</translation>
+<translation id="7174545416324379297">ലയിപ്പിച്ചു</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> എന്നതും മറ്റ് <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> എണ്ണവും}other{<ph name="SHIPPING_OPTION_PREVIEW" /> എന്നതും മറ്റ് <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> എണ്ണവും}}</translation>
 <translation id="7177397715882417099">സെർവർ ഉപയോഗിച്ച് നിങ്ങൾ പോകുന്ന <ph name="ORIGIN" /> സൈറ്റ്, അതിൻ്റെ എല്ലാ അഭ്യർത്ഥനകളിലേക്കും ഒരു സുരക്ഷാ നയം ബാധകമാക്കുമെന്ന് ഇത് അഭ്യർത്ഥിച്ചിരിക്കുന്നു. എന്നാൽ ഒരു നയം നിർവഹിക്കുന്നതിന് പകരം ഇത് ബ്രൗസറിനെ മറ്റിടത്തേയ്ക്ക് റീഡയറക്‌ട് ചെയ്‌തതിനാൽ, <ph name="SITE" />എന്നതിനുള്ള നിങ്ങളുടെ അഭ്യർത്ഥന പൂർത്തീകരിക്കാൻ ബ്രൗസറിന് കഴിയുന്നില്ല.</translation>
 <translation id="7179323680825933600">പേയ്‌മെന്റ് രീതികൾ സംരക്ഷിച്ച് പൂരിപ്പിക്കുക</translation>
@@ -1376,6 +1381,7 @@
 <translation id="8553075262323480129">പേജിന്‍റെ ഭാഷ നിര്‍‌ണ്ണയിക്കാന്‍‌ കഴിയാത്തതിനാല്‍‌ വിവര്‍‌ത്തനം പരാജയപ്പെട്ടു.</translation>
 <translation id="8557066899867184262">കാർഡിന് പിന്നിലാണ് CVC രേഖപ്പെടുത്തിയിരിക്കുന്നത്.</translation>
 <translation id="8559762987265718583">നിങ്ങളുടെ ഉപകരണത്തിന്റെ തീയതിയും സമയവും (<ph name="DATE_AND_TIME" />) തെറ്റായതിനാൽ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> എന്നതിലേക്കുള്ള സ്വകാര്യ കണക്ഷൻ സ്ഥാപിക്കാനാവില്ല.</translation>
+<translation id="8561575143530093465"><ph name="SAFETY_TIP" /> സംശയാസ്‌പദമായ സൈറ്റ്</translation>
 <translation id="8564985650692024650">മറ്റ് സൈറ്റുകളിൽ നിങ്ങൾ <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> പാസ്‌വേഡ് പുനരുപയോഗിച്ചിട്ടുണ്ടെങ്കിൽ, അത് റീസെറ്റ് ചെയ്യാൻ Chromium ശുപാർ‌ശ ചെയ്യുന്നു.</translation>
 <translation id="8571890674111243710"><ph name="LANGUAGE" /> ലേക്ക് പേജ് വിവര്‍‌ത്തനം ചെയ്യുന്നു...</translation>
 <translation id="858637041960032120">ഫോൺ നമ്പർ ചേർക്കൂ</translation>
@@ -1427,6 +1433,7 @@
 <translation id="8938939909778640821">ക്രെഡിറ്റ് കാർഡുകളും പ്രീപെയ്ഡ് കാർഡുകളും സ്വീകരിക്കുന്നു</translation>
 <translation id="8943282376843390568">ചെറുനാരങ്ങയുടെ നിറം</translation>
 <translation id="8957210676456822347">ക്യാപ്‌റ്റീവ് പോർട്ടൽ അംഗീകരിക്കൽ</translation>
+<translation id="8962950042226115166">സംശയാസ്‌പദമായ സൈറ്റ്</translation>
 <translation id="8968766641738584599">കാർഡ് സംരക്ഷിക്കുക</translation>
 <translation id="8971063699422889582">സെർവറിന്റെ സർട്ടിഫിക്കറ്റ് കാലഹരണപ്പെട്ടു.</translation>
 <translation id="8975012916872825179">ഫോൺ നമ്പറുകൾ, ഇമെയിൽ വിലാസങ്ങൾ, ഷിപ്പിംഗ് വിലാസങ്ങൾ എന്നിവ പോലുള്ള വിവരങ്ങൾ ഉൾപ്പെടുന്നു</translation>
@@ -1459,7 +1466,6 @@
 <translation id="9078964945751709336">കൂടുതൽ വിവരങ്ങൾ ആവശ്യമാണ്</translation>
 <translation id="9080712759204168376">ഓർഡർ സംഗ്രഹം</translation>
 <translation id="9089260154716455634">ഓഫ് അവേഴ്‌സ് നയം:</translation>
-<translation id="9093075372111400787">വിപുലീകരിച്ചത് അടയ്‌ക്കുക</translation>
 <translation id="9095388113577226029">കൂടുതൽ ഭാഷകൾ...</translation>
 <translation id="9103872766612412690">നിങ്ങളുടെ വിവരങ്ങൾ പരിരക്ഷിക്കാൻ സാധാരണയായി <ph name="SITE" />, എൻക്രിപ്‌ഷൻ ഉപയോഗിക്കുന്നു. ഇപ്പോൾ <ph name="SITE" /> സൈറ്റിലേക്ക് കണക്‌റ്റ് ചെയ്യാൻ Chromium ശ്രമിച്ചപ്പോൾ, അസാധാരണമായതും തെറ്റായതുമായ ക്രെഡൻഷ്യലുകൾ വെബ്‌സൈറ്റ് തിരികെ അയച്ചു. ഒരു ആക്രമണകാരി <ph name="SITE" /> എന്നതായി ഭാവിക്കാൻ ശ്രമിക്കുമ്പോഴോ Wi-Fi സൈൻ ഇൻ സ്‌ക്രീൻ, കണക്ഷനെ തടസ്സപ്പെടുത്തുമ്പോഴോ ആണ് ഇങ്ങനെ സംഭവിക്കാനിടയുള്ളത്. ഏതെങ്കിലും ഡാറ്റ കൈമാറുന്നതിനുമുമ്പ് Chromium കണക്ഷൻ അവസാനിപ്പിച്ചതിനാൽ, നിങ്ങളുടെ വിവരങ്ങൾ തുടർന്നും സുരക്ഷിതമായിരിക്കും.</translation>
 <translation id="9106062320799175032">ബില്ലിംഗ് വിലാസം ചേർക്കുക</translation>

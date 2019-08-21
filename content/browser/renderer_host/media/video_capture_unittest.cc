@@ -93,7 +93,7 @@ class VideoCaptureTest : public testing::Test,
                          public media::mojom::VideoCaptureObserver {
  public:
   VideoCaptureTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         audio_manager_(std::make_unique<media::MockAudioManager>(
             std::make_unique<media::TestAudioThread>())),
         audio_system_(
@@ -304,10 +304,10 @@ class VideoCaptureTest : public testing::Test,
     std::move(quit_closure).Run();
   }
 
-  // |media_stream_manager_| needs to outlive |thread_bundle_| because it is a
-  // MessageLoopCurrent::DestructionObserver.
+  // |media_stream_manager_| needs to outlive |task_environment_| because it is
+  // a MessageLoopCurrent::DestructionObserver.
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
-  const content::TestBrowserThreadBundle thread_bundle_;
+  const content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<media::AudioManager> audio_manager_;
   std::unique_ptr<media::AudioSystem> audio_system_;
   content::TestBrowserContext browser_context_;

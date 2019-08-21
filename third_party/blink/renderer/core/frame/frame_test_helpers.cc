@@ -252,10 +252,9 @@ WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
     widget_client = std::make_unique<TestWebWidgetClient>();
     WebFrameWidget* frame_widget =
         WebFrameWidget::CreateForChildLocalRoot(widget_client.get(), frame);
-    // The WebWidget requires a LayerTreeView to be set, either by the
+    // The WebWidget requires an AnimationHost to be set, either by the
     // WebWidgetClient itself or by someone else. We do that here.
-    frame_widget->SetLayerTreeView(widget_client->layer_tree_view(),
-                                   widget_client->animation_host());
+    frame_widget->SetAnimationHost(widget_client->animation_host());
     frame_widget->Resize(WebSize());
   }
   if (widget_client)
@@ -292,10 +291,9 @@ WebLocalFrameImpl* CreateLocalChild(WebRemoteFrame& parent,
       CreateDefaultClientIfNeeded(widget_client, owned_widget_client);
   WebFrameWidget* frame_widget =
       WebFrameWidget::CreateForChildLocalRoot(widget_client, frame);
-  // The WebWidget requires a LayerTreeView to be set, either by the
+  // The WebWidget requires an AnimationHost to be set, either by the
   // WebWidgetClient itself or by someone else. We do that here.
-  frame_widget->SetLayerTreeView(widget_client->layer_tree_view(),
-                                 widget_client->animation_host());
+  frame_widget->SetAnimationHost(widget_client->animation_host());
   // Set an initial size for subframes.
   if (frame->Parent())
     frame_widget->Resize(WebSize());
@@ -356,8 +354,7 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
   // TODO(danakj): Make this part of attaching the main frame's WebFrameWidget.
   // This happens before CreateForMainFrame as the WebFrameWidget binding to the
   // WebLocalFrameImpl sets up animations.
-  web_view_->MainFrameWidget()->SetLayerTreeView(
-      test_web_widget_client_->layer_tree_view(),
+  web_view_->MainFrameWidget()->SetAnimationHost(
       test_web_widget_client_->animation_host());
   // TODO(dcheng): The main frame widget currently has a special case.
   // Eliminate this once WebView is no longer a WebWidget.
@@ -426,8 +423,7 @@ WebViewImpl* WebViewHelper::InitializeRemote(
 
   test_web_widget_client_ = CreateDefaultClientIfNeeded(
       web_widget_client, owned_test_web_widget_client_);
-  web_view_->MainFrameWidget()->SetLayerTreeView(
-      test_web_widget_client_->layer_tree_view(),
+  web_view_->MainFrameWidget()->SetAnimationHost(
       test_web_widget_client_->animation_host());
 
   return web_view_;

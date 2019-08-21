@@ -110,10 +110,10 @@ void LogClickToCallDialogShown(SharingClickToCallDialogType type) {
   base::UmaHistogramEnumeration("Sharing.ClickToCallDialogShown", type);
 }
 
-void LogSendSharingMessageSuccess(bool success) {
-  base::UmaHistogramBoolean("Sharing.SendMessageSuccess", success);
+void LogSendSharingMessageResult(SharingSendMessageResult result) {
+  base::UmaHistogramEnumeration("Sharing.SendMessageResult", result);
 }
 
-void LogSendSharingAckMessageSuccess(bool success) {
-  base::UmaHistogramBoolean("Sharing.SendAckMessageSuccess", success);
+void LogSendSharingAckMessageResult(SharingSendMessageResult result) {
+  base::UmaHistogramEnumeration("Sharing.SendAckMessageResult", result);
 }

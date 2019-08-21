@@ -45,7 +45,7 @@ class CrashRestoreHelperTest : public PlatformTest {
   }
 
  protected:
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   ios::ChromeBrowserState* off_the_record_chrome_browser_state_;
   CrashRestoreHelper* helper_;

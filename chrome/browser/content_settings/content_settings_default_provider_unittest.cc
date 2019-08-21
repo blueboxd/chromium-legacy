@@ -33,7 +33,7 @@ class ContentSettingsDefaultProviderTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   DefaultProvider provider_;
 };

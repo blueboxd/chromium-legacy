@@ -84,9 +84,8 @@ static void DispatchEventToRenderers(EventRouterForwarder* event_router,
 class EventRouterForwarderTest : public testing::Test {
  protected:
   EventRouterForwarderTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD),
-        profile_manager_(
-            TestingBrowserProcess::GetGlobal()) {
+      : task_environment_(content::BrowserTaskEnvironment::REAL_IO_THREAD),
+        profile_manager_(TestingBrowserProcess::GetGlobal()) {
 #if defined(OS_MACOSX)
     base::PowerMonitorDeviceSource::AllocateSystemIOPorts();
 #endif
@@ -107,7 +106,7 @@ class EventRouterForwarderTest : public testing::Test {
     profile2_ = profile_manager_.CreateTestingProfile("two");
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager profile_manager_;
   // Profiles are weak pointers, owned by ProfileManager in |browser_process_|.
   TestingProfile* profile1_;

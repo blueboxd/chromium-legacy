@@ -141,7 +141,6 @@
 <translation id="200815880754187296"><ph name="KILOBYTES" /> কেবি other apps</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{#টি ফাইল}one{#টি ফাইল}other{#টি ফাইল}}</translation>
 <translation id="2017836877785168846">অ্যাড্রেস বার থেকে ইতিহাস ও অটোকমপ্লিট মুছে ফেলে।</translation>
-<translation id="2018707881002649255">আপনার বেছে নেওয়া নিচের পরিচিতি <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ওয়েবসাইটে শেয়ার করা হবে।</translation>
 <translation id="2021896219286479412">পূর্ণ স্ক্রিন সাইট নিয়ন্ত্রণ</translation>
 <translation id="2038563949887743358">ডেস্কটপ সাইটের অনুরোধ চালু করুন</translation>
 <translation id="2041019821020695769">Chrome যাতে আপনাকে বিজ্ঞপ্তি পাঠাতে পারে তার জন্য আপনি <ph name="BEGIN_LINK" />Android সেটিংস<ph name="END_LINK" />-এ গিয়ে বিজ্ঞপ্তি চালু করুন।</translation>
@@ -243,7 +242,6 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> সেকেন্ড বাকি আছে</translation>
 <translation id="2779651927720337254">করা যায়নি</translation>
 <translation id="2781151931089541271">১ সেকেন্ড বাকি আছে</translation>
-<translation id="2796941233371040292">এখানে কোনও স্টোরেজ ডেটা নেই</translation>
 <translation id="2801022321632964776">নিজের ভাষায় ব্রাউজ করতে, Chrome-কে লেটেস্ট ভার্সনে আপডেট করুন</translation>
 <translation id="2810645512293415242">পৃষ্ঠায় সহজে ডেটা সংরক্ষণ করে এবং দ্রুত লোড করুন।</translation>
 <translation id="281504910091592009">আপনার <ph name="BEGIN_LINK" />Google অ্যাকাউন্ট<ph name="END_LINK" />-এ সেভ করা পাসওয়ার্ড দেখুন এবং পরিচালনা করুন</translation>
@@ -271,6 +269,7 @@
 <translation id="2962095958535813455">ছদ্মবেশী ট্যাবে পাল্টানো হয়েছে</translation>
 <translation id="2968755619301702150">সার্টিফিকেট প্রদর্শনকারী</translation>
 <translation id="2979025552038692506">নির্বাচিত ছদ্মবেশী ট্যাবগুলি</translation>
+<translation id="2987620471460279764">অন্য ডিভাইস থেকে টেক্সট শেয়ার করা হয়েছে</translation>
 <translation id="2989523299700148168">সাম্প্রতিক দেখা হয়েছে</translation>
 <translation id="2996291259634659425">পাসফ্রেজ তৈরি করুন</translation>
 <translation id="2996809686854298943">URL প্রয়োজন</translation>
@@ -556,6 +555,7 @@
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{১টি ডাউনলোড করা যায়নি।}one{#টি ডাউনলোড করা যায়নি।}other{#টি ডাউনলোড করা যায়নি।}}</translation>
 <translation id="5170568018924773124">ফোল্ডারে দেখান</translation>
 <translation id="5184329579814168207">Chrome এ খুলুন</translation>
+<translation id="5193988420012215838">আপনার ক্লিপবোর্ডে কপি করা হয়েছে</translation>
 <translation id="5199929503336119739">কর্মস্থলের প্রোফাইল</translation>
 <translation id="5202089186707505116">এই সাইটকে আপনার ভিআর সেন্সর অ্যাক্সেস করার অনুমতি দিতে চান?</translation>
 <translation id="5210286577605176222">পূর্ববর্তী ট্যাবে চলে যান</translation>
@@ -704,6 +704,7 @@
 উদাহরণস্বরূপ, কিছু ওয়েবসাইট আপনার দেখা অন্য ওয়েবসাইট ভিত্তিক নয় এমন বিজ্ঞাপন দেখিয়ে এই অনুরোধে প্রতিক্রিয়া জানাতে পারে৷ অনেক ওয়েবসাইট তারপরও আপনার ব্রাউজিং ডেটা সংগ্রহ এবং ব্যবহার করবে - উদাহরণস্বরূপ, আপনার নিরাপত্তা বাড়াতে, সামগ্রী, বিজ্ঞাপন এবং প্রস্তাবনা প্রদান করতে এবং রিপোর্ট পরিসংখ্যান তৈরি করতে৷</translation>
 <translation id="624789221780392884">আপডেট প্রস্তুত</translation>
 <translation id="6255999984061454636">কন্টেন্টের প্রস্তাবনা</translation>
+<translation id="6264430811215618931"><ph name="ORIGIN" /> আপনার ফোন নম্বরে একটি টেক্সট মেসেজ পাঠিয়েছে। আপনি কনফার্ম করলে সাইটটি আপনার পরিচিতি যাচাই করতে পারবে।</translation>
 <translation id="6277522088822131679">পৃষ্ঠাটি প্রিন্ট করার সময় একটি সমস্যা হয়েছিল৷ দয়া করে আবার চেষ্টা করুন৷</translation>
 <translation id="6295158916970320988">সমস্ত সাইট</translation>
 <translation id="629730747756840877">অ্যাকাউন্ট</translation>
@@ -719,7 +720,6 @@
 <translation id="6364438453358674297">ইতিহাস থেকে প্রস্তাবনা সরাবেন?</translation>
 <translation id="6369229450655021117">এখান থেকে আপনি ওয়েবে সার্চ করতে, বন্ধুদের সাথে শেয়ার করতে এবং খোলা পৃষ্ঠাগুলি দেখতে পারেন</translation>
 <translation id="6378173571450987352">বিবরণ: ব্যবহার করা ডেটার পরিমাণ অনুযায়ী সাজানো হয়েছে</translation>
-<translation id="6383961787135158834">সাইট স্টোরেজ মুছুন...</translation>
 <translation id="6388207532828177975">পরিষ্কার এবং রিসেট করুন</translation>
 <translation id="6393863479814692971">এই সাইটটির জন্য Chrome কে আপনার ক্যামেরা এবং মাইক্রোফোনে অ্যাক্সেস দিতে হবে।</translation>
 <translation id="6395288395575013217">লিঙ্ক</translation>

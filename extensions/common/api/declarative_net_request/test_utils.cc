@@ -202,6 +202,7 @@ std::unique_ptr<base::DictionaryValue> CreateManifest(
       .Set("background", DictionaryBuilder()
                              .Set("scripts", ToListValue(background_scripts))
                              .Build())
+      .Set(keys::kBrowserAction, DictionaryBuilder().Build())
       .Build();
 }
 

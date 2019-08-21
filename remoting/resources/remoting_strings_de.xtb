@@ -275,7 +275,7 @@ Wenn "<ph name="SERVICE_SCRIPT_NAME" />" bereits vorhanden und ausgewählt ist, 
 <translation id="7782471917492991422">Bitte überprüfen Sie die Energieverwaltungseinstellungen Ihres Computers. Vergewissern Sie sich, dass er nicht so konfiguriert ist, dass er bei Inaktivität in den Energiesparmodus schaltet.</translation>
 <translation id="7810127880729796595">Statistiken anzeigen (Verbindung: <ph name="QUALITY" />)</translation>
 <translation id="7836926030608666805">Es fehlen einige erforderliche Komponenten. Überprüfen Sie, ob Sie die neueste Version von Chrome verwenden, und versuchen Sie es erneut.</translation>
-<translation id="7868137160098754906">Gib Ihre PIN für den Remote-Computer ein.</translation>
+<translation id="7868137160098754906">Geben Sie Ihre PIN für den Remote-Computer ein.</translation>
 <translation id="7869445566579231750">Sie sind nicht berechtigt, diese App auszuführen.</translation>
 <translation id="7895403300744144251">Die Sicherheitsrichtlinien auf dem Remote-Computer gestatten keine Verbindungen von Ihrem Konto.</translation>
 <translation id="7936528439960309876">Rechts verankern</translation>

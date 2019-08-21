@@ -57,6 +57,7 @@
 <translation id="2746543609216772311">Värdet måste vara <ph name="MINIMUM_DATE_OR_TIME" /> eller senare.</translation>
 <translation id="2759744352195237655">popup-knapp</translation>
 <translation id="2761667185364618470">Markera den här kryssrutan om du vill fortsätta.</translation>
+<translation id="2844350028562914727">detaljer</translation>
 <translation id="2896972712917208084">alternativknappsgrupp</translation>
 <translation id="2908441821576996758">Ange en kommaavgränsad lista med e-postadresser.</translation>
 <translation id="2940813599313844715">objekt</translation>
@@ -154,6 +155,7 @@
 <translation id="6166809985690652833">efterord</translation>
 <translation id="6209276755895393898">Det verkar vara: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">ordlista</translation>
+<translation id="6281763101136022427">webbadress</translation>
 <translation id="6310801910862476708">Avsluta bild-i-bild-läge</translation>
 <translation id="6398862346408813489">Visa panelen för val av månad</translation>
 <translation id="6404546809543547843">tidsreglage för ljud</translation>
@@ -236,6 +238,7 @@
 <translation id="860475260694818407">innehållsförteckning</translation>
 <translation id="8613126697340063924">styra fjärruppspelning</translation>
 <translation id="862370744433916922">undertext</translation>
+<translation id="8711688047404765493">utdata</translation>
 <translation id="8750798805984357768">Välj ett av följande alternativ.</translation>
 <translation id="8808573423886751634">kapitel</translation>
 <translation id="8845239796550121995">Castar nu till TV:n</translation>

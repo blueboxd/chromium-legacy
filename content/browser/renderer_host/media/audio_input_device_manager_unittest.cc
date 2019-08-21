@@ -114,7 +114,7 @@ class MAYBE_AudioInputDeviceManagerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<media::AudioManager> audio_manager_;
   std::unique_ptr<media::AudioSystem> audio_system_;
   scoped_refptr<AudioInputDeviceManager> manager_;

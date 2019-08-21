@@ -149,7 +149,6 @@
 <translation id="2921219216347069551">无法分享网页</translation>
 <translation id="2923448633003185837">粘贴并转到</translation>
 <translation id="292639812446257861">标记为未读</translation>
-<translation id="2933759065870693102">闪光灯</translation>
 <translation id="2958718410589002129">密码</translation>
 <translation id="2969979262385602596">登录失败，请稍后重试。</translation>
 <translation id="298306318844797842">添加付款方式…</translation>
@@ -305,6 +304,7 @@
 <translation id="5317780077021120954">保存</translation>
 <translation id="5327248766486351172">名称</translation>
 <translation id="5388358297987318779">打开图片</translation>
+<translation id="5407969256130905701">舍弃更改</translation>
 <translation id="5409365236829784218">没有安装可打开此文件的应用。</translation>
 <translation id="5416022985862681400">过去 7 天</translation>
 <translation id="5433691172869980887">已复制用户名</translation>
@@ -510,6 +510,7 @@
 <translation id="8428213095426709021">设置</translation>
 <translation id="8458397775385147834">删除了1项</translation>
 <translation id="8487700953926739672">可离线使用</translation>
+<translation id="8490978609246021741">保存更改</translation>
 <translation id="8503813439785031346">用户名</translation>
 <translation id="850600235656508448">在无痕模式下打开</translation>
 <translation id="8517375800490286174">开放源代码许可</translation>

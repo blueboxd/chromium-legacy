@@ -4959,7 +4959,7 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   ASSERT_TRUE(service()->UninstallExtension(
       good_crx, UNINSTALL_REASON_FOR_TESTING, NULL));
   // The data deletion happens on the IO thread; since we use a
-  // TestBrowserThreadBundle (without REAL_IO_THREAD), the IO and UI threads are
+  // BrowserTaskEnvironment (without REAL_IO_THREAD), the IO and UI threads are
   // the same, and RunAllTasksUntilIdle() should run IO thread tasks.
   content::RunAllTasksUntilIdle();
 
@@ -5927,7 +5927,7 @@ class ExtensionsReadyRecorder : public content::NotificationObserver {
 // Also tests that we always fire EXTENSIONS_READY, no matter whether we are
 // enabled or not.
 class ExtensionServiceTestSimple : public testing::Test {
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(ExtensionServiceTestSimple, Enabledness) {

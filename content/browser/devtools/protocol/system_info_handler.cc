@@ -195,10 +195,17 @@ ImageDecodeAcceleratorSupportedProfileToProtocol(
 void SendGetInfoResponse(std::unique_ptr<GetInfoCallback> callback) {
   gpu::GPUInfo gpu_info = GpuDataManagerImpl::GetInstance()->GetGPUInfo();
   auto devices = std::make_unique<protocol::Array<GPUDevice>>();
+  // The active device should be the 0th device
+  for (size_t i = 0; i < gpu_info.secondary_gpus.size(); ++i) {
+    if (gpu_info.secondary_gpus[i].active)
+      devices->emplace_back(GPUDeviceToProtocol(gpu_info.secondary_gpus[i]));
+  }
   devices->emplace_back(GPUDeviceToProtocol(gpu_info.gpu));
-  for (const auto& device : gpu_info.secondary_gpus)
-    devices->emplace_back(GPUDeviceToProtocol(device));
-
+  for (size_t i = 0; i < gpu_info.secondary_gpus.size(); ++i) {
+    if (gpu_info.secondary_gpus[i].active)
+      continue;
+    devices->emplace_back(GPUDeviceToProtocol(gpu_info.secondary_gpus[i]));
+  }
   std::unique_ptr<protocol::DictionaryValue> aux_attributes =
       protocol::DictionaryValue::create();
   AuxGPUInfoEnumerator enumerator(aux_attributes.get());

@@ -17,6 +17,9 @@ namespace prerender {
 
 namespace {
 
+const char kPurposeHeaderName[] = "Purpose";
+const char kPurposeHeaderValue[] = "prefetch";
+
 void CancelPrerenderForUnsupportedMethod(
     PrerenderURLLoaderThrottle::CancelerGetterCallback callback) {
   chrome::mojom::PrerenderCanceler* canceler = std::move(callback).Run();
@@ -80,7 +83,8 @@ void PrerenderURLLoaderThrottle::WillStartRequest(
     bool* defer) {
   if (mode_ == PREFETCH_ONLY) {
     request->load_flags |= net::LOAD_PREFETCH;
-    request->headers.SetHeader(kPurposeHeaderName, kPurposeHeaderValue);
+    request->cors_exempt_headers.SetHeader(kPurposeHeaderName,
+                                           kPurposeHeaderValue);
   }
 
   resource_type_ = static_cast<content::ResourceType>(request->resource_type);

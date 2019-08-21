@@ -22,7 +22,8 @@ namespace {
 
 using ::signin::AccessTokenFetcher;
 
-constexpr char kAPIScope[] = "https://www.googleapis.com/auth/userinfo.id";
+constexpr char kAPIScope[] =
+    "https://www.googleapis.com/auth/identity.passwords.leak.check";
 
 // Returns a Google account that can be used for getting a token.
 CoreAccountId GetAccountForRequest(

@@ -173,7 +173,6 @@
 #endif
 
 #if defined(OS_MACOSX)
-#include "base/memory/memory_pressure_monitor_mac.h"
 #include "content/browser/renderer_host/browser_compositor_view_mac.h"
 #include "content/browser/theme_helper_mac.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
@@ -192,7 +191,6 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "base/memory/memory_pressure_monitor_chromeos.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
@@ -370,25 +368,14 @@ std::unique_ptr<base::MemoryPressureMonitor> CreateMemoryPressureMonitor(
   if (command_line.HasSwitch(switches::kBrowserTest))
     return nullptr;
 
-// TODO(chrisha): Simplify this code once MemoryPressureMonitor is made a
-// concrete class.
 #if defined(OS_CHROMEOS)
-  if (chromeos::switches::MemoryPressureHandlingEnabled()) {
-    if (base::chromeos::MemoryPressureMonitor::SupportsKernelNotifications()) {
-      return std::make_unique<base::chromeos::MemoryPressureMonitor>();
-    }
-    LOG(ERROR) << "No MemoryPressureMonitor created because the kernel does "
-                  "not support notifications.";
-  }
-  return nullptr;
-#elif defined(OS_MACOSX)
-  return std::make_unique<base::mac::MemoryPressureMonitor>();
-#elif defined(OS_WIN)
+  if (chromeos::switches::MemoryPressureHandlingEnabled())
+    return std::make_unique<util::MultiSourceMemoryPressureMonitor>();
+#elif defined(OS_MACOSX) || defined(OS_WIN)
   return std::make_unique<util::MultiSourceMemoryPressureMonitor>();
-#else
+#endif
   // No memory monitor on other platforms...
   return nullptr;
-#endif
 }
 
 #if defined(OS_CHROMEOS)

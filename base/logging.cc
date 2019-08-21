@@ -119,6 +119,10 @@ typedef pthread_mutex_t* MutexHandle;
 #include "base/posix/safe_strerror.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "base/files/scoped_file.h"
+#endif
+
 namespace logging {
 
 namespace {
@@ -313,52 +317,52 @@ bool InitializeLogFileHandle() {
     g_log_file_name = new PathString(GetDefaultLogFile());
   }
 
-  if ((g_logging_destination & LOG_TO_FILE) != 0) {
+  if ((g_logging_destination & LOG_TO_FILE) == 0)
+    return true;
+
 #if defined(OS_WIN)
-    // The FILE_APPEND_DATA access mask ensures that the file is atomically
-    // appended to across accesses from multiple threads.
-    // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364399(v=vs.85).aspx
-    // https://msdn.microsoft.com/en-us/library/windows/desktop/aa363858(v=vs.85).aspx
+  // The FILE_APPEND_DATA access mask ensures that the file is atomically
+  // appended to across accesses from multiple threads.
+  // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364399(v=vs.85).aspx
+  // https://msdn.microsoft.com/en-us/library/windows/desktop/aa363858(v=vs.85).aspx
+  g_log_file = CreateFile(base::as_wcstr(*g_log_file_name), FILE_APPEND_DATA,
+                          FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
+                          OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+  if (g_log_file == INVALID_HANDLE_VALUE || g_log_file == nullptr) {
+    // We are intentionally not using FilePath or FileUtil here to reduce the
+    // dependencies of the logging implementation. For e.g. FilePath and
+    // FileUtil depend on shell32 and user32.dll. This is not acceptable for
+    // some consumers of base logging like chrome_elf, etc.
+    // Please don't change the code below to use FilePath.
+    // try the current directory
+    base::char16 system_buffer[MAX_PATH];
+    system_buffer[0] = 0;
+    DWORD len = ::GetCurrentDirectory(base::size(system_buffer),
+                                      base::as_writable_wcstr(system_buffer));
+    if (len == 0 || len > base::size(system_buffer))
+      return false;
+
+    *g_log_file_name = system_buffer;
+    // Append a trailing backslash if needed.
+    if (g_log_file_name->back() != L'\\')
+      *g_log_file_name += STRING16_LITERAL("\\");
+    *g_log_file_name += STRING16_LITERAL("debug.log");
+
     g_log_file = CreateFile(base::as_wcstr(*g_log_file_name), FILE_APPEND_DATA,
                             FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
                             OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
     if (g_log_file == INVALID_HANDLE_VALUE || g_log_file == nullptr) {
-      // We are intentionally not using FilePath or FileUtil here to reduce the
-      // dependencies of the logging implementation. For e.g. FilePath and
-      // FileUtil depend on shell32 and user32.dll. This is not acceptable for
-      // some consumers of base logging like chrome_elf, etc.
-      // Please don't change the code below to use FilePath.
-      // try the current directory
-      base::char16 system_buffer[MAX_PATH];
-      system_buffer[0] = 0;
-      DWORD len = ::GetCurrentDirectory(base::size(system_buffer),
-                                        base::as_writable_wcstr(system_buffer));
-      if (len == 0 || len > base::size(system_buffer))
-        return false;
-
-      *g_log_file_name = system_buffer;
-      // Append a trailing backslash if needed.
-      if (g_log_file_name->back() != L'\\')
-        *g_log_file_name += STRING16_LITERAL("\\");
-      *g_log_file_name += STRING16_LITERAL("debug.log");
-
-      g_log_file =
-          CreateFile(base::as_wcstr(*g_log_file_name), FILE_APPEND_DATA,
-                     FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_ALWAYS,
-                     FILE_ATTRIBUTE_NORMAL, nullptr);
-      if (g_log_file == INVALID_HANDLE_VALUE || g_log_file == nullptr) {
-        g_log_file = nullptr;
-        return false;
-      }
-    }
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
-    g_log_file = fopen(g_log_file_name->c_str(), "a");
-    if (g_log_file == nullptr)
+      g_log_file = nullptr;
       return false;
+    }
+  }
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+  g_log_file = fopen(g_log_file_name->c_str(), "a");
+  if (g_log_file == nullptr)
+    return false;
 #else
 #error Unsupported platform
 #endif
-  }
 
   return true;
 }
@@ -379,6 +383,11 @@ void CloseLogFileUnlocked() {
 
   CloseFile(g_log_file);
   g_log_file = nullptr;
+
+  // If we initialized logging via an externally-provided file descriptor, we
+  // won't have a log path set and shouldn't try to reopen the log file.
+  if (!g_log_file_name)
+    g_logging_destination &= ~LOG_TO_FILE;
 }
 
 }  // namespace
@@ -401,6 +410,7 @@ bool BaseInitLoggingImpl(const LoggingSettings& settings) {
   CHECK_EQ(settings.logging_dest & ~(LOG_TO_SYSTEM_DEBUG_LOG | LOG_TO_STDERR),
            0u);
 #endif
+
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   // Don't bother initializing |g_vlog_info| unless we use one of the
   // vlog switches.
@@ -439,7 +449,7 @@ bool BaseInitLoggingImpl(const LoggingSettings& settings) {
     return true;
 
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
-  LoggingLock::Init(settings.lock_log, settings.log_file);
+  LoggingLock::Init(settings.lock_log, settings.log_file_path);
   LoggingLock logging_lock;
 #endif
 
@@ -447,9 +457,17 @@ bool BaseInitLoggingImpl(const LoggingSettings& settings) {
   // default log file will re-initialize to the new options.
   CloseLogFileUnlocked();
 
+#if defined(OS_CHROMEOS)
+  if (settings.log_file) {
+    DCHECK(!settings.log_file_path);
+    g_log_file = settings.log_file;
+    return true;
+  }
+#endif
+
   if (!g_log_file_name)
     g_log_file_name = new PathString();
-  *g_log_file_name = settings.log_file;
+  *g_log_file_name = settings.log_file_path;
   if (settings.delete_old == DELETE_OLD_LOG_FILE)
     DeleteFilePath(*g_log_file_name);
 
@@ -1077,6 +1095,25 @@ void CloseLogFile() {
 #endif
   CloseLogFileUnlocked();
 }
+
+#if defined(OS_CHROMEOS)
+FILE* DuplicateLogFILE() {
+  if ((g_logging_destination & LOG_TO_FILE) == 0 || !InitializeLogFileHandle())
+    return nullptr;
+
+  int log_fd = fileno(g_log_file);
+  if (log_fd == -1)
+    return nullptr;
+  base::ScopedFD dup_fd(dup(log_fd));
+  if (dup_fd == -1)
+    return nullptr;
+  FILE* duplicate = fdopen(dup_fd.get(), "a");
+  if (!duplicate)
+    return nullptr;
+  ignore_result(dup_fd.release());
+  return duplicate;
+}
+#endif
 
 void RawLog(int level, const char* message) {
   if (level >= g_min_log_level && message) {

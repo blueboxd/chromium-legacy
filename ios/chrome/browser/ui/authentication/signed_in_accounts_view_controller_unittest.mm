@@ -44,7 +44,7 @@ class SignedInAccountsViewControllerTest : public BlockCleanupTest {
   }
 
  protected:
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   AuthenticationServiceFake* auth_service_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
 };

@@ -145,8 +145,7 @@ void ExpectTwoStoredPerfProfiles(
 class ProfileProviderTest : public testing::Test {
  public:
   ProfileProviderTest()
-      : test_browser_thread_bundle_(
-            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   void SetUp() override {
     // ProfileProvider requires chromeos::LoginState and
@@ -165,10 +164,10 @@ class ProfileProviderTest : public testing::Test {
   }
 
  protected:
-  // test_browser_thread_bundle_ must be the first member (or at least before
+  // task_environment_ must be the first member (or at least before
   // any member that cares about tasks) to be initialized first and destroyed
   // last.
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   std::unique_ptr<TestProfileProvider> profile_provider_;
 
@@ -186,7 +185,7 @@ TEST_F(ProfileProviderTest, CheckSetup) {
 
 TEST_F(ProfileProviderTest, UserLoginLogout) {
   // No user is logged in, so no collection is scheduled to run.
-  test_browser_thread_bundle_.FastForwardBy(kPeriodicCollectionInterval);
+  task_environment_.FastForwardBy(kPeriodicCollectionInterval);
 
   std::vector<SampledProfile> stored_profiles;
   EXPECT_FALSE(profile_provider_->GetSampledProfiles(&stored_profiles));
@@ -200,7 +199,7 @@ TEST_F(ProfileProviderTest, UserLoginLogout) {
 
   // Run all pending tasks. SetLoggedInState has activated timers for periodic
   // collection causing timer based pending tasks.
-  test_browser_thread_bundle_.FastForwardBy(kPeriodicCollectionInterval);
+  task_environment_.FastForwardBy(kPeriodicCollectionInterval);
   // We should find two profiles, one for each collector.
   EXPECT_TRUE(profile_provider_->GetSampledProfiles(&stored_profiles));
   ExpectTwoStoredPerfProfiles<SampledProfile::PERIODIC_COLLECTION>(
@@ -212,7 +211,7 @@ TEST_F(ProfileProviderTest, UserLoginLogout) {
       chromeos::LoginState::LOGGED_IN_NONE,
       chromeos::LoginState::LOGGED_IN_USER_NONE);
   // Run all pending tasks.
-  test_browser_thread_bundle_.FastForwardBy(kPeriodicCollectionInterval);
+  task_environment_.FastForwardBy(kPeriodicCollectionInterval);
   // We should find no new profiles.
   stored_profiles.clear();
   EXPECT_FALSE(profile_provider_->GetSampledProfiles(&stored_profiles));
@@ -223,7 +222,7 @@ TEST_F(ProfileProviderTest, SuspendDone_NoUserLoggedIn_NoCollection) {
   // No user is logged in, so no collection is done on resume from suspend.
   profile_provider_->SuspendDone(base::TimeDelta::FromMinutes(10));
   // Run all pending tasks.
-  test_browser_thread_bundle_.FastForwardBy(kMaxCollectionDelay);
+  task_environment_.FastForwardBy(kMaxCollectionDelay);
 
   std::vector<SampledProfile> stored_profiles;
   EXPECT_FALSE(profile_provider_->GetSampledProfiles(&stored_profiles));
@@ -243,7 +242,7 @@ TEST_F(ProfileProviderTest, CanceledSuspend_NoCollection) {
   // Trigger a canceled suspend (zero sleep duration).
   profile_provider_->SuspendDone(base::TimeDelta::FromSeconds(0));
   // Run all pending tasks.
-  test_browser_thread_bundle_.FastForwardBy(kMaxCollectionDelay);
+  task_environment_.FastForwardBy(kMaxCollectionDelay);
 
   // We should find no profiles.
   std::vector<SampledProfile> stored_profiles;
@@ -261,7 +260,7 @@ TEST_F(ProfileProviderTest, SuspendDone) {
   // Trigger a resume from suspend.
   profile_provider_->SuspendDone(base::TimeDelta::FromMinutes(10));
   // Run all pending tasks.
-  test_browser_thread_bundle_.FastForwardBy(kMaxCollectionDelay);
+  task_environment_.FastForwardBy(kMaxCollectionDelay);
 
   // We should find two profiles, one for each collector.
   std::vector<SampledProfile> stored_profiles;
@@ -274,7 +273,7 @@ TEST_F(ProfileProviderTest, OnSessionRestoreDone_NoUserLoggedIn_NoCollection) {
   // No user is logged in, so no collection is done on session restore.
   profile_provider_->OnSessionRestoreDone(10);
   // Run all pending tasks.
-  test_browser_thread_bundle_.FastForwardBy(kMaxCollectionDelay);
+  task_environment_.FastForwardBy(kMaxCollectionDelay);
 
   std::vector<SampledProfile> stored_profiles;
   EXPECT_FALSE(profile_provider_->GetSampledProfiles(&stored_profiles));
@@ -294,7 +293,7 @@ TEST_F(ProfileProviderTest, OnSessionRestoreDone) {
   // Trigger a session restore.
   profile_provider_->OnSessionRestoreDone(10);
   // Run all pending tasks.
-  test_browser_thread_bundle_.FastForwardBy(kMaxCollectionDelay);
+  task_environment_.FastForwardBy(kMaxCollectionDelay);
 
   // We should find two profiles, one for each collector.
   std::vector<SampledProfile> stored_profiles;
@@ -333,7 +332,7 @@ class ProfileProviderFeatureParamsTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProfileProviderFeatureParamsTest);
@@ -360,7 +359,7 @@ TEST_F(ProfileProviderFeatureParamsTest, HeapCollectorDisabled) {
   // Before destroying ScopedFeatureList, we need to finish SetUp() of each
   // registered collector, which accesses field trial params on its own
   // dedicated sequence.
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(ProfileProviderFeatureParamsTest, HeapCollectorEnabled) {
@@ -389,7 +388,7 @@ TEST_F(ProfileProviderFeatureParamsTest, HeapCollectorEnabled) {
   // Before destroying ScopedFeatureList, we need to finish SetUp() of each
   // registered collector, which accesses field trial params on its own
   // dedicated sequence.
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 }  // namespace metrics

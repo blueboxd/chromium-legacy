@@ -971,7 +971,7 @@ _BANNED_CPP_FUNCTIONS = (
       'RunAllPendingInMessageLoop(BrowserThread',
       (
           'RunAllPendingInMessageLoop is deprecated. Use RunLoop for',
-          'BrowserThread::UI, TestBrowserThreadBundle::RunIOThreadUntilIdle',
+          'BrowserThread::UI, BrowserTaskEnvironment::RunIOThreadUntilIdle',
           'for BrowserThread::IO, and prefer RunLoop::QuitClosure to observe',
           'async events instead of flushing threads.',
       ),

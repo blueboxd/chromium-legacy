@@ -63,7 +63,7 @@ class TranslateControllerTest : public PlatformTest,
     translation_time_ = translation_time;
   }
 
-  web::TestWebThreadBundle web_thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<web::TestWebState> test_web_state_;
   std::unique_ptr<web::TestBrowserState> test_browser_state_;
   web::FakeWebFrame fake_main_frame_;

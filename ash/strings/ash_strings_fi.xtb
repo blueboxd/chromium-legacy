@@ -333,6 +333,7 @@
 <translation id="6043212731627905357">Näyttö ja <ph name="DEVICE_TYPE" /> eivät sovi yhteen (näyttöä ei tueta).</translation>
 <translation id="6043994281159824495">Kirjaudu ulos nyt</translation>
 <translation id="6047696787498798094">Näytön jakaminen loppuu, kun vaihdat toiseen käyttäjään. Haluatko jatkaa?</translation>
+<translation id="6054305421211936131">Kirjaudu sisään älykortilla</translation>
 <translation id="6062360702481658777">Sinut kirjataan ulos automaattisesti, aikaa jäljellä <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="6064337552080329342">Salasanasi vahvistaminen epäonnistui. Yritä uudelleen.</translation>
 <translation id="607652042414456612">Lähellä olevat Bluetooth-laitteet voivat löytää tietokoneesi. Tietokoneesi nimi on <ph name="NAME" /> ja osoite <ph name="ADDRESS" /></translation>
@@ -362,6 +363,7 @@
 <translation id="6459472438155181876">Ruutua laajennetaan: <ph name="DISPLAY_NAME" /></translation>
 <translation id="6482559668224714696">Koko näytön suurennus</translation>
 <translation id="6490471652906364588">C-tyypin USB-laite (oikean sivun portti)</translation>
+<translation id="649452524636452238">Älykortin PIN-koodi</translation>
 <translation id="6501401484702599040">Näkymä peilataan kohteeseen <ph name="RECEIVER_NAME" />.</translation>
 <translation id="6521655319214113338">Käsinkirjoitus</translation>
 <translation id="6528179044667508675">Älä häiritse</translation>
@@ -391,6 +393,7 @@
 <translation id="6857811139397017780">Aktivoi <ph name="NETWORKSERVICE" /></translation>
 <translation id="6910714959251846841">Tämän päivityksen asennus edellyttää laitteen powerwashia. Lue lisää uusimmasta <ph name="SYSTEM_APP_NAME" /> ‑päivityksestä.</translation>
 <translation id="6911468394164995108">Liity muuhun verkkoon...</translation>
+<translation id="6919251195245069855">Älykorttia ei tunnistettu. Yritä uudelleen.</translation>
 <translation id="6972754398087986839">Aloitusopas</translation>
 <translation id="6981982820502123353">Esteettömyys</translation>
 <translation id="698231206551913481">Kun käyttäjä poistetaan, kaikki kyseiseen käyttäjään yhdistetyt tiedostot ja paikalliset tiedot poistetaan pysyvästi.</translation>

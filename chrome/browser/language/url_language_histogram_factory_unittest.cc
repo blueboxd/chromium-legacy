@@ -12,7 +12,7 @@ using testing::IsNull;
 using testing::Not;
 
 TEST(UrlLanguageHistogramFactoryTest, NotCreatedInIncognito) {
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   TestingProfile profile;
 
   EXPECT_THAT(UrlLanguageHistogramFactory::GetForBrowserContext(&profile),

@@ -392,7 +392,7 @@ class IfNodeUnittest(unittest.TestCase):
     self.assertNotEquals(outputs, ['uncond1.rc', 'uncond2.adm', 'iftest.h'])
 
   def testChildrenAccepted(self):
-    grd_reader.Parse(StringIO('''<?xml version="1.0"?>
+    grd_reader.Parse(StringIO(r'''<?xml version="1.0"?>
       <grit latest_public_release="2" source_lang_id="en-US" current_release="3" base_dir=".">
         <release seq="3">
           <includes>
@@ -407,11 +407,11 @@ class IfNodeUnittest(unittest.TestCase):
           </includes>
           <structures>
             <if expr="'bingo' in defs">
-              <structure type="dialog" name="IDD_ABOUTBOX" file="grit\\test\data\klonk.rc" encoding="utf-16" />
+              <structure type="dialog" name="IDD_ABOUTBOX" file="grit\test\data\klonk.rc" encoding="utf-16" />
             </if>
             <if expr="'bingo' in defs">
               <if expr="'hello' in defs">
-                <structure type="dialog" name="IDD_ABOUTBOX" file="grit\\test\data\klonk.rc" encoding="utf-16" />
+                <structure type="dialog" name="IDD_ABOUTBOX" file="grit\test\data\klonk.rc" encoding="utf-16" />
               </if>
             </if>
           </structures>
@@ -440,24 +440,24 @@ class IfNodeUnittest(unittest.TestCase):
 
   def testIfBadChildrenNesting(self):
     # includes
-    xml = StringIO('''<?xml version="1.0"?>
+    xml = StringIO(r'''<?xml version="1.0"?>
       <grit latest_public_release="2" source_lang_id="en-US" current_release="3" base_dir=".">
         <release seq="3">
           <includes>
             <if expr="'bingo' in defs">
-              <structure type="dialog" name="IDD_ABOUTBOX" file="grit\\test\data\klonk.rc" encoding="utf-16" />
+              <structure type="dialog" name="IDD_ABOUTBOX" file="grit\test\data\klonk.rc" encoding="utf-16" />
             </if>
           </includes>
         </release>
       </grit>''')
     self.assertRaises(grit.exception.UnexpectedChild, grd_reader.Parse, xml)
     # messages
-    xml = StringIO('''<?xml version="1.0"?>
+    xml = StringIO(r'''<?xml version="1.0"?>
       <grit latest_public_release="2" source_lang_id="en-US" current_release="3" base_dir=".">
         <release seq="3">
           <messages>
             <if expr="'bingo' in defs">
-              <structure type="dialog" name="IDD_ABOUTBOX" file="grit\\test\data\klonk.rc" encoding="utf-16" />
+              <structure type="dialog" name="IDD_ABOUTBOX" file="grit\test\data\klonk.rc" encoding="utf-16" />
             </if>
           </messages>
         </release>
@@ -486,26 +486,26 @@ class IfNodeUnittest(unittest.TestCase):
       </grit>''')
     self.assertRaises(grit.exception.UnexpectedChild, grd_reader.Parse, xml)
     # same with nesting
-    xml = StringIO('''<?xml version="1.0"?>
+    xml = StringIO(r'''<?xml version="1.0"?>
       <grit latest_public_release="2" source_lang_id="en-US" current_release="3" base_dir=".">
         <release seq="3">
           <includes>
             <if expr="'bingo' in defs">
               <if expr="'hello' in defs">
-                <structure type="dialog" name="IDD_ABOUTBOX" file="grit\\test\data\klonk.rc" encoding="utf-16" />
+                <structure type="dialog" name="IDD_ABOUTBOX" file="grit\test\data\klonk.rc" encoding="utf-16" />
               </if>
             </if>
           </includes>
         </release>
       </grit>''')
     self.assertRaises(grit.exception.UnexpectedChild, grd_reader.Parse, xml)
-    xml = StringIO('''<?xml version="1.0"?>
+    xml = StringIO(r'''<?xml version="1.0"?>
       <grit latest_public_release="2" source_lang_id="en-US" current_release="3" base_dir=".">
         <release seq="3">
           <messages>
             <if expr="'bingo' in defs">
               <if expr="'hello' in defs">
-                <structure type="dialog" name="IDD_ABOUTBOX" file="grit\\test\data\klonk.rc" encoding="utf-16" />
+                <structure type="dialog" name="IDD_ABOUTBOX" file="grit\test\data\klonk.rc" encoding="utf-16" />
               </if>
             </if>
           </messages>

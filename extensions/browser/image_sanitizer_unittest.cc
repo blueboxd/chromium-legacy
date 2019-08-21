@@ -189,7 +189,7 @@ class ImageSanitizerTest : public testing::Test {
     decoded_image_callback_called_ = true;
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   service_manager::TestConnectorFactory connector_factory_;
   std::unique_ptr<service_manager::Connector> connector_;
   std::unique_ptr<service_manager::Service> test_data_decoder_service_;

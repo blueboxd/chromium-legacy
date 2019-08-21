@@ -45,7 +45,7 @@ class IsDirectoryUtilTest : public testing::Test {
     EXPECT_TRUE(base::CreateTemporaryFile(&file_path_));
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   ExtensionsAPIClient extensions_api_client_;
   content::TestBrowserContext context_;
   base::FilePath dir_path_;

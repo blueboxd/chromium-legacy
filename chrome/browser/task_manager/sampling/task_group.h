@@ -17,11 +17,14 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/task_manager/providers/task.h"
-#include "chrome/browser/task_manager/sampling/arc_shared_sampler.h"
 #include "chrome/browser/task_manager/sampling/shared_sampler.h"
 #include "chrome/browser/task_manager/sampling/task_group_sampler.h"
 #include "chrome/browser/task_manager/task_manager_observer.h"
 #include "components/nacl/common/buildflags.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/task_manager/sampling/arc_shared_sampler.h"
+#endif  // defined(OS_CHROMEOS)
 
 namespace gpu {
 struct VideoMemoryUsageStats;

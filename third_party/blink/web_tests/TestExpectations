@@ -179,7 +179,7 @@ crbug.com/726075 [ Win ] compositing/3d-cube.html [ Failure ]
 crbug.com/726075 [ Linux ] compositing/3d-cube.html [ Failure ]
 crbug.com/726075 [ Mac ] compositing/3d-cube.html [ Failure ]
 
-# Looks like a filuare to get a paint on time. Test could be changed to use runAfterLayoutAndPaint
+# Looks like a failure to get a paint on time. Test could be changed to use runAfterLayoutAndPaint
 # instead of a timeout, which may fix things.
 crbug.com/713049 images/color-profile-reflection.html [ Failure Pass ]
 crbug.com/713049 virtual/gpu-rasterization/images/color-profile-reflection.html [ Failure Pass Timeout ]
@@ -198,8 +198,10 @@ crbug.com/974720 [ Mac10.13 ] fast/text/firstline/capitalize-transform.html [ Pa
 # Flakily timing out or failing.
 # TODO(ccameron): Investigate this.
 crbug.com/730267 virtual/gpu-rasterization/images/color-profile-group.html [ Pass Timeout Failure ]
-crbug.com/730267 virtual/gpu-rasterization/images/color-profile-layer.html [ Pass Timeout Failure ]
-crbug.com/730267 virtual/gpu-rasterization/images/color-profile-layer-filter.html [ Pass Timeout Failure ]
+crbug.com/730267 virtual/gpu-rasterization/images/yuv-decode-eligible/color-profile-layer.html [ Pass Timeout Failure ]
+crbug.com/730267 virtual/gpu-rasterization/images/yuv-decode-eligible/color-profile-layer-filter.html [ Pass Timeout Failure ]
+crbug.com/730267 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/color-profile-layer.html [ Pass Timeout Failure ]
+crbug.com/730267 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/color-profile-layer-filter.html [ Pass Timeout Failure ]
 
 # Flaky virtual/threaded/fast/scrolling tests
 crbug.com/841567 virtual/threaded/fast/scrolling/absolute-position-behind-scrollbar.html [ Failure Pass ]
@@ -329,6 +331,10 @@ crbug.com/954591 external/wpt/css/css-transforms/composited-under-rotateY-180deg
 # Fixed in CompositeAfterPaint.
 crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrollbar-over-child-layer-nested-2.html [ Failure ]
 crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrollbar-over-child-layer-nested.html [ Failure ]
+
+crbug.com/981719 external/wpt/css/css-ui/appearance-textfield-001.html [ Failure ]
+crbug.com/981719 [ Linux ] external/wpt/css/css-ui/webkit-appearance-textfield-001.html [ Failure ]
+crbug.com/981719 [ Win ] external/wpt/css/css-ui/webkit-appearance-textfield-001.html [ Failure ]
 
 # ====== Paint team owned tests to here ======
 
@@ -2735,25 +2741,6 @@ crbug.com/957181 virtual/omt-worker-fetch/external/wpt/resource-timing/nested-co
 # Chrome touch-action computation ignores div transforms.
 crbug.com/715148 external/wpt/pointerevents/pointerevent_touch-action-rotated-divs_touch-manual.html  [ Skip ]
 
-# Stack trace layout changes, disabled until v8 roll.
-crbug.com/v8/8742 fast/events/window-onerror-11.html [ Failure Pass ]
-crbug.com/v8/8742 fast/events/window-onerror-12.html [ Failure Pass ]
-crbug.com/v8/8742 http/tests/devtools/console/console-log-linkify-stack-in-errors.js [ Failure Pass ]
-crbug.com/v8/8742 http/tests/devtools/console/console-worker-nested-imports-syntax-error.js [ Failure Pass ]
-crbug.com/v8/8742 http/tests/devtools/console/console-xpath.js [ Failure Pass ]
-crbug.com/v8/8742 http/tests/devtools/sources/debugger/rethrow-error-from-bindings-crash.js [ Failure Pass ]
-crbug.com/v8/8742 virtual/mouseevent_fractional/fast/events/window-onerror-11.html [ Failure Pass ]
-crbug.com/v8/8742 virtual/mouseevent_fractional/fast/events/window-onerror-12.html [ Failure Pass ]
-# Also stack trace layout. The following web tests now include 'eval' in the stack trace.
-# Can be renabled when the corresponding V8 CL lands.
-crbug.com/v8/8742 http/tests/devtools/console/console-error-on-call-frame.js [ Failure Pass ]
-crbug.com/v8/8742 http/tests/devtools/console/console-trace-in-eval.js [ Failure Pass ]
-crbug.com/v8/8742 http/tests/devtools/console/console-uncaught-exception-in-eval.js [ Failure Pass ]
-crbug.com/v8/8742 http/tests/devtools/sources/debugger-async/async-callstack.js [ Failure Pass ]
-crbug.com/v8/8742 http/tests/devtools/sources/debugger-pause/debugger-eval-while-paused-throws.js [ Failure Pass ]
-crbug.com/v8/8742 http/tests/inspector-protocol/network/navigation-long-async-stack.js [ Failure Pass ]
-crbug.com/v8/8742 inspector-protocol/runtime/runtime-console-basic-functions-paused.js [ Failure Pass ]
-
 # These testcases are incorrect, mark them as failing until they're fixed in the testsuite.
 # https://lists.w3.org/Archives/Public/www-style/2016Jan/0275.html
 # https://lists.w3.org/Archives/Public/www-style/2016Jan/0276.html
@@ -2862,12 +2849,6 @@ crbug.com/769885 [ Linux ] virtual/android/fullscreen/video-scrolled-iframe.html
 # Temporarily disabled after chromium change
 crbug.com/492511 [ Mac ] fast/text/atsui-negative-spacing-features.html [ Failure ]
 crbug.com/492511 [ Mac ] fast/text/international/arabic-justify.html [ Failure ]
-
-### Tests added for non-fast scrolling regions that break as a result of compositor scrolling.
-# TODO(pdr): Mark these as passing when PaintNonFastScrollableRegions launches.
-crbug.com/817600 virtual/threaded/fast/scrolling/non-composited-scroller-in-scrolled-absolute-scroller.html [ Failure ]
-crbug.com/817600 virtual/threaded/fast/scrolling/non-composited-scroller-in-scrolled-position-fixed-scroller.html [ Failure ]
-crbug.com/817600 virtual/threaded/fast/scrolling/non-composited-scroller-in-sticky.html [ Failure ]
 
 # Ref tests that fail due to differences in inline box structure, even though they contain the same text.
 # This happens because inline box layout uses fixed-point measurements, which can cause rounding differences.
@@ -3247,18 +3228,6 @@ crbug.com/994214 external/wpt/html/cross-origin-opener-policy/coop-navigated-pop
 crbug.com/626703 [ Linux ] external/wpt/shadow-dom/directionality-002.tentative.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/shadow-dom/directionality-002.tentative.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/shadow-dom/directionality-002.tentative.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-text-decor/text-decoration-skip-ink-upright-002.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-text-decor/text-decoration-skip-ink-upright-002.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-text-decor/text-decoration-skip-ink-upright-002.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-text-decor/text-decoration-skip-ink-upright-001.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-text-decor/text-decoration-skip-ink-upright-001.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-text-decor/text-decoration-skip-ink-upright-001.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-text-decor/text-decoration-skip-ink-vertical-002.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-text-decor/text-decoration-skip-ink-vertical-002.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-text-decor/text-decoration-skip-ink-vertical-002.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-text-decor/text-decoration-skip-ink-vertical-001.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-text-decor/text-decoration-skip-ink-vertical-001.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-text-decor/text-decoration-skip-ink-vertical-001.html [ Failure ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/html/cross-origin-opener-policy/popup-same-site-unsafe-allow-outgoing.https.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.13 ] wpt_internal/display-lock/rendersubtree/activation/selection.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-lists/li-value-reversed-005.html [ Failure ]
@@ -3286,11 +3255,6 @@ crbug.com/626703 [ Win ] external/wpt/css/css-lists/inline-list.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-lists/inline-block-list.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-lists/inline-block-list.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-lists/inline-block-list.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-ui/appearance-textfield-001.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-ui/appearance-textfield-001.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-ui/appearance-textfield-001.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-ui/webkit-appearance-textfield-001.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-ui/webkit-appearance-textfield-001.html [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-http/img-tag/keep-origin-redirect/same-origin-insecure.http.html [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/referrer-policy/unset-referrer-policy/http-rp/same-origin/http-http/img-tag/swap-origin-redirect/insecure-protocol.http.html [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/referrer-policy/unsafe-url/attr-referrer/cross-origin/http-http/img-tag/no-redirect/generic.http.html [ Timeout ]
@@ -4225,7 +4189,6 @@ crbug.com/626703 external/wpt/css/css-transitions/transition-duration-004.html [
 crbug.com/626703 external/wpt/css/css-transitions/transition-property-032.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-transitions/transition-property-025.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-transitions/transition-property-013.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-writing-modes/available-size-019.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-animations/animation-delay-010.html [ Failure ]
 crbug.com/626703 virtual/threaded/external/wpt/css/css-animations/animation-delay-010.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-numeric.html [ Failure ]
@@ -4266,15 +4229,11 @@ crbug.com/626703 external/wpt/css/mediaqueries/viewport-script-dynamic.html [ Fa
 crbug.com/626703 external/wpt/css/css-writing-modes/available-size-014.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/available-size-013.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/available-size-016.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-writing-modes/available-size-015.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-ui/text-overflow-028.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-ui/text-overflow-028.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/astral-bidi/adlam-anti-ref.html [ Failure Pass ]
 crbug.com/626703 external/wpt/css/css-writing-modes/astral-bidi/cypriot-anti-ref.html [ Failure Pass ]
 crbug.com/626703 external/wpt/css/css-fill-stroke/paint-order-001.tentative.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-writing-modes/available-size-006.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-writing-modes/available-size-007.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-writing-modes/available-size-008.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/available-size-005.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/available-size-003.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/available-size-009.html [ Failure ]
@@ -4719,6 +4678,18 @@ crbug.com/785230 [ Win ] external/wpt/css/css-text-decor/text-decoration-shortha
 crbug.com/785230 [ Linux ] external/wpt/css/css-text-decor/text-decoration-skip-ink-003.html [ Failure ]
 crbug.com/785230 [ Mac ] external/wpt/css/css-text-decor/text-decoration-skip-ink-003.html [ Failure ]
 crbug.com/785230 [ Win ] external/wpt/css/css-text-decor/text-decoration-skip-ink-003.html [ Failure ]
+crbug.com/785230 [ Linux ] external/wpt/css/css-text-decor/text-decoration-skip-ink-upright-002.html [ Failure ]
+crbug.com/785230 [ Mac ] external/wpt/css/css-text-decor/text-decoration-skip-ink-upright-002.html [ Failure ]
+crbug.com/785230 [ Win ] external/wpt/css/css-text-decor/text-decoration-skip-ink-upright-002.html [ Failure ]
+crbug.com/785230 [ Linux ] external/wpt/css/css-text-decor/text-decoration-skip-ink-upright-001.html [ Failure ]
+crbug.com/785230 [ Mac ] external/wpt/css/css-text-decor/text-decoration-skip-ink-upright-001.html [ Failure ]
+crbug.com/785230 [ Win ] external/wpt/css/css-text-decor/text-decoration-skip-ink-upright-001.html [ Failure ]
+crbug.com/785230 [ Linux ] external/wpt/css/css-text-decor/text-decoration-skip-ink-vertical-002.html [ Failure ]
+crbug.com/785230 [ Mac ] external/wpt/css/css-text-decor/text-decoration-skip-ink-vertical-002.html [ Failure ]
+crbug.com/785230 [ Win ] external/wpt/css/css-text-decor/text-decoration-skip-ink-vertical-002.html [ Failure ]
+crbug.com/785230 [ Linux ] external/wpt/css/css-text-decor/text-decoration-skip-ink-vertical-001.html [ Failure ]
+crbug.com/785230 [ Mac ] external/wpt/css/css-text-decor/text-decoration-skip-ink-vertical-001.html [ Failure ]
+crbug.com/785230 [ Win ] external/wpt/css/css-text-decor/text-decoration-skip-ink-vertical-001.html [ Failure ]
 
 crbug.com/912362 external/wpt/web-animations/timing-model/timelines/timelines.html [ Failure ]
 
@@ -5256,6 +5227,7 @@ crbug.com/775957 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ Skip 
 # Canvas tests that are affected by change to Skia GPU rect shadow rendering.
 crbug.com/990918 virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ Pass Failure ]
 crbug.com/990918 virtual/gpu/fast/canvas/canvas-composite-shadow.html [ Pass Failure ]
+crbug.com/990918 virtual/gpu/fast/canvas/canvas-shadow.html [ Pass Failure ]
 
 # Sheriff failures 2017-09-21
 crbug.com/767469 http/tests/navigation/start-load-during-provisional-loader-detach.html [ Pass Failure ]
@@ -5294,10 +5266,10 @@ crbug.com/778745 http/tests/inspector-protocol/cachestorage/read-cached-response
 crbug.com/773122 crbug.com/777813 [ Win ] fast/text/font-ascent-mac.html [ Failure Pass ]
 
 # Sheriff failures 2017-11-13
-crbug.com/783800 external/wpt/imagecapture/MediaStreamTrack-applyConstraints.html [ Pass Failure ]
-crbug.com/783800 external/wpt/imagecapture/MediaStreamTrack-applyConstraints-getSettings.html [ Pass Failure ]
-crbug.com/783301 external/wpt/imagecapture/MediaStreamTrack-getSettings.html [ Pass Failure ]
-crbug.com/783301 external/wpt/imagecapture/MediaStreamTrack-getCapabilities.html [ Pass Failure ]
+crbug.com/783800 external/wpt/mediacapture-image/MediaStreamTrack-applyConstraints.html [ Pass Failure ]
+crbug.com/783800 external/wpt/mediacapture-image/MediaStreamTrack-applyConstraints-getSettings.html [ Pass Failure ]
+crbug.com/783301 external/wpt/mediacapture-image/MediaStreamTrack-getSettings.html [ Pass Failure ]
+crbug.com/783301 external/wpt/mediacapture-image/MediaStreamTrack-getCapabilities.html [ Pass Failure ]
 
 # Cookie Store API
 crbug.com/827231 [ Win ] external/wpt/cookie-store/document_cookie.tentative.https.html [ Pass Failure Timeout ]
@@ -5379,6 +5351,7 @@ crbug.com/831720 [ Win ] media/controls/tap-to-hide-controls.html [ Pass Failure
 crbug.com/831720 [ Linux ] media/controls/tap-to-hide-controls.html [ Pass Failure ]
 crbug.com/831720 [ Win ] virtual/audio-service/media/controls/doubletap-to-jump-forwards-too-short.html [ Pass Failure ]
 crbug.com/831720 [ Linux ] virtual/audio-service/media/controls/doubletap-to-jump-forwards-too-short.html [ Pass Failure ]
+crbug.com/831720 [ Linux ] virtual/audio-service/media/controls/doubletap-to-jump-backwards-at-start.html [ Pass Failure ]
 crbug.com/831720 [ Mac ] virtual/audio-service/media/controls/tap-to-hide-controls.html [ Pass Failure ]
 crbug.com/831720 [ Win ] virtual/audio-service/media/controls/tap-to-hide-controls.html [ Pass Failure ]
 crbug.com/831720 [ Linux ] virtual/audio-service/media/controls/tap-to-hide-controls.html [ Pass Failure ]
@@ -5419,7 +5392,7 @@ crbug.com/814585 [ Linux ] fast/css3-text/css3-text-decoration/text-underline-po
 # Sheriff failures 2018-02-22
 crbug.com/814889 idle-callback/test-runner-run-idle-tasks.html [ Crash Timeout Pass ]
 crbug.com/814953 fast/replaced/no-focus-ring-iframe.html [ Failure Pass ]
-crbug.com/814964 virtual/gpu-rasterization/images/color-profile-border-radius.html [ Failure Pass ]
+crbug.com/814964 virtual/gpu-rasterization/images/yuv-decode-eligible/color-profile-border-radius.html [ Failure Pass ]
 
 # These pass on bots with proprietary codecs (most CQ bots) while failing on bots without.
 crbug.com/807110 external/wpt/html/semantics/embedded-content/media-elements/mime-types/canPlayType.html [ Failure Pass ]
@@ -6348,7 +6321,6 @@ crbug.com/979593 [ Linux Win ] virtual/omt-worker-fetch/external/wpt/service-wor
 
 # Sheriff 2019-07-03
 crbug.com/979490 [ Linux Win ] virtual/omt-worker-fetch/external/wpt/workers/modules/dedicated-worker-import-referrer.html [ Pass Timeout ]
-crbug.com/981137 [ Win ] virtual/gpu-rasterization/images/webp-no-color-profile-lossy.html [ Pass Failure ]
 crbug.com/981210 external/wpt/web-animations/interfaces/Animation/oncancel.html [ Pass Failure ]
 
 # Sheriff 2019-07-04
@@ -6496,7 +6468,7 @@ crbug.com/979298 [ Mac ] media/video-zoom.html [ Pass Failure ]
 crbug.com/979298 [ Mac ] virtual/audio-service/media/controls/captions-menu-always-visible.html [ Pass Failure ]
 crbug.com/979298 [ Mac ] virtual/audio-service/media/controls/overflow-menu-always-visible.html [ Pass Failure ]
 crbug.com/979298 [ Mac ] virtual/audio-service/media/controls/volumechange-muted-attribute.html [ Pass Failure ]
-crbug.com/979298 [ Mac ] virtual/audio-service/media/video-persistence.html [ Pass Failure ]
+crbug.com/988248 [ Mac Linux ] virtual/audio-service/media/video-persistence.html [ Pass Failure ]
 crbug.com/979298 [ Mac ] virtual/audio-service/media/video-zoom.html [ Pass Failure ]
 
 crbug.com/986019 virtual/threaded/animations/play-state.html [ Pass Failure ]

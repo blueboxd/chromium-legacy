@@ -88,7 +88,7 @@ std::unique_ptr<UserCloudPolicyManager> BuildCloudPolicyManager() {
 class UserPolicySigninServiceTest : public testing::Test {
  public:
   UserPolicySigninServiceTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         test_account_id_(AccountId::FromUserEmailGaiaId(
             kTestUser,
             signin::GetTestGaiaIdForEmail(kTestUser))),
@@ -279,7 +279,7 @@ class UserPolicySigninServiceTest : public testing::Test {
 
   // BrowserPolicyConnector and UrlFetcherFactory want to initialize and free
   // various components asynchronously via tasks, so create fake threads here.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   // Used in conjunction with OnRegisterCompleted() to test client registration
   // callbacks.

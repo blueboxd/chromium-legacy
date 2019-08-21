@@ -92,7 +92,7 @@ class KeySystemSupportTest : public testing::Test {
   }
 
   media::mojom::KeySystemSupportPtr key_system_support_;
-  TestBrowserThreadBundle test_browser_thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
 
   // Updated by IsSupported().
   media::mojom::KeySystemCapabilityPtr capability_;

@@ -52,8 +52,7 @@ bool CreateInspectionResultsCacheWithEntry(
 class ModuleInspectorTest : public testing::Test {
  public:
   ModuleInspectorTest()
-      : test_browser_thread_bundle_(
-            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   std::unique_ptr<ModuleInspector> CreateModuleInspector() {
     auto module_inspector =
@@ -74,11 +73,11 @@ class ModuleInspectorTest : public testing::Test {
     inspected_modules_.push_back(std::move(inspection_result));
   }
 
-  void RunUntilIdle() { test_browser_thread_bundle_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
   void FastForwardToIdleTimer() {
-    test_browser_thread_bundle_.FastForwardBy(
+    task_environment_.FastForwardBy(
         ModuleInspector::kFlushInspectionResultsTimerTimeout);
-    test_browser_thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   const std::vector<ModuleInspectionResult>& inspected_modules() {
@@ -87,11 +86,11 @@ class ModuleInspectorTest : public testing::Test {
 
   void ClearInspectedModules() { inspected_modules_.clear(); }
 
-  // A TestBrowserThreadBundle is required instead of a TaskEnvironment
+  // A BrowserTaskEnvironment is required instead of a TaskEnvironment
   // because of AfterStartupTaskUtils (DCHECK for BrowserThread::UI).
   //
   // Must be before the ModuleInspector.
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   // Holds a working UtilWin service implementation.
   base::Optional<UtilWinImpl> util_win_impl_;

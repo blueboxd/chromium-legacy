@@ -313,6 +313,12 @@ void DesktopSessionAgent::DisconnectSession(protocol::ErrorCode error) {
       std::make_unique<ChromotingDesktopNetworkMsg_DisconnectSession>(error));
 }
 
+void DesktopSessionAgent::OnLocalKeyPressed(uint32_t usb_keycode) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  remote_input_filter_->LocalKeyPressed(usb_keycode);
+}
+
 void DesktopSessionAgent::OnLocalPointerMoved(
     const webrtc::DesktopVector& new_pos,
     ui::EventType type) {

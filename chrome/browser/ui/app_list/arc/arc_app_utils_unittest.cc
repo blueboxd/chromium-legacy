@@ -95,14 +95,14 @@ TEST_F(ArcAppUtilsTest, ShelfGroupId) {
 // Tests that IsArcItem does not crash or DCHECK with invalid crx file ids.
 TEST_F(ArcAppUtilsTest, IsArcItemDoesNotCrashWithInvalidCrxFileIds) {
   // TestingProfile checks CurrentlyOn(cotnent::BrowserThread::UI).
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   TestingProfile testing_profile;
   EXPECT_FALSE(arc::IsArcItem(&testing_profile, std::string()));
   EXPECT_FALSE(arc::IsArcItem(&testing_profile, "ShelfWindowWatcher0"));
 }
 
 TEST_F(ArcAppUtilsTest, GetAndroidId) {
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   TestingProfile testing_profile;
 
   // ARC++ is not running.

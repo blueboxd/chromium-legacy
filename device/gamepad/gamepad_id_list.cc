@@ -155,8 +155,6 @@ constexpr struct GamepadInfo {
     {0x0583, 0xb031, kXInputTypeNone},
     // Vetronix Corp.
     {0x05a0, 0x3232, kXInputTypeNone},
-    // Apple, Inc.
-    {0x05ac, 0x3232, kXInputTypeNone},
     // Genesys Logic, Inc.
     {0x05e3, 0x0596, kXInputTypeNone},
     // InterAct, Inc.

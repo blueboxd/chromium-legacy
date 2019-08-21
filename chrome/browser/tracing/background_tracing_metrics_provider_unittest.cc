@@ -52,7 +52,7 @@ class BackgroundTracingMetricsProviderTest : public testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(BackgroundTracingMetricsProviderTest, NoTraceData) {

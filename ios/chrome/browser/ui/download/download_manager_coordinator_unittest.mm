@@ -88,8 +88,8 @@ class DownloadManagerCoordinatorTest : public PlatformTest {
   ~DownloadManagerCoordinatorTest() override {
     // Stop to avoid holding a dangling pointer to destroyed task.
     @autoreleasepool {
-      // thread_bundle_ has to outlive the coordinator. Dismissing coordinator
-      // retains are autoreleases it.
+      // task_environment_ has to outlive the coordinator. Dismissing
+      // coordinator retains are autoreleases it.
       [coordinator_ stop];
     }
 
@@ -97,7 +97,7 @@ class DownloadManagerCoordinatorTest : public PlatformTest {
     [application_ stopMocking];
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   FakeContainedPresenter* presenter_;
   UIViewController* base_view_controller_;
   ScopedKeyWindow scoped_key_window_;
@@ -146,7 +146,7 @@ TEST_F(DownloadManagerCoordinatorTest, Stop) {
   coordinator_.downloadTask = &task;
   [coordinator_ start];
   @autoreleasepool {
-    // thread_bundle_ has to outlive the coordinator. Dismissing coordinator
+    // task_environment_ has to outlive the coordinator. Dismissing coordinator
     // retains are autoreleases it.
     [coordinator_ stop];
   }
@@ -285,7 +285,7 @@ TEST_F(DownloadManagerCoordinatorTest, DelegateHideDownload) {
                        didCreateDownload:task.get()
                        webStateIsVisible:YES];
   @autoreleasepool {
-    // thread_bundle_ has to outlive the coordinator. Dismissing coordinator
+    // task_environment_ has to outlive the coordinator. Dismissing coordinator
     // retains are autoreleases it.
     [coordinator_ downloadManagerTabHelper:&tab_helper_
                            didHideDownload:task.get()];
@@ -765,7 +765,7 @@ TEST_F(DownloadManagerCoordinatorTest, CloseInProgressDownload) {
 
   // Stop to avoid holding a dangling pointer to destroyed task.
   @autoreleasepool {
-    // thread_bundle_ has to outlive the coordinator. Dismissing coordinator
+    // task_environment_ has to outlive the coordinator. Dismissing coordinator
     // retains are autoreleases it.
     [coordinator_ stop];
   }
@@ -796,7 +796,7 @@ TEST_F(DownloadManagerCoordinatorTest, DecidePolicyForDownload) {
               alert.message);
 
   @autoreleasepool {
-    // thread_bundle_ has to outlive the coordinator. Dismissing coordinator
+    // task_environment_ has to outlive the coordinator. Dismissing coordinator
     // retains are autoreleases it.
     [coordinator_ stop];
   }
@@ -971,7 +971,7 @@ TEST_F(DownloadManagerCoordinatorTest, ViewController) {
   EXPECT_NSEQ(viewController, coordinator_.viewController);
 
   @autoreleasepool {
-    // thread_bundle_ has to outlive the coordinator. Dismissing coordinator
+    // task_environment_ has to outlive the coordinator. Dismissing coordinator
     // retains are autoreleases it.
     [coordinator_ stop];
   }

@@ -805,7 +805,7 @@
 
       個々の設定は JSON プロパティで指定できます。
 
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" /> に設定されている場合、ユーザーは <ph name="TPM_FIRMWARE_UPDATE_TPM" /> ファームウェア アップデートをインストールするために Powerwash のフローを開始できます。
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" /> に設定されている場合、ユーザーは <ph name="TPM_FIRMWARE_UPDATE_TPM" /> ファームウェア アップデートをインストールする Powerwash のフローを開始できます。
 
       <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" /> に設定されている場合、ユーザーはデバイス全体の状態（企業の登録を含む）を保持する <ph name="TPM_FIRMWARE_UPDATE_TPM" /> ファームウェア アップデートのフローを開始できますが、ユーザーデータは失われます。このアップデート フローはバージョン 68 より利用可能です。
 
@@ -1620,15 +1620,6 @@
 
           未設定の場合、または False に設定されている場合、ユーザーは Google ドライブにファイルを転送できます。</translation>
 <translation id="3915395663995367577">プロキシ .pac ファイルへの URL</translation>
-<translation id="3920892052017026701">バッテリー充電のカスタムの充電開始設定（%）を行います。
-
-          バッテリーは、このバッテリー充電のカスタムの充電開始設定の値まで消費すると、充電を開始します。
-
-          DeviceBatteryChargeCustomStartCharging には DeviceBatteryChargeCustomStopCharging よりも少ない値を指定する必要があります。
-
-          このポリシーは、DeviceBatteryChargeMode がカスタムに設定されている場合にのみ使用されます。
-
-          このポリシーを設定していない場合は、標準のバッテリー充電モードが適用されます。</translation>
 <translation id="3925377537407648234">ディスプレイの解像度と倍率を設定する</translation>
 <translation id="3939893074578116847">オンライン ステータス監視のためにネットワーク パケットを管理サーバーに送信します。
       これにより、サーバーではデバイスがオフラインかどうかを検出できます。
@@ -3547,15 +3538,6 @@
       このポリシーの値が 0 の場合は、デフォルトのキャッシュ サイズが使用されます。ユーザーはこの値を変更できません。
 
       このポリシーが未設定の場合は、デフォルトのサイズが使用されます。ユーザーは --disk-cache-size フラグを使用してこの値をオーバーライドできます。</translation>
-<translation id="759389052790680884">バッテリー充電のカスタムの充電停止設定（%）を行います。
-
-          バッテリーは、このバッテリー充電のカスタムの充電停止設定の値に達すると、充電を停止します。
-
-          DeviceBatteryChargeCustomStartCharging には DeviceBatteryChargeCustomStopCharging よりも少ない値を指定する必要があります。
-
-          このポリシーは、DeviceBatteryChargeMode がカスタムに設定されている場合にのみ使用されます。
-
-          このポリシーを設定していない場合は、標準のバッテリー充電モードが適用されます。</translation>
 <translation id="759957074386651883">セーフ ブラウジングの設定</translation>
 <translation id="7604169113182304895">このリストを使用するかどうかは Android アプリ側の選択となります。Android アプリにリストの使用を強制することはできません。</translation>
 <translation id="7612157962821894603"><ph name="PRODUCT_NAME" /> 起動時にシステム全体のフラグを適用</translation>
@@ -3644,9 +3626,6 @@
 <translation id="7750991880413385988">新しいタブ ページを開く</translation>
 <translation id="7754704193130578113">ダウンロード前に各ファイルの保存場所を確認する</translation>
 <translation id="7761446981238915769">ログイン画面でインストールするアプリのリストを設定する</translation>
-<translation id="7763479091692861127"> OS アップデートに使用できる接続のタイプです。OS アップデートは、サイズが大きいために接続に大きな負担がかかり、余分な費用が発生する可能性があります。そのため、デフォルトでは現在、WiMax、Bluetooth、携帯通信など費用が高くなる接続タイプは利用できません。
-
-      認識される接続タイプ ID は「ethernet」、「wifi」、「wimax」、「bluetooth」、「cellular」です。</translation>
 <translation id="7763614521440615342">[新しいタブ] ページにおすすめのコンテンツを表示します</translation>
 <translation id="7765879851993224640">Smart Lock Signin の使用を許可する</translation>
 <translation id="7772346342637974431">バッテリー電源で動作している場合に、ユーザー入力が行われなくなってから警告ダイアログを表示するまでの時間を指定します。

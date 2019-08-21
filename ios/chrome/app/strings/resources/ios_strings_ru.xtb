@@ -149,7 +149,6 @@
 <translation id="2921219216347069551">Ошибка</translation>
 <translation id="2923448633003185837">Вставить и перейти</translation>
 <translation id="292639812446257861">Отметить как непрочитанное</translation>
-<translation id="2933759065870693102">Вспышка</translation>
 <translation id="2958718410589002129">Пароли</translation>
 <translation id="2969979262385602596">Не удалось войти в аккаунт. Повторите попытку.</translation>
 <translation id="298306318844797842">Добавить способ оплаты</translation>
@@ -305,6 +304,7 @@
 <translation id="5317780077021120954">Сохранить</translation>
 <translation id="5327248766486351172">Название</translation>
 <translation id="5388358297987318779">Открыть изображение</translation>
+<translation id="5407969256130905701">Сбросить изменения</translation>
 <translation id="5409365236829784218">Нет приложений, поддерживающих файлы этого типа.</translation>
 <translation id="5416022985862681400">Последние 7 дней</translation>
 <translation id="5433691172869980887">Имя пользователя скопировано</translation>
@@ -510,6 +510,7 @@
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8458397775385147834">Удалено закладок: 1</translation>
 <translation id="8487700953926739672">Доступно в автономном режиме</translation>
+<translation id="8490978609246021741">Сохранить изменения</translation>
 <translation id="8503813439785031346">Имя пользователя</translation>
 <translation id="850600235656508448">Открыть в режиме инкогнито</translation>
 <translation id="8517375800490286174">Лицензии открытого ПО</translation>

@@ -140,7 +140,7 @@ class LocalPrinterHandlerChromeosTest : public testing::Test {
 
  protected:
   // Must outlive |profile_|.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   // Must outlive |printers_manager_|.
   TestingProfile profile_;
   scoped_refptr<TestPrintBackend> test_backend_;
@@ -230,7 +230,7 @@ TEST_F(LocalPrinterHandlerChromeosTest, StartGetCapabilityValidPrinter) {
   local_printer_handler_->StartGetCapability(
       "printer1", base::BindOnce(&RecordGetCapability, &fetched_caps));
 
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_TRUE(fetched_caps);
   base::DictionaryValue* dict;
@@ -257,7 +257,7 @@ TEST_F(LocalPrinterHandlerChromeosTest, StartGetCapabilityPrinterNotInstalled) {
   local_printer_handler_->StartGetCapability(
       "printer1", base::BindOnce(&RecordGetCapability, &fetched_caps));
 
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_TRUE(fetched_caps);
   base::DictionaryValue* dict;
@@ -273,7 +273,7 @@ TEST_F(LocalPrinterHandlerChromeosTest, StartGetCapabilityInvalidPrinter) {
   local_printer_handler_->StartGetCapability(
       "invalid printer", base::BindOnce(&RecordGetCapability, &fetched_caps));
 
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_TRUE(fetched_caps);
   EXPECT_TRUE(fetched_caps->is_none());

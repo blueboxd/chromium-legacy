@@ -57,7 +57,7 @@ class WebRtcLogCleanupTest : public testing::Test {
     EXPECT_EQ(expected_files, file_counter);
   }
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir dir_;
 };
 

@@ -99,7 +99,8 @@ MojoCreateSharedBufferResult* Mojo::createSharedBuffer(unsigned num_bytes) {
 void Mojo::bindInterface(ScriptState* script_state,
                          const String& interface_name,
                          MojoHandle* request_handle,
-                         const String& scope) {
+                         const String& scope,
+                         bool use_browser_interface_broker) {
   std::string name = interface_name.Utf8();
   auto handle =
       mojo::ScopedMessagePipeHandle::From(request_handle->TakeHandle());
@@ -110,6 +111,19 @@ void Mojo::bindInterface(ScriptState* script_state,
     return;
   }
 
+  // This should replace InterfaceProvider usage below when all
+  // InterfaceProvider clients are converted to use BrowserInterfaceBroker. See
+  // crbug.com/936482.
+  if (use_browser_interface_broker) {
+    if (auto* browser_interface_broker_proxy =
+            ExecutionContext::From(script_state)
+                ->GetBrowserInterfaceBrokerProxy()) {
+      browser_interface_broker_proxy->GetInterface(name, std::move(handle));
+      return;
+    }
+  }
+
+  // TODO(crbug.com/995556): remove when no longer used.
   if (auto* interface_provider =
           ExecutionContext::From(script_state)->GetInterfaceProvider()) {
     interface_provider->GetInterfaceByName(name, std::move(handle));

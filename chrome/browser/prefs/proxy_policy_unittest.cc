@@ -123,7 +123,7 @@ class ProxyPolicyTest : public testing::Test {
     return std::move(prefs);
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::CommandLine command_line_;
   MockConfigurationPolicyProvider provider_;
   std::unique_ptr<PolicyServiceImpl> policy_service_;

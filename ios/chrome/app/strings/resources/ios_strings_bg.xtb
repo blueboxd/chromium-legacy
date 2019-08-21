@@ -149,7 +149,6 @@
 <translation id="2921219216347069551">Стр. не може да се сподели</translation>
 <translation id="2923448633003185837">Поставяне и старт</translation>
 <translation id="292639812446257861">Означаване като непрочетено</translation>
-<translation id="2933759065870693102">Фенерче</translation>
 <translation id="2958718410589002129">Пароли</translation>
 <translation id="2969979262385602596">Влизането не бе успешно. Моля, опитайте пак по-късно.</translation>
 <translation id="298306318844797842">Добавяне на начин на плащане…</translation>
@@ -305,6 +304,7 @@
 <translation id="5317780077021120954">Запазване</translation>
 <translation id="5327248766486351172">Име</translation>
 <translation id="5388358297987318779">Отваряне на изображението</translation>
+<translation id="5407969256130905701">Отхвърляне на промените</translation>
 <translation id="5409365236829784218">Няма инсталирани приложения, които могат да отворят файла.</translation>
 <translation id="5416022985862681400">Последните 7 дни</translation>
 <translation id="5433691172869980887">Потребителското име е копирано</translation>
@@ -510,6 +510,7 @@
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8458397775385147834">Изтрихте 1 елемент</translation>
 <translation id="8487700953926739672">Налице офлайн</translation>
+<translation id="8490978609246021741">Запазване на промените</translation>
 <translation id="8503813439785031346">Потребителско име</translation>
 <translation id="850600235656508448">Отваряне в режим „инкогнито“</translation>
 <translation id="8517375800490286174">Лицензи за отворен код</translation>

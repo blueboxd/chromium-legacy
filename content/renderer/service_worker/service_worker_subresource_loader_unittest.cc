@@ -581,7 +581,7 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
     return body;
   }
 
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
   scoped_refptr<ControllerServiceWorkerConnector> connector_;
   FakeServiceWorkerContainerHost fake_container_host_;

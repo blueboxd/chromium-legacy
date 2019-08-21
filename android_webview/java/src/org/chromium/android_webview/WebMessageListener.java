@@ -19,11 +19,11 @@ public interface WebMessageListener {
      * @param message      The message from JavaScript.
      * @param sourceOrigin The origin of the frame where the message is from.
      * @param isMainframe  If the message is from a main frame.
-     * @param replyPort    Used for reply message to the injected JavaScript object.
+     * @param jsReplyProxy Used for reply message to the injected JavaScript object.
      * @param ports        JavaScript code could post message with additional message ports. Receive
      *                     ports to establish new communication channels. Could be empty array but
      *                     won't be null.
      */
-    void onPostMessage(String message, Uri sourceOrigin, boolean isMainFrame, MessagePort replyPort,
-            MessagePort[] ports);
+    void onPostMessage(String message, Uri sourceOrigin, boolean isMainFrame,
+            JsReplyProxy jsReplyProxy, MessagePort[] ports);
 }

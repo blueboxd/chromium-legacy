@@ -148,7 +148,7 @@ class MediaEngagementSessionTest : public testing::Test {
   const url::Origin origin_;
   base::SimpleTestClock test_clock_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   std::unique_ptr<MediaEngagementService> service_;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder_;

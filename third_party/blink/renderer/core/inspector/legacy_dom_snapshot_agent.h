@@ -53,9 +53,6 @@ class CORE_EXPORT LegacyDOMSnapshotAgent {
       bool include_event_listeners,
       bool include_user_agent_shadow_tree);
 
-  // Collect LayoutTreeNodes owned by a pseudo element.
-  void VisitPseudoLayoutChildren(Node* pseudo_node, int index);
-
   std::unique_ptr<protocol::Array<int>> VisitPseudoElements(
       Element* parent,
       int index,

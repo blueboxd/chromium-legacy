@@ -79,7 +79,7 @@ class StartPageTokenLoaderTest : public testing::Test {
 
   // Empty team drive id equates to the users default corpus.
   const std::string empty_team_drive_id_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   std::unique_ptr<EventLogger> logger_;

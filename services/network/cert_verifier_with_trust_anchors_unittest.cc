@@ -70,7 +70,7 @@ class CertVerifierWithTrustAnchorsTest : public testing::Test {
   }
 
   void TearDown() override {
-    // Destroy |cert_verifier_| before destroying the ThreadBundle, otherwise
+    // Destroy |cert_verifier_| before destroying the TaskEnvironment, otherwise
     // BrowserThread::CurrentlyOn checks fail.
     cert_verifier_.reset();
   }

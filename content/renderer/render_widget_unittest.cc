@@ -153,8 +153,7 @@ class MockHandledEventCallback {
 class StubWebPagePopup : public blink::WebPagePopup {
  public:
   // WebWidget implementation.
-  void SetLayerTreeView(blink::WebLayerTreeView*, cc::AnimationHost*) override {
-  }
+  void SetAnimationHost(cc::AnimationHost*) override {}
   blink::WebURL GetURLForDebugTrace() override { return {}; }
   blink::WebHitTestResult HitTestResultAt(const gfx::Point&) override {
     return {};

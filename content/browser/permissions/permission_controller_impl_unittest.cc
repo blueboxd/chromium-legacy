@@ -69,7 +69,7 @@ class PermissionControllerImplTest : public ::testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestBrowserContext browser_context_;
   std::unique_ptr<PermissionControllerImpl> permission_controller_;
 

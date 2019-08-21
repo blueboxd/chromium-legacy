@@ -142,6 +142,7 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
       answer(match.answer),
       transition(match.transition),
       type(match.type),
+      parent_type(match.parent_type),
       has_tab_match(match.has_tab_match),
       subtype_identifier(match.subtype_identifier),
       associated_keyword(match.associated_keyword
@@ -194,6 +195,7 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   answer = match.answer;
   transition = match.transition;
   type = match.type;
+  parent_type = match.parent_type;
   has_tab_match = match.has_tab_match;
   subtype_identifier = match.subtype_identifier;
   associated_keyword.reset(
@@ -607,6 +609,13 @@ bool AutocompleteMatch::IsSpecializedSearchType(Type type) {
          type == AutocompleteMatchType::SEARCH_SUGGEST_PROFILE;
 }
 
+AutocompleteMatch::Type AutocompleteMatch::GetDemotionType() const {
+  if (!IsSubMatch())
+    return type;
+  else
+    return parent_type;
+}
+
 // static
 TemplateURL* AutocompleteMatch::GetTemplateURLWithKeyword(
     TemplateURLService* template_url_service,
@@ -825,6 +834,12 @@ bool AutocompleteMatch::IsSameFamily(size_t lhs, size_t rhs) {
   return (lhs & FAMILY_SIZE_MASK) == (rhs & FAMILY_SIZE_MASK);
 }
 
+void AutocompleteMatch::SetSubMatch(size_t subrelevance,
+                                    AutocompleteMatch::Type parent_type) {
+  this->subrelevance = subrelevance;
+  this->parent_type = parent_type;
+}
+
 bool AutocompleteMatch::IsSubMatch() const {
   return subrelevance & ~FAMILY_SIZE_MASK;
 }
@@ -885,7 +900,7 @@ AutocompleteMatch AutocompleteMatch::DerivePedalSuggestion(
   copy.pedal = pedal;
   if (subrelevance == 0)
     subrelevance = GetNextFamilyID();
-  copy.subrelevance = subrelevance + PEDAL_FAMILY_ID;
+  copy.SetSubMatch(subrelevance + PEDAL_FAMILY_ID, copy.type);
   DCHECK(IsSameFamily(subrelevance, copy.subrelevance));
 
   copy.type = Type::PEDAL;

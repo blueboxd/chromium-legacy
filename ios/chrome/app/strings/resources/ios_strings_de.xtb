@@ -40,7 +40,7 @@
 <translation id="1400642268715879018">Letzte 4 Wochen</translation>
 <translation id="1407135791313364759">Alle öffnen</translation>
 <translation id="1430915738399379752">Drucken</translation>
-<translation id="1436290164580597469">Gib Ihre Passphrase ein, um die Synchronisierung zu starten.</translation>
+<translation id="1436290164580597469">Geben Sie Ihre Passphrase ein, um die Synchronisierung zu starten.</translation>
 <translation id="1449835205994625556">Passwort ausblenden</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> Elemente</translation>
 <translation id="1491277525950327607">Zum Aktivieren bzw. Deaktivieren doppeltippen</translation>
@@ -149,7 +149,6 @@
 <translation id="2921219216347069551">Seite kann nicht geteilt werden</translation>
 <translation id="2923448633003185837">Einfügen und los</translation>
 <translation id="292639812446257861">Als ungelesen markieren</translation>
-<translation id="2933759065870693102">Taschenlampe</translation>
 <translation id="2958718410589002129">Passwörter</translation>
 <translation id="2969979262385602596">Anmeldefehler, bitte später erneut versuchen</translation>
 <translation id="298306318844797842">Zahlungsmethode hinzufügen…</translation>
@@ -257,7 +256,7 @@
 <translation id="4659667755519643272">Tab-Wechsler starten</translation>
 <translation id="4666531726415300315">Angemeldet als <ph name="EMAIL" />.
 
-Ihre Daten sind mit Ihrer Synchronisierungspassphrase verschlüsselt. Gib diese ein, um die Synchronisierung zu starten.</translation>
+Ihre Daten sind mit Ihrer Synchronisierungspassphrase verschlüsselt. Geben Sie diese ein, um die Synchronisierung zu starten.</translation>
 <translation id="4689564913179979534">Zahlungsmethoden verwalten…</translation>
 <translation id="473775607612524610">Aktualisieren</translation>
 <translation id="4747097190499141774">Die Passphrasenverschlüsselung enthält keine Zahlungsmethoden oder Adressen von Google Pay. Nur Personen mit Ihrer Passphrase können Ihre verschlüsselten Daten lesen. Die Passphrase wird nicht an Google gesendet oder von Google gespeichert. Falls Sie sie vergessen oder diese Einstellung ändern möchten, müssen Sie die Synchronisierung zurücksetzen. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
@@ -305,6 +304,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5317780077021120954">Speichern</translation>
 <translation id="5327248766486351172">Name</translation>
 <translation id="5388358297987318779">Bild öffnen</translation>
+<translation id="5407969256130905701">Änderungen verwerfen</translation>
 <translation id="5409365236829784218">Es sind keine Apps inst., die diese Datei öffnen können.</translation>
 <translation id="5416022985862681400">Letzte 7 Tage</translation>
 <translation id="5433691172869980887">Nutzername kopiert</translation>
@@ -331,14 +331,14 @@ Handoff muss auch im Abschnitt "Allgemein" Ihrer Einstellungen aktiviert sein un
 <translation id="5846482154967366008">Suchmaschine</translation>
 <translation id="5854790677617711513">Älter als 30 Tage</translation>
 <translation id="5857090052475505287">Neuer Ordner</translation>
-<translation id="5857770089550859117">Gib Ihre Passphrase ein, um die Synchronisierung zu starten.</translation>
+<translation id="5857770089550859117">Geben Sie Ihre Passphrase ein, um die Synchronisierung zu starten.</translation>
 <translation id="5860033963881614850">Aus</translation>
 <translation id="5869029295770560994">Ok</translation>
 <translation id="5871497086027727873">1 Lesezeichen verschoben</translation>
 <translation id="5897956970858271241">Kopierten Link aufrufen</translation>
 <translation id="5911030830365207728">Google Übersetzer</translation>
 <translation id="5916664084637901428">An</translation>
-<translation id="5938160824633642847">Der Speicher Ihres Geräts ist fast voll. Gib Speicherplatz frei und versuchen Sie es dann noch einmal.</translation>
+<translation id="5938160824633642847">Der Speicher Ihres Geräts ist fast voll. Geben Sie Speicherplatz frei und versuchen Sie es dann noch einmal.</translation>
 <translation id="5948291296578561264">Dadurch können Sie Fotos in der Fotogalerie speichern.</translation>
 <translation id="5955891643922670672">Offlineversion wird angezeigt</translation>
 <translation id="5957613098218939406">Weitere Optionen</translation>
@@ -385,7 +385,7 @@ Handoff muss auch im Abschnitt "Allgemein" Ihrer Einstellungen aktiviert sein un
 <translation id="6417838470969808600">Sie haben Lesezeichen, den Verlauf, Passwörter und andere Einstellungen von <ph name="USER_EMAIL1" /> übernommen.</translation>
 <translation id="641799622251403418">Angemeldet als <ph name="EMAIL" />.
 
-Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase verschlüsselt. Gib diese ein, um die Synchronisierung zu starten.</translation>
+Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase verschlüsselt. Geben Sie diese ein, um die Synchronisierung zu starten.</translation>
 <translation id="6418346271604475326">PDF wird vorbereitet</translation>
 <translation id="6434591244308415567">Ein Fehler ist aufgetreten. Bitte versuchen Sie es später noch einmal.</translation>
 <translation id="6445051938772793705">Land</translation>
@@ -510,6 +510,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="8428213095426709021">Einstellungen</translation>
 <translation id="8458397775385147834">1 Lesezeichen gelöscht</translation>
 <translation id="8487700953926739672">Offline verfügbar</translation>
+<translation id="8490978609246021741">Änderungen speichern</translation>
 <translation id="8503813439785031346">Nutzername</translation>
 <translation id="850600235656508448">Im Inkognitomodus öffnen</translation>
 <translation id="8517375800490286174">Open Source-Lizenzen</translation>

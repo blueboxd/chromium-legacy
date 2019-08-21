@@ -2546,25 +2546,6 @@
             ]
         }
     ],
-    "GpuWatchdogV2": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "GpuWatchdogV2"
-                    ]
-                }
-            ]
-        }
-    ],
     "GridLayoutForNtpShortcuts": [
         {
             "platforms": [
@@ -6676,23 +6657,6 @@
             ]
         }
     ],
-    "WebRTC-Audio-NetEqPostponeDecodingAfterExpand": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "linux",
-                "ios",
-                "android_webview"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled"
-                }
-            ]
-        }
-    ],
     "WebRTC-Audio-NewOpusPacketLossRateOptimization": [
         {
             "platforms": [
@@ -6726,24 +6690,6 @@
             ]
         }
     ],
-    "WebRTC-Bwe-LossBasedControl": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "linux",
-                "ios",
-                "android",
-                "android_webview"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled,balance_incr:5kbps,balance_decr:24kbps,exponent:0.7,resets:true"
-                }
-            ]
-        }
-    ],
     "WebRTC-Bwe-MaxRttLimit": [
         {
             "platforms": [
@@ -6758,23 +6704,6 @@
             "experiments": [
                 {
                     "name": "persist,limit:3s,fraction:.8,interval:1s"
-                }
-            ]
-        }
-    ],
-    "WebRTC-BweAllocProbingOnlyInAlr": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "linux",
-                "ios",
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled"
                 }
             ]
         }
@@ -6848,24 +6777,6 @@
                     "enable_features": [
                         "WebRtcHideLocalIpsWithMdns"
                     ]
-                }
-            ]
-        }
-    ],
-    "WebRTC-KeepAbsSendTimeExtension": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "linux",
-                "ios",
-                "android",
-                "android_webview"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled"
                 }
             ]
         }

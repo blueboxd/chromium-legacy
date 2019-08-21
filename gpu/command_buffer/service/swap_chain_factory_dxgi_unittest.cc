@@ -110,6 +110,26 @@ TEST_P(SwapChainFactoryDXGITest, InvalidFormat) {
     backings.back_buffer->Destroy();
   }
   {
+    auto valid_format = viz::BGRA_8888;
+    auto backings = swap_chain_factory_->CreateSwapChain(
+        front_buffer_mailbox, back_buffer_mailbox, valid_format, size,
+        color_space, usage);
+    EXPECT_TRUE(backings.front_buffer);
+    EXPECT_TRUE(backings.back_buffer);
+    backings.front_buffer->Destroy();
+    backings.back_buffer->Destroy();
+  }
+  {
+    auto valid_format = viz::RGBA_F16;
+    auto backings = swap_chain_factory_->CreateSwapChain(
+        front_buffer_mailbox, back_buffer_mailbox, valid_format, size,
+        color_space, usage);
+    EXPECT_TRUE(backings.front_buffer);
+    EXPECT_TRUE(backings.back_buffer);
+    backings.front_buffer->Destroy();
+    backings.back_buffer->Destroy();
+  }
+  {
     auto invalid_format = viz::RGBA_4444;
     auto backings = swap_chain_factory_->CreateSwapChain(
         front_buffer_mailbox, back_buffer_mailbox, invalid_format, size,

@@ -160,7 +160,7 @@ class DemoModeResourcesRemoverTest : public testing::Test {
   }
 
   TestingPrefServiceSimple local_state_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   std::unique_ptr<DemoModeTestHelper> demo_mode_test_helper_;
 
@@ -246,7 +246,7 @@ TEST_F(DemoModeResourcesRemoverTest, LowDiskSpace) {
   EXPECT_EQ(DemoModeResourcesRemover::Get(), remover.get());
 
   FakeCryptohomeClient::Get()->NotifyLowDiskSpace(1024 * 1024 * 1024);
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(DemoModeResourcesExist());
 }
 
@@ -260,7 +260,7 @@ TEST_F(DemoModeResourcesRemoverTest, LowDiskSpaceInDemoSession) {
   EXPECT_FALSE(DemoModeResourcesRemover::Get());
 
   FakeCryptohomeClient::Get()->NotifyLowDiskSpace(1024 * 1024 * 1024);
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(DemoModeResourcesExist());
 }
 
@@ -273,7 +273,7 @@ TEST_F(DemoModeResourcesRemoverTest, NotCreatedAfterResourcesRemoved) {
   EXPECT_EQ(DemoModeResourcesRemover::Get(), remover.get());
 
   FakeCryptohomeClient::Get()->NotifyLowDiskSpace(1024 * 1024 * 1024);
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(DemoModeResourcesExist());
 
   // Reset the resources remover - subsequent attempts to create the remover
@@ -294,7 +294,7 @@ TEST_F(DemoModeResourcesRemoverTest, AttemptRemoval) {
       DemoModeResourcesRemover::RemovalReason::kEnterpriseEnrolled,
       base::BindOnce(&RecordRemovalResult, &result));
 
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_TRUE(result.has_value());
   EXPECT_EQ(DemoModeResourcesRemover::RemovalResult::kSuccess, result.value());
@@ -312,7 +312,7 @@ TEST_F(DemoModeResourcesRemoverTest, AttemptRemovalResourcesNonExistent) {
       DemoModeResourcesRemover::RemovalReason::kLowDiskSpace,
       base::BindOnce(&RecordRemovalResult, &result));
 
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_TRUE(result.has_value());
   EXPECT_EQ(DemoModeResourcesRemover::RemovalResult::kNotFound, result.value());
@@ -352,7 +352,7 @@ TEST_F(DemoModeResourcesRemoverTest, ConcurrentRemovalAttempts) {
       DemoModeResourcesRemover::RemovalReason::kLowDiskSpace,
       base::BindOnce(&RecordRemovalResult, &result_2));
 
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(DemoModeResourcesExist());
   ASSERT_TRUE(result_1.has_value());
@@ -372,7 +372,7 @@ TEST_F(DemoModeResourcesRemoverTest, RepeatedRemovalAttempt) {
   remover->AttemptRemoval(
       DemoModeResourcesRemover::RemovalReason::kLowDiskSpace,
       DemoModeResourcesRemover::RemovalCallback());
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(DemoModeResourcesExist());
 
@@ -393,7 +393,7 @@ TEST_F(DemoModeResourcesRemoverTest, NoRemovalOnLogin) {
 
   AddAndLogInUser(TestUserType::kRegular, remover.get());
 
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(DemoModeResourcesExist());
 }
@@ -416,7 +416,7 @@ TEST_F(DemoModeResourcesRemoverTest, RemoveAfterActiveUse) {
   AddAndLogInUser(TestUserType::kRegular, remover.get());
   activity_detector_.HandleExternalUserActivity();
 
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(DemoModeResourcesExist());
 
   // Advance time so it's longer than removal threshold, but under the idle
@@ -424,7 +424,7 @@ TEST_F(DemoModeResourcesRemoverTest, RemoveAfterActiveUse) {
   AdvanceTestTime(base::TimeDelta::FromSeconds(4));
   activity_detector_.HandleExternalUserActivity();
 
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(DemoModeResourcesExist());
 }
 
@@ -454,7 +454,7 @@ TEST_F(DemoModeResourcesRemoverTest, IgnoreUsageBeforeLogin) {
 
   // The total usage was over the removal threshold, but it happened before
   // login - the resources should still be around.
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(DemoModeResourcesExist());
 }
 
@@ -476,21 +476,21 @@ TEST_F(DemoModeResourcesRemoverTest, RemoveAfterActiveUse_AccumulateActivity) {
   AddAndLogInUser(TestUserType::kRegular, remover.get());
   activity_detector_.HandleExternalUserActivity();
 
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(DemoModeResourcesExist());
 
   // Over update interval, but under removal threshold.
   AdvanceTestTime(base::TimeDelta::FromSeconds(2));
   activity_detector_.HandleExternalUserActivity();
 
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(DemoModeResourcesExist());
 
   // This should get accumulated time over removal threshold.
   AdvanceTestTime(base::TimeDelta::FromSeconds(2));
   activity_detector_.HandleExternalUserActivity();
 
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(DemoModeResourcesExist());
 }
 
@@ -512,7 +512,7 @@ TEST_F(DemoModeResourcesRemoverTest, DoNotAccumulateIdleTimeUsage) {
   AddAndLogInUser(TestUserType::kRegular, remover.get());
   activity_detector_.HandleExternalUserActivity();
 
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(DemoModeResourcesExist());
 
   // Advance to the time just under removal threshold in small increments
@@ -522,7 +522,7 @@ TEST_F(DemoModeResourcesRemoverTest, DoNotAccumulateIdleTimeUsage) {
   AdvanceTestTime(base::TimeDelta::FromSeconds(3));
   activity_detector_.HandleExternalUserActivity();
 
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(DemoModeResourcesExist());
 
   // Simulate longer idle period.
@@ -531,7 +531,7 @@ TEST_F(DemoModeResourcesRemoverTest, DoNotAccumulateIdleTimeUsage) {
 
   // The resources should be still be here, as usage amount should not have been
   // incremented.
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(DemoModeResourcesExist());
 
   // Advance time little bit more, so it's over the removal threshold (and over
@@ -539,7 +539,7 @@ TEST_F(DemoModeResourcesRemoverTest, DoNotAccumulateIdleTimeUsage) {
   AdvanceTestTime(base::TimeDelta::FromSeconds(3));
   activity_detector_.HandleExternalUserActivity();
 
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(DemoModeResourcesExist());
 }
 
@@ -561,7 +561,7 @@ TEST_F(DemoModeResourcesRemoverTest, ReportUsageBeforeIdlePeriod) {
   AddAndLogInUser(TestUserType::kRegular, remover.get());
   activity_detector_.HandleExternalUserActivity();
 
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(DemoModeResourcesExist());
 
   // Advance to the time just under removal threshold in small increments
@@ -572,7 +572,7 @@ TEST_F(DemoModeResourcesRemoverTest, ReportUsageBeforeIdlePeriod) {
   AdvanceTestTime(base::TimeDelta::FromSeconds(3));
   activity_detector_.HandleExternalUserActivity();
 
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(DemoModeResourcesExist());
 
   // Simulate longer idle period.
@@ -581,7 +581,7 @@ TEST_F(DemoModeResourcesRemoverTest, ReportUsageBeforeIdlePeriod) {
 
   // The resources should be still be here, as usage amount should not have been
   // incremented.
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(DemoModeResourcesExist());
 
   // Advance time cummulatively over the update period.
@@ -591,7 +591,7 @@ TEST_F(DemoModeResourcesRemoverTest, ReportUsageBeforeIdlePeriod) {
   activity_detector_.HandleExternalUserActivity();
 
   // When combined the accumulated active usage was above the removal threshold.
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(DemoModeResourcesExist());
 }
 
@@ -613,7 +613,7 @@ TEST_F(DemoModeResourcesRemoverTest, RemovalThresholdReachedBeforeIdlePeriod) {
   AddAndLogInUser(TestUserType::kRegular, remover.get());
   activity_detector_.HandleExternalUserActivity();
 
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(DemoModeResourcesExist());
 
   // Advance to the time just under removal threshold in small increments, but
@@ -623,7 +623,7 @@ TEST_F(DemoModeResourcesRemoverTest, RemovalThresholdReachedBeforeIdlePeriod) {
   AdvanceTestTime(base::TimeDelta::FromSeconds(3));
   activity_detector_.HandleExternalUserActivity();
 
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(DemoModeResourcesExist());
 
   // Advance time so total is over the remova threshold, but in increment under
@@ -631,7 +631,7 @@ TEST_F(DemoModeResourcesRemoverTest, RemovalThresholdReachedBeforeIdlePeriod) {
   AdvanceTestTime(base::TimeDelta::FromSeconds(3));
   activity_detector_.HandleExternalUserActivity();
 
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(DemoModeResourcesExist());
 
   // Simulate longer idle period.
@@ -640,7 +640,7 @@ TEST_F(DemoModeResourcesRemoverTest, RemovalThresholdReachedBeforeIdlePeriod) {
 
   // Activity after the idle period ended should have flushed previous pending
   // usage, and the resources should have been removed.
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(DemoModeResourcesExist());
 }
 
@@ -697,14 +697,14 @@ TEST_F(DemoModeResourcesRemoverTest,
   AddAndLogInUser(TestUserType::kRegular, remover.get());
   activity_detector_.HandleExternalUserActivity();
 
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(DemoModeResourcesExist());
 
   // Over update interval, but under removal threshold.
   AdvanceTestTime(base::TimeDelta::FromSeconds(2));
   activity_detector_.HandleExternalUserActivity();
 
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(DemoModeResourcesExist());
 
   remover.reset();
@@ -722,7 +722,7 @@ TEST_F(DemoModeResourcesRemoverTest,
   AdvanceTestTime(base::TimeDelta::FromSeconds(2));
   activity_detector_.HandleExternalUserActivity();
 
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(DemoModeResourcesExist());
 }
 
@@ -745,14 +745,14 @@ TEST_F(DemoModeResourcesRemoverTest,
   AddAndLogInUser(TestUserType::kRegular, remover.get());
   activity_detector_.HandleExternalUserActivity();
 
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(DemoModeResourcesExist());
 
   // Over update interval, but under removal threshold.
   AdvanceTestTime(base::TimeDelta::FromSeconds(3));
   activity_detector_.HandleExternalUserActivity();
 
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(DemoModeResourcesExist());
 
   // This is under update interval, but should get accumulated time over
@@ -773,7 +773,7 @@ TEST_F(DemoModeResourcesRemoverTest,
           base::TimeDelta::FromSeconds(9) /*idle_threshold*/));
   AddAndLogInUser(TestUserType::kRegular, remover.get());
 
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(DemoModeResourcesExist());
 }
 
@@ -785,7 +785,7 @@ TEST_F(DemoModeResourcesRemoverTest, NoRemovalInKioskDemoMode) {
   ASSERT_TRUE(remover.get());
 
   AddAndLogInUser(TestUserType::kDerelictDemoKiosk, remover.get());
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(DemoModeResourcesExist());
 }
@@ -810,7 +810,7 @@ TEST_F(DemoModeResourcesRemoverInLegacyDemoRetailModeTest,
 
   AdvanceTestTime(base::TimeDelta::FromSeconds(5));
 
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(DemoModeResourcesExist());
 }
 
@@ -822,7 +822,7 @@ TEST_F(ManagedDemoModeResourcesRemoverTest, RemoveOnRegularLogin) {
 
   AddAndLogInUser(TestUserType::kRegular, remover.get());
 
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(DemoModeResourcesExist());
 }
@@ -835,7 +835,7 @@ TEST_F(ManagedDemoModeResourcesRemoverTest, NoRemovalGuestLogin) {
 
   AddAndLogInUser(TestUserType::kGuest, remover.get());
 
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(DemoModeResourcesExist());
 }
@@ -848,7 +848,7 @@ TEST_F(ManagedDemoModeResourcesRemoverTest, RemoveOnLowDiskInGuest) {
 
   AddAndLogInUser(TestUserType::kGuest, remover.get());
   FakeCryptohomeClient::Get()->NotifyLowDiskSpace(1024 * 1024 * 1024);
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(DemoModeResourcesExist());
 }
@@ -860,7 +860,7 @@ TEST_F(ManagedDemoModeResourcesRemoverTest, RemoveOnPublicSessionLogin) {
   ASSERT_TRUE(remover.get());
 
   AddAndLogInUser(TestUserType::kPublicAccount, remover.get());
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(DemoModeResourcesExist());
 }
@@ -872,7 +872,7 @@ TEST_F(ManagedDemoModeResourcesRemoverTest, RemoveInKioskSession) {
   ASSERT_TRUE(remover.get());
 
   AddAndLogInUser(TestUserType::kKiosk, remover.get());
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(DemoModeResourcesExist());
 }
@@ -884,7 +884,7 @@ TEST_F(DemoModeResourcesRemoverInLegacyDemoRetailModeTest, NoRemovalOnLogin) {
   ASSERT_TRUE(remover.get());
 
   AddAndLogInUser(TestUserType::kPublicAccount, remover.get());
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(DemoModeResourcesExist());
 }
@@ -898,7 +898,7 @@ TEST_F(DemoModeResourcesRemoverInLegacyDemoRetailModeTest,
 
   AddAndLogInUser(TestUserType::kPublicAccount, remover.get());
   FakeCryptohomeClient::Get()->NotifyLowDiskSpace(1024 * 1024 * 1024);
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(DemoModeResourcesExist());
 }
@@ -923,7 +923,7 @@ TEST_F(DemoModeResourcesRemoverInLegacyDemoRetailModeTest,
 
   AdvanceTestTime(base::TimeDelta::FromSeconds(5));
 
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(DemoModeResourcesExist());
 }
 

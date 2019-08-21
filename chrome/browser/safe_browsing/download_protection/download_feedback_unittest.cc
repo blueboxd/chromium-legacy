@@ -133,7 +133,7 @@ class DownloadFeedbackTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   base::FilePath upload_file_path_;
   std::string upload_file_data_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   FakeUploaderFactory two_phase_uploader_factory_;

@@ -19,7 +19,7 @@ class ChromeExtensionsAPIClientTest : public testing::Test {
   ChromeExtensionsAPIClientTest() = default;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   DISALLOW_COPY_AND_ASSIGN(ChromeExtensionsAPIClientTest);
 };
 

@@ -32,7 +32,7 @@ class ExternalMetricsTest : public testing::Test {
 
   base::ScopedTempDir dir_;
   scoped_refptr<ExternalMetrics> external_metrics_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(ExternalMetricsTest, CustomInterval) {

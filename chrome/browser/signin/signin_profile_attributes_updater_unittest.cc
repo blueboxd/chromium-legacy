@@ -58,7 +58,7 @@ class SigninProfileAttributesUpdaterTest : public testing::Test {
     RecreateSigninProfileAttributesUpdater();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager profile_manager_;
   base::FilePath profile_path_;
   signin::IdentityTestEnvironment identity_test_env_;

@@ -609,11 +609,11 @@ TEST_F(DragDropControllerTest, DragLeavesClipboardAloneTest) {
   std::string clip_str("I am on the clipboard");
   {
     // We first copy some text to the clipboard.
-    ui::ScopedClipboardWriter scw(ui::ClipboardType::kCopyPaste);
+    ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste);
     scw.WriteText(base::ASCIIToUTF16(clip_str));
   }
   EXPECT_TRUE(cb->IsFormatAvailable(ui::ClipboardFormatType::GetPlainTextType(),
-                                    ui::ClipboardType::kCopyPaste));
+                                    ui::ClipboardBuffer::kCopyPaste));
 
   std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
   DragTestView* drag_view = new DragTestView;
@@ -630,8 +630,8 @@ TEST_F(DragDropControllerTest, DragLeavesClipboardAloneTest) {
   // Verify the clipboard contents haven't changed
   std::string result;
   EXPECT_TRUE(cb->IsFormatAvailable(ui::ClipboardFormatType::GetPlainTextType(),
-                                    ui::ClipboardType::kCopyPaste));
-  cb->ReadAsciiText(ui::ClipboardType::kCopyPaste, &result);
+                                    ui::ClipboardBuffer::kCopyPaste));
+  cb->ReadAsciiText(ui::ClipboardBuffer::kCopyPaste, &result);
   EXPECT_EQ(clip_str, result);
   // Destroy the clipboard here because ash doesn't delete it.
   // crbug.com/158150.

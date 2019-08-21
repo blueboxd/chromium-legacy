@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
+#include "chrome/browser/sharing/sharing_fcm_sender.h"
 #include "components/gcm_driver/gcm_app_handler.h"
 
 namespace gcm {
@@ -18,7 +19,6 @@ class GCMDriver;
 }
 
 class SharingMessageHandler;
-class SharingFCMSender;
 
 // SharingFCMHandler is responsible for receiving SharingMessage from GCMDriver
 // and delegate it to the payload specific handler.
@@ -69,6 +69,7 @@ class SharingFCMHandler : public gcm::GCMAppHandler {
                       const std::string& original_message_id);
 
   void OnAckMessageSent(const std::string& original_message_id,
+                        SharingSendMessageResult result,
                         base::Optional<std::string> message_id);
 
   gcm::GCMDriver* const gcm_driver_;

@@ -27,6 +27,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_export.h"
+#include "net/base/network_isolation_key.h"
 #include "net/http/alternative_service.h"
 #include "net/http/broken_alternative_services.h"
 #include "net/http/http_server_properties.h"
@@ -100,7 +101,8 @@ typedef base::MRUCache<quic::QuicServerId, std::string> QuicServerInfoMap;
 // * Alternative Service support;
 // * QUIC data (like ServerNetworkStats and QuicServerInfo).
 //
-// Optionally retrieves and saves properties from/to disk.
+// Optionally retrieves and saves properties from/to disk. This class is not
+// threadsafe.
 class NET_EXPORT HttpServerProperties
     : public BrokenAlternativeServices::Delegate {
  public:
@@ -141,6 +143,9 @@ class NET_EXPORT HttpServerProperties
     // Returns true if no fields are populated.
     bool empty() const;
 
+    // Used in tests.
+    bool operator==(const ServerInfo& other) const;
+
     // IMPORTANT:  When adding a field here, be sure to update
     // HttpServerProperties::OnServerInfoLoaded() as well as
     // HttpServerPropertiesManager to correctly load/save the from/to the pref
@@ -160,15 +165,29 @@ class NET_EXPORT HttpServerProperties
     // (Http11ServerHostPortSet, QUIC server info).
   };
 
+  struct NET_EXPORT ServerInfoMapKey {
+    // If |use_network_isolation_key| is false, an empty NetworkIsolationKey is
+    // used instead of |network_isolation_key|.
+    ServerInfoMapKey(const url::SchemeHostPort& server,
+                     const NetworkIsolationKey& network_isolation_key,
+                     bool use_network_isolation_key);
+    ~ServerInfoMapKey();
+
+    bool operator<(const ServerInfoMapKey& other) const;
+
+    url::SchemeHostPort server;
+    NetworkIsolationKey network_isolation_key;
+  };
+
   class NET_EXPORT ServerInfoMap
-      : public base::MRUCache<url::SchemeHostPort, ServerInfo> {
+      : public base::MRUCache<ServerInfoMapKey, ServerInfo> {
    public:
     ServerInfoMap();
 
     // If there's an entry corresponding to |key|, brings that entry to the
     // front and returns an iterator to it. Otherwise, inserts an empty
     // ServerInfo using |key|, and returns an iterator to it.
-    iterator GetOrPut(const url::SchemeHostPort& key);
+    iterator GetOrPut(const ServerInfoMapKey& key);
 
     // Erases the ServerInfo identified by |server_info_it| if no fields have
     // data. The iterator must point to an entry in the map. Regardless of
@@ -200,19 +219,27 @@ class NET_EXPORT HttpServerProperties
   // disk.
   void Clear(base::OnceClosure callback);
 
-  // Returns true if |server| supports a network protocol which honors
-  // request prioritization.
+  // Returns true if |server|, in the context of |network_isolation_key|, has
+  // previously supported a network protocol which honors request
+  // prioritization.
+  //
   // Note that this also implies that the server supports request
   // multiplexing, since priorities imply a relationship between
   // multiple requests.
-  bool SupportsRequestPriority(const url::SchemeHostPort& server);
+  bool SupportsRequestPriority(
+      const url::SchemeHostPort& server,
+      const net::NetworkIsolationKey& network_isolation_key);
 
   // Returns the value set by SetSupportsSpdy(). If not set, returns false.
-  bool GetSupportsSpdy(const url::SchemeHostPort& server);
+  bool GetSupportsSpdy(const url::SchemeHostPort& server,
+                       const net::NetworkIsolationKey& network_isolation_key);
 
-  // Add |server| into the persistent store. Should only be called from IO
-  // thread.
-  void SetSupportsSpdy(const url::SchemeHostPort& server, bool supports_spdy);
+  // Records whether |server| supports H2 or not. Information is restricted to
+  // the context of |network_isolation_key|, to prevent cross-site information
+  // leakage.
+  void SetSupportsSpdy(const url::SchemeHostPort& server,
+                       const net::NetworkIsolationKey& network_isolation_key,
+                       bool supports_spdy);
 
   // Returns true if |server| has required HTTP/1.1 via HTTP/2 error code.
   bool RequiresHTTP11(const HostPortPair& server);
@@ -226,14 +253,17 @@ class NET_EXPORT HttpServerProperties
   // Modify SSLConfig to force HTTP/1.1 if necessary.
   void MaybeForceHTTP11(const HostPortPair& server, SSLConfig* ssl_config);
 
-  // Return all alternative services for |origin|, including broken ones.
-  // Returned alternative services never have empty hostnames.
+  // Return all alternative services for |origin|, learned in the context of
+  // |network_isolation_key|, including broken ones. Returned alternative
+  // services never have empty hostnames.
   AlternativeServiceInfoVector GetAlternativeServiceInfos(
-      const url::SchemeHostPort& origin);
+      const url::SchemeHostPort& origin,
+      const net::NetworkIsolationKey& network_isolation_key);
 
   // Set a single HTTP/2 alternative service for |origin|.  Previous
   // alternative services for |origin| are discarded.
   // |alternative_service.host| may be empty.
+  // TODO(mmenke):  Add NetworkIsolationKey argument.
   void SetHttp2AlternativeService(const url::SchemeHostPort& origin,
                                   const AlternativeService& alternative_service,
                                   base::Time expiration);
@@ -241,18 +271,20 @@ class NET_EXPORT HttpServerProperties
   // Set a single QUIC alternative service for |origin|.  Previous alternative
   // services for |origin| are discarded.
   // |alternative_service.host| may be empty.
+  // TODO(mmenke):  Add NetworkIsolationKey argument.
   void SetQuicAlternativeService(
       const url::SchemeHostPort& origin,
       const AlternativeService& alternative_service,
       base::Time expiration,
       const quic::ParsedQuicVersionVector& advertised_versions);
 
-  // Set alternative services for |origin|.  Previous alternative services for
-  // |origin| are discarded.
-  // Hostnames in |alternative_service_info_vector| may be empty.
+  // Set alternative services for |origin|, learned in the context of
+  // |network_isolation_key|.  Previous alternative services for |origin| are
+  // discarded. Hostnames in |alternative_service_info_vector| may be empty.
   // |alternative_service_info_vector| may be empty.
   void SetAlternativeServices(
       const url::SchemeHostPort& origin,
+      const net::NetworkIsolationKey& network_isolation_key,
       const AlternativeServiceInfoVector& alternative_service_info_vector);
 
   // Marks |alternative_service| as broken.
@@ -384,6 +416,12 @@ class NET_EXPORT HttpServerProperties
   typedef std::vector<std::string> CanonicalSuffixList;
   typedef std::set<HostPortPair> Http11ServerHostPortSet;
 
+  // Helper function to use the passed in parameters and
+  // |use_network_isolation_key_| to create a ServerInfoMapKey.
+  ServerInfoMapKey CreateServerInfoKey(
+      const url::SchemeHostPort& server,
+      const NetworkIsolationKey& network_isolation_key);
+
   // Return the iterator for |server|, or for its canonical host, or end. Skips
   // over ServerInfos without |alternative_service_info| populated.
   ServerInfoMap::const_iterator GetIteratorWithAlternativeServiceInfo(
@@ -445,6 +483,10 @@ class NET_EXPORT HttpServerProperties
 
   const base::TickClock* tick_clock_;  // Unowned
   base::Clock* clock_;                 // Unowned
+
+  // Cached value of kPartitionHttpServerPropertiesByNetworkIsolationKey
+  // feature. Cached to improve performance.
+  const bool use_network_isolation_key_;
 
   // Set to true once initial properties have been retrieved from disk by
   // |properties_manager_|. Always true if |properties_manager_| is nullptr.

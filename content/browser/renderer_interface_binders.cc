@@ -10,9 +10,11 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/no_destructor.h"
+#include "base/task/post_task.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/content_index/content_index_service_impl.h"
 #include "content/browser/cookie_store/cookie_store_context.h"
+#include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/locks/lock_manager.h"
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
@@ -23,6 +25,7 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/websockets/websocket_connector_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
@@ -31,14 +34,16 @@
 #include "content/public/common/content_switches.h"
 #include "media/mojo/mojom/video_decode_perf_history.mojom.h"
 #include "media/mojo/services/video_decode_perf_history.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/vibration_manager.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/shape_detection/public/mojom/barcodedetection_provider.mojom.h"
-#include "services/shape_detection/public/mojom/constants.mojom.h"
 #include "services/shape_detection/public/mojom/facedetection_provider.mojom.h"
+#include "services/shape_detection/public/mojom/shape_detection_service.mojom.h"
 #include "services/shape_detection/public/mojom/textdetection.mojom.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
@@ -94,6 +99,48 @@ class RendererInterfaceBinders {
       parameterized_binder_registry_;
 };
 
+void BindShapeDetectionServiceOnIOThread(
+    mojo::PendingReceiver<shape_detection::mojom::ShapeDetectionService>
+        receiver) {
+  auto* gpu = GpuProcessHost::Get();
+  if (gpu)
+    gpu->RunService(std::move(receiver));
+}
+
+shape_detection::mojom::ShapeDetectionService* GetShapeDetectionService() {
+  static base::NoDestructor<
+      mojo::Remote<shape_detection::mojom::ShapeDetectionService>>
+      remote;
+  if (!*remote) {
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&BindShapeDetectionServiceOnIOThread,
+                                  remote->BindNewPipeAndPassReceiver()));
+    remote->reset_on_disconnect();
+  }
+
+  return remote->get();
+}
+
+void BindBarcodeDetectionProvider(
+    shape_detection::mojom::BarcodeDetectionProviderRequest request,
+    RenderProcessHost* host,
+    const url::Origin& origin) {
+  GetShapeDetectionService()->BindBarcodeDetectionProvider(std::move(request));
+}
+
+void BindFaceDetectionProvider(
+    shape_detection::mojom::FaceDetectionProviderRequest request,
+    RenderProcessHost* host,
+    const url::Origin& origin) {
+  GetShapeDetectionService()->BindFaceDetectionProvider(std::move(request));
+}
+
+void BindTextDetection(shape_detection::mojom::TextDetectionRequest request,
+                       RenderProcessHost* host,
+                       const url::Origin& origin) {
+  GetShapeDetectionService()->BindTextDetection(std::move(request));
+}
+
 // Forwards service requests to Service Manager since the renderer cannot launch
 // out-of-process services on is own.
 template <typename Interface>
@@ -112,15 +159,13 @@ void ForwardServiceRequest(const char* service_name,
 // interface requests from frames, binders registered on the frame itself
 // override binders registered here.
 void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
-  parameterized_binder_registry_.AddInterface(base::Bind(
-      &ForwardServiceRequest<shape_detection::mojom::BarcodeDetectionProvider>,
-      shape_detection::mojom::kServiceName));
-  parameterized_binder_registry_.AddInterface(base::Bind(
-      &ForwardServiceRequest<shape_detection::mojom::FaceDetectionProvider>,
-      shape_detection::mojom::kServiceName));
   parameterized_binder_registry_.AddInterface(
-      base::Bind(&ForwardServiceRequest<shape_detection::mojom::TextDetection>,
-                 shape_detection::mojom::kServiceName));
+      base::BindRepeating(&BindBarcodeDetectionProvider));
+  parameterized_binder_registry_.AddInterface(
+      base::BindRepeating(&BindFaceDetectionProvider));
+  parameterized_binder_registry_.AddInterface(
+      base::BindRepeating(&BindTextDetection));
+
   parameterized_binder_registry_.AddInterface(
       base::Bind(&ForwardServiceRequest<device::mojom::VibrationManager>,
                  device::mojom::kServiceName));

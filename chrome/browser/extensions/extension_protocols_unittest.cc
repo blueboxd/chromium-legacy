@@ -167,7 +167,7 @@ class GetResult {
 class ExtensionProtocolsTestBase : public testing::Test {
  public:
   explicit ExtensionProtocolsTestBase(bool force_incognito)
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         rvh_test_enabler_(new content::RenderViewHostTestEnabler()),
         force_incognito_(force_incognito) {}
 
@@ -293,7 +293,7 @@ class ExtensionProtocolsTestBase : public testing::Test {
     return web_contents()->GetMainFrame();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<content::RenderViewHostTestEnabler> rvh_test_enabler_;
   std::unique_ptr<network::mojom::URLLoaderFactory> loader_factory_;
   std::unique_ptr<TestingProfile> testing_profile_;

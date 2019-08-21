@@ -7,8 +7,11 @@
 
 #import "components/autofill/ios/browser/autofill_client_ios_bridge.h"
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/values.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/payments/card_unmask_delegate.h"
 
@@ -22,8 +25,24 @@ class FormStructure;
 
 // Bridge for AutofillClient's method |ConfirmSaveCreditCardLocally|.
 - (void)confirmSaveCreditCardLocally:(const autofill::CreditCard&)creditCard
+               saveCreditCardOptions:
+                   (autofill::AutofillClient::SaveCreditCardOptions)
+                       saveCreditCardOptions
                             callback:(autofill::AutofillClient::
                                           LocalSaveCardPromptCallback)callback;
+
+// Bridge for AutofillClient's method |ConfirmSaveCreditCardToCloud|.
+- (void)confirmSaveCreditCardToCloud:(const autofill::CreditCard&)creditCard
+                        legalMessage:
+                            (std::unique_ptr<base::DictionaryValue>)legalMessage
+               saveCreditCardOptions:
+                   (autofill::AutofillClient::SaveCreditCardOptions)
+                       saveCreditCardOptions
+                            callback:(autofill::AutofillClient::
+                                          UploadSaveCardPromptCallback)callback;
+
+// Bridge for AutofillClient's method |CreditCardUploadCompleted|.
+- (void)handleCreditCardUploadCompleted:(BOOL)cardSaved;
 
 // Bridge for AutofillClient's method |ShowUnmaskPrompt|.
 - (void)

@@ -94,7 +94,7 @@ class InSessionPasswordChangeManagerTest : public testing::Test {
     EXPECT_FALSE(Notification().has_value());
   }
 
-  content::TestBrowserThreadBundle test_environment_{
+  content::BrowserTaskEnvironment test_environment_{
       base::test::TaskEnvironment::MainThreadType::UI,
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   TestingProfileManager profile_manager_{TestingBrowserProcess::GetGlobal()};

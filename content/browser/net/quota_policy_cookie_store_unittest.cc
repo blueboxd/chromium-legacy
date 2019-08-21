@@ -110,7 +110,7 @@ class QuotaPolicyCookieStoreTest : public testing::Test {
     DestroyStore();
   }
 
-  TestBrowserThreadBundle bundle_;
+  BrowserTaskEnvironment bundle_;
   const scoped_refptr<base::SequencedTaskRunner> background_task_runner_ =
       base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
   base::WaitableEvent loaded_event_;

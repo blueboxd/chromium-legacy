@@ -50,7 +50,7 @@ TEST(TranslateServiceTest, CheckTranslatableURL) {
 
 // Tests that download and history URLs are not translatable.
 TEST(TranslateServiceTest, DownloadsAndHistoryNotTranslated) {
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   TranslateService::InitializeForTesting(
       network::mojom::ConnectionType::CONNECTION_WIFI);
   EXPECT_FALSE(

@@ -49,7 +49,7 @@ class MockDeviceDescriptionService : public DeviceDescriptionService {
 class DialMediaSinkServiceImplTest : public ::testing::Test {
  public:
   DialMediaSinkServiceImplTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         data_decoder_service_(connector_factory_.RegisterInstance(
             data_decoder::mojom::kServiceName)),
         media_sink_service_(new DialMediaSinkServiceImpl(
@@ -102,7 +102,7 @@ class DialMediaSinkServiceImplTest : public ::testing::Test {
   }
 
  protected:
-  const content::TestBrowserThreadBundle thread_bundle_;
+  const content::BrowserTaskEnvironment task_environment_;
   service_manager::TestConnectorFactory connector_factory_;
   data_decoder::DataDecoderService data_decoder_service_;
 

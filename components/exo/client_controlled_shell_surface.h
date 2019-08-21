@@ -302,6 +302,8 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
 
   ash::WindowStateType pending_window_state_ = ash::WindowStateType::kNormal;
 
+  bool pending_always_on_top_ = false;
+
   ash::WindowPinType current_pin_;
 
   bool can_maximize_ = true;

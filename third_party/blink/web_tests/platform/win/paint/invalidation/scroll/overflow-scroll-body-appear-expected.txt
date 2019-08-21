@@ -18,6 +18,11 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
+          "object": "Scrolling background of LayoutView #document",
+          "rect": [0, 0, 2008, 2096],
+          "reason": "background"
+        },
+        {
           "object": "NGPhysicalTextFragment 'Bug 36461 - No vertical scrollbar after the CSS class change'",
           "rect": [118, 52, 370, 19],
           "reason": "geometry"

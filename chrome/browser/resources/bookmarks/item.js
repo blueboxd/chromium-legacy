@@ -248,7 +248,7 @@ Polymer({
   updateFavicon_: function(url) {
     this.$.icon.className = url ? 'website-icon' : 'folder-icon';
     this.$.icon.style.backgroundImage =
-        url ? cr.icon.getFavicon(url, false) : null;
+        url ? cr.icon.getFaviconForPageURL(url, false) : null;
   },
 
   /** @private */

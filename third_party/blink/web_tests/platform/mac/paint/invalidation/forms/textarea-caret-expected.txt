@@ -18,6 +18,16 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
+          "object": "HorizontalScrollbar",
+          "rect": [5, 5, 167, 44],
+          "reason": "chunk appeared"
+        },
+        {
+          "object": "LayoutTextControl TEXTAREA id='editor'",
+          "rect": [5, 5, 167, 44],
+          "reason": "chunk appeared"
+        },
+        {
           "object": "LayoutTextControl TEXTAREA id='editor'",
           "rect": [5, 5, 167, 44],
           "reason": "chunk appeared"
@@ -28,9 +38,29 @@
           "reason": "chunk appeared"
         },
         {
-          "object": "LayoutBlockFlow HTML",
+          "object": "LayoutTextControl TEXTAREA id='editor'",
+          "rect": [5, 5, 167, 44],
+          "reason": "chunk appeared"
+        },
+        {
+          "object": "LayoutTextControl TEXTAREA id='editor'",
+          "rect": [5, 5, 167, 44],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutNGBlockFlow HTML",
           "rect": [8, 8, 161, 38],
           "reason": "chunk disappeared"
+        },
+        {
+          "object": "LayoutTextControl TEXTAREA id='editor'",
+          "rect": [8, 8, 161, 38],
+          "reason": "chunk disappeared"
+        },
+        {
+          "object": "LayoutTextControl TEXTAREA id='editor'",
+          "rect": [8, 8, 161, 38],
+          "reason": "paint property change"
         },
         {
           "object": "LayoutTextControl TEXTAREA id='editor'",

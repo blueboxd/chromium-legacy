@@ -93,9 +93,9 @@ bool Increased(int current, int* last) {
   return increased;
 }
 
-base::string16 GetClipboardText(ui::ClipboardType clipboard_type) {
+base::string16 GetClipboardText(ui::ClipboardBuffer clipboard_buffer) {
   base::string16 clipboard_text;
-  ui::Clipboard::GetForCurrentThread()->ReadText(clipboard_type,
+  ui::Clipboard::GetForCurrentThread()->ReadText(clipboard_buffer,
                                                  &clipboard_text);
   return clipboard_text;
 }
@@ -1080,7 +1080,8 @@ TEST_F(LabelSelectionTest, MouseDrag) {
   EXPECT_STR_EQ(" mouse drag", GetSelectedText());
 
   event_generator()->PressKey(ui::VKEY_C, kControlCommandModifier);
-  EXPECT_STR_EQ(" mouse drag", GetClipboardText(ui::ClipboardType::kCopyPaste));
+  EXPECT_STR_EQ(" mouse drag",
+                GetClipboardText(ui::ClipboardBuffer::kCopyPaste));
 }
 
 TEST_F(LabelSelectionTest, MouseDragMultilineLTR) {
@@ -1277,14 +1278,14 @@ TEST_F(LabelSelectionTest, SelectionClipboard) {
   // selection clipboard.
   label()->SelectRange(gfx::Range(2, 5));
   EXPECT_STR_EQ("bel", GetSelectedText());
-  EXPECT_TRUE(GetClipboardText(ui::ClipboardType::kSelection).empty());
+  EXPECT_TRUE(GetClipboardText(ui::ClipboardBuffer::kSelection).empty());
 
   // Verify text selection using the mouse updates the selection clipboard.
   PerformMousePress(GetCursorPoint(5));
   PerformMouseDragTo(GetCursorPoint(0));
   PerformMouseRelease(GetCursorPoint(0));
   EXPECT_STR_EQ("Label", GetSelectedText());
-  EXPECT_STR_EQ("Label", GetClipboardText(ui::ClipboardType::kSelection));
+  EXPECT_STR_EQ("Label", GetClipboardText(ui::ClipboardBuffer::kSelection));
 }
 #endif
 
@@ -1303,7 +1304,7 @@ TEST_F(LabelSelectionTest, KeyboardActions) {
   EXPECT_EQ(initial_text, GetSelectedText());
 
   event_generator()->PressKey(ui::VKEY_C, kControlCommandModifier);
-  EXPECT_EQ(initial_text, GetClipboardText(ui::ClipboardType::kCopyPaste));
+  EXPECT_EQ(initial_text, GetClipboardText(ui::ClipboardBuffer::kCopyPaste));
 
   // The selection should get cleared on changing the text, but focus should not
   // be affected.

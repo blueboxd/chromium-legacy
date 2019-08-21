@@ -181,7 +181,7 @@ class MediaPerceptionAPIManagerTest : public testing::Test {
   TestUpstartClient* upstart_client() { return upstart_client_.get(); }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   content::TestBrowserContext browser_context_;
   std::unique_ptr<TestUpstartClient> upstart_client_;
 

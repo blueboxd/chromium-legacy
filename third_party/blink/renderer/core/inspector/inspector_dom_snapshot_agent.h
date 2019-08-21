@@ -97,7 +97,6 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
   void VisitDocument(Document*);
   int VisitNode(Node*, int parent_index);
   void VisitContainerChildren(Node* container, int parent_index);
-  void VisitPseudoLayoutChildren(Node* pseudo_node, int index);
   void VisitPseudoElements(Element* parent, int parent_index);
   std::unique_ptr<protocol::Array<int>> BuildArrayForElementAttributes(Node*);
   int BuildLayoutTreeNode(LayoutObject*, Node*, int node_index);
@@ -125,8 +124,6 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
       documents_;
   std::unique_ptr<protocol::DOMSnapshot::DocumentSnapshot> document_;
 
-  // Maps a style string vector to an index in |computed_styles_|. Used to avoid
-  // duplicate entries in |computed_styles_|.
   bool include_snapshot_dom_rects_ = false;
   std::unique_ptr<CSSPropertyFilter> css_property_filter_;
   // Maps a PaintLayer to its paint order index.

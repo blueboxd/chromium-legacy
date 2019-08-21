@@ -55,7 +55,7 @@ class QuickUnlockStorageUnitTest : public testing::Test {
         ->auth_token_->Reset();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
 
   DISALLOW_COPY_AND_ASSIGN(QuickUnlockStorageUnitTest);

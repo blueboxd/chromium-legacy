@@ -52,6 +52,9 @@ class CONTENT_EXPORT VirtualFidoDiscoveryFactory
   // authenticator matches the ID.
   VirtualAuthenticator* GetAuthenticator(const std::string& id);
 
+  // Returns all the authenticators attached to the factory.
+  std::vector<VirtualAuthenticator*> GetAuthenticators();
+
   // Removes the authenticator with the given |id|. Returns true if an
   // authenticator matched the |id|, false otherwise.
   bool RemoveAuthenticator(const std::string& id);

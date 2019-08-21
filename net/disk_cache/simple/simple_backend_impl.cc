@@ -143,6 +143,19 @@ void RunOperationAndCallback(
     copyable_callback.Run(operation_result);
 }
 
+// Same but for things that work with EntryResult.
+void RunEntryResultOperationAndCallback(
+    base::OnceCallback<EntryResult(EntryResultCallback)> operation,
+    EntryResultCallback operation_callback) {
+  base::RepeatingCallback<void(EntryResult)> copyable_callback;
+  if (operation_callback)
+    copyable_callback =
+        base::AdaptCallbackForRepeating(std::move(operation_callback));
+  EntryResult operation_result = std::move(operation).Run(copyable_callback);
+  if (operation_result.net_error() != net::ERR_IO_PENDING && copyable_callback)
+    copyable_callback.Run(std::move(operation_result));
+}
+
 void RecordIndexLoad(net::CacheType cache_type,
                      base::TimeTicks constructed_since,
                      int result) {
@@ -367,10 +380,9 @@ int32_t SimpleBackendImpl::GetEntryCount() const {
   return index_->GetEntryCount();
 }
 
-net::Error SimpleBackendImpl::OpenEntry(const std::string& key,
-                                        net::RequestPriority request_priority,
-                                        Entry** entry,
-                                        CompletionOnceCallback callback) {
+EntryResult SimpleBackendImpl::OpenEntry(const std::string& key,
+                                         net::RequestPriority request_priority,
+                                         EntryResultCallback callback) {
   const uint64_t entry_hash = simple_util::GetEntryHashKey(key);
 
   std::vector<PostDoomWaiter>* post_doom = nullptr;
@@ -387,23 +399,24 @@ net::Error SimpleBackendImpl::OpenEntry(const std::string& key,
           net::NetLogEventType::SIMPLE_CACHE_ENTRY_OPEN_CALL);
       log_for_entry.AddEventWithNetErrorCode(
           net::NetLogEventType::SIMPLE_CACHE_ENTRY_OPEN_END, net::ERR_FAILED);
-      return net::ERR_FAILED;
+      return EntryResult::MakeError(net::ERR_FAILED);
     }
 
-    base::OnceCallback<net::Error(CompletionOnceCallback)> operation =
+    base::OnceCallback<EntryResult(EntryResultCallback)> operation =
         base::BindOnce(&SimpleBackendImpl::OpenEntry, base::Unretained(this),
-                       key, request_priority, entry);
-    post_doom->emplace_back(base::BindOnce(
-        &RunOperationAndCallback, std::move(operation), std::move(callback)));
-    return net::ERR_IO_PENDING;
+                       key, request_priority);
+    post_doom->emplace_back(base::BindOnce(&RunEntryResultOperationAndCallback,
+                                           std::move(operation),
+                                           std::move(callback)));
+    return EntryResult::MakeError(net::ERR_IO_PENDING);
   }
-  return simple_entry->OpenEntry(entry, std::move(callback));
+  return simple_entry->OpenEntry(std::move(callback));
 }
 
-net::Error SimpleBackendImpl::CreateEntry(const std::string& key,
-                                          net::RequestPriority request_priority,
-                                          Entry** entry,
-                                          CompletionOnceCallback callback) {
+EntryResult SimpleBackendImpl::CreateEntry(
+    const std::string& key,
+    net::RequestPriority request_priority,
+    EntryResultCallback callback) {
   DCHECK_LT(0u, key.size());
   const uint64_t entry_hash = simple_util::GetEntryHashKey(key);
 
@@ -420,22 +433,22 @@ net::Error SimpleBackendImpl::CreateEntry(const std::string& key,
 
   // If that doesn't work either, retry this once doom is done.
   if (!simple_entry) {
-    base::OnceCallback<net::Error(CompletionOnceCallback)> operation =
+    base::OnceCallback<EntryResult(EntryResultCallback)> operation =
         base::BindOnce(&SimpleBackendImpl::CreateEntry, base::Unretained(this),
-                       key, request_priority, entry);
-    post_doom->emplace_back(base::BindOnce(
-        &RunOperationAndCallback, std::move(operation), std::move(callback)));
-    return net::ERR_IO_PENDING;
+                       key, request_priority);
+    post_doom->emplace_back(base::BindOnce(&RunEntryResultOperationAndCallback,
+                                           std::move(operation),
+                                           std::move(callback)));
+    return EntryResult::MakeError(net::ERR_IO_PENDING);
   }
 
-  return simple_entry->CreateEntry(entry, std::move(callback));
+  return simple_entry->CreateEntry(std::move(callback));
 }
 
-net::Error SimpleBackendImpl::OpenOrCreateEntry(
+EntryResult SimpleBackendImpl::OpenOrCreateEntry(
     const std::string& key,
     net::RequestPriority request_priority,
-    EntryWithOpened* entry_struct,
-    CompletionOnceCallback callback) {
+    EntryResultCallback callback) {
   DCHECK_LT(0u, key.size());
   const uint64_t entry_hash = simple_util::GetEntryHashKey(key);
 
@@ -449,22 +462,20 @@ net::Error SimpleBackendImpl::OpenOrCreateEntry(
     simple_entry = MaybeOptimisticCreateForPostDoom(
         entry_hash, key, request_priority, post_doom);
     if (simple_entry) {
-      entry_struct->opened = false;
-      return simple_entry->CreateEntry(&entry_struct->entry,
-                                       std::move(callback));
+      return simple_entry->CreateEntry(std::move(callback));
     } else {
       // If that doesn't work either, retry this once doom is done.
-      base::OnceCallback<net::Error(CompletionOnceCallback)> operation =
+      base::OnceCallback<EntryResult(EntryResultCallback)> operation =
           base::BindOnce(&SimpleBackendImpl::OpenOrCreateEntry,
-                         base::Unretained(this), key, request_priority,
-                         entry_struct);
-      post_doom->emplace_back(base::BindOnce(
-          &RunOperationAndCallback, std::move(operation), std::move(callback)));
-      return net::ERR_IO_PENDING;
+                         base::Unretained(this), key, request_priority);
+      post_doom->emplace_back(
+          base::BindOnce(&RunEntryResultOperationAndCallback,
+                         std::move(operation), std::move(callback)));
+      return EntryResult::MakeError(net::ERR_IO_PENDING);
     }
   }
 
-  return simple_entry->OpenOrCreateEntry(entry_struct, std::move(callback));
+  return simple_entry->OpenOrCreateEntry(std::move(callback));
 }
 
 scoped_refptr<SimpleEntryImpl>
@@ -565,26 +576,25 @@ class SimpleBackendImpl::SimpleIterator final : public Iterator {
       : backend_(backend) {}
 
   // From Backend::Iterator:
-  net::Error OpenNextEntry(Entry** next_entry,
-                           CompletionOnceCallback callback) override {
+  EntryResult OpenNextEntry(EntryResultCallback callback) override {
     if (!backend_)
-      return net::ERR_FAILED;
-    CompletionOnceCallback open_next_entry_impl = base::BindOnce(
-        &SimpleIterator::OpenNextEntryImpl, weak_factory_.GetWeakPtr(),
-        next_entry, std::move(callback));
+      return EntryResult::MakeError(net::ERR_FAILED);
+    CompletionOnceCallback open_next_entry_impl =
+        base::BindOnce(&SimpleIterator::OpenNextEntryImpl,
+                       weak_factory_.GetWeakPtr(), std::move(callback));
     backend_->index_->ExecuteWhenReady(std::move(open_next_entry_impl));
-    return net::ERR_IO_PENDING;
+    return EntryResult::MakeError(net::ERR_IO_PENDING);
   }
 
-  void OpenNextEntryImpl(Entry** next_entry,
-                         CompletionOnceCallback callback,
+  void OpenNextEntryImpl(EntryResultCallback callback,
                          int index_initialization_error_code) {
     if (!backend_) {
-      std::move(callback).Run(net::ERR_FAILED);
+      std::move(callback).Run(EntryResult::MakeError(net::ERR_FAILED));
       return;
     }
     if (index_initialization_error_code != net::OK) {
-      std::move(callback).Run(index_initialization_error_code);
+      std::move(callback).Run(EntryResult::MakeError(
+          static_cast<net::Error>(index_initialization_error_code)));
       return;
     }
     if (!hashes_to_enumerate_)
@@ -597,31 +607,29 @@ class SimpleBackendImpl::SimpleIterator final : public Iterator {
       uint64_t entry_hash = hashes_to_enumerate_->back();
       hashes_to_enumerate_->pop_back();
       if (backend_->index()->Has(entry_hash)) {
-        *next_entry = nullptr;
-        CompletionOnceCallback continue_iteration = base::BindOnce(
-            &SimpleIterator::CheckIterationReturnValue,
-            weak_factory_.GetWeakPtr(), next_entry, copyable_callback);
-        int error_code_open = backend_->OpenEntryFromHash(
-            entry_hash, next_entry, std::move(continue_iteration));
-        if (error_code_open == net::ERR_IO_PENDING)
+        EntryResultCallback continue_iteration =
+            base::BindOnce(&SimpleIterator::CheckIterationReturnValue,
+                           weak_factory_.GetWeakPtr(), copyable_callback);
+        EntryResult open_result = backend_->OpenEntryFromHash(
+            entry_hash, std::move(continue_iteration));
+        if (open_result.net_error() == net::ERR_IO_PENDING)
           return;
-        if (error_code_open != net::ERR_FAILED) {
-          copyable_callback.Run(error_code_open);
+        if (open_result.net_error() != net::ERR_FAILED) {
+          copyable_callback.Run(std::move(open_result));
           return;
         }
       }
     }
-    copyable_callback.Run(net::ERR_FAILED);
+    copyable_callback.Run(EntryResult::MakeError(net::ERR_FAILED));
   }
 
-  void CheckIterationReturnValue(Entry** entry,
-                                 CompletionOnceCallback callback,
-                                 int error_code) {
-    if (error_code == net::ERR_FAILED) {
-      OpenNextEntry(entry, std::move(callback));
+  void CheckIterationReturnValue(EntryResultCallback callback,
+                                 EntryResult result) {
+    if (result.net_error() == net::ERR_FAILED) {
+      OpenNextEntry(std::move(callback));
       return;
     }
-    std::move(callback).Run(error_code);
+    std::move(callback).Run(std::move(result));
   }
 
  private:
@@ -841,23 +849,22 @@ SimpleBackendImpl::CreateOrFindActiveOrDoomedEntry(
   return base::WrapRefCounted(it->second);
 }
 
-net::Error SimpleBackendImpl::OpenEntryFromHash(
-    uint64_t entry_hash,
-    Entry** entry,
-    CompletionOnceCallback callback) {
+EntryResult SimpleBackendImpl::OpenEntryFromHash(uint64_t entry_hash,
+                                                 EntryResultCallback callback) {
   auto it = entries_pending_doom_.find(entry_hash);
   if (it != entries_pending_doom_.end()) {
-    base::OnceCallback<net::Error(CompletionOnceCallback)> operation =
+    base::OnceCallback<EntryResult(EntryResultCallback)> operation =
         base::BindOnce(&SimpleBackendImpl::OpenEntryFromHash,
-                       base::Unretained(this), entry_hash, entry);
-    it->second.emplace_back(base::BindOnce(
-        &RunOperationAndCallback, std::move(operation), std::move(callback)));
-    return net::ERR_IO_PENDING;
+                       base::Unretained(this), entry_hash);
+    it->second.emplace_back(base::BindOnce(&RunEntryResultOperationAndCallback,
+                                           std::move(operation),
+                                           std::move(callback)));
+    return EntryResult::MakeError(net::ERR_IO_PENDING);
   }
 
   auto has_active = active_entries_.find(entry_hash);
   if (has_active != active_entries_.end()) {
-    return OpenEntry(has_active->second->key(), net::HIGHEST, entry,
+    return OpenEntry(has_active->second->key(), net::HIGHEST,
                      std::move(callback));
   }
 
@@ -865,10 +872,10 @@ net::Error SimpleBackendImpl::OpenEntryFromHash(
       GetCacheType(), path_, cleanup_tracker_.get(), entry_hash,
       entry_operations_mode_, this, file_tracker_, net_log_,
       GetNewEntryPriority(net::HIGHEST));
-  CompletionOnceCallback backend_callback =
+  EntryResultCallback backend_callback =
       base::BindOnce(&SimpleBackendImpl::OnEntryOpenedFromHash, AsWeakPtr(),
-                     entry_hash, entry, simple_entry, std::move(callback));
-  return simple_entry->OpenEntry(entry, std::move(backend_callback));
+                     entry_hash, simple_entry, std::move(callback));
+  return simple_entry->OpenEntry(std::move(backend_callback));
 }
 
 net::Error SimpleBackendImpl::DoomEntryFromHash(
@@ -901,15 +908,14 @@ net::Error SimpleBackendImpl::DoomEntryFromHash(
 
 void SimpleBackendImpl::OnEntryOpenedFromHash(
     uint64_t hash,
-    Entry** entry,
     const scoped_refptr<SimpleEntryImpl>& simple_entry,
-    CompletionOnceCallback callback,
-    int error_code) {
-  if (error_code != net::OK) {
-    std::move(callback).Run(error_code);
+    EntryResultCallback callback,
+    EntryResult result) {
+  if (result.net_error() != net::OK) {
+    std::move(callback).Run(std::move(result));
     return;
   }
-  DCHECK(*entry);
+
   std::pair<EntryMap::iterator, bool> insert_result =
       active_entries_.insert(EntryMap::value_type(hash, simple_entry.get()));
   EntryMap::iterator& it = insert_result.first;
@@ -919,13 +925,16 @@ void SimpleBackendImpl::OnEntryOpenedFromHash(
     // the entry opened from hash in the |active_entries_|. We now provide the
     // proxy object to the entry.
     it->second->SetActiveEntryProxy(ActiveEntryProxy::Create(hash, this));
-    std::move(callback).Run(net::OK);
+    std::move(callback).Run(std::move(result));
   } else {
     // The entry was made active while we waiting for the open from hash to
     // finish. The entry created from hash needs to be closed, and the one
     // in |active_entries_| can be returned to the caller.
+    Entry* entry_from_result = result.ReleaseEntry();
+    DCHECK_EQ(entry_from_result, simple_entry.get());
     simple_entry->Close();
-    it->second->OpenEntry(entry, std::move(callback));
+    EntryResult reopen_result = it->second->OpenEntry(std::move(callback));
+    DCHECK_EQ(reopen_result.net_error(), net::ERR_IO_PENDING);
   }
 }
 

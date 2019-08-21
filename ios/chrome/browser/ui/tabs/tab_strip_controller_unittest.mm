@@ -128,7 +128,7 @@ class TabStripControllerTest : public PlatformTest {
     [tab_model_ browserStateDestroyed];
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   TabStripControllerTestTabModel* tab_model_;
   TabStripController* controller_;

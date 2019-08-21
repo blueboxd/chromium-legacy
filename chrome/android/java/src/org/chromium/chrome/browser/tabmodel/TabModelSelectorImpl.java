@@ -57,8 +57,9 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
      * @param supportUndo Whether a tab closure can be undone.
      */
     public TabModelSelectorImpl(Activity activity, TabCreatorManager tabCreatorManager,
-            TabPersistencePolicy persistencePolicy, boolean supportUndo, boolean isTabbedActivity) {
-        super(tabCreatorManager);
+            TabPersistencePolicy persistencePolicy, boolean supportUndo, boolean isTabbedActivity,
+            boolean startIncognito) {
+        super(tabCreatorManager, startIncognito);
         mUma = new TabModelSelectorUma(activity);
         final TabPersistentStoreObserver persistentStoreObserver =
                 new TabPersistentStoreObserver() {
@@ -126,7 +127,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
         TabModel incognitoModel = new IncognitoTabModel(new IncognitoTabModelImplCreator(
                 regularTabCreator, incognitoTabCreator, mUma, mOrderController,
                 mTabContentManager, mTabSaver, this));
-        initialize(isIncognitoSelected(), normalModel, incognitoModel);
+        initialize(normalModel, incognitoModel);
         regularTabCreator.setTabModel(normalModel, mOrderController);
         incognitoTabCreator.setTabModel(incognitoModel, mOrderController);
         mTabSaver.setTabContentManager(mTabContentManager);
@@ -208,7 +209,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
      */
     @VisibleForTesting
     public void initializeForTesting(TabModel normalModel, TabModel incognitoModel) {
-        initialize(isIncognitoSelected(), normalModel, incognitoModel);
+        initialize(normalModel, incognitoModel);
     }
 
     @Override

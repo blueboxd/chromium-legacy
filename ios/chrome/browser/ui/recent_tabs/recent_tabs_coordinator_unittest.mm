@@ -200,7 +200,7 @@ class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
   }
 
  protected:
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   GoogleServiceAuthError no_error_;
   IOSChromeScopedTestingLocalState local_state_;
   signin::IdentityTestEnvironment identity_test_env_;

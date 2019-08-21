@@ -19,7 +19,7 @@ class ErrorScreensHistogramHelperTest : public testing::Test {
     second_helper_.reset(new ErrorScreensHistogramHelper("TestScreen2"));
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::HistogramTester histograms_;
   std::unique_ptr<ErrorScreensHistogramHelper> helper_;
   std::unique_ptr<ErrorScreensHistogramHelper> second_helper_;

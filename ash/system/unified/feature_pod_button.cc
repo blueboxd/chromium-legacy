@@ -8,7 +8,6 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/default_color_constants.h"
-#include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/unified/feature_pod_controller_base.h"
 #include "ash/system/unified/unified_system_tray_view.h"
@@ -66,12 +65,17 @@ void FeaturePodIconButton::PaintButtonContents(gfx::Canvas* canvas) {
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
 
-  SkColor color = kUnifiedMenuButtonColor;
+  SkColor color = AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
+      AshColorProvider::ControlsLayerType::kInactiveControlBackground,
+      kUnifiedMenuButtonColor);
   if (GetEnabled()) {
-    if (toggled_)
-      color = kUnifiedMenuButtonColorActive;
+    if (toggled_) {
+      color = AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
+          AshColorProvider::ControlsLayerType::kActiveControlBackground,
+          kUnifiedMenuButtonColorActive);
+    }
   } else {
-    color = kUnifiedMenuButtonColorDisabled;
+    color = AshColorProvider::Get()->GetDisabledColor(color);
   }
   flags.setColor(color);
 

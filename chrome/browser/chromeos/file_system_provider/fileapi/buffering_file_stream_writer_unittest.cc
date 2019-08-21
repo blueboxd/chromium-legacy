@@ -112,7 +112,7 @@ class FileSystemProviderBufferingFileStreamWriterTest : public testing::Test {
 
   ~FileSystemProviderBufferingFileStreamWriterTest() override {}
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   scoped_refptr<net::StringIOBuffer> short_text_buffer_;
   scoped_refptr<net::StringIOBuffer> long_text_buffer_;
 };

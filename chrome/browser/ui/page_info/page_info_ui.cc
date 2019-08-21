@@ -266,17 +266,22 @@ PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
                                        IDS_PAGE_INFO_UNWANTED_SOFTWARE_SUMMARY,
                                        IDS_PAGE_INFO_UNWANTED_SOFTWARE_DETAILS);
     case PageInfo::SAFE_BROWSING_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE:
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+      return CreateSecurityDescriptionForPasswordReuse(PasswordType::SYNC_GAIA);
+#endif
+      NOTREACHED();
+      break;
     case PageInfo::SAFE_BROWSING_STATUS_SIGNED_IN_NON_SYNC_PASSWORD_REUSE:
 #if BUILDFLAG(FULL_SAFE_BROWSING)
       return CreateSecurityDescriptionForPasswordReuse(
-          /*is_enterprise_password=*/false);
+          PasswordType::NON_SYNC_GAIA);
 #endif
       NOTREACHED();
       break;
     case PageInfo::SAFE_BROWSING_STATUS_ENTERPRISE_PASSWORD_REUSE:
 #if BUILDFLAG(FULL_SAFE_BROWSING)
       return CreateSecurityDescriptionForPasswordReuse(
-          /*is_enterprise_password=*/true);
+          PasswordType::NON_GAIA_ENTERPRISE);
 #endif
       NOTREACHED();
       break;

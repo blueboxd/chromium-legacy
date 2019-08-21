@@ -127,7 +127,12 @@
   {
     "prefix": "gpu-rasterization",
     "base": "images",
-    "args": ["--force-gpu-rasterization"]
+    "args": ["--force-gpu-rasterization",  "--enable-features=DecodeLossyWebPImagesToYUV"]
+  },
+  {
+    "prefix": "gpu-rasterization-disable-yuv",
+    "base": "images/yuv-decode-eligible",
+    "args": ["--force-gpu-rasterization", "--disable-features=DecodeLossyWebPImagesToYUV"]
   },
   {
     "prefix": "exotic-color-space",

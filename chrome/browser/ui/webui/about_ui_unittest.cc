@@ -127,7 +127,7 @@ class ChromeOSTermsTest : public testing::Test {
         request_url, std::move(wc_getter),
         base::BindRepeating(&TestDataReceiver::OnDataReceived,
                             base::Unretained(data_receiver)));
-    test_browser_thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   const base::FilePath& PreinstalledOfflineResourcesPath() {
@@ -138,7 +138,7 @@ class ChromeOSTermsTest : public testing::Test {
   base::ScopedTempDir preinstalled_offline_resources_dir_;
   base::FilePath arc_tos_dir_;
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   chromeos::system::ScopedFakeStatisticsProvider statistics_provider_;
 

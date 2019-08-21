@@ -54,7 +54,7 @@ class MediaRouterBaseTest : public testing::Test {
   void TearDown() override { router_.Shutdown(); }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   MockMediaRouterBase router_;
   MediaRoutesObserver* routes_observer_;
 };

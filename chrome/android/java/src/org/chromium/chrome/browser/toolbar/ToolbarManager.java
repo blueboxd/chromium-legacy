@@ -19,6 +19,7 @@ import android.text.TextUtils;
 import android.view.View;
 import android.view.View.OnAttachStateChangeListener;
 import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
@@ -29,6 +30,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.TabLoadStatus;
 import org.chromium.chrome.browser.ThemeColorProvider;
@@ -92,6 +94,7 @@ import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
 import org.chromium.chrome.browser.toolbar.top.ToolbarLayout;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator;
 import org.chromium.chrome.browser.toolbar.top.ViewShiftingActionBarDelegate;
+import org.chromium.chrome.browser.toolbar.top.tab_switcher_action_menu.TabSwitcherActionMenuCoordinator;
 import org.chromium.chrome.browser.translate.TranslateBridge;
 import org.chromium.chrome.browser.ui.ImmersiveModeManager;
 import org.chromium.chrome.browser.util.ColorUtils;
@@ -947,9 +950,17 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
         mTabModelSelector = tabModelSelector;
 
+        OnLongClickListener tabSwitcherLongClickHandler = null;
+
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_SWITCHER_LONGPRESS_MENU)) {
+            tabSwitcherLongClickHandler =
+                    TabSwitcherActionMenuCoordinator.createOnLongClickListener(
+                            (id) -> mActivity.onOptionsItemSelected(id, null));
+        }
+
         mToolbar.initializeWithNative(tabModelSelector, controlsVisibilityDelegate, layoutManager,
-                tabSwitcherClickHandler, newTabClickHandler, bookmarkClickHandler,
-                customTabsBackClickHandler);
+                tabSwitcherClickHandler, tabSwitcherLongClickHandler, newTabClickHandler,
+                bookmarkClickHandler, customTabsBackClickHandler);
 
         mToolbar.addOnAttachStateChangeListener(new OnAttachStateChangeListener() {
             @Override

@@ -89,7 +89,7 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
   base::FilePath kTemplateFilepath(kTemplateFilename);
   const char kNoDisplayDesktopFile[] = "[Desktop Entry]\nNoDisplay=true";
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
 
   // No existing shortcuts.
   {

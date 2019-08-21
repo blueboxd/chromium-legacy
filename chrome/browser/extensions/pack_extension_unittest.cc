@@ -35,7 +35,7 @@ class PackExtensionTest : public testing::Test {
     return startup_helper_.PackExtension(command_line);
   }
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   base::FilePath test_data_dir_;
   StartupHelper startup_helper_;

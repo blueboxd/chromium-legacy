@@ -59,7 +59,7 @@ class MessageNode(base.ContentNode):
 
   # For splitting a list of things that can be separated by commas or
   # whitespace
-  _SPLIT_RE = lazy_re.compile('\s*,\s*|\s+')
+  _SPLIT_RE = lazy_re.compile(r'\s*,\s*|\s+')
 
   def __init__(self):
     super(MessageNode, self).__init__()
@@ -101,7 +101,7 @@ class MessageNode(base.ContentNode):
     return True
 
   def SetReplaceEllipsis(self, value):
-    '''Sets whether to replace ... with \u2026.
+    r'''Sets whether to replace ... with \u2026.
     '''
     self._replace_ellipsis = value
 

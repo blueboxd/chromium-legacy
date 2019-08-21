@@ -149,7 +149,6 @@
 <translation id="2921219216347069551">Ko thể chia sẻ trang</translation>
 <translation id="2923448633003185837">Dán và truy cập</translation>
 <translation id="292639812446257861">Đánh dấu là chưa đọc</translation>
-<translation id="2933759065870693102">Đèn pin</translation>
 <translation id="2958718410589002129">Mật khẩu</translation>
 <translation id="2969979262385602596">Không đăng nhập được. Vui lòng thử lại sau.</translation>
 <translation id="298306318844797842">Thêm phương thức thanh toán...</translation>
@@ -305,6 +304,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="5317780077021120954">Lưu</translation>
 <translation id="5327248766486351172">Tên</translation>
 <translation id="5388358297987318779">Mở hình ảnh</translation>
+<translation id="5407969256130905701">Hủy các thay đổi</translation>
 <translation id="5409365236829784218">Không có ứng dụng nào được cài đặt có thể mở tệp này.</translation>
 <translation id="5416022985862681400">7 ngày qua</translation>
 <translation id="5433691172869980887">Đã sao chép tên người dùng</translation>
@@ -510,6 +510,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="8428213095426709021">Cài đặt</translation>
 <translation id="8458397775385147834">1 dấu trang đã bị xóa</translation>
 <translation id="8487700953926739672">Khả dụng ngoại tuyến</translation>
+<translation id="8490978609246021741">Lưu các thay đổi</translation>
 <translation id="8503813439785031346">Tên người dùng</translation>
 <translation id="850600235656508448">Mở trong chế độ ẩn danh</translation>
 <translation id="8517375800490286174">Giấy phép nguồn mở</translation>

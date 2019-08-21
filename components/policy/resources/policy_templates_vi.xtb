@@ -824,11 +824,11 @@
 
       Bạn có thể chỉ định từng tùy chọn cài đặt trong thuộc tính JSON:
 
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Nếu bạn đặt thành <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, thì người dùng sẽ có thể kích hoạt luồng Powerwash để cài đặt bản cập nhật chương trình cơ sở <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Nếu bạn đặt thành <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, thì người dùng sẽ có thể kích hoạt quy trình Powerwash để cài đặt bản cập nhật chương trình cơ sở <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: Nếu bạn đặt thành <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, thì người dùng có thể gọi luồng cập nhật chương trình cơ sở <ph name="TPM_FIRMWARE_UPDATE_TPM" />. Luồng cập nhật này bảo toàn trạng thái trên toàn thiết bị (bao gồm cả phần đăng ký doanh nghiệp), nhưng lại làm mất dữ liệu của người dùng. Luồng cập nhật này bắt đầu có từ phiên bản 68.
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: Nếu bạn đặt thành <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, thì người dùng có thể gọi quy trình cập nhật chương trình cơ sở <ph name="TPM_FIRMWARE_UPDATE_TPM" />. Quy trình cập nhật này bảo toàn trạng thái trên toàn thiết bị (bao gồm cả phần đăng ký doanh nghiệp), nhưng lại làm mất dữ liệu của người dùng. Quy trình cập nhật này bắt đầu có từ phiên bản 68.
 
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: Kiểm soát cách các bản cập nhật chương trình cơ sở <ph name="TPM_FIRMWARE_UPDATE_TPM" /> tự động được thực thi cho chương trình cơ sở <ph name="TPM_FIRMWARE_UPDATE_TPM" /> dễ bị tấn công. Tất cả các luồng bảo toàn trạng thái trên thiết bị cục bộ.
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: Kiểm soát cách các bản cập nhật chương trình cơ sở <ph name="TPM_FIRMWARE_UPDATE_TPM" /> tự động được thực thi cho chương trình cơ sở <ph name="TPM_FIRMWARE_UPDATE_TPM" /> dễ bị tấn công. Tất cả các quy trình bảo toàn trạng thái trên thiết bị cục bộ.
         Nếu bạn không đặt hoặc đặt chính sách này thành 1, thì các bản cập nhật chương trình cơ sở TPM sẽ không được thực thi.
         Nếu bạn đặt chính sách này thành 2, chương trình cơ sở <ph name="TPM_FIRMWARE_UPDATE_TPM" /> sẽ được cập nhật vào lần khởi động lại tiếp theo sau khi người dùng xác nhận bản cập nhật.
         Nếu bạn đặt chính sách này thành 3, chương trình cơ sở <ph name="TPM_FIRMWARE_UPDATE_TPM" /> sẽ được cập nhật vào lần khởi động lại tiếp theo.
@@ -1660,15 +1660,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Nếu không được đặt hoặc được đặt thành False thì người dùng có thể chuyển các tệp đến Google Drive.</translation>
 <translation id="3915395663995367577">URL tới một tệp .pac proxy</translation>
-<translation id="3920892052017026701">Đặt mức phần trăm bắt đầu sạc pin tùy chỉnh.
-
-          Pin bắt đầu sạc khi lượng pin còn lại thấp hơn giá trị bắt đầu sạc pin tùy chỉnh này.
-
-          DeviceBatteryChargeCustomStartCharging phải nhỏ hơn DeviceBatteryChargeCustomStopCharging.
-
-          Chính sách này chỉ được dùng nếu bạn đặt DeviceBatteryChargeMode thành tùy chỉnh.
-
-          Nếu bạn không định cấu hình hoặc không đặt chính sách này, thì chế độ sạc pin tiêu chuẩn sẽ được áp dụng.</translation>
 <translation id="3925377537407648234">Đặt độ phân giải màn hình và hệ số tỷ lệ</translation>
 <translation id="3939893074578116847">Gửi gói mạng tới máy chủ quản lý để theo dõi trạng thái trực tuyến, để cho phép
       máy chủ phát hiện xem thiết bị có ngoại tuyến hay không.
@@ -2992,7 +2983,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu chính sách này được đặt thành sai, người dùng sẽ không được báo cáo.</translation>
 <translation id="6394350458541421998">Chính sách này đã chấm dứt kể từ phiên bản <ph name="PRODUCT_OS_NAME" /> 29. Vui lòng sử dụng chính sách PresentationScreenDimDelayScale thay vào đó.</translation>
 <translation id="6401669939808766804">Đăng xuất người dùng</translation>
-<translation id="6403746242226534223">Kiểm tra danh tiếng Duyệt web an toàn của các URL đã truy cập trong thời gian thực</translation>
+<translation id="6403746242226534223">Kiểm tra danh tiếng của các URL đã truy cập theo thời gian thực theo thông tin của tính năng Duyệt web an toàn</translation>
 <translation id="6406448383934634215">Nếu chọn 'Mở một danh sách URL' làm thao tác khởi động, thì bạn có thể chỉ định danh sách URL sẽ được mở. Nếu bạn không đặt chính sách, thì sẽ không có URL nào mở khi khởi động.
 
           Chính sách này chỉ hoạt động nếu bạn đặt chính sách 'RestoreOnStartup' thành 'RestoreOnStartupIsURLs'.
@@ -3664,15 +3655,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Nếu giá trị của chính sách này là 0, kích thước bộ nhớ đệm mặc định sẽ được sử dụng nhưng người dùng không thể thay đổi kích thước đó.
 
       Nếu chính sách này không được đặt, kích thước mặc định sẽ được sử dụng và người dùng có thể ghi đè kích thước đó bằng cờ --disk-cache-size.</translation>
-<translation id="759389052790680884">Đặt mức phần trăm ngừng sạc pin tùy chỉnh.
-
-          Pin sẽ ngừng sạc khi đạt đến giá trị ngừng sạc pin tùy chỉnh.
-
-          DeviceBatteryChargeCustomStartCharging phải nhỏ hơn DeviceBatteryChargeCustomStopCharging.
-
-          Chính sách này chỉ được dùng nếu bạn đặt DeviceBatteryChargeMode thành tùy chỉnh.
-
-          Nếu bạn không định cấu hình hoặc không đặt chính sách này, thì chế độ sạc pin tiêu chuẩn sẽ được áp dụng.</translation>
 <translation id="759957074386651883">Cài đặt Duyệt web an toàn</translation>
 <translation id="7604169113182304895">Các ứng dụng Android có thể chọn sử dụng danh sách này một cách tự nguyện. Bạn không thể buộc các ứng dụng đó sử dụng danh sách.</translation>
 <translation id="7612157962821894603">Cờ trên toàn hệ thống được áp dụng khi khởi động <ph name="PRODUCT_NAME" /></translation>
@@ -3766,9 +3748,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="7750991880413385988">Mở trang Tab mới</translation>
 <translation id="7754704193130578113">Hỏi vị trí lưu từng tệp trước khi tải xuống</translation>
 <translation id="7761446981238915769">Định cấu hình danh sách ứng dụng đã cài đặt trên màn hình đăng nhập</translation>
-<translation id="7763479091692861127"> Các loại kết nối được phép sử dụng cho cập nhật hệ điều hành. Các cập nhật hệ điều hành có khả năng gây quá tải cho kết nối do kích thước của chúng và có thể phải chịu thêm phí. Do đó, theo mặc định chúng không được bật cho các loại kết nối hiện được xem là đắt đỏ, gồm có WiMax, Bluetooth và kết nối di động.
-
-      Các mã định danh loại kết nối được nhận dạng là "ethernet", "wifi", "wimax", "bluetooth" và "cellular".</translation>
 <translation id="7763614521440615342">Hiển thị các đề xuất nội dung trên trang Tab mới</translation>
 <translation id="7765879851993224640">Cho phép sử dụng tính năng Đăng nhập bằng Smart Lock.</translation>
 <translation id="7772346342637974431">Chỉ định khoảng thời gian kể từ khi người dùng không có thao tác nhập cho đến khi hộp thoại cảnh báo hiển thị khi chạy bằng pin.
@@ -4066,10 +4045,10 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 
       Để biết thêm thông tin về chính sách <ph name="IEEM_SITELIST_POLICY" /> của Internet Explorer, hãy truy cập vào trang web sau: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="8402079500086185021">Luôn mở các tệp PDF từ bên ngoài</translation>
-<translation id="8405691014775178834">Cho phép người dùng này truy cập gốc vào vùng chứa Crostini.
+<translation id="8405691014775178834">Cho phép người dùng này truy cập ở cấp gốc vào vùng chứa Crostini.
 
-      Nếu bạn không đặt hoặc đặt chính sách này thành true, thì người dùng này sẽ có quyền truy cập gốc vào vùng chứa Crostini.
-      Nếu bạn đặt chính sách này thành false, thì người dùng này sẽ không có quyền truy cập gốc vào cả vùng chứa Crostini hiện có lẫn vùng chứa Crostini mới.</translation>
+      Nếu bạn không đặt hoặc đặt chính sách này thành true, thì người dùng này sẽ có quyền truy cập cấp gốc vào vùng chứa Crostini.
+      Nếu bạn đặt chính sách này thành false, thì người dùng này sẽ không có quyền truy cập cấp gốc vào cả vùng chứa Crostini hiện có lẫn vùng chứa Crostini mới.</translation>
 <translation id="8417305981081876834">Đặt độ dài tối đa của mã PIN màn hình khóa</translation>
 <translation id="841977920223099909">Trình kích hoạt cảnh báo bảo vệ mật khẩu</translation>
 <translation id="8424255554404582727">Đặt chế độ xoay màn hình mặc định, được áp dụng lại mỗi lần khởi động lại</translation>

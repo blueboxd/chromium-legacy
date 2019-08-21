@@ -529,9 +529,9 @@ VideoInputDeviceCapabilities::VideoInputDeviceCapabilities(
       facing_mode(facing_mode) {}
 
 VideoInputDeviceCapabilities::VideoInputDeviceCapabilities(
-    VideoInputDeviceCapabilities&& other) = default;
+    VideoInputDeviceCapabilities&& other) noexcept = default;
 VideoInputDeviceCapabilities& VideoInputDeviceCapabilities::operator=(
-    VideoInputDeviceCapabilities&& other) = default;
+    VideoInputDeviceCapabilities&& other) noexcept = default;
 
 VideoInputDeviceCapabilities::~VideoInputDeviceCapabilities() = default;
 
@@ -557,10 +557,10 @@ WebMediaStreamTrack::FacingMode ToWebFacingMode(
 
 VideoDeviceCaptureCapabilities::VideoDeviceCaptureCapabilities() = default;
 VideoDeviceCaptureCapabilities::VideoDeviceCaptureCapabilities(
-    VideoDeviceCaptureCapabilities&& other) = default;
+    VideoDeviceCaptureCapabilities&& other) noexcept = default;
 VideoDeviceCaptureCapabilities::~VideoDeviceCaptureCapabilities() = default;
 VideoDeviceCaptureCapabilities& VideoDeviceCaptureCapabilities::operator=(
-    VideoDeviceCaptureCapabilities&& other) = default;
+    VideoDeviceCaptureCapabilities&& other) noexcept = default;
 
 VideoCaptureSettings SelectSettingsVideoDeviceCapture(
     const VideoDeviceCaptureCapabilities& capabilities,

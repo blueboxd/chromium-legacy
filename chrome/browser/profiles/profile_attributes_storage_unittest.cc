@@ -179,7 +179,7 @@ class ProfileAttributesStorageTest : public testing::Test {
   TestingProfileManager testing_profile_manager_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   ProfileAttributesTestObserver observer_;
 };
 

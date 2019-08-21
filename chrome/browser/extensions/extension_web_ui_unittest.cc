@@ -63,7 +63,7 @@ class ExtensionWebUITest : public testing::Test {
 
   std::unique_ptr<TestingProfile> profile_;
   ExtensionService* extension_service_;
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
 #if defined OS_CHROMEOS
   chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;

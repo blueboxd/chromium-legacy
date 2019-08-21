@@ -127,7 +127,7 @@ class SpellingServiceClientTest
     return false;
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingSpellingServiceClient client_;
   TestingProfile profile_;
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -207,7 +207,7 @@ TEST_P(SpellingServiceClientTest, RequestTextCheck) {
       base::WideToUTF16(test_case.request_text),
       base::BindOnce(&SpellingServiceClientTest::OnTextCheckComplete,
                      base::Unretained(this), 0));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Verify that the expected endpoint was hit (REST vs RPC).
   ASSERT_EQ(requested_url.path(), expected_request_url.path());

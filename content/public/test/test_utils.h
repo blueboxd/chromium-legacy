@@ -65,13 +65,13 @@ void RunThisRunLoop(base::RunLoop* run_loop);
 void RunAllPendingInMessageLoop();
 
 // Deprecated: For BrowserThread::IO use
-// TestBrowserThreadBundle::RunIOThreadUntilIdle. For the main thread use
+// BrowserTaskEnvironment::RunIOThreadUntilIdle. For the main thread use
 // RunLoop. In non-unit-tests use RunLoop::QuitClosure to observe async events
 // rather than flushing entire threads.
 void RunAllPendingInMessageLoop(BrowserThread::ID thread_id);
 
 // Runs all tasks on the current thread and ThreadPool threads until idle.
-// Note: Prefer TestBrowserThreadBundle::RunUntilIdle() in unit tests.
+// Note: Prefer BrowserTaskEnvironment::RunUntilIdle() in unit tests.
 void RunAllTasksUntilIdle();
 
 // Get task to quit the given RunLoop. It allows a few generations of pending
@@ -276,7 +276,7 @@ class WindowedNotificationObserver : public NotificationObserver {
 // Include this class as a member variable in your test harness if you take
 // advantage of this functionality to ensure that the in-process utility thread
 // is torn down correctly. See http://crbug.com/316919 for more information.
-// Note: this class should be declared after the TestBrowserThreadBundle and
+// Note: this class should be declared after the BrowserTaskEnvironment and
 // ShadowingAtExitManager (if it exists) as it will need to be run before they
 // are torn down.
 class InProcessUtilityThreadHelper : public BrowserChildProcessObserver {

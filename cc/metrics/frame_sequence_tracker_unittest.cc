@@ -5,6 +5,7 @@
 #include "cc/metrics/frame_sequence_tracker.h"
 
 #include "base/macros.h"
+#include "cc/metrics/compositor_frame_reporting_controller.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,7 +20,10 @@ class FrameSequenceTrackerTest : public testing::Test {
   const uint32_t kMainDamage = 0x2;
 
   FrameSequenceTrackerTest()
-      : tracker_(
+      : compositor_frame_reporting_controller_(
+            std::make_unique<CompositorFrameReportingController>()),
+        collection_(compositor_frame_reporting_controller_.get()),
+        tracker_(
             collection_.CreateTracker(FrameSequenceTrackerType::kTouchScroll)) {
   }
   ~FrameSequenceTrackerTest() override = default;
@@ -69,8 +73,9 @@ class FrameSequenceTrackerTest : public testing::Test {
   }
 
  protected:
+  std::unique_ptr<CompositorFrameReportingController>
+      compositor_frame_reporting_controller_;
   FrameSequenceTrackerCollection collection_;
-
   std::unique_ptr<FrameSequenceTracker> tracker_;
 };
 

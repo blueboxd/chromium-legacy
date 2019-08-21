@@ -602,14 +602,29 @@ IndexedDBConnectionCoordinator::ExecuteTask(bool has_connections) {
     case RequestState::kPendingLocks:
     case RequestState::kPendingTransactionComplete:
       return {ExecuteTaskResult::kPendingAsyncWork, leveldb::Status()};
-    case RequestState::kDone:
+    case RequestState::kDone: {
+      // Move |request_to_discard| out of |request_queue_| then
+      // |request_queue_.pop()|. We do this because |request_to_discard|'s dtor
+      // calls OnConnectionClosed and OnNoConnections, which interact with
+      // |request_queue_| assuming the queue no longer holds
+      // |request_to_discard|.
+      auto request_to_discard = std::move(request_queue_.front());
       request_queue_.pop();
+      request_to_discard.reset();
       return {request_queue_.empty() ? ExecuteTaskResult::kDone
                                      : ExecuteTaskResult::kMoreTasks,
               leveldb::Status::OK()};
+    }
     case RequestState::kError: {
       leveldb::Status status = request->status();
+      // Move |request_to_discard| out of |request_queue_| then
+      // |request_queue_.pop()|. We do this because |request_to_discard|'s dtor
+      // calls OnConnectionClosed and OnNoConnections, which interact with
+      // |request_queue_| assuming the queue no longer holds
+      // |request_to_discard|.
+      auto request_to_discard = std::move(request_queue_.front());
       request_queue_.pop();
+      request_to_discard.reset();
       return {ExecuteTaskResult::kError, status};
     }
   }

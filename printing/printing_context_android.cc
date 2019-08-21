@@ -121,6 +121,7 @@ void PrintingContextAndroid::AskUserForSettingsReply(
     std::move(callback_).Run(FAILED);
     return;
   }
+  ResetSettings();
 
   // We use device name variable to store the file descriptor.  This is hacky
   // but necessary. Since device name is not necessary for the upstream
@@ -245,7 +246,7 @@ PrintingContext::Result PrintingContextAndroid::DocumentDone() {
     return CANCEL;
   DCHECK(in_print_job_);
 
-  ResetSettings();
+  DeleteSettings();
   return OK;
 }
 

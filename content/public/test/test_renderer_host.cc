@@ -292,7 +292,7 @@ void RenderViewHostTestHarness::TearDown() {
   // Although this isn't required by many, some subclasses members require that
   // the task environment is gone by the time that they are destroyed (akin to
   // browser shutdown).
-  thread_bundle_.reset();
+  task_environment_.reset();
 }
 
 std::unique_ptr<BrowserContext>
@@ -313,7 +313,7 @@ void RenderViewHostTestHarness::SetRenderProcessHostFactory(
 }
 
 RenderViewHostTestHarness::RenderViewHostTestHarness(
-    std::unique_ptr<TestBrowserThreadBundle> thread_bundle)
-    : thread_bundle_(std::move(thread_bundle)) {}
+    std::unique_ptr<BrowserTaskEnvironment> task_environment)
+    : task_environment_(std::move(task_environment)) {}
 
 }  // namespace content

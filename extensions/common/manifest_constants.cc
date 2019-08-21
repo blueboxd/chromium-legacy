@@ -272,7 +272,7 @@ const char kBackgroundRequiredForPlatformApps[] =
     "Packaged apps must have a background page or background scripts.";
 const char kBackgroundSpecificationInvalidForManifestV3[] =
     "The \"*\" key cannot be used with manifest_version 3. Use the "
-    "\"service_worker\" key instead.";
+    "\"background.service_worker\" key instead.";
 const char kCannotAccessAboutUrl[] =
     "Cannot access \"*\" at origin \"*\". Extension must have permission to "
     "access the frame's origin, and matchAboutBlank must be true.";

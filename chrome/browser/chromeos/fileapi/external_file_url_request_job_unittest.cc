@@ -131,7 +131,7 @@ constexpr char kExpectedFileContents[] =
 class ExternalFileURLRequestJobTest : public testing::Test {
  protected:
   ExternalFileURLRequestJobTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         integration_service_factory_callback_(base::Bind(
             &ExternalFileURLRequestJobTest::CreateDriveIntegrationService,
             base::Unretained(this))),
@@ -246,7 +246,7 @@ class ExternalFileURLRequestJobTest : public testing::Test {
 
   drive::FileSystemInterface* GetFileSystem() { return fake_file_system_; }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   content::TestServiceManagerContext context_;
   drive::DriveIntegrationServiceFactory::FactoryCallback
       integration_service_factory_callback_;

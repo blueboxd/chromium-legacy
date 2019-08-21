@@ -45,8 +45,8 @@ class ExtensionTestBrowserContext : public content::TestBrowserContext {
 namespace extensions {
 
 ExtensionsTest::ExtensionsTest(
-    std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle)
-    : thread_bundle_(std::move(thread_bundle)),
+    std::unique_ptr<content::BrowserTaskEnvironment> task_environment)
+    : task_environment_(std::move(task_environment)),
       rvh_test_enabler_(
           std::make_unique<content::RenderViewHostTestEnabler>()) {}
 
@@ -54,7 +54,7 @@ ExtensionsTest::~ExtensionsTest() {
   // Destroy the task runners before nulling the browser/utility clients, as
   // posted tasks may use them.
   rvh_test_enabler_.reset();
-  thread_bundle_.reset();
+  task_environment_.reset();
   content::SetUtilityClientForTesting(nullptr);
 }
 

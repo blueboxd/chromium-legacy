@@ -124,6 +124,14 @@ void ContentPasswordManagerDriver::GeneratedPasswordAccepted(
   GetPasswordGenerationAgent()->GeneratedPasswordAccepted(password);
 }
 
+void ContentPasswordManagerDriver::GeneratedPasswordAccepted(
+    const autofill::FormData& form_data,
+    uint32_t generation_element_id,
+    const base::string16& password) {
+  GetPasswordManager()->OnGeneratedPasswordAccepted(
+      this, form_data, generation_element_id, password);
+}
+
 void ContentPasswordManagerDriver::FillSuggestion(
     const base::string16& username,
     const base::string16& password) {

@@ -62,6 +62,9 @@ class OrderIterator {
  private:
   void Reset();
 
+  // Returns the order to use for |child|.
+  int ResolvedOrder(const LayoutBox& child) const;
+
   const LayoutBox* container_box_;
 
   LayoutBox* current_child_ = nullptr;

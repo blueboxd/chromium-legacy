@@ -242,9 +242,9 @@ cc::Layer* ImageLayerBridge::CcLayer() const {
 }
 
 ImageLayerBridge::RegisteredBitmap::RegisteredBitmap() = default;
-ImageLayerBridge::RegisteredBitmap::RegisteredBitmap(RegisteredBitmap&& other) =
-    default;
+ImageLayerBridge::RegisteredBitmap::RegisteredBitmap(
+    RegisteredBitmap&& other) noexcept = default;
 ImageLayerBridge::RegisteredBitmap& ImageLayerBridge::RegisteredBitmap::
-operator=(RegisteredBitmap&& other) = default;
+operator=(RegisteredBitmap&& other) noexcept = default;
 
 }  // namespace blink

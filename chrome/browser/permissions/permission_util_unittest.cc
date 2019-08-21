@@ -13,7 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 class PermissionUtilTest : public testing::Test {
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(PermissionUtilTest, ScopedRevocationReporter) {

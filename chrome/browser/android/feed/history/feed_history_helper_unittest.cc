@@ -57,7 +57,7 @@ class FeedHistoryHelperTest : public testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   history::HistoryService* history_service_;
   TestingProfile profile_;
   std::unique_ptr<FeedHistoryHelper> feed_history_helper_;

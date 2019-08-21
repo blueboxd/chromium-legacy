@@ -70,7 +70,9 @@ class PLATFORM_EXPORT CachedMetadata : public RefCounted<CachedMetadata> {
 
   ~CachedMetadata() = default;
 
-  const Vector<uint8_t>& SerializedData() const { return serialized_data_; }
+  base::span<const uint8_t> SerializedData() const {
+    return base::make_span(serialized_data_.data(), serialized_data_.size());
+  }
 
   uint32_t DataTypeID() const {
     DCHECK_GE(serialized_data_.size(), kCachedMetaDataStart);

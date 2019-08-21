@@ -57,7 +57,7 @@ class BookmarkCounterTest : public testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   std::unique_ptr<base::RunLoop> run_loop_;
 

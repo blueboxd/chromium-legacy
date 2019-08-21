@@ -37,7 +37,6 @@ ConditionalCacheDeletionHelper::ConditionalCacheDeletionHelper(
     base::RepeatingCallback<bool(const disk_cache::Entry*)> condition)
     : cache_(cache),
       condition_(std::move(condition)),
-      current_entry_(nullptr),
       previous_entry_(nullptr) {
 }
 
@@ -75,15 +74,22 @@ int ConditionalCacheDeletionHelper::DeleteAndDestroySelfWhenFinished(
   completion_callback_ = std::move(completion_callback);
   iterator_ = cache_->CreateIterator();
 
-  IterateOverEntries(net::OK);
+  // Any status other than OK (since no entry), IO_PENDING, or FAILED would
+  // work here.
+  IterateOverEntries(
+      disk_cache::EntryResult::MakeError(net::ERR_CACHE_OPEN_FAILURE));
+
+  // DeleteAndDestroySelfWhenFinished() itself is always async since
+  // |completion_callback| is always posted and never run directly.
   return net::ERR_IO_PENDING;
 }
 
 ConditionalCacheDeletionHelper::~ConditionalCacheDeletionHelper() {}
 
-void ConditionalCacheDeletionHelper::IterateOverEntries(int error) {
+void ConditionalCacheDeletionHelper::IterateOverEntries(
+    disk_cache::EntryResult result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  while (error != net::ERR_IO_PENDING) {
+  while (result.net_error() != net::ERR_IO_PENDING) {
     // If the entry obtained in the previous iteration matches the condition,
     // mark it for deletion. The iterator is already one step forward, so it
     // won't be invalidated. Always close the previous entry so it does not
@@ -94,7 +100,7 @@ void ConditionalCacheDeletionHelper::IterateOverEntries(int error) {
       previous_entry_->Close();
     }
 
-    if (error == net::ERR_FAILED) {
+    if (result.net_error() == net::ERR_FAILED) {
       // The iteration finished successfully or we can no longer iterate
       // (e.g. the cache was destroyed). We cannot distinguish between the two,
       // but we know that there is nothing more that we can do, so we return OK.
@@ -105,9 +111,8 @@ void ConditionalCacheDeletionHelper::IterateOverEntries(int error) {
       return;
     }
 
-    previous_entry_ = current_entry_;
-    error = iterator_->OpenNextEntry(
-        &current_entry_,
+    previous_entry_ = result.ReleaseEntry();
+    result = iterator_->OpenNextEntry(
         base::BindOnce(&ConditionalCacheDeletionHelper::IterateOverEntries,
                        base::Unretained(this)));
   }

@@ -104,7 +104,8 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
     EmbeddedWorkerInstanceClientImpl* owner,
     blink::mojom::EmbeddedWorkerStartTimingPtr start_timing,
-    blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request,
+    mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
+        preference_watcher_receiver,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_loaders,
     mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
         subresource_loader_updater,
@@ -116,7 +117,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
       is_starting_installed_worker_(is_starting_installed_worker),
       script_url_to_skip_throttling_(script_url_to_skip_throttling),
       renderer_preferences_(std::move(renderer_preferences)),
-      preference_watcher_request_(std::move(preference_watcher_request)),
+      preference_watcher_receiver_(std::move(preference_watcher_receiver)),
       initiator_thread_task_runner_(std::move(initiator_thread_task_runner)),
       proxy_(nullptr),
       pending_service_worker_request_(std::move(service_worker_request)),
@@ -388,7 +389,7 @@ void ServiceWorkerContextClient::ReportConsoleMessage(
 scoped_refptr<blink::WebWorkerFetchContext>
 ServiceWorkerContextClient::CreateWorkerFetchContextOnInitiatorThread() {
   DCHECK(initiator_thread_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(preference_watcher_request_.is_pending());
+  DCHECK(preference_watcher_receiver_.is_valid());
 
   // TODO(bashi): Consider changing ServiceWorkerFetchContextImpl to take
   // URLLoaderFactoryInfo.
@@ -404,7 +405,7 @@ ServiceWorkerContextClient::CreateWorkerFetchContextOnInitiatorThread() {
       GetContentClient()
           ->renderer()
           ->CreateWebSocketHandshakeThrottleProvider(),
-      std::move(preference_watcher_request_),
+      std::move(preference_watcher_receiver_),
       std::move(pending_subresource_loader_updater_));
 }
 

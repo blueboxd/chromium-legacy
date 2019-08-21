@@ -56,6 +56,9 @@ import androidx.browser.customtabs.CustomTabColorSchemeParams;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.browser.customtabs.CustomTabsSessionToken;
 import androidx.browser.customtabs.TrustedWebUtils;
+import androidx.browser.trusted.TrustedWebActivityIntentBuilder;
+import androidx.browser.trusted.sharing.ShareData;
+import androidx.browser.trusted.sharing.ShareTarget;
 
 /**
  * A model class that parses the incoming intent for Custom Tabs specific customization data.
@@ -323,7 +326,7 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
         mIsTrustedWebActivity = IntentUtils.safeGetBooleanExtra(
                 intent, TrustedWebUtils.EXTRA_LAUNCH_AS_TRUSTED_WEB_ACTIVITY, false);
         mTrustedWebActivityAdditionalOrigins = IntentUtils.safeGetStringArrayListExtra(intent,
-                TrustedWebUtils.EXTRA_ADDITIONAL_TRUSTED_ORIGINS);
+                TrustedWebActivityIntentBuilder.EXTRA_ADDITIONAL_TRUSTED_ORIGINS);
         mTitleVisibilityState = IntentUtils.safeGetIntExtra(
                 intent, CustomTabsIntent.EXTRA_TITLE_VISIBILITY_STATE, CustomTabsIntent.NO_TITLE);
         mShowShareItem = IntentUtils.safeGetBooleanExtra(intent,
@@ -846,7 +849,7 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     /**
      * @return Whether the Custom Tab should attempt to display a Trusted Web Activity.
      */
-    boolean isTrustedWebActivity() {
+    public boolean isTrustedWebActivity() {
         return mIsTrustedWebActivity;
     }
 
@@ -949,5 +952,39 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
         boolean isEnabled =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_TARGET_TRANSLATE_LANGUAGE);
         return isEnabled ? mTranslateLanguage : null;
+    }
+
+    /**
+     * Returns {@link ShareTarget} describing the share target, or null if the intent is not about
+     * sharing.
+     */
+    @Nullable
+    public ShareTarget getShareTarget() {
+        Bundle bundle = IntentUtils.safeGetBundleExtra(mIntent,
+                TrustedWebActivityIntentBuilder.EXTRA_SHARE_TARGET);
+        if (bundle == null) return null;
+        try {
+            return ShareTarget.fromBundle(bundle);
+        } catch (Throwable e) {
+            // Catch unparcelling errors.
+            return null;
+        }
+    }
+
+    /**
+     * Returns {@link ShareData} describing the data to be shared, or null if the intent is not
+     * about sharing.
+     */
+    @Nullable
+    public ShareData getShareData() {
+        Bundle bundle = IntentUtils.safeGetParcelableExtra(mIntent,
+                TrustedWebActivityIntentBuilder.EXTRA_SHARE_DATA);
+        if (bundle == null) return null;
+        try {
+            return ShareData.fromBundle(bundle);
+        } catch (Throwable e) {
+            // Catch unparcelling errors.
+            return null;
+        }
     }
 }

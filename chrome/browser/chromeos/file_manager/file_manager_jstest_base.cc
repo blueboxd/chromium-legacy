@@ -40,7 +40,9 @@ class TestFilesDataSource : public content::URLDataSource {
       const content::WebContents::Getter& wc_getter,
       const content::URLDataSource::GotDataCallback& callback) override {
     base::PostTaskWithTraits(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+        FROM_HERE,
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskPriority::USER_BLOCKING},
         base::BindOnce(&TestFilesDataSource::ReadFile, base::Unretained(this),
                        path, callback));
   }

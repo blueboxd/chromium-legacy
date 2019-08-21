@@ -59,7 +59,7 @@ static void FlushTaskRunner(base::SequencedTaskRunner* task_runner) {
 class WebRtcRtpDumpWriterTest : public testing::Test {
  public:
   WebRtcRtpDumpWriterTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         temp_dir_(new base::ScopedTempDir()) {}
 
   void SetUp() override {
@@ -231,7 +231,7 @@ class WebRtcRtpDumpWriterTest : public testing::Test {
     return true;
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<base::ScopedTempDir> temp_dir_;
   base::FilePath incoming_dump_path_;
   base::FilePath outgoing_dump_path_;

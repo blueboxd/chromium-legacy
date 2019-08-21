@@ -162,7 +162,7 @@ class TestScreenWinManager final : public TestScreenWinInitializer {
 
   HWND CreateFakeHwnd(const gfx::Rect& bounds) override {
     EXPECT_EQ(screen_win_, nullptr);
-    hwnd_map_.insert(std::pair<HWND, gfx::Rect>(++hwndLast_, bounds));
+    hwnd_map_.emplace(++hwndLast_, bounds);
     return hwndLast_;
   }
 

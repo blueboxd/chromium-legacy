@@ -10,7 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_app_manager.h"
 #include "chromeos/services/multidevice_setup/public/cpp/android_sms_pairing_state_tracker.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "url/gurl.h"
 
@@ -54,7 +54,8 @@ class AndroidSmsPairingStateTrackerImpl
   Profile* profile_;
   AndroidSmsAppManager* android_sms_app_manager_;
 
-  mojo::Binding<network::mojom::CookieChangeListener> cookie_listener_binding_;
+  mojo::Receiver<network::mojom::CookieChangeListener>
+      cookie_listener_receiver_{this};
   bool was_paired_on_last_update_ = false;
   base::WeakPtrFactory<AndroidSmsPairingStateTrackerImpl> weak_ptr_factory_{
       this};

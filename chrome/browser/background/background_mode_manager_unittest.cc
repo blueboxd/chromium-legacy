@@ -181,7 +181,7 @@ class BackgroundModeManagerTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<base::CommandLine> command_line_;
 
   std::unique_ptr<TestingProfileManager> profile_manager_;
@@ -270,7 +270,7 @@ class BackgroundModeManagerWithExtensionsTest : public testing::Test {
 
  private:
   // Required for extension service.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   // BackgroundModeManager actually affects Chrome start/stop state,
   // tearing down our thread bundle before we've had chance to clean

@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <array>
 #include <map>
+#include <set>
 
 #include "components/policy/core/common/policy_merger.h"
 #include "components/policy/core/common/policy_pref_names.h"
@@ -11,14 +13,19 @@
 
 namespace policy {
 
-const char* const kDictionaryPoliciesToMerge[] = {
+namespace {
+
+constexpr std::array<const char*, 7> kDictionaryPoliciesToMerge{
     key::kContentPackManualBehaviorURLs,
     key::kExtensionSettings,
     key::kDeviceLoginScreenPowerManagement,
     key::kKeyPermissions,
     key::kPowerManagementIdleSettings,
     key::kScreenBrightnessPercent,
-    key::kScreenLockDelays};
+    key::kScreenLockDelays,
+};
+
+}  // namespace
 
 // static
 bool PolicyMerger::ConflictCanBeMerged(const PolicyMap::Entry& conflict,
@@ -39,7 +46,7 @@ PolicyMerger::PolicyMerger() = default;
 PolicyMerger::~PolicyMerger() = default;
 
 PolicyListMerger::PolicyListMerger(
-    const std::set<std::string> policies_to_merge)
+    base::flat_set<std::string> policies_to_merge)
     : policies_to_merge_(std::move(policies_to_merge)) {}
 PolicyListMerger::~PolicyListMerger() = default;
 
@@ -120,10 +127,10 @@ void PolicyListMerger::DoMerge(PolicyMap::Entry* policy) const {
 }
 
 PolicyDictionaryMerger::PolicyDictionaryMerger(
-    std::set<std::string> policies_to_merge)
+    base::flat_set<std::string> policies_to_merge)
     : policies_to_merge_(std::move(policies_to_merge)),
-      allowed_policies_(std::begin(kDictionaryPoliciesToMerge),
-                        std::end(kDictionaryPoliciesToMerge)) {}
+      allowed_policies_(kDictionaryPoliciesToMerge.begin(),
+                        kDictionaryPoliciesToMerge.end()) {}
 PolicyDictionaryMerger::~PolicyDictionaryMerger() = default;
 
 void PolicyDictionaryMerger::Merge(PolicyMap::PolicyMapType* policies) const {
@@ -135,7 +142,7 @@ void PolicyDictionaryMerger::Merge(PolicyMap::PolicyMapType* policies) const {
 }
 
 void PolicyDictionaryMerger::SetAllowedPoliciesForTesting(
-    std::set<std::string> allowed_policies) {
+    base::flat_set<std::string> allowed_policies) {
   allowed_policies_ = std::move(allowed_policies);
 }
 

@@ -9,6 +9,7 @@
 #include "base/strings/strcat.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
+#include "cc/metrics/compositor_frame_reporting_controller.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "ui/gfx/presentation_feedback.h"
@@ -45,7 +46,10 @@ int GetIndexForMetric(ThreadType thread_type, FrameSequenceTrackerType type) {
 ////////////////////////////////////////////////////////////////////////////////
 // FrameSequenceTrackerCollection
 
-FrameSequenceTrackerCollection::FrameSequenceTrackerCollection() {}
+FrameSequenceTrackerCollection::FrameSequenceTrackerCollection(
+    CompositorFrameReportingController* compositor_frame_reporting_controller)
+    : compositor_frame_reporting_controller_(
+          compositor_frame_reporting_controller) {}
 FrameSequenceTrackerCollection::~FrameSequenceTrackerCollection() {
   removal_trackers_.clear();
   DCHECK(frame_trackers_.empty());
@@ -59,6 +63,8 @@ FrameSequenceTrackerCollection::CreateTracker(FrameSequenceTrackerType type) {
       type, base::BindOnce(&FrameSequenceTrackerCollection::RemoveFrameTracker,
                            base::Unretained(this))));
   AddFrameTracker(tracker.get());
+
+  compositor_frame_reporting_controller_->AddActiveTracker(type);
   return tracker;
 }
 
@@ -66,6 +72,8 @@ void FrameSequenceTrackerCollection::ScheduleRemoval(
     std::unique_ptr<FrameSequenceTracker> tracker) {
   if (!tracker)
     return;
+
+  compositor_frame_reporting_controller_->RemoveActiveTracker(tracker->type_);
   tracker->ScheduleTerminate();
   removal_trackers_.push_back(std::move(tracker));
 }

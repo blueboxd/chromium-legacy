@@ -21,8 +21,8 @@ async function expectTypeErrorWithMessage(promise, message) {
 
 function createDescription({id = 'id', title = 'title', description = 'description',
                             category = 'homepage', iconUrl = '/resources/square.png',
-                            launchUrl = scope}) {
-  return {id, title, description, category, iconUrl, launchUrl};
+                            launchUrl = scope, includeIcons = true}) {
+  return {id, title, description, category, icons: includeIcons ? [{src: iconUrl}] : [], launchUrl};
 }
 
 // Creates a Promise test for |func| given the |description|. The |func| will be

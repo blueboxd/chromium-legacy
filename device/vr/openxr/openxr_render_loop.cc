@@ -4,19 +4,25 @@
 
 #include "device/vr/openxr/openxr_render_loop.h"
 
+#include <directxmath.h>
+
 #include "device/vr/openxr/openxr_api_wrapper.h"
 #include "device/vr/openxr/openxr_gamepad_helper.h"
 
 namespace device {
 
-OpenXrRenderLoop::OpenXrRenderLoop() : XRCompositorCommon() {}
+OpenXrRenderLoop::OpenXrRenderLoop(
+    base::RepeatingCallback<void(mojom::VRDisplayInfoPtr)>
+        on_display_info_changed)
+    : XRCompositorCommon(),
+      on_display_info_changed_(std::move(on_display_info_changed)) {}
 
 OpenXrRenderLoop::~OpenXrRenderLoop() {
   Stop();
 }
 
-void OpenXrRenderLoop::GetViewSize(uint32_t* width, uint32_t* height) const {
-  openxr_->GetViewSize(width, height);
+gfx::Size OpenXrRenderLoop::GetViewSize() const {
+  return openxr_->GetViewSize();
 }
 
 mojom::XRFrameDataPtr OpenXrRenderLoop::GetNextFrameData() {
@@ -45,6 +51,20 @@ mojom::XRFrameDataPtr OpenXrRenderLoop::GetNextFrameData() {
       frame_data->pose->position = position;
   }
 
+  bool updated_display_info = UpdateDisplayInfo();
+  bool updated_eye_parameters = UpdateEyeParameters();
+
+  if (updated_eye_parameters) {
+    frame_data->left_eye = current_display_info_->left_eye.Clone();
+    frame_data->right_eye = current_display_info_->right_eye.Clone();
+  }
+
+  if (updated_display_info || updated_eye_parameters) {
+    main_thread_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(on_display_info_changed_,
+                                  current_display_info_.Clone()));
+  }
+
   return frame_data;
 }
 
@@ -55,6 +75,7 @@ mojom::XRGamepadDataPtr OpenXrRenderLoop::GetNextGamepadData() {
 bool OpenXrRenderLoop::StartRuntime() {
   DCHECK(!openxr_);
   DCHECK(!gamepad_helper_);
+  DCHECK(!current_display_info_);
 
   // The new wrapper object is stored in a temporary variable instead of
   // openxr_ so that the local unique_ptr cleans up the object if starting
@@ -78,10 +99,7 @@ bool OpenXrRenderLoop::StartRuntime() {
   // Starting session succeeded so we can set the member variable.
   // Any additional code added below this should never fail.
   openxr_ = std::move(openxr);
-
-  uint32_t width, height;
-  GetViewSize(&width, &height);
-  texture_helper_.SetDefaultSize(gfx::Size(width, height));
+  texture_helper_.SetDefaultSize(GetViewSize());
 
   DCHECK(openxr_);
   DCHECK(gamepad_helper_);
@@ -90,9 +108,13 @@ bool OpenXrRenderLoop::StartRuntime() {
 }
 
 void OpenXrRenderLoop::StopRuntime() {
-  openxr_ = nullptr;
-  texture_helper_.Reset();
+  // Has to reset gamepad_helper_ before reset openxr_. If we destroy openxr_
+  // first, gamepad_helper_destructor will try to call the actual openxr runtime
+  // rather than the mock in tests.
   gamepad_helper_.reset();
+  openxr_ = nullptr;
+  current_display_info_ = nullptr;
+  texture_helper_.Reset();
 }
 
 void OpenXrRenderLoop::OnSessionStart() {
@@ -105,6 +127,123 @@ bool OpenXrRenderLoop::PreComposite() {
 
 bool OpenXrRenderLoop::SubmitCompositedFrame() {
   return XR_SUCCEEDED(openxr_->EndFrame());
+}
+
+// Return true if display info has changed.
+bool OpenXrRenderLoop::UpdateDisplayInfo() {
+  bool changed = false;
+
+  if (!current_display_info_) {
+    current_display_info_ = mojom::VRDisplayInfo::New();
+    current_display_info_->id = device::mojom::XRDeviceId::OPENXR_DEVICE_ID;
+
+    current_display_info_->capabilities = mojom::VRDisplayCapabilities::New();
+    current_display_info_->capabilities->can_provide_environment_integration =
+        false;
+
+    current_display_info_->webvr_default_framebuffer_scale = 1.0f;
+    current_display_info_->webxr_default_framebuffer_scale = 1.0f;
+
+    changed = true;
+  }
+
+  std::string runtime_name = openxr_->GetRuntimeName();
+  if (current_display_info_->display_name != runtime_name) {
+    current_display_info_->display_name = runtime_name;
+    changed = true;
+  }
+
+  bool has_position = openxr_->HasPosition();
+  if (current_display_info_->capabilities->has_position != has_position) {
+    current_display_info_->capabilities->has_position = has_position;
+    changed = true;
+  }
+
+  // OpenXR is initialized when creating the instance and getting the system
+  // was successful. If we are able to get a system, then we can present to
+  // an external display.
+  bool openxr_initialized = openxr_->IsInitialized();
+  if (current_display_info_->capabilities->has_external_display !=
+          openxr_initialized ||
+      current_display_info_->capabilities->can_present != openxr_initialized) {
+    current_display_info_->capabilities->has_external_display =
+        openxr_initialized;
+    current_display_info_->capabilities->can_present = openxr_initialized;
+    changed = true;
+  }
+
+  return changed;
+}
+
+// return true if either left_eye or right_eye updated.
+bool OpenXrRenderLoop::UpdateEyeParameters() {
+  bool changed = false;
+
+  if (!current_display_info_->left_eye) {
+    current_display_info_->left_eye = mojom::VREyeParameters::New();
+    changed = true;
+  }
+
+  if (!current_display_info_->right_eye) {
+    current_display_info_->right_eye = mojom::VREyeParameters::New();
+    changed = true;
+  }
+
+  const XrView left = openxr_->GetView(0);
+  const XrView right = openxr_->GetView(1);
+
+  gfx::Point3F center =
+      gfx::Point3F((left.pose.position.x + right.pose.position.x) / 2,
+                   (left.pose.position.y + right.pose.position.y) / 2,
+                   (left.pose.position.z + right.pose.position.z) / 2);
+
+  gfx::Size view_size = GetViewSize();
+
+  changed |=
+      UpdateEye(left, center, view_size, &current_display_info_->left_eye);
+
+  changed |=
+      UpdateEye(right, center, view_size, &current_display_info_->right_eye);
+
+  return changed;
+}
+
+bool OpenXrRenderLoop::UpdateEye(const XrView& view,
+                                 const gfx::Point3F& center,
+                                 const gfx::Size& view_size,
+                                 mojom::VREyeParametersPtr* eye) const {
+  bool changed = false;
+
+  gfx::Vector3dF offset = gfx::Vector3dF(view.pose.position.x - center.x(),
+                                         view.pose.position.y - center.y(),
+                                         view.pose.position.z - center.z());
+
+  if ((*eye)->offset != offset) {
+    (*eye)->offset = offset;
+    changed = true;
+  }
+
+  if ((*eye)->render_width != static_cast<uint32_t>(view_size.width())) {
+    (*eye)->render_width = static_cast<uint32_t>(view_size.width());
+    changed = true;
+  }
+
+  if ((*eye)->render_height != static_cast<uint32_t>(view_size.height())) {
+    (*eye)->render_height = static_cast<uint32_t>(view_size.height());
+    changed = true;
+  }
+
+  mojom::VRFieldOfViewPtr fov = mojom::VRFieldOfView::New(
+      DirectX::XMConvertToDegrees(view.fov.angleUp),
+      -DirectX::XMConvertToDegrees(view.fov.angleDown),
+      -DirectX::XMConvertToDegrees(view.fov.angleLeft),
+      DirectX::XMConvertToDegrees(view.fov.angleRight));
+  if (!(*eye)->field_of_view || !fov->Equals(*(*eye)->field_of_view)) {
+    (*eye)->field_of_view = std::move(fov);
+    changed = true;
+  }
+
+  return changed;
 }
 
 }  // namespace device

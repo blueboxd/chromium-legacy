@@ -149,7 +149,6 @@
 <translation id="2921219216347069551">Nevar kopīgot lapu</translation>
 <translation id="2923448633003185837">Ielīmēt un pāriet</translation>
 <translation id="292639812446257861">Atzīmēt kā nelasītus</translation>
-<translation id="2933759065870693102">Lukturītis</translation>
 <translation id="2958718410589002129">Paroles</translation>
 <translation id="2969979262385602596">Neizdevās pierakstīties. Vēlāk mēģiniet vēlreiz.</translation>
 <translation id="298306318844797842">Pievienot maksājuma veidu...</translation>
@@ -305,6 +304,7 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5317780077021120954">Saglabāt</translation>
 <translation id="5327248766486351172">Nosaukums</translation>
 <translation id="5388358297987318779">Atvērt attēlu</translation>
+<translation id="5407969256130905701">Atmest izmaiņas</translation>
 <translation id="5409365236829784218">Nav instalēta neviena lietotne, ar kuru atvērt šo failu.</translation>
 <translation id="5416022985862681400">Pēdējās 7 dienas</translation>
 <translation id="5433691172869980887">Lietotājvārds ir nokopēts.</translation>
@@ -510,6 +510,7 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="8428213095426709021">Iestatījumi</translation>
 <translation id="8458397775385147834">Tika dzēsts 1 vienums.</translation>
 <translation id="8487700953926739672">Pieejams bezsaistē</translation>
+<translation id="8490978609246021741">Saglabāt izmaiņas</translation>
 <translation id="8503813439785031346">Lietotājvārds</translation>
 <translation id="850600235656508448">Atvērt inkognito režīmā</translation>
 <translation id="8517375800490286174">Atklātā pirmkoda licences</translation>

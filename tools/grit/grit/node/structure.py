@@ -54,7 +54,7 @@ class StructureNode(base.Node):
   # VALUE must escape all commas: ',' -> ',,'.  Each variable definition
   # should be separated by a comma with no extra whitespace.
   # Example: THING1=foo,THING2=bar
-  variable_pattern = re.compile('([^,=\s]+)=((?:,,|[^,])*)')
+  variable_pattern = re.compile(r'([^,=\s]+)=((?:,,|[^,])*)')
 
   def __init__(self):
     super(StructureNode, self).__init__()

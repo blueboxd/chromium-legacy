@@ -3337,6 +3337,29 @@ TEST(AXTreeTest, TestSetSizePosInSetUnkown) {
   EXPECT_OPTIONAL_EQ(2, item2->GetSetSize());
 }
 
+TEST(AXTreeTest, TestSetSizePosInSetMenuItemValidChildOfMenuListPopup) {
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(3);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].child_ids = {2, 3};
+  initial_state.nodes[0].role = ax::mojom::Role::kMenuListPopup;
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[1].role = ax::mojom::Role::kMenuItem;
+  initial_state.nodes[2].id = 3;
+  initial_state.nodes[2].role = ax::mojom::Role::kMenuListOption;
+  AXTree tree(initial_state);
+
+  AXNode* menu = tree.GetFromId(1);
+  EXPECT_OPTIONAL_EQ(2, menu->GetSetSize());
+  AXNode* item1 = tree.GetFromId(2);
+  EXPECT_OPTIONAL_EQ(1, item1->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(2, item1->GetSetSize());
+  AXNode* item2 = tree.GetFromId(3);
+  EXPECT_OPTIONAL_EQ(2, item2->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(2, item2->GetSetSize());
+}
+
 TEST(AXTreeTest, OnNodeWillBeDeletedHasValidUnignoredParent) {
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;

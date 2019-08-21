@@ -44,7 +44,8 @@ class TestNetworkContext : public mojom::NetworkContext {
   void CreateURLLoaderFactory(
       mojom::URLLoaderFactoryRequest request,
       mojom::URLLoaderFactoryParamsPtr params) override {}
-  void GetCookieManager(mojom::CookieManagerRequest cookie_manager) override {}
+  void GetCookieManager(
+      mojo::PendingReceiver<mojom::CookieManager> cookie_manager) override {}
   void GetRestrictedCookieManager(
       mojom::RestrictedCookieManagerRequest restricted_cookie_manager,
       mojom::RestrictedCookieManagerRole role,

@@ -217,7 +217,7 @@ class DeviceCommandStartCRDSessionJobTest : public testing::Test {
 
   base::TimeTicks test_start_time_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::RunLoop run_loop_;
 
  private:

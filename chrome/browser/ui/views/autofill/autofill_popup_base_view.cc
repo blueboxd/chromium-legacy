@@ -290,17 +290,6 @@ void AutofillPopupBaseView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
       l10n_util::GetStringUTF16(IDS_AUTOFILL_POPUP_ACCESSIBLE_NODE_DATA));
 }
 
-void AutofillPopupBaseView::VisibilityChanged(View* starting_from,
-                                              bool is_visible) {
-  // Fire these the first time a menu is visible. By firing these and the
-  // matching end events, we are telling screen readers that the focus
-  // is only changing temporarily, and the screen reader will restore the
-  // focus back to the appropriate textfield when the menu closes.
-  NotifyAccessibilityEvent(
-      is_visible ? ax::mojom::Event::kMenuStart : ax::mojom::Event::kMenuEnd,
-      true);
-}
-
 void AutofillPopupBaseView::SetSelection(const gfx::Point& point) {
   if (delegate_)
     delegate_->SetSelectionAtPoint(point);

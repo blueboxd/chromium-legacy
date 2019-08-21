@@ -123,7 +123,7 @@ class ClickToCallContextMenuObserverTest : public testing::Test {
         SharingServiceFactory::GetForBrowserContext(menu_.GetBrowserContext()));
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   MockRenderViewContextMenu menu_{/* incognito= */ false};
   std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<ClickToCallContextMenuObserver> observer_;

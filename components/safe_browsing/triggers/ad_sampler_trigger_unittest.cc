@@ -224,7 +224,7 @@ TEST(AdSamplerTriggerTestFinch, FrequencyDenominatorFeature) {
   // Make sure that setting the frequency denominator via Finch params works as
   // expected, and that the default frequency is used when no Finch config is
   // given.
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   AdSamplerTrigger trigger_default(nullptr, nullptr, nullptr, nullptr, nullptr);
   EXPECT_EQ(kAdSamplerDefaultFrequency,
             trigger_default.sampler_frequency_denominator_);

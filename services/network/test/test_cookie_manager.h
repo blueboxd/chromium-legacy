@@ -10,6 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 
 namespace network {
@@ -36,11 +37,13 @@ class TestCookieManager : public network::mojom::CookieManager {
   void AddCookieChangeListener(
       const GURL& url,
       const base::Optional<std::string>& name,
-      network::mojom::CookieChangeListenerPtr listener) override;
+      mojo::PendingRemote<network::mojom::CookieChangeListener> listener)
+      override;
   void AddGlobalChangeListener(
-      network::mojom::CookieChangeListenerPtr notification_pointer) override {}
-  void CloneInterface(
-      network::mojom::CookieManagerRequest new_interface) override {}
+      mojo::PendingRemote<network::mojom::CookieChangeListener>
+          notification_pointer) override {}
+  void CloneInterface(mojo::PendingReceiver<network::mojom::CookieManager>
+                          new_interface) override {}
   void FlushCookieStore(FlushCookieStoreCallback callback) override {}
   void AllowFileSchemeCookies(
       bool allow,
@@ -57,7 +60,8 @@ class TestCookieManager : public network::mojom::CookieManager {
 
  private:
   // List of observers receiving cookie change notifications.
-  std::vector<network::mojom::CookieChangeListenerPtr> cookie_change_listeners_;
+  std::vector<mojo::Remote<network::mojom::CookieChangeListener>>
+      cookie_change_listeners_;
 };
 
 }  // namespace network

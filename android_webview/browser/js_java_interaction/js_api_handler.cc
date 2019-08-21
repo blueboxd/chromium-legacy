@@ -10,6 +10,7 @@
 #include "base/android/jni_string.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 namespace android_webview {
 
@@ -19,7 +20,8 @@ JsApiHandler::JsApiHandler(content::RenderFrameHost* render_frame_host)
 JsApiHandler::~JsApiHandler() {}
 
 void JsApiHandler::BindPendingReceiver(
-    mojo::PendingAssociatedReceiver<mojom::JsApiHandler> pending_receiver) {
+    mojo::PendingAssociatedReceiver<mojom::JsToJavaMessaging>
+        pending_receiver) {
   receiver_.Bind(std::move(pending_receiver));
 }
 
@@ -53,7 +55,16 @@ void JsApiHandler::PostMessage(
       env, base::android::ConvertUTF16ToJavaString(env, message),
       base::android::ConvertUTF8ToJavaString(env, source_origin.Serialize()),
       web_contents->GetMainFrame() == render_frame_host_,
+      reply_proxy_->GetJavaPeer(),
       base::android::ToJavaIntArray(env, int_ports.data(), int_ports.size()));
+}
+
+void JsApiHandler::SetJavaToJsMessaging(
+    mojo::PendingRemote<mojom::JavaToJsMessaging> java_to_js_messaging) {
+  // A RenderFrame may inject JsToJavaMessaging in the JavaScript context more
+  // than once because of reusing of RenderFrame.
+  reply_proxy_ =
+      std::make_unique<JsReplyProxy>(std::move(java_to_js_messaging));
 }
 
 }  // namespace android_webview

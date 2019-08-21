@@ -50,7 +50,7 @@ class ErrorConsoleUnitTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
   ErrorConsole* error_console_;
 };

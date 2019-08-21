@@ -72,7 +72,7 @@ class PasswordDetailsTableViewControllerTest
         reauthenticationModule:reauthentication_module_];
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   MockReauthenticationModule* reauthentication_module_;
   NSString* origin_;
   autofill::PasswordForm form_;

@@ -61,7 +61,7 @@ LayoutBox* OrderIterator::Next() {
       current_child_ = current_child_->NextSiblingBox();
     }
   } while (!current_child_ ||
-           current_child_->StyleRef().Order() != *order_values_iterator_);
+           ResolvedOrder(*current_child_) != *order_values_iterator_);
 
   return current_child_;
 }
@@ -72,12 +72,20 @@ void OrderIterator::Reset() {
   is_reset_ = true;
 }
 
+int OrderIterator::ResolvedOrder(const LayoutBox& child) const {
+  if (container_box_->StyleRef().Display() == EDisplay::kWebkitBox ||
+      container_box_->StyleRef().Display() == EDisplay::kWebkitInlineBox) {
+    return child.StyleRef().BoxOrdinalGroup();
+  }
+  return child.StyleRef().Order();
+}
+
 OrderIteratorPopulator::~OrderIteratorPopulator() {
   iterator_.Reset();
 }
 
 void OrderIteratorPopulator::CollectChild(const LayoutBox* child) {
-  iterator_.order_values_.insert(child->StyleRef().Order());
+  iterator_.order_values_.insert(iterator_.ResolvedOrder(*child));
 }
 
 }  // namespace blink

@@ -667,3 +667,12 @@ class ChromeDriver(object):
   def GetCredentials(self, authenticatorId):
     params = {'authenticatorId': authenticatorId}
     return self.ExecuteCommand(Command.GET_CREDENTIALS, params)
+
+  def RemoveAllCredentials(self, authenticatorId):
+    params = {'authenticatorId': authenticatorId}
+    return self.ExecuteCommand(Command.REMOVE_ALL_CREDENTIALS, params)
+
+  def SetUserVerified(self, authenticatorId, isUserVerified):
+    params = {'authenticatorId': authenticatorId,
+              'isUserVerified': isUserVerified}
+    return self.ExecuteCommand(Command.SET_USER_VERIFIED, params)

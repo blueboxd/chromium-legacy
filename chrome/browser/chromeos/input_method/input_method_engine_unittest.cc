@@ -189,7 +189,7 @@ class InputMethodEngineTest : public testing::Test {
   GURL options_page_;
   GURL input_view_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<ui::MockIMEInputContextHandler>
       mock_ime_input_context_handler_;
   std::unique_ptr<ChromeKeyboardControllerClientTestHelper>

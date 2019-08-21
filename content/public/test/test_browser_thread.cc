@@ -58,7 +58,7 @@ TestBrowserThread::~TestBrowserThread() {
   //   1) TestBrowserThread::Stop()
   //   2) ~MessageLoop()
   //   3) ~TestBrowserThread()
-  // (~TestBrowserThreadBundle() does this).
+  // (~BrowserTaskEnvironment() does this).
   BrowserThreadImpl::ResetGlobalsForTesting(identifier_);
 }
 

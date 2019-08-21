@@ -49,7 +49,7 @@ class WebUISourcesTest : public testing::Test {
 
   content::URLDataSource::GotDataCallback callback_;
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<ThemeSource> theme_source_;

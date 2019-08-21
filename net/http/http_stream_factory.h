@@ -62,9 +62,11 @@ class NET_EXPORT HttpStreamFactory {
   explicit HttpStreamFactory(HttpNetworkSession* session);
   virtual ~HttpStreamFactory();
 
-  void ProcessAlternativeServices(HttpNetworkSession* session,
-                                  const HttpResponseHeaders* headers,
-                                  const url::SchemeHostPort& http_server);
+  void ProcessAlternativeServices(
+      HttpNetworkSession* session,
+      const net::NetworkIsolationKey& network_isolation_key,
+      const HttpResponseHeaders* headers,
+      const url::SchemeHostPort& http_server);
 
   // Request a stream.
   // Will call delegate->OnStreamReady on successful completion.

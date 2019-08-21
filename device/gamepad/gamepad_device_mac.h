@@ -13,11 +13,12 @@
 
 #include "base/memory/weak_ptr.h"
 #include "device/gamepad/abstract_haptic_gamepad.h"
-#include "device/gamepad/dualshock4_controller_mac.h"
-#include "device/gamepad/hid_haptic_gamepad_mac.h"
 #include "device/gamepad/public/cpp/gamepad.h"
 
 namespace device {
+
+class Dualshock4Controller;
+class HidHapticGamepad;
 
 // GamepadDeviceMac represents a single gamepad device. Gamepad enumeration
 // and state polling is handled through the raw HID interface, while haptics
@@ -51,13 +52,13 @@ class GamepadDeviceMac final : public AbstractHapticGamepad {
   // ForceFeedback framework.
   bool SupportsVibration();
 
-  // AbstractHapticGamepad implementation.
+  // AbstractHapticGamepad public implementation.
   void SetVibration(double strong_magnitude, double weak_magnitude) override;
   void SetZeroVibration() override;
   base::WeakPtr<AbstractHapticGamepad> GetWeakPtr() override;
 
  private:
-  // AbstractHapticGamepad implementation.
+  // AbstractHapticGamepad private implementation.
   void DoShutdown() override;
 
   // Initialize button capabilities for |gamepad|.
@@ -106,10 +107,10 @@ class GamepadDeviceMac final : public AbstractHapticGamepad {
   LONG direction_data_[2];
 
   // Dualshock4 functionality, if available.
-  std::unique_ptr<Dualshock4ControllerMac> dualshock4_;
+  std::unique_ptr<Dualshock4Controller> dualshock4_;
 
   // A controller that uses a HID output report for vibration effects.
-  std::unique_ptr<HidHapticGamepadMac> hid_haptics_;
+  std::unique_ptr<HidHapticGamepad> hid_haptics_;
 
   base::WeakPtrFactory<GamepadDeviceMac> weak_factory_{this};
 };

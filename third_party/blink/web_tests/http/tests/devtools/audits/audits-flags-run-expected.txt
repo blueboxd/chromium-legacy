@@ -14,4 +14,5 @@ Run audits: enabled visible
 emulatedFormFactor: desktop
 disableStorageReset: false
 throttlingMethod: provided
+TestedAsMobileDevice: false
 

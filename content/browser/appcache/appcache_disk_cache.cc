@@ -116,10 +116,7 @@ class ActiveCall : public base::RefCounted<ActiveCall> {
   ActiveCall(const base::WeakPtr<AppCacheDiskCache>& owner,
              AppCacheDiskCacheEntry** entry,
              net::CompletionOnceCallback callback)
-      : owner_(owner),
-        entry_(entry),
-        callback_(std::move(callback)),
-        entry_ptr_(nullptr) {
+      : owner_(owner), entry_(entry), callback_(std::move(callback)) {
     DCHECK(owner_);
   }
 
@@ -129,10 +126,10 @@ class ActiveCall : public base::RefCounted<ActiveCall> {
                                 net::CompletionOnceCallback callback) {
     scoped_refptr<ActiveCall> active_call =
         base::MakeRefCounted<ActiveCall>(owner, entry, std::move(callback));
-    net::Error return_value = owner->disk_cache()->CreateEntry(
-        base::NumberToString(key), net::HIGHEST, &active_call->entry_ptr_,
+    disk_cache::EntryResult result = owner->disk_cache()->CreateEntry(
+        base::NumberToString(key), net::HIGHEST,
         base::BindOnce(&ActiveCall::OnAsyncCompletion, active_call));
-    return active_call->HandleImmediateReturnValue(return_value);
+    return active_call->HandleImmediateReturnValue(std::move(result));
   }
 
   static net::Error OpenEntry(const base::WeakPtr<AppCacheDiskCache>& owner,
@@ -141,21 +138,17 @@ class ActiveCall : public base::RefCounted<ActiveCall> {
                               net::CompletionOnceCallback callback) {
     scoped_refptr<ActiveCall> active_call =
         base::MakeRefCounted<ActiveCall>(owner, entry, std::move(callback));
-    net::Error return_value = owner->disk_cache()->OpenEntry(
-        base::NumberToString(key), net::HIGHEST, &active_call->entry_ptr_,
+    disk_cache::EntryResult result = owner->disk_cache()->OpenEntry(
+        base::NumberToString(key), net::HIGHEST,
         base::BindOnce(&ActiveCall::OnAsyncCompletion, active_call));
-    return active_call->HandleImmediateReturnValue(return_value);
+    return active_call->HandleImmediateReturnValue(std::move(result));
   }
 
   static net::Error DoomEntry(const base::WeakPtr<AppCacheDiskCache>& owner,
                               int64_t key,
                               net::CompletionOnceCallback callback) {
-    scoped_refptr<ActiveCall> active_call =
-        base::MakeRefCounted<ActiveCall>(owner, nullptr, std::move(callback));
-    net::Error return_value = owner->disk_cache()->DoomEntry(
-        base::NumberToString(key), net::HIGHEST,
-        base::BindOnce(&ActiveCall::OnAsyncCompletion, active_call));
-    return active_call->HandleImmediateReturnValue(return_value);
+    return owner->disk_cache()->DoomEntry(base::NumberToString(key),
+                                          net::HIGHEST, std::move(callback));
   }
 
  private:
@@ -163,26 +156,28 @@ class ActiveCall : public base::RefCounted<ActiveCall> {
 
   ~ActiveCall() = default;
 
-  net::Error HandleImmediateReturnValue(net::Error rv) {
+  net::Error HandleImmediateReturnValue(disk_cache::EntryResult result) {
+    net::Error rv = result.net_error();
     if (rv == net::ERR_IO_PENDING) {
       // OnAsyncCompletion will be called later.
       return rv;
     }
 
-    if (rv == net::OK && entry_) {
-      DCHECK(entry_ptr_);
-      *entry_ = new AppCacheDiskCacheEntry(entry_ptr_, owner_.get());
+    if (rv == net::OK) {
+      *entry_ = new AppCacheDiskCacheEntry(result.ReleaseEntry(), owner_.get());
     }
+
     return rv;
   }
 
-  void OnAsyncCompletion(int rv) {
-    if (rv == net::OK && entry_) {
-      DCHECK(entry_ptr_);
+  void OnAsyncCompletion(disk_cache::EntryResult result) {
+    int rv = result.net_error();
+    if (rv == net::OK) {
       if (owner_) {
-        *entry_ = new AppCacheDiskCacheEntry(entry_ptr_, owner_.get());
+        *entry_ =
+            new AppCacheDiskCacheEntry(result.ReleaseEntry(), owner_.get());
       } else {
-        entry_ptr_->Close();
+        result.ReleaseEntry()->Close();
         rv = net::ERR_ABORTED;
       }
     }
@@ -192,7 +187,6 @@ class ActiveCall : public base::RefCounted<ActiveCall> {
   base::WeakPtr<AppCacheDiskCache> owner_;
   AppCacheDiskCacheEntry** entry_;
   net::CompletionOnceCallback callback_;
-  disk_cache::Entry* entry_ptr_;
 };
 
 }  // namespace

@@ -485,7 +485,7 @@
       M73 以上版本支援封鎖「javascript://*」網址。不過，這項設定只適用於在網址列 (或書籤小程式等) 中輸入的 JavaScript。請注意，網頁內的 JavaScript 網址只要是動態載入資料，一律不會受到這項政策影響。舉例來說，即使你封鎖了「example.com/abc」，example.com 這個網頁仍可透過 XMLHTTPRequest 載入「example.com/abc」。
 
       如果不設定這項政策，瀏覽器不會將任何網址列入黑名單。</translation>
-<translation id="1859859319036806634">警告：我們將於 <ph name="PRODUCT_NAME" /> 52 版發佈 (大約在 2016 年 9 月) 之後淘汰 TLS 版本遞補功能，並停止支援這項政策。
+<translation id="1859859319036806634">警告：我們將於 <ph name="PRODUCT_NAME" /> 52 版發布 (大約在 2016 年 9 月) 之後淘汰 TLS 版本遞補功能，並停止支援這項政策。
 
       當 TLS 交握失敗時，<ph name="PRODUCT_NAME" /> 會先重新嘗試以較低版本的 TLS 建立連線，以忽略 HTTPS 伺服器發生的錯誤。這項設定可讓您指定要在哪個版本停止遞補程序。如果伺服器正確執行版本交涉 (亦即不中斷連線)，系統就不會套用這項設定。不過，最終的連線仍然必須符合 SSLVersionMin 要求。
 
@@ -1281,7 +1281,7 @@
 <translation id="3264793472749429012">預設搜尋引擎編碼</translation>
 <translation id="3273221114520206906">預設 JavaScript 設定</translation>
 <translation id="3284094172359247914">控制 WebUSB API 使用權限</translation>
-<translation id="3288595667065905535">發佈頻道</translation>
+<translation id="3288595667065905535">發布頻道</translation>
 <translation id="3292147213643666827">啟用 Proxy 功能，將 <ph name="PRODUCT_NAME" /> 當做 <ph name="CLOUD_PRINT_NAME" /> 與連接到本機的舊型印表機之間的 Proxy。
 
       不論這項政策處於啟用或未設定的狀態，使用者都可以透過 Google 帳戶驗證來啟用雲端列印 Proxy。
@@ -1614,15 +1614,6 @@
 
           如果你設為 False 或未設定，使用者即可將檔案傳輸至 Google 雲端硬碟。</translation>
 <translation id="3915395663995367577">Proxy .pac 檔案的網址</translation>
-<translation id="3920892052017026701">自訂開始充電的值 (以百分比表示)。
-
-          電池電量耗用到自訂的開始充電值時，就會開始充電。
-
-          DeviceBatteryChargeCustomStartCharging 必須小於 DeviceBatteryChargeCustomStopCharging。
-
-          你必須將 DeviceBatteryChargeMode 設為自訂，才能使用這項政策。
-
-          如果未設定或不設定這項政策，系統將套用標準充電模式。</translation>
 <translation id="3925377537407648234">設定螢幕解析度和縮放比例</translation>
 <translation id="3939893074578116847">將監控線上狀態所需的網路封包傳送到管理伺服器，
       讓伺服器偵測裝置是否處於離線狀態。
@@ -2448,7 +2439,7 @@
 <translation id="5508307164752647432">啟用 Kerberos 功能</translation>
 <translation id="5511702823008968136">啟用書籤列</translation>
 <translation id="5512418063782665071">首頁網址</translation>
-<translation id="551639594034811656">這項政策是用來定義一份百分比清單，藉此指定首次偵測到更新的當天開始起算的各天內，機構單位中應安裝更新的 <ph name="PRODUCT_OS_NAME" />裝置百分比。偵測到更新的時間會晚於更新發佈時間，因為更新發佈後，裝置可能要經過一段時間才會檢查是否有更新。
+<translation id="551639594034811656">這項政策是用來定義一份百分比清單，藉此指定首次偵測到更新的當天開始起算的各天內，機構單位中應安裝更新的 <ph name="PRODUCT_OS_NAME" />裝置百分比。偵測到更新的時間會晚於更新發布時間，因為更新發布後，裝置可能要經過一段時間才會檢查是否有更新。
 
       每組 (天數, 百分比) 配對代表自偵測到更新當天起的指定天數內，必須完成更新的裝置百分比。舉例來說，如果有以下配對：[(4, 40), (10, 70), (15, 100)]，即表示偵測到更新後的 4 天內，應完成 40% 的裝置更新，10 天內應完成 70% 的裝置更新，依此類推。
 
@@ -2941,9 +2932,9 @@
 <translation id="6536600139108165863">裝置關機時自動重新啟動</translation>
 <translation id="6539246272469751178">這項政策對 Android 應用程式沒有影響。Android 應用程式會一律使用預設的下載目錄，無法存取任何由 <ph name="PRODUCT_OS_NAME" />下載到非預設下載目錄的檔案。</translation>
 <translation id="654303922206238013">eCryptfs 遷移策略</translation>
-<translation id="6544897973797372144">如果你將這項政策設為「True」，且並未指定 ChromeOsReleaseChannel 政策，則註冊網域的使用者將可變更裝置的發佈頻道。如果你將這項政策設為「False」，則系統會將裝置鎖定為先前設定的任何頻道。
+<translation id="6544897973797372144">如果你將這項政策設為「True」，且並未指定 ChromeOsReleaseChannel 政策，則註冊網域的使用者將可變更裝置的發布頻道。如果你將這項政策設為「False」，則系統會將裝置鎖定為先前設定的任何頻道。
 
-      ChromeOsReleaseChannel 政策會覆寫使用者選取的頻道，但如果政策設定的頻道比裝置原本安裝的頻道更穩定，則系統只會在更穩定的頻道發佈比裝置上安裝的頻道更高的版本時，才會切換至該版本。</translation>
+      ChromeOsReleaseChannel 政策會覆寫使用者選取的頻道，但如果政策設定的頻道比裝置原本安裝的頻道更穩定，則系統只會在更穩定的頻道發布比裝置上安裝的頻道更高的版本時，才會切換至該版本。</translation>
 <translation id="6549567350270907557">啟用這項設定後，使用者可以透過 <ph name="PRODUCT_NAME" /> 檢查已輸入的憑證是否有資料外洩。
 
               這項政策一經啟用或停用，使用者即無法在 <ph name="PRODUCT_NAME" /> 中變更或覆寫政策。如果不設定這項政策，系統可執行資料外洩檢查功能 (但使用者可自行關閉)。</translation>
@@ -3515,15 +3506,6 @@
       如果這項政策的值為 0，系統會使用預設快取大小，但使用者無法變更。
 
       如果未設定這項政策，系統會使用預設大小，使用者則可使用 --disk-cache-size 參數予以覆寫。</translation>
-<translation id="759389052790680884">自訂電池的停止充電值 (以百分比表示)。
-
-          電池電量達到自訂的停止充電值時，就會停止充電。
-
-          DeviceBatteryChargeCustomStartCharging 必須小於 DeviceBatteryChargeCustomStopCharging。
-
-          你必須將 DeviceBatteryChargeMode 設為自訂，才能使用這項政策。
-
-          如果未設定或不設定這項政策，系統將套用標準充電模式。</translation>
 <translation id="759957074386651883">安全瀏覽設定</translation>
 <translation id="7604169113182304895">Android 應用程式可以選擇是否使用這份清單，你無法強制套用。</translation>
 <translation id="7612157962821894603">要在 <ph name="PRODUCT_NAME" /> 啟動時套用的全系統設定</translation>
@@ -3536,7 +3518,7 @@
 
 這項政策應用於逐步輪換存取碼設定。新設定一律會加到 |future_config| 中，同時
       現有值會移到 |current_config| 中。|current_config| 先前的值則會移到 |old_configs|，並在輪換結束後移除。這項政策只適用於兒童使用者。如果設定這項政策，系統將可在兒童使用者裝置上驗證家長存取碼。如果不設定這項政策，系統將無法在兒童使用者裝置上驗證家長存取碼。</translation>
-<translation id="7625444193696794922">指定裝置的固定發佈頻道。</translation>
+<translation id="7625444193696794922">指定裝置的固定發布頻道。</translation>
 <translation id="7632724434767231364">GSSAPI 資料庫名稱</translation>
 <translation id="7635471475589566552">設定「<ph name="PRODUCT_NAME" />」的應用程式語言代碼，並且禁止使用者變更語言代碼。如果你啟用這項設定，「<ph name="PRODUCT_NAME" />」就會使用指定的語言代碼。如果設定的語言代碼不受支援，就會改用「en-US」。如果停用或尚未調整這項設定，「<ph name="PRODUCT_NAME" />」就會使用使用者指定的偏好語言代碼 (如果已設定)、系統語言代碼或備用語言代碼「en-US」。</translation>
 <translation id="7641363659597330616">設定 <ph name="PRODUCT_NAME" /> 將完全封鎖的下載作業類型，不讓使用者覆寫這項安全決策。
@@ -3613,9 +3595,6 @@
 <translation id="7750991880413385988">開啟新分頁</translation>
 <translation id="7754704193130578113">下載每個檔案前先詢問儲存位置</translation>
 <translation id="7761446981238915769">設定登入畫面中的已安裝應用程式清單</translation>
-<translation id="7763479091692861127"> 允許用來進行作業系統更新的連線類型。由於作業系統更新檔案較大，可能會對連線流量造成沉重負荷，同時也可能讓使用者必須支付額外費用，因此當使用者使用較昂貴的連線類型 (目前包括 WiMax、藍牙和行動網路) 時，預設情況並不允許進行作業系統更新。
-
-      系統可識別的連線類型識別碼包括「ethernet」、「wifi」、「wimax」、「bluetooth」和「cellular」。</translation>
 <translation id="7763614521440615342">在新分頁顯示內容建議</translation>
 <translation id="7765879851993224640">允許使用 Smart Lock 登入功能。</translation>
 <translation id="7772346342637974431">指定電池供電時的閒置時間長度。如果使用者在這段時間內一直都沒有任何動作，系統就會顯示警告對話方塊。
@@ -3838,9 +3817,9 @@
       如未設定這項政策，<ph name="PRODUCT_OS_NAME" /> 就會使用裝置本機帳戶的電子郵件帳戶 ID 當做登入畫面的顯示名稱。
 
       這項政策對於一般使用者帳戶無效。</translation>
-<translation id="8259375588339409826">Chromium 和 Google Chrome 支援同一套政策。請注意，這份文件可能包含未發佈的政策 (即「支援環境」項目是指尚未發佈的 <ph name="PRODUCT_NAME" /> 版本)，後續有關這些政策的變更與移除恕不另行通知，我們也不提供任何方面的保證，包括安全性和隱私權方面的保證。
+<translation id="8259375588339409826">Chromium 和 Google Chrome 支援同一套政策。請注意，這份文件可能包含未發布的政策 (即「支援環境」項目是指尚未發布的 <ph name="PRODUCT_NAME" /> 版本)，後續有關這些政策的變更與移除恕不另行通知，我們也不提供任何方面的保證，包括安全性和隱私權方面的保證。
 
-這些政策僅適用於設定貴機構內部的 <ph name="PRODUCT_NAME" /> 執行個體。如果在機構外 (例如公開發佈的程式中) 使用這些政策，會被視為惡意軟體行徑，且 Google 和防毒軟體廠商可能會將其標示為惡意軟體。
+這些政策僅適用於設定貴機構內部的 <ph name="PRODUCT_NAME" /> 執行個體。如果在機構外 (例如公開發布的程式中) 使用這些政策，會被視為惡意軟體行徑，且 Google 和防毒軟體廠商可能會將其標示為惡意軟體。
 
 這些設定不需手動配置！你可以在 <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" /> 下載簡單易用的範本，直接在 Windows、Mac 和 Linux 系統中使用。
 
@@ -4277,7 +4256,7 @@
 <translation id="9126014181388780690">「允許 Google 助理存取畫面內容」</translation>
 <translation id="913195841488580904">禁止存取清單中的網址</translation>
 <translation id="9135033364005346124">啟用 <ph name="CLOUD_PRINT_NAME" /> Proxy</translation>
-<translation id="9136399279941091445">發佈指定裝置政策時的停機時間間隔</translation>
+<translation id="9136399279941091445">發布指定裝置政策時的停機時間間隔</translation>
 <translation id="9147029539363974059">將系統記錄傳送到管理伺服器，
       讓管理員監控系統記錄。
 

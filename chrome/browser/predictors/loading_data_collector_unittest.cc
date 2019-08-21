@@ -44,7 +44,7 @@ class LoadingDataCollectorTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
 
   std::unique_ptr<StrictMock<MockResourcePrefetchPredictor>> mock_predictor_;

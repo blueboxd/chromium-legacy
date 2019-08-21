@@ -33,6 +33,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/transform_util.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/transient_window_manager.h"
 #include "ui/wm/core/window_util.h"
@@ -89,14 +90,6 @@ bool CanProcessWindow(aura::Window* window,
     return false;
 
   return true;
-}
-
-// Find the transform that will convert |src| to |dst|.
-gfx::Transform CalculateTransform(const gfx::RectF& src,
-                                  const gfx::RectF& dst) {
-  return gfx::Transform(dst.width() / src.width(), 0, 0,
-                        dst.height() / src.height(), dst.x() - src.x(),
-                        dst.y() - src.y());
 }
 
 // Get the target offscreen workspace bounds.
@@ -231,7 +224,7 @@ class HomeLauncherGestureHandler::ScopedWindowModifier
       values.initial_opacity = window->layer()->opacity();
       values.initial_transform = window->transform();
       values.target_opacity = 0.f;
-      values.target_transform = CalculateTransform(
+      values.target_transform = gfx::TransformBetweenRects(
           gfx::RectF(window->GetTargetBounds()),
           GetOffscreenWindowBounds(window, work_area, target_work_area));
       if (window == window_) {
@@ -878,7 +871,7 @@ bool HomeLauncherGestureHandler::SetUpWindows(Mode mode, aura::Window* window) {
             static_cast<float>(backdrop_window->bounds().height()),
         0.f, 0.f);
     backdrop_values_->target_opacity = 0.01f;
-    backdrop_values_->target_transform = CalculateTransform(
+    backdrop_values_->target_transform = gfx::TransformBetweenRects(
         gfx::RectF(backdrop_window->bounds()), target_work_area);
   }
 
@@ -889,7 +882,7 @@ bool HomeLauncherGestureHandler::SetUpWindows(Mode mode, aura::Window* window) {
     divider_values_->initial_opacity = 1.f;
     divider_values_->initial_transform = gfx::Transform();
     divider_values_->target_opacity = 0.f;
-    divider_values_->target_transform = CalculateTransform(
+    divider_values_->target_transform = gfx::TransformBetweenRects(
         gfx::RectF(divider_window->bounds()),
         GetOffscreenWindowBounds(divider_window, work_area, target_work_area));
   }

@@ -137,7 +137,7 @@ class PrivetLocalPrinterListerTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle test_thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   scoped_refptr<TestServiceDiscoveryClient> test_service_discovery_client_;
   std::unique_ptr<PrivetLocalPrinterLister> local_printer_lister_;
   StrictMock<MockLocalPrinterListerDelegate> delegate_;

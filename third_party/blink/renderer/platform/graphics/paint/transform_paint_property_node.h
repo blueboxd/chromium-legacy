@@ -263,6 +263,9 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
   const TransformationMatrix& Matrix() const {
     return state_.transform_and_origin.Matrix();
   }
+  TransformationMatrix MatrixWithOriginApplied() const {
+    return TransformationMatrix(Matrix()).ApplyTransformOrigin(Origin());
+  }
   // The slow version always return meaningful TransformationMatrix regardless
   // of IsIdentityOr2DTranslation(). Should be used only in contexts that are
   // not performance sensitive.

@@ -119,7 +119,7 @@ class ServiceVideoCaptureProviderTest : public testing::Test {
 
   void TearDown() override {}
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   video_capture::MockVideoCaptureService mock_video_capture_service_;
   video_capture::MockVideoSourceProvider mock_source_provider_;
   mojo::Binding<video_capture::mojom::VideoSourceProvider>

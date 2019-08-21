@@ -121,6 +121,12 @@ void QuicClientMessageLooplNetworkHelper::RunEventLoop() {
 
 quic::QuicPacketWriter*
 QuicClientMessageLooplNetworkHelper::CreateQuicPacketWriter() {
+  // This is always called once per QuicSession before
+  // StartPacketReaderIfNotStarted. However if the QuicClient is creating
+  // multiple sessions it needs to restart the packet reader for the second one
+  // so we set packet_reader_started_ to false to ensure that.
+  packet_reader_started_ = false;
+
   return new QuicChromiumPacketWriter(
       socket_.get(), base::ThreadTaskRunnerHandle::Get().get());
 }

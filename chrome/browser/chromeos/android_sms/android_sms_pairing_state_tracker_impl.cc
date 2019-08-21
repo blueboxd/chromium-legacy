@@ -30,9 +30,7 @@ namespace android_sms {
 AndroidSmsPairingStateTrackerImpl::AndroidSmsPairingStateTrackerImpl(
     Profile* profile,
     AndroidSmsAppManager* android_sms_app_manager)
-    : profile_(profile),
-      android_sms_app_manager_(android_sms_app_manager),
-      cookie_listener_binding_(this) {
+    : profile_(profile), android_sms_app_manager_(android_sms_app_manager) {
   android_sms_app_manager_->AddObserver(this);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
@@ -90,7 +88,7 @@ void AndroidSmsPairingStateTrackerImpl::OnCookieChange(
 void AndroidSmsPairingStateTrackerImpl::OnInstalledAppUrlChanged() {
   // If the app URL changed, stop any ongoing cookie monitoring and attempt to
   // add a new change listener.
-  cookie_listener_binding_.Close();
+  cookie_listener_receiver_.reset();
   AddCookieChangeListener();
 }
 
@@ -113,11 +111,9 @@ AndroidSmsPairingStateTrackerImpl::GetCookieManager() {
 void AndroidSmsPairingStateTrackerImpl::AddCookieChangeListener() {
   // Trigger the first fetch of the sms cookie and start listening for changes.
   AttemptFetchMessagesPairingState();
-  network::mojom::CookieChangeListenerPtr listener_ptr;
-  cookie_listener_binding_.Bind(mojo::MakeRequest(&listener_ptr));
-
   GetCookieManager()->AddCookieChangeListener(
-      GetPairingUrl(), kMessagesPairStateCookieName, std::move(listener_ptr));
+      GetPairingUrl(), kMessagesPairStateCookieName,
+      cookie_listener_receiver_.BindNewPipeAndPassRemote());
 }
 
 }  // namespace android_sms

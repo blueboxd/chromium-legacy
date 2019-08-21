@@ -76,5 +76,8 @@ const char kUpdateDynamicRulesStatusHistogram[] =
 const char kReadDynamicRulesJSONStatusHistogram[] =
     "Extensions.DeclarativeNetRequest.ReadDynamicRulesJSONStatus";
 
+const char kActionCountPlaceholderBadgeText[] =
+    "<<declarativeNetRequestActionCount>>";
+
 }  // namespace declarative_net_request
 }  // namespace extensions

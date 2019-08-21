@@ -260,7 +260,7 @@ class SystemLogUploaderTest : public testing::TestWithParam<bool> {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   chromeos::ScopedCrosSettingsTestHelper settings_helper_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   bool is_zipped_upload_;

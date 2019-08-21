@@ -255,7 +255,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const url::Origin& embedding_origin) override;
   std::string GetWebBluetoothBlocklist() override;
 #if defined(OS_CHROMEOS)
-  void OnTrustAnchorUsed(const std::string& username_hash) override;
+  void OnTrustAnchorUsed(content::BrowserContext* browser_context) override;
 #endif
   scoped_refptr<network::SharedURLLoaderFactory>
   GetSystemSharedURLLoaderFactory() override;
@@ -540,7 +540,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                             content::BrowserContext* context) override;
   void RegisterRendererPreferenceWatcher(
       content::BrowserContext* browser_context,
-      blink::mojom::RendererPreferenceWatcherPtr watcher) override;
+      mojo::PendingRemote<blink::mojom::RendererPreferenceWatcher> watcher)
+      override;
   base::Optional<std::string> GetOriginPolicyErrorPage(
       network::OriginPolicyState error_reason,
       content::NavigationHandle* handle) override;

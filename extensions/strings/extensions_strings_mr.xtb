@@ -5,7 +5,7 @@
 <translation id="1140871961407805696">पर्यावरण-समोरील</translation>
 <translation id="1196338895211115272">खासगी की एक्सपोर्ट करण्यात अयशस्वी.</translation>
 <translation id="1420684932347524586">अरेरे! यादृच्छिक RSA खासगी की व्युत्पन्न करण्यात अयशस्वी.</translation>
-<translation id="1445572445564823378">हे एक्स्टेंशन <ph name="PRODUCT_NAME" /> मंद होत आहे. <ph name="PRODUCT_NAME" /> चे कार्यप्रदर्शन रिस्टोअर करण्‍यासाठी तुम्ही ते ‍बंद करणे आवश्‍यक आहे.</translation>
+<translation id="1445572445564823378">हे एक्स्टेंशन <ph name="PRODUCT_NAME" /> हळू चालत आहे. <ph name="PRODUCT_NAME" /> चे काम रिस्टोअर करण्‍यासाठी तुम्ही ते ‍अक्षम करणे आवश्‍यक आहे.</translation>
 <translation id="1468038450257740950">WebGL समर्थित नाही.</translation>
 <translation id="149347756975725155">एक्स्टेंशन प्रतीक '<ph name="ICON" />' लोड करणे शक्य नाही.</translation>
 <translation id="1803557475693955505">'पार्श्वभूमी पृष्ठ '<ph name="BACKGROUND_PAGE" />'  लोड करणे शक्य नाही.</translation>
@@ -25,7 +25,7 @@
 <translation id="3466070586188012397"><ph name="VENDOR_ID" /> विक्रेत्याकडील <ph name="PRODUCT_NAME" /> (सिरीअल नंबर <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3561217442734750519">खासगी की साठी इनपुट मूल्य वैध पथ असावा.</translation>
 <translation id="388442998277590542">पर्याय पृष्ठ '<ph name="OPTIONS_PAGE" />' लोड करणे शक्य नाही.</translation>
-<translation id="3984413272403535372">एक्स्टेंशन साइन करताना एरर.</translation>
+<translation id="3984413272403535372">एक्स्टेंशनमध्ये साइन करताना एरर.</translation>
 <translation id="39964277676607559">आशय स्क्रिप्टसाठी javascript '<ph name="RELATIVE_PATH" />' लोड करणे शक्य नाही.</translation>
 <translation id="4115165561519362854">या मशीनच्या अॅडमिनिस्ट्रेटरला <ph name="EXTENSION_NAME" /> कडे <ph name="EXTENSION_VERSION" /> ची किमान आवृत्ती असणे आवश्यक आहे. ही त्या आवृत्तीवर (किंवा उच्च) अपडेट करेपर्यंत हे सक्षम होऊ शकत नाही.</translation>
 <translation id="4233778200880751280">'<ph name="ABOUT_PAGE" />' पृष्ठाविषयी लोड करू शकलो नाही.</translation>
@@ -60,7 +60,7 @@
 <translation id="7939686037314084444">एक्सटेंशन योग्यरित्या लोड होऊ शकले नाही. हे कदाचित नेटवर्क विनंत्या व्यत्यय आणू शकत नाही.</translation>
 <translation id="7972881773422714442">पर्याय: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">वापरकर्ता-समोरील</translation>
-<translation id="8047248493720652249">दुसर्‍या एक्स्टेंशनने (<ph name="EXTENSION_NAME" />) एक वेगळे फाइल नाव "<ph name="ACTUAL_FILENAME" />" निर्धारित केल्यामुळे डाउनलोड "<ph name="ATTEMPTED_FILENAME" />" ला नाव देण्यात हे एक्स्टेंशन अयशस्वी झाले.</translation>
+<translation id="8047248493720652249">दुसर्‍या एक्स्टेंशनने (<ph name="EXTENSION_NAME" />) एक वेगळे फाइलनाव "<ph name="ACTUAL_FILENAME" />" निर्धारित केल्यामुळे डाउनलोड "<ph name="ATTEMPTED_FILENAME" />" ला नाव देण्यात हे एक्स्टेंशन अयशस्वी झाले.</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME" /> कडील <ph name="PRODUCT_NAME" /></translation>
 <translation id="8517576857589387417">मॅनिफेस्ट फाइल गहाळ किंवा वाचता न येण्यासारखी आहे</translation>
 <translation id="8636666366616799973">पॅकेज चुकीचे आहे. तपशील: '<ph name="ERROR_MESSAGE" />'.</translation>

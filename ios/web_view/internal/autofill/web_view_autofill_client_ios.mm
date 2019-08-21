@@ -166,7 +166,9 @@ void WebViewAutofillClientIOS::ConfirmSaveCreditCardLocally(
     SaveCreditCardOptions options,
     LocalSaveCardPromptCallback callback) {
   DCHECK(options.show_prompt);
-  [bridge_ confirmSaveCreditCardLocally:card callback:std::move(callback)];
+  [bridge_ confirmSaveCreditCardLocally:card
+                  saveCreditCardOptions:options
+                               callback:std::move(callback)];
 }
 
 void WebViewAutofillClientIOS::ConfirmSaveCreditCardToCloud(
@@ -175,10 +177,14 @@ void WebViewAutofillClientIOS::ConfirmSaveCreditCardToCloud(
     SaveCreditCardOptions options,
     UploadSaveCardPromptCallback callback) {
   DCHECK(options.show_prompt);
+  [bridge_ confirmSaveCreditCardToCloud:card
+                           legalMessage:std::move(legal_message)
+                  saveCreditCardOptions:options
+                               callback:std::move(callback)];
 }
 
 void WebViewAutofillClientIOS::CreditCardUploadCompleted(bool card_saved) {
-  NOTIMPLEMENTED();
+  [bridge_ handleCreditCardUploadCompleted:card_saved];
 }
 
 void WebViewAutofillClientIOS::ConfirmCreditCardFillAssist(

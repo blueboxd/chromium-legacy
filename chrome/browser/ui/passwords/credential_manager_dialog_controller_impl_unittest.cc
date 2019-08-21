@@ -66,7 +66,7 @@ class CredentialManagerDialogControllerTest : public testing::Test {
   PrefService* prefs() { return profile_.GetPrefs(); }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   StrictMock<PasswordsModelDelegateMock> ui_controller_mock_;
   CredentialManagerDialogControllerImpl controller_;

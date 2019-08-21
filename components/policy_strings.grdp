@@ -178,6 +178,12 @@
   <message name="IDS_POLICY_INVALID_SEARCH_URL_ERROR" desc="The text displayed in the status column when a the URL given for DefaultSearchProviderSearchURL is invalid.">
     Invalid search URL.
   </message>
+  <message name="IDS_POLICY_INVALID_SECURE_DNS_MODE_ERROR" desc="The text displayed in the status column when the value for DnsOverHttpsMode is invalid.">
+    Invalid DnsOverHttps mode.
+  </message>
+  <message name="IDS_POLICY_SECURE_DNS_MODE_NOT_SUPPORTED_ERROR" desc="The text displayed in the status column when the value for DnsOverHttpsMode is secure, which is not supported yet.">
+    The DnsOverHttps mode <ph name="SECURE_DNS_MODE_SECURE">'secure'</ph> is not yet supported, the mode has been set to <ph name="SECURE_DNS_MODE_OFF">'off'</ph>.
+  </message>
   <message name="IDS_POLICY_INVALID_PROXY_MODE_ERROR" desc="The text displayed in the status column when the value for ProxyMode is invalid.">
     Invalid proxy mode.
   </message>

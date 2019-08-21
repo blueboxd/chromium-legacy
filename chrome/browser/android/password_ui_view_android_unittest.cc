@@ -106,7 +106,7 @@ class PasswordUIViewAndroidTest : public ::testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager testing_profile_manager_;
   TestingProfile* testing_profile_;
   JNIEnv* env_;

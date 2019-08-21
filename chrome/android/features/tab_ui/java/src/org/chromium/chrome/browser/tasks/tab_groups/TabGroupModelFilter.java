@@ -558,7 +558,11 @@ public class TabGroupModelFilter extends TabModelFilter {
         reorderGroup(TabGroup.INVALID_GROUP_ID);
 
         TabModel tabModel = getTabModel();
-        selectTab(tabModel.getTabAt(tabModel.index()));
+        if (tabModel.index() == TabModel.INVALID_TAB_INDEX) {
+            mCurrentGroupIndex = TabModel.INVALID_TAB_INDEX;
+        } else {
+            selectTab(tabModel.getTabAt(tabModel.index()));
+        }
 
         assert mGroupIdToGroupIndexMap.size() == mGroupIdToGroupMap.size();
     }
@@ -601,7 +605,11 @@ public class TabGroupModelFilter extends TabModelFilter {
         super.resetFilterState();
 
         TabModel tabModel = getTabModel();
-        selectTab(tabModel.getTabAt(tabModel.index()));
+        if (tabModel.index() == TabModel.INVALID_TAB_INDEX) {
+            mCurrentGroupIndex = TabModel.INVALID_TAB_INDEX;
+        } else {
+            selectTab(tabModel.getTabAt(tabModel.index()));
+        }
         mShouldRecordUma = true;
         mIsResetting = false;
     }

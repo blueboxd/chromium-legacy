@@ -1668,15 +1668,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
           설정하지 않거나 False로 설정하면 파일을 Google 드라이브에 전송할 수 있습니다.</translation>
 <translation id="3915395663995367577">proxy .pac 파일에 대한 URL</translation>
-<translation id="3920892052017026701">배터리 충전을 시작할 지점을 퍼센트로 맞춤설정합니다.
-
-          배터리가 맞춤설정된 충전 시작 값까지 소모되면 배터리 충전이 시작됩니다.
-
-          DeviceBatteryChargeCustomStartCharging은 DeviceBatteryChargeCustomStopCharging보다 작아야 합니다.
-
-          이 정책은 DeviceBatteryChargeMode가 맞춤으로 설정된 경우에만 사용됩니다.
-
-          정책이 구성 또는 설정되지 않은 경우 표준 배터리 충전 모드가 적용됩니다.</translation>
 <translation id="3925377537407648234">디스플레이 해상도 및 배율 설정</translation>
 <translation id="3939893074578116847">온라인 상태를 모니터링하기 위해 관리 서버에 네트워크 패킷을 전송하여
       기기가 오프라인일 때 서버에서 감지할 수 있도록 합니다.
@@ -3082,7 +3073,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       사용자가 선택한 채널은 ChromeOsReleaseChannel 정책이 무시할 수 있지만 정책 채널이 기기에 설치된 채널보다 더 안정적인 경우 더 안정적인 채널이 기기에 설치된 채널보다 더 많아질 때 채널이 전환됩니다.</translation>
 <translation id="6549567350270907557">이 설정을 사용 설정하면 입력된 사용자 인증 정보가 유출된 데이터에 포함되었는지 <ph name="PRODUCT_NAME" />에서 확인하도록 할 수 있습니다.
 
-              이 정책을 사용 설정 또는 중지하면 사용자는 <ph name="PRODUCT_NAME" />에서 이 정책을 변경하거나 재정의할 수 없습니다. 정책이 설정되지 않으면 유출 검사가 허용되지만 사용자가 언제든지 사용 중지할 수 있습니다.</translation>
+              이 정책을 사용 설정 또는 중지하면 사용자는 <ph name="PRODUCT_NAME" />에서 이 정책을 변경하거나 재정의할 수 없습니다. 정책이 설정되지 않으면 유출 검사가 허용되지만 사용자가 사용 중지할 수 있습니다.</translation>
 <translation id="6553143066970470539">화면 밝기 퍼센트</translation>
 <translation id="6559057113164934677">카메라 및 마이크에 대한 모든 사이트의 액세스 허용 안함</translation>
 <translation id="6561396069801924653">작업 표시줄 메뉴에 접근성 옵션 표시</translation>
@@ -3678,15 +3669,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 정책 값이 0인 경우 기본 캐시 크기가 사용되지만 사용자가 변경할 수는 없습니다.
 
       이 정책이 설정되지 않으면 기본 크기가 사용되며 사용자는 --disk-cache-size 플래그를 통해 기본 크기를 변경할 수 있습니다.</translation>
-<translation id="759389052790680884">배터리 충전을 중단할 지점을 퍼센트로 맞춤설정합니다.
-
-          맞춤설정된 배터리 충전 중단 값에 도달하면 배터리 충전이 중지됩니다.
-
-          DeviceBatteryChargeCustomStartCharging은 DeviceBatteryChargeCustomStopCharging보다 작아야 합니다.
-
-          이 정책은 DeviceBatteryChargeMode가 맞춤으로 설정된 경우에만 사용됩니다.
-
-          정책이 구성 또는 설정되지 않은 경우 표준 배터리 충전 모드가 적용됩니다.</translation>
 <translation id="759957074386651883">세이프 브라우징 설정</translation>
 <translation id="7604169113182304895">Android 앱이 자발적으로 이 목록을 사용하도록 선택할 수 있습니다. 강제로 Android 앱에서 이 목록을 사용하도록 할 수 없습니다.</translation>
 <translation id="7612157962821894603"><ph name="PRODUCT_NAME" /> 시작 시 시스템 전체 플래그 적용</translation>
@@ -3787,9 +3769,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="7750991880413385988">새 탭 페이지 열기</translation>
 <translation id="7754704193130578113">다운로드 전에 각 파일의 저장 위치 확인</translation>
 <translation id="7761446981238915769">로그인 화면에서 설치된 앱 목록 구성</translation>
-<translation id="7763479091692861127"> OS 업데이트에 사용할 수 있는 연결 유형입니다. OS 업데이트는 용량이 크고 부가 비용이 발생할 수 있기 때문에 잠재적으로 연결 네트워크에 부담이 됩니다. 따라서 비용이 부담스러운 연결 유형(예: WiMax, Bluetooth 및 Cellular)은 현재 기본적으로 사용하지 않도록 설정합니다.
-
-      인식할 수 있는 연결 유형 식별자는 'ethernet', 'wifi', 'wimax', 'bluetooth' 및 'cellular'입니다.</translation>
 <translation id="7763614521440615342">새 탭 페이지에 콘텐츠 추천 표시</translation>
 <translation id="7765879851993224640">Smart Lock을 사용하도록 허용합니다.</translation>
 <translation id="7772346342637974431">배터리 전원 사용 시 사용자의 입력 없이 어느 정도의 시간이 지나면 경고 대화상자가 표시될지 지정합니다.

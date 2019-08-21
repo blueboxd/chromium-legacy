@@ -11,6 +11,8 @@
 namespace device {
 
 namespace {
+constexpr double kThumbstickDeadzone = 0.16;
+
 GamepadHand MojoToGamepadHandedness(device::mojom::XRHandedness handedness) {
   switch (handedness) {
     case device::mojom::XRHandedness::LEFT:
@@ -62,11 +64,6 @@ base::Optional<Gamepad> GamepadBuilder::GetGamepad() {
   return base::nullopt;
 }
 
-void GamepadBuilder::SetAxisDeadzone(double deadzone) {
-  DCHECK_GE(deadzone, 0);
-  axis_deadzone_ = deadzone;
-}
-
 void GamepadBuilder::AddButton(const GamepadButton& button) {
   DCHECK_LT(gamepad_.buttons_length, Gamepad::kButtonsLengthCap);
   gamepad_.buttons[gamepad_.buttons_length++] = button;
@@ -78,9 +75,10 @@ void GamepadBuilder::AddButton(const ButtonData& data) {
     AddAxes(data);
 }
 
-void GamepadBuilder::AddAxis(double value) {
+void GamepadBuilder::AddAxis(double value, double deadzone) {
   DCHECK_LT(gamepad_.axes_length, Gamepad::kAxesLengthCap);
-  gamepad_.axes[gamepad_.axes_length++] = ApplyAxisDeadzoneToValue(value);
+  gamepad_.axes[gamepad_.axes_length++] =
+      std::fabs(value) < deadzone ? 0.0 : value;
 }
 
 void GamepadBuilder::AddAxes(const ButtonData& data) {
@@ -92,8 +90,10 @@ void GamepadBuilder::AddAxes(const ButtonData& data) {
     return;
   }
 
-  AddAxis(data.x_axis);
-  AddAxis(data.y_axis);
+  const double deadzone =
+      data.type == ButtonData::Type::kThumbstick ? kThumbstickDeadzone : 0.0;
+  AddAxis(data.x_axis, deadzone);
+  AddAxis(data.y_axis, deadzone);
 }
 
 void GamepadBuilder::AddPlaceholderButton() {
@@ -115,10 +115,6 @@ void GamepadBuilder::RemovePlaceholderButton() {
 void GamepadBuilder::AddPlaceholderAxes() {
   AddAxis(0.0);
   AddAxis(0.0);
-}
-
-double GamepadBuilder::ApplyAxisDeadzoneToValue(double value) const {
-  return std::fabs(value) < axis_deadzone_ ? 0 : value;
 }
 
 }  // namespace device

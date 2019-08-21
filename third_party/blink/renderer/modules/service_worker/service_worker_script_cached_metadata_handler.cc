@@ -38,7 +38,8 @@ void ServiceWorkerScriptCachedMetadataHandler::SetCachedMetadata(
   if (type != kSendToPlatform)
     return;
   cached_metadata_ = CachedMetadata::Create(data_type_id, data, size);
-  const Vector<uint8_t>& serialized_data = cached_metadata_->SerializedData();
+  base::span<const uint8_t> serialized_data =
+      cached_metadata_->SerializedData();
   global_scope_->GetServiceWorkerHost()->SetCachedMetadata(script_url_,
                                                            serialized_data);
 }

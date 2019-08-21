@@ -354,9 +354,9 @@ class PasswordProtectionServiceTest : public ::testing::TestWithParam<bool> {
   }
 
  protected:
-  // |thread_bundle_| is needed here because this test involves both UI and IO
-  // threads.
-  content::TestBrowserThreadBundle thread_bundle_;
+  // |task_environment_| is needed here because this test involves both UI and
+  // IO threads.
+  content::BrowserTaskEnvironment task_environment_;
   scoped_refptr<MockSafeBrowsingDatabaseManager> database_manager_;
   sync_preferences::TestingPrefServiceSyncable test_pref_service_;
   scoped_refptr<HostContentSettingsMap> content_setting_map_;

@@ -51,7 +51,7 @@ class ExtensionActionManagerTest
   ExtensionRegistry* registry() { return registry_; }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   ExtensionRegistry* registry_;
   ExtensionActionManager* manager_;
 

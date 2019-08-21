@@ -67,10 +67,10 @@ class MediaStorageUtilTest : public testing::Test {
     TestStorageMonitor::Destroy();
   }
 
-  void RunUntilIdle() { test_browser_thread_bundle_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
  private:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestStorageMonitor* monitor_;
   base::ScopedTempDir scoped_temp_dir_;
 };

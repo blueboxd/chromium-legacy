@@ -40,7 +40,7 @@ class EnterpriseUserSessionMetricsTest : public testing::Test {
   ~EnterpriseUserSessionMetricsTest() override = default;
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   ScopedTestingLocalState local_state_;
   std::unique_ptr<ScopedStubInstallAttributes> install_attributes_;
 

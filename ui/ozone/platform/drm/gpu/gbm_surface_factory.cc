@@ -162,7 +162,7 @@ GbmSurfaceFactory::~GbmSurfaceFactory() {
 void GbmSurfaceFactory::RegisterSurface(gfx::AcceleratedWidget widget,
                                         GbmSurfaceless* surface) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  widget_to_surface_map_.insert(std::make_pair(widget, surface));
+  widget_to_surface_map_.emplace(widget, surface);
 }
 
 void GbmSurfaceFactory::UnregisterSurface(gfx::AcceleratedWidget widget) {

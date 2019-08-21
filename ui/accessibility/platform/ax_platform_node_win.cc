@@ -3850,6 +3850,11 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       }
       break;
 
+    case UIA_IsDialogPropertyId:
+      result->vt = VT_BOOL;
+      result->boolVal = IsDialog(data.role) ? VARIANT_TRUE : VARIANT_FALSE;
+      break;
+
     case UIA_IsKeyboardFocusablePropertyId:
       result->vt = VT_BOOL;
       result->boolVal =

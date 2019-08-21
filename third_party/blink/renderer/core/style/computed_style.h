@@ -1259,9 +1259,21 @@ class ComputedStyle : public ComputedStyleBase,
     return FlexDirection() == EFlexDirection::kColumn ||
            FlexDirection() == EFlexDirection::kColumnReverse;
   }
-  bool IsReverseFlexDirection() const {
-    return FlexDirection() == EFlexDirection::kRowReverse ||
-           FlexDirection() == EFlexDirection::kColumnReverse;
+  bool ResolvedIsColumnReverseFlexDirection() const {
+    if (Display() == EDisplay::kWebkitBox ||
+        Display() == EDisplay::kWebkitInlineBox) {
+      return BoxOrient() == EBoxOrient::kVertical &&
+             BoxDirection() == EBoxDirection::kReverse;
+    }
+    return FlexDirection() == EFlexDirection::kColumnReverse;
+  }
+  bool ResolvedIsRowReverseFlexDirection() const {
+    if (Display() == EDisplay::kWebkitBox ||
+        Display() == EDisplay::kWebkitInlineBox) {
+      return BoxOrient() == EBoxOrient::kHorizontal &&
+             BoxDirection() == EBoxDirection::kReverse;
+    }
+    return FlexDirection() == EFlexDirection::kRowReverse;
   }
   bool HasBoxReflect() const { return BoxReflect(); }
   bool ReflectionDataEquivalent(const ComputedStyle& other) const {

@@ -277,7 +277,7 @@ class BlinkSettingsFieldTrialTest : public testing::Test {
   base::FieldTrialList trial_list_;
   base::CommandLine command_line_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 const char BlinkSettingsFieldTrialTest::kDisallowFetchFieldTrialName[] =

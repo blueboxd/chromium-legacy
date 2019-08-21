@@ -120,7 +120,7 @@ class RenderWidgetHostViewMacEditCommandHelperWithTaskEnvTest
   // This has a MessageLoop for ImageTransportFactory and enables
   // BrowserThread::UI for RecyclableCompositorMac used by
   // RenderWidgetHostViewMac.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 }  // namespace

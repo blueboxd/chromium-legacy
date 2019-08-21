@@ -14,4 +14,8 @@
 bool IsValidDoHTemplate(const std::string& server_template,
                         std::string* server_method);
 
+const char kDnsOverHttpsModeOff[] = "off";
+const char kDnsOverHttpsModeAutomatic[] = "automatic";
+const char kDnsOverHttpsModeSecure[] = "secure";
+
 #endif  // CHROME_BROWSER_NET_DNS_UTIL_H_

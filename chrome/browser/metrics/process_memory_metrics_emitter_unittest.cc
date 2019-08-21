@@ -618,7 +618,7 @@ class ProcessMemoryMetricsEmitterTest
     EXPECT_EQ(expected.size() + expected_total_memory_entries, entries.size());
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder_;
 
  private:

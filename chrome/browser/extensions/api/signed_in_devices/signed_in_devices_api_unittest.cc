@@ -32,7 +32,7 @@ using testing::Return;
 namespace extensions {
 
 TEST(SignedInDevicesAPITest, GetSignedInDevices) {
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   TestingProfile profile;
   FakeDeviceInfoTracker device_tracker;
   TestExtensionPrefs extension_prefs(base::ThreadTaskRunnerHandle::Get().get());

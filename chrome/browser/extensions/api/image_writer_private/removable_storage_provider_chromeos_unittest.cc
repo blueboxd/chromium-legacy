@@ -104,7 +104,7 @@ class RemovableStorageProviderChromeOsUnitTest : public testing::Test {
     EXPECT_EQ(capacity, device->capacity);
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   MockDiskMountManager* disk_mount_manager_mock_;
   scoped_refptr<StorageDeviceList> devices_;
 };
@@ -125,7 +125,7 @@ TEST_F(RemovableStorageProviderChromeOsUnitTest, GetAllDevices) {
       base::Bind(&RemovableStorageProviderChromeOsUnitTest::DevicesCallback,
                  base::Unretained(this)));
 
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_EQ(2U, devices_->data.size());
 
@@ -146,7 +146,7 @@ TEST_F(RemovableStorageProviderChromeOsUnitTest, EmptyProductAndModel) {
       base::Bind(&RemovableStorageProviderChromeOsUnitTest::DevicesCallback,
                  base::Unretained(this)));
 
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_EQ(2U, devices_->data.size());
 

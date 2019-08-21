@@ -116,7 +116,7 @@ class MediaRouterFileDialogTest : public Test {
   base::FilePath fake_path;
   base::string16 fake_path_name;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(MediaRouterFileDialogTest, SelectFileSuccess) {

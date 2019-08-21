@@ -149,7 +149,6 @@
 <translation id="2921219216347069551">לא ניתן לשתף את הדף</translation>
 <translation id="2923448633003185837">הדבקה וחיפוש</translation>
 <translation id="292639812446257861">סמן כ'לא נקרא'</translation>
-<translation id="2933759065870693102">פנס</translation>
 <translation id="2958718410589002129">סיסמאות</translation>
 <translation id="2969979262385602596">הכניסה נכשלה. נסה שוב מאוחר יותר.</translation>
 <translation id="298306318844797842">הוספת אמצעי תשלום...</translation>
@@ -305,6 +304,7 @@
 <translation id="5317780077021120954">שמור</translation>
 <translation id="5327248766486351172">שם</translation>
 <translation id="5388358297987318779">פתח תמונה</translation>
+<translation id="5407969256130905701">ביטול השינויים</translation>
 <translation id="5409365236829784218">אין יישומים מותקנים שיכולים לפתוח את הקובץ הזה.</translation>
 <translation id="5416022985862681400">7 הימים האחרונים</translation>
 <translation id="5433691172869980887">שם המשתמש הועתק</translation>
@@ -510,6 +510,7 @@
 <translation id="8428213095426709021">הגדרות</translation>
 <translation id="8458397775385147834">פריט אחד נמחק</translation>
 <translation id="8487700953926739672">זמין במצב לא מקוון</translation>
+<translation id="8490978609246021741">שמירת השינויים</translation>
 <translation id="8503813439785031346">שם משתמש</translation>
 <translation id="850600235656508448">פתיחה במצב גלישה בסתר</translation>
 <translation id="8517375800490286174">רישיונות קוד פתוח</translation>

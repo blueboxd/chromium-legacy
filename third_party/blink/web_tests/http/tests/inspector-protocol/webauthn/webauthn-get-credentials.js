@@ -10,7 +10,7 @@
       protocol: "ctap2",
       transport: "usb",
       hasResidentKey: true,
-      hasUserVerification: false,
+      hasUserVerification: true,
     },
   })).result.authenticatorId;
 
@@ -20,28 +20,18 @@
   // Register a non-resident credential.
   testRunner.log((await session.evaluateAsync("registerCredential()")).status);
 
-  // TODO(nsatragno): content_shell does not support registering resident
-  // credentials through navigator.credentials.create(). Update this test to use
-  // registerCredential() once that feature is supported.
-  const userHandle = "nina";
-  const credentialId = "cred-2";
-  testRunner.log(await dp.WebAuthn.addCredential({
-    authenticatorId,
-    credential: {
-      credentialId: btoa(credentialId),
-      rpId: "devtools.test",
-      privateKey: await session.evaluateAsync("generateBase64Key()"),
-      signCount: 1,
-      isResidentCredential: true,
-      userHandle: btoa(userHandle),
-    }
-  }));
+  // Register a resident credential.
+  testRunner.log((await session.evaluateAsync(`registerCredential({
+    authenticatorSelection: {
+      requireResidentKey: true,
+    },
+  })`)).status);
 
   let logCredential = credential => {
     testRunner.log("isResidentCredential: " + credential.isResidentCredential);
     testRunner.log("signCount: " + credential.signCount);
     testRunner.log("rpId: " + credential.rpId);
-    testRunner.log("userHandle: " + atob(credential.userHandle || ""));
+    testRunner.log("userHandle: " + credential.userHandle);
   };
   // Get the registered credentials.
   let credentials = (await dp.WebAuthn.getCredentials({authenticatorId})).result.credentials;

@@ -67,7 +67,8 @@ class CORE_EXPORT CSSSelectorList {
  public:
   CSSSelectorList() : selector_array_(nullptr) {}
 
-  CSSSelectorList(CSSSelectorList&& o) : selector_array_(o.selector_array_) {
+  CSSSelectorList(CSSSelectorList&& o) noexcept
+      : selector_array_(o.selector_array_) {
     o.selector_array_ = nullptr;
   }
 
@@ -81,7 +82,7 @@ class CORE_EXPORT CSSSelectorList {
   bool HasPseudoWhere() const;
   bool RequiresExpansion() const;
 
-  CSSSelectorList& operator=(CSSSelectorList&& o) {
+  CSSSelectorList& operator=(CSSSelectorList&& o) noexcept {
     DCHECK(this != &o);
     DeleteSelectorsIfNeeded();
     selector_array_ = o.selector_array_;

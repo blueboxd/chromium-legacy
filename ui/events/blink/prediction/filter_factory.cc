@@ -51,7 +51,7 @@ void FilterFactory::LoadFilterParams(
       FilterParamMapKey param_key = {FilterType::kOneEuro, predictor_type};
       FilterParams param_value = {{OneEuroFilter::kParamMincutoff, mincutoff},
                                   {OneEuroFilter::kParamBeta, beta}};
-      filter_params_map_.insert(std::make_pair(param_key, param_value));
+      filter_params_map_.emplace(param_key, param_value);
     }
   }
 }

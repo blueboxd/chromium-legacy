@@ -79,7 +79,7 @@ class ServiceDiscoveryClientMacTest : public CocoaTest {
   ServiceDiscoveryClient* client() { return client_.get(); }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   scoped_refptr<ServiceDiscoveryClientMac> client_;
 

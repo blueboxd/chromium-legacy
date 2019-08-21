@@ -184,7 +184,7 @@ class ErrorCacheForTests : public mojom::blink::CacheStorageCache {
   }
   void SetSideData(const KURL& url,
                    base::Time response_time,
-                   const Vector<uint8_t>& side_data,
+                   base::span<const uint8_t> side_data,
                    int64_t trace_id,
                    SetSideDataCallback callback) override {
     std::move(callback).Run(

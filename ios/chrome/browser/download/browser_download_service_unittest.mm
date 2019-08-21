@@ -132,7 +132,7 @@ class BrowserDownloadServiceTest : public PlatformTest {
   }
 
   web::DownloadControllerDelegate* previous_delegate_;
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   TestChromeBrowserState::Builder browser_state_builder_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   std::unique_ptr<BrowserDownloadService> service_;

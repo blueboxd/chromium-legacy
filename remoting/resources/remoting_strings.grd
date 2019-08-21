@@ -1323,7 +1323,7 @@ An additional configuration step is required before you can control this machine
 
 To enable this functionality, select '<ph name="BUTTON_NAME">$2<ex>Open Preferences</ex></ph>' to display the Security and Privacy preferences pane, then check the box next to '<ph name="SERVICE_SCRIPT_NAME">$3<ex>org.chromium.chromoting.me2me.sh</ex></ph>'.
 
-If '<ph name="SERVICE_SCRIPT_NAME">$3<ex>org.chromium.chromoting.me2me.sh</ex></ph>' is already present and checked, you may need to remove it and then add it again.
+If '<ph name="SERVICE_SCRIPT_NAME">$3<ex>org.chromium.chromoting.me2me.sh</ex></ph>' is already present and checked, you may need to uncheck and then recheck it.
         </message>
         <message name="IDS_ACCESSIBILITY_PERMISSION_DIALOG_OPEN_BUTTON" desc="The button text of the prompt used to ask the user to enable the Chrome Remote Desktop service in the accessibility section of the privacy and security preferences pane.  Selecting this button will open the security and preferences pane.  Mac-only.">
           Open Preferences

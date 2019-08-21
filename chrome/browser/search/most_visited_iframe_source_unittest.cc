@@ -71,7 +71,7 @@ class MostVisitedIframeSourceTest : public testing::Test {
   // else happen on the IO thread. This setup is a hacky way to satisfy all
   // those constraints.
   MostVisitedIframeSourceTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         instant_io_context_(NULL),
         response_(NULL) {}
 
@@ -117,7 +117,7 @@ class MostVisitedIframeSourceTest : public testing::Test {
     response_ = data;
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   net::TestURLRequestContext test_url_request_context_;
   content::MockResourceContext resource_context_;

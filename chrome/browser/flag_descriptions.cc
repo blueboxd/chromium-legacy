@@ -1263,10 +1263,6 @@ const char kNewTabstripAnimationName[] = "New tabstrip animations";
 const char kNewTabstripAnimationDescription[] =
     "New implementation of tabstrip animations.";
 
-const char kNewTabLoadingAnimation[] = "New tab-loading animation";
-const char kNewTabLoadingAnimationDescription[] =
-    "Enables a new look for the tab-loading animation.";
-
 const char kNotificationIndicatorName[] = "Notification Indicators";
 const char kNotificationIndicatorDescription[] =
     "Enable notification indicators, which appear on app icons when a "
@@ -2628,6 +2624,12 @@ const char kStrictSiteIsolationDescription[] =
     "#site-isolation-trial-opt-out for how to disable site isolation for "
     "testing.";
 
+extern const char kTabSwitcherLongpressMenuName[] =
+    "Enable tab switcher long-press menu";
+extern const char kTabSwitcherLongpressMenuDescription[] =
+    "Enable showing a popup menu when the tab switcher is long-pressed, which "
+    "displays options for 'NewTab', 'New incognito tab' and 'Close tab'.";
+
 const char kTranslateAndroidManualTriggerName[] =
     "Enable manual translate trigger";
 const char kTranslateAndroidManualTriggerDescription[] =
@@ -2894,11 +2896,6 @@ const char kDisablePostscriptPrinting[] = "Disable PostScript Printing";
 const char kDisablePostscriptPrintingDescription[] =
     "Disables PostScript generation when printing to PostScript capable "
     "printers, and uses EMF generation in its place.";
-
-const char kEnableAppcontainerName[] = "Enable AppContainer Lockdown.";
-const char kEnableAppcontainerDescription[] =
-    "Enables the use of an AppContainer on sandboxed processes to improve "
-    "security.";
 
 const char kEnableAuraTooltipsOnWindowsName[] =
     "Enable aura tooltips on Windows";

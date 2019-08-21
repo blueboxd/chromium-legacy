@@ -152,18 +152,15 @@ class MockDiskCache : public disk_cache::Backend {
   ~MockDiskCache() override;
 
   int32_t GetEntryCount() const override;
-  net::Error OpenOrCreateEntry(const std::string& key,
-                               net::RequestPriority request_priority,
-                               disk_cache::EntryWithOpened* entry_struct,
-                               CompletionOnceCallback callback) override;
-  net::Error OpenEntry(const std::string& key,
-                       net::RequestPriority request_priority,
-                       disk_cache::Entry** entry,
-                       CompletionOnceCallback callback) override;
-  net::Error CreateEntry(const std::string& key,
-                         net::RequestPriority request_priority,
-                         disk_cache::Entry** entry,
-                         CompletionOnceCallback callback) override;
+  EntryResult OpenOrCreateEntry(const std::string& key,
+                                net::RequestPriority request_priority,
+                                EntryResultCallback callback) override;
+  EntryResult OpenEntry(const std::string& key,
+                        net::RequestPriority request_priority,
+                        EntryResultCallback callback) override;
+  EntryResult CreateEntry(const std::string& key,
+                          net::RequestPriority request_priority,
+                          EntryResultCallback callback) override;
   net::Error DoomEntry(const std::string& key,
                        net::RequestPriority request_priority,
                        CompletionOnceCallback callback) override;
@@ -251,7 +248,7 @@ class MockDiskCache : public disk_cache::Backend {
   using EntryMap = std::map<std::string, MockDiskEntry*>;
   class NotImplementedIterator;
 
-  void CallbackLater(CompletionOnceCallback callback, int result);
+  void CallbackLater(base::OnceClosure callback);
 
   EntryMap entries_;
   std::vector<std::string> external_cache_hits_;
@@ -269,8 +266,7 @@ class MockDiskCache : public disk_cache::Backend {
 
   // Used for pause and restart.
   MockDiskEntry::DeferOp defer_op_;
-  CompletionOnceCallback resume_callback_;
-  int resume_return_code_;
+  base::OnceClosure resume_callback_;
 };
 
 class MockBackendFactory : public HttpCache::BackendFactory {
@@ -351,10 +347,9 @@ class MockHttpCache {
 
 // This version of the disk cache doesn't invoke CreateEntry callbacks.
 class MockDiskCacheNoCB : public MockDiskCache {
-  net::Error CreateEntry(const std::string& key,
-                         net::RequestPriority request_priority,
-                         disk_cache::Entry** entry,
-                         CompletionOnceCallback callback) override;
+  EntryResult CreateEntry(const std::string& key,
+                          net::RequestPriority request_priority,
+                          EntryResultCallback callback) override;
 };
 
 class MockBackendNoCbFactory : public HttpCache::BackendFactory {

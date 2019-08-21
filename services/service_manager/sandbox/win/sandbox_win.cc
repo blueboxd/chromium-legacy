@@ -553,16 +553,9 @@ BOOL WINAPI DuplicateHandlePatch(HANDLE source_process_handle,
 bool IsAppContainerEnabled() {
   if (base::win::GetVersion() < base::win::Version::WIN8)
     return false;
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  const std::string appcontainer_group_name =
-      base::FieldTrialList::FindFullName("EnableAppContainer");
-  if (command_line.HasSwitch(service_manager::switches::kDisableAppContainer))
-    return false;
-  if (command_line.HasSwitch(service_manager::switches::kEnableAppContainer))
-    return true;
-  return base::StartsWith(appcontainer_group_name, "Enabled",
-                          base::CompareCase::INSENSITIVE_ASCII);
+
+  return base::FeatureList::IsEnabled(
+      {"RendererAppContainer", base::FEATURE_DISABLED_BY_DEFAULT});
 }
 
 sandbox::ResultCode SetJobMemoryLimit(const base::CommandLine& cmd_line,

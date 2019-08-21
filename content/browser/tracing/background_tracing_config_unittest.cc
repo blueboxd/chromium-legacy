@@ -34,7 +34,7 @@ class BackgroundTracingConfigTest : public testing::Test {
   BackgroundTracingConfigTest() = default;
 
  protected:
-  TestBrowserThreadBundle test_browser_thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
 };
 
 std::unique_ptr<BackgroundTracingConfigImpl> ReadFromJSONString(

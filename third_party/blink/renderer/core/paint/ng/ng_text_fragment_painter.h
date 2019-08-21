@@ -7,7 +7,6 @@
 
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
-#include "third_party/blink/renderer/platform/graphics/dom_node_id.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
@@ -25,9 +24,7 @@ class NGTextFragmentPainter {
  public:
   explicit NGTextFragmentPainter(const NGPaintFragment&);
 
-  void Paint(const PaintInfo&,
-             const PhysicalOffset& paint_offset,
-             DOMNodeId node_id);
+  void Paint(const PaintInfo&, const PhysicalOffset& paint_offset);
 
  private:
   void PaintSymbol(const PaintInfo& paint_info,

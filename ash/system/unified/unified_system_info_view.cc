@@ -398,8 +398,8 @@ UnifiedSystemInfoView::UnifiedSystemInfoView(
 
   if (PowerStatus::Get()->IsBatteryPresent()) {
     auto* separator = new views::Separator();
-    separator->SetColor(AshColorProvider::Get()->DeprecatedGetContentLayerColor(
-        ContentLayerType::kSeparator, kSeparatorOnDarkBackgroundColor));
+    separator->SetColor(AshColorProvider::Get()->GetContentLayerColor(
+        ContentLayerType::kSeparator, AshColorMode::kDark));
     separator->SetPreferredHeight(kUnifiedSystemInfoHeight);
     AddChildView(separator);
 

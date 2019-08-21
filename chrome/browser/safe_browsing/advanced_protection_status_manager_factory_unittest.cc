@@ -13,7 +13,7 @@ namespace safe_browsing {
 // Check that AdvancedProtectionStatusManagerFactory returns the same object
 // for both off-the-record profile and regular profile.
 TEST(AdvancedProtectionStatusManagerFactoryTest, OffTheRecordUseSameService) {
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
 
   TestingProfile::Builder builder;
   std::unique_ptr<TestingProfile> testing_profile = builder.Build();

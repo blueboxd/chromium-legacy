@@ -70,14 +70,10 @@ class MockIconStore : public IconStore {
   MockIconStore() {}
 
   MOCK_METHOD1(Init, void(IconStore::InitCallback));
-  MOCK_METHOD2(Load, void(const std::string&, IconStore::LoadIconCallback));
   MOCK_METHOD2(LoadIcons,
                void(const std::vector<std::string>&,
                     IconStore::LoadIconsCallback));
-  MOCK_METHOD2(Add, void(IconEntry, IconStore::UpdateCallback));
-  MOCK_METHOD2(AddIcons,
-               void(std::vector<IconEntry>, IconStore::UpdateCallback));
-  MOCK_METHOD2(Delete, void(const std::string&, IconStore::UpdateCallback));
+  MOCK_METHOD2(AddIcons, void(std::vector<SkBitmap>, IconStore::AddCallback));
   MOCK_METHOD2(DeleteIcons,
                void(const std::vector<std::string>&,
                     IconStore::UpdateCallback));

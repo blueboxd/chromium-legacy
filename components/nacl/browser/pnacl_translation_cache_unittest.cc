@@ -26,7 +26,7 @@ const int kTestDiskCacheSize = 16 * 1024 * 1024;
 class PnaclTranslationCacheTest : public testing::Test {
  protected:
   PnaclTranslationCacheTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
   ~PnaclTranslationCacheTest() override {}
   void SetUp() override { cache_.reset(new PnaclTranslationCache()); }
   void TearDown() override {
@@ -44,7 +44,7 @@ class PnaclTranslationCacheTest : public testing::Test {
   std::string GetNexe(const std::string& key);
 
   std::unique_ptr<PnaclTranslationCache> cache_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
 };
 

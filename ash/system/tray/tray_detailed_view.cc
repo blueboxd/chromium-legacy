@@ -9,7 +9,6 @@
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
-#include "ash/style/default_color_constants.h"
 #include "ash/system/tray/detailed_view_delegate.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_menu_button.h"
@@ -244,9 +243,9 @@ class ScrollContentsView : public views::View {
     cc::PaintFlags flags;
     gfx::ShadowValues shadow;
     shadow.emplace_back(gfx::Vector2d(0, kShadowOffsetY), kShadowBlur,
-                        AshColorProvider::Get()->DeprecatedGetContentLayerColor(
+                        AshColorProvider::Get()->GetContentLayerColor(
                             AshColorProvider::ContentLayerType::kSeparator,
-                            kSeparatorOnDarkBackgroundColor));
+                            AshColorProvider::AshColorMode::kDark));
     flags.setLooper(gfx::CreateShadowDrawLooper(shadow));
     flags.setAntiAlias(true);
     canvas->ClipRect(shadowed_area, SkClipOp::kDifference);

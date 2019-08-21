@@ -169,11 +169,6 @@ class Tab : public gfx::AnimationDelegate,
   // to the user that it needs their attention.
   void SetTabNeedsAttention(bool attention);
 
-  // Gets/sets the background X offset used to match the image in the inactive
-  // tab to the frame image.
-  int background_offset() const { return background_offset_; }
-  void set_background_offset(int offset) { background_offset_ = offset; }
-
   // Returns true if this tab became the active tab selected in
   // response to the last ui::ET_TAP_DOWN gesture dispatched to
   // this tab. Only used for collecting UMA metrics.
@@ -263,9 +258,6 @@ class Tab : public gfx::AnimationDelegate,
   gfx::LinearAnimation title_animation_;
 
   bool tab_activated_with_last_tap_down_ = false;
-
-  // The offset used to paint the inactive background image.
-  int background_offset_;
 
   // For narrow tabs, we show the alert icon or, if there is no alert icon, the
   // favicon even if it won't completely fit. In this case, we need to center

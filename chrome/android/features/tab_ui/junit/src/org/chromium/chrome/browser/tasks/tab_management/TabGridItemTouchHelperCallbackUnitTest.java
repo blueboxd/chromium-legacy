@@ -17,6 +17,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.graphics.Canvas;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.View;
@@ -102,6 +103,8 @@ public class TabGridItemTouchHelperCallbackUnitTest {
     Profile mProfile;
     @Mock
     Tracker mTracker;
+    @Mock
+    GridLayoutManager mGridLayoutManager;
 
     private Tab mTab1;
     private Tab mTab2;
@@ -169,6 +172,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
 
     private void setupRecyclerView() {
         doReturn(mAdapter).when(mRecyclerView).getAdapter();
+        doReturn(mGridLayoutManager).when(mRecyclerView).getLayoutManager();
         doReturn(12).when(mRecyclerView).getBottom();
         doReturn(4).when(mRecyclerView).getChildCount();
         doReturn(4).when(mAdapter).getItemCount();
@@ -225,7 +229,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
     }
 
     @Test
-    public void onSwipeTab_DELETE() {
+    public void onSwipeTab_Delete() {
         initAndAssertAllProperties();
 
         mItemTouchHelperCallback.onSwiped(mMockViewHolder1, POSITION1);
@@ -234,7 +238,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
     }
 
     @Test
-    public void onReleaseTab_NO_MERGE() {
+    public void onReleaseTab_NoMerge() {
         initAndAssertAllProperties();
 
         // Simulate the selection of card#1 in TabListModel.
@@ -255,7 +259,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
     }
 
     @Test
-    public void onReleaseTab_MERGE_BACKWARD() {
+    public void onReleaseTab_MergeBackward() {
         initAndAssertAllProperties();
 
         // Simulate the selection of card#1 in TabListModel.
@@ -271,7 +275,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
                 mMockViewHolder1, ItemTouchHelper.ACTION_STATE_IDLE);
 
         verify(mTabGroupModelFilter).mergeTabsToGroup(TAB1_ID, TAB2_ID);
-        verify(mRecyclerView).removeView(mItemView1);
+        verify(mGridLayoutManager).removeView(mItemView1);
         verify(mTracker).notifyEvent(eq(EventConstants.TAB_DRAG_AND_DROP_TO_GROUP));
         assertThat(mModel.get(0).get(TabProperties.CARD_ANIMATION_STATUS),
                 equalTo(ClosableTabGridViewHolder.AnimationStatus.HOVERED_CARD_ZOOM_OUT));
@@ -279,7 +283,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
     }
 
     @Test
-    public void onReleaseTab_MERGE_FORWARD() {
+    public void onReleaseTab_MergeForward() {
         initAndAssertAllProperties();
 
         // Simulate the selection of card#2 in TabListModel.
@@ -294,7 +298,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
         mItemTouchHelperCallback.onSelectedChanged(
                 mMockViewHolder2, ItemTouchHelper.ACTION_STATE_IDLE);
 
-        verify(mRecyclerView).removeView(mItemView2);
+        verify(mGridLayoutManager).removeView(mItemView2);
         verify(mTabGroupModelFilter).mergeTabsToGroup(TAB2_ID, TAB1_ID);
         verify(mTracker).notifyEvent(eq(EventConstants.TAB_DRAG_AND_DROP_TO_GROUP));
         assertThat(mModel.get(1).get(TabProperties.CARD_ANIMATION_STATUS),
@@ -305,7 +309,8 @@ public class TabGridItemTouchHelperCallbackUnitTest {
     @Test
     @Features.DisableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
             ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID})
-    public void onReleaseTab_MERGE_BACKWARD_WITHOUT_GROUP() {
+    public void
+    onReleaseTab_MergeBackward_WithoutGroup() {
         initAndAssertAllProperties();
         doReturn(mEmptyTabModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
 
@@ -326,13 +331,14 @@ public class TabGridItemTouchHelperCallbackUnitTest {
         assertThat(mModel.get(0).get(TabProperties.ALPHA), equalTo(1f));
         // Merge signal should never be sent.
         verify(mTabGroupModelFilter, never()).mergeTabsToGroup(anyInt(), anyInt());
-        verify(mRecyclerView, never()).removeView(any(View.class));
+        verify(mGridLayoutManager, never()).removeView(any(View.class));
     }
 
     @Test
     @Features.DisableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
             ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID})
-    public void onReleaseTab_MERGE_FORWARD_WITHOUT_GROUP() {
+    public void
+    onReleaseTab_MergeForward_WithoutGroup() {
         initAndAssertAllProperties();
         doReturn(mEmptyTabModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
 
@@ -353,11 +359,11 @@ public class TabGridItemTouchHelperCallbackUnitTest {
         assertThat(mModel.get(1).get(TabProperties.ALPHA), equalTo(1f));
         // Merge signal should never be sent.
         verify(mTabGroupModelFilter, never()).mergeTabsToGroup(anyInt(), anyInt());
-        verify(mRecyclerView, never()).removeView(any(View.class));
+        verify(mGridLayoutManager, never()).removeView(any(View.class));
     }
 
     @Test
-    public void onReleaseTab_UNGROUP_BAR_HIDE() {
+    public void onReleaseTab_UngroupBar_Hide() {
         initAndAssertAllProperties();
         setupItemTouchHelperCallback(true);
 
@@ -369,7 +375,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
     }
 
     @Test
-    public void onReleaseTab_UNGROUP() {
+    public void onReleaseTab_Ungroup() {
         initAndAssertAllProperties();
 
         setupItemTouchHelperCallback(true);
@@ -381,11 +387,11 @@ public class TabGridItemTouchHelperCallbackUnitTest {
         verify(mTabGroupModelFilter).moveTabOutOfGroup(TAB1_ID);
         verify(mTabGridDialogHandler)
                 .updateUngroupBarStatus(TabGridDialogParent.UngroupBarStatus.HIDE);
-        verify(mRecyclerView).removeView(mItemView1);
+        verify(mGridLayoutManager).removeView(mItemView1);
     }
 
     @Test
-    public void onDragTab_HOVERED_GTS_HORIZONTAL() {
+    public void onDragTab_Hovered_GTS_Horizontal() {
         initAndAssertAllProperties();
 
         // Drag card#1 rightwards to hover on card#2.
@@ -397,7 +403,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
     }
 
     @Test
-    public void onDragTab_HOVERED_GTS_VERTICAL() {
+    public void onDragTab_Hovered_GTS_Vertical() {
         initAndAssertAllProperties();
 
         // Drag card#1 downwards to hover on card#3.
@@ -409,7 +415,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
     }
 
     @Test
-    public void onDragTab_HOVERED_GTS_DIAGONAL() {
+    public void onDragTab_Hovered_GTS_Diagonal() {
         initAndAssertAllProperties();
 
         // Drag card#1 diagonally to hover on card#4.
@@ -427,7 +433,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
     }
 
     @Test
-    public void onDragTab_NOT_HOVERED_GTS_HORIZONTAL() {
+    public void onDragTab_NotHovered_GTS_Horizontal() {
         initAndAssertAllProperties();
 
         // With merge threshold equal to 2, any horizontal drag with |dX| <= (5 - threshold) should
@@ -445,7 +451,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
     }
 
     @Test
-    public void onDragTab_NOT_HOVERED_GTS_VERTICAL() {
+    public void onDragTab_NotHovered_GTS_Vertical() {
         initAndAssertAllProperties();
 
         // With merge threshold equal to 2, any vertical drag with |dY| <= (5 - threshold) should
@@ -463,7 +469,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
     }
 
     @Test
-    public void onDragTab_NOT_HOVERED_GTS_DIAGONAL() {
+    public void onDragTab_NotHovered_GTS_Diagonal() {
         initAndAssertAllProperties();
 
         // With merge threshold equal to 2, any diagonal drag with |dX| <= (5 - threshold) or |dY|
@@ -517,7 +523,8 @@ public class TabGridItemTouchHelperCallbackUnitTest {
     @Test
     @Features.DisableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
             ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID})
-    public void onDragTab_Hovered_GTS_WITHOUT_GROUP() {
+    public void
+    onDragTab_Hovered_GTS_WithoutGroup() {
         initAndAssertAllProperties();
         doReturn(mEmptyTabModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
 
@@ -539,7 +546,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
     }
 
     @Test
-    public void onDragTab_Hovered_NON_GTS() {
+    public void onDragTab_Hovered_NonGTS() {
         initAndAssertAllProperties();
         // Suppose drag happens in components other than GTS.
         mItemTouchHelperCallback.setActionsOnAllRelatedTabsForTest(false);
@@ -562,11 +569,12 @@ public class TabGridItemTouchHelperCallbackUnitTest {
     }
 
     @Test
-    public void onDragTab_UNGROUP() {
+    public void onDragTab_Ungroup() {
         initAndAssertAllProperties();
         setupItemTouchHelperCallback(true);
 
         // Simulate dragging card#1 down to the ungroup bar.
+        mItemTouchHelperCallback.setSelectedTabIndexForTest(POSITION1);
         mItemTouchHelperCallback.onChildDraw(mCanvas, mRecyclerView, mDummyViewHolder1, 0, 7,
                 ItemTouchHelper.ACTION_STATE_DRAG, true);
 
@@ -582,28 +590,30 @@ public class TabGridItemTouchHelperCallbackUnitTest {
     }
 
     @Test
-    public void onDragTab_NOT_UNGROUP() {
+    public void onDragTab_NotUngroup() {
         initAndAssertAllProperties();
         setupItemTouchHelperCallback(true);
 
         // With recyclerview bottom equal to 12 and ungroup threshold equal to 2, any drag with
         // itemview.bottom + dY <= 10 should never trigger ungroup.
+        mItemTouchHelperCallback.setSelectedTabIndexForTest(POSITION1);
         mItemTouchHelperCallback.onChildDraw(mCanvas, mRecyclerView, mDummyViewHolder1, 0, 6,
                 ItemTouchHelper.ACTION_STATE_DRAG, true);
 
         // Simulate dragging card#3 down to the ungroup bar.
+        mItemTouchHelperCallback.setSelectedTabIndexForTest(POSITION3);
         mItemTouchHelperCallback.onChildDraw(mCanvas, mRecyclerView, mDummyViewHolder3, 0, 1,
                 ItemTouchHelper.ACTION_STATE_DRAG, true);
 
         verify(mTabGridDialogHandler, times(2))
-                .updateUngroupBarStatus(TabGridDialogParent.UngroupBarStatus.HIDE);
+                .updateUngroupBarStatus(TabGridDialogParent.UngroupBarStatus.SHOW);
 
         verify(mTabGridDialogHandler, never())
                 .updateUngroupBarStatus(TabGridDialogParent.UngroupBarStatus.HOVERED);
     }
 
     @Test
-    public void onDragTab_UNGROUP_LAST_TAB() {
+    public void onDragTab_Ungroup_LastTab() {
         initAndAssertAllProperties();
         setupItemTouchHelperCallback(true);
 
@@ -616,6 +626,21 @@ public class TabGridItemTouchHelperCallbackUnitTest {
 
         verify(mTabGridDialogHandler, never())
                 .updateUngroupBarStatus(TabGridDialogParent.UngroupBarStatus.HOVERED);
+    }
+
+    @Test
+    public void onDragTab_AfterRelease() {
+        initAndAssertAllProperties();
+        setupItemTouchHelperCallback(true);
+
+        // Simulate that drop is finished, but there are some extra onChildDraw calls.
+        mItemTouchHelperCallback.setSelectedTabIndexForTest(TabModel.INVALID_TAB_INDEX);
+
+        // Simulate dragging the tab down to the ungroup bar.
+        mItemTouchHelperCallback.onChildDraw(mCanvas, mRecyclerView, mDummyViewHolder1, 0, 8,
+                ItemTouchHelper.ACTION_STATE_DRAG, true);
+
+        verify(mTabGridDialogHandler, never()).updateUngroupBarStatus(anyInt());
     }
 
     private void verifyDrag(

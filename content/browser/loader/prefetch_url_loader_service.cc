@@ -51,7 +51,6 @@ struct PrefetchURLLoaderService::BindContext {
 PrefetchURLLoaderService::PrefetchURLLoaderService(
     BrowserContext* browser_context)
     : browser_context_(browser_context),
-      preference_watcher_binding_(this),
       signed_exchange_prefetch_metric_recorder_(
           base::MakeRefCounted<SignedExchangePrefetchMetricRecorder>(
               base::DefaultTickClock::GetInstance())) {
@@ -60,11 +59,8 @@ PrefetchURLLoaderService::PrefetchURLLoaderService(
       GetContentClient()->browser()->GetAcceptLangs(browser_context);
 
   // Create a RendererPreferenceWatcher to observe updates in the preferences.
-  blink::mojom::RendererPreferenceWatcherPtr watcher_ptr;
-  preference_watcher_request_ = mojo::MakeRequest(&watcher_ptr);
-  preference_watcher_binding_.Bind(std::move(preference_watcher_request_));
   GetContentClient()->browser()->RegisterRendererPreferenceWatcher(
-      browser_context, std::move(watcher_ptr));
+      browser_context, preference_watcher_receiver_.BindNewPipeAndPassRemote());
 }
 
 void PrefetchURLLoaderService::GetFactory(

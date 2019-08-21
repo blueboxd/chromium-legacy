@@ -44,7 +44,7 @@ class BrowserAccessibilityWinTest : public testing::Test {
  private:
   void SetUp() override;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityWinTest);
 };

@@ -64,9 +64,7 @@ class SiteDataCacheImplTest : public ::testing::Test {
 
   void TearDown() override { WaitForAsyncOperationsToComplete(); }
 
-  void WaitForAsyncOperationsToComplete() {
-    test_browser_thread_bundle_.RunUntilIdle();
-  }
+  void WaitForAsyncOperationsToComplete() { task_environment_.RunUntilIdle(); }
 
   // Populates |writer_|, |reader_| and |data_| to refer to a tab navigated to
   // |kTestOrigin| that updated its title in background. Populates |writer2_|,
@@ -121,7 +119,7 @@ class SiteDataCacheImplTest : public ::testing::Test {
   }
 
   base::SimpleTestTickClock test_clock_;
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::test::ScopedFeatureList scoped_feature_list_;
   TestingProfile profile_;
 

@@ -155,7 +155,7 @@ class CastActivityRecordTest : public testing::Test,
 
   // Run any pending events and verify expectations associated with them.
   void RunUntilIdle() {
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     testing::Mock::VerifyAndClearExpectations(&socket_service_);
     testing::Mock::VerifyAndClearExpectations(&message_handler_);
     testing::Mock::VerifyAndClearExpectations(&manager_);
@@ -175,7 +175,7 @@ class CastActivityRecordTest : public testing::Test,
 
   // TODO(crbug.com/954797): Factor out members also present in
   // CastActivityManagerTest.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   MediaSinkInternal sink_ = CreateCastSink(kChannelId);
   service_manager::TestConnectorFactory connector_factory_;
   cast_channel::MockCastSocketService socket_service_{

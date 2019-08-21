@@ -1185,7 +1185,7 @@ TEST_F(BackgroundFetchServiceTest, JobsInitializedOnBrowserRestart) {
 
   // Simulate browser restart by re-creating |context_| and |service_|.
   context_->Shutdown();
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   TearDown();
   SetUp();
 
@@ -1199,7 +1199,7 @@ TEST_F(BackgroundFetchServiceTest, JobsInitializedOnBrowserRestart) {
   {
     EXPECT_CALL(*this, OnRegistrationLoadedAtStartup(_, _, _, _, _, _, _));
     // Allow restart process to go through.
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   // Check that the registration is not in the DB, which means it completed.

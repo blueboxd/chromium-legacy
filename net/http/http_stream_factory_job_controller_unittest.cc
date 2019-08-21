@@ -20,6 +20,7 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/platform_thread.h"
 #include "net/base/completion_once_callback.h"
+#include "net/base/features.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/proxy_server.h"
 #include "net/base/test_proxy_delegate.h"
@@ -53,6 +54,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/origin.h"
 
 using ::testing::_;
 using ::testing::Contains;
@@ -296,7 +298,8 @@ class HttpStreamFactoryJobControllerTest : public TestWithTaskEnvironment {
                                             bool should_mark_broken) {
     const url::SchemeHostPort server(request_info.url);
     const AlternativeServiceInfoVector alternative_service_info_vector =
-        session_->http_server_properties()->GetAlternativeServiceInfos(server);
+        session_->http_server_properties()->GetAlternativeServiceInfos(
+            server, NetworkIsolationKey());
     EXPECT_EQ(1u, alternative_service_info_vector.size());
     EXPECT_EQ(should_mark_broken,
               session_->http_server_properties()->IsAlternativeServiceBroken(
@@ -2349,7 +2352,8 @@ TEST_F(HttpStreamFactoryJobControllerTest,
 
   // Sets server support HTTP/2.
   url::SchemeHostPort server(request_info.url);
-  session_->http_server_properties()->SetSupportsSpdy(server, true);
+  session_->http_server_properties()->SetSupportsSpdy(
+      server, NetworkIsolationKey(), true);
 
   job_controller_->Preconnect(/*num_streams=*/5);
   // Only one job is started.
@@ -2363,6 +2367,95 @@ TEST_F(HttpStreamFactoryJobControllerTest,
 
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+}
+
+// Check that the logic to only preconnect a single socket to servers with H2
+// support respects NetworkIsolationKeys.
+TEST_F(HttpStreamFactoryJobControllerTest,
+       PreconnectMultipleStreamsToH2ServerWithNetworkIsolationKey) {
+  base::test::ScopedFeatureList feature_list;
+  // It's not strictly necessary to enable
+  // |kPartitionConnectionsByNetworkIsolationKey|, but the second phase of the
+  // test would only make 4 connections, reusing the first connection, without
+  // it.
+  feature_list.InitWithFeatures(
+      {// enabled_features
+       features::kPartitionHttpServerPropertiesByNetworkIsolationKey,
+       features::kPartitionConnectionsByNetworkIsolationKey},
+      // disabled_features
+      {});
+  // Need to re-create HttpServerProperties after enabling the field trial,
+  // since it caches the field trial value on construction.
+  session_deps_.http_server_properties =
+      std::make_unique<HttpServerProperties>();
+
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
+  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+
+  tcp_data_ = std::make_unique<SequencedSocketData>();
+  tcp_data_->set_connect_data(MockConnect(ASYNC, OK));
+  SetPreconnect();
+
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("http://www.example.com");
+  request_info.network_isolation_key = kNetworkIsolationKey1;
+  Initialize(request_info);
+
+  // Sets server support HTTP/2, using kNetworkIsolationKey.
+  url::SchemeHostPort server(request_info.url);
+  session_->http_server_properties()->SetSupportsSpdy(
+      server, kNetworkIsolationKey1, true);
+
+  job_controller_->Preconnect(/*num_streams=*/5);
+  // Only one job is started.
+  EXPECT_TRUE(job_controller_->main_job());
+  EXPECT_FALSE(job_controller_->alternative_job());
+  EXPECT_EQ(HttpStreamFactory::PRECONNECT,
+            job_controller_->main_job()->job_type());
+  // There is only 1 connect even though multiple streams were requested.
+  EXPECT_EQ(
+      1, HttpStreamFactoryJobPeer::GetNumStreams(job_controller_->main_job()));
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+
+  // Now try using two different NetworkIsolationKeys, one empty, one not, and
+  // make sure that 5 sockets are preconnected with each one.
+  std::vector<std::unique_ptr<SequencedSocketData>> socket_data;
+  for (auto other_network_isolation_key :
+       {NetworkIsolationKey(), kNetworkIsolationKey2}) {
+    for (int i = 0; i < 5; ++i) {
+      socket_data.emplace_back(std::make_unique<SequencedSocketData>(
+          MockConnect(ASYNC, OK), base::span<const MockRead>(),
+          base::span<const MockWrite>()));
+      session_deps_.socket_factory->AddSocketDataProvider(
+          socket_data.back().get());
+    }
+
+    request_info.network_isolation_key = other_network_isolation_key;
+    MockHttpStreamRequestDelegate request_delegate;
+    HttpStreamFactory::JobController* job_controller =
+        new HttpStreamFactory::JobController(
+            factory_, &request_delegate, session_.get(), &job_factory_,
+            request_info, is_preconnect_, false /* is_websocket */,
+            enable_ip_based_pooling_, enable_alternative_services_, SSLConfig(),
+            SSLConfig());
+    HttpStreamFactoryPeer::AddJobController(factory_, job_controller);
+    job_controller->Preconnect(/*num_streams=*/5);
+    // Five jobs should be started.
+    EXPECT_TRUE(job_controller->main_job());
+    EXPECT_FALSE(job_controller->alternative_job());
+    EXPECT_EQ(HttpStreamFactory::PRECONNECT,
+              job_controller->main_job()->job_type());
+    EXPECT_EQ(
+        5, HttpStreamFactoryJobPeer::GetNumStreams(job_controller->main_job()));
+
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+  }
 }
 
 // Check the case that while a preconnect is waiting in the H2 request queue,
@@ -2384,7 +2477,8 @@ TEST_F(HttpStreamFactoryJobControllerTest, SpdySessionInterruptsPreconnect) {
 
   // Sets server support HTTP/2.
   url::SchemeHostPort server(request_info.url);
-  session_->http_server_properties()->SetSupportsSpdy(server, true);
+  session_->http_server_properties()->SetSupportsSpdy(
+      server, NetworkIsolationKey(), true);
 
   // Start a non-preconnect request.
   std::unique_ptr<HttpStreamRequest> stream_request = job_controller_->Start(
@@ -2454,7 +2548,8 @@ TEST_F(JobControllerLimitMultipleH2Requests, MultipleRequests) {
 
   // Sets server support HTTP/2.
   url::SchemeHostPort server(request_info.url);
-  session_->http_server_properties()->SetSupportsSpdy(server, true);
+  session_->http_server_properties()->SetSupportsSpdy(
+      server, NetworkIsolationKey(), true);
 
   std::vector<std::unique_ptr<MockHttpStreamRequestDelegate>> request_delegates;
   std::vector<std::unique_ptr<HttpStreamRequest>> requests;
@@ -2492,6 +2587,98 @@ TEST_F(JobControllerLimitMultipleH2Requests, MultipleRequests) {
   }
 }
 
+// Check that throttling simultaneous requests to a single H2 server respects
+// NetworkIsolationKeys.
+TEST_F(JobControllerLimitMultipleH2Requests,
+       MultipleRequestsNetworkIsolationKey) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      {// enabled_features
+       features::kPartitionHttpServerPropertiesByNetworkIsolationKey,
+       features::kPartitionConnectionsByNetworkIsolationKey},
+      // disabled_features
+      {});
+  // Need to re-create HttpServerProperties after enabling the field trial,
+  // since it caches the field trial value on construction.
+  session_deps_.http_server_properties =
+      std::make_unique<HttpServerProperties>();
+
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
+  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+
+  tcp_data_ = std::make_unique<SequencedSocketData>(
+      MockConnect(SYNCHRONOUS, ERR_IO_PENDING), base::span<MockRead>(),
+      base::span<MockWrite>());
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://www.example.com");
+  Initialize(request_info);
+
+  // Sets server support HTTP/2.
+  url::SchemeHostPort server(request_info.url);
+  session_->http_server_properties()->SetSupportsSpdy(
+      server, kNetworkIsolationKey1, true);
+
+  std::vector<std::unique_ptr<MockHttpStreamRequestDelegate>> request_delegates;
+  std::vector<std::unique_ptr<HttpStreamRequest>> requests;
+  std::vector<std::unique_ptr<SequencedSocketData>> socket_data;
+  for (int i = 0; i < kNumRequests; ++i) {
+    // Shouldn't matter whether requests are interleaved by NetworkIsolationKey
+    // or not.
+    for (const auto& network_isolation_key :
+         {NetworkIsolationKey(), kNetworkIsolationKey1,
+          kNetworkIsolationKey2}) {
+      request_info.network_isolation_key = network_isolation_key;
+      // For kNetworkIsolationKey1, all requests but the first will be
+      // throttled.
+      if (i == 0 || network_isolation_key != kNetworkIsolationKey1) {
+        socket_data.emplace_back(std::make_unique<SequencedSocketData>(
+            MockConnect(ASYNC, OK), base::span<const MockRead>(),
+            base::span<const MockWrite>()));
+        session_deps_.socket_factory->AddSocketDataProvider(
+            socket_data.back().get());
+      }
+      request_delegates.emplace_back(
+          std::make_unique<MockHttpStreamRequestDelegate>());
+      HttpStreamFactory::JobController* job_controller =
+          new HttpStreamFactory::JobController(
+              factory_, request_delegates[i].get(), session_.get(),
+              &job_factory_, request_info, is_preconnect_,
+              false /* is_websocket */, enable_ip_based_pooling_,
+              enable_alternative_services_, SSLConfig(), SSLConfig());
+      HttpStreamFactoryPeer::AddJobController(factory_, job_controller);
+      auto request = job_controller->Start(
+          request_delegates[i].get(), nullptr, net_log_.bound(),
+          HttpStreamRequest::HTTP_STREAM, DEFAULT_PRIORITY);
+      EXPECT_TRUE(job_controller->main_job());
+      EXPECT_FALSE(job_controller->alternative_job());
+      requests.push_back(std::move(request));
+    }
+  }
+  TransportClientSocketPool* socket_pool =
+      reinterpret_cast<TransportClientSocketPool*>(session_->GetSocketPool(
+          HttpNetworkSession::NORMAL_SOCKET_POOL, ProxyServer::Direct()));
+  ClientSocketPool::GroupId group_id0(HostPortPair::FromURL(request_info.url),
+                                      ClientSocketPool::SocketType::kSsl,
+                                      request_info.privacy_mode,
+                                      NetworkIsolationKey());
+  ClientSocketPool::GroupId group_id1(HostPortPair::FromURL(request_info.url),
+                                      ClientSocketPool::SocketType::kSsl,
+                                      request_info.privacy_mode,
+                                      kNetworkIsolationKey1);
+  ClientSocketPool::GroupId group_id2(HostPortPair::FromURL(request_info.url),
+                                      ClientSocketPool::SocketType::kSsl,
+                                      request_info.privacy_mode,
+                                      kNetworkIsolationKey2);
+  EXPECT_EQ(static_cast<uint32_t>(kNumRequests),
+            socket_pool->NumConnectJobsInGroupForTesting(group_id0));
+  EXPECT_EQ(1u, socket_pool->NumConnectJobsInGroupForTesting(group_id1));
+  EXPECT_EQ(static_cast<uint32_t>(kNumRequests),
+            socket_pool->NumConnectJobsInGroupForTesting(group_id2));
+}
+
 TEST_F(JobControllerLimitMultipleH2Requests, MultipleRequestsFirstRequestHang) {
   // First socket connect hang.
   SequencedSocketData hangdata;
@@ -2526,7 +2713,8 @@ TEST_F(JobControllerLimitMultipleH2Requests, MultipleRequestsFirstRequestHang) {
 
   // Sets server support HTTP/2.
   url::SchemeHostPort server(request_info.url);
-  session_->http_server_properties()->SetSupportsSpdy(server, true);
+  session_->http_server_properties()->SetSupportsSpdy(
+      server, NetworkIsolationKey(), true);
 
   std::vector<std::unique_ptr<MockHttpStreamRequestDelegate>> request_delegates;
   std::vector<std::unique_ptr<HttpStreamRequest>> requests;
@@ -2599,7 +2787,8 @@ TEST_F(JobControllerLimitMultipleH2Requests,
 
   // Sets server support HTTP/2.
   url::SchemeHostPort server(request_info.url);
-  session_->http_server_properties()->SetSupportsSpdy(server, true);
+  session_->http_server_properties()->SetSupportsSpdy(
+      server, NetworkIsolationKey(), true);
 
   std::vector<std::unique_ptr<MockHttpStreamRequestDelegate>> request_delegates;
   std::vector<std::unique_ptr<HttpStreamRequest>> requests;
@@ -2654,7 +2843,8 @@ TEST_F(JobControllerLimitMultipleH2Requests, MultiplePreconnects) {
 
   // Sets server support HTTP/2.
   url::SchemeHostPort server(request_info.url);
-  session_->http_server_properties()->SetSupportsSpdy(server, true);
+  session_->http_server_properties()->SetSupportsSpdy(
+      server, NetworkIsolationKey(), true);
 
   std::vector<std::unique_ptr<MockHttpStreamRequestDelegate>> request_delegates;
   for (int i = 0; i < kNumRequests; ++i) {
@@ -2700,7 +2890,8 @@ TEST_F(JobControllerLimitMultipleH2Requests, H1NegotiatedForFirstRequest) {
 
   // Sets server support HTTP/2.
   url::SchemeHostPort server(request_info.url);
-  session_->http_server_properties()->SetSupportsSpdy(server, true);
+  session_->http_server_properties()->SetSupportsSpdy(
+      server, NetworkIsolationKey(), true);
 
   std::vector<std::unique_ptr<MockHttpStreamRequestDelegate>> request_delegates;
   std::vector<std::unique_ptr<HttpStreamRequest>> requests;
@@ -2765,7 +2956,8 @@ TEST_F(JobControllerLimitMultipleH2Requests, QuicJobNotThrottled) {
   SetAlternativeService(request_info, alternative_service);
 
   // Sets server support HTTP/2.
-  session_->http_server_properties()->SetSupportsSpdy(server, true);
+  session_->http_server_properties()->SetSupportsSpdy(
+      server, NetworkIsolationKey(), true);
 
   // Use default job factory so that Resume() is not mocked out.
   HttpStreamFactory::JobFactory default_job_factory;

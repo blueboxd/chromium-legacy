@@ -288,7 +288,7 @@ class FrameSinkVideoCaptureDeviceForTest : public FrameSinkVideoCaptureDevice {
 class FrameSinkVideoCaptureDeviceTest : public testing::Test {
  public:
   FrameSinkVideoCaptureDeviceTest()
-      : browser_threads_(TestBrowserThreadBundle::REAL_IO_THREAD) {}
+      : browser_threads_(BrowserTaskEnvironment::REAL_IO_THREAD) {}
 
   ~FrameSinkVideoCaptureDeviceTest() override { EXPECT_FALSE(device_); }
 
@@ -411,7 +411,7 @@ class FrameSinkVideoCaptureDeviceTest : public testing::Test {
 
  protected:
   // See the threading notes at top of this file.
-  TestBrowserThreadBundle browser_threads_;
+  BrowserTaskEnvironment browser_threads_;
 
   NiceMock<MockFrameSinkVideoCapturer> capturer_;
   std::unique_ptr<FrameSinkVideoCaptureDevice> device_;

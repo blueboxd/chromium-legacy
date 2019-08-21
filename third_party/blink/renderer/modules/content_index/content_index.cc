@@ -4,27 +4,22 @@
 
 #include "third_party/blink/renderer/modules/content_index/content_index.h"
 
-#include "base/barrier_closure.h"
 #include "base/optional.h"
-#include "base/time/time.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/core/loader/threaded_icon_loader.h"
 #include "third_party/blink/renderer/modules/content_index/content_description_type_converter.h"
+#include "third_party/blink/renderer/modules/content_index/content_index_icon_loader.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 
 namespace {
-
-constexpr base::TimeDelta kIconFetchTimeout = base::TimeDelta::FromSeconds(30);
 
 // Validates |description|. If there is an error, an error message to be passed
 // to a TypeError is passed. Otherwise a null string is returned.
@@ -41,16 +36,17 @@ WTF::String ValidateDescription(const ContentDescription& description,
   if (description.description().IsEmpty())
     return "Description cannot be empty";
 
-  if (description.iconUrl().IsEmpty())
-    return "Invalid icon URL provided";
-
   if (description.launchUrl().IsEmpty())
     return "Invalid launch URL provided";
 
-  KURL icon_url =
-      registration->GetExecutionContext()->CompleteURL(description.iconUrl());
-  if (!icon_url.ProtocolIsInHTTPFamily())
-    return "Invalid icon URL protocol";
+  for (const auto& icon : description.icons()) {
+    if (icon->src().IsEmpty())
+      return "Invalid icon URL provided";
+    KURL icon_url =
+        registration->GetExecutionContext()->CompleteURL(icon->src());
+    if (!icon_url.ProtocolIsInHTTPFamily())
+      return "Invalid icon URL protocol";
+  }
 
   KURL launch_url =
       registration->GetExecutionContext()->CompleteURL(description.launchUrl());
@@ -63,20 +59,6 @@ WTF::String ValidateDescription(const ContentDescription& description,
     return "Launch URL must belong to the Service Worker's scope";
 
   return WTF::String();
-}
-
-void FetchIcon(ExecutionContext* execution_context,
-               const KURL& icon_url,
-               const WebSize& icon_size,
-               ThreadedIconLoader::IconCallback callback) {
-  ResourceRequest resource_request(icon_url);
-  resource_request.SetRequestContext(mojom::RequestContextType::IMAGE);
-  resource_request.SetPriority(ResourceLoadPriority::kMedium);
-  resource_request.SetTimeoutInterval(kIconFetchTimeout);
-
-  auto* threaded_icon_loader = MakeGarbageCollected<ThreadedIconLoader>();
-  threaded_icon_loader->Start(execution_context, resource_request, icon_size,
-                              std::move(callback));
 }
 
 }  // namespace
@@ -124,40 +106,33 @@ void ContentIndex::DidGetIconSizes(
     ScriptPromiseResolver* resolver,
     mojom::blink::ContentDescriptionPtr description,
     const Vector<WebSize>& icon_sizes) {
-  KURL icon_url =
-      registration_->GetExecutionContext()->CompleteURL(description->icon_url);
-
-  auto icons = std::make_unique<Vector<SkBitmap>>();
-  icons->ReserveCapacity(icon_sizes.size());
-  Vector<SkBitmap>* icons_ptr = icons.get();
-  auto barrier_closure = base::BarrierClosure(
-      icon_sizes.size(),
-      WTF::Bind(&ContentIndex::DidGetIcons, WrapPersistent(this),
-                WrapPersistent(resolver), std::move(description),
-                std::move(icons)));
-
-  for (const auto& icon_size : icon_sizes) {
-    // |icons_ptr| is safe to use since it is owned by |barrier_closure|.
-    FetchIcon(
-        registration_->GetExecutionContext(), icon_url, icon_size,
-        WTF::Bind(
-            [](base::OnceClosure done_closure, Vector<SkBitmap>* icons_ptr,
-               SkBitmap icon, double resize_scale) {
-              icons_ptr->push_back(std::move(icon));
-              std::move(done_closure).Run();
-            },
-            barrier_closure, WTF::Unretained(icons_ptr)));
+  if (!icon_sizes.IsEmpty() && description->icons.IsEmpty()) {
+    ScriptState* script_state = resolver->GetScriptState();
+    ScriptState::Scope scope(script_state);
+    resolver->Reject(V8ThrowException::CreateTypeError(
+        script_state->GetIsolate(), "icons must be provided"));
+    return;
   }
+
+  if (icon_sizes.IsEmpty()) {
+    DidGetIcons(resolver, std::move(description), /* icons= */ {});
+    return;
+  }
+
+  auto* icon_loader = MakeGarbageCollected<ContentIndexIconLoader>();
+  icon_loader->Start(registration_->GetExecutionContext(),
+                     std::move(description), icon_sizes,
+                     WTF::Bind(&ContentIndex::DidGetIcons, WrapPersistent(this),
+                               WrapPersistent(resolver)));
 }
 
 void ContentIndex::DidGetIcons(ScriptPromiseResolver* resolver,
                                mojom::blink::ContentDescriptionPtr description,
-                               std::unique_ptr<Vector<SkBitmap>> icons) {
-  DCHECK(icons);
+                               Vector<SkBitmap> icons) {
   ScriptState* script_state = resolver->GetScriptState();
   ScriptState::Scope scope(script_state);
 
-  for (const auto& icon : *icons) {
+  for (const auto& icon : icons) {
     if (icon.isNull()) {
       resolver->Reject(V8ThrowException::CreateTypeError(
           script_state->GetIsolate(), "Icon could not be loaded"));
@@ -169,7 +144,7 @@ void ContentIndex::DidGetIcons(ScriptPromiseResolver* resolver,
       description->launch_url);
 
   GetService()->Add(registration_->RegistrationId(), std::move(description),
-                    *icons, launch_url,
+                    icons, launch_url,
                     WTF::Bind(&ContentIndex::DidAdd, WrapPersistent(this),
                               WrapPersistent(resolver)));
 }

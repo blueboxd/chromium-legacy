@@ -62,12 +62,12 @@ class PLATFORM_EXPORT FormDataElement final {
   explicit FormDataElement(scoped_refptr<WrappedDataPipeGetter>);
 
   FormDataElement(const FormDataElement&);
-  FormDataElement(FormDataElement&&);
+  FormDataElement(FormDataElement&&) noexcept;
 
   ~FormDataElement();
 
   FormDataElement& operator=(const FormDataElement&);
-  FormDataElement& operator=(FormDataElement&&);
+  FormDataElement& operator=(FormDataElement&&) noexcept;
 
   bool IsSafeToSendToAnotherThread() const;
 

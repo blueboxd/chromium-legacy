@@ -150,6 +150,16 @@
     "note": "This policy has been removed. See https://bugs.chromium.org/p/chromium/issues/detail?id=624095"
   },
 
+  "DnsOverHttpsMode": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": { "DnsOverHttpsMode": "off" },
+    "pref_mappings": [
+      { "pref": "dns_over_https.mode",
+        "local_state": true
+      }
+    ]
+  },
+
   "NetworkPredictionOptions": {
     "os": ["win", "linux", "mac", "chromeos"],
     "can_be_recommended": true,

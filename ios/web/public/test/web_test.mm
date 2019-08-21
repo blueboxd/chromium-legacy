@@ -24,13 +24,13 @@ class WebTestRenderProcessCrashObserver : public GlobalWebStateObserver {
   }
 };
 
-WebTest::WebTest(TestWebThreadBundle::Options options)
+WebTest::WebTest(WebTaskEnvironment::Options options)
     : WebTest(base::WrapUnique(new TestWebClient), options) {}
 
 WebTest::WebTest(std::unique_ptr<web::WebClient> web_client,
-                 TestWebThreadBundle::Options options)
+                 WebTaskEnvironment::Options options)
     : web_client_(std::move(web_client)),
-      thread_bundle_(options),
+      task_environment_(options),
       crash_observer_(std::make_unique<WebTestRenderProcessCrashObserver>()) {}
 
 WebTest::~WebTest() {}

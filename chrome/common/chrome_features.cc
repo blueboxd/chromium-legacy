@@ -120,7 +120,7 @@ const base::Feature kBundledConnectionHelpFeature{
 
 // Enables the UI to configure caption settings.
 const base::Feature kCaptionSettings{"CaptionSettings",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if !defined(OS_ANDROID)
 // Enables logging UKMs for background tab activity by TabActivityWatcher.
@@ -505,11 +505,6 @@ const base::Feature kNewNetErrorPageUI{"NewNetErrorPageUI",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // OS_ANDROID
 
-#if !defined(OS_ANDROID)
-const base::Feature kNewTabLoadingAnimation{"NewTabLoadingAnimation",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // !OS_ANDROID
-
 #if defined(OS_POSIX)
 // Enables NTLMv2, which implicitly disables NTLMv1.
 const base::Feature kNtlmV2Enabled{"NtlmV2Enabled",
@@ -685,6 +680,14 @@ const char kTreatUnsafeDownloadsAsActiveParamName[] = "ExtensionList";
 // resource usage.
 const base::Feature kHeavyAdIntervention{"HeavyAdIntervention",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables or disables the blocklist for the heavy ad intervention. This
+// throttles the amount of interventions that can occur on a given host in a
+// time period. This is separate from the intervention feature so it does not
+// interfere with field trial activation, as this blocklist is created for every
+// user.
+const base::Feature kHeavyAdBlocklist{"HeavyAdBlocklist",
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if defined(OS_CHROMEOS)
 // Enables or disables usage time state notifier for supervised accounts on

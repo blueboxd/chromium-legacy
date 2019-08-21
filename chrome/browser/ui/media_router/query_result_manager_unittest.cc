@@ -66,7 +66,7 @@ class QueryResultManagerTest : public ::testing::Test {
            (default_source && source && *default_source.get() == *source);
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   MockMediaRouter mock_router_;
   QueryResultManager query_result_manager_;
   MockObserver mock_observer_;

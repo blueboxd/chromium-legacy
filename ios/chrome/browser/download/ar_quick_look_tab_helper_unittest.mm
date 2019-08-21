@@ -59,7 +59,7 @@ class ARQuickLookTabHelperTest : public PlatformTest,
   base::HistogramTester* histogram_tester() { return &histogram_tester_; }
 
  private:
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   web::TestWebState web_state_;
   FakeARQuickLookTabHelperDelegate* delegate_;
   base::HistogramTester histogram_tester_;

@@ -154,8 +154,8 @@ class PaymentAppContentUnitTestBase::PaymentAppForWorkerTestHelper
 };
 
 PaymentAppContentUnitTestBase::PaymentAppContentUnitTestBase()
-    : thread_bundle_(
-          new TestBrowserThreadBundle(TestBrowserThreadBundle::IO_MAINLOOP)),
+    : task_environment_(
+          new BrowserTaskEnvironment(BrowserTaskEnvironment::IO_MAINLOOP)),
       worker_helper_(new PaymentAppForWorkerTestHelper()) {
   worker_helper_->context_wrapper()->set_storage_partition(storage_partition());
   storage_partition()->service_worker_context_->Shutdown();

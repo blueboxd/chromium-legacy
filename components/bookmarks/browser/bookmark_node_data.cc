@@ -139,7 +139,7 @@ BookmarkNodeData::~BookmarkNodeData() {
 bool BookmarkNodeData::ClipboardContainsBookmarks() {
   return ui::Clipboard::GetForCurrentThread()->IsFormatAvailable(
       ui::ClipboardFormatType::GetType(kClipboardFormatString),
-      ui::ClipboardType::kCopyPaste);
+      ui::ClipboardBuffer::kCopyPaste);
 }
 #endif
 
@@ -175,7 +175,7 @@ bool BookmarkNodeData::ReadFromTuple(const GURL& url,
 
 #if !defined(OS_MACOSX)
 void BookmarkNodeData::WriteToClipboard() {
-  ui::ScopedClipboardWriter scw(ui::ClipboardType::kCopyPaste);
+  ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste);
 
 #if defined(OS_WIN)
   const base::string16 kEOL(L"\r\n");
@@ -216,8 +216,8 @@ void BookmarkNodeData::WriteToClipboard() {
       pickle, ui::ClipboardFormatType::GetType(kClipboardFormatString));
 }
 
-bool BookmarkNodeData::ReadFromClipboard(ui::ClipboardType type) {
-  DCHECK_EQ(type, ui::ClipboardType::kCopyPaste);
+bool BookmarkNodeData::ReadFromClipboard(ui::ClipboardBuffer buffer) {
+  DCHECK_EQ(buffer, ui::ClipboardBuffer::kCopyPaste);
   std::string data;
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   clipboard->ReadData(ui::ClipboardFormatType::GetType(kClipboardFormatString),

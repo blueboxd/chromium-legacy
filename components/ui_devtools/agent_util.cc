@@ -39,7 +39,7 @@ bool GetSourceCode(std::string path, std::string* source_code) {
   bool return_value;
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&base::ReadFileToString, src_dir, source_code),
       base::BindOnce(&OnSourceFile, run_loop.QuitClosure(), &return_value));

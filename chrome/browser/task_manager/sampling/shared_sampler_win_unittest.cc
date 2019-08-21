@@ -94,7 +94,7 @@ class SharedSamplerTest : public testing::Test {
   base::Time start_time_;
   base::TimeDelta cpu_time_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   scoped_refptr<base::SequencedTaskRunner> blocking_pool_runner_;
   scoped_refptr<SharedSampler> shared_sampler_;
 

@@ -10,20 +10,33 @@
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "content/public/browser/web_contents.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace {
 
+using ::testing::_;
+
+class MockPasswordManagerDriver
+    : public password_manager::StubPasswordManagerDriver {
+ public:
+  MOCK_METHOD1(GeneratedPasswordAccepted, void(const base::string16&));
+  MOCK_METHOD3(GeneratedPasswordAccepted,
+               void(const autofill::FormData&,
+                    uint32_t,
+                    const base::string16&));
+};
+
 class PasswordGenerationPopupControllerImplTest
     : public ChromeRenderViewHostTestHarness {
  public:
-  std::unique_ptr<password_manager::PasswordManagerDriver> CreateDriver();
+  std::unique_ptr<MockPasswordManagerDriver> CreateDriver();
 };
 
-std::unique_ptr<password_manager::PasswordManagerDriver>
+std::unique_ptr<MockPasswordManagerDriver>
 PasswordGenerationPopupControllerImplTest::CreateDriver() {
-  return std::make_unique<password_manager::StubPasswordManagerDriver>();
+  return std::make_unique<MockPasswordManagerDriver>();
 }
 
 TEST_F(PasswordGenerationPopupControllerImplTest, GetOrCreateTheSame) {
@@ -142,6 +155,26 @@ TEST_F(PasswordGenerationPopupControllerImplTest,
 
   EXPECT_FALSE(controller1);
   EXPECT_TRUE(controller2);
+}
+
+TEST_F(PasswordGenerationPopupControllerImplTest, DestroyInPasswordAccepted) {
+  autofill::password_generation::PasswordGenerationUIData ui_data(
+      gfx::RectF(100, 20), 20 /*max_length*/, base::ASCIIToUTF16("element"),
+      100 /*generation_element_id*/, base::i18n::TextDirection(),
+      autofill::PasswordForm());
+  auto driver = CreateDriver();
+  std::unique_ptr<content::WebContents> web_contents = CreateTestWebContents();
+  base::WeakPtr<PasswordGenerationPopupController> controller =
+      PasswordGenerationPopupControllerImpl::GetOrCreate(
+          nullptr /*previous*/, ui_data.bounds, ui_data, driver->AsWeakPtr(),
+          nullptr, web_contents.get(), main_rfh());
+
+  // Destroying the controller in GeneratedPasswordAccepted() should not cause a
+  // crash.
+  EXPECT_CALL(*driver,
+              GeneratedPasswordAccepted(_, 100 /*generation_element_id*/, _))
+      .WillOnce([controller](auto, auto, auto) { controller->Hide(); });
+  controller->PasswordAccepted();
 }
 
 }  // namespace

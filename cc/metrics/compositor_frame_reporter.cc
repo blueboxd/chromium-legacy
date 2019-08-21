@@ -16,17 +16,21 @@ namespace {
 
 // When considering if a time is abnormal, compare the stage execution
 // time to this percentile from the previous times of the same stage.
-static constexpr double kAbnormalityPercentile = 95;
+constexpr double kAbnormalityPercentile = 95;
 
 // Use for determining abnormal execution times. If the sample size is less
 // than this then don't check for abnormal execution time.
-static constexpr size_t kMinimumTimeDeltaSampleSize = 20;
+constexpr size_t kMinimumTimeDeltaSampleSize = 20;
 
-static constexpr int kMissedFrameReportTypeCount =
+constexpr int kMissedFrameReportTypeCount =
     static_cast<int>(CompositorFrameReporter::MissedFrameReportTypes::
                          kMissedFrameReportTypeCount);
-static constexpr int kStageTypeCount =
+constexpr int kStageTypeCount =
     static_cast<int>(CompositorFrameReporter::StageType::kStageTypeCount);
+// For each possible FrameSequenceTrackerType there will be a UMA histogram
+// plus one for general case.
+constexpr int kFrameSequenceTrackerTypeCount =
+    static_cast<int>(FrameSequenceTrackerType::kMaxType) + 1;
 
 // Names for CompositorFrameReporter::StageType, which should be updated in case
 // of changes to the enum.
@@ -46,6 +50,15 @@ static_assert(sizeof(kStageNames) / sizeof(kStageNames[0]) == kStageTypeCount,
 // updated in case of changes to the enum.
 constexpr const char* kReportTypeNames[]{"", "MissedFrame.",
                                          "MissedFrameLatencyIncrease."};
+
+constexpr const char* kFrameSequenceTrackerTypeNames[]{"CompositorAnimation.",
+                                                       "MainThreadAnimation.",
+                                                       "PinchZoom.",
+                                                       "RAF.",
+                                                       "TouchScroll.",
+                                                       "WheelScroll.",
+                                                       ""};
+
 static_assert(sizeof(kReportTypeNames) / sizeof(kReportTypeNames[0]) ==
                   kMissedFrameReportTypeCount,
               "Compositor latency report types has changed.");
@@ -53,15 +66,30 @@ static_assert(sizeof(kReportTypeNames) / sizeof(kReportTypeNames[0]) ==
 // This value should be recalculate in case of changes to the number of values
 // in CompositorFrameReporter::MissedFrameReportTypes or in
 // CompositorFrameReporter::StageType
-static constexpr int kMaxHistogramIndex =
-    2 * kMissedFrameReportTypeCount * kStageTypeCount;
-static constexpr int kHistogramMin = 1;
-static constexpr int kHistogramMax = 350000;
-static constexpr int kHistogramBucketCount = 50;
+constexpr int kMaxHistogramIndex = 2 * kMissedFrameReportTypeCount *
+                                   kFrameSequenceTrackerTypeCount *
+                                   kStageTypeCount;
+constexpr int kHistogramMin = 1;
+constexpr int kHistogramMax = 350000;
+constexpr int kHistogramBucketCount = 50;
+
+std::string HistogramName(const char* compositor_type,
+                          const int report_type_index,
+                          const int frame_sequence_tracker_type_index,
+                          const int stage_type_index) {
+  return base::StrCat(
+      {compositor_type, "CompositorLatency.",
+       kReportTypeNames[report_type_index],
+       kFrameSequenceTrackerTypeNames[frame_sequence_tracker_type_index],
+       kStageNames[stage_type_index]});
+}
 }  // namespace
 
-CompositorFrameReporter::CompositorFrameReporter(bool is_single_threaded)
-    : is_single_threaded_(is_single_threaded) {
+CompositorFrameReporter::CompositorFrameReporter(
+    const base::flat_set<FrameSequenceTrackerType>* active_trackers,
+    bool is_single_threaded)
+    : is_single_threaded_(is_single_threaded),
+      active_trackers_(active_trackers) {
   TRACE_EVENT_ASYNC_BEGIN1("cc,benchmark", "PipelineReporter", this,
                            "is_single_threaded", is_single_threaded);
 }
@@ -160,7 +188,13 @@ void CompositorFrameReporter::ReportStageHistograms(bool missed_frame) const {
 
   for (const StageData& stage : stage_history_) {
     base::TimeDelta stage_delta = stage.end_time - stage.start_time;
-    ReportHistogram(report_type, stage.stage_type, stage_delta);
+    ReportHistogram(report_type, FrameSequenceTrackerType::kMaxType,
+                    stage.stage_type, stage_delta);
+
+    for (const auto& frame_sequence_tracker_type : *active_trackers_) {
+      ReportHistogram(report_type, frame_sequence_tracker_type,
+                      stage.stage_type, stage_delta);
+    }
 
     if (!stage.time_delta_history)
       continue;
@@ -175,9 +209,18 @@ void CompositorFrameReporter::ReportStageHistograms(bool missed_frame) const {
           kMinimumTimeDeltaSampleSize) {
         base::TimeDelta time_upper_limit = GetStateNormalUpperLimit(stage);
         if (stage_delta > time_upper_limit) {
-          ReportHistogram(CompositorFrameReporter::MissedFrameReportTypes::
-                              kMissedFrameLatencyIncrease,
-                          stage.stage_type, stage_delta - time_upper_limit);
+          // This ReportHistogram reports the latency of all
+          // frame_sequence_tracker_types(interactions) combined.
+          auto current_report_type = CompositorFrameReporter::
+              MissedFrameReportTypes::kMissedFrameLatencyIncrease;
+          ReportHistogram(current_report_type,
+                          FrameSequenceTrackerType::kMaxType, stage.stage_type,
+                          stage_delta - time_upper_limit);
+
+          for (const auto& frame_sequence_tracker_type : *active_trackers_) {
+            ReportHistogram(current_report_type, frame_sequence_tracker_type,
+                            stage.stage_type, stage_delta - time_upper_limit);
+          }
         }
       }
 
@@ -191,12 +234,19 @@ void CompositorFrameReporter::ReportStageHistograms(bool missed_frame) const {
 
 void CompositorFrameReporter::ReportHistogram(
     CompositorFrameReporter::MissedFrameReportTypes report_type,
+    FrameSequenceTrackerType frame_sequence_tracker_type,
     CompositorFrameReporter::StageType stage_type,
     base::TimeDelta time_delta) const {
   const int report_type_index = static_cast<int>(report_type);
   const int stage_type_index = static_cast<int>(stage_type);
+  const int frame_sequence_tracker_type_index =
+      static_cast<int>(frame_sequence_tracker_type);
   const int histogram_index =
-      (stage_type_index * kMissedFrameReportTypeCount + report_type_index) * 2 +
+      ((stage_type_index * kFrameSequenceTrackerTypeCount +
+        frame_sequence_tracker_type_index) *
+           kMissedFrameReportTypeCount +
+       report_type_index) *
+          2 +
       (is_single_threaded_ ? 1 : 0);
 
   CHECK_LT(stage_type_index, kStageTypeCount);
@@ -207,16 +257,16 @@ void CompositorFrameReporter::ReportHistogram(
   CHECK_GE(histogram_index, 0);
 
   const char* compositor_type = is_single_threaded_ ? "SingleThreaded" : "";
-  const std::string name =
-      base::StrCat({compositor_type, "CompositorLatency.",
-                    kReportTypeNames[static_cast<int>(report_type)],
-                    kStageNames[static_cast<int>(stage_type)]});
 
   STATIC_HISTOGRAM_POINTER_GROUP(
-      name, histogram_index, kMaxHistogramIndex,
+      HistogramName(compositor_type, report_type_index,
+                    frame_sequence_tracker_type_index, stage_type_index),
+      histogram_index, kMaxHistogramIndex,
       AddTimeMicrosecondsGranularity(time_delta),
       base::Histogram::FactoryGet(
-          name, kHistogramMin, kHistogramMax, kHistogramBucketCount,
+          HistogramName(compositor_type, report_type_index,
+                        frame_sequence_tracker_type_index, stage_type_index),
+          kHistogramMin, kHistogramMax, kHistogramBucketCount,
           base::HistogramBase::kUmaTargetedHistogramFlag));
 }
 

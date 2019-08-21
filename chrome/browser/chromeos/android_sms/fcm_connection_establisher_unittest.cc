@@ -24,7 +24,7 @@ namespace android_sms {
 class FcmConnectionEstablisherTest : public testing::Test {
  protected:
   FcmConnectionEstablisherTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
   ~FcmConnectionEstablisherTest() override = default;
 
   void VerifyTransferrableMessage(
@@ -39,7 +39,7 @@ class FcmConnectionEstablisherTest : public testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   DISALLOW_COPY_AND_ASSIGN(FcmConnectionEstablisherTest);
 };
 

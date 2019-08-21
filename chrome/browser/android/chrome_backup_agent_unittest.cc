@@ -47,7 +47,7 @@ class ChromeBackupAgentTest : public ::testing::Test {
     registry_->RegisterBooleanPref("dummy", false);
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::vector<std::string> expected_pref_names_;
   TestingProfileManager testing_profile_manager_;
   TestingProfile* testing_profile_;

@@ -57,6 +57,7 @@
 <translation id="2746543609216772311">Vrednost mora biti <ph name="MINIMUM_DATE_OR_TIME" /> ali pozneje.</translation>
 <translation id="2759744352195237655">pojavni gumb</translation>
 <translation id="2761667185364618470">Potrdite to polje, če želite nadaljevati.</translation>
+<translation id="2844350028562914727">podrobnosti</translation>
 <translation id="2896972712917208084">skupina izbirnih gumbov</translation>
 <translation id="2908441821576996758">Vnesite seznam e-poštnih naslovov, ločenih z vejicami</translation>
 <translation id="2940813599313844715">predmet</translation>
@@ -154,6 +155,7 @@
 <translation id="6166809985690652833">spremna beseda</translation>
 <translation id="6209276755895393898">Videti je kot: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">glosar</translation>
+<translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">Zapri način slike v sliki</translation>
 <translation id="6398862346408813489">Prikaz podokna za izbiro meseca</translation>
 <translation id="6404546809543547843">časovni krmilnik za predvajanje zvoka</translation>
@@ -236,6 +238,7 @@
 <translation id="860475260694818407">kazalo</translation>
 <translation id="8613126697340063924">upravljanje oddaljenega predvajanja</translation>
 <translation id="862370744433916922">podnaslov</translation>
+<translation id="8711688047404765493">izhod</translation>
 <translation id="8750798805984357768">Izberite eno od teh možnosti.</translation>
 <translation id="8808573423886751634">poglavje</translation>
 <translation id="8845239796550121995">Predvajanje na televizorju</translation>

@@ -256,7 +256,6 @@ source_set("blink_headers") {
     "platform/web_isolated_world_ids.h",
     "platform/web_isolated_world_info.h",
     "platform/web_keyboard_event.h",
-    "platform/web_layer_tree_view.h",
     "platform/web_loading_behavior_flag.h",
     "platform/web_loading_hints_provider.h",
     "platform/web_localized_string.h",

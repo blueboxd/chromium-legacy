@@ -15,6 +15,10 @@
 #include "sandbox/win/src/sharedmem_ipc_client.h"
 #include "sandbox/win/src/target_services.h"
 
+#if defined(ADDRESS_SANITIZER)
+extern "C" void* __asan_shadow_memory_dynamic_address;
+#endif
+
 namespace sandbox {
 
 NTSTATUS WINAPI
@@ -26,48 +30,52 @@ TargetNtCreateSection(NtCreateSectionFunction orig_CreateSection,
                       ULONG section_page_protection,
                       ULONG allocation_attributes,
                       HANDLE file_handle) {
-  NTSTATUS status = orig_CreateSection(
-      section_handle, desired_access, object_attributes, maximum_size,
-      section_page_protection, allocation_attributes, file_handle);
-
-  // Only intercept calls that match a particular signature.
-  if (status != STATUS_INVALID_IMAGE_HASH)
-    return status;
-  // The section only needs to have SECTION_MAP_EXECUTE, but the permissions
-  // vary depending on the OS. Windows 1903 and higher requests (SECTION_QUERY |
-  // SECTION_MAP_READ | SECTION_MAP_EXECUTE) while previous OS versions also
-  // request SECTION_MAP_WRITE. Just check for EXECUTE.
-  if (!(desired_access & SECTION_MAP_EXECUTE))
-    return status;
-  if (object_attributes)
-    return status;
-  if (maximum_size)
-    return status;
-  if (section_page_protection != PAGE_EXECUTE)
-    return status;
-  if (allocation_attributes != SEC_IMAGE)
-    return status;
-
   do {
-    if (!ValidParameter(section_handle, sizeof(HANDLE), WRITE))
+    // If the shadow memory is not fully initialized then the call below to
+    // create a std::unique_ptr will fail, so just abort early in this case.
+#if defined(ADDRESS_SANITIZER)
+    if (!__asan_shadow_memory_dynamic_address)
+      break;
+#endif
+    // The section only needs to have SECTION_MAP_EXECUTE, but the permissions
+    // vary depending on the OS. Windows 1903 and higher requests (SECTION_QUERY
+    // | SECTION_MAP_READ | SECTION_MAP_EXECUTE) while previous OS versions also
+    // request SECTION_MAP_WRITE. Just check for EXECUTE.
+    if (!(desired_access & SECTION_MAP_EXECUTE))
+      break;
+    if (object_attributes)
+      break;
+    if (maximum_size)
+      break;
+    if (section_page_protection != PAGE_EXECUTE)
+      break;
+    if (allocation_attributes != SEC_IMAGE)
       break;
 
+    // IPC must be fully started.
     void* memory = GetGlobalIPCMemory();
     if (!memory)
       break;
+
     std::unique_ptr<wchar_t, NtAllocDeleter> path;
+
     if (!NtGetPathFromHandle(file_handle, &path))
       break;
+
     const wchar_t* const_name = path.get();
 
     CountedParameterSet<NameBased> params;
     params[NameBased::NAME] = ParamPickerMake(const_name);
 
+    // Check if this will be sent to the broker.
     if (!QueryBroker(IPC_NTCREATESECTION_TAG, params.GetBase()))
       break;
 
+    if (!ValidParameter(section_handle, sizeof(HANDLE), WRITE))
+      break;
+
     CrossCallReturn answer = {0};
-    answer.nt_status = status;
+    answer.nt_status = STATUS_INVALID_IMAGE_HASH;
     SharedMemIPCClient ipc(memory);
     ResultCode code =
         CrossCall(ipc, IPC_NTCREATESECTION_TAG, file_handle, &answer);
@@ -75,19 +83,21 @@ TargetNtCreateSection(NtCreateSectionFunction orig_CreateSection,
     if (code != SBOX_ALL_OK)
       break;
 
-    status = answer.nt_status;
-
     if (!NT_SUCCESS(answer.nt_status))
       break;
 
     __try {
       *section_handle = answer.handle;
+      return answer.nt_status;
     } __except (EXCEPTION_EXECUTE_HANDLER) {
       break;
     }
   } while (false);
 
-  return status;
+  // Fall back to the original API in all failure cases.
+  return orig_CreateSection(section_handle, desired_access, object_attributes,
+                            maximum_size, section_page_protection,
+                            allocation_attributes, file_handle);
 }
 
 }  // namespace sandbox

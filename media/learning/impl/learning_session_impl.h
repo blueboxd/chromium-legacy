@@ -52,9 +52,12 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningSessionImpl
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // [task_name] = task controller.
-  using LearningTaskMap =
+  using LearningTaskControllerMap =
       std::map<std::string, base::SequenceBound<LearningTaskController>>;
-  LearningTaskMap task_map_;
+  LearningTaskControllerMap controller_map_;
+
+  // Used to fetch registered LearningTasks from their name.
+  std::map<std::string, LearningTask> task_map_;
 
   CreateTaskControllerCB controller_factory_;
 

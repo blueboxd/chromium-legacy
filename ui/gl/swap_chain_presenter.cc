@@ -200,9 +200,17 @@ SwapChainPresenter::SwapChainPresenter(
     Microsoft::WRL::ComPtr<IDCompositionDevice2> dcomp_device)
     : layer_tree_(layer_tree),
       d3d11_device_(d3d11_device),
-      dcomp_device_(dcomp_device) {}
+      dcomp_device_(dcomp_device),
+      is_on_battery_power_(true) {
+  if (base::PowerMonitor::IsInitialized()) {
+    is_on_battery_power_ = base::PowerMonitor::IsOnBatteryPower();
+    base::PowerMonitor::AddObserver(this);
+  }
+}
 
-SwapChainPresenter::~SwapChainPresenter() = default;
+SwapChainPresenter::~SwapChainPresenter() {
+  base::PowerMonitor::RemoveObserver(this);
+}
 
 bool SwapChainPresenter::ShouldUseYUVSwapChain(
     gfx::ProtectedVideoType protected_video_type) {
@@ -366,8 +374,8 @@ gfx::Size SwapChainPresenter::CalculateSwapChainSize(
   if (params.transform.IsScaleOrTranslation()) {
     swap_chain_size = overlay_onscreen_size;
   }
-
-  if (DirectCompositionSurfaceWin::AreScaledOverlaysSupported()) {
+  if (DirectCompositionSurfaceWin::AreScaledOverlaysSupported() &&
+      !ShouldUseVideoProcessorScaling()) {
     // Downscaling doesn't work on Intel display HW, and so DWM will perform an
     // extra BLT to avoid HW downscaling. This prevents the use of hardware
     // overlays especially for protected video.
@@ -495,6 +503,9 @@ bool SwapChainPresenter::TryPresentToDecodeSwapChain(
     const gfx::Size& swap_chain_size) {
   if (!base::FeatureList::IsEnabled(
           features::kDirectCompositionUseNV12DecodeSwapChain))
+    return false;
+
+  if (ShouldUseVideoProcessorScaling())
     return false;
 
   auto not_used_reason = DecodeSwapChainNotUsedReason::kFailedToPresent;
@@ -1214,6 +1225,14 @@ bool SwapChainPresenter::ReallocateSwapChain(
     }
   }
   return true;
+}
+
+void SwapChainPresenter::OnPowerStateChange(bool on_battery_power) {
+  is_on_battery_power_ = on_battery_power;
+}
+
+bool SwapChainPresenter::ShouldUseVideoProcessorScaling() {
+  return (!is_on_battery_power_ && !layer_tree_->disable_vp_scaling());
 }
 
 }  // namespace gl

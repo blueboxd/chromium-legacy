@@ -241,20 +241,18 @@ LayoutUnit LayoutFlexibleBox::InlineBlockBaseline(
 }
 
 bool LayoutFlexibleBox::HasTopOverflow() const {
-  EFlexDirection flex_direction = StyleRef().FlexDirection();
   if (IsHorizontalWritingMode())
-    return flex_direction == EFlexDirection::kColumnReverse;
+    return StyleRef().ResolvedIsColumnReverseFlexDirection();
   return !StyleRef().IsLeftToRightDirection() ^
-         (flex_direction == EFlexDirection::kRowReverse);
+         StyleRef().ResolvedIsRowReverseFlexDirection();
 }
 
 bool LayoutFlexibleBox::HasLeftOverflow() const {
-  EFlexDirection flex_direction = StyleRef().FlexDirection();
   if (IsHorizontalWritingMode()) {
     return !StyleRef().IsLeftToRightDirection() ^
-           (flex_direction == EFlexDirection::kRowReverse);
+           StyleRef().ResolvedIsRowReverseFlexDirection();
   }
-  return flex_direction == EFlexDirection::kColumnReverse;
+  return StyleRef().ResolvedIsColumnReverseFlexDirection();
 }
 
 void LayoutFlexibleBox::MergeAnonymousFlexItems(LayoutObject* remove_child) {
@@ -473,7 +471,7 @@ bool LayoutFlexibleBox::IsLeftToRightFlow() const {
            IsFlippedLinesWritingMode(StyleRef().GetWritingMode());
   }
   return StyleRef().IsLeftToRightDirection() ^
-         (StyleRef().FlexDirection() == EFlexDirection::kRowReverse);
+         StyleRef().ResolvedIsRowReverseFlexDirection();
 }
 
 bool LayoutFlexibleBox::IsMultiline() const {
@@ -1244,8 +1242,8 @@ LayoutUnit LayoutFlexibleBox::StaticMainAxisPositionForPositionedChild(
   LayoutUnit offset = FlexLayoutAlgorithm::InitialContentPositionOffset(
       available_space, FlexLayoutAlgorithm::ResolvedJustifyContent(StyleRef()),
       1);
-  if (StyleRef().FlexDirection() == EFlexDirection::kRowReverse ||
-      StyleRef().FlexDirection() == EFlexDirection::kColumnReverse)
+  if (StyleRef().ResolvedIsRowReverseFlexDirection() ||
+      StyleRef().ResolvedIsColumnReverseFlexDirection())
     offset = available_space - offset;
   return offset;
 }
@@ -1462,7 +1460,7 @@ void LayoutFlexibleBox::ApplyLineItemsPosition(FlexLine* current_line) {
                                       current_line->cross_axis_extent));
   }
 
-  if (StyleRef().FlexDirection() == EFlexDirection::kColumnReverse) {
+  if (StyleRef().ResolvedIsColumnReverseFlexDirection()) {
     // We have to do an extra pass for column-reverse to reposition the flex
     // items since the start depends on the height of the flexbox, which we
     // only know after we've positioned all the flex items.

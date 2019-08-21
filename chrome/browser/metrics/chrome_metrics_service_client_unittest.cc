@@ -80,7 +80,7 @@ class ChromeMetricsServiceClientTest : public testing::Test {
     return std::make_unique<metrics::ClientInfo>();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingPrefServiceSimple prefs_;
   TestingProfileManager profile_manager_;
   base::UserActionTester user_action_runner_;

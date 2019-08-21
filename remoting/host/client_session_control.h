@@ -36,6 +36,9 @@ class ClientSessionControl {
   virtual void OnLocalPointerMoved(const webrtc::DesktopVector& position,
                                    ui::EventType type) = 0;
 
+  // Called when a local key press or release is detected.
+  virtual void OnLocalKeyPressed(uint32_t usb_keycode) = 0;
+
   // Disables or enables the remote input in the client session.
   virtual void SetDisableInputs(bool disable_inputs) = 0;
 

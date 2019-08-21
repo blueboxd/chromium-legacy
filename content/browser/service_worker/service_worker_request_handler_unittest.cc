@@ -38,7 +38,7 @@ namespace service_worker_request_handler_unittest {
 class ServiceWorkerRequestHandlerTest : public testing::Test {
  public:
   ServiceWorkerRequestHandlerTest()
-      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   void SetUp() override {
     helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
@@ -77,7 +77,7 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
     EXPECT_EQ(expected_handler_created, !!interceptor.get());
   }
 
-  TestBrowserThreadBundle browser_thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
   net::URLRequestContext url_request_context_;

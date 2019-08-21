@@ -78,7 +78,7 @@ class BrowserPresentationConnectionProxyTest : public ::testing::Test {
   MockMediaRouter* mock_router() { return &mock_router_; }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<MockPresentationConnectionProxy>
       mock_controller_connection_proxy_;
   std::unique_ptr<mojo::Binding<blink::mojom::PresentationConnection>> binding_;

@@ -333,6 +333,7 @@
 <translation id="6043212731627905357">אין כימיה בין הצג הזה למכשיר ה-<ph name="DEVICE_TYPE" /> שלך (המכשיר לא תומך בצג).</translation>
 <translation id="6043994281159824495">צא עכשיו</translation>
 <translation id="6047696787498798094">שיתוף המסך יפסיק ברגע שתעבור למשתמש אחר. האם ברצונך להמשיך?</translation>
+<translation id="6054305421211936131">כניסה באמצעות כרטיס חכם</translation>
 <translation id="6062360702481658777">תצא באופן אוטומטי בעוד <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="6064337552080329342">מצטערים, אי אפשר לאמת את הסיסמה שלך. צריך לנסות שוב.</translation>
 <translation id="607652042414456612">‏מכשירי Bluetooth קרובים יכולים לאתר את המחשב שלך, והוא יופיע כ-"<ph name="NAME" />" עם הכתובת <ph name="ADDRESS" /></translation>
@@ -360,6 +361,7 @@
 <translation id="6459472438155181876">מרחיב את המסך אל <ph name="DISPLAY_NAME" /></translation>
 <translation id="6482559668224714696">זכוכית מגדלת במסך מלא</translation>
 <translation id="6490471652906364588">‏מכשיר עם יציאת USB-C (יציאה ימנית)</translation>
+<translation id="649452524636452238">קוד האימות של הכרטיס החכם</translation>
 <translation id="6501401484702599040">מעביר את המסך אל <ph name="RECEIVER_NAME" /></translation>
 <translation id="6521655319214113338">קלט בכתב-יד</translation>
 <translation id="6528179044667508675">נא לא להפריע</translation>
@@ -389,6 +391,7 @@
 <translation id="6857811139397017780">הפעל את <ph name="NETWORKSERVICE" /></translation>
 <translation id="6910714959251846841">‏כדי להתקין את העדכון הזה צריך לבצע Powerwash של המכשיר. אפשר לקרוא מידע נוסף על העדכון האחרון של <ph name="SYSTEM_APP_NAME" />.</translation>
 <translation id="6911468394164995108">הצטרף לרשת אחרת...</translation>
+<translation id="6919251195245069855">לא ניתן היה לזהות את הכרטיס החכם שלך. יש לנסות שוב.</translation>
 <translation id="6972754398087986839">תחילת העבודה</translation>
 <translation id="6981982820502123353">נגישות</translation>
 <translation id="698231206551913481">כל הקבצים והנתונים המשויכים למשתמש זה יימחקו לצמיתות ברגע שהמשתמש יוסר.</translation>

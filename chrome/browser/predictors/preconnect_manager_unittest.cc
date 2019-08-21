@@ -171,7 +171,7 @@ class PreconnectManagerTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<StrictMock<MockNetworkContext>> mock_network_context_;
   std::unique_ptr<StrictMock<MockPreconnectManagerDelegate>> mock_delegate_;

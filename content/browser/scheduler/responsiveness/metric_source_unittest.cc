@@ -94,23 +94,22 @@ class TestMetricSource : public MetricSource {
 class ResponsivenessMetricSourceTest : public testing::Test {
  public:
   ResponsivenessMetricSourceTest()
-      : test_browser_thread_bundle_(
-            base::test::TaskEnvironment::MainThreadType::UI,
-            content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI,
+                          content::BrowserTaskEnvironment::REAL_IO_THREAD) {}
 
-  void SetUp() override { test_browser_thread_bundle_.RunIOThreadUntilIdle(); }
+  void SetUp() override { task_environment_.RunIOThreadUntilIdle(); }
 
   void TearDown() override {
     // Destroy a task onto the IO thread, which posts back to the UI thread
     // to complete destruction.
-    test_browser_thread_bundle_.RunIOThreadUntilIdle();
-    test_browser_thread_bundle_.RunUntilIdle();
+    task_environment_.RunIOThreadUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
  protected:
   // This member sets up BrowserThread::IO and BrowserThread::UI. It must be the
   // first member, as other members may depend on these abstractions.
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(ResponsivenessMetricSourceTest, SetUpTearDown) {
@@ -124,17 +123,17 @@ TEST_F(ResponsivenessMetricSourceTest, SetUpTearDown) {
 
   metric_source->SetUp();
   // Test SetUpOnIOThread() is called after running the IO thread RunLoop.
-  test_browser_thread_bundle_.RunIOThreadUntilIdle();
+  task_environment_.RunIOThreadUntilIdle();
   EXPECT_TRUE(delegate->set_up_on_io_thread());
 
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   base::ScopedClosureRunner on_finish_destroy(
       base::BindLambdaForTesting([&]() { metric_source = nullptr; }));
   metric_source->Destroy(std::move(on_finish_destroy));
 
   // Run IO thread to test TearDownOnIOThread().
-  test_browser_thread_bundle_.RunIOThreadUntilIdle();
+  task_environment_.RunIOThreadUntilIdle();
   EXPECT_TRUE(delegate->tear_down_on_io_thread());
   EXPECT_FALSE(delegate->tear_down_on_ui_thread());
 
@@ -152,24 +151,24 @@ TEST_F(ResponsivenessMetricSourceTest, RunTasks) {
       std::make_unique<TestMetricSource>(delegate.get());
 
   metric_source->SetUp();
-  test_browser_thread_bundle_.RunIOThreadUntilIdle();
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunIOThreadUntilIdle();
+  task_environment_.RunUntilIdle();
 
   base::PostTask(FROM_HERE, {content::BrowserThread::UI}, base::DoNothing());
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_GT(delegate->will_run_task_on_ui_thread(), 0);
   EXPECT_GT(delegate->did_run_task_on_ui_thread(), 0);
 
   base::PostTask(FROM_HERE, {content::BrowserThread::IO}, base::DoNothing());
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_GT(delegate->will_run_task_on_io_thread(), 0);
   EXPECT_GT(delegate->did_run_task_on_io_thread(), 0);
 
   base::ScopedClosureRunner on_finish_destroy(
       base::BindLambdaForTesting([&]() { metric_source = nullptr; }));
   metric_source->Destroy(std::move(on_finish_destroy));
-  test_browser_thread_bundle_.RunIOThreadUntilIdle();
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunIOThreadUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(metric_source);
 }

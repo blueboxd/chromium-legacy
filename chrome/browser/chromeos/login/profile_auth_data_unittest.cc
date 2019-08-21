@@ -109,7 +109,7 @@ class ProfileAuthDataTest : public testing::Test {
   network::mojom::CookieManager* GetCookies(
       content::BrowserContext* browser_context);
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   network::NetworkService* network_service_;
   TestingProfileWithNetworkContext login_browser_context_;

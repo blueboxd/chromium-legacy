@@ -97,7 +97,7 @@ class SameSiteDataRemoverImplTest : public testing::Test {
   }
 
  private:
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<BrowserContext> browser_context_;
   std::unique_ptr<SameSiteDataRemoverImpl> same_site_remover_;
 

@@ -30,7 +30,7 @@ class FakeFileSystemTest : public ::testing::Test {
         std::make_unique<FakeFileSystem>(fake_drive_service_.get());
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<FakeDriveService> fake_drive_service_;
   std::unique_ptr<FakeFileSystem> fake_file_system_;
 };

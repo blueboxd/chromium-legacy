@@ -20,7 +20,7 @@ namespace content {
 class NotificationStorageTest : public ::testing::Test {
  public:
   NotificationStorageTest()
-      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP),
         origin_(GURL("https://example.com")),
         success_(false),
         service_worker_registration_id_(
@@ -94,7 +94,7 @@ class NotificationStorageTest : public ::testing::Test {
     }
 
     // Wait for the worker to be activated.
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
     if (!service_worker_registration) {
       ADD_FAILURE() << "Could not find the new Service Worker registration.";
@@ -151,7 +151,7 @@ class NotificationStorageTest : public ::testing::Test {
   std::string GenerateNotificationId() { return base::GenerateGUID(); }
 
  protected:
-  TestBrowserThreadBundle thread_bundle_;  // Must be first member
+  BrowserTaskEnvironment task_environment_;  // Must be first member
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   GURL origin_;
   TestBrowserContext browser_context_;

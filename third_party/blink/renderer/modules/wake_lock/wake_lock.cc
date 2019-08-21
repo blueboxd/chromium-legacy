@@ -9,9 +9,11 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/modules/wake_lock/wake_lock_controller.h"
 #include "third_party/blink/renderer/modules/wake_lock/wake_lock_request_options.h"
 #include "third_party/blink/renderer/modules/wake_lock/wake_lock_type.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -124,6 +126,18 @@ ScriptPromise WakeLock::request(ScriptState* script_state,
 
   WakeLockType wake_lock_type = ToWakeLockType(type);
   WakeLockController& controller = WakeLockController::From(context);
+
+  switch (wake_lock_type) {
+    case WakeLockType::kScreen:
+      UseCounter::Count(context, WebFeature::kWakeLockAcquireScreenLock);
+      break;
+    case WakeLockType::kSystem:
+      UseCounter::Count(context, WebFeature::kWakeLockAcquireSystemLock);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
 
   // 5.3. Otherwise, add to signal:
   // 5.3.1. Run release a wake lock with promise and type.

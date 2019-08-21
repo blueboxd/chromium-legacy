@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_COOKIE_STORE_COOKIE_STORE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_COOKIE_STORE_COOKIE_STORE_H_
 
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom-blink.h"
 #include "third_party/blink/public/mojom/cookie_store/cookie_store.mojom-blink.h"
@@ -156,11 +156,11 @@ class CookieStore final : public EventTargetWithInlineData,
 
   // Wraps a Mojo pipe used to receive cookie change notifications.
   //
-  // This binding is set up on-demand, when the cookie store has at least one
-  // change event listener. If all the listeners are unregistered, the binding
+  // This receiver is set up on-demand, when the cookie store has at least one
+  // change event listener. If all the listeners are unregistered, the receiver
   // is torn down.
-  mojo::Binding<network::mojom::blink::CookieChangeListener>
-      change_listener_binding_;
+  mojo::Receiver<network::mojom::blink::CookieChangeListener>
+      change_listener_receiver_{this};
 
   // Default for cookie_url in CookieStoreGetOptions.
   //

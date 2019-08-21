@@ -66,7 +66,7 @@ class SideSwipeControllerTest : public PlatformTest {
     [side_swipe_controller_ addHorizontalGesturesToView:view_];
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   TestWebStateListDelegate web_state_list_delegate_;
   std::unique_ptr<WebStateList> web_state_list_;

@@ -82,7 +82,6 @@
 #include "services/service_manager/service_manager.h"
 #include "services/service_manager/service_process_host.h"
 #include "services/service_manager/service_process_launcher.h"
-#include "services/shape_detection/public/mojom/constants.mojom.h"
 #include "services/tracing/public/cpp/tracing_features.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "services/tracing/tracing_service.h"
@@ -428,8 +427,6 @@ class BrowserServiceManagerDelegate
     if (identity.name() == media::mojom::kMediaServiceName)
       run_in_gpu_process = true;
 #endif
-    if (identity.name() == shape_detection::mojom::kServiceName)
-      run_in_gpu_process = true;
     return std::make_unique<ContentChildServiceProcessHost>(run_in_gpu_process,
                                                             child_flags);
   }

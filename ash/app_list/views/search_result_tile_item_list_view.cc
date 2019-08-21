@@ -299,12 +299,18 @@ std::vector<SearchResult*> SearchResultTileItemListView::GetDisplayResults() {
             [](const SearchResult* r1, const SearchResult* r2) -> bool {
               return r1->display_index() < r2->display_index();
             });
+
+  const ash::SearchResultDisplayIndex display_results_last_index =
+      static_cast<ash::SearchResultDisplayIndex>(display_results.size() - 1);
   for (auto* result : policy_tiles_results) {
-    if (result->display_index() > display_results.size() - 1) {
+    const ash::SearchResultDisplayIndex result_index = result->display_index();
+    if (result_index > display_results_last_index) {
       display_results.emplace_back(result);
     } else {
-      display_results.emplace(display_results.begin() + result->display_index(),
-                              result);
+      // TODO(newcomer): Remove this check once we determine the root cause for
+      // https://crbug.com/992344.
+      CHECK_GE(result_index, ash::SearchResultDisplayIndex::kFirstIndex);
+      display_results.emplace(display_results.begin() + result_index, result);
     }
   }
 

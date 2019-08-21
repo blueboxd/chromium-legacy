@@ -42,7 +42,7 @@ namespace extensions {
 class AppDataMigratorTest : public testing::Test {
  public:
   AppDataMigratorTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   void SetUp() override {
     profile_ = GetTestingProfile();
@@ -63,7 +63,7 @@ class AppDataMigratorTest : public testing::Test {
   void TearDown() override {}
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<AppDataMigrator> migrator_;
   content::StoragePartition* default_partition_;

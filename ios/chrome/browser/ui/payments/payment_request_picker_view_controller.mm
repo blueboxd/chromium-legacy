@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #import "ios/chrome/browser/ui/payments/payment_request_picker_row.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 #include "third_party/libaddressinput/messages.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -112,6 +113,8 @@ NSString* const kPaymentRequestPickerSearchBarAccessibilityID =
   self.searchController.searchBar.accessibilityIdentifier =
       kPaymentRequestPickerSearchBarAccessibilityID;
   self.tableView.tableHeaderView = self.searchController.searchBar;
+
+  self.tableView.tintColor = [UIColor colorNamed:kBlueColor];
 
   // Presentation of searchController will walk up the view controller hierarchy
   // until it finds the root view controller or one that defines a presentation

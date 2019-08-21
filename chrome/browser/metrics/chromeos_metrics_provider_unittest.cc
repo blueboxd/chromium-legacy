@@ -187,7 +187,7 @@ class ChromeOSMetricsProviderTest : public testing::Test {
       fake_multidevice_setup_client_impl_factory_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeOSMetricsProviderTest);
 };

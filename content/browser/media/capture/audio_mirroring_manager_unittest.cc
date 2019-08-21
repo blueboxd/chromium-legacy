@@ -221,7 +221,7 @@ class AudioMirroringManagerTest : public testing::Test {
   }
 
  private:
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   AudioParameters params_;
   AudioMirroringManager mirroring_manager_;
 

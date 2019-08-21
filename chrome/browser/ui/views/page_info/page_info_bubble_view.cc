@@ -87,7 +87,6 @@
 using bubble_anchor_util::AnchorConfiguration;
 using bubble_anchor_util::GetPageInfoAnchorConfiguration;
 using bubble_anchor_util::GetPageInfoAnchorRect;
-using password_manager::metrics_util::PasswordType;
 
 namespace {
 
@@ -813,7 +812,7 @@ void PageInfoBubbleView::SetIdentityInfo(const IdentityInfo& identity_info) {
   if (identity_info.show_change_password_buttons) {
     header_->AddPasswordReuseButtons();
   }
-
+  details_text_ = security_description->details;
   header_->SetDetails(security_description->details);
 
   Layout();
@@ -919,21 +918,36 @@ void PageInfoBubbleView::DidChangeVisibleSecurityState() {
 #if BUILDFLAG(FULL_SAFE_BROWSING)
 std::unique_ptr<PageInfoUI::SecurityDescription>
 PageInfoBubbleView::CreateSecurityDescriptionForPasswordReuse(
-    bool is_enterprise_password) const {
+    PasswordType password_type) const {
   std::unique_ptr<PageInfoUI::SecurityDescription> security_description(
       new PageInfoUI::SecurityDescription());
   security_description->summary_style = SecuritySummaryColor::RED;
   security_description->summary =
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_SUMMARY);
-  // TODO(crbug/914410): Need to account for non-sync users.
   auto* service = safe_browsing::ChromePasswordProtectionService::
       GetPasswordProtectionService(profile_);
+  password_manager::metrics_util::PasswordType metrics_password_type;
+  switch (password_type) {
+    case (PasswordType::NON_GAIA_ENTERPRISE):
+      metrics_password_type =
+          password_manager::metrics_util::PasswordType::ENTERPRISE_PASSWORD;
+      break;
+    case (PasswordType::SYNC_GAIA):
+      metrics_password_type = password_manager::metrics_util::PasswordType::
+          PRIMARY_ACCOUNT_PASSWORD;
+      break;
+    case (PasswordType::NON_SYNC_GAIA):
+      metrics_password_type =
+          password_manager::metrics_util::PasswordType::OTHER_GAIA_PASSWORD;
+      break;
+    default:
+      metrics_password_type =
+          password_manager::metrics_util::PasswordType::PASSWORD_TYPE_UNKNOWN;
+  }
+
   security_description->details = service->GetWarningDetailText(
-      is_enterprise_password
-          ? service->GetPasswordProtectionReusedPasswordAccountType(
-                PasswordType::ENTERPRISE_PASSWORD, service->username())
-          : service->GetPasswordProtectionReusedPasswordAccountType(
-                PasswordType::PRIMARY_ACCOUNT_PASSWORD, service->username()));
+      service->GetPasswordProtectionReusedPasswordAccountType(
+          metrics_password_type, service->username()));
   return security_description;
 }
 #endif

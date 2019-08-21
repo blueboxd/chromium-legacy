@@ -53,7 +53,7 @@ class KerberosTicketExpiryNotificationTest : public testing::Test {
             base::Unretained(this)));
   }
 
-  content::TestBrowserThreadBundle test_environment_{
+  content::BrowserTaskEnvironment test_environment_{
       base::test::TaskEnvironment::MainThreadType::UI};
   TestingProfileManager profile_manager_{TestingBrowserProcess::GetGlobal()};
   TestingProfile* profile_ = nullptr;

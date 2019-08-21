@@ -91,7 +91,7 @@ class SessionStorageDataMapTest : public testing::Test {
   ~SessionStorageDataMapTest() override {}
 
  protected:
-  TestBrowserThreadBundle test_browser_thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   testing::StrictMock<MockListener> listener_;
   url::Origin test_origin_;
   std::map<std::vector<uint8_t>, std::vector<uint8_t>> mock_data_;

@@ -43,7 +43,7 @@ class PluginVmFilesTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<chromeos::ScopedSetRunningOnChromeOSForTesting> fake_release_;
   base::FilePath my_files_;
@@ -53,7 +53,7 @@ TEST_F(PluginVmFilesTest, DirNotExists) {
   EnsureDefaultSharedDirExists(profile_.get(),
                                base::BindOnce(&PluginVmFilesTest::Callback,
                                               base::Unretained(this), true));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(PluginVmFilesTest, DirAlreadyExists) {
@@ -61,7 +61,7 @@ TEST_F(PluginVmFilesTest, DirAlreadyExists) {
   EnsureDefaultSharedDirExists(profile_.get(),
                                base::BindOnce(&PluginVmFilesTest::Callback,
                                               base::Unretained(this), true));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(PluginVmFilesTest, FileAlreadyExists) {
@@ -73,7 +73,7 @@ TEST_F(PluginVmFilesTest, FileAlreadyExists) {
   EnsureDefaultSharedDirExists(profile_.get(),
                                base::BindOnce(&PluginVmFilesTest::Callback,
                                               base::Unretained(this), false));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 }  // namespace plugin_vm

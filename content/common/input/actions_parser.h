@@ -31,7 +31,7 @@ class CONTENT_EXPORT ActionsParser {
   }
 
  private:
-  bool ParsePointerActions(const base::Value& pointer_actions);
+  bool ParsePointerActions(const base::Value& pointer_actions, int index);
   bool ParseActions(const base::Value& actions, int pointer_id);
   bool ParseAction(const base::Value& action,
                    SyntheticPointerActionListParams::ParamList& param_list,
@@ -49,6 +49,7 @@ class CONTENT_EXPORT ActionsParser {
   int action_index_;
   std::set<int> pointer_id_set_;
   std::set<std::string> pointer_name_set_;
+  bool use_testdriver_api_;
 
   DISALLOW_COPY_AND_ASSIGN(ActionsParser);
 };

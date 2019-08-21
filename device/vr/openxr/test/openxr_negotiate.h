@@ -23,10 +23,18 @@ XrResult GetInstanceProcAddress(XrInstance instance,
                                 PFN_xrVoidFunction* function) {
   if (strcmp(name, "xrAcquireSwapchainImage") == 0) {
     *function = reinterpret_cast<PFN_xrVoidFunction>(xrAcquireSwapchainImage);
+  } else if (strcmp(name, "xrAttachSessionActionSets") == 0) {
+    *function = reinterpret_cast<PFN_xrVoidFunction>(xrAttachSessionActionSets);
   } else if (strcmp(name, "xrBeginFrame") == 0) {
     *function = reinterpret_cast<PFN_xrVoidFunction>(xrBeginFrame);
   } else if (strcmp(name, "xrBeginSession") == 0) {
     *function = reinterpret_cast<PFN_xrVoidFunction>(xrBeginSession);
+  } else if (strcmp(name, "xrCreateAction") == 0) {
+    *function = reinterpret_cast<PFN_xrVoidFunction>(xrCreateAction);
+  } else if (strcmp(name, "xrCreateActionSet") == 0) {
+    *function = reinterpret_cast<PFN_xrVoidFunction>(xrCreateActionSet);
+  } else if (strcmp(name, "xrCreateActionSpace") == 0) {
+    *function = reinterpret_cast<PFN_xrVoidFunction>(xrCreateActionSpace);
   } else if (strcmp(name, "xrCreateInstance") == 0) {
     *function = reinterpret_cast<PFN_xrVoidFunction>(xrCreateInstance);
   } else if (strcmp(name, "xrCreateReferenceSpace") == 0) {
@@ -35,8 +43,12 @@ XrResult GetInstanceProcAddress(XrInstance instance,
     *function = reinterpret_cast<PFN_xrVoidFunction>(xrCreateSession);
   } else if (strcmp(name, "xrCreateSwapchain") == 0) {
     *function = reinterpret_cast<PFN_xrVoidFunction>(xrCreateSwapchain);
+  } else if (strcmp(name, "xrDestroyActionSet") == 0) {
+    *function = reinterpret_cast<PFN_xrVoidFunction>(xrDestroyActionSet);
   } else if (strcmp(name, "xrDestroyInstance") == 0) {
     *function = reinterpret_cast<PFN_xrVoidFunction>(xrDestroyInstance);
+  } else if (strcmp(name, "xrDestroySpace") == 0) {
+    *function = reinterpret_cast<PFN_xrVoidFunction>(xrDestroySpace);
   } else if (strcmp(name, "xrEndFrame") == 0) {
     *function = reinterpret_cast<PFN_xrVoidFunction>(xrEndFrame);
   } else if (strcmp(name, "xrEndSession") == 0) {
@@ -56,6 +68,12 @@ XrResult GetInstanceProcAddress(XrInstance instance,
   } else if (strcmp(name, "xrGetD3D11GraphicsRequirementsKHR") == 0) {
     *function =
         reinterpret_cast<PFN_xrVoidFunction>(xrGetD3D11GraphicsRequirementsKHR);
+  } else if (strcmp(name, "xrGetActionStateBoolean") == 0) {
+    *function = reinterpret_cast<PFN_xrVoidFunction>(xrGetActionStateBoolean);
+  } else if (strcmp(name, "xrGetActionStateVector2f") == 0) {
+    *function = reinterpret_cast<PFN_xrVoidFunction>(xrGetActionStateVector2f);
+  } else if (strcmp(name, "xrGetActionStatePose") == 0) {
+    *function = reinterpret_cast<PFN_xrVoidFunction>(xrGetActionStatePose);
   } else if (strcmp(name, "xrGetSystem") == 0) {
     *function = reinterpret_cast<PFN_xrVoidFunction>(xrGetSystem);
   } else if (strcmp(name, "xrLocateSpace") == 0) {
@@ -64,6 +82,13 @@ XrResult GetInstanceProcAddress(XrInstance instance,
     *function = reinterpret_cast<PFN_xrVoidFunction>(xrLocateViews);
   } else if (strcmp(name, "xrReleaseSwapchainImage") == 0) {
     *function = reinterpret_cast<PFN_xrVoidFunction>(xrReleaseSwapchainImage);
+  } else if (strcmp(name, "xrSuggestInteractionProfileBindings") == 0) {
+    *function = reinterpret_cast<PFN_xrVoidFunction>(
+        xrSuggestInteractionProfileBindings);
+  } else if (strcmp(name, "xrStringToPath") == 0) {
+    *function = reinterpret_cast<PFN_xrVoidFunction>(xrStringToPath);
+  } else if (strcmp(name, "xrSyncActions") == 0) {
+    *function = reinterpret_cast<PFN_xrVoidFunction>(xrSyncActions);
   } else if (strcmp(name, "xrWaitFrame") == 0) {
     *function = reinterpret_cast<PFN_xrVoidFunction>(xrWaitFrame);
   } else if (strcmp(name, "xrWaitSwapchainImage") == 0) {

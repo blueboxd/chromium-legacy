@@ -27,7 +27,7 @@ const service_manager::Manifest& GetAWContentBrowserOverlayManifest() {
               service_manager::Manifest::InterfaceList<
                   autofill::mojom::AutofillDriver,
                   autofill::mojom::PasswordManagerDriver,
-                  blink::mojom::TextSuggestionHost, mojom::JsApiHandler>())
+                  blink::mojom::TextSuggestionHost, mojom::JsToJavaMessaging>())
           .Build()};
   return *manifest;
 }

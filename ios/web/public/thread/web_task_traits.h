@@ -57,7 +57,7 @@ class WebTaskTraitsExtension {
           base::trait_helpers::AreValidTraits<ValidTrait, ArgTypes...>::value>>
   constexpr WebTaskTraitsExtension(ArgTypes... args)
       : web_thread_(base::trait_helpers::GetEnum<WebThread::ID>(args...)),
-        nestable_(!base::trait_helpers::HasTrait<NonNestable>(args...)) {}
+        nestable_(!base::trait_helpers::HasTrait<NonNestable, ArgTypes...>()) {}
 
   constexpr base::TaskTraitsExtensionStorage Serialize() const {
     static_assert(8 == sizeof(WebTaskTraitsExtension),

@@ -20,7 +20,8 @@ namespace {
 class ServicesTest : public testing::Test {
  public:
   ServicesTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::MainThreadType::IO) {}
+      : task_environment_(content::BrowserTaskEnvironment::MainThreadType::IO) {
+  }
 
   template <typename Interface>
   bool IsConnected(mojo::Remote<Interface>* remote) {
@@ -32,7 +33,7 @@ class ServicesTest : public testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   content::InProcessUtilityThreadHelper in_process_utility_thread_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ServicesTest);

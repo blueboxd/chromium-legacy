@@ -346,7 +346,7 @@ class RecommendAppsFetcherImplTest : public testing::Test {
     arc_features_callback_ = std::move(callback);
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   service_manager::TestConnectorFactory connector_factory_;
 

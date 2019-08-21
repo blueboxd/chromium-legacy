@@ -67,6 +67,9 @@ class COMPONENT_EXPORT(LEARNING_COMMON) LearningTaskController {
   // Notify the LearningTaskController that no completion will be sent.
   virtual void CancelObservation(base::UnguessableToken id) = 0;
 
+  // Returns the LearningTask associated with |this|.
+  virtual const LearningTask& GetLearningTask() = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(LearningTaskController);
 };

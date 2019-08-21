@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/feature_list.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/core_probe_sink.h"
@@ -32,7 +33,31 @@ bool IsKnownAdExecutionContext(ExecutionContext* execution_context) {
 
 }  // namespace
 
-AdTracker::AdTracker(LocalFrame* local_root) : local_root_(local_root) {
+namespace features {
+// Controls whether the AdTracker will look across async stacks to determine if
+// the currently running stack is ad related.
+const base::Feature kAsyncStackAdTagging{"AsyncStackAdTagging",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+}  // namespace features
+
+// static
+AdTracker* AdTracker::FromExecutionContext(
+    ExecutionContext* execution_context) {
+  if (!execution_context)
+    return nullptr;
+  if (auto* document = DynamicTo<Document>(execution_context)) {
+    LocalFrame* frame = document->GetFrame();
+    if (frame) {
+      return frame->GetAdTracker();
+    }
+  }
+  return nullptr;
+}
+
+AdTracker::AdTracker(LocalFrame* local_root)
+    : local_root_(local_root),
+      async_stack_enabled_(
+          base::FeatureList::IsEnabled(features::kAsyncStackAdTagging)) {
   local_root_->GetProbeSink()->AddAdTracker(this);
 }
 
@@ -132,8 +157,35 @@ bool AdTracker::CalculateIfAdSubresource(ExecutionContext* execution_context,
   return known_ad;
 }
 
+void AdTracker::DidCreateAsyncTask(probe::AsyncTaskId* task) {
+  DCHECK(task);
+  if (!async_stack_enabled_)
+    return;
+
+  if (IsAdScriptInStack())
+    task->SetAdTask();
+}
+
+void AdTracker::DidStartAsyncTask(probe::AsyncTaskId* task) {
+  DCHECK(task);
+  if (!async_stack_enabled_)
+    return;
+
+  if (task->IsAdTask())
+    running_ad_async_tasks_ += 1;
+}
+
+void AdTracker::DidFinishAsyncTask(probe::AsyncTaskId* task) {
+  DCHECK(task);
+  if (!async_stack_enabled_)
+    return;
+
+  if (task->IsAdTask())
+    running_ad_async_tasks_ -= 1;
+}
+
 bool AdTracker::IsAdScriptInStack() {
-  if (num_ads_in_stack_ > 0)
+  if (num_ads_in_stack_ > 0 || running_ad_async_tasks_ > 0)
     return true;
 
   ExecutionContext* execution_context = GetCurrentExecutionContext();

@@ -168,7 +168,7 @@ class MockServiceWorkerInstalledScriptsManager
 class ServiceWorkerInstalledScriptsSenderTest : public testing::Test {
  public:
   ServiceWorkerInstalledScriptsSenderTest()
-      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {}
 
  protected:
   void SetUp() override {
@@ -201,7 +201,7 @@ class ServiceWorkerInstalledScriptsSenderTest : public testing::Test {
   ServiceWorkerVersion* version() { return version_.get(); }
 
  private:
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
 
   GURL scope_;

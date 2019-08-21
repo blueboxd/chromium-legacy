@@ -155,7 +155,7 @@ class CastActivityManagerTest : public testing::Test,
   // method is sometimes called when there are clearly no pending events simply
   // to check expectations for code executed synchronously.
   void RunUntilIdle() {
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     testing::Mock::VerifyAndClearExpectations(&message_handler_);
     testing::Mock::VerifyAndClearExpectations(&mock_router_);
   }
@@ -302,7 +302,7 @@ class CastActivityManagerTest : public testing::Test,
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   data_decoder::TestingJsonParser::ScopedFactoryOverride parser_override_;
   service_manager::TestConnectorFactory connector_factory_;
   MockMojoMediaRouter mock_router_;

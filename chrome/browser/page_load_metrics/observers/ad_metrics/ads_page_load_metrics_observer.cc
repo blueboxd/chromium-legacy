@@ -13,11 +13,15 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/time/default_tick_clock.h"
+#include "chrome/browser/heavy_ad_intervention/heavy_ad_blocklist.h"
 #include "chrome/browser/heavy_ad_intervention/heavy_ad_helper.h"
+#include "chrome/browser/heavy_ad_intervention/heavy_ad_service.h"
+#include "chrome/browser/heavy_ad_intervention/heavy_ad_service_factory.h"
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/browser/page_load_metrics/resource_tracker.h"
 #include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
+#include "chrome/common/chrome_features.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
 #include "components/subresource_filter/core/common/common_features.h"
 #include "components/ukm/content/source_url_recorder.h"
@@ -90,9 +94,14 @@ bool AdsPageLoadMetricsObserver::IsSubframeSameOriginToMainFrame(
 AdsPageLoadMetricsObserver::AggregateFrameInfo::AggregateFrameInfo()
     : bytes(0), network_bytes(0), num_frames(0) {}
 
-AdsPageLoadMetricsObserver::AdsPageLoadMetricsObserver(base::TickClock* clock)
+AdsPageLoadMetricsObserver::AdsPageLoadMetricsObserver(
+    base::TickClock* clock,
+    HeavyAdBlocklist* blocklist)
     : subresource_observer_(this),
-      clock_(clock ? clock : base::DefaultTickClock::GetInstance()) {}
+      clock_(clock ? clock : base::DefaultTickClock::GetInstance()),
+      heavy_ad_blocklist_(blocklist),
+      heavy_ad_blocklist_enabled_(
+          base::FeatureList::IsEnabled(features::kHeavyAdBlocklist)) {}
 
 AdsPageLoadMetricsObserver::~AdsPageLoadMetricsObserver() = default;
 
@@ -156,6 +165,10 @@ void AdsPageLoadMetricsObserver::MaybeTriggerHeavyAdIntervention(
   if (!frame_data->MaybeTriggerHeavyAdIntervention())
     return;
 
+  // Check to see if we are allowed to activate on this host.
+  if (IsBlocklisted())
+    return;
+
   // Find the RenderFrameHost associated with this frame data. It is possible
   // that this frame no longer exists. We do not care if the frame has
   // moved to a new process because once the frame has been tagged as an ad, it
@@ -179,6 +192,14 @@ void AdsPageLoadMetricsObserver::MaybeTriggerHeavyAdIntervention(
                 frame_data->heavy_ad_status());
   ADS_HISTOGRAM("HeavyAds.InterventionType", UMA_HISTOGRAM_ENUMERATION,
                 frame_data->visibility(), frame_data->heavy_ad_status());
+
+  // Report intervention to the blocklist.
+  if (auto* blocklist = GetHeavyAdBlocklist()) {
+    blocklist->AddEntry(
+        GetDelegate().GetWebContents()->GetLastCommittedURL().host(),
+        true /* opt_out */,
+        static_cast<int>(HeavyAdBlocklistType::kHeavyAdOnlyType));
+  }
 }
 
 void AdsPageLoadMetricsObserver::OnCpuTimingUpdate(
@@ -905,4 +926,44 @@ FrameData* AdsPageLoadMetricsObserver::FindFrameData(FrameTreeNodeId id) {
     return nullptr;
 
   return &*id_and_data->second;
+}
+
+bool AdsPageLoadMetricsObserver::IsBlocklisted() {
+  if (!heavy_ad_blocklist_enabled_)
+    return false;
+
+  if (heavy_ads_blocklist_blocklisted_)
+    return true;
+
+  auto* blocklist = GetHeavyAdBlocklist();
+
+  // Treat instances where the blocklist is unavailable as blocklisted. This
+  // includes incognito profiles, which do not create a blocklist service.
+  if (!blocklist) {
+    heavy_ads_blocklist_blocklisted_ = true;
+    return true;
+  }
+
+  std::vector<blacklist::BlacklistReason> passed_reasons;
+  auto blocklist_reason = blocklist->IsLoadedAndAllowed(
+      GetDelegate().GetWebContents()->GetLastCommittedURL().host(),
+      static_cast<int>(HeavyAdBlocklistType::kHeavyAdOnlyType),
+      false /* opt_out */, &passed_reasons);
+  heavy_ads_blocklist_blocklisted_ =
+      (blocklist_reason != blacklist::BlacklistReason::kAllowed);
+
+  // TODO(https://crbug.com/959849): Add UMA for blocklist reasons.
+
+  return heavy_ads_blocklist_blocklisted_;
+}
+
+HeavyAdBlocklist* AdsPageLoadMetricsObserver::GetHeavyAdBlocklist() {
+  if (heavy_ad_blocklist_)
+    return heavy_ad_blocklist_;
+  auto* heavy_ad_service = HeavyAdServiceFactory::GetForBrowserContext(
+      GetDelegate().GetWebContents()->GetBrowserContext());
+  if (!heavy_ad_service)
+    return nullptr;
+
+  return heavy_ad_service->heavy_ad_blocklist();
 }

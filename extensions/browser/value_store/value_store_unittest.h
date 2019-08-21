@@ -63,7 +63,7 @@ class ValueStoreTest : public testing::TestWithParam<ValueStoreTestParam> {
  private:
   base::ScopedTempDir temp_dir_;
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 #endif  // EXTENSIONS_BROWSER_VALUE_STORE_VALUE_STORE_UNITTEST_H_

@@ -47,14 +47,15 @@
   AuditsTestRunner.addStatusListener(msg => TestRunner.addResult(msg));
   AuditsTestRunner.getRunButton().click();
 
-  var results = await AuditsTestRunner.waitForResults();
+  var {artifacts, lhr} = await AuditsTestRunner.waitForResults();
   TestRunner.addResult(`\n=============== Lighthouse Results ===============`);
-  TestRunner.addResult(`URL: ${results.finalUrl}`);
-  TestRunner.addResult(`Version: ${results.lighthouseVersion}`);
+  TestRunner.addResult(`URL: ${lhr.finalUrl}`);
+  TestRunner.addResult(`Version: ${lhr.lighthouseVersion}`);
+  TestRunner.addResult(`TestedAsMobileDevice: ${artifacts.TestedAsMobileDevice}`);
   TestRunner.addResult('\n');
 
-  Object.keys(results.audits).sort().forEach(auditName => {
-    var audit = results.audits[auditName];
+  Object.keys(lhr.audits).sort().forEach(auditName => {
+    var audit = lhr.audits[auditName];
 
     if (FLAKY_AUDITS.includes(auditName)) {
       TestRunner.addResult(`${auditName}: flaky`);

@@ -142,6 +142,7 @@
 <translation id="119092896208640858">To clear browsing data from this device only, while keeping it in your Google Account, <ph name="BEGIN_LINK" />sign out<ph name="END_LINK" />.</translation>
 <translation id="1193273168751563528">Enter managed session</translation>
 <translation id="1195447618553298278">Unknown error.</translation>
+<translation id="1197088940767939838">Orange</translation>
 <translation id="1197979282329025000">An error occurred while retrieving printer capabilities for printer <ph name="PRINTER_NAME" />. This printer could not be registered with <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="119944043368869598">Clear all</translation>
 <translation id="1201402288615127009">Next</translation>
@@ -1470,6 +1471,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3156531245809797194">To use Chrome, please sign in</translation>
 <translation id="3157931365184549694">Restore</translation>
 <translation id="3158033540161634471">Set up your fingerprint</translation>
+<translation id="3159493096109238499">Beige</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (hardware-backed)</translation>
 <translation id="3161522574479303604">All languages</translation>
 <translation id="3163201441334626963">Unknown product <ph name="PRODUCT_ID" /> from vendor <ph name="VENDOR_ID" /></translation>
@@ -2129,7 +2131,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4107048419833779140">Identify and eject storage devices</translation>
 <translation id="4109135793348361820">Move window to <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">Download complete: <ph name="FILE_NAME" />. Press Shift+F6 to cycle to the downloads bar area.</translation>
-<translation id="4110690756550305074">Ask when a site wants to save your changes directly to files or folders on your device (recommended)</translation>
 <translation id="4110895898888439383">Browse the web in high contrast mode</translation>
 <translation id="4115002065223188701">Network out of range</translation>
 <translation id="4115080753528843955">Some content services use unique identifiers for the purposes of authorising access to protected content</translation>
@@ -2347,7 +2348,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4479877282574735775">Configuring the virtual machine. This may take a few minutes.</translation>
 <translation id="4480590691557335796">Chrome can find harmful software on your computer and remove it</translation>
 <translation id="4481530544597605423">Unpaired devices</translation>
-<translation id="4483579413421375386">Show for site</translation>
 <translation id="4495419450179050807">Don't show on this page</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> has crashed</translation>
 <translation id="450099669180426158">Exclamation mark icon</translation>
@@ -2562,7 +2562,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4836504898754963407">Manage fingerprints</translation>
 <translation id="4837926214103741331">You are not authorised to use this device. Please contact the device owner for sign-in permission.</translation>
 <translation id="4837952862063191349">To unlock and restore your local data, please enter your old <ph name="DEVICE_TYPE" /> password.</translation>
-<translation id="4838791013695308697">Do not allow any sites to save your changes directly to files or folders on your device</translation>
 <translation id="4838836835474292213">Clipboard read access allowed</translation>
 <translation id="4839303808932127586">Sa&amp;ve video as...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{One more}other{# more}}</translation>
@@ -3048,7 +3047,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5567989639534621706">Application Caches</translation>
 <translation id="5568069709869097550">Can't sign in</translation>
 <translation id="5568144734023334204">Android storage</translation>
-<translation id="5571092938913434726">Global Media Controls</translation>
 <translation id="5572851009514199876">Please start and sign in to Chrome so that Chrome can check whether you are allowed to access this site.</translation>
 <translation id="5575473780076478375">Incognito Extension: <ph name="EXTENSION_NAME" /></translation>
 <translation id="5575528586625653441">A problem with demo registration request occurred.</translation>
@@ -3444,7 +3442,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6129691635767514872">The selected data has been removed from Chrome and synced devices. Your Google Account may have other forms of browsing history such as searches and activity from other Google services at <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6129938384427316298">Netscape Certificate Comment</translation>
 <translation id="6129953537138746214">Space</translation>
-<translation id="6130024555057767093">Notifications are currently blocked for all sites except for sites that you individually allow.</translation>
 <translation id="6136114942382973861">Close downloads bar</translation>
 <translation id="6137767437444130246">User certificate</translation>
 <translation id="6138680304137685902">X9.62 ECDSA Signature with SHA-384</translation>
@@ -3796,7 +3793,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6680650203439190394">Rate</translation>
 <translation id="6681668084120808868">Take photo</translation>
 <translation id="6681964764822470072">"<ph name="APP_NAME" />" will be uninstalled.</translation>
-<translation id="6684006110763523553">Ask when a site wants to save your changes directly to files or folders on your device</translation>
 <translation id="668599234725812620">Open Google Play</translation>
 <translation id="6686490380836145850">Close tabs to the right</translation>
 <translation id="6686817083349815241">Save your password</translation>
@@ -4725,7 +4721,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       Content that you’ve purchased such as movies, TV shows, music, books or other in-app purchases may also be deleted.
       <ph name="LINE_BREAKS2" />
       This doesn’t affect apps or content on other devices.</translation>
-<translation id="8025958612547562988">Save detected printers to your profile, or add a new printer.</translation>
 <translation id="8026334261755873520">Clear browsing data</translation>
 <translation id="8028060951694135607">Microsoft Key Recovery</translation>
 <translation id="8028803902702117856">Downloading <ph name="SIZE" />, <ph name="FILE_NAME" /></translation>
@@ -4881,7 +4876,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8256319818471787266">Sparky</translation>
 <translation id="8257950718085972371">Continue blocking camera access</translation>
 <translation id="8259239505248583312">Let's go</translation>
-<translation id="8259556432390118667">Hex colour value</translation>
 <translation id="8260126382462817229">Try signing in again</translation>
 <translation id="8260864402787962391">Mouse</translation>
 <translation id="8261378640211443080">This extension is not listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> and may have been added without your knowledge.</translation>
@@ -5419,7 +5413,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="9053893665344928494">Remember my choice</translation>
 <translation id="9055636786322918818">Enforce RC4 encryption. Using this option increases your risk, as the RC4 ciphers are insecure.</translation>
 <translation id="9056810968620647706">No matches were found.</translation>
-<translation id="9057119625587205566">No printers nearby</translation>
 <translation id="9062065967472365419">Surprise me</translation>
 <translation id="9062468308252555888">14x</translation>
 <translation id="9063208415146866933">Error from line <ph name="ERROR_LINE_START" /> to <ph name="ERROR_LINE_END" /></translation>
@@ -5560,6 +5553,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="987897973846887088">No images available</translation>
 <translation id="988978206646512040">Empty passphrase is not allowed</translation>
 <translation id="992032470292211616">Extensions, apps and themes can harm your mobile device. Are you sure that you want to continue?</translation>
+<translation id="992256792861109788">Pink</translation>
 <translation id="992592832486024913">Disable ChromeVox (spoken feedback)</translation>
 <translation id="992778845837390402">Linux backup currently in progress</translation>
 <translation id="993540765962421562">Installation in progress</translation>

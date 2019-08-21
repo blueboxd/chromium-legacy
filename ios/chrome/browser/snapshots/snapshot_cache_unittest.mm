@@ -225,7 +225,7 @@ class SnapshotCacheTest : public PlatformTest {
 #pragma clang diagnostic pop
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   SnapshotCache* snapshotCache_;
   NSMutableArray* testSessions_;
   NSMutableArray* testImages_;

@@ -414,8 +414,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
     return nullptr;
   }
 
-  virtual const BrowserInterfaceBrokerProxy* GetBrowserInterfaceBrokerProxy()
-      const {
+  virtual BrowserInterfaceBrokerProxy* GetBrowserInterfaceBrokerProxy() const {
     return nullptr;
   }
 

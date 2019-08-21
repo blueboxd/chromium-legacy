@@ -58,13 +58,15 @@ class TabLoaderTest : public testing::Test {
 
     TabLoaderTester::SetConstructionCallbackForTesting(nullptr);
     test_web_contents_factory_.reset();
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     test_policy_.reset();
   }
 
   void SimulateLoadTimeout() {
-    // Unfortunately there's no mock time in BrowserThreadBundle. Fast-forward
-    // things and simulate firing the timer.
+    // Unfortunately there's no mock time in BrowserTaskEnvironment.
+    // Fast-forward things and simulate firing the timer.
+    // TODO(crbug.com/905412): TaskEnvironment::TimeSource::MOCK_TIME now
+    // supports this.
     EXPECT_TRUE(tab_loader_.force_load_timer().IsRunning());
     clock_.SetNowTicks(tab_loader_.force_load_time());
     tab_loader_.force_load_timer().Stop();
@@ -147,7 +149,7 @@ class TabLoaderTest : public testing::Test {
   base::RepeatingCallback<void(TabLoader*)> construction_callback_;
 
   std::unique_ptr<content::TestWebContentsFactory> test_web_contents_factory_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile testing_profile_;
   std::unique_ptr<testing::ScopedAlwaysLoadSessionRestoreTestPolicy>
       test_policy_;

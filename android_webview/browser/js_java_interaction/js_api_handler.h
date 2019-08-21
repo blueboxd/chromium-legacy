@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "android_webview/browser/js_java_interaction/js_reply_proxy.h"
 #include "android_webview/common/js_java_interaction/interfaces.mojom.h"
 #include "base/strings/string16.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
@@ -20,24 +21,29 @@ class RenderFrameHost;
 
 namespace android_webview {
 
-// Implementation of mojo::JsApiHandler interface. Receives PostMessage() call
-// from renderer JsBinding.
-class JsApiHandler : public mojom::JsApiHandler {
+// Implementation of mojo::JsToJavaMessaging interface. Receives PostMessage()
+// call from renderer JsBinding.
+class JsApiHandler : public mojom::JsToJavaMessaging {
  public:
   explicit JsApiHandler(content::RenderFrameHost* rfh);
   ~JsApiHandler() override;
 
   // Binds mojo.
   void BindPendingReceiver(
-      mojo::PendingAssociatedReceiver<mojom::JsApiHandler> pending_receiver);
+      mojo::PendingAssociatedReceiver<mojom::JsToJavaMessaging>
+          pending_receiver);
 
-  // mojom::JsApiHandler implementation.
+  // mojom::JsToJavaMessaging implementation.
   void PostMessage(const base::string16& message,
                    std::vector<mojo::ScopedMessagePipeHandle> ports) override;
+  void SetJavaToJsMessaging(mojo::PendingRemote<mojom::JavaToJsMessaging>
+                                java_to_js_messaging) override;
 
  private:
+  std::unique_ptr<JsReplyProxy> reply_proxy_;
   content::RenderFrameHost* render_frame_host_;
-  mojo::AssociatedReceiver<mojom::JsApiHandler> receiver_{this};
+  mojo::AssociatedRemote<mojom::JsJavaConfigurator> configurator_remote_;
+  mojo::AssociatedReceiver<mojom::JsToJavaMessaging> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(JsApiHandler);
 };

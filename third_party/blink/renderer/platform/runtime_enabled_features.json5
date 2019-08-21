@@ -245,6 +245,9 @@
       status: "experimental",
     },
     {
+      name: "Canvas2dSwapChain",
+    },
+    {
       name: "CanvasColorManagement",
       status: "experimental",
     },
@@ -1161,7 +1164,7 @@
     // See: https://docs.google.com/document/d/1IyYJ6bVF7KZq96b_s5NrAzGtVoBXn_LQnya9y4yT3iw/view
     {
       name: "PaintNonFastScrollableRegions",
-      implied_by: ["CompositeAfterPaint"],
+      status: "stable",
     },
     {
       name: "PaintUnderInvalidationChecking",

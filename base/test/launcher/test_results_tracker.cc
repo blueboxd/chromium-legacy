@@ -90,12 +90,12 @@ struct TestSuiteResultsAggregator {
 TestResultsTracker::TestResultsTracker() : iteration_(-1), out_(nullptr) {}
 
 TestResultsTracker::~TestResultsTracker() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  CHECK(thread_checker_.CalledOnValidThread());
 
   if (!out_)
     return;
 
-  DCHECK_GE(iteration_, 0);
+  CHECK_GE(iteration_, 0);
 
   // Maps test case names to test results.
   typedef std::map<std::string, std::vector<TestResult> > TestCaseMap;
@@ -158,7 +158,7 @@ TestResultsTracker::~TestResultsTracker() {
 }
 
 bool TestResultsTracker::Init(const CommandLine& command_line) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  CHECK(thread_checker_.CalledOnValidThread());
 
   // Prevent initializing twice.
   if (out_) {
@@ -209,7 +209,7 @@ bool TestResultsTracker::Init(const CommandLine& command_line) {
 }
 
 void TestResultsTracker::OnTestIterationStarting() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  CHECK(thread_checker_.CalledOnValidThread());
 
   // Start with a fresh state for new iteration.
   iteration_++;
@@ -239,8 +239,8 @@ void TestResultsTracker::AddTestPlaceholder(const std::string& test_name) {
 }
 
 void TestResultsTracker::AddTestResult(const TestResult& result) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_GE(iteration_, 0);
+  CHECK(thread_checker_.CalledOnValidThread());
+  CHECK_GE(iteration_, 0);
 
   PerIterationData::ResultsMap& results_map =
       per_iteration_data_[iteration_].results;
@@ -271,18 +271,18 @@ void TestResultsTracker::AddTestResult(const TestResult& result) {
 }
 
 void TestResultsTracker::GeneratePlaceholderIteration() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  CHECK(thread_checker_.CalledOnValidThread());
 
   for (auto& full_test_name : test_placeholders_) {
     std::string test_name = TestNameWithoutDisabledPrefix(full_test_name);
 
     TestResult test_result;
-    test_result.full_name = test_name;
+    test_result.full_name = full_test_name;
     test_result.status = TestResult::TEST_NOT_RUN;
 
     // There shouldn't be any existing results when we generate placeholder
     // results.
-    DCHECK(
+    CHECK(
         per_iteration_data_[iteration_].results[test_name].test_results.empty())
         << test_name;
     per_iteration_data_[iteration_].results[test_name].test_results.push_back(
@@ -319,7 +319,7 @@ void TestResultsTracker::PrintSummaryOfCurrentIteration() const {
 }
 
 void TestResultsTracker::PrintSummaryOfAllIterations() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  CHECK(thread_checker_.CalledOnValidThread());
 
   TestStatusMap tests_by_status(GetTestStatusMapForAllIterations());
 
@@ -566,7 +566,7 @@ void TestResultsTracker::PrintTests(InputIterator first,
   for (InputIterator it = first; it != last; ++it) {
     const std::string& test_name = *it;
     const auto location_it = test_locations_.find(test_name);
-    DCHECK(location_it != test_locations_.end()) << test_name;
+    CHECK(location_it != test_locations_.end()) << test_name;
     const CodeLocation& location = location_it->second;
     fprintf(stdout, "    %s (%s:%d)\n", test_name.c_str(),
             location.file.c_str(), location.line);

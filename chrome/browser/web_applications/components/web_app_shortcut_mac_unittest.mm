@@ -103,7 +103,7 @@ class WebAppShortcutCreatorTest : public testing::Test {
   }
 
   // Needed by DCHECK_CURRENTLY_ON in ShortcutInfo destructor.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   base::ScopedTempDir temp_app_data_dir_;
   base::ScopedTempDir temp_destination_dir_;

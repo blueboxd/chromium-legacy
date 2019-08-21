@@ -38,7 +38,7 @@ class AttestationPolicyObserverTest : public ::testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   ScopedCrosSettingsTestHelper settings_helper_;
   StrictMock<MockMachineCertificateUploader> certificate_uploader_;
 };

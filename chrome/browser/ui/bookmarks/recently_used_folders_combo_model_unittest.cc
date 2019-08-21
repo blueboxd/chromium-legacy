@@ -48,7 +48,7 @@ class RecentlyUsedFoldersComboModelTest : public testing::Test {
   RecentlyUsedFoldersComboModelTest() = default;
 
  private:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(RecentlyUsedFoldersComboModelTest);
 };

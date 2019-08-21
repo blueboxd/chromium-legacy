@@ -44,6 +44,7 @@
 #include "ui/compositor_extra/shadow.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/transform_util.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_impl.h"
@@ -127,14 +128,9 @@ void SetWidgetBoundsAndMaybeAnimateTransform(
   // new bounds back to the old bounds, and then apply the idenity
   // transform. This so the bounds visually line up the concurrent transform
   // animations. Also transform animations may be more performant.
-  // TODO(sammiequon): Move the transform calcuations to a utility function.
-  gfx::RectF current_bounds = gfx::RectF(window->GetBoundsInScreen());
-  gfx::Transform transform(previous_bounds.width() / current_bounds.width(),
-                           0.f, 0.f,
-                           previous_bounds.height() / current_bounds.height(),
-                           previous_bounds.x() - current_bounds.x(),
-                           previous_bounds.y() - current_bounds.y());
-  window->SetTransform(transform);
+  const gfx::RectF current_bounds = gfx::RectF(window->GetBoundsInScreen());
+  window->SetTransform(
+      gfx::TransformBetweenRects(current_bounds, previous_bounds));
   ScopedOverviewAnimationSettings settings(animation_type, window);
   if (observer)
     settings.AddObserver(observer);

@@ -85,7 +85,7 @@ class WebRtcEventLogUploaderImplTest : public ::testing::Test {
   }
 
   ~WebRtcEventLogUploaderImplTest() override {
-    test_browser_thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void SetUp() override {
@@ -182,7 +182,7 @@ class WebRtcEventLogUploaderImplTest : public ::testing::Test {
                           base::Unretained(&observer_));
   }
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   base::Time kReasonableTime;
 

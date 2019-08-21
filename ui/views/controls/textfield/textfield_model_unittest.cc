@@ -591,7 +591,7 @@ TEST_F(TextfieldModelTest, Clipboard) {
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   const base::string16 initial_clipboard_text =
       base::ASCIIToUTF16("initial text");
-  ui::ScopedClipboardWriter(ui::ClipboardType::kCopyPaste)
+  ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
       .WriteText(initial_clipboard_text);
 
   base::string16 clipboard_text;
@@ -601,14 +601,14 @@ TEST_F(TextfieldModelTest, Clipboard) {
   // Cut with an empty selection should do nothing.
   model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, gfx::SELECTION_NONE);
   EXPECT_FALSE(model.Cut());
-  clipboard->ReadText(ui::ClipboardType::kCopyPaste, &clipboard_text);
+  clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, &clipboard_text);
   EXPECT_EQ(initial_clipboard_text, clipboard_text);
   EXPECT_STR_EQ("HELLO WORLD", model.text());
   EXPECT_EQ(11U, model.GetCursorPosition());
 
   // Copy with an empty selection should do nothing.
   model.Copy();
-  clipboard->ReadText(ui::ClipboardType::kCopyPaste, &clipboard_text);
+  clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, &clipboard_text);
   EXPECT_EQ(initial_clipboard_text, clipboard_text);
   EXPECT_STR_EQ("HELLO WORLD", model.text());
   EXPECT_EQ(11U, model.GetCursorPosition());
@@ -617,7 +617,7 @@ TEST_F(TextfieldModelTest, Clipboard) {
   model.render_text()->SetObscured(true);
   model.SelectAll(false);
   EXPECT_FALSE(model.Cut());
-  clipboard->ReadText(ui::ClipboardType::kCopyPaste, &clipboard_text);
+  clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, &clipboard_text);
   EXPECT_EQ(initial_clipboard_text, clipboard_text);
   EXPECT_STR_EQ("HELLO WORLD", model.text());
   EXPECT_STR_EQ("HELLO WORLD", model.GetSelectedText());
@@ -625,7 +625,7 @@ TEST_F(TextfieldModelTest, Clipboard) {
   // Copy on obscured (password) text should do nothing.
   model.SelectAll(false);
   EXPECT_FALSE(model.Copy());
-  clipboard->ReadText(ui::ClipboardType::kCopyPaste, &clipboard_text);
+  clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, &clipboard_text);
   EXPECT_EQ(initial_clipboard_text, clipboard_text);
   EXPECT_STR_EQ("HELLO WORLD", model.text());
   EXPECT_STR_EQ("HELLO WORLD", model.GetSelectedText());
@@ -635,7 +635,7 @@ TEST_F(TextfieldModelTest, Clipboard) {
   model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, gfx::SELECTION_NONE);
   model.MoveCursor(gfx::WORD_BREAK, gfx::CURSOR_LEFT, gfx::SELECTION_RETAIN);
   EXPECT_TRUE(model.Cut());
-  clipboard->ReadText(ui::ClipboardType::kCopyPaste, &clipboard_text);
+  clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, &clipboard_text);
   EXPECT_STR_EQ("WORLD", clipboard_text);
   EXPECT_STR_EQ("HELLO ", model.text());
   EXPECT_EQ(6U, model.GetCursorPosition());
@@ -643,7 +643,7 @@ TEST_F(TextfieldModelTest, Clipboard) {
   // Copy with non-empty selection.
   model.SelectAll(false);
   EXPECT_TRUE(model.Copy());
-  clipboard->ReadText(ui::ClipboardType::kCopyPaste, &clipboard_text);
+  clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, &clipboard_text);
   EXPECT_STR_EQ("HELLO ", clipboard_text);
   EXPECT_STR_EQ("HELLO ", model.text());
   EXPECT_EQ(6U, model.GetCursorPosition());
@@ -1741,7 +1741,7 @@ TEST_F(TextfieldModelTest, UndoRedo_CompositionText) {
 TEST_F(TextfieldModelTest, Clipboard_WhiteSpaceStringTest) {
   // Test 1
   // Clipboard text with a leading tab should be pasted with the tab stripped.
-  ui::ScopedClipboardWriter(ui::ClipboardType::kCopyPaste)
+  ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
       .WriteText(base::ASCIIToUTF16("\tB"));
 
   TextfieldModel model(nullptr);
@@ -1760,7 +1760,7 @@ TEST_F(TextfieldModelTest, Clipboard_WhiteSpaceStringTest) {
   // Test 2
   // Clipboard text with multiple leading tabs and spaces should be pasted with
   // all tabs and spaces stripped.
-  ui::ScopedClipboardWriter(ui::ClipboardType::kCopyPaste)
+  ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
       .WriteText(base::ASCIIToUTF16("\t\t\t B"));
 
   model.Append(base::ASCIIToUTF16("HELLO WORLD"));
@@ -1777,7 +1777,7 @@ TEST_F(TextfieldModelTest, Clipboard_WhiteSpaceStringTest) {
   // Test 3
   // Clipboard text with multiple tabs separating the words should be pasted
   // with one space replacing all tabs.
-  ui::ScopedClipboardWriter(ui::ClipboardType::kCopyPaste)
+  ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
       .WriteText(base::ASCIIToUTF16("FOO \t\t BAR"));
 
   model.Append(base::ASCIIToUTF16("HELLO WORLD"));
@@ -1795,7 +1795,7 @@ TEST_F(TextfieldModelTest, Clipboard_WhiteSpaceStringTest) {
   // Clipboard text with multiple leading tabs and multiple tabs separating
   // the words should be pasted with the leading tabs stripped and one space
   // replacing the intermediate tabs.
-  ui::ScopedClipboardWriter(ui::ClipboardType::kCopyPaste)
+  ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
       .WriteText(base::ASCIIToUTF16("\t\tFOO \t\t BAR"));
 
   EXPECT_TRUE(model.Paste());
@@ -1808,7 +1808,7 @@ TEST_F(TextfieldModelTest, Clipboard_WhiteSpaceStringTest) {
   // Test 5
   // Clipboard text with multiple trailing tabs should be pasted with all
   // trailing tabs stripped.
-  ui::ScopedClipboardWriter(ui::ClipboardType::kCopyPaste)
+  ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
       .WriteText(base::ASCIIToUTF16("FOO BAR\t\t\t"));
   EXPECT_TRUE(model.Paste());
   EXPECT_STR_EQ("FOO BAR", model.text());
@@ -1820,7 +1820,7 @@ TEST_F(TextfieldModelTest, Clipboard_WhiteSpaceStringTest) {
   // Test 6
   // Clipboard text with only spaces and tabs should be pasted as a single
   // space.
-  ui::ScopedClipboardWriter(ui::ClipboardType::kCopyPaste)
+  ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
       .WriteText(base::ASCIIToUTF16("     \t\t"));
   EXPECT_TRUE(model.Paste());
   EXPECT_STR_EQ(" ", model.text());
@@ -1832,7 +1832,7 @@ TEST_F(TextfieldModelTest, Clipboard_WhiteSpaceStringTest) {
   // Test 7
   // Clipboard text with lots of spaces between words should have all spaces
   // replaced with a single space.
-  ui::ScopedClipboardWriter(ui::ClipboardType::kCopyPaste)
+  ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
       .WriteText(base::ASCIIToUTF16("FOO      BAR"));
   EXPECT_TRUE(model.Paste());
   EXPECT_STR_EQ("FOO BAR", model.text());

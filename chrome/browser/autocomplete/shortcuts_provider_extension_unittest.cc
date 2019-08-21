@@ -57,7 +57,7 @@ class ShortcutsProviderExtensionTest : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   ChromeAutocompleteProviderClient client_;
   scoped_refptr<ShortcutsBackend> backend_;

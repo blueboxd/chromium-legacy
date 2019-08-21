@@ -106,7 +106,7 @@ class MockPageInfoUI : public PageInfoUI {
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   std::unique_ptr<PageInfoUI::SecurityDescription>
   CreateSecurityDescriptionForPasswordReuse(
-      bool unused_is_enterprise_password) const override {
+      PasswordType password_type) const override {
     std::unique_ptr<PageInfoUI::SecurityDescription> security_description(
         new PageInfoUI::SecurityDescription());
     security_description->summary_style = SecuritySummaryColor::RED;

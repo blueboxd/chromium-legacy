@@ -86,7 +86,7 @@ class ArcSupportMessageHostTest : public testing::Test {
 
  private:
   // Fake as if the current testing thread is UI thread.
-  content::TestBrowserThreadBundle bundle_;
+  content::BrowserTaskEnvironment bundle_;
 
   std::unique_ptr<TestClient> client_;
   std::unique_ptr<extensions::NativeMessageHost> message_host_;

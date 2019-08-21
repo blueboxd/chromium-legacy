@@ -16,6 +16,8 @@ extern const char kExploreSitesVariationPersonalized[];
 extern const char kExploreSitesVariationMostLikelyTile[];
 
 extern const char kExploreSitesMostLikelyVariationParameterName[];
+extern const char kExploreSitesHeadersExperimentParameterName[];
+
 extern const char kExploreSitesMostLikelyVariationIconArrow[];
 extern const char kExploreSitesMostLikelyVariationIconDots[];
 extern const char kExploreSitesMostLikelyVariationIconGrouped[];
@@ -24,6 +26,8 @@ extern const char kExploreSitesDenseVariationParameterName[];
 extern const char kExploreSitesDenseVariationOriginal[];
 extern const char kExploreSitesDenseVariationDenseTitleBottom[];
 extern const char kExploreSitesDenseVariationDenseTitleRight[];
+
+extern const char kExploreSitesGamesTopExperiment[];
 
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.explore_sites

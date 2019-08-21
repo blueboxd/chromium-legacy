@@ -250,7 +250,8 @@ int HttpStreamFactory::Job::Preconnect(int num_streams) {
       !http_server_properties->IsInitialized() &&
       request_info_.url.SchemeIsCryptographic();
   if (connect_one_stream || http_server_properties->SupportsRequestPriority(
-                                url::SchemeHostPort(request_info_.url))) {
+                                url::SchemeHostPort(request_info_.url),
+                                request_info_.network_isolation_key)) {
     num_streams_ = 1;
   } else {
     num_streams_ = num_streams;
@@ -841,7 +842,7 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
       session_->http_server_properties();
   if (http_server_properties) {
     http_server_properties->MaybeForceHTTP11(destination_, &server_ssl_config_);
-    if (proxy_info_.is_http() || proxy_info_.is_https()) {
+    if (proxy_info_.is_https()) {
       http_server_properties->MaybeForceHTTP11(
           proxy_info_.proxy_server().host_port_pair(), &proxy_ssl_config_);
     }
@@ -1143,8 +1144,11 @@ int HttpStreamFactory::Job::DoCreateStream() {
 
   HttpServerProperties* http_server_properties =
       session_->http_server_properties();
-  if (http_server_properties)
-    http_server_properties->SetSupportsSpdy(scheme_host_port, true);
+  if (http_server_properties) {
+    http_server_properties->SetSupportsSpdy(scheme_host_port,
+                                            request_info_.network_isolation_key,
+                                            true /* supports_spdy */);
+  }
 
   // Create a SpdyHttpStream or a BidirectionalStreamImpl attached to the
   // session.
@@ -1336,7 +1340,8 @@ bool HttpStreamFactory::Job::ShouldThrottleConnectForSpdy() const {
       spdy_session_key_.host_port_pair().host(),
       spdy_session_key_.host_port_pair().port());
   // Only throttle the request if the server is believed to support H2.
-  return session_->http_server_properties()->GetSupportsSpdy(scheme_host_port);
+  return session_->http_server_properties()->GetSupportsSpdy(
+      scheme_host_port, request_info_.network_isolation_key);
 }
 
 }  // namespace net

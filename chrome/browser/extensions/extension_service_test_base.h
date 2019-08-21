@@ -140,12 +140,12 @@ class ExtensionServiceTestBase : public testing::Test {
   base::ScopedTempDir temp_dir_;
 
   // Destroying at_exit_manager_ will delete all LazyInstances, so it must come
-  // after thread_bundle_ in the destruction order.
+  // after task_environment_ in the destruction order.
   base::ShadowingAtExitManager at_exit_manager_;
 
   // The MessageLoop is used by RenderViewHostTestEnabler, so this must be
   // created before it.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   // Enable creation of WebContents without initializing a renderer.
   content::RenderViewHostTestEnabler rvh_test_enabler_;

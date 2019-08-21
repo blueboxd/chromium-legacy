@@ -149,7 +149,7 @@ class NotificationChannelsProviderAndroidTest : public testing::Test {
     return ContentSettingsPattern::FromURLNoWildcard(GURL(kTestOrigin));
   }
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<TestingProfile> profile_;
 

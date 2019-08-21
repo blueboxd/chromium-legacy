@@ -614,16 +614,12 @@ bool OverviewController::ToggleOverview(
       observer.OnOverviewModeEnding(overview_session_.get());
     overview_session_->Shutdown();
 
-#if DCHECK_IS_ON()
-    const auto enter_exit_type = overview_session_->enter_exit_overview_type();
-    if (enter_exit_type ==
-            OverviewSession::EnterExitOverviewType::kImmediateExit &&
-        !delayed_animations_.empty()) {
-      // Immediate exit type implies no delayed exit animations at all, if we
-      // get here then this is a bug.
-      NOTREACHED();
+    if (overview_session_->enter_exit_overview_type() ==
+        OverviewSession::EnterExitOverviewType::kImmediateExit) {
+      for (const auto& animation : delayed_animations_)
+        animation->Shutdown();
+      delayed_animations_.clear();
     }
-#endif
 
     // Don't delete |overview_session_| yet since the stack is still using it.
     base::ThreadTaskRunnerHandle::Get()->DeleteSoon(

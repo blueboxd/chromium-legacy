@@ -47,6 +47,8 @@ class DEVICE_VR_EXPORT OpenXrDevice
   void CreateImmersiveOverlay(
       mojom::ImmersiveOverlayRequest overlay_request) override;
 
+  void EnsureRenderLoop();
+
   void OnRequestSessionResult(mojom::XRRuntime::RequestSessionCallback callback,
                               bool result,
                               mojom::XRSessionPtr session);

@@ -191,7 +191,10 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     # All tests receive the following options.
     return [
       '--enable-logging',
-      '--enable-experimental-web-platform-features'] + browser_args
+      '--enable-experimental-web-platform-features',
+      # All bots are connected with a power source, however, we want to to test
+      # with the code path that's enabled with battery power.
+      '--disable_vp_scaling=1'] + browser_args
 
   def _GetOverlayBotConfigHelper(self):
     system_info = self.browser.GetSystemInfo()

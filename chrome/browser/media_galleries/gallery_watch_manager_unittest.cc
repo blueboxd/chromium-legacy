@@ -56,7 +56,7 @@ class GalleryWatchManagerTest : public GalleryWatchManagerObserver,
                                 public testing::Test {
  public:
   GalleryWatchManagerTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
 #if defined(OS_CHROMEOS)
         test_user_manager_(std::make_unique<chromeos::ScopedTestUserManager>()),
 #endif
@@ -194,7 +194,7 @@ class GalleryWatchManagerTest : public GalleryWatchManagerObserver,
   std::unique_ptr<GalleryWatchManager> manager_;
 
   // Needed for extension service & friends to work.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   scoped_refptr<extensions::Extension> extension_;
 

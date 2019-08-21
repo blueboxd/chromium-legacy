@@ -6,7 +6,7 @@ importScripts('helpers.js');
 promise_test(async () => {
   let helperImpl = new TestHelperImpl;
   let interceptor =
-      new MojoInterfaceInterceptor(content.mojom.MojoWebTestHelper.name);
+      new MojoInterfaceInterceptor(content.mojom.MojoWebTestHelper.name, "context", true);
   interceptor.oninterfacerequest = e => {
     helperImpl.bindRequest(e.handle);
   };
@@ -14,7 +14,7 @@ promise_test(async () => {
 
   let helper = new content.mojom.MojoWebTestHelperPtr;
   Mojo.bindInterface(content.mojom.MojoWebTestHelper.name,
-                     mojo.makeRequest(helper).handle);
+                     mojo.makeRequest(helper).handle, "context", true);
 
   let response = await helper.reverse('the string');
   assert_equals(response.reversed, kTestReply);

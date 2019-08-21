@@ -57,6 +57,7 @@
 <translation id="2746543609216772311">Az érték <ph name="MINIMUM_DATE_OR_TIME" /> vagy azt követő kell, hogy legyen.</translation>
 <translation id="2759744352195237655">előugró gomb</translation>
 <translation id="2761667185364618470">Kérjük, jelölje be ezt a jelölőnégyzetet, ha tovább kíván haladni.</translation>
+<translation id="2844350028562914727">részletek</translation>
 <translation id="2896972712917208084">választógombcsoport</translation>
 <translation id="2908441821576996758">Kérjük, adjon meg egy vesszőkkel elválasztott e-mail címlistát.</translation>
 <translation id="2940813599313844715">objektum</translation>
@@ -154,6 +155,7 @@
 <translation id="6166809985690652833">utószó</translation>
 <translation id="6209276755895393898">Úgy tűnik, hogy a következőről van szó: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">szószedet</translation>
+<translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">Kilépés a kép a képben funkcióból</translation>
 <translation id="6398862346408813489">A hónapválasztási panel megjelenítése</translation>
 <translation id="6404546809543547843">hang idővonalának vezérlője</translation>
@@ -236,6 +238,7 @@
 <translation id="860475260694818407">tartalomjegyzék</translation>
 <translation id="8613126697340063924">távoli lejátszás kezelése</translation>
 <translation id="862370744433916922">felirat</translation>
+<translation id="8711688047404765493">kimenet</translation>
 <translation id="8750798805984357768">Kérjük, válassza ki az egyik opciót.</translation>
 <translation id="8808573423886751634">fejezet</translation>
 <translation id="8845239796550121995">Átküldés a tévére folyamatban</translation>

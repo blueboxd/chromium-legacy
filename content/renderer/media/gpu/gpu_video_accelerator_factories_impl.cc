@@ -384,7 +384,7 @@ GpuVideoAcceleratorFactoriesImpl::GetVideoEncodeAcceleratorSupportedProfiles() {
           .video_encode_accelerator_supported_profiles);
 }
 
-scoped_refptr<viz::ContextProviderCommandBuffer>
+scoped_refptr<viz::ContextProvider>
 GpuVideoAcceleratorFactoriesImpl::GetMediaContextProvider() {
   return CheckContextLost() ? nullptr : context_provider_;
 }

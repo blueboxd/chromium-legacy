@@ -543,6 +543,72 @@ class PLATFORM_EXPORT ExternalCanvasResource final : public CanvasResource {
   bool is_origin_clean_ = true;
 };
 
+class PLATFORM_EXPORT CanvasResourceSwapChain final : public CanvasResource {
+ public:
+  static scoped_refptr<CanvasResourceSwapChain> Create(
+      const IntSize&,
+      const CanvasColorParams&,
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
+      base::WeakPtr<CanvasResourceProvider>,
+      SkFilterQuality);
+  ~CanvasResourceSwapChain() override;
+  bool IsRecycleable() const final { return IsValid(); }
+  bool IsAccelerated() const final { return true; }
+  bool IsValid() const override;
+  bool SupportsAcceleratedCompositing() const override { return true; }
+  bool NeedsReadLockFences() const final { return false; }
+  bool OriginClean() const final { return is_origin_clean_; }
+  void SetOriginClean(bool value) final { is_origin_clean_ = value; }
+  scoped_refptr<CanvasResource> MakeAccelerated(
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper>) final {
+    NOTREACHED();
+    return nullptr;
+  }
+  scoped_refptr<CanvasResource> MakeUnaccelerated() final {
+    NOTREACHED();
+    return nullptr;
+  }
+  void Abandon() final;
+  IntSize Size() const final { return size_; }
+  void TakeSkImage(sk_sp<SkImage> image) final;
+
+  scoped_refptr<StaticBitmapImage> Bitmap() override;
+
+  GLenum TextureTarget() const final { return GL_TEXTURE_2D; }
+  GLuint GetBackingTextureHandleForOverwrite() final {
+    return back_buffer_texture_id_;
+  }
+
+  void PresentSwapChain();
+
+ private:
+  void TearDown() override;
+  bool IsOverlayCandidate() const final { return true; }
+  const gpu::Mailbox& GetOrCreateGpuMailbox(MailboxSyncMode) override;
+  bool HasGpuMailbox() const override;
+  const gpu::SyncToken GetSyncToken() override;
+  base::WeakPtr<WebGraphicsContext3DProviderWrapper> ContextProviderWrapper()
+      const override;
+
+  CanvasResourceSwapChain(const IntSize&,
+                          const CanvasColorParams&,
+                          base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
+                          base::WeakPtr<CanvasResourceProvider>,
+                          SkFilterQuality);
+
+  const base::WeakPtr<WebGraphicsContext3DProviderWrapper>
+      context_provider_wrapper_;
+  const IntSize size_;
+  const base::PlatformThreadId owning_thread_id_;
+  gpu::Mailbox front_buffer_mailbox_;
+  gpu::Mailbox back_buffer_mailbox_;
+  GLuint front_buffer_texture_id_ = 0u;
+  GLuint back_buffer_texture_id_ = 0u;
+  gpu::SyncToken sync_token_;
+
+  bool is_origin_clean_ = true;
+};
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_CANVAS_RESOURCE_H_

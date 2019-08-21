@@ -45,6 +45,11 @@ NET_EXPORT extern const base::Feature kSplitCacheByNetworkIsolationKey;
 NET_EXPORT extern const base::Feature
     kPartitionConnectionsByNetworkIsolationKey;
 
+// Partitions HttpServerProperties based on the NetworkIsolationKey associated
+// with a request.
+NET_EXPORT extern const base::Feature
+    kPartitionHttpServerPropertiesByNetworkIsolationKey;
+
 // Partitions TLS sessions and QUIC server configs based on the
 // NetworkIsolationKey associated with a request.
 //

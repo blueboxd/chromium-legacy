@@ -34,9 +34,9 @@ class GpuChannelHost;
 class GpuMemoryBufferManager;
 }  // namespace gpu
 
-namespace ui {
+namespace viz {
 class ContextProviderCommandBuffer;
-}  // namespace ui
+}  // namespace viz
 
 namespace content {
 
@@ -113,8 +113,7 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   std::vector<media::VideoEncodeAccelerator::SupportedProfile>
   GetVideoEncodeAcceleratorSupportedProfiles() override;
 
-  scoped_refptr<viz::ContextProviderCommandBuffer> GetMediaContextProvider()
-      override;
+  scoped_refptr<viz::ContextProvider> GetMediaContextProvider() override;
 
   void SetRenderingColorSpace(const gfx::ColorSpace& color_space) override;
 

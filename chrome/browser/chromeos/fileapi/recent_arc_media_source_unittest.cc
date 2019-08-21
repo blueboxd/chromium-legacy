@@ -139,7 +139,7 @@ class RecentArcMediaSourceTest : public testing::Test {
 
   void EnableDefer() { runner_->SetShouldDefer(true); }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   arc::FakeFileSystemInstance fake_file_system_;
 
   // Use the same initialization/destruction order as

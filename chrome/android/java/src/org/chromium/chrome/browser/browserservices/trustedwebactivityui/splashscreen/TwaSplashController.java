@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.browserservices.trustedwebactivityui.splashs
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
+import static androidx.browser.trusted.TrustedWebActivityIntentBuilder.EXTRA_SPLASH_SCREEN_PARAMS;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -33,7 +35,8 @@ import org.chromium.ui.base.ActivityWindowAndroid;
 import javax.inject.Inject;
 
 import androidx.browser.customtabs.TrustedWebUtils;
-import androidx.browser.customtabs.TrustedWebUtils.SplashScreenParamKey;
+import androidx.browser.trusted.TrustedWebActivityIntentBuilder;
+import androidx.browser.trusted.splashscreens.SplashScreenParamKey;
 
 /**
  * Orchestrates the flow of showing and removing splash screens for apps based on Trusted Web
@@ -174,8 +177,7 @@ public class TwaSplashController
     }
 
     private Bundle getSplashScreenParamsFromIntent() {
-        return mIntentDataProvider.getIntent().getBundleExtra(
-                TrustedWebUtils.EXTRA_SPLASH_SCREEN_PARAMS);
+        return mIntentDataProvider.getIntent().getBundleExtra(EXTRA_SPLASH_SCREEN_PARAMS);
     }
 
     /**
@@ -184,9 +186,8 @@ public class TwaSplashController
     public static boolean intentIsForTwaWithSplashScreen(Intent intent) {
         boolean isTrustedWebActivity = IntentUtils.safeGetBooleanExtra(
                 intent, TrustedWebUtils.EXTRA_LAUNCH_AS_TRUSTED_WEB_ACTIVITY, false);
-        boolean requestsSplashScreen = IntentUtils.safeGetParcelableExtra(
-                                               intent, TrustedWebUtils.EXTRA_SPLASH_SCREEN_PARAMS)
-                != null;
+        boolean requestsSplashScreen =
+                IntentUtils.safeGetParcelableExtra(intent, EXTRA_SPLASH_SCREEN_PARAMS) != null;
         return isTrustedWebActivity && requestsSplashScreen;
     }
 
@@ -200,7 +201,7 @@ public class TwaSplashController
         if (!intentIsForTwaWithSplashScreen(intent)) return false;
 
         Bundle params = IntentUtils.safeGetBundleExtra(
-                intent, TrustedWebUtils.EXTRA_SPLASH_SCREEN_PARAMS);
+                intent, TrustedWebActivityIntentBuilder.EXTRA_SPLASH_SCREEN_PARAMS);
         boolean shownInClient = IntentUtils.safeGetBoolean(params, KEY_SHOWN_IN_CLIENT, true);
         // shownInClient is "true" by default for the following reasons:
         // - For compatibility with older clients which don't use this bundle key.

@@ -228,11 +228,7 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
                           AnimationHost::CreateForTesting(ThreadInstance::IMPL),
                           0,
                           std::move(image_worker_task_runner)),
-        test_hooks_(test_hooks) {
-    compositor_frame_reporting_controller_ =
-        std::make_unique<FakeCompositorFrameReportingController>(
-            settings.single_thread_proxy_scheduler);
-  }
+        test_hooks_(test_hooks) {}
 
   std::unique_ptr<RasterBufferProvider> CreateRasterBufferProvider() override {
     return test_hooks_->CreateRasterBufferProvider(this);

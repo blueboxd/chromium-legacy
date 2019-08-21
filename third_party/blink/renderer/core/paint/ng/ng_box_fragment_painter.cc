@@ -993,16 +993,8 @@ void NGBoxFragmentPainter::PaintTextChild(const NGPaintFragment& paint_fragment,
       paint_info.phase != PaintPhase::kMask)
     return;
 
-  const auto& text_fragment =
-      To<NGPhysicalTextFragment>(paint_fragment.PhysicalFragment());
-  DOMNodeId node_id = kInvalidDOMNodeId;
-  if (auto* node = text_fragment.GetNode()) {
-    if (node->GetLayoutObject()->IsText())
-      node_id = ToLayoutText(node->GetLayoutObject())->EnsureNodeId();
-  }
-
   NGTextFragmentPainter text_painter(paint_fragment);
-  text_painter.Paint(paint_info, paint_offset, node_id);
+  text_painter.Paint(paint_info, paint_offset);
 }
 
 void NGBoxFragmentPainter::PaintAtomicInline(const PaintInfo& paint_info) {

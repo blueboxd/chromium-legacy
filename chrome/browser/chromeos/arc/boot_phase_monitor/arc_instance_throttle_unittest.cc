@@ -90,7 +90,7 @@ class ArcInstanceThrottleTest : public testing::Test {
     ArcInstanceThrottleTest* test_;
     DISALLOW_COPY_AND_ASSIGN(TestDelegateImpl);
   };
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<ArcServiceManager> arc_service_manager_;
   std::unique_ptr<ArcSessionManager> arc_session_manager_;
   std::unique_ptr<TestingProfile> testing_profile_;

@@ -54,7 +54,7 @@ class UserCommandArcJobTest : public testing::Test {
   UserCommandArcJobTest();
   ~UserCommandArcJobTest() override;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   // ArcServiceManager needs to be created before ArcPolicyBridge (since the
   // Bridge depends on the Manager), and it needs to be destroyed after Profile

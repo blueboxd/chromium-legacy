@@ -20,7 +20,7 @@ class TaskQueue;
 }  // namespace sequence_manager
 
 // A simple single thread TaskExecutor intended for non-test usage. Tests should
-// generally use TaskEnvironment or TestBrowserThreadBundle instead.
+// generally use TaskEnvironment or BrowserTaskEnvironment instead.
 // TODO(alexclarke): Inherit from TaskExecutor to support base::Here().
 class BASE_EXPORT SingleThreadTaskExecutor {
  public:

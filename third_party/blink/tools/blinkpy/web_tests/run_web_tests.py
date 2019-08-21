@@ -308,6 +308,8 @@ def parse_args(args):
             optparse.make_option(
                 '--iterations',
                 '--isolated-script-test-repeat',
+                # TODO(crbug.com/893235): Remove the gtest alias when FindIt no longer uses it.
+                '--gtest_repeat',
                 type='int',
                 default=1,
                 help='Number of times to run the set of tests (e.g. ABCABCABC)'),
@@ -406,6 +408,8 @@ def parse_args(args):
                       '"always" == always skip, even if listed on the command line.')),
             optparse.make_option(
                 '--isolated-script-test-also-run-disabled-tests',
+                # TODO(crbug.com/893235): Remove the gtest alias when FindIt no longer uses it.
+                '--gtest_also_run_disabled_tests',
                 action='store_const',
                 const='ignore',
                 dest='skipped',
@@ -437,6 +441,13 @@ def parse_args(args):
                 type='string',
                 help='A list of tests to run separated by TWO colons, e.g. fast::css/test.html, '
                      'same as listing them as positional arguments'),
+            # TODO(crbug.com/893235): Remove gtest_filter when FindIt no longer uses it.
+            optparse.make_option(
+                '--gtest_filter',
+                type='string',
+                help='A colon-separated list of tests to run. Wildcards are '
+                     'NOT supported. It is the same as listing the tests as '
+                     'positional arguments.'),
             optparse.make_option(
                 '--time-out-ms',
                 help='Set the timeout for each test'),
@@ -577,6 +588,9 @@ def _set_up_derived_options(port, options, args):
 
     if options.isolated_script_test_filter:
         args.extend(options.isolated_script_test_filter.split('::'))
+
+    if options.gtest_filter:
+        args.extend(options.gtest_filter.split(':'))
 
     if not options.total_shards and 'GTEST_TOTAL_SHARDS' in port.host.environ:
         options.total_shards = int(port.host.environ['GTEST_TOTAL_SHARDS'])

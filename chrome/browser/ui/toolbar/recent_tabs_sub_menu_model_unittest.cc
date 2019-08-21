@@ -285,8 +285,7 @@ TEST_F(RecentTabsSubMenuModelTest,
                                            base::WrapUnique(session_service));
   SessionID tab_id = SessionID::FromSerializedValue(1);
   SessionID window_id = SessionID::FromSerializedValue(2);
-  session_service->SetWindowType(window_id, Browser::TYPE_NORMAL,
-                                 SessionService::TYPE_NORMAL);
+  session_service->SetWindowType(window_id, Browser::TYPE_NORMAL);
   session_service->SetTabWindow(window_id, tab_id);
   session_service->SetTabIndexInWindow(window_id, tab_id, 0);
   session_service->SetSelectedTabInWindow(window_id, 0);

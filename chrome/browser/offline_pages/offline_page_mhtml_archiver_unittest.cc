@@ -159,7 +159,7 @@ class OfflinePageMHTMLArchiverTest : public testing::Test {
                            int64_t file_size,
                            const std::string& digest);
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::FilePath archive_dir_path_;
   base::HistogramTester histogram_tester_;
 
@@ -177,7 +177,7 @@ class OfflinePageMHTMLArchiverTest : public testing::Test {
 };
 
 OfflinePageMHTMLArchiverTest::OfflinePageMHTMLArchiverTest()
-    : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD),
+    : task_environment_(content::BrowserTaskEnvironment::REAL_IO_THREAD),
       last_result_(OfflinePageArchiver::ArchiverResult::ERROR_DEVICE_FULL),
       last_file_size_(0L) {}
 

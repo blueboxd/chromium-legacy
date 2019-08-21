@@ -106,18 +106,15 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
 
   // Backend:
   int32_t GetEntryCount() const override;
-  net::Error OpenEntry(const std::string& key,
-                       net::RequestPriority request_priority,
-                       Entry** entry,
-                       CompletionOnceCallback callback) override;
-  net::Error CreateEntry(const std::string& key,
-                         net::RequestPriority request_priority,
-                         Entry** entry,
-                         CompletionOnceCallback callback) override;
-  net::Error OpenOrCreateEntry(const std::string& key,
-                               net::RequestPriority priority,
-                               EntryWithOpened* entry_struct,
-                               CompletionOnceCallback callback) override;
+  EntryResult OpenEntry(const std::string& key,
+                        net::RequestPriority request_priority,
+                        EntryResultCallback callback) override;
+  EntryResult CreateEntry(const std::string& key,
+                          net::RequestPriority request_priority,
+                          EntryResultCallback callback) override;
+  EntryResult OpenOrCreateEntry(const std::string& key,
+                                net::RequestPriority priority,
+                                EntryResultCallback callback) override;
   net::Error DoomEntry(const std::string& key,
                        net::RequestPriority priority,
                        CompletionOnceCallback callback) override;
@@ -240,9 +237,8 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   // corresponding to |hash| in the map of active entries, opens it. Otherwise,
   // a new empty Entry will be created, opened and filled with information from
   // the disk.
-  net::Error OpenEntryFromHash(uint64_t entry_hash,
-                               Entry** entry,
-                               CompletionOnceCallback callback);
+  EntryResult OpenEntryFromHash(uint64_t entry_hash,
+                                EntryResultCallback callback);
 
   // Doom the entry corresponding to |entry_hash|, if it's active or currently
   // pending doom. This function does not block if there is an active entry,
@@ -255,10 +251,9 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   // hash alone - this checks that a duplicate active entry was not created
   // using a key in the meantime.
   void OnEntryOpenedFromHash(uint64_t hash,
-                             Entry** entry,
                              const scoped_refptr<SimpleEntryImpl>& simple_entry,
-                             CompletionOnceCallback callback,
-                             int error_code);
+                             EntryResultCallback callback,
+                             EntryResult result);
 
   // Called when we tried to open an entry from key. When the entry has been
   // opened, a check for key mismatch is performed.

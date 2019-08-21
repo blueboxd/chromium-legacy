@@ -334,7 +334,7 @@ class AutoEnrollmentClientImplTest
     return static_cast<AutoEnrollmentClientImpl*>(client_.release());
   }
 
-  content::TestBrowserThreadBundle browser_threads_;
+  content::BrowserTaskEnvironment browser_threads_;
   ScopedTestingLocalState scoped_testing_local_state_;
   TestingPrefServiceSimple* local_state_;
   std::unique_ptr<MockDeviceManagementService> service_;

@@ -207,7 +207,7 @@ class PageAllocator : public v8::PageAllocator {
   size_t CommitPageSize() override { return base::kSystemPageSize; }
 
   void SetRandomMmapSeed(int64_t seed) override {
-    base::SetRandomPageBaseSeed(seed);
+    base::SetMmapSeedForTesting(seed);
   }
 
   void* GetRandomMmapAddr() override { return base::GetRandomPageBase(); }

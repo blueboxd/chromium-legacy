@@ -14,7 +14,7 @@
 namespace media_router {
 
 TEST(MediaSinksObserverTest, OriginMatching) {
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   MockMediaRouter router;
   MediaSource source(
       MediaSource::ForPresentationUrl(GURL("https://presentation.com")));

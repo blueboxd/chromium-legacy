@@ -84,7 +84,7 @@ class BookmarkTrackerEventTest : public testing::Test {
   std::unique_ptr<FakeBookmarkTracker> bookmark_tracker_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkTrackerEventTest);
 };
@@ -169,7 +169,7 @@ class BookmarkTrackerTest : public testing::Test {
  private:
   std::unique_ptr<TestingProfileManager> testing_profile_manager_;
   base::test::ScopedFeatureList scoped_feature_list_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkTrackerTest);
 };

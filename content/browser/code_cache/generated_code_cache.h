@@ -138,21 +138,16 @@ class CONTENT_EXPORT GeneratedCodeCache {
   // Write entry to cache
   void WriteDataImpl(const std::string& key,
                      scoped_refptr<net::IOBufferWithSize> buffer);
-  void CompleteForWriteData(
-      scoped_refptr<net::IOBufferWithSize> buffer,
-      const std::string& key,
-      scoped_refptr<base::RefCountedData<disk_cache::EntryWithOpened>>
-          entry_struct,
-      int rv);
+  void CompleteForWriteData(scoped_refptr<net::IOBufferWithSize> buffer,
+                            const std::string& key,
+                            disk_cache::EntryResult result);
   void WriteDataCompleted(const std::string& key, int rv);
 
   // Fetch entry from cache
   void FetchEntryImpl(const std::string& key, ReadDataCallback);
-  void OpenCompleteForReadData(
-      ReadDataCallback callback,
-      const std::string& key,
-      scoped_refptr<base::RefCountedData<disk_cache::Entry*>> entry,
-      int rv);
+  void OpenCompleteForReadData(ReadDataCallback callback,
+                               const std::string& key,
+                               disk_cache::EntryResult result);
   void ReadDataComplete(const std::string& key,
                         ReadDataCallback callback,
                         scoped_refptr<net::IOBufferWithSize> buffer,
@@ -172,10 +167,9 @@ class CONTENT_EXPORT GeneratedCodeCache {
   void DoPendingGetBackend(GetBackendCallback callback);
 
   void OpenCompleteForSetLastUsedForTest(
-      scoped_refptr<base::RefCountedData<disk_cache::Entry*>> entry,
       base::Time time,
       base::RepeatingCallback<void(void)> callback,
-      int rv);
+      disk_cache::EntryResult result);
 
   void CollectStatistics(GeneratedCodeCache::CacheEntryStatus status);
 

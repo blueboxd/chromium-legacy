@@ -128,7 +128,7 @@ class StateStoreTest : public PlatformStateStoreTestBase {
 
   static const char kProfileName_[];
   static const TestData kTestData_[];
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile* profile_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
 

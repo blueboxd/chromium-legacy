@@ -20,10 +20,7 @@ const float kCloudPrintMarginInch = 0.25;
 }
 
 PrintingContext::PrintingContext(Delegate* delegate)
-    : settings_(std::make_unique<PrintSettings>()),
-      delegate_(delegate),
-      in_print_job_(false),
-      abort_printing_(false) {
+    : delegate_(delegate), in_print_job_(false), abort_printing_(false) {
   DCHECK(delegate_);
 }
 
@@ -46,24 +43,30 @@ const PrintSettings& PrintingContext::settings() const {
   return *settings_;
 }
 
-void PrintingContext::ResetSettings() {
+void PrintingContext::ResetSettingsImpl(bool create_empty) {
   ReleaseContext();
 
-  settings_->Clear();
+  settings_ = create_empty ? std::make_unique<PrintSettings>() : nullptr;
 
   in_print_job_ = false;
   abort_printing_ = false;
 }
 
-std::unique_ptr<PrintSettings> PrintingContext::TakeAndResetSettings() {
-  std::unique_ptr<PrintSettings> result = std::move(settings_);
-  settings_ = std::make_unique<PrintSettings>();
-  return result;
+void PrintingContext::ResetSettings() {
+  ResetSettingsImpl(true);
+}
+
+void PrintingContext::DeleteSettings() {
+  ResetSettingsImpl(false);
+}
+
+std::unique_ptr<PrintSettings> PrintingContext::ExtractSettings() {
+  return std::move(settings_);
 }
 
 PrintingContext::Result PrintingContext::OnError() {
   Result result = abort_printing_ ? CANCEL : FAILED;
-  ResetSettings();
+  DeleteSettings();
   return result;
 }
 
@@ -158,7 +161,7 @@ PrintingContext::Result PrintingContext::UpdatePrintSettings(
 #if defined(OS_CHROMEOS)
 PrintingContext::Result PrintingContext::UpdatePrintSettingsFromPOD(
     std::unique_ptr<PrintSettings> job_settings) {
-  ResetSettings();
+  DeleteSettings();
   settings_ = std::move(job_settings);
 
   return UpdatePrinterSettings(false /* external_preview */,

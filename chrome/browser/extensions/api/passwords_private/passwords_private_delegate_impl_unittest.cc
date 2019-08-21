@@ -147,7 +147,7 @@ class PasswordsPrivateDelegateImplTest : public testing::Test {
   void SetUpRouters();
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   extensions::TestEventRouter* event_router_ = nullptr;
 

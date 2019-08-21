@@ -168,7 +168,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void CreateURLLoaderFactory(mojom::URLLoaderFactoryRequest request,
                               mojom::URLLoaderFactoryParamsPtr params) override;
   void ResetURLLoaderFactories() override;
-  void GetCookieManager(mojom::CookieManagerRequest request) override;
+  void GetCookieManager(
+      mojo::PendingReceiver<mojom::CookieManager> receiver) override;
   void GetRestrictedCookieManager(mojom::RestrictedCookieManagerRequest request,
                                   mojom::RestrictedCookieManagerRole role,
                                   const url::Origin& origin,

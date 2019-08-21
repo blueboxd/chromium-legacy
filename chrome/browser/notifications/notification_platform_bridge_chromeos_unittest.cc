@@ -16,7 +16,7 @@
 // Regression test for https://crbug.com/840105
 TEST(NotificationPlatformBridgeChromeOsTest, Update) {
   message_center::MessageCenter::Initialize();
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   TestingProfile profile;
   NotificationPlatformBridgeChromeOs bridge;
 

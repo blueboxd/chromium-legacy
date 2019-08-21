@@ -159,6 +159,7 @@ void PrintJobWorker::GetSettings(bool ask_user_for_settings,
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK_EQ(page_number_, PageNumber::npos());
 
+  printing_context_->ResetSettings();
   printing_context_->set_margin_type(margin_type);
   printing_context_->set_is_modifiable(is_modifiable);
 
@@ -221,7 +222,7 @@ void PrintJobWorker::UpdatePrintSettingsFromPOD(
 
 void PrintJobWorker::GetSettingsDone(SettingsCallback callback,
                                      PrintingContext::Result result) {
-  std::move(callback).Run(printing_context_->TakeAndResetSettings(), result);
+  std::move(callback).Run(printing_context_->ExtractSettings(), result);
 }
 
 void PrintJobWorker::GetSettingsWithUI(int document_page_count,

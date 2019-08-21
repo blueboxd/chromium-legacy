@@ -468,6 +468,14 @@ public abstract class ToolbarLayout
     void setOnTabSwitcherClickHandler(OnClickListener listener) {}
 
     /**
+     * Sets the OnLongClickListener that will be notified when the TabSwitcher button is long
+     *         pressed.
+     * @param listener The callback that will be notified when the TabSwitcher button is long
+     *         pressed.
+     */
+    void setOnTabSwitcherLongClickHandler(OnLongClickListener listener) {}
+
+    /**
      * Sets the OnClickListener that will be notified when the bookmark button is pressed.
      * @param listener The callback that will be notified when the bookmark button is pressed.
      */

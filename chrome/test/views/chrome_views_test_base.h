@@ -18,21 +18,21 @@
 class ChromeViewsTestBase : public views::ViewsTestBase {
  public:
   // Constructs a ChromeViewsTestBase with |traits| being forwarded to its
-  // TestBrowserThreadBundle. MainThreadType always defaults to UI and must not
+  // BrowserTaskEnvironment. MainThreadType always defaults to UI and must not
   // be specified. TimeSource defaults to MOCK_TIME but can be specified to
   // override.
   template <typename... TaskEnvironmentTraits>
   NOINLINE explicit ChromeViewsTestBase(TaskEnvironmentTraits... traits)
       : views::ViewsTestBase(
             views::ViewsTestBase::SubclassManagesTaskEnvironment()),
-        thread_bundle_(
+        task_environment_(
             base::test::TaskEnvironment::MainThreadType::UI,
             base::trait_helpers::GetEnum<
-                content::TestBrowserThreadBundle::TimeSource,
-                content::TestBrowserThreadBundle::TimeSource::MOCK_TIME>(
+                content::BrowserTaskEnvironment::TimeSource,
+                content::BrowserTaskEnvironment::TimeSource::MOCK_TIME>(
                 traits...),
             base::trait_helpers::
-                Exclude<content::TestBrowserThreadBundle::TimeSource>::Filter(
+                Exclude<content::BrowserTaskEnvironment::TimeSource>::Filter(
                     traits)...) {}
   ~ChromeViewsTestBase() override;
 
@@ -42,7 +42,7 @@ class ChromeViewsTestBase : public views::ViewsTestBase {
  protected:
   // Use this protected member directly to drive tasks posted within a
   // ChromeViewsTestBase-based test.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeViewsTestBase);
 };

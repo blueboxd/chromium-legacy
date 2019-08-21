@@ -15,8 +15,7 @@ namespace device {
 // it themselves.
 class XRStandardGamepadBuilder {
  public:
-  XRStandardGamepadBuilder(device::mojom::XRHandedness handedness,
-                           double axis_deadzone = 0.0);
+  XRStandardGamepadBuilder(device::mojom::XRHandedness handedness);
   virtual ~XRStandardGamepadBuilder();
   void SetPrimaryButton(const GamepadButton& button) {
     primary_button_ = button;
@@ -58,7 +57,6 @@ class XRStandardGamepadBuilder {
   bool has_optional_axes_ = false;
 
   device::mojom::XRHandedness handedness_;
-  double axis_deadzone_;
 
   DISALLOW_COPY_AND_ASSIGN(XRStandardGamepadBuilder);
 };

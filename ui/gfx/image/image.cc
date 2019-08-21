@@ -272,7 +272,7 @@ class ImageStorage : public base::RefCounted<ImageStorage> {
   const ImageRep* AddRepresentation(std::unique_ptr<ImageRep> rep) const {
     DCHECK(IsOnValidSequence());
     Image::RepresentationType type = rep->type();
-    auto result = representations_.insert(std::make_pair(type, std::move(rep)));
+    auto result = representations_.emplace(type, std::move(rep));
 
     // insert should not fail (implies that there was already a representation
     // of that type in the map).

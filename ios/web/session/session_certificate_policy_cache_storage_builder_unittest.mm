@@ -24,7 +24,7 @@ using SessionCertificatePolicyCacheStorageBuilderTest = PlatformTest;
 // populates the storage with the correct data.
 TEST_F(SessionCertificatePolicyCacheStorageBuilderTest, BuildStorage) {
   // Create a cache and populate it with an allowed cert.
-  web::TestWebThreadBundle thread_bundle;
+  web::WebTaskEnvironment task_environment;
   web::SessionCertificatePolicyCacheImpl cache;
   scoped_refptr<net::X509Certificate> cert =
       net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");

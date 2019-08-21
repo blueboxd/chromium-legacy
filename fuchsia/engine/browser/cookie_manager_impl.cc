@@ -7,7 +7,8 @@
 #include <lib/fidl/cpp/binding.h>
 
 #include "base/fuchsia/fuchsia_logging.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/cookies/canonical_cookie.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "url/gurl.h"
@@ -45,11 +46,11 @@ class CookiesIteratorImpl : public fuchsia::web::CookiesIterator,
  public:
   // |this| will delete itself when |mojo_request| or |changes| disconnect.
   CookiesIteratorImpl(
-      mojo::InterfaceRequest<network::mojom::CookieChangeListener> mojo_request,
+      mojo::PendingReceiver<network::mojom::CookieChangeListener> mojo_receiver,
       fidl::InterfaceRequest<fuchsia::web::CookiesIterator> changes)
       : CookiesIteratorImpl(std::move(changes)) {
-    mojo_binding_.Bind(std::move(mojo_request));
-    mojo_binding_.set_connection_error_handler(base::BindOnce(
+    mojo_receiver_.Bind(std::move(mojo_receiver));
+    mojo_receiver_.set_disconnect_handler(base::BindOnce(
         &CookiesIteratorImpl::OnMojoError, base::Unretained(this)));
   }
   // |this| will delete itself when |iterator| disconnects, or if a GetNext()
@@ -75,7 +76,7 @@ class CookiesIteratorImpl : public fuchsia::web::CookiesIterator,
  private:
   explicit CookiesIteratorImpl(
       fidl::InterfaceRequest<fuchsia::web::CookiesIterator> iterator)
-      : mojo_binding_(this), fidl_binding_(this) {
+      : mojo_receiver_(this), fidl_binding_(this) {
     fidl_binding_.Bind(std::move(iterator));
     fidl_binding_.set_error_handler([this](zx_status_t status) {
       ZX_LOG_IF(ERROR, status != ZX_ERR_PEER_CLOSED, status)
@@ -97,7 +98,7 @@ class CookiesIteratorImpl : public fuchsia::web::CookiesIterator,
 
     if (!get_next_callback_)
       return;
-    if (mojo_binding_.is_bound() && queued_cookies_.empty())
+    if (mojo_receiver_.is_bound() && queued_cookies_.empty())
       return;
 
     // Build a vector of Cookies to return to the caller.
@@ -113,7 +114,7 @@ class CookiesIteratorImpl : public fuchsia::web::CookiesIterator,
 
     // If this is a one-off CookieIterator then tear down once |queued_cookies_|
     // is empty.
-    if (queued_cookies_.empty() && !mojo_binding_.is_bound())
+    if (queued_cookies_.empty() && !mojo_receiver_.is_bound())
       delete this;
   }
 
@@ -124,7 +125,7 @@ class CookiesIteratorImpl : public fuchsia::web::CookiesIterator,
     MaybeSendQueuedCookies();
   }
 
-  mojo::Binding<network::mojom::CookieChangeListener> mojo_binding_;
+  mojo::Receiver<network::mojom::CookieChangeListener> mojo_receiver_;
   fidl::Binding<fuchsia::web::CookiesIterator> fidl_binding_;
 
   GetNextCallback get_next_callback_;
@@ -168,8 +169,8 @@ void CookieManagerImpl::ObserveCookieChanges(
     fidl::InterfaceRequest<fuchsia::web::CookiesIterator> changes) {
   EnsureCookieManager();
 
-  network::mojom::CookieChangeListenerPtr mojo_listener;
-  new CookiesIteratorImpl(mojo::MakeRequest(&mojo_listener),
+  mojo::PendingRemote<network::mojom::CookieChangeListener> mojo_listener;
+  new CookiesIteratorImpl(mojo_listener.InitWithNewPipeAndPassReceiver(),
                           std::move(changes));
 
   if (url) {

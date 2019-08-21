@@ -82,7 +82,7 @@ class BrowserDMTokenStorageWinTest : public testing::Test {
                            dm_token.size(), REG_BINARY) == ERROR_SUCCESS);
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   registry_util::RegistryOverrideManager registry_override_manager_;
 };
 

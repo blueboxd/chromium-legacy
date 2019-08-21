@@ -22,7 +22,7 @@ namespace web {
 
 class URLLoaderTest : public WebTest {
  protected:
-  URLLoaderTest() : WebTest(TestWebThreadBundle::Options::IO_MAINLOOP) {}
+  URLLoaderTest() : WebTest(WebTaskEnvironment::Options::IO_MAINLOOP) {}
 
  protected:
   net::EmbeddedTestServer server_;

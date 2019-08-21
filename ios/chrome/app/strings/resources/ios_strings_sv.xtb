@@ -149,7 +149,6 @@
 <translation id="2921219216347069551">Kan inte dela sidan</translation>
 <translation id="2923448633003185837">Klistra in och öppna</translation>
 <translation id="292639812446257861">Markera som oläst</translation>
-<translation id="2933759065870693102">Ficklampa</translation>
 <translation id="2958718410589002129">Lösenord</translation>
 <translation id="2969979262385602596">Det gick inte att logga in. Försök igen senare.</translation>
 <translation id="298306318844797842">Lägg till betalningsmetod …</translation>
@@ -305,6 +304,7 @@ Din data har krypterats med lösenfrasen för synkronisering. Ange den om du vil
 <translation id="5317780077021120954">Spara</translation>
 <translation id="5327248766486351172">Namn</translation>
 <translation id="5388358297987318779">Öppna bild</translation>
+<translation id="5407969256130905701">Ignorera ändringar</translation>
 <translation id="5409365236829784218">Det finns inga installerade appar som kan öppna filen.</translation>
 <translation id="5416022985862681400">Senaste 7 dagarna</translation>
 <translation id="5433691172869980887">Användarnamnet har kopierats</translation>
@@ -510,6 +510,7 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="8428213095426709021">Inställningar</translation>
 <translation id="8458397775385147834">1 objekt har tagits bort</translation>
 <translation id="8487700953926739672">Tillgänglig offline</translation>
+<translation id="8490978609246021741">Spara ändringar</translation>
 <translation id="8503813439785031346">Användarnamn</translation>
 <translation id="850600235656508448">Öppna i inkognitoläge</translation>
 <translation id="8517375800490286174">Licenser för öppen källkod</translation>

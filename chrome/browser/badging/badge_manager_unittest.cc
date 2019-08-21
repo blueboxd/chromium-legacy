@@ -83,7 +83,7 @@ class BadgeManagerUnittest : public ::testing::Test {
  private:
   TestBadgeManagerDelegate* delegate_;
   BadgeManager* badge_manager_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
 
   DISALLOW_COPY_AND_ASSIGN(BadgeManagerUnittest);

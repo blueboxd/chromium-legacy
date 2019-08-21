@@ -110,7 +110,8 @@ bool DirectLayerTreeFrameSink::BindToClient(
 
   // Avoid initializing GL context here, as this should be sharing the
   // Display's context.
-  display_->Initialize(this, frame_sink_manager_->surface_manager());
+  display_->Initialize(this, frame_sink_manager_->surface_manager(),
+                       true /* enable_shared_images */);
 
   support_->SetUpHitTest(display_);
 

@@ -108,7 +108,7 @@ class BookmarkEditorViewTest : public testing::Test {
 
   views::TreeView* tree_view() { return editor_->tree_view_; }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   BookmarkModel* model_;
   std::unique_ptr<TestingProfile> profile_;

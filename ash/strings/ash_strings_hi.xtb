@@ -334,6 +334,7 @@
 <translation id="6043212731627905357">यह मॉनीटर आपके <ph name="DEVICE_TYPE" /> के साथ काम नहीं कर रहा है (मॉनीटर समर्थित नहीं है).</translation>
 <translation id="6043994281159824495">अब प्रस्थान करें</translation>
 <translation id="6047696787498798094">किसी दूसरे उपयोगकर्ता पर स्‍विच करने से स्‍क्रीन शेयर होना बंद हो जाएगा. क्या आप शेयर करना जारी रखना चाहते हैं?</translation>
+<translation id="6054305421211936131">स्मार्ट कार्ड से साइन इन करें</translation>
 <translation id="6062360702481658777">आप <ph name="LOGOUT_TIME_LEFT" /> में अपने आप प्रस्थान कर जाएंगे.</translation>
 <translation id="6064337552080329342">माफ़ करें, आपके पासवर्ड की पुष्टि नहीं की जा सकी. कृपया फिर से कोशिश करें.</translation>
 <translation id="607652042414456612">आपका कंप्यूर आस-पास के ब्लूटूथ डिवाइस के लिए खोजे जाने योग्य है और वह "<ph name="NAME" />" के रूप में <ph name="ADDRESS" /> पते के साथ दिखाई देगा</translation>
@@ -361,6 +362,7 @@
 <translation id="6459472438155181876"><ph name="DISPLAY_NAME" /> पर स्क्रीन विस्तृत कर रहा है</translation>
 <translation id="6482559668224714696">फ़ुल-स्क्रीन पर सामग्री को बड़ा दिखाने वाला</translation>
 <translation id="6490471652906364588">USB-C डिवाइस (दायां पोर्ट)</translation>
+<translation id="649452524636452238">स्मार्ट कार्ड पिन</translation>
 <translation id="6501401484702599040">स्‍क्रीन को <ph name="RECEIVER_NAME" /> पर कास्‍ट किया जा रहा है</translation>
 <translation id="6521655319214113338">हस्तलेखन इनपुट</translation>
 <translation id="6528179044667508675">परेशान न करें</translation>
@@ -390,6 +392,7 @@
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> को सक्रिय करें</translation>
 <translation id="6910714959251846841">इस अपडेट के लिए आपके डिवाइस को पावरवॉश करना ज़रूरी है. <ph name="SYSTEM_APP_NAME" /> के नए अपडेट के बारे में ज़्यादा जानें.</translation>
 <translation id="6911468394164995108">अन्य में शामिल हों...</translation>
+<translation id="6919251195245069855">आपका स्मार्ट कार्ड पहचाना नहीं जा सका. फिर से कोशिश करें.</translation>
 <translation id="6972754398087986839">आरंभ करें</translation>
 <translation id="6981982820502123353">सुलभता</translation>
 <translation id="698231206551913481">इस उपयोगकर्ता को हटाए जाने पर, इससे जुड़ीं सभी फ़ाइलों और स्थानीय डेटा को हमेशा के लिए मिटा दिया जाएगा.</translation>

@@ -184,7 +184,8 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
   };
 
   AndroidSmsAppSetupControllerImplTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::TimeSource::MOCK_TIME),
+      : task_environment_(
+            content::BrowserTaskEnvironment::TimeSource::MOCK_TIME),
         host_content_settings_map_(
             HostContentSettingsMapFactory::GetForProfile(&profile_)) {}
 
@@ -254,7 +255,7 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
                 install_requests.size());
       EXPECT_EQ(GetInstallOptionsForUrl(install_url), install_requests.back());
 
-      thread_bundle_.FastForwardBy(
+      task_environment_.FastForwardBy(
           AndroidSmsAppSetupControllerImpl::kInstallRetryDelay *
           (1 << retry_count));
     }
@@ -262,7 +263,7 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
     // Send success code for last attempt.
     test_pending_app_manager_->SetInstallResultCode(
         web_app::InstallResultCode::kSuccess);
-    thread_bundle_.FastForwardBy(
+    task_environment_.FastForwardBy(
         AndroidSmsAppSetupControllerImpl::kInstallRetryDelay *
         (1 << (num_failure_tries - 1)));
 
@@ -423,7 +424,7 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
     std::move(quit_closure).Run();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   base::Optional<bool> last_set_up_app_result_;
   base::Optional<bool> last_delete_cookie_result_;

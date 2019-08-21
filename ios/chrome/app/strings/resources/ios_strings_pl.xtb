@@ -149,7 +149,6 @@
 <translation id="2921219216347069551">Nie można udostępnić</translation>
 <translation id="2923448633003185837">Wklej i otwórz</translation>
 <translation id="292639812446257861">Oznacz jako nieprzeczytane</translation>
-<translation id="2933759065870693102">Latarka</translation>
 <translation id="2958718410589002129">Hasła</translation>
 <translation id="2969979262385602596">Nie udało się zalogować. Spróbuj ponownie później.</translation>
 <translation id="298306318844797842">Dodaj formę płatności…</translation>
@@ -305,6 +304,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5317780077021120954">Zapisz</translation>
 <translation id="5327248766486351172">Nazwa</translation>
 <translation id="5388358297987318779">Otwórz obraz</translation>
+<translation id="5407969256130905701">Odrzuć zmiany</translation>
 <translation id="5409365236829784218">Nie masz aplikacji, w których można otworzyć ten plik.</translation>
 <translation id="5416022985862681400">Ostatnie 7 dni</translation>
 <translation id="5433691172869980887">Nazwa użytkownika została skopiowana</translation>
@@ -510,6 +510,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="8428213095426709021">Ustawienia</translation>
 <translation id="8458397775385147834">Usunąłeś 1 element</translation>
 <translation id="8487700953926739672">Dostępny offline</translation>
+<translation id="8490978609246021741">Zapisz zmiany</translation>
 <translation id="8503813439785031346">Nazwa użytkownika</translation>
 <translation id="850600235656508448">Otwórz w trybie incognito</translation>
 <translation id="8517375800490286174">Licencje typu open source</translation>

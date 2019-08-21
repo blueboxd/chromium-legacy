@@ -146,6 +146,8 @@ const CGFloat kHorizontalPadding = 16;
       [_methodTypeIconView.centerYAnchor
           constraintEqualToAnchor:self.contentView.centerYAnchor],
     ]];
+
+    self.tintColor = [UIColor colorNamed:kBlueColor];
   }
   return self;
 }

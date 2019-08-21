@@ -827,7 +827,7 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
 
 void URLLoader::OnAuthRequired(net::URLRequest* url_request,
                                const net::AuthChallengeInfo& auth_info) {
-  if (!network_service_client_) {
+  if (!network_context_client_) {
     OnAuthCredentials(base::nullopt);
     return;
   }
@@ -848,7 +848,7 @@ void URLLoader::OnAuthRequired(net::URLRequest* url_request,
   if (url_request->response_headers())
     head.headers = url_request->response_headers();
   head.auth_challenge_info = auth_info;
-  network_service_client_->OnAuthRequired(
+  network_context_client_->OnAuthRequired(
       fetch_window_id_, factory_params_->process_id, render_frame_id_,
       request_id_, url_request_->url(), first_auth_attempt_, auth_info, head,
       std::move(auth_challenge_responder));
@@ -868,7 +868,7 @@ void URLLoader::OnCertificateRequested(net::URLRequest* unused,
     return;
   }
 
-  if (!network_service_client_) {
+  if (!network_context_client_) {
     ContinueWithoutCertificate();
     return;
   }
@@ -884,11 +884,11 @@ void URLLoader::OnCertificateRequested(net::URLRequest* unused,
       base::BindOnce(&URLLoader::CancelRequest, base::Unretained(this)));
 
   if (fetch_window_id_) {
-    network_service_client_->OnCertificateRequested(
+    network_context_client_->OnCertificateRequested(
         fetch_window_id_, -1 /* process_id */, -1 /* routing_id */, request_id_,
         cert_info, std::move(client_cert_responder));
   } else {
-    network_service_client_->OnCertificateRequested(
+    network_context_client_->OnCertificateRequested(
         base::nullopt /* window_id */, factory_params_->process_id,
         render_frame_id_, request_id_, cert_info,
         std::move(client_cert_responder));
@@ -899,11 +899,11 @@ void URLLoader::OnSSLCertificateError(net::URLRequest* request,
                                       int net_error,
                                       const net::SSLInfo& ssl_info,
                                       bool fatal) {
-  if (!network_service_client_) {
+  if (!network_context_client_) {
     OnSSLCertificateErrorResponse(ssl_info, net::ERR_INSECURE_RESPONSE);
     return;
   }
-  network_service_client_->OnSSLCertificateError(
+  network_context_client_->OnSSLCertificateError(
       factory_params_->process_id, render_frame_id_, url_request_->url(),
       net_error, ssl_info, fatal,
       base::Bind(&URLLoader::OnSSLCertificateErrorResponse,

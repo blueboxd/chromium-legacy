@@ -231,6 +231,7 @@ class AwContents : public FindHelper::Listener,
                      const base::android::JavaRef<jstring>& message,
                      const base::android::JavaRef<jstring>& origin,
                      jboolean is_main_frame,
+                     const base::android::JavaRef<jobject>& reply_proxy,
                      const base::android::JavaRef<jintArray>& ports);
 
   bool GetViewTreeForceDarkState() { return view_tree_force_dark_state_; }

@@ -55,7 +55,7 @@ class PagePlaceholderTabHelperTest : public PlatformTest {
     return PagePlaceholderTabHelper::FromWebState(web_state_.get());
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   ScopedKeyWindow scoped_key_window_;
   std::unique_ptr<ios::ChromeBrowserState> browser_state_;
   std::unique_ptr<web::TestWebState> web_state_;

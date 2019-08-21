@@ -75,7 +75,8 @@ class SoftwareImageDecodeTaskImpl : public TileTask {
     devtools_instrumentation::ScopedImageDecodeTask image_decode_task(
         paint_image_.GetSkImage().get(),
         devtools_instrumentation::ScopedImageDecodeTask::kSoftware,
-        ImageDecodeCache::ToScopedTaskType(tracing_info_.task_type));
+        ImageDecodeCache::ToScopedTaskType(tracing_info_.task_type),
+        ImageDecodeCache::ToScopedImageType(paint_image_.GetImageType()));
     SoftwareImageDecodeCache::TaskProcessingResult result =
         cache_->DecodeImageInTask(image_key_, paint_image_, task_type_);
 

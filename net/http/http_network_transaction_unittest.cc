@@ -11938,7 +11938,9 @@ TEST_F(HttpNetworkTransactionTest, IgnoreAltSvcWithInvalidCert) {
   HttpServerProperties* http_server_properties =
       session->http_server_properties();
   EXPECT_TRUE(
-      http_server_properties->GetAlternativeServiceInfos(test_server).empty());
+      http_server_properties
+          ->GetAlternativeServiceInfos(test_server, NetworkIsolationKey())
+          .empty());
 
   EXPECT_THAT(callback.WaitForResult(), IsOk());
 
@@ -11954,7 +11956,9 @@ TEST_F(HttpNetworkTransactionTest, IgnoreAltSvcWithInvalidCert) {
   EXPECT_EQ("hello world", response_data);
 
   EXPECT_TRUE(
-      http_server_properties->GetAlternativeServiceInfos(test_server).empty());
+      http_server_properties
+          ->GetAlternativeServiceInfos(test_server, NetworkIsolationKey())
+          .empty());
 }
 
 TEST_F(HttpNetworkTransactionTest, HonorAlternativeServiceHeader) {
@@ -11993,7 +11997,9 @@ TEST_F(HttpNetworkTransactionTest, HonorAlternativeServiceHeader) {
   HttpServerProperties* http_server_properties =
       session->http_server_properties();
   EXPECT_TRUE(
-      http_server_properties->GetAlternativeServiceInfos(test_server).empty());
+      http_server_properties
+          ->GetAlternativeServiceInfos(test_server, NetworkIsolationKey())
+          .empty());
 
   EXPECT_THAT(callback.WaitForResult(), IsOk());
 
@@ -12009,11 +12015,106 @@ TEST_F(HttpNetworkTransactionTest, HonorAlternativeServiceHeader) {
   EXPECT_EQ("hello world", response_data);
 
   AlternativeServiceInfoVector alternative_service_info_vector =
-      http_server_properties->GetAlternativeServiceInfos(test_server);
+      http_server_properties->GetAlternativeServiceInfos(test_server,
+                                                         NetworkIsolationKey());
   ASSERT_EQ(1u, alternative_service_info_vector.size());
   AlternativeService alternative_service(kProtoHTTP2, "mail.example.org", 443);
   EXPECT_EQ(alternative_service,
             alternative_service_info_vector[0].alternative_service());
+}
+
+TEST_F(HttpNetworkTransactionTest,
+       HonorAlternativeServiceHeaderWithNetworkIsolationKey) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      // enabled_features
+      {features::kPartitionHttpServerPropertiesByNetworkIsolationKey,
+       // Need to partition connections by NetworkIsolationKey for
+       // SpdySessionKeys to include NetworkIsolationKeys.
+       features::kPartitionConnectionsByNetworkIsolationKey},
+      // disabled_features
+      {});
+  // Since HttpServerProperties caches the feature value, have to create a new
+  // one.
+  session_deps_.http_server_properties =
+      std::make_unique<HttpServerProperties>();
+
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
+  const net::NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
+  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
+  const net::NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+
+  MockRead data_reads[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"),
+      MockRead(kAlternativeServiceHttpHeader),
+      MockRead("\r\n"),
+      MockRead("hello world"),
+      MockRead(SYNCHRONOUS, OK),
+  };
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("https://www.example.org/");
+  request.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  request.network_isolation_key = kNetworkIsolationKey1;
+
+  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  ssl.ssl_info.cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "wildcard.pem");
+  ASSERT_TRUE(ssl.ssl_info.cert);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  TestCompletionCallback callback;
+
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
+
+  int rv = trans.Start(&request, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  url::SchemeHostPort test_server(request.url);
+  HttpServerProperties* http_server_properties =
+      session->http_server_properties();
+  EXPECT_TRUE(
+      http_server_properties
+          ->GetAlternativeServiceInfos(test_server, kNetworkIsolationKey1)
+          .empty());
+
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
+
+  const HttpResponseInfo* response = trans.GetResponseInfo();
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->headers);
+  EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
+  EXPECT_FALSE(response->was_fetched_via_spdy);
+  EXPECT_FALSE(response->was_alpn_negotiated);
+
+  std::string response_data;
+  ASSERT_THAT(ReadTransaction(&trans, &response_data), IsOk());
+  EXPECT_EQ("hello world", response_data);
+
+  AlternativeServiceInfoVector alternative_service_info_vector =
+      http_server_properties->GetAlternativeServiceInfos(test_server,
+                                                         kNetworkIsolationKey1);
+  ASSERT_EQ(1u, alternative_service_info_vector.size());
+  AlternativeService alternative_service(kProtoHTTP2, "mail.example.org", 443);
+  EXPECT_EQ(alternative_service,
+            alternative_service_info_vector[0].alternative_service());
+
+  // Make sure the alternative service information is only associated with
+  // kNetworkIsolationKey1.
+  EXPECT_TRUE(
+      http_server_properties
+          ->GetAlternativeServiceInfos(test_server, NetworkIsolationKey())
+          .empty());
+  EXPECT_TRUE(
+      http_server_properties
+          ->GetAlternativeServiceInfos(test_server, kNetworkIsolationKey2)
+          .empty());
 }
 
 // Regression test for https://crbug.com/615497.
@@ -12046,7 +12147,9 @@ TEST_F(HttpNetworkTransactionTest,
   HttpServerProperties* http_server_properties =
       session->http_server_properties();
   EXPECT_TRUE(
-      http_server_properties->GetAlternativeServiceInfos(test_server).empty());
+      http_server_properties
+          ->GetAlternativeServiceInfos(test_server, NetworkIsolationKey())
+          .empty());
 
   int rv = trans.Start(&request, callback.callback(), NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
@@ -12064,7 +12167,9 @@ TEST_F(HttpNetworkTransactionTest,
   EXPECT_EQ("hello world", response_data);
 
   EXPECT_TRUE(
-      http_server_properties->GetAlternativeServiceInfos(test_server).empty());
+      http_server_properties
+          ->GetAlternativeServiceInfos(test_server, NetworkIsolationKey())
+          .empty());
 }
 
 // HTTP/2 Alternative Services should be disabled by default.
@@ -12164,9 +12269,10 @@ TEST_F(HttpNetworkTransactionTest, ClearAlternativeServices) {
   http_server_properties->SetQuicAlternativeService(
       test_server, alternative_service, expiration,
       session->params().quic_params.supported_versions);
-  EXPECT_EQ(
-      1u,
-      http_server_properties->GetAlternativeServiceInfos(test_server).size());
+  EXPECT_EQ(1u,
+            http_server_properties
+                ->GetAlternativeServiceInfos(test_server, NetworkIsolationKey())
+                .size());
 
   // Send a clear header.
   MockRead data_reads[] = {
@@ -12210,7 +12316,9 @@ TEST_F(HttpNetworkTransactionTest, ClearAlternativeServices) {
   EXPECT_EQ("hello world", response_data);
 
   EXPECT_TRUE(
-      http_server_properties->GetAlternativeServiceInfos(test_server).empty());
+      http_server_properties
+          ->GetAlternativeServiceInfos(test_server, NetworkIsolationKey())
+          .empty());
 }
 
 TEST_F(HttpNetworkTransactionTest, HonorMultipleAlternativeServiceHeaders) {
@@ -12249,7 +12357,9 @@ TEST_F(HttpNetworkTransactionTest, HonorMultipleAlternativeServiceHeaders) {
   HttpServerProperties* http_server_properties =
       session->http_server_properties();
   EXPECT_TRUE(
-      http_server_properties->GetAlternativeServiceInfos(test_server).empty());
+      http_server_properties
+          ->GetAlternativeServiceInfos(test_server, NetworkIsolationKey())
+          .empty());
 
   EXPECT_THAT(callback.WaitForResult(), IsOk());
 
@@ -12265,7 +12375,8 @@ TEST_F(HttpNetworkTransactionTest, HonorMultipleAlternativeServiceHeaders) {
   EXPECT_EQ("hello world", response_data);
 
   AlternativeServiceInfoVector alternative_service_info_vector =
-      http_server_properties->GetAlternativeServiceInfos(test_server);
+      http_server_properties->GetAlternativeServiceInfos(test_server,
+                                                         NetworkIsolationKey());
   ASSERT_EQ(2u, alternative_service_info_vector.size());
 
   AlternativeService alternative_service(kProtoHTTP2, "www.example.com", 443);
@@ -12389,12 +12500,13 @@ TEST_F(HttpNetworkTransactionTest, IdentifyQuicNotBroken) {
           session->params().quic_params.supported_versions));
 
   http_server_properties->SetAlternativeServices(
-      server, alternative_service_info_vector);
+      server, NetworkIsolationKey(), alternative_service_info_vector);
 
   // Mark one of the QUIC alternative service as broken.
   http_server_properties->MarkAlternativeServiceBroken(alternative_service1);
-  EXPECT_EQ(2u,
-            http_server_properties->GetAlternativeServiceInfos(server).size());
+  EXPECT_EQ(2u, http_server_properties
+                    ->GetAlternativeServiceInfos(server, NetworkIsolationKey())
+                    .size());
 
   HttpRequestInfo request;
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
@@ -12466,7 +12578,8 @@ TEST_F(HttpNetworkTransactionTest, MarkBrokenAlternateProtocolAndFallback) {
   EXPECT_EQ("hello world", response_data);
 
   const AlternativeServiceInfoVector alternative_service_info_vector =
-      http_server_properties->GetAlternativeServiceInfos(server);
+      http_server_properties->GetAlternativeServiceInfos(server,
+                                                         NetworkIsolationKey());
   ASSERT_EQ(1u, alternative_service_info_vector.size());
   EXPECT_EQ(alternative_service,
             alternative_service_info_vector[0].alternative_service());

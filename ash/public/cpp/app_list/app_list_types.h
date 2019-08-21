@@ -113,16 +113,18 @@ enum class AppListLaunchType {
 
 // Type of the search result, which is set in Chrome.
 enum class SearchResultType {
-  kUnknown,         // Unknown type. Don't use over IPC
-  kInstalledApp,    // Installed apps.
-  kPlayStoreApp,    // Installable apps from PlayStore.
-  kInstantApp,      // Instant apps.
-  kInternalApp,     // Chrome OS apps.
-  kOmnibox,         // Results from Omnibox.
-  kLauncher,        // Results from launcher search (currently only from Files).
-  kAnswerCard,      // WebContents based answer card.
+  kUnknown,       // Unknown type. Don't use over IPC
+  kInstalledApp,  // Installed apps.
+  kPlayStoreApp,  // Installable apps from PlayStore.
+  kInstantApp,    // Instant apps.
+  kInternalApp,   // Chrome OS apps.
+  kOmnibox,       // Results from Omnibox.
+  kLauncher,      // Results from launcher search (currently only from Files).
+  kAnswerCard,    // WebContents based answer card.
   kPlayStoreReinstallApp,  // Reinstall recommendations from PlayStore.
   kArcAppShortcut,         // ARC++ app shortcuts.
+  kZeroStateFile,          // Zero state local file results.
+  kDriveQuickAccess,       // Drive QuickAccess results.
   // Add new values here.
 };
 

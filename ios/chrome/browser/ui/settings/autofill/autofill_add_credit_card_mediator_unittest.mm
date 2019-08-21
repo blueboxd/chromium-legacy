@@ -37,7 +37,7 @@ class AutofillAddCreditCardMediatorTest : public PlatformTest {
         personalDataManager:personal_data_manager_];
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   autofill::PersonalDataManager* personal_data_manager_;
   AutofillAddCreditCardMediator* add_credit_card_mediator_;

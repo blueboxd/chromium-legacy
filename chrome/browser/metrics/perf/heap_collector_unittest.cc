@@ -192,8 +192,7 @@ size_t HeapSamplingPeriod(const TestHeapCollector& collector) {
 class HeapCollectorTest : public testing::Test {
  public:
   HeapCollectorTest()
-      : test_browser_thread_bundle_(
-            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   void SaveProfile(std::unique_ptr<SampledProfile> sampled_profile) {
     cached_profile_data_.resize(cached_profile_data_.size() + 1);
@@ -220,7 +219,7 @@ class HeapCollectorTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   std::vector<SampledProfile> cached_profile_data_;
 
@@ -257,7 +256,7 @@ TEST_F(HeapCollectorTest, NoCollectionWhenProfileCacheFull_Tcmalloc) {
 
   // Advance the clock by a periodic collection interval. We shouldn't find a
   // profile because the cache is full.
-  test_browser_thread_bundle_.FastForwardBy(kPeriodicCollectionInterval);
+  task_environment_.FastForwardBy(kPeriodicCollectionInterval);
 
   EXPECT_TRUE(cached_profile_data_.empty());
 }
@@ -322,7 +321,7 @@ TEST_F(HeapCollectorTest, ParseAndSaveProfile_Tcmalloc) {
   sampled_profile->set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
   heap_collector_->ParseAndSaveProfile(std::move(cat), kTempProfile,
                                        std::move(sampled_profile));
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Check that the profile was cached.
   ASSERT_EQ(1U, cached_profile_data_.size());
@@ -361,7 +360,7 @@ TEST_F(HeapCollectorTest, NoCollectionWhenProfileCacheFull_ShimLayer) {
 
   // Advance the clock by a periodic collection interval. We shouldn't find a
   // profile because the cache is full.
-  test_browser_thread_bundle_.FastForwardBy(kPeriodicCollectionInterval);
+  task_environment_.FastForwardBy(kPeriodicCollectionInterval);
 
   EXPECT_TRUE(cached_profile_data_.empty());
 }
@@ -445,7 +444,7 @@ TEST_F(HeapCollectorTest, ParseAndSaveProfile_ShimLayer) {
   sampled_profile->set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
   heap_collector_->ParseAndSaveProfile(std::move(cat), kTempProfile,
                                        std::move(sampled_profile));
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Check that the profile was cached.
   ASSERT_EQ(1U, cached_profile_data_.size());
@@ -469,7 +468,7 @@ class HeapCollectorCollectionParamsTest : public testing::Test {
   HeapCollectorCollectionParamsTest() = default;
 
  protected:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(HeapCollectorCollectionParamsTest);
 };

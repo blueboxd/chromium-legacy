@@ -19,7 +19,8 @@ class BrowserDownloadServiceFactoryTest : public PlatformTest {
  protected:
   BrowserDownloadServiceFactoryTest()
       : browser_state_(browser_state_builder_.Build()) {}
-  web::TestWebThreadBundle thread_bundle_;  // ChromeBrowserState needs thread.
+  // ChromeBrowserState needs thread.
+  web::WebTaskEnvironment task_environment_;
   TestChromeBrowserState::Builder browser_state_builder_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
 };

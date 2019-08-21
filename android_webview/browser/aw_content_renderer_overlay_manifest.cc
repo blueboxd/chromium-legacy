@@ -23,7 +23,7 @@ const service_manager::Manifest& GetAWContentRendererOverlayManifest() {
                   autofill::mojom::PasswordAutofillAgent,
                   autofill::mojom::PasswordGenerationAgent,
                   safe_browsing::mojom::ThreatReporter,
-                  mojom::JsJavaConfigurator, mojom::JsApiHandler>())
+                  mojom::JsJavaConfigurator, mojom::JsToJavaMessaging>())
           .Build()};
   return *manifest;
 }

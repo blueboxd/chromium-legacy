@@ -274,7 +274,7 @@ class CrOSComponentInstallerTest : public testing::Test {
     return service;
   }
 
-  void RunUntilIdle() { thread_bundle_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
   chromeos::FakeImageLoaderClient* image_loader_client() {
     return image_loader_client_;
@@ -327,7 +327,7 @@ class CrOSComponentInstallerTest : public testing::Test {
     return base::make_optional(path);
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   user_manager::ScopedUserManager user_manager_;
 

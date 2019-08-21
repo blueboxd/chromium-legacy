@@ -561,7 +561,7 @@ class TetherServiceTest : public testing::Test {
   }
 
   const chromeos::multidevice::RemoteDeviceRefList test_devices_;
-  const content::TestBrowserThreadBundle thread_bundle_;
+  const content::BrowserTaskEnvironment task_environment_;
 
   std::unique_ptr<TestingProfile> profile_;
   chromeos::FakeChromeUserManager* fake_chrome_user_manager_;

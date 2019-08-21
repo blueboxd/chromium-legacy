@@ -15,8 +15,10 @@ class CompositorFrameReporterTest;
 
 class CompositorFrameReporterTest : public testing::Test {
  public:
+  const base::flat_set<FrameSequenceTrackerType> active_trackers = {};
   CompositorFrameReporterTest()
-      : pipeline_reporter_(std::make_unique<CompositorFrameReporter>()) {
+      : pipeline_reporter_(
+            std::make_unique<CompositorFrameReporter>(&active_trackers)) {
     AdvanceNowByMs(1);
   }
 
@@ -169,7 +171,8 @@ TEST_F(CompositorFrameReporterTest, MissedFrameLatencyIncreaseReportingTest) {
 
   // Submit 19 non-missed frames.
   for (int i = 0; i < 19; ++i) {
-    pipeline_reporter_ = std::make_unique<CompositorFrameReporter>();
+    pipeline_reporter_ =
+        std::make_unique<CompositorFrameReporter>(&active_trackers);
     pipeline_reporter_->StartStage(CompositorFrameReporter::StageType::kCommit,
                                    Now(), &time_delta_history);
     AdvanceNowByMs(1);
@@ -190,7 +193,8 @@ TEST_F(CompositorFrameReporterTest, MissedFrameLatencyIncreaseReportingTest) {
   // Submit 3 frames missed frames. This will remove 3 sample from the front of
   // time delta history. And 16 sample will be in the time delta history.
   for (int i = 0; i < 3; ++i) {
-    pipeline_reporter_ = std::make_unique<CompositorFrameReporter>();
+    pipeline_reporter_ =
+        std::make_unique<CompositorFrameReporter>(&active_trackers);
     pipeline_reporter_->StartStage(CompositorFrameReporter::StageType::kCommit,
                                    Now(), &time_delta_history);
     AdvanceNowByMs(100);
@@ -216,7 +220,8 @@ TEST_F(CompositorFrameReporterTest, MissedFrameLatencyIncreaseReportingTest) {
 
   // Submit 5 frame so that missed frame duration increases would be reported.
   for (int i = 0; i < 5; ++i) {
-    pipeline_reporter_ = std::make_unique<CompositorFrameReporter>();
+    pipeline_reporter_ =
+        std::make_unique<CompositorFrameReporter>(&active_trackers);
     pipeline_reporter_->StartStage(CompositorFrameReporter::StageType::kCommit,
                                    Now(), &time_delta_history);
     AdvanceNowByMs(1);
@@ -237,7 +242,8 @@ TEST_F(CompositorFrameReporterTest, MissedFrameLatencyIncreaseReportingTest) {
 
   // Submit missed frame that is not abnormal (more than 95 percentile of the
   // frame history). This brings down the time delta history count to 20.
-  pipeline_reporter_ = std::make_unique<CompositorFrameReporter>();
+  pipeline_reporter_ =
+      std::make_unique<CompositorFrameReporter>(&active_trackers);
   pipeline_reporter_->StartStage(CompositorFrameReporter::StageType::kCommit,
                                  Now(), &time_delta_history);
   AdvanceNowByMs(1);
@@ -259,7 +265,8 @@ TEST_F(CompositorFrameReporterTest, MissedFrameLatencyIncreaseReportingTest) {
 
   // Submit missed frame that is abnormal (more than 95 percentile of the
   // frame history).
-  pipeline_reporter_ = std::make_unique<CompositorFrameReporter>();
+  pipeline_reporter_ =
+      std::make_unique<CompositorFrameReporter>(&active_trackers);
   pipeline_reporter_->StartStage(CompositorFrameReporter::StageType::kCommit,
                                  Now(), &time_delta_history);
   AdvanceNowByMs(3);
@@ -277,7 +284,8 @@ TEST_F(CompositorFrameReporterTest, MissedFrameLatencyIncreaseReportingTest) {
       "CompositorLatency.MissedFrame.EndCommitToActivation", 5);
 
   // Submit not-missed frame with abnormal times.
-  pipeline_reporter_ = std::make_unique<CompositorFrameReporter>();
+  pipeline_reporter_ =
+      std::make_unique<CompositorFrameReporter>(&active_trackers);
   pipeline_reporter_->StartStage(CompositorFrameReporter::StageType::kCommit,
                                  Now(), &time_delta_history);
   AdvanceNowByMs(3);

@@ -62,6 +62,16 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestPresentationLocksFocus) {
   TestPresentationLocksFocusImpl(t, "webxr_test_presentation_locks_focus");
 }
 
+#if BUILDFLAG(ENABLE_OPENXR)
+IN_PROC_BROWSER_TEST_F(WebVrOpenXrBrowserTest, TestPresentationLocksFocus) {
+  // Create a mock so that the test hook on OpenXRAPIWrapper is set.
+  // This is needed to set the environment variable in LoadOpenXRRuntime
+  // to use the mock runtime instead of the real system runtime.
+  MockXRDeviceHookBase my_mock;
+  TestPresentationLocksFocusImpl(this, "test_presentation_locks_focus");
+}
+#endif  // BUILDFLAG(ENABLE_OPENXR)
+
 class WebXrControllerInputMock : public MockXRDeviceHookBase {
  public:
   void OnFrameSubmitted(
@@ -950,10 +960,7 @@ IN_PROC_MULTI_CLASS_BROWSER_TEST_F2(WebXrVrOpenVrBrowserTest,
   t->EndTest();
 }
 
-// Test that OpenVR controller input is registered via the Gamepad API.
-// Equivalent to
-// WebXrVrInputTest#testControllerClicksRegisteredOnDaydream
-IN_PROC_BROWSER_TEST_F(WebVrOpenVrBrowserTest, TestControllerInputRegistered) {
+void TestWebVrControllerInputRegistered(WebVrBrowserTestBase* t) {
   WebXrControllerInputMock my_mock;
 
   // Connect a controller.
@@ -971,9 +978,9 @@ IN_PROC_BROWSER_TEST_F(WebVrOpenVrBrowserTest, TestControllerInputRegistered) {
   unsigned int controller_index = my_mock.ConnectController(controller_data);
 
   // Load the test page and enter presentation.
-  LoadUrlAndAwaitInitialization(
-      GetFileUrlForHtmlTestFile("test_gamepad_button"));
-  EnterSessionWithUserGestureOrFail();
+  t->LoadUrlAndAwaitInitialization(
+      t->GetFileUrlForHtmlTestFile("test_gamepad_button"));
+  t->EnterSessionWithUserGestureOrFail();
 
   // We need to have this, otherwise the JavaScript side of the Gamepad API
   // doesn't seem to pick up the correct button state? I.e. if we don't have
@@ -986,18 +993,33 @@ IN_PROC_BROWSER_TEST_F(WebVrOpenVrBrowserTest, TestControllerInputRegistered) {
   // flakiness workaround. Coincidentally, it's also helpful for the different
   // issue solved by the above PressReleasePrimaryTrigger, so make sure to set
   // it here so that the above press/release isn't caught by the test code.
-  RunJavaScriptOrFail("canStartTest = true");
+  t->RunJavaScriptOrFail("canStartTest = true");
   // Press and release the trigger, ensuring the Gamepad API detects both.
   my_mock.TogglePrimaryTrigger(controller_index);
-  WaitOnJavaScriptStep();
+  t->WaitOnJavaScriptStep();
   // Re-register the callback since it unregisters itself after finishing the
   // step.
-  RunJavaScriptOrFail(
+  t->RunJavaScriptOrFail(
       "onPresentingAnimationFrameCallback = gamepadFrameCallback");
   my_mock.TogglePrimaryTrigger(controller_index);
-  WaitOnJavaScriptStep();
-  EndTest();
+  t->WaitOnJavaScriptStep();
+  t->EndTest();
 }
+
+// Test that OpenVR controller input is registered via the Gamepad API.
+// Equivalent to
+// WebXrVrInputTest#testControllerClicksRegisteredOnDaydream
+IN_PROC_BROWSER_TEST_F(WebVrOpenVrBrowserTest,
+                       TestWebVrControllerInputRegistered) {
+  TestWebVrControllerInputRegistered(this);
+}
+
+#if BUILDFLAG(ENABLE_OPENXR)
+IN_PROC_BROWSER_TEST_F(WebVrOpenXrBrowserTest,
+                       TestWebVrControllerInputRegistered) {
+  TestWebVrControllerInputRegistered(this);
+}
+#endif  // BUILDFLAG(ENABLE_OPENXR)
 
 std::string TransformToColMajorString(const gfx::Transform& t) {
   float array[16];

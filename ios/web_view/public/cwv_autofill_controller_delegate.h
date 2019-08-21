@@ -12,13 +12,8 @@ NS_ASSUME_NONNULL_BEGIN
 @class CWVAutofillController;
 @class CWVAutofillFormSuggestion;
 @class CWVCreditCard;
+@class CWVCreditCardSaver;
 @class CWVCreditCardVerifier;
-
-// Storage policies for autofill data.
-typedef NS_ENUM(NSInteger, CWVStoragePolicy) {
-  CWVStoragePolicyReject = 0,  // Do not store.
-  CWVStoragePolicyAllow,       // Allow storage.
-};
 
 // User decision for saving / updating password.
 // Note: CWVPasswordUserDecisionNever is only used in saving scenarios.
@@ -81,14 +76,12 @@ typedef NS_ENUM(NSInteger, CWVPasswordUserDecision) {
 - (void)autofillControllerDidInsertFormElements:
     (CWVAutofillController*)autofillController;
 
-// Called when user needs to decide on whether or not to save the card locally.
-// This can happen if user is signed out or sync is disabled.
-// Pass final decision to |decisionHandler|. Must only be called once.
-// If not implemented, assumes CWVStoragePolicyReject.
+// Called when it is possible to save a new credit card. This is usually called
+// after a new card was entered in a form and submitted.
+// |saver| encapsulates information needed to assist with this save attempt.
+// Life time of |saver| should be managed by the delegate.
 - (void)autofillController:(CWVAutofillController*)autofillController
-    decidePolicyForLocalStorageOfCreditCard:(CWVCreditCard*)creditCard
-                            decisionHandler:(void (^)(CWVStoragePolicy policy))
-                                                decisionHandler;
+    saveCreditCardWithSaver:(CWVCreditCardSaver*)saver;
 
 // Called when the user needs to use |verifier| to verify a credit card.
 // Lifetime of |verifier| should be managed by the delegate.

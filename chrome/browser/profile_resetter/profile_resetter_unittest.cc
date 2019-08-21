@@ -20,6 +20,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_path_override.h"
 #include "build/build_config.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
@@ -45,6 +46,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
@@ -201,13 +203,12 @@ class ConfigParserTest : public testing::Test {
 
   MOCK_METHOD0(Callback, void(void));
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
 };
 
 ConfigParserTest::ConfigParserTest()
-    : test_browser_thread_bundle_(
-          content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+    : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
 
 ConfigParserTest::~ConfigParserTest() {}
 
@@ -514,15 +515,17 @@ TEST_F(ProfileResetterTest, ResetExtensionsByDisabling) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
+  ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile());
+  content::WindowedNotificationObserver theme_change_observer(
+      chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
+      content::Source<ThemeService>(theme_service));
+
   scoped_refptr<Extension> theme = CreateExtension(
       base::ASCIIToUTF16("example1"), temp_dir.GetPath(), Manifest::UNPACKED,
       extensions::Manifest::TYPE_THEME, false);
   service_->FinishInstallationForTest(theme.get());
-  // Let ThemeService finish creating the theme pack.
-  base::RunLoop().RunUntilIdle();
+  theme_change_observer.Wait();
 
-  ThemeService* theme_service =
-      ThemeServiceFactory::GetForProfile(profile());
   EXPECT_FALSE(theme_service->UsingDefaultTheme());
 
   scoped_refptr<Extension> ext2 = CreateExtension(

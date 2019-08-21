@@ -126,7 +126,6 @@ public class WebApkShareTargetUtilTest {
 
         Assert.assertEquals(null,
                 WebApkShareTargetUtilShadow.computePostData(
-                        WebApkTestHelper.getGeneratedShareTargetActivityClassName(0),
                         infoWithShareMethodGet.shareTarget(), infoWithShareMethodGet.shareData()));
 
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_METHOD, "POST");
@@ -135,11 +134,7 @@ public class WebApkShareTargetUtilTest {
         // changed
         WebApkInfo infoWithShareMethodPost = WebApkInfo.create(intent);
 
-        Assert.assertNotEquals(null,
-                WebApkShareTargetUtilShadow.computePostData(
-                        WebApkTestHelper.getGeneratedShareTargetActivityClassName(0),
-                        infoWithShareMethodPost.shareTarget(),
-                        infoWithShareMethodPost.shareData()));
+        Assert.assertNotEquals(null, computePostData(infoWithShareMethodPost));
     }
 
     /**
@@ -163,9 +158,7 @@ public class WebApkShareTargetUtilTest {
         intent.putExtra(Intent.EXTRA_TEXT, "extra_text");
         WebApkInfo info = WebApkInfo.create(intent);
 
-        WebApkShareTargetUtilShadow.PostData postData = WebApkShareTargetUtilShadow.computePostData(
-                WebApkTestHelper.getGeneratedShareTargetActivityClassName(0), info.shareTarget(),
-                info.shareData());
+        WebApkShareTargetUtilShadow.PostData postData = computePostData(info);
 
         assertPostData(postData, new String[] {"title", "text"}, new boolean[] {false, false},
                 new String[] {"extra_subject", "extra_text"}, new String[] {"", ""},
@@ -192,9 +185,7 @@ public class WebApkShareTargetUtilTest {
 
         WebApkInfo info = WebApkInfo.create(intent);
 
-        WebApkShareTargetUtilShadow.PostData postData = WebApkShareTargetUtilShadow.computePostData(
-                WebApkTestHelper.getGeneratedShareTargetActivityClassName(0), info.shareTarget(),
-                info.shareData());
+        WebApkShareTargetUtilShadow.PostData postData = computePostData(info);
 
         assertPostData(postData, new String[] {}, new boolean[] {}, new String[] {},
                 new String[] {}, new String[] {});
@@ -218,9 +209,7 @@ public class WebApkShareTargetUtilTest {
         // Intent.EXTRA_STREAM is not specified.
         WebApkInfo info = WebApkInfo.create(intent);
 
-        WebApkShareTargetUtilShadow.PostData postData = WebApkShareTargetUtilShadow.computePostData(
-                WebApkTestHelper.getGeneratedShareTargetActivityClassName(0), info.shareTarget(),
-                info.shareData());
+        WebApkShareTargetUtilShadow.PostData postData = computePostData(info);
 
         assertPostData(postData, new String[] {}, new boolean[] {}, new String[] {},
                 new String[] {}, new String[] {});
@@ -243,9 +232,7 @@ public class WebApkShareTargetUtilTest {
 
         WebApkInfo info = WebApkInfo.create(intent);
 
-        WebApkShareTargetUtilShadow.PostData postData = WebApkShareTargetUtilShadow.computePostData(
-                WebApkTestHelper.getGeneratedShareTargetActivityClassName(0), info.shareTarget(),
-                info.shareData());
+        WebApkShareTargetUtilShadow.PostData postData = computePostData(info);
 
         assertPostData(postData, new String[] {"name"}, new boolean[] {true},
                 new String[] {"mock-uri-2"}, new String[] {"file-name-for-mock-uri-2"},
@@ -272,9 +259,7 @@ public class WebApkShareTargetUtilTest {
 
         WebApkInfo info = WebApkInfo.create(intent);
 
-        WebApkShareTargetUtilShadow.PostData postData = WebApkShareTargetUtilShadow.computePostData(
-                WebApkTestHelper.getGeneratedShareTargetActivityClassName(0), info.shareTarget(),
-                info.shareData());
+        WebApkShareTargetUtilShadow.PostData postData = computePostData(info);
 
         assertPostData(postData, new String[] {"share-title", "share-text"},
                 new boolean[] {false, false},
@@ -302,9 +287,7 @@ public class WebApkShareTargetUtilTest {
 
         WebApkInfo info = WebApkInfo.create(intent);
 
-        WebApkShareTargetUtilShadow.PostData postData = WebApkShareTargetUtilShadow.computePostData(
-                WebApkTestHelper.getGeneratedShareTargetActivityClassName(0), info.shareTarget(),
-                info.shareData());
+        WebApkShareTargetUtilShadow.PostData postData = computePostData(info);
 
         assertPostData(postData, new String[] {"share-title", "share-text"},
                 new boolean[] {false, false},
@@ -336,9 +319,7 @@ public class WebApkShareTargetUtilTest {
 
         WebApkInfo info = WebApkInfo.create(intent);
 
-        WebApkShareTargetUtilShadow.PostData postData = WebApkShareTargetUtilShadow.computePostData(
-                WebApkTestHelper.getGeneratedShareTargetActivityClassName(0), info.shareTarget(),
-                info.shareData());
+        WebApkShareTargetUtilShadow.PostData postData = computePostData(info);
 
         assertPostData(postData, new String[] {"share-title", "share-text", "name"},
                 new boolean[] {false, false, true},
@@ -371,9 +352,7 @@ public class WebApkShareTargetUtilTest {
 
         WebApkInfo info = WebApkInfo.create(intent);
 
-        WebApkShareTargetUtilShadow.PostData postData = WebApkShareTargetUtilShadow.computePostData(
-                WebApkTestHelper.getGeneratedShareTargetActivityClassName(0), info.shareTarget(),
-                info.shareData());
+        WebApkShareTargetUtilShadow.PostData postData = computePostData(info);
 
         assertPostData(postData, new String[] {"share-text"}, new boolean[] {true},
                 new String[] {"text-file-mock-uri"}, new String[] {""},
@@ -407,9 +386,7 @@ public class WebApkShareTargetUtilTest {
 
         WebApkInfo info = WebApkInfo.create(intent);
 
-        WebApkShareTargetUtilShadow.PostData postData = WebApkShareTargetUtilShadow.computePostData(
-                WebApkTestHelper.getGeneratedShareTargetActivityClassName(0), info.shareTarget(),
-                info.shareData());
+        WebApkShareTargetUtilShadow.PostData postData = computePostData(info);
 
         assertPostData(postData, new String[] {"share-text"}, new boolean[] {true},
                 new String[] {"text-file-mock-uri"}, new String[] {""},
@@ -442,9 +419,7 @@ public class WebApkShareTargetUtilTest {
 
         WebApkInfo info = WebApkInfo.create(intent);
 
-        WebApkShareTargetUtilShadow.PostData postData = WebApkShareTargetUtilShadow.computePostData(
-                WebApkTestHelper.getGeneratedShareTargetActivityClassName(0), info.shareTarget(),
-                info.shareData());
+        WebApkShareTargetUtilShadow.PostData postData = computePostData(info);
 
         assertPostData(postData, new String[] {"share-text"}, new boolean[] {false},
                 new String[] {"shared_text_value"}, new String[] {""}, new String[] {"text/plain"});
@@ -475,9 +450,7 @@ public class WebApkShareTargetUtilTest {
 
         WebApkInfo info = WebApkInfo.create(intent);
 
-        WebApkShareTargetUtilShadow.PostData postData = WebApkShareTargetUtilShadow.computePostData(
-                WebApkTestHelper.getGeneratedShareTargetActivityClassName(0), info.shareTarget(),
-                info.shareData());
+        WebApkShareTargetUtilShadow.PostData postData = computePostData(info);
 
         assertPostData(postData, new String[] {"share-text-file"}, new boolean[] {true},
                 new String[] {"text-mock-uri"}, new String[] {"file-name-for-text-mock-uri"},
@@ -509,9 +482,7 @@ public class WebApkShareTargetUtilTest {
 
         WebApkInfo info = WebApkInfo.create(intent);
 
-        WebApkShareTargetUtilShadow.PostData postData = WebApkShareTargetUtilShadow.computePostData(
-                WebApkTestHelper.getGeneratedShareTargetActivityClassName(0), info.shareTarget(),
-                info.shareData());
+        WebApkShareTargetUtilShadow.PostData postData = computePostData(info);
 
         assertPostData(postData, new String[] {"share-text-file", "share-text-file"},
                 new boolean[] {false, true}, new String[] {"shared_text_value", "text-mock-uri"},
@@ -545,9 +516,7 @@ public class WebApkShareTargetUtilTest {
 
         WebApkInfo info = WebApkInfo.create(intent);
 
-        WebApkShareTargetUtilShadow.PostData postData = WebApkShareTargetUtilShadow.computePostData(
-                WebApkTestHelper.getGeneratedShareTargetActivityClassName(0), info.shareTarget(),
-                info.shareData());
+        WebApkShareTargetUtilShadow.PostData postData = computePostData(info);
 
         assertPostData(postData, new String[] {"share-text", "share-text-file"},
                 new boolean[] {false, true}, new String[] {"shared_text_value", "text-mock-uri"},
@@ -583,9 +552,7 @@ public class WebApkShareTargetUtilTest {
 
         WebApkInfo info = WebApkInfo.create(intent);
 
-        WebApkShareTargetUtilShadow.PostData postData = WebApkShareTargetUtilShadow.computePostData(
-                WebApkTestHelper.getGeneratedShareTargetActivityClassName(0), info.shareTarget(),
-                info.shareData());
+        WebApkShareTargetUtilShadow.PostData postData = computePostData(info);
 
         assertPostData(postData, new String[] {"share-text-file"}, new boolean[] {true},
                 new String[] {"mock-uri"}, new String[] {"file-name-for-mock-uri"},
@@ -616,14 +583,16 @@ public class WebApkShareTargetUtilTest {
 
         WebApkInfo info = WebApkInfo.create(intent);
 
-        WebApkShareTargetUtilShadow.PostData postData = WebApkShareTargetUtilShadow.computePostData(
-                WebApkTestHelper.getGeneratedShareTargetActivityClassName(0), info.shareTarget(),
-                info.shareData());
+        WebApkShareTargetUtilShadow.PostData postData = computePostData(info);
 
         // with invalid name parameter from Android manifest, we ignore the file sharing part.
         assertPostData(postData, new String[] {"share-title", "share-text"},
                 new boolean[] {false, false},
                 new String[] {"shared_subject_value", "shared_text_value"}, new String[] {"", ""},
                 new String[] {"text/plain", "text/plain"});
+    }
+
+    private WebApkShareTargetUtil.PostData computePostData(WebApkInfo info) {
+        return WebApkShareTargetUtilShadow.computePostData(info.shareTarget(), info.shareData());
     }
 }

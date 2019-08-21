@@ -76,7 +76,7 @@ class ShareToDataBuilderTest : public PlatformTest {
 
  private:
   FakeSnapshotGeneratorDelegate* delegate_ = nil;
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<ios::ChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<web::TestWebState> web_state_;
 

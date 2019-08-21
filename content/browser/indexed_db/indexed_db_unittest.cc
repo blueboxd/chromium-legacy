@@ -147,7 +147,7 @@ class IndexedDBTest : public testing::Test {
   scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;
 
  private:
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   TestBrowserContext browser_context_;
   base::ScopedTempDir temp_dir_;
   scoped_refptr<IndexedDBContextImpl> context_;

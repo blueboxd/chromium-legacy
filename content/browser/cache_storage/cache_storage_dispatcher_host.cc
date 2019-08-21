@@ -331,7 +331,7 @@ class CacheStorageDispatcherHost::CacheImpl
 
   void SetSideData(const GURL& url,
                    base::Time response_time,
-                   const std::vector<uint8_t>& side_data,
+                   base::span<const uint8_t> side_data,
                    int64_t trace_id,
                    SetSideDataCallback callback) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

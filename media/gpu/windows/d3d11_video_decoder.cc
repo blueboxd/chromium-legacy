@@ -232,6 +232,14 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
   }
 
   usable_feature_level_ = device_->GetFeatureLevel();
+
+  // If we're ignoring workarounds, also limit to 11.0.  This is to see if 11.0
+  // is more stable than 11.1, even though it doesn't really have much to do
+  // with the IgnoreWorkarounds experiment.
+  if (usable_feature_level_ > D3D_FEATURE_LEVEL_11_0 &&
+      base::FeatureList::IsEnabled(kD3D11VideoDecoderIgnoreWorkarounds)) {
+    usable_feature_level_ = D3D_FEATURE_LEVEL_11_0;
+  }
   device_->GetImmediateContext(device_context_.ReleaseAndGetAddressOf());
 
   HRESULT hr;

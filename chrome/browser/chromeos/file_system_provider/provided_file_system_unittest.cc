@@ -267,7 +267,7 @@ class FileSystemProviderProvidedFileSystemTest : public testing::Test {
         base::WrapUnique(new StubNotificationManager));
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<FakeEventRouter> event_router_;
   std::unique_ptr<ProvidedFileSystemInfo> file_system_info_;

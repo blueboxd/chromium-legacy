@@ -72,7 +72,7 @@ class PasswordManagerPresenterTest : public testing::Test {
 
   ~PasswordManagerPresenterTest() override {
     store_->ShutdownOnUIThread();
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void AddPasswordEntry(const GURL& origin,
@@ -116,7 +116,7 @@ class PasswordManagerPresenterTest : public testing::Test {
                      : base::nullopt);
     // The password store posts mutation tasks to a background thread, thus we
     // need to spin the message loop here.
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   int GetPasswordIndex(base::StringPiece origin,
@@ -150,12 +150,12 @@ class PasswordManagerPresenterTest : public testing::Test {
                      : base::nullopt);
     // The password store posts mutation tasks to a background thread, thus we
     // need to spin the message loop here.
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void UpdatePasswordLists() {
     mock_controller_.GetPasswordManagerPresenter()->UpdatePasswordLists();
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   MockPasswordUIView& GetUIController() { return mock_controller_; }
@@ -171,7 +171,7 @@ class PasswordManagerPresenterTest : public testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   MockPasswordUIView mock_controller_{&profile_};
   scoped_refptr<password_manager::PasswordStore> store_;

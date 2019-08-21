@@ -64,8 +64,7 @@ class FileWriteWatcherTest : public testing::Test {
   // By using the IO_MAINLOOP test thread bundle, the main thread is used
   // both as UI and FILE thread, with TYPE_IO message loop.
   FileWriteWatcherTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
-  }
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
 
@@ -74,7 +73,7 @@ class FileWriteWatcherTest : public testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
 };
 

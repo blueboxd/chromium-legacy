@@ -1087,7 +1087,6 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="8153880621934657047">Not inside table.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{underscore}other{# underscores}}</translation>
 <translation id="8179976553408161302">Enter</translation>
-<translation id="8183813379996435469">Automatically detect and switch ChromeVox language.</translation>
 <translation id="8184828902145951186">row</translation>
 <translation id="8186185314313222077">toggle full screen</translation>
 <translation id="8199231515320852133">Announce the headers of the current cell</translation>

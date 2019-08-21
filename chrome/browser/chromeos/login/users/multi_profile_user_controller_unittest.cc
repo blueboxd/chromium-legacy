@@ -205,7 +205,7 @@ class MultiProfileUserControllerTest
 
   TestingProfile* profile(int index) { return user_profiles_[index]; }
 
-  content::TestBrowserThreadBundle threads_;
+  content::BrowserTaskEnvironment threads_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   FakeChromeUserManager* fake_user_manager_;  // Not owned
   user_manager::ScopedUserManager user_manager_enabler_;

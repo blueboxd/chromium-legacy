@@ -89,7 +89,7 @@ class FileSystemProviderBufferingFileStreamReaderTest : public testing::Test {
   FileSystemProviderBufferingFileStreamReaderTest() {}
   ~FileSystemProviderBufferingFileStreamReaderTest() override {}
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(FileSystemProviderBufferingFileStreamReaderTest, Read) {

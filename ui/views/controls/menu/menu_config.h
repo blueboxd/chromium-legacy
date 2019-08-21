@@ -84,12 +84,6 @@ struct VIEWS_EXPORT MenuConfig {
   // Padding between the arrow and the edge.
   int arrow_to_edge_padding = 5;
 
-  // The icon size used for icons in touchable menu items.
-  int touchable_icon_size = 20;
-
-  // The color used for icons in touchable menu items.
-  SkColor touchable_icon_color = gfx::kGoogleGrey700;
-
   // The space reserved for the check. The actual size of the image may be
   // different.
   int check_width = kMenuCheckSize;

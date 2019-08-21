@@ -27,7 +27,7 @@ class MediaRouterFactoryTest : public testing::Test {
   Profile* profile() { return &profile_; }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
 };
 

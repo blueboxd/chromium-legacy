@@ -220,6 +220,7 @@ public class TabListMediatorUnitTest {
                 .when(mGridCardOnClickListenerProvider)
                 .openTabGridDialog(any(Tab.class));
         doNothing().when(mContext).registerComponentCallbacks(mComponentCallbacksCaptor.capture());
+        doReturn(mGridLayoutManager).when(mRecyclerView).getLayoutManager();
 
         mModel = new TabListModel();
         mMediator = new TabListMediator(mContext, mModel, mTabModelSelector,
@@ -400,7 +401,7 @@ public class TabListMediatorUnitTest {
                 mDummyViewHolder2, ItemTouchHelper.ACTION_STATE_IDLE);
 
         verify(mTabGroupModelFilter).mergeTabsToGroup(eq(TAB2_ID), eq(TAB1_ID));
-        verify(mRecyclerView).removeView(mItemView2);
+        verify(mGridLayoutManager).removeView(mItemView2);
         verify(mTracker).notifyEvent(eq(EventConstants.TAB_DRAG_AND_DROP_TO_GROUP));
     }
 
@@ -424,7 +425,7 @@ public class TabListMediatorUnitTest {
                 mDummyViewHolder1, ItemTouchHelper.ACTION_STATE_IDLE);
 
         verify(mTabGroupModelFilter, never()).mergeTabsToGroup(anyInt(), anyInt());
-        verify(mRecyclerView, never()).removeView(any(View.class));
+        verify(mGridLayoutManager, never()).removeView(any(View.class));
     }
 
     @Test
@@ -448,7 +449,7 @@ public class TabListMediatorUnitTest {
                 mDummyViewHolder1, ItemTouchHelper.ACTION_STATE_IDLE);
 
         verify(mTabGroupModelFilter, never()).mergeTabsToGroup(anyInt(), anyInt());
-        verify(mRecyclerView, never()).removeView(any(View.class));
+        verify(mGridLayoutManager, never()).removeView(any(View.class));
     }
 
     @Test
@@ -473,7 +474,7 @@ public class TabListMediatorUnitTest {
                 mDummyViewHolder1, ItemTouchHelper.ACTION_STATE_IDLE);
 
         verify(mTabGroupModelFilter).moveTabOutOfGroup(eq(TAB1_ID));
-        verify(mRecyclerView).removeView(mItemView1);
+        verify(mGridLayoutManager).removeView(mItemView1);
     }
 
     @Test

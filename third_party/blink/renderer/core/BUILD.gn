@@ -1714,30 +1714,25 @@ fuzzer_test("content_security_policy_fuzzer") {
   seed_corpus = "//testing/libfuzzer/fuzzers/content_security_policy_corpus"
 }
 
-# Since libFuzzer isn't working on Windows, and the proto_library cannot build
-# on Windows because of a build error, prevent it from being built on Windows.
-# TODO(metzman): Figure out how to get this building on Windows.
-if (!is_win) {
-  fuzzer_test("css_parser_proto_fuzzer") {
-    sources = [
-      "css/parser/css_parser_proto_fuzzer.cc",
-      "css/parser/css_proto_converter.cc",
-      "css/parser/css_proto_converter.h",
-    ]
-    deps = [
-      ":core",
-      ":css_proto",
-      "//third_party/blink/renderer/platform:blink_fuzzer_test_support",
-      "//third_party/libprotobuf-mutator",
-    ]
-    dict = "//third_party/blink/renderer/core/css/css.dict"
-  }
+fuzzer_test("css_parser_proto_fuzzer") {
+  sources = [
+    "css/parser/css_parser_proto_fuzzer.cc",
+    "css/parser/css_proto_converter.cc",
+    "css/parser/css_proto_converter.h",
+  ]
+  deps = [
+    ":core",
+    ":css_proto",
+    "//third_party/blink/renderer/platform:blink_fuzzer_test_support",
+    "//third_party/libprotobuf-mutator",
+  ]
+  dict = "//third_party/blink/renderer/core/css/css.dict"
+}
 
-  proto_library("css_proto") {
-    sources = [
-      "css/parser/css.proto",
-    ]
-  }
+proto_library("css_proto") {
+  sources = [
+    "css/parser/css.proto",
+  ]
 }
 
 # Fuzzers for blink::FeaturePolicy.

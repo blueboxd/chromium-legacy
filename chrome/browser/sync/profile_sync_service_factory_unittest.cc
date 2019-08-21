@@ -153,7 +153,7 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
   Profile* profile() { return profile_.get(); }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
 };
 

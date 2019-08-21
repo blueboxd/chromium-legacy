@@ -102,7 +102,7 @@ class CastMediaRouteProviderTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   service_manager::TestConnectorFactory connector_factory_;
   data_decoder::DataDecoderService data_decoder_service_;
 

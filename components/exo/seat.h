@@ -107,8 +107,8 @@ class Seat : public aura::client::FocusChangeObserver,
       : public ui::ScopedClipboardWriter,
         public base::RefCounted<RefCountedScopedClipboardWriter> {
    public:
-    RefCountedScopedClipboardWriter(ui::ClipboardType type)
-        : ScopedClipboardWriter(type) {}
+    RefCountedScopedClipboardWriter(ui::ClipboardBuffer buffer)
+        : ScopedClipboardWriter(buffer) {}
 
    private:
     friend class base::RefCounted<RefCountedScopedClipboardWriter>;

@@ -163,7 +163,7 @@ class ResourceMetadataTest : public testing::Test {
   }
 
   base::ScopedTempDir temp_dir_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<ResourceMetadataStorage, test_util::DestroyHelperForTests>
       metadata_storage_;
   std::unique_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;

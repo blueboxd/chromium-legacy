@@ -74,6 +74,7 @@ class GpuChildThread : public ChildThreadImpl,
   void RunService(
       const std::string& service_name,
       mojo::PendingReceiver<service_manager::mojom::Service> receiver) override;
+  void BindServiceInterface(mojo::GenericPendingReceiver receiver) override;
 
   // IPC::Listener implementation via ChildThreadImpl:
   void OnAssociatedInterfaceRequest(

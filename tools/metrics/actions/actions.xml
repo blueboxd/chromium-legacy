@@ -12094,9 +12094,11 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileMenuCloseTab">
-  <obsolete>This menu item was never added to the app menu.</obsolete>
-  <owner>aurimas@chromium.org</owner>
-  <description>User pressed 'Close tab' in the app menu.</description>
+  <owner>lazzzis@google.com</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    User pressed 'Close tab' in the tab switcher long-press menu.
+  </description>
 </action>
 
 <action name="MobileMenuDataSaverOpened">

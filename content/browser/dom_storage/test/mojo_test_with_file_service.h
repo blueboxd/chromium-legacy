@@ -34,10 +34,10 @@ class MojoTestWithFileService : public testing::Test {
     return test_connector_factory_.GetDefaultConnector();
   }
 
-  void RunUntilIdle() { thread_bundle_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
  private:
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   service_manager::TestConnectorFactory test_connector_factory_;
   file::FileService file_service_;
   base::ScopedTempDir temp_path_;

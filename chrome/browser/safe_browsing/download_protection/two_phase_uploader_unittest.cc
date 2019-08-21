@@ -70,7 +70,7 @@ base::FilePath GetTestFilePath() {
 class TwoPhaseUploaderTest : public testing::Test {
  public:
   TwoPhaseUploaderTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {
     // Make sure the Network Service is started before making a NetworkContext.
     content::GetNetworkService();
     content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
@@ -89,7 +89,7 @@ class TwoPhaseUploaderTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   const scoped_refptr<base::SequencedTaskRunner> task_runner_ =
       base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
                                        base::TaskPriority::BEST_EFFORT});

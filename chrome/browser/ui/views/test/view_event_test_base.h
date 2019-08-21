@@ -136,7 +136,7 @@ class ViewEventTestBase : public views::WidgetDelegate, public testing::Test {
   // Thread for posting background drag events.
   std::unique_ptr<base::Thread> drag_event_thread_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
 #if defined(OS_WIN)
   ui::ScopedOleInitializer ole_initializer_;

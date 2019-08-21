@@ -1168,7 +1168,7 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
     if (response_.ssl_info.is_valid() &&
         !IsCertStatusError(response_.ssl_info.cert_status)) {
       session_->http_stream_factory()->ProcessAlternativeServices(
-          session_, response_.headers.get(),
+          session_, request_->network_isolation_key, response_.headers.get(),
           url::SchemeHostPort(request_->url));
     }
   }

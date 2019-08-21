@@ -824,4 +824,67 @@ TEST_F(BrowserAccessibilityTest, GetAuthorUniqueId) {
   ASSERT_EQ(base::WideToUTF16(L"my_html_id"),
             root_accessible->GetAuthorUniqueId());
 }
+
+TEST_F(BrowserAccessibilityTest, NextWordPositionWithHypertext) {
+  // Build a tree simulating an INPUT control with placeholder text.
+  ui::AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.child_ids = {2};
+
+  ui::AXNodeData input;
+  input.id = 2;
+  input.role = ax::mojom::Role::kTextField;
+  input.child_ids = {3};
+  input.SetName("Search the web");
+
+  ui::AXNodeData static_text;
+  static_text.id = 3;
+  static_text.role = ax::mojom::Role::kStaticText;
+  static_text.child_ids = {4};
+  static_text.SetName("Search the web");
+
+  ui::AXNodeData inline_text;
+  inline_text.id = 4;
+  inline_text.role = ax::mojom::Role::kInlineTextBox;
+  inline_text.SetName("Search the web");
+  inline_text.AddIntListAttribute(ax::mojom::IntListAttribute::kWordStarts,
+                                  {0, 7, 11});
+  inline_text.AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds,
+                                  {6, 10, 14});
+
+  std::unique_ptr<BrowserAccessibilityManager> browser_accessibility_manager(
+      BrowserAccessibilityManager::Create(
+          MakeAXTreeUpdate(root, input, static_text, inline_text),
+          test_browser_accessibility_delegate_.get(),
+          new BrowserAccessibilityFactory()));
+  ASSERT_NE(nullptr, browser_accessibility_manager.get());
+
+  BrowserAccessibility* root_accessible =
+      browser_accessibility_manager->GetRoot();
+  ASSERT_NE(nullptr, root_accessible);
+  ASSERT_NE(0u, root_accessible->InternalChildCount());
+  BrowserAccessibility* input_accessible = root_accessible->InternalGetChild(0);
+  ASSERT_NE(nullptr, input_accessible);
+
+  // Create a text position at offset 0 in the input control
+  auto position =
+      input_accessible
+          ->CreatePositionAt(0, ax::mojom::TextAffinity::kDownstream)
+          ->AsTextPosition();
+
+  // On hypertext-based platforms (e.g., Windows IA2), the INPUT control will
+  // have a max-text-offset of zero, and so advancing to the next-word positions
+  // should return null positions.  On non-hypertext platforms, the next-word
+  // positions will be non-null.
+  bool is_hypertext_platform = position->MaxTextOffset() == 0;
+  auto next_word_start = position->CreateNextWordStartPosition(
+      ui::AXBoundaryBehavior::CrossBoundary);
+  ASSERT_EQ(is_hypertext_platform, next_word_start->IsNullPosition());
+
+  auto next_word_end = position->CreateNextWordEndPosition(
+      ui::AXBoundaryBehavior::CrossBoundary);
+  ASSERT_EQ(is_hypertext_platform, next_word_end->IsNullPosition());
+}
+
 }  // namespace content

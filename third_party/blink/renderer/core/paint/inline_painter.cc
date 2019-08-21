@@ -50,16 +50,7 @@ void InlinePainter::Paint(const PaintInfo& paint_info) {
                           fragment->Offset();
 
       if (fragment->PhysicalFragment().IsText()) {
-        const auto& text_fragment =
-            To<NGPhysicalTextFragment>(fragment->PhysicalFragment());
-        DOMNodeId node_id = kInvalidDOMNodeId;
-        if (auto* node = text_fragment.GetNode()) {
-          if (node->GetLayoutObject()->IsText())
-            node_id = ToLayoutText(node->GetLayoutObject())->EnsureNodeId();
-        }
-        NGTextFragmentPainter(*fragment).Paint(paint_info, child_offset,
-                                               node_id);
-
+        NGTextFragmentPainter(*fragment).Paint(paint_info, child_offset);
       } else {
         NGInlineBoxFragmentPainter(*fragment).Paint(paint_info, child_offset);
       }

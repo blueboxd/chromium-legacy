@@ -305,11 +305,11 @@ class ThreadWatcherTest : public ::testing::Test {
   ThreadWatcherList* thread_watcher_list_;
 
   ThreadWatcherTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD),
+      : task_environment_(content::BrowserTaskEnvironment::REAL_IO_THREAD),
         setup_complete_(&lock_),
         initialized_(false) {
     // Make sure UI and IO threads are started and ready.
-    thread_bundle_.RunIOThreadUntilIdle();
+    task_environment_.RunIOThreadUntilIdle();
 
     watchdog_thread_.reset(new WatchDogThread());
     watchdog_thread_->StartAndWaitForTesting();
@@ -371,7 +371,7 @@ class ThreadWatcherTest : public ::testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::Lock lock_;
   base::ConditionVariable setup_complete_;
   bool initialized_;
@@ -706,7 +706,7 @@ class ThreadWatcherListTest : public ::testing::Test {
     }
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::Lock lock_;
   base::ConditionVariable done_;
 

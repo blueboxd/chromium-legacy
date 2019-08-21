@@ -127,7 +127,7 @@ class ArcFileSystemOperationRunnerTest : public testing::Test {
                             counter));
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   FakeFileSystemInstance file_system_instance_;
 
   // Use the same initialization/destruction order as

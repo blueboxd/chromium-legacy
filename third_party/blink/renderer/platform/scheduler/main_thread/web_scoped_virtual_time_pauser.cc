@@ -28,7 +28,7 @@ WebScopedVirtualTimePauser::~WebScopedVirtualTimePauser() {
 }
 
 WebScopedVirtualTimePauser::WebScopedVirtualTimePauser(
-    WebScopedVirtualTimePauser&& other) {
+    WebScopedVirtualTimePauser&& other) noexcept {
   virtual_time_when_paused_ = other.virtual_time_when_paused_;
   paused_ = other.paused_;
   duration_ = other.duration_;
@@ -39,7 +39,7 @@ WebScopedVirtualTimePauser::WebScopedVirtualTimePauser(
 }
 
 WebScopedVirtualTimePauser& WebScopedVirtualTimePauser::operator=(
-    WebScopedVirtualTimePauser&& other) {
+    WebScopedVirtualTimePauser&& other) noexcept {
   if (scheduler_ && paused_)
     DecrementVirtualTimePauseCount();
   virtual_time_when_paused_ = other.virtual_time_when_paused_;

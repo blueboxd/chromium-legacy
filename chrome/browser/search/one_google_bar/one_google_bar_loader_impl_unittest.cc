@@ -54,7 +54,7 @@ class OneGoogleBarLoaderImplTest : public testing::Test {
             /*account_consistency_mirror_required=*/false) {}
 
   explicit OneGoogleBarLoaderImplTest(bool account_consistency_mirror_required)
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)),
@@ -98,7 +98,7 @@ class OneGoogleBarLoaderImplTest : public testing::Test {
  private:
   // variations::AppendVariationHeaders and SafeJsonParser require a
   // threads and a ServiceManagerConnection to be set.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   content::TestServiceManagerContext service_manager_context_;
 
   data_decoder::TestingJsonParser::ScopedFactoryOverride factory_override_;

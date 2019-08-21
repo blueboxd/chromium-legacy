@@ -141,7 +141,7 @@ DisplayLinkMac::DisplayLinkMac(
     DPLOG_IF(ERROR, register_error != kCGErrorSuccess)
         << "CGDisplayRegisterReconfigurationCallback: " << register_error;
   }
-  all_display_links.insert(std::make_pair(display_id_, this));
+  all_display_links.emplace(display_id_, this);
 }
 
 DisplayLinkMac::~DisplayLinkMac() {

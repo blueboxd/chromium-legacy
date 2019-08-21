@@ -31,10 +31,12 @@ const char kUpdateLayer[] = "UpdateLayer";
 
 ScopedImageDecodeTask::ScopedImageDecodeTask(const void* image_ptr,
                                              DecodeType decode_type,
-                                             TaskType task_type)
+                                             TaskType task_type,
+                                             ImageType image_type)
     : decode_type_(decode_type),
       task_type_(task_type),
-      start_time_(base::TimeTicks::Now()) {
+      start_time_(base::TimeTicks::Now()),
+      image_type_(image_type) {
   TRACE_EVENT_BEGIN1(internal::CategoryName::kTimeline,
                      internal::kImageDecodeTask, internal::kPixelRefId,
                      reinterpret_cast<uint64_t>(image_ptr));
@@ -46,32 +48,50 @@ ScopedImageDecodeTask::~ScopedImageDecodeTask() {
   if (suppress_metrics_)
     return;
 
-  base::TimeDelta duration = base::TimeTicks::Now() - start_time_;
+  const uint32_t bucket_count = 50;
+  base::TimeDelta min = base::TimeDelta::FromMicroseconds(1);
+  base::TimeDelta max = base::TimeDelta::FromMilliseconds(1000);
+  auto duration = base::TimeTicks::Now() - start_time_;
+  if (image_type_ == ImageType::kWebP) {
+    switch (decode_type_) {
+      case kSoftware:
+        UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+            "Renderer4.ImageDecodeTaskDurationUs.WebP.Software", duration, min,
+            max, bucket_count);
+        break;
+      case kGpu:
+        UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+            "Renderer4.ImageDecodeTaskDurationUs.WebP.Gpu", duration, min, max,
+            bucket_count);
+        break;
+    }
+  }
   switch (task_type_) {
     case kInRaster:
       switch (decode_type_) {
         case kSoftware:
-          UMA_HISTOGRAM_COUNTS_1M(
-              "Renderer4.ImageDecodeTaskDurationUs.Software",
-              duration.InMicroseconds());
+          UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+              "Renderer4.ImageDecodeTaskDurationUs.Software", duration, min,
+              max, bucket_count);
           break;
         case kGpu:
-          UMA_HISTOGRAM_COUNTS_1M("Renderer4.ImageDecodeTaskDurationUs.Gpu",
-                                  duration.InMicroseconds());
+          UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+              "Renderer4.ImageDecodeTaskDurationUs.Gpu", duration, min, max,
+              bucket_count);
           break;
       }
       break;
     case kOutOfRaster:
       switch (decode_type_) {
         case kSoftware:
-          UMA_HISTOGRAM_COUNTS_1M(
+          UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
               "Renderer4.ImageDecodeTaskDurationUs.OutOfRaster.Software",
-              duration.InMicroseconds());
+              duration, min, max, bucket_count);
           break;
         case kGpu:
-          UMA_HISTOGRAM_COUNTS_1M(
-              "Renderer4.ImageDecodeTaskDurationUs.OutOfRaster.Gpu",
-              duration.InMicroseconds());
+          UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+              "Renderer4.ImageDecodeTaskDurationUs.OutOfRaster.Gpu", duration,
+              min, max, bucket_count);
           break;
       }
       break;

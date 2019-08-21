@@ -92,10 +92,10 @@ class ScopedWebCallbacks {
       std::move(destruction_callback_).Run(std::move(callbacks_));
   }
 
-  ScopedWebCallbacks(ScopedWebCallbacks&& other) = default;
+  ScopedWebCallbacks(ScopedWebCallbacks&& other) noexcept = default;
   ScopedWebCallbacks(const ScopedWebCallbacks& other) = delete;
 
-  ScopedWebCallbacks& operator=(ScopedWebCallbacks&& other) = default;
+  ScopedWebCallbacks& operator=(ScopedWebCallbacks&& other) noexcept = default;
   ScopedWebCallbacks& operator=(const ScopedWebCallbacks& other) = delete;
 
   std::unique_ptr<CallbacksType> PassCallbacks() {

@@ -42,8 +42,8 @@ bool ClickToCallIconView::Update() {
   if (!controller)
     return false;
 
-  if (show_error_ != controller->send_failed()) {
-    show_error_ = controller->send_failed();
+  if (should_show_error() != controller->send_failed()) {
+    set_should_show_error(controller->send_failed());
     UpdateIconImage();
   }
 
@@ -54,13 +54,14 @@ bool ClickToCallIconView::Update() {
 
   const bool is_bubble_showing = IsBubbleShowing();
 
-  if (is_bubble_showing || loading_animation_ || last_controller_ != controller)
+  if (is_bubble_showing || isLoadingAnimationVisible() ||
+      last_controller_ != controller)
     ResetSlideAnimation(/*show=*/false);
 
   last_controller_ = controller;
 
   const bool is_visible =
-      is_bubble_showing || loading_animation_ || label()->GetVisible();
+      is_bubble_showing || isLoadingAnimationVisible() || label()->GetVisible();
   const bool visibility_changed = GetVisible() != is_visible;
 
   SetVisible(is_visible);

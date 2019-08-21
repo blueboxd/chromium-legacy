@@ -121,8 +121,6 @@ class TabIcon : public views::View, public views::AnimationDelegateViews {
   bool is_crashed_ = false;
   int attention_types_ = 0;  // Bitmask of AttentionType.
 
-  const bool use_new_loading_animation_;
-
   // Value from last call to SetNetworkState. When true, the network loading
   // animation will not be shown.
   bool inhibit_loading_animation_ = false;

@@ -34,6 +34,7 @@
 
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/renderer/core/probe/async_task_id.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/modules/filesystem/directory_entry.h"
 #include "third_party/blink/renderer/modules/filesystem/dom_file_path.h"
@@ -52,7 +53,7 @@ namespace {
 
 void RunCallback(ExecutionContext* execution_context,
                  base::OnceClosure task,
-                 std::unique_ptr<int> identifier) {
+                 std::unique_ptr<probe::AsyncTaskId> identifier) {
   if (!execution_context)
     return;
   DCHECK(execution_context->IsContextThread());
@@ -166,7 +167,8 @@ void DOMFileSystem::ScheduleCallback(ExecutionContext* execution_context,
 
   DCHECK(execution_context->IsContextThread());
 
-  std::unique_ptr<int> identifier = std::make_unique<int>(0);
+  std::unique_ptr<probe::AsyncTaskId> identifier =
+      std::make_unique<probe::AsyncTaskId>();
   probe::AsyncTaskScheduled(execution_context, TaskNameForInstrumentation(),
                             identifier.get());
   execution_context->GetTaskRunner(TaskType::kFileReading)

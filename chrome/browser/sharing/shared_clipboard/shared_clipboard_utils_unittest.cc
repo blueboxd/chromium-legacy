@@ -76,7 +76,7 @@ class SharedClipboardUtilsTest : public testing::Test {
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   bool create_service_ = true;
 

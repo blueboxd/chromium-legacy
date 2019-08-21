@@ -159,7 +159,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   int64_t usage_;
   std::set<url::Origin> origins_;

@@ -40,7 +40,7 @@ namespace sync_file_system {
 class LocalFileChangeTrackerTest : public testing::Test {
  public:
   LocalFileChangeTrackerTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         in_memory_env_(leveldb_chrome::NewMemEnv("LocalFileChangeTrackerTest")),
         file_system_(GURL("http://example.com"),
                      in_memory_env_.get(),
@@ -113,7 +113,7 @@ class LocalFileChangeTrackerTest : public testing::Test {
     change_tracker()->GetAllChangedURLs(urls);
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir base_dir_;
   std::unique_ptr<leveldb::Env> in_memory_env_;
   CannedSyncableFileSystem file_system_;

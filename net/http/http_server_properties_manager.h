@@ -100,6 +100,9 @@ class NET_EXPORT_PRIVATE HttpServerPropertiesManager {
   // If the OnPrefLoadCallback() passed to the constructor hasn't been invoked
   // by the time this method is called, calling this will prevent it from ever
   // being invoked, as this method will overwrite any previous preferences.
+  //
+  // Entries associated with NetworkIsolationKeys for opaque origins are not
+  // written to disk.
   void WriteToPrefs(
       const HttpServerProperties::ServerInfoMap& server_info_map,
       const GetCannonicalSuffix& get_canonical_suffix,
@@ -121,8 +124,11 @@ class NET_EXPORT_PRIVATE HttpServerPropertiesManager {
                            DoNotLoadAltSvcForInsecureOrigins);
   FRIEND_TEST_ALL_PREFIXES(HttpServerPropertiesManagerTest,
                            DoNotLoadExpiredAlternativeService);
-  void AddServersData(const base::DictionaryValue& server_dict,
-                      HttpServerProperties::ServerInfoMap* server_info_map);
+
+  void AddServerData(const base::DictionaryValue& server_dict,
+                     HttpServerProperties::ServerInfoMap* server_info_map,
+                     bool use_network_isolation_key);
+
   // Helper method used for parsing an alternative service from JSON.
   // |dict| is the JSON dictionary to be parsed. It should contain fields
   // corresponding to members of AlternativeService.

@@ -218,7 +218,7 @@ public class TabWindowManager implements ActivityStateListener {
             TabPersistencePolicy persistencePolicy = new TabbedModeTabPersistencePolicy(
                     selectorIndex, mergeTabs);
             return new TabModelSelectorImpl(
-                    activity, tabCreatorManager, persistencePolicy, true, true);
+                    activity, tabCreatorManager, persistencePolicy, true, true, false);
         }
     }
 }

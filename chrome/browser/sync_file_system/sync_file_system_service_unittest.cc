@@ -129,7 +129,7 @@ ACTION(InvokeCompletionClosure) {
 class SyncFileSystemServiceTest : public testing::Test {
  protected:
   SyncFileSystemServiceTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
+      : task_environment_(content::BrowserTaskEnvironment::REAL_IO_THREAD) {}
 
   void SetUp() override {
     in_memory_env_ = leveldb_chrome::NewMemEnv("SyncFileSystemServiceTest");
@@ -261,7 +261,7 @@ class SyncFileSystemServiceTest : public testing::Test {
     sync_service_->SetSyncEnabledForTesting(true);
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<leveldb::Env> in_memory_env_;
   TestingProfile profile_;
   std::unique_ptr<CannedSyncableFileSystem> file_system_;

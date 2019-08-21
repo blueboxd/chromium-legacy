@@ -78,7 +78,7 @@ class SigninPrepareUserListTest : public testing::Test,
   FakeChromeUserManager* user_manager() { return fake_user_manager_; }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   ScopedCrosSettingsTestHelper cros_settings_test_helper_;
   FakeChromeUserManager* fake_user_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;

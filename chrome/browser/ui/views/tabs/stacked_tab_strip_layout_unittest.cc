@@ -126,7 +126,7 @@ class StackedTabStripLayoutTest : public testing::Test {
     return view_model_.ideal_bounds(index).x();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<StackedTabStripLayout> layout_;
   views::ViewModel view_model_;
 

@@ -116,7 +116,7 @@ class ImageWriterOperationTest : public ImageWriterUnitTestBase {
 
     // Cancel() will ensure we Shutdown() FakeImageWriterClient.
     operation_->Cancel();
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
     ImageWriterUnitTestBase::TearDown();
   }

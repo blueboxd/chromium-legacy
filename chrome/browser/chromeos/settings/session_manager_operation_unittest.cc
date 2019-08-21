@@ -108,7 +108,7 @@ class SessionManagerOperationTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   policy::DevicePolicyBuilder policy_;
   ObservableFakeSessionManagerClient session_manager_client_;

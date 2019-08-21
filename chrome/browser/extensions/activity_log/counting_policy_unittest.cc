@@ -48,7 +48,7 @@ namespace extensions {
 class CountingPolicyTest : public testing::Test {
  public:
   CountingPolicyTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {
 #if defined OS_CHROMEOS
     test_user_manager_.reset(new chromeos::ScopedTestUserManager());
 #endif
@@ -383,7 +383,7 @@ class CountingPolicyTest : public testing::Test {
   base::SimpleTestClock mock_clock_;
   ExtensionService* extension_service_;
   std::unique_ptr<TestingProfile> profile_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
 #if defined OS_CHROMEOS
   chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;

@@ -126,7 +126,7 @@ class PolicyValueStoreTest : public testing::Test {
   }
 
   base::ScopedTempDir scoped_temp_dir_;
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<PolicyValueStore> store_;
   MockSettingsObserver observer_;
   scoped_refptr<SettingsObserverList> observers_;

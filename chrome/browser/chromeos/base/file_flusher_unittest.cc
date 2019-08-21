@@ -79,7 +79,7 @@ class FileFlusherTest : public testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   std::map<base::FilePath, int> flush_counts_;
 

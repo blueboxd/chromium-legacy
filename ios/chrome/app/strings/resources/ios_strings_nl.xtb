@@ -149,7 +149,6 @@
 <translation id="2921219216347069551">Kan pagina niet delen</translation>
 <translation id="2923448633003185837">Plakken en zoeken</translation>
 <translation id="292639812446257861">Markeren als ongelezen</translation>
-<translation id="2933759065870693102">Zaklamp</translation>
 <translation id="2958718410589002129">Wachtwoorden</translation>
 <translation id="2969979262385602596">Kan niet inloggen. Probeer het later opnieuw.</translation>
 <translation id="298306318844797842">Betaalmethode toevoegen…</translation>
@@ -305,6 +304,7 @@ Je gegevens zijn versleuteld met je wachtwoordzin voor synchronisatie. Geef deze
 <translation id="5317780077021120954">Opslaan</translation>
 <translation id="5327248766486351172">Naam</translation>
 <translation id="5388358297987318779">Afbeelding openen</translation>
+<translation id="5407969256130905701">Wijzigingen niet opslaan</translation>
 <translation id="5409365236829784218">Er zijn geen applicaties geïnstalleerd waarmee dit bestand kan worden geopend.</translation>
 <translation id="5416022985862681400">Afgelopen 7 dagen</translation>
 <translation id="5433691172869980887">Gebruikersnaam gekopieerd</translation>
@@ -510,6 +510,7 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="8428213095426709021">Instellingen</translation>
 <translation id="8458397775385147834">1 item verwijderd</translation>
 <translation id="8487700953926739672">Offline beschikbaar</translation>
+<translation id="8490978609246021741">Wijzigingen opslaan</translation>
 <translation id="8503813439785031346">Gebruikersnaam</translation>
 <translation id="850600235656508448">Openen in incognitomodus</translation>
 <translation id="8517375800490286174">Open-sourcelicenties</translation>

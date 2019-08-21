@@ -23,7 +23,7 @@ namespace extensions {
 
 // Adds a listener and removes it.
 TEST(SignedInDevicesManager, UpdateListener) {
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
 
   std::unique_ptr<TestingProfile> profile =
       IdentityTestEnvironmentProfileAdaptor::

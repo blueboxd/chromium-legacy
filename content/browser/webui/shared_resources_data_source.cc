@@ -78,6 +78,9 @@ const std::map<std::string, std::string> CreatePathPrefixAliasesMap() {
   };
 
 #if defined(OS_CHROMEOS)
+  // Add lottie library for Chrome OS.
+  aliases["../../../third_party/lottie/"] = "lottie/";
+
   if (UsingMultiplePolymerVersions())
     return aliases;
 #endif  // defined(OS_CHROMEOS)
@@ -419,6 +422,10 @@ void SharedResourcesDataSource::DisablePolymer2ForHost(
     const std::string& host) {
   DCHECK(disabled_polymer2_host_.empty() || host == disabled_polymer2_host_);
   disabled_polymer2_host_ = host;
+}
+
+std::string SharedResourcesDataSource::GetContentSecurityPolicyWorkerSrc() {
+  return "worker-src blob: 'self';";
 }
 
 // Returns true if the WebContents making the request has disabled Polymer 2.

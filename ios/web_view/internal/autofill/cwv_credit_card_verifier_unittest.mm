@@ -133,7 +133,7 @@ class CWVCreditCardVerifierTest : public PlatformTest {
     ui::ResourceBundle::CleanupSharedInstance();
   }
 
-  web::TestWebThreadBundle web_thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   FakeCardUnmaskDelegate card_unmask_delegate_;
   CWVCreditCardVerifier* credit_card_verifier_;

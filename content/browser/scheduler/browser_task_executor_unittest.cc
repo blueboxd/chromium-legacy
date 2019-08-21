@@ -39,7 +39,7 @@ using QueueType = BrowserTaskQueues::QueueType;
 
 class BrowserTaskExecutorTest : public testing::Test {
  private:
-  TestBrowserThreadBundle thread_bundle_{
+  BrowserTaskEnvironment task_environment_{
       base::test::TaskEnvironment::MainThreadType::UI,
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 };
@@ -58,7 +58,7 @@ TEST_F(BrowserTaskExecutorTest, RunAllPendingTasksForTestingOnUI) {
 
   BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::UI);
 
-  // Cleanup pending tasks, as TestBrowserThreadBundle will run them.
+  // Cleanup pending tasks, as BrowserTaskEnvironment will run them.
   Mock::VerifyAndClearExpectations(&task_1);
   EXPECT_CALL(task_2, Run);
   BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::IO);
@@ -75,7 +75,7 @@ TEST_F(BrowserTaskExecutorTest, RunAllPendingTasksForTestingOnIO) {
 
   BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::IO);
 
-  // Cleanup pending tasks, as TestBrowserThreadBundle will run them.
+  // Cleanup pending tasks, as BrowserTaskEnvironment will run them.
   Mock::VerifyAndClearExpectations(&task_1);
   EXPECT_CALL(task_2, Run);
   BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::IO);
@@ -98,7 +98,7 @@ TEST_F(BrowserTaskExecutorTest, RunAllPendingTasksForTestingOnIOIsReentrant) {
   base::PostTask(FROM_HERE, {BrowserThread::IO}, task_1.Get());
   BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::IO);
 
-  // Cleanup pending tasks, as TestBrowserThreadBundle will run them.
+  // Cleanup pending tasks, as BrowserTaskEnvironment will run them.
   Mock::VerifyAndClearExpectations(&task_1);
   Mock::VerifyAndClearExpectations(&task_2);
   EXPECT_CALL(task_3, Run);

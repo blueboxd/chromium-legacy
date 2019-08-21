@@ -149,7 +149,6 @@
 <translation id="2921219216347069551">امکان اشتراک‌گذاری صفحه وجود ندارد</translation>
 <translation id="2923448633003185837">جای‌گذاری و رفتن</translation>
 <translation id="292639812446257861">علامت‌گذاری به‌‌عنوان خوانده‌نشده</translation>
-<translation id="2933759065870693102">چراغ</translation>
 <translation id="2958718410589002129">گذرواژه‌ها</translation>
 <translation id="2969979262385602596">ورود به سیستم انجام نشد. بعداً دوباره امتحان کنید.</translation>
 <translation id="298306318844797842">افزودن روش پرداخت…</translation>
@@ -305,6 +304,7 @@
 <translation id="5317780077021120954">ذخیره</translation>
 <translation id="5327248766486351172">نام</translation>
 <translation id="5388358297987318779">بازکردن تصویر</translation>
+<translation id="5407969256130905701">صرف‌نظر کردن از تغییرات</translation>
 <translation id="5409365236829784218">برنامه‌ای که بتواند این فایل را باز کند در سیستم نصب نشده است.</translation>
 <translation id="5416022985862681400">۷ روز گذشته</translation>
 <translation id="5433691172869980887">نام کاربری کپی شد</translation>
@@ -510,6 +510,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="8428213095426709021">تنظیمات</translation>
 <translation id="8458397775385147834">۱ مورد حذف شد</translation>
 <translation id="8487700953926739672">امکان دسترسی به صورت آفلاین</translation>
+<translation id="8490978609246021741">ذخیره تغییرات</translation>
 <translation id="8503813439785031346">نام کاربری</translation>
 <translation id="850600235656508448">باز کردن در حالت ناشناس</translation>
 <translation id="8517375800490286174">مجوزهای منبع باز</translation>

@@ -397,6 +397,7 @@ crbug.com/928530 [ linux intel no-passthrough ] conformance/programs/program-tes
 # NVIDIA
 crbug.com/524144 [ linux nvidia no-passthrough ] conformance/extensions/oes-element-index-uint.html [ RetryOnFailure ]
 crbug.com/596622 [ linux nvidia ] conformance/textures/image/tex-2d-rgb-rgb-unsigned_byte.html [ RetryOnFailure ]
+crbug.com/995652 [ linux nvidia ] conformance/uniforms/out-of-bounds-uniform-array-access.html [ RetryOnFailure ]
 
 # NVIDIA P400 OpenGL
 crbug.com/715001 [ linux nvidia-0x1cb3 ] conformance/limits/gl-max-texture-dimensions.html [ Failure ]
@@ -569,6 +570,8 @@ crbug.com/891456 [ android nvidia ] conformance/textures/image_bitmap_from_video
 # android-marshmallow-arm64-rel.
 crbug.com/845411 [ android ] conformance/glsl/constructors/glsl-construct-mat3.html [ RetryOnFailure ]
 crbug.com/845438 [ android ] conformance/glsl/bugs/sketchfab-lighting-shader-crash.html [ RetryOnFailure ]
+# Renderer process hung on android-marshmallow-arm64-rel.
+crbug.com/995652 [ android ] conformance/uniforms/out-of-bounds-uniform-array-access.html [ RetryOnFailure ]
 
 # Android ANGLE GLES
 crbug.com/981579 [ android opengles ] conformance/textures/misc/tex-video-using-tex-unit-non-zero.html [ RetryOnFailure ]
@@ -598,3 +601,6 @@ crbug.com/957807 [ chromeos ] conformance/rendering/line-rendering-quality.html 
 crbug.com/957807 [ chromeos ] conformance/uniforms/uniform-samplers-test.html [ Skip ]
 crbug.com/957807 [ chromeos ] deqp/data/gles2/shaders/conversions.html [ Skip ]
 crbug.com/957807 [ chromeos ] deqp/data/gles2/shaders/swizzles.html [ Skip ]
+
+# ChromeOS: AMD
+crbug.com/995652 [ chromeos amd ] conformance/uniforms/out-of-bounds-uniform-array-access.html [ Skip ]

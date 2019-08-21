@@ -48,7 +48,16 @@ std::string CreateSerializedContentEntry(
   description_proto.set_title(description.title);
   description_proto.set_description(description.description);
   description_proto.set_category(static_cast<int>(description.category));
-  description_proto.set_icon_url(description.icon_url);
+
+  for (const auto& icon : description.icons) {
+    auto* icon_proto = description_proto.add_icons();
+    icon_proto->set_src(icon->src);
+    if (icon->sizes)
+      icon_proto->set_sizes(*icon->sizes);
+    if (icon->type)
+      icon_proto->set_type(*icon->type);
+  }
+
   description_proto.set_launch_url(description.launch_url);
 
   // Create entry.
@@ -77,7 +86,16 @@ blink::mojom::ContentDescriptionPtr DescriptionFromProto(
   result->description = description.description();
   result->category =
       static_cast<blink::mojom::ContentCategory>(description.category());
-  result->icon_url = description.icon_url();
+  for (const auto& icon : description.icons()) {
+    auto mojo_icon = blink::mojom::ContentIconDefinition::New();
+    mojo_icon->src = icon.src();
+    if (icon.has_sizes())
+      mojo_icon->sizes = icon.sizes();
+    if (icon.has_type())
+      mojo_icon->type = icon.type();
+    result->icons.push_back(std::move(mojo_icon));
+  }
+
   result->launch_url = description.launch_url();
   return result;
 }

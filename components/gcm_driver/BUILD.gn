@@ -40,8 +40,8 @@ static_library("gcm_driver") {
     "registration_info.h",
     "system_encryptor.cc",
     "system_encryptor.h",
-    "web_push_metrics.cc",
-    "web_push_metrics.h",
+    "web_push_common.cc",
+    "web_push_common.h",
     "web_push_sender.cc",
     "web_push_sender.h",
   ]

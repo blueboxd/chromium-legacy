@@ -35,5 +35,9 @@ void MojoLearningTaskController::CancelObservation(base::UnguessableToken id) {
   controller_ptr_->CancelObservation(id);
 }
 
+const LearningTask& MojoLearningTaskController::GetLearningTask() {
+  return LearningTask::Empty();
+}
+
 }  // namespace learning
 }  // namespace media

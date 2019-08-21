@@ -15,6 +15,9 @@
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/time/default_clock.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/optimization_guide/optimization_guide_navigation_data.h"
+#include "chrome/browser/optimization_guide/optimization_guide_web_contents_observer.h"
 #include "components/optimization_guide/bloom_filter.h"
 #include "components/optimization_guide/hint_cache.h"
 #include "components/optimization_guide/hint_cache_store.h"
@@ -119,6 +122,10 @@ OptimizationGuideHintsManager::OptimizationGuideHintsManager(
       url_loader_factory_(url_loader_factory),
       clock_(base::DefaultClock::GetInstance()) {
   DCHECK(optimization_guide_service_);
+
+  g_browser_process->network_quality_tracker()
+      ->AddEffectiveConnectionTypeObserver(this);
+
   hint_cache_->Initialize(
       optimization_guide::switches::ShouldPurgeHintCacheStoreOnStartup(),
       base::BindOnce(&OptimizationGuideHintsManager::OnHintCacheInitialized,
@@ -129,10 +136,14 @@ OptimizationGuideHintsManager::~OptimizationGuideHintsManager() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   optimization_guide_service_->RemoveObserver(this);
+  g_browser_process->network_quality_tracker()
+      ->RemoveEffectiveConnectionTypeObserver(this);
 }
 
 void OptimizationGuideHintsManager::Shutdown() {
   optimization_guide_service_->RemoveObserver(this);
+  g_browser_process->network_quality_tracker()
+      ->RemoveEffectiveConnectionTypeObserver(this);
 }
 
 void OptimizationGuideHintsManager::OnHintsComponentAvailable(
@@ -537,6 +548,17 @@ OptimizationGuideHintsManager::CanApplyOptimization(
     optimization_guide::OptimizationMetadata* optimization_metadata) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  OptimizationGuideNavigationData* navigation_data = nullptr;
+  OptimizationGuideWebContentsObserver*
+      optimization_guide_web_contents_observer =
+          OptimizationGuideWebContentsObserver::FromWebContents(
+              navigation_handle->GetWebContents());
+  if (optimization_guide_web_contents_observer) {
+    navigation_data =
+        optimization_guide_web_contents_observer
+            ->GetOrCreateOptimizationGuideNavigationData(navigation_handle);
+  }
+
   // Clear out optimization metadata if provided.
   if (optimization_metadata)
     (*optimization_metadata).previews_metadata.Clear();
@@ -572,6 +594,9 @@ OptimizationGuideHintsManager::CanApplyOptimization(
   // Check if we have a hint already loaded for this navigation.
   const optimization_guide::proto::Hint* loaded_hint =
       hint_cache_->GetHintIfLoaded(host);
+  if (navigation_data && loaded_hint)
+    navigation_data->set_serialized_hint_version_string(loaded_hint->version());
+
   const optimization_guide::proto::PageHint* matched_page_hint =
       loaded_hint ? optimization_guide::FindPageHintForURL(url, loaded_hint)
                   : nullptr;

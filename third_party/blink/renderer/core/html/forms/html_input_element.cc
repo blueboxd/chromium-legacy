@@ -409,6 +409,7 @@ void HTMLInputElement::UpdateType() {
       input_type_->ShouldRespectHeightAndWidthAttributes();
   bool could_be_successful_submit_button = CanBeSuccessfulSubmitButton();
 
+  input_type_view_->ClosePopupView();
   input_type_view_->DestroyShadowSubtree();
   DropInnerEditorElement();
   SetForceReattachLayoutTree();

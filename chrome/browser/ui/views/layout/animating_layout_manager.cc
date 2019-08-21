@@ -188,11 +188,8 @@ void AnimatingLayoutManager::ResetLayout() {
   target_layout_ = target_layout_manager_->GetProposedLayout(target_size);
   current_layout_ = target_layout_;
   starting_layout_ = current_layout_;
-  const bool was_animating = current_offset_ < 1.0;
   current_offset_ = 1.0;
   set_cached_layout_size(target_size);
-  if (was_animating)
-    NotifyIsAnimatingChanged();
 }
 
 void AnimatingLayoutManager::AddObserver(Observer* observer) {
@@ -255,6 +252,13 @@ void AnimatingLayoutManager::Layout(views::View* host) {
     ResetLayout();
   }
   ApplyLayout(current_layout_);
+
+  // Send animating stopped events on layout so the current layout during the
+  // event represents the final state instead of an intermediate state.
+  if (is_animating_ && current_offset_ == 1.0) {
+    is_animating_ = false;
+    NotifyIsAnimatingChanged();
+  }
 }
 
 void AnimatingLayoutManager::InvalidateLayout() {
@@ -388,7 +392,10 @@ bool AnimatingLayoutManager::RecalculateTarget() {
     starting_offset_ = 0.0;
     current_offset_ = 0.0;
     animation_delegate_->Animate();
-    NotifyIsAnimatingChanged();
+    if (!is_animating_) {
+      is_animating_ = true;
+      NotifyIsAnimatingChanged();
+    }
   } else {
     starting_offset_ = current_offset_;
   }
@@ -412,8 +419,6 @@ void AnimatingLayoutManager::AnimateTo(double value) {
   current_layout_ = InterpolatingLayoutManager::Interpolate(
       percent, starting_layout_, target_layout_);
   InvalidateHost();
-  if (!is_animating())
-    NotifyIsAnimatingChanged();
 }
 
 void AnimatingLayoutManager::NotifyIsAnimatingChanged() {

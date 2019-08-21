@@ -69,7 +69,7 @@ class PaymentInstrumentTest : public testing::Test,
         std::move(method_data), this, "en-US");
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   content::TestBrowserContext browser_context_;
   autofill::AutofillProfile address_;
   autofill::CreditCard local_card_;

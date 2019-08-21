@@ -26,7 +26,9 @@ enum class SchedulerTaskTime {
   kEvening = 2,
 };
 
-// The type of a list of clients using the notification scheduler system.
+// The type of a list of clients using the notification scheduler system. Used
+// in metrics, need to sync with histogram suffix
+// NotificationSchedulerClientType in histograms.xml.
 // GENERATED_JAVA_ENUM_PACKAGE: (
 //   org.chromium.chrome.browser.notifications.scheduler)
 enum class SchedulerClientType {
@@ -75,8 +77,9 @@ enum class ImpressionResult {
   kMaxValue = kNeutral
 };
 
-// Defines user actions type.
-// A Java counterpart will be generated for this enum.
+// Defines user actions type. Used in metrics, can only insert enum values, need
+// to sync with histogram enum NotificationSchedulerUserActionType in
+// enums.xml. A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: (
 //   org.chromium.chrome.browser.notifications.scheduler)
 enum class UserActionType {
@@ -86,6 +89,7 @@ enum class UserActionType {
   kButtonClick = 1,
   // The user dismisses the notification.
   kDismiss = 2,
+  kMaxValue = kDismiss
 };
 
 // Categorizes type of notification buttons. Different type of button clicks

@@ -13,7 +13,6 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/grit/components_scaled_resources.h"
 #include "content/public/common/url_constants.h"
@@ -35,7 +34,7 @@
 namespace {
 
 constexpr int kAttentionIndicatorRadius = 3;
-constexpr int kNewLoadingAnimationStrokeWidthDp = 2;
+constexpr int kLoadingAnimationStrokeWidthDp = 2;
 
 // Returns whether the favicon for the given URL should be colored according to
 // the browser theme.
@@ -84,8 +83,6 @@ class TabIcon::CrashAnimation : public gfx::LinearAnimation,
 TabIcon::TabIcon()
     : AnimationDelegateViews(this),
       clock_(base::DefaultTickClock::GetInstance()),
-      use_new_loading_animation_(
-          base::FeatureList::IsEnabled(features::kNewTabLoadingAnimation)),
       favicon_fade_in_animation_(base::TimeDelta::FromMilliseconds(250),
                                  gfx::LinearAnimation::kDefaultFrameRate,
                                  this) {
@@ -182,21 +179,16 @@ void TabIcon::OnPaint(gfx::Canvas* canvas) {
       std::min(gfx::kFaviconSize, contents_bounds.width()),
       std::min(gfx::kFaviconSize, contents_bounds.height()));
 
-  // The old animation replaces the favicon and should early-abort.
-  if (!use_new_loading_animation_ && ShowingLoadingAnimation()) {
-    PaintLoadingAnimation(canvas, icon_bounds);
+  // Don't paint the attention indicator during the loading animation.
+  if (!ShowingLoadingAnimation() && ShowingAttentionIndicator() &&
+      !should_display_crashed_favicon_) {
+    PaintAttentionIndicatorAndIcon(canvas, GetIconToPaint(), icon_bounds);
   } else {
-    // Don't paint the attention indicator during the loading animation.
-    if (!ShowingLoadingAnimation() && ShowingAttentionIndicator() &&
-        !should_display_crashed_favicon_) {
-      PaintAttentionIndicatorAndIcon(canvas, GetIconToPaint(), icon_bounds);
-    } else {
-      MaybePaintFavicon(canvas, GetIconToPaint(), icon_bounds);
-    }
-
-    if (ShowingLoadingAnimation())
-      PaintLoadingAnimation(canvas, icon_bounds);
+    MaybePaintFavicon(canvas, GetIconToPaint(), icon_bounds);
   }
+
+  if (ShowingLoadingAnimation())
+    PaintLoadingAnimation(canvas, icon_bounds);
 
   UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
       "TabStrip.Tab.Icon.PaintDuration", paint_timer.Elapsed(),
@@ -258,15 +250,12 @@ void TabIcon::PaintLoadingAnimation(gfx::Canvas* canvas, gfx::Rect bounds) {
   TRACE_EVENT0("views", "TabIcon::PaintLoadingAnimation");
 
   const ui::ThemeProvider* tp = GetThemeProvider();
-  base::Optional<SkScalar> stroke_width;
-  if (use_new_loading_animation_)
-    stroke_width = kNewLoadingAnimationStrokeWidthDp;
 
   if (network_state_ == TabNetworkState::kWaiting) {
     gfx::PaintThrobberWaiting(
         canvas, bounds,
         tp->GetColor(ThemeProperties::COLOR_TAB_THROBBER_WAITING),
-        waiting_state_.elapsed_time, stroke_width);
+        waiting_state_.elapsed_time, kLoadingAnimationStrokeWidthDp);
   } else {
     const base::TimeTicks current_time = clock_->NowTicks();
     if (loading_animation_start_time_.is_null())
@@ -278,7 +267,7 @@ void TabIcon::PaintLoadingAnimation(gfx::Canvas* canvas, gfx::Rect bounds) {
         canvas, bounds,
         tp->GetColor(ThemeProperties::COLOR_TAB_THROBBER_SPINNING),
         current_time - loading_animation_start_time_, &waiting_state_,
-        stroke_width);
+        kLoadingAnimationStrokeWidthDp);
   }
 }
 
@@ -319,7 +308,7 @@ void TabIcon::MaybePaintFavicon(gfx::Canvas* canvas,
     use_scale_filter = true;
     // The favicon is initially inset with the width of the loading-animation
     // stroke + an additional dp to create some visual separation.
-    const float kInitialFaviconInsetDp = 1 + kNewLoadingAnimationStrokeWidthDp;
+    const float kInitialFaviconInsetDp = 1 + kLoadingAnimationStrokeWidthDp;
     const float kInitialFaviconDiameterDp =
         gfx::kFaviconSize - 2 * kInitialFaviconInsetDp;
     // This a full outset circle of the favicon square. The animation ends with
@@ -380,7 +369,7 @@ void TabIcon::SetNetworkState(TabNetworkState network_state) {
   const bool was_animated = NetworkStateIsAnimated(network_state_);
   network_state_ = network_state;
   const bool is_animated = NetworkStateIsAnimated(network_state_);
-  if (use_new_loading_animation_ && was_animated != is_animated) {
+  if (was_animated != is_animated) {
     if (was_animated && HasNonDefaultFavicon()) {
       favicon_fade_in_animation_.Start();
     } else {

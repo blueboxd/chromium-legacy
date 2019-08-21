@@ -624,13 +624,22 @@ class SessionRestoreImpl : public BrowserListObserver {
                                  ui::WindowShowState show_state,
                                  const std::string& app_name) {
     Browser::CreateParams params(type, profile_, false);
-    if (!app_name.empty()) {
+    params.initial_bounds = bounds;
+
+    // Only browsers of TYPE_NORMAL, and Chrome OS TYPE_APP are saved or
+    // restored.  See SessionService::ShouldRestoreWindowOfType.
+#if defined(OS_CHROMEOS)
+    DCHECK(type == Browser::Type::TYPE_NORMAL ||
+           type == Browser::Type::TYPE_APP);
+    if (type == Browser::Type::TYPE_APP) {
       const bool trusted_source = true;  // We only store trusted app windows.
       params = Browser::CreateParams::CreateForApp(app_name, trusted_source,
                                                    bounds, profile_, false);
-    } else {
-      params.initial_bounds = bounds;
     }
+#else
+    DCHECK(type == Browser::Type::TYPE_NORMAL);
+#endif
+
     params.initial_show_state = show_state;
     params.initial_workspace = workspace;
     params.is_session_restore = true;

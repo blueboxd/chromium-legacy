@@ -170,7 +170,7 @@ class ArcMetricsServiceTest : public testing::Test {
         chromeos::PowerManagerClient::Get());
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   base::SimpleTestClock test_clock_;
   base::SimpleTestTickClock test_tick_clock_;

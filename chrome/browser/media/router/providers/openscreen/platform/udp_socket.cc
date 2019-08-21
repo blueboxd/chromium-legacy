@@ -66,6 +66,8 @@ const net::IPEndPoint ToChromeNetEndpoint(const IPEndpoint& endpoint) {
 
 // static
 ErrorOr<UdpSocketUniquePtr> UdpSocket::Create(
+    TaskRunner* task_runner,
+    Client* client,
     const IPEndpoint& local_endpoint) {
   // TODO(jophba): implement create method.
   NOTIMPLEMENTED();
@@ -73,8 +75,11 @@ ErrorOr<UdpSocketUniquePtr> UdpSocket::Create(
 }
 
 ChromeUdpSocket::ChromeUdpSocket(std::unique_ptr<network::UDPSocket> udp_socket,
+                                 TaskRunner* task_runner,
+                                 Client* client,
                                  const IPEndpoint& local_endpoint)
-    : local_endpoint_(ToChromeNetEndpoint(local_endpoint)),
+    : UdpSocket(task_runner, client),
+      local_endpoint_(ToChromeNetEndpoint(local_endpoint)),
       udp_socket_(std::move(udp_socket)) {}
 ChromeUdpSocket::~ChromeUdpSocket() = default;
 

@@ -14,7 +14,7 @@
 #if !defined(OS_ANDROID)
 TEST(ChromeSigninStatusMetricsProviderDelegateTest,
      UpdateStatusWhenBrowserAdded) {
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
 
   std::unique_ptr<ChromeSigninStatusMetricsProviderDelegate> delegate(
       new ChromeSigninStatusMetricsProviderDelegate);

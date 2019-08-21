@@ -100,7 +100,7 @@ class CRWWKHTTPCookieStoreTest : public PlatformTest {
   }
 
  protected:
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   CRWWKHTTPCookieStore* crw_cookie_store_;
   id mock_http_cookie_store_ = nil;
   NSHTTPCookie* test_cookie_1_ = nil;

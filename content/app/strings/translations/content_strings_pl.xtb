@@ -57,6 +57,7 @@
 <translation id="2746543609216772311">Musisz podać wartość <ph name="MINIMUM_DATE_OR_TIME" /> lub późniejszą.</translation>
 <translation id="2759744352195237655">przycisk wyskakującego okienka</translation>
 <translation id="2761667185364618470">Zaznacz to pole, jeśli chcesz kontynuować.</translation>
+<translation id="2844350028562914727">szczegóły</translation>
 <translation id="2896972712917208084">grupa przycisków opcji</translation>
 <translation id="2908441821576996758">Podaj listę adresów e-mail rozdzielonych przecinkami.</translation>
 <translation id="2940813599313844715">obiekt</translation>
@@ -154,6 +155,7 @@
 <translation id="6166809985690652833">posłowie</translation>
 <translation id="6209276755895393898">Wygląda jak: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">słownik</translation>
+<translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">Wyłącz tryb obrazu w obrazie</translation>
 <translation id="6398862346408813489">Pokaż panel wyboru miesiąca</translation>
 <translation id="6404546809543547843">pasek czasu odtwarzania dźwięku</translation>
@@ -236,6 +238,7 @@
 <translation id="860475260694818407">spis treści</translation>
 <translation id="8613126697340063924">sterowanie zdalnym odtwarzaniem</translation>
 <translation id="862370744433916922">podtytuł</translation>
+<translation id="8711688047404765493">dane wyjściowe</translation>
 <translation id="8750798805984357768">Wybierz jedną z opcji.</translation>
 <translation id="8808573423886751634">rozdział</translation>
 <translation id="8845239796550121995">Przesyłam na telewizor</translation>

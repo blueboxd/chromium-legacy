@@ -67,7 +67,7 @@ class ContentSettingBackedBooleanTest : public PlatformTest {
                               inverted:YES];
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   ContentSettingBackedBoolean* observable_boolean_;
 };

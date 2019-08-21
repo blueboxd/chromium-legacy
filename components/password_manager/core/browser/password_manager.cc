@@ -569,9 +569,19 @@ void PasswordManager::ProvisionallySavePassword(
 }
 
 void PasswordManager::DidNavigateMainFrame(bool form_may_be_submitted) {
+  std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
+  if (password_manager_util::IsLoggingActive(client_)) {
+    logger.reset(
+        new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
+    logger->LogBoolean(Logger::STRING_DID_NAVIGATE_MAIN_FRAME,
+                       form_may_be_submitted);
+  }
+
   pending_login_managers_.clear();
 
   if (client_->IsNewTabPage()) {
+    if (logger)
+      logger->LogMessage(Logger::STRING_NAVIGATION_NTP);
     // On a successful Chrome sign-in the page navigates to the new tab page
     // (ntp). OnPasswordFormsRendered is not called on ntp. That is why the
     // standard flow for saving hash does not work. Save a password hash now
@@ -1292,6 +1302,11 @@ void PasswordManager::MaybeSavePasswordHash(
 
   if (!should_save_enterprise_pw && !should_save_gaia_pw)
     return;
+
+  if (password_manager_util::IsLoggingActive(client_)) {
+    BrowserSavePasswordProgressLogger logger(client_->GetLogManager());
+    logger.LogMessage(Logger::STRING_SAVE_PASSWORD_HASH);
+  }
 
   // Canonicalizes username if it is an email.
   if (username.find('@') != std::string::npos)

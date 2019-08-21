@@ -1017,7 +1017,7 @@ DisplayLockContext::ScopedForcedUpdate::ScopedForcedUpdate(
     : context_(context) {}
 
 DisplayLockContext::ScopedForcedUpdate::ScopedForcedUpdate(
-    ScopedForcedUpdate&& other)
+    ScopedForcedUpdate&& other) noexcept
     : context_(other.context_) {
   other.context_ = nullptr;
 }

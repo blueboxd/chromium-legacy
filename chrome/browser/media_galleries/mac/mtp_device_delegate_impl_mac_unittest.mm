@@ -232,7 +232,7 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
       base::Bind(&MTPDeviceDelegateImplMacTest::OnError,
                  base::Unretained(this),
                  &wait));
-    test_browser_thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     EXPECT_TRUE(wait.IsSignaled());
     *info = info_;
     return error_;
@@ -247,7 +247,7 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
                             base::Unretained(this), &wait),
         base::Bind(&MTPDeviceDelegateImplMacTest::OnError,
                    base::Unretained(this), &wait));
-    test_browser_thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     wait.Wait();
     return error_;
   }
@@ -265,13 +265,13 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
         base::Bind(&MTPDeviceDelegateImplMacTest::OnError,
                    base::Unretained(this),
                    &wait));
-    test_browser_thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     wait.Wait();
     return error_;
   }
 
  protected:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   base::ScopedTempDir temp_dir_;
   storage_monitor::ImageCaptureDeviceManager manager_;
@@ -339,7 +339,7 @@ TEST_F(MTPDeviceDelegateImplMacTest, TestOverlappedReadDir) {
   // Signal the delegate that no files are coming.
   delegate_->NoMoreItems();
 
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   wait.Wait();
 
   EXPECT_EQ(base::File::FILE_OK, error_);

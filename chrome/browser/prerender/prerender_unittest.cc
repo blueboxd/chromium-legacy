@@ -428,7 +428,7 @@ class PrerenderTest : public testing::Test {
 
  private:
   // Needed to pass PrerenderManager's DCHECKs.
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   TestingProfile profile_;
   base::SimpleTestTickClock tick_clock_;

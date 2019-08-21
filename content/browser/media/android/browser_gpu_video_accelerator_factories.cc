@@ -174,7 +174,7 @@ BrowserGpuVideoAcceleratorFactories::
   return media::VideoEncodeAccelerator::SupportedProfiles();
 }
 
-scoped_refptr<viz::ContextProviderCommandBuffer>
+scoped_refptr<viz::ContextProvider>
 BrowserGpuVideoAcceleratorFactories::GetMediaContextProvider() {
   return context_provider_;
 }

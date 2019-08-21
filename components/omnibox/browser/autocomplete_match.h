@@ -237,6 +237,10 @@ struct AutocompleteMatch {
   // like entity, personalized, profile or postfix.
   static bool IsSpecializedSearchType(Type type);
 
+  // If this match is a submatch, returns the parent's type, otherwise this
+  // match's type.
+  Type GetDemotionType() const;
+
   // A static version GetTemplateURL() that takes the match's keyword and
   // match's hostname as parameters.  In short, returns the TemplateURL
   // associated with |keyword| if it exists; otherwise returns the TemplateURL
@@ -320,6 +324,8 @@ struct AutocompleteMatch {
   // family, which will cause them to be sorted together.
   static size_t GetNextFamilyID();
   static bool IsSameFamily(size_t lhs, size_t rhs);
+  // Preferred method to set both fields simultaneously.
+  void SetSubMatch(size_t subrelevance, AutocompleteMatch::Type parent_type);
   bool IsSubMatch() const;
 
   // Computes the stripped destination URL (via GURLToStrippedGURL()) and
@@ -533,6 +539,9 @@ struct AutocompleteMatch {
 
   // Type of this match.
   Type type = AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED;
+
+  // If a submatch, the type of the parent.
+  Type parent_type;
 
   // True if we saw a tab that matched this suggestion.
   bool has_tab_match = false;

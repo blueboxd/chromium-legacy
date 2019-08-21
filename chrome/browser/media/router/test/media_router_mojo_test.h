@@ -289,7 +289,7 @@ class MediaRouterMojoTest : public ::testing::Test {
   void RegisterMediaRouteProvider(mojom::MediaRouteProvider* provider,
                                   MediaRouteProviderId provider_id);
 
-  content::TestBrowserThreadBundle test_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   scoped_refptr<const extensions::Extension> extension_;
   TestingProfile profile_;
   std::unique_ptr<MediaRouterMojoImpl> media_router_;

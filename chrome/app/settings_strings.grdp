@@ -3324,13 +3324,13 @@
     File editing
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE_ASK" desc="The ask label for native file system write permission in site settings.">
-    Ask when a site wants to save your changes directly to files or folders on your device
+    Ask when a site wants to edit files or folders on your device
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE_ASK_RECOMMENDED" desc="The ask label for native file system write permission in site settings (with the 'recommended' suffix).">
-    Ask when a site wants to save your changes directly to files or folders on your device (recommended)
+    Ask when a site wants to edit files or folders on your device (recommended)
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE_BLOCK" desc="The block label for native file system write permission in site settings.">
-    Do not allow any sites to save your changes directly to files or folders on your device
+    Do not allow any sites to edit files or folders on your device
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_REMOVE_ZOOM_LEVEL" desc="Title tooltip and accessibility text for the button to remove zoom levels in site settings">
     Remove zoom level

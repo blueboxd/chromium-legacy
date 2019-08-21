@@ -99,7 +99,7 @@ class TextToSpeechPlayerTest : public PlatformTest {
 
   TextToSpeechPlayer* tts_player_;
   TTSPlayerObserver* tts_player_observer_;
-  web::TestWebThreadBundle web_thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
 };
 
 // Tests that kTTSAudioReadyForPlaybackNotification is received and that

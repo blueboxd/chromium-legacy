@@ -141,7 +141,6 @@
 <translation id="200815880754187296"><ph name="KILOBYTES" /> kB de otras aplicaciones</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# archivo}other{# archivos}}</translation>
 <translation id="2017836877785168846">Borra el historial y los autocompletados de la barra de direcciones.</translation>
-<translation id="2018707881002649255">Los contactos que selecciones de la lista de abajo se compartirán con el sitio web <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="2021896219286479412">Controles de pantalla completa</translation>
 <translation id="2038563949887743358">Activar opción para ver como ordenador</translation>
 <translation id="2041019821020695769">Para que Chrome pueda enviarte notificaciones, actívalas también en los <ph name="BEGIN_LINK" />ajustes de Android<ph name="END_LINK" />.</translation>
@@ -243,7 +242,6 @@
 <translation id="2777555524387840389">Quedan <ph name="SECONDS" /> segundos</translation>
 <translation id="2779651927720337254">ha fallado</translation>
 <translation id="2781151931089541271">Queda 1 segundo</translation>
-<translation id="2796941233371040292">No hay datos de almacenamiento</translation>
 <translation id="2801022321632964776">Actualiza para incluir tu idioma en la última versión de Chrome</translation>
 <translation id="2810645512293415242">Esta página se ha simplificado para ahorrar datos y poder cargarla más rápido.</translation>
 <translation id="281504910091592009">Consulta y gestiona las contraseñas guardadas en tu <ph name="BEGIN_LINK" />cuenta de Google<ph name="END_LINK" /></translation>
@@ -271,6 +269,7 @@
 <translation id="2962095958535813455">Se ha cambiado a las pestañas de incógnito</translation>
 <translation id="2968755619301702150">Visor de certificados</translation>
 <translation id="2979025552038692506">Pestaña de incógnito seleccionada</translation>
+<translation id="2987620471460279764">Texto compartido desde otro dispositivo</translation>
 <translation id="2989523299700148168">Visitados recientemente</translation>
 <translation id="2996291259634659425">Crea una frase de contraseña</translation>
 <translation id="2996809686854298943">URL necesaria</translation>
@@ -554,6 +553,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{No se ha podido completar 1 descarga.}other{No se han podido completar # descargas.}}</translation>
 <translation id="5170568018924773124">Mostrar en carpeta</translation>
 <translation id="5184329579814168207">Abrir en Chrome</translation>
+<translation id="5193988420012215838">Se ha copiado al portapapeles</translation>
 <translation id="5199929503336119739">Perfil de trabajo</translation>
 <translation id="5202089186707505116">¿Quieres permitir que este sitio web acceda a tus sensores de realidad virtual?</translation>
 <translation id="5210286577605176222">Te dirige a la pestaña anterior</translation>
@@ -702,6 +702,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anuncios no basados en otros sitios web que hayas visitado. Muchos sitios web seguirán recopilando y utilizando tus datos de navegación (por ejemplo, para mejorar la seguridad, para proporcionar contenido, anuncios y recomendaciones, o para generar estadísticas de informes).</translation>
 <translation id="624789221780392884">Actualización lista</translation>
 <translation id="6255999984061454636">Sugerencias de contenido</translation>
+<translation id="6264430811215618931"><ph name="ORIGIN" /> ha enviado un mensaje de texto a tu número de teléfono. Si lo confirmas, el sitio web sabrá que eres tú.</translation>
 <translation id="6277522088822131679">Se ha producido un problema al imprimir la página. Vuelve a intentarlo.</translation>
 <translation id="6295158916970320988">Todos los sitios</translation>
 <translation id="629730747756840877">Cuenta</translation>
@@ -717,7 +718,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6364438453358674297">¿Eliminar sugerencia del historial?</translation>
 <translation id="6369229450655021117">Desde aquí, puedes buscar en la Web, compartir contenido con amigos y ver las páginas abiertas</translation>
 <translation id="6378173571450987352">Detalles: ordenados por cantidad de datos usados</translation>
-<translation id="6383961787135158834">Borrar almacenamiento web…</translation>
 <translation id="6388207532828177975">Borrar y restablecer</translation>
 <translation id="6393863479814692971">Chrome necesita permiso para acceder a la cámara y al micrófono en este sitio web.</translation>
 <translation id="6395288395575013217">ENLACE</translation>

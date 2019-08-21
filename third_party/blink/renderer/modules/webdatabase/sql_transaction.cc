@@ -103,7 +103,8 @@ SQLTransaction::SQLTransaction(Database* db,
       read_only_(read_only) {
   DCHECK(IsMainThread());
   DCHECK(database_);
-  probe::AsyncTaskScheduled(db->GetExecutionContext(), "SQLTransaction", this);
+  probe::AsyncTaskScheduled(db->GetExecutionContext(), "SQLTransaction",
+                            &async_task_id_);
 }
 
 SQLTransaction::~SQLTransaction() = default;
@@ -184,7 +185,7 @@ SQLTransactionState SQLTransaction::NextStateForTransactionError() {
 
 SQLTransactionState SQLTransaction::DeliverTransactionCallback() {
   bool should_deliver_error_callback = false;
-  probe::AsyncTask async_task(database_->GetExecutionContext(), this,
+  probe::AsyncTask async_task(database_->GetExecutionContext(), &async_task_id_,
                               "transaction");
 
   // Spec 4.3.2 4: Invoke the transaction callback with the new SQLTransaction
@@ -208,7 +209,8 @@ SQLTransactionState SQLTransaction::DeliverTransactionCallback() {
 }
 
 SQLTransactionState SQLTransaction::DeliverTransactionErrorCallback() {
-  probe::AsyncTask async_task(database_->GetExecutionContext(), this);
+  probe::AsyncTask async_task(database_->GetExecutionContext(),
+                              &async_task_id_);
 
   // Spec 4.3.2.10: If exists, invoke error callback with the last
   // error to have occurred in this transaction.
@@ -272,7 +274,8 @@ SQLTransactionState SQLTransaction::DeliverQuotaIncreaseCallback() {
 
 SQLTransactionState SQLTransaction::DeliverSuccessCallback() {
   DCHECK(IsMainThread());
-  probe::AsyncTask async_task(database_->GetExecutionContext(), this);
+  probe::AsyncTask async_task(database_->GetExecutionContext(),
+                              &async_task_id_);
 
   // Spec 4.3.2.8: Deliver success callback.
   if (OnSuccessCallback* success_callback = success_callback_.Release())

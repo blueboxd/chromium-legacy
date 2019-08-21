@@ -89,7 +89,7 @@ class ServiceWorkerProcessManagerTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestBrowserContext> browser_context_;
   std::unique_ptr<ServiceWorkerProcessManager> process_manager_;
   GURL script_url_;

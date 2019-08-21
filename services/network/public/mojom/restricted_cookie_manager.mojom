@@ -77,7 +77,7 @@ interface RestrictedCookieManager {
   // The subscription is canceled by closing the pipe.
   AddChangeListener(url.mojom.Url url, url.mojom.Url site_for_cookies,
                     url.mojom.Origin top_frame_origin,
-                    CookieChangeListener listener) => ();
+                    pending_remote<CookieChangeListener> listener) => ();
 
   // Sets a cookie.  If setting of this cookie is not permitted either by web
   // platform rules, or user preferences, the attempt will be silently ignored.

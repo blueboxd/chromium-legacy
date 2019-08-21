@@ -70,7 +70,7 @@ class CastAppDiscoveryServiceTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::SimpleTestTickClock clock_;
   testing::NiceMock<cast_channel::MockCastSocketService> socket_service_;

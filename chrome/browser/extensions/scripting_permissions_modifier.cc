@@ -50,10 +50,9 @@ bool CanWithholdFromExtension(const Extension& extension) {
 // |runtime_granted_permissions| in the case of overlapping host permissions
 // (such as *://*.google.com/* and https://*/*, which would intersect with
 // https://*.google.com/*).
-void PartitionHostPermissions(
+std::unique_ptr<const PermissionSet> PartitionHostPermissions(
     const PermissionSet& requested_permissions,
-    const PermissionSet& runtime_granted_permissions,
-    std::unique_ptr<const PermissionSet>* granted_permissions_out) {
+    const PermissionSet& runtime_granted_permissions) {
   auto segregate_url_permissions =
       [](const URLPatternSet& requested_patterns,
          const URLPatternSet& runtime_granted_patterns,
@@ -85,7 +84,7 @@ void PartitionHostPermissions(
                             runtime_granted_permissions.scriptable_hosts(),
                             &granted_scriptable_hosts);
 
-  *granted_permissions_out = std::make_unique<PermissionSet>(
+  return std::make_unique<PermissionSet>(
       requested_permissions.apis().Clone(),
       requested_permissions.manifest_permissions().Clone(),
       std::move(granted_explicit_hosts), std::move(granted_scriptable_hosts));
@@ -388,11 +387,11 @@ void ScriptingPermissionsModifier::RemoveAllGrantedHostPermissions() {
 }
 
 // static
-void ScriptingPermissionsModifier::WithholdPermissionsIfNecessary(
+std::unique_ptr<const PermissionSet>
+ScriptingPermissionsModifier::WithholdPermissionsIfNecessary(
     const Extension& extension,
     const ExtensionPrefs& extension_prefs,
-    const PermissionSet& permissions,
-    std::unique_ptr<const PermissionSet>* granted_permissions_out) {
+    const PermissionSet& permissions) {
   bool should_withhold = false;
   if (ShouldConsiderExtension(extension)) {
     base::Optional<bool> pref_value =
@@ -402,8 +401,7 @@ void ScriptingPermissionsModifier::WithholdPermissionsIfNecessary(
 
   should_withhold &= !permissions.effective_hosts().is_empty();
   if (!should_withhold) {
-    *granted_permissions_out = permissions.Clone();
-    return;
+    return permissions.Clone();
   }
 
   // Only grant host permissions that the user has explicitly granted at
@@ -411,8 +409,7 @@ void ScriptingPermissionsModifier::WithholdPermissionsIfNecessary(
   // permissions API.
   std::unique_ptr<const PermissionSet> runtime_granted_permissions =
       GetRuntimePermissionsFromPrefs(extension, extension_prefs);
-  PartitionHostPermissions(permissions, *runtime_granted_permissions,
-                           granted_permissions_out);
+  return PartitionHostPermissions(permissions, *runtime_granted_permissions);
 }
 
 std::unique_ptr<const PermissionSet>
@@ -446,10 +443,9 @@ ScriptingPermissionsModifier::GetRevokablePermissions() const {
   // Revokable permissions are those that would be withheld if there were no
   // runtime-granted permissions.
   PermissionSet empty_runtime_granted_permissions;
-  std::unique_ptr<const PermissionSet> granted_permissions;
-  PartitionHostPermissions(*current_granted_permissions,
-                           empty_runtime_granted_permissions,
-                           &granted_permissions);
+  std::unique_ptr<const PermissionSet> granted_permissions =
+      PartitionHostPermissions(*current_granted_permissions,
+                               empty_runtime_granted_permissions);
   return PermissionSet::CreateDifference(*current_granted_permissions,
                                          *granted_permissions);
 }

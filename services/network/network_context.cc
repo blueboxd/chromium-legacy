@@ -667,8 +667,9 @@ void NetworkContext::ResetURLLoaderFactories() {
     factory->ClearBindings();
 }
 
-void NetworkContext::GetCookieManager(mojom::CookieManagerRequest request) {
-  cookie_manager_->AddRequest(std::move(request));
+void NetworkContext::GetCookieManager(
+    mojo::PendingReceiver<mojom::CookieManager> receiver) {
+  cookie_manager_->AddReceiver(std::move(receiver));
 }
 
 void NetworkContext::GetRestrictedCookieManager(
@@ -2255,7 +2256,7 @@ void NetworkContext::OnCertVerifyForSignedExchangeComplete(int cert_verify_id,
 
 #if defined(OS_CHROMEOS)
 void NetworkContext::TrustAnchorUsed() {
-  network_service_->client()->OnTrustAnchorUsed(params_->username_hash);
+  client_->OnTrustAnchorUsed();
 }
 
 scoped_refptr<net::CertVerifyProc> NetworkContext::CreateCertVerifyProcForUser(

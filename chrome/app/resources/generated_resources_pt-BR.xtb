@@ -142,6 +142,7 @@
 <translation id="119092896208640858">Para limpar os dados de navegação apenas deste dispositivo e mantê-los na sua Conta do Google, <ph name="BEGIN_LINK" />saia da sua conta<ph name="END_LINK" />.</translation>
 <translation id="1193273168751563528">Entrar na sessão gerenciada</translation>
 <translation id="1195447618553298278">Erro desconhecido.</translation>
+<translation id="1197088940767939838">Laranja</translation>
 <translation id="1197979282329025000">Ocorreu um erro durante a recuperação dos recursos da impressora <ph name="PRINTER_NAME" />. Essa impressora não pôde ser registrada com <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="119944043368869598">Limpar tudo</translation>
 <translation id="1201402288615127009">Próxima</translation>
@@ -1470,6 +1471,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3156531245809797194">Para usar o Chrome, faça login</translation>
 <translation id="3157931365184549694">Restaurar</translation>
 <translation id="3158033540161634471">Configurar impressão digital</translation>
+<translation id="3159493096109238499">Bege</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (no hardware)</translation>
 <translation id="3161522574479303604">Todos os idiomas</translation>
 <translation id="3163201441334626963">Produto <ph name="PRODUCT_ID" /> desconhecido do fornecedor <ph name="VENDOR_ID" /></translation>
@@ -2129,7 +2131,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4107048419833779140">Identificar e ejetar dispositivos de armazenamento</translation>
 <translation id="4109135793348361820">Mover janela para <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">Download concluído: <ph name="FILE_NAME" />. Pressione Shift+F6 para voltar à área da barra de downloads.</translation>
-<translation id="4110690756550305074">Perguntar quando um site deve solicitar o salvamento de alterações diretamente em arquivos ou pastas do dispositivo (recomendado)</translation>
 <translation id="4110895898888439383">Navegue na Web usando o modo de alto contraste</translation>
 <translation id="4115002065223188701">Rede fora de alcance</translation>
 <translation id="4115080753528843955">Alguns serviços de conteúdo usam identificadores exclusivos para autorizar o acesso a conteúdo protegido</translation>
@@ -2347,7 +2348,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4479877282574735775">Configurando a máquina virtual. Isso pode levar alguns minutos.</translation>
 <translation id="4480590691557335796">O Chrome pode localizar softwares nocivos no seu computador e removê-los</translation>
 <translation id="4481530544597605423">Dispositvos não pareados</translation>
-<translation id="4483579413421375386">Mostrar para o site</translation>
 <translation id="4495419450179050807">Não mostrar esta página</translation>
 <translation id="4500114933761911433">O plug-in <ph name="PLUGIN_NAME" /> falhou</translation>
 <translation id="450099669180426158">Ícone de ponto de exclamação</translation>
@@ -2562,7 +2562,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4836504898754963407">Gerenciar impressões digitais</translation>
 <translation id="4837926214103741331">Você não tem autorização para usar este dispositivo. Para permissão de login, entre em contato com o proprietário do dispositivo.</translation>
 <translation id="4837952862063191349">Para desbloquear e restaurar seus dados locais, digite sua senha antiga do <ph name="DEVICE_TYPE" />.</translation>
-<translation id="4838791013695308697">Não permitir que site algum salve alterações diretamente em arquivos ou pastas do seu dispositivo</translation>
 <translation id="4838836835474292213">Acesso de leitura à área de transferência permitido</translation>
 <translation id="4839303808932127586">Sal&amp;var vídeo como...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{Mais 1}one{Mais #}other{Mais #}}</translation>
@@ -3048,7 +3047,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="5567989639534621706">Caches de aplicativos</translation>
 <translation id="5568069709869097550">Não consigo acessar</translation>
 <translation id="5568144734023334204">Armazenamento do Android</translation>
-<translation id="5571092938913434726">Controles globais de mídia</translation>
 <translation id="5572851009514199876">Inicie e faça login no Chrome para que ele possa verificar se você tem permissão para acessar este site.</translation>
 <translation id="5575473780076478375">Extensão anônima: <ph name="EXTENSION_NAME" /></translation>
 <translation id="5575528586625653441">Ocorreu um problema com a solicitação de registro de demonstração.</translation>
@@ -3445,7 +3443,6 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="6129691635767514872">Os dados selecionados foram removidos do Chrome e dos dispositivos sincronizados. É possível que sua Conta do Google tenha outras formas de histórico de navegação, como pesquisas e atividades de outros serviços do Google em <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6129938384427316298">Comentário do certificado do Netscape</translation>
 <translation id="6129953537138746214">Espaço</translation>
-<translation id="6130024555057767093">No momento, as notificações estão bloqueadas para todos os sites, exceto para os sites permitidos individualmente.</translation>
 <translation id="6136114942382973861">Fechar barra de downloads</translation>
 <translation id="6137767437444130246">Certificado do usuário</translation>
 <translation id="6138680304137685902">Assinatura X9.62 ECDSA com SHA-384</translation>
@@ -3798,7 +3795,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6680650203439190394">Velocidade</translation>
 <translation id="6681668084120808868">Tirar foto</translation>
 <translation id="6681964764822470072">O app "<ph name="APP_NAME" />" será desinstalado.</translation>
-<translation id="6684006110763523553">Perguntar quando um site deve solicitar o salvamento de alterações diretamente em arquivos ou pastas do dispositivo</translation>
 <translation id="668599234725812620">Abrir o Google Play</translation>
 <translation id="6686490380836145850">Fechar guias à direita</translation>
 <translation id="6686817083349815241">Salvar sua senha</translation>
@@ -4727,7 +4723,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
       O conteúdo comprado, como filmes, programas de TV, músicas, livros ou outras compras dentro de apps, também poderá ser excluído.
       <ph name="LINE_BREAKS2" />
       Isso não afeta apps ou conteúdos em outros dispositivos.</translation>
-<translation id="8025958612547562988">As impressoras detectadas foram salvas no seu perfil. Caso nenhuma tenha sido detectada, adicione uma nova impressora.</translation>
 <translation id="8026334261755873520">Limpar dados de navegação</translation>
 <translation id="8028060951694135607">Recuperação de chave da Microsoft</translation>
 <translation id="8028803902702117856">Fazendo o download de <ph name="SIZE" />, <ph name="FILE_NAME" /></translation>
@@ -4883,7 +4878,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8256319818471787266">Totó</translation>
 <translation id="8257950718085972371">Continuar bloqueando o acesso à câmera</translation>
 <translation id="8259239505248583312">Vamos lá</translation>
-<translation id="8259556432390118667">Valor de cor hexadecimal</translation>
 <translation id="8260126382462817229">Tente fazer login novamente</translation>
 <translation id="8260864402787962391">Mouse</translation>
 <translation id="8261378640211443080">Esta extensão não está listada na <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> e pode ter sido adicionada sem seu conhecimento.</translation>
@@ -5421,7 +5415,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="9053893665344928494">Lembrar minha escolha</translation>
 <translation id="9055636786322918818">Aplicar a codificação RC4. O uso dessa opção é mais arriscado, porque as criptografias RC4 não são seguras.</translation>
 <translation id="9056810968620647706">Nenhuma correspondência foi encontrada.</translation>
-<translation id="9057119625587205566">Nenhuma impressora nas proximidades</translation>
 <translation id="9062065967472365419">Surpreenda-me</translation>
 <translation id="9062468308252555888">14x</translation>
 <translation id="9063208415146866933">Erro da linha <ph name="ERROR_LINE_START" /> a <ph name="ERROR_LINE_END" /></translation>
@@ -5562,6 +5555,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="987897973846887088">Não há imagens disponíveis</translation>
 <translation id="988978206646512040">A senha longa não pode ficar em branco</translation>
 <translation id="992032470292211616">Extensões, aplicativos e temas podem danificar seu dispositivo. Tem certeza que quer continuar?</translation>
+<translation id="992256792861109788">Rosa</translation>
 <translation id="992592832486024913">Desativar ChromeVox (feedback falado)</translation>
 <translation id="992778845837390402">O backup do Linux está em andamento</translation>
 <translation id="993540765962421562">Instalação em andamento</translation>

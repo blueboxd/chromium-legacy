@@ -110,7 +110,7 @@ public class TabModelSelectorTabObserverTest {
     @Test
     @SmallTest
     public void testObserverAddedBeforeInitialize() {
-        TabModelSelectorBase selector = new TabModelSelectorBase(null) {
+        TabModelSelectorBase selector = new TabModelSelectorBase(null, false) {
             @Override
             public Tab openNewTab(LoadUrlParams loadUrlParams, @TabLaunchType int type, Tab parent,
                     boolean incognito) {
@@ -118,7 +118,7 @@ public class TabModelSelectorTabObserverTest {
             }
         };
         TestTabModelSelectorTabObserver observer = createTabModelSelectorTabObserver();
-        selector.initialize(false, mTestRule.getNormalTabModel(), mTestRule.getIncognitoTabModel());
+        selector.initialize(mTestRule.getNormalTabModel(), mTestRule.getIncognitoTabModel());
 
         Tab normalTab1 = createTestTab(false);
         addTab(mTestRule.getNormalTabModel(), normalTab1);

@@ -317,7 +317,7 @@ class ActivityServiceControllerTest : public PlatformTest {
     EXPECT_FALSE(provider.fakePasswordFormFiller.methodCalled);
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   UIViewController* parentController_;
   ShareToData* shareData_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;

@@ -1067,7 +1067,7 @@ void ServiceWorkerVersion::OnStartSent(blink::ServiceWorkerStatusCode status) {
 }
 
 void ServiceWorkerVersion::SetCachedMetadata(const GURL& url,
-                                             const std::vector<uint8_t>& data) {
+                                             base::span<const uint8_t> data) {
   int64_t callback_id = tick_clock_->NowTicks().ToInternalValue();
   TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker",
                            "ServiceWorkerVersion::SetCachedMetadata",

@@ -103,7 +103,7 @@ class DesktopMediaPickerViewsTest : public testing::Test {
   MOCK_METHOD1(OnPickerDone, void(content::DesktopMediaID));
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   views::ScopedViewsTestHelper test_helper_;
   std::map<DesktopMediaID::Type, FakeDesktopMediaList*> media_lists_;
   std::unique_ptr<DesktopMediaPickerViews> picker_views_;

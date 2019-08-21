@@ -134,7 +134,7 @@ class SnapshotTabHelperTest : public PlatformTest {
   }
 
  protected:
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<ios::ChromeBrowserState> browser_state_;
   TabHelperSnapshotGeneratorDelegate* delegate_ = nil;
   NSString* snapshot_session_id_ = nil;

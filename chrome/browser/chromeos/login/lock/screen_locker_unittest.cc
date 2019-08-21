@@ -112,7 +112,7 @@ class ScreenLockerUnitTest : public testing::Test {
 
  protected:
   // Needed for main loop and posting async tasks.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   // Needed to set up Service Manager and create mojo fakes.
   content::TestServiceManagerContext context_;

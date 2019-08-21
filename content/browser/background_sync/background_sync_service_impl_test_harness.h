@@ -77,7 +77,7 @@ class BackgroundSyncServiceImplTestHarness : public testing::Test {
       blink::mojom::OneShotBackgroundSyncService::GetRegistrationsCallback
           callback);
 
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<EmbeddedWorkerTestHelper> embedded_worker_helper_;
   std::unique_ptr<StoragePartitionImpl> storage_partition_impl_;
   scoped_refptr<ServiceWorkerRegistration> sw_registration_;

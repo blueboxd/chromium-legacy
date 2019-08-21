@@ -168,11 +168,17 @@ void WebrtcVideoStream::Pause(bool pause) {
 }
 
 void WebrtcVideoStream::SetLosslessEncode(bool want_lossless) {
-  NOTIMPLEMENTED();
+  lossless_encode_ = want_lossless;
+  if (encoder_) {
+    encoder_->SetLosslessEncode(want_lossless);
+  }
 }
 
 void WebrtcVideoStream::SetLosslessColor(bool want_lossless) {
-  NOTIMPLEMENTED();
+  lossless_color_ = want_lossless;
+  if (encoder_) {
+    encoder_->SetLosslessColor(want_lossless);
+  }
 }
 
 void WebrtcVideoStream::SetObserver(Observer* observer) {
@@ -212,6 +218,8 @@ void WebrtcVideoStream::OnCaptureResult(
     if (!encoder_) {
       encoder_selector_.SetDesktopFrame(*frame);
       encoder_ = encoder_selector_.CreateEncoder();
+      encoder_->SetLosslessEncode(lossless_encode_);
+      encoder_->SetLosslessColor(lossless_color_);
 
       // TODO(zijiehe): Permanently stop the video stream if we cannot create an
       // encoder for the |frame|.

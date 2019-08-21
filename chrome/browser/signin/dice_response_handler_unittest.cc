@@ -697,7 +697,7 @@ TEST_F(DiceResponseHandlerTest, SigninSignoutDifferentAccount) {
 // Tests that the DiceResponseHandler is created for a normal profile but not
 // for an incognito profile.
 TEST(DiceResponseHandlerFactoryTest, NotInIncognito) {
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   TestingProfile profile;
   EXPECT_THAT(DiceResponseHandler::GetForProfile(&profile), testing::NotNull());
   EXPECT_THAT(

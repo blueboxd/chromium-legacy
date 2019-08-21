@@ -57,7 +57,7 @@ class TestQuery : public PrinterQuery {
     auto worker = std::make_unique<TestPrintJobWorker>();
     EXPECT_TRUE(worker->Start());
     worker->printing_context()->UseDefaultSettings();
-    SetSettingsForTest(worker->printing_context()->TakeAndResetSettings());
+    SetSettingsForTest(worker->printing_context()->ExtractSettings());
 
     return std::move(worker);
   }
@@ -91,7 +91,7 @@ TEST(PrintJobTest, SimplePrint) {
   // Test the multi-threaded nature of PrintJob to make sure we can use it with
   // known lifetime.
 
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   content::NotificationRegistrar registrar;
   TestPrintNotificationObserver observer;
   registrar.Add(&observer, content::NOTIFICATION_ALL,
@@ -113,7 +113,7 @@ TEST(PrintJobTest, SimplePrint) {
 
 TEST(PrintJobTest, SimplePrintLateInit) {
   volatile bool check = false;
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   scoped_refptr<PrintJob> job(new TestPrintJob(&check));
   job = nullptr;
   EXPECT_TRUE(check);
@@ -143,7 +143,7 @@ TEST(PrintJobTest, SimplePrintLateInit) {
 
 #if defined(OS_WIN)
 TEST(PrintJobTest, PageRangeMapping) {
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
 
   int page_count = 4;
   std::vector<int> input_full = {0, 1, 2, 3};

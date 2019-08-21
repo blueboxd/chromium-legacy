@@ -95,9 +95,9 @@ void GetStubResolverConfig(
       local_state->GetBoolean(prefs::kBuiltInDnsClientEnabled);
 
   std::string doh_mode = local_state->GetString(prefs::kDnsOverHttpsMode);
-  if (doh_mode == "secure")
+  if (doh_mode == kDnsOverHttpsModeSecure)
     *secure_dns_mode = net::DnsConfig::SecureDnsMode::SECURE;
-  else if (doh_mode == "automatic")
+  else if (doh_mode == kDnsOverHttpsModeAutomatic)
     *secure_dns_mode = net::DnsConfig::SecureDnsMode::AUTOMATIC;
   else
     *secure_dns_mode = net::DnsConfig::SecureDnsMode::OFF;
@@ -373,13 +373,13 @@ SystemNetworkContextManager::SystemNetworkContextManager(
   // features before registering change callbacks for these preferences.
   local_state_->SetDefaultPrefValue(prefs::kBuiltInDnsClientEnabled,
                                     base::Value(ShouldEnableAsyncDns()));
-  std::string default_doh_mode = "off";
+  std::string default_doh_mode = kDnsOverHttpsModeOff;
   std::string default_doh_templates = "";
   if (base::FeatureList::IsEnabled(features::kDnsOverHttps)) {
     if (features::kDnsOverHttpsFallbackParam.Get()) {
-      default_doh_mode = "automatic";
+      default_doh_mode = kDnsOverHttpsModeAutomatic;
     } else {
-      default_doh_mode = "secure";
+      default_doh_mode = kDnsOverHttpsModeSecure;
     }
     default_doh_templates = features::kDnsOverHttpsTemplatesParam.Get();
   }
@@ -397,10 +397,11 @@ SystemNetworkContextManager::SystemNetworkContextManager(
   std::set<std::string> entries = flags_storage.GetFlags();
   if (entries.count("dns-over-https@1")) {
     // The user has "Enabled" selected.
-    local_state_->SetString(prefs::kDnsOverHttpsMode, "automatic");
+    local_state_->SetString(prefs::kDnsOverHttpsMode,
+                            kDnsOverHttpsModeAutomatic);
   } else if (entries.count("dns-over-https@2")) {
     // The user has "Disabled" selected.
-    local_state_->SetString(prefs::kDnsOverHttpsMode, "off");
+    local_state_->SetString(prefs::kDnsOverHttpsMode, kDnsOverHttpsModeOff);
   } else {
     // The user has "Default" selected.
     local_state_->ClearPref(prefs::kDnsOverHttpsMode);

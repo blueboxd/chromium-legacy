@@ -152,7 +152,7 @@ class MockNetworkURLLoaderFactory final
 class ServiceWorkerNewScriptLoaderTest : public testing::Test {
  public:
   ServiceWorkerNewScriptLoaderTest()
-      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP),
         mock_server_(std::make_unique<MockHTTPServer>()) {}
   ~ServiceWorkerNewScriptLoaderTest() override = default;
 
@@ -260,7 +260,7 @@ class ServiceWorkerNewScriptLoaderTest : public testing::Test {
   }
 
  protected:
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<MockNetworkURLLoaderFactory> mock_url_loader_factory_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
 

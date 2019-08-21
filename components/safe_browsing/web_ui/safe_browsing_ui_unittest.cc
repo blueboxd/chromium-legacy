@@ -40,7 +40,7 @@ class SafeBrowsingUITest : public testing::Test {
  protected:
   int member_int_;
   content::TestWebUI web_ui_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   content::TestBrowserContext browser_context_;
 };
 

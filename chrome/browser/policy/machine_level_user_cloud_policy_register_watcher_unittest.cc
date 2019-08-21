@@ -113,7 +113,7 @@ class MachineLevelUserCloudPolicyRegisterWatcherTest : public ::testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   FakeMachineLevelUserCloudPolicyController controller_;
   MachineLevelUserCloudPolicyRegisterWatcher watcher_;

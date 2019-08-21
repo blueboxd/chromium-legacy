@@ -94,8 +94,8 @@ class TabStrip : public views::AccessiblePaneView,
   // Called when the colors of the frame change.
   void FrameColorsChanged();
 
-  // Set the background offset used by inactive tabs to match the frame image.
-  void SetBackgroundOffset(int offset);
+  // Sets |background_offset_| and schedules a paint.
+  void SetBackgroundOffset(int background_offset);
 
   // Returns true if the specified rect (in TabStrip coordinates) intersects
   // the window caption area of the browser window.
@@ -259,6 +259,7 @@ class TabStrip : public views::AccessiblePaneView,
   void UpdateHoverCard(Tab* tab) override;
   bool HoverCardIsShowingForTab(Tab* tab) override;
   bool ShouldPaintTab(const Tab* tab, float scale, SkPath* clip) override;
+  int GetBackgroundOffset() const override;
   int GetStrokeThickness() const override;
   bool CanPaintThrobberToLayer() const override;
   bool HasVisibleBackgroundTabShapes() const override;
@@ -600,6 +601,9 @@ class TabStrip : public views::AccessiblePaneView,
   // need to resize immediately, we'll resize only back to this width, thus
   // once again placing the last tab under the mouse cursor.
   int available_width_for_tabs_ = -1;
+
+  // The background offset used by inactive tabs to match the frame image.
+  int background_offset_ = 0;
 
   // True if PrepareForCloseAt has been invoked. When true remove animations
   // preserve current tab bounds.

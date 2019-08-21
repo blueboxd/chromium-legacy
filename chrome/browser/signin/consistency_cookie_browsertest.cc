@@ -21,8 +21,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -42,13 +41,10 @@ class TestConsistencyCookieManager
  public:
   TestConsistencyCookieManager(SigninClient* client,
                                AccountReconcilor* reconcilor)
-      : signin::ConsistencyCookieManagerBase(client, reconcilor),
-        cookie_listener_binding_(this) {
+      : signin::ConsistencyCookieManagerBase(client, reconcilor) {
     // Listen to cookie changes.
-    network::mojom::CookieChangeListenerPtr listener_ptr;
-    cookie_listener_binding_.Bind(mojo::MakeRequest(&listener_ptr));
     client->GetCookieManager()->AddGlobalChangeListener(
-        std::move(listener_ptr));
+        cookie_listener_receiver_.BindNewPipeAndPassRemote());
     // Subclasses have to call UpdateCookie() in the constructor.
     UpdateCookie();
     // Wait for the initial cookie to be set.
@@ -83,7 +79,8 @@ class TestConsistencyCookieManager
   std::string CalculateCookieValue() override { return value_; }
 
   std::string value_ = "initial_value";
-  mojo::Binding<network::mojom::CookieChangeListener> cookie_listener_binding_;
+  mojo::Receiver<network::mojom::CookieChangeListener>
+      cookie_listener_receiver_{this};
   base::OnceClosure run_loop_quit_closure_;
 };
 

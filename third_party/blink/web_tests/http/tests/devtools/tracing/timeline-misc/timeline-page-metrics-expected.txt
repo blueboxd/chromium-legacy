@@ -1,5 +1,19 @@
 Test timeline page metrics.
 
+
+Only main frame
+Entries:
+101 NaN FP
+101.2 NaN FCP
+101.3 NaN FMP
+
+Markers:
+101 1 First Paint
+101.2 1.2000000000000028 First Contentful Paint
+101.3 1.2999999999999972 First Meaningful Paint
+
+
+Multiple frames
 Entries:
 101 NaN FP
 101.2 NaN FCP

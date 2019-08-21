@@ -184,7 +184,7 @@ class MidiHostTest : public testing::Test {
   int GetNumberOfBadMessages() { return rph_->bad_msg_count(); }
 
  private:
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<BrowserContext> browser_context_;
   std::unique_ptr<MockRenderProcessHost> rph_;
 

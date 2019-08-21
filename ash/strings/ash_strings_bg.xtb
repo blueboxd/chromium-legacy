@@ -333,6 +333,7 @@
 <translation id="6043212731627905357">Този монитор не се поддържа от вашия <ph name="DEVICE_TYPE" />.</translation>
 <translation id="6043994281159824495">Изход сега</translation>
 <translation id="6047696787498798094">Споделянето на екрана ще спре, когато превключите към друг потребител. Искате ли да продължите?</translation>
+<translation id="6054305421211936131">Влизане със смарткарта</translation>
 <translation id="6062360702481658777">Ще излезете автоматично след <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="6064337552080329342">За съжаление, паролата ви не можа да бъде потвърдена. Моля, опитайте отново.</translation>
 <translation id="607652042414456612">Компютърът ви е откриваем за устройства с Bluetooth наблизо и ще се показва като „<ph name="NAME" />“ с адрес <ph name="ADDRESS" /></translation>
@@ -360,6 +361,7 @@
 <translation id="6459472438155181876">Екранът се разширява на „<ph name="DISPLAY_NAME" />“</translation>
 <translation id="6482559668224714696">Лупа за увеличаване на целия екран</translation>
 <translation id="6490471652906364588">USB-C устройство (десният порт)</translation>
+<translation id="649452524636452238">ПИН за смарткартата</translation>
 <translation id="6501401484702599040">Екранът се предава към „<ph name="RECEIVER_NAME" />“</translation>
 <translation id="6521655319214113338">Ръкописно въвеждане</translation>
 <translation id="6528179044667508675">Не безпокойте</translation>
@@ -389,6 +391,7 @@
 <translation id="6857811139397017780">Активиране на <ph name="NETWORKSERVICE" /></translation>
 <translation id="6910714959251846841">Тази актуализация изисква Powerwash на устройството ви. Научете повече за най-новата актуализация на <ph name="SYSTEM_APP_NAME" />.</translation>
 <translation id="6911468394164995108">Присъединяване другаде...</translation>
+<translation id="6919251195245069855">Смарткартата ви не бе разпозната. Опитайте отново.</translation>
 <translation id="6972754398087986839">Първи стъпки</translation>
 <translation id="6981982820502123353">Достъпност</translation>
 <translation id="698231206551913481">След като този потребител бъде премахнат, всички свързани с него файлове и локални данни ще се изтрият за постоянно.</translation>

@@ -25,7 +25,7 @@ public class TestTrustedWebActivityService extends TrustedWebActivityService {
     }
 
     @Override
-    protected boolean notifyNotificationWithChannel(String platformTag, int platformId,
+    public boolean notifyNotificationWithChannel(String platformTag, int platformId,
             Notification notification, String channelName) {
         MessengerService.sMessageHandler
                 .recordNotifyNotification(platformTag, platformId, channelName);
@@ -33,12 +33,12 @@ public class TestTrustedWebActivityService extends TrustedWebActivityService {
     }
 
     @Override
-    protected void cancelNotification(String platformTag, int platformId) {
+    public void cancelNotification(String platformTag, int platformId) {
         MessengerService.sMessageHandler.recordCancelNotification(platformTag, platformId);
     }
 
     @Override
-    protected int getSmallIconId() {
+    public int getSmallIconId() {
         MessengerService.sMessageHandler.recordGetSmallIconId();
         return SMALL_ICON_ID;
     }

@@ -272,7 +272,8 @@ class WasmStreamingClient : public v8::WasmStreaming::Client {
         reinterpret_cast<const uint8_t*>(serialized_module.buffer.get()),
         serialized_module.size);
 
-    const Vector<uint8_t>& serialized_data = cached_metadata->SerializedData();
+    base::span<const uint8_t> serialized_data =
+        cached_metadata->SerializedData();
     // Make sure the data could be copied.
     if (serialized_data.size() < serialized_module.size)
       return;

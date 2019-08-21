@@ -285,7 +285,6 @@ NotificationUIManager* TestingBrowserProcess::notification_ui_manager() {
     notification_ui_manager_ = NotificationUIManager::Create();
   return notification_ui_manager_.get();
 #else
-  NOTIMPLEMENTED();
   return nullptr;
 #endif
 }

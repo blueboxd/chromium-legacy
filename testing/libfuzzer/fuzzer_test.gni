@@ -24,7 +24,6 @@ import("//testing/test.gni")
 # - ubsan_options - UndefinedBehaviorSanitizer options.
 # - seed_corpus - a directory with seed corpus.
 # - seed_corpus_deps - dependencies for generating the seed corpus.
-# - skip_owners - if true, skips writing the owners file.
 #
 # If use_libfuzzer gn flag is defined, then proper fuzzer would be build.
 # Without use_libfuzzer or use_afl a unit-test style binary would be built on
@@ -155,35 +154,38 @@ template("fuzzer_test") {
       test_deps += [ ":" + config_file_name ]
     }
 
-    # Generate .owners file (if skip_owners is not true).
-    owners_file_name = target_name + ".owners"
-    action(owners_file_name) {
-      script = "//testing/libfuzzer/gen_fuzzer_owners.py"
-      args = [
-        "--owners",
-        rebase_path("$root_build_dir/" + owners_file_name, root_build_dir),
-      ]
+    if (use_fuzzing_engine) {
+      # Generating owners files is slow, only enable when fuzzing engine is
+      # used.
+      owners_file_name = target_name + ".owners"
+      action(owners_file_name) {
+        script = "//testing/libfuzzer/gen_fuzzer_owners.py"
+        args = [
+          "--owners",
+          rebase_path("$root_build_dir/" + owners_file_name, root_build_dir),
+        ]
 
-      if (defined(invoker.sources) && invoker.sources != []) {
-        args += [ "--sources" ] + rebase_path(invoker.sources, "//")
-      } else if (defined(invoker.deps) && invoker.deps != []) {
-        _full_deps = []
-        foreach(_dep, invoker.deps) {
-          _full_deps += [ get_label_info(_dep, "dir") + ":" +
-                          get_label_info(_dep, "name") ]
+        if (defined(invoker.sources) && invoker.sources != []) {
+          args += [ "--sources" ] + rebase_path(invoker.sources, "//")
+        } else if (defined(invoker.deps) && invoker.deps != []) {
+          _full_deps = []
+          foreach(_dep, invoker.deps) {
+            _full_deps += [ get_label_info(_dep, "dir") + ":" +
+                            get_label_info(_dep, "name") ]
+          }
+          args += [
+                    "--build-dir",
+                    rebase_path("$root_build_dir/", root_build_dir),
+                    "--deps",
+                  ] + _full_deps
         }
-        args += [
-                  "--build-dir",
-                  rebase_path("$root_build_dir/", root_build_dir),
-                  "--deps",
-                ] + _full_deps
-      }
 
-      outputs = [
-        "$root_build_dir/$owners_file_name",
-      ]
+        outputs = [
+          "$root_build_dir/$owners_file_name",
+        ]
+      }
+      test_deps += [ ":" + owners_file_name ]
     }
-    test_deps += [ ":" + owners_file_name ]
 
     test(target_name) {
       forward_variables_from(invoker,

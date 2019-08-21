@@ -98,7 +98,7 @@ class BudgetDatabaseTest : public ::testing::Test {
   std::vector<BudgetState> prediction_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   BudgetDatabase db_;
   base::HistogramTester histogram_tester_;

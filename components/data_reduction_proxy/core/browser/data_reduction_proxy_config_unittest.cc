@@ -200,7 +200,7 @@ class DataReductionProxyConfigTest : public testing::Test {
     return test_context_->GetConfiguredProxiesForHttp();
   }
 
-  content::TestBrowserThreadBundle task_environment_{
+  content::BrowserTaskEnvironment task_environment_{
       base::test::TaskEnvironment::MainThreadType::IO};
 
   std::unique_ptr<DataReductionProxyTestContext> test_context_;

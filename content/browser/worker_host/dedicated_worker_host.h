@@ -58,6 +58,9 @@ class DedicatedWorkerHost final
   }
   const url::Origin& GetOrigin() { return origin_; }
 
+  void CreateIdleManager(
+      mojo::PendingReceiver<blink::mojom::IdleManager> receiver);
+
   // service_manager::mojom::InterfaceProvider:
   void GetInterface(const std::string& interface_name,
                     mojo::ScopedMessagePipeHandle interface_pipe) override;
@@ -112,8 +115,6 @@ class DedicatedWorkerHost final
 
   void CreateNestedDedicatedWorker(
       blink::mojom::DedicatedWorkerHostFactoryRequest request);
-
-  void CreateIdleManager(blink::mojom::IdleManagerRequest request);
 
   // May return a nullptr.
   RenderFrameHostImpl* GetAncestorRenderFrameHost();

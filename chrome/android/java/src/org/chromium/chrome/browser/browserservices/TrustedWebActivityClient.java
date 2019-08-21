@@ -134,7 +134,7 @@ public class TrustedWebActivityClient {
         }
 
         int id = service.getSmallIconId();
-        if (id == TrustedWebActivityService.NO_ID) {
+        if (id == TrustedWebActivityService.SMALL_ICON_NOT_SET) {
             recordFallback(FALLBACK_ICON_NOT_PROVIDED);
             return;
         }

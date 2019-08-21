@@ -48,7 +48,7 @@ class IOSChromeMetricsServiceClientTest : public PlatformTest {
     return std::make_unique<metrics::ClientInfo>();
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
   std::unique_ptr<ios::ChromeBrowserState> browser_state_;
   metrics::TestEnabledStateProvider enabled_state_provider_;

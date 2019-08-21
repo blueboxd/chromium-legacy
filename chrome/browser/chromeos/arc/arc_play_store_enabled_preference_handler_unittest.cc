@@ -120,7 +120,7 @@ class ArcPlayStoreEnabledPreferenceHandlerTest : public testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   user_manager::ScopedUserManager user_manager_enabler_;
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>

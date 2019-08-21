@@ -11,23 +11,16 @@
 
 namespace base {
 
-struct RandomContext;
+// Returns a random value. The generator's internal state is initialized with
+// `base::RandUint64` which is very unpredictable, but which is expensive due to
+// the need to call into the kernel. Therefore this generator uses a fast,
+// entirely user-space function after initialization.
+uint32_t RandomValue();
 
-// TODO(crbug.com/984742): This doesn't need to be part of the interface, and
-// can be an implementation detail of `RandomValue`.
-//
-// Returns a pointer to the global `RandomContext`. If the context has not been
-// initialized yet, initializes it with a random starting state.
-RandomContext* GetRandomContext();
-
-uint32_t RandomValue(RandomContext* x);
-
-// TODO(crbug.com/984742): Rename this to `SetRandomSeedForTesting`.
-//
 // Sets the seed for the random number generator to a known value, to cause the
 // RNG to generate a predictable sequence of outputs. May be called multiple
 // times.
-BASE_EXPORT void SetRandomPageBaseSeed(int64_t seed);
+BASE_EXPORT void SetMmapSeedForTesting(uint64_t seed);
 
 }  // namespace base
 

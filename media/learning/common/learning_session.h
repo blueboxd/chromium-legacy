@@ -10,6 +10,7 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "base/supports_user_data.h"
 #include "media/learning/common/labelled_example.h"
 #include "media/learning/common/learning_task.h"
 
@@ -19,10 +20,11 @@ namespace learning {
 class LearningTaskController;
 
 // Interface to provide a Learner given the task name.
-class COMPONENT_EXPORT(LEARNING_COMMON) LearningSession {
+class COMPONENT_EXPORT(LEARNING_COMMON) LearningSession
+    : public base::SupportsUserData::Data {
  public:
   LearningSession();
-  virtual ~LearningSession();
+  ~LearningSession() override;
 
   // Return a LearningTaskController for the given task.
   virtual std::unique_ptr<LearningTaskController> GetController(

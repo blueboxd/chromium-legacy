@@ -291,7 +291,7 @@ class DataItemTest : public testing::Test {
 
   std::unique_ptr<content::TestBrowserContext> context_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   std::unique_ptr<TestExtensionsBrowserClient> extensions_browser_client_;

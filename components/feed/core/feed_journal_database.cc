@@ -38,8 +38,9 @@ FeedJournalDatabase::FeedJournalDatabase(
     leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
     const base::FilePath& database_folder)
     : database_status_(InitStatus::kNotInitialized),
-      task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
+      task_runner_(
+          base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                           base::TaskPriority::USER_VISIBLE})),
       storage_database_(proto_database_provider->GetDB<JournalStorageProto>(
           leveldb_proto::ProtoDbType::FEED_JOURNAL_DATABASE,
           database_folder.AppendASCII(kJournalDatabaseFolder),
@@ -193,14 +194,14 @@ void FeedJournalDatabase::PerformOperations(
 
   JournalMap copy_to_journal;
   while (!journal_mutation->Empty()) {
-    JournalOperation operation = journal_mutation->TakeFristOperation();
+    JournalOperation operation = journal_mutation->TakeFirstOperation();
     switch (operation.type()) {
       case JournalOperation::JOURNAL_APPEND:
         journal->add_journal_data(operation.value());
         break;
       case JournalOperation::JOURNAL_COPY:
         copy_to_journal[operation.to_journal_name()] =
-            CopyJouarnal(operation.to_journal_name(), *journal);
+            CopyJournal(operation.to_journal_name(), *journal);
         break;
       case JournalOperation::JOURNAL_DELETE:
         journal->clear_journal_data();
@@ -333,7 +334,7 @@ void FeedJournalDatabase::OnOperationCommitted(base::TimeTicks start_time,
   std::move(callback).Run(success);
 }
 
-JournalStorageProto FeedJournalDatabase::CopyJouarnal(
+JournalStorageProto FeedJournalDatabase::CopyJournal(
     const std::string& new_journal_name,
     const JournalStorageProto& source_journal) {
   JournalStorageProto new_journal;

@@ -115,7 +115,7 @@ class TabMemoryMetricsReporterTest : public testing::Test {
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
 
   std::unique_ptr<content::TestWebContentsFactory> test_web_contents_factory_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile testing_profile_;
   content::WebContents* contents1_;
   content::WebContents* contents2_;

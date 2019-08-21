@@ -150,7 +150,7 @@ public class WebApkShareTargetUtil {
         for (Uri fileUri : shareFiles) {
             String fileType, fileName;
 
-            try (StrictModeContext strictModeContextUnused = StrictModeContext.allowDiskReads()) {
+            try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
                 fileType = getFileTypeFromContentUri(fileUri);
                 fileName = getFileNameFromContentUri(fileUri);
             }
@@ -193,10 +193,9 @@ public class WebApkShareTargetUtil {
         }
     }
 
-    protected static PostData computePostData(String shareTargetActivityName,
+    protected static PostData computePostData(
             WebApkInfo.ShareTarget shareTarget, WebApkInfo.ShareData shareData) {
-        if (shareTarget == null || !shareTarget.isShareMethodPost() || shareData == null
-                || !shareData.shareActivityClassName.equals(shareTargetActivityName)) {
+        if (shareTarget == null || !shareTarget.isShareMethodPost() || shareData == null) {
             return null;
         }
 

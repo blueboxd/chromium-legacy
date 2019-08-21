@@ -8,13 +8,13 @@ import("//build/config/ui.gni")
 jumbo_component("clipboard_types") {
   output_name = "ui_base_clipboard_types"
   sources = [
+    "clipboard_buffer.h",
     "clipboard_constants.cc",
     "clipboard_constants.h",
     "clipboard_constants_mac.mm",
     "clipboard_format_type_android.cc",
     "clipboard_format_type_mac.mm",
     "clipboard_format_type_win.cc",
-    "clipboard_types.h",
   ]
 
   if (!is_ios) {

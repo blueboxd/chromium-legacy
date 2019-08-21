@@ -75,7 +75,7 @@ class V4StoreTest : public PlatformTest {
   base::ScopedTempDir temp_dir_;
   base::FilePath store_path_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<V4Store> updated_store_;
 };
 

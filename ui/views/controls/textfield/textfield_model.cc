@@ -522,7 +522,7 @@ bool TextfieldModel::Redo() {
 
 bool TextfieldModel::Cut() {
   if (!HasCompositionText() && HasSelection() && !render_text_->obscured()) {
-    ui::ScopedClipboardWriter(ui::ClipboardType::kCopyPaste)
+    ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
         .WriteText(GetSelectedText());
     // A trick to let undo/redo handle cursor correctly.
     // Undoing CUT moves the cursor to the end of the change rather
@@ -539,7 +539,7 @@ bool TextfieldModel::Cut() {
 
 bool TextfieldModel::Copy() {
   if (!HasCompositionText() && HasSelection() && !render_text_->obscured()) {
-    ui::ScopedClipboardWriter(ui::ClipboardType::kCopyPaste)
+    ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
         .WriteText(GetSelectedText());
     return true;
   }
@@ -548,8 +548,8 @@ bool TextfieldModel::Copy() {
 
 bool TextfieldModel::Paste() {
   base::string16 text;
-  ui::Clipboard::GetForCurrentThread()->ReadText(ui::ClipboardType::kCopyPaste,
-                                                 &text);
+  ui::Clipboard::GetForCurrentThread()->ReadText(
+      ui::ClipboardBuffer::kCopyPaste, &text);
   if (text.empty())
     return false;
 

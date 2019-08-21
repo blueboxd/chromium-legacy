@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/base64.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -24,9 +25,12 @@
 #include "components/optimization_guide/test_hints_component_creator.h"
 #include "components/prefs/pref_service.h"
 #include "components/previews/core/previews_switches.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_source.h"
 
 namespace {
 
@@ -60,6 +64,28 @@ int RetryForHistogramUntilCountReached(
       return total;
   }
 }
+
+// A WebContentsObserver that asks whether an optimization type can be applied.
+class OptimizationGuideConsumerWebContentsObserver
+    : public content::WebContentsObserver {
+ public:
+  OptimizationGuideConsumerWebContentsObserver(
+      content::WebContents* web_contents)
+      : content::WebContentsObserver(web_contents) {}
+  ~OptimizationGuideConsumerWebContentsObserver() override = default;
+
+  // contents::WebContentsObserver implementation:
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override {
+    OptimizationGuideKeyedService* service =
+        OptimizationGuideKeyedServiceFactory::GetForProfile(
+            Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+    service->CanApplyOptimization(
+        navigation_handle,
+        optimization_guide::OptimizationTarget::kPainfulPageLoad,
+        optimization_guide::proto::NOSCRIPT, /*optimization_metadata=*/nullptr);
+  }
+};
 
 }  // namespace
 
@@ -119,6 +145,14 @@ class OptimizationGuideKeyedServiceBrowserTest
     url_with_hints_ =
         https_server_->GetURL("somehost.com", "/hashints/whatever");
     url_that_redirects_ = https_server_->GetURL("/redirect");
+
+    // Set up an OptimizationGuideKeyedService consumer.
+    consumer_.reset(new OptimizationGuideConsumerWebContentsObserver(
+        browser()->tab_strip_model()->GetActiveWebContents()));
+
+    g_browser_process->network_quality_tracker()
+        ->ReportEffectiveConnectionTypeForTesting(
+            net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   }
 
   void TearDown() override {
@@ -177,6 +211,7 @@ class OptimizationGuideKeyedServiceBrowserTest
   base::test::ScopedFeatureList scoped_feature_list_;
   optimization_guide::testing::TestHintsComponentCreator
       test_hints_component_creator_;
+  std::unique_ptr<OptimizationGuideConsumerWebContentsObserver> consumer_;
 
   DISALLOW_COPY_AND_ASSIGN(OptimizationGuideKeyedServiceBrowserTest);
 };
@@ -205,6 +240,7 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
   PushHintsComponentAndWaitForCompletion();
   RegisterWithKeyedService();
 
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
   base::HistogramTester histogram_tester;
 
   ui_test_utils::NavigateToURL(browser(), url_with_hints());
@@ -216,6 +252,19 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
   // load a hint that succeeds.
   histogram_tester.ExpectUniqueSample("OptimizationGuide.LoadedHint.Result",
                                       true, 1);
+
+  // Expect that the optimization guide UKM was recorded.
+  auto entries = ukm_recorder.GetEntriesByName(
+      ukm::builders::OptimizationGuide::kEntryName);
+  ASSERT_EQ(1u, entries.size());
+  auto* entry = entries.at(0);
+  ukm_recorder.ExpectEntryMetric(
+      entry, ukm::builders::OptimizationGuide::kHintSourceName,
+      static_cast<int>(
+          optimization_guide::proto::HINT_SOURCE_OPTIMIZATION_HINTS_COMPONENT));
+  ukm_recorder.ExpectEntryMetric(
+      entry, ukm::builders::OptimizationGuide::kHintGenerationTimestampName,
+      123);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -224,11 +273,12 @@ IN_PROC_BROWSER_TEST_F(
   PushHintsComponentAndWaitForCompletion();
   RegisterWithKeyedService();
 
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
   base::HistogramTester histogram_tester;
 
   ui_test_utils::NavigateToURL(browser(), url_that_redirects());
 
-  EXPECT_GE(RetryForHistogramUntilCountReached(
+  EXPECT_EQ(RetryForHistogramUntilCountReached(
                 histogram_tester, "OptimizationGuide.LoadedHint.Result", 2),
             2);
   // Should attempt and fail to load a hint for the initial navigation.
@@ -237,6 +287,18 @@ IN_PROC_BROWSER_TEST_F(
   // Should attempt and succeed to load a hint once for the redirect.
   histogram_tester.ExpectBucketCount("OptimizationGuide.LoadedHint.Result",
                                      true, 1);
+  // Expect that the optimization guide UKM was recorded.
+  auto entries = ukm_recorder.GetEntriesByName(
+      ukm::builders::OptimizationGuide::kEntryName);
+  ASSERT_EQ(1u, entries.size());
+  auto* entry = entries.at(0);
+  ukm_recorder.ExpectEntryMetric(
+      entry, ukm::builders::OptimizationGuide::kHintSourceName,
+      static_cast<int>(
+          optimization_guide::proto::HINT_SOURCE_OPTIMIZATION_HINTS_COMPONENT));
+  ukm_recorder.ExpectEntryMetric(
+      entry, ukm::builders::OptimizationGuide::kHintGenerationTimestampName,
+      123);
 }
 
 IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
@@ -244,17 +306,67 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
   PushHintsComponentAndWaitForCompletion();
   RegisterWithKeyedService();
 
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
   base::HistogramTester histogram_tester;
 
   ui_test_utils::NavigateToURL(browser(), GURL("https://nohints.com/"));
 
-  EXPECT_GE(RetryForHistogramUntilCountReached(
+  EXPECT_EQ(RetryForHistogramUntilCountReached(
                 histogram_tester, "OptimizationGuide.LoadedHint.Result", 1),
             1);
   // There were no hints that match this URL, but there should still be an
   // attempt to load a hint but still fail.
   histogram_tester.ExpectUniqueSample("OptimizationGuide.LoadedHint.Result",
                                       false, 1);
+  // Should expect that no hints were loaded and so we don't have a hint
+  // version recorded.
+  auto entries = ukm_recorder.GetEntriesByName(
+      ukm::builders::OptimizationGuide::kEntryName);
+  EXPECT_TRUE(entries.empty());
+}
+
+IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
+                       NavigateToPageWithHintWithNoVersion) {
+  PushHintsComponentAndWaitForCompletion();
+  RegisterWithKeyedService();
+
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+  base::HistogramTester histogram_tester;
+
+  ui_test_utils::NavigateToURL(browser(), GURL("https://m.noversion.com/"));
+
+  EXPECT_EQ(RetryForHistogramUntilCountReached(
+                histogram_tester, "OptimizationGuide.LoadedHint.Result", 1),
+            1);
+  // There should be a hint that matches this URL.
+  histogram_tester.ExpectUniqueSample("OptimizationGuide.LoadedHint.Result",
+                                      true, 1);
+  // Should expect that UKM was not recorded since it did not have a version.
+  auto entries = ukm_recorder.GetEntriesByName(
+      ukm::builders::OptimizationGuide::kEntryName);
+  EXPECT_TRUE(entries.empty());
+}
+
+IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
+                       NavigateToPageWithHintWithBadVersion) {
+  PushHintsComponentAndWaitForCompletion();
+  RegisterWithKeyedService();
+
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+  base::HistogramTester histogram_tester;
+
+  ui_test_utils::NavigateToURL(browser(), GURL("https://m.badversion.com/"));
+
+  EXPECT_EQ(RetryForHistogramUntilCountReached(
+                histogram_tester, "OptimizationGuide.LoadedHint.Result", 1),
+            1);
+  // There should be a hint that matches this URL.
+  histogram_tester.ExpectUniqueSample("OptimizationGuide.LoadedHint.Result",
+                                      true, 1);
+  // Should expect that UKM was not recorded since it had a bad version string.
+  auto entries = ukm_recorder.GetEntriesByName(
+      ukm::builders::OptimizationGuide::kEntryName);
+  EXPECT_TRUE(entries.empty());
 }
 
 class OptimizationGuideKeyedServiceDataSaverUserWithInfobarShownTest
@@ -399,7 +511,7 @@ class OptimizationGuideKeyedServiceHintsFetcherTest
 
     // Expect that the browser initialization will record at least one sample
     // in each of the follow histograms as OnePlatform Hints are enabled.
-    EXPECT_GE(
+    EXPECT_EQ(
         RetryForHistogramUntilCountReached(
             histogram_tester_,
             "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1),
@@ -409,7 +521,7 @@ class OptimizationGuideKeyedServiceHintsFetcherTest
     histogram_tester_.ExpectBucketCount(
         "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 2, 1);
 
-    EXPECT_GE(RetryForHistogramUntilCountReached(
+    EXPECT_EQ(RetryForHistogramUntilCountReached(
                   histogram_tester_,
                   "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", 1),
               1);
@@ -418,7 +530,7 @@ class OptimizationGuideKeyedServiceHintsFetcherTest
         "OptimizationGuide.HintsFetcher.GetHintsRequest.HintCount", 1, 1);
 
     // Wait until fetched hints have been stored.
-    EXPECT_GE(
+    EXPECT_EQ(
         RetryForHistogramUntilCountReached(
             histogram_tester_, "OptimizationGuide.FetchedHints.Stored", 1),
         1);
@@ -452,10 +564,18 @@ class OptimizationGuideKeyedServiceHintsFetcherTest
     response->set_code(net::HTTP_OK);
 
     optimization_guide::proto::GetHintsResponse get_hints_response;
+    optimization_guide::proto::Version hint_version;
+    hint_version.mutable_generation_timestamp()->set_seconds(234);
+    hint_version.set_hint_source(
+        optimization_guide::proto::HINT_SOURCE_OPTIMIZATION_GUIDE_SERVICE);
+    std::string hint_version_string;
+    hint_version.SerializeToString(&hint_version_string);
+    base::Base64Encode(hint_version_string, &hint_version_string);
 
     optimization_guide::proto::Hint* hint = get_hints_response.add_hints();
     hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
     hint->set_key("somehost.com");
+    hint->set_version(hint_version_string);
     optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
     page_hint->set_page_pattern("*");
 
@@ -486,9 +606,10 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceHintsFetcherTest,
 
   // Prompt the loading of the hint that was just fetched.
   {
+    ukm::TestAutoSetUkmRecorder ukm_recorder;
     base::HistogramTester histogram_tester;
     ui_test_utils::NavigateToURL(browser(), url_with_hints());
-    EXPECT_GE(RetryForHistogramUntilCountReached(
+    EXPECT_EQ(RetryForHistogramUntilCountReached(
                   histogram_tester, "OptimizationGuide.LoadedHint.Result", 1),
               1);
     histogram_tester.ExpectUniqueSample("OptimizationGuide.LoadedHint.Result",
@@ -501,6 +622,18 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceHintsFetcherTest,
         static_cast<int>(
             optimization_guide::HintCacheStore::StoreEntryType::kFetchedHint),
         1);
+    // Expect that the optimization guide UKM was recorded.
+    auto entries = ukm_recorder.GetEntriesByName(
+        ukm::builders::OptimizationGuide::kEntryName);
+    ASSERT_EQ(1u, entries.size());
+    auto* entry = entries.at(0);
+    ukm_recorder.ExpectEntryMetric(
+        entry, ukm::builders::OptimizationGuide::kHintSourceName,
+        static_cast<int>(
+            optimization_guide::proto::HINT_SOURCE_OPTIMIZATION_GUIDE_SERVICE));
+    ukm_recorder.ExpectEntryMetric(
+        entry, ukm::builders::OptimizationGuide::kHintGenerationTimestampName,
+        234);
   }
 
   // Wipe the browser history - clear all the fetched hints.
@@ -511,10 +644,11 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceHintsFetcherTest,
 
   // Try to load the same hint to confirm fetched hints are no longer there.
   {
+    ukm::TestAutoSetUkmRecorder ukm_recorder;
     base::HistogramTester histogram_tester;
 
     ui_test_utils::NavigateToURL(browser(), url_with_hints());
-    EXPECT_GE(RetryForHistogramUntilCountReached(
+    EXPECT_EQ(RetryForHistogramUntilCountReached(
                   histogram_tester, "OptimizationGuide.LoadedHint.Result", 1),
               1);
     histogram_tester.ExpectUniqueSample("OptimizationGuide.LoadedHint.Result",
@@ -526,5 +660,17 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceHintsFetcherTest,
         static_cast<int>(
             optimization_guide::HintCacheStore::StoreEntryType::kComponentHint),
         1);
+    // Expect that the optimization guide UKM was recorded.
+    auto entries = ukm_recorder.GetEntriesByName(
+        ukm::builders::OptimizationGuide::kEntryName);
+    ASSERT_EQ(1u, entries.size());
+    auto* entry = entries.at(0);
+    ukm_recorder.ExpectEntryMetric(
+        entry, ukm::builders::OptimizationGuide::kHintSourceName,
+        static_cast<int>(optimization_guide::proto::
+                             HINT_SOURCE_OPTIMIZATION_HINTS_COMPONENT));
+    ukm_recorder.ExpectEntryMetric(
+        entry, ukm::builders::OptimizationGuide::kHintGenerationTimestampName,
+        123);
   }
 }

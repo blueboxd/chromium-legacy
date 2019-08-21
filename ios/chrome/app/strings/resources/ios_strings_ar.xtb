@@ -149,7 +149,6 @@
 <translation id="2921219216347069551">تتعذر مشاركة الصفحة</translation>
 <translation id="2923448633003185837">لصق وانتقال</translation>
 <translation id="292639812446257861">وضع علامة كغير مقروءة</translation>
-<translation id="2933759065870693102">الكشاف</translation>
 <translation id="2958718410589002129">كلمات المرور</translation>
 <translation id="2969979262385602596">تعذّر تسجيل الدخول. يُرجى إعادة المحاولة لاحقًا.</translation>
 <translation id="298306318844797842">إضافة طريقة الدفع...</translation>
@@ -305,6 +304,7 @@
 <translation id="5317780077021120954">حفظ</translation>
 <translation id="5327248766486351172">الاسم</translation>
 <translation id="5388358297987318779">فتح الصورة</translation>
+<translation id="5407969256130905701">تجاهل التغييرات</translation>
 <translation id="5409365236829784218">لا تتوفر تطبيقات مثبتة يمكن من خلالها فتح هذا الملف.</translation>
 <translation id="5416022985862681400">آخر 7 أيام</translation>
 <translation id="5433691172869980887">تم نسخ اسم المستخدم</translation>
@@ -510,6 +510,7 @@
 <translation id="8428213095426709021">الإعدادات</translation>
 <translation id="8458397775385147834">تم حذف عنصر واحد</translation>
 <translation id="8487700953926739672">التوفر بلا إنترنت</translation>
+<translation id="8490978609246021741">حفظ التغييرات</translation>
 <translation id="8503813439785031346">اسم المستخدم</translation>
 <translation id="850600235656508448">فتح في وضع التصفح المتخفي</translation>
 <translation id="8517375800490286174">تراخيص البرامج المفتوحة المصدر</translation>

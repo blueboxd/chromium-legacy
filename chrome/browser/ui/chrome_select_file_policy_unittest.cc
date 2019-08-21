@@ -80,7 +80,7 @@ typedef testing::Test ChromeSelectFilePolicyTest;
 // Tests if SelectFileDialog::SelectFile returns asynchronously with
 // file-selection dialogs disabled by policy.
 TEST_F(ChromeSelectFilePolicyTest, MAYBE_ExpectAsynchronousListenerCall) {
-  content::TestBrowserThreadBundle test_browser_thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
 
   ScopedTestingLocalState local_state(TestingBrowserProcess::GetGlobal());
 

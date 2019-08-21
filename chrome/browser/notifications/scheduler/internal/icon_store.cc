@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/guid.h"
 #include "base/stl_util.h"
 #include "chrome/browser/notifications/scheduler/internal/icon_entry.h"
 #include "chrome/browser/notifications/scheduler/internal/proto_conversion.h"
@@ -49,43 +50,26 @@ void IconProtoDbStore::Init(InitCallback callback) {
                            std::move(callback)));
 }
 
-void IconProtoDbStore::Load(const std::string& key, LoadIconCallback callback) {
-  db_->GetEntry(
-      key, base::BindOnce(&IconProtoDbStore::OnIconEntryLoaded,
-                          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+void IconProtoDbStore::AddIcons(std::vector<SkBitmap> icons,
+                                AddCallback callback) {
+  std::vector<std::string> icons_uuid;
+  for (size_t i = 0; i < icons.size(); i++) {
+    icons_uuid.emplace_back(base::GenerateGUID());
+  }
+
+  icon_converter_->ConvertIconToString(
+      std::move(icons),
+      base::BindOnce(&IconProtoDbStore::OnIconsEncoded,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     std::move(icons_uuid)));
 }
 
 void IconProtoDbStore::LoadIcons(const std::vector<std::string>& keys,
                                  LoadIconsCallback callback) {
-  db_->LoadEntriesWithFilter(
+  db_->LoadKeysAndEntriesWithFilter(
       base::BindRepeating(&HasKeyInDb, keys),
       base::BindOnce(&IconProtoDbStore::OnIconEntriesLoaded,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-}
-
-void IconProtoDbStore::Add(IconEntry entry, UpdateCallback callback) {
-  std::vector<IconEntry> input;
-  input.emplace_back(std::move(entry));
-  AddIcons(std::move(input), std::move(callback));
-}
-
-void IconProtoDbStore::AddIcons(std::vector<IconEntry> entries,
-                                UpdateCallback callback) {
-  auto entries_to_save = std::make_unique<KeyEntryVector>();
-  for (size_t i = 0; i < entries.size(); i++) {
-    auto key = entries[i].uuid;
-    entries_to_save->emplace_back(std::move(key), std::move(entries[i]));
-  }
-  db_->UpdateEntries(std::move(entries_to_save),
-                     std::make_unique<KeyVector>() /*entries_to_delete*/,
-                     std::move(callback));
-}
-
-void IconProtoDbStore::Delete(const std::string& key, UpdateCallback callback) {
-  auto keys_to_delete = std::make_unique<KeyVector>();
-  keys_to_delete->emplace_back(key);
-  db_->UpdateEntries(std::make_unique<KeyEntryVector>() /*keys_to_save*/,
-                     std::move(keys_to_delete), std::move(callback));
 }
 
 void IconProtoDbStore::DeleteIcons(const std::vector<std::string>& keys,
@@ -105,28 +89,57 @@ void IconProtoDbStore::OnDbInitialized(
   std::move(callback).Run(success);
 }
 
-void IconProtoDbStore::OnIconEntryLoaded(
-    LoadIconCallback callback,
-    bool success,
-    std::unique_ptr<IconEntry> icon_entry) {
-  if (!success) {
-    std::move(callback).Run(false, nullptr);
-    return;
-  }
-
-  std::move(callback).Run(true, std::move(icon_entry));
-}
-
 void IconProtoDbStore::OnIconEntriesLoaded(
     LoadIconsCallback callback,
     bool success,
-    std::unique_ptr<std::vector<IconEntry>> icon_entries) {
+    std::unique_ptr<std::map<std::string, IconEntry>> icon_entries) {
   if (!success) {
-    std::move(callback).Run(false, nullptr);
+    std::move(callback).Run(false, {} /*IconsMap*/);
     return;
   }
 
-  std::move(callback).Run(true, std::move(icon_entries));
+  std::vector<std::string> icons_uuid;
+  std::vector<std::string> encoded_icons_data;
+  for (auto& entry : *icon_entries.get()) {
+    icons_uuid.emplace_back(std::move(entry.first));
+    encoded_icons_data.emplace_back(std::move(entry.second.data));
+  }
+
+  icon_converter_->ConvertStringToIcon(
+      std::move(encoded_icons_data),
+      base::BindOnce(&IconProtoDbStore::OnIconsDecoded,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     std::move(icons_uuid)));
+}
+
+void IconProtoDbStore::OnIconsEncoded(
+    AddCallback callback,
+    std::vector<std::string> icons_uuid,
+    std::vector<std::string> encoded_icons_data) {
+  // TODO(hesen): Handle result return from PNGCodec.
+  DCHECK_EQ(icons_uuid.size(), encoded_icons_data.size());
+  auto entries_to_save = std::make_unique<KeyEntryVector>();
+  for (size_t i = 0; i < encoded_icons_data.size(); i++) {
+    IconEntry icon_entry;
+    icon_entry.data = std::move(encoded_icons_data[i]);
+    entries_to_save->emplace_back(icons_uuid[i], std::move(icon_entry));
+  }
+  auto add_callback =
+      base::BindOnce(std::move(callback), std::move(icons_uuid));
+  db_->UpdateEntries(std::move(entries_to_save),
+                     std::make_unique<KeyVector>() /*entries_to_delete*/,
+                     std::move(add_callback));
+}
+
+void IconProtoDbStore::OnIconsDecoded(LoadIconsCallback callback,
+                                      std::vector<std::string> icons_uuid,
+                                      std::vector<SkBitmap> decoded_icons) {
+  // TODO(hesen): Handle result return from PNGCodec.
+  IconsMap icons;
+  for (size_t i = 0; i < icons_uuid.size(); i++) {
+    icons.emplace(std::move(icons_uuid[i]), decoded_icons[i]);
+  }
+  std::move(callback).Run(true, std::move(icons));
 }
 
 }  // namespace notifications

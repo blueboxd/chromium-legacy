@@ -7,9 +7,11 @@
 
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/time/time.h"
 #include "cc/base/base_export.h"
 #include "cc/cc_export.h"
+#include "cc/metrics/frame_sequence_tracker.h"
 
 namespace cc {
 class RollingTimeDeltaHistory;
@@ -72,7 +74,9 @@ class CC_EXPORT CompositorFrameReporter {
     kStageTypeCount
   };
 
-  explicit CompositorFrameReporter(bool is_single_threaded = false);
+  CompositorFrameReporter(
+      const base::flat_set<FrameSequenceTrackerType>* active_trackers,
+      bool is_single_threaded = false);
   ~CompositorFrameReporter();
 
   CompositorFrameReporter(const CompositorFrameReporter& reporter) = delete;
@@ -112,8 +116,10 @@ class CC_EXPORT CompositorFrameReporter {
   void ReportStageHistograms(bool missed_frame) const;
   void ReportHistogram(
       CompositorFrameReporter::MissedFrameReportTypes report_type,
+      FrameSequenceTrackerType intraction_type,
       StageType stage_type,
       base::TimeDelta time_delta) const;
+
   // Returns true if the stage duration is greater than |kAbnormalityPercentile|
   // of its RollingTimeDeltaHistory.
   base::TimeDelta GetStateNormalUpperLimit(const StageData& stage) const;
@@ -123,6 +129,8 @@ class CC_EXPORT CompositorFrameReporter {
   base::TimeTicks frame_termination_time_;
   FrameTerminationStatus frame_termination_status_ =
       FrameTerminationStatus::kUnknown;
+
+  const base::flat_set<FrameSequenceTrackerType>* active_trackers_;
 };
 }  // namespace cc
 

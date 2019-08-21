@@ -29,7 +29,7 @@ const int kProcessId = 1;
 class WorkerScriptLoaderFactoryTest : public testing::Test {
  public:
   WorkerScriptLoaderFactoryTest()
-      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {}
   ~WorkerScriptLoaderFactoryTest() override = default;
 
   void SetUp() override {
@@ -75,7 +75,7 @@ class WorkerScriptLoaderFactoryTest : public testing::Test {
     return loader;
   }
 
-  TestBrowserThreadBundle browser_thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   std::unique_ptr<FakeNetworkURLLoaderFactory> network_loader_factory_instance_;
   scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory_;

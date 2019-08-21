@@ -65,7 +65,7 @@ enum class ExternalFilesLoadedInWebStateFeature {
 
 class URLOpenerTest : public PlatformTest {
  private:
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
 };
 
 TEST_F(URLOpenerTest, HandleOpenURL) {

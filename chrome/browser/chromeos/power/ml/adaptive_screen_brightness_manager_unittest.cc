@@ -95,7 +95,8 @@ class AdaptiveScreenBrightnessManagerTest
 
     viz::mojom::VideoDetectorObserverPtr observer;
     auto periodic_timer = std::make_unique<base::RepeatingTimer>();
-    periodic_timer->SetTaskRunner(thread_bundle()->GetMainThreadTaskRunner());
+    periodic_timer->SetTaskRunner(
+        task_environment()->GetMainThreadTaskRunner());
     screen_brightness_manager_ =
         std::make_unique<AdaptiveScreenBrightnessManager>(
             std::move(logger), &user_activity_detector_,
@@ -157,7 +158,7 @@ class AdaptiveScreenBrightnessManagerTest
   }
 
   void FastForwardTimeBySecs(const int seconds) {
-    thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(seconds));
+    task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(seconds));
   }
 
   // Creates a test browser window and sets its visibility, activity and

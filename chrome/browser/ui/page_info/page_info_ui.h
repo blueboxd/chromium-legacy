@@ -54,6 +54,18 @@ class PageInfoUI {
     base::string16 details;
   };
 
+  // This enum is used to create the description in the page info bubble when
+  // password reuse is detected.
+  enum PasswordType {
+    UNKNOWN,
+    // If the reused password is associated with a non-GAIA enterprise account.
+    NON_GAIA_ENTERPRISE,
+    // If the reused password is associated with a syncing GAIA account.
+    SYNC_GAIA,
+    // If the reused password is associated with a non-syncing GAIA account.
+    NON_SYNC_GAIA,
+  };
+
   // |CookieInfo| contains information about the cookies from a specific source.
   // A source can for example be a specific origin or an entire wildcard domain.
   struct CookieInfo {
@@ -233,7 +245,7 @@ class PageInfoUI {
   // Creates security description for password reuse case.
   virtual std::unique_ptr<PageInfoUI::SecurityDescription>
   CreateSecurityDescriptionForPasswordReuse(
-      bool is_enterprise_password) const = 0;
+      PasswordType password_type) const = 0;
 #endif
 };
 

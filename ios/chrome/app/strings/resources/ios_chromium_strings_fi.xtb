@@ -21,7 +21,6 @@
 <translation id="2915596697727466327">Chromium varmistaa Face ID:llä, että sinulla on lupa käyttää salasanoja.</translation>
 <translation id="3256316712990552818">Kopioitiin Chromiumiin.</translation>
 <translation id="3413120535237193088">Kirjaudu sisään Chromiumiin, niin voit käyttää kirjanmerkkejäsi kaikilla laitteilla.</translation>
-<translation id="3473048256428424907">Ota käyttöön Chromiumin QR-lukija</translation>
 <translation id="3605252743693911722">Kirjaudu sisään Chromiumiin, jotta voit käyttää kirjanmerkkejäsi, salasanojasi ja muita asetuksiasi kaikilla laitteillasi.</translation>
 <translation id="3805899903892079518">Chromium ei voi käyttää kuviasi tai videoitasi. Anna käyttöoikeus kohdassa iOS-asetukset &gt; Tietosuoja &gt; Kuvat.</translation>
 <translation id="4024541897090868497">Kirjaudu sisään Chromiumiin, niin voit käyttää välilehtiäsi kaikilla laitteilla.</translation>
@@ -29,7 +28,6 @@
 <translation id="4241912885070669028">Olet kirjautumassa ulos verkkotunnuksen <ph name="SIGNOUT_MANAGED_DOMAIN" /> hallitsemalta tililtä. Chromium-tietosi poistetaan tältä laitteelta, mutta tietosi säilyvät Google-tililläsi.</translation>
 <translation id="4555020257205549924">Kun tämä ominaisuus on käytössä, Chromium tarjoaa vierailla kielillä kirjoitettujen sivujen käännöksiä Google Kääntäjän kautta. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
 <translation id="4787850887676698916">Muilla laitteilla Chromiumissa avaamasi välilehdet näytetään täällä.</translation>
-<translation id="495292094137889840">Aloita Chromiumin QR-lukijan käyttö</translation>
 <translation id="4999538639245140991">Koska kirjaudut ulos verkkotunnuksen <ph name="SIGNOUT_MANAGED_DOMAIN" /> ylläpitämältä tililtä, Chromium-datasi poistetaan tältä laitteelta. Se säilyy edelleen Google-tililläsi.</translation>
 <translation id="5231355151045086930">Kirjaudu ulos Chromiumista</translation>
 <translation id="5862307444128926510">Tervetuloa Chromiumiin</translation>

@@ -31,7 +31,7 @@ class SadTabCoordinatorTest : public PlatformTest {
     [base_view_controller_.view addLayoutGuide:guide];
     AddSameConstraints(guide, base_view_controller_.view);
   }
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   UIViewController* base_view_controller_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
 };

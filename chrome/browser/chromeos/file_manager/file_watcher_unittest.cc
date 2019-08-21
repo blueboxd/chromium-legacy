@@ -25,13 +25,12 @@ class FileManagerFileWatcherTest : public testing::Test {
   // Use IO_MAINLOOP so FilePathWatcher works in the fake FILE thread, which
   // is actually shared with the main thread.
   FileManagerFileWatcherTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
-  }
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
 
-  void FlushMessageLoopTasks() { thread_bundle_.RunUntilIdle(); }
+  void FlushMessageLoopTasks() { task_environment_.RunUntilIdle(); }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(FileManagerFileWatcherTest, AddAndRemoveOneExtensionId) {

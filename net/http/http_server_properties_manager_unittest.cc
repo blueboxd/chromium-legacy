@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
@@ -14,8 +15,12 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/default_tick_clock.h"
 #include "base/values.h"
+#include "net/base/features.h"
 #include "net/base/ip_address.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties.h"
@@ -34,6 +39,45 @@ using ::testing::AtLeast;
 using ::testing::Invoke;
 using ::testing::Mock;
 using ::testing::StrictMock;
+
+enum class NetworkIsolationKeyMode {
+  kDisabled,
+  kTopFrameOriginOnly,
+  kTopFrameOriginAndFrameOrigin,
+};
+
+const NetworkIsolationKeyMode kNetworkIsolationKeyModes[] = {
+    NetworkIsolationKeyMode::kDisabled,
+    NetworkIsolationKeyMode::kTopFrameOriginOnly,
+    NetworkIsolationKeyMode::kTopFrameOriginAndFrameOrigin,
+};
+
+std::unique_ptr<base::test::ScopedFeatureList> SetNetworkIsolationKeyMode(
+    NetworkIsolationKeyMode mode) {
+  auto feature_list = std::make_unique<base::test::ScopedFeatureList>();
+  switch (mode) {
+    case NetworkIsolationKeyMode::kDisabled:
+      feature_list->InitAndDisableFeature(
+          features::kPartitionHttpServerPropertiesByNetworkIsolationKey);
+      break;
+    case NetworkIsolationKeyMode::kTopFrameOriginOnly:
+      feature_list->InitWithFeatures(
+          // enabled_features
+          {features::kPartitionHttpServerPropertiesByNetworkIsolationKey},
+          // disabled_features
+          {features::kAppendFrameOriginToNetworkIsolationKey});
+      break;
+    case NetworkIsolationKeyMode::kTopFrameOriginAndFrameOrigin:
+      feature_list->InitWithFeatures(
+          // enabled_features
+          {features::kPartitionHttpServerPropertiesByNetworkIsolationKey,
+           features::kAppendFrameOriginToNetworkIsolationKey},
+          // disabled_features
+          {});
+      break;
+  }
+  return feature_list;
+}
 
 class MockPrefDelegate : public net::HttpServerProperties::PrefDelegate {
  public:
@@ -98,6 +142,78 @@ class MockPrefDelegate : public net::HttpServerProperties::PrefDelegate {
   DISALLOW_COPY_AND_ASSIGN(MockPrefDelegate);
 };
 
+// Converts |server_info_map| to a base::Value by running it through an
+// HttpServerPropertiesManager. Other fields are left empty.
+base::Value ServerInfoMapToValue(
+    const HttpServerProperties::ServerInfoMap& server_info_map) {
+  std::unique_ptr<MockPrefDelegate> pref_delegate =
+      std::make_unique<MockPrefDelegate>();
+  MockPrefDelegate* unowned_pref_delegate = pref_delegate.get();
+  // Callback that shouldn't be invoked - this method short-circuits loading
+  // prefs by calling HttpServerPropertiesManager::WriteToPrefs() before prefs
+  // are loaded.
+  HttpServerPropertiesManager::OnPrefsLoadedCallback on_prefs_loaded_callback =
+      base::BindOnce(
+          [](std::unique_ptr<HttpServerProperties::ServerInfoMap>
+                 server_info_map,
+             const IPAddress& last_quic_address,
+             std::unique_ptr<QuicServerInfoMap> quic_server_info_map,
+             std::unique_ptr<BrokenAlternativeServiceList>
+                 broken_alternative_service_list,
+             std::unique_ptr<RecentlyBrokenAlternativeServices>
+                 recently_broken_alternative_services) { ADD_FAILURE(); });
+  HttpServerPropertiesManager manager(
+      std::move(pref_delegate), std::move(on_prefs_loaded_callback),
+      10 /* max_server_configs_stored_in_properties */, nullptr /* net_log */,
+      base::DefaultTickClock::GetInstance());
+  manager.WriteToPrefs(
+      server_info_map, HttpServerPropertiesManager::GetCannonicalSuffix(),
+      IPAddress() /* last_quic_address */, QuicServerInfoMap(10),
+      BrokenAlternativeServiceList(), RecentlyBrokenAlternativeServices(10),
+      base::OnceClosure());
+
+  return unowned_pref_delegate->GetServerProperties()->Clone();
+}
+
+// Does the inverse of ServerInfoMapToValue(). Ignores fields other than the
+// ServerInfoMap.
+std::unique_ptr<HttpServerProperties::ServerInfoMap> ValueToServerInfoMap(
+    const base::Value& value) {
+  const base::DictionaryValue* dictionary_value;
+  if (!value.GetAsDictionary(&dictionary_value))
+    return nullptr;
+
+  std::unique_ptr<MockPrefDelegate> pref_delegate =
+      std::make_unique<MockPrefDelegate>();
+  MockPrefDelegate* unowned_pref_delegate = pref_delegate.get();
+
+  std::unique_ptr<HttpServerProperties::ServerInfoMap> out;
+  bool callback_invoked = false;
+  HttpServerPropertiesManager::OnPrefsLoadedCallback on_prefs_loaded_callback =
+      base::BindLambdaForTesting(
+          [&](std::unique_ptr<HttpServerProperties::ServerInfoMap>
+                  server_info_map,
+              const IPAddress& last_quic_address,
+              std::unique_ptr<QuicServerInfoMap> quic_server_info_map,
+              std::unique_ptr<BrokenAlternativeServiceList>
+                  broken_alternative_service_list,
+              std::unique_ptr<RecentlyBrokenAlternativeServices>
+                  recently_broken_alternative_services) {
+            ASSERT_FALSE(callback_invoked);
+            callback_invoked = true;
+            out = std::move(server_info_map);
+          });
+
+  HttpServerPropertiesManager manager(
+      std::move(pref_delegate), std::move(on_prefs_loaded_callback),
+      10 /* max_server_configs_stored_in_properties */, nullptr /* net_log */,
+      base::DefaultTickClock::GetInstance());
+
+  unowned_pref_delegate->InitializePrefs(*dictionary_value);
+  EXPECT_TRUE(callback_invoked);
+  return out;
+}
+
 }  // namespace
 
 class HttpServerPropertiesManagerTest : public testing::Test,
@@ -155,9 +271,11 @@ class HttpServerPropertiesManagerTest : public testing::Test,
     http_server_props_.reset();
   }
 
-  bool HasAlternativeService(const url::SchemeHostPort& server) {
+  bool HasAlternativeService(const url::SchemeHostPort& server,
+                             const NetworkIsolationKey& network_isolation_key) {
     const AlternativeServiceInfoVector alternative_service_info_vector =
-        http_server_props_->GetAlternativeServiceInfos(server);
+        http_server_props_->GetAlternativeServiceInfos(server,
+                                                       network_isolation_key);
     return !alternative_service_info_vector.empty();
   }
 
@@ -227,8 +345,9 @@ TEST_F(HttpServerPropertiesManagerTest, BadCachedHostPortPair) {
   url::SchemeHostPort gooler_server("http", google_host_port_pair.host(),
                                     google_host_port_pair.port());
 
-  EXPECT_FALSE(http_server_props_->SupportsRequestPriority(gooler_server));
-  EXPECT_FALSE(HasAlternativeService(gooler_server));
+  EXPECT_FALSE(http_server_props_->SupportsRequestPriority(
+      gooler_server, NetworkIsolationKey()));
+  EXPECT_FALSE(HasAlternativeService(gooler_server, NetworkIsolationKey()));
   const ServerNetworkStats* stats1 =
       http_server_props_->GetServerNetworkStats(gooler_server);
   EXPECT_EQ(nullptr, stats1);
@@ -264,8 +383,9 @@ TEST_F(HttpServerPropertiesManagerTest, BadCachedAltProtocolPort) {
     InitializePrefs(http_server_properties_dict);
 
     // Verify alternative service is not set.
-    EXPECT_FALSE(HasAlternativeService(
-        url::SchemeHostPort("http", "www.google.com", 80)));
+    EXPECT_FALSE(
+        HasAlternativeService(url::SchemeHostPort("http", "www.google.com", 80),
+                              NetworkIsolationKey()));
 }
 
 TEST_F(HttpServerPropertiesManagerTest, SupportsSpdy) {
@@ -273,11 +393,12 @@ TEST_F(HttpServerPropertiesManagerTest, SupportsSpdy) {
 
   // Add mail.google.com:443 as a supporting spdy server.
   url::SchemeHostPort spdy_server("https", "mail.google.com", 443);
-  EXPECT_FALSE(http_server_props_->SupportsRequestPriority(spdy_server));
-  http_server_props_->SetSupportsSpdy(spdy_server, true);
+  EXPECT_FALSE(http_server_props_->SupportsRequestPriority(
+      spdy_server, NetworkIsolationKey()));
+  http_server_props_->SetSupportsSpdy(spdy_server, NetworkIsolationKey(), true);
   // Setting the value to the same thing again should not trigger another pref
   // update.
-  http_server_props_->SetSupportsSpdy(spdy_server, true);
+  http_server_props_->SetSupportsSpdy(spdy_server, NetworkIsolationKey(), true);
 
   // Run the task.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
@@ -287,11 +408,12 @@ TEST_F(HttpServerPropertiesManagerTest, SupportsSpdy) {
 
   // Setting the value to the same thing again should not trigger another pref
   // update.
-  http_server_props_->SetSupportsSpdy(spdy_server, true);
+  http_server_props_->SetSupportsSpdy(spdy_server, NetworkIsolationKey(), true);
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
   EXPECT_EQ(0u, GetPendingMainThreadTaskCount());
 
-  EXPECT_TRUE(http_server_props_->SupportsRequestPriority(spdy_server));
+  EXPECT_TRUE(http_server_props_->SupportsRequestPriority(
+      spdy_server, NetworkIsolationKey()));
 }
 
 // Regression test for crbug.com/670519. Test that there is only one pref update
@@ -305,8 +427,9 @@ TEST_F(HttpServerPropertiesManagerTest,
   // Post an update task. SetSupportsSpdy calls ScheduleUpdatePrefs with a delay
   // of 60ms.
   url::SchemeHostPort spdy_server("https", "mail.google.com", 443);
-  EXPECT_FALSE(http_server_props_->SupportsRequestPriority(spdy_server));
-  http_server_props_->SetSupportsSpdy(spdy_server, true);
+  EXPECT_FALSE(http_server_props_->SupportsRequestPriority(
+      spdy_server, NetworkIsolationKey()));
+  http_server_props_->SetSupportsSpdy(spdy_server, NetworkIsolationKey(), true);
   // The pref update task should be scheduled.
   EXPECT_EQ(1u, GetPendingMainThreadTaskCount());
 
@@ -317,7 +440,8 @@ TEST_F(HttpServerPropertiesManagerTest,
   // Set another spdy server to trigger another call to
   // ScheduleUpdatePrefs. There should be no new update posted.
   url::SchemeHostPort spdy_server2("https", "drive.google.com", 443);
-  http_server_props_->SetSupportsSpdy(spdy_server2, true);
+  http_server_props_->SetSupportsSpdy(spdy_server2, NetworkIsolationKey(),
+                                      true);
   EXPECT_EQ(1u, GetPendingMainThreadTaskCount());
 
   // Move forward the extra 20ms. The pref update should be executed.
@@ -326,13 +450,16 @@ TEST_F(HttpServerPropertiesManagerTest,
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
   EXPECT_EQ(0u, GetPendingMainThreadTaskCount());
 
-  EXPECT_TRUE(http_server_props_->SupportsRequestPriority(spdy_server));
-  EXPECT_TRUE(http_server_props_->SupportsRequestPriority(spdy_server2));
+  EXPECT_TRUE(http_server_props_->SupportsRequestPriority(
+      spdy_server, NetworkIsolationKey()));
+  EXPECT_TRUE(http_server_props_->SupportsRequestPriority(
+      spdy_server2, NetworkIsolationKey()));
   // Set the third spdy server to trigger one more call to
   // ScheduleUpdatePrefs. A new update task should be posted now since the
   // previous one is completed.
   url::SchemeHostPort spdy_server3("https", "maps.google.com", 443);
-  http_server_props_->SetSupportsSpdy(spdy_server3, true);
+  http_server_props_->SetSupportsSpdy(spdy_server3, NetworkIsolationKey(),
+                                      true);
   EXPECT_EQ(1u, GetPendingMainThreadTaskCount());
 
   // Run the task.
@@ -345,7 +472,7 @@ TEST_F(HttpServerPropertiesManagerTest, GetAlternativeServiceInfos) {
   InitializePrefs();
 
   url::SchemeHostPort spdy_server_mail("http", "mail.google.com", 80);
-  EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
+  EXPECT_FALSE(HasAlternativeService(spdy_server_mail, NetworkIsolationKey()));
   const AlternativeService alternative_service(kProtoHTTP2, "mail.google.com",
                                                443);
   http_server_props_->SetHttp2AlternativeService(
@@ -361,7 +488,8 @@ TEST_F(HttpServerPropertiesManagerTest, GetAlternativeServiceInfos) {
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
   AlternativeServiceInfoVector alternative_service_info_vector =
-      http_server_props_->GetAlternativeServiceInfos(spdy_server_mail);
+      http_server_props_->GetAlternativeServiceInfos(spdy_server_mail,
+                                                     NetworkIsolationKey());
   ASSERT_EQ(1u, alternative_service_info_vector.size());
   EXPECT_EQ(alternative_service,
             alternative_service_info_vector[0].alternative_service());
@@ -371,7 +499,7 @@ TEST_F(HttpServerPropertiesManagerTest, SetAlternativeServices) {
   InitializePrefs();
 
   url::SchemeHostPort spdy_server_mail("http", "mail.google.com", 80);
-  EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
+  EXPECT_FALSE(HasAlternativeService(spdy_server_mail, NetworkIsolationKey()));
   AlternativeServiceInfoVector alternative_service_info_vector;
   const AlternativeService alternative_service1(kProtoHTTP2, "mail.google.com",
                                                 443);
@@ -383,11 +511,11 @@ TEST_F(HttpServerPropertiesManagerTest, SetAlternativeServices) {
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
           alternative_service2, one_day_from_now_, advertised_versions_));
-  http_server_props_->SetAlternativeServices(spdy_server_mail,
-                                             alternative_service_info_vector);
+  http_server_props_->SetAlternativeServices(
+      spdy_server_mail, NetworkIsolationKey(), alternative_service_info_vector);
   // ExpectScheduleUpdatePrefs() should be called only once.
-  http_server_props_->SetAlternativeServices(spdy_server_mail,
-                                             alternative_service_info_vector);
+  http_server_props_->SetAlternativeServices(
+      spdy_server_mail, NetworkIsolationKey(), alternative_service_info_vector);
 
   // Run the task.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
@@ -395,7 +523,8 @@ TEST_F(HttpServerPropertiesManagerTest, SetAlternativeServices) {
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
   AlternativeServiceInfoVector alternative_service_info_vector2 =
-      http_server_props_->GetAlternativeServiceInfos(spdy_server_mail);
+      http_server_props_->GetAlternativeServiceInfos(spdy_server_mail,
+                                                     NetworkIsolationKey());
   ASSERT_EQ(2u, alternative_service_info_vector2.size());
   EXPECT_EQ(alternative_service1,
             alternative_service_info_vector2[0].alternative_service());
@@ -407,16 +536,16 @@ TEST_F(HttpServerPropertiesManagerTest, SetAlternativeServicesEmpty) {
   InitializePrefs();
 
   url::SchemeHostPort spdy_server_mail("http", "mail.google.com", 80);
-  EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
+  EXPECT_FALSE(HasAlternativeService(spdy_server_mail, NetworkIsolationKey()));
   const AlternativeService alternative_service(kProtoHTTP2, "mail.google.com",
                                                443);
-  http_server_props_->SetAlternativeServices(spdy_server_mail,
-                                             AlternativeServiceInfoVector());
+  http_server_props_->SetAlternativeServices(
+      spdy_server_mail, NetworkIsolationKey(), AlternativeServiceInfoVector());
 
   EXPECT_EQ(0u, GetPendingMainThreadTaskCount());
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
 
-  EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
+  EXPECT_FALSE(HasAlternativeService(spdy_server_mail, NetworkIsolationKey()));
 }
 
 TEST_F(HttpServerPropertiesManagerTest, ConfirmAlternativeService) {
@@ -426,7 +555,7 @@ TEST_F(HttpServerPropertiesManagerTest, ConfirmAlternativeService) {
   AlternativeService alternative_service;
 
   spdy_server_mail = url::SchemeHostPort("http", "mail.google.com", 80);
-  EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
+  EXPECT_FALSE(HasAlternativeService(spdy_server_mail, NetworkIsolationKey()));
   alternative_service = AlternativeService(kProtoHTTP2, "mail.google.com", 443);
 
   http_server_props_->SetHttp2AlternativeService(
@@ -471,7 +600,7 @@ TEST_F(HttpServerPropertiesManagerTest, ConfirmAlternativeService) {
 // info. Prefs should not be written until after the load happens.
 TEST_F(HttpServerPropertiesManagerTest, LateLoadAlternativeServiceInfo) {
   url::SchemeHostPort spdy_server_mail("http", "mail.google.com", 80);
-  EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
+  EXPECT_FALSE(HasAlternativeService(spdy_server_mail, NetworkIsolationKey()));
   const AlternativeService alternative_service(kProtoHTTP2, "mail.google.com",
                                                443);
   http_server_props_->SetHttp2AlternativeService(
@@ -482,7 +611,8 @@ TEST_F(HttpServerPropertiesManagerTest, LateLoadAlternativeServiceInfo) {
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
 
   AlternativeServiceInfoVector alternative_service_info_vector =
-      http_server_props_->GetAlternativeServiceInfos(spdy_server_mail);
+      http_server_props_->GetAlternativeServiceInfos(spdy_server_mail,
+                                                     NetworkIsolationKey());
   ASSERT_EQ(1u, alternative_service_info_vector.size());
   EXPECT_EQ(alternative_service,
             alternative_service_info_vector[0].alternative_service());
@@ -490,7 +620,8 @@ TEST_F(HttpServerPropertiesManagerTest, LateLoadAlternativeServiceInfo) {
   // Initializing prefs does not result in a task to write the prefs.
   InitializePrefs(base::DictionaryValue(), true /* expect_pref_update */);
   alternative_service_info_vector =
-      http_server_props_->GetAlternativeServiceInfos(spdy_server_mail);
+      http_server_props_->GetAlternativeServiceInfos(spdy_server_mail,
+                                                     NetworkIsolationKey());
   EXPECT_EQ(1u, alternative_service_info_vector.size());
 
   // Updating the entry should result in a task to save prefs. Have to at least
@@ -504,7 +635,8 @@ TEST_F(HttpServerPropertiesManagerTest, LateLoadAlternativeServiceInfo) {
   FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
   alternative_service_info_vector =
-      http_server_props_->GetAlternativeServiceInfos(spdy_server_mail);
+      http_server_props_->GetAlternativeServiceInfos(spdy_server_mail,
+                                                     NetworkIsolationKey());
   EXPECT_EQ(1u, alternative_service_info_vector.size());
 }
 
@@ -512,7 +644,7 @@ TEST_F(HttpServerPropertiesManagerTest, LateLoadAlternativeServiceInfo) {
 TEST_F(HttpServerPropertiesManagerTest,
        ClearPrefsBeforeLoadAlternativeServiceInfo) {
   url::SchemeHostPort spdy_server_mail("http", "mail.google.com", 80);
-  EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
+  EXPECT_FALSE(HasAlternativeService(spdy_server_mail, NetworkIsolationKey()));
   const AlternativeService alternative_service(kProtoHTTP2, "mail.google.com",
                                                443);
   http_server_props_->SetHttp2AlternativeService(
@@ -524,7 +656,8 @@ TEST_F(HttpServerPropertiesManagerTest,
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
 
   AlternativeServiceInfoVector alternative_service_info_vector =
-      http_server_props_->GetAlternativeServiceInfos(spdy_server_mail);
+      http_server_props_->GetAlternativeServiceInfos(spdy_server_mail,
+                                                     NetworkIsolationKey());
   ASSERT_EQ(1u, alternative_service_info_vector.size());
   EXPECT_EQ(alternative_service,
             alternative_service_info_vector[0].alternative_service());
@@ -542,7 +675,8 @@ TEST_F(HttpServerPropertiesManagerTest,
   std::move(pref_delegate_->GetSetPropertiesCallback()).Run();
   EXPECT_TRUE(callback_invoked_);
   alternative_service_info_vector =
-      http_server_props_->GetAlternativeServiceInfos(spdy_server_mail);
+      http_server_props_->GetAlternativeServiceInfos(spdy_server_mail,
+                                                     NetworkIsolationKey());
   EXPECT_EQ(0u, alternative_service_info_vector.size());
 
   // Re-creating the entry should result in a task to save prefs.
@@ -553,7 +687,8 @@ TEST_F(HttpServerPropertiesManagerTest,
   FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
   alternative_service_info_vector =
-      http_server_props_->GetAlternativeServiceInfos(spdy_server_mail);
+      http_server_props_->GetAlternativeServiceInfos(spdy_server_mail,
+                                                     NetworkIsolationKey());
   EXPECT_EQ(1u, alternative_service_info_vector.size());
 }
 
@@ -565,7 +700,7 @@ TEST_F(HttpServerPropertiesManagerTest,
   AlternativeService alternative_service;
 
   spdy_server_mail = url::SchemeHostPort("http", "mail.google.com", 80);
-  EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
+  EXPECT_FALSE(HasAlternativeService(spdy_server_mail, NetworkIsolationKey()));
   alternative_service = AlternativeService(kProtoHTTP2, "mail.google.com", 443);
 
   http_server_props_->SetHttp2AlternativeService(
@@ -615,7 +750,7 @@ TEST_F(HttpServerPropertiesManagerTest,
   AlternativeService alternative_service;
 
   spdy_server_mail = url::SchemeHostPort("http", "mail.google.com", 80);
-  EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
+  EXPECT_FALSE(HasAlternativeService(spdy_server_mail, NetworkIsolationKey()));
   alternative_service = AlternativeService(kProtoHTTP2, "mail.google.com", 443);
 
   http_server_props_->SetHttp2AlternativeService(
@@ -664,7 +799,7 @@ TEST_F(HttpServerPropertiesManagerTest, OnDefaultNetworkChangedWithBrokenOnly) {
   AlternativeService alternative_service;
 
   spdy_server_mail = url::SchemeHostPort("http", "mail.google.com", 80);
-  EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
+  EXPECT_FALSE(HasAlternativeService(spdy_server_mail, NetworkIsolationKey()));
   alternative_service = AlternativeService(kProtoHTTP2, "mail.google.com", 443);
 
   http_server_props_->SetHttp2AlternativeService(
@@ -815,10 +950,11 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   alt_svc_info_vector.push_back(
       AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
           broken_alternative_service, one_day_from_now_));
-  http_server_props_->SetAlternativeServices(spdy_server, alt_svc_info_vector);
+  http_server_props_->SetAlternativeServices(spdy_server, NetworkIsolationKey(),
+                                             alt_svc_info_vector);
 
   http_server_props_->MarkAlternativeServiceBroken(broken_alternative_service);
-  http_server_props_->SetSupportsSpdy(spdy_server, true);
+  http_server_props_->SetSupportsSpdy(spdy_server, NetworkIsolationKey(), true);
   http_server_props_->SetSupportsQuic(true, actual_address);
   ServerNetworkStats stats;
   stats.srtt = base::TimeDelta::FromMicroseconds(10);
@@ -834,8 +970,9 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
 
   EXPECT_TRUE(http_server_props_->IsAlternativeServiceBroken(
       broken_alternative_service));
-  EXPECT_TRUE(http_server_props_->SupportsRequestPriority(spdy_server));
-  EXPECT_TRUE(HasAlternativeService(spdy_server));
+  EXPECT_TRUE(http_server_props_->SupportsRequestPriority(
+      spdy_server, NetworkIsolationKey()));
+  EXPECT_TRUE(HasAlternativeService(spdy_server, NetworkIsolationKey()));
   IPAddress address;
   EXPECT_TRUE(http_server_props_->GetSupportsQuic(&address));
   EXPECT_EQ(actual_address, address);
@@ -861,8 +998,9 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
 
   EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
       broken_alternative_service));
-  EXPECT_FALSE(http_server_props_->SupportsRequestPriority(spdy_server));
-  EXPECT_FALSE(HasAlternativeService(spdy_server));
+  EXPECT_FALSE(http_server_props_->SupportsRequestPriority(
+      spdy_server, NetworkIsolationKey()));
+  EXPECT_FALSE(HasAlternativeService(spdy_server, NetworkIsolationKey()));
   EXPECT_FALSE(http_server_props_->GetSupportsQuic(&address));
   const ServerNetworkStats* stats2 =
       http_server_props_->GetServerNetworkStats(spdy_server);
@@ -874,35 +1012,35 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
 // https://crbug.com/444956: Add 200 alternative_service servers followed by
 // supports_quic and verify we have read supports_quic from prefs.
 TEST_F(HttpServerPropertiesManagerTest, BadSupportsQuic) {
-  auto servers_dict = std::make_unique<base::DictionaryValue>();
   std::unique_ptr<base::ListValue> servers_list =
       std::make_unique<base::ListValue>();
 
   for (int i = 1; i <= 200; ++i) {
     // Set up alternative_service for www.google.com:i.
-    auto alternative_service_dict = std::make_unique<base::DictionaryValue>();
-    alternative_service_dict->SetString("protocol_str", "quic");
-    alternative_service_dict->SetInteger("port", i);
-    auto alternative_service_list = std::make_unique<base::ListValue>();
-    alternative_service_list->Append(std::move(alternative_service_dict));
-    auto server_pref_dict = std::make_unique<base::DictionaryValue>();
-    server_pref_dict->SetWithoutPathExpansion(
-        "alternative_service", std::move(alternative_service_list));
-      servers_dict->SetWithoutPathExpansion(
-          StringPrintf("https://www.google.com:%d", i),
-          std::move(server_pref_dict));
-      servers_list->AppendIfNotPresent(std::move(servers_dict));
-      servers_dict = std::make_unique<base::DictionaryValue>();
+    base::Value server_dict(base::Value::Type::DICTIONARY);
+    base::Value alternative_service_dict(base::Value::Type::DICTIONARY);
+    alternative_service_dict.SetStringKey("protocol_str", "quic");
+    alternative_service_dict.SetIntKey("port", i);
+    base::Value alternative_service_list(base::Value::Type::LIST);
+    alternative_service_list.GetList().emplace_back(
+        std::move(alternative_service_dict));
+    server_dict.SetKey("alternative_service",
+                       std::move(alternative_service_list));
+    server_dict.SetStringKey("server",
+                             StringPrintf("https://www.google.com:%d", i));
+    server_dict.SetKey("isolation", base::Value(base::Value::Type::LIST));
+    servers_list->GetList().emplace_back(std::move(server_dict));
   }
 
   // Set the server preference for http://mail.google.com server.
-  auto server_pref_dict1 = std::make_unique<base::DictionaryValue>();
-    servers_dict->SetWithoutPathExpansion("https://mail.google.com",
-                                          std::move(server_pref_dict1));
-    servers_list->AppendIfNotPresent(std::move(servers_dict));
-    base::DictionaryValue http_server_properties_dict = DictWithVersion();
-    http_server_properties_dict.SetWithoutPathExpansion(
-        "servers", std::move(servers_list));
+  base::Value server_dict2(base::Value::Type::DICTIONARY);
+  server_dict2.SetStringKey("server", "https://mail.google.com");
+  server_dict2.SetKey("isolation", base::Value(base::Value::Type::LIST));
+  servers_list->GetList().emplace_back(std::move(server_dict2));
+
+  base::DictionaryValue http_server_properties_dict = DictWithVersion();
+  http_server_properties_dict.SetWithoutPathExpansion("servers",
+                                                      std::move(servers_list));
 
   // Set up SupportsQuic for 127.0.0.1
   auto supports_quic = std::make_unique<base::DictionaryValue>();
@@ -920,7 +1058,8 @@ TEST_F(HttpServerPropertiesManagerTest, BadSupportsQuic) {
       server_gurl = GURL(StringPrintf("https://www.google.com:%d", i));
     url::SchemeHostPort server(server_gurl);
     AlternativeServiceInfoVector alternative_service_info_vector =
-        http_server_props_->GetAlternativeServiceInfos(server);
+        http_server_props_->GetAlternativeServiceInfos(server,
+                                                       NetworkIsolationKey());
     ASSERT_EQ(1u, alternative_service_info_vector.size());
     EXPECT_EQ(
         kProtoQUIC,
@@ -956,7 +1095,7 @@ TEST_F(HttpServerPropertiesManagerTest, UpdatePrefsWithCache) {
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
           www_alternative_service2, expiration2));
-  http_server_props_->SetAlternativeServices(server_www,
+  http_server_props_->SetAlternativeServices(server_www, NetworkIsolationKey(),
                                              alternative_service_info_vector);
 
   AlternativeService mail_alternative_service(kProtoHTTP2, "foo.google.com",
@@ -970,10 +1109,11 @@ TEST_F(HttpServerPropertiesManagerTest, UpdatePrefsWithCache) {
       mail_alternative_service);
 
   // #3: Set SPDY server map
-  http_server_props_->SetSupportsSpdy(server_www, false);
-  http_server_props_->SetSupportsSpdy(server_mail, true);
+  http_server_props_->SetSupportsSpdy(server_www, NetworkIsolationKey(), false);
+  http_server_props_->SetSupportsSpdy(server_mail, NetworkIsolationKey(), true);
   http_server_props_->SetSupportsSpdy(
-      url::SchemeHostPort("http", "not_persisted.com", 80), false);
+      url::SchemeHostPort("http", "not_persisted.com", 80),
+      NetworkIsolationKey(), false);
 
   // #4: Set ServerNetworkStats.
   ServerNetworkStats stats;
@@ -1060,18 +1200,20 @@ TEST_F(HttpServerPropertiesManagerTest, UpdatePrefsWithCache) {
       "{\"https://mail.google.com:80\":"
       "{\"server_info\":\"quic_server_info1\"}},"
       "\"servers\":["
-      "{\"https://www.google.com:80\":{"
-      "\"alternative_service\":[{\"advertised_versions\":[],"
+      "{\"alternative_service\":[{\"advertised_versions\":[],"
       "\"expiration\":\"13756212000000000\",\"port\":443,"
       "\"protocol_str\":\"h2\"},"
       "{\"advertised_versions\":[],\"expiration\":\"13758804000000000\","
-      "\"host\":\"www.google.com\",\"port\":1234,\"protocol_str\":\"h2\"}]}},"
-      "{\"https://mail.google.com:80\":{"
-      "\"alternative_service\":[{\"advertised_versions\":[],"
+      "\"host\":\"www.google.com\",\"port\":1234,\"protocol_str\":\"h2\"}],"
+      "\"isolation\":[],"
+      "\"server\":\"https://www.google.com:80\"},"
+      "{\"alternative_service\":[{\"advertised_versions\":[],"
       "\"expiration\":\"9223372036854775807\",\"host\":\"foo.google.com\","
       "\"port\":444,\"protocol_str\":\"h2\"}],"
+      "\"isolation\":[],"
       "\"network_stats\":{\"srtt\":42},"
-      "\"supports_spdy\":true}}],"
+      "\"server\":\"https://mail.google.com:80\","
+      "\"supports_spdy\":true}],"
       "\"supports_quic\":{\"address\":\"127.0.0.1\",\"used_quic\":true},"
       "\"version\":5}";
 
@@ -1187,7 +1329,7 @@ TEST_F(HttpServerPropertiesManagerTest, DoNotPersistExpiredAlternativeService) {
 
   const url::SchemeHostPort server("https", "www.example.com", 443);
   // #2: SetAlternativeServices().
-  http_server_props_->SetAlternativeServices(server,
+  http_server_props_->SetAlternativeServices(server, NetworkIsolationKey(),
                                              alternative_service_info_vector);
 
   // |net_test_task_runner_| has a remaining pending task to expire
@@ -1209,13 +1351,18 @@ TEST_F(HttpServerPropertiesManagerTest, DoNotPersistExpiredAlternativeService) {
   const base::DictionaryValue* server_pref_dict;
   ASSERT_TRUE(it->GetAsDictionary(&server_pref_dict));
 
-  const base::DictionaryValue* example_pref_dict;
+  const std::string* server_str = server_pref_dict->FindStringKey("server");
+  ASSERT_TRUE(server_str);
+  EXPECT_EQ("https://www.example.com", *server_str);
 
-  ASSERT_TRUE(server_pref_dict->GetDictionaryWithoutPathExpansion(
-      "https://www.example.com", &example_pref_dict));
+  const base::Value* network_isolation_key_value =
+      server_pref_dict->FindKey("isolation");
+  ASSERT_TRUE(network_isolation_key_value);
+  ASSERT_EQ(base::Value::Type::LIST, network_isolation_key_value->type());
+  EXPECT_TRUE(network_isolation_key_value->GetList().empty());
 
   const base::ListValue* altsvc_list;
-  ASSERT_TRUE(example_pref_dict->GetList("alternative_service", &altsvc_list));
+  ASSERT_TRUE(server_pref_dict->GetList("alternative_service", &altsvc_list));
 
   ASSERT_EQ(2u, altsvc_list->GetSize());
 
@@ -1319,7 +1466,7 @@ TEST_F(HttpServerPropertiesManagerTest, PersistAdvertisedVersionsToPref) {
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
           h2_alternative_service, expiration2));
-  http_server_props_->SetAlternativeServices(server_www,
+  http_server_props_->SetAlternativeServices(server_www, NetworkIsolationKey(),
                                              alternative_service_info_vector);
 
   // Set another QUIC alternative service with a single advertised QUIC version.
@@ -1352,15 +1499,20 @@ TEST_F(HttpServerPropertiesManagerTest, PersistAdvertisedVersionsToPref) {
   const char expected_json[] =
       "{\"quic_servers\":{\"https://mail.google.com:80\":{"
       "\"server_info\":\"quic_server_info1\"}},\"servers\":["
-      "{\"https://www.google.com:80\":{\"alternative_service\":[{"
+      "{\"alternative_service\":[{"
       "\"advertised_versions\":[39,46],\"expiration\":\"13756212000000000\","
       "\"port\":443,\"protocol_str\":\"quic\"},{\"advertised_versions\":[],"
       "\"expiration\":\"13758804000000000\",\"host\":\"www.google.com\","
-      "\"port\":1234,\"protocol_str\":\"h2\"}]}},"
-      "{\"https://mail.google.com:80\":{\"alternative_service\":[{"
+      "\"port\":1234,\"protocol_str\":\"h2\"}],"
+      "\"isolation\":[],"
+      "\"server\":\"https://www.google.com:80\"},"
+      "{\"alternative_service\":[{"
       "\"advertised_versions\":[46],\"expiration\":\"9223372036854775807\","
       "\"host\":\"foo.google.com\",\"port\":444,\"protocol_str\":\"quic\"}],"
-      "\"network_stats\":{\"srtt\":42}}}],\"supports_quic\":{"
+      "\"isolation\":[],"
+      "\"network_stats\":{\"srtt\":42},"
+      "\"server\":\"https://mail.google.com:80\"}],"
+      "\"supports_quic\":{"
       "\"address\":\"127.0.0.1\",\"used_quic\":true},\"version\":5}";
 
   const base::Value* http_server_properties =
@@ -1444,7 +1596,7 @@ TEST_F(HttpServerPropertiesManagerTest,
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
           quic_alternative_service1, expiration1, advertised_versions_));
-  http_server_props_->SetAlternativeServices(server_www,
+  http_server_props_->SetAlternativeServices(server_www, NetworkIsolationKey(),
                                              alternative_service_info_vector);
 
   // Set quic_server_info string.
@@ -1466,10 +1618,12 @@ TEST_F(HttpServerPropertiesManagerTest,
   const char expected_json[] =
       "{\"quic_servers\":{\"https://mail.google.com:80\":"
       "{\"server_info\":\"quic_server_info1\"}},\"servers\":["
-      "{\"https://www.google.com:80\":"
       "{\"alternative_service\":[{\"advertised_versions\":[46],"
       "\"expiration\":\"13756212000000000\",\"port\":443,"
-      "\"protocol_str\":\"quic\"}]}}],\"supports_quic\":"
+      "\"protocol_str\":\"quic\"}],"
+      "\"isolation\":[],"
+      "\"server\":\"https://www.google.com:80\"}],"
+      "\"supports_quic\":"
       "{\"address\":\"127.0.0.1\",\"used_quic\":true},\"version\":5}";
 
   const base::Value* http_server_properties =
@@ -1491,7 +1645,7 @@ TEST_F(HttpServerPropertiesManagerTest,
   alternative_service_info_vector_2.push_back(
       AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
           quic_alternative_service1, expiration1, advertised_versions));
-  http_server_props_->SetAlternativeServices(server_www,
+  http_server_props_->SetAlternativeServices(server_www, NetworkIsolationKey(),
                                              alternative_service_info_vector_2);
 
   // Update Prefs.
@@ -1504,10 +1658,12 @@ TEST_F(HttpServerPropertiesManagerTest,
   const char expected_json_updated[] =
       "{\"quic_servers\":{\"https://mail.google.com:80\":"
       "{\"server_info\":\"quic_server_info1\"}},\"servers\":["
-      "{\"https://www.google.com:80\":"
       "{\"alternative_service\":[{\"advertised_versions\":[39,46],"
       "\"expiration\":\"13756212000000000\",\"port\":443,"
-      "\"protocol_str\":\"quic\"}]}}],\"supports_quic\":"
+      "\"protocol_str\":\"quic\"}],"
+      "\"isolation\":[],"
+      "\"server\":\"https://www.google.com:80\"}],"
+      "\"supports_quic\":"
       "{\"address\":\"127.0.0.1\",\"used_quic\":true},\"version\":5}";
   EXPECT_TRUE(
       base::JSONWriter::Write(*http_server_properties, &preferences_json));
@@ -1524,7 +1680,7 @@ TEST_F(HttpServerPropertiesManagerTest,
   alternative_service_info_vector_3.push_back(
       AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
           quic_alternative_service1, expiration1, advertised_versions_2));
-  http_server_props_->SetAlternativeServices(server_www,
+  http_server_props_->SetAlternativeServices(server_www, NetworkIsolationKey(),
                                              alternative_service_info_vector_3);
 
   // No Prefs update.
@@ -1574,21 +1730,23 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
       "\"server_info\":\"quic_server_info1\"}"
       "},"
       "\"servers\":["
-      "{\"https://www.google.com:80\":{"
+      "{\"server\":\"https://www.google.com:80\","
+      "\"isolation\":[],"
       "\"alternative_service\":["
       "{\"expiration\":\"13756212000000000\",\"port\":443,"
       "\"protocol_str\":\"h2\"},"
       "{\"expiration\":\"13758804000000000\",\"host\":\"www.google.com\","
       "\"port\":1234,\"protocol_str\":\"h2\"}"
       "]"
-      "}},"
-      "{\"https://mail.google.com:80\":{"
+      "},"
+      "{\"server\":\"https://mail.google.com:80\","
+      "\"isolation\":[],"
       "\"alternative_service\":["
       "{\"expiration\":\"9223372036854775807\",\"host\":\"foo.google.com\","
       "\"port\":444,\"protocol_str\":\"h2\"}"
       "],"
       "\"network_stats\":{\"srtt\":42}"
-      "}}"
+      "}"
       "],"
       "\"supports_quic\":"
       "{\"address\":\"127.0.0.1\",\"used_quic\":true},"
@@ -1615,7 +1773,8 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   //
   AlternativeServiceInfoVector alternative_service_info_vector =
       http_server_props_->GetAlternativeServiceInfos(
-          url::SchemeHostPort("https", "www.google.com", 80));
+          url::SchemeHostPort("https", "www.google.com", 80),
+          NetworkIsolationKey());
   ASSERT_EQ(2u, alternative_service_info_vector.size());
 
   EXPECT_EQ(kProtoHTTP2,
@@ -1644,7 +1803,8 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   //
   alternative_service_info_vector =
       http_server_props_->GetAlternativeServiceInfos(
-          url::SchemeHostPort("https", "mail.google.com", 80));
+          url::SchemeHostPort("https", "mail.google.com", 80),
+          NetworkIsolationKey());
   ASSERT_EQ(1u, alternative_service_info_vector.size());
 
   EXPECT_EQ(kProtoHTTP2,
@@ -1694,7 +1854,8 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   // been removed from the alternative services info vectors of all servers.
   alternative_service_info_vector =
       http_server_props_->GetAlternativeServiceInfos(
-          url::SchemeHostPort("https", "www.google.com", 80));
+          url::SchemeHostPort("https", "www.google.com", 80),
+          NetworkIsolationKey());
   ASSERT_EQ(1u, alternative_service_info_vector.size());
 
   //
@@ -1788,6 +1949,175 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   IPAddress actual_address(127, 0, 0, 1);
   EXPECT_TRUE(http_server_props_->GetSupportsQuic(&actual_address));
   EXPECT_EQ(4, pref_delegate_->GetAndClearNumPrefUpdates());
+}
+
+TEST_F(HttpServerPropertiesManagerTest, NetworkIsolationKeyServerInfo) {
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
+  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
+  const url::Origin kOpaqueOrigin =
+      url::Origin::Create(GURL("data:text/plain,Hello World"));
+  const url::SchemeHostPort kServer("https", "baz.test", 443);
+  const url::SchemeHostPort kServer2("https", "zab.test", 443);
+
+  HttpServerProperties::ServerInfo server_info;
+  server_info.supports_spdy = true;
+
+  for (auto save_network_isolation_key_mode : kNetworkIsolationKeyModes) {
+    SCOPED_TRACE(static_cast<int>(save_network_isolation_key_mode));
+
+    // Save prefs using |save_network_isolation_key_mode|.
+    base::Value saved_value;
+    {
+      // Configure the the feature.
+      std::unique_ptr<base::test::ScopedFeatureList> feature_list =
+          SetNetworkIsolationKeyMode(save_network_isolation_key_mode);
+
+      // This parameter is normally calculated by HttpServerProperties based on
+      // the kPartitionHttpServerPropertiesByNetworkIsolationKey feature, but
+      // this test doesn't use that class.
+      bool use_network_isolation_key =
+          save_network_isolation_key_mode != NetworkIsolationKeyMode::kDisabled;
+
+      HttpServerProperties::ServerInfoMap server_info_map;
+
+      // Add server info entry using two origins with value of |server_info|.
+      // NetworkIsolationKey's constructor takes the state of the
+      // kAppendFrameOriginToNetworkIsolationKey feature into account, so need
+      // to make sure to call the constructor after setting up the feature
+      // above.
+      HttpServerProperties::ServerInfoMapKey server_info_key(
+          kServer, NetworkIsolationKey(kOrigin1, kOrigin2),
+          use_network_isolation_key);
+      server_info_map.Put(server_info_key, server_info);
+
+      // Also add an etry with an opaque origin, if |use_network_isolation_key|
+      // is true. This value should not be saved to disk, since opaque origins
+      // are only meaningful within a browsing session.
+      if (use_network_isolation_key) {
+        HttpServerProperties::ServerInfoMapKey server_info_key2(
+            kServer2, NetworkIsolationKey(kOpaqueOrigin, kOpaqueOrigin),
+            use_network_isolation_key);
+        server_info_map.Put(server_info_key2, server_info);
+      }
+
+      saved_value = ServerInfoMapToValue(server_info_map);
+    }
+
+    for (auto load_network_isolation_key_mode : kNetworkIsolationKeyModes) {
+      SCOPED_TRACE(static_cast<int>(load_network_isolation_key_mode));
+
+      std::unique_ptr<base::test::ScopedFeatureList> feature_list =
+          SetNetworkIsolationKeyMode(load_network_isolation_key_mode);
+      std::unique_ptr<HttpServerProperties::ServerInfoMap> server_info_map2 =
+          ValueToServerInfoMap(saved_value);
+      ASSERT_TRUE(server_info_map2);
+      if (save_network_isolation_key_mode ==
+          NetworkIsolationKeyMode::kDisabled) {
+        // If NetworkIsolationKey was disabled when saving, it was saved with an
+        // empty NetworkIsolationKey, which should always be loaded
+        // successfully. This is needed to continue to support consumers that
+        // don't use NetworkIsolationKeys.
+        ASSERT_EQ(1u, server_info_map2->size());
+        const HttpServerProperties::ServerInfoMapKey& server_info_key2 =
+            server_info_map2->begin()->first;
+        const HttpServerProperties::ServerInfo& server_info2 =
+            server_info_map2->begin()->second;
+        EXPECT_EQ(kServer, server_info_key2.server);
+        EXPECT_EQ(NetworkIsolationKey(),
+                  server_info_key2.network_isolation_key);
+        EXPECT_EQ(server_info, server_info2);
+      } else if (save_network_isolation_key_mode ==
+                 load_network_isolation_key_mode) {
+        // If the save and load modes are the same, the load should succeed, and
+        // the network isolation keys should match.
+        ASSERT_EQ(1u, server_info_map2->size());
+        const HttpServerProperties::ServerInfoMapKey& server_info_key2 =
+            server_info_map2->begin()->first;
+        const HttpServerProperties::ServerInfo& server_info2 =
+            server_info_map2->begin()->second;
+        EXPECT_EQ(kServer, server_info_key2.server);
+        EXPECT_EQ(NetworkIsolationKey(kOrigin1, kOrigin2),
+                  server_info_key2.network_isolation_key);
+        EXPECT_EQ(server_info, server_info2);
+      } else {
+        // Otherwise, the NetworkIsolationKey doesn't make sense with the
+        // current feature values, so the ServerInfo should be discarded.
+        EXPECT_EQ(0u, server_info_map2->size());
+      }
+    }
+  }
+}
+
+// Tests a full round trip with a NetworkIsolationKey, using the
+// HttpServerProperties interface.
+TEST_F(HttpServerPropertiesManagerTest, NetworkIsolationKeyIntegration) {
+  const url::Origin kOrigin = url::Origin::Create(GURL("https://foo.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey(kOrigin, kOrigin);
+  const url::SchemeHostPort kServer("https", "baz.test", 443);
+
+  const url::Origin kOpaqueOrigin =
+      url::Origin::Create(GURL("data:text/plain,Hello World"));
+  const NetworkIsolationKey kOpaqueOriginNetworkIsolationKey(kOpaqueOrigin,
+                                                             kOpaqueOrigin);
+  const url::SchemeHostPort kServer2("https", "zab.test", 443);
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPartitionHttpServerPropertiesByNetworkIsolationKey);
+
+  // Create and initialize an HttpServerProperties with no state.
+  std::unique_ptr<MockPrefDelegate> pref_delegate =
+      std::make_unique<MockPrefDelegate>();
+  MockPrefDelegate* unowned_pref_delegate = pref_delegate.get();
+  std::unique_ptr<HttpServerProperties> properties =
+      std::make_unique<HttpServerProperties>(std::move(pref_delegate),
+                                             /*net_log=*/nullptr,
+                                             GetMockTickClock());
+  unowned_pref_delegate->InitializePrefs(base::DictionaryValue());
+
+  // Set a values using kNetworkIsolationKey.
+  properties->SetSupportsSpdy(kServer, kNetworkIsolationKey, true);
+  EXPECT_TRUE(properties->GetSupportsSpdy(kServer, kNetworkIsolationKey));
+  EXPECT_FALSE(
+      properties->GetSupportsSpdy(kServer, kOpaqueOriginNetworkIsolationKey));
+  EXPECT_FALSE(properties->GetSupportsSpdy(kServer, NetworkIsolationKey()));
+
+  // Opaque origins should works with HttpServerProperties, but not be persisted
+  // to disk.
+  properties->SetSupportsSpdy(kServer2, kOpaqueOriginNetworkIsolationKey, true);
+  EXPECT_FALSE(properties->GetSupportsSpdy(kServer2, kNetworkIsolationKey));
+  EXPECT_TRUE(
+      properties->GetSupportsSpdy(kServer2, kOpaqueOriginNetworkIsolationKey));
+  EXPECT_FALSE(properties->GetSupportsSpdy(kServer2, NetworkIsolationKey()));
+
+  // Wait until the data's been written to prefs, and then tear down the
+  // HttpServerProperties.
+  FastForwardBy(HttpServerProperties::GetUpdatePrefsDelayForTesting());
+  std::unique_ptr<base::DictionaryValue> saved_value =
+      unowned_pref_delegate->GetServerProperties()->CreateDeepCopy();
+  properties.reset();
+
+  // Create a new HttpServerProperties using the value saved to prefs above.
+  pref_delegate = std::make_unique<MockPrefDelegate>();
+  unowned_pref_delegate = pref_delegate.get();
+  properties = std::make_unique<HttpServerProperties>(
+      std::move(pref_delegate), /*net_log=*/nullptr, GetMockTickClock());
+  unowned_pref_delegate->InitializePrefs(*saved_value);
+
+  // The information set using kNetworkIsolationKey on the original
+  // HttpServerProperties should also be set on the restored
+  // HttpServerProperties.
+  EXPECT_TRUE(properties->GetSupportsSpdy(kServer, kNetworkIsolationKey));
+  EXPECT_FALSE(
+      properties->GetSupportsSpdy(kServer, kOpaqueOriginNetworkIsolationKey));
+  EXPECT_FALSE(properties->GetSupportsSpdy(kServer, NetworkIsolationKey()));
+
+  // The information set using kOpaqueOriginNetworkIsolationKey should not have
+  // been restored.
+  EXPECT_FALSE(properties->GetSupportsSpdy(kServer2, kNetworkIsolationKey));
+  EXPECT_FALSE(
+      properties->GetSupportsSpdy(kServer2, kOpaqueOriginNetworkIsolationKey));
+  EXPECT_FALSE(properties->GetSupportsSpdy(kServer2, NetworkIsolationKey()));
 }
 
 }  // namespace net

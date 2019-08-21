@@ -12,9 +12,9 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -72,7 +72,8 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   static scoped_refptr<WebWorkerFetchContextImpl> Create(
       ServiceWorkerProviderContext* provider_context,
       blink::mojom::RendererPreferences renderer_preferences,
-      blink::mojom::RendererPreferenceWatcherRequest watcher_request,
+      mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
+          watcher_receiver,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
           fallback_factory_info);
@@ -174,7 +175,8 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   // Regarding the rest of params, see the comments on Create().
   WebWorkerFetchContextImpl(
       blink::mojom::RendererPreferences renderer_preferences,
-      blink::mojom::RendererPreferenceWatcherRequest watcher_request,
+      mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
+          watcher_receiver,
       blink::mojom::ServiceWorkerWorkerClientRequest
           service_worker_client_request,
       blink::mojom::ServiceWorkerWorkerClientRegistryPtrInfo
@@ -286,14 +288,15 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
 
   blink::mojom::RendererPreferences renderer_preferences_;
 
-  // |watcher_binding_| and |child_preference_watchers_| are for keeping track
-  // of updates in the renderer preferences.
-  mojo::Binding<blink::mojom::RendererPreferenceWatcher>
-      preference_watcher_binding_;
+  // |preference_watcher_receiver_| and |child_preference_watchers_| are for
+  // keeping track of updates in the renderer preferences.
+  mojo::Receiver<blink::mojom::RendererPreferenceWatcher>
+      preference_watcher_receiver_{this};
   // Kept while staring up the worker thread. Valid until
   // InitializeOnWorkerThread().
-  blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request_;
-  mojo::InterfacePtrSet<blink::mojom::RendererPreferenceWatcher>
+  mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
+      preference_watcher_pending_receiver_;
+  mojo::RemoteSet<blink::mojom::RendererPreferenceWatcher>
       child_preference_watchers_;
 
   // This is owned by ThreadedMessagingProxyBase on the main thread.

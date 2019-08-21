@@ -202,7 +202,7 @@ class SearchRankingEventLoggerTest : public testing::Test {
   // all tasks and then all the tasks on the current one to complete as well.
   void Wait() {
     history::BlockUntilHistoryProcessesPendingRequests(history_service_.get());
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   // Wait for a background UKM event to finish processing. This is necessary if
@@ -217,7 +217,7 @@ class SearchRankingEventLoggerTest : public testing::Test {
     run_loop.Run();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::ScopedMockClockOverride time_;
   base::ScopedTempDir history_dir_;
   base::test::ScopedFeatureList scoped_feature_list_;

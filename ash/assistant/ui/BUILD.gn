@@ -88,6 +88,8 @@ component("ui") {
     "main_stage/suggestion_container_view.h",
     "main_stage/ui_element_container_view.cc",
     "main_stage/ui_element_container_view.h",
+    "proactive_suggestions_view.cc",
+    "proactive_suggestions_view.h",
   ]
 
   deps = [

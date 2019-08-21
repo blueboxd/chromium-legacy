@@ -119,7 +119,7 @@ class ViscaWebcamTest : public testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   scoped_refptr<ViscaWebcam> webcam_;
 };
 

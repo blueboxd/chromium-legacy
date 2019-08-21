@@ -94,7 +94,7 @@ class IdentityGaiaWebAuthFlowTest : public testing::Test {
  protected:
   testing::StrictMock<MockGaiaWebAuthFlowDelegate> delegate_;
   GoogleServiceAuthError::State ubertoken_error_state_;
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(IdentityGaiaWebAuthFlowTest, OAuthError) {

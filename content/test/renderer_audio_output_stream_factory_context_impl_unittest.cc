@@ -177,7 +177,7 @@ class RendererAudioOutputStreamFactoryIntegrationTest : public Test {
  public:
   RendererAudioOutputStreamFactoryIntegrationTest()
       : media_stream_manager_(),
-        thread_bundle_(TestBrowserThreadBundle::Options::REAL_IO_THREAD),
+        task_environment_(BrowserTaskEnvironment::Options::REAL_IO_THREAD),
         audio_manager_(std::make_unique<media::AudioThreadImpl>()),
         audio_system_(&audio_manager_) {
     media_stream_manager_ = std::make_unique<MediaStreamManager>(
@@ -198,7 +198,7 @@ class RendererAudioOutputStreamFactoryIntegrationTest : public Test {
   }
 
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   media::MockAudioManager audio_manager_;
   media::AudioSystemImpl audio_system_;
   std::unique_ptr<RendererAudioOutputStreamFactoryContextImpl,

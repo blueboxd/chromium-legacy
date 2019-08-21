@@ -149,45 +149,9 @@ bool IsColorModelSelected(int color_mode) {
 // Global SequenceNumber used for generating unique cookie values.
 static base::AtomicSequenceNumber cookie_seq;
 
-PrintSettings::PrintSettings() {
-  Clear();
-}
+PrintSettings::PrintSettings() = default;
 
 PrintSettings::~PrintSettings() = default;
-
-void PrintSettings::Clear() {
-  ranges_.clear();
-  selection_only_ = false;
-  margin_type_ = DEFAULT_MARGINS;
-  title_.clear();
-  url_.clear();
-  display_header_footer_ = false;
-  should_print_backgrounds_ = false;
-  collate_ = false;
-  color_ = UNKNOWN_COLOR_MODEL;
-  copies_ = 0;
-  duplex_mode_ = UNKNOWN_DUPLEX_MODE;
-  device_name_.clear();
-  requested_media_ = RequestedMedia();
-  page_setup_device_units_.Clear();
-  dpi_ = gfx::Size();
-  scale_factor_ = 1.0f;
-  rasterize_pdf_ = false;
-  landscape_ = false;
-  supports_alpha_blend_ = true;
-#if defined(OS_WIN)
-  print_text_with_gdi_ = false;
-  printer_type_ = PrintSettings::PrinterType::TYPE_NONE;
-#endif
-  is_modifiable_ = true;
-  pages_per_sheet_ = 1;
-#if defined(OS_CHROMEOS)
-  send_user_info_ = false;
-  username_.clear();
-  job_title_.clear();
-  pin_value_.clear();
-#endif  // defined(OS_CHROMEOS)
-}
 
 void PrintSettings::SetPrinterPrintableArea(
     const gfx::Size& physical_size_device_units,

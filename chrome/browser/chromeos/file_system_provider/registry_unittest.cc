@@ -118,7 +118,7 @@ class FileSystemProviderRegistryTest : public testing::Test {
     fake_watcher_.last_tag = "hello-world";
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   TestingProfile* profile_;
   std::unique_ptr<RegistryInterface> registry_;

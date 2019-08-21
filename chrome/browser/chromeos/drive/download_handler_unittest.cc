@@ -108,7 +108,7 @@ class DownloadHandlerTest : public testing::Test {
 
  protected:
   base::ScopedTempDir temp_dir_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   std::unique_ptr<DownloadHandlerTestDownloadManager> download_manager_;
   std::unique_ptr<DownloadHandlerTestDownloadManager>

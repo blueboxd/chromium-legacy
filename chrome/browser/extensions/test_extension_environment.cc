@@ -94,9 +94,10 @@ ExtensionService* TestExtensionEnvironment::CreateExtensionServiceForProfile(
 }
 
 TestExtensionEnvironment::TestExtensionEnvironment(Type type)
-    : thread_bundle_(type == Type::kWithTaskEnvironment
-                         ? std::make_unique<content::TestBrowserThreadBundle>()
-                         : nullptr),
+    : task_environment_(
+          type == Type::kWithTaskEnvironment
+              ? std::make_unique<content::BrowserTaskEnvironment>()
+              : nullptr),
 #if defined(OS_CHROMEOS)
       chromeos_env_(chromeos::DeviceSettingsService::IsInitialized()
                         ? nullptr

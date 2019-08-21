@@ -59,7 +59,7 @@ class ChromeBlacklistTrialTest : public testing::Test {
 
   std::unique_ptr<base::win::RegKey> blacklist_registry_key_;
   registry_util::RegistryOverrideManager override_manager_;
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeBlacklistTrialTest);

@@ -266,7 +266,8 @@ class RendererPerfTest : public testing::Test {
         std::move(output_surface),
         /*display_scheduler=*/nullptr, base::ThreadTaskRunnerHandle::Get());
     display_->SetVisible(true);
-    display_->Initialize(&client_, manager_.surface_manager());
+    display_->Initialize(&client_, manager_.surface_manager(),
+                         true /* enable_shared_images */);
     display_->Resize(kSurfaceSize);
 
     id_allocator_.GenerateId();

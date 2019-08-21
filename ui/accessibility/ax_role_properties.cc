@@ -147,6 +147,16 @@ bool IsDocument(const ax::mojom::Role role) {
   }
 }
 
+bool IsDialog(const ax::mojom::Role role) {
+  switch (role) {
+    case ax::mojom::Role::kAlertDialog:
+    case ax::mojom::Role::kDialog:
+      return true;
+    default:
+      return false;
+  }
+}
+
 bool IsHeading(const ax::mojom::Role role) {
   switch (role) {
     case ax::mojom::Role::kHeading:

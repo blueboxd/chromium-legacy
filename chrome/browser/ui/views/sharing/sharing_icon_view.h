@@ -42,9 +42,15 @@ class SharingIconView : public PageActionIconView {
   void UpdateInkDrop(bool activate);
   void UpdateOpacity();
   void UpdateLoaderColor();
+  bool isLoadingAnimationVisible();
+  bool should_show_error() { return should_show_error_; }
+  void set_should_show_error(bool should_show_error) {
+    should_show_error_ = should_show_error;
+  }
 
+ private:
   std::unique_ptr<gfx::ThrobAnimation> loading_animation_;
-  bool show_error_ = false;
+  bool should_show_error_ = false;
   SkColor loader_color_;
 
   DISALLOW_COPY_AND_ASSIGN(SharingIconView);

@@ -24,7 +24,7 @@ namespace extensions {
 
 class ChromeDesktopReportRequestGeneratorTest : public ::testing::Test {
  protected:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   TestingProfile profile_;
 };

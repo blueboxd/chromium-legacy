@@ -45,7 +45,7 @@ class DeclarativeContentConditionTrackerTest : public testing::Test {
   const void* GeneratePredicateGroupID();
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   // Enables MockRenderProcessHosts.
   content::RenderViewHostTestEnabler render_view_host_test_enabler_;

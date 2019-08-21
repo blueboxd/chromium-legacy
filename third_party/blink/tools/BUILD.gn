@@ -13,7 +13,7 @@ action("build_wpt_metadata") {
     "../../third_party/blink/web_tests/WPTOverrideExpectations",
   ]
   outputs = [
-    "$root_out_dir/wpt_expectations_metadata/",
+    "$root_out_dir/wpt_expectations_metadata.stamp",
   ]
   data = [
     # Include the blinkpy tools to access expectations data

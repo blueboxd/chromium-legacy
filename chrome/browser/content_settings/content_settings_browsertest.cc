@@ -490,25 +490,48 @@ IN_PROC_BROWSER_TEST_P(CookieSettingsTest, BlockCookiesAlsoBlocksIndexedDB) {
       "    });"
       "  }"
       "  try {"
-      "    await wrap(%s);"
+      "    let promiselike = indexedDB.%s%s;"
+      "    if (typeof promiselike.then !== 'undefined') {"
+      "      await promiselike;"
+      "    }"
+      "    await wrap(promiselike);"
       "  } catch(e) {"
       "    return `${name} - ${e.toString()}`;"
       "  }"
       "  return `${name} - success`;"
       "}())";
 
-  const std::vector<std::string> kTestOps({
-      "indexedDB.open('foo', 1)",
-      "indexedDB.deleteDatabase('foo')",
-  });
+  struct TestOp {
+    const char* cmd;
+    const char* args;
+  };
+
+  const TestOp kTestOps[] = {
+      {.cmd = "open", .args = "('foo', 1)"},
+      {.cmd = "deleteDatabase", .args = "('foo')"},
+  };
 
   const char kBaseExpected[] =
       "%s - UnknownError: The user denied permission to access the database.";
 
   for (auto& op : kTestOps) {
     EXPECT_EQ(
-        base::StringPrintf(kBaseExpected, op.data()),
-        EvalJs(tab, base::StringPrintf(kBaseScript, op.data(), op.data())));
+        base::StringPrintf(kBaseExpected, op.cmd),
+        EvalJs(tab, base::StringPrintf(kBaseScript, op.cmd, op.cmd, op.args)));
+  }
+
+  const TestOp kPromiseTestOps[] = {
+      {.cmd = "databases", .args = "()"},
+  };
+
+  const char kPromiseBaseExpected[] =
+      "%s - UnknownError: Failed to execute '%s' on 'IDBFactory': The user "
+      "denied permission to access the database.";
+
+  for (auto& op : kPromiseTestOps) {
+    EXPECT_EQ(
+        base::StringPrintf(kPromiseBaseExpected, op.cmd, op.cmd),
+        EvalJs(tab, base::StringPrintf(kBaseScript, op.cmd, op.cmd, op.args)));
   }
 }
 

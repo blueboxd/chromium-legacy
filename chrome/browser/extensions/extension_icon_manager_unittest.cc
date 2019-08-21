@@ -86,7 +86,7 @@ class ExtensionIconManagerTest : public testing::Test,
   }
 
  private:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   // The number of observed image loads that have not been waited for.
   int unwaited_image_loads_;

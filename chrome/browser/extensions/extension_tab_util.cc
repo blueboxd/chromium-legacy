@@ -118,6 +118,39 @@ ExtensionTabUtil::Delegate* GetExtensionTabUtilDelegate() {
   return GetExtensionTabUtilDelegateWrapper().get();
 }
 
+ExtensionTabUtil::ScrubTabBehavior GetScrubTabBehaviorImpl(
+    const Extension* extension,
+    const GURL& url,
+    int tab_id) {
+  bool has_permission = false;
+
+  if (extension) {
+    bool api_permission = false;
+    if (tab_id == api::tabs::TAB_ID_NONE) {
+      api_permission =
+          extension->permissions_data()->HasAPIPermission(APIPermission::kTab);
+    } else {
+      api_permission = extension->permissions_data()->HasAPIPermissionForTab(
+          tab_id, APIPermission::kTab);
+    }
+
+    bool host_permission = extension->permissions_data()
+                               ->active_permissions()
+                               .HasExplicitAccessToOrigin(url);
+    has_permission = api_permission || host_permission;
+  }
+
+  if (!has_permission) {
+    return ExtensionTabUtil::kScrubTabFully;
+  }
+
+  if (GetExtensionTabUtilDelegate()) {
+    return GetExtensionTabUtilDelegate()->GetScrubTabBehavior(extension);
+  }
+
+  return ExtensionTabUtil::kDontScrubTab;
+}
+
 }  // namespace
 
 ExtensionTabUtil::OpenTabParams::OpenTabParams()
@@ -279,9 +312,14 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(ExtensionFunction* function,
   if (active)
     navigate_params.navigated_or_inserted_contents->SetInitialFocus();
 
+  ExtensionTabUtil::ScrubTabBehavior scrub_tab_behavior =
+      ExtensionTabUtil::GetScrubTabBehavior(
+          function->extension(),
+          navigate_params.navigated_or_inserted_contents);
+
   // Return data about the newly created tab.
   return ExtensionTabUtil::CreateTabObject(
-             navigate_params.navigated_or_inserted_contents, kScrubTab,
+             navigate_params.navigated_or_inserted_contents, scrub_tab_behavior,
              function->extension(), tab_strip, new_index)
       ->ToValue()
       .release();
@@ -405,8 +443,9 @@ std::unique_ptr<api::tabs::Tab> ExtensionTabUtil::CreateTabObject(
     }
   }
 
-  if (scrub_tab_behavior == kScrubTab)
-    ScrubTabForExtension(extension, contents, tab_object.get());
+  if (scrub_tab_behavior != kDontScrubTab)
+    ScrubTabForExtension(extension, contents, tab_object.get(),
+                         scrub_tab_behavior);
   return tab_object;
 }
 
@@ -416,7 +455,10 @@ std::unique_ptr<base::ListValue> ExtensionTabUtil::CreateTabList(
   std::unique_ptr<base::ListValue> tab_list(new base::ListValue());
   TabStripModel* tab_strip = browser->tab_strip_model();
   for (int i = 0; i < tab_strip->count(); ++i) {
-    tab_list->Append(CreateTabObject(tab_strip->GetWebContentsAt(i), kScrubTab,
+    WebContents* web_contents = tab_strip->GetWebContentsAt(i);
+    ExtensionTabUtil::ScrubTabBehavior scrub_tab_behavior =
+        ExtensionTabUtil::GetScrubTabBehavior(extension, web_contents);
+    tab_list->Append(CreateTabObject(web_contents, scrub_tab_behavior,
                                      extension, tab_strip, i)
                          ->ToValue());
   }
@@ -506,35 +548,38 @@ void ExtensionTabUtil::SetPlatformDelegate(std::unique_ptr<Delegate> delegate) {
 }
 
 // static
-void ExtensionTabUtil::ScrubTabForExtension(const Extension* extension,
-                                            content::WebContents* contents,
-                                            api::tabs::Tab* tab) {
-  bool has_permission = false;
-  if (extension) {
-    bool api_permission = false;
-    std::string url;
-    if (contents) {
-      api_permission = extension->permissions_data()->HasAPIPermissionForTab(
-          GetTabId(contents), APIPermission::kTab);
-      url = contents->GetURL().spec();
-    } else {
-      api_permission =
-          extension->permissions_data()->HasAPIPermission(APIPermission::kTab);
-      url = *tab->url;
-    }
-    bool host_permission = extension->permissions_data()
-                               ->active_permissions()
-                               .HasExplicitAccessToOrigin(GURL(url));
-    has_permission = api_permission || host_permission;
-  }
-  if (!has_permission) {
-    tab->url.reset();
-    tab->title.reset();
-    tab->fav_icon_url.reset();
-  }
-  if (GetExtensionTabUtilDelegate()) {
-    GetExtensionTabUtilDelegate()->ScrubTabForExtension(extension, contents,
-                                                        tab);
+ExtensionTabUtil::ScrubTabBehavior ExtensionTabUtil::GetScrubTabBehavior(
+    const Extension* extension,
+    content::WebContents* contents) {
+  return GetScrubTabBehaviorImpl(extension, contents->GetURL(),
+                                 GetTabId(contents));
+}
+
+// static
+ExtensionTabUtil::ScrubTabBehavior ExtensionTabUtil::GetScrubTabBehavior(
+    const Extension* extension,
+    const GURL& url) {
+  return GetScrubTabBehaviorImpl(extension, url, api::tabs::TAB_ID_NONE);
+}
+
+// static
+void ExtensionTabUtil::ScrubTabForExtension(
+    const Extension* extension,
+    content::WebContents* contents,
+    api::tabs::Tab* tab,
+    ScrubTabBehavior scrub_tab_behavior) {
+  switch (scrub_tab_behavior) {
+    case kScrubTabFully:
+      tab->url.reset();
+      tab->title.reset();
+      tab->fav_icon_url.reset();
+      break;
+    case kScrubTabUrlToOrigin:
+      tab->url =
+          std::make_unique<std::string>(GURL(*tab->url).GetOrigin().spec());
+      break;
+    case kDontScrubTab:
+      NOTREACHED();
   }
 }
 

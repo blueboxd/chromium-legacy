@@ -8593,6 +8593,58 @@
       If this policy is left not set, the built-in DNS client will be enabled by default on MacOS, Android (when neither Private DNS nor VPN are enabled) and ChromeOS, and the users will be able to change whether the built-in DNS client is used by editing chrome://flags or specifying a command-line flag.''',
     },
     {
+      'name': 'DnsOverHttpsMode',
+      'owners': ['doh-core@google.com'],
+      'type': 'string-enum',
+      'schema': {
+        'type': 'string',
+        'enum': [
+          'off',
+          'automatic',
+          'secure',
+        ],
+      },
+      'items': [
+        {
+          'name': 'off',
+          'value': 'off',
+          'caption': '''Disable DNS-over-HTTPS''',
+        },
+        {
+          'name': 'automatic',
+          'value': 'automatic',
+          'caption': '''Enable DNS-over-HTTPS with insecure fallback''',
+        },
+        {
+          'name': 'secure',
+          'value': 'secure',
+          'caption': '''Enable DNS-over-HTTPS without insecure fallback''',
+        }
+      ],
+      'supported_on': ['chrome_os:78-', 'chrome.*:78-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'future': True,
+      'example_value': 'off',
+      'id': 582,
+      'default_for_enterprise_users': 'off',
+      'caption': '''Controls the mode of DNS-over-HTTPS.''',
+      'tags': [],
+      'desc': '''Controls the mode of the DNS-over-HTTPS resolver. Please note that this policy will only set the default mode for each query. The mode may be overridden for special types of queries such as requests to resolve a DNS-over-HTTPS server hostname.
+
+      The <ph name="SECURE_DNS_MODE_OFF">"off"</ph> mode will disable DNS-over-HTTPS.
+
+      The <ph name="SECURE_DNS_MODE_AUTOMATIC">"automatic"</ph> mode will send DNS-over-HTTPS queries first if a DNS-over-HTTPS server is available and may fallback to sending insecure queries on error.
+
+      The <ph name="SECURE_DNS_MODE_SECURE">"secure"</ph> mode will only send DNS-over-HTTPS queries and will fail to resolve on error.
+
+      On <ph name="ANDROID_VERSION">Android Pie</ph> and above, if DNS-over-TLS is active, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not send insecure DNS requests.
+
+      If this policy is unset the browser may send DNS-over-HTTPS requests to a resolver associated with the user's configured system resolver.''',
+    },
+    {
       'name': 'ShelfAutoHideBehavior',
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'string-enum',
@@ -17786,6 +17838,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562],
-  'highest_id_currently_used': 581,
+  'highest_id_currently_used': 582,
   'highest_atomic_group_id_currently_used': 37
 }

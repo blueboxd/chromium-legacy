@@ -192,7 +192,7 @@ TEST_F(PerformanceManagerTabHelperTest, FrameHierarchyReflectsToGraph) {
   DeleteContents();
 
   // Allow content/ to settle.
-  thread_bundle()->RunUntilIdle();
+  task_environment()->RunUntilIdle();
 
   size_t num_hosts = CountAllRenderProcessHosts();
 
@@ -203,7 +203,7 @@ TEST_F(PerformanceManagerTabHelperTest, FrameHierarchyReflectsToGraph) {
         ASSERT_EQ(0u, graph->GetAllPageNodeImpls().size());
       }));
 
-  thread_bundle()->RunUntilIdle();
+  task_environment()->RunUntilIdle();
 }
 
 namespace {

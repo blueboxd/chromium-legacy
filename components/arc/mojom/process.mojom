@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 8
+// Next MinVersion: 9
 
 module arc.mojom;
 
@@ -109,7 +109,19 @@ struct RunningAppProcessInfo {
   int64 last_activity_time;
 };
 
-// Next Method ID: 8
+// Describes the memory usage of an ARC process.
+struct ArcMemoryDump {
+  // PID (within ARC's PID namespace) of the process.
+  uint32 pid;
+
+  // Resident Set Size (RSS) in kilobytes
+  uint32 resident_set_kb = 0;
+
+  // Private footprint (RSS + swap usage) in kilobytes
+  uint32 private_footprint_kb = 0;
+};
+
+// Next Method ID: 10
 interface ProcessInstance {
   // Requests ARC instance to kill a process.
   [MinVersion=1]
@@ -120,11 +132,22 @@ interface ProcessInstance {
 
   // Requests memory usage dumps for all ARC application processes.
   [MinVersion=7]
-  RequestApplicationProcessMemoryInfo@6()
-      => (memory_instrumentation.mojom.GlobalMemoryDump dump);
+  RequestApplicationProcessMemoryInfoDeprecated@6()
+    => (memory_instrumentation.mojom.GlobalMemoryDump dump);
 
   // Requests memory usage dumps for all ARC system processes.
   [MinVersion=7]
-  RequestSystemProcessMemoryInfo@7(array<uint32> nspids)
-      => (memory_instrumentation.mojom.GlobalMemoryDump dump);
+  RequestSystemProcessMemoryInfoDeprecated@7(array<uint32> nspids)
+    => (memory_instrumentation.mojom.GlobalMemoryDump dump);
+
+  // Requests memory usage dumps for all ARC application processes.
+  [MinVersion=8]
+  RequestApplicationProcessMemoryInfo@8()
+    => (array<ArcMemoryDump> process_dumps);
+
+  // Requests memory usage dumps for all ARC system processes.
+  [MinVersion=8]
+  RequestSystemProcessMemoryInfo@9(array<uint32> nspids)
+    => (array<ArcMemoryDump> process_dumps);
+
 };

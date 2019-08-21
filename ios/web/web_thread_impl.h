@@ -23,7 +23,7 @@ class WebSubThread;
 // accepting tasks however).
 //
 // Very few users should use this directly. To mock WebThreads, tests should
-// use TestWebThreadBundle instead.
+// use WebTaskEnvironment instead.
 class WebThreadImpl : public WebThread {
  public:
   ~WebThreadImpl();

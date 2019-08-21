@@ -27,10 +27,10 @@ class WebTestWithWebState : public WebTest, public base::TaskObserver {
 
  protected:
   explicit WebTestWithWebState(
-      TestWebThreadBundle::Options = TestWebThreadBundle::Options::DEFAULT);
+      WebTaskEnvironment::Options = WebTaskEnvironment::Options::DEFAULT);
   WebTestWithWebState(
       std::unique_ptr<web::WebClient> web_client,
-      TestWebThreadBundle::Options = TestWebThreadBundle::Options::DEFAULT);
+      WebTaskEnvironment::Options = WebTaskEnvironment::Options::DEFAULT);
   ~WebTestWithWebState() override;
 
   // WebTest overrides.

@@ -108,7 +108,7 @@ class PrivetNotificationsListenerTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle test_thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
       test_shared_url_loader_factory_;
@@ -266,7 +266,7 @@ class PrivetNotificationsNotificationTest : public testing::Test {
   Profile* profile() { return profile_; }
 
   // The thread bundle must be first so it is destroyed last.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   std::unique_ptr<NotificationDisplayServiceTester> display_service_;
 

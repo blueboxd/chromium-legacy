@@ -20,6 +20,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/disk_cache/disk_cache.h"
+#include "net/disk_cache/disk_cache_test_util.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_manager.h"
@@ -90,12 +91,13 @@ class HttpCacheDataRemoverTest : public testing::Test {
 
     // Create some entries in the cache.
     for (const CacheTestEntry& test_entry : kCacheEntries) {
-      disk_cache::Entry* entry = nullptr;
-      net::TestCompletionCallback callback;
+      TestEntryResultCompletionCallback callback;
       std::string key = ComputeCacheKey(test_entry.url);
-      int rv =
-          backend_->CreateEntry(key, net::HIGHEST, &entry, callback.callback());
-      ASSERT_EQ(net::OK, callback.GetResult(rv));
+      disk_cache::EntryResult result =
+          backend_->CreateEntry(key, net::HIGHEST, callback.callback());
+      result = callback.GetResult(std::move(result));
+      ASSERT_EQ(net::OK, result.net_error());
+      disk_cache::Entry* entry = result.ReleaseEntry();
       ASSERT_TRUE(entry);
       base::Time time;
       ASSERT_TRUE(base::Time::FromString(test_entry.date, &time));
@@ -132,13 +134,13 @@ class HttpCacheDataRemoverTest : public testing::Test {
 
   bool HasEntry(const std::string& url_string) {
     std::string key = ComputeCacheKey(url_string);
-    disk_cache::Entry* entry = nullptr;
     base::RunLoop run_loop;
-    net::TestCompletionCallback callback;
-    if (backend_->OpenEntry(key, net::HIGHEST, &entry, callback.callback()) ==
-        net::ERR_IO_PENDING) {
-      callback.WaitForResult();
-    }
+    TestEntryResultCompletionCallback callback;
+    disk_cache::EntryResult result =
+        backend_->OpenEntry(key, net::HIGHEST, callback.callback());
+    if (result.net_error() == net::ERR_IO_PENDING)
+      result = callback.WaitForResult();
+    disk_cache::Entry* entry = result.ReleaseEntry();
     if (entry)
       entry->Close();
     return entry != nullptr;

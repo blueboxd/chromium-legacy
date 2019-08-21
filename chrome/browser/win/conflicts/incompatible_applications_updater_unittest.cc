@@ -171,7 +171,7 @@ class IncompatibleApplicationsUpdaterTest : public testing::Test,
   const base::FilePath dll2_;
 
  private:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   ScopedTestingLocalState scoped_testing_local_state_;
   registry_util::RegistryOverrideManager registry_override_manager_;
   base::test::ScopedFeatureList scoped_feature_list_;

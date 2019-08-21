@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/renderer/core/events/web_input_event_conversion.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"

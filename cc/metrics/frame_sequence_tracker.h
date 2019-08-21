@@ -28,9 +28,10 @@ struct BeginFrameArgs;
 
 namespace cc {
 class FrameSequenceTracker;
+class CompositorFrameReportingController;
 
 enum FrameSequenceTrackerType {
-  kCompositorAnimation,
+  kCompositorAnimation = 0,
   kMainThreadAnimation,
   kPinchZoom,
   kRAF,
@@ -43,7 +44,7 @@ enum FrameSequenceTrackerType {
 // submitted frames.
 class CC_EXPORT FrameSequenceTrackerCollection {
  public:
-  FrameSequenceTrackerCollection();
+  explicit FrameSequenceTrackerCollection(CompositorFrameReportingController*);
   ~FrameSequenceTrackerCollection();
 
   FrameSequenceTrackerCollection(const FrameSequenceTrackerCollection&) =
@@ -90,6 +91,8 @@ class CC_EXPORT FrameSequenceTrackerCollection {
 
   std::vector<FrameSequenceTracker*> frame_trackers_;
   std::vector<std::unique_ptr<FrameSequenceTracker>> removal_trackers_;
+  CompositorFrameReportingController* const
+      compositor_frame_reporting_controller_;
 };
 
 // Tracks a sequence of frames to determine the throughput. It tracks this by

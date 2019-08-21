@@ -266,8 +266,7 @@ void SessionService::WindowOpened(Browser* browser) {
     return;
 
   RestoreIfNecessary(std::vector<GURL>(), browser);
-  SetWindowType(browser->session_id(), browser->type(),
-                browser->deprecated_is_app() ? TYPE_APP : TYPE_NORMAL);
+  SetWindowType(browser->session_id(), browser->type());
   SetWindowAppName(browser->session_id(), browser->app_name());
 }
 
@@ -384,11 +383,10 @@ void SessionService::TabClosing(WebContents* contents) {
 }
 
 void SessionService::SetWindowType(const SessionID& window_id,
-                                   Browser::Type type,
-                                   AppType app_type) {
+                                   Browser::Type type) {
   sessions::SessionWindow::WindowType window_type =
       WindowTypeForBrowserType(type);
-  if (!ShouldRestoreWindowOfType(window_type, app_type))
+  if (!ShouldRestoreWindowOfType(window_type))
     return;
 
   windows_tracking_.insert(window_id);
@@ -583,15 +581,11 @@ void SessionService::Init() {
   BrowserList::AddObserver(this);
 }
 
-// TODO(crbug.com/990158): Remove AppType.  WindowType will be sufficient once
-// it matches Browser::Type with APP and DEVTOOLS.
 bool SessionService::ShouldRestoreWindowOfType(
-    sessions::SessionWindow::WindowType window_type,
-    AppType app_type) const {
+    sessions::SessionWindow::WindowType window_type) const {
 #if defined(OS_CHROMEOS)
   // Restore app popups for ChromeOS alone.
-  if (window_type == sessions::SessionWindow::TYPE_POPUP &&
-      app_type == TYPE_APP)
+  if (window_type == sessions::SessionWindow::TYPE_APP)
     return true;
 #endif
 
@@ -603,9 +597,7 @@ void SessionService::RemoveUnusedRestoreWindows(
   auto i = window_list->begin();
   while (i != window_list->end()) {
     sessions::SessionWindow* window = i->get();
-    if (!ShouldRestoreWindowOfType(window->type,
-                                   window->app_name.empty() ? TYPE_NORMAL :
-                                                              TYPE_APP)) {
+    if (!ShouldRestoreWindowOfType(window->type)) {
       i = window_list->erase(i);
     } else {
       ++i;
@@ -926,9 +918,7 @@ bool SessionService::ShouldTrackBrowser(Browser* browser) const {
   if (browser->deprecated_is_app() && !browser->is_trusted_source()) {
     return false;
   }
-  return ShouldRestoreWindowOfType(
-      WindowTypeForBrowserType(browser->type()),
-      browser->deprecated_is_app() ? TYPE_APP : TYPE_NORMAL);
+  return ShouldRestoreWindowOfType(WindowTypeForBrowserType(browser->type()));
 }
 
 void SessionService::MaybeDeleteSessionOnlyData() {

@@ -248,7 +248,7 @@ class DownloadMetadataManagerTestBase : public ::testing::Test {
       downloads->push_back(zero_item_.get());
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   NiceMock<MockDownloadMetadataManager> manager_;
   TestingProfile profile_;
   NiceMock<content::MockDownloadManager> download_manager_;

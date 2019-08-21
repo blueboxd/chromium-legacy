@@ -74,7 +74,7 @@ TEST_F(CookieUtilTest, ShouldClearSessionCookies) {
 // Tests that CreateCookieStore returns the correct type of net::CookieStore
 // based on the given parameters and the iOS version.
 TEST_F(CookieUtilTest, CreateCookieStoreInIOS11) {
-  web::TestWebThreadBundle thread_bundle;
+  web::WebTaskEnvironment task_environment;
   net::ScopedTestingCookieStoreIOSClient scoped_cookie_store_ios_client(
       std::make_unique<net::TestCookieStoreIOSClient>());
 

@@ -56,7 +56,7 @@ class LeveldbScopedDatabaseUnitTest : public testing::Test {
     return db_->ToValueStoreError(iterator->status());
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir database_dir_;
   scoped_refptr<LeveldbScopedDatabase> db_;
 };

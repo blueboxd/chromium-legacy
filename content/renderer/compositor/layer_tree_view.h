@@ -19,7 +19,6 @@
 #include "cc/trees/swap_promise.h"
 #include "cc/trees/swap_promise_monitor.h"
 #include "content/common/content_export.h"
-#include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "ui/gfx/geometry/rect.h"
 
 class GURL;
@@ -51,12 +50,15 @@ namespace ui {
 class LatencyInfo;
 }
 
+namespace viz {
+class LocalSurfaceIdAllocation;
+}
+
 namespace content {
 class LayerTreeViewDelegate;
 
 class CONTENT_EXPORT LayerTreeView
-    : public blink::WebLayerTreeView,
-      public cc::LayerTreeHostClient,
+    : public cc::LayerTreeHostClient,
       public cc::LayerTreeHostSingleThreadClient {
  public:
   // The |main_thread| is the task runner that the compositor will use for the

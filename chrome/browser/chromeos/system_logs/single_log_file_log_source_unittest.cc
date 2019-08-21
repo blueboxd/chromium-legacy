@@ -89,7 +89,7 @@ class SingleLogFileLogSourceTest : public ::testing::Test {
   void FetchFromSource() {
     source_->Fetch(base::Bind(&SingleLogFileLogSourceTest::OnFileRead,
                               base::Unretained(this)));
-    browser_thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   // Callback for fetching logs from |source_|. Overwrites the previous stored
@@ -113,7 +113,7 @@ class SingleLogFileLogSourceTest : public ::testing::Test {
 
  private:
   // Creates the necessary browser threads.
-  content::TestBrowserThreadBundle browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   // Unit under test.
   std::unique_ptr<SingleLogFileLogSource> source_;

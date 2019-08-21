@@ -72,8 +72,7 @@ class ProcessSingletonPosixTest : public testing::Test {
 
   ProcessSingletonPosixTest()
       : kill_callbacks_(0),
-        test_browser_thread_bundle_(
-            content::TestBrowserThreadBundle::REAL_IO_THREAD),
+        task_environment_(content::BrowserTaskEnvironment::REAL_IO_THREAD),
         wait_event_(base::WaitableEvent::ResetPolicy::MANUAL,
                     base::WaitableEvent::InitialState::NOT_SIGNALED),
         signal_event_(base::WaitableEvent::ResetPolicy::MANUAL,
@@ -262,7 +261,7 @@ class ProcessSingletonPosixTest : public testing::Test {
     kill_callbacks_++;
   }
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   base::WaitableEvent wait_event_;
   base::WaitableEvent signal_event_;

@@ -340,7 +340,7 @@ class DnsHTTPAttempt : public DnsAttempt, public URLRequest::Delegate {
       std::string encoded_query;
       base::Base64UrlEncode(base::StringPiece(query_->io_buffer()->data(),
                                               query_->io_buffer()->size()),
-                            base::Base64UrlEncodePolicy::INCLUDE_PADDING,
+                            base::Base64UrlEncodePolicy::OMIT_PADDING,
                             &encoded_query);
       parameters.emplace("dns", encoded_query);
       uri_template::Expand(server_template, parameters, &url_string);

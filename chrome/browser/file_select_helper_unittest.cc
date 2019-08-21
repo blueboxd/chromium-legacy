@@ -121,7 +121,7 @@ TEST_F(FileSelectHelperTest, GetSanitizedFileName) {
 }
 
 TEST_F(FileSelectHelperTest, LastSelectedDirectory) {
-  content::TestBrowserThreadBundle browser_thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   TestingProfile profile;
   scoped_refptr<FileSelectHelper> file_select_helper =
       new FileSelectHelper(&profile);

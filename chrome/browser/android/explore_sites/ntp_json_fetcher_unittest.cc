@@ -24,7 +24,7 @@ using testing::_;
 class NTPJsonFetcherTest : public testing::Test {
  public:
   NTPJsonFetcherTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 
   void SetUp() {
@@ -107,7 +107,7 @@ class NTPJsonFetcherTest : public testing::Test {
 
   std::unique_ptr<NTPCatalog> catalog_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile browser_context_;
   net::EmbeddedTestServer https_server_;
 

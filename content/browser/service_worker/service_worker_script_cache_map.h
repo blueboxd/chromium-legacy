@@ -50,7 +50,7 @@ class CONTENT_EXPORT ServiceWorkerScriptCacheMap {
 
   // Writes the metadata of the existing script.
   void WriteMetadata(const GURL& url,
-                     const std::vector<uint8_t>& data,
+                     base::span<const uint8_t> data,
                      net::CompletionOnceCallback callback);
   // Clears the metadata of the existing script.
   void ClearMetadata(const GURL& url, net::CompletionOnceCallback callback);

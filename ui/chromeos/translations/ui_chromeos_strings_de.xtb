@@ -270,7 +270,6 @@
 <translation id="426015154560005552">Arabische Tastatur</translation>
 <translation id="4261901459838235729">Google-Präsentation</translation>
 <translation id="4290535918735525311">1 Ordner für Linux freigegeben</translation>
-<translation id="42981349822642051">Maximieren</translation>
 <translation id="4298972503445160211">Dänische Tastatur</translation>
 <translation id="4299729908419173967">Portugiesisch (Brasilien)</translation>
 <translation id="4309915981827077375">Allgemeine Informationen</translation>
@@ -567,7 +566,7 @@
 <translation id="7576032389798113292">6 x 4</translation>
 <translation id="7589661784326793847">Einen Moment bitte</translation>
 <translation id="7603724359189955920">Gitter</translation>
-<translation id="7627790789328695202">Hoppla, <ph name="FILE_NAME" /> existiert bereits. Gib einen anderen Namen ein und versuchen Sie es erneut.</translation>
+<translation id="7627790789328695202">Hoppla, <ph name="FILE_NAME" /> existiert bereits. Geben Sie einen anderen Namen ein und versuchen Sie es erneut.</translation>
 <translation id="7649070708921625228">Hilfe</translation>
 <translation id="7654209398114106148"><ph name="NUMBER_OF_ITEMS" /> Elemente werden verschoben...</translation>
 <translation id="7658239707568436148">Abbrechen</translation>

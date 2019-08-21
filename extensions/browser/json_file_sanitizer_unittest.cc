@@ -77,7 +77,7 @@ class JsonFileSanitizerTest : public testing::Test {
       std::move(done_callback_).Run();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   data_decoder::TestDataDecoderService test_data_decoder_service_;
   JsonFileSanitizer::Status last_status_;
   std::string last_error_;

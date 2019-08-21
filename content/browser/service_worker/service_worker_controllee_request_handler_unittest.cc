@@ -86,7 +86,7 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
   };
 
   ServiceWorkerControlleeRequestHandlerTest()
-      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   void SetUp() override {
     SetUpWithHelper(new EmbeddedWorkerTestHelper(base::FilePath()));
@@ -137,7 +137,7 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
   }
 
  protected:
-  TestBrowserThreadBundle browser_thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;

@@ -102,7 +102,7 @@ class SubresourceFilterRulesetPublisherImplTest : public ::testing::Test {
 
  private:
   base::ScopedTempDir scoped_temp_dir_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   content::TestBrowserContext browser_context_;
   NotifyingMockRenderProcessHost existing_renderer_;
 

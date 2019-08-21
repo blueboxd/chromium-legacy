@@ -147,7 +147,7 @@ void HostContextFactoryPrivate::ConfigureCompositor(
   params.pipes.compositor_frame_sink_associated_info = std::move(sink_info);
   params.pipes.client_request = std::move(client_request);
   params.enable_surface_synchronization = true;
-  if (features::IsVizHitTestingDrawQuadEnabled()) {
+  if (!features::IsVizHitTestingSurfaceLayerEnabled()) {
     params.hit_test_data_provider =
         std::make_unique<viz::HitTestDataProviderDrawQuad>(
             false /* should_ask_for_child_region */,

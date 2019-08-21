@@ -454,6 +454,13 @@ void ClientSession::DisconnectSession(protocol::ErrorCode error) {
   connection_->Disconnect(error);
 }
 
+void ClientSession::OnLocalKeyPressed(uint32_t usb_keycode) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  bool is_local = remote_input_filter_.LocalKeyPressed(usb_keycode);
+  if (is_local && desktop_environment_options_.terminate_upon_input())
+    DisconnectSession(protocol::OK);
+}
+
 void ClientSession::OnLocalPointerMoved(const webrtc::DesktopVector& position,
                                         ui::EventType type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

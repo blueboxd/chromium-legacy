@@ -19,7 +19,7 @@ class HostZoomMapTest : public testing::Test {
   HostZoomMapTest() = default;
 
  private:
-  TestBrowserThreadBundle test_browser_thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(HostZoomMapTest, GetSetZoomLevel) {

@@ -57,6 +57,7 @@
 <translation id="2746543609216772311">Værdien må ikke være tidligere end <ph name="MINIMUM_DATE_OR_TIME" />.</translation>
 <translation id="2759744352195237655">pop op-knap</translation>
 <translation id="2761667185364618470">Markér dette felt, hvis du vil fortsætte.</translation>
+<translation id="2844350028562914727">detaljer</translation>
 <translation id="2896972712917208084">gruppe af alternativknapper</translation>
 <translation id="2908441821576996758">Angiv en kommasepareret liste over mailadresser.</translation>
 <translation id="2940813599313844715">objekt</translation>
@@ -154,6 +155,7 @@
 <translation id="6166809985690652833">efterskrift</translation>
 <translation id="6209276755895393898">Det lader til at være: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">ordliste</translation>
+<translation id="6281763101136022427">webadresse</translation>
 <translation id="6310801910862476708">Afslut integreret billede</translation>
 <translation id="6398862346408813489">Vis panel til valg af måned</translation>
 <translation id="6404546809543547843">afspilningsbjælke for lyd</translation>
@@ -236,6 +238,7 @@
 <translation id="860475260694818407">indholdsfortegnelse</translation>
 <translation id="8613126697340063924">kontrollér afspilning via fjernadgang</translation>
 <translation id="862370744433916922">undertitel</translation>
+<translation id="8711688047404765493">output</translation>
 <translation id="8750798805984357768">Vælg en af disse muligheder.</translation>
 <translation id="8808573423886751634">kapitel</translation>
 <translation id="8845239796550121995">Caster nu til dit fjernsyn</translation>

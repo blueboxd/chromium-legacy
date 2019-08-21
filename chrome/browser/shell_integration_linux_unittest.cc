@@ -95,7 +95,7 @@ bool WriteString(const base::FilePath& path, const base::StringPiece& str) {
 }  // namespace
 
 TEST(ShellIntegrationTest, GetDataWriteLocation) {
-  content::TestBrowserThreadBundle test_browser_thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
 
   // Test that it returns $XDG_DATA_HOME.
   {
@@ -122,7 +122,7 @@ TEST(ShellIntegrationTest, GetDataWriteLocation) {
 }
 
 TEST(ShellIntegrationTest, GetDataSearchLocations) {
-  content::TestBrowserThreadBundle test_browser_thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
 
   // Test that it returns $XDG_DATA_HOME + $XDG_DATA_DIRS.
   {
@@ -190,7 +190,7 @@ TEST(ShellIntegrationTest, GetExistingShortcutContents) {
   const char kTestData1[] = "a magical testing string";
   const char kTestData2[] = "a different testing string";
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
 
   // Test that it searches $XDG_DATA_HOME/applications.
   {
@@ -284,7 +284,7 @@ TEST(ShellIntegrationTest, GetExistingProfileShortcutFilenames) {
   const char kApp2Filename[] = "chrome-extension2-Profile_Name_.desktop";
   const char kUnrelatedAppFilename[] = "chrome-extension-Other_Profile.desktop";
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
 
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());

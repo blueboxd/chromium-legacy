@@ -271,7 +271,7 @@ XAtom X11AtomCache::GetAtom(const char* name) const {
     return it->second;
 
   XAtom atom = XInternAtom(xdisplay_, name, False);
-  cached_atoms_.insert(std::make_pair(name, atom));
+  cached_atoms_.emplace(name, atom);
   return atom;
 }
 

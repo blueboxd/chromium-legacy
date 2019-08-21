@@ -65,7 +65,7 @@ class FileSystemProviderThrottledFileSystemTest : public testing::Test {
         std::make_unique<FakeProvidedFileSystem>(file_system_info)));
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<ThrottledFileSystem> file_system_;
 };
 

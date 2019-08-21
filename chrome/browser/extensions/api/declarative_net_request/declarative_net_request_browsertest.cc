@@ -2713,11 +2713,12 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
       rules, "test_extension", {URLPattern::kAllUrlsPattern}));
 
+  const ExtensionId& extension_id = last_loaded_extension_id();
   const Extension* dnr_extension = extension_registry()->GetExtensionById(
-      last_loaded_extension_id(), extensions::ExtensionRegistry::ENABLED);
+      extension_id, extensions::ExtensionRegistry::ENABLED);
 
-  ExtensionPrefs::Get(profile())->SetDNRUseActionCountAsBadgeText(
-      last_loaded_extension_id(), true);
+  ExtensionPrefs::Get(profile())->SetDNRUseActionCountAsBadgeText(extension_id,
+                                                                  true);
 
   ExtensionAction* action =
       ExtensionActionManager::Get(web_contents()->GetBrowserContext())
@@ -2782,6 +2783,90 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
 
   // Verify that the badge text for the first tab is unaffected.
   EXPECT_EQ(first_tab_badge_text, action->GetDisplayBadgeText(first_tab_id));
+}
+
+// Test that the extension cannot retrieve the number of actions matched
+// from the badge text by calling chrome.browserAction.getBadgeText.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
+                       GetBadgeTextForActionsMatched) {
+  auto query_badge_text_from_ext = [this](const ExtensionId& extension_id,
+                                          int tab_id) {
+    static constexpr char kBadgeTextQueryScript[] = R"(
+        chrome.browserAction.getBadgeText({tabId: %d}, badgeText => {
+          window.domAutomationController.send(badgeText);
+        });
+      )";
+
+    return ExecuteScriptInBackgroundPage(
+        extension_id, base::StringPrintf(kBadgeTextQueryScript, tab_id));
+  };
+
+  // Load the extension with a background script so scripts can be run from its
+  // generated background page.
+  set_has_background_script(true);
+
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
+      {}, "test_extension", {URLPattern::kAllUrlsPattern}));
+
+  const ExtensionId& extension_id = last_loaded_extension_id();
+  const Extension* dnr_extension = extension_registry()->GetExtensionById(
+      extension_id, extensions::ExtensionRegistry::ENABLED);
+
+  ExtensionAction* action =
+      ExtensionActionManager::Get(web_contents()->GetBrowserContext())
+          ->GetExtensionAction(*dnr_extension);
+
+  const std::string default_badge_text = "asdf";
+  action->SetBadgeText(ExtensionAction::kDefaultTabId, default_badge_text);
+
+  const GURL page_url = embedded_test_server()->GetURL(
+      "norulesmatched.com", "/pages_with_script/index.html");
+  ui_test_utils::NavigateToURL(browser(), page_url);
+  ASSERT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
+
+  // The preference is initially turned off. Both the visible badge text and the
+  // badge text queried by the extension using getBadgeText() should return the
+  // default badge text.
+  int first_tab_id = ExtensionTabUtil::GetTabId(web_contents());
+  EXPECT_EQ(default_badge_text, action->GetDisplayBadgeText(first_tab_id));
+
+  std::string queried_badge_text =
+      query_badge_text_from_ext(extension_id, first_tab_id);
+  EXPECT_EQ(default_badge_text, queried_badge_text);
+
+  ExtensionPrefs::Get(profile())->SetDNRUseActionCountAsBadgeText(extension_id,
+                                                                  true);
+  // TODO(crbug.com/979068): Remove the navigation once we update extension
+  // action immediately upon toggling preference.
+  ui_test_utils::NavigateToURL(browser(), page_url);
+  ASSERT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
+
+  // Since the preference is on for the current tab, attempting to query the
+  // badge text from the extension should return the placeholder text instead of
+  // the matched action count.
+  queried_badge_text = query_badge_text_from_ext(extension_id, first_tab_id);
+  EXPECT_EQ(declarative_net_request::kActionCountPlaceholderBadgeText,
+            queried_badge_text);
+
+  // The displayed badge text should show "0" as no actions have been matched.
+  EXPECT_EQ("0", action->GetDisplayBadgeText(first_tab_id));
+
+  ExtensionPrefs::Get(profile())->SetDNRUseActionCountAsBadgeText(extension_id,
+                                                                  false);
+  // TODO(crbug.com/979068): Remove the navigation once we update extension
+  // action immediately upon toggling preference.
+  ui_test_utils::NavigateToURL(browser(), page_url);
+  ASSERT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
+
+  // Switching the preference off should cause the extension queried badge text
+  // to be the explicitly set badge text for this tab if it exists. In this
+  // case, the queried badge text should be the default badge text.
+  queried_badge_text = query_badge_text_from_ext(extension_id, first_tab_id);
+  EXPECT_EQ(default_badge_text, queried_badge_text);
+
+  // The displayed badge text should be the default badge text now that the
+  // preference is off.
+  EXPECT_EQ(default_badge_text, action->GetDisplayBadgeText(first_tab_id));
 }
 
 // Test that the action matched badge text for an extension is visible in an

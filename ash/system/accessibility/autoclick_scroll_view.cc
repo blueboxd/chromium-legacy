@@ -9,8 +9,8 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/style/default_color_constants.h"
 #include "ash/system/accessibility/autoclick_menu_bubble_controller.h"
-#include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/custom_shape_button.h"
 #include "ash/system/unified/top_shortcut_button.h"
 #include "base/macros.h"
@@ -27,16 +27,24 @@
 
 namespace ash {
 
+using ContentLayerType = AshColorProvider::ContentLayerType;
+using AshColorMode = AshColorProvider::AshColorMode;
+
 namespace {
 
-// Constants for color, size and position.
-constexpr SkColor kScrollpadStrokeColor = SkColorSetARGB(0x1A, 255, 255, 255);
-constexpr SkColor kScrollpadActiveColor =
-    SkColorSetA(kUnifiedMenuButtonColor, 0x29);
+// Constants for size and position.
 constexpr int kScrollButtonCloseSizeDips = 48;
 constexpr int kScrollpadStrokeWidthDips = 2;
 constexpr int kScrollPadButtonHypotenuseDips = 192;
 constexpr int kScrollPadIconPadding = 30;
+
+// TODO(crbug.com/982950): Get color from AshColorProvider::GetRippleAttributes
+// instead.
+SkColor HoveredButtonColor() {
+  return AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
+      AshColorProvider::ControlsLayerType::kInactiveControlBackground,
+      SkColorSetA(kUnifiedMenuButtonColor, 0x29));
+}
 
 }  // namespace
 
@@ -55,8 +63,7 @@ class AutoclickScrollCloseButton : public TopShortcutButton,
              gfx::CreateVectorIcon(
                  kAutoclickCloseIcon,
                  AshColorProvider::Get()->GetContentLayerColor(
-                     AshColorProvider::ContentLayerType::kIconPrimary,
-                     AshColorProvider::AshColorMode::kDark)));
+                     ContentLayerType::kIconPrimary, AshColorMode::kDark)));
   }
 
   ~AutoclickScrollCloseButton() override = default;
@@ -94,7 +101,7 @@ class AutoclickScrollCloseButton : public TopShortcutButton,
       cc::PaintFlags flags;
       flags.setAntiAlias(true);
       flags.setStyle(cc::PaintFlags::kFill_Style);
-      flags.setColor(kScrollpadActiveColor);
+      flags.setColor(HoveredButtonColor());
       canvas->DrawCircle(gfx::PointF(rect.CenterPoint()),
                          kScrollButtonCloseSizeDips / 2, flags);
     }
@@ -134,11 +141,11 @@ class AutoclickScrollButton : public CustomShapeButton,
             int64_t{AutoclickScrollView::kAutoclickScrollDelayMs}),
         base::BindRepeating(&AutoclickScrollButton::DoScrollAction,
                             base::Unretained(this)));
-    SetImage(views::Button::STATE_NORMAL,
-             gfx::CreateVectorIcon(
-                 icon, AshColorProvider::Get()->GetContentLayerColor(
-                           AshColorProvider::ContentLayerType::kIconPrimary,
-                           AshColorProvider::AshColorMode::kDark)));
+    SetImage(
+        views::Button::STATE_NORMAL,
+        gfx::CreateVectorIcon(
+            icon, AshColorProvider::Get()->GetContentLayerColor(
+                      ContentLayerType::kIconPrimary, AshColorMode::kDark)));
     if (action_ == AutoclickController::ScrollPadAction::kScrollLeft ||
         action_ == AutoclickController::ScrollPadAction::kScrollRight) {
       size_ = gfx::Size(kScrollPadButtonHypotenuseDips / 2,
@@ -253,14 +260,15 @@ class AutoclickScrollButton : public CustomShapeButton,
     flags.setAntiAlias(true);
 
     if (active_) {
-      flags.setColor(kScrollpadActiveColor);
+      flags.setColor(HoveredButtonColor());
       flags.setStyle(cc::PaintFlags::kFill_Style);
       canvas->DrawPath(CreateCustomShapePath(rect), flags);
     }
 
     flags.setStyle(cc::PaintFlags::kStroke_Style);
     flags.setStrokeWidth(kScrollpadStrokeWidthDips);
-    flags.setColor(kScrollpadStrokeColor);
+    flags.setColor(AshColorProvider::Get()->GetContentLayerColor(
+        ContentLayerType::kSeparator, AshColorMode::kDark));
     canvas->DrawPath(ComputePath(false /* only drawn edges */), flags);
 
     gfx::ImageSkia img = GetImageToPaint();

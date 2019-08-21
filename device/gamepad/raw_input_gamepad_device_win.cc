@@ -5,8 +5,11 @@
 #include "raw_input_gamepad_device_win.h"
 
 #include "base/stl_util.h"
+#include "device/gamepad/dualshock4_controller.h"
 #include "device/gamepad/gamepad_blocklist.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
+#include "device/gamepad/hid_haptic_gamepad.h"
+#include "device/gamepad/hid_writer_win.h"
 
 namespace device {
 
@@ -68,11 +71,12 @@ RawInputGamepadDeviceWin::RawInputGamepadDeviceWin(
     is_valid_ = QueryDeviceInfo();
 
   if (is_valid_) {
-    if (Dualshock4ControllerWin::IsDualshock4(vendor_id_, product_id_)) {
-      dualshock4_ = std::make_unique<Dualshock4ControllerWin>(handle_);
-    } else if (HidHapticGamepadWin::IsHidHaptic(vendor_id_, product_id_)) {
-      hid_haptics_ =
-          HidHapticGamepadWin::Create(vendor_id_, product_id_, handle_);
+    if (Dualshock4Controller::IsDualshock4(vendor_id_, product_id_)) {
+      dualshock4_ = std::make_unique<Dualshock4Controller>(
+          std::make_unique<HidWriterWin>(handle_));
+    } else if (HidHapticGamepad::IsHidHaptic(vendor_id_, product_id_)) {
+      hid_haptics_ = HidHapticGamepad::Create(
+          vendor_id_, product_id_, std::make_unique<HidWriterWin>(handle_));
     }
   }
 }

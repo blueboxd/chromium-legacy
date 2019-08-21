@@ -77,8 +77,7 @@ static void UpdateCcTransformLocalMatrix(
     // local matrix. We should not set the local matrix on cc node if it is a
     // sticky node because the sticky offset would be applied twice otherwise.
     DCHECK(compositor_node.local.IsIdentity());
-    DCHECK(compositor_node.pre_local.IsIdentity());
-    DCHECK(compositor_node.post_local.IsIdentity());
+    DCHECK_EQ(gfx::Point3F(), compositor_node.origin);
   } else if (transform_node.IsIdentityOr2DTranslation()) {
     auto translation = transform_node.Translation2D();
     if (transform_node.ScrollNode()) {
@@ -87,24 +86,19 @@ static void UpdateCcTransformLocalMatrix(
       compositor_node.scroll_offset =
           gfx::ScrollOffset(-translation.Width(), -translation.Height());
       DCHECK(compositor_node.local.IsIdentity());
-      DCHECK(compositor_node.pre_local.IsIdentity());
-      DCHECK(compositor_node.post_local.IsIdentity());
+      DCHECK_EQ(gfx::Point3F(), compositor_node.origin);
     } else {
       compositor_node.local.matrix().setTranslate(translation.Width(),
                                                   translation.Height(), 0);
       DCHECK_EQ(FloatPoint3D(), transform_node.Origin());
-      compositor_node.pre_local.matrix().setIdentity();
-      compositor_node.post_local.matrix().setIdentity();
+      compositor_node.origin = gfx::Point3F();
     }
   } else {
     DCHECK(!transform_node.ScrollNode());
     FloatPoint3D origin = transform_node.Origin();
-    compositor_node.pre_local.matrix().setTranslate(-origin.X(), -origin.Y(),
-                                                    -origin.Z());
     compositor_node.local.matrix() =
         TransformationMatrix::ToSkMatrix44(transform_node.Matrix());
-    compositor_node.post_local.matrix().setTranslate(origin.X(), origin.Y(),
-                                                     origin.Z());
+    compositor_node.origin = origin;
   }
   compositor_node.needs_local_transform_update = true;
 }

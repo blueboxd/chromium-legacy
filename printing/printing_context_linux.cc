@@ -172,7 +172,7 @@ PrintingContext::Result PrintingContextLinux::DocumentDone() {
     return CANCEL;
   DCHECK(in_print_job_);
 
-  ResetSettings();
+  DeleteSettings();
   return OK;
 }
 

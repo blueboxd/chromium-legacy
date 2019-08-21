@@ -127,7 +127,7 @@ class GCMProfileServiceTest : public testing::Test {
   GCMClient::Result send_result() const { return send_result_; }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
   GCMProfileService* gcm_profile_service_;
   std::unique_ptr<FakeGCMAppHandler> gcm_app_handler_;

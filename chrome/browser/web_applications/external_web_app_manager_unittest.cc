@@ -173,7 +173,7 @@ class ScanDirForExternalWebAppsTest : public testing::Test {
 #endif
 
   // To support context of browser threads.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(ScanDirForExternalWebAppsTest);
 };

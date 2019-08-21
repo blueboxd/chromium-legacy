@@ -149,7 +149,6 @@
 <translation id="2921219216347069551">Error al compartir</translation>
 <translation id="2923448633003185837">Pegar y acceder</translation>
 <translation id="292639812446257861">Marcar como no leídas</translation>
-<translation id="2933759065870693102">Linterna</translation>
 <translation id="2958718410589002129">Contraseñas</translation>
 <translation id="2969979262385602596">Error al iniciar la sesión. Inténtalo más tarde.</translation>
 <translation id="298306318844797842">Agregar forma de pago…</translation>
@@ -305,6 +304,7 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="5327248766486351172">Nombre</translation>
 <translation id="5388358297987318779">Abrir imagen</translation>
+<translation id="5407969256130905701">Descartar cambios</translation>
 <translation id="5409365236829784218">No se instalaron aplicaciones que puedan abrir este archivo.</translation>
 <translation id="5416022985862681400">Últimos 7 días</translation>
 <translation id="5433691172869980887">Se copió el nombre de usuario</translation>
@@ -510,6 +510,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="8428213095426709021">Configuración</translation>
 <translation id="8458397775385147834">1 elemento eliminado</translation>
 <translation id="8487700953926739672">Disponible sin conexión</translation>
+<translation id="8490978609246021741">Guardar cambios</translation>
 <translation id="8503813439785031346">Nombre de usuario</translation>
 <translation id="850600235656508448">Abrir en incógnito</translation>
 <translation id="8517375800490286174">Licencias de código abierto</translation>

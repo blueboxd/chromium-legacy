@@ -21,7 +21,7 @@ void Assign(BlacklistState* to, BlacklistState from) {
 
 class BlacklistStateFetcherTest : public testing::Test {
  private:
-  content::TestBrowserThreadBundle browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(BlacklistStateFetcherTest, RequestBlacklistState) {

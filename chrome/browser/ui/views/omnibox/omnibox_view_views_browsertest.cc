@@ -54,8 +54,8 @@
 
 namespace {
 
-void SetClipboardText(ui::ClipboardType type, const std::string& text) {
-  ui::ScopedClipboardWriter(type).WriteText(base::ASCIIToUTF16(text));
+void SetClipboardText(ui::ClipboardBuffer buffer, const std::string& text) {
+  ui::ScopedClipboardWriter(buffer).WriteText(base::ASCIIToUTF16(text));
 }
 
 }  // namespace
@@ -139,7 +139,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, PasteAndGoDoesNotLeavePopupOpen) {
   OmniboxViewViews* omnibox_view_views = static_cast<OmniboxViewViews*>(view);
 
   // Put an URL on the clipboard.
-  SetClipboardText(ui::ClipboardType::kCopyPaste, "http://www.example.com/");
+  SetClipboardText(ui::ClipboardBuffer::kCopyPaste, "http://www.example.com/");
 
   // Paste and go.
   omnibox_view_views->ExecuteCommand(IDC_PASTE_AND_GO, ui::EF_NONE);
@@ -253,7 +253,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, SelectionClipboard) {
 
   // Middle click focuses the omnibox, pastes, and sets a trailing cursor.
   // Select-all on focus shouldn't alter the selection clipboard or cursor.
-  SetClipboardText(ui::ClipboardType::kSelection, "123");
+  SetClipboardText(ui::ClipboardBuffer::kSelection, "123");
   ASSERT_NO_FATAL_FAILURE(Click(ui_controls::MIDDLE,
                                 click_location, click_location));
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
@@ -267,7 +267,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, SelectionClipboard) {
                        cursor_x + render_text->display_rect().x());
 
   // Middle clicking again, with focus, pastes and updates the cursor.
-  SetClipboardText(ui::ClipboardType::kSelection, "4567");
+  SetClipboardText(ui::ClipboardBuffer::kSelection, "4567");
   ASSERT_NO_FATAL_FAILURE(Click(ui_controls::MIDDLE,
                                 click_location, click_location));
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
@@ -338,7 +338,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest,
   views::TextfieldTestApi textfield_test_api(omnibox_view_views);
 
   // Put a URL on the clipboard.
-  SetClipboardText(ui::ClipboardType::kCopyPaste, "http://www.example.com/");
+  SetClipboardText(ui::ClipboardBuffer::kCopyPaste, "http://www.example.com/");
 
   // Tap to activate touch editing.
   gfx::Point omnibox_center =

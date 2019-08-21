@@ -341,6 +341,9 @@ const char kEnablePreferCompositingToLCDText[] =
 // features.
 const char kEnableBlinkFeatures[]           = "enable-blink-features";
 
+// Enables Canvas 2D overlays for Windows.
+const char kEnableCanvas2dSwapChain[] = "enable-canvas2d-swap-chain";
+
 // Enable native caret browsing, in which a moveable cursor is placed on a web
 // page, allowing a user to select and navigate through non-editable text using
 // just a keyboard. See https://crbug.com/977390 for links to i2i.
@@ -494,6 +497,9 @@ const char kEnableOopRasterization[] = "enable-oop-rasterization";
 
 // Turns on skia deferred display list for out of process raster.
 const char kEnableOopRasterizationDDL[] = "enable-oop-rasterization-ddl";
+
+// Enables WebGL overlays for Windows.
+const char kEnableWebGLSwapChain[] = "enable-webgl-swap-chain";
 
 // The number of multisample antialiasing samples for GPU rasterization.
 // Requires MSAA support on GPU to have an effect. 0 disables MSAA.

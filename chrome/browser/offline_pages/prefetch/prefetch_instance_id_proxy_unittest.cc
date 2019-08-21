@@ -47,7 +47,7 @@ class PrefetchInstanceIDProxyTest : public testing::Test {
  private:
   void GetTokenCompleted(const std::string& token, InstanceID::Result result);
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   std::unique_ptr<PrefetchInstanceIDProxy> proxy_;
 

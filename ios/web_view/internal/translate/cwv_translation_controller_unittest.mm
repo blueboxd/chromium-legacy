@@ -70,7 +70,7 @@ class CWVTranslationControllerTest : public TestWithLocaleAndResources {
     }];
   }
 
-  web::TestWebThreadBundle web_thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   WebViewBrowserState browser_state_;
   std::unique_ptr<FakeWebViewTranslateClient> translate_client_;
   web::TestWebState web_state_;

@@ -57,6 +57,7 @@
 <translation id="2746543609216772311">Hodnota musí byť <ph name="MINIMUM_DATE_OR_TIME" /> alebo neskôr.</translation>
 <translation id="2759744352195237655">kontextové tlačidlo</translation>
 <translation id="2761667185364618470">Ak chcete pokračovať, začiarknite toto políčko.</translation>
+<translation id="2844350028562914727">podrobnosti</translation>
 <translation id="2896972712917208084">skupina prepínačov</translation>
 <translation id="2908441821576996758">Zadajte zoznam e-mailových adries oddelených čiarkou.</translation>
 <translation id="2940813599313844715">objekt</translation>
@@ -154,6 +155,7 @@
 <translation id="6166809985690652833">doslov</translation>
 <translation id="6209276755895393898">Zrejme to bude: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">glosár</translation>
+<translation id="6281763101136022427">Webová adresa</translation>
 <translation id="6310801910862476708">Ukončiť obraz v obraze</translation>
 <translation id="6398862346408813489">Zobraziť panel na výber mesiaca</translation>
 <translation id="6404546809543547843">posúvač časovej osi zvuku</translation>
@@ -236,6 +238,7 @@
 <translation id="860475260694818407">obsah</translation>
 <translation id="8613126697340063924">ovládať vzdialené prehrávanie</translation>
 <translation id="862370744433916922">podnadpis</translation>
+<translation id="8711688047404765493">výstup</translation>
 <translation id="8750798805984357768">Vyberte jednu z týchto možností.</translation>
 <translation id="8808573423886751634">kapitola</translation>
 <translation id="8845239796550121995">Prenáša sa do televízora</translation>

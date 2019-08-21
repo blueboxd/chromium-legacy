@@ -195,8 +195,6 @@ void DedicatedWorkerHost::RegisterMojoInterfaces() {
   registry_.AddInterface(
       base::BindRepeating(&DedicatedWorkerHost::CreateNestedDedicatedWorker,
                           base::Unretained(this)));
-  registry_.AddInterface(base::BindRepeating(
-      &DedicatedWorkerHost::CreateIdleManager, base::Unretained(this)));
 }
 
 void DedicatedWorkerHost::DidStartScriptLoad(
@@ -349,7 +347,7 @@ void DedicatedWorkerHost::CreateNestedDedicatedWorker(
 }
 
 void DedicatedWorkerHost::CreateIdleManager(
-    blink::mojom::IdleManagerRequest request) {
+    mojo::PendingReceiver<blink::mojom::IdleManager> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderFrameHostImpl* ancestor_render_frame_host =
       GetAncestorRenderFrameHost();
@@ -362,7 +360,7 @@ void DedicatedWorkerHost::CreateIdleManager(
   static_cast<StoragePartitionImpl*>(
       ancestor_render_frame_host->GetProcess()->GetStoragePartition())
       ->GetIdleManager()
-      ->CreateService(std::move(request));
+      ->CreateService(std::move(receiver));
 }
 
 RenderFrameHostImpl* DedicatedWorkerHost::GetAncestorRenderFrameHost() {

@@ -70,7 +70,7 @@ class UserSessionManagerTest : public testing::Test {
 
   // Allows UserSessionManager to request the NetworkConnectionTracker in its
   // constructor.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   user_manager::ScopedUserManager scoped_user_manager_{
       std::make_unique<user_manager::FakeUserManager>()};

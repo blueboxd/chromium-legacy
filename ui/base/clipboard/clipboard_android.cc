@@ -287,29 +287,30 @@ ClipboardAndroid::~ClipboardAndroid() {
 
 void ClipboardAndroid::OnPreShutdown() {}
 
-uint64_t ClipboardAndroid::GetSequenceNumber(ClipboardType /* type */) const {
+uint64_t ClipboardAndroid::GetSequenceNumber(
+    ClipboardBuffer /* buffer */) const {
   DCHECK(CalledOnValidThread());
   return g_map.Get().GetSequenceNumber();
 }
 
 bool ClipboardAndroid::IsFormatAvailable(const ClipboardFormatType& format,
-                                         ClipboardType type) const {
+                                         ClipboardBuffer buffer) const {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(type, ClipboardType::kCopyPaste);
+  DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
   return g_map.Get().HasFormat(format.ToString());
 }
 
-void ClipboardAndroid::Clear(ClipboardType type) {
+void ClipboardAndroid::Clear(ClipboardBuffer buffer) {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(type, ClipboardType::kCopyPaste);
+  DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
   g_map.Get().Clear();
 }
 
-void ClipboardAndroid::ReadAvailableTypes(ClipboardType type,
+void ClipboardAndroid::ReadAvailableTypes(ClipboardBuffer buffer,
                                           std::vector<base::string16>* types,
                                           bool* contains_filenames) const {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(type, ClipboardType::kCopyPaste);
+  DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
 
   if (!types || !contains_filenames) {
     NOTREACHED();
@@ -320,44 +321,44 @@ void ClipboardAndroid::ReadAvailableTypes(ClipboardType type,
 
   // would be nice to ask the ClipboardMap to enumerate the types it supports,
   // rather than hardcode the list here.
-  if (IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), type))
+  if (IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), buffer))
     types->push_back(base::UTF8ToUTF16(kMimeTypeText));
-  if (IsFormatAvailable(ClipboardFormatType::GetHtmlType(), type))
+  if (IsFormatAvailable(ClipboardFormatType::GetHtmlType(), buffer))
     types->push_back(base::UTF8ToUTF16(kMimeTypeHTML));
 
   // these formats aren't supported by the ClipboardMap currently, but might
   // be one day?
-  if (IsFormatAvailable(ClipboardFormatType::GetRtfType(), type))
+  if (IsFormatAvailable(ClipboardFormatType::GetRtfType(), buffer))
     types->push_back(base::UTF8ToUTF16(kMimeTypeRTF));
-  if (IsFormatAvailable(ClipboardFormatType::GetBitmapType(), type))
+  if (IsFormatAvailable(ClipboardFormatType::GetBitmapType(), buffer))
     types->push_back(base::UTF8ToUTF16(kMimeTypePNG));
   *contains_filenames = false;
 }
 
-void ClipboardAndroid::ReadText(ClipboardType type,
+void ClipboardAndroid::ReadText(ClipboardBuffer buffer,
                                 base::string16* result) const {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(type, ClipboardType::kCopyPaste);
+  DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
   std::string utf8;
-  ReadAsciiText(type, &utf8);
+  ReadAsciiText(buffer, &utf8);
   *result = base::UTF8ToUTF16(utf8);
 }
 
-void ClipboardAndroid::ReadAsciiText(ClipboardType type,
+void ClipboardAndroid::ReadAsciiText(ClipboardBuffer buffer,
                                      std::string* result) const {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(type, ClipboardType::kCopyPaste);
+  DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
   *result = g_map.Get().Get(ClipboardFormatType::GetPlainTextType().ToString());
 }
 
 // Note: |src_url| isn't really used. It is only implemented in Windows
-void ClipboardAndroid::ReadHTML(ClipboardType type,
+void ClipboardAndroid::ReadHTML(ClipboardBuffer buffer,
                                 base::string16* markup,
                                 std::string* src_url,
                                 uint32_t* fragment_start,
                                 uint32_t* fragment_end) const {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(type, ClipboardType::kCopyPaste);
+  DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
   if (src_url)
     src_url->clear();
 
@@ -369,14 +370,15 @@ void ClipboardAndroid::ReadHTML(ClipboardType type,
   *fragment_end = static_cast<uint32_t>(markup->length());
 }
 
-void ClipboardAndroid::ReadRTF(ClipboardType type, std::string* result) const {
+void ClipboardAndroid::ReadRTF(ClipboardBuffer buffer,
+                               std::string* result) const {
   DCHECK(CalledOnValidThread());
   NOTIMPLEMENTED();
 }
 
-SkBitmap ClipboardAndroid::ReadImage(ClipboardType type) const {
+SkBitmap ClipboardAndroid::ReadImage(ClipboardBuffer buffer) const {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(type, ClipboardType::kCopyPaste);
+  DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
   std::string input =
       g_map.Get().Get(ClipboardFormatType::GetBitmapType().ToString());
 
@@ -395,7 +397,7 @@ SkBitmap ClipboardAndroid::ReadImage(ClipboardType type) const {
   return bmp;
 }
 
-void ClipboardAndroid::ReadCustomData(ClipboardType clipboard_type,
+void ClipboardAndroid::ReadCustomData(ClipboardBuffer buffer,
                                       const base::string16& type,
                                       base::string16* result) const {
   DCHECK(CalledOnValidThread());
@@ -425,10 +427,10 @@ void ClipboardAndroid::ClearLastModifiedTime() {
 }
 
 // Main entry point used to write several values in the clipboard.
-void ClipboardAndroid::WriteObjects(ClipboardType type,
+void ClipboardAndroid::WriteObjects(ClipboardBuffer buffer,
                                     const ObjectMap& objects) {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(type, ClipboardType::kCopyPaste);
+  DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
   g_map.Get().Clear();
 
   for (const auto& object : objects)

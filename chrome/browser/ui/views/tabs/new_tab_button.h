@@ -36,12 +36,6 @@ class NewTabButton : public views::ImageButton,
   NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener);
   ~NewTabButton() override;
 
-  // Set the background X offset used to match the background image to the frame
-  // image.
-  void set_background_offset(int offset) {
-    background_offset_ = offset;
-  }
-
   // Retrieves the last active BrowserView instance to display the NewTabPromo.
   static void ShowPromoForLastActiveBrowser();
 
@@ -116,9 +110,6 @@ class NewTabButton : public views::ImageButton,
   // Promotional UI that appears next to the NewTabButton and encourages its
   // use. Owned by its NativeWidget.
   FeaturePromoBubbleView* new_tab_promo_ = nullptr;
-
-  // The offset used to paint the background image.
-  int background_offset_;
 
   // were we destroyed?
   bool* destroyed_ = nullptr;

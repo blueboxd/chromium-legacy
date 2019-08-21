@@ -135,7 +135,7 @@ class ServiceWorkerPaymentInstrumentTest : public testing::Test,
  private:
   MockPaymentRequestDelegate delegate_;
   MockIdentityObserver identity_observer_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   content::TestBrowserContext browser_context_;
 
   std::unique_ptr<PaymentRequestSpec> spec_;

@@ -149,7 +149,6 @@
 <translation id="2921219216347069551">ページを共有できない</translation>
 <translation id="2923448633003185837">貼り付けて移動</translation>
 <translation id="292639812446257861">未読にする</translation>
-<translation id="2933759065870693102">照明</translation>
 <translation id="2958718410589002129">パスワード</translation>
 <translation id="2969979262385602596">ログインできません。後でもう一度お試しください。</translation>
 <translation id="298306318844797842">お支払い方法を追加...</translation>
@@ -305,6 +304,7 @@
 <translation id="5317780077021120954">保存</translation>
 <translation id="5327248766486351172">名前</translation>
 <translation id="5388358297987318779">画像を開く</translation>
+<translation id="5407969256130905701">変更を破棄</translation>
 <translation id="5409365236829784218">このファイルを開くアプリがインストールされていません。</translation>
 <translation id="5416022985862681400">過去 7 日間</translation>
 <translation id="5433691172869980887">ユーザー名がコピーされました</translation>
@@ -510,6 +510,7 @@
 <translation id="8428213095426709021">設定</translation>
 <translation id="8458397775385147834">1件の項目を削除しました</translation>
 <translation id="8487700953926739672">オフラインでの利用</translation>
+<translation id="8490978609246021741">変更を保存</translation>
 <translation id="8503813439785031346">ユーザー名</translation>
 <translation id="850600235656508448">シークレット モードで開く</translation>
 <translation id="8517375800490286174">オープンソースライセンス</translation>

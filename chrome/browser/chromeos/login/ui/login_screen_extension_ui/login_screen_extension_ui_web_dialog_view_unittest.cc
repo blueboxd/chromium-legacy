@@ -24,7 +24,7 @@ class LoginScreenExtensionUiWebDialogViewUnittest : public testing::Test {
   ~LoginScreenExtensionUiWebDialogViewUnittest() override = default;
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile;
 
  private:

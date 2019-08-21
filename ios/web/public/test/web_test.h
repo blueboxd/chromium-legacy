@@ -22,10 +22,10 @@ class WebTestRenderProcessCrashObserver;
 // mimics a web embedder.
 class WebTest : public PlatformTest {
  protected:
-  explicit WebTest(TestWebThreadBundle::Options options =
-                       TestWebThreadBundle::Options::DEFAULT);
+  explicit WebTest(WebTaskEnvironment::Options options =
+                       WebTaskEnvironment::Options::DEFAULT);
   WebTest(std::unique_ptr<web::WebClient> web_client,
-          TestWebThreadBundle::Options = TestWebThreadBundle::Options::DEFAULT);
+          WebTaskEnvironment::Options = WebTaskEnvironment::Options::DEFAULT);
   ~WebTest() override;
 
   // Returns the WebClient that is used for testing.
@@ -48,7 +48,7 @@ class WebTest : public PlatformTest {
   // The WebClient used in tests.
   ScopedTestingWebClient web_client_;
   // The threads used for testing.
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   // The browser state used in tests.
   TestBrowserState browser_state_;
 

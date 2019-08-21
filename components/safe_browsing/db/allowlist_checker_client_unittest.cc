@@ -50,7 +50,7 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
 class AllowlistCheckerClientTest : public testing::Test {
  public:
   AllowlistCheckerClientTest()
-      : thread_bundle_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         target_url_("https://example.test") {}
 
   void SetUp() override {
@@ -62,11 +62,11 @@ class AllowlistCheckerClientTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
 
     // Verify no callback is remaining.
-    EXPECT_TRUE(thread_bundle_.MainThreadIsIdle());
+    EXPECT_TRUE(task_environment_.MainThreadIsIdle());
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   GURL target_url_;
   scoped_refptr<MockSafeBrowsingDatabaseManager> database_manager_;
@@ -116,11 +116,11 @@ TEST_F(AllowlistCheckerClientTest, TestCsdListAsyncTimeout) {
   MockBoolCallback callback;
   AllowlistCheckerClient::StartCheckCsdWhitelist(database_manager_, target_url_,
                                                  callback.Get());
-  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
   // No callback yet.
 
   EXPECT_CALL(callback, Run(true /* did_match_allowlist */));
-  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(5));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(5));
 }
 
 TEST_F(AllowlistCheckerClientTest, TestHighConfidenceListMatch) {
@@ -171,11 +171,11 @@ TEST_F(AllowlistCheckerClientTest, TestHighConfidenceListAsyncTimeout) {
   MockBoolCallback callback;
   AllowlistCheckerClient::StartCheckHighConfidenceAllowlist(
       database_manager_, target_url_, callback.Get());
-  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
   // No callback yet.
 
   EXPECT_CALL(callback, Run(false /* did_match_allowlist */));
-  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(5));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(5));
 }
 
 }  // namespace safe_browsing

@@ -809,11 +809,6 @@
     "expiry_milestone": 74
   },
   {
-    "name": "enable-appcontainer",
-    "owners": [ "forshaw", "wfh" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-arc-cups-api",
     "owners": [ "luum", "skau" ],
     "expiry_milestone": 76
@@ -954,7 +949,7 @@
   {
     "name": "enable-avoid-flash-between-navigation",
     "owners": [ "schenney", "paint-dev" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 80
   },
   {
     "name": "enable-backdrop-filter",
@@ -1207,7 +1202,7 @@
   {
     "name": "enable-gpu-appcontainer",
     "owners": [ "forshaw", "wfh" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 82
   },
   {
     "name": "enable-gpu-rasterization",
@@ -1431,7 +1426,7 @@
   {
     "name": "enable-offer-store-unmasked-wallet-cards",
     "owners": [ "jsaul@google.com" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 86
   },
   {
     "name": "enable-offline-previews",
@@ -1798,18 +1793,18 @@
   },
   {
     "name": "enable-viz-display-compositor",
-    "owners": [ "fsamuel", "kylechar" ],
-    "expiry_milestone": 76
+    "owners": [ "kylechar", "rjkroege" ],
+    "expiry_milestone": 79
   },
   {
     "name": "enable-viz-hit-test-surface-layer",
     "owners": [ "yigu", "rjkroege", "kylechar" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 79
   },
   {
     "name": "enable-web-authentication-ble-support",
     "owners": [ "webauthn-team@google.com" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 82
   },
   {
     "name": "enable-web-authentication-cable-support",
@@ -2379,11 +2374,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "new-tab-loading-animation",
-    "owners": [ "pbos@chromium.org" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "new-tabstrip-animation",
     "owners": [ "tbergquist" ],
     "expiry_milestone": 81
@@ -2391,7 +2381,7 @@
   {
     "name": "new-usb-backend",
     "owners": [ "reillyg@chromium.org" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 83
   },
   {
     "name": "newblue",
@@ -2630,8 +2620,8 @@
   },
   {
     "name": "omnibox-ui-show-suggestion-favicons",
-    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 76
+    "owners": [ "ender", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 79
   },
   {
     "name": "omnibox-ui-swap-title-and-url",
@@ -3039,6 +3029,11 @@
     "name": "tab-outlines-in-low-contrast-themes",
     "owners": [ "dfried" ],
     "expiry_milestone":  79
+  },
+  {
+    "name": "tab-switcher-longpress-menu",
+    "owners": [ "lazzzis@google.com", "twellington" ],
+    "expiry_milestone": 81
   },
   {
     "name": "temporary-unexpire-flags-m78",

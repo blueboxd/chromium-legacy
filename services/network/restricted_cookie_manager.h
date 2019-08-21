@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_change_dispatcher.h"
 #include "net/cookies/cookie_store.h"
@@ -70,11 +69,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
                           const url::Origin& top_frame_origin,
                           SetCanonicalCookieCallback callback) override;
 
-  void AddChangeListener(const GURL& url,
-                         const GURL& site_for_cookies,
-                         const url::Origin& top_frame_origin,
-                         mojom::CookieChangeListenerPtr listener,
-                         AddChangeListenerCallback callback) override;
+  void AddChangeListener(
+      const GURL& url,
+      const GURL& site_for_cookies,
+      const url::Origin& top_frame_origin,
+      mojo::PendingRemote<mojom::CookieChangeListener> listener,
+      AddChangeListenerCallback callback) override;
 
   void SetCookieFromString(const GURL& url,
                            const GURL& site_for_cookies,

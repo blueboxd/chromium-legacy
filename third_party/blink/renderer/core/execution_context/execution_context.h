@@ -293,8 +293,7 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
     return nullptr;
   }
 
-  virtual const BrowserInterfaceBrokerProxy* GetBrowserInterfaceBrokerProxy()
-      const {
+  virtual BrowserInterfaceBrokerProxy* GetBrowserInterfaceBrokerProxy() {
     return nullptr;
   }
 

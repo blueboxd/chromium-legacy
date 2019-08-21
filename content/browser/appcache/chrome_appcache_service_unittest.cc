@@ -43,7 +43,7 @@ const char kSessionOnlyManifest[] = "http://www.sessiononly.com/cache.manifest";
 class ChromeAppCacheServiceTest : public testing::Test {
  public:
   ChromeAppCacheServiceTest()
-      : thread_bundle_(base::test::TaskEnvironment::MainThreadType::IO),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         kProtectedManifestURL(kProtectedManifest),
         kNormalManifestURL(kNormalManifest),
         kSessionOnlyManifestURL(kSessionOnlyManifest) {}
@@ -54,7 +54,7 @@ class ChromeAppCacheServiceTest : public testing::Test {
       bool init_storage);
   void InsertDataIntoAppCache(ChromeAppCacheService* appcache_service);
 
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   const GURL kProtectedManifestURL;
   const GURL kNormalManifestURL;
@@ -76,14 +76,14 @@ ChromeAppCacheServiceTest::CreateAppCacheServiceImpl(
   appcache_service->Initialize(appcache_path, &browser_context_,
                                std::move(mock_policy));
   // Steps needed to initialize the storage of AppCache data.
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   if (init_storage) {
     AppCacheStorageImpl* storage =
         static_cast<AppCacheStorageImpl*>(
             appcache_service->storage());
     storage->database_->db_connection();
     storage->disk_cache();
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
   return appcache_service;
 }
@@ -121,7 +121,7 @@ TEST_F(ChromeAppCacheServiceTest, KeepOnDestruction) {
 
   // Test: delete the ChromeAppCacheService
   appcache_service = nullptr;
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Recreate the appcache (for reading the data back)
   appcache_service = CreateAppCacheServiceImpl(appcache_path, false);
@@ -143,7 +143,7 @@ TEST_F(ChromeAppCacheServiceTest, KeepOnDestruction) {
 
   // Delete and let cleanup tasks run prior to returning.
   appcache_service = nullptr;
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(ChromeAppCacheServiceTest, SaveSessionState) {
@@ -163,7 +163,7 @@ TEST_F(ChromeAppCacheServiceTest, SaveSessionState) {
 
   // Test: delete the ChromeAppCacheService
   appcache_service = nullptr;
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Recreate the appcache (for reading the data back)
   appcache_service = CreateAppCacheServiceImpl(appcache_path, false);
@@ -185,7 +185,7 @@ TEST_F(ChromeAppCacheServiceTest, SaveSessionState) {
 
   // Delete and let cleanup tasks run prior to returning.
   appcache_service = nullptr;
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 }  // namespace content

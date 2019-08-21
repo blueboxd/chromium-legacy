@@ -38,6 +38,9 @@
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
+#include "chrome/browser/heavy_ad_intervention/heavy_ad_blocklist.h"
+#include "chrome/browser/heavy_ad_intervention/heavy_ad_service.h"
+#include "chrome/browser/heavy_ad_intervention/heavy_ad_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/language/url_language_histogram_factory.h"
@@ -567,6 +570,13 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
         PreviewsServiceFactory::GetForProfile(profile_);
     if (previews_service)
       previews_service->ClearBlackList(delete_begin_, delete_end_);
+
+    HeavyAdService* heavy_ad_service =
+        HeavyAdServiceFactory::GetForBrowserContext(profile_);
+    if (heavy_ad_service && heavy_ad_service->heavy_ad_blocklist()) {
+      heavy_ad_service->heavy_ad_blocklist()->ClearBlackList(delete_begin_,
+                                                             delete_end_);
+    }
 
     OptimizationGuideKeyedService* optimization_guide_keyed_service =
         OptimizationGuideKeyedServiceFactory::GetForProfile(profile_);

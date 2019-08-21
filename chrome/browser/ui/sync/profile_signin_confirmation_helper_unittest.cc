@@ -167,7 +167,7 @@ class ProfileSigninConfirmationHelperTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
   TestingPrefStoreWithCustomReadError* user_prefs_;
   BookmarkModel* model_;

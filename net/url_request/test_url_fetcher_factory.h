@@ -53,7 +53,7 @@ class ScopedURLFetcherFactory {
 // Typical usage:
 //   // TestURLFetcher requires a MessageLoop and an IO thread to release
 //   // URLRequestContextGetter in URLFetcher::Core.
-//   TestBrowserThreadBundle thread_bundle_;
+//   BrowserTaskEnvironment task_environment_;
 //   // Create factory (it automatically sets itself as URLFetcher's factory).
 //   TestURLFetcherFactory factory;
 //   // Do something that triggers creation of a URLFetcher.

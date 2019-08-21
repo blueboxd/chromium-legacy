@@ -127,7 +127,7 @@ class ProfileWriterTest : public testing::Test {
     bookmarks_.push_back(entry);
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileWriterTest);
 };

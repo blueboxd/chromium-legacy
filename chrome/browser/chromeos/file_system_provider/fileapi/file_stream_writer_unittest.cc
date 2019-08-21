@@ -95,7 +95,7 @@ class FileSystemProviderFileStreamWriter : public testing::Test {
     ASSERT_TRUE(wrong_file_url_.is_valid());
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir data_dir_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   TestingProfile* profile_;  // Owned by TestingProfileManager.

@@ -88,7 +88,7 @@ void InitInstallerLogging(const installer::MasterPreferences& prefs) {
 
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_FILE;
-  settings.log_file = log_file_path.value().c_str();
+  settings.log_file_path = log_file_path.value().c_str();
   logging::InitLogging(settings);
 
   if (prefs.GetBool(installer::master_preferences::kVerboseLogging,

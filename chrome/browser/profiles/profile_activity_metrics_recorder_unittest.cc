@@ -30,9 +30,10 @@ constexpr base::TimeDelta kInactivityTimeout = base::TimeDelta::FromMinutes(5);
 class ProfileActivityMetricsRecorderTest : public testing::Test {
  public:
   ProfileActivityMetricsRecorderTest()
-      : thread_bundle_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         profile_manager_(TestingBrowserProcess::GetGlobal()) {
-    base::SetRecordActionTaskRunner(thread_bundle_.GetMainThreadTaskRunner());
+    base::SetRecordActionTaskRunner(
+        task_environment_.GetMainThreadTaskRunner());
   }
 
   void SetUp() override {
@@ -80,10 +81,12 @@ class ProfileActivityMetricsRecorderTest : public testing::Test {
 
   TestingProfileManager* profile_manager() { return &profile_manager_; }
   base::HistogramTester* histograms() { return &histogram_tester_; }
-  content::TestBrowserThreadBundle* thread_bundle() { return &thread_bundle_; }
+  content::BrowserTaskEnvironment* task_environment() {
+    return &task_environment_;
+  }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   TestingProfileManager profile_manager_;
   base::HistogramTester histogram_tester_;
@@ -155,7 +158,7 @@ TEST_F(ProfileActivityMetricsRecorderTest, MultipleProfiles) {
   SimulateUserActionAndExpectRecording(/*bucket=*/1);
 
   // Profile 1: Session lasts 2 minutes.
-  thread_bundle()->FastForwardBy(base::TimeDelta::FromMinutes(2));
+  task_environment()->FastForwardBy(base::TimeDelta::FromMinutes(2));
 
   // Profile 3: Browser is activated for the first time. The profile is assigned
   // bucket 2.
@@ -169,7 +172,7 @@ TEST_F(ProfileActivityMetricsRecorderTest, MultipleProfiles) {
                                   /*bucket=*/1, /*count=*/2);
 
   // Profile 3: Session lasts 2 minutes.
-  thread_bundle()->FastForwardBy(base::TimeDelta::FromMinutes(2));
+  task_environment()->FastForwardBy(base::TimeDelta::FromMinutes(2));
 
   // Profile 2: Browser is activated for the first time. The profile is assigned
   // bucket 3.
@@ -193,11 +196,11 @@ TEST_F(ProfileActivityMetricsRecorderTest, SessionInactivityNotRecorded) {
                                   /*bucket=*/1, /*count=*/1);
 
   // Wait 2 minutes before doing another user interaction.
-  thread_bundle()->FastForwardBy(base::TimeDelta::FromMinutes(2));
+  task_environment()->FastForwardBy(base::TimeDelta::FromMinutes(2));
   SimulateUserEvent();
 
   // Stay inactive so the session ends.
-  thread_bundle()->FastForwardBy(kInactivityTimeout * 2);
+  task_environment()->FastForwardBy(kInactivityTimeout * 2);
 
   // The inactive time is not recorded.
   histograms()->ExpectBucketCount("Profile.SessionDuration.PerProfile",

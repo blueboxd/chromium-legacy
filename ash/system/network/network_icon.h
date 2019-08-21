@@ -81,11 +81,6 @@ gfx::ImageSkia GetConnectedNetworkWithConnectingVpnImage(
 gfx::ImageSkia GetDisconnectedImageForNetworkType(
     chromeos::network_config::mojom::NetworkType network_type);
 
-// Returns the full strength image for a Wi-Fi network using |icon_color| for
-// the main icon and |badge_color| for the badge.
-ASH_EXPORT gfx::ImageSkia GetImageForNewWifiNetwork(SkColor icon_color,
-                                                    SkColor badge_color);
-
 // Returns the label for |network| when displayed in a list.
 ASH_EXPORT base::string16 GetLabelForNetworkList(
     const chromeos::network_config::mojom::NetworkStateProperties* network);

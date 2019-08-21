@@ -83,7 +83,7 @@ class ArcFileSystemBridgeTest : public testing::Test {
 
  protected:
   base::ScopedTempDir temp_dir_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   content::TestServiceManagerContext service_manager_context_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
 

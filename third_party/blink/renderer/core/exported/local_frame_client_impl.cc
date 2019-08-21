@@ -1111,7 +1111,7 @@ LocalFrameClientImpl::GetDocumentInterfaceBroker() {
   return document_interface_broker_.get();
 }
 
-const blink::BrowserInterfaceBrokerProxy*
+blink::BrowserInterfaceBrokerProxy*
 LocalFrameClientImpl::GetBrowserInterfaceBrokerProxy() const {
   return web_frame_->Client()->GetBrowserInterfaceBrokerProxy();
 }

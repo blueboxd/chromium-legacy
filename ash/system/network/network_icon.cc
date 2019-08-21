@@ -541,17 +541,6 @@ gfx::ImageSkia GetDisconnectedImageForNetworkType(NetworkType network_type) {
   return GetBasicImage(ICON_TYPE_LIST, network_type, false /* connected */);
 }
 
-gfx::ImageSkia GetImageForNewWifiNetwork(SkColor icon_color,
-                                         SkColor badge_color) {
-  gfx::ImageSkia icon =
-      gfx::CanvasImageSource::MakeImageSkia<SignalStrengthImageSource>(
-          ImageTypeForNetworkType(NetworkType::kWiFi), icon_color,
-          GetSizeForIconType(ICON_TYPE_LIST), kNumNetworkImages - 1);
-  Badges badges;
-  badges.bottom_right = {&kNetworkBadgeAddOtherIcon, badge_color};
-  return CreateNetworkIconImage(icon, badges);
-}
-
 base::string16 GetLabelForNetworkList(const NetworkStateProperties* network) {
   if (network->type == NetworkType::kCellular) {
     ActivationStateType activation_state = network->cellular->activation_state;

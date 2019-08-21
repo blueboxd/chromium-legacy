@@ -1623,6 +1623,7 @@ bool WebGLRenderingContextBase::CopyRenderingResultsFromDrawingBuffer(
         shared_context_wrapper->ContextProvider()->ContextGL();
     GLuint texture_id =
         resource_provider->GetBackingTextureHandleForOverwrite();
+    GLenum texture_target = resource_provider->GetBackingTextureTarget();
     if (!texture_id)
       return false;
 
@@ -1632,7 +1633,7 @@ bool WebGLRenderingContextBase::CopyRenderingResultsFromDrawingBuffer(
 
     bool flip_y = is_origin_top_left_ && !canvas()->LowLatencyEnabled();
     return drawing_buffer_->CopyToPlatformTexture(
-        gl, GL_TEXTURE_2D, texture_id, 0 /*texture LOD */, true, flip_y,
+        gl, texture_target, texture_id, 0 /*texture LOD */, true, flip_y,
         IntPoint(0, 0), IntRect(IntPoint(0, 0), drawing_buffer_->Size()),
         source_buffer);
   }

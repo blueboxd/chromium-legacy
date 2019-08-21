@@ -94,7 +94,7 @@ class CWVAutofillDataManagerTest : public PlatformTest {
     ui::ResourceBundle::CleanupSharedInstance();
   }
 
-  web::TestWebThreadBundle web_thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<autofill::TestPersonalDataManager> personal_data_manager_;
   CWVAutofillDataManager* autofill_data_manager_;
 };

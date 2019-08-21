@@ -563,7 +563,7 @@ static void VerifyQueryAndExtractParameters(
 class ExtensionUpdaterTest : public testing::Test {
  public:
   ExtensionUpdaterTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         testing_local_state_(TestingBrowserProcess::GetGlobal()) {}
 
   void SetUp() override {
@@ -2102,7 +2102,7 @@ class ExtensionUpdaterTest : public testing::Test {
 
  protected:
   std::unique_ptr<TestExtensionPrefs> prefs_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   ManifestFetchData* CreateManifestFetchData(
       const GURL& update_url,

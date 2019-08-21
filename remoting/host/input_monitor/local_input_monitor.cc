@@ -30,7 +30,7 @@ class LocalInputMonitorImpl : public LocalInputMonitor {
   void StartMonitoringForClientSession(
       base::WeakPtr<ClientSessionControl> client_session_control) override;
   void StartMonitoring(PointerMoveCallback on_pointer_input,
-                       base::RepeatingClosure on_keyboard_input,
+                       KeyPressedCallback on_keyboard_input,
                        base::RepeatingClosure on_error) override;
 
  private:
@@ -90,12 +90,19 @@ void LocalInputMonitorImpl::StartMonitoringForClientSession(
       base::BindOnce(&ClientSessionControl::DisconnectSession,
                      client_session_control, protocol::OK));
 
+  keyboard_input_monitor_ = LocalKeyboardInputMonitor::Create(
+      caller_task_runner_, input_task_runner_, ui_task_runner_,
+      base::BindRepeating(&ClientSessionControl::OnLocalKeyPressed,
+                          client_session_control),
+      base::BindOnce(&ClientSessionControl::DisconnectSession,
+                     client_session_control, protocol::OK));
+
   OnMonitoringStarted();
 }
 
 void LocalInputMonitorImpl::StartMonitoring(
     PointerMoveCallback on_pointer_input,
-    base::RepeatingClosure on_keyboard_input,
+    KeyPressedCallback on_keyboard_input,
     base::RepeatingClosure on_error) {
   DCHECK(!monitoring_);
   DCHECK(on_error);

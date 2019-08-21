@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.webapps;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.text.TextUtils;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
@@ -182,8 +183,14 @@ public class WebApkActivity extends WebappActivity {
     @Override
     protected boolean loadUrlIfPostShareTarget(WebappInfo webappInfo) {
         WebApkInfo webApkInfo = (WebApkInfo) webappInfo;
-        return WebApkPostShareTargetNavigator.navigateIfPostShareTarget(
-                webApkInfo, getActivityTab().getWebContents());
+        WebApkInfo.ShareData shareData = webApkInfo.shareData();
+        if (shareData == null || !TextUtils.equals(shareData.shareActivityClassName,
+                webApkInfo.shareTargetActivityName())) {
+            return false;
+        }
+        return new WebApkPostShareTargetNavigator().navigateIfPostShareTarget(
+                webApkInfo.url(), webApkInfo.shareTarget(), shareData,
+                getActivityTab().getWebContents());
     }
 
     @Override

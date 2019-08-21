@@ -42,7 +42,6 @@
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_image.h"
 #include "third_party/blink/public/platform/web_input_event.h"
-#include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/public/platform/web_menu_source_type.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
@@ -1236,7 +1235,6 @@ void WebViewImpl::Close() {
       GetPage()->WillCloseAnimationHost(nullptr);
 
     animation_host_ = nullptr;
-    layer_tree_view_ = nullptr;
   }
 
   AsView().page.Clear();
@@ -3237,7 +3235,6 @@ bool WebViewImpl::TabsToLinks() const {
 }
 
 void WebViewImpl::RegisterViewportLayersWithCompositor() {
-  DCHECK(layer_tree_view_);
   DCHECK(does_composite_);
 
   if (!GetPage()->MainFrame() || !GetPage()->MainFrame()->IsLocalFrame())
@@ -3345,10 +3342,8 @@ GraphicsLayer* WebViewImpl::RootGraphicsLayer() {
   return root_graphics_layer_;
 }
 
-void WebViewImpl::SetLayerTreeView(WebLayerTreeView* layer_tree_view,
-                                   cc::AnimationHost* animation_host) {
+void WebViewImpl::SetAnimationHost(cc::AnimationHost* animation_host) {
   DCHECK(does_composite_);
-  layer_tree_view_ = layer_tree_view;
   animation_host_ = animation_host;
 
   AsView().page->AnimationHostInitialized(*animation_host_, nullptr);

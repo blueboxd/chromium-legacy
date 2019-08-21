@@ -92,7 +92,7 @@ crbug.com/935970 media/video-controls-visibility-multimodal-touch-after-mouse.ht
 crbug.com/935970 media/video-controls-visible-audio-only.html [ Skip ]
 
 # Pixel Dump Crash
-crbug.com/963542 images/color-profile-layer-filter.html [ Skip ]
+crbug.com/963542 images/yuv-decode-eligible/color-profile-layer-filter.html [ Skip ]
 crbug.com/963542 media/alpha-video-playback.html [ Skip ]
 
 # Rebaseline
@@ -105,19 +105,19 @@ crbug.com/972637 images/color-profile-background-image-repeat.html [ Skip ]
 crbug.com/972637 images/color-profile-background-image-space.html [ Skip ]
 crbug.com/972637 images/color-profile-border-fade.html [ Skip ]
 crbug.com/972637 images/color-profile-border-image.html [ Skip ]
-crbug.com/972637 images/color-profile-border-radius.html [ Skip ]
-crbug.com/972637 images/color-profile-filter.html [ Skip ]
+crbug.com/972637 images/yuv-decode-eligible/color-profile-border-radius.html [ Skip ]
+crbug.com/972637 images/yuv-decode-eligible/color-profile-filter.html [ Skip ]
 crbug.com/972637 images/color-profile-group.html [ Skip ]
 crbug.com/972637 images/color-profile-image-canvas-pattern.html [ Skip ]
 crbug.com/972637 images/color-profile-image-canvas.html [ Skip ]
 crbug.com/972637 images/color-profile-image-filter-all.html [ Skip ]
-crbug.com/972637 images/color-profile-image-profile-match.html [ Skip ]
-crbug.com/972637 images/color-profile-image.html [ Skip ]
+crbug.com/972637 images/yuv-decode-eligible/color-profile-image-profile-match.html [ Skip ]
+crbug.com/972637 images/yuv-decode-eligible/color-profile-image.html [ Skip ]
 crbug.com/972637 images/color-profile-mask-image-svg.html [ Skip ]
 crbug.com/972637 images/color-profile-object.html [ Skip ]
 crbug.com/972637 images/color-profile-svg-fill-text.html [ Skip ]
 crbug.com/972637 images/color-profile-svg.html [ Skip ]
-crbug.com/972637 images/webp-color-profile-lossy.html [ Skip ]
+crbug.com/972637 images/yuv-decode-eligible/webp-color-profile-lossy.html [ Skip ]
 crbug.com/972637 media/video-poster-scale.html [ Skip ]
 
 # Need a Vulkan native specific baseline.

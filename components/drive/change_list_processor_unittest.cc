@@ -167,7 +167,7 @@ class ChangeListProcessorTest : public testing::Test {
     return entry;
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<ResourceMetadataStorage, test_util::DestroyHelperForTests>
       metadata_storage_;

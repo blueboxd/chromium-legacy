@@ -112,28 +112,30 @@ class DelayableBackend : public disk_cache::Backend {
 
   // disk_cache::Backend overrides
   int32_t GetEntryCount() const override { return backend_->GetEntryCount(); }
-  net::Error OpenEntry(const std::string& key,
-                       net::RequestPriority request_priority,
-                       disk_cache::Entry** entry,
-                       CompletionOnceCallback callback) override {
+  EntryResult OpenEntry(const std::string& key,
+                        net::RequestPriority request_priority,
+                        EntryResultCallback callback) override {
     if (delay_open_entry_ && open_entry_callback_.is_null()) {
-      open_entry_callback_ = base::BindOnce(
-          &DelayableBackend::OpenEntryDelayedImpl, base::Unretained(this), key,
-          base::Unretained(entry), std::move(callback));
+      open_entry_callback_ =
+          base::BindOnce(&DelayableBackend::OpenEntryDelayedImpl,
+                         base::Unretained(this), key, std::move(callback));
       if (open_entry_started_callback_)
         std::move(open_entry_started_callback_).Run();
-      return net::ERR_IO_PENDING;
+      return EntryResult::MakeError(net::ERR_IO_PENDING);
     }
-    return backend_->OpenEntry(key, request_priority, entry,
-                               std::move(callback));
+    return backend_->OpenEntry(key, request_priority, std::move(callback));
   }
 
-  net::Error CreateEntry(const std::string& key,
-                         net::RequestPriority request_priority,
-                         disk_cache::Entry** entry,
-                         CompletionOnceCallback callback) override {
-    return backend_->CreateEntry(key, request_priority, entry,
-                                 std::move(callback));
+  EntryResult CreateEntry(const std::string& key,
+                          net::RequestPriority request_priority,
+                          EntryResultCallback callback) override {
+    return backend_->CreateEntry(key, request_priority, std::move(callback));
+  }
+  EntryResult OpenOrCreateEntry(const std::string& key,
+                                net::RequestPriority request_priority,
+                                EntryResultCallback callback) override {
+    return backend_->OpenOrCreateEntry(key, request_priority,
+                                       std::move(callback));
   }
   net::Error DoomEntry(const std::string& key,
                        net::RequestPriority request_priority,
@@ -193,13 +195,13 @@ class DelayableBackend : public disk_cache::Backend {
 
  private:
   void OpenEntryDelayedImpl(const std::string& key,
-                            disk_cache::Entry** entry,
-                            CompletionOnceCallback callback) {
+                            EntryResultCallback callback) {
     auto copyable_callback =
         base::AdaptCallbackForRepeating(std::move(callback));
-    int rv = backend_->OpenEntry(key, net::HIGHEST, entry, copyable_callback);
-    if (rv != net::ERR_IO_PENDING)
-      copyable_callback.Run(rv);
+    EntryResult result =
+        backend_->OpenEntry(key, net::HIGHEST, copyable_callback);
+    if (result.net_error() != net::ERR_IO_PENDING)
+      copyable_callback.Run(std::move(result));
   }
 
   std::unique_ptr<disk_cache::Backend> backend_;
@@ -425,7 +427,7 @@ class MockLegacyCacheStorage : public LegacyCacheStorage {
 class CacheStorageCacheTest : public testing::Test {
  public:
   CacheStorageCacheTest()
-      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   void SetUp() override {
     ChromeBlobStorageContext* blob_storage_context =
@@ -842,7 +844,7 @@ class CacheStorageCacheTest : public testing::Test {
 
  protected:
   base::ScopedTempDir temp_dir_;
-  TestBrowserThreadBundle browser_thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   TestBrowserContext browser_context_;
   scoped_refptr<MockSpecialStoragePolicy> quota_policy_;
   scoped_refptr<MockQuotaManager> mock_quota_manager_;
@@ -2279,7 +2281,7 @@ TEST_P(CacheStorageCacheTestP, BlobReferenceDelaysClose) {
   cache_->Close(base::BindOnce(&CacheStorageCacheTest::CloseCallback,
                                base::Unretained(this),
                                base::Unretained(&loop)));
-  browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   // If MemoryOnly closing does succeed right away.
   EXPECT_EQ(MemoryOnly(), callback_closed_);
 

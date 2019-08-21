@@ -1777,7 +1777,7 @@ class AppCacheStorageImplTest : public testing::Test {
   }
 
   // Data members --------------------------------------------------
-  TestBrowserThreadBundle task_environment_;
+  BrowserTaskEnvironment task_environment_;
 
   base::OnceClosure test_finished_cb_;
   base::stack<base::OnceClosure> task_stack_;

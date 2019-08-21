@@ -141,8 +141,7 @@ class CrostiniManagerTest : public testing::Test {
   }
 
   CrostiniManagerTest()
-      : test_browser_thread_bundle_(
-            content::TestBrowserThreadBundle::REAL_IO_THREAD) {
+      : task_environment_(content::BrowserTaskEnvironment::REAL_IO_THREAD) {
     chromeos::DBusThreadManager::Initialize();
     fake_cicerone_client_ = static_cast<chromeos::FakeCiceroneClient*>(
         chromeos::DBusThreadManager::Get()->GetCiceroneClient());
@@ -195,7 +194,7 @@ class CrostiniManagerTest : public testing::Test {
   device::FakeUsbDeviceManager fake_usb_manager_;
 
  private:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
   base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(CrostiniManagerTest);

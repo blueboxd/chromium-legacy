@@ -227,8 +227,8 @@ bool SynchronousLayerTreeFrameSink::BindToClient(
       &shared_bitmap_manager_, software_renderer_settings, kRootFrameSinkId,
       std::move(output_surface), nullptr /* scheduler */,
       nullptr /* current_task_runner */);
-  display_->Initialize(&display_client_,
-                       frame_sink_manager_->surface_manager());
+  display_->Initialize(&display_client_, frame_sink_manager_->surface_manager(),
+                       true /* enable_shared_images */);
   display_->SetVisible(true);
   return true;
 }

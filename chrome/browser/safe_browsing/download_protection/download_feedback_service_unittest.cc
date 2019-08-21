@@ -153,7 +153,7 @@ class DownloadFeedbackServiceTest : public testing::Test {
 
  protected:
   base::ScopedTempDir temp_dir_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
   FakeDownloadFeedbackFactory download_feedback_factory_;
 };

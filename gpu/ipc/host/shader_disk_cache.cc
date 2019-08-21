@@ -55,7 +55,7 @@ class ShaderDiskCacheEntry : public base::ThreadChecker {
 
   void Cache();
   void OnOpComplete(int rv);
-  void set_entry(disk_cache::Entry* entry) { entry_ = entry; }
+  void OnEntryOpenComplete(disk_cache::EntryResult result);
 
  private:
   enum OpType {
@@ -90,7 +90,7 @@ class ShaderDiskReadHelper : public base::ThreadChecker {
 
   void LoadCache();
   void OnOpComplete(int rv);
-  void set_entry(disk_cache::Entry* entry) { entry_ = entry; }
+  void OnEntryOpenComplete(disk_cache::EntryResult result);
 
  private:
   enum OpType {
@@ -146,24 +146,6 @@ class ShaderClearHelper : public base::ThreadChecker {
   DISALLOW_COPY_AND_ASSIGN(ShaderClearHelper);
 };
 
-// When the cache is asked to open an entry an Entry** is passed to it. The
-// underlying Entry* must stay alive for the duration of the call, so it is ref
-// counted. If the underlying state machine is deleted before the callback runs,
-// close the entry.
-template <typename T>
-void OnEntryOpenComplete(
-    base::WeakPtr<T> state_machine,
-    scoped_refptr<base::RefCountedData<disk_cache::Entry*>> entry_ptr,
-    int rv) {
-  if (!state_machine) {
-    if (rv == net::OK)
-      entry_ptr->data->Close();
-    return;
-  }
-  state_machine->set_entry(entry_ptr->data);
-  state_machine->OnOpComplete(rv);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // ShaderDiskCacheEntry
 
@@ -187,20 +169,13 @@ ShaderDiskCacheEntry::~ShaderDiskCacheEntry() {
 void ShaderDiskCacheEntry::Cache() {
   DCHECK(CalledOnValidThread());
 
-  // The Entry* passed to the cache may be used after this class is deleted or
-  // after the callback is deleted, so make it ref counted.
-  auto entry_ptr =
-      base::MakeRefCounted<base::RefCountedData<disk_cache::Entry*>>();
-  auto callback = base::BindOnce(&OnEntryOpenComplete<ShaderDiskCacheEntry>,
-                                 weak_ptr_factory_.GetWeakPtr(), entry_ptr);
+  auto callback = base::BindOnce(&ShaderDiskCacheEntry::OnEntryOpenComplete,
+                                 weak_ptr_factory_.GetWeakPtr());
 
-  int rv = cache_->backend()->OpenEntry(key_, net::HIGHEST, &entry_ptr->data,
-                                        std::move(callback));
-
-  if (rv != net::ERR_IO_PENDING) {
-    entry_ = entry_ptr->data;
-    OnOpComplete(rv);
-  }
+  disk_cache::EntryResult result =
+      cache_->backend()->OpenEntry(key_, net::HIGHEST, std::move(callback));
+  if (result.net_error() != net::ERR_IO_PENDING)
+    OnEntryOpenComplete(std::move(result));
 }
 
 void ShaderDiskCacheEntry::OnOpComplete(int rv) {
@@ -226,6 +201,12 @@ void ShaderDiskCacheEntry::OnOpComplete(int rv) {
     weak_ptr_ = std::move(weak_ptr);
 }
 
+void ShaderDiskCacheEntry::OnEntryOpenComplete(disk_cache::EntryResult result) {
+  int rv = result.net_error();
+  entry_ = result.ReleaseEntry();
+  OnOpComplete(rv);
+}
+
 int ShaderDiskCacheEntry::OpenCallback(int rv) {
   DCHECK(CalledOnValidThread());
   if (rv == net::OK) {
@@ -236,19 +217,16 @@ int ShaderDiskCacheEntry::OpenCallback(int rv) {
 
   op_type_ = CREATE_ENTRY;
 
-  // The Entry* passed to the cache may be used after this class is deleted or
-  // after the callback is deleted, so make it ref counted.
-  auto entry_ptr =
-      base::MakeRefCounted<base::RefCountedData<disk_cache::Entry*>>();
-  auto callback = base::BindOnce(&OnEntryOpenComplete<ShaderDiskCacheEntry>,
-                                 weak_ptr_factory_.GetWeakPtr(), entry_ptr);
+  auto callback = base::BindOnce(&ShaderDiskCacheEntry::OnEntryOpenComplete,
+                                 weak_ptr_factory_.GetWeakPtr());
 
-  int create_rv = cache_->backend()->CreateEntry(
-      key_, net::HIGHEST, &entry_ptr->data, std::move(callback));
+  disk_cache::EntryResult create_result =
+      cache_->backend()->CreateEntry(key_, net::HIGHEST, std::move(callback));
+  rv = create_result.net_error();
 
-  if (create_rv != net::ERR_IO_PENDING)
-    entry_ = entry_ptr->data;
-  return create_rv;
+  if (rv != net::ERR_IO_PENDING)
+    entry_ = create_result.ReleaseEntry();  // may be nullptr
+  return rv;
 }
 
 int ShaderDiskCacheEntry::WriteCallback(int rv) {
@@ -320,23 +298,26 @@ void ShaderDiskReadHelper::OnOpComplete(int rv) {
   } while (rv != net::ERR_IO_PENDING);
 }
 
+void ShaderDiskReadHelper::OnEntryOpenComplete(disk_cache::EntryResult result) {
+  int rv = result.net_error();
+  entry_ = result.ReleaseEntry();
+  OnOpComplete(rv);
+}
+
 int ShaderDiskReadHelper::OpenNextEntry() {
   DCHECK(CalledOnValidThread());
   op_type_ = OPEN_NEXT_COMPLETE;
   if (!iter_)
     iter_ = cache_->backend()->CreateIterator();
 
-  // The Entry* passed to the cache may be used after this class is deleted or
-  // after the callback is deleted, so make it ref counted.
-  auto entry_ptr =
-      base::MakeRefCounted<base::RefCountedData<disk_cache::Entry*>>();
-  auto callback = base::BindOnce(&OnEntryOpenComplete<ShaderDiskReadHelper>,
-                                 weak_ptr_factory_.GetWeakPtr(), entry_ptr);
+  auto callback = base::BindOnce(&ShaderDiskReadHelper::OnEntryOpenComplete,
+                                 weak_ptr_factory_.GetWeakPtr());
 
-  int rv = iter_->OpenNextEntry(&entry_ptr->data, std::move(callback));
+  disk_cache::EntryResult result = iter_->OpenNextEntry(std::move(callback));
+  int rv = result.net_error();
 
   if (rv != net::ERR_IO_PENDING)
-    entry_ = entry_ptr->data;
+    entry_ = result.ReleaseEntry();
   return rv;
 }
 

@@ -95,7 +95,7 @@ class ExtensionMediaRouteProviderProxyTest : public testing::Test {
     provider_proxy_->RegisterMediaRouteProvider(std::move(mock_provider_ptr));
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMediaRouteProviderProxyTest);

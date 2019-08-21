@@ -78,7 +78,7 @@ class FakePpdProvider : public PpdProvider {
 class CupsPrintersHandlerTest : public testing::Test {
  public:
   CupsPrintersHandlerTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD),
+      : task_environment_(content::BrowserTaskEnvironment::REAL_IO_THREAD),
         profile_(),
         web_ui_(),
         printers_handler_() {}
@@ -94,7 +94,7 @@ class CupsPrintersHandlerTest : public testing::Test {
 
  protected:
   // Must outlive |profile_|.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   content::TestWebUI web_ui_;
   std::unique_ptr<CupsPrintersHandler> printers_handler_;

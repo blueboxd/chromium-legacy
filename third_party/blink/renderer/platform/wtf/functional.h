@@ -117,7 +117,8 @@ template <typename T>
 class PassedWrapper final {
  public:
   explicit PassedWrapper(T&& scoper) : scoper_(std::move(scoper)) {}
-  PassedWrapper(PassedWrapper&& other) : scoper_(std::move(other.scoper_)) {}
+  PassedWrapper(PassedWrapper&& other) noexcept
+      : scoper_(std::move(other.scoper_)) {}
   T MoveOut() const { return std::move(scoper_); }
 
  private:
@@ -318,8 +319,9 @@ class CrossThreadFunction<R(Args...)> {
   CrossThreadFunction(const CrossThreadFunction&) = delete;
   CrossThreadFunction& operator=(const CrossThreadFunction&) = delete;
 
-  CrossThreadFunction(CrossThreadFunction&& other) = default;
-  CrossThreadFunction& operator=(CrossThreadFunction&& other) = default;
+  CrossThreadFunction(CrossThreadFunction&& other) noexcept = default;
+  CrossThreadFunction& operator=(CrossThreadFunction&& other) noexcept =
+      default;
 
   R Run(Args... args) const & {
     return callback_.Run(std::forward<Args>(args)...);
@@ -354,8 +356,9 @@ class CrossThreadOnceFunction<R(Args...)> {
   CrossThreadOnceFunction(const CrossThreadOnceFunction&) = delete;
   CrossThreadOnceFunction& operator=(const CrossThreadOnceFunction&) = delete;
 
-  CrossThreadOnceFunction(CrossThreadOnceFunction&& other) = default;
-  CrossThreadOnceFunction& operator=(CrossThreadOnceFunction&& other) = default;
+  CrossThreadOnceFunction(CrossThreadOnceFunction&& other) noexcept = default;
+  CrossThreadOnceFunction& operator=(CrossThreadOnceFunction&& other) noexcept =
+      default;
 
   R Run(Args... args) && {
     return std::move(callback_).Run(std::forward<Args>(args)...);

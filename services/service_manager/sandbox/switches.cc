@@ -47,9 +47,6 @@ const char kAllowNoSandboxJob[] = "allow-no-sandbox-job";
 // Allows debugging of sandboxed processes (see zygote_main_linux.cc).
 const char kAllowSandboxDebugging[] = "allow-sandbox-debugging";
 
-// Disable appcontainer/lowbox for renderer on Win8+ platforms.
-const char kDisableAppContainer[] = "disable-appcontainer";
-
 // Disables the GPU process sandbox.
 const char kDisableGpuSandbox[] = "disable-gpu-sandbox";
 
@@ -64,9 +61,6 @@ const char kDisableSetuidSandbox[] = "disable-setuid-sandbox";
 
 // Disables the Win32K process mitigation policy for child processes.
 const char kDisableWin32kLockDown[] = "disable-win32k-lockdown";
-
-// Ensable appcontainer/lowbox for renderer on Win8+ platforms.
-const char kEnableAppContainer[] = "enable-appcontainer";
 
 // Allows shmat() system call in the GPU sandbox.
 const char kGpuSandboxAllowSysVShm[] = "gpu-sandbox-allow-sysv-shm";

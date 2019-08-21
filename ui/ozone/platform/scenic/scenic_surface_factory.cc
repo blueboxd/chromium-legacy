@@ -165,7 +165,7 @@ void ScenicSurfaceFactory::AddSurface(gfx::AcceleratedWidget widget,
   base::AutoLock lock(surface_lock_);
   DCHECK(!base::Contains(surface_map_, widget));
   surface->AssertBelongsToCurrentThread();
-  surface_map_.insert(std::make_pair(widget, surface));
+  surface_map_.emplace(widget, surface);
 }
 
 void ScenicSurfaceFactory::RemoveSurface(gfx::AcceleratedWidget widget) {

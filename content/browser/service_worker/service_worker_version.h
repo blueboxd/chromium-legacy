@@ -685,7 +685,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // Implements blink::mojom::ServiceWorkerHost.
   void SetCachedMetadata(const GURL& url,
-                         const std::vector<uint8_t>& data) override;
+                         base::span<const uint8_t> data) override;
   void ClearCachedMetadata(const GURL& url) override;
   void ClaimClients(ClaimClientsCallback callback) override;
   void GetClients(blink::mojom::ServiceWorkerClientQueryOptionsPtr options,

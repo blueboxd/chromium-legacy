@@ -295,7 +295,8 @@ Polymer({
    * @private
    */
   getFavIconStyle_: function(item) {
-    return 'background-image:' + cr.icon.getFavicon(item.tabUrl, false);
+    return 'background-image:' +
+        cr.icon.getFaviconForPageURL(item.tabUrl, false);
   },
 
   /**

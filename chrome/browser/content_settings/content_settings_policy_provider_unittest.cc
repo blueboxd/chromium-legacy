@@ -33,7 +33,7 @@ namespace content_settings {
 typedef std::vector<Rule> Rules;
 
 class PolicyProviderTest : public testing::Test {
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(PolicyProviderTest, DefaultGeolocationContentSetting) {

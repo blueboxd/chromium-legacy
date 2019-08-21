@@ -54,7 +54,7 @@ class ArcSupervisionTransitionNotificationTest
   std::unique_ptr<NotificationDisplayServiceTester> display_service_;
   ArcAppTest arc_app_test_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcSupervisionTransitionNotificationTest);
 };

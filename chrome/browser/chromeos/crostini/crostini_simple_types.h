@@ -101,6 +101,7 @@ enum class ImportContainerProgressStatus {
 struct VmInfo {
   VmState state;
   vm_tools::concierge::VmInfo info;
+  bool usb_devices_shared = false;
 };
 
 struct StreamingExportStatus {

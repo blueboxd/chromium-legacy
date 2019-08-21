@@ -128,7 +128,7 @@ class ToolbarMediatorTest : public PlatformTest {
   ~ToolbarMediatorTest() override { [mediator_ disconnect]; }
 
  protected:
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   void SetUpWebStateList() {
     web_state_list_ = std::make_unique<WebStateList>(&web_state_list_delegate_);
     web_state_list_->InsertWebState(0, std::move(test_web_state_),

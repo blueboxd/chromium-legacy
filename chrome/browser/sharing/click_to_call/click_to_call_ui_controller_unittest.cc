@@ -92,7 +92,7 @@ class ClickToCallUiControllerTest : public testing::Test {
         SharingServiceFactory::GetForBrowserContext(&profile_));
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   std::unique_ptr<content::WebContents> web_contents_;
   ClickToCallUiController* controller_ = nullptr;

@@ -395,15 +395,9 @@ IN_PROC_BROWSER_TEST_F(AppControllerNewProfileManagementBrowserTest,
   EXPECT_FALSE(UserManager::IsShowing());
 }
 
-#if defined(ADDRESS_SANITIZER)
-// Flaky under ASAN. See https://crbug.com/674475.
-#define MAYBE_GuestProfileReopenWithNoWindows DISABLED_GuestProfileReopenWithNoWindows
-#else
-#define MAYBE_GuestProfileReopenWithNoWindows GuestProfileReopenWithNoWindows
-#endif
 // Test that for a guest last profile, a reopen event opens the User Manager.
 IN_PROC_BROWSER_TEST_F(AppControllerNewProfileManagementBrowserTest,
-                       MAYBE_GuestProfileReopenWithNoWindows) {
+                       GuestProfileReopenWithNoWindows) {
   // Create the system profile. Set the guest as the last used profile so the
   // app controller can use it on init.
   CreateAndWaitForSystemProfile();

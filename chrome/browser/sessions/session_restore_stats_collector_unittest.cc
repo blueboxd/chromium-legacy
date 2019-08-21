@@ -344,8 +344,8 @@ class SessionRestoreStatsCollectorTest : public testing::Test {
     stats_collector_->DeferTab(controller);
   }
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
-  // |test_browser_thread_bundle_| needs to still be alive when
+  content::BrowserTaskEnvironment task_environment_;
+  // |task_environment_| needs to still be alive when
   // |testing_profile_| is destroyed.
   TestingProfile testing_profile_;
 

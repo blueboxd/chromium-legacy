@@ -21,7 +21,6 @@
 <translation id="2915596697727466327">Chromium ใช้ Face ID เพื่อยืนยันสิทธิ์ในการเข้าถึงรหัสผ่าน</translation>
 <translation id="3256316712990552818">คัดลอกลงใน Chromium แล้ว</translation>
 <translation id="3413120535237193088">ลงชื่อเข้าใช้ Chromium เพื่อรับบุ๊กมาร์กในอุปกรณ์ทุกเครื่องของคุณ</translation>
-<translation id="3473048256428424907">เปิดโปรแกรมสแกนโค้ด QR ของ Chromium</translation>
 <translation id="3605252743693911722">ลงชื่อเข้าใช้ Chromium เพื่อรับบุ๊กมาร์ก รหัสผ่าน และข้อมูลอื่นๆ ในอุปกรณ์ทุกเครื่องของคุณ</translation>
 <translation id="3805899903892079518">Chromium ไม่มีสิทธิ์เข้าถึงรูปภาพหรือวิดีโอของคุณ เปิดใช้การเข้าถึงได้ในการตั้งค่า iOS &gt; ความเป็นส่วนตัว &gt; รูปภาพ</translation>
 <translation id="4024541897090868497">ลงชื่อเข้าใช้ Chromium เพื่อรับแท็บในอุปกรณ์ทุกเครื่องของคุณ</translation>
@@ -29,7 +28,6 @@
 <translation id="4241912885070669028">คุณกำลังออกจากระบบบัญชีที่จัดการโดย <ph name="SIGNOUT_MANAGED_DOMAIN" /> การออกจากระบบจะลบข้อมูล Chromium ของคุณออกจากอุปกรณ์เครื่องนี้ แต่ข้อมูลจะยังคงอยู่ในบัญชี Google</translation>
 <translation id="4555020257205549924">เมื่อเปิดฟีเจอร์นี้ Chromium จะเสนอให้แปลหน้าต่างๆ ที่เขียนด้วยภาษาอื่นโดยใช้ Google แปลภาษา <ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="4787850887676698916">แท็บที่คุณเปิดไว้ใน Chromium ในอุปกรณ์เครื่องอื่นๆ จะปรากฏที่นี่</translation>
-<translation id="495292094137889840">เริ่มใช้โปรแกรมสแกนโค้ด QR ของ Chromium</translation>
 <translation id="4999538639245140991">เนื่องจากคุณกำลังออกจากระบบบัญชีที่จัดการโดย <ph name="SIGNOUT_MANAGED_DOMAIN" /> ข้อมูล Chromium ของคุณจะถูกลบออกจากอุปกรณ์นี้ แต่ข้อมูลจะยังคงอยู่ในบัญชี Google</translation>
 <translation id="5231355151045086930">ออกจากระบบ Chromium</translation>
 <translation id="5862307444128926510">ยินดีต้อนรับสู่ Chromium</translation>

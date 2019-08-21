@@ -133,7 +133,7 @@ class EntryWrapper {
   void DoOpen(int key);
 
  private:
-  void OnOpenDone(int key, int result);
+  void OnOpenDone(int key, disk_cache::EntryResult result);
   void DoRead();
   void OnReadDone(int result);
   void DoWrite();
@@ -167,24 +167,26 @@ void EntryWrapper::DoOpen(int key) {
     return DoRead();
 
   state_ = OPEN;
-  int rv = g_data->cache->OpenEntry(
-      g_data->keys[key], net::HIGHEST, &entry_,
+  disk_cache::EntryResult result = g_data->cache->OpenEntry(
+      g_data->keys[key], net::HIGHEST,
       base::Bind(&EntryWrapper::OnOpenDone, base::Unretained(this), key));
-  if (rv != net::ERR_IO_PENDING)
-    OnOpenDone(key, rv);
+  if (result.net_error() != net::ERR_IO_PENDING)
+    OnOpenDone(key, std::move(result));
 }
 
-void EntryWrapper::OnOpenDone(int key, int result) {
-  if (result == net::OK)
+void EntryWrapper::OnOpenDone(int key, disk_cache::EntryResult result) {
+  if (result.net_error() == net::OK) {
+    entry_ = result.ReleaseEntry();
     return DoRead();
+  }
 
   CHECK_EQ(state_, OPEN);
   state_ = CREATE;
   result = g_data->cache->CreateEntry(
-      g_data->keys[key], net::HIGHEST, &entry_,
+      g_data->keys[key], net::HIGHEST,
       base::Bind(&EntryWrapper::OnOpenDone, base::Unretained(this), key));
-  if (result != net::ERR_IO_PENDING)
-    OnOpenDone(key, result);
+  if (result.net_error() != net::ERR_IO_PENDING)
+    OnOpenDone(key, std::move(result));
 }
 
 void EntryWrapper::DoRead() {

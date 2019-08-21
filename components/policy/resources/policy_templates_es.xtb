@@ -1661,15 +1661,6 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 
           Si se utiliza el valor false o no se establece la política, los usuarios podrán transferir archivos a Google Drive.</translation>
 <translation id="3915395663995367577">URL de un archivo .pac de proxy</translation>
-<translation id="3920892052017026701">Establece un porcentaje personalizado de inicio de carga de la batería.
-
-          La batería empezará a cargarse cuando alcance el valor personalizado de inicio de carga.
-
-          El valor de DeviceBatteryChargeCustomStartCharging debe ser inferior al de DeviceBatteryChargeCustomStopCharging.
-
-          Esta política solo se usará si se asigna un valor personalizado a DeviceBatteryChargeMode.
-
-          Si no se configura esta política o no se le asigna ningún valor, se aplicará el modo estándar de carga de la batería.</translation>
 <translation id="3925377537407648234">Definir la resolución de pantalla y el factor de escala</translation>
 <translation id="3939893074578116847">Envía paquetes de red al servidor de gestión para supervisar el estado online y permitir que el servidor detecte si el dispositivo está sin conexión.
 
@@ -1863,11 +1854,11 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
 <translation id="4239720644496144453">La caché no se utiliza en las aplicaciones para Android. Si varios usuarios instalan la misma aplicación para Android, se descargará una nueva para cada uno de ellos.</translation>
 <translation id="4241202391219483189">Esta política controla si el usuario puede importar o quitar certificados de CA mediante el administrador de certificados.
 
-      Si se le asigna el valor "Permitir que los usuarios gestionen todos los certificados" o no se define ninguno, los usuarios podrán editar la configuración de confianza de todos los certificados de CA, quitar certificados importados por usuarios e importar certificados.
+      Si se selecciona "Permitir que los usuarios gestionen todos los certificados" o no se selecciona nada, los usuarios podrán editar la configuración de confianza de todos los certificados de CA, quitar certificados importados por usuarios e importar certificados.
 
-      Si se le asigna el valor "Permitir que los usuarios gestionen certificados de usuario", solo podrán gestionar certificados importados por usuarios y no podrán cambiar la configuración de confianza de los certificados integrados.
+      Si se elige "Permitir que los usuarios gestionen certificados de usuario", solo podrán gestionar certificados importados por usuarios y no podrán cambiar la configuración de confianza de los certificados integrados.
 
-      Si se le asigna el valor ''No permitir que los usuarios gestionen certificados'', los usuarios no podrán gestionar certificados de CA, solo verlos.</translation>
+      Si se selecciona ''No permitir que los usuarios gestionen certificados'', los usuarios no podrán gestionar certificados de CA, solo verlos.</translation>
 <translation id="4243336580717651045">Esta política habilita la recogida de datos anónima con clave de URL en <ph name="PRODUCT_NAME" /> e impide que los usuarios cambien esta configuración.
 
       La recogida de datos anónima con clave de URL envía las URL de páginas que el usuario visita a Google para hacer búsquedas y mejorar la navegación.
@@ -3671,15 +3662,6 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
       Si se establece 0 como valor de esta política, se utilizará el tamaño de caché predeterminado, pero el usuario no podrá modificarlo.
 
       Si no se define esta política, se utilizará el tamaño predeterminado y el usuario podrá modificarlo mediante el indicador "--disk-cache-size".</translation>
-<translation id="759389052790680884">Establece un porcentaje personalizado de parada de carga para la batería.
-
-          La batería deja de cargarse cuando alcanza el valor personalizado de parada de carga.
-
-          El valor de DeviceBatteryChargeCustomStartCharging debe ser inferior al de DeviceBatteryChargeCustomStopCharging.
-
-          Esta política solo se usará si se asigna un valor personalizado a DeviceBatteryChargeMode.
-
-          Si no se configura esta política o no se le asigna ningún valor, se aplicará el modo estándar de carga de la batería.</translation>
 <translation id="759957074386651883">Configuración de Navegación Segura</translation>
 <translation id="7604169113182304895">Las aplicaciones para Android pueden aceptar esta lista voluntariamente. No se les puede forzar a que lo hagan.</translation>
 <translation id="7612157962821894603">Opciones que se deben aplicar al iniciar <ph name="PRODUCT_NAME" /> en todo el sistema</translation>
@@ -3780,9 +3762,6 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 <translation id="7750991880413385988">Abrir página Nueva pestaña</translation>
 <translation id="7754704193130578113">Preguntar dónde se guardará cada archivo antes de descargarlo</translation>
 <translation id="7761446981238915769">Configurar la lista de aplicaciones instaladas en la pantalla de inicio de sesión</translation>
-<translation id="7763479091692861127"> Indica los tipos de conexiones que se pueden utilizar para actualizar el sistema operativo. Estas actualizaciones pueden constituir un lastre para la conexión por su tamaño y pueden suponer costes adicionales. Por tanto, están inhabilitadas de forma predeterminada en los tipos de conexiones que se consideran más costosos, entre los que se incluyen WiMAX, Bluetooth y redes móviles.
-
-      Los identificadores de tipos de conexiones reconocidos son Ethernet, Wi-Fi, WiMAX, Bluetooth y redes móviles.</translation>
 <translation id="7763614521440615342">Mostrar sugerencias de contenido en la página Nueva pestaña</translation>
 <translation id="7765879851993224640">Permitir que se use el inicio de sesión con Smart Lock</translation>
 <translation id="7772346342637974431">Permite especificar el tiempo que debe transcurrir sin que el usuario realice ninguna acción antes de mostrar un cuadro de diálogo de advertencia (con batería).

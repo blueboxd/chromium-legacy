@@ -405,8 +405,8 @@ TEST(VectorTest, AppendFirst) {
 class MojoMoveOnlyType final {
  public:
   MojoMoveOnlyType();
-  MojoMoveOnlyType(MojoMoveOnlyType&&);
-  MojoMoveOnlyType& operator=(MojoMoveOnlyType&&);
+  MojoMoveOnlyType(MojoMoveOnlyType&&) noexcept;
+  MojoMoveOnlyType& operator=(MojoMoveOnlyType&&) noexcept;
   ~MojoMoveOnlyType();
 
  private:

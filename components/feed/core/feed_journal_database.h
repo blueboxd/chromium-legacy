@@ -144,8 +144,8 @@ class FeedJournalDatabase {
                             ConfirmationCallback callback,
                             bool success);
 
-  JournalStorageProto CopyJouarnal(const std::string& new_journal_name,
-                                   const JournalStorageProto& source_journal);
+  JournalStorageProto CopyJournal(const std::string& new_journal_name,
+                                  const JournalStorageProto& source_journal);
 
   // Status of the database initialization.
   InitStatus database_status_;

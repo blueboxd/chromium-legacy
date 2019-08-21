@@ -139,7 +139,7 @@ class ClearBrowsingDataCollectionViewControllerTest
                 ->GetAllIdentities() firstObject];
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   syncer::TestSyncService* test_sync_service_;
   std::unique_ptr<BrowsingDataRemover> remover_;

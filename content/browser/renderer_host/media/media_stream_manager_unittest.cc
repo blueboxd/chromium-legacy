@@ -184,7 +184,7 @@ class MockMediaStreamUIProxy : public FakeMediaStreamUIProxy {
 class MediaStreamManagerTest : public ::testing::Test {
  public:
   MediaStreamManagerTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {
     audio_manager_ = std::make_unique<MockAudioManager>();
     audio_system_ =
         std::make_unique<media::AudioSystemImpl>(audio_manager_.get());
@@ -376,13 +376,13 @@ class MediaStreamManagerTest : public ::testing::Test {
     return audio_device;
   }
 
-  // media_stream_manager_ needs to outlive thread_bundle_ because it is a
+  // media_stream_manager_ needs to outlive task_environment_ because it is a
   // MessageLoopCurrent::DestructionObserver. audio_manager_ needs to outlive
-  // thread_bundle_ because it uses the underlying message loop.
+  // task_environment_ because it uses the underlying message loop.
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
   std::unique_ptr<MockMediaObserver> media_observer_;
   std::unique_ptr<ContentBrowserClient> browser_content_client_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<MockAudioManager> audio_manager_;
   std::unique_ptr<media::AudioSystem> audio_system_;
   MockVideoCaptureProvider* video_capture_provider_;

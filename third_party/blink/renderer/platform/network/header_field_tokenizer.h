@@ -20,7 +20,7 @@ class PLATFORM_EXPORT HeaderFieldTokenizer final {
   using Mode = ParsedContentHeaderFieldParameters::Mode;
 
   explicit HeaderFieldTokenizer(const String& header_field);
-  HeaderFieldTokenizer(HeaderFieldTokenizer&&);
+  HeaderFieldTokenizer(HeaderFieldTokenizer&&) noexcept;
 
   // Try to parse a separator character, a token or either a token or a quoted
   // string from the |header_field| input. Return |true| on success. Return

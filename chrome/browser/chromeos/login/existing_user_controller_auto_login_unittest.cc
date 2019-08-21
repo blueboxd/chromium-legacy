@@ -141,7 +141,7 @@ class ExistingUserControllerAutoLoginTest : public ::testing::Test {
  private:
   std::unique_ptr<MockLoginDisplayHost> mock_login_display_host_;
   std::unique_ptr<MockLoginDisplay> mock_login_display_;
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   ScopedTestingLocalState local_state_;
 
   // Required by ExistingUserController:

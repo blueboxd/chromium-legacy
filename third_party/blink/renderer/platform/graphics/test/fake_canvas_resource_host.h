@@ -38,10 +38,12 @@ class FakeCanvasResourceHost : public CanvasResourceHost {
                                     : CanvasResourceProvider::ResourceUsage::
                                           kSoftwareCompositedResourceUsage;
 
-    CanvasResourceProvider::PresentationMode presentation_mode =
-        RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled()
-            ? CanvasResourceProvider::kAllowImageChromiumPresentationMode
-            : CanvasResourceProvider::kDefaultPresentationMode;
+    uint8_t presentation_mode =
+        CanvasResourceProvider::kDefaultPresentationMode;
+    if (RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled()) {
+      presentation_mode |=
+          CanvasResourceProvider::kAllowImageChromiumPresentationMode;
+    }
 
     std::unique_ptr<CanvasResourceProvider> provider;
     if (provider_type_) {

@@ -117,6 +117,11 @@
       showcase::kClassForInstantiationKey : @"SCAlertCoordinator",
       showcase::kUseCaseKey : @"Alert",
     },
+    @{
+      showcase::kClassForDisplayKey : @"BadgeViewController",
+      showcase::kClassForInstantiationKey : @"SCBadgeCoordinator",
+      showcase::kUseCaseKey : @"Badge View",
+    },
   ];
 }
 

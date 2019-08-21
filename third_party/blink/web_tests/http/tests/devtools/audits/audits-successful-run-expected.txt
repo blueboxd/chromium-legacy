@@ -283,6 +283,7 @@ Generating results...
 =============== Lighthouse Results ===============
 URL: http://127.0.0.1:8000/devtools/resources/inspected-page.html
 Version: 5.2.0
+TestedAsMobileDevice: true
 
 
 accesskeys: notApplicable

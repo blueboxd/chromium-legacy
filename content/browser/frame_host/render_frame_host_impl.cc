@@ -4384,9 +4384,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   }
 
   registry_->AddInterface(base::BindRepeating(
-      &RenderFrameHostImpl::BindIdleManagerRequest, base::Unretained(this)));
-
-  registry_->AddInterface(base::BindRepeating(
       &GetRestrictedCookieManager, base::Unretained(this),
       GetProcess()->GetID(), routing_id_, GetProcess()->GetStoragePartition()));
 
@@ -6202,15 +6199,15 @@ void RenderFrameHostImpl::BindPresentationServiceRequest(
   presentation_service_->Bind(std::move(request));
 }
 
-void RenderFrameHostImpl::BindIdleManagerRequest(
-    blink::mojom::IdleManagerRequest request) {
+void RenderFrameHostImpl::GetIdleManager(
+    mojo::PendingReceiver<blink::mojom::IdleManager> receiver) {
   if (!IsFeatureEnabled(blink::mojom::FeaturePolicyFeature::kIdleDetection)) {
     mojo::ReportBadMessage("Feature policy blocks access to IdleDetection.");
     return;
   }
   static_cast<StoragePartitionImpl*>(GetProcess()->GetStoragePartition())
       ->GetIdleManager()
-      ->CreateService(std::move(request));
+      ->CreateService(std::move(receiver));
 }
 
 blink::mojom::FileChooserPtr RenderFrameHostImpl::BindFileChooserForTesting() {
@@ -7217,10 +7214,11 @@ void RenderFrameHostImpl::AddSameSiteCookieDeprecationMessage(
         cookie_url +
         " was set without the `SameSite` attribute. "
         "A future release of Chrome will only deliver cookies with "
-        "cross-site requests if they are set with `SameSite=None`. You "
-        "can review cookies in developer tools under "
+        "cross-site requests if they are set with `SameSite=None` and "
+        "`Secure`. You can review cookies in developer tools under "
         "Application>Storage>Cookies and see more details at "
-        "https://www.chromestatus.com/feature/5088147346030592.";
+        "https://www.chromestatus.com/feature/5088147346030592 and "
+        "https://www.chromestatus.com/feature/5633521622188032.";
   }
   if (status == net::CanonicalCookie::CookieInclusionStatus::
                     EXCLUDE_SAMESITE_NONE_INSECURE) {

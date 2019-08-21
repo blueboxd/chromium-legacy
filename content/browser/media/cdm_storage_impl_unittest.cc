@@ -47,7 +47,7 @@ class CdmStorageTest : public RenderViewHostTestHarness {
  public:
   CdmStorageTest()
       : RenderViewHostTestHarness(
-            content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
+            content::BrowserTaskEnvironment::REAL_IO_THREAD) {}
 
  protected:
   void SetUp() final {

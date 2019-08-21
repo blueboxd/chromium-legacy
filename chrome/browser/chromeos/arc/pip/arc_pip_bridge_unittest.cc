@@ -47,7 +47,7 @@ class ArcPipBridgeTest : public testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile testing_profile_;
   std::unique_ptr<ArcBridgeService> arc_bridge_service_;
   std::unique_ptr<ArcPipBridge> bridge_;

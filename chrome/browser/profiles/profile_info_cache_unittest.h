@@ -56,9 +56,9 @@ class ProfileInfoCacheTest : public testing::Test {
   void ResetCache();
 
  private:
-  // TestBrowserThreadBundle needs to be up through the destruction of the
+  // BrowserTaskEnvironment needs to be up through the destruction of the
   // TestingProfileManager below.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
  protected:
   TestingProfileManager testing_profile_manager_;

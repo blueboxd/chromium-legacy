@@ -53,7 +53,7 @@ web::CertPolicy::Judgment GetJudgmenet(
 class SessionCertificatePolicyCacheImplTest : public PlatformTest {
  protected:
   SessionCertificatePolicyCacheImplTest()
-      : thread_bundle_(web::TestWebThreadBundle::Options::REAL_IO_THREAD),
+      : task_environment_(web::WebTaskEnvironment::Options::REAL_IO_THREAD),
         cert_(net::ImportCertFromFile(net::GetTestCertsDirectory(),
                                       "ok_cert.pem")),
         host_("test.com"),
@@ -61,7 +61,7 @@ class SessionCertificatePolicyCacheImplTest : public PlatformTest {
     cache_.RegisterAllowedCertificate(cert_, host_, status_);
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   web::SessionCertificatePolicyCacheImpl cache_;
   scoped_refptr<net::X509Certificate> cert_;
   std::string host_;

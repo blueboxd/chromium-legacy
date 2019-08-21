@@ -89,7 +89,7 @@ class DelayedCallbackRunnerTest : public testing::Test {
     return callbacks_[name].deleted;
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<safe_browsing::DelayedCallbackRunner> instance_;
 
  private:

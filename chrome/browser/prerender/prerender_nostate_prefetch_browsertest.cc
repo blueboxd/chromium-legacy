@@ -670,10 +670,12 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PurposeHeaderIsSet) {
         if (params->url_request.url == prefetch_page ||
             params->url_request.url == prefetch_script) {
           EXPECT_TRUE(params->url_request.load_flags & net::LOAD_PREFETCH);
-          EXPECT_TRUE(params->url_request.headers.HasHeader(
+          EXPECT_FALSE(params->url_request.headers.HasHeader(
+              kExpectedPurposeHeaderOnPrefetch));
+          EXPECT_TRUE(params->url_request.cors_exempt_headers.HasHeader(
               kExpectedPurposeHeaderOnPrefetch));
           std::string purpose_header;
-          params->url_request.headers.GetHeader(
+          params->url_request.cors_exempt_headers.GetHeader(
               kExpectedPurposeHeaderOnPrefetch, &purpose_header);
           EXPECT_EQ("prefetch", purpose_header);
         }
@@ -703,6 +705,8 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
             params->url_request.url == prefetch_script2) {
           EXPECT_FALSE(params->url_request.load_flags & net::LOAD_PREFETCH);
           EXPECT_FALSE(params->url_request.headers.HasHeader(
+              kExpectedPurposeHeaderOnPrefetch));
+          EXPECT_FALSE(params->url_request.cors_exempt_headers.HasHeader(
               kExpectedPurposeHeaderOnPrefetch));
         }
         return false;

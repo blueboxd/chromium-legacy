@@ -47,7 +47,7 @@ class PasswordExpiryNotificationTest : public testing::Test {
         "saml.password-expiry-notification");
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   NotificationDisplayServiceTester display_service_tester_{&profile_};
 };

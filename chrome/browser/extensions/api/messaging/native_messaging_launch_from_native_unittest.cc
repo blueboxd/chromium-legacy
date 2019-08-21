@@ -115,7 +115,7 @@ class ExtensionSupportsConnectionFromNativeAppTest : public ::testing::Test {
   }
 
   ScopedCurrentChannel channel_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   bool has_listener_result_ = true;
   TestingProfile profile_;
   std::string extension_id_;

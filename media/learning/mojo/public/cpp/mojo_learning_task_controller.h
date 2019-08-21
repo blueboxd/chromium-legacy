@@ -29,6 +29,7 @@ class COMPONENT_EXPORT(MEDIA_LEARNING_MOJO) MojoLearningTaskController
   void CompleteObservation(base::UnguessableToken id,
                            const ObservationCompletion& completion) override;
   void CancelObservation(base::UnguessableToken id) override;
+  const LearningTask& GetLearningTask() override;
 
  private:
   mojom::LearningTaskControllerPtr controller_ptr_;

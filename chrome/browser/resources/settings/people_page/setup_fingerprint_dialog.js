@@ -101,7 +101,7 @@ Polymer({
             loadTimeData.getInteger('fingerprintReaderLocation');
         switch (fingerprintLocation) {
           case settings.FingerprintLocation.TABLET_POWER_BUTTON:
-            return 'fingerprint-scanner-tablet-power-button';
+            return '';
           case settings.FingerprintLocation.KEYBOARD_TOP_RIGHT:
             return 'fingerprint-scanner-laptop-top-right';
           case settings.FingerprintLocation.KEYBOARD_BOTTOM_RIGHT:
@@ -343,6 +343,24 @@ Polymer({
     }
 
     this.$.arc.setProgress(oldValue, newValue, newValue === 100);
+  },
+
+  /**
+   * Returns true if we have lottie animation file instead of a png animation
+   * image sequence.
+   * @return boolean
+   * @private
+   */
+  shouldUseLottieAnimation_: function() {
+    if (!loadTimeData.getBoolean('fingerprintUnlockEnabled')) {
+      return false;
+    }
+
+    const fingerprintLocation =
+        loadTimeData.getInteger('fingerprintReaderLocation');
+    const isTabletPowerButton =
+        settings.FingerprintLocation.TABLET_POWER_BUTTON == fingerprintLocation;
+    return isTabletPowerButton;
   },
 
 });

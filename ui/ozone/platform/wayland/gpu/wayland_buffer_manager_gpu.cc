@@ -80,7 +80,7 @@ void WaylandBufferManagerGpu::OnPresentation(
 
 void WaylandBufferManagerGpu::RegisterSurface(gfx::AcceleratedWidget widget,
                                               WaylandSurfaceGpu* surface) {
-  widget_to_surface_map_.insert(std::make_pair(widget, surface));
+  widget_to_surface_map_.emplace(widget, surface);
 }
 
 void WaylandBufferManagerGpu::UnregisterSurface(gfx::AcceleratedWidget widget) {

@@ -266,7 +266,7 @@ class RegisterAppTaskTest : public testing::Test {
   int64_t next_file_id_;
   int64_t next_tracker_id_;
 
-  content::TestBrowserThreadBundle browser_threads_;
+  content::BrowserTaskEnvironment browser_threads_;
   base::ScopedTempDir database_dir_;
 
   std::unique_ptr<SyncEngineContext> context_;

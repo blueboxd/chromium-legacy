@@ -131,7 +131,7 @@ class TclibUnittest(unittest.TestCase):
       'AddinMenus=notegdsplugin.dll\r\n'
       '\r\n'
       'If the notesgdsplugin.dll file is not in the application directory\r\n'
-      '(e.g., C:\Program Files\Lotus\Notes) after Google Desktop \r\n'
+      r'(e.g., C:\Program Files\Lotus\Notes) after Google Desktop \r\n'
       'installation, it is likely that Notes was not installed correctly. \r\n'
       '\r\n'
       'Only local databases can be indexed.  If they can be determined, \r\n'
@@ -156,7 +156,7 @@ class TclibUnittest(unittest.TestCase):
       'you can get to the preferences, add the following line to your \r\n'
       'notes.ini file:\r\n'
       'GDSNoIndexHistory=1\r\n')
-    self.failUnless(id == '3138901326664699350')
+    self.assertEqual(id, '7660964495923572726')
 
   def testPlaceholderNameChecking(self):
     try:

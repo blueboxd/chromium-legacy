@@ -102,7 +102,7 @@ class BackgroundSyncManagerTest
       public DevToolsBackgroundServicesContextImpl::EventObserver {
  public:
   BackgroundSyncManagerTest()
-      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {
     sync_options_1_.tag = "foo";
     sync_options_2_.tag = "bar";
   }
@@ -657,7 +657,7 @@ class BackgroundSyncManagerTest
     return test_background_sync_manager()->AreOptionConditionsMet();
   }
 
-  TestBrowserThreadBundle browser_thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   StoragePartitionImpl* storage_partition_impl_;
   scoped_refptr<BackgroundSyncContextImpl> background_sync_context_;

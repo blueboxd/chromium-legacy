@@ -225,6 +225,7 @@ VISIT_PROTO_FIELDS(const sync_pb::ClientConfigParams& proto) {
 
 VISIT_PROTO_FIELDS(const sync_pb::ClientStatus& proto) {
   VISIT(hierarchy_conflict_detected);
+  VISIT(is_sync_feature_enabled);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::ClientToServerMessage& proto) {

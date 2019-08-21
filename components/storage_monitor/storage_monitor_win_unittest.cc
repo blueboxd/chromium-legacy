@@ -72,7 +72,7 @@ class StorageMonitorWinTest : public testing::Test {
   MockRemovableStorageObserver observer_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(StorageMonitorWinTest);
 };

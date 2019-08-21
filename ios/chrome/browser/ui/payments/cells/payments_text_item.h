@@ -37,6 +37,9 @@ typedef NS_ENUM(NSUInteger, PaymentsTextCellType) {
 // The leading image to display.
 @property(nonatomic, nullable, strong) UIImage* leadingImage;
 
+// The tint color for the leading image.
+@property(nonatomic, nullable, strong) UIColor* leadingImageTintColor;
+
 // The trailing image to display.
 @property(nonatomic, nullable, strong) UIImage* trailingImage;
 

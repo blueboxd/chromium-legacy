@@ -197,7 +197,8 @@ DirectCompositionSurfaceWin::DirectCompositionSurfaceWin(
       root_surface_(new DirectCompositionChildSurfaceWin()),
       layer_tree_(std::make_unique<DCLayerTree>(
           settings.disable_nv12_dynamic_textures,
-          settings.disable_larger_than_screen_overlays)),
+          settings.disable_larger_than_screen_overlays,
+          settings.disable_vp_scaling)),
       presentation_helper_(
           std::make_unique<GLSurfacePresentationHelper>(vsync_provider.get())),
       vsync_provider_(std::move(vsync_provider)),

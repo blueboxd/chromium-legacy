@@ -55,6 +55,9 @@ class Origin;
 
 namespace media {
 class VideoDecodePerfHistory;
+namespace learning {
+class LearningSession;
+}
 }
 
 namespace storage {
@@ -333,6 +336,14 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // have similar decode performance and stats are not exposed to the web
   // directly, so privacy is not compromised.
   virtual media::VideoDecodePerfHistory* GetVideoDecodePerfHistory();
+
+  // Returns a LearningSession associated with |this|. Used as the central
+  // source from which to retrieve LearningTaskControllers for media machine
+  // learning.
+  // Exposed here rather than StoragePartition because learnings will cover
+  // general media trends rather than SiteInstance specific behavior. The
+  // learnings are not exposed to the web.
+  virtual media::learning::LearningSession* GetLearningSession();
 
   // Retrieves the InProgressDownloadManager associated with this object if
   // available

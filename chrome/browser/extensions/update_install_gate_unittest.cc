@@ -201,7 +201,7 @@ class UpdateInstallGateTest : public testing::Test {
 
  private:
   // Needed by extension system.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   // Needed to ensure we don't end up creating actual RenderViewHosts
   // and RenderProcessHosts.

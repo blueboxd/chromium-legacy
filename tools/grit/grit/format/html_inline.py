@@ -39,18 +39,18 @@ DIST_SUBSTR = '%DISTRIBUTION%'
 
 # Matches beginning of an "if" block.
 _BEGIN_IF_BLOCK = lazy_re.compile(
-    '<if [^>]*?expr=("(?P<expr1>[^">]*)"|\'(?P<expr2>[^\'>]*)\')[^>]*?>')
+    r'<if [^>]*?expr=("(?P<expr1>[^">]*)"|\'(?P<expr2>[^\'>]*)\')[^>]*?>')
 
 # Matches ending of an "if" block.
-_END_IF_BLOCK = lazy_re.compile('</if>')
+_END_IF_BLOCK = lazy_re.compile(r'</if>')
 
 # Used by DoInline to replace various links with inline content.
 _STYLESHEET_RE = lazy_re.compile(
-    '<link rel="stylesheet"[^>]+?href="(?P<filename>[^"]*)".*?>(\s*</link>)?',
+    r'<link rel="stylesheet"[^>]+?href="(?P<filename>[^"]*)".*?>(\s*</link>)?',
     re.DOTALL)
 _INCLUDE_RE = lazy_re.compile(
-    '<include[^>]+?src=("(?P<file1>[^">]*)"|\'(?P<file2>[^\'>]*)\').*?>' +
-    '(\s*</include>)?',
+    r'<include[^>]+?src=("(?P<file1>[^">]*)"|\'(?P<file2>[^\'>]*)\').*?>'
+    r'(\s*</include>)?',
     re.DOTALL)
 _SRC_RE = lazy_re.compile(
     r'<(?!script)(?:[^>]+?\s)src="(?!\[\[|{{)(?P<filename>[^"\']*)"',
@@ -73,7 +73,7 @@ _SRCSET_ENTRY_RE = lazy_re.compile(
     re.MULTILINE)
 _ICON_RE = lazy_re.compile(
     r'<link rel="icon"\s(?:[^>]+?\s)?'
-    'href=(?P<quote>")(?P<filename>[^"\']*)\1',
+    r'href=(?P<quote>")(?P<filename>[^"\']*)\1',
     re.MULTILINE)
 
 
@@ -443,17 +443,18 @@ def DoInline(
     """Helper function that returns a string for a regex that matches url('')
        but not url([[ ]]) or url({{ }}). Appends |postfix| to group names.
     """
-    url_re = 'url\((?!\[\[|{{)(?P<q%s>"|\'|)(?P<filename%s>[^"\'()]*)(?P=q%s)\)'
+    url_re = (r'url\((?!\[\[|{{)(?P<q%s>"|\'|)(?P<filename%s>[^"\'()]*)'
+              r'(?P=q%s)\)')
     return url_re % (postfix, postfix, postfix)
 
   def InlineCSSImages(text, filepath=input_filepath):
     """Helper function that inlines external images in CSS backgrounds."""
     # Replace contents of url() for css attributes: content, background,
     # or *-image.
-    property_re = '(content|background|[\w-]*-image):[^;]*'
+    property_re = r'(content|background|[\w-]*-image):[^;]*'
     # Replace group names to prevent duplicates when forming value_re.
-    image_set_value_re = 'image-set\(([ ]*' + GetUrlRegexString('2') + \
-        '[ ]*[0-9.]*x[ ]*(,[ ]*)?)+\)'
+    image_set_value_re = (r'image-set\(([ ]*' + GetUrlRegexString('2') +
+        r'[ ]*[0-9.]*x[ ]*(,[ ]*)?)+\)')
     value_re = '(%s|%s)' % (GetUrlRegexString(), image_set_value_re)
     css_re = property_re + value_re
     return re.sub(css_re, lambda m: InlineCSSUrls(m, filepath), text)
@@ -469,7 +470,7 @@ def DoInline(
     """Helper function that inlines CSS files included via the @import
        directive.
     """
-    return re.sub('@import\s+' + GetUrlRegexString() + ';',
+    return re.sub(r'@import\s+' + GetUrlRegexString() + r';',
                   lambda m: InlineCSSFile(m, '%s', filepath),
                   text)
 
@@ -491,8 +492,8 @@ def DoInline(
     if not allow_external_script:
       # We need to inline css and js before we inline images so that image
       # references gets inlined in the css and js
-      flat_text = re.sub('<script (?P<attrs1>.*?)src="(?P<filename>[^"\']*)"' +
-                         '(?P<attrs2>.*?)></script>',
+      flat_text = re.sub(r'<script (?P<attrs1>.*?)src="(?P<filename>[^"\']*)"'
+                         r'(?P<attrs2>.*?)></script>',
                          InlineScript,
                          flat_text)
 

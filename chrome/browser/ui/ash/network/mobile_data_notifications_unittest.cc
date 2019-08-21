@@ -155,7 +155,7 @@ class MobileDataNotificationsTest : public testing::Test {
     ASSERT_TRUE(ProfileManager::GetActiveUserProfile() == profile);
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   session_manager::SessionManager session_manager_;
   std::unique_ptr<MobileDataNotifications> mobile_data_notifications_;
   std::unique_ptr<NetworkConnectTestDelegate> network_connect_delegate_;

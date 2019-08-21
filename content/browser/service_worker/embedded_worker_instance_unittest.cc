@@ -62,7 +62,7 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
                                    public EmbeddedWorkerInstance::Listener {
  protected:
   EmbeddedWorkerInstanceTest()
-      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   enum EventType {
     PROCESS_ALLOCATED,
@@ -215,7 +215,7 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
   std::vector<blink::mojom::ServiceWorkerInstalledScriptsManagerHostRequest>
       installed_scripts_manager_host_requests_;
 
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   std::vector<EventLog> events_;
   base::test::ScopedFeatureList scoped_feature_list_;

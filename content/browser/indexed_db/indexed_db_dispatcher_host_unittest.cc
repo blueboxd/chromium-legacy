@@ -178,7 +178,7 @@ class TestIndexedDBObserver : public IndexedDBContextImpl::Observer {
 class IndexedDBDispatcherHostTest : public testing::Test {
  public:
   IndexedDBDispatcherHostTest()
-      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP),
         special_storage_policy_(
             base::MakeRefCounted<MockSpecialStoragePolicy>()),
         quota_manager_(base::MakeRefCounted<MockQuotaManager>(
@@ -232,7 +232,7 @@ class IndexedDBDispatcherHostTest : public testing::Test {
   }
 
  protected:
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   TestBrowserContext browser_context_;
 
   base::ScopedTempDir temp_dir_;

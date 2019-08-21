@@ -23,8 +23,8 @@ public class MockTabModelSelector extends TabModelSelectorBase {
 
     public MockTabModelSelector(
             int tabCount, int incognitoTabCount, MockTabModel.MockTabModelDelegate delegate) {
-        super(null);
-        initialize(false, new MockTabModel(false, delegate), new MockTabModel(true, delegate));
+        super(null, false);
+        initialize(new MockTabModel(false, delegate), new MockTabModel(true, delegate));
         for (int i = 0; i < tabCount; i++) {
             addMockTab();
         }

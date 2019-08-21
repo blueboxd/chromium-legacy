@@ -410,7 +410,7 @@ int main(int argc, const char* argv[]) {
         logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
   } else {
     settings.logging_dest = logging::LOG_TO_ALL;
-    settings.log_file = FILE_PATH_LITERAL("courgette.log");
+    settings.log_file_path = FILE_PATH_LITERAL("courgette.log");
   }
   (void)logging::InitLogging(settings);
   logging::SetMinLogLevel(logging::LOG_VERBOSE);

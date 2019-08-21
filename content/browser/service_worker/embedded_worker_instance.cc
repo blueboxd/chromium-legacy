@@ -257,10 +257,11 @@ void SetupOnUIThread(
       process_manager->browser_context(), params->renderer_preferences.get());
 
   // Create a RendererPreferenceWatcher to observe updates in the preferences.
-  blink::mojom::RendererPreferenceWatcherPtr watcher_ptr;
-  params->preference_watcher_request = mojo::MakeRequest(&watcher_ptr);
+  mojo::PendingRemote<blink::mojom::RendererPreferenceWatcher> watcher_remote;
+  params->preference_watcher_request =
+      watcher_remote.InitWithNewPipeAndPassReceiver();
   GetContentClient()->browser()->RegisterRendererPreferenceWatcher(
-      process_manager->browser_context(), std::move(watcher_ptr));
+      process_manager->browser_context(), std::move(watcher_remote));
 
   // Continue to OnSetupCompleted on the core thread.
   base::Optional<base::Time> ui_post_time;

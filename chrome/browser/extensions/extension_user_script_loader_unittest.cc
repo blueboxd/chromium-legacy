@@ -70,7 +70,7 @@ class ExtensionUserScriptLoaderTest : public testing::Test,
   base::ReadOnlySharedMemoryRegion* shared_memory_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionUserScriptLoaderTest);

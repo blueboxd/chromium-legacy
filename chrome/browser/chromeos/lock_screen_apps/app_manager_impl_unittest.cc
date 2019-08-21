@@ -440,7 +440,7 @@ class LockScreenAppManagerImplTest
   void OnNoteTakingChanged() { ++note_taking_changed_count_; }
 
   std::unique_ptr<base::test::ScopedCommandLine> command_line_;
-  content::TestBrowserThreadBundle threads_;
+  content::BrowserTaskEnvironment threads_;
 
   chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
   chromeos::ScopedTestUserManager user_manager_;

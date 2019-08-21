@@ -52,7 +52,7 @@ class ModuleEventSinkImplTest : public testing::Test {
   int module_event_count() { return module_event_count_; }
 
   // Must be first.
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   std::unique_ptr<ModuleEventSinkImpl> module_event_sink_impl_;
 
@@ -72,12 +72,12 @@ TEST_F(ModuleEventSinkImplTest, CallsForwardedAsExpected) {
 
   // An invalid load event should not cause a module entry.
   module_event_sink_impl_->OnModuleEvents({kInvalidLoadAddress});
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(0, module_event_count());
 
   // A valid load event should cause a module entry.
   module_event_sink_impl_->OnModuleEvents({kValidLoadAddress});
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(1, module_event_count());
 }
 
@@ -90,6 +90,6 @@ TEST_F(ModuleEventSinkImplTest, MultipleEvents) {
   EXPECT_EQ(0, module_event_count());
 
   module_event_sink_impl_->OnModuleEvents({kLoadAddress1, kLoadAddress2});
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(2, module_event_count());
 }

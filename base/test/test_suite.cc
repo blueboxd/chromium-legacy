@@ -176,7 +176,7 @@ void InitializeLogging() {
 #endif  // defined(OS_FUCHSIA)
 
   logging::LoggingSettings settings;
-  settings.log_file = log_filename.value().c_str();
+  settings.log_file_path = log_filename.value().c_str();
   settings.logging_dest = logging::LOG_TO_ALL;
   settings.delete_old = logging::DELETE_OLD_LOG_FILE;
   logging::InitLogging(settings);

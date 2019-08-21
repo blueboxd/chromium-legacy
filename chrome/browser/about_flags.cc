@@ -1037,6 +1037,15 @@ const FeatureEntry::FeatureParam kExploreSitesIconGrouped[] = {
          kExploreSitesMostLikelyVariationParameterName,
      chrome::android::explore_sites::
          kExploreSitesMostLikelyVariationIconGrouped}};
+const FeatureEntry::FeatureParam kExploreSitesWithGamesTop[] = {
+    {chrome::android::explore_sites::kExploreSitesVariationParameterName,
+     chrome::android::explore_sites::kExploreSitesVariationMostLikelyTile},
+    {chrome::android::explore_sites::
+         kExploreSitesMostLikelyVariationParameterName,
+     chrome::android::explore_sites::kExploreSitesMostLikelyVariationIconDots},
+    {chrome::android::explore_sites::
+         kExploreSitesHeadersExperimentParameterName,
+     chrome::android::explore_sites::kExploreSitesGamesTopExperiment}};
 const FeatureEntry::FeatureVariation kExploreSitesVariations[] = {
     {"Experimental", &kExploreSitesExperimental, 1, nullptr},
     {"Personalized", &kExploreSitesPersonalized, 1, nullptr},
@@ -1046,6 +1055,8 @@ const FeatureEntry::FeatureVariation kExploreSitesVariations[] = {
      nullptr},
     {"Grouped Icon", kExploreSitesIconGrouped,
      base::size(kExploreSitesIconGrouped), nullptr},
+    {"Games Top", kExploreSitesWithGamesTop,
+     base::size(kExploreSitesWithGamesTop), nullptr},
     {"Dense Title Bottom", kExploreSitesDenseTitleBottom,
      base::size(kExploreSitesDenseTitleBottom), nullptr},
     {"Dense Title Right", kExploreSitesDenseTitleRight,
@@ -1407,7 +1418,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExploreSitesDescription, kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kExploreSites,
                                     kExploreSitesVariations,
-                                    "ExploreSites")},
+                                    "ExploreSites InitialCountries")},
     {"shopping-assist", flag_descriptions::kShoppingAssistName,
      flag_descriptions::kShoppingAssistDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kShoppingAssist)},
@@ -1512,11 +1523,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebUITabStripDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kWebUITabStrip)},
 #endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
-#if !defined(OS_ANDROID)
-    {"new-tab-loading-animation", flag_descriptions::kNewTabLoadingAnimation,
-     flag_descriptions::kNewTabLoadingAnimationDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kNewTabLoadingAnimation)},
-#endif  // !defined(OS_ANDROID)
     {"focus-mode", flag_descriptions::kFocusMode,
      flag_descriptions::kFocusModeDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kFocusMode)},
@@ -2219,11 +2225,6 @@ const FeatureEntry kFeatureEntries[] = {
      MULTI_VALUE_TYPE(kCrosRegionsModeChoices)},
 #endif  // OS_CHROMEOS
 #if defined(OS_WIN)
-    {"enable-appcontainer", flag_descriptions::kEnableAppcontainerName,
-     flag_descriptions::kEnableAppcontainerDescription, kOsWin,
-     ENABLE_DISABLE_VALUE_TYPE(
-         service_manager::switches::kEnableAppContainer,
-         service_manager::switches::kDisableAppContainer)},
     {"enable-aura-tooltips-on-windows",
      flag_descriptions::kEnableAuraTooltipsOnWindowsName,
      flag_descriptions::kEnableAuraTooltipsOnWindowsDescription, kOsWin,
@@ -4334,6 +4335,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"dns-over-https", flag_descriptions::kDnsOverHttpsName,
      flag_descriptions::kDnsOverHttpsDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kDnsOverHttps)},
+
+#if defined(OS_ANDROID)
+    {"tab-switcher-longpress-menu",
+     flag_descriptions::kTabSwitcherLongpressMenuName,
+     flag_descriptions::kTabSwitcherLongpressMenuDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kTabSwitcherLongpressMenu)},
+#endif  // defined(OS_ANDROID)
 
     {"bundled-exchanges", flag_descriptions::kBundledHTTPExchangesName,
      flag_descriptions::kBundledHTTPExchangesDescription, kOsAll,

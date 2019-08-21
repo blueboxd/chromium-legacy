@@ -757,8 +757,11 @@ class ResourceScheduler::Client
         url::SchemeHostPort scheme_host_port(request->url_request()->url());
         net::HttpServerProperties& http_server_properties =
             *request->url_request()->context()->http_server_properties();
-        if (!http_server_properties.SupportsRequestPriority(scheme_host_port))
+        if (!http_server_properties.SupportsRequestPriority(
+                scheme_host_port,
+                request->url_request()->network_isolation_key())) {
           attributes |= kAttributeDelayable;
+        }
       }
     }
 
@@ -1059,9 +1062,11 @@ class ResourceScheduler::Client
         params_for_network_quality_.delay_requests_on_multiplexed_connections;
 
     url::SchemeHostPort scheme_host_port(url_request.url());
-    bool supports_priority = url_request.context()
-                                 ->http_server_properties()
-                                 ->SupportsRequestPriority(scheme_host_port);
+    bool supports_priority =
+        url_request.context()
+            ->http_server_properties()
+            ->SupportsRequestPriority(scheme_host_port,
+                                      url_request.network_isolation_key());
 
     if (!priority_delayable) {
       // TODO(willchan): We should really improve this algorithm as described in

@@ -92,7 +92,7 @@ class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
 class ServiceWorkerProviderHostTest : public testing::Test {
  protected:
   ServiceWorkerProviderHostTest()
-      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {
     SetContentClient(&test_content_client_);
   }
   ~ServiceWorkerProviderHostTest() override {}
@@ -280,7 +280,7 @@ class ServiceWorkerProviderHostTest : public testing::Test {
       blink::mojom::ServiceWorkerProviderType provider_type,
       const GURL url);
 
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
 
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   ServiceWorkerContextCore* context_;

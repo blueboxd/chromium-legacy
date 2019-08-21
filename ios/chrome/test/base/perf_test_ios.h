@@ -70,7 +70,7 @@ class PerfTest : public BlockCleanupTest {
   // Sets number of times to repeat a test when ran with RepeatTimedRuns.
   int repeatCount_;
   // The threads used for testing.
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   // The WebClient for testing purposes.
   web::ScopedTestingWebClient web_client_;
 };

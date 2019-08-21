@@ -1285,10 +1285,11 @@ bool LocationBarView::IsEditingOrEmpty() const {
 
 void LocationBarView::OnLocationIconPressed(const ui::MouseEvent& event) {
   if (event.IsOnlyMiddleMouseButton() &&
-      ui::Clipboard::IsSupportedClipboardType(ui::ClipboardType::kSelection)) {
+      ui::Clipboard::IsSupportedClipboardBuffer(
+          ui::ClipboardBuffer::kSelection)) {
     base::string16 text;
     ui::Clipboard::GetForCurrentThread()->ReadText(
-        ui::ClipboardType::kSelection, &text);
+        ui::ClipboardBuffer::kSelection, &text);
     text = OmniboxView::SanitizeTextForPaste(text);
 
     if (!GetOmniboxView()->model()->CanPasteAndGo(text)) {

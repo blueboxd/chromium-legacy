@@ -58,6 +58,11 @@ class LearningSessionImplTest : public testing::Test {
       cancelled_id_ = id;
     }
 
+    const LearningTask& GetLearningTask() override {
+      NOTREACHED();
+      return LearningTask::Empty();
+    }
+
     SequenceBoundFeatureProvider feature_provider_;
     base::UnguessableToken id_;
     FeatureVector features_;
@@ -135,6 +140,19 @@ TEST_F(LearningSessionImplTest, RegisteringTasksCreatesControllers) {
   EXPECT_EQ(task_controllers_.size(), 2u);
   EXPECT_EQ(task_runners_.size(), 2u);
   EXPECT_EQ(task_runners_[1], task_runner_.get());
+
+  // Make sure controllers are being returned for the right tasks.
+  // Note: this test passes because LearningSessionController::GetController()
+  // returns a wrapper around a FakeLTC, instead of the FakeLTC itself. The
+  // wrapper internally built by LearningSessionImpl has a proper implementation
+  // of GetLearningTask(), whereas the FakeLTC does not.
+  std::unique_ptr<LearningTaskController> ltc_0 =
+      session_->GetController(task_0_.name);
+  EXPECT_EQ(ltc_0->GetLearningTask().name, task_0_.name);
+
+  std::unique_ptr<LearningTaskController> ltc_1 =
+      session_->GetController(task_1_.name);
+  EXPECT_EQ(ltc_1->GetLearningTask().name, task_1_.name);
 }
 
 TEST_F(LearningSessionImplTest, ExamplesAreForwardedToCorrectTask) {

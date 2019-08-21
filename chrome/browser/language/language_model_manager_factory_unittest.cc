@@ -14,7 +14,7 @@ using testing::Not;
 
 // Check that Incognito language modeling is inherited from the user's profile.
 TEST(LanguageModelManagerFactoryTest, SharedWithIncognito) {
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
 
   TestingProfile profile;
   const language::LanguageModelManager* const manager =

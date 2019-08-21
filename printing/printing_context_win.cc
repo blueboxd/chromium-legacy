@@ -71,6 +71,7 @@ PrintingContext::Result PrintingContextWin::UseDefaultSettings() {
   scoped_refptr<PrintBackend> backend = PrintBackend::CreateInstance(nullptr);
   base::string16 default_printer =
       base::UTF8ToWide(backend->GetDefaultPrinterName());
+  ResetSettings();
   if (!default_printer.empty()) {
     ScopedPrinterHandle printer;
     if (printer.OpenPrinterWithName(default_printer.c_str())) {
@@ -321,7 +322,7 @@ PrintingContext::Result PrintingContextWin::DocumentDone() {
   if (EndDoc(context_) <= 0)
     return OnError();
 
-  ResetSettings();
+  DeleteSettings();
   return OK;
 }
 

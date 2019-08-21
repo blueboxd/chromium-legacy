@@ -444,7 +444,6 @@ GaiaCookieManagerService::GaiaCookieManagerService(
       fetcher_backoff_(&kBackoffPolicy),
       fetcher_retries_(0),
       listAccountsUnexpectedServerResponseRetried_(false),
-      cookie_listener_binding_(this),
       external_cc_result_fetched_(false),
       list_accounts_stale_(true) {
   std::string gaia_cookie_last_list_accounts_data =
@@ -475,27 +474,24 @@ void GaiaCookieManagerService::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 void GaiaCookieManagerService::InitCookieListener() {
-  DCHECK(!cookie_listener_binding_);
+  DCHECK(!cookie_listener_receiver_.is_bound());
   network::mojom::CookieManager* cookie_manager =
       signin_client_->GetCookieManager();
 
   // NOTE: |cookie_manager| can be nullptr when TestSigninClient is used in
   // testing contexts.
   if (cookie_manager) {
-    network::mojom::CookieChangeListenerPtr listener_ptr;
-    cookie_listener_binding_.Bind(mojo::MakeRequest(&listener_ptr));
-    cookie_listener_binding_.set_connection_error_handler(base::BindOnce(
-        &GaiaCookieManagerService::OnCookieListenerConnectionError,
-        base::Unretained(this)));
-
     cookie_manager->AddCookieChangeListener(
         GaiaUrls::GetInstance()->google_url(), kGaiaCookieName,
-        std::move(listener_ptr));
+        cookie_listener_receiver_.BindNewPipeAndPassRemote());
+    cookie_listener_receiver_.set_disconnect_handler(base::BindOnce(
+        &GaiaCookieManagerService::OnCookieListenerConnectionError,
+        base::Unretained(this)));
   }
 }
 
 void GaiaCookieManagerService::Shutdown() {
-  cookie_listener_binding_.Close();
+  cookie_listener_receiver_.reset();
 }
 
 void GaiaCookieManagerService::SetAccountsInCookie(
@@ -716,7 +712,7 @@ void GaiaCookieManagerService::OnCookieChange(
 void GaiaCookieManagerService::OnCookieListenerConnectionError() {
   // A connection error from the CookieManager likely means that the network
   // service process has crashed. Try again to set up a listener.
-  cookie_listener_binding_.Close();
+  cookie_listener_receiver_.reset();
   InitCookieListener();
 }
 

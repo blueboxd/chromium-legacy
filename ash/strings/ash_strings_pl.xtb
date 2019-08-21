@@ -333,6 +333,7 @@
 <translation id="6043212731627905357">Ten monitor nie działa z Twoim urządzeniem <ph name="DEVICE_TYPE" /> (nie jest obsługiwany).</translation>
 <translation id="6043994281159824495">Wyloguj się teraz</translation>
 <translation id="6047696787498798094">Gdy zmienisz użytkownika, udostępnianie ekranu zostanie zakończone. Chcesz kontynuować?</translation>
+<translation id="6054305421211936131">Zaloguj się, używając karty elektronicznej</translation>
 <translation id="6062360702481658777">Zostaniesz automatycznie wylogowany za <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="6064337552080329342">Nie udało się zweryfikować Twojego hasła. Spróbuj ponownie.</translation>
 <translation id="607652042414456612">Twój komputer jest wykrywalny na urządzenia Bluetooth znajdujących się w pobliżu. Będzie prezentowany jako „<ph name="NAME" />” z adresem <ph name="ADDRESS" /></translation>
@@ -360,6 +361,7 @@
 <translation id="6459472438155181876">Rozszerzanie ekranu na <ph name="DISPLAY_NAME" /></translation>
 <translation id="6482559668224714696">Lupa pełnoekranowa</translation>
 <translation id="6490471652906364588">Urządzenie USB-C (prawy port)</translation>
+<translation id="649452524636452238">Kod PIN karty elektronicznej</translation>
 <translation id="6501401484702599040">Przesyłam ekran do: <ph name="RECEIVER_NAME" /></translation>
 <translation id="6521655319214113338">Pismo odręczne</translation>
 <translation id="6528179044667508675">Nie przeszkadzać</translation>
@@ -389,6 +391,7 @@
 <translation id="6857811139397017780">Aktywuj sieć <ph name="NETWORKSERVICE" /></translation>
 <translation id="6910714959251846841">Ta aktualizacja wymaga usunięcia wszystkich danych z urządzenia za pomocą funkcji Powerwash. Dowiedz się więcej o najnowszej aktualizacji <ph name="SYSTEM_APP_NAME" />.</translation>
 <translation id="6911468394164995108">Połącz z inną...</translation>
+<translation id="6919251195245069855">Nie udało się rozpoznać karty elektronicznej. Spróbuj ponownie.</translation>
 <translation id="6972754398087986839">Rozpocznij</translation>
 <translation id="6981982820502123353">Ułatwienia dostępu</translation>
 <translation id="698231206551913481">Usunięcie tego użytkownika spowoduje trwałe usunięcie wszystkich związanych z nim plików i danych lokalnych.</translation>

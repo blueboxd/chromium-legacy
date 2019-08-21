@@ -109,15 +109,7 @@ WebUIDataSourceImpl::WebUIDataSourceImpl(const std::string& source_name)
     : URLDataSourceImpl(source_name,
                         std::make_unique<InternalDataSource>(this)),
       source_name_(source_name),
-      default_resource_(-1),
-      add_csp_(true),
-      script_src_set_(false),
-      object_src_set_(false),
-      frame_src_set_(false),
-      deny_xframe_options_(true),
-      add_load_time_data_defaults_(true),
-      replace_existing_source_(true),
-      should_replace_i18n_in_js_(false) {}
+      default_resource_(-1) {}
 
 WebUIDataSourceImpl::~WebUIDataSourceImpl() {
 }

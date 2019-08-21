@@ -596,8 +596,8 @@ bool PropertyTreeBuilderContext<LayerType>::AddTransformNodeIfNeeded(
   } else {
     node->source_offset = source_offset;
     node->local = Transform(layer);
-    node->update_pre_local_transform(TransformOrigin(layer));
-    node->update_post_local_transform(Position(layer), TransformOrigin(layer));
+    node->origin = TransformOrigin(layer);
+    node->UpdatePostTranslation(Position(layer));
   }
 
   node->in_subtree_of_page_scale_layer =

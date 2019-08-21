@@ -51,6 +51,7 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningTaskControllerImpl
   void CompleteObservation(base::UnguessableToken id,
                            const ObservationCompletion& completion) override;
   void CancelObservation(base::UnguessableToken id) override;
+  const LearningTask& GetLearningTask() override;
 
  private:
   // Add |example| to the training data, and process it.

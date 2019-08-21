@@ -14,8 +14,8 @@ import org.chromium.chrome.browser.tab.Tab;
 public class SingleTabModelSelector extends TabModelSelectorBase {
     public SingleTabModelSelector(
             Activity activity, TabCreatorManager tabCreatorManager, boolean incognito) {
-        super(tabCreatorManager);
-        initialize(incognito, new SingleTabModel(activity, incognito));
+        super(tabCreatorManager, incognito);
+        initialize(new SingleTabModel(activity, incognito));
 
         TabModelObserver tabModelObserver = new EmptyTabModelObserver() {
             @Override

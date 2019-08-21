@@ -57,6 +57,7 @@
 <translation id="2746543609216772311">ค่าต้องเป็น <ph name="MINIMUM_DATE_OR_TIME" /> หรือหลังจากนั้น</translation>
 <translation id="2759744352195237655">ปุ่มป๊อปอัป</translation>
 <translation id="2761667185364618470">โปรดเลือกช่องนี้หากคุณต้องการดำเนินการต่อ</translation>
+<translation id="2844350028562914727">รายละเอียด</translation>
 <translation id="2896972712917208084">กลุ่มตัวเลือก</translation>
 <translation id="2908441821576996758">โปรดป้อนรายการที่อยู่อีเมลโดยคั่นด้วยเครื่องหมายจุลภาค</translation>
 <translation id="2940813599313844715">ออบเจ็กต์</translation>
@@ -154,6 +155,7 @@
 <translation id="6166809985690652833">คำแถลงท้ายเล่ม</translation>
 <translation id="6209276755895393898">ดูเหมือนเป็น<ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">อภิธานศัพท์</translation>
+<translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">ออกจากการแสดงภาพซ้อนภาพ</translation>
 <translation id="6398862346408813489">แสดงแผงการเลือกเดือน</translation>
 <translation id="6404546809543547843">ตัวควบคุมเวลาของเสียง</translation>
@@ -236,6 +238,7 @@
 <translation id="860475260694818407">สารบัญ</translation>
 <translation id="8613126697340063924">ควบคุมการเล่นระยะไกล</translation>
 <translation id="862370744433916922">คำบรรยาย</translation>
+<translation id="8711688047404765493">เอาต์พุต</translation>
 <translation id="8750798805984357768">โปรดเลือกตัวเลือกอย่างหนึ่งอย่างใดเหล่านี้</translation>
 <translation id="8808573423886751634">บท</translation>
 <translation id="8845239796550121995">ตอนนี้กำลังแคสต์ไปยัง TV</translation>

@@ -45,7 +45,7 @@ namespace extensions {
 class FullStreamUIPolicyTest : public testing::Test {
  public:
   FullStreamUIPolicyTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {
 #if defined OS_CHROMEOS
     test_user_manager_.reset(new chromeos::ScopedTestUserManager());
 #endif
@@ -325,7 +325,7 @@ class FullStreamUIPolicyTest : public testing::Test {
  protected:
   ExtensionService* extension_service_;
   std::unique_ptr<TestingProfile> profile_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
 #if defined OS_CHROMEOS
   chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;

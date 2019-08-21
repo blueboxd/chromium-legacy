@@ -128,7 +128,7 @@ class SafeBrowsingPrivateEventRouterTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::test::ScopedFeatureList scoped_feature_list_;
   TestingProfileManager profile_manager_;
   TestingProfile* profile_;

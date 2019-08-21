@@ -149,7 +149,6 @@
 <translation id="2921219216347069551">Κοιν.χ. σελ. αδύνατη</translation>
 <translation id="2923448633003185837">Επικόλληση και μετάβαση</translation>
 <translation id="292639812446257861">Επισ. ως μη αναγνωσμένων</translation>
-<translation id="2933759065870693102">Φακός</translation>
 <translation id="2958718410589002129">Κωδικοί πρόσβασης</translation>
 <translation id="2969979262385602596">Αποτυχία σύνδεσης. Δοκιμάστε ξανά αργότερα.</translation>
 <translation id="298306318844797842">Προσθήκη τρόπου πληρωμής…</translation>
@@ -305,6 +304,7 @@
 <translation id="5317780077021120954">Αποθήκευση</translation>
 <translation id="5327248766486351172">Όνομα</translation>
 <translation id="5388358297987318779">Άνοιγμα εικόνας</translation>
+<translation id="5407969256130905701">Απόρριψη αλλαγών</translation>
 <translation id="5409365236829784218">Δεν υπάρχουν εγκατεστ. εφαρμογές για το άνοιγμα του αρχείου</translation>
 <translation id="5416022985862681400">Τελευταίες 7 ημέρες</translation>
 <translation id="5433691172869980887">Το όνομα χρήστη αντιγράφηκε</translation>
@@ -511,6 +511,7 @@
 <translation id="8428213095426709021">Ρυθμίσεις</translation>
 <translation id="8458397775385147834">Διαγράφηκε 1 στοιχείο</translation>
 <translation id="8487700953926739672">Διαθέσιμο εκτός σύνδεσης</translation>
+<translation id="8490978609246021741">Αποθήκευση αλλαγών</translation>
 <translation id="8503813439785031346">Όνομα χρήστη</translation>
 <translation id="850600235656508448">Άνοιγμα σε κατάσταση ανώνυμης περιήγησης</translation>
 <translation id="8517375800490286174">Άδειες λογισμ. ανοικτού κώδικα</translation>

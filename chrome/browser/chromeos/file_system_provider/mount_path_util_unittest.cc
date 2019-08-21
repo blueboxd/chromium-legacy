@@ -81,7 +81,7 @@ class FileSystemProviderMountPathUtilTest : public testing::Test {
         FakeExtensionProvider::Create(kExtensionId));
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   TestingProfile* profile_;  // Owned by TestingProfileManager.
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;

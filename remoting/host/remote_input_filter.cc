@@ -17,6 +17,12 @@ namespace {
 // any echoes are detected.
 const unsigned int kNumRemoteMousePositions = 50;
 
+// The number of remote keypress events to record for the purpose of eliminating
+// "echoes" detected by the local input detector. The value should be large
+// enough to cope with the fact that multiple events might be injected before
+// any echoes are detected.
+const unsigned int kNumRemoteKeyPresses = 20;
+
 // The number of milliseconds for which to block remote input when local input
 // is received.
 const int64_t kRemoteBlockTimeoutMillis = 2000;
@@ -61,10 +67,26 @@ bool RemoteInputFilter::LocalPointerMoved(const webrtc::DesktopVector& pos,
     }
   }
 
-  // Release all pressed buttons or keys, disable inputs, and note the time.
+  LocalInputDetected();
+  return true;
+}
+
+bool RemoteInputFilter::LocalKeyPressed(uint32_t usb_keycode) {
+  // If local echo is expected and |usb_keycode| is the oldest unechoed injected
+  // keypress, then ignore it.
+  if (expect_local_echo_ && !injected_key_presses_.empty() &&
+      injected_key_presses_.front() == usb_keycode) {
+    injected_key_presses_.pop_front();
+    return false;
+  }
+
+  LocalInputDetected();
+  return true;
+}
+
+void RemoteInputFilter::LocalInputDetected() {
   event_tracker_->ReleaseAll();
   latest_local_input_time_ = base::TimeTicks::Now();
-  return true;
 }
 
 void RemoteInputFilter::SetExpectLocalEcho(bool expect_local_echo) {
@@ -76,6 +98,13 @@ void RemoteInputFilter::SetExpectLocalEcho(bool expect_local_echo) {
 void RemoteInputFilter::InjectKeyEvent(const protocol::KeyEvent& event) {
   if (ShouldIgnoreInput())
     return;
+  if (expect_local_echo_ && event.pressed() && event.has_usb_keycode()) {
+    injected_key_presses_.push_back(event.usb_keycode());
+    if (injected_key_presses_.size() > kNumRemoteKeyPresses) {
+      VLOG(1) << "Injected key press queue full.";
+      injected_key_presses_.clear();
+    }
+  }
   event_tracker_->InjectKeyEvent(event);
 }
 

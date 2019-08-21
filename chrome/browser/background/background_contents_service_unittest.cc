@@ -61,7 +61,7 @@ class BackgroundContentsServiceTest : public testing::Test {
     return url;
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<base::CommandLine> command_line_;
 };
 

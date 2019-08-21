@@ -296,7 +296,7 @@ class SupervisedUserWhitelistInstallerTest : public testing::Test {
     EXPECT_EQ(version, component->version.GetString());
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager testing_profile_manager_;
   data_decoder::TestingJsonParser::ScopedFactoryOverride json_parser_override_;
   TestingPrefServiceSimple local_state_;

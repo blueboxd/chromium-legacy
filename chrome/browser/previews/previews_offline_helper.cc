@@ -106,13 +106,6 @@ void RemoveStaleOfflinePageEntries(base::DictionaryValue* dict) {
   }
 }
 
-bool IsOfflinePageItemFreshForPreviews(
-    const offline_pages::OfflinePageItem& item) {
-  return base::Time::Now() <=
-         item.creation_time +
-             previews::params::OfflinePreviewFreshnessDuration();
-}
-
 void AddSingleOfflineItemEntry(
     base::DictionaryValue* available_pages,
     const offline_pages::OfflinePageItem& added_page) {
@@ -231,11 +224,8 @@ void PreviewsOfflineHelper::Shutdown() {
 
 void PreviewsOfflineHelper::RequestDBUpdate() {
   offline_pages::PageCriteria criteria;
-  criteria.exclude_tab_bound_pages = true;
   criteria.maximum_matches =
       previews::params::OfflinePreviewsHelperMaxPrefSize();
-  criteria.additional_criteria =
-      base::BindRepeating(&IsOfflinePageItemFreshForPreviews);
 
   offline_page_model_->GetPagesWithCriteria(
       criteria, base::BindOnce(&PreviewsOfflineHelper::UpdateAllPrefEntries,
@@ -251,6 +241,7 @@ void PreviewsOfflineHelper::UpdateAllPrefEntries(
   available_pages_->Clear();
   for (const offline_pages::OfflinePageItem& page : pages)
     AddSingleOfflineItemEntry(available_pages_.get(), page);
+  RemoveStaleOfflinePageEntries(available_pages_.get());
   UpdatePref();
 
   UMA_HISTOGRAM_COUNTS_100("Previews.Offline.FalsePositivePrevention.PrefSize",

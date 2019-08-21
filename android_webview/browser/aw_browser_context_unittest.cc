@@ -28,7 +28,7 @@ class AwBrowserContextTest : public testing::Test {
   void TearDown() override { delete test_content_client_initializer_; }
 
   // Create the TestBrowserThreads.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   content::TestContentClientInitializer* test_content_client_initializer_;
   AwBrowserProcess* browser_process_;
 };

@@ -39,7 +39,7 @@ namespace {
 class PreviewsLitePageURLLoaderInterceptorTest : public testing::Test {
  public:
   PreviewsLitePageURLLoaderInterceptorTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         shared_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)) {}
@@ -77,7 +77,7 @@ class PreviewsLitePageURLLoaderInterceptorTest : public testing::Test {
   PreviewsLitePageURLLoaderInterceptor& interceptor() { return *interceptor_; }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
  private:
   base::Optional<bool> callback_was_empty_;

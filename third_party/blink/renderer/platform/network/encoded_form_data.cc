@@ -59,10 +59,11 @@ FormDataElement::FormDataElement(
     : type_(kDataPipe), data_pipe_getter_(std::move(data_pipe_getter)) {}
 
 FormDataElement::FormDataElement(const FormDataElement&) = default;
-FormDataElement::FormDataElement(FormDataElement&&) = default;
+FormDataElement::FormDataElement(FormDataElement&&) noexcept = default;
 FormDataElement::~FormDataElement() = default;
 FormDataElement& FormDataElement::operator=(const FormDataElement&) = default;
-FormDataElement& FormDataElement::operator=(FormDataElement&&) = default;
+FormDataElement& FormDataElement::operator=(FormDataElement&&) noexcept =
+    default;
 
 bool operator==(const FormDataElement& a, const FormDataElement& b) {
   if (&a == &b)

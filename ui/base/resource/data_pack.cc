@@ -486,11 +486,11 @@ bool DataPack::WritePack(const base::FilePath& path,
       auto it = rev_map.find(entry.second);
       if (it != rev_map.end()) {
         // Found an alias here!
-        aliases.insert(std::make_pair(entry.first, it->second));
+        aliases.emplace(entry.first, it->second);
       } else {
         // Found a final resource.
         const auto entry_index = static_cast<uint16_t>(resource_ids.size());
-        rev_map.insert(std::make_pair(entry.second, entry_index));
+        rev_map.emplace(entry.second, entry_index);
         resource_ids.push_back(entry.first);
       }
     }

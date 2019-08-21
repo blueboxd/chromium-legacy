@@ -118,7 +118,7 @@ class PrintServersProviderTest : public testing::Test {
 
  protected:
   // everything must be called on Chrome_UIThread
-  content::TestBrowserThreadBundle task_environment_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<PrintServersProvider> external_servers_;
 };
 

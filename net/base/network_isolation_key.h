@@ -84,7 +84,7 @@ class NET_EXPORT NetworkIsolationKey {
 
   // Returns a representation of |this| as a base::Value. Returns false on
   // failure. Succeeds if either IsEmpty() or !IsTransient().
-  bool ToValue(base::Value* out_value) WARN_UNUSED_RESULT;
+  bool ToValue(base::Value* out_value) const WARN_UNUSED_RESULT;
 
   // Inverse of ToValue(). Writes the result to |network_isolation_key|. Returns
   // false on failure. Fails on values that could not have been produced by

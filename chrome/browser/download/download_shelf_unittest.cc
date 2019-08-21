@@ -56,7 +56,7 @@ class DownloadShelfTest : public testing::Test {
  protected:
   std::unique_ptr<download::MockDownloadItem> GetInProgressMockDownload();
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<download::MockDownloadItem> download_item_;
   std::unique_ptr<content::MockDownloadManager> download_manager_;
   TestDownloadShelf shelf_;

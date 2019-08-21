@@ -266,10 +266,10 @@ class ImageCaptureDeviceManagerTest : public testing::Test {
                   moreGoing:NO];
   }
 
-  void RunUntilIdle() { thread_bundle_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestStorageMonitor* monitor_;
   TestCameraListener listener_;
 };

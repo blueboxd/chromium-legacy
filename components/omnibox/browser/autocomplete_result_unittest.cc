@@ -1846,21 +1846,25 @@ TEST_F(AutocompleteResultTest, TestGroupSuggestionsBySearchVsURL) {
   matches[2].type = AutocompleteMatchType::SEARCH_SUGGEST;
   // It's submatch to move up with it.
   matches[3].type = AutocompleteMatchType::HISTORY_URL;
+  matches[3].parent_type = AutocompleteMatchType::SEARCH_SUGGEST;
   matches[3].subrelevance = 4 + 1;
   // A non-search-type to move down.
   matches[4].type = AutocompleteMatchType::HISTORY_URL;
   // It's submatch to move down with it.
   matches[5].type = AutocompleteMatchType::SEARCH_SUGGEST;
+  matches[5].parent_type = AutocompleteMatchType::HISTORY_URL;
   matches[5].subrelevance = 8 + 1;
   // A search-type to move up.
   matches[6].type = AutocompleteMatchType::SEARCH_SUGGEST;
   // It's submatch to move up with it.
   matches[7].type = AutocompleteMatchType::HISTORY_URL;
+  matches[7].parent_type = AutocompleteMatchType::SEARCH_SUGGEST;
   matches[7].subrelevance = 12 + 1;
   // A non-search-type to "move down" (really, to stay).
   matches[8].type = AutocompleteMatchType::HISTORY_URL;
   // It's submatch to move down with it.
   matches[9].type = AutocompleteMatchType::SEARCH_SUGGEST;
+  matches[9].parent_type = AutocompleteMatchType::HISTORY_URL;
   matches[9].subrelevance = 16 + 1;
 
   AutocompleteResult::GroupSuggestionsBySearchVsURL(matches.begin(),
@@ -1873,4 +1877,66 @@ TEST_F(AutocompleteResultTest, TestGroupSuggestionsBySearchVsURL) {
     EXPECT_TRUE(!AutocompleteMatch::IsSearchType(matches[i].type) ||
                 matches[i].IsSubMatch());
   }
+}
+
+TEST_F(AutocompleteResultTest, SortAndCullWithDemotedSubmatches) {
+  base::test::ScopedFeatureList feature_list;
+  // Disable overriding features to only test standard sorting.
+  feature_list.InitWithFeatures({},
+                                {omnibox::kOmniboxGroupSuggestionsBySearchVsUrl,
+                                 omnibox::kOmniboxPreserveDefaultMatchScore});
+
+  ACMatches matches;
+  const AutocompleteMatchTestData data[] = {
+      {"http://history-url/", AutocompleteMatchType::HISTORY_URL},
+      {"http://search-history-submatch1/",
+       AutocompleteMatchType::SEARCH_HISTORY},
+      {"http://search-what-you-typed/",
+       AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED},
+      {"http://history-title/", AutocompleteMatchType::HISTORY_TITLE},
+      {"http://search-history-submatch2/",
+       AutocompleteMatchType::SEARCH_HISTORY},
+      {"http://search-history/", AutocompleteMatchType::SEARCH_HISTORY},
+  };
+  PopulateAutocompleteMatchesFromTestData(data, base::size(data), &matches);
+
+  // Construct submatch relations.
+  matches[0].subrelevance = 4;
+  matches[1].SetSubMatch(4 + 1, AutocompleteMatchType::HISTORY_URL);
+  matches[1].relevance = matches[0].relevance;
+
+  matches[3].subrelevance = 8;
+  matches[4].SetSubMatch(8 + 1, AutocompleteMatchType::HISTORY_TITLE);
+  matches[4].relevance = matches[3].relevance;
+
+  // Add a rule demoting history-url and killing history-title.
+  {
+    std::map<std::string, std::string> params;
+    params[std::string(OmniboxFieldTrial::kDemoteByTypeRule) + ":3:*"] =
+        "1:50,7:100,2:0";  // 3 == HOME_PAGE
+    ASSERT_TRUE(variations::AssociateVariationParams(
+        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
+  }
+  base::FieldTrialList::CreateFieldTrial(
+      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
+
+  AutocompleteInput input(base::ASCIIToUTF16("a"), OmniboxEventProto::HOME_PAGE,
+                          TestSchemeClassifier());
+  AutocompleteResult result;
+  result.AppendMatches(input, matches);
+  result.SortAndCull(input, template_url_service_.get());
+
+  // Check the new ordering. The search-history submatch should follow
+  // the demoted history-url match, and the history-title results and
+  // its submatch should be omitted.
+  ASSERT_EQ(4u, result.size());
+  EXPECT_EQ("http://search-what-you-typed/",
+            result.match_at(0)->destination_url.spec());
+  EXPECT_EQ("http://search-history/",
+            result.match_at(1)->destination_url.spec());
+  EXPECT_EQ("http://history-url/", result.match_at(2)->destination_url.spec());
+  EXPECT_EQ("http://search-history-submatch1/",
+            result.match_at(3)->destination_url.spec());
+  EXPECT_TRUE(AutocompleteMatch::IsSameFamily(
+      result.match_at(2)->subrelevance, result.match_at(3)->subrelevance));
 }

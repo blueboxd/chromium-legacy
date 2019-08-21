@@ -161,12 +161,13 @@ void SharedWorkerHost::Start(
       renderer_preferences.get());
 
   // Create a RendererPreferenceWatcher to observe updates in the preferences.
-  blink::mojom::RendererPreferenceWatcherPtr watcher_ptr;
-  blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request =
-      mojo::MakeRequest(&watcher_ptr);
+  mojo::PendingRemote<blink::mojom::RendererPreferenceWatcher> watcher_remote;
+  mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
+      preference_watcher_receiver =
+          watcher_remote.InitWithNewPipeAndPassReceiver();
   GetContentClient()->browser()->RegisterRendererPreferenceWatcher(
       RenderProcessHost::FromID(worker_process_id_)->GetBrowserContext(),
-      std::move(watcher_ptr));
+      std::move(watcher_remote));
 
   // Set up content settings interface.
   mojo::PendingRemote<blink::mojom::WorkerContentSettingsProxy>
@@ -211,7 +212,7 @@ void SharedWorkerHost::Start(
   factory_->CreateSharedWorker(
       std::move(info), GetContentClient()->browser()->GetUserAgent(),
       pause_on_start, devtools_worker_token, std::move(renderer_preferences),
-      std::move(preference_watcher_request), std::move(content_settings),
+      std::move(preference_watcher_receiver), std::move(content_settings),
       service_worker_handle_->TakeProviderInfo(),
       appcache_handle_
           ? base::make_optional(appcache_handle_->appcache_host_id())

@@ -144,7 +144,8 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTestRedirectMode, RedirectNotFollowed) {
   const GURL destination_url = embedded_test_server()->GetURL(destination_path);
   // Loading a page that prefetches the redirect resource only follows the
   // redirect when the mode is follow.
-  NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path)));
   prefetch_waiter.Run();
   EXPECT_EQ(1, main_page_counter->GetRequestCount());
 
@@ -184,7 +185,8 @@ IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestSplitCache,
 
   // Loading a page that prefetches the target URL would increment the
   // |request_counter|.
-  NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path)));
   prefetch_waiter.Run();
   EXPECT_EQ(1, request_counter->GetRequestCount());
   EXPECT_EQ(1, GetPrefetchURLLoaderCallCount());
@@ -232,7 +234,8 @@ IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestSplitCache,
 
   // Loading a page that prefetches the cross-origin iframe URL increments its
   // counter.
-  NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path)));
   prefetch_waiter.Run();
   EXPECT_EQ(1, cross_origin_iframe_counter->GetRequestCount());
   EXPECT_EQ(1, GetPrefetchURLLoaderCallCount());
@@ -284,7 +287,8 @@ IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestSplitCache,
 
   // Loading a page that prefetches the cross-origin subresource URL
   // increments its counter.
-  NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path)));
   prefetch_waiter.Run();
   EXPECT_EQ(1, cross_origin_subresource_counter->GetRequestCount());
   EXPECT_EQ(1, GetPrefetchURLLoaderCallCount());
@@ -333,7 +337,8 @@ IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestSplitCache,
 
   // Loading a page that prefetches the cross-origin subresource URL
   // increments its counter.
-  NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path)));
   prefetch_waiter.Run();
   EXPECT_EQ(1, cross_origin_subresource_counter->GetRequestCount());
   EXPECT_EQ(1, GetPrefetchURLLoaderCallCount());
@@ -381,7 +386,8 @@ IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestSplitCache,
 
   // Loading a page that prefetches the cross-origin subresource URL
   // increments its counter.
-  NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path)));
   prefetch_waiter.Run();
   EXPECT_EQ(1, cross_origin_subresource_counter->GetRequestCount());
   EXPECT_EQ(1, GetPrefetchURLLoaderCallCount());
@@ -391,7 +397,7 @@ IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestSplitCache,
   // Subsequent navigation to the cross-origin subresource itself will not be
   // reused from the cache, because the cached resource is not partitioned under
   // the cross-origin it is served from.
-  NavigateToURL(shell(), cross_origin_subresource_url);
+  EXPECT_TRUE(NavigateToURL(shell(), cross_origin_subresource_url));
   EXPECT_EQ(2, cross_origin_subresource_counter->GetRequestCount());
   EXPECT_EQ(1, GetPrefetchURLLoaderCallCount());
 
@@ -422,7 +428,8 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, Simple) {
 
   // Loading a page that prefetches the target URL would increment the
   // |request_counter|.
-  NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path)));
   prefetch_waiter.Run();
   EXPECT_EQ(1, request_counter->GetRequestCount());
   EXPECT_EQ(1, GetPrefetchURLLoaderCallCount());
@@ -461,7 +468,8 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, CrossOrigin) {
 
   // Loading a page that prefetches the target URL would increment the
   // |request_counter|.
-  NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path)));
   prefetch_waiter.Run();
   EXPECT_EQ(1, request_counter->GetRequestCount());
   EXPECT_EQ(1, GetPrefetchURLLoaderCallCount());
@@ -498,7 +506,8 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, DoublePrefetch) {
 
   // Loading a page that prefetches the target URL would increment the
   // |request_counter|, but it should hit only once.
-  NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path)));
   prefetch_waiter.Run();
   EXPECT_EQ(1, request_counter->GetRequestCount());
   EXPECT_EQ(1, GetPrefetchURLLoaderCallCount());
@@ -540,7 +549,8 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, NoCacheAndNoStore) {
 
   // Loading a page that prefetches the target URL would increment the
   // fetch count for the both targets.
-  NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path)));
   nocache_waiter.Run();
   nostore_waiter.Run();
   EXPECT_EQ(1, nocache_request_counter->GetRequestCount());
@@ -593,7 +603,8 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, WithPreload) {
 
   // Loading a page that prefetches the target URL would increment both
   // |target_request_counter| and |preload_request_counter|.
-  NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path)));
   preload_waiter.Run();
   EXPECT_EQ(1, target_request_counter->GetRequestCount());
   EXPECT_EQ(1, preload_request_counter->GetRequestCount());
@@ -642,7 +653,8 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, CrossOriginWithPreload) {
 
   // Loading a page that prefetches the target URL would increment both
   // |target_request_counter| and |preload_request_counter|.
-  NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path)));
   preload_waiter.Run();
   EXPECT_EQ(1, target_request_counter->GetRequestCount());
   EXPECT_EQ(1, preload_request_counter->GetRequestCount());
@@ -705,7 +717,8 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, SignedExchangeWithPreload) {
 
   // Loading a page that prefetches the target URL would increment both
   // |target_request_counter| and |preload_request_counter|.
-  NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path)));
   prefetch_waiter.Run();
   EXPECT_EQ(1, target_request_counter->GetRequestCount());
 
@@ -777,7 +790,8 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest,
 
   // Loading a page that prefetches the target URL would increment both
   // |target_request_counter| and |preload_request_counter|.
-  NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path)));
   prefetch_waiter.Run();
   EXPECT_EQ(1, target_request_counter->GetRequestCount());
 

@@ -158,7 +158,7 @@ class WebRtcInternalsTest : public testing::Test {
     VerifyString(dict, "video", video);
   }
 
-  TestBrowserThreadBundle test_browser_thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(WebRtcInternalsTest, AddRemoveObserver) {

@@ -206,9 +206,9 @@ std::unique_ptr<Browser> BrowserWithTestWindowTest::CreateBrowser(
 }
 
 BrowserWithTestWindowTest::BrowserWithTestWindowTest(
-    std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle,
+    std::unique_ptr<content::BrowserTaskEnvironment> task_environment,
     Browser::Type browser_type,
     bool hosted_app)
-    : thread_bundle_(std::move(thread_bundle)),
+    : task_environment_(std::move(task_environment)),
       browser_type_(browser_type),
       hosted_app_(hosted_app) {}

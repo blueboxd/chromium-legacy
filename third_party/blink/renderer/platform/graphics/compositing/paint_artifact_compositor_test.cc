@@ -4036,10 +4036,9 @@ TEST_P(PaintArtifactCompositorTest, CreatesViewportNodes) {
   cc::TransformNode* cc_transform_node = transform_tree.FindNodeFromElementId(
       transform_state.compositor_element_id);
   EXPECT_TRUE(cc_transform_node);
-  EXPECT_TRUE(cc_transform_node->pre_local.IsIdentity());
   EXPECT_EQ(TransformationMatrix::ToTransform(matrix),
             cc_transform_node->local);
-  EXPECT_TRUE(cc_transform_node->post_local.IsIdentity());
+  EXPECT_EQ(gfx::Point3F(), cc_transform_node->origin);
 }
 
 // Test that |cc::TransformNode::in_subtree_of_page_scale_layer| is not set on

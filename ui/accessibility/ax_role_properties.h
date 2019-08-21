@@ -37,6 +37,9 @@ AX_EXPORT bool IsControl(const ax::mojom::Role role);
 // Returns true if the provided role belongs to a document.
 AX_EXPORT bool IsDocument(const ax::mojom::Role role);
 
+// Returns true if the provided role represents a dialog.
+AX_EXPORT bool IsDialog(const ax::mojom::Role role);
+
 // Returns true if the provided role belongs to a heading.
 AX_EXPORT bool IsHeading(const ax::mojom::Role role);
 

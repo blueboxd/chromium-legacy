@@ -118,7 +118,7 @@ class AppMenuIconControllerTest : public ::testing::TestWithParam<int> {
   install_static::ScopedInstallDetails install_details_;
 #endif
   FakeUpgradeDetector upgrade_detector_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
 
   DISALLOW_COPY_AND_ASSIGN(AppMenuIconControllerTest);

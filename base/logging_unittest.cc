@@ -260,7 +260,7 @@ void TestForLogToStderr(int log_destinations,
   base::FilePath file_logs_path;
   if (log_destinations & LOG_TO_FILE) {
     file_logs_path = temp_dir.GetPath().Append("file.log");
-    settings.log_file = file_logs_path.value().c_str();
+    settings.log_file_path = file_logs_path.value().c_str();
   }
   InitLogging(settings);
 
@@ -315,6 +315,64 @@ TEST_F(LoggingTest, AlwaysLogErrorsToStderr) {
   EXPECT_TRUE(did_log_error);
 }
 #endif
+
+#if defined(OS_CHROMEOS)
+TEST_F(LoggingTest, InitWithFileDescriptor) {
+  const char kErrorLogMessage[] = "something bad happened";
+
+  // Open a file to pass to the InitLogging.
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath file_log_path = temp_dir.GetPath().Append("file.log");
+  FILE* log_file = fopen(file_log_path.value().c_str(), "w");
+  CHECK(log_file);
+
+  // Set up logging.
+  LoggingSettings settings;
+  settings.logging_dest = LOG_TO_FILE;
+  settings.log_file = log_file;
+  InitLogging(settings);
+
+  LOG(ERROR) << kErrorLogMessage;
+
+  // Check the message was written to the log file.
+  std::string written_logs;
+  ASSERT_TRUE(base::ReadFileToString(file_log_path, &written_logs));
+  ASSERT_NE(written_logs.find(kErrorLogMessage), std::string::npos);
+}
+
+TEST_F(LoggingTest, DuplicateLogFile) {
+  const char kErrorLogMessage1[] = "something really bad happened";
+  const char kErrorLogMessage2[] = "some other bad thing happened";
+
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath file_log_path = temp_dir.GetPath().Append("file.log");
+
+  // Set up logging.
+  LoggingSettings settings;
+  settings.logging_dest = LOG_TO_FILE;
+  settings.log_file_path = file_log_path.value().c_str();
+  InitLogging(settings);
+
+  LOG(ERROR) << kErrorLogMessage1;
+
+  // Duplicate the log FILE, close the original (to make sure we actually
+  // duplicated it), and write to the duplicate.
+  FILE* log_file_dup = DuplicateLogFILE();
+  CHECK(log_file_dup);
+  CloseLogFile();
+  fprintf(log_file_dup, "%s\n", kErrorLogMessage2);
+  fflush(log_file_dup);
+
+  // Check the messages were written to the log file.
+  std::string written_logs;
+  ASSERT_TRUE(base::ReadFileToString(file_log_path, &written_logs));
+  ASSERT_NE(written_logs.find(kErrorLogMessage1), std::string::npos);
+  ASSERT_NE(written_logs.find(kErrorLogMessage2), std::string::npos);
+  fclose(log_file_dup);
+}
+#endif  // defined(OS_CHROMEOS)
 
 // Official builds have CHECKs directly call BreakDebugger.
 #if !defined(OFFICIAL_BUILD)

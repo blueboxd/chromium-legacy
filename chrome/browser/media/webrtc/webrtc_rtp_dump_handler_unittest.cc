@@ -73,7 +73,7 @@ class FakeDumpWriter : public WebRtcRtpDumpWriter {
 class WebRtcRtpDumpHandlerTest : public testing::Test {
  public:
   WebRtcRtpDumpHandlerTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {
     ResetDumpHandler(base::FilePath(), true);
   }
 
@@ -112,7 +112,7 @@ class WebRtcRtpDumpHandlerTest : public testing::Test {
   MOCK_METHOD0(OnStopOngoingDumpsFinished, void(void));
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<WebRtcRtpDumpHandler> handler_;
 };
 

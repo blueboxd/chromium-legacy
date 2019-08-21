@@ -237,7 +237,8 @@ void NewTabButton::PaintFill(gfx::Canvas* canvas) const {
   if (has_custom_image && !new_tab_promo_observer_.IsObservingSources()) {
     float x_scale = scale;
     const gfx::Rect& contents_bounds = GetContentsBounds();
-    int x = GetMirroredX() + contents_bounds.x() + background_offset_;
+    int x = GetMirroredX() + contents_bounds.x() +
+            tab_strip_->GetBackgroundOffset();
     if (base::i18n::IsRTL()) {
       // The new tab background is mirrored in RTL mode, but the theme
       // background should never be mirrored. Mirror it here to compensate.

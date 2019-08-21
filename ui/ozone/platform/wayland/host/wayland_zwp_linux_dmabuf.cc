@@ -74,7 +74,7 @@ void WaylandZwpLinuxDmabuf::CreateBuffer(base::ScopedFD fd,
   } else {
     // Store the |params| with the corresponding |callback| to identify newly
     // created buffer and notify the client about it via the |callback|.
-    pending_params_.insert(std::make_pair(params, std::move(callback)));
+    pending_params_.emplace(params, std::move(callback));
 
     zwp_linux_buffer_params_v1_add_listener(params, &params_listener, this);
     zwp_linux_buffer_params_v1_create(params, size.width(), size.height(),

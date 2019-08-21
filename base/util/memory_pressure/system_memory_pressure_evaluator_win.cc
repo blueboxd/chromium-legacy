@@ -55,11 +55,10 @@ const int
 
 SystemMemoryPressureEvaluator::SystemMemoryPressureEvaluator(
     std::unique_ptr<MemoryPressureVoter> voter)
-    : moderate_threshold_mb_(0),
+    : util::SystemMemoryPressureEvaluator(std::move(voter)),
+      moderate_threshold_mb_(0),
       critical_threshold_mb_(0),
       moderate_pressure_repeat_count_(0),
-      voter_(std::move(voter)),
-      current_vote_(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE),
       weak_ptr_factory_(this) {
   InferThresholds();
   StartObserving();
@@ -69,11 +68,10 @@ SystemMemoryPressureEvaluator::SystemMemoryPressureEvaluator(
     int moderate_threshold_mb,
     int critical_threshold_mb,
     std::unique_ptr<MemoryPressureVoter> voter)
-    : moderate_threshold_mb_(moderate_threshold_mb),
+    : util::SystemMemoryPressureEvaluator(std::move(voter)),
+      moderate_threshold_mb_(moderate_threshold_mb),
       critical_threshold_mb_(critical_threshold_mb),
       moderate_pressure_repeat_count_(0),
-      voter_(std::move(voter)),
-      current_vote_(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE),
       weak_ptr_factory_(this) {
   DCHECK_GE(moderate_threshold_mb_, critical_threshold_mb_);
   DCHECK_LE(0, critical_threshold_mb_);
@@ -133,18 +131,18 @@ void SystemMemoryPressureEvaluator::CheckMemoryPressure() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Get the previous pressure level and update the current one.
-  MemoryPressureLevel old_vote = current_vote_;
-  current_vote_ = CalculateCurrentPressureLevel();
+  MemoryPressureLevel old_vote = current_vote();
+  SetCurrentVote(CalculateCurrentPressureLevel());
 
   // |notify| will be set to true if MemoryPressureListeners need to be
   // notified of a memory pressure level state change.
   bool notify = false;
-  switch (current_vote_) {
+  switch (current_vote()) {
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
       break;
 
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
-      if (old_vote != current_vote_) {
+      if (old_vote != current_vote()) {
         // This is a new transition to moderate pressure so notify.
         moderate_pressure_repeat_count_ = 0;
         notify = true;
@@ -169,7 +167,7 @@ void SystemMemoryPressureEvaluator::CheckMemoryPressure() {
       break;
   }
 
-  voter_->SetVote(current_vote_, notify);
+  SendCurrentVote(notify);
 }
 
 base::MemoryPressureListener::MemoryPressureLevel

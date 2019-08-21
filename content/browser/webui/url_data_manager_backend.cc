@@ -136,6 +136,7 @@ scoped_refptr<net::HttpResponseHeaders> URLDataManagerBackend::GetHeaders(
     base.append(source->GetContentSecurityPolicyChildSrc());
     base.append(source->GetContentSecurityPolicyStyleSrc());
     base.append(source->GetContentSecurityPolicyImgSrc());
+    base.append(source->GetContentSecurityPolicyWorkerSrc());
     headers->AddHeader(base);
   }
 

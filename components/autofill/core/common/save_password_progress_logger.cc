@@ -517,6 +517,12 @@ std::string SavePasswordProgressLogger::GetStringFromID(
     case SavePasswordProgressLogger::
         STRING_PASSWORD_REQUIREMENTS_VOTE_NO_PASSWORD_ATTRIBUTES:
       return "No password requirements attributed set";
+    case STRING_SAVE_PASSWORD_HASH:
+      return "Password hash is saved";
+    case STRING_DID_NAVIGATE_MAIN_FRAME:
+      return "PasswordManager::DidNavigateMainFrame";
+    case STRING_NAVIGATION_NTP:
+      return "Navigation to New Tab page";
     case SavePasswordProgressLogger::STRING_INVALID:
       return "INVALID";
       // Intentionally no default: clause here -- all IDs need to get covered.

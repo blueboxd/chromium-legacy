@@ -70,7 +70,7 @@ class PluginVmManagerTest : public testing::Test {
     return chrome_launcher_controller_->GetShelfSpinnerController();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> testing_profile_;
   std::unique_ptr<PluginVmTestHelper> test_helper_;
   std::unique_ptr<NotificationDisplayServiceTester> display_service_;
@@ -86,7 +86,7 @@ class PluginVmManagerTest : public testing::Test {
 TEST_F(PluginVmManagerTest, LaunchPluginVmRequiresPluginVmAllowed) {
   EXPECT_FALSE(IsPluginVmAllowedForProfile(testing_profile_.get()));
   plugin_vm_manager_->LaunchPluginVm();
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(VmPluginDispatcherClient().list_vms_called());
   EXPECT_FALSE(VmPluginDispatcherClient().start_vm_called());
   EXPECT_FALSE(VmPluginDispatcherClient().show_vm_called());
@@ -109,7 +109,7 @@ TEST_F(PluginVmManagerTest, LaunchPluginVmStartAndShow) {
   VmPluginDispatcherClient().set_list_vms_response(list_vms_response);
 
   plugin_vm_manager_->LaunchPluginVm();
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(VmPluginDispatcherClient().list_vms_called());
   EXPECT_TRUE(VmPluginDispatcherClient().start_vm_called());
   EXPECT_TRUE(VmPluginDispatcherClient().show_vm_called());
@@ -132,7 +132,7 @@ TEST_F(PluginVmManagerTest, LaunchPluginVmShowAndStop) {
   VmPluginDispatcherClient().set_list_vms_response(list_vms_response);
 
   plugin_vm_manager_->LaunchPluginVm();
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(VmPluginDispatcherClient().list_vms_called());
   EXPECT_FALSE(VmPluginDispatcherClient().start_vm_called());
   EXPECT_TRUE(VmPluginDispatcherClient().show_vm_called());
@@ -142,7 +142,7 @@ TEST_F(PluginVmManagerTest, LaunchPluginVmShowAndStop) {
   EXPECT_EQ(plugin_vm_manager_->seneschal_server_handle(), 0ul);
 
   plugin_vm_manager_->StopPluginVm();
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(VmPluginDispatcherClient().stop_vm_called());
 
   histogram_tester_->ExpectUniqueSample(kPluginVmLaunchResultHistogram,
@@ -166,7 +166,7 @@ TEST_F(PluginVmManagerTest, OnStateChangedRunningStoppedSuspended) {
   state_changed_signal.set_vm_state(
       vm_tools::plugin_dispatcher::VmState::VM_STATE_RUNNING);
   VmPluginDispatcherClient().NotifyVmStateChanged(state_changed_signal);
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(ConciergeClient().get_vm_info_called());
   EXPECT_TRUE(base::DirectoryExists(
       file_manager::util::GetMyFilesFolderForProfile(testing_profile_.get())));
@@ -176,7 +176,7 @@ TEST_F(PluginVmManagerTest, OnStateChangedRunningStoppedSuspended) {
   state_changed_signal.set_vm_state(
       vm_tools::plugin_dispatcher::VmState::VM_STATE_STOPPED);
   VmPluginDispatcherClient().NotifyVmStateChanged(state_changed_signal);
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(plugin_vm_manager_->seneschal_server_handle(), 0ul);
   EXPECT_FALSE(
       chrome_launcher_controller_->IsOpen(ash::ShelfID(kPluginVmAppId)));
@@ -185,13 +185,13 @@ TEST_F(PluginVmManagerTest, OnStateChangedRunningStoppedSuspended) {
   state_changed_signal.set_vm_state(
       vm_tools::plugin_dispatcher::VmState::VM_STATE_RUNNING);
   VmPluginDispatcherClient().NotifyVmStateChanged(state_changed_signal);
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(plugin_vm_manager_->seneschal_server_handle(), 1ul);
 
   state_changed_signal.set_vm_state(
       vm_tools::plugin_dispatcher::VmState::VM_STATE_SUSPENDED);
   VmPluginDispatcherClient().NotifyVmStateChanged(state_changed_signal);
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(plugin_vm_manager_->seneschal_server_handle(), 0ul);
 }
 
@@ -208,7 +208,7 @@ TEST_F(PluginVmManagerTest, LaunchPluginVmSpinner) {
   VmPluginDispatcherClient().set_list_vms_response(list_vms_response);
 
   plugin_vm_manager_->LaunchPluginVm();
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Spinner exists for first launch.
   EXPECT_TRUE(SpinnerController()->HasApp(kPluginVmAppId));
@@ -218,7 +218,7 @@ TEST_F(PluginVmManagerTest, LaunchPluginVmSpinner) {
   test_helper_->CloseShelfItem();
 
   plugin_vm_manager_->LaunchPluginVm();
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   // A second launch shouldn't show a spinner.
   EXPECT_FALSE(SpinnerController()->HasApp(kPluginVmAppId));
 }
@@ -242,7 +242,7 @@ TEST_F(PluginVmManagerTest, LaunchPluginVmFromSuspending) {
       vm_tools::plugin_dispatcher::VmState::VM_STATE_SUSPENDING);
   VmPluginDispatcherClient().set_list_vms_response(list_vms_response);
   plugin_vm_manager_->LaunchPluginVm();
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(VmPluginDispatcherClient().list_vms_called());
   EXPECT_FALSE(VmPluginDispatcherClient().start_vm_called());
@@ -253,7 +253,7 @@ TEST_F(PluginVmManagerTest, LaunchPluginVmFromSuspending) {
   state_changed_signal.set_vm_state(
       vm_tools::plugin_dispatcher::VmState::VM_STATE_SUSPENDED);
   VmPluginDispatcherClient().NotifyVmStateChanged(state_changed_signal);
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(VmPluginDispatcherClient().list_vms_called());
   EXPECT_TRUE(VmPluginDispatcherClient().start_vm_called());
@@ -276,7 +276,7 @@ TEST_F(PluginVmManagerTest, LaunchPluginVmInvalidLicense) {
   VmPluginDispatcherClient().set_start_vm_response(start_vm_response);
 
   plugin_vm_manager_->LaunchPluginVm();
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(VmPluginDispatcherClient().show_vm_called());
 
   EXPECT_TRUE(display_service_->GetNotification(kInvalidLicenseNotificationId));

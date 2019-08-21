@@ -113,17 +113,17 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
   WebUIDataSource::HandleRequestCallback filter_callback_;
   WebUIDataSource::ShouldHandleRequestCallback should_handle_request_callback_;
 
-  bool add_csp_;
-  bool script_src_set_;
+  bool add_csp_ = true;
+  bool script_src_set_ = false;
   std::string script_src_;
-  bool object_src_set_;
+  bool object_src_set_ = false;
   std::string object_src_;
-  bool frame_src_set_;
+  bool frame_src_set_ = false;
   std::string frame_src_;
-  bool deny_xframe_options_;
-  bool add_load_time_data_defaults_;
-  bool replace_existing_source_;
-  bool should_replace_i18n_in_js_;
+  bool deny_xframe_options_ = true;
+  bool add_load_time_data_defaults_ = true;
+  bool replace_existing_source_ = true;
+  bool should_replace_i18n_in_js_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIDataSourceImpl);
 };

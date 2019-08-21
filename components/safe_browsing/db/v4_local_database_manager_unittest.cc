@@ -445,7 +445,7 @@ class V4LocalDatabaseManagerTest : public PlatformTest {
   ExtendedReportingLevel extended_reporting_level_;
   ExtendedReportingLevelCallback erl_callback_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   scoped_refptr<V4LocalDatabaseManager> v4_local_database_manager_;
 };
 

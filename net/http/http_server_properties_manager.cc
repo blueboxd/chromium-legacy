@@ -7,11 +7,13 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/tick_clock.h"
 #include "base/values.h"
+#include "net/base/features.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_address.h"
 #include "net/base/port_util.h"
@@ -35,6 +37,8 @@ const int kVersionNumber = 5;
 // Persist at most 200 currently-broken alternative services to disk.
 const int kMaxBrokenAlternativeServicesToPersist = 200;
 
+const char kServerKey[] = "server";
+const char kNetworkIsolationKey[] = "isolation";
 const char kVersionKey[] = "version";
 const char kServersKey[] = "servers";
 const char kSupportsSpdyKey[] = "supports_spdy";
@@ -187,7 +191,6 @@ void HttpServerPropertiesManager::ReadPrefs(
     return;
   }
 
-  const base::DictionaryValue* servers_dict = nullptr;
   const base::ListValue* servers_list = nullptr;
   // For Version 5, data is stored in the following format.
   // |servers| are saved in MRU order. |servers| are in the format flattened
@@ -214,16 +217,21 @@ void HttpServerPropertiesManager::ReadPrefs(
   *quic_server_info_map = std::make_unique<QuicServerInfoMap>(
       max_server_configs_stored_in_properties_);
 
+  bool use_network_isolation_key = base::FeatureList::IsEnabled(
+      features::kPartitionHttpServerPropertiesByNetworkIsolationKey);
+
   // Iterate servers list in reverse MRU order so that entries are inserted
   // into |spdy_servers_map|, |alternative_service_map|, and
   // |server_network_stats_map| from oldest to newest.
+  const base::DictionaryValue* server_dict = nullptr;
   for (auto it = servers_list->end(); it != servers_list->begin();) {
     --it;
-    if (!it->GetAsDictionary(&servers_dict)) {
+    if (!it->GetAsDictionary(&server_dict)) {
       DVLOG(1) << "Malformed http_server_properties for servers dictionary.";
       continue;
     }
-    AddServersData(*servers_dict, server_info_map->get());
+    AddServerData(*server_dict, server_info_map->get(),
+                  use_network_isolation_key);
   }
 
   AddToQuicServerInfoMap(*http_server_properties_dict,
@@ -335,39 +343,46 @@ void HttpServerPropertiesManager::AddToBrokenAlternativeServices(
   }
 }
 
-void HttpServerPropertiesManager::AddServersData(
-    const base::DictionaryValue& servers_dict,
-    HttpServerProperties::ServerInfoMap* server_info_map) {
-  for (base::DictionaryValue::Iterator it(servers_dict); !it.IsAtEnd();
-       it.Advance()) {
-    // Get server's scheme/host/pair.
-    const std::string& server_str = it.key();
-    std::string spdy_server_url = server_str;
-    url::SchemeHostPort spdy_server((GURL(spdy_server_url)));
-    if (spdy_server.host().empty()) {
-      DVLOG(1) << "Malformed http_server_properties for server: " << server_str;
-      return;
-    }
+void HttpServerPropertiesManager::AddServerData(
+    const base::DictionaryValue& server_dict,
+    HttpServerProperties::ServerInfoMap* server_info_map,
+    bool use_network_isolation_key) {
+  // Get server's scheme/host/pair.
+  const std::string* server_str = server_dict.FindStringKey(kServerKey);
+  const base::Value* network_isolation_key_value =
+      server_dict.FindKey(kNetworkIsolationKey);
+  NetworkIsolationKey network_isolation_key;
+  // Can't load entry if server name missing, or if the network isolation key is
+  // missing or invalid.
+  if (!server_str || !network_isolation_key_value ||
+      !NetworkIsolationKey::FromValue(*network_isolation_key_value,
+                                      &network_isolation_key)) {
+    return;
+  }
 
-    const base::DictionaryValue* server_pref_dict = nullptr;
-    if (!it.value().GetAsDictionary(&server_pref_dict)) {
-      DVLOG(1) << "Malformed http_server_properties server: " << server_str;
-      return;
-    }
+  // If the entry includes a non-empty NetworkIsolationKey, but using a network
+  // isolation key is currently disabled, throw away the entry.
+  if (!network_isolation_key.IsEmpty() && !use_network_isolation_key)
+    return;
 
-    HttpServerProperties::ServerInfo server_info;
+  url::SchemeHostPort spdy_server((GURL(*server_str)));
+  if (spdy_server.host().empty()) {
+    DVLOG(1) << "Malformed http_server_properties for server: " << server_str;
+    return;
+  }
 
-    bool supports_spdy;
-    if (server_pref_dict->GetBoolean(kSupportsSpdyKey, &supports_spdy)) {
-      server_info.supports_spdy = supports_spdy;
-    }
+  HttpServerProperties::ServerInfo server_info;
 
-    if (ParseAlternativeServiceInfo(spdy_server, *server_pref_dict,
-                                    &server_info)) {
-      ParseNetworkStats(spdy_server, *server_pref_dict, &server_info);
-    }
-    if (!server_info.empty())
-      server_info_map->Put(spdy_server, std::move(server_info));
+  server_info.supports_spdy = server_dict.FindBoolKey(kSupportsSpdyKey);
+
+  if (ParseAlternativeServiceInfo(spdy_server, server_dict, &server_info))
+    ParseNetworkStats(spdy_server, server_dict, &server_info);
+
+  if (!server_info.empty()) {
+    server_info_map->Put(
+        HttpServerProperties::ServerInfoMapKey(
+            spdy_server, network_isolation_key, use_network_isolation_key),
+        std::move(server_info));
   }
 }
 
@@ -632,38 +647,42 @@ void HttpServerPropertiesManager::WriteToPrefs(
   base::Value servers_list(base::Value::Type::LIST);
   for (auto map_it = server_info_map.rbegin(); map_it != server_info_map.rend();
        ++map_it) {
-    const url::SchemeHostPort server = map_it->first;
+    const HttpServerProperties::ServerInfoMapKey key = map_it->first;
     const HttpServerProperties::ServerInfo& server_info = map_it->second;
 
-    base::DictionaryValue servers_dict;
-    base::DictionaryValue server_pref_dict;
+    // If can't convert the NetworkIsolationKey to a value, don't save to disk.
+    // Generally happens because the key is for a unique origin.
+    base::Value network_isolation_key_value;
+    if (!key.network_isolation_key.ToValue(&network_isolation_key_value))
+      continue;
+
+    base::DictionaryValue server_dict;
 
     bool supports_spdy = server_info.supports_spdy.value_or(false);
     if (supports_spdy)
-      server_pref_dict.SetBoolKey(kSupportsSpdyKey, supports_spdy);
+      server_dict.SetBoolKey(kSupportsSpdyKey, supports_spdy);
 
     AlternativeServiceInfoVector alternative_services =
-        GetAlternativeServiceToPersist(server_info.alternative_services, server,
-                                       now, get_canonical_suffix,
+        GetAlternativeServiceToPersist(server_info.alternative_services,
+                                       key.server, now, get_canonical_suffix,
                                        &persisted_canonical_suffix_map);
-    if (!alternative_services.empty()) {
-      SaveAlternativeServiceToServerPrefs(alternative_services,
-                                          &server_pref_dict);
-    }
+    if (!alternative_services.empty())
+      SaveAlternativeServiceToServerPrefs(alternative_services, &server_dict);
 
     if (server_info.server_network_stats) {
       SaveNetworkStatsToServerPrefs(*server_info.server_network_stats,
-                                    &server_pref_dict);
+                                    &server_dict);
     }
 
     // Don't add empty entries. This can happen if, for example, all alternative
     // services are empty, or |supports_spdy| is set to false, and all other
     // fields are not set.
-    if (server_pref_dict.DictEmpty())
+    if (server_dict.DictEmpty())
       continue;
-
-    servers_dict.SetKey(server.Serialize(), std::move(server_pref_dict));
-    servers_list.GetList().emplace_back(std::move(servers_dict));
+    server_dict.SetStringKey(kServerKey, key.server.Serialize());
+    server_dict.SetKey(kNetworkIsolationKey,
+                       std::move(network_isolation_key_value));
+    servers_list.GetList().emplace_back(std::move(server_dict));
   }
   http_server_properties_dict.SetKey(kServersKey, std::move(servers_list));
 

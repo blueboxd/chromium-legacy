@@ -66,7 +66,7 @@ class BrowserContainerCoordinatorTest : public PlatformTest {
     return web_state_list_.GetActiveWebState();
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   FakeWebStateListDelegate web_state_list_delegate_;
   WebStateList web_state_list_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;

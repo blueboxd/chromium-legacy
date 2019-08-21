@@ -143,7 +143,7 @@ class PushMessagingServiceTest : public ::testing::Test {
   PushMessagingTestingProfile* profile() { return &profile_; }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   PushMessagingTestingProfile profile_;
 
 #if defined(OS_ANDROID)

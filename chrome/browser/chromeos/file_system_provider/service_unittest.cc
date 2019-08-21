@@ -119,7 +119,7 @@ class FileSystemProviderServiceTest : public testing::Test {
     service_->Shutdown();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   TestingProfile* profile_;
   FakeChromeUserManager* user_manager_;

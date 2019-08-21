@@ -250,7 +250,7 @@ class TabDesktopMediaListTest : public testing::Test {
   std::unique_ptr<TabDesktopMediaList> list_;
   std::vector<WebContents*> manually_added_web_contents_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
 #if defined(OS_CHROMEOS)
   chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;

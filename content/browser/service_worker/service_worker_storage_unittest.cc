@@ -315,8 +315,7 @@ bool VerifyResponseMetadata(ServiceWorkerStorage* storage,
 class ServiceWorkerStorageTest : public testing::Test {
  public:
   ServiceWorkerStorageTest()
-      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {
-  }
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   void SetUp() override { InitializeTestHelper(); }
 
@@ -600,7 +599,7 @@ class ServiceWorkerStorageTest : public testing::Test {
   base::ScopedTempDir user_data_directory_;
   base::FilePath user_data_directory_path_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
-  TestBrowserThreadBundle browser_thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(ServiceWorkerStorageTest, DisabledStorage) {

@@ -11,7 +11,6 @@
 #include "cc/layers/surface_layer.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/platform/web_layer_tree_view.h"
 
 namespace blink {
 

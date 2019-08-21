@@ -76,6 +76,7 @@ class AutofillPopupViewNativeViews : public AutofillPopupBaseView,
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnThemeChanged() override;
+  void VisibilityChanged(View* starting_from, bool is_visible) override;
 
   // AutofillPopupView:
   void Show() override;
@@ -111,6 +112,8 @@ class AutofillPopupViewNativeViews : public AutofillPopupBaseView,
   views::ScrollView* scroll_view_ = nullptr;
   views::View* body_container_ = nullptr;
   views::View* footer_container_ = nullptr;
+
+  bool is_ax_menu_start_event_fired_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupViewNativeViews);
 };

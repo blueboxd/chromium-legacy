@@ -164,9 +164,9 @@ struct TestEnvironment {
         mute_source, deleter.Get(), renderer_factory_client.MakePtr());
   }
 
-  void RunUntilIdle() { thread_bundle.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment.RunUntilIdle(); }
 
-  TestBrowserThreadBundle thread_bundle;
+  BrowserTaskEnvironment task_environment;
   MockDeleterCallback deleter;
   MockSource source;
   StrictMock<MockRendererAudioInputStreamFactoryClient> renderer_factory_client;
@@ -179,7 +179,7 @@ struct TestEnvironment {
 
 TEST(AudioLoopbackStreamBrokerTest, StoresProcessAndFrameId) {
   InSequence seq;
-  TestBrowserThreadBundle thread_bundle;
+  BrowserTaskEnvironment task_environment;
   MockDeleterCallback deleter;
   StrictMock<MockRendererAudioInputStreamFactoryClient> renderer_factory_client;
   MockSource source;

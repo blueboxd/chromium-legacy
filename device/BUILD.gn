@@ -108,7 +108,7 @@ test("device_unittests") {
     "gamepad/gamepad_id_list_unittest.cc",
     "gamepad/gamepad_provider_unittest.cc",
     "gamepad/gamepad_service_unittest.cc",
-    "gamepad/hid_haptic_gamepad_base_unittest.cc",
+    "gamepad/hid_haptic_gamepad_unittest.cc",
     "gamepad/public/cpp/gamepad_mojom_traits_unittest.cc",
     "test/run_all_unittests.cc",
   ]

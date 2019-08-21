@@ -136,6 +136,8 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
   _emailLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
 
   _notificationLabel.textColor = [UIColor colorNamed:kBlueColor];
+
+  self.tintColor = [UIColor colorNamed:kBlueColor];
 }
 
 - (void)useScaledFont:(BOOL)useScaledFont {

@@ -42,10 +42,10 @@ class PLATFORM_EXPORT ContiguousContainerBase {
 
  protected:
   explicit ContiguousContainerBase(size_t max_object_size);
-  ContiguousContainerBase(ContiguousContainerBase&&);
+  ContiguousContainerBase(ContiguousContainerBase&&) noexcept;
   ~ContiguousContainerBase();
 
-  ContiguousContainerBase& operator=(ContiguousContainerBase&&);
+  ContiguousContainerBase& operator=(ContiguousContainerBase&&) noexcept;
 
   size_t size() const { return elements_.size(); }
   bool IsEmpty() const { return !size(); }
@@ -147,7 +147,7 @@ class ContiguousContainer : public ContiguousContainerBase {
                            WTF_HEAP_PROFILER_TYPE_NAME(BaseElementType));
   }
 
-  ContiguousContainer(ContiguousContainer&& source)
+  ContiguousContainer(ContiguousContainer&& source) noexcept
       : ContiguousContainerBase(std::move(source)) {}
 
   ~ContiguousContainer() {
@@ -157,7 +157,7 @@ class ContiguousContainer : public ContiguousContainerBase {
     }
   }
 
-  ContiguousContainer& operator=(ContiguousContainer&& source) {
+  ContiguousContainer& operator=(ContiguousContainer&& source) noexcept {
     // Must clear in the derived class to ensure that element destructors
     // care called.
     Clear();

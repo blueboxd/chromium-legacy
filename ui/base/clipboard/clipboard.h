@@ -25,8 +25,8 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "ui/base/clipboard/clipboard_buffer.h"
 #include "ui/base/clipboard/clipboard_format_type.h"
-#include "ui/base/clipboard/clipboard_types.h"
 
 class SkBitmap;
 
@@ -41,17 +41,17 @@ class ScopedClipboardWriter;
 // - is generalized for all targets/operating systems.
 class COMPONENT_EXPORT(BASE_CLIPBOARD) Clipboard : public base::ThreadChecker {
  public:
-  static bool IsSupportedClipboardType(ClipboardType type) {
-    switch (type) {
-      case ClipboardType::kCopyPaste:
+  static bool IsSupportedClipboardBuffer(ClipboardBuffer buffer) {
+    switch (buffer) {
+      case ClipboardBuffer::kCopyPaste:
         return true;
-      case ClipboardType::kSelection:
+      case ClipboardBuffer::kSelection:
 #if !defined(OS_WIN) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
         return true;
 #else
         return false;
 #endif
-      case ClipboardType::kDrag:
+      case ClipboardBuffer::kDrag:
         return false;
     }
     NOTREACHED();
@@ -99,30 +99,32 @@ class COMPONENT_EXPORT(BASE_CLIPBOARD) Clipboard : public base::ThreadChecker {
   // Returns a sequence number which uniquely identifies clipboard state.
   // This can be used to version the data on the clipboard and determine
   // whether it has changed.
-  virtual uint64_t GetSequenceNumber(ClipboardType type) const = 0;
+  virtual uint64_t GetSequenceNumber(ClipboardBuffer buffer) const = 0;
 
   // Tests whether the clipboard contains a certain format
   virtual bool IsFormatAvailable(const ClipboardFormatType& format,
-                                 ClipboardType type) const = 0;
+                                 ClipboardBuffer buffer) const = 0;
 
   // Clear the clipboard data.
-  virtual void Clear(ClipboardType type) = 0;
+  virtual void Clear(ClipboardBuffer buffer) = 0;
 
-  virtual void ReadAvailableTypes(ClipboardType type,
+  virtual void ReadAvailableTypes(ClipboardBuffer buffer,
                                   std::vector<base::string16>* types,
                                   bool* contains_filenames) const = 0;
 
   // Reads Unicode text from the clipboard, if available.
-  virtual void ReadText(ClipboardType type, base::string16* result) const = 0;
+  virtual void ReadText(ClipboardBuffer buffer,
+                        base::string16* result) const = 0;
 
   // Reads ASCII text from the clipboard, if available.
-  virtual void ReadAsciiText(ClipboardType type, std::string* result) const = 0;
+  virtual void ReadAsciiText(ClipboardBuffer buffer,
+                             std::string* result) const = 0;
 
   // Reads HTML from the clipboard, if available. If the HTML fragment requires
   // context to parse, |fragment_start| and |fragment_end| are indexes into
   // markup indicating the beginning and end of the actual fragment. Otherwise,
   // they will contain 0 and markup->size().
-  virtual void ReadHTML(ClipboardType type,
+  virtual void ReadHTML(ClipboardBuffer buffer,
                         base::string16* markup,
                         std::string* src_url,
                         uint32_t* fragment_start,
@@ -130,12 +132,12 @@ class COMPONENT_EXPORT(BASE_CLIPBOARD) Clipboard : public base::ThreadChecker {
 
   // Reads RTF from the clipboard, if available. Stores the result as a byte
   // vector.
-  virtual void ReadRTF(ClipboardType type, std::string* result) const = 0;
+  virtual void ReadRTF(ClipboardBuffer buffer, std::string* result) const = 0;
 
   // Reads an image from the clipboard, if available.
-  virtual SkBitmap ReadImage(ClipboardType type) const = 0;
+  virtual SkBitmap ReadImage(ClipboardBuffer buffer) const = 0;
 
-  virtual void ReadCustomData(ClipboardType clipboard_type,
+  virtual void ReadCustomData(ClipboardBuffer buffer,
                               const base::string16& type,
                               base::string16* result) const = 0;
 
@@ -209,7 +211,8 @@ class COMPONENT_EXPORT(BASE_CLIPBOARD) Clipboard : public base::ThreadChecker {
 
   // Write a bunch of objects to the system clipboard. Copies are made of the
   // contents of |objects|.
-  virtual void WriteObjects(ClipboardType type, const ObjectMap& objects) = 0;
+  virtual void WriteObjects(ClipboardBuffer buffer,
+                            const ObjectMap& objects) = 0;
 
   void DispatchObject(ObjectType type, const ObjectMapParams& params);
 

@@ -67,7 +67,6 @@ source_set("lib") {
   public_deps = [
     "//base",
     "//media/capture",
-    "//services/service_manager/public/cpp",
     "//services/shape_detection/public/mojom",
   ]
 
@@ -105,8 +104,6 @@ if (is_android) {
       "//mojo/public/java:bindings_java",
       "//mojo/public/java:system_java",
       "//mojo/public/java/system:system_impl_java",
-      "//services/service_manager/public/java:service_manager_java",
-      "//services/service_manager/public/mojom:mojom_java",
       "//services/shape_detection/public/mojom:mojom_java",
       "//skia/public/mojom:mojom_java",
       "//ui/gfx/geometry/mojom:mojom_java",

@@ -1601,15 +1601,6 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
 
           Se questa norma non viene impostata o è impostata su False, gli utenti potranno trasferire file in Google Drive.</translation>
 <translation id="3915395663995367577">URL di un file proxy .pac</translation>
-<translation id="3920892052017026701">Consente di impostare il valore personalizzato espresso in percentuale raggiunto il quale la batteria avvia la ricarica.
-
-          La batteria inizia a caricarsi quando raggiunge il valore di avvio della ricarica personalizzato.
-
-          DeviceBatteryChargeCustomStartCharging deve essere inferiore a DeviceBatteryChargeCustomStopCharging.
-
-          Questo criterio viene utilizzato unicamente quando DeviceBatteryChargeMode è impostato su personalizzato.
-
-          Se questo criterio non è configurato o non è impostato, verrà applicata la modalità di ricarica standard della batteria.</translation>
 <translation id="3925377537407648234">Imposta fattore di scala e risoluzione del display</translation>
 <translation id="3939893074578116847">Invia pacchetti di rete al server di gestione per monitorare lo stato online, per consentire
       al server di rilevare se il dispositivo è offline.
@@ -3516,15 +3507,6 @@ Se questa norma viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà le dimen
 Se il valore di questa norma è 0, verranno utilizzate le dimensioni della cache predefinite, che l'utente non potrà modificare.
 
 Se questa norma non viene impostata, verranno utilizzate le dimensioni predefinite, che l'utente potrà sostituire con il flag --disk-cache-size.</translation>
-<translation id="759389052790680884">Consente di impostare il valore personalizzato espresso in percentuale raggiunto il quale la batteria interrompe la ricarica.
-
-          La batteria smette di caricarsi quando raggiunge il valore di interruzione della ricarica personalizzato.
-
-          DeviceBatteryChargeCustomStartCharging deve essere inferiore a DeviceBatteryChargeCustomStopCharging.
-
-          Questo criterio viene utilizzato unicamente quando DeviceBatteryChargeMode è impostato su personalizzato.
-
-          Se questo criterio non è configurato o non è impostato, verrà applicata la modalità di ricarica standard della batteria.</translation>
 <translation id="759957074386651883">Impostazioni di Navigazione sicura</translation>
 <translation id="7604169113182304895">Le app Android potrebbero decidere volontariamente se rispettare o meno questo elenco. Non è possibile imporre il rispetto dell'elenco.</translation>
 <translation id="7612157962821894603">Contrassegni a livello di sistema da applicare all'avvio di <ph name="PRODUCT_NAME" /></translation>
@@ -3622,9 +3604,6 @@ Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visu
 <translation id="7750991880413385988">Apri pagina Nuova scheda</translation>
 <translation id="7754704193130578113">Chiedi dove salvare il file prima di scaricarlo</translation>
 <translation id="7761446981238915769">Configura l'elenco di app installate nella schermata di accesso</translation>
-<translation id="7763479091692861127"> I tipi di connessioni utilizzabili per aggiornamenti del sistema operativo. Gli aggiornamenti del sistema operativo possono mettere a dura prova la connessione a causa delle loro dimensioni e potrebbero generare costi aggiuntivi. Pertanto, per impostazione predefinita non sono abilitati per i tipi di connessione che sono considerati costosi, fra cui WiMax, Bluetooth e cellulare, al momento.
-
-      Gli identificatori dei tipi di connessione riconosciuti sono "ethernet", "wifi", "wimax", "bluetooth" e "cellulare".</translation>
 <translation id="7763614521440615342">Mostra suggerimenti di contenuti nella pagina Nuova scheda</translation>
 <translation id="7765879851993224640">Consenti l'uso dell'accesso tramite Smart Lock.</translation>
 <translation id="7772346342637974431">Consente di specificare il periodo di tempo senza immissioni da parte dell'utente dopo il quale viene mostrata una finestra di dialogo di avviso quando il computer è alimentato tramite batteria.

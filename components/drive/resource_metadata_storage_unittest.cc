@@ -76,7 +76,7 @@ class ResourceMetadataStorageTest : public testing::Test {
     return ResourceMetadataStorage::UpgradeOldDB(temp_dir_.GetPath());
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<ResourceMetadataStorage, test_util::DestroyHelperForTests>
       storage_;

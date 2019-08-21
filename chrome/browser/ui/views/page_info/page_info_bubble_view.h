@@ -104,8 +104,12 @@ class PageInfoBubbleView : public PageInfoBubbleViewBase,
       const security_state::VisibleSecurityState& visible_security_state,
       PageInfoClosingCallback closing_callback);
 
+ protected:
+  const base::string16 details_text() const { return details_text_; }
+
  private:
   friend class PageInfoBubbleViewBrowserTest;
+  friend class PageInfoBubbleViewSyncBrowserTest;
   friend class test::PageInfoBubbleViewTestApi;
 
   PageInfoBubbleView(
@@ -159,7 +163,7 @@ class PageInfoBubbleView : public PageInfoBubbleViewBase,
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   std::unique_ptr<PageInfoUI::SecurityDescription>
   CreateSecurityDescriptionForPasswordReuse(
-      bool is_enterprise_password) const override;
+      PageInfoUI::PasswordType password_type) const override;
 #endif
 
   // Creates the contents of the |site_settings_view_|. The ownership of the
@@ -181,6 +185,9 @@ class PageInfoBubbleView : public PageInfoBubbleViewBase,
 
   // The header section (containing security-related information).
   BubbleHeaderView* header_ = nullptr;
+
+  // The raw details of the status of the identity check for this site.
+  base::string16 details_text_ = base::string16();
 
   // The view that contains the certificate, cookie, and permissions sections.
   views::View* site_settings_view_ = nullptr;

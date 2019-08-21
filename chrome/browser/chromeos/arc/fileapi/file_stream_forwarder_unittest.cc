@@ -66,7 +66,7 @@ class FileStreamForwarderTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   base::FilePath dest_file_path_;
   base::ScopedFD dest_fd_;

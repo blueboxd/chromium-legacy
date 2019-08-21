@@ -56,7 +56,7 @@ class InstallTrackerTest : public testing::Test {
     EXPECT_EQ(original.percent_downloaded, retrieved.percent_downloaded);
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<InstallTracker> tracker_;
 };

@@ -22,6 +22,8 @@
 #include "net/http/http_response_info.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 
+class HeavyAdBlocklist;
+
 // This observer labels each sub-frame as an ad or not, and keeps track of
 // relevant per-frame and whole-page byte statistics.
 class AdsPageLoadMetricsObserver
@@ -55,7 +57,8 @@ class AdsPageLoadMetricsObserver
     DISALLOW_COPY_AND_ASSIGN(AggregateFrameInfo);
   };
 
-  explicit AdsPageLoadMetricsObserver(base::TickClock* clock = nullptr);
+  explicit AdsPageLoadMetricsObserver(base::TickClock* clock = nullptr,
+                                      HeavyAdBlocklist* blocklist = nullptr);
   ~AdsPageLoadMetricsObserver() override;
 
   // page_load_metrics::PageLoadMetricsObserver
@@ -149,6 +152,9 @@ class AdsPageLoadMetricsObserver
       content::RenderFrameHost* render_frame_host,
       FrameData* frame_data);
 
+  bool IsBlocklisted();
+  HeavyAdBlocklist* GetHeavyAdBlocklist();
+
   // Stores the size data of each ad frame. Pointed to by ad_frames_ so use a
   // data structure that won't move the data around. This only stores ad frames
   // that are actively on the page. When a frame is destroyed, so should its
@@ -205,6 +211,19 @@ class AdsPageLoadMetricsObserver
 
   // The tick clock used to get the current time.  Can be replaced by tests.
   const base::TickClock* clock_;
+
+  // Stores whether the heavy ad intervention is blocklisted or not for the user
+  // on the URL of this page. Incognito Profiles will cause this to be set to
+  // true. Used as a cache to avoid checking the blocklist once the page is
+  // blocklisted. Once blocklisted, a page load cannot be unblocklisted.
+  bool heavy_ads_blocklist_blocklisted_ = false;
+
+  // Pointer to the blocklist used to throttle the heavy ad intervention. Can
+  // be replaced by tests.
+  HeavyAdBlocklist* heavy_ad_blocklist_;
+
+  // Whether the heavy ad blocklist feature is enabled.
+  const bool heavy_ad_blocklist_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(AdsPageLoadMetricsObserver);
 };

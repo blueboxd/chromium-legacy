@@ -266,14 +266,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
 //
 // The test then presses <tab> six times to cycle through focused elements 1-6.
 // The test then repeats this with <shift-tab> to cycle in reverse order.
-#if defined(THREAD_SANITIZER)
-// TODO(crbug.com/995144): Fix the data race reported by TSan.
-#define MAYBE_SequentialFocusNavigation DISABLED_SequentialFocusNavigation
-#else
-#define MAYBE_SequentialFocusNavigation SequentialFocusNavigation
-#endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
-                       MAYBE_SequentialFocusNavigation) {
+                       SequentialFocusNavigation) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b,c)"));
   ui_test_utils::NavigateToURL(browser(), main_url);

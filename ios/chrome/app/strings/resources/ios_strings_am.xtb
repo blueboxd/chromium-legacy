@@ -149,7 +149,6 @@
 <translation id="2921219216347069551">ገጽ ማጋራት አልተቻለም</translation>
 <translation id="2923448633003185837">ለጥፍ እና ሂድ</translation>
 <translation id="292639812446257861">እንዳልተነበበ ምልክት አድርግ</translation>
-<translation id="2933759065870693102">የባትሪ ብርሃን</translation>
 <translation id="2958718410589002129">የይለፍ ቃላት</translation>
 <translation id="2969979262385602596">በመለያ መግባት አልተሳካም። እባክዎ ቆይተው እንደገና ይሞክሩ።</translation>
 <translation id="298306318844797842">የመክፈያ ዘዴን ያክሉ...</translation>
@@ -305,6 +304,7 @@
 <translation id="5317780077021120954">አስቀምጥ</translation>
 <translation id="5327248766486351172">ስም</translation>
 <translation id="5388358297987318779">ምስል ክፈት</translation>
+<translation id="5407969256130905701">ለውጦችን አስወግድ</translation>
 <translation id="5409365236829784218">ይህን ፋይል መክፈት የሚችሉ መተግበሪያዎች አልተጫኑም።</translation>
 <translation id="5416022985862681400">ባለፉት 7 ቀኖች</translation>
 <translation id="5433691172869980887">የተጠቃሚ ስም ተቀድቷል</translation>
@@ -510,6 +510,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="8428213095426709021">ቅንብሮች</translation>
 <translation id="8458397775385147834">1 ንጥል ተሰርዟል</translation>
 <translation id="8487700953926739672">ከመስመር ውጪ ይገኛል</translation>
+<translation id="8490978609246021741">ለውጦችን አስቀምጥ</translation>
 <translation id="8503813439785031346">የተጣቃሚ ስም</translation>
 <translation id="850600235656508448">ማንነት በማያሳውቅ ሁነታ ይክፈቱ</translation>
 <translation id="8517375800490286174">የክፍት ምንጭ ፍቃዶች</translation>

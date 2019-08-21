@@ -20,8 +20,8 @@
 #include "third_party/skia/include/core/SkImageEncoder.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/clipboard_buffer.h"
 #include "ui/base/clipboard/clipboard_constants.h"
-#include "ui/base/clipboard/clipboard_types.h"
 #include "ui/base/dragdrop/file_info.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "url/gurl.h"
@@ -121,8 +121,8 @@ scoped_refptr<base::RefCountedString> EncodeAsRefCountedString(
 
 void ReadTextFromClipboard(const std::string& charset, base::ScopedFD fd) {
   base::string16 text;
-  ui::Clipboard::GetForCurrentThread()->ReadText(ui::ClipboardType::kCopyPaste,
-                                                 &text);
+  ui::Clipboard::GetForCurrentThread()->ReadText(
+      ui::ClipboardBuffer::kCopyPaste, &text);
   WriteFileDescriptor(std::move(fd), EncodeAsRefCountedString(text, charset));
 }
 
@@ -130,14 +130,14 @@ void ReadHTMLFromClipboard(const std::string& charset, base::ScopedFD fd) {
   base::string16 text;
   std::string url;
   uint32_t start, end;
-  ui::Clipboard::GetForCurrentThread()->ReadHTML(ui::ClipboardType::kCopyPaste,
-                                                 &text, &url, &start, &end);
+  ui::Clipboard::GetForCurrentThread()->ReadHTML(
+      ui::ClipboardBuffer::kCopyPaste, &text, &url, &start, &end);
   WriteFileDescriptor(std::move(fd), EncodeAsRefCountedString(text, charset));
 }
 
 void ReadRTFFromClipboard(base::ScopedFD fd) {
   std::string text;
-  ui::Clipboard::GetForCurrentThread()->ReadRTF(ui::ClipboardType::kCopyPaste,
+  ui::Clipboard::GetForCurrentThread()->ReadRTF(ui::ClipboardBuffer::kCopyPaste,
                                                 &text);
   WriteFileDescriptor(std::move(fd), base::RefCountedString::TakeString(&text));
 }
@@ -157,7 +157,7 @@ void SendAsPNGOnWorkerThread(base::ScopedFD fd, const SkBitmap sk_bitmap) {
 
 void ReadPNGFromClipboard(base::ScopedFD fd) {
   const SkBitmap sk_bitmap = ui::Clipboard::GetForCurrentThread()->ReadImage(
-      ui::ClipboardType::kCopyPaste);
+      ui::ClipboardBuffer::kCopyPaste);
   base::PostTask(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
@@ -304,7 +304,7 @@ void DataOffer::SetClipboardData(FileHelper* file_helper,
                                  const ui::Clipboard& data) {
   DCHECK_EQ(0u, data_.size());
   if (data.IsFormatAvailable(ui::ClipboardFormatType::GetPlainTextWType(),
-                             ui::ClipboardType::kCopyPaste)) {
+                             ui::ClipboardBuffer::kCopyPaste)) {
     auto utf8_callback =
         base::BindRepeating(&ReadTextFromClipboard, std::string(kUTF8));
     delegate_->OnOffer(std::string(kTextMimeTypeUtf8));
@@ -317,7 +317,7 @@ void DataOffer::SetClipboardData(FileHelper* file_helper,
         base::BindRepeating(&ReadTextFromClipboard, std::string(kUTF16)));
   }
   if (data.IsFormatAvailable(ui::ClipboardFormatType::GetHtmlType(),
-                             ui::ClipboardType::kCopyPaste)) {
+                             ui::ClipboardBuffer::kCopyPaste)) {
     delegate_->OnOffer(std::string(kTextHtmlMimeTypeUtf8));
     data_callbacks_.emplace(
         std::string(kTextHtmlMimeTypeUtf8),
@@ -328,13 +328,13 @@ void DataOffer::SetClipboardData(FileHelper* file_helper,
         base::BindRepeating(&ReadHTMLFromClipboard, std::string(kUTF16)));
   }
   if (data.IsFormatAvailable(ui::ClipboardFormatType::GetRtfType(),
-                             ui::ClipboardType::kCopyPaste)) {
+                             ui::ClipboardBuffer::kCopyPaste)) {
     delegate_->OnOffer(std::string(kTextRtfMimeType));
     data_callbacks_.emplace(std::string(kTextRtfMimeType),
                             base::BindRepeating(&ReadRTFFromClipboard));
   }
   if (data.IsFormatAvailable(ui::ClipboardFormatType::GetBitmapType(),
-                             ui::ClipboardType::kCopyPaste)) {
+                             ui::ClipboardBuffer::kCopyPaste)) {
     delegate_->OnOffer(std::string(kImagePngMimeType));
     data_callbacks_.emplace(std::string(kImagePngMimeType),
                             base::BindRepeating(&ReadPNGFromClipboard));

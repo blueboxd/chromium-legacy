@@ -23,9 +23,6 @@ struct IconEntry {
   IconEntry();
   IconEntry(IconEntry&& other);
 
-  // Unique identifier for the icon database entry.
-  std::string uuid;
-
   // Raw data of the icon.
   IconData data;
 

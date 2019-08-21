@@ -321,29 +321,16 @@ IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
   TestVideoQuality("VP8", false /* prefer_hw_video_codec */);
 }
 
-// Fails consistently on Win7 builders.  crbug.com/993020.
-#if defined(OS_WIN)
-#define MAYBE_MANUAL_TestVideoQualityVp9 DISABLED_MANUAL_TestVideoQualityVp9
-#else
-#define MAYBE_MANUAL_TestVideoQualityVp9 MANUAL_TestVideoQualityVp9
-#endif
 IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
-                       MAYBE_MANUAL_TestVideoQualityVp9) {
+                       MANUAL_TestVideoQualityVp9) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   TestVideoQuality("VP9", true /* prefer_hw_video_codec */);
 }
 
 #if BUILDFLAG(RTC_USE_H264)
 
-// Flaky on mac: crbug.com/754684
-#if defined(OS_MACOSX)
-#define MAYBE_MANUAL_TestVideoQualityH264 DISABLED_MANUAL_TestVideoQualityH264
-#else
-#define MAYBE_MANUAL_TestVideoQualityH264 MANUAL_TestVideoQualityH264
-#endif
-
 IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
-                       MAYBE_MANUAL_TestVideoQualityH264) {
+                       MANUAL_TestVideoQualityH264) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   // Only run test if run-time feature corresponding to |rtc_use_h264| is on.
   if (!base::FeatureList::IsEnabled(content::kWebRtcH264WithOpenH264FFmpeg)) {

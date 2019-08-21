@@ -60,7 +60,7 @@ const char ext2_id[] = "extension2";
 // Check that no badge appears if it has been suppressed for a specific
 // warning.
 TEST(WarningBadgeServiceTest, SuppressBadgeForCurrentWarnings) {
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   TestingProfile profile;
   TestExtensionWarningSet warnings(&profile);
   TestWarningBadgeService badge_service(&profile, &warnings);

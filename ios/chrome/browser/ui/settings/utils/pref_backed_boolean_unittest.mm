@@ -42,7 +42,7 @@ class PrefBackedBooleanTest : public PlatformTest {
 
   PrefBackedBoolean* GetObservableBoolean() { return observable_boolean_; }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   TestingPrefServiceSimple pref_service_;
   PrefBackedBoolean* observable_boolean_;
 };

@@ -29,7 +29,7 @@ class StandardManagementPolicyProviderTest : public testing::Test {
     return ExtensionBuilder("test").SetLocation(location).Build();
   }
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   TestingProfile profile_;
   std::unique_ptr<ExtensionManagement> settings_;

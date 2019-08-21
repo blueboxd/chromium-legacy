@@ -832,7 +832,7 @@ void Layer::SetPosition(const gfx::PointF& position) {
       TransformNode* transform_node =
           layer_tree_host_->property_trees()->transform_tree.Node(
               transform_tree_index_);
-      transform_node->update_post_local_transform(position, transform_origin());
+      transform_node->UpdatePostTranslation(position);
       transform_node->needs_local_transform_update = true;
       transform_node->transform_changed = true;
       layer_tree_host_->property_trees()->transform_tree.set_needs_update(true);
@@ -912,8 +912,7 @@ void Layer::SetTransformOrigin(const gfx::Point3F& transform_origin) {
           layer_tree_host_->property_trees()->transform_tree.Node(
               transform_tree_index_);
       DCHECK_EQ(transform_tree_index(), transform_node->id);
-      transform_node->update_pre_local_transform(transform_origin);
-      transform_node->update_post_local_transform(position(), transform_origin);
+      transform_node->origin = transform_origin;
       transform_node->needs_local_transform_update = true;
       transform_node->transform_changed = true;
       layer_tree_host_->property_trees()->transform_tree.set_needs_update(true);

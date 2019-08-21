@@ -25,7 +25,7 @@ FrameRequestCallbackCollection::RegisterFrameCallback(FrameCallback* callback) {
                        TRACE_EVENT_SCOPE_THREAD, "data",
                        inspector_animation_frame_event::Data(context_, id));
   probe::AsyncTaskScheduledBreakable(context_, "requestAnimationFrame",
-                                     callback);
+                                     callback->async_task_id());
   return id;
 }
 
@@ -45,7 +45,7 @@ void FrameRequestCallbackCollection::CancelCallbackInternal(
   for (wtf_size_t i = 0; i < frame_callbacks_.size(); ++i) {
     if (frame_callbacks_[i]->Id() == id) {
       probe::AsyncTaskCanceledBreakable(context_, probe_name,
-                                        frame_callbacks_[i]);
+                                        frame_callbacks_[i]->async_task_id());
       frame_callbacks_.EraseAt(i);
       TRACE_EVENT_INSTANT1("devtools.timeline", trace_event_name,
                            TRACE_EVENT_SCOPE_THREAD, "data",
@@ -55,8 +55,8 @@ void FrameRequestCallbackCollection::CancelCallbackInternal(
   }
   for (wtf_size_t i = 0; i < post_frame_callbacks_.size(); ++i) {
     if (post_frame_callbacks_[i]->Id() == id) {
-      probe::AsyncTaskCanceledBreakable(context_, probe_name,
-                                        post_frame_callbacks_[i]);
+      probe::AsyncTaskCanceledBreakable(
+          context_, probe_name, post_frame_callbacks_[i]->async_task_id());
       post_frame_callbacks_.EraseAt(i);
       TRACE_EVENT_INSTANT1("devtools.timeline", trace_event_name,
                            TRACE_EVENT_SCOPE_THREAD, "data",
@@ -66,7 +66,8 @@ void FrameRequestCallbackCollection::CancelCallbackInternal(
   }
   for (const auto& callback : callbacks_to_invoke_) {
     if (callback->Id() == id) {
-      probe::AsyncTaskCanceledBreakable(context_, probe_name, callback);
+      probe::AsyncTaskCanceledBreakable(context_, probe_name,
+                                        callback->async_task_id());
       TRACE_EVENT_INSTANT1("devtools.timeline", trace_event_name,
                            TRACE_EVENT_SCOPE_THREAD, "data",
                            inspector_animation_frame_event::Data(context_, id));
@@ -122,7 +123,7 @@ void FrameRequestCallbackCollection::ExecuteCallbacksInternal(
     TRACE_EVENT1(
         "devtools.timeline", trace_event_name, "data",
         inspector_animation_frame_event::Data(context_, callback->Id()));
-    probe::AsyncTask async_task(context_, callback);
+    probe::AsyncTask async_task(context_, callback->async_task_id());
     probe::UserCallback probe(context_, probe_name, AtomicString(), true);
     if (callback->GetUseLegacyTimeBase())
       callback->Invoke(high_res_now_ms_legacy);
@@ -145,7 +146,7 @@ FrameRequestCallbackCollection::RegisterPostFrameCallback(
                        TRACE_EVENT_SCOPE_THREAD, "data",
                        inspector_animation_frame_event::Data(context_, id));
   probe::AsyncTaskScheduledBreakable(context_, "requestPostAnimationFrame",
-                                     callback);
+                                     callback->async_task_id());
   return id;
 }
 

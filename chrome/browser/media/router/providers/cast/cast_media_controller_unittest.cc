@@ -175,7 +175,7 @@ class CastMediaControllerTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle test_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   MockActivityRecord activity_;
   std::unique_ptr<CastMediaController> controller_;
   mojom::MediaControllerPtr mojo_controller_;

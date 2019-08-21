@@ -128,6 +128,8 @@ class CONTENT_EXPORT URLDataSource {
   virtual std::string GetContentSecurityPolicyStyleSrc();
   // By default empty. Override to change this.
   virtual std::string GetContentSecurityPolicyImgSrc();
+  // By default empty. Override to change this.
+  virtual std::string GetContentSecurityPolicyWorkerSrc();
 
   // By default, the "X-Frame-Options: DENY" header is sent. To stop this from
   // happening, return false. It is OK to return false as needed.

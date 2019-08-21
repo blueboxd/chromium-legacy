@@ -27,7 +27,7 @@ using testing::StartsWith;
 class PromoServiceTest : public testing::Test {
  public:
   PromoServiceTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)) {}
@@ -55,7 +55,7 @@ class PromoServiceTest : public testing::Test {
 
  private:
   // Required to run tests from UI and threads.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   // Required to use SafeJsonParser.
   content::TestServiceManagerContext service_manager_context_;

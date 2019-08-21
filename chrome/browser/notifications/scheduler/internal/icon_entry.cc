@@ -9,7 +9,6 @@ namespace notifications {
 IconEntry::IconEntry() = default;
 
 IconEntry::IconEntry(IconEntry&& other) {
-  uuid.swap(other.uuid);
   data.swap(other.data);
 }
 

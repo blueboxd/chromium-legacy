@@ -184,7 +184,7 @@ class BrowserViewControllerTest : public BlockCleanupTest {
 
   MOCK_METHOD0(OnCompletionCalled, void());
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   IOSChromeScopedTestingLocalState local_state_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   TabModel* tabModel_;

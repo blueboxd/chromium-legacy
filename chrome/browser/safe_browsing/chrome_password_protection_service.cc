@@ -1442,7 +1442,8 @@ void ChromePasswordProtectionService::OnWarningTriggerChanged() {
   const base::Value* pref_value = pref_change_registrar_->prefs()->Get(
       prefs::kPasswordProtectionWarningTrigger);
   // If password protection is not turned off, do nothing.
-  if (pref_value->GetInt() != 0) {
+  if (static_cast<PasswordProtectionTrigger>(pref_value->GetInt()) !=
+      PASSWORD_PROTECTION_OFF) {
     return;
   }
 

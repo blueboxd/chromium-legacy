@@ -91,7 +91,7 @@ class MediaStreamUIProxyTest : public testing::Test {
   }
 
  protected:
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
 
   MockRenderFrameHostDelegate delegate_;
   MockResponseCallback response_callback_;

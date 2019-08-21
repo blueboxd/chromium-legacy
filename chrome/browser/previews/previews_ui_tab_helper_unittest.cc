@@ -77,7 +77,7 @@ class PreviewsUITabHelperUnitTest : public ChromeRenderViewHostTestHarness {
             profile(),
             std::make_unique<data_reduction_proxy::DataStoreImpl>(
                 profile()->GetPath()),
-            thread_bundle()->GetMainThreadTaskRunner());
+            task_environment()->GetMainThreadTaskRunner());
   }
 
   void SetCommittedPreviewsType(previews::PreviewsType previews_type) {

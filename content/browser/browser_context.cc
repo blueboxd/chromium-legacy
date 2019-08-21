@@ -60,6 +60,7 @@
 #include "media/base/media_switches.h"
 #include "media/capabilities/in_memory_video_decode_stats_db_impl.h"
 #include "media/capabilities/video_decode_stats_db_impl.h"
+#include "media/learning/impl/learning_session_impl.h"
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/cookie_store.h"
@@ -173,6 +174,7 @@ const char kServiceManagerConnection[] = "service-manager-connection";
 const char kServiceInstanceGroup[] = "service-instance-group";
 const char kStoragePartitionMapKeyName[] = "content_storage_partition_map";
 const char kVideoDecodePerfHistoryId[] = "video-decode-perf-history";
+const char kLearningSession[] = "learning-session";
 
 #if defined(OS_CHROMEOS)
 const char kMountPointsKey[] = "mount_points";
@@ -809,6 +811,24 @@ media::VideoDecodePerfHistory* BrowserContext::GetVideoDecodePerfHistory() {
   }
 
   return decode_history;
+}
+
+media::learning::LearningSession* BrowserContext::GetLearningSession() {
+  media::learning::LearningSession* learning_session =
+      static_cast<media::learning::LearningSession*>(
+          GetUserData(kLearningSession));
+
+  if (!learning_session) {
+    auto new_learning_session =
+        std::make_unique<media::learning::LearningSessionImpl>(
+            base::SequencedTaskRunnerHandle::Get());
+
+    learning_session = new_learning_session.get();
+
+    SetUserData(kLearningSession, std::move(new_learning_session));
+  }
+
+  return learning_session;
 }
 
 download::InProgressDownloadManager*

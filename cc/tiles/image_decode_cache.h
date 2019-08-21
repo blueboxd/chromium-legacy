@@ -73,6 +73,15 @@ class CC_EXPORT ImageDecodeCache {
     return ScopedTaskType::kInRaster;
   }
 
+  static devtools_instrumentation::ScopedImageDecodeTask::ImageType
+  ToScopedImageType(PaintImage::ImageType image_type) {
+    using ScopedImageType =
+        devtools_instrumentation::ScopedImageDecodeTask::ImageType;
+    if (image_type == PaintImage::ImageType::kWEBP)
+      return ScopedImageType::kWebP;
+    return ScopedImageType::kOther;
+  }
+
   virtual ~ImageDecodeCache() {}
 
   struct CC_EXPORT TaskResult {
@@ -147,7 +156,6 @@ class CC_EXPORT ImageDecodeCache {
   // Should be called periodically to record statistics about cache use and
   // performance.
   virtual void RecordStats() = 0;
-
 };
 
 }  // namespace cc

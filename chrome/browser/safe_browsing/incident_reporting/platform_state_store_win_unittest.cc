@@ -101,7 +101,7 @@ class PlatformStateStoreWinTest : public ::testing::Test {
   TestingProfile* profile_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   registry_util::RegistryOverrideManager registry_override_manager_;
   TestingProfileManager profile_manager_;
 

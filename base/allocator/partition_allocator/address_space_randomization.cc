@@ -19,11 +19,11 @@
 namespace base {
 
 void* GetRandomPageBase() {
-  uintptr_t random = static_cast<uintptr_t>(RandomValue(GetRandomContext()));
+  uintptr_t random = static_cast<uintptr_t>(RandomValue());
 
 #if defined(ARCH_CPU_64_BITS)
   random <<= 32ULL;
-  random |= static_cast<uintptr_t>(RandomValue(GetRandomContext()));
+  random |= static_cast<uintptr_t>(RandomValue());
 
 // The kASLRMask and kASLROffset constants will be suitable for the
 // OS and build configuration.

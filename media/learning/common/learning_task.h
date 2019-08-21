@@ -91,6 +91,9 @@ struct COMPONENT_EXPORT(LEARNING_COMMON) LearningTask {
   // unique |name| for the task.  This is used to identify this task in UKM.
   Id GetId() const;
 
+  // Returns a reference to an empty learning task.
+  static const LearningTask& Empty();
+
   // Unique name for this task.
   std::string name;
 

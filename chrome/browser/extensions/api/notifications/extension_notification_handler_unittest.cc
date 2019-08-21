@@ -59,7 +59,7 @@ class ExtensionNotificationHandlerTest : public testing::Test {
   ExtensionNotificationHandlerTest() {}
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(ExtensionNotificationHandlerTest, CloseHandler) {

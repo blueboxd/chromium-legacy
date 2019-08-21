@@ -98,7 +98,7 @@ class ReadingListMediatorTest
   std::unique_ptr<favicon::LargeIconServiceImpl> large_icon_service_;
 
  private:
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   DISALLOW_COPY_AND_ASSIGN(ReadingListMediatorTest);
 };
 

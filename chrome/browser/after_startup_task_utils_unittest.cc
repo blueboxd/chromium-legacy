@@ -128,7 +128,7 @@ class AfterStartupTaskTest : public testing::Test {
     loop->Quit();
   }
 
-  content::TestBrowserThreadBundle browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(AfterStartupTaskTest, IsStartupComplete) {

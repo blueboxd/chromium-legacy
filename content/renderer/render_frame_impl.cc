@@ -266,7 +266,6 @@ using blink::WebFrameSerializer;
 using blink::WebFrameSerializerClient;
 using blink::WebHistoryItem;
 using blink::WebHTTPBody;
-using blink::WebLayerTreeView;
 using blink::WebLocalFrame;
 using blink::WebMediaPlayer;
 using blink::WebMediaPlayerClient;
@@ -4065,7 +4064,7 @@ void RenderFrameImpl::SetHostZoomLevel(const GURL& url, double zoom_level) {
 
 // blink::WebLocalFrameClient implementation
 // ----------------------------------------
-const blink::BrowserInterfaceBrokerProxy*
+blink::BrowserInterfaceBrokerProxy*
 RenderFrameImpl::GetBrowserInterfaceBrokerProxy() {
   return &browser_interface_broker_proxy_;
 }
@@ -4185,15 +4184,15 @@ RenderFrameImpl::CreateWorkerFetchContext() {
           frame_->GetDocumentLoader()->GetServiceWorkerNetworkProvider());
   DCHECK(provider);
 
-  blink::mojom::RendererPreferenceWatcherPtr watcher;
-  blink::mojom::RendererPreferenceWatcherRequest watcher_request =
-      mojo::MakeRequest(&watcher);
+  mojo::PendingRemote<blink::mojom::RendererPreferenceWatcher> watcher;
+  mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
+      watcher_receiver = watcher.InitWithNewPipeAndPassReceiver();
   render_view()->RegisterRendererPreferenceWatcher(std::move(watcher));
 
   scoped_refptr<WebWorkerFetchContextImpl> worker_fetch_context =
       WebWorkerFetchContextImpl::Create(
           provider->context(), render_view_->renderer_preferences(),
-          std::move(watcher_request), GetLoaderFactoryBundle()->Clone(),
+          std::move(watcher_receiver), GetLoaderFactoryBundle()->Clone(),
           GetLoaderFactoryBundle()->CloneWithoutAppCacheFactory());
 
   worker_fetch_context->set_ancestor_frame_id(routing_id_);
@@ -4216,15 +4215,15 @@ RenderFrameImpl::CreateWorkerFetchContextForPlzDedicatedWorker(
   DCHECK(blink::features::IsPlzDedicatedWorkerEnabled());
   DCHECK(factory_client);
 
-  blink::mojom::RendererPreferenceWatcherPtr watcher;
-  blink::mojom::RendererPreferenceWatcherRequest watcher_request =
-      mojo::MakeRequest(&watcher);
+  mojo::PendingRemote<blink::mojom::RendererPreferenceWatcher> watcher;
+  mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
+      watcher_receiver = watcher.InitWithNewPipeAndPassReceiver();
   render_view()->RegisterRendererPreferenceWatcher(std::move(watcher));
 
   scoped_refptr<WebWorkerFetchContextImpl> worker_fetch_context =
       static_cast<DedicatedWorkerHostFactoryClient*>(factory_client)
           ->CreateWorkerFetchContext(render_view_->renderer_preferences(),
-                                     std::move(watcher_request));
+                                     std::move(watcher_receiver));
 
   worker_fetch_context->set_ancestor_frame_id(routing_id_);
   worker_fetch_context->set_frame_request_blocker(frame_request_blocker_);
@@ -6061,10 +6060,10 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
         base::debug::CrashKeyString* origin =
             base::debug::AllocateCrashKeyString(
                 "mismatched_origin", base::debug::CrashKeySize::Size256);
-        base::debug::ScopedCrashKeyString(url,
-                                          params->url.possibly_invalid_spec());
-        base::debug::ScopedCrashKeyString(origin,
-                                          params->origin.GetDebugString());
+        base::debug::ScopedCrashKeyString scoped_url(
+            url, params->url.possibly_invalid_spec());
+        base::debug::ScopedCrashKeyString scoped_origin(
+            origin, params->origin.GetDebugString());
         CHECK(false) << " url:" << params->url << " origin:" << params->origin;
       }
     }

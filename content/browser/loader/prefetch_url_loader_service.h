@@ -13,7 +13,6 @@
 #include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
@@ -119,11 +118,8 @@ class CONTENT_EXPORT PrefetchURLLoaderService final
                     std::unique_ptr<BindContext>>
       loader_factory_receivers_;
   // Used in the IO thread.
-  mojo::Binding<blink::mojom::RendererPreferenceWatcher>
-      preference_watcher_binding_;
-  // Created in the ctor and bound to |preference_watcher_binding_| in the
-  // IO thread.
-  blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request_;
+  mojo::Receiver<blink::mojom::RendererPreferenceWatcher>
+      preference_watcher_receiver_{this};
 
   base::RepeatingClosure prefetch_load_callback_for_testing_;
 

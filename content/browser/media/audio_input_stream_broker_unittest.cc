@@ -152,9 +152,9 @@ struct TestEnvironment {
             deleter.Get(),
             renderer_factory_client.MakePtr())) {}
 
-  void RunUntilIdle() { thread_bundle.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment.RunUntilIdle(); }
 
-  TestBrowserThreadBundle thread_bundle;
+  BrowserTaskEnvironment task_environment;
   MockDeleterCallback deleter;
   StrictMock<MockRendererAudioInputStreamFactoryClient> renderer_factory_client;
   std::unique_ptr<AudioInputStreamBroker> broker;
@@ -165,7 +165,7 @@ struct TestEnvironment {
 }  // namespace
 
 TEST(AudioInputStreamBrokerTest, StoresProcessAndFrameId) {
-  TestBrowserThreadBundle thread_bundle;
+  BrowserTaskEnvironment task_environment;
   MockDeleterCallback deleter;
   StrictMock<MockRendererAudioInputStreamFactoryClient> renderer_factory_client;
 

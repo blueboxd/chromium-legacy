@@ -43,6 +43,7 @@
 #include "content/browser/gpu/gpu_memory_buffer_manager_singleton.h"
 #include "content/browser/gpu/shader_cache_factory.h"
 #include "content/browser/service_manager/service_manager_context.h"
+#include "content/common/child_process.mojom.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/in_process_child_thread_params.h"
 #include "content/common/service_manager/child_connection.h"
@@ -1064,6 +1065,10 @@ void GpuProcessHost::ForceShutdown() {
     g_gpu_process_hosts[kind_] = nullptr;
 
   process_->ForceShutdown();
+}
+
+void GpuProcessHost::RunService(mojo::GenericPendingReceiver receiver) {
+  process_->child_process()->BindServiceInterface(std::move(receiver));
 }
 
 bool GpuProcessHost::LaunchGpuProcess() {

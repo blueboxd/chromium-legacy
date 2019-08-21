@@ -150,7 +150,7 @@ class FallbackTaskProviderTest : public testing::Test,
   std::vector<Task*> seen_tasks() { return seen_tasks_; }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<FallbackTaskProvider> task_provider_;
   std::vector<Task*> seen_tasks_;
 

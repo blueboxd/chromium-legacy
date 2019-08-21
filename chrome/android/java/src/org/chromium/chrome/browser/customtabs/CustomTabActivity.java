@@ -403,7 +403,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     }
 
     @Override
-    protected void onNewIntent(Intent intent) {
+    public void onNewIntent(Intent intent) {
         Intent originalIntent = getIntent();
         super.onNewIntent(intent);
         // Currently we can't handle arbitrary updates of intent parameters, so make sure

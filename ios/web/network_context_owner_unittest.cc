@@ -41,7 +41,7 @@ class NetworkContextOwnerTest : public PlatformTest {
   void SawError() { saw_connection_error_ = true; }
 
   bool saw_connection_error_;
-  TestWebThreadBundle test_web_thread_bundle_;
+  WebTaskEnvironment task_environment_;
   scoped_refptr<net::TestURLRequestContextGetter> context_getter_;
   network::mojom::NetworkContextPtr network_context_;
   std::unique_ptr<NetworkContextOwner> network_context_owner_;

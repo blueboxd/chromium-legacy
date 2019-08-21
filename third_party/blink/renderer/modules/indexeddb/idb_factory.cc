@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/probe/async_task_id.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/modules/indexed_db_names.h"
@@ -74,13 +75,14 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
       : promise_resolver_(promise_resolver) {
     probe::AsyncTaskScheduled(
         ExecutionContext::From(promise_resolver_->GetScriptState()),
-        indexed_db_names::kIndexedDB, this);
+        indexed_db_names::kIndexedDB, &async_task_id_);
   }
 
   ~WebIDBGetDBNamesCallbacksImpl() override {
     if (promise_resolver_) {
       probe::AsyncTaskCanceled(
-          ExecutionContext::From(promise_resolver_->GetScriptState()), this);
+          ExecutionContext::From(promise_resolver_->GetScriptState()),
+          &async_task_id_);
       promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kUnknownError,
           "An unexpected shutdown occured before the "
@@ -96,8 +98,8 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
       return;
 
     probe::AsyncTask async_task(
-        ExecutionContext::From(promise_resolver_->GetScriptState()), this,
-        "error");
+        ExecutionContext::From(promise_resolver_->GetScriptState()),
+        &async_task_id_, "error");
     promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kUnknownError,
         "The databases() promise was rejected."));
@@ -122,8 +124,8 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
     }
 
     probe::AsyncTask async_task(
-        ExecutionContext::From(promise_resolver_->GetScriptState()), this,
-        "success");
+        ExecutionContext::From(promise_resolver_->GetScriptState()),
+        &async_task_id_, "success");
     promise_resolver_->Resolve(name_and_version_list);
     promise_resolver_.Clear();
   }
@@ -184,6 +186,7 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
   void DetachRequestFromCallback() override { NOTREACHED(); }
 
  private:
+  probe::AsyncTaskId async_task_id_;
   Persistent<ScriptPromiseResolver> promise_resolver_;
 };
 
@@ -224,11 +227,23 @@ ScriptPromise IDBFactory::GetDatabaseInfo(ScriptState* script_state,
                                           ExceptionState& exception_state) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
 
+  if (!IsContextValid(ExecutionContext::From(script_state))) {
+    resolver->Reject();
+    return resolver->Promise();
+  }
+
   if (!ExecutionContext::From(script_state)
            ->GetSecurityOrigin()
            ->CanAccessDatabase()) {
     exception_state.ThrowSecurityError(
         "Access to the IndexedDB API is denied in this context.");
+    resolver->Reject();
+    return resolver->Promise();
+  }
+
+  if (!CachedAllowIndexedDB(script_state)) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kUnknownError,
+                                      kPermissionDeniedErrorMessage);
     resolver->Reject();
     return resolver->Promise();
   }

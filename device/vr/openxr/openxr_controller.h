@@ -23,8 +23,8 @@ enum class OpenXrControllerType {
 };
 
 enum class OpenXrButtonType {
-  kTrackpad = 0,
-  kTrigger = 1,
+  kTrigger = 0,
+  kTrackpad = 1,
   kGrip = 2,
   kMenu = 3,
   kMaxValue = 3,

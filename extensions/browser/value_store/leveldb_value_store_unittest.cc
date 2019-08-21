@@ -64,7 +64,7 @@ class LeveldbValueStoreUnitTest : public testing::Test {
   std::unique_ptr<LeveldbValueStore> store_;
   base::ScopedTempDir database_dir_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 // Check that we can restore a single corrupted key in the LeveldbValueStore.

@@ -341,7 +341,7 @@ class SignedExchangeHandlerTest
     while (!read_header()) {
       while (source_->awaiting_completion())
         source_->CompleteNextRead();
-      browser_thread_bundle_.RunUntilIdle();
+      task_environment_.RunUntilIdle();
     }
   }
 
@@ -400,7 +400,7 @@ class SignedExchangeHandlerTest
   }
 
   base::test::ScopedFeatureList feature_list_;
-  content::TestBrowserThreadBundle browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestBrowserClient browser_client_;
   ContentBrowserClient* original_client_;
   std::unique_ptr<net::TestURLRequestContext> url_request_context_;

@@ -13,6 +13,7 @@
 #include "cc/base/rolling_time_delta_history.h"
 #include "cc/cc_export.h"
 #include "cc/metrics/compositor_frame_reporter.h"
+#include "cc/metrics/frame_sequence_tracker.h"
 
 namespace cc {
 class RollingTimeDeltaHistory;
@@ -55,6 +56,11 @@ class CC_EXPORT CompositorFrameReportingController {
   virtual void DidNotProduceFrame();
   virtual void DidPresentCompositorFrame(uint32_t frame_token,
                                          base::TimeTicks presentation_time);
+
+  virtual void AddActiveTracker(FrameSequenceTrackerType type);
+  virtual void RemoveActiveTracker(FrameSequenceTrackerType type);
+
+  base::flat_set<FrameSequenceTrackerType> active_trackers_;
 
  protected:
   struct SubmittedCompositorFrame {

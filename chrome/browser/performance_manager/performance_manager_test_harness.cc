@@ -20,7 +20,7 @@ void PerformanceManagerTestHarness::SetUp() {
 void PerformanceManagerTestHarness::TearDown() {
   // Have the performance manager destroy itself.
   PerformanceManager::Destroy(std::move(perf_man_));
-  thread_bundle()->RunUntilIdle();
+  task_environment()->RunUntilIdle();
 
   Super::TearDown();
 }

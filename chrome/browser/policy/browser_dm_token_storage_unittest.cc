@@ -36,7 +36,7 @@ class BrowserDMTokenStorageTest : public testing::Test {
   FakeBrowserDMTokenStorage storage_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(BrowserDMTokenStorageTest, RetrieveClientId) {

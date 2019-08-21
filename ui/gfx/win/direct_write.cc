@@ -87,8 +87,10 @@ void InitializeDirectWrite() {
   base::UmaHistogramSparse("DirectWrite.Fonts.Gfx.InitializeLoopCount",
                            iteration);
   // TODO(crbug.com/956064): Move to a CHECK when the cause of the crash is
-  // fixed.
+  // fixed and remove the if statement that fallback to GDI font manager.
   DCHECK(!!direct_write_font_mgr);
+  if (!direct_write_font_mgr)
+    direct_write_font_mgr = SkFontMgr_New_GDI();
 
   // Override the default skia font manager. This must be called before any
   // use of the skia font manager is done (e.g. before any call to

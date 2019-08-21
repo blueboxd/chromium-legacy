@@ -83,7 +83,8 @@ class DataObserverTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;  // To set up BrowserThreads.
+  content::BrowserTaskEnvironment
+      task_environment_;  // To set up BrowserThreads.
 
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<MockDeltaFileService> delta_file_service_;

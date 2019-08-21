@@ -85,7 +85,7 @@ class DeviceCommandWipeUsersJobTest : public testing::Test {
   DeviceCommandWipeUsersJobTest();
   ~DeviceCommandWipeUsersJobTest() override;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::RunLoop run_loop_;
 
   ScopedTestingLocalState local_state_;

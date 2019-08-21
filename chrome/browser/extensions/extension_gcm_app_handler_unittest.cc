@@ -242,7 +242,7 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
   }
 
   ExtensionGCMAppHandlerTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD),
+      : task_environment_(content::BrowserTaskEnvironment::REAL_IO_THREAD),
         extension_service_(NULL),
         registration_result_(gcm::GCMClient::UNKNOWN_ERROR),
         unregistration_result_(gcm::GCMClient::UNKNOWN_ERROR) {}
@@ -405,7 +405,7 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<content::InProcessUtilityThreadHelper>
       in_process_utility_thread_helper_;
   std::unique_ptr<TestingProfile> profile_;

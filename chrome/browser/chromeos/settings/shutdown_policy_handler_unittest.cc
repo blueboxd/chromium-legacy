@@ -43,7 +43,7 @@ class ShutdownPolicyHandlerTest : public testing::Test,
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   ScopedTestingCrosSettings scoped_testing_cros_settings_;
   bool reboot_on_shutdown_;
   int delegate_invocations_count_;

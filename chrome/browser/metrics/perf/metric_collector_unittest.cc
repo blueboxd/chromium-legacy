@@ -21,7 +21,7 @@
 #include "third_party/metrics_proto/sampled_profile.pb.h"
 #include "third_party/protobuf/src/google/protobuf/io/coded_stream.h"
 #include "third_party/protobuf/src/google/protobuf/io/zero_copy_stream_impl_lite.h"
-#include "third_party/protobuf/src/google/protobuf/wire_format_lite_inl.h"
+#include "third_party/protobuf/src/google/protobuf/wire_format_lite.h"
 
 namespace metrics {
 
@@ -148,8 +148,7 @@ const base::TimeDelta kMaxCollectionDelay = base::TimeDelta::FromSeconds(1);
 class MetricCollectorTest : public testing::Test {
  public:
   MetricCollectorTest()
-      : test_browser_thread_bundle_(
-            base::test::TaskEnvironment::TimeSource::MOCK_TIME),
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         perf_data_proto_(GetExamplePerfDataProto()),
         perf_stat_proto_(GetExamplePerfStatProto()) {}
 
@@ -183,10 +182,10 @@ class MetricCollectorTest : public testing::Test {
   }
 
  protected:
-  // test_browser_thread_bundle_ must be the first member (or at least before
+  // task_environment_ must be the first member (or at least before
   // any member that cares about tasks) to be initialized first and destroyed
   // last.
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   std::vector<SampledProfile> cached_profile_data_;
 
@@ -215,7 +214,7 @@ TEST_F(MetricCollectorTest, EmptyProtosAreNotSaved) {
   metric_collector_->SaveSerializedPerfProto(
       std::move(sampled_profile),
       TestMetricCollector::PerfProtoType::PERF_TYPE_DATA, std::string());
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(cached_profile_data_.empty());
 }
@@ -228,7 +227,7 @@ TEST_F(MetricCollectorTest, PerfDataProto) {
       std::move(sampled_profile),
       TestMetricCollector::PerfProtoType::PERF_TYPE_DATA,
       perf_data_proto_.SerializeAsString());
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_EQ(1U, cached_profile_data_.size());
 
   const SampledProfile& profile = cached_profile_data_[0];
@@ -298,7 +297,7 @@ TEST_F(MetricCollectorTest, PerfDataProto_UnknownFieldsDiscarded) {
   metric_collector_->SaveSerializedPerfProto(
       std::move(sampled_profile),
       TestMetricCollector::PerfProtoType::PERF_TYPE_DATA, perf_data_string);
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_EQ(1U, cached_profile_data_.size());
 
@@ -354,7 +353,7 @@ TEST_F(MetricCollectorTest, PerfStatProto) {
       std::move(sampled_profile),
       TestMetricCollector::PerfProtoType::PERF_TYPE_STAT,
       perf_stat_proto_.SerializeAsString());
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_EQ(1U, cached_profile_data_.size());
 
@@ -379,7 +378,7 @@ TEST_F(MetricCollectorTest, MultipleCalls) {
       std::move(sampled_profile),
       TestMetricCollector::PerfProtoType::PERF_TYPE_DATA,
       perf_data_proto_.SerializeAsString());
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::RESTORE_SESSION);
@@ -388,7 +387,7 @@ TEST_F(MetricCollectorTest, MultipleCalls) {
       std::move(sampled_profile),
       TestMetricCollector::PerfProtoType::PERF_TYPE_STAT,
       perf_stat_proto_.SerializeAsString());
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::RESUME_FROM_SUSPEND);
@@ -398,7 +397,7 @@ TEST_F(MetricCollectorTest, MultipleCalls) {
       std::move(sampled_profile),
       TestMetricCollector::PerfProtoType::PERF_TYPE_DATA,
       perf_data_proto_.SerializeAsString());
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
@@ -406,7 +405,7 @@ TEST_F(MetricCollectorTest, MultipleCalls) {
       std::move(sampled_profile),
       TestMetricCollector::PerfProtoType::PERF_TYPE_STAT,
       perf_stat_proto_.SerializeAsString());
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_EQ(4U, cached_profile_data_.size());
 
@@ -463,7 +462,7 @@ TEST_F(MetricCollectorTest, StopTimer) {
   sampled_profile->set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
 
   metric_collector_->CollectProfile(std::move(sampled_profile));
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(metric_collector_->IsRunning());
   EXPECT_FALSE(metric_collector_->login_time().is_null());
@@ -485,7 +484,7 @@ TEST_F(MetricCollectorTest, ScheduleSuspendDoneCollection) {
   EXPECT_TRUE(metric_collector_->IsRunning());
 
   // Fast forward the time by the max collection delay.
-  test_browser_thread_bundle_.FastForwardBy(kMaxCollectionDelay);
+  task_environment_.FastForwardBy(kMaxCollectionDelay);
 
   // Check that the SuspendDone trigger produced one profile.
   ASSERT_EQ(1U, cached_profile_data_.size());
@@ -506,11 +505,11 @@ TEST_F(MetricCollectorTest, ScheduleSuspendDoneCollection) {
   // collection interval forward by kPeriodicCollectionInterval. Since we had
   // a SuspendDone collection, we should not see any new profiles during the
   // next periodic collection interval, but see one in the following interval.
-  test_browser_thread_bundle_.FastForwardBy(kPeriodicCollectionInterval -
-                                            kMaxCollectionDelay);
+  task_environment_.FastForwardBy(kPeriodicCollectionInterval -
+                                  kMaxCollectionDelay);
   EXPECT_TRUE(cached_profile_data_.empty());
 
-  test_browser_thread_bundle_.FastForwardBy(kPeriodicCollectionInterval);
+  task_environment_.FastForwardBy(kPeriodicCollectionInterval);
 
   ASSERT_EQ(1U, cached_profile_data_.size());
   const SampledProfile& profile2 = cached_profile_data_[0];
@@ -526,7 +525,7 @@ TEST_F(MetricCollectorTest, ScheduleSessionRestoreCollection) {
   EXPECT_TRUE(metric_collector_->IsRunning());
 
   // Fast forward the time by the max collection delay.
-  test_browser_thread_bundle_.FastForwardBy(kMaxCollectionDelay);
+  task_environment_.FastForwardBy(kMaxCollectionDelay);
 
   ASSERT_EQ(1U, cached_profile_data_.size());
 
@@ -546,7 +545,7 @@ TEST_F(MetricCollectorTest, ScheduleSessionRestoreCollection) {
   metric_collector_->ScheduleSessionRestoreCollection(1);
 
   // Fast forward the time by the max collection delay.
-  test_browser_thread_bundle_.FastForwardBy(kMaxCollectionDelay);
+  task_environment_.FastForwardBy(kMaxCollectionDelay);
   // This should find no new session restore profiles.
   EXPECT_TRUE(cached_profile_data_.empty());
 
@@ -554,12 +553,12 @@ TEST_F(MetricCollectorTest, ScheduleSessionRestoreCollection) {
   // collection interval forward by kPeriodicCollectionInterval. Since we had
   // a SessionRestore collection, we should not see any new profiles during the
   // current periodic collection interval, but see one in the next interval.
-  test_browser_thread_bundle_.FastForwardBy(kPeriodicCollectionInterval -
-                                            kMaxCollectionDelay * 2);
+  task_environment_.FastForwardBy(kPeriodicCollectionInterval -
+                                  kMaxCollectionDelay * 2);
   EXPECT_TRUE(cached_profile_data_.empty());
 
   // Advance clock another collection interval. We should find a profile.
-  test_browser_thread_bundle_.FastForwardBy(kPeriodicCollectionInterval);
+  task_environment_.FastForwardBy(kPeriodicCollectionInterval);
   ASSERT_EQ(1U, cached_profile_data_.size());
   const SampledProfile& profile2 = cached_profile_data_[0];
   EXPECT_EQ(SampledProfile::PERIODIC_COLLECTION, profile2.trigger_event());
@@ -567,7 +566,7 @@ TEST_F(MetricCollectorTest, ScheduleSessionRestoreCollection) {
   // Advance the clock another periodic collection interval. This run should
   // include a new periodic collection, but no session restore.
   cached_profile_data_.clear();
-  test_browser_thread_bundle_.FastForwardBy(kPeriodicCollectionInterval);
+  task_environment_.FastForwardBy(kPeriodicCollectionInterval);
   ASSERT_EQ(1U, cached_profile_data_.size());
   const SampledProfile& profile3 = cached_profile_data_[0];
   EXPECT_EQ(SampledProfile::PERIODIC_COLLECTION, profile3.trigger_event());
@@ -579,7 +578,7 @@ TEST_F(MetricCollectorTest, ScheduleIntervalCollection) {
 
   // Advance the clock by a periodic collection interval. We must have a
   // periodic collection profile.
-  test_browser_thread_bundle_.FastForwardBy(kPeriodicCollectionInterval);
+  task_environment_.FastForwardBy(kPeriodicCollectionInterval);
 
   ASSERT_EQ(1U, cached_profile_data_.size());
 

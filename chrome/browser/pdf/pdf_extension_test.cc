@@ -1677,7 +1677,7 @@ class PDFExtensionClipboardTest : public PDFExtensionTest {
   // Checks the Linux selection clipboard by polling.
   void CheckSelectionClipboard(const std::string& expected) {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-    CheckClipboard(ui::ClipboardType::kSelection, expected);
+    CheckClipboard(ui::ClipboardBuffer::kSelection, expected);
 #endif
   }
 
@@ -1687,7 +1687,7 @@ class PDFExtensionClipboardTest : public PDFExtensionTest {
   void SendCopyCommandAndCheckCopyPasteClipboard(const std::string& expected) {
     content::RunAllPendingInMessageLoop();
     GetWebContentsForInputRouting()->Copy();
-    CheckClipboard(ui::ClipboardType::kCopyPaste, expected);
+    CheckClipboard(ui::ClipboardBuffer::kCopyPaste, expected);
   }
 
   content::WebContents* GetWebContentsForInputRouting() {
@@ -1697,26 +1697,26 @@ class PDFExtensionClipboardTest : public PDFExtensionTest {
   }
 
  private:
-  // Waits and polls the clipboard of a given |clipboard_type| until its
+  // Waits and polls the clipboard of a given |clipboard_buffer| until its
   // contents reaches the length of |expected|. Then checks and see if the
   // clipboard contents matches |expected|.
   // TODO(thestig): Change this to avoid polling after https://crbug.com/755826
   // has been fixed.
-  void CheckClipboard(ui::ClipboardType clipboard_type,
+  void CheckClipboard(ui::ClipboardBuffer clipboard_buffer,
                       const std::string& expected) {
     auto* clipboard = ui::Clipboard::GetForCurrentThread();
     std::string clipboard_data;
-    const std::string& last_data = last_clipboard_data_[clipboard_type];
+    const std::string& last_data = last_clipboard_data_[clipboard_buffer];
     if (last_data.size() == expected.size()) {
       DCHECK_EQ(last_data, expected);
-      clipboard->ReadAsciiText(clipboard_type, &clipboard_data);
+      clipboard->ReadAsciiText(clipboard_buffer, &clipboard_data);
       EXPECT_EQ(expected, clipboard_data);
       return;
     }
 
     const bool expect_increase = last_data.size() < expected.size();
     while (true) {
-      clipboard->ReadAsciiText(clipboard_type, &clipboard_data);
+      clipboard->ReadAsciiText(clipboard_buffer, &clipboard_data);
       if (expect_increase) {
         if (clipboard_data.size() >= expected.size())
           break;
@@ -1729,10 +1729,10 @@ class PDFExtensionClipboardTest : public PDFExtensionTest {
     }
     EXPECT_EQ(expected, clipboard_data);
 
-    last_clipboard_data_[clipboard_type] = clipboard_data;
+    last_clipboard_data_[clipboard_buffer] = clipboard_data;
   }
 
-  std::map<ui::ClipboardType, std::string> last_clipboard_data_;
+  std::map<ui::ClipboardBuffer, std::string> last_clipboard_data_;
   WebContents* guest_contents_;
 };
 

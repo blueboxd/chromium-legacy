@@ -819,18 +819,18 @@
 
       Bağımsız ayarlar JSON özelliklerinde belirtilebilir:
 
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" /> olarak ayarlanırsa, kullanıcılar bir <ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımı güncellemesini yüklemek için powerwash sürecini başlatabilirler.
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" /> olarak ayarlanırsa kullanıcılar bir <ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımı güncellemesini yüklemek için powerwash sürecini başlatabilirler.
 
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" /> olarak ayarlanırsa, kullanıcılar cihaz genelindeki durumu (kurumsal kayıt dahil) koruyan ancak kullanıcı verilerini kaybeden <ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımı güncelleme sürecini başlatabilirler. Bu güncelleme süreci, sürüm 68'den itibaren kullanılabilmektedir.
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" /> olarak ayarlanırsa kullanıcılar cihaz genelindeki durumu (kurumsal kayıt dahil) koruyan ancak kullanıcı verilerini kaybeden <ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımı güncelleme sürecini başlatabilirler. Bu güncelleme süreci, sürüm 68'den itibaren kullanılabilmektedir.
 
       <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: Otomatik <ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımı güncellemelerinin, güvenlik açığı olan <ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımı için nasıl zorunlu kılınacağını denetler. Tüm süreçlerde yerel cihaz durumu korunur.
         1 olarak ayarlanır veya ayarlanmazsa TPM donanım yazılımı güncellemeleri zorunlu kılınmaz.
-        2 olarak ayarlanırsa <ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımı, kullanıcı güncellemeyi onaylamasının ardından, bir sonraki yeniden başlatma işlemi sırasında güncellenir.
-        3 olarak ayarlanırsa, <ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımı bir sonraki yeniden başlatma sırasında güncellenir.
-        4 olarak ayarlanırsa, <ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımı kayıt işleminden sonra, kullanıcı oturum açmadan önce güncellenir.
+        2 olarak ayarlanırsa <ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımı, kullanıcının güncellemeyi onaylamasının ardından, bir sonraki yeniden başlatma işlemi sırasında güncellenir.
+        3 olarak ayarlanırsa <ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımı bir sonraki yeniden başlatma sırasında güncellenir.
+        4 olarak ayarlanırsa <ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımı kayıt işleminden sonra, kullanıcı oturum açmadan önce güncellenir.
         Bu seçenek sürüm 75'ten itibaren kullanılabilir.
 
-      Politika ayarlanmazsa, <ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımı güncelleme işlevi kullanılamaz.</translation>
+      Politika ayarlanmazsa <ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımı güncelleme işlevi kullanılamaz.</translation>
 <translation id="2471748297300970300">Devre dışı bırakılırsa, Chrome tehlikeli olabilecek komut satırı işaretleriyle başlatıldığında güvenlik uyarılarının gösterilmesini engeller.
 
           Etkinleştirilir veya ayarlanmadan bırakılırsa, Chrome'u başlatmak için komut satırı işaretleri kullanıldığında güvenlik uyarıları gösterilir.
@@ -1650,15 +1650,6 @@ Bu politika yanlış seçeneğine ayarlanırsa kiosk oturum bilgileri rapor edil
 
           Ayarlanmazsa veya Yanlış değerine ayarlanırsa kullanıcılar Google Drive'a dosya aktarabilirler.</translation>
 <translation id="3915395663995367577">Proxy .pac dosyası için URL</translation>
-<translation id="3920892052017026701">Pil şarjı için özel şarj başlatma değerini yüzde olarak ayarlayın.
-
-          Pil şarjı için özel şarj başlatma değerine ulaşıldığında pil şarj olmaya başlar.
-
-          DeviceBatteryChargeCustomStartCharging değeri DeviceBatteryChargeCustomStopCharging değerinden küçük olmalıdır.
-
-          Bu politika sadece DeviceBatteryChargeMode ayarı özel seçeneğine ayarlanmışsa kullanılır.
-
-          Bu politika yapılandırılmaz veya ayarlanmamış olarak bırakılırsa, standart pil şarj modu uygulanır.</translation>
 <translation id="3925377537407648234">Ekran çözünürlüğünü ve ölçek faktörünü ayarlama</translation>
 <translation id="3939893074578116847">Çevrimiçi durumu izlemek, yönetim sunucusunun cihazın çevrimdışı olup olmadığını
       belirlemesini sağlamak için ağ paketlerini yönetim sunucusuna gönderin.
@@ -3642,15 +3633,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
       Bu politikanın değeri 0 olursa varsayılan önbellek boyutu kullanılır, ancak kullanıcı bu değeri değiştiremez.
 
       Bu politika ayarlanmazsa varsayılan boyut kullanılır ve kullanıcı --disk-cache-size bayrağıyla bu değeri geçersiz kılabilir.</translation>
-<translation id="759389052790680884">Pil şarjı için özel şarj durdurma değerini yüzde olarak ayarlayın.
-
-          Özel şarj durma değerine ulaştığında pilin şarj edilmesi durur.
-
-          DeviceBatteryChargeCustomStartCharging değeri DeviceBatteryChargeCustomStopCharging değerinden küçük olmalıdır.
-
-          Bu politika sadece DeviceBatteryChargeMode ayarı özel seçeneğine ayarlanmışsa kullanılır.
-
-          Bu politika yapılandırılmaz veya ayarlanmamış olarak bırakılırsa, standart pil şarj modu uygulanır.</translation>
 <translation id="759957074386651883">Güvenli Tarama ayarları</translation>
 <translation id="7604169113182304895">Android uygulamaları, kendi tercihleriyle bu listeye uymaya karar verebilir. Bu uygulamaları listeye uymaya zorlayamazsınız.</translation>
 <translation id="7612157962821894603"><ph name="PRODUCT_NAME" /> başlatılırken uygulanan sistem genelindeki işaretler</translation>
@@ -3751,9 +3733,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="7750991880413385988">Yeni Sekme Sayfasını aç</translation>
 <translation id="7754704193130578113">İndirmeden önce her dosyanın nereye kaydedileceğini sor</translation>
 <translation id="7761446981238915769">Giriş ekranında, yüklü uygulamaların listesini yapılandır</translation>
-<translation id="7763479091692861127"> İşletim sistemi güncellemeleri için kullanılmasına izin verilen bağlantı türleri. İşletim sistemi güncellemeleri, boyutları nedeniyle muhtemelen bağlantı üzerine ağır yük getirir ve ek maliyete neden olabilir. Bu nedenle, aralarında WiMax, Bluetooth ve Hücresel bağlantıların da yer aldığı, pahalı kabul edilen bağlantı türleri için şu anda varsayılan olarak etkin değildir.
-
-      Tanınan bağlantı türü tanıtıcıları şunlardır: "ethernet", "wifi", "wimax", "bluetooth" ve "cellular".</translation>
 <translation id="7763614521440615342">Yeni Sekme sayfasında içerik önerileri göster</translation>
 <translation id="7765879851993224640">Smart Lock oturum açmanın kullanılmasına izin ver</translation>
 <translation id="7772346342637974431">Pil gücüyle çalışırken, kullanıcı ne kadar süre giriş yapmazsa bir uyarı iletişim kutusu görüntüleneceğini belirtir.
@@ -4055,8 +4034,8 @@ Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır. Ancak
 <translation id="8402079500086185021">PDF dosyalarını her zaman harici olarak aç</translation>
 <translation id="8405691014775178834">Bu kullanıcının, Crostini kapsayıcılarına root erişimine izin verilir.
 
-      Bu politika true (doğru) değerine ayarlanırsa veya ayarlanmadan bırakılırsa, kullanıcıya Crostini kapsayıcılarına root erişimi izni verilir.
-      Politika false (yanlış) değerine ayarlanırsa, kullanıcıya hem mevcut hem de yeni Crostini kapsayıcılara root erişimi izni verilmez.</translation>
+      Bu politika true (doğru) değerine ayarlanırsa veya ayarlanmadan bırakılırsa kullanıcıya Crostini kapsayıcılarına root erişimi izni verilir.
+      Politika false (yanlış) değerine ayarlanırsa kullanıcıya hem mevcut hem de yeni Crostini kapsayıcılara root erişimi izni verilmez.</translation>
 <translation id="8417305981081876834">Kilit ekranı PIN'inin maksimum uzunluğunu ayarla</translation>
 <translation id="841977920223099909">Şifre koruma uyarısı tetikleyicisi</translation>
 <translation id="8424255554404582727">Her yeniden başlatmada tekrar uygulanacak varsayılan ekran döndürmesini ayarla</translation>

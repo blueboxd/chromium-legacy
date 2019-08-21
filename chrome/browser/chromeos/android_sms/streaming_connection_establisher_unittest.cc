@@ -22,11 +22,11 @@ namespace android_sms {
 class StreamingConnectionEstablisherTest : public testing::Test {
  protected:
   StreamingConnectionEstablisherTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
   ~StreamingConnectionEstablisherTest() override = default;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   DISALLOW_COPY_AND_ASSIGN(StreamingConnectionEstablisherTest);
 };
 

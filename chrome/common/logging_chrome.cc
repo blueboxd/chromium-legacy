@@ -301,7 +301,7 @@ void InitChromeLogging(const base::CommandLine& command_line,
 
   LoggingSettings settings;
   settings.logging_dest = logging_dest;
-  settings.log_file = log_path.value().c_str();
+  settings.log_file_path = log_path.value().c_str();
   settings.lock_log = log_locking_state;
   settings.delete_old = delete_old_log_file;
   bool success = InitLogging(settings);

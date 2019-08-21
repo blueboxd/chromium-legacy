@@ -147,7 +147,7 @@ bool TouchSelectionControllerClientChildFrame::IsCommandIdEnabled(
     case IDS_APP_PASTE: {
       base::string16 result;
       ui::Clipboard::GetForCurrentThread()->ReadText(
-          ui::ClipboardType::kCopyPaste, &result);
+          ui::ClipboardBuffer::kCopyPaste, &result);
       return editable && !result.empty();
     }
     default:

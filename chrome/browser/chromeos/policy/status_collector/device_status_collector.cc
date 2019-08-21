@@ -1236,9 +1236,6 @@ void DeviceStatusCollector::SampleProbeData(
   if (result.value().error() != runtime_probe::RUNTIME_PROBE_ERROR_NOT_SET)
     return;
 
-  if (result.value().battery_size() == 0)
-    return;
-
   for (const auto& battery : result.value().battery()) {
     if (battery.name() != kGenericDeviceName)
       continue;

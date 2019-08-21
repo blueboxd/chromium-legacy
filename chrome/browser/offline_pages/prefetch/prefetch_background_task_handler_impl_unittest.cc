@@ -36,7 +36,7 @@ class PrefetchBackgroundTaskHandlerImplTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   std::unique_ptr<PrefetchBackgroundTaskHandlerImpl> task_handler_;

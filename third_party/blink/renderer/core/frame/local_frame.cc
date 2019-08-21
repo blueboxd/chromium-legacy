@@ -1201,8 +1201,7 @@ LocalFrame::GetDocumentInterfaceBroker() {
   return *Client()->GetDocumentInterfaceBroker();
 }
 
-const BrowserInterfaceBrokerProxy* LocalFrame::GetBrowserInterfaceBrokerProxy()
-    const {
+BrowserInterfaceBrokerProxy* LocalFrame::GetBrowserInterfaceBrokerProxy() {
   DCHECK(Client());
   return Client()->GetBrowserInterfaceBrokerProxy();
 }

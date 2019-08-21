@@ -83,6 +83,7 @@ class FakeTabController : public TabController {
   bool ShouldPaintTab(const Tab* tab, float scale, SkPath* clip) override {
     return true;
   }
+  int GetBackgroundOffset() const override { return 0; }
   bool ShouldPaintAsActiveFrame() const override { return true; }
   int GetStrokeThickness() const override { return 0; }
   bool CanPaintThrobberToLayer() const override {

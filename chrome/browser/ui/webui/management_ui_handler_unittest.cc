@@ -119,7 +119,7 @@ class ManagementUIHandlerTests : public testing::Test {
 
  protected:
   TestManagementUIHandler handler_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   policy::MockPolicyService policy_service_;
   policy::PolicyMap empty_policy_map_;
   base::string16 device_domain_;

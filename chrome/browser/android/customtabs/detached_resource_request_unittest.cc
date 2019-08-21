@@ -193,7 +193,7 @@ void WatchPathAndReportHeaders(const std::string& path,
 class DetachedResourceRequestTest : public ::testing::Test {
  public:
   DetachedResourceRequestTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
+      : task_environment_(content::BrowserTaskEnvironment::REAL_IO_THREAD) {}
   ~DetachedResourceRequestTest() override = default;
 
   void SetUp() override {
@@ -288,7 +288,7 @@ class DetachedResourceRequestTest : public ::testing::Test {
 
  private:
   std::unique_ptr<TestingProfile> profile_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<content::TestHostResolver> host_resolver_;
   std::unique_ptr<net::EmbeddedTestServer> test_server_;
 };

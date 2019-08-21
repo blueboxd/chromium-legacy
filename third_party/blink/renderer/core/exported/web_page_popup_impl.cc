@@ -313,12 +313,10 @@ void WebPagePopupImpl::Initialize(WebViewImpl* web_view,
   SetFocus(true);
 }
 
-void WebPagePopupImpl::SetLayerTreeView(WebLayerTreeView* layer_tree_view,
-                                        cc::AnimationHost* animation_host) {
+void WebPagePopupImpl::SetAnimationHost(cc::AnimationHost* animation_host) {
   // The WebWidgetClient is given |this| as its WebWidget but it is set up
-  // before Initialize() is called on |this|. So we store the |layer_tree_view|
+  // before Initialize() is called on |this|. So we store the |animation_host_|
   // here, but finish setting it up in Initialize().
-  layer_tree_view_ = layer_tree_view;
   animation_host_ = animation_host;
 }
 
@@ -507,7 +505,6 @@ void WebPagePopupImpl::Close() {
   }
 
   is_accelerated_compositing_active_ = false;
-  layer_tree_view_ = nullptr;
   animation_host_ = nullptr;
   web_page_popup_client_ = nullptr;
 

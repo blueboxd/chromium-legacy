@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.base.Callback;
@@ -86,7 +87,7 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
         if (FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
             mTabGridDialogCoordinator = new TabGridDialogCoordinator(context, tabModelSelector,
                     tabContentManager, tabCreatorManager, container, this, mMediator,
-                    this::getTabGridCardPosition);
+                    this::getTabGridDialogAnimationParams);
 
             mUndoGroupSnackbarController =
                     new UndoGroupSnackbarController(context, tabModelSelector, snackbarManageable);
@@ -227,8 +228,12 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
         return mTabListCoordinator.resetWithListOfTabs(tabs, quickMode, mruMode);
     }
 
-    private Rect getTabGridCardPosition(int index) {
-        return mTabListCoordinator.getContainerView().getRectOfCurrentTabGridCard(index);
+    private TabGridDialogParent.AnimationParams getTabGridDialogAnimationParams(int index) {
+        View itemView = mTabListCoordinator.getContainerView()
+                                .findViewHolderForAdapterPosition(index)
+                                .itemView;
+        Rect rect = mTabListCoordinator.getContainerView().getRectOfCurrentTabGridCard(index);
+        return new TabGridDialogParent.AnimationParams(rect, itemView);
     }
 
     @Override

@@ -20,47 +20,6 @@ TestNetworkServiceClient::TestNetworkServiceClient(
 
 TestNetworkServiceClient::~TestNetworkServiceClient() {}
 
-void TestNetworkServiceClient::OnAuthRequired(
-    const base::Optional<base::UnguessableToken>& window_id,
-    uint32_t process_id,
-    uint32_t routing_id,
-    uint32_t request_id,
-    const GURL& url,
-    bool first_auth_attempt,
-    const net::AuthChallengeInfo& auth_info,
-    const base::Optional<ResourceResponseHead>& head,
-    mojom::AuthChallengeResponderPtr auth_challenge_responder) {
-  NOTREACHED();
-}
-
-void TestNetworkServiceClient::OnCertificateRequested(
-    const base::Optional<base::UnguessableToken>& window_id,
-    uint32_t process_id,
-    uint32_t routing_id,
-    uint32_t request_id,
-    const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
-    mojom::ClientCertificateResponderPtr client_cert_responder) {
-  NOTREACHED();
-}
-
-void TestNetworkServiceClient::OnSSLCertificateError(
-    uint32_t process_id,
-    uint32_t routing_id,
-    const GURL& url,
-    int net_error,
-    const net::SSLInfo& ssl_info,
-    bool fatal,
-    OnSSLCertificateErrorCallback response) {
-  NOTREACHED();
-}
-
-#if defined(OS_CHROMEOS)
-void TestNetworkServiceClient::OnTrustAnchorUsed(
-    const std::string& username_hash) {
-  NOTREACHED();
-}
-#endif
-
 void TestNetworkServiceClient::OnFileUploadRequested(
     uint32_t process_id,
     bool async,

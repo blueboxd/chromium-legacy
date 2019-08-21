@@ -88,7 +88,7 @@ class SigninBrowserStateInfoUpdaterTest : public PlatformTest {
   }
 
   ScopedTempDirWrapper scoped_state_path_;
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
 
   IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
   signin::IdentityTestEnvironment identity_test_env_;

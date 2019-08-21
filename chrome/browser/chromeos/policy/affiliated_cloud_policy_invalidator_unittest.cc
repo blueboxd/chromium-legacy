@@ -94,7 +94,7 @@ AffiliatedCloudPolicyInvalidatorTest::AffiliatedCloudPolicyInvalidatorTest() {
 // correctly and the highest handled invalidation version is preserved when
 // switching invalidation services.
 TEST_P(AffiliatedCloudPolicyInvalidatorTest, CreateUseDestroy) {
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
 
   // Set up a CloudPolicyCore backed by a simple CloudPolicyStore that does no
   // signature verification and stores policy in memory.

@@ -54,7 +54,7 @@ class WelcomeToChromeViewControllerTest : public PlatformTest {
     PlatformTest::TearDown();
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   IOSChromeScopedTestingLocalState local_state_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   WelcomeToChromeViewController* controller_;

@@ -399,7 +399,7 @@ class ExtensionAppShimHandlerTest : public testing::Test {
     handler_->OnShimSetHidden(host, hidden);
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   MockDelegate* delegate_;
   std::unique_ptr<TestingExtensionAppShimHandler> handler_;
   base::FilePath profile_path_a_;

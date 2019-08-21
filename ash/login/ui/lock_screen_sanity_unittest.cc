@@ -410,7 +410,7 @@ TEST_F(LockScreenSanityTest, RemoveUser) {
 
 TEST_F(LockScreenSanityTest, LockScreenKillsPreventsClipboardPaste) {
   {
-    ui::ScopedClipboardWriter writer(ui::ClipboardType::kCopyPaste);
+    ui::ScopedClipboardWriter writer(ui::ClipboardBuffer::kCopyPaste);
     writer.WriteText(base::UTF8ToUTF16("password"));
   }
 

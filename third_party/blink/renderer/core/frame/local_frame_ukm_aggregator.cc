@@ -24,7 +24,7 @@ LocalFrameUkmAggregator::ScopedUkmHierarchicalTimer::ScopedUkmHierarchicalTimer(
       start_time_(clock_->NowTicks()) {}
 
 LocalFrameUkmAggregator::ScopedUkmHierarchicalTimer::ScopedUkmHierarchicalTimer(
-    ScopedUkmHierarchicalTimer&& other)
+    ScopedUkmHierarchicalTimer&& other) noexcept
     : aggregator_(other.aggregator_),
       metric_index_(other.metric_index_),
       clock_(other.clock_),

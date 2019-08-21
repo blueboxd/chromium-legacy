@@ -61,7 +61,7 @@ class FailureDecodeRequestSender
 class ArcWallpaperServiceTest : public testing::Test {
  public:
   ArcWallpaperServiceTest()
-      : thread_bundle_(std::make_unique<content::TestBrowserThreadBundle>()),
+      : task_environment_(std::make_unique<content::BrowserTaskEnvironment>()),
         user_manager_(new chromeos::FakeChromeUserManager()),
         user_manager_enabler_(base::WrapUnique(user_manager_)) {}
   ~ArcWallpaperServiceTest() override = default;
@@ -119,7 +119,7 @@ class ArcWallpaperServiceTest : public testing::Test {
   TestWallpaperController test_wallpaper_controller_;
 
  private:
-  std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle_;
+  std::unique_ptr<content::BrowserTaskEnvironment> task_environment_;
   chromeos::FakeChromeUserManager* const user_manager_ = nullptr;
   user_manager::ScopedUserManager user_manager_enabler_;
   arc::ArcServiceManager arc_service_manager_;

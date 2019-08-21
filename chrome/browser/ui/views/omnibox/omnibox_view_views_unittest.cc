@@ -597,11 +597,11 @@ TEST_F(OmniboxViewViewsTest, BlurNeverExitsKeywordMode) {
 
 TEST_F(OmniboxViewViewsTest, PasteAndGoToUrlOrSearchCommand) {
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  ui::ClipboardType clipboard_type = ui::ClipboardType::kCopyPaste;
+  ui::ClipboardBuffer clipboard_buffer = ui::ClipboardBuffer::kCopyPaste;
   command_updater()->UpdateCommandEnabled(IDC_OPEN_CURRENT_URL, true);
 
   // Test command is disabled for an empty clipboard.
-  clipboard->Clear(clipboard_type);
+  clipboard->Clear(clipboard_buffer);
   EXPECT_FALSE(omnibox_view()->IsCommandIdEnabled(IDC_PASTE_AND_GO));
 
   // Test input that's a valid URL.
@@ -611,7 +611,7 @@ TEST_F(OmniboxViewViewsTest, PasteAndGoToUrlOrSearchCommand) {
 #else
       base::ASCIIToUTF16("Pa&ste and go to https://test.com");
 #endif
-  ui::ScopedClipboardWriter(clipboard_type)
+  ui::ScopedClipboardWriter(clipboard_buffer)
       .WriteText(base::ASCIIToUTF16("https://test.com/"));
   base::string16 returned_text =
       omnibox_view()->GetLabelForCommandId(IDC_PASTE_AND_GO);
@@ -625,7 +625,7 @@ TEST_F(OmniboxViewViewsTest, PasteAndGoToUrlOrSearchCommand) {
 #else
       base::ASCIIToUTF16("Pa&ste and go to test.com");
 #endif
-  ui::ScopedClipboardWriter(clipboard_type)
+  ui::ScopedClipboardWriter(clipboard_buffer)
       .WriteText(base::ASCIIToUTF16("test.com"));
   returned_text = omnibox_view()->GetLabelForCommandId(IDC_PASTE_AND_GO);
   EXPECT_TRUE(omnibox_view()->IsCommandIdEnabled(IDC_PASTE_AND_GO));
@@ -640,7 +640,7 @@ TEST_F(OmniboxViewViewsTest, PasteAndGoToUrlOrSearchCommand) {
       base::WideToUTF16(
           L"Pa&ste and search for \x201Cthis is a test sentence\x201D");
 #endif
-  ui::ScopedClipboardWriter(clipboard_type)
+  ui::ScopedClipboardWriter(clipboard_buffer)
       .WriteText(base::ASCIIToUTF16("this is a test sentence"));
   returned_text = omnibox_view()->GetLabelForCommandId(IDC_PASTE_AND_GO);
   EXPECT_TRUE(omnibox_view()->IsCommandIdEnabled(IDC_PASTE_AND_GO));
@@ -711,9 +711,9 @@ TEST_P(OmniboxViewViewsClipboardTest, ClipboardCopyOrCutURL) {
   ASSERT_TRUE(omnibox_view()->IsSelectAll());
 
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  ui::ClipboardType clipboard_type = ui::ClipboardType::kCopyPaste;
+  ui::ClipboardBuffer clipboard_buffer = ui::ClipboardBuffer::kCopyPaste;
 
-  clipboard->Clear(clipboard_type);
+  clipboard->Clear(clipboard_buffer);
   ui::TextEditCommand clipboard_command = GetParam();
   textfield_test_api()->ExecuteTextEditCommand(clipboard_command);
 
@@ -724,20 +724,20 @@ TEST_P(OmniboxViewViewsClipboardTest, ClipboardCopyOrCutURL) {
 
   // Make sure both HTML and Plain Text formats are available.
   EXPECT_TRUE(clipboard->IsFormatAvailable(
-      ui::ClipboardFormatType::GetPlainTextType(), clipboard_type));
+      ui::ClipboardFormatType::GetPlainTextType(), clipboard_buffer));
   EXPECT_TRUE(clipboard->IsFormatAvailable(
-      ui::ClipboardFormatType::GetHtmlType(), clipboard_type));
+      ui::ClipboardFormatType::GetHtmlType(), clipboard_buffer));
 
   // Windows clipboard only supports text URLs.
   // Mac clipboard not reporting URL format available for some reason.
   // crbug.com/751031
 #if defined(OS_LINUX)
   EXPECT_TRUE(clipboard->IsFormatAvailable(
-      ui::ClipboardFormatType::GetUrlType(), clipboard_type));
+      ui::ClipboardFormatType::GetUrlType(), clipboard_buffer));
 #endif
 
   std::string read_from_clipboard;
-  clipboard->ReadAsciiText(clipboard_type, &read_from_clipboard);
+  clipboard->ReadAsciiText(clipboard_buffer, &read_from_clipboard);
   EXPECT_EQ("https://test.com/", read_from_clipboard);
 }
 
@@ -747,9 +747,9 @@ TEST_P(OmniboxViewViewsClipboardTest, ClipboardCopyOrCutUserText) {
   ASSERT_TRUE(omnibox_view()->IsSelectAll());
 
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  ui::ClipboardType clipboard_type = ui::ClipboardType::kCopyPaste;
+  ui::ClipboardBuffer clipboard_buffer = ui::ClipboardBuffer::kCopyPaste;
 
-  clipboard->Clear(clipboard_type);
+  clipboard->Clear(clipboard_buffer);
   ui::TextEditCommand clipboard_command = GetParam();
   textfield_test_api()->ExecuteTextEditCommand(clipboard_command);
 
@@ -759,12 +759,12 @@ TEST_P(OmniboxViewViewsClipboardTest, ClipboardCopyOrCutUserText) {
   // Make sure HTML format isn't written. See
   // BookmarkNodeData::WriteToClipboard() for details.
   EXPECT_TRUE(clipboard->IsFormatAvailable(
-      ui::ClipboardFormatType::GetPlainTextType(), clipboard_type));
+      ui::ClipboardFormatType::GetPlainTextType(), clipboard_buffer));
   EXPECT_FALSE(clipboard->IsFormatAvailable(
-      ui::ClipboardFormatType::GetHtmlType(), clipboard_type));
+      ui::ClipboardFormatType::GetHtmlType(), clipboard_buffer));
 
   std::string read_from_clipboard;
-  clipboard->ReadAsciiText(clipboard_type, &read_from_clipboard);
+  clipboard->ReadAsciiText(clipboard_buffer, &read_from_clipboard);
   EXPECT_EQ("user text", read_from_clipboard);
 }
 

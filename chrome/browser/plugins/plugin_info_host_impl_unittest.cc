@@ -176,7 +176,7 @@ class PluginInfoHostImplTest : public ::testing::Test {
 
  private:
   base::ShadowingAtExitManager at_exit_manager_;  // Destroys the PluginService.
-  content::TestBrowserThreadBundle test_thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   TestingProfile profile_;
   PluginInfoHostImpl::Context context_;
   HostContentSettingsMap* host_content_settings_map_;

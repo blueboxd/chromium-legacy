@@ -94,7 +94,7 @@ class WebCacheManagerTest : public testing::Test {
 
  private:
   WebCacheManager manager_;
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 // static

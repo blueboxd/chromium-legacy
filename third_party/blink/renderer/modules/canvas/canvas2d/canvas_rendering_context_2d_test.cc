@@ -301,8 +301,10 @@ class FakeCanvasResourceProvider : public CanvasResourceProvider {
                              AccelerationHint hint)
       : CanvasResourceProvider(CanvasResourceProvider::kBitmap,
                                size,
+                               /*msaa_sample_count=*/0,
                                kLow_SkFilterQuality,
                                color_params,
+                               /*is_origin_top_left=*/false,
                                nullptr,
                                nullptr),
         is_accelerated_(hint != kPreferNoAcceleration) {}

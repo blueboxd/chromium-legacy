@@ -142,7 +142,7 @@ class DemoSessionTest : public testing::Test {
   }
 
   FakeCrOSComponentManager* cros_component_manager_ = nullptr;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<session_manager::SessionManager> session_manager_;
   std::unique_ptr<WallpaperControllerClient> wallpaper_controller_client_;
   TestWallpaperController test_wallpaper_controller_;

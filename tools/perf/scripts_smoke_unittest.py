@@ -151,7 +151,8 @@ class ScriptsSmokeTest(unittest.TestCase):
 
   # Android: crbug.com/932301
   # ChromeOS: crbug.com/754913
-  @decorators.Disabled('chromeos', 'android')
+  # Linux: crbug.com/996003
+  @decorators.Disabled('chromeos', 'android', 'linux')
   def testRunPerformanceTestsTelemetrySharded_end2end(self):
     options = options_for_unittests.GetCopy()
     browser_type = options.browser_type

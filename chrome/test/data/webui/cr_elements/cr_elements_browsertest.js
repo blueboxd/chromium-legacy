@@ -669,3 +669,34 @@ TEST_F('CrElementsViewManagerTest', 'VisibilityTest', function() {
 TEST_F('CrElementsViewManagerTest', 'EventFiringTest', function() {
   runMochaTest(this.suiteName, cr_view_manager_test.TestNames.EventFiring);
 });
+
+GEN('#if defined(OS_CHROMEOS)');
+/**
+ * @constructor
+ * @extends {CrElementsBrowserTest}
+ */
+function CrElementsLottieTest() {}
+
+CrElementsLottieTest.prototype = {
+  __proto__: CrElementsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://resources/cr_elements/chromeos/cr_lottie/' +
+      'cr_lottie.html',
+
+  /** @override */
+  commandLineSwitches: [{
+    switchName: 'enable-pixel-output-in-tests',
+  }],
+
+  /** @override */
+  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    '../test_util.js',
+    'cr_lottie_tests.js',
+  ]),
+};
+
+TEST_F('CrElementsLottieTest', 'All', function() {
+  mocha.run();
+});
+GEN('#endif');

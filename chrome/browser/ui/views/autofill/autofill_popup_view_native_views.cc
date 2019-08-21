@@ -861,6 +861,19 @@ void AutofillPopupViewNativeViews::GetAccessibleNodeData(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_POPUP_ACCESSIBLE_NODE_DATA));
 }
 
+void AutofillPopupViewNativeViews::VisibilityChanged(View* starting_from,
+                                                     bool is_visible) {
+  // Fire menu end event. The menu start event is delayed until the user
+  // navigates into the menu, otherwise some screen readers will ignore
+  // any focus events outside of the menu, including a focus event on
+  // the form control itself.
+  if (!is_visible) {
+    if (is_ax_menu_start_event_fired_)
+      NotifyAccessibilityEvent(ax::mojom::Event::kMenuEnd, true);
+    is_ax_menu_start_event_fired_ = false;
+  }
+}
+
 void AutofillPopupViewNativeViews::OnThemeChanged() {
   SetBackground(views::CreateSolidBackground(GetBackgroundColor()));
   // |body_container_| and |footer_container_| will be null if there is no body
@@ -896,6 +909,17 @@ void AutofillPopupViewNativeViews::OnSelectedRowChanged(
 
   if (current_row_selection)
     rows_[*current_row_selection]->SetSelected(true);
+
+  if (!is_ax_menu_start_event_fired_) {
+    // By firing these and the matching kMenuEnd events, we are telling screen
+    // readers that the focus is only changing temporarily, and the screen
+    // reader will restore the focus back to the appropriate textfield when the
+    // menu closes. Wait until item is selected before firing, otherwise if it's
+    // fired when the menu is first visible, then the focus on the form control
+    // is not read.
+    NotifyAccessibilityEvent(ax::mojom::Event::kMenuStart, true);
+    is_ax_menu_start_event_fired_ = true;
+  }
 }
 
 void AutofillPopupViewNativeViews::OnSuggestionsChanged() {

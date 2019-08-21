@@ -30,9 +30,9 @@ namespace {
 
 struct Env {
   Env()
-      : thread_bundle((base::CommandLine::Init(0, nullptr),
-                       TestTimeouts::Initialize(),
-                       base::test::TaskEnvironment::MainThreadType::IO)) {
+      : task_environment((base::CommandLine::Init(0, nullptr),
+                          TestTimeouts::Initialize(),
+                          base::test::TaskEnvironment::MainThreadType::IO)) {
     logging::SetMinLogLevel(logging::LOG_FATAL);
     mojo::core::Init();
     test_content_client = std::make_unique<TestContentClient>();
@@ -52,10 +52,10 @@ struct Env {
                                   appcache_service, base::FilePath(),
                                   /*browser_context=*/nullptr,
                                   /*special_storage_policy=*/nullptr));
-    thread_bundle.RunUntilIdle();
+    task_environment.RunUntilIdle();
   }
 
-  TestBrowserThreadBundle thread_bundle;
+  BrowserTaskEnvironment task_environment;
   scoped_refptr<ChromeAppCacheService> appcache_service;
   std::unique_ptr<TestContentClient> test_content_client;
   std::unique_ptr<TestContentBrowserClient> test_content_browser_client;
@@ -258,7 +258,7 @@ DEFINE_BINARY_PROTO_FUZZER(const fuzzing::proto::Session& session) {
         break;
       }
       case fuzzing::proto::Command::kRunUntilIdle: {
-        SingletonEnv().thread_bundle.RunUntilIdle();
+        SingletonEnv().task_environment.RunUntilIdle();
         break;
       }
       case fuzzing::proto::Command::COMMAND_NOT_SET: {
@@ -270,7 +270,7 @@ DEFINE_BINARY_PROTO_FUZZER(const fuzzing::proto::Session& session) {
   host.reset();
   // TODO(nedwilliamson): Investigate removing this or reinitializing
   // the appcache service as a fuzzer command.
-  SingletonEnv().thread_bundle.RunUntilIdle();
+  SingletonEnv().task_environment.RunUntilIdle();
 }
 
 }  // namespace content

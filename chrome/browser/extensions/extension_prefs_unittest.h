@@ -46,7 +46,7 @@ class ExtensionPrefsTest : public testing::Test {
   ExtensionPrefs* prefs() { return prefs_.prefs(); }
   ChromeAppSorting* app_sorting() { return prefs_.app_sorting(); }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestExtensionPrefs prefs_;
 
  private:

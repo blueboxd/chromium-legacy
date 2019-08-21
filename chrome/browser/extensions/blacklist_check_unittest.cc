@@ -39,7 +39,7 @@ class BlacklistCheckTest : public testing::Test {
   PreloadCheckRunner runner_;
 
  private:
-  content::TestBrowserThreadBundle browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestExtensionPrefs test_prefs_;
   Blacklist blacklist_;
   TestBlacklist test_blacklist_;

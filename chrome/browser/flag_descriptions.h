@@ -772,9 +772,6 @@ extern const char kNewUsbBackendDescription[];
 extern const char kNewblueName[];
 extern const char kNewblueDescription[];
 
-extern const char kNewTabLoadingAnimation[];
-extern const char kNewTabLoadingAnimationDescription[];
-
 extern const char kNewTabstripAnimationName[];
 extern const char kNewTabstripAnimationDescription[];
 
@@ -1548,6 +1545,9 @@ extern const char kSiteIsolationForPasswordSitesDescription[];
 extern const char kStrictSiteIsolationName[];
 extern const char kStrictSiteIsolationDescription[];
 
+extern const char kTabSwitcherLongpressMenuName[];
+extern const char kTabSwitcherLongpressMenuDescription[];
+
 extern const char kTranslateAndroidManualTriggerName[];
 extern const char kTranslateAndroidManualTriggerDescription[];
 
@@ -1705,9 +1705,6 @@ extern const char kD3D11VideoDecoderDescription[];
 
 extern const char kDisablePostscriptPrinting[];
 extern const char kDisablePostscriptPrintingDescription[];
-
-extern const char kEnableAppcontainerName[];
-extern const char kEnableAppcontainerDescription[];
 
 extern const char kEnableAuraTooltipsOnWindowsName[];
 extern const char kEnableAuraTooltipsOnWindowsDescription[];

@@ -74,7 +74,7 @@ class DownloadsHandlerTest : public testing::Test {
   DownloadsHandler* handler() { return &handler_; }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   content::TestWebUI test_web_ui_;
   TestingProfile profile_;
 

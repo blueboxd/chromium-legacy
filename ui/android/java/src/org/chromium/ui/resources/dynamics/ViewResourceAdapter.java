@@ -8,10 +8,13 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Rect;
+import android.os.SystemClock;
 import android.view.View;
 import android.view.View.OnLayoutChangeListener;
+import android.view.ViewGroup;
 
 import org.chromium.base.TraceEvent;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.ui.resources.Resource;
 import org.chromium.ui.resources.ResourceFactory;
 import org.chromium.ui.resources.statics.NinePatchData;
@@ -20,7 +23,7 @@ import org.chromium.ui.resources.statics.NinePatchData;
  * An adapter that exposes a {@link View} as a {@link DynamicResource}. In order to properly use
  * this adapter {@link ViewResourceAdapter#invalidate(Rect)} must be called when parts of the
  * {@link View} are invalidated.  For {@link ViewGroup}s the easiest way to do this is to override
- * {@link View#invalidateChildInParent(int[], Rect)}.
+ * {@link ViewGroup#invalidateChildInParent(int[], Rect)}.
  */
 public class ViewResourceAdapter extends DynamicResource implements OnLayoutChangeListener {
     private final View mView;
@@ -29,6 +32,7 @@ public class ViewResourceAdapter extends DynamicResource implements OnLayoutChan
     private Bitmap mBitmap;
     private Rect mViewSize = new Rect();
     protected float mScale = 1;
+    private long mLastGetBitmapTimestamp;
 
     /**
      * Builds a {@link ViewResourceAdapter} instance around {@code view}.
@@ -50,6 +54,11 @@ public class ViewResourceAdapter extends DynamicResource implements OnLayoutChan
     public Bitmap getBitmap() {
         super.getBitmap();
 
+        if (mLastGetBitmapTimestamp > 0) {
+            RecordHistogram.recordLongTimesHistogram("ViewResourceAdapter.GetBitmapInterval",
+                    SystemClock.elapsedRealtime() - mLastGetBitmapTimestamp);
+        }
+
         TraceEvent.begin("ViewResourceAdapter:getBitmap");
         if (validateBitmap()) {
             Canvas canvas = new Canvas(mBitmap);
@@ -67,6 +76,8 @@ public class ViewResourceAdapter extends DynamicResource implements OnLayoutChan
 
         mDirtyRect.setEmpty();
         TraceEvent.end("ViewResourceAdapter:getBitmap");
+
+        mLastGetBitmapTimestamp = SystemClock.elapsedRealtime();
         return mBitmap;
     }
 

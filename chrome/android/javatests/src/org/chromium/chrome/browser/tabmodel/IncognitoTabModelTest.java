@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
+import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
@@ -16,10 +17,14 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
@@ -69,5 +74,20 @@ public class IncognitoTabModelTest {
         mTabModel.addObserver(new CloseAllDuringAddTabTabModelObserver());
         createTabOnUiThread();
         Assert.assertEquals(1, mTabModel.getCount());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"OffTheRecord"})
+    public void testRecreateInIncognito() {
+        createTabOnUiThread();
+        // Need to wait for contentsState to be initialized for the tab to restore correctly.
+        CriteriaHelper.pollUiThread(() -> {
+            return TabState.from(mActivityTestRule.getActivity().getActivityTab()).contentsState
+                    != null;
+        });
+        ChromeTabbedActivity newActivity =
+                ApplicationTestUtils.recreateActivity(mActivityTestRule.getActivity());
+        CriteriaHelper.pollUiThread(() -> newActivity.getTabModelSelector().isIncognitoSelected());
     }
 }

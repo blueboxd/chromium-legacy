@@ -48,7 +48,7 @@ class UsbPolicyAllowedDevicesTestBase
  protected:
   Profile* profile() { return &profile_; }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   device::FakeUsbDeviceManager device_manager_;
 

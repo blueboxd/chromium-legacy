@@ -99,7 +99,8 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       EmbeddedWorkerInstanceClientImpl* owner,
       blink::mojom::EmbeddedWorkerStartTimingPtr start_timing,
-      blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request,
+      mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
+          preference_watcher_receiver,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_loaders,
       mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
           subresource_loader_updater,
@@ -211,7 +212,8 @@ class CONTENT_EXPORT ServiceWorkerContextClient
 
   blink::mojom::RendererPreferencesPtr renderer_preferences_;
   // Passed on creation of ServiceWorkerFetchContext.
-  blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request_;
+  mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
+      preference_watcher_receiver_;
 
   scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner_;
   scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;

@@ -33,12 +33,14 @@ class ResizeObserver;
 class ScriptPromiseResolver;
 class V8XRFrameRequestCallback;
 class XR;
+class XRAnchorSet;
 class XRCanvasInputProvider;
-class XRSpace;
+class XRPose;
 class XRRay;
 class XRReferenceSpace;
 class XRRenderState;
 class XRRenderStateInit;
+class XRSpace;
 class XRViewData;
 class XRWorldInformation;
 class XRWorldTrackingState;
@@ -85,6 +87,7 @@ class XRSession final
   XRRenderState* renderState() const { return render_state_; }
   XRWorldTrackingState* worldTrackingState() { return world_tracking_state_; }
   XRSpace* viewerSpace() const;
+  XRAnchorSet* trackedAnchors() const { return nullptr; }
 
   bool immersive() const;
 
@@ -102,6 +105,10 @@ class XRSession final
       ExceptionState& exception_state);
   ScriptPromise requestReferenceSpace(ScriptState* script_state,
                                       const String& type);
+
+  ScriptPromise createAnchor(ScriptState* script_state,
+                             XRPose* pose,
+                             XRSpace* space);
 
   int requestAnimationFrame(V8XRFrameRequestCallback* callback);
   void cancelAnimationFrame(int id);

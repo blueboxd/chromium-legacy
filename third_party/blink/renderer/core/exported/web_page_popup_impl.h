@@ -47,7 +47,6 @@ namespace blink {
 class Page;
 class PagePopupChromeClient;
 class PagePopupClient;
-class WebLayerTreeView;
 class WebViewImpl;
 class LocalDOMWindow;
 
@@ -108,7 +107,7 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
 
  private:
   // WebWidget implementation.
-  void SetLayerTreeView(WebLayerTreeView*, cc::AnimationHost*) override;
+  void SetAnimationHost(cc::AnimationHost*) override;
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
   void BeginFrame(base::TimeTicks last_frame_time,
                   bool record_main_frame_metrics) override;
@@ -158,7 +157,6 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   PagePopupClient* popup_client_;
   bool closing_ = false;
 
-  WebLayerTreeView* layer_tree_view_ = nullptr;
   cc::AnimationHost* animation_host_ = nullptr;
   scoped_refptr<cc::Layer> root_layer_;
   base::TimeTicks raf_aligned_input_start_time_;

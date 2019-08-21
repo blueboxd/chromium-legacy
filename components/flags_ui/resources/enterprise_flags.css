@@ -70,6 +70,7 @@ body {
   flex-shrink: 0;
   height: 55px;
   position: relative;
+  white-space: nowrap;
 }
 
 #header h1 {
@@ -88,19 +89,31 @@ body {
 }
 
 #header .flex-container {
+  justify-content: space-between;
   max-width: 100%;
   width: 100%;
 }
 
 #header .center-content {
-  max-width: 680px;
-  min-width: 680px;
+ flex: 3;
+ max-width: 680px;
+}
+
+@media only screen and (max-width: 512px) {
+  #enterprise-flags-title {
+    max-width: 0;
+    overflow: hidden;
+  }
 }
 
 @media (prefers-color-scheme: dark) {
   #header {
     background-color: rgba(255, 255, 255, .04);
   }
+}
+
+#experiment-reset-all {
+  margin-inline-start: 10px;
 }
 
 .search-container {

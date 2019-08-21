@@ -16,7 +16,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::RunLoop;
-using content::TestBrowserThreadBundle;
+using content::BrowserTaskEnvironment;
 
 namespace chrome_browser_net {
 
@@ -97,7 +97,7 @@ class DnsProbeRunnerTest : public testing::Test {
     return network_context_.get();
   }
 
-  TestBrowserThreadBundle bundle_;
+  BrowserTaskEnvironment bundle_;
   std::unique_ptr<network::mojom::NetworkContext> network_context_;
   std::unique_ptr<DnsProbeRunner> runner_;
 };

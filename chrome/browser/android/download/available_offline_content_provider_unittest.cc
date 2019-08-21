@@ -144,7 +144,7 @@ class AvailableOfflineContentTest : public testing::Test {
     return std::make_tuple(list_visible_by_prefs, std::move(suggestions));
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_ =
       std::make_unique<base::test::ScopedFeatureList>();

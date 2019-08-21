@@ -324,11 +324,6 @@ extern const base::Feature kNativeNotifications;
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kNewNetErrorPageUI;
 #endif
 
-#if !defined(OS_ANDROID)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kNewTabLoadingAnimation;
-#endif
-
 #if defined(OS_POSIX)
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kNtlmV2Enabled;
 #endif
@@ -443,6 +438,9 @@ extern const char kTreatUnsafeDownloadsAsActiveParamName[];
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kHeavyAdIntervention;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kHeavyAdBlocklist;
 
 #if defined(OS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES)

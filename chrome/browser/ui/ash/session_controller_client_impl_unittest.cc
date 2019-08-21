@@ -185,7 +185,7 @@ class SessionControllerClientImplTest : public testing::Test {
     return profile;
   }
 
-  content::TestBrowserThreadBundle threads_;
+  content::BrowserTaskEnvironment threads_;
   content::TestServiceManagerContext context_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   std::unique_ptr<AssistantClient> assistant_client_;

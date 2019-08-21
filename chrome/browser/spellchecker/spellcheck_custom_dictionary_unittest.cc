@@ -68,7 +68,7 @@ static std::unique_ptr<KeyedService> BuildSpellcheckService(
 class SpellcheckCustomDictionaryTest : public testing::Test {
  public:
   SpellcheckCustomDictionaryTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
 
  protected:
   void SetUp() override {
@@ -115,7 +115,7 @@ class SpellcheckCustomDictionaryTest : public testing::Test {
     return dictionary.Apply(change);
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   TestingProfile profile_;
 };

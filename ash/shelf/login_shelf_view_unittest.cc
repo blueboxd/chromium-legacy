@@ -19,6 +19,7 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shutdown_controller_impl.h"
@@ -520,6 +521,13 @@ TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterShutdownButtonStatusChange) {
                                  LoginShelfView::kBrowseAsGuest,
                                  LoginShelfView::kAddUser}));
   EXPECT_TRUE(IsButtonEnabled(LoginShelfView::kShutdown));
+}
+
+TEST_F(LoginShelfViewTest, ShouldNotShowNavigationWidget) {
+  gfx::NativeWindow window = login_shelf_view_->GetWidget()->GetNativeWindow();
+  ShelfWidget* shelf_widget = Shelf::ForWindow(window)->shelf_widget();
+  EXPECT_FALSE(shelf_widget->navigation_widget()->IsVisible())
+      << "The navigation widget should not appear in the login shelf.";
 }
 
 TEST_F(LoginShelfViewTest, ParentAccessButtonVisibility) {

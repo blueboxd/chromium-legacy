@@ -83,7 +83,7 @@ class CRWSessionControllerTest : public PlatformTest {
   }
 
   base::test::ScopedFeatureList feature_list_;
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   web::TestBrowserState browser_state_;
   web::FakeNavigationManagerDelegate navigation_manager_delegate_;
   CRWSessionController* session_controller_;

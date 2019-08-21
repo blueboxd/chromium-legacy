@@ -140,7 +140,7 @@ class MockSandboxedUnpackerClient : public SandboxedUnpackerClient {
 class SandboxedUnpackerTest : public ExtensionsTest {
  public:
   SandboxedUnpackerTest()
-      : ExtensionsTest(content::TestBrowserThreadBundle::IO_MAINLOOP) {
+      : ExtensionsTest(content::BrowserTaskEnvironment::IO_MAINLOOP) {
     test_connector_factory_.set_ignore_quit_requests(true);
   }
 

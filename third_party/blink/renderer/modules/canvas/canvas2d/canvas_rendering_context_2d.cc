@@ -177,8 +177,8 @@ bool CanvasRenderingContext2D::IsAccelerated() const {
 
 bool CanvasRenderingContext2D::IsOriginTopLeft() const {
   // Accelerated 2D contexts have the origin of coordinates on the bottom left,
-  // except if they are single buffered (needed for front buffer rendering).
-  return !IsAccelerated() || canvas()->ResourceProvider()->IsSingleBuffered();
+  // except if they are used for low latency mode (front buffer rendering).
+  return !IsAccelerated() || canvas()->LowLatencyEnabled();
 }
 
 bool CanvasRenderingContext2D::IsComposited() const {

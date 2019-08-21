@@ -24,7 +24,7 @@ class ServiceWorkerContextCoreTest : public testing::Test,
                                      public ServiceWorkerContextCoreObserver {
  public:
   ServiceWorkerContextCoreTest()
-      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   void SetUp() override {
     helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
@@ -124,7 +124,7 @@ class ServiceWorkerContextCoreTest : public testing::Test,
   }
 
  private:
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   GURL scope_for_wait_for_activated_;
   base::OnceClosure quit_closure_for_wait_for_activated_;

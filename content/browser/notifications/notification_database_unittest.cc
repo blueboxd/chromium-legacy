@@ -43,7 +43,7 @@ const struct {
 class NotificationDatabaseTest : public ::testing::Test {
  public:
   NotificationDatabaseTest()
-      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {}
 
  protected:
   // Creates a new NotificationDatabase instance in memory.
@@ -117,7 +117,7 @@ class NotificationDatabaseTest : public ::testing::Test {
 
   NotificationDatabase::UkmCallback callback() { return callback_; }
 
-  TestBrowserThreadBundle thread_bundle_;  // Must be first member.
+  BrowserTaskEnvironment task_environment_;  // Must be first member.
 
   NotificationDatabase::UkmCallback callback_;
 };

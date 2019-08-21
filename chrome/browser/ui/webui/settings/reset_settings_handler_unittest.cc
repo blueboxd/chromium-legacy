@@ -81,7 +81,7 @@ class ResetSettingsHandlerTest : public testing::Test {
 
  private:
   // The order here matters.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   content::TestWebUI web_ui_;
   std::unique_ptr<TestingResetSettingsHandler> handler_;

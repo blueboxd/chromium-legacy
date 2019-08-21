@@ -19,6 +19,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwContents;
+import org.chromium.android_webview.JsReplyProxy;
 import org.chromium.android_webview.WebMessageListener;
 import org.chromium.android_webview.test.TestAwContentsClient.OnReceivedTitleHelper;
 import org.chromium.base.test.util.Feature;
@@ -46,6 +47,8 @@ public class JsJavaInteractionTest {
             RESOURCE_PATH + "/post_message_with_ports.html";
     private static final String POST_MESSAGE_REPEAT_HTML =
             RESOURCE_PATH + "/post_message_repeat.html";
+    private static final String POST_MESSAGE_REPLY_HTML =
+            RESOURCE_PATH + "/post_message_receives_reply.html";
 
     private static final String HELLO = "Hello";
     private static final String NEW_TITLE = "new_title";
@@ -68,23 +71,23 @@ public class JsJavaInteractionTest {
             public String mMessage;
             public Uri mSourceOrigin;
             public boolean mIsMainFrame;
-            public MessagePort mReplyPort;
+            public JsReplyProxy mReplyProxy;
             public MessagePort[] mPorts;
 
             public Data(String message, Uri sourceOrigin, boolean isMainFrame,
-                    MessagePort replyPort, MessagePort[] ports) {
+                    JsReplyProxy replyProxy, MessagePort[] ports) {
                 mMessage = message;
                 mSourceOrigin = sourceOrigin;
                 mIsMainFrame = isMainFrame;
-                mReplyPort = replyPort;
+                mReplyProxy = replyProxy;
                 mPorts = ports;
             }
         }
 
         @Override
         public void onPostMessage(String message, Uri sourceOrigin, boolean isMainFrame,
-                MessagePort replyPort, MessagePort[] ports) {
-            mQueue.add(new Data(message, sourceOrigin, isMainFrame, replyPort, ports));
+                JsReplyProxy replyProxy, MessagePort[] ports) {
+            mQueue.add(new Data(message, sourceOrigin, isMainFrame, replyProxy, ports));
         }
 
         public Data waitForOnPostMessage() throws Exception {
@@ -515,6 +518,145 @@ public class JsJavaInteractionTest {
         Assert.assertFalse(isJsObjectInjectedWhenLoadingUrl(""));
     }
 
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    public void testJsReplyProxyWorks() throws Throwable {
+        setWebMessageListenerOnUiThread(mAwContents, mListener, new String[] {"*"});
+
+        final String url = loadUrlFromPath(POST_MESSAGE_REPLY_HTML);
+
+        TestWebMessageListener.Data data = mListener.waitForOnPostMessage();
+
+        // JavaScript code in the page will change the title to NEW_TITLE if postMessage to proxy
+        // succeed.
+        final OnReceivedTitleHelper onReceivedTitleHelper =
+                mContentsClient.getOnReceivedTitleHelper();
+        final int titleCallCount = onReceivedTitleHelper.getCallCount();
+        data.mReplyProxy.postMessage(NEW_TITLE);
+        onReceivedTitleHelper.waitForCallback(titleCallCount);
+
+        Assert.assertEquals(NEW_TITLE, onReceivedTitleHelper.getTitle());
+
+        Assert.assertTrue(mListener.hasNoMoreOnPostMessage());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
+    public void testJsReplyProxyDropsMessageIfJsObjectIsGone() throws Throwable {
+        setWebMessageListenerOnUiThread(mAwContents, mListener, new String[] {"*"});
+
+        final String url = loadUrlFromPath(POST_MESSAGE_REPLY_HTML);
+
+        TestWebMessageListener.Data data = mListener.waitForOnPostMessage();
+
+        JsReplyProxy proxy = data.mReplyProxy;
+
+        // Load the same url again.
+        loadUrlFromPath(POST_MESSAGE_REPLY_HTML);
+        TestWebMessageListener.Data data2 = mListener.waitForOnPostMessage();
+
+        // Use the previous JsReplyProxy to send message. It should drop the message.
+        proxy.postMessage(NEW_TITLE);
+
+        // Call evaluateJavascript to make sure the previous postMessage() call is reached to
+        // renderer if it should, since these messages are in sequence.
+        Assert.assertTrue(hasJavaScriptObject(
+                JS_OBJECT_NAME, mActivityTestRule, mAwContents, mContentsClient));
+
+        // Title shouldn't change.
+        Assert.assertNotEquals(NEW_TITLE, mActivityTestRule.getTitleOnUiThread(mAwContents));
+
+        Assert.assertTrue(mListener.hasNoMoreOnPostMessage());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
+    public void testJsAddAndRemoveEventListener() throws Throwable {
+        setWebMessageListenerOnUiThread(mAwContents, mListener, new String[] {"*"});
+        loadUrlFromPath(POST_MESSAGE_SIMPLE_HTML);
+
+        JsReplyProxy proxy = mListener.waitForOnPostMessage().mReplyProxy;
+
+        final String listener1 = "function (event) {"
+                + "  if (window.listenerResult1) {"
+                + "    window.listenerResult1 += event.data;"
+                + "  } else {"
+                + "    window.listenerResult1 = event.data;"
+                + "  }"
+                + "}";
+
+        final String listener2 = "function (event) {"
+                + "  if (window.listenerResult2) {"
+                + "    window.listenerResult2 += event.data;"
+                + "  } else {"
+                + "    window.listenerResult2 = event.data;"
+                + "  }"
+                + "}";
+
+        addEventListener(listener1, "listener1", JS_OBJECT_NAME, mActivityTestRule, mAwContents,
+                mContentsClient);
+        addEventListener(listener2, "listener2", JS_OBJECT_NAME, mActivityTestRule, mAwContents,
+                mContentsClient);
+
+        // Post message to test both listeners receive message.
+        final String message = "testListener";
+        proxy.postMessage(message);
+
+        Assert.assertEquals(message,
+                getJsObjectValue(
+                        "window.listenerResult1", mActivityTestRule, mAwContents, mContentsClient));
+        Assert.assertEquals(message,
+                getJsObjectValue(
+                        "window.listenerResult2", mActivityTestRule, mAwContents, mContentsClient));
+
+        removeEventListener(
+                "listener2", JS_OBJECT_NAME, mActivityTestRule, mAwContents, mContentsClient);
+
+        // Post message again to test if remove works.
+        proxy.postMessage(message);
+
+        // listener 1 should add message again.
+        Assert.assertEquals(message + message,
+                getJsObjectValue(
+                        "window.listenerResult1", mActivityTestRule, mAwContents, mContentsClient));
+        // listener 2 result should remain the same.
+        Assert.assertEquals(message,
+                getJsObjectValue(
+                        "window.listenerResult2", mActivityTestRule, mAwContents, mContentsClient));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    public void testJsObjectRemoveOnMessage() throws Throwable {
+        setWebMessageListenerOnUiThread(mAwContents, mListener, new String[] {"*"});
+
+        final String url = loadUrlFromPath(POST_MESSAGE_REPLY_HTML);
+
+        TestWebMessageListener.Data data = mListener.waitForOnPostMessage();
+
+        // JavaScript code in the page will change the title to NEW_TITLE if postMessage to proxy
+        // succeed.
+        final OnReceivedTitleHelper onReceivedTitleHelper =
+                mContentsClient.getOnReceivedTitleHelper();
+        final int titleCallCount = onReceivedTitleHelper.getCallCount();
+        data.mReplyProxy.postMessage(NEW_TITLE);
+        onReceivedTitleHelper.waitForCallback(titleCallCount);
+
+        Assert.assertEquals(NEW_TITLE, onReceivedTitleHelper.getTitle());
+
+        mActivityTestRule.executeJavaScriptAndWaitForResult(
+                mAwContents, mContentsClient, JS_OBJECT_NAME + ".onmessage = undefined;");
+        Assert.assertEquals("null",
+                mActivityTestRule.executeJavaScriptAndWaitForResult(
+                        mAwContents, mContentsClient, JS_OBJECT_NAME + ".onmessage"));
+
+        Assert.assertTrue(mListener.hasNoMoreOnPostMessage());
+    }
+
     private boolean isJsObjectInjectedWhenLoadingUrl(final String baseUrl) throws Throwable {
         mActivityTestRule.loadDataWithBaseUrlSync(mAwContents,
                 mContentsClient.getOnPageFinishedHelper(), DATA_HTML, "text/html", false, baseUrl,
@@ -555,6 +697,28 @@ public class JsJavaInteractionTest {
         final String result = rule.executeJavaScriptAndWaitForResult(
                 awContents, contentsClient, "typeof " + jsObjectName + " !== 'undefined'");
         return result.equals("true");
+    }
+
+    private static void addEventListener(final String func, final String funcName,
+            String jsObjectName, final AwActivityTestRule rule, final AwContents awContents,
+            final TestAwContentsClient contentsClient) throws Throwable {
+        String code = "let " + funcName + " = " + func + ";";
+        code += jsObjectName + ".addEventListener('message', " + funcName + ");";
+        rule.executeJavaScriptAndWaitForResult(awContents, contentsClient, code);
+    }
+
+    private static void removeEventListener(final String funcName, final String jsObjectName,
+            final AwActivityTestRule rule, final AwContents awContents,
+            final TestAwContentsClient contentsClient) throws Throwable {
+        String code = jsObjectName + ".removeEventListener('message', " + funcName + ")";
+        rule.executeJavaScriptAndWaitForResult(awContents, contentsClient, code);
+    }
+
+    private static String getJsObjectValue(final String jsObjectName, final AwActivityTestRule rule,
+            final AwContents awContents, final TestAwContentsClient contentsClient)
+            throws Throwable {
+        return rule.maybeStripDoubleQuotes(
+                rule.executeJavaScriptAndWaitForResult(awContents, contentsClient, jsObjectName));
     }
 
     private static String parseOrigin(String url) {

@@ -68,7 +68,7 @@ class MockObserver : public MediaSinkServiceBase::Observer {
 class CastMediaSinkServiceImplTest : public ::testing::Test {
  public:
   CastMediaSinkServiceImplTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         mock_time_task_runner_(new base::TestMockTimeTaskRunner()),
         mock_cast_socket_service_(
             new cast_channel::MockCastSocketService(mock_time_task_runner_)),
@@ -121,7 +121,7 @@ class CastMediaSinkServiceImplTest : public ::testing::Test {
 
   static std::vector<DiscoveryNetworkInfo> fake_network_info_;
 
-  const content::TestBrowserThreadBundle thread_bundle_;
+  const content::BrowserTaskEnvironment task_environment_;
   scoped_refptr<base::TestMockTimeTaskRunner> mock_time_task_runner_;
   std::unique_ptr<DiscoveryNetworkMonitor> discovery_network_monitor_ =
       DiscoveryNetworkMonitor::CreateInstanceForTest(&FakeGetNetworkInfo);

@@ -71,6 +71,7 @@ class MockClientSessionControl : public ClientSessionControl {
   MOCK_METHOD1(DisconnectSession, void(protocol::ErrorCode error));
   MOCK_METHOD2(OnLocalPointerMoved,
                void(const webrtc::DesktopVector&, ui::EventType));
+  MOCK_METHOD1(OnLocalKeyPressed, void(uint32_t));
   MOCK_METHOD1(SetDisableInputs, void(bool));
   MOCK_METHOD0(ResetVideoPipeline, void());
   MOCK_METHOD1(OnDesktopDisplayChanged,

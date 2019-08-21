@@ -84,7 +84,7 @@ class DemoResourcesTest : public testing::Test {
   }
 
   FakeCrOSComponentManager* cros_component_manager_ = nullptr;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
  private:
   BrowserProcessPlatformPartTestApi browser_process_platform_part_test_api_;

@@ -103,7 +103,7 @@ class SpellcheckServiceUnitTest : public testing::TestWithParam<TestCase> {
   struct : public base::SupportsUserData {
   } context_;
   TestingPrefServiceSimple prefs_;
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(SpellcheckServiceUnitTest);
 };

@@ -15,7 +15,6 @@
 #include "components/gcm_driver/crypto/gcm_decryption_result.h"
 #include "components/gcm_driver/crypto/gcm_encryption_result.h"
 #include "components/gcm_driver/gcm_app_handler.h"
-#include "components/gcm_driver/web_push_metrics.h"
 
 namespace gcm {
 
@@ -334,7 +333,7 @@ void GCMDriver::SendWebPushMessage(const std::string& app_id,
                                    const std::string& fcm_token,
                                    crypto::ECPrivateKey* vapid_key,
                                    WebPushMessage message,
-                                   SendWebPushMessageCallback callback) {
+                                   WebPushCallback callback) {
   std::string payload_copy = message.payload;
   encryption_provider_.EncryptMessage(
       app_id, authorized_entity, p256dh, auth_secret, payload_copy,
@@ -346,7 +345,7 @@ void GCMDriver::SendWebPushMessage(const std::string& app_id,
 void GCMDriver::OnMessageEncrypted(const std::string& fcm_token,
                                    crypto::ECPrivateKey* vapid_key,
                                    WebPushMessage message,
-                                   SendWebPushMessageCallback callback,
+                                   WebPushCallback callback,
                                    GCMEncryptionResult result,
                                    std::string payload) {
   UMA_HISTOGRAM_ENUMERATION("GCM.Crypto.EncryptMessageResult", result,
@@ -355,15 +354,15 @@ void GCMDriver::OnMessageEncrypted(const std::string& fcm_token,
   switch (result) {
     case GCMEncryptionResult::ENCRYPTED_DRAFT_08: {
       message.payload = std::move(payload);
-      web_push_sender_.SendMessage(fcm_token, vapid_key, message,
+      web_push_sender_.SendMessage(fcm_token, vapid_key, std::move(message),
                                    std::move(callback));
       return;
     }
     case GCMEncryptionResult::NO_KEYS:
     case GCMEncryptionResult::INVALID_SHARED_SECRET:
     case GCMEncryptionResult::ENCRYPTION_FAILED: {
-      LogSendWebPushMessageResult(SendWebPushMessageResult::kEncryptionFailed);
-      std::move(callback).Run(base::nullopt);
+      InvokeWebPushCallback(std::move(callback),
+                            SendWebPushMessageResult::kEncryptionFailed);
       return;
     }
     case GCMEncryptionResult::ENUM_SIZE:

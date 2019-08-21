@@ -160,7 +160,7 @@ class RenderThreadImplBrowserTest : public testing::Test {
     SetRendererClientForTesting(content_renderer_client_.get());
 
     browser_threads_.reset(
-        new TestBrowserThreadBundle(TestBrowserThreadBundle::REAL_IO_THREAD));
+        new BrowserTaskEnvironment(BrowserTaskEnvironment::REAL_IO_THREAD));
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
         base::CreateSingleThreadTaskRunner({BrowserThread::IO});
 
@@ -251,7 +251,7 @@ class RenderThreadImplBrowserTest : public testing::Test {
   TestContentClientInitializer content_client_initializer_;
   std::unique_ptr<ContentRendererClient> content_renderer_client_;
 
-  std::unique_ptr<TestBrowserThreadBundle> browser_threads_;
+  std::unique_ptr<BrowserTaskEnvironment> browser_threads_;
   std::unique_ptr<TestServiceManagerContext> shell_context_;
   std::unique_ptr<ChildConnection> child_connection_;
   std::unique_ptr<IPC::ChannelProxy> channel_;

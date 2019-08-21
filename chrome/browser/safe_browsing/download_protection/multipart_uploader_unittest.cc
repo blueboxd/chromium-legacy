@@ -21,10 +21,10 @@ using ::testing::Invoke;
 class MultipartUploadRequestTest : public testing::Test {
  public:
   MultipartUploadRequestTest()
-      : thread_bundle_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 class MockMultipartUploadRequest : public MultipartUploadRequest {
@@ -72,7 +72,7 @@ TEST_F(MultipartUploadRequestTest, RetriesCorrectly) {
                                    std::make_unique<std::string>("response"));
       }));
   mock_request.Start();
-  thread_bundle_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
 }
 
 }  // namespace safe_browsing

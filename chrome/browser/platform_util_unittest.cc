@@ -139,7 +139,7 @@ class PlatformUtilTestBase : public testing::Test {
   void SetUpPlatformFixture(const base::FilePath&) {}
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 #endif

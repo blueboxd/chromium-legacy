@@ -86,7 +86,7 @@ class MockMediaDevicesListener : public blink::mojom::MediaDevicesListener {
 class MediaDevicesDispatcherHostTest : public testing::TestWithParam<GURL> {
  public:
   MediaDevicesDispatcherHostTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         browser_context_(new TestBrowserContext()),
         origin_(url::Origin::Create(GetParam())) {
     // Make sure we use fake devices to avoid long delays.
@@ -399,7 +399,7 @@ class MediaDevicesDispatcherHostTest : public testing::TestWithParam<GURL> {
   // MediaStreamManager expects to be destroyed after the IO thread has been
   // uninitialized.
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<MediaDevicesDispatcherHost> host_;
 
   std::unique_ptr<media::AudioManager> audio_manager_;

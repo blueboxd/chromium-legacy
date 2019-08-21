@@ -160,7 +160,7 @@ class ArcSelectFilesHandlerTest : public testing::Test {
                                                    callback.Get());
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   std::unique_ptr<ArcSelectFilesHandler> arc_select_files_handler_;
   MockSelectFileDialogHolder* mock_dialog_holder_;

@@ -77,7 +77,7 @@ class SettingsNavigationControllerTest : public PlatformTest {
     }
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   id mockDelegate_;

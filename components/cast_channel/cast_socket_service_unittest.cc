@@ -36,7 +36,7 @@ class CastSocketServiceTest : public testing::Test {
   void TearDown() override { cast_socket_service_ = nullptr; }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<CastSocketService> cast_socket_service_;
   base::MockCallback<CastSocket::OnOpenCallback> mock_on_open_callback_;
   MockCastSocketObserver mock_observer_;

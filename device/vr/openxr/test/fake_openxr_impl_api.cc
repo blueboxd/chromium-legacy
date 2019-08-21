@@ -27,11 +27,22 @@ XrResult xrAcquireSwapchainImage(
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSwapchain(swapchain));
-  RETURN_IF_FALSE(acquire_info->type == XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO,
-                  XR_ERROR_VALIDATION_FAILURE,
-                  "xrAcquireSwapchainImage type invalid");
+  RETURN_IF(acquire_info->type != XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO,
+            XR_ERROR_VALIDATION_FAILURE,
+            "xrAcquireSwapchainImage type invalid");
 
   *index = g_test_helper.NextSwapchainImageIndex();
+
+  return XR_SUCCESS;
+}
+
+XrResult xrAttachSessionActionSets(
+    XrSession session,
+    const XrSessionActionSetsAttachInfo* attach_info) {
+  DLOG(INFO) << __FUNCTION__;
+  XrResult xr_result;
+
+  RETURN_IF_XR_FAILED(g_test_helper.ValidateSession(session));
 
   return XR_SUCCESS;
 }
@@ -42,8 +53,8 @@ XrResult xrBeginFrame(XrSession session,
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSession(session));
-  RETURN_IF_FALSE(frame_begin_info->type == XR_TYPE_FRAME_BEGIN_INFO,
-                  XR_ERROR_VALIDATION_FAILURE, "XrFrameBeginInfo type invalid");
+  RETURN_IF(frame_begin_info->type != XR_TYPE_FRAME_BEGIN_INFO,
+            XR_ERROR_VALIDATION_FAILURE, "XrFrameBeginInfo type invalid");
 
   return XR_SUCCESS;
 }
@@ -54,15 +65,53 @@ XrResult xrBeginSession(XrSession session,
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSession(session));
-  RETURN_IF_FALSE(begin_info->type == XR_TYPE_SESSION_BEGIN_INFO,
-                  XR_ERROR_VALIDATION_FAILURE,
-                  "XrSessionBeginInfo type invalid");
-  RETURN_IF_FALSE(begin_info->primaryViewConfigurationType ==
-                      OpenXrTestHelper::kViewConfigurationType,
-                  XR_ERROR_VALIDATION_FAILURE,
-                  "XrSessionBeginInfo primaryViewConfigurationType invalid");
+  RETURN_IF(begin_info->type != XR_TYPE_SESSION_BEGIN_INFO,
+            XR_ERROR_VALIDATION_FAILURE, "XrSessionBeginInfo type invalid");
+  RETURN_IF(begin_info->primaryViewConfigurationType !=
+                OpenXrTestHelper::kViewConfigurationType,
+            XR_ERROR_VALIDATION_FAILURE,
+            "XrSessionBeginInfo primaryViewConfigurationType invalid");
 
   RETURN_IF_XR_FAILED(g_test_helper.BeginSession());
+  return XR_SUCCESS;
+}
+
+XrResult xrCreateAction(XrActionSet action_set,
+                        const XrActionCreateInfo* create_info,
+                        XrAction* action) {
+  DLOG(INFO) << __FUNCTION__;
+  XrResult xr_result;
+
+  RETURN_IF_XR_FAILED(g_test_helper.ValidateActionSet(action_set));
+  RETURN_IF_XR_FAILED(g_test_helper.ValidateActionCreateInfo(*create_info));
+  *action = g_test_helper.CreateAction(action_set, *create_info);
+
+  return XR_SUCCESS;
+}
+
+XrResult xrCreateActionSet(XrInstance instance,
+                           const XrActionSetCreateInfo* create_info,
+                           XrActionSet* action_set) {
+  DLOG(INFO) << __FUNCTION__;
+  XrResult xr_result;
+
+  RETURN_IF_XR_FAILED(g_test_helper.ValidateInstance(instance));
+  RETURN_IF_XR_FAILED(g_test_helper.ValidateActionSetCreateInfo(*create_info));
+  *action_set = g_test_helper.CreateActionSet(*create_info);
+
+  return XR_SUCCESS;
+}
+
+XrResult xrCreateActionSpace(XrSession session,
+                             const XrActionSpaceCreateInfo* create_info,
+                             XrSpace* space) {
+  DLOG(INFO) << __FUNCTION__;
+  XrResult xr_result;
+
+  RETURN_IF_XR_FAILED(g_test_helper.ValidateSession(session));
+  RETURN_IF_XR_FAILED(
+      g_test_helper.ValidateActionSpaceCreateInfo(*create_info));
+  *space = g_test_helper.CreateActionSpace();
 
   return XR_SUCCESS;
 }
@@ -71,13 +120,12 @@ XrResult xrCreateInstance(const XrInstanceCreateInfo* create_info,
                           XrInstance* instance) {
   DLOG(INFO) << __FUNCTION__;
 
-  RETURN_IF_FALSE(create_info->type == XR_TYPE_INSTANCE_CREATE_INFO,
-                  XR_ERROR_VALIDATION_FAILURE,
-                  "XrInstanceCreateInfo type invalid");
+  RETURN_IF(create_info->type != XR_TYPE_INSTANCE_CREATE_INFO,
+            XR_ERROR_VALIDATION_FAILURE, "XrInstanceCreateInfo type invalid");
 
-  RETURN_IF_FALSE(create_info->enabledExtensionCount ==
-                      OpenXrTestHelper::NumExtensionsSupported(),
-                  XR_ERROR_VALIDATION_FAILURE, "enabledExtensionCount invalid");
+  RETURN_IF(create_info->enabledExtensionCount !=
+                OpenXrTestHelper::NumExtensionsSupported(),
+            XR_ERROR_VALIDATION_FAILURE, "enabledExtensionCount invalid");
 
   for (uint32_t i = 0; i < create_info->enabledExtensionCount; i++) {
     bool valid_extension = false;
@@ -107,14 +155,13 @@ XrResult xrCreateReferenceSpace(XrSession session,
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSession(session));
-  RETURN_IF_FALSE(create_info->type == XR_TYPE_REFERENCE_SPACE_CREATE_INFO,
-                  XR_ERROR_VALIDATION_FAILURE,
-                  "XrReferenceSpaceCreateInfo type invalid");
-  RETURN_IF_FALSE(
-      create_info->referenceSpaceType == XR_REFERENCE_SPACE_TYPE_LOCAL ||
-          create_info->referenceSpaceType == XR_REFERENCE_SPACE_TYPE_VIEW,
-      XR_ERROR_VALIDATION_FAILURE,
-      "XrReferenceSpaceCreateInfo referenceSpaceType invalid");
+  RETURN_IF(create_info->type != XR_TYPE_REFERENCE_SPACE_CREATE_INFO,
+            XR_ERROR_VALIDATION_FAILURE,
+            "XrReferenceSpaceCreateInfo type invalid");
+  RETURN_IF(create_info->referenceSpaceType != XR_REFERENCE_SPACE_TYPE_LOCAL &&
+                create_info->referenceSpaceType != XR_REFERENCE_SPACE_TYPE_VIEW,
+            XR_ERROR_VALIDATION_FAILURE,
+            "XrReferenceSpaceCreateInfo referenceSpaceType invalid");
   RETURN_IF_XR_FAILED(g_test_helper.ValidateXrPosefIsIdentity(
       create_info->poseInReferenceSpace));
 
@@ -140,18 +187,17 @@ XrResult xrCreateSession(XrInstance instance,
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateInstance(instance));
-  RETURN_IF_FALSE(create_info->type == XR_TYPE_SESSION_CREATE_INFO,
-                  XR_ERROR_VALIDATION_FAILURE,
-                  "XrSessionCreateInfo type invalid");
+  RETURN_IF(create_info->type != XR_TYPE_SESSION_CREATE_INFO,
+            XR_ERROR_VALIDATION_FAILURE, "XrSessionCreateInfo type invalid");
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSystemId(create_info->systemId));
 
   const XrGraphicsBindingD3D11KHR* binding =
       static_cast<const XrGraphicsBindingD3D11KHR*>(create_info->next);
-  RETURN_IF_FALSE(binding->type == XR_TYPE_GRAPHICS_BINDING_D3D11_KHR,
-                  XR_ERROR_VALIDATION_FAILURE,
-                  "XrGraphicsBindingD3D11KHR type invalid");
-  RETURN_IF_FALSE(binding->device != nullptr, XR_ERROR_VALIDATION_FAILURE,
-                  "D3D11Device is null");
+  RETURN_IF(binding->type != XR_TYPE_GRAPHICS_BINDING_D3D11_KHR,
+            XR_ERROR_VALIDATION_FAILURE,
+            "XrGraphicsBindingD3D11KHR type invalid");
+  RETURN_IF(binding->device == nullptr, XR_ERROR_VALIDATION_FAILURE,
+            "D3D11Device is null");
 
   g_test_helper.SetD3DDevice(binding->device);
   *session = g_test_helper.GetSession();
@@ -166,35 +212,41 @@ XrResult xrCreateSwapchain(XrSession session,
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSession(session));
-  RETURN_IF_FALSE(create_info->type == XR_TYPE_SWAPCHAIN_CREATE_INFO,
-                  XR_ERROR_VALIDATION_FAILURE,
-                  "XrSwapchainCreateInfo type invalid");
-  RETURN_IF_FALSE(create_info->arraySize == 1, XR_ERROR_VALIDATION_FAILURE,
-                  "XrSwapchainCreateInfo arraySize invalid");
-  RETURN_IF_FALSE(create_info->format == DXGI_FORMAT_R8G8B8A8_UNORM,
-                  XR_ERROR_SWAPCHAIN_FORMAT_UNSUPPORTED,
-                  "XrSwapchainCreateInfo format unsupported");
-  RETURN_IF_FALSE(create_info->width == OpenXrTestHelper::kDimension * 2,
-                  XR_ERROR_VALIDATION_FAILURE,
-                  "XrSwapchainCreateInfo width is not dimension * 2");
-  RETURN_IF_FALSE(create_info->height == OpenXrTestHelper::kDimension,
-                  XR_ERROR_VALIDATION_FAILURE,
-                  "XrSwapchainCreateInfo height is not dimension");
-  RETURN_IF_FALSE(create_info->mipCount == 1, XR_ERROR_VALIDATION_FAILURE,
-                  "XrSwapchainCreateInfo mipCount is not 1");
-  RETURN_IF_FALSE(create_info->faceCount == 1, XR_ERROR_VALIDATION_FAILURE,
-                  "XrSwapchainCreateInfo faceCount is not 1");
-  RETURN_IF_FALSE(create_info->sampleCount == OpenXrTestHelper::kSwapCount,
-                  XR_ERROR_VALIDATION_FAILURE,
-                  "XrSwapchainCreateInfo sampleCount invalid");
-  RETURN_IF_FALSE(
-      create_info->usageFlags == XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT,
-      XR_ERROR_VALIDATION_FAILURE,
-      "XrSwapchainCreateInfo usageFlags is not "
-      "XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT");
+  RETURN_IF(create_info->type != XR_TYPE_SWAPCHAIN_CREATE_INFO,
+            XR_ERROR_VALIDATION_FAILURE, "XrSwapchainCreateInfo type invalid");
+  RETURN_IF(create_info->arraySize != 1, XR_ERROR_VALIDATION_FAILURE,
+            "XrSwapchainCreateInfo arraySize invalid");
+  RETURN_IF(create_info->format != DXGI_FORMAT_R8G8B8A8_UNORM,
+            XR_ERROR_SWAPCHAIN_FORMAT_UNSUPPORTED,
+            "XrSwapchainCreateInfo format unsupported");
+  RETURN_IF(create_info->width != OpenXrTestHelper::kDimension * 2,
+            XR_ERROR_VALIDATION_FAILURE,
+            "XrSwapchainCreateInfo width is not dimension * 2");
+  RETURN_IF(create_info->height != OpenXrTestHelper::kDimension,
+            XR_ERROR_VALIDATION_FAILURE,
+            "XrSwapchainCreateInfo height is not dimension");
+  RETURN_IF(create_info->mipCount != 1, XR_ERROR_VALIDATION_FAILURE,
+            "XrSwapchainCreateInfo mipCount is not 1");
+  RETURN_IF(create_info->faceCount != 1, XR_ERROR_VALIDATION_FAILURE,
+            "XrSwapchainCreateInfo faceCount is not 1");
+  RETURN_IF(create_info->sampleCount != OpenXrTestHelper::kSwapCount,
+            XR_ERROR_VALIDATION_FAILURE,
+            "XrSwapchainCreateInfo sampleCount invalid");
+  RETURN_IF(create_info->usageFlags != XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT,
+            XR_ERROR_VALIDATION_FAILURE,
+            "XrSwapchainCreateInfo usageFlags is not "
+            "XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT");
 
   *swapchain = g_test_helper.GetSwapchain();
 
+  return XR_SUCCESS;
+}
+
+XrResult xrDestroyActionSet(XrActionSet action_set) {
+  DLOG(INFO) << __FUNCTION__;
+  XrResult xr_result;
+
+  RETURN_IF_XR_FAILED(g_test_helper.ValidateActionSet(action_set));
   return XR_SUCCESS;
 }
 
@@ -207,19 +259,28 @@ XrResult xrDestroyInstance(XrInstance instance) {
   return XR_SUCCESS;
 }
 
+XrResult xrDestroySpace(XrSpace space) {
+  DLOG(INFO) << __FUNCTION__;
+  XrResult xr_result;
+
+  RETURN_IF_XR_FAILED(g_test_helper.ValidateSpace(space));
+
+  return XR_SUCCESS;
+}
+
 XrResult xrEndFrame(XrSession session, const XrFrameEndInfo* frame_end_info) {
   DLOG(INFO) << __FUNCTION__;
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSession(session));
-  RETURN_IF_FALSE(frame_end_info->type == XR_TYPE_FRAME_END_INFO,
-                  XR_ERROR_VALIDATION_FAILURE, "frame_end_info type invalid");
-  RETURN_IF_FALSE(frame_end_info->environmentBlendMode ==
-                      OpenXrTestHelper::kEnvironmentBlendMode,
-                  XR_ERROR_VALIDATION_FAILURE,
-                  "frame_end_info environmentBlendMode invalid");
-  RETURN_IF_FALSE(frame_end_info->layerCount == 1, XR_ERROR_VALIDATION_FAILURE,
-                  "frame_end_info layerCount invalid");
+  RETURN_IF(frame_end_info->type != XR_TYPE_FRAME_END_INFO,
+            XR_ERROR_VALIDATION_FAILURE, "frame_end_info type invalid");
+  RETURN_IF(frame_end_info->environmentBlendMode !=
+                OpenXrTestHelper::kEnvironmentBlendMode,
+            XR_ERROR_VALIDATION_FAILURE,
+            "frame_end_info environmentBlendMode invalid");
+  RETURN_IF(frame_end_info->layerCount != 1, XR_ERROR_VALIDATION_FAILURE,
+            "frame_end_info layerCount invalid");
   RETURN_IF_XR_FAILED(
       g_test_helper.ValidatePredictedDisplayTime(frame_end_info->displayTime));
 
@@ -250,10 +311,9 @@ XrResult xrEnumerateEnvironmentBlendModes(
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateInstance(instance));
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSystemId(system_id));
-  RETURN_IF_FALSE(
-      view_configuration_type == OpenXrTestHelper::kViewConfigurationType,
-      XR_ERROR_VALIDATION_FAILURE,
-      "xrEnumerateEnvironmentBlendModes viewConfigurationType invalid");
+  RETURN_IF(view_configuration_type != OpenXrTestHelper::kViewConfigurationType,
+            XR_ERROR_VALIDATION_FAILURE,
+            "xrEnumerateEnvironmentBlendModes viewConfigurationType invalid");
 
   *environmentBlendModeCountOutput = 1;
 
@@ -271,9 +331,9 @@ XrResult xrEnumerateInstanceExtensionProperties(
     XrExtensionProperties* properties) {
   DLOG(INFO) << __FUNCTION__;
 
-  RETURN_IF_FALSE(
-      property_capacity_input >= OpenXrTestHelper::NumExtensionsSupported() ||
-          property_capacity_input == 0,
+  RETURN_IF(
+      property_capacity_input < OpenXrTestHelper::NumExtensionsSupported() &&
+          property_capacity_input != 0,
       XR_ERROR_SIZE_INSUFFICIENT, "XrExtensionProperties array is too small");
 
   *property_count_output = OpenXrTestHelper::NumExtensionsSupported();
@@ -302,10 +362,9 @@ XrResult xrEnumerateViewConfigurationViews(
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateInstance(instance));
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSystemId(system_id));
-  RETURN_IF_FALSE(
-      view_configuration_type == OpenXrTestHelper::kViewConfigurationType,
-      XR_ERROR_VALIDATION_FAILURE,
-      "xrEnumerateViewConfigurationViews viewConfigurationType invalid");
+  RETURN_IF(view_configuration_type != OpenXrTestHelper::kViewConfigurationType,
+            XR_ERROR_VALIDATION_FAILURE,
+            "xrEnumerateViewConfigurationViews viewConfigurationType invalid");
 
   *view_count_output = OpenXrTestHelper::NumViews();
 
@@ -325,12 +384,11 @@ XrResult xrEnumerateSwapchainImages(XrSwapchain swapchain,
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSwapchain(swapchain));
-  RETURN_IF_FALSE(
-      image_capacity_input == OpenXrTestHelper::kMinSwapchainBuffering ||
-          image_capacity_input == 0,
-      XR_ERROR_SIZE_INSUFFICIENT,
-      "xrEnumerateSwapchainImages does not equal length returned by "
-      "xrCreateSwapchain");
+  RETURN_IF(image_capacity_input != OpenXrTestHelper::kMinSwapchainBuffering &&
+                image_capacity_input != 0,
+            XR_ERROR_SIZE_INSUFFICIENT,
+            "xrEnumerateSwapchainImages does not equal length returned by "
+            "xrCreateSwapchain");
 
   *image_count_output = OpenXrTestHelper::kMinSwapchainBuffering;
 
@@ -343,9 +401,9 @@ XrResult xrEnumerateSwapchainImages(XrSwapchain swapchain,
       XrSwapchainImageD3D11KHR& image =
           reinterpret_cast<XrSwapchainImageD3D11KHR*>(images)[i];
 
-      RETURN_IF_FALSE(image.type == XR_TYPE_SWAPCHAIN_IMAGE_D3D11_KHR,
-                      XR_ERROR_VALIDATION_FAILURE,
-                      "XrSwapchainImageD3D11KHR type invalid");
+      RETURN_IF(image.type != XR_TYPE_SWAPCHAIN_IMAGE_D3D11_KHR,
+                XR_ERROR_VALIDATION_FAILURE,
+                "XrSwapchainImageD3D11KHR type invalid");
 
       image.texture = textures[i].Get();
     }
@@ -363,8 +421,8 @@ XrResult xrGetD3D11GraphicsRequirementsKHR(
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateInstance(instance));
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSystemId(system_id));
-  RETURN_IF_FALSE(
-      graphics_requirements->type == XR_TYPE_GRAPHICS_REQUIREMENTS_D3D11_KHR,
+  RETURN_IF(
+      graphics_requirements->type != XR_TYPE_GRAPHICS_REQUIREMENTS_D3D11_KHR,
       XR_ERROR_VALIDATION_FAILURE,
       "XrGraphicsRequirementsD3D11KHR type invalid");
 
@@ -387,6 +445,70 @@ XrResult xrGetD3D11GraphicsRequirementsKHR(
                   "Unable to create query DXGI Adapter");
 }
 
+XrResult xrGetActionStateBoolean(XrSession session,
+                                 const XrActionStateGetInfo* get_info,
+                                 XrActionStateBoolean* state) {
+  DLOG(INFO) << __FUNCTION__;
+  XrResult xr_result;
+
+  RETURN_IF_XR_FAILED(g_test_helper.ValidateSession(session));
+  RETURN_IF(get_info->type != XR_TYPE_ACTION_STATE_GET_INFO,
+            XR_ERROR_VALIDATION_FAILURE,
+            "xrGetActionStateBoolean get_info has wrong type");
+  RETURN_IF_XR_FAILED(g_test_helper.ValidateAction(get_info->action));
+  RETURN_IF(get_info->subactionPath != XR_NULL_PATH,
+            XR_ERROR_VALIDATION_FAILURE,
+            "xrGetActionStateBoolean has subactionPath != nullptr which is not "
+            "supported by current version of test.");
+  RETURN_IF_XR_FAILED(
+      g_test_helper.GetActionStateBoolean(get_info->action, state));
+
+  return XR_SUCCESS;
+}
+
+XrResult XRAPI_CALL
+xrGetActionStateVector2f(XrSession session,
+                         const XrActionStateGetInfo* get_info,
+                         XrActionStateVector2f* state) {
+  DLOG(INFO) << __FUNCTION__;
+  XrResult xr_result;
+
+  RETURN_IF_XR_FAILED(g_test_helper.ValidateSession(session));
+  RETURN_IF(get_info->type != XR_TYPE_ACTION_STATE_GET_INFO,
+            XR_ERROR_VALIDATION_FAILURE,
+            "xrGetActionStateVector2f get_info has wrong type");
+  RETURN_IF_XR_FAILED(g_test_helper.ValidateAction(get_info->action));
+  RETURN_IF(
+      get_info->subactionPath != XR_NULL_PATH, XR_ERROR_VALIDATION_FAILURE,
+      "xrGetActionStateVector2f has subactionPath != nullptr which is not "
+      "supported by current version of test.");
+  RETURN_IF_XR_FAILED(
+      g_test_helper.GetActionStateVector2f(get_info->action, state));
+
+  return XR_SUCCESS;
+}
+
+XrResult xrGetActionStatePose(XrSession session,
+                              const XrActionStateGetInfo* get_info,
+                              XrActionStatePose* state) {
+  DLOG(INFO) << __FUNCTION__;
+  XrResult xr_result;
+
+  RETURN_IF_XR_FAILED(g_test_helper.ValidateSession(session));
+  RETURN_IF(get_info->type != XR_TYPE_ACTION_STATE_GET_INFO,
+            XR_ERROR_VALIDATION_FAILURE,
+            "xrGetActionStatePose get_info has wrong type");
+  RETURN_IF_XR_FAILED(g_test_helper.ValidateAction(get_info->action));
+  RETURN_IF(get_info->subactionPath != XR_NULL_PATH,
+            XR_ERROR_VALIDATION_FAILURE,
+            "xrGetActionStatePose has subactionPath != nullptr which is not "
+            "supported by current version of test.");
+  RETURN_IF_XR_FAILED(
+      g_test_helper.GetActionStatePose(get_info->action, state));
+
+  return XR_SUCCESS;
+}
+
 XrResult xrGetSystem(XrInstance instance,
                      const XrSystemGetInfo* get_info,
                      XrSystemId* system_id) {
@@ -394,11 +516,10 @@ XrResult xrGetSystem(XrInstance instance,
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateInstance(instance));
-  RETURN_IF_FALSE(get_info->type == XR_TYPE_SYSTEM_GET_INFO,
-                  XR_ERROR_VALIDATION_FAILURE, "XrSystemGetInfo type invalid");
-  RETURN_IF_FALSE(get_info->formFactor == XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY,
-                  XR_ERROR_VALIDATION_FAILURE,
-                  "XrSystemGetInfo formFactor invalid");
+  RETURN_IF(get_info->type != XR_TYPE_SYSTEM_GET_INFO,
+            XR_ERROR_VALIDATION_FAILURE, "XrSystemGetInfo type invalid");
+  RETURN_IF(get_info->formFactor != XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY,
+            XR_ERROR_VALIDATION_FAILURE, "XrSystemGetInfo formFactor invalid");
 
   *system_id = g_test_helper.GetSystemId();
 
@@ -436,9 +557,9 @@ XrResult xrLocateViews(XrSession session,
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSession(session));
   RETURN_IF_XR_FAILED(g_test_helper.ValidatePredictedDisplayTime(
       view_locate_info->displayTime));
-  RETURN_IF_FALSE(view_locate_info->type == XR_TYPE_VIEW_LOCATE_INFO,
-                  XR_ERROR_VALIDATION_FAILURE,
-                  "xrLocateViews view_locate_info type invalid");
+  RETURN_IF(view_locate_info->type != XR_TYPE_VIEW_LOCATE_INFO,
+            XR_ERROR_VALIDATION_FAILURE,
+            "xrLocateViews view_locate_info type invalid");
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSpace(view_locate_info->space));
 
   return XR_SUCCESS;
@@ -451,9 +572,72 @@ XrResult xrReleaseSwapchainImage(
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSwapchain(swapchain));
-  RETURN_IF_FALSE(release_info->type == XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO,
-                  XR_ERROR_VALIDATION_FAILURE,
-                  "xrReleaseSwapchainImage type invalid");
+  RETURN_IF(release_info->type != XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO,
+            XR_ERROR_VALIDATION_FAILURE,
+            "xrReleaseSwapchainImage type invalid");
+
+  return XR_SUCCESS;
+}
+
+XrResult xrSuggestInteractionProfileBindings(
+    XrInstance instance,
+    const XrInteractionProfileSuggestedBinding* suggested_bindings) {
+  DLOG(INFO) << __FUNCTION__;
+  XrResult xr_result;
+
+  RETURN_IF_XR_FAILED(g_test_helper.ValidateInstance(instance));
+  RETURN_IF(
+      suggested_bindings->type != XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING,
+      XR_ERROR_VALIDATION_FAILURE,
+      "xrSetInteractionProfileSuggestedBindings type invalid");
+  RETURN_IF_XR_FAILED(
+      g_test_helper.ValidatePath(suggested_bindings->interactionProfile));
+  RETURN_IF(
+      g_test_helper.PathToString(suggested_bindings->interactionProfile)
+              .compare("/interaction_profiles/microsoft/motion_controller") !=
+          0,
+      XR_ERROR_VALIDATION_FAILURE,
+      "xrSetInteractionProfileSuggestedBindings interactionProfile other than "
+      "microsoft is used, this is not currently supported.");
+
+  for (uint32_t i = 0; i < suggested_bindings->countSuggestedBindings; i++) {
+    XrActionSuggestedBinding suggestedBinding =
+        suggested_bindings->suggestedBindings[i];
+    RETURN_IF_XR_FAILED(g_test_helper.BindActionAndPath(suggestedBinding));
+  }
+
+  return XR_SUCCESS;
+}
+
+XrResult xrStringToPath(XrInstance instance,
+                        const char* pathString,
+                        XrPath* path) {
+  DLOG(INFO) << __FUNCTION__;
+  XrResult xr_result;
+
+  RETURN_IF_XR_FAILED(g_test_helper.ValidateInstance(instance));
+
+  *path = g_test_helper.GetPath(pathString);
+
+  return XR_SUCCESS;
+}
+
+XrResult xrSyncActions(XrSession session, const XrActionsSyncInfo* sync_info) {
+  DLOG(INFO) << __FUNCTION__;
+  XrResult xr_result;
+
+  RETURN_IF_XR_FAILED(g_test_helper.ValidateSession(session));
+  RETURN_IF_FALSE(g_test_helper.UpdateData(), XR_ERROR_VALIDATION_FAILURE,
+                  "xrSyncActionData can't receive data from test");
+
+  for (uint32_t i = 0; i < sync_info->countActiveActionSets; i++) {
+    RETURN_IF(
+        sync_info->activeActionSets[i].subactionPath != XR_NULL_PATH,
+        XR_ERROR_VALIDATION_FAILURE,
+        "xrSyncActionData does not support use of subactionPath for test yet");
+    RETURN_IF_XR_FAILED(
+        g_test_helper.SyncActionData(sync_info->activeActionSets[i].actionSet));
+  }
 
   return XR_SUCCESS;
 }
@@ -465,11 +649,10 @@ XrResult xrWaitFrame(XrSession session,
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSession(session));
-  RETURN_IF_FALSE(frame_wait_info->type == XR_TYPE_FRAME_WAIT_INFO,
-                  XR_ERROR_VALIDATION_FAILURE, "frame_wait_info type invalid");
-  RETURN_IF_FALSE(frame_state->type == XR_TYPE_FRAME_STATE,
-                  XR_ERROR_VALIDATION_FAILURE,
-                  "XR_TYPE_FRAME_STATE type invalid");
+  RETURN_IF(frame_wait_info->type != XR_TYPE_FRAME_WAIT_INFO,
+            XR_ERROR_VALIDATION_FAILURE, "frame_wait_info type invalid");
+  RETURN_IF(frame_state->type != XR_TYPE_FRAME_STATE,
+            XR_ERROR_VALIDATION_FAILURE, "XR_TYPE_FRAME_STATE type invalid");
 
   frame_state->predictedDisplayTime = g_test_helper.NextPredictedDisplayTime();
 
@@ -482,12 +665,11 @@ XrResult xrWaitSwapchainImage(XrSwapchain swapchain,
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSwapchain(swapchain));
-  RETURN_IF_FALSE(wait_info->type == XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO,
-                  XR_ERROR_VALIDATION_FAILURE,
-                  "xrWaitSwapchainImage type invalid");
-  RETURN_IF_FALSE(wait_info->timeout == XR_INFINITE_DURATION,
-                  XR_ERROR_VALIDATION_FAILURE,
-                  "xrWaitSwapchainImage timeout not XR_INFINITE_DURATION");
+  RETURN_IF(wait_info->type != XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO,
+            XR_ERROR_VALIDATION_FAILURE, "xrWaitSwapchainImage type invalid");
+  RETURN_IF(wait_info->timeout != XR_INFINITE_DURATION,
+            XR_ERROR_VALIDATION_FAILURE,
+            "xrWaitSwapchainImage timeout not XR_INFINITE_DURATION");
 
   return XR_SUCCESS;
 }

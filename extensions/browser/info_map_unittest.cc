@@ -21,7 +21,7 @@ class InfoMapTest : public testing::Test {
   InfoMapTest() = default;
 
  private:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 // Returns a barebones test Extension object with the given name.

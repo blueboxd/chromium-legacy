@@ -35,18 +35,16 @@ class GamepadBuilder {
 
   virtual bool IsValid() const;
   virtual base::Optional<Gamepad> GetGamepad();
-  void SetAxisDeadzone(double value);
 
   void AddButton(const GamepadButton& button);
   void AddButton(const ButtonData& data);
-  void AddAxis(double value);
+  void AddAxis(double value, double deadzone = 0.0);
   void AddPlaceholderAxes();
   void AddPlaceholderButton();
   void RemovePlaceholderButton();
 
  protected:
   void AddAxes(const ButtonData& data);
-  double ApplyAxisDeadzoneToValue(double value) const;
 
   GamepadHand GetHandedness() const { return gamepad_.hand; }
   GamepadMapping GetMapping() const { return gamepad_.mapping; }
@@ -54,8 +52,6 @@ class GamepadBuilder {
   Gamepad gamepad_;
 
  private:
-  double axis_deadzone_ = 0.0;
-
   DISALLOW_COPY_AND_ASSIGN(GamepadBuilder);
 };
 

@@ -14,12 +14,12 @@
 // be found in clipboard.h.
 namespace ui {
 
-ScopedClipboardWriter::ScopedClipboardWriter(ClipboardType type) : type_(type) {
-}
+ScopedClipboardWriter::ScopedClipboardWriter(ClipboardBuffer buffer)
+    : buffer_(buffer) {}
 
 ScopedClipboardWriter::~ScopedClipboardWriter() {
   if (!objects_.empty())
-    Clipboard::GetForCurrentThread()->WriteObjects(type_, objects_);
+    Clipboard::GetForCurrentThread()->WriteObjects(buffer_, objects_);
 }
 
 void ScopedClipboardWriter::WriteText(const base::string16& text) {

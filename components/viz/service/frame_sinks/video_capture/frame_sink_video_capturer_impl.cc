@@ -11,7 +11,9 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/read_only_shared_memory_region.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -30,6 +32,13 @@
 using media::VideoCaptureOracle;
 using media::VideoFrame;
 using media::VideoFrameMetadata;
+
+#define UMA_HISTOGRAM_CAPTURE_DURATION_CUSTOM_TIMES(name, sample)         \
+  UMA_HISTOGRAM_CUSTOM_TIMES(                                             \
+      base::StringPrintf("Viz.FrameSinkVideoCapturer.%s.CaptureDuration", \
+                         name),                                           \
+      sample, base::TimeDelta::FromMilliseconds(1),                       \
+      base::TimeDelta::FromSeconds(1), 50)
 
 namespace viz {
 
@@ -587,7 +596,7 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
                      oracle_frame_number, content_version_, content_rect,
                      VideoCaptureOverlay::MakeCombinedRenderer(
                          GetOverlaysInOrder(), content_rect, frame->format()),
-                     std::move(frame))));
+                     std::move(frame), base::TimeTicks::Now())));
   request->set_source(copy_request_source_);
   request->set_area(gfx::Rect(source_size));
   request->SetScaleRatio(
@@ -612,6 +621,7 @@ void FrameSinkVideoCapturerImpl::DidCopyFrame(
     const gfx::Rect& content_rect,
     VideoCaptureOverlay::OnceRenderer overlay_renderer,
     scoped_refptr<VideoFrame> frame,
+    base::TimeTicks request_time,
     std::unique_ptr<CopyOutputResult> result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_GE(capture_frame_number, next_delivery_frame_number_);
@@ -639,23 +649,34 @@ void FrameSinkVideoCapturerImpl::DidCopyFrame(
     uint8_t* const v = frame->visible_data(VideoFrame::kVPlane) +
                        (content_rect.y() / 2) * v_stride +
                        (content_rect.x() / 2);
-    if (result->ReadI420Planes(y, y_stride, u, u_stride, v, v_stride)) {
+    bool success =
+        result->ReadI420Planes(y, y_stride, u, u_stride, v, v_stride);
+    if (success) {
       // Per CopyOutputResult header comments, I420_PLANES results are always in
       // the Rec.709 color space.
       frame->set_color_space(gfx::ColorSpace::CreateREC709());
+      UMA_HISTOGRAM_CAPTURE_DURATION_CUSTOM_TIMES(
+          "I420", base::TimeTicks::Now() - request_time);
     } else {
       frame = nullptr;
     }
+    UMA_HISTOGRAM_BOOLEAN("Viz.FrameSinkVideoCapturer.I420.CaptureSucceeded",
+                          success);
   } else {
     int stride = frame->stride(VideoFrame::kARGBPlane);
     DCHECK_EQ(media::PIXEL_FORMAT_ARGB, pixel_format_);
     uint8_t* const pixels = frame->visible_data(VideoFrame::kARGBPlane) +
                             content_rect.y() * stride + content_rect.x() * 4;
-    if (result->ReadRGBAPlane(pixels, stride)) {
+    bool success = result->ReadRGBAPlane(pixels, stride);
+    if (success) {
       frame->set_color_space(result->GetRGBAColorSpace());
+      UMA_HISTOGRAM_CAPTURE_DURATION_CUSTOM_TIMES(
+          "RGBA", base::TimeTicks::Now() - request_time);
     } else {
       frame = nullptr;
     }
+    UMA_HISTOGRAM_BOOLEAN("Viz.FrameSinkVideoCapturer.RGBA.CaptureSucceeded",
+                          success);
   }
 
   if (frame) {

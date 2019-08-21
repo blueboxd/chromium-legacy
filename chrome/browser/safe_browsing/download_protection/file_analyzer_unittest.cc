@@ -55,7 +55,7 @@ class FileAnalyzerTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
 
  private:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   content::InProcessUtilityThreadHelper in_process_utility_thread_helper_;
 };
 

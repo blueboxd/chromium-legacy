@@ -124,7 +124,7 @@ class WatcherCallback {
 class ServiceWorkerContextWatcherTest : public testing::Test {
  public:
   ServiceWorkerContextWatcherTest()
-      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   void SetUp() override {
     helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
@@ -170,7 +170,7 @@ class ServiceWorkerContextWatcherTest : public testing::Test {
 
  private:
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
-  TestBrowserThreadBundle browser_thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextWatcherTest);
 };

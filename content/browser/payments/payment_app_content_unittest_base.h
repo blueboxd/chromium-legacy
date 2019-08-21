@@ -21,7 +21,7 @@ namespace content {
 class BrowserContext;
 class PaymentAppContextImpl;
 class StoragePartitionImpl;
-class TestBrowserThreadBundle;
+class BrowserTaskEnvironment;
 
 class PaymentAppContentUnitTestBase : public testing::Test {
  protected:
@@ -46,7 +46,7 @@ class PaymentAppContentUnitTestBase : public testing::Test {
   StoragePartitionImpl* storage_partition();
   PaymentAppContextImpl* payment_app_context();
 
-  std::unique_ptr<TestBrowserThreadBundle> thread_bundle_;
+  std::unique_ptr<BrowserTaskEnvironment> task_environment_;
   std::unique_ptr<PaymentAppForWorkerTestHelper> worker_helper_;
   std::vector<payments::mojom::PaymentManagerPtr> payment_managers_;
 

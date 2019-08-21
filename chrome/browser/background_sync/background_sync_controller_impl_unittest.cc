@@ -52,7 +52,7 @@ std::unique_ptr<KeyedService> BuildTestHistoryService(
 class BackgroundSyncControllerImplTest : public testing::Test {
  protected:
   BackgroundSyncControllerImplTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {
     ResetFieldTrialList();
 #if defined(OS_ANDROID)
     BackgroundSyncLauncherAndroid::SetPlayServicesVersionCheckDisabledForTests(
@@ -93,7 +93,7 @@ class BackgroundSyncControllerImplTest : public testing::Test {
     return registration;
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   std::unique_ptr<BackgroundSyncControllerImpl> controller_;
   std::unique_ptr<base::FieldTrialList> field_trial_list_;

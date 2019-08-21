@@ -366,6 +366,13 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
     return page_info_bubble_view->certificate_button_->title()->GetText();
   }
 
+  const base::string16 GetPageInfoBubbleViewDetailText() {
+    PageInfoBubbleView* page_info_bubble_view =
+        static_cast<PageInfoBubbleView*>(
+            PageInfoBubbleView::GetPageInfoBubbleForTesting());
+    return page_info_bubble_view->details_text();
+  }
+
  private:
   std::vector<PageInfoBubbleView::PageInfoBubbleViewID> expected_identifiers_;
 
@@ -487,6 +494,9 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
       helper->GetVisibleSecurityState();
   ASSERT_EQ(security_state::MALICIOUS_CONTENT_STATUS_ENTERPRISE_PASSWORD_REUSE,
             visible_security_state->malicious_content_status);
+  ASSERT_EQ(l10n_util::GetStringUTF16(
+                IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_ENTERPRISE),
+            GetPageInfoBubbleViewDetailText());
 
   // Verify these two buttons are showing.
   EXPECT_TRUE(change_password_button->GetVisible());

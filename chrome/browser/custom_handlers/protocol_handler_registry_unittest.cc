@@ -274,7 +274,7 @@ class ProtocolHandlerRegistryTest : public testing::Test {
   void TearDown() override { TeadDownRegistry(); }
 
  private:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   std::unique_ptr<TestingProfile> profile_;
   FakeDelegate* delegate_;  // Registry assumes ownership of delegate_.

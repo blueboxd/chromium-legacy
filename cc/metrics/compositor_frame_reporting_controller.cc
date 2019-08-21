@@ -70,7 +70,8 @@ void CompositorFrameReportingController::WillBeginImplFrame() {
         begin_time);
   }
   std::unique_ptr<CompositorFrameReporter> reporter =
-      std::make_unique<CompositorFrameReporter>(is_single_threaded_);
+      std::make_unique<CompositorFrameReporter>(&active_trackers_,
+                                                is_single_threaded_);
   reporter->StartStage(
       CompositorFrameReporter::StageType::kBeginImplFrameToSendBeginMainFrame,
       begin_time,
@@ -202,6 +203,16 @@ void CompositorFrameReportingController::DidPresentCompositorFrame(
                                               presentation_time);
     submitted_compositor_frames_.erase(submitted_frame);
   }
+}
+
+void CompositorFrameReportingController::AddActiveTracker(
+    FrameSequenceTrackerType type) {
+  active_trackers_.insert(type);
+}
+
+void CompositorFrameReportingController::RemoveActiveTracker(
+    FrameSequenceTrackerType type) {
+  active_trackers_.erase(type);
 }
 
 void CompositorFrameReportingController::AdvanceReporterStage(

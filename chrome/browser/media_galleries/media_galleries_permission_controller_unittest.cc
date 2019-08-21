@@ -139,7 +139,7 @@ class MediaGalleriesPermissionControllerTest : public ::testing::Test {
   }
 
   // Needed for extension service & friends to work.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   // The dialog is owned by the controller, but this pointer should only be
   // valid while the dialog is live within the controller.

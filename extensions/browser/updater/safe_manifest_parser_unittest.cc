@@ -43,7 +43,7 @@ class ExtensionUpdateManifestTest : public testing::Test {
     std::move(quit_loop).Run();
   }
 
-  content::TestBrowserThreadBundle browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<UpdateManifestResults> results_;
   base::Optional<std::string> error_;
   data_decoder::TestDataDecoderService test_data_decoder_service_;

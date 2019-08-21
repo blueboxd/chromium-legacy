@@ -15,6 +15,7 @@
 <translation id="1524282610922162960">Comparteix una pestanya de Chromium</translation>
 <translation id="1668054258064581266">Després de suprimir el vostre compte de Chromium, pot ser que hàgiu de tornar a carregar les pestanyes obertes.</translation>
 <translation id="1688750314291223739">Configureu la sincronització per desar al web les funcions personalitzades del navegador i per accedir-hi des de qualsevol equip mitjançant Chromium.</translation>
+<translation id="1705503634486268204">Chromium t'ajudarà a recordar les contrasenyes perquè a tu no et calgui fer-ho.</translation>
 <translation id="1708666629004767631">Hi ha disponible una versió nova més segura de Chromium.</translation>
 <translation id="1766096484055239003">L'administrador necessita que reiniciïs Chromium per aplicar una actualització</translation>
 <translation id="1774152462503052664">Permet que Chromium s'executi en segon pla</translation>
@@ -223,8 +224,7 @@ Chromium no pot recuperar la configuració.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Reinicia Chromium en 1 dia}other{Reinicia Chromium en # dies}}</translation>
 <translation id="8453117565092476964">L'arxiu d'instal·lació està malmès o no és vàlid. Torneu a baixar Chromium.</translation>
 <translation id="8493179195440786826">Chromium no està actualitzat</translation>
-<translation id="8494843963476918365">Si no es mostra alguna opció de configuració en aquesta pàgina, prova la <ph name="LINK_BEGIN" />
-    configuració del navegador de Chromium<ph name="LINK_END" />.</translation>
+<translation id="8494843963476918365">Si no es mostra alguna opció de configuració en aquesta pàgina, prova la <ph name="LINK_BEGIN" />configuració del navegador de Chromium<ph name="LINK_END" />.</translation>
 <translation id="85843667276690461">Obtén ajuda per a l'ús de Chromium</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Els autors de Chromium. Tots els drets reservats.</translation>
 <translation id="8619360774459241877">S'està iniciant Chromium...</translation>

@@ -141,7 +141,6 @@
 <translation id="200815880754187296">기타 앱 <ph name="KILOBYTES" />KB</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{파일 #개}other{파일 #개}}</translation>
 <translation id="2017836877785168846">검색주소창의 검색 기록 및 자동 완성 항목을 삭제합니다.</translation>
-<translation id="2018707881002649255">아래에서 선택한 연락처가 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 웹사이트와 공유됩니다.</translation>
 <translation id="2021896219286479412">전체화면 사이트 컨트롤</translation>
 <translation id="2038563949887743358">데스크톱 버전으로 보기 사용 설정</translation>
 <translation id="2041019821020695769">Chrome에서 알림을 전송하도록 허용하려면 <ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />에서도 알림을 사용 설정하세요.</translation>
@@ -243,7 +242,6 @@
 <translation id="2777555524387840389"><ph name="SECONDS" />초 남음</translation>
 <translation id="2779651927720337254">실패</translation>
 <translation id="2781151931089541271">1초 남음</translation>
-<translation id="2796941233371040292">저장소 데이터 없음</translation>
 <translation id="2801022321632964776">최신 버전의 Chrome에서 내가 사용하는 언어를 사용하려면 업데이트하세요.</translation>
 <translation id="2810645512293415242">페이지가 간소화되어 데이터가 절약되고 로드 속도가 빨라졌습니다.</translation>
 <translation id="281504910091592009"><ph name="BEGIN_LINK" />Google 계정<ph name="END_LINK" />에서 저장된 비밀번호 보기 및 관리</translation>
@@ -271,6 +269,7 @@
 <translation id="2962095958535813455">시크릿 탭으로 전환됨</translation>
 <translation id="2968755619301702150">인증서 뷰어</translation>
 <translation id="2979025552038692506">선택된 시크릿 탭</translation>
+<translation id="2987620471460279764">다른 기기에서 공유된 텍스트</translation>
 <translation id="2989523299700148168">최근 방문</translation>
 <translation id="2996291259634659425">암호 만들기</translation>
 <translation id="2996809686854298943">URL이 필요합니다.</translation>
@@ -554,6 +553,7 @@
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{다운로드 1개 실패}other{다운로드 #개 실패}}</translation>
 <translation id="5170568018924773124">폴더 열기</translation>
 <translation id="5184329579814168207">Chrome에서 열기</translation>
+<translation id="5193988420012215838">클립보드에 복사됨</translation>
 <translation id="5199929503336119739">직장용 프로필</translation>
 <translation id="5202089186707505116">이 사이트에서 VR 센서에 액세스하도록 허용하시겠습니까?</translation>
 <translation id="5210286577605176222">이전 탭으로 이동</translation>
@@ -702,6 +702,7 @@
 예를 들어 어떤 웹사이트는 사용자가 방문한 다른 웹사이트를 기반으로 하지 않는 광고를 표시하여 이 요청에 응답할 수 있습니다. 그러나 대부분의 웹사이트에서는 보안을 개선하거나 웹사이트에 콘텐츠, 광고, 권장사항 등을 제공하거나 보고서 통계를 생성하기 위해 사용자의 인터넷 사용 기록을 계속 수집하고 사용합니다.</translation>
 <translation id="624789221780392884">업데이트 준비 완료</translation>
 <translation id="6255999984061454636">콘텐츠 추천</translation>
+<translation id="6264430811215618931"><ph name="ORIGIN" />에서 내 전화번호로 SMS를 전송했습니다. 확인하면 사이트에서 본인 확인이 완료됩니다.</translation>
 <translation id="6277522088822131679">페이지를 인쇄하는 중에 문제가 발생했습니다. 다시 시도해 주세요.</translation>
 <translation id="6295158916970320988">모든 사이트</translation>
 <translation id="629730747756840877">계정</translation>
@@ -717,7 +718,6 @@
 <translation id="6364438453358674297">기록에서 제안을 삭제하시겠습니까?</translation>
 <translation id="6369229450655021117">여기에서 웹을 검색하고, 친구와 공유하고, 열린 페이지를 볼 수 있습니다.</translation>
 <translation id="6378173571450987352">세부정보: 사용된 데이터 양에 따라 정렬</translation>
-<translation id="6383961787135158834">사이트 저장공간 삭제...</translation>
 <translation id="6388207532828177975">삭제 및 재설정</translation>
 <translation id="6393863479814692971">Chrome이 이 사이트에서 카메라와 마이크에 액세스하려면 권한이 필요합니다.</translation>
 <translation id="6395288395575013217">링크</translation>

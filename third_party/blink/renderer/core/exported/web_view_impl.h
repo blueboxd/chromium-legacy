@@ -85,7 +85,6 @@ class UserGestureToken;
 class WebDevToolsAgentImpl;
 class WebElement;
 class WebInputMethodController;
-class WebLayerTreeView;
 class WebLocalFrame;
 class WebLocalFrameImpl;
 class WebRemoteFrame;
@@ -422,7 +421,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void DidDetachLocalMainFrame();
 
   // WebWidget methods:
-  void SetLayerTreeView(WebLayerTreeView*, cc::AnimationHost*) override;
+  void SetAnimationHost(cc::AnimationHost*) override;
   void Close() override;
   WebSize Size() override;
   void Resize(const WebSize&) override;
@@ -637,13 +636,10 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   Persistent<HTMLPlugInElement> mouse_capture_element_;
   scoped_refptr<UserGestureToken> mouse_capture_gesture_token_;
 
-  // WebViews, and WebWidgets, are used to host a Page and present it via a
-  // WebLayerTreeView compositor. The WidgetClient() provides compositing
-  // support for the WebView.
+  // WebViews, and WebWidgets, are used to host a Page. The WidgetClient()
+  // provides compositing support for the WebView.
   // In some cases, a WidgetClient() is not provided, or it informs us that
   // it won't be presenting content via a compositor.
-  // When not compositing, the |layer_tree_view_| will be null, otherwise it
-  // would be non-null until closing.
   //
   // TODO(dcheng): All WebViewImpls should have an associated LayerTreeView,
   // but for various reasons, that's not the case... WebView plugin, printing,
@@ -652,7 +648,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // the client return a null compositor. We should make things more consistent
   // and clear.
   const bool does_composite_;
-  WebLayerTreeView* layer_tree_view_ = nullptr;
   cc::AnimationHost* animation_host_ = nullptr;
 
   scoped_refptr<cc::Layer> root_layer_;

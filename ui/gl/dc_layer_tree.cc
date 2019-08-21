@@ -16,10 +16,11 @@ bool SizeContains(const gfx::Size& a, const gfx::Size& b) {
 }  // namespace
 
 DCLayerTree::DCLayerTree(bool disable_nv12_dynamic_textures,
-                         bool disable_larger_than_screen_overlays)
+                         bool disable_larger_than_screen_overlays,
+                         bool disable_vp_scaling)
     : disable_nv12_dynamic_textures_(disable_nv12_dynamic_textures),
-      disable_larger_than_screen_overlays_(
-          disable_larger_than_screen_overlays) {}
+      disable_larger_than_screen_overlays_(disable_larger_than_screen_overlays),
+      disable_vp_scaling_(disable_vp_scaling) {}
 
 DCLayerTree::~DCLayerTree() = default;
 

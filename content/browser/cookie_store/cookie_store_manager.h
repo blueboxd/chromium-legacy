@@ -187,8 +187,8 @@ class CookieStoreManager : public ServiceWorkerContextCoreObserver,
 
   // Used to receive cookie changes from the network service.
   ::network::mojom::CookieManagerPtr cookie_manager_;
-  mojo::Binding<::network::mojom::CookieChangeListener>
-      cookie_change_listener_binding_;
+  mojo::Receiver<::network::mojom::CookieChangeListener>
+      cookie_change_listener_receiver_{this};
 
   // The service worker registration user data key for subscription data.
   //

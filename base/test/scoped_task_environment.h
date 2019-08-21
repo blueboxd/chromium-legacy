@@ -174,7 +174,8 @@ class TaskEnvironment {
                                    ThreadPoolExecutionMode::DEFAULT>(args...),
             trait_helpers::GetEnum<ThreadingMode, ThreadingMode::DEFAULT>(
                 args...),
-            trait_helpers::HasTrait<SubclassCreatesDefaultTaskRunner>(args...),
+            trait_helpers::HasTrait<SubclassCreatesDefaultTaskRunner,
+                                    ArgTypes...>(),
             trait_helpers::NotATraitTag()) {}
 
   // Waits until no undelayed ThreadPool tasks remain. Then, unregisters the

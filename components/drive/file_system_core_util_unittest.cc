@@ -20,7 +20,7 @@ namespace drive {
 namespace util {
 
 class FileSystemUtilTest : public testing::Test {
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(FileSystemUtilTest, EscapeUnescapeCacheFileName) {

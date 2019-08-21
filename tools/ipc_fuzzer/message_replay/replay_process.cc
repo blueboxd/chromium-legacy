@@ -113,7 +113,7 @@ bool ReplayProcess::Initialize(int argc, const char** argv) {
   logging::SetMinLogLevel(logging::LOG_ERROR);
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_ALL;
-  settings.log_file = FILE_PATH_LITERAL("ipc_replay.log");
+  settings.log_file_path = FILE_PATH_LITERAL("ipc_replay.log");
   logging::InitLogging(settings);
 
   // Make sure to initialize Mojo before starting the IO thread.

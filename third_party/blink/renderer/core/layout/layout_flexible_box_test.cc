@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
 
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 
@@ -460,6 +461,51 @@ TEST_P(LayoutFlexibleBoxTest, GeometriesWithScrollbarsRTLRowReverseVRL) {
     </div>
   )HTML");
   ExpectSameAsRowVRL();
+}
+
+TEST_P(LayoutFlexibleBoxTest, ResizedFlexChildRequiresVisualOverflowRecalc) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        display: flex;
+        flex-direction: column;
+        width: 100px;
+        height: 1000px;
+      }
+      #child1 {
+        flex-grow: 1;
+        width: 100px;
+        will-change: transform;
+      }
+      #overflow-child {
+        width: 100px;
+        height: 950px;
+        box-shadow: 5px 10px;
+      }
+      #child2 {
+        width: 100px;
+      }
+    </style>
+    <div id="parent">
+      <div id="child1">
+        <div id="overflow-child"></div>
+      </div>
+      <div id="child2"></div>
+    </div>
+  )HTML");
+  auto* child1_element = GetElementById("child1");
+  auto* child2_element = GetElementById("child2");
+  child2_element->setAttribute(html_names::kStyleAttr, "height: 100px;");
+  GetDocument().View()->UpdateLifecycleToLayoutClean();
+
+  auto* child1_box = ToLayoutBox(child1_element->GetLayoutObject());
+  ASSERT_TRUE(child1_box->HasSelfPaintingLayer());
+  EXPECT_TRUE(child1_box->Layer()->NeedsVisualOverflowRecalcForTesting());
+
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_EQ(child1_box->PhysicalVisualOverflowRect(),
+            PhysicalRect(0, 0, 105, 960));
 }
 
 }  // namespace blink

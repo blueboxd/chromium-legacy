@@ -100,13 +100,14 @@ DedicatedWorkerHostFactoryClient::CloneWorkerFetchContext(
 scoped_refptr<WebWorkerFetchContextImpl>
 DedicatedWorkerHostFactoryClient::CreateWorkerFetchContext(
     blink::mojom::RendererPreferences renderer_preference,
-    blink::mojom::RendererPreferenceWatcherRequest watcher_request) {
+    mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
+        watcher_receiver) {
   DCHECK(blink::features::IsPlzDedicatedWorkerEnabled());
   DCHECK(subresource_loader_factory_bundle_);
   scoped_refptr<WebWorkerFetchContextImpl> worker_fetch_context =
       WebWorkerFetchContextImpl::Create(
           service_worker_provider_context_.get(),
-          std::move(renderer_preference), std::move(watcher_request),
+          std::move(renderer_preference), std::move(watcher_receiver),
           subresource_loader_factory_bundle_->Clone(),
           subresource_loader_factory_bundle_->CloneWithoutAppCacheFactory());
   worker_fetch_context->SetResponseOverrideForMainScript(

@@ -28,13 +28,13 @@ void MockClipboardHost::Reset() {
   needs_reset_ = false;
 }
 
-void MockClipboardHost::GetSequenceNumber(ui::ClipboardType clipboard_type,
+void MockClipboardHost::GetSequenceNumber(ui::ClipboardBuffer clipboard_buffer,
                                           GetSequenceNumberCallback callback) {
   std::move(callback).Run(sequence_number_);
 }
 
 void MockClipboardHost::ReadAvailableTypes(
-    ui::ClipboardType clipboard_type,
+    ui::ClipboardBuffer clipboard_buffer,
     ReadAvailableTypesCallback callback) {
   std::vector<base::string16> types;
   if (!plain_text_.empty())
@@ -51,7 +51,7 @@ void MockClipboardHost::ReadAvailableTypes(
 }
 
 void MockClipboardHost::IsFormatAvailable(blink::mojom::ClipboardFormat format,
-                                          ui::ClipboardType clipboard_type,
+                                          ui::ClipboardBuffer clipboard_buffer,
                                           IsFormatAvailableCallback callback) {
   bool result = false;
   switch (format) {
@@ -71,27 +71,27 @@ void MockClipboardHost::IsFormatAvailable(blink::mojom::ClipboardFormat format,
   std::move(callback).Run(result);
 }
 
-void MockClipboardHost::ReadText(ui::ClipboardType clipboard_type,
+void MockClipboardHost::ReadText(ui::ClipboardBuffer clipboard_buffer,
                                  ReadTextCallback callback) {
   std::move(callback).Run(plain_text_);
 }
 
-void MockClipboardHost::ReadHtml(ui::ClipboardType clipboard_type,
+void MockClipboardHost::ReadHtml(ui::ClipboardBuffer clipboard_buffer,
                                  ReadHtmlCallback callback) {
   std::move(callback).Run(html_text_, url_, 0, html_text_.length());
 }
 
-void MockClipboardHost::ReadRtf(ui::ClipboardType clipboard_type,
+void MockClipboardHost::ReadRtf(ui::ClipboardBuffer clipboard_buffer,
                                 ReadRtfCallback callback) {
   std::move(callback).Run(std::string());
 }
 
-void MockClipboardHost::ReadImage(ui::ClipboardType clipboard_type,
+void MockClipboardHost::ReadImage(ui::ClipboardBuffer clipboard_buffer,
                                   ReadImageCallback callback) {
   std::move(callback).Run(image_);
 }
 
-void MockClipboardHost::ReadCustomData(ui::ClipboardType clipboard_type,
+void MockClipboardHost::ReadCustomData(ui::ClipboardBuffer clipboard_buffer,
                                        const base::string16& type,
                                        ReadCustomDataCallback callback) {
   auto it = custom_data_.find(type);

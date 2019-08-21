@@ -77,7 +77,7 @@ class CastSessionClientImplTest : public testing::Test {
   ~CastSessionClientImplTest() override { RunUntilIdle(); }
 
  protected:
-  void RunUntilIdle() { thread_bundle_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
   template <typename T>
   void ExpectErrorLog(const T& matcher) {
@@ -88,7 +88,7 @@ class CastSessionClientImplTest : public testing::Test {
     }
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   data_decoder::TestingJsonParser::ScopedFactoryOverride parser_override_;
   service_manager::TestConnectorFactory connector_factory_;
   cast_channel::MockCastSocketService socket_service_{

@@ -16,8 +16,8 @@ namespace content {
 namespace {
 
 TEST(NetworkQualityObserverImplTest, TestObserverNotified) {
-  content::TestBrowserThreadBundle thread_bundle(
-      content::TestBrowserThreadBundle::IO_MAINLOOP);
+  content::BrowserTaskEnvironment task_environment(
+      content::BrowserTaskEnvironment::IO_MAINLOOP);
 
   network::TestNetworkQualityTracker test_network_quality_tracker;
 

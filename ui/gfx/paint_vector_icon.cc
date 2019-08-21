@@ -530,7 +530,7 @@ class VectorIconCache {
 
     ImageSkia icon_image(std::make_unique<VectorIconSource>(description),
                          Size(description.dip_size, description.dip_size));
-    images_.insert(std::make_pair(description, icon_image));
+    images_.emplace(description, icon_image);
     return icon_image;
   }
 

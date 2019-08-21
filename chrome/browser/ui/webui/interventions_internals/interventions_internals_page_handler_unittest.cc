@@ -310,7 +310,7 @@ class InterventionsInternalsPageHandlerTest : public testing::Test {
     page_.reset();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
  protected:
   TestingProfileManager profile_manager_;

@@ -212,7 +212,7 @@ class SyncEngineInitializerTest : public testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle browser_threads_;
+  content::BrowserTaskEnvironment browser_threads_;
   base::ScopedTempDir database_dir_;
   std::unique_ptr<leveldb::Env> in_memory_env_;
 

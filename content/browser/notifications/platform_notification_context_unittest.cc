@@ -244,7 +244,7 @@ class PlatformNotificationContextTest : public ::testing::Test {
   const std::string& notification_id() const { return notification_id_; }
 
  private:
-  TestBrowserThreadBundle thread_bundle_;  // Must be first member
+  BrowserTaskEnvironment task_environment_;  // Must be first member
   TestBrowserContext browser_context_;
   MockPermissionManager* permission_manager_ = nullptr;
 

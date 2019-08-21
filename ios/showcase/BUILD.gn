@@ -23,6 +23,7 @@ ios_app_bundle("showcase") {
 group("features") {
   deps = [
     "//ios/showcase/alert",
+    "//ios/showcase/badges",
     "//ios/showcase/bubble",
     "//ios/showcase/content_suggestions",
     "//ios/showcase/infobars",
@@ -52,6 +53,7 @@ ios_eg_test("ios_showcase_egtests") {
     "//ios/showcase/core:main",
 
     # Add all eg_tests targets below.
+    "//ios/showcase/badges:eg_tests",
     "//ios/showcase/bubble:eg_tests",
     "//ios/showcase/content_suggestions:eg_tests",
     "//ios/showcase/core:eg_tests",

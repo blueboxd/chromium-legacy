@@ -182,14 +182,14 @@ void CookiesEventRouter::MaybeStartListening() {
                              ? original_profile->GetOffTheRecordProfile()
                              : nullptr;
 
-  if (!binding_)
-    BindToCookieManager(&binding_, original_profile);
-  if (!otr_binding_.is_bound() && otr_profile)
-    BindToCookieManager(&otr_binding_, otr_profile);
+  if (!receiver_.is_bound())
+    BindToCookieManager(&receiver_, original_profile);
+  if (!otr_receiver_.is_bound() && otr_profile)
+    BindToCookieManager(&otr_receiver_, otr_profile);
 }
 
 void CookiesEventRouter::BindToCookieManager(
-    mojo::Binding<network::mojom::CookieChangeListener>* binding,
+    mojo::Receiver<network::mojom::CookieChangeListener>* receiver,
     Profile* profile) {
   network::mojom::CookieManager* cookie_manager =
       content::BrowserContext::GetDefaultStoragePartition(profile)
@@ -197,19 +197,17 @@ void CookiesEventRouter::BindToCookieManager(
   if (!cookie_manager)
     return;
 
-  network::mojom::CookieChangeListenerPtr listener_ptr;
-  binding->Bind(mojo::MakeRequest(&listener_ptr));
-  binding->set_connection_error_handler(base::BindOnce(
-      &CookiesEventRouter::OnConnectionError, base::Unretained(this), binding));
-
-  cookie_manager->AddGlobalChangeListener(std::move(listener_ptr));
+  cookie_manager->AddGlobalChangeListener(receiver->BindNewPipeAndPassRemote());
+  receiver->set_disconnect_handler(
+      base::BindOnce(&CookiesEventRouter::OnConnectionError,
+                     base::Unretained(this), receiver));
 }
 
 void CookiesEventRouter::OnConnectionError(
-    mojo::Binding<network::mojom::CookieChangeListener>* binding) {
+    mojo::Receiver<network::mojom::CookieChangeListener>* receiver) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  binding->Close();
+  receiver->reset();
   MaybeStartListening();
 }
 

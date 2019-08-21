@@ -95,7 +95,7 @@ class OperationTestBase : public testing::Test {
   template <typename... Args>
   OperationTestBase(Args... args)
       : OperationTestBase(
-            std::make_unique<content::TestBrowserThreadBundle>(args...)) {}
+            std::make_unique<content::BrowserTaskEnvironment>(args...)) {}
 
   ~OperationTestBase() override;
 
@@ -148,9 +148,9 @@ class OperationTestBase : public testing::Test {
   // The template constructor has to be in the header but it delegates to this
   // constructor to initialize all other members out-of-line.
   explicit OperationTestBase(
-      std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle);
+      std::unique_ptr<content::BrowserTaskEnvironment> task_environment);
 
-  std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle_;
+  std::unique_ptr<content::BrowserTaskEnvironment> task_environment_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   base::ScopedTempDir temp_dir_;

@@ -8,13 +8,19 @@ option optimize_for = LITE_RUNTIME;
 
 package content.proto;
 
+message ContentIconDefinition {
+  optional string src = 1;
+  optional string sizes = 2;
+  optional string type = 3;
+}
+
 // Stores all fields of the developer provided content description.
 message ContentDescription {
   optional string id = 1;
   optional string title = 2;
   optional string description = 3;
   optional int32 category = 4;
-  optional string icon_url = 5;
+  repeated ContentIconDefinition icons = 5;
   optional string launch_url = 6;
 }
 

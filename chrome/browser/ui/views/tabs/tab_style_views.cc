@@ -688,9 +688,10 @@ void GM2TabStyle::PaintTabBackgroundFill(gfx::Canvas* canvas,
   if (fill_id) {
     gfx::ScopedCanvas scale_scoper(canvas);
     canvas->sk_canvas()->scale(scale, scale);
-    canvas->TileImageInt(*tab_->GetThemeProvider()->GetImageSkiaNamed(fill_id),
-                         tab_->GetMirroredX() + tab_->background_offset(), 0, 0,
-                         y_inset, tab_->width(), tab_->height());
+    canvas->TileImageInt(
+        *tab_->GetThemeProvider()->GetImageSkiaNamed(fill_id),
+        tab_->GetMirroredX() + tab_->controller()->GetBackgroundOffset(), 0, 0,
+        y_inset, tab_->width(), tab_->height());
   }
 
   if (paint_hover_effect) {

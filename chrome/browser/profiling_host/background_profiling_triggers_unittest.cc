@@ -117,7 +117,7 @@ class BackgroundProfilingTriggersTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager testing_profile_manager_;
 
   ProfilingProcessHost host_;

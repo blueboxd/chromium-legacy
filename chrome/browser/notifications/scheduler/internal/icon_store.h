@@ -16,6 +16,7 @@
 #include "chrome/browser/notifications/proto/icon.pb.h"
 #include "chrome/browser/notifications/scheduler/internal/icon_converter.h"
 #include "chrome/browser/notifications/scheduler/internal/icon_entry.h"
+#include "chrome/browser/notifications/scheduler/public/notification_data.h"
 #include "components/leveldb_proto/public/proto_database.h"
 
 // Forward declaration for proto conversion.
@@ -33,32 +34,22 @@ namespace notifications {
 // be loaded into memory.
 class IconStore {
  public:
-  using LoadIconCallback =
-      base::OnceCallback<void(bool, std::unique_ptr<IconEntry>)>;
-  using LoadIconsCallback =
-      base::OnceCallback<void(bool, std::unique_ptr<std::vector<IconEntry>>)>;
+  using IconsMap = std::map<std::string /*icons_uuid*/, SkBitmap>;
+  using LoadIconsCallback = base::OnceCallback<void(bool, IconsMap)>;
   using InitCallback = base::OnceCallback<void(bool)>;
   using UpdateCallback = base::OnceCallback<void(bool)>;
+  using AddCallback =
+      base::OnceCallback<void(std::vector<std::string> /*icons_uuid*/, bool)>;
 
   // Initializes the storage.
   virtual void Init(InitCallback callback) = 0;
-
-  // Loads one icon.
-  virtual void Load(const std::string& key, LoadIconCallback callback) = 0;
 
   // Loads multiple icons.
   virtual void LoadIcons(const std::vector<std::string>& keys,
                          LoadIconsCallback callback) = 0;
 
-  // Adds one icon to storage.
-  virtual void Add(IconEntry entry, UpdateCallback callback) = 0;
-
   // Adds multiple icons to storage.
-  virtual void AddIcons(std::vector<IconEntry> entries,
-                        UpdateCallback callback) = 0;
-
-  // Deletes an icon.
-  virtual void Delete(const std::string& key, UpdateCallback callback) = 0;
+  virtual void AddIcons(std::vector<SkBitmap>, AddCallback callback) = 0;
 
   // Deletes multiple icons.
   virtual void DeleteIcons(const std::vector<std::string>& keys,
@@ -82,13 +73,9 @@ class IconProtoDbStore : public IconStore {
  private:
   // IconStore implementation.
   void Init(InitCallback callback) override;
-  void Load(const std::string& key, LoadIconCallback callback) override;
   void LoadIcons(const std::vector<std::string>& keys,
                  LoadIconsCallback callback) override;
-  void Add(IconEntry entry, UpdateCallback callback) override;
-  void AddIcons(std::vector<IconEntry> entries,
-                UpdateCallback callback) override;
-  void Delete(const std::string& key, UpdateCallback callback) override;
+  void AddIcons(std::vector<SkBitmap> icons, AddCallback callback) override;
   void DeleteIcons(const std::vector<std::string>& keys,
                    UpdateCallback callback) override;
 
@@ -97,15 +84,20 @@ class IconProtoDbStore : public IconStore {
                        leveldb_proto::Enums::InitStatus status);
 
   // Called when the icon is retrieved from the database.
-  void OnIconEntryLoaded(LoadIconCallback callback,
-                         bool success,
-                         std::unique_ptr<IconEntry> icon_entry);
-
-  // Called when the icon is retrieved from the database.
   void OnIconEntriesLoaded(
       LoadIconsCallback callback,
       bool success,
-      std::unique_ptr<std::vector<IconEntry>> icon_entries);
+      std::unique_ptr<std::map<std::string, IconEntry>> icon_entries);
+
+  // Called when the icons are encoded.
+  void OnIconsEncoded(AddCallback callback,
+                      std::vector<std::string> icons_uuid,
+                      std::vector<std::string> encoded_icons_data);
+
+  // Called when the encoded data are decoded.
+  void OnIconsDecoded(LoadIconsCallback callback,
+                      std::vector<std::string> icons_uuid,
+                      std::vector<SkBitmap> decoded_icons);
 
   // The proto database instance that persists data.
   std::unique_ptr<leveldb_proto::ProtoDatabase<proto::Icon, IconEntry>> db_;

@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.content.res.ColorStateList;
-import android.graphics.Rect;
 import android.view.View.OnClickListener;
 
 import org.chromium.chrome.browser.widget.ScrimView;
@@ -32,11 +31,12 @@ class TabGridSheetProperties {
     public static final PropertyModel
             .WritableObjectPropertyKey<ScrimView.ScrimObserver> SCRIMVIEW_OBSERVER =
             new PropertyModel.WritableObjectPropertyKey<>();
-    public static final PropertyModel.WritableObjectPropertyKey<Rect> ANIMATION_SOURCE_RECT =
+    public static final PropertyModel
+            .WritableObjectPropertyKey<TabGridDialogParent.AnimationParams> ANIMATION_PARAMS =
             new PropertyModel.WritableObjectPropertyKey<>();
     public static final PropertyModel.WritableIntPropertyKey UNGROUP_BAR_STATUS =
             new PropertyModel.WritableIntPropertyKey();
     public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {COLLAPSE_CLICK_LISTENER,
             ADD_CLICK_LISTENER, HEADER_TITLE, CONTENT_TOP_MARGIN, PRIMARY_COLOR, TINT,
-            IS_DIALOG_VISIBLE, SCRIMVIEW_OBSERVER, ANIMATION_SOURCE_RECT, UNGROUP_BAR_STATUS};
+            IS_DIALOG_VISIBLE, SCRIMVIEW_OBSERVER, ANIMATION_PARAMS, UNGROUP_BAR_STATUS};
 }

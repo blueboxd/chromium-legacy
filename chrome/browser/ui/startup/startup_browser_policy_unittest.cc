@@ -101,7 +101,7 @@ TEST_F(StartupBrowserPolicyUnitTest, ForceEphemeralProfiles) {
   TestingProfile::Builder builder;
   builder.SetPolicyService(GetPolicyService(policy_map));
   // Needed by the builder when building the profile.
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   auto profile = builder.Build();
 
   EXPECT_TRUE(welcome::HasModulesToShow(profile.get()));
@@ -118,7 +118,7 @@ TEST_F(StartupBrowserPolicyUnitTest, NewTabPageLocation) {
   TestingProfile::Builder builder;
   builder.SetPolicyService(GetPolicyService(policy_map));
   // Needed by the builder when building the profile.
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   auto profile = builder.Build();
 
   TemplateURLServiceFactory::GetInstance()->SetTestingFactory(

@@ -264,17 +264,17 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, ClipboardCopyPasteText) {
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   ASSERT_TRUE(clipboard);
   base::string16 paste_text = base::ASCIIToUTF16("Clippy!");
-  for (ui::ClipboardType type :
-       {ui::ClipboardType::kCopyPaste, ui::ClipboardType::kSelection,
-        ui::ClipboardType::kDrag}) {
-    if (!ui::Clipboard::IsSupportedClipboardType(type))
+  for (ui::ClipboardBuffer buffer :
+       {ui::ClipboardBuffer::kCopyPaste, ui::ClipboardBuffer::kSelection,
+        ui::ClipboardBuffer::kDrag}) {
+    if (!ui::Clipboard::IsSupportedClipboardBuffer(buffer))
       continue;
     {
-      ui::ScopedClipboardWriter writer(type);
+      ui::ScopedClipboardWriter writer(buffer);
       writer.WriteText(paste_text);
     }
     base::string16 copy_text;
-    clipboard->ReadText(type, &copy_text);
+    clipboard->ReadText(buffer, &copy_text);
     EXPECT_EQ(paste_text, copy_text);
   }
 }

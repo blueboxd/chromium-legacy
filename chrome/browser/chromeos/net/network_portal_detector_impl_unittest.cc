@@ -289,7 +289,7 @@ class NetworkPortalDetectorImplTest
     NetworkHandler::Initialize();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   Profile* profile_ = nullptr;
   std::unique_ptr<NetworkPortalDetectorImpl> network_portal_detector_;
   std::unique_ptr<base::HistogramSamples> original_samples_;

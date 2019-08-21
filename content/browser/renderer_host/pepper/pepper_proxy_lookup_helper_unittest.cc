@@ -140,7 +140,7 @@ class PepperProxyLookupHelperTest : public testing::Test {
     lookup_helper_.reset();
   }
 
-  TestBrowserThreadBundle test_browser_thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
 
   bool fail_to_start_request_ = false;
 

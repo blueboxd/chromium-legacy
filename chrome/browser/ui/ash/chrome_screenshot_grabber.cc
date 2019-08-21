@@ -80,7 +80,7 @@ void CopyScreenshotToClipboard(scoped_refptr<base::RefCountedString> png_data,
   std::string encoded;
   base::Base64Encode(png_data->data(), &encoded);
   {
-    ui::ScopedClipboardWriter scw(ui::ClipboardType::kCopyPaste);
+    ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste);
 
     // Send both HTML and and Image formats to clipboard. HTML format is needed
     // by ARC, while Image is needed by Hangout.

@@ -174,8 +174,8 @@ common `SequencedTaskRunner`, use
 ### How to test code that posts tasks?
 
 If the test uses `BrowserThread::UI/IO`, instantiate a
-`content::TestBrowserThreadBundle` for the scope of the test. Call
-`TestBrowserThreadBundle::RunUntilIdle()` to wait until all tasks have run.
+`content::BrowserTaskEnvironment` for the scope of the test. Call
+`BrowserTaskEnvironment::RunUntilIdle()` to wait until all tasks have run.
 
 If the test doesn't use `BrowserThread::UI/IO`, instantiate a
 `base::test::TaskEnvironment` for the scope of the test. Call

@@ -56,7 +56,7 @@ class VerdictCacheManagerTest : public ::testing::Test {
   scoped_refptr<HostContentSettingsMap> content_setting_map_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   sync_preferences::TestingPrefServiceSyncable test_pref_service_;
 };
 

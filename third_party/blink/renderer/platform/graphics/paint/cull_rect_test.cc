@@ -289,6 +289,16 @@ TEST_F(CullRectTest, ApplyTransformsSingleScrollWholeScrollingContents) {
   EXPECT_EQ(IntRect(-3970, -3975, 8040, 8050), cull_rect3.Rect());
 }
 
+TEST_F(CullRectTest, ApplyTransformsWithOrigin) {
+  ScopedCompositeAfterPaintForTest cap(true);
+  auto t1 = CreateTransform(t0(), TransformationMatrix().Translate(1, 2));
+  auto t2 = CreateTransform(*t1, TransformationMatrix().Scale(0.5),
+                            FloatPoint3D(50, 100, 0));
+  CullRect cull_rect1(IntRect(0, 0, 50, 200));
+  cull_rect1.ApplyTransforms(*t1, *t2, base::nullopt);
+  EXPECT_EQ(IntRect(-50, -100, 100, 400), cull_rect1.Rect());
+}
+
 TEST_F(CullRectTest, ApplyTransformsSingleScrollPartialScrollingContents) {
   ScopedCompositeAfterPaintForTest cap(true);
   auto t1 = CreateTransform(t0(), TransformationMatrix().Translate(1, 2));

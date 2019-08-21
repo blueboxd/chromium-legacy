@@ -107,7 +107,7 @@ class CrostiniExportImportTest : public testing::Test {
     // shutdown GuestOsSharePath to ensure watchers are destroyed, otherwise
     // they can trigger and execute against a destroyed service.
     guest_os::GuestOsSharePath::GetForProfile(profile())->Shutdown();
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     base::DeleteFile(tarball_, false);
     profile_.reset();
   }
@@ -124,7 +124,7 @@ class CrostiniExportImportTest : public testing::Test {
   ContainerId container_id_;
   base::FilePath tarball_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CrostiniExportImportTest);
@@ -134,7 +134,7 @@ class CrostiniExportImportTest : public testing::Test {
 TEST_F(CrostiniExportImportTest, TestDeprecatedExportSuccess) {
   crostini_export_import_->FileSelected(
       tarball_, 0, reinterpret_cast<void*>(ExportImportType::EXPORT));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   CrostiniExportImportNotification* notification =
       crostini_export_import_->GetNotificationForTesting(container_id_);
   ASSERT_NE(notification, nullptr);
@@ -175,14 +175,14 @@ TEST_F(CrostiniExportImportTest, TestDeprecatedExportSuccess) {
   EXPECT_EQ(notification->status(),
             CrostiniExportImportNotification::Status::DONE);
   // CrostiniExportImport should've created the exported file.
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(base::PathExists(tarball_));
 }
 
 TEST_F(CrostiniExportImportTest, TestExportSuccess) {
   crostini_export_import_->FileSelected(
       tarball_, 0, reinterpret_cast<void*>(ExportImportType::EXPORT));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   CrostiniExportImportNotification* notification =
       crostini_export_import_->GetNotificationForTesting(container_id_);
   ASSERT_NE(notification, nullptr);
@@ -233,14 +233,14 @@ TEST_F(CrostiniExportImportTest, TestExportSuccess) {
   EXPECT_EQ(notification->status(),
             CrostiniExportImportNotification::Status::DONE);
   // CrostiniExportImport should've created the exported file.
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(base::PathExists(tarball_));
 }
 
 TEST_F(CrostiniExportImportTest, TestExportFail) {
   crostini_export_import_->FileSelected(
       tarball_, 0, reinterpret_cast<void*>(ExportImportType::EXPORT));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   CrostiniExportImportNotification* notification =
       crostini_export_import_->GetNotificationForTesting(container_id_);
 
@@ -250,14 +250,14 @@ TEST_F(CrostiniExportImportTest, TestExportFail) {
   EXPECT_EQ(notification->status(),
             CrostiniExportImportNotification::Status::FAILED);
   // CrostiniExportImport should cleanup the file if an export fails.
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(base::PathExists(tarball_));
 }
 
 TEST_F(CrostiniExportImportTest, TestExportCancelled) {
   crostini_export_import_->FileSelected(
       tarball_, 0, reinterpret_cast<void*>(ExportImportType::EXPORT));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   CrostiniExportImportNotification* notification =
       crostini_export_import_->GetNotificationForTesting(container_id_);
   ASSERT_NE(notification, nullptr);
@@ -291,14 +291,14 @@ TEST_F(CrostiniExportImportTest, TestExportCancelled) {
       vm_tools::cicerone::ExportLxdContainerProgressSignal_Status_CANCELLED);
   EXPECT_FALSE(
       crostini_export_import_->GetNotificationForTesting(container_id_));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(base::PathExists(tarball_));
 }
 
 TEST_F(CrostiniExportImportTest, TestExportDoneBeforeCancelled) {
   crostini_export_import_->FileSelected(
       tarball_, 0, reinterpret_cast<void*>(ExportImportType::EXPORT));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   CrostiniExportImportNotification* notification =
       crostini_export_import_->GetNotificationForTesting(container_id_);
   ASSERT_NE(notification, nullptr);
@@ -319,14 +319,14 @@ TEST_F(CrostiniExportImportTest, TestExportDoneBeforeCancelled) {
       vm_tools::cicerone::ExportLxdContainerProgressSignal_Status_DONE);
   EXPECT_FALSE(
       crostini_export_import_->GetNotificationForTesting(container_id_));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_FALSE(base::PathExists(tarball_));
 }
 
 TEST_F(CrostiniExportImportTest, TestImportSuccess) {
   crostini_export_import_->FileSelected(
       tarball_, 0, reinterpret_cast<void*>(ExportImportType::IMPORT));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   CrostiniExportImportNotification* notification =
       crostini_export_import_->GetNotificationForTesting(container_id_);
   ASSERT_NE(notification, nullptr);
@@ -372,7 +372,7 @@ TEST_F(CrostiniExportImportTest, TestImportSuccess) {
 TEST_F(CrostiniExportImportTest, TestImportFail) {
   crostini_export_import_->FileSelected(
       tarball_, 0, reinterpret_cast<void*>(ExportImportType::IMPORT));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   CrostiniExportImportNotification* notification =
       crostini_export_import_->GetNotificationForTesting(container_id_);
 
@@ -389,7 +389,7 @@ TEST_F(CrostiniExportImportTest, TestImportFail) {
 TEST_F(CrostiniExportImportTest, TestImportCancelled) {
   crostini_export_import_->FileSelected(
       tarball_, 0, reinterpret_cast<void*>(ExportImportType::IMPORT));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   CrostiniExportImportNotification* notification =
       crostini_export_import_->GetNotificationForTesting(container_id_);
   ASSERT_NE(notification, nullptr);
@@ -423,7 +423,7 @@ TEST_F(CrostiniExportImportTest, TestImportCancelled) {
 TEST_F(CrostiniExportImportTest, TestImportDoneBeforeCancelled) {
   crostini_export_import_->FileSelected(
       tarball_, 0, reinterpret_cast<void*>(ExportImportType::IMPORT));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   CrostiniExportImportNotification* notification =
       crostini_export_import_->GetNotificationForTesting(container_id_);
   ASSERT_NE(notification, nullptr);
@@ -448,7 +448,7 @@ TEST_F(CrostiniExportImportTest, TestImportDoneBeforeCancelled) {
 TEST_F(CrostiniExportImportTest, TestImportFailArchitecture) {
   crostini_export_import_->FileSelected(
       tarball_, 0, reinterpret_cast<void*>(ExportImportType::IMPORT));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   CrostiniExportImportNotification* notification =
       crostini_export_import_->GetNotificationForTesting(container_id_);
 
@@ -470,7 +470,7 @@ TEST_F(CrostiniExportImportTest, TestImportFailArchitecture) {
 TEST_F(CrostiniExportImportTest, TestImportFailSpace) {
   crostini_export_import_->FileSelected(
       tarball_, 0, reinterpret_cast<void*>(ExportImportType::IMPORT));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   CrostiniExportImportNotification* notification =
       crostini_export_import_->GetNotificationForTesting(container_id_);
 

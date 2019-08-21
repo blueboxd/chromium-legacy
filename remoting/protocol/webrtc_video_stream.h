@@ -109,6 +109,11 @@ class WebrtcVideoStream : public VideoStream,
 
   const SessionOptions session_options_;
 
+  // Settings that are received from video-control messages. These are stored
+  // here in case a message is received before the encoder is created.
+  bool lossless_encode_ = false;
+  bool lossless_color_ = false;
+
   base::WeakPtrFactory<WebrtcVideoStream> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebrtcVideoStream);

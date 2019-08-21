@@ -117,7 +117,7 @@ class ServiceVideoCaptureDeviceLauncherTest : public testing::Test {
   void RunConnectionLostAfterSuccessfulStartTest(
       base::OnceClosure close_connection_cb);
 
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   MockVideoCaptureDeviceLauncherCallbacks mock_callbacks_;
   video_capture::mojom::VideoSourceProviderPtr source_provider_;
   video_capture::MockVideoSourceProvider mock_source_provider_;

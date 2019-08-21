@@ -9,7 +9,9 @@
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace android_webview {
 
@@ -21,7 +23,7 @@ class AwProxyingRestrictedCookieManagerListener
       const GURL& site_for_cookies,
       base::WeakPtr<AwProxyingRestrictedCookieManager>
           aw_restricted_cookie_manager,
-      network::mojom::CookieChangeListenerPtr client_listener)
+      mojo::PendingRemote<network::mojom::CookieChangeListener> client_listener)
       : url_(url),
         site_for_cookies_(site_for_cookies),
         aw_restricted_cookie_manager_(aw_restricted_cookie_manager),
@@ -39,7 +41,7 @@ class AwProxyingRestrictedCookieManagerListener
   const GURL site_for_cookies_;
   base::WeakPtr<AwProxyingRestrictedCookieManager>
       aw_restricted_cookie_manager_;
-  network::mojom::CookieChangeListenerPtr client_listener_;
+  mojo::Remote<network::mojom::CookieChangeListener> client_listener_;
 };
 
 // static
@@ -100,21 +102,23 @@ void AwProxyingRestrictedCookieManager::AddChangeListener(
     const GURL& url,
     const GURL& site_for_cookies,
     const url::Origin& top_frame_origin,
-    network::mojom::CookieChangeListenerPtr listener,
+    mojo::PendingRemote<network::mojom::CookieChangeListener> listener,
     AddChangeListenerCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  network::mojom::CookieChangeListenerPtr proxy_listener_ptr;
+  mojo::PendingRemote<network::mojom::CookieChangeListener>
+      proxy_listener_remote;
   auto proxy_listener =
       std::make_unique<AwProxyingRestrictedCookieManagerListener>(
           url, site_for_cookies, weak_factory_.GetWeakPtr(),
           std::move(listener));
 
-  mojo::MakeStrongBinding(std::move(proxy_listener),
-                          mojo::MakeRequest(&proxy_listener_ptr));
+  mojo::MakeSelfOwnedReceiver(
+      std::move(proxy_listener),
+      proxy_listener_remote.InitWithNewPipeAndPassReceiver());
 
   underlying_restricted_cookie_manager_->AddChangeListener(
-      url, site_for_cookies, top_frame_origin, std::move(proxy_listener_ptr),
+      url, site_for_cookies, top_frame_origin, std::move(proxy_listener_remote),
       std::move(callback));
 }
 

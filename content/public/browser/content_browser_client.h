@@ -632,7 +632,7 @@ class CONTENT_EXPORT ContentBrowserClient {
 
 #if defined(OS_CHROMEOS)
   // Notification that a trust anchor was used by the given user.
-  virtual void OnTrustAnchorUsed(const std::string& username_hash) {}
+  virtual void OnTrustAnchorUsed(BrowserContext* browser_context) {}
 #endif
 
   // Allows the embedder to override the LocationProvider implementation.
@@ -1496,7 +1496,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Registers the watcher to observe updates in RendererPreferences.
   virtual void RegisterRendererPreferenceWatcher(
       BrowserContext* browser_context,
-      blink::mojom::RendererPreferenceWatcherPtr watcher);
+      mojo::PendingRemote<blink::mojom::RendererPreferenceWatcher> watcher);
 
   // Returns the HTML content of the error page for Origin Policy related
   // errors.

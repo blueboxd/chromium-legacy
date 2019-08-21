@@ -161,7 +161,7 @@ class SearchPermissionsServiceTest : public testing::Test {
 
  private:
   std::unique_ptr<TestingProfile> profile_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   // This is owned by the SearchPermissionsService which is owned by the
   // profile.

@@ -227,7 +227,7 @@ class CookieStoreManagerTest
       public testing::WithParamInterface<bool /* reset_context */> {
  public:
   CookieStoreManagerTest()
-      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   void SetUp() override {
     // Use an on-disk service worker storage to test saving and loading.
@@ -237,7 +237,7 @@ class CookieStoreManagerTest
   }
 
   void TearDown() override {
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
     // Smart pointers are reset manually in destruction order because this is
     // called by ResetServiceWorkerContext().
@@ -351,7 +351,7 @@ class CookieStoreManagerTest
   static constexpr const int64_t kInvalidRegistrationId = -1;
 
  protected:
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir user_data_directory_;
   std::unique_ptr<CookieStoreWorkerTestHelper> worker_test_helper_;
   std::unique_ptr<StoragePartitionImpl> storage_partition_impl_;
@@ -462,7 +462,7 @@ TEST_P(CookieStoreManagerTest, WrongDomainSubscription) {
 
   ASSERT_TRUE(
       SetSessionCookie("cookie-name", "cookie-value", "google.com", "/"));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_EQ(0u, worker_test_helper_->changes().size());
 }
@@ -750,7 +750,7 @@ TEST_P(CookieStoreManagerTest, OneCookieChange) {
 
   ASSERT_TRUE(
       SetSessionCookie("cookie-name", "cookie-value", "example.com", "/"));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_EQ(1u, worker_test_helper_->changes().size());
   EXPECT_EQ("cookie-name", worker_test_helper_->changes()[0].first.Name());
@@ -788,13 +788,13 @@ TEST_P(CookieStoreManagerTest, CookieChangeNameStartsWith) {
 
   ASSERT_TRUE(
       SetSessionCookie("cookie-name-1", "cookie-value-1", "example.com", "/"));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(0u, worker_test_helper_->changes().size());
 
   worker_test_helper_->changes().clear();
   ASSERT_TRUE(
       SetSessionCookie("cookie-name-2", "cookie-value-2", "example.com", "/"));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_EQ(1u, worker_test_helper_->changes().size());
   EXPECT_EQ("cookie-name-2", worker_test_helper_->changes()[0].first.Name());
@@ -807,7 +807,7 @@ TEST_P(CookieStoreManagerTest, CookieChangeNameStartsWith) {
   worker_test_helper_->changes().clear();
   ASSERT_TRUE(SetSessionCookie("cookie-name-22", "cookie-value-22",
                                "example.com", "/"));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_EQ(1u, worker_test_helper_->changes().size());
   EXPECT_EQ("cookie-name-22", worker_test_helper_->changes()[0].first.Name());
@@ -845,19 +845,19 @@ TEST_P(CookieStoreManagerTest, CookieChangeUrl) {
 
   ASSERT_TRUE(
       SetSessionCookie("cookie-name-1", "cookie-value-1", "google.com", "/"));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_EQ(0u, worker_test_helper_->changes().size());
 
   worker_test_helper_->changes().clear();
   ASSERT_TRUE(SetSessionCookie("cookie-name-2", "cookie-value-2", "example.com",
                                "/a/subpath"));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(0u, worker_test_helper_->changes().size());
 
   worker_test_helper_->changes().clear();
   ASSERT_TRUE(
       SetSessionCookie("cookie-name-3", "cookie-value-3", "example.com", "/"));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_EQ(1u, worker_test_helper_->changes().size());
   EXPECT_EQ("cookie-name-3", worker_test_helper_->changes()[0].first.Name());
@@ -870,7 +870,7 @@ TEST_P(CookieStoreManagerTest, CookieChangeUrl) {
   worker_test_helper_->changes().clear();
   ASSERT_TRUE(
       SetSessionCookie("cookie-name-4", "cookie-value-4", "example.com", "/a"));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_EQ(1u, worker_test_helper_->changes().size());
   EXPECT_EQ("cookie-name-4", worker_test_helper_->changes()[0].first.Name());
@@ -912,7 +912,7 @@ TEST_P(CookieStoreManagerTest, HttpOnlyCookieChange) {
       /* secure = */ false,
       /* httponly = */ true, net::CookieSameSite::NO_RESTRICTION,
       net::COOKIE_PRIORITY_DEFAULT)));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(0u, worker_test_helper_->changes().size());
 
   worker_test_helper_->changes().clear();
@@ -922,7 +922,7 @@ TEST_P(CookieStoreManagerTest, HttpOnlyCookieChange) {
       /* secure = */ false,
       /* httponly = */ false, net::CookieSameSite::NO_RESTRICTION,
       net::COOKIE_PRIORITY_DEFAULT)));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   ASSERT_EQ(1u, worker_test_helper_->changes().size());
   EXPECT_EQ("cookie-name-2", worker_test_helper_->changes()[0].first.Name());

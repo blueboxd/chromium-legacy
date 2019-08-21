@@ -27,7 +27,6 @@
 #include "services/network/public/cpp/manifest.h"
 #include "services/resource_coordinator/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
-#include "services/shape_detection/public/cpp/manifest.h"
 #include "services/tracing/manifest.h"
 
 namespace content {
@@ -75,7 +74,6 @@ const std::vector<service_manager::Manifest>& GetBuiltinServiceManifests() {
                   : service_manager::Manifest::ExecutionMode::
                         kOutOfProcessBuiltin),
           resource_coordinator::GetManifest(),
-          shape_detection::GetManifest(),
           tracing::GetManifest(),
       }};
   return *manifests;

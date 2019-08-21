@@ -96,7 +96,7 @@ class NativeFileSystemFileHandleImplTest : public testing::Test {
   const url::Origin test_src_origin_ = url::Origin::Create(test_src_url_);
 
   base::test::ScopedFeatureList scoped_feature_list_;
-  TestBrowserThreadBundle task_environment_;
+  BrowserTaskEnvironment task_environment_;
 
   base::ScopedTempDir dir_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;

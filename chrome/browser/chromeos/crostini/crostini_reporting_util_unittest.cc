@@ -34,7 +34,7 @@ class CrostiniReportingUtilTest : public testing::Test {
     profile_.GetPrefs()->SetBoolean(prefs::kReportCrostiniUsageEnabled, true);
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::SimpleTestClock test_clock_;
   TestingProfile profile_;
   component_updater::MockComponentUpdateService update_service_;

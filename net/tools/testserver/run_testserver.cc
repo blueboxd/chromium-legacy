@@ -33,7 +33,7 @@ int main(int argc, const char* argv[]) {
 
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_ALL;
-  settings.log_file = FILE_PATH_LITERAL("testserver.log");
+  settings.log_file_path = FILE_PATH_LITERAL("testserver.log");
   if (!logging::InitLogging(settings)) {
     printf("Error: could not initialize logging. Exiting.\n");
     return -1;

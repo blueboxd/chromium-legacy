@@ -24,7 +24,7 @@ namespace content {
 TestBrowserContext::TestBrowserContext(
     base::FilePath browser_context_dir_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI))
-      << "Please construct content::TestBrowserThreadBundle before "
+      << "Please construct content::BrowserTaskEnvironment before "
       << "constructing TestBrowserContext instances.  "
       << BrowserThread::GetDCheckCurrentlyOnErrorMessage(BrowserThread::UI);
 
@@ -39,7 +39,7 @@ TestBrowserContext::TestBrowserContext(
 TestBrowserContext::~TestBrowserContext() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI))
       << "Please destruct content::TestBrowserContext before destructing "
-      << "the TestBrowserThreadBundle instance.  "
+      << "the BrowserTaskEnvironment instance.  "
       << BrowserThread::GetDCheckCurrentlyOnErrorMessage(BrowserThread::UI);
 
   NotifyWillBeDestroyed(this);

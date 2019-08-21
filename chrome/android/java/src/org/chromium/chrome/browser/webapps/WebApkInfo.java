@@ -49,7 +49,7 @@ import java.util.Map;
  */
 public class WebApkInfo extends WebappInfo {
     // A class that stores share information from share intent.
-    protected static class ShareData {
+    public static class ShareData {
         public String subject;
         public String text;
         public ArrayList<Uri> files;

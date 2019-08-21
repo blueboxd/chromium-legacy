@@ -87,8 +87,7 @@ const base::TimeDelta kMaxCollectionDelay = base::TimeDelta::FromSeconds(1);
 class MetricProviderTest : public testing::Test {
  public:
   MetricProviderTest()
-      : test_browser_thread_bundle_(
-            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   void SetUp() override {
     CollectionParams test_params;
@@ -104,16 +103,16 @@ class MetricProviderTest : public testing::Test {
     metric_provider_ = std::make_unique<MetricProvider>(
         std::make_unique<TestMetricCollector>(test_params));
     metric_provider_->Init();
-    test_browser_thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void TearDown() override { metric_provider_.reset(); }
 
  protected:
-  // test_browser_thread_bundle_ must be the first member (or at least before
+  // task_environment_ must be the first member (or at least before
   // any member that cares about tasks) to be initialized first and destroyed
   // last.
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   std::unique_ptr<MetricProvider> metric_provider_;
 
@@ -128,7 +127,7 @@ TEST_F(MetricProviderTest, CheckSetup) {
 }
 
 TEST_F(MetricProviderTest, DisabledBeforeLogin) {
-  test_browser_thread_bundle_.FastForwardBy(kPeriodicCollectionInterval);
+  task_environment_.FastForwardBy(kPeriodicCollectionInterval);
 
   // There are no cached profiles after a profiling interval.
   std::vector<SampledProfile> stored_profiles;
@@ -138,7 +137,7 @@ TEST_F(MetricProviderTest, DisabledBeforeLogin) {
 
 TEST_F(MetricProviderTest, EnabledOnLogin) {
   metric_provider_->OnUserLoggedIn();
-  test_browser_thread_bundle_.FastForwardBy(kPeriodicCollectionInterval);
+  task_environment_.FastForwardBy(kPeriodicCollectionInterval);
 
   // We should find a cached PERIODIC_COLLECTION profile after a profiling
   // interval.
@@ -156,10 +155,10 @@ TEST_F(MetricProviderTest, EnabledOnLogin) {
 
 TEST_F(MetricProviderTest, DisabledOnDeactivate) {
   metric_provider_->OnUserLoggedIn();
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   metric_provider_->Deactivate();
-  test_browser_thread_bundle_.FastForwardBy(kPeriodicCollectionInterval);
+  task_environment_.FastForwardBy(kPeriodicCollectionInterval);
 
   // There are no cached profiles after a profiling interval.
   std::vector<SampledProfile> stored_profiles;
@@ -169,14 +168,14 @@ TEST_F(MetricProviderTest, DisabledOnDeactivate) {
 
 TEST_F(MetricProviderTest, SuspendDone) {
   metric_provider_->OnUserLoggedIn();
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   const auto kSuspendDuration = base::TimeDelta::FromMinutes(3);
 
   metric_provider_->SuspendDone(kSuspendDuration);
 
   // Fast forward the time by the max collection delay.
-  test_browser_thread_bundle_.FastForwardBy(kMaxCollectionDelay);
+  task_environment_.FastForwardBy(kMaxCollectionDelay);
 
   // Check that the SuspendDone trigger produced one profile.
   std::vector<SampledProfile> stored_profiles;
@@ -193,14 +192,14 @@ TEST_F(MetricProviderTest, SuspendDone) {
 
 TEST_F(MetricProviderTest, OnSessionRestoreDone) {
   metric_provider_->OnUserLoggedIn();
-  test_browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   const int kRestoredTabs = 7;
 
   metric_provider_->OnSessionRestoreDone(kRestoredTabs);
 
   // Fast forward the time by the max collection delay.
-  test_browser_thread_bundle_.FastForwardBy(kMaxCollectionDelay);
+  task_environment_.FastForwardBy(kMaxCollectionDelay);
 
   std::vector<SampledProfile> stored_profiles;
   EXPECT_TRUE(metric_provider_->GetSampledProfiles(&stored_profiles));

@@ -98,7 +98,7 @@ class WKHTTPSystemCookieStoreTestDelegate {
   SystemCookieStore* GetCookieStore() { return store_.get(); }
 
  private:
-  web::TestWebThreadBundle web_thread_;
+  web::WebTaskEnvironment web_thread_;
   web::TestBrowserState browser_state_;
   WKHTTPCookieStore* shared_store_ = nil;
   std::unique_ptr<web::WKHTTPSystemCookieStore> store_;

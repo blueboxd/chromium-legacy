@@ -83,7 +83,7 @@ class TaskGroupTest : public testing::Test {
     task_group_->AddTask(fake_task_.get());
   }
 
-  content::TestBrowserThreadBundle browser_threads_;
+  content::BrowserTaskEnvironment browser_threads_;
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
   std::unique_ptr<base::RunLoop> run_loop_;
   std::unique_ptr<TaskGroup> task_group_;

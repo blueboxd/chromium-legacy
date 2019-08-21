@@ -73,7 +73,7 @@ class TPMAutoUpdateModePolicyHandlerTest : public testing::Test {
   chromeos::TpmAutoUpdateUserNotification last_shown_notification_ =
       chromeos::TpmAutoUpdateUserNotification::kNone;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   ScopedTestingLocalState local_state_;
   chromeos::FakeChromeUserManager* user_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;

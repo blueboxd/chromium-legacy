@@ -2386,6 +2386,7 @@ TEST_F(AuthenticatorContentBrowserClientTest,
 }
 
 TEST_F(AuthenticatorContentBrowserClientTest, IsUVPAA) {
+  SimulateNavigation(GURL(kTestOrigin1));
   for (const bool is_uvpaa : {false, true}) {
     SCOPED_TRACE(::testing::Message() << "is_uvpaa=" << is_uvpaa);
     test_client_.is_uvpaa = is_uvpaa;
@@ -2487,9 +2488,10 @@ class FakeAuthenticatorCommon : public AuthenticatorCommon {
         mock_delegate_(std::move(mock_delegate)) {}
   ~FakeAuthenticatorCommon() override = default;
 
-  void UpdateRequestDelegate() override {
+  std::unique_ptr<AuthenticatorRequestClientDelegate> CreateRequestDelegate(
+      std::string relying_party_id) override {
     DCHECK(mock_delegate_);
-    request_delegate_ = std::move(mock_delegate_);
+    return std::move(mock_delegate_);
   }
 
  private:

@@ -129,8 +129,7 @@ class CORE_EXPORT WorkerGlobalScope
   void AddConsoleMessageImpl(ConsoleMessage*, bool discard_duplicates) final;
   bool IsSecureContext(String& error_message) const override;
   service_manager::InterfaceProvider* GetInterfaceProvider() final;
-  const BrowserInterfaceBrokerProxy* GetBrowserInterfaceBrokerProxy()
-      const final;
+  BrowserInterfaceBrokerProxy* GetBrowserInterfaceBrokerProxy() final;
 
   OffscreenFontSelector* GetFontSelector() { return font_selector_; }
 

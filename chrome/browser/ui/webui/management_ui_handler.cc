@@ -45,6 +45,7 @@
 #include "chrome/browser/chromeos/policy/status_uploader.h"
 #include "chrome/browser/chromeos/policy/system_log_uploader.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/ui/webui/management_ui_handler_chromeos.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
@@ -579,29 +580,8 @@ void ManagementUIHandler::AsyncUpdateLogo() {
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   const auto url = connector->GetCustomerLogoURL();
   if (!url.empty() && GURL(url) != logo_url_) {
-    net::NetworkTrafficAnnotationTag traffic_annotation =
-        net::DefineNetworkTrafficAnnotation("management_ui_customer_logo", R"(
-          semantics {
-            sender: "Management UI Handler"
-            description:
-              "Download organization logo for visualization on the "
-              "chrome://management page."
-            trigger:
-              "The user managed by organization that provides a company logo "
-              "in their GSuites account loads the chrome://management page."
-            data:
-              "Organization uploaded image URL."
-            destination: GOOGLE_OWNED_SERVICE
-          }
-          policy {
-            cookies_allowed: NO
-            setting:
-              "This feature cannot be disabled by settings, but it is only "
-              "triggered by a user action."
-            policy_exception_justification: "Not implemented."
-          })");
-    icon_fetcher_ =
-        std::make_unique<BitmapFetcher>(GURL(url), this, traffic_annotation);
+    icon_fetcher_ = std::make_unique<BitmapFetcher>(
+        GURL(url), this, GetManagementUICustomerLogoAnnotation());
     icon_fetcher_->Init(
         std::string(), net::URLRequest::NEVER_CLEAR_REFERRER,
         net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES);

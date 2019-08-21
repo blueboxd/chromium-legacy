@@ -374,8 +374,11 @@ TEST_F(InfobarContainerCoordinatorTest,
             InfobarBannerPresentationState::Presented);
 
   web_state_list_->ActivateWebStateAt(0);
-  // Wait for any potential presentation.
-  base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(1));
+  // Wait for any potential presentation. This value was initially 1 second but
+  // started to cause Flake on iOS13, this seems to be fixed when we change it
+  // to 2 seconds. If this happens again with a different iOS version or device,
+  // etc. or the test keeps flaking, then it should probably be redesigned.
+  base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(2));
 
   ASSERT_NE(infobar_container_coordinator_.infobarBannerState,
             InfobarBannerPresentationState::Presented);

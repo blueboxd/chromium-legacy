@@ -208,7 +208,7 @@ class TrialComparisonCertVerifierControllerTest : public testing::Test {
  private:
   scoped_refptr<CertificateReportingServiceTestHelper>
       reporting_service_test_helper_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   scoped_refptr<safe_browsing::SafeBrowsingService> sb_service_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   TestingProfile* profile_;

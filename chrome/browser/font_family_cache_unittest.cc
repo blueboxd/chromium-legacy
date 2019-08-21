@@ -33,7 +33,7 @@ class TestingFontFamilyCache : public FontFamilyCache {
 
 // Tests that the cache is correctly set and cleared.
 TEST(FontFamilyCacheTest, Caching) {
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile;
   TestingFontFamilyCache cache(&profile);
   sync_preferences::TestingPrefServiceSyncable* prefs =

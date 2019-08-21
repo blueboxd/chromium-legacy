@@ -7,8 +7,8 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/style/default_color_constants.h"
 #include "ash/system/audio/unified_volume_slider_controller.h"
-#include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/unified/unified_system_tray_view.h"
 #include "base/i18n/rtl.h"
@@ -101,7 +101,9 @@ class MoreButton : public views::Button {
     gfx::Rect rect(GetContentsBounds());
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
-    flags.setColor(kUnifiedMenuButtonColor);
+    flags.setColor(AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
+        AshColorProvider::ControlsLayerType::kInactiveControlBackground,
+        kUnifiedMenuButtonColor));
     flags.setStyle(cc::PaintFlags::kFill_Style);
     canvas->DrawRoundRect(rect, kTrayItemSize / 2, flags);
   }

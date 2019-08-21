@@ -131,7 +131,8 @@ void ScriptedAnimationController::DispatchEvents(
     // avoid special casting window.
     // FIXME: We should not fire events for nodes that are no longer in the
     // tree.
-    probe::AsyncTask async_task(event_target->GetExecutionContext(), event);
+    probe::AsyncTask async_task(event_target->GetExecutionContext(),
+                                event->async_task_id());
     if (LocalDOMWindow* window = event_target->ToLocalDOMWindow())
       window->DispatchEvent(*event, nullptr);
     else
@@ -209,7 +210,7 @@ void ScriptedAnimationController::EnqueueTask(base::OnceClosure task) {
 
 void ScriptedAnimationController::EnqueueEvent(Event* event) {
   probe::AsyncTaskScheduled(event->target()->GetExecutionContext(),
-                            event->type(), event);
+                            event->type(), event->async_task_id());
   event_queue_.push_back(event);
   ScheduleAnimationIfNeeded();
 }

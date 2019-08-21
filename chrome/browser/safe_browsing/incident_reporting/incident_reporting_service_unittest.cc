@@ -332,7 +332,7 @@ class IncidentReportingServiceTest : public testing::Test {
   bool DelayedAnalysisRan() const { return delayed_analysis_ran_; }
 
   // Fakes BrowserThreads and the main MessageLoop.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   // Replaces the main MessageLoop's TaskRunner with a TaskRunner on which time
   // is mocked to allow testing of things bound to timers below.

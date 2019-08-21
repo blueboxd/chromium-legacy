@@ -11,7 +11,6 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/bluetooth/bluetooth_power_controller.h"
 #include "ash/system/model/system_tray_model.h"
-#include "ash/system/network/network_icon.h"
 #include "ash/system/network/tray_network_state_model.h"
 #include "ash/system/unified/top_shortcut_button.h"
 #include "base/bind.h"
@@ -32,18 +31,6 @@ namespace ash {
 namespace tray {
 
 namespace {
-
-// Full opacity for badge.
-constexpr int kJoinBadgeAlpha = 0xFF;
-
-// .30 opacity for icon.
-constexpr int kJoinIconAlpha = 0x4D;
-
-// .38 opacity for disabled badge.
-constexpr int kDisabledJoinBadgeAlpha = 0x61;
-
-// .30 * .38 opacity for disabled icon.
-constexpr int kDisabledJoinIconAlpha = 0x1D;
 
 const int64_t kBluetoothTimeoutDelaySeconds = 2;
 
@@ -316,14 +303,6 @@ void WifiSectionHeaderView::OnToggleToggled(bool is_on) {
 }
 
 void WifiSectionHeaderView::AddExtraButtons(bool enabled) {
-  const SkColor prominent_color = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_ProminentButtonColor);
-  gfx::ImageSkia normal_image = network_icon::GetImageForNewWifiNetwork(
-      SkColorSetA(prominent_color, kJoinIconAlpha),
-      SkColorSetA(prominent_color, kJoinBadgeAlpha));
-  gfx::ImageSkia disabled_image = network_icon::GetImageForNewWifiNetwork(
-      SkColorSetA(prominent_color, kDisabledJoinIconAlpha),
-      SkColorSetA(prominent_color, kDisabledJoinBadgeAlpha));
   auto* join_button = new TopShortcutButton(this, vector_icons::kWifiAddIcon,
                                             IDS_ASH_STATUS_TRAY_OTHER_WIFI);
   join_button->SetEnabled(enabled);

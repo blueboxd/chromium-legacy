@@ -55,7 +55,8 @@ constexpr char kLoginPasswordPlaceholder[] = "${PASSWORD}";
 constexpr char kDefaultKerberosConfig[] = R"([libdefaults]
   default_tgs_enctypes = aes256-cts-hmac-sha1-96 aes128-cts-hmac-sha1-96
   default_tkt_enctypes = aes256-cts-hmac-sha1-96 aes128-cts-hmac-sha1-96
-  permitted_enctypes = aes256-cts-hmac-sha1-96 aes128-cts-hmac-sha1-96)";
+  permitted_enctypes = aes256-cts-hmac-sha1-96 aes128-cts-hmac-sha1-96
+  forwardable = true)";
 
 // If |principal_name| is "UsEr@realm.com", sets |principal_name| to
 // "user@REALM.COM". Returns false if the given name has no @ or one of the

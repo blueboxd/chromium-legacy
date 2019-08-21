@@ -17,7 +17,7 @@ using LanguageModelManagerFactoryTest = PlatformTest;
 
 // Check that Incognito language modeling is inherited from the user's profile.
 TEST_F(LanguageModelManagerFactoryTest, SharedWithIncognito) {
-  web::TestWebThreadBundle thread_bundle;
+  web::WebTaskEnvironment task_environment;
 
   std::unique_ptr<TestChromeBrowserState> state(
       TestChromeBrowserState::Builder().Build());

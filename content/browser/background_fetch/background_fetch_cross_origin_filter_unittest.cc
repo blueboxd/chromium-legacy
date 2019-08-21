@@ -24,7 +24,7 @@ const char kAccessControlAllowOriginHeader[] = "access-control-allow-origin";
 class BackgroundFetchCrossOriginFilterTest : public ::testing::Test {
  public:
   BackgroundFetchCrossOriginFilterTest()
-      : thread_bundle_(TestBrowserThreadBundle::REAL_IO_THREAD),
+      : task_environment_(BrowserTaskEnvironment::REAL_IO_THREAD),
         source_(url::Origin::Create(GURL(kFirstOrigin))) {}
   ~BackgroundFetchCrossOriginFilterTest() override = default;
 
@@ -48,7 +48,7 @@ class BackgroundFetchCrossOriginFilterTest : public ::testing::Test {
   }
 
  protected:
-  TestBrowserThreadBundle thread_bundle_;  // Must be first member.
+  BrowserTaskEnvironment task_environment_;  // Must be first member.
 
   url::Origin source_;
 

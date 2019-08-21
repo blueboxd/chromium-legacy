@@ -16,7 +16,7 @@ class WakeLockPermissionContextTests : public testing::Test {
   TestingProfile* profile() { return &profile_; }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
 };
 

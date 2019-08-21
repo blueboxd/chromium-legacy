@@ -51,7 +51,7 @@ class RenderWidgetHostViewAndroidTest : public testing::Test {
   std::unique_ptr<MockRenderWidgetHost> host_;
   RenderWidgetHostViewAndroid* render_widget_host_view_android_;
 
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAndroidTest);
 };

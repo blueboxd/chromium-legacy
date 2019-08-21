@@ -26,7 +26,7 @@ namespace device {
 namespace {
 
 // Constants/functions used by both WebXR and WebVR.
-constexpr double kJoystickDeadzone = 0.1;
+constexpr double kJoystickDeadzone = 0.16;
 
 bool TryGetGamepadButton(const vr::VRControllerState_t& controller_state,
                          uint64_t supported_buttons,

@@ -41,7 +41,7 @@ namespace content {
 class NavigationURLLoaderTest : public testing::Test {
  public:
   NavigationURLLoaderTest()
-      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP),
         browser_context_(new TestBrowserContext) {
     base::RunLoop().RunUntilIdle();
   }
@@ -92,7 +92,7 @@ class NavigationURLLoaderTest : public testing::Test {
   }
 
  protected:
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestBrowserContext> browser_context_;
 };
 

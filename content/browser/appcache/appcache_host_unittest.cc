@@ -158,7 +158,7 @@ class AppCacheHostTest : public testing::Test {
 
   void SwapCacheCallback(bool result) { last_swap_result_ = result; }
 
-  TestBrowserThreadBundle task_environment_;
+  BrowserTaskEnvironment task_environment_;
   RenderViewHostTestEnabler rvh_enabler_;
   TestBrowserContext browser_context_;
   std::unique_ptr<TestWebContents> web_contents_;

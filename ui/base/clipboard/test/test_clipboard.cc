@@ -16,7 +16,7 @@
 namespace ui {
 
 TestClipboard::TestClipboard()
-    : default_store_type_(ClipboardType::kCopyPaste) {}
+    : default_store_buffer_(ClipboardBuffer::kCopyPaste) {}
 
 TestClipboard::~TestClipboard() = default;
 
@@ -34,67 +34,68 @@ void TestClipboard::SetLastModifiedTime(const base::Time& time) {
 
 void TestClipboard::OnPreShutdown() {}
 
-uint64_t TestClipboard::GetSequenceNumber(ClipboardType type) const {
-  return GetStore(type).sequence_number;
+uint64_t TestClipboard::GetSequenceNumber(ClipboardBuffer buffer) const {
+  return GetStore(buffer).sequence_number;
 }
 
 bool TestClipboard::IsFormatAvailable(const ClipboardFormatType& format,
-                                      ClipboardType type) const {
+                                      ClipboardBuffer buffer) const {
 #if defined(OS_LINUX)
   // The linux clipboard treats the presence of text on the clipboard
   // as the url format being available.
   if (format.Equals(ClipboardFormatType::GetUrlType()))
-    return IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), type);
+    return IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), buffer);
 #endif  // OS_LINUX
-  const DataStore& store = GetStore(type);
+  const DataStore& store = GetStore(buffer);
   return base::Contains(store.data, format);
 }
 
-void TestClipboard::Clear(ClipboardType type) {
-  GetStore(type).Clear();
+void TestClipboard::Clear(ClipboardBuffer buffer) {
+  GetStore(buffer).Clear();
 }
 
-void TestClipboard::ReadAvailableTypes(ClipboardType type,
+void TestClipboard::ReadAvailableTypes(ClipboardBuffer buffer,
                                        std::vector<base::string16>* types,
                                        bool* contains_filenames) const {
   types->clear();
 
-  if (IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), type))
+  if (IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), buffer))
     types->push_back(base::UTF8ToUTF16(kMimeTypeText));
-  if (IsFormatAvailable(ClipboardFormatType::GetHtmlType(), type))
+  if (IsFormatAvailable(ClipboardFormatType::GetHtmlType(), buffer))
     types->push_back(base::UTF8ToUTF16(kMimeTypeHTML));
 
-  if (IsFormatAvailable(ClipboardFormatType::GetRtfType(), type))
+  if (IsFormatAvailable(ClipboardFormatType::GetRtfType(), buffer))
     types->push_back(base::UTF8ToUTF16(kMimeTypeRTF));
-  if (IsFormatAvailable(ClipboardFormatType::GetBitmapType(), type))
+  if (IsFormatAvailable(ClipboardFormatType::GetBitmapType(), buffer))
     types->push_back(base::UTF8ToUTF16(kMimeTypePNG));
 
   *contains_filenames = false;
 }
 
-void TestClipboard::ReadText(ClipboardType type, base::string16* result) const {
+void TestClipboard::ReadText(ClipboardBuffer buffer,
+                             base::string16* result) const {
   std::string result8;
-  ReadAsciiText(type, &result8);
+  ReadAsciiText(buffer, &result8);
   *result = base::UTF8ToUTF16(result8);
 }
 
-void TestClipboard::ReadAsciiText(ClipboardType type,
+void TestClipboard::ReadAsciiText(ClipboardBuffer buffer,
                                   std::string* result) const {
   result->clear();
-  const DataStore& store = GetStore(type);
+  const DataStore& store = GetStore(buffer);
   auto it = store.data.find(ClipboardFormatType::GetPlainTextType());
   if (it != store.data.end())
     *result = it->second;
 }
 
-void TestClipboard::ReadHTML(ClipboardType type,
+void TestClipboard::ReadHTML(ClipboardBuffer buffer,
                              base::string16* markup,
                              std::string* src_url,
                              uint32_t* fragment_start,
                              uint32_t* fragment_end) const {
   markup->clear();
   src_url->clear();
-  const DataStore& store = GetStore(type);
+  const DataStore& store = GetStore(buffer);
   auto it = store.data.find(ClipboardFormatType::GetHtmlType());
   if (it != store.data.end())
     *markup = base::UTF8ToUTF16(it->second);
@@ -103,19 +104,19 @@ void TestClipboard::ReadHTML(ClipboardType type,
   *fragment_end = base::checked_cast<uint32_t>(markup->size());
 }
 
-void TestClipboard::ReadRTF(ClipboardType type, std::string* result) const {
+void TestClipboard::ReadRTF(ClipboardBuffer buffer, std::string* result) const {
   result->clear();
-  const DataStore& store = GetStore(type);
+  const DataStore& store = GetStore(buffer);
   auto it = store.data.find(ClipboardFormatType::GetRtfType());
   if (it != store.data.end())
     *result = it->second;
 }
 
-SkBitmap TestClipboard::ReadImage(ClipboardType type) const {
-  return GetStore(type).image;
+SkBitmap TestClipboard::ReadImage(ClipboardBuffer buffer) const {
+  return GetStore(buffer).image;
 }
 
-void TestClipboard::ReadCustomData(ClipboardType clipboard_type,
+void TestClipboard::ReadCustomData(ClipboardBuffer buffer,
                                    const base::string16& type,
                                    base::string16* result) const {}
 
@@ -148,12 +149,13 @@ void TestClipboard::ClearLastModifiedTime() {
   last_modified_time_ = base::Time();
 }
 
-void TestClipboard::WriteObjects(ClipboardType type, const ObjectMap& objects) {
-  Clear(type);
-  default_store_type_ = type;
+void TestClipboard::WriteObjects(ClipboardBuffer buffer,
+                                 const ObjectMap& objects) {
+  Clear(buffer);
+  default_store_buffer_ = buffer;
   for (const auto& kv : objects)
     DispatchObject(static_cast<ObjectType>(kv.first), kv.second);
-  default_store_type_ = ClipboardType::kCopyPaste;
+  default_store_buffer_ = ClipboardBuffer::kCopyPaste;
 }
 
 void TestClipboard::WriteText(const char* text_data, size_t text_len) {
@@ -161,8 +163,8 @@ void TestClipboard::WriteText(const char* text_data, size_t text_len) {
   GetDefaultStore().data[ClipboardFormatType::GetPlainTextType()] = text;
   // Create a dummy entry.
   GetDefaultStore().data[ClipboardFormatType::GetPlainTextWType()];
-  if (IsSupportedClipboardType(ClipboardType::kSelection))
-    GetStore(ClipboardType::kSelection)
+  if (IsSupportedClipboardBuffer(ClipboardBuffer::kSelection))
+    GetStore(ClipboardBuffer::kSelection)
         .data[ClipboardFormatType::GetPlainTextType()] = text;
   ui::ClipboardMonitor::GetInstance()->NotifyClipboardDataChanged();
 }
@@ -228,24 +230,24 @@ void TestClipboard::DataStore::Clear() {
 }
 
 const TestClipboard::DataStore& TestClipboard::GetStore(
-    ClipboardType type) const {
-  CHECK(IsSupportedClipboardType(type));
-  return stores_[type];
+    ClipboardBuffer buffer) const {
+  CHECK(IsSupportedClipboardBuffer(buffer));
+  return stores_[buffer];
 }
 
-TestClipboard::DataStore& TestClipboard::GetStore(ClipboardType type) {
-  CHECK(IsSupportedClipboardType(type));
-  DataStore& store = stores_[type];
+TestClipboard::DataStore& TestClipboard::GetStore(ClipboardBuffer buffer) {
+  CHECK(IsSupportedClipboardBuffer(buffer));
+  DataStore& store = stores_[buffer];
   ++store.sequence_number;
   return store;
 }
 
 const TestClipboard::DataStore& TestClipboard::GetDefaultStore() const {
-  return GetStore(default_store_type_);
+  return GetStore(default_store_buffer_);
 }
 
 TestClipboard::DataStore& TestClipboard::GetDefaultStore() {
-  return GetStore(default_store_type_);
+  return GetStore(default_store_buffer_);
 }
 
 }  // namespace ui

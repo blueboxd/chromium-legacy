@@ -862,7 +862,7 @@ bool Label::PasteSelectionClipboard() {
 void Label::UpdateSelectionClipboard() {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   if (!GetObscured()) {
-    ui::ScopedClipboardWriter(ui::ClipboardType::kSelection)
+    ui::ScopedClipboardWriter(ui::ClipboardBuffer::kSelection)
         .WriteText(GetSelectedText());
   }
 #endif
@@ -1088,7 +1088,7 @@ base::string16 Label::GetSelectedText() const {
 void Label::CopyToClipboard() {
   if (!HasSelection() || GetObscured())
     return;
-  ui::ScopedClipboardWriter(ui::ClipboardType::kCopyPaste)
+  ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
       .WriteText(GetSelectedText());
 }
 

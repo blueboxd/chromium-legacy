@@ -17,7 +17,6 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
-#include "ash/style/default_color_constants.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/palette/palette_tool_manager.h"
 #include "ash/system/palette/palette_utils.h"
@@ -497,9 +496,9 @@ void PaletteTray::ShowBubble(bool show_by_click) {
 
   // Add horizontal separator between the title and tools.
   auto* separator = new views::Separator();
-  separator->SetColor(AshColorProvider::Get()->DeprecatedGetContentLayerColor(
+  separator->SetColor(AshColorProvider::Get()->GetContentLayerColor(
       AshColorProvider::ContentLayerType::kSeparator,
-      kSeparatorOnLightBackgroundColor));
+      AshColorProvider::AshColorMode::kLight));
   separator->SetBorder(views::CreateEmptyBorder(gfx::Insets(
       kPaddingBetweenTitleAndSeparator, 0, kMenuSeparatorVerticalPadding, 0)));
   bubble_view->AddChildView(separator);

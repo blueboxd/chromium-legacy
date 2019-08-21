@@ -818,15 +818,15 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 
       Einzelne Einstellungen können in den JSON-Eigenschaften festgelegt werden:
 
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Wenn die Richtlinie auf <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" /> gesetzt ist, können Nutzer mithilfe von Powerwash ein Update der <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmware installieren.
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Wenn die Einstellung auf <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" /> gesetzt ist, können Nutzer mithilfe von Powerwash ein Update der <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmware installieren.
 
       <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: Wenn sie auf <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" /> gesetzt ist, können Nutzer den <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmwareupdatevorgang starten, bei dem der geräteübergreifende Status erhalten bleibt (einschließlich Unternehmensregistrierung), aber die Nutzerdaten verloren gehen. Dieser Updatevorgang ist ab Version 68 verfügbar.
 
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: Diese Richtlinie bestimmt, wie automatische <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmwareupdates für anfällige <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmware erzwungen werden. Der lokale Gerätestatus wird bei allen Vorgängen beibehalten.
-        Wenn die Richtlinie auf 1 gesetzt oder nicht festgelegt ist, werden TPM-Firmwareupdates nicht erzwungen.
-        Wird sie auf 2 gesetzt, wird die <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmware beim nächsten Neustart aktualisiert, nachdem der Nutzer das Update bestätigt hat.
-        Wird sie auf 3 gesetzt, wird die <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmware beim nächsten Neustart aktualisiert.
-        Wird sie auf 4 gesetzt, wird die <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmware nach der Registrierung aktualisiert, bevor sich der Nutzer anmeldet.
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: Mit dieser Einstellung können Sie festlegen, wie automatische <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmwareupdates für anfällige <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmware erzwungen werden. Der lokale Gerätestatus wird bei allen Vorgängen beibehalten.
+        Wenn die Einstellung auf 1 gesetzt oder nicht festgelegt ist, werden TPM-Firmwareupdates nicht erzwungen.
+        Wird sie auf 2 gesetzt, wird die <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmware beim nächsten Neustart aktualisiert, nachdem der Nutzer das Update bestätigt hat.
+        Wird sie auf 3 gesetzt, wird die <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmware beim nächsten Neustart aktualisiert.
+        Wird sie auf 4 gesetzt, wird die <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmware nach der Registrierung aktualisiert, bevor sich der Nutzer anmeldet.
         Diese Option ist ab Version 75 verfügbar.
 
       Sollte diese Richtlinie nicht festgelegt werden, ist die Updatefunktion für die <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmware nicht verfügbar.</translation>
@@ -1627,15 +1627,6 @@ Falls die Richtlinie nicht festgelegt wird, bleibt die Varianten-Seed-URL unver�
 
           Falls die Richtlinie auf "false" gesetzt oder nicht festgelegt wird, können die Nutzer Dateien an Google Drive übertragen.</translation>
 <translation id="3915395663995367577">URL einer PAC-Proxy-Datei</translation>
-<translation id="3920892052017026701">Legt den Akkuladestand (%) für benutzerdefiniertes Starten des Ladevorgangs fest.
-
-          Der Ladevorgang startet, wenn der Ladestand auf den Startwert für benutzerdefiniertes Laden gefallen ist.
-
-          "DeviceBatteryChargeCustomStartCharging" muss kleiner als "DeviceBatteryChargeCustomStopCharging" sein.
-
-          Diese Richtlinie wird nur verwendet, wenn "DeviceBatteryChargeMode" auf "custom" festgelegt ist.
-
-          Wenn sie nicht konfiguriert oder festgelegt ist, wird der Standardakkulademodus angewendet.</translation>
 <translation id="3925377537407648234">Bildschirmauflösung und Skalierungsfaktor festlegen</translation>
 <translation id="3939893074578116847">Es werden Netzwerkpakete zur Überwachung des Onlinestatus an den 
       Verwaltungsserver gesendet, damit er erkennt, wenn das Gerät offline ist.
@@ -2284,7 +2275,7 @@ Ist diese Richtlinie festgelegt, gibt sie an, wie lange der Nutzer inaktiv sein 
 
 Wenn diese Richtlinie nicht festgelegt ist, werden 0 Millisekunden als Zeitlimit verwendet.
 
-Gib den Richtlinienwert in Millisekunden an.</translation>
+Geben Sie den Richtlinienwert in Millisekunden an.</translation>
 <translation id="523505283826916779">Einstellungen für Bedienungshilfen</translation>
 <translation id="5236882091572996759">Wenn diese Richtlinie auf "true" gesetzt oder nicht konfiguriert ist, wird der Nutzer während der Audiowiedergabe als aktiv angesehen. Dadurch wird verhindert, dass das Zeitlimit für die Inaktivität erreicht wird und entsprechende Maßnahmen ergriffen werden. Der Bildschirm wird jedoch unabhängig von den Audioaktivitäten gemäß den konfigurierten Zeitlimits gedimmt, abgeschaltet und gesperrt.
 
@@ -3546,15 +3537,6 @@ Die Richtlinienwerte sollten in % angegeben werden und zwischen 0 und 100 liegen
       Wenn der Wert dieser Richtlinie 0 beträgt, wird die Standard-Cache-Größe verwendet. Der Nutzer kann diese jedoch nicht ändern.
 
       Wird diese Richtlinie nicht festgelegt, wird die Standardgröße verwendet und der Nutzer kann diese mit dem Parameter "--disk-cache-size" überschreiben.</translation>
-<translation id="759389052790680884">Legt den Akkuladestand (%) für benutzerdefiniertes Beenden des Ladevorgangs fest.
-
-          Wenn der benutzerdefinierte Endwert für die Akkuaufladung erreicht wird, endet der Ladevorgang.
-
-          "DeviceBatteryChargeCustomStartCharging" muss kleiner als "DeviceBatteryChargeCustomStopCharging" sein.
-
-          Diese Richtlinie wird nur verwendet, wenn "DeviceBatteryChargeMode" auf "custom" festgelegt ist.
-
-          Wenn sie nicht konfiguriert oder festgelegt ist, wird der Standardakkulademodus angewendet.</translation>
 <translation id="759957074386651883">Safe Browsing-Einstellungen</translation>
 <translation id="7604169113182304895">Diese Liste kann auf freiwilliger Basis für Android-Apps übernommen werden. Es ist nicht möglich, die Verwendung zu erzwingen.</translation>
 <translation id="7612157962821894603">Systemweite Parameter, die beim Starten von <ph name="PRODUCT_NAME" /> angewendet werden</translation>
@@ -3650,9 +3632,6 @@ Die Richtlinienwerte sollten in % angegeben werden und zwischen 0 und 100 liegen
 <translation id="7750991880413385988">"Neuer Tab"-Seite öffnen</translation>
 <translation id="7754704193130578113">Vor dem Download von Dateien nach dem Speicherort fragen</translation>
 <translation id="7761446981238915769">Liste der installierten Apps auf dem Anmeldebildschirm konfigurieren</translation>
-<translation id="7763479091692861127"> Die Verbindungstypen, die für Betriebssystemaktualisierungen zulässig sind. Betriebssystemaktualisierungen beanspruchen die Verbindung aufgrund ihrer Größe potenziell stark und können zusätzliche Kosten verursachen. Deshalb sind sie für als kostenintensiv geltende Verbindungstypen standardmäßig nicht aktiviert. Dazu gehören derzeit beispielsweise WiMax, Bluetooth und Mobilfunkverbindungen.
-
-      Zu den erkannten Verbindungstypkennungen gehören "ethernet", "wifi", "wimax", "bluetooth" und "cellular".</translation>
 <translation id="7763614521440615342">Inhaltsvorschläge auf der "Neuer Tab"-Seite anzeigen</translation>
 <translation id="7765879851993224640">Verwendung von Smart Lock zur Anmeldung erlauben.</translation>
 <translation id="7772346342637974431">Gibt an, nach welcher Inaktivitätsspanne des Nutzers im Akkubetrieb eine Warnung angezeigt wird.

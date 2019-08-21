@@ -166,7 +166,7 @@ TEST(OpenWithMenuTest, TestBuildHandlersMap) {
 }
 
 TEST(OpenWithMenuTest, TestModelChanged) {
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   MockRenderViewContextMenu mock_menu(false);
   OpenWithMenu observer(nullptr, &mock_menu);
   mock_menu.SetObserver(&observer);

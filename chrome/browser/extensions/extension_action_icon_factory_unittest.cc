@@ -160,7 +160,7 @@ class ExtensionActionIconFactoryTest
   TestingProfile* profile() { return profile_.get(); }
 
  private:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   bool quit_in_icon_updated_;
   std::unique_ptr<TestingProfile> profile_;
   ExtensionService* extension_service_;

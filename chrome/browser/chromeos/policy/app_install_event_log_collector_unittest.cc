@@ -176,7 +176,7 @@ class AppInstallEventLogCollectorTest : public testing::Test {
   chromeos::ShillServiceClient::TestInterface* service_test_ = nullptr;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
   FakeAppInstallEventLogCollectorDelegate delegate_;
   TestingPrefServiceSimple pref_service_;

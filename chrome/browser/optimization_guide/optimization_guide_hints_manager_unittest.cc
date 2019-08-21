@@ -12,6 +12,9 @@
 #include "base/files/file_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/optimization_guide/optimization_guide_navigation_data.h"
+#include "chrome/browser/optimization_guide/optimization_guide_web_contents_observer.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/optimization_guide/bloom_filter.h"
 #include "components/optimization_guide/hints_component_util.h"
 #include "components/optimization_guide/hints_fetcher.h"
@@ -24,6 +27,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_web_contents_factory.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -172,6 +176,7 @@ class OptimizationGuideHintsManagerTest
 
   void SetUp() override {
     optimization_guide::ProtoDatabaseProviderTestBase::SetUp();
+    web_contents_factory_.reset(new content::TestWebContentsFactory);
     CreateServiceAndHintsManager();
   }
 
@@ -187,7 +192,7 @@ class OptimizationGuideHintsManagerTest
     }
     optimization_guide_service_ =
         std::make_unique<TestOptimizationGuideService>(
-            browser_thread_bundle_.GetMainThreadTaskRunner());
+            task_environment_.GetMainThreadTaskRunner());
     pref_service_ = std::make_unique<TestingPrefServiceSimple>();
     optimization_guide::prefs::RegisterProfilePrefs(pref_service_->registry());
 
@@ -198,7 +203,7 @@ class OptimizationGuideHintsManagerTest
     hints_manager_ = std::make_unique<OptimizationGuideHintsManager>(
         optimization_guide_service_.get(), temp_dir(), pref_service_.get(),
         db_provider_.get(), top_host_provider, url_loader_factory_);
-    hints_manager_->SetClockForTesting(browser_thread_bundle_.GetMockClock());
+    hints_manager_->SetClockForTesting(task_environment_.GetMockClock());
 
     // Add observer is called after the HintCache is fully initialized,
     // indicating that the OptimizationGuideHintsManager is ready to process
@@ -275,8 +280,12 @@ class OptimizationGuideHintsManagerTest
   }
 
   void MoveClockForwardBy(base::TimeDelta time_delta) {
-    browser_thread_bundle_.FastForwardBy(time_delta);
+    task_environment_.FastForwardBy(time_delta);
     RunUntilIdle();
+  }
+
+  content::WebContents* CreateWebContents() {
+    return web_contents_factory_->CreateWebContents(&testing_profile_);
   }
 
   OptimizationGuideHintsManager* hints_manager() const {
@@ -297,7 +306,7 @@ class OptimizationGuideHintsManagerTest
 
  protected:
   void RunUntilIdle() {
-    browser_thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -311,10 +320,11 @@ class OptimizationGuideHintsManagerTest
                               serialized_config.size()));
   }
 
-  content::TestBrowserThreadBundle browser_thread_bundle_ = {
+  content::BrowserTaskEnvironment task_environment_ = {
       base::test::TaskEnvironment::MainThreadType::UI,
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
-
+  TestingProfile testing_profile_;
+  std::unique_ptr<content::TestWebContentsFactory> web_contents_factory_;
   std::unique_ptr<OptimizationGuideHintsManager> hints_manager_;
   std::unique_ptr<TestOptimizationGuideService> optimization_guide_service_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
@@ -587,7 +597,7 @@ TEST_F(OptimizationGuideHintsManagerTest, LoadHintForNavigationWithHint) {
   base::HistogramTester histogram_tester;
   InitializeWithDefaultConfig("3.0.0.0");
 
-  content::MockNavigationHandle navigation_handle;
+  content::MockNavigationHandle navigation_handle(CreateWebContents());
   navigation_handle.set_url(url_with_hints());
 
   base::RunLoop run_loop;
@@ -603,7 +613,7 @@ TEST_F(OptimizationGuideHintsManagerTest, LoadHintForNavigationNoHint) {
   base::HistogramTester histogram_tester;
   InitializeWithDefaultConfig("3.0.0.0");
 
-  content::MockNavigationHandle navigation_handle;
+  content::MockNavigationHandle navigation_handle(CreateWebContents());
   navigation_handle.set_url(GURL("https://notinhints.com"));
 
   base::RunLoop run_loop;
@@ -619,7 +629,7 @@ TEST_F(OptimizationGuideHintsManagerTest, LoadHintForNavigationNoHost) {
   base::HistogramTester histogram_tester;
   InitializeWithDefaultConfig("3.0.0.0");
 
-  content::MockNavigationHandle navigation_handle;
+  content::MockNavigationHandle navigation_handle(CreateWebContents());
   navigation_handle.set_url(GURL("blargh"));
 
   base::RunLoop run_loop;
@@ -1000,7 +1010,7 @@ TEST_F(OptimizationGuideHintsManagerTest, CanApplyOptimizationUrlWithNoHost) {
   // Set ECT estimate to be "painful".
   hints_manager()->OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
-  content::MockNavigationHandle navigation_handle;
+  content::MockNavigationHandle navigation_handle(CreateWebContents());
   navigation_handle.set_url(GURL("urlwithnohost"));
   EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
             hints_manager()->CanApplyOptimization(
@@ -1026,7 +1036,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   // Set ECT estimate to be "painful".
   hints_manager()->OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
-  content::MockNavigationHandle navigation_handle;
+  content::MockNavigationHandle navigation_handle(CreateWebContents());
   navigation_handle.set_url(GURL("https://whatever.com/123"));
   EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kUnknown,
             hints_manager()->CanApplyOptimization(
@@ -1055,7 +1065,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   // Set ECT estimate to be "painful".
   hints_manager()->OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
-  content::MockNavigationHandle navigation_handle;
+  content::MockNavigationHandle navigation_handle(CreateWebContents());
   navigation_handle.set_url(GURL("https://m.black.com/123"));
   EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
             hints_manager()->CanApplyOptimization(
@@ -1084,7 +1094,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   // Set ECT estimate to be "painful".
   hints_manager()->OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
-  content::MockNavigationHandle navigation_handle;
+  content::MockNavigationHandle navigation_handle(CreateWebContents());
   navigation_handle.set_url(GURL("https://whatever.com/123"));
   EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
             hints_manager()->CanApplyOptimization(
@@ -1112,7 +1122,7 @@ TEST_F(OptimizationGuideHintsManagerTest, CanApplyOptimizationNoECTEstimate) {
   // Explicitly set ECT estimate to be unknown.
   hints_manager()->OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
-  content::MockNavigationHandle navigation_handle;
+  content::MockNavigationHandle navigation_handle(CreateWebContents());
   navigation_handle.set_url(GURL("https://whatever.com/123"));
   EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
             hints_manager()->CanApplyOptimization(
@@ -1141,7 +1151,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   // Explicitly set ECT estimate to be unknown.
   hints_manager()->OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G);
-  content::MockNavigationHandle navigation_handle;
+  content::MockNavigationHandle navigation_handle(CreateWebContents());
   navigation_handle.set_url(GURL("https://whatever.com/123"));
   EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
             hints_manager()->CanApplyOptimization(
@@ -1163,7 +1173,10 @@ TEST_F(OptimizationGuideHintsManagerTest,
   // Set ECT estimate so hint is activated.
   hints_manager()->OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
-  content::MockNavigationHandle navigation_handle;
+  // Add OptimizationGuideWebContentsObserver so we can check state on it.
+  content::WebContents* web_contents = CreateWebContents();
+  OptimizationGuideWebContentsObserver::CreateForWebContents(web_contents);
+  content::MockNavigationHandle navigation_handle(web_contents);
   navigation_handle.set_url(url_with_hints());
   base::RunLoop run_loop;
   hints_manager()->LoadHintForNavigation(&navigation_handle,
@@ -1177,6 +1190,13 @@ TEST_F(OptimizationGuideHintsManagerTest,
                 optimization_guide::OptimizationTarget::kPainfulPageLoad,
                 optimization_guide::proto::NOSCRIPT, &optimization_metadata));
   EXPECT_EQ(12345, optimization_metadata.previews_metadata.inflation_percent());
+
+  // Make sure hint version string is set.
+  OptimizationGuideWebContentsObserver* observer =
+      OptimizationGuideWebContentsObserver::FromWebContents(web_contents);
+  OptimizationGuideNavigationData* nav_data =
+      observer->GetOrCreateOptimizationGuideNavigationData(&navigation_handle);
+  EXPECT_EQ("someversion", nav_data->serialized_hint_version_string());
 }
 
 TEST_F(OptimizationGuideHintsManagerTest,
@@ -1186,7 +1206,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   // Set ECT estimate so hint is activated.
   hints_manager()->OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
-  content::MockNavigationHandle navigation_handle;
+  content::MockNavigationHandle navigation_handle(CreateWebContents());
   navigation_handle.set_url(url_with_hints());
   base::RunLoop run_loop;
   hints_manager()->LoadHintForNavigation(&navigation_handle,
@@ -1209,7 +1229,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   // Set ECT estimate so hint is activated.
   hints_manager()->OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G);
-  content::MockNavigationHandle navigation_handle;
+  content::MockNavigationHandle navigation_handle(CreateWebContents());
   navigation_handle.set_url(url_with_hints());
   base::RunLoop run_loop;
   hints_manager()->LoadHintForNavigation(&navigation_handle,
@@ -1229,7 +1249,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
        CanApplyOptimizationWithNonPainfulPageLoadTarget) {
   InitializeWithDefaultConfig("1.0.0.0");
 
-  content::MockNavigationHandle navigation_handle;
+  content::MockNavigationHandle navigation_handle(CreateWebContents());
   navigation_handle.set_url(url_with_hints());
   base::RunLoop run_loop;
   hints_manager()->LoadHintForNavigation(&navigation_handle,
@@ -1253,7 +1273,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   // Set ECT estimate so hint is activated.
   hints_manager()->OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
-  content::MockNavigationHandle navigation_handle;
+  content::MockNavigationHandle navigation_handle(CreateWebContents());
   navigation_handle.set_url(url_with_hints());
   base::RunLoop run_loop;
   hints_manager()->LoadHintForNavigation(&navigation_handle,
@@ -1276,7 +1296,10 @@ TEST_F(OptimizationGuideHintsManagerTest,
   // Set ECT estimate so hint is activated.
   hints_manager()->OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
-  content::MockNavigationHandle navigation_handle;
+  // Add OptimizationGuideWebContentsObserver so we can check state on it.
+  content::WebContents* web_contents = CreateWebContents();
+  OptimizationGuideWebContentsObserver::CreateForWebContents(web_contents);
+  content::MockNavigationHandle navigation_handle(web_contents);
   navigation_handle.set_url(GURL("https://nohint.com"));
 
   optimization_guide::OptimizationMetadata optimization_metadata;
@@ -1287,6 +1310,13 @@ TEST_F(OptimizationGuideHintsManagerTest,
                 optimization_guide::OptimizationTarget::kPainfulPageLoad,
                 optimization_guide::proto::NOSCRIPT, &optimization_metadata));
   EXPECT_EQ(0, optimization_metadata.previews_metadata.inflation_percent());
+
+  // Make sure hint version string is not set when we have a hint for it.
+  OptimizationGuideWebContentsObserver* observer =
+      OptimizationGuideWebContentsObserver::FromWebContents(web_contents);
+  OptimizationGuideNavigationData* nav_data =
+      observer->GetOrCreateOptimizationGuideNavigationData(&navigation_handle);
+  EXPECT_FALSE(nav_data->serialized_hint_version_string().has_value());
 }
 
 TEST_F(OptimizationGuideHintsManagerTest,
@@ -1296,7 +1326,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   // Set ECT estimate so hint is activated.
   hints_manager()->OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
-  content::MockNavigationHandle navigation_handle;
+  content::MockNavigationHandle navigation_handle(CreateWebContents());
   navigation_handle.set_url(url_with_hints());
 
   optimization_guide::OptimizationMetadata optimization_metadata;
@@ -1309,7 +1339,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
 
 TEST_F(OptimizationGuideHintsManagerTest,
        CanApplyOptimizationFilterTakesPrecedence) {
-  content::MockNavigationHandle navigation_handle;
+  content::MockNavigationHandle navigation_handle(CreateWebContents());
   navigation_handle.set_url(GURL("https://m.black.com/urlinfilterandhints"));
 
   hints_manager()->RegisterOptimizationTypes(
@@ -1354,7 +1384,10 @@ TEST_F(OptimizationGuideHintsManagerTest,
 
 TEST_F(OptimizationGuideHintsManagerTest,
        CanApplyOptimizationFilterTakesPrecedenceWithECTComingFromHint) {
-  content::MockNavigationHandle navigation_handle;
+  // Add OptimizationGuideWebContentsObserver so we can check state on it.
+  content::WebContents* web_contents = CreateWebContents();
+  OptimizationGuideWebContentsObserver::CreateForWebContents(web_contents);
+  content::MockNavigationHandle navigation_handle(web_contents);
   navigation_handle.set_url(GURL("https://notfiltered.com/whatever"));
 
   hints_manager()->RegisterOptimizationTypes(
@@ -1396,4 +1429,11 @@ TEST_F(OptimizationGuideHintsManagerTest,
                 optimization_guide::OptimizationTarget::kPainfulPageLoad,
                 optimization_guide::proto::LITE_PAGE_REDIRECT,
                 /*optimization_metadata=*/nullptr));
+
+  // Make sure hint version string is set since we had a hint for it.
+  OptimizationGuideWebContentsObserver* observer =
+      OptimizationGuideWebContentsObserver::FromWebContents(web_contents);
+  OptimizationGuideNavigationData* nav_data =
+      observer->GetOrCreateOptimizationGuideNavigationData(&navigation_handle);
+  EXPECT_EQ("someversion", nav_data->serialized_hint_version_string().value());
 }

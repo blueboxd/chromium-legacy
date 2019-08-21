@@ -188,8 +188,8 @@ FileError OperationTestBase::CheckForUpdates() {
 }
 
 OperationTestBase::OperationTestBase(
-    std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle)
-    : thread_bundle_(std::move(thread_bundle)) {}
+    std::unique_ptr<content::BrowserTaskEnvironment> task_environment)
+    : task_environment_(std::move(task_environment)) {}
 
 }  // namespace file_system
 }  // namespace drive

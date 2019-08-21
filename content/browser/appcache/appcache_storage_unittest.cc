@@ -24,7 +24,7 @@ class AppCacheStorageTest : public testing::Test {
   };
 
  private:
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(AppCacheStorageTest, AddRemoveCache) {

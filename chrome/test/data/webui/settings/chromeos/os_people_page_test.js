@@ -130,6 +130,9 @@ cr.define('settings_people_page', function() {
           'pushedName', peoplePage.$$('#profile-name').textContent.trim());
       const newBg = peoplePage.$$('#profile-icon').style.backgroundImage;
       assertTrue(newBg.includes(iconDataUrl));
+
+      // Sub-page trigger is hidden.
+      assertTrue(peoplePage.$$('#account-manager-subpage-trigger').hidden);
     });
 
     test('GAIA name and picture, account manager enabled', async () => {
@@ -156,6 +159,14 @@ cr.define('settings_people_page', function() {
       assertEquals(
           'primary@gmail.com, +2 more accounts',
           peoplePage.$$('#profile-label').textContent.trim());
+
+      // Sub-page trigger is shown.
+      const subpageTrigger = peoplePage.$$('#account-manager-subpage-trigger');
+      assertFalse(subpageTrigger.hidden);
+
+      // Sub-page trigger navigates to Google account manager.
+      subpageTrigger.click();
+      assertEquals(settings.getCurrentRoute(), settings.routes.ACCOUNT_MANAGER);
     });
   });
 });

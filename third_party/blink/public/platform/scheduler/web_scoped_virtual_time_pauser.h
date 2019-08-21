@@ -42,8 +42,9 @@ class BLINK_PLATFORM_EXPORT WebScopedVirtualTimePauser {
   WebScopedVirtualTimePauser();
   ~WebScopedVirtualTimePauser();
 
-  WebScopedVirtualTimePauser(WebScopedVirtualTimePauser&& other);
-  WebScopedVirtualTimePauser& operator=(WebScopedVirtualTimePauser&& other);
+  WebScopedVirtualTimePauser(WebScopedVirtualTimePauser&& other) noexcept;
+  WebScopedVirtualTimePauser& operator=(
+      WebScopedVirtualTimePauser&& other) noexcept;
 
   WebScopedVirtualTimePauser(const WebScopedVirtualTimePauser&) = delete;
   WebScopedVirtualTimePauser& operator=(const WebScopedVirtualTimePauser&) =

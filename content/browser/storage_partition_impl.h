@@ -185,6 +185,30 @@ class CONTENT_EXPORT StoragePartitionImpl
       override;
 
   // network::mojom::NetworkContextClient interface.
+  void OnAuthRequired(const base::Optional<base::UnguessableToken>& window_id,
+                      uint32_t process_id,
+                      uint32_t routing_id,
+                      uint32_t request_id,
+                      const GURL& url,
+                      bool first_auth_attempt,
+                      const net::AuthChallengeInfo& auth_info,
+                      const base::Optional<network::ResourceResponseHead>& head,
+                      network::mojom::AuthChallengeResponderPtr
+                          auth_challenge_responder) override;
+  void OnCertificateRequested(
+      const base::Optional<base::UnguessableToken>& window_id,
+      uint32_t process_id,
+      uint32_t routing_id,
+      uint32_t request_id,
+      const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
+      network::mojom::ClientCertificateResponderPtr cert_responder) override;
+  void OnSSLCertificateError(uint32_t process_id,
+                             uint32_t routing_id,
+                             const GURL& url,
+                             int net_error,
+                             const net::SSLInfo& ssl_info,
+                             bool fatal,
+                             OnSSLCertificateErrorCallback response) override;
   void OnCanSendReportingReports(
       const std::vector<url::Origin>& origins,
       OnCanSendReportingReportsCallback callback) override;
@@ -211,6 +235,9 @@ class CONTENT_EXPORT StoragePartitionImpl
       const GURL& url,
       const GURL& site_for_cookies,
       const std::vector<net::CookieWithStatus>& cookie_list) override;
+#if defined(OS_CHROMEOS)
+  void OnTrustAnchorUsed() override;
+#endif
 
   scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter() {
     return url_loader_factory_getter_;

@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.content.Context;
-import android.graphics.Rect;
 import android.support.annotation.Nullable;
 import android.view.View;
 
@@ -20,7 +19,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.tab_ui.R;
@@ -55,18 +53,17 @@ public class TabGridDialogMediator {
     }
 
     /**
-     * Defines an interface for a {@link TabGridDialogMediator} to get the position on the screen
-     * of the tab grid card related to TabGridDialog in order to prepare animation.
+     * Defines an interface for a {@link TabGridDialogMediator} to get the {@link
+     * TabGridDialogParent.AnimationParams} in order to prepare show/hide animation.
      */
-    interface AnimationOriginProvider {
+    interface AnimationParamsProvider {
         /**
-         * Provide position of a tab card in GridTabSwitcher as the originate position of a
-         * animation.
+         * Provide a {@link TabGridDialogParent.AnimationParams} to setup the animation.
          *
          * @param index Index in GridTabSwitcher of the tab whose position is requested.
-         * @return  A {@link Rect} that contains position information of the tab card.
+         * @return A {@link TabGridDialogParent.AnimationParams} used to setup the animation.
          */
-        Rect getAnimationOriginRect(int index);
+        TabGridDialogParent.AnimationParams getAnimationParamsForIndex(int index);
     }
 
     private final Context mContext;
@@ -76,21 +73,21 @@ public class TabGridDialogMediator {
     private final TabCreatorManager mTabCreatorManager;
     private final ResetHandler mDialogResetHandler;
     private final TabSwitcherMediator.ResetHandler mTabSwitcherResetHandler;
-    private final AnimationOriginProvider mAnimationOriginProvider;
+    private final AnimationParamsProvider mAnimationParamsProvider;
     private final DialogHandler mTabGridDialogHandler;
     private int mCurrentTabId = Tab.INVALID_TAB_ID;
 
     TabGridDialogMediator(Context context, ResetHandler dialogResetHandler, PropertyModel model,
             TabModelSelector tabModelSelector, TabCreatorManager tabCreatorManager,
             TabSwitcherMediator.ResetHandler tabSwitcherResetHandler,
-            AnimationOriginProvider animationOriginProvider) {
+            AnimationParamsProvider animationParamsProvider) {
         mContext = context;
         mModel = model;
         mTabModelSelector = tabModelSelector;
         mTabCreatorManager = tabCreatorManager;
         mDialogResetHandler = dialogResetHandler;
         mTabSwitcherResetHandler = tabSwitcherResetHandler;
-        mAnimationOriginProvider = animationOriginProvider;
+        mAnimationParamsProvider = animationParamsProvider;
         mTabGridDialogHandler = new DialogHandler();
 
         // Register for tab model.
@@ -142,7 +139,19 @@ public class TabGridDialogMediator {
     }
 
     void hideDialog(boolean showAnimation) {
-        if (!showAnimation) mModel.set(TabGridSheetProperties.ANIMATION_SOURCE_RECT, null);
+        if (!showAnimation) {
+            mModel.set(TabGridSheetProperties.ANIMATION_PARAMS, null);
+        } else {
+            TabGroupModelFilter filter =
+                    (TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider()
+                            .getCurrentTabModelFilter();
+            int index = filter.indexOf(
+                    TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), mCurrentTabId));
+            if (mAnimationParamsProvider != null && index != TabModel.INVALID_TAB_INDEX) {
+                mModel.set(TabGridSheetProperties.ANIMATION_PARAMS,
+                        mAnimationParamsProvider.getAnimationParamsForIndex(index));
+            }
+        }
         mDialogResetHandler.resetWithListOfTabs(null);
     }
 
@@ -154,21 +163,14 @@ public class TabGridDialogMediator {
             mCurrentTabId = tabId;
             int index = filter.indexOf(
                     TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), tabId));
-            if (mAnimationOriginProvider != null) {
-                Rect rect = mAnimationOriginProvider.getAnimationOriginRect(index);
-                mModel.set(TabGridSheetProperties.ANIMATION_SOURCE_RECT, rect);
+            if (mAnimationParamsProvider != null) {
+                TabGridDialogParent.AnimationParams params =
+                        mAnimationParamsProvider.getAnimationParamsForIndex(index);
+                mModel.set(TabGridSheetProperties.ANIMATION_PARAMS, params);
             }
             updateDialog();
             mModel.set(TabGridSheetProperties.IS_DIALOG_VISIBLE, true);
         } else {
-            if (!FeatureUtilities.isTabToGtsAnimationEnabled()) {
-                int index = filter.indexOf(TabModelUtils.getTabById(
-                        mTabModelSelector.getCurrentModel(), mCurrentTabId));
-                if (mAnimationOriginProvider != null && index != TabModel.INVALID_TAB_INDEX) {
-                    Rect rect = mAnimationOriginProvider.getAnimationOriginRect(index);
-                    mModel.set(TabGridSheetProperties.ANIMATION_SOURCE_RECT, rect);
-                }
-            }
             mModel.set(TabGridSheetProperties.IS_DIALOG_VISIBLE, false);
         }
     }

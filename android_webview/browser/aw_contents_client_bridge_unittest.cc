@@ -48,7 +48,7 @@ class AwContentsClientBridgeTest : public Test {
   void SetUp() override;
   void TestCertType(SSLClientCertType type, const std::string& expected_name);
   // Create the TestBrowserThreads. Just instantiate the member variable.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::android::ScopedJavaGlobalRef<jobject> jbridge_;
   std::unique_ptr<AwContentsClientBridge> bridge_;
   scoped_refptr<SSLCertRequestInfo> cert_request_info_;

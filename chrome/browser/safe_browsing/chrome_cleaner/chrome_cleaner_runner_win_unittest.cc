@@ -145,7 +145,7 @@ class ChromeCleanerRunnerSimpleTest
   }
 
  protected:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   // Test fixture parameters.
   ChromeMetricsStatus metrics_status_;
@@ -344,7 +344,7 @@ class ChromeCleanerRunnerTest
   }
 
  protected:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager profile_manager_;
   TestingProfile* testing_profile_;
 

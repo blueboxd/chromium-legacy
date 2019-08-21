@@ -9,6 +9,7 @@
 #include "ash/assistant/assistant_screen_context_controller.h"
 #include "ash/assistant/ui/assistant_container_view.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
+#include "ash/assistant/ui/proactive_suggestions_view.h"
 #include "ash/assistant/util/assistant_util.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/assistant/util/histogram_util.h"
@@ -488,17 +489,18 @@ void AssistantUiController::UpdateUiMode(
 
 void AssistantUiController::OnKeyboardOccludedBoundsChanged(
     const gfx::Rect& new_bounds_in_screen) {
-  DCHECK(container_view_);
+  DCHECK(container_view_ || proactive_suggestions_view_);
 
   // Check the display for root window and where the keyboard shows to handle
   // the case when there are multiple monitors and the virtual keyboard is shown
   // on a different display other than Assistant UI.
   // TODO(https://crbug.com/943446): Directly compare with the root window of
   // the virtual keyboard controller.
-  aura::Window* root_window =
-      container_view_->GetWidget()->GetNativeWindow()->GetRootWindow();
+  aura::Window* root_window = GetRootWindow();
+
   display::Display keyboard_display =
       display::Screen::GetScreen()->GetDisplayMatching(new_bounds_in_screen);
+
   if (!new_bounds_in_screen.IsEmpty() &&
       root_window !=
           Shell::Get()->GetRootWindowForDisplayId(keyboard_display.id())) {
@@ -518,20 +520,20 @@ void AssistantUiController::OnKeyboardOccludedBoundsChanged(
 void AssistantUiController::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t changed_metrics) {
-  DCHECK(container_view_);
+  DCHECK(container_view_ || proactive_suggestions_view_);
 
   // Disable this display event when virtual keyboard shows for solving the
   // inconsistency between normal virtual keyboard and accessibility keyboard in
   // changing the work area (accessibility keyboard will change the display work
   // area but virtual keyboard won't). Display metrics change with keyboard
   // showing is instead handled by OnKeyboardOccludedBoundsChanged.
-  if (keyboard_workspace_occluded_bounds_.IsEmpty()) {
-    aura::Window* root_window =
-        container_view_->GetWidget()->GetNativeWindow()->GetRootWindow();
-    if (root_window == Shell::Get()->GetRootWindowForDisplayId(display.id())) {
-      UpdateUsableWorkArea(root_window);
-    }
-  }
+  if (!keyboard_workspace_occluded_bounds_.IsEmpty())
+    return;
+
+  aura::Window* root_window = GetRootWindow();
+
+  if (root_window == Shell::Get()->GetRootWindowForDisplayId(display.id()))
+    UpdateUsableWorkArea(root_window);
 }
 
 void AssistantUiController::OnEvent(const ui::Event& event) {
@@ -602,7 +604,62 @@ void AssistantUiController::CreateContainerView() {
       new AssistantContainerView(assistant_controller_->view_delegate());
   container_view_->GetWidget()->AddObserver(this);
 
-  // To save resources, only watch these events while Assistant UI exists.
+  UpdateUsableWorkAreaObservers();
+}
+
+void AssistantUiController::ResetContainerView() {
+  DCHECK(container_view_);
+
+  container_view_->GetWidget()->RemoveObserver(this);
+  container_view_ = nullptr;
+
+  UpdateUsableWorkAreaObservers();
+}
+
+void AssistantUiController::CreateProactiveSuggestionsView() {
+  DCHECK(!proactive_suggestions_view_);
+
+  proactive_suggestions_view_ =
+      new ProactiveSuggestionsView(assistant_controller_->view_delegate());
+
+  UpdateUsableWorkAreaObservers();
+}
+
+void AssistantUiController::ResetProactiveSuggestionsView() {
+  DCHECK(proactive_suggestions_view_);
+
+  proactive_suggestions_view_->GetWidget()->CloseNow();
+  proactive_suggestions_view_ = nullptr;
+
+  UpdateUsableWorkAreaObservers();
+}
+
+aura::Window* AssistantUiController::GetRootWindow() {
+  DCHECK(container_view_ || proactive_suggestions_view_);
+  return container_view_
+             ? container_view_->GetWidget()->GetNativeWindow()->GetRootWindow()
+             : proactive_suggestions_view_->GetWidget()
+                   ->GetNativeWindow()
+                   ->GetRootWindow();
+}
+
+void AssistantUiController::UpdateUsableWorkAreaObservers() {
+  // To save resources, we only observe the usable work area when Assistant UI
+  // exists as we otherwise don't need to respond to events in realtime.
+  const bool should_observe_usable_work_area =
+      container_view_ || proactive_suggestions_view_;
+
+  if (should_observe_usable_work_area == is_observing_usable_work_area_)
+    return;
+
+  is_observing_usable_work_area_ = should_observe_usable_work_area;
+
+  if (!is_observing_usable_work_area_) {
+    keyboard::KeyboardUIController::Get()->RemoveObserver(this);
+    display::Screen::GetScreen()->RemoveObserver(this);
+    return;
+  }
+
   display::Screen::GetScreen()->AddObserver(this);
   keyboard::KeyboardUIController::Get()->AddObserver(this);
 
@@ -611,19 +668,8 @@ void AssistantUiController::CreateContainerView() {
       keyboard::KeyboardUIController::Get()
           ->GetWorkspaceOccludedBoundsInScreen();
 
-  // Set the initial usable work area for Assistant views.
-  aura::Window* root_window =
-      container_view_->GetWidget()->GetNativeWindow()->GetRootWindow();
-  UpdateUsableWorkArea(root_window);
-}
-
-void AssistantUiController::ResetContainerView() {
-  // Remove observers when the Assistant UI is closed.
-  keyboard::KeyboardUIController::Get()->RemoveObserver(this);
-  display::Screen::GetScreen()->RemoveObserver(this);
-
-  container_view_->GetWidget()->RemoveObserver(this);
-  container_view_ = nullptr;
+  // Set the initial usable work area.
+  UpdateUsableWorkArea(GetRootWindow());
 }
 
 }  // namespace ash

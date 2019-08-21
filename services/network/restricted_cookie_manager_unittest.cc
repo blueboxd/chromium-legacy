@@ -13,6 +13,8 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "mojo/core/embedder/embedder.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/features.h"
 #include "net/cookies/canonical_cookie_test_helpers.h"
 #include "net/cookies/cookie_constants.h"
@@ -138,9 +140,10 @@ class RestrictedCookieManagerSync {
     return result;
   }
 
-  void AddChangeListener(const GURL& url,
-                         const GURL& site_for_cookies,
-                         mojom::CookieChangeListenerPtr listener) {
+  void AddChangeListener(
+      const GURL& url,
+      const GURL& site_for_cookies,
+      mojo::PendingRemote<mojom::CookieChangeListener> listener) {
     base::RunLoop run_loop;
     cookie_service_->AddChangeListener(
         url, site_for_cookies, url::Origin::Create(site_for_cookies),
@@ -725,8 +728,9 @@ class TestCookieChangeListener : public network::mojom::CookieChangeListener {
     network::mojom::CookieChangeCause change_cause;
   };
 
-  TestCookieChangeListener(network::mojom::CookieChangeListenerRequest request)
-      : binding_(this, std::move(request)) {}
+  TestCookieChangeListener(
+      mojo::PendingReceiver<network::mojom::CookieChangeListener> receiver)
+      : receiver_(this, std::move(receiver)) {}
   ~TestCookieChangeListener() override = default;
 
   // Spin in a run loop until a change is received.
@@ -753,7 +757,7 @@ class TestCookieChangeListener : public network::mojom::CookieChangeListener {
 
  private:
   std::vector<Change> observed_changes_;
-  mojo::Binding<network::mojom::CookieChangeListener> binding_;
+  mojo::Receiver<network::mojom::CookieChangeListener> receiver_;
 
   // If not null, will be stopped when a cookie change notification is received.
   base::RunLoop* run_loop_ = nullptr;
@@ -762,13 +766,13 @@ class TestCookieChangeListener : public network::mojom::CookieChangeListener {
 }  // anonymous namespace
 
 TEST_P(RestrictedCookieManagerTest, ChangeDispatch) {
-  network::mojom::CookieChangeListenerPtr listener_ptr;
-  network::mojom::CookieChangeListenerRequest request =
-      mojo::MakeRequest(&listener_ptr);
+  mojo::PendingRemote<network::mojom::CookieChangeListener> listener_remote;
+  mojo::PendingReceiver<network::mojom::CookieChangeListener> receiver =
+      listener_remote.InitWithNewPipeAndPassReceiver();
   sync_service_->AddChangeListener(GURL("http://example.com/test/"),
                                    GURL("http://example.com"),
-                                   std::move(listener_ptr));
-  TestCookieChangeListener listener(std::move(request));
+                                   std::move(listener_remote));
+  TestCookieChangeListener listener(std::move(receiver));
 
   ASSERT_THAT(listener.observed_changes(), testing::SizeIs(0));
 
@@ -783,13 +787,13 @@ TEST_P(RestrictedCookieManagerTest, ChangeDispatch) {
 }
 
 TEST_P(RestrictedCookieManagerTest, ChangeSettings) {
-  network::mojom::CookieChangeListenerPtr listener_ptr;
-  network::mojom::CookieChangeListenerRequest request =
-      mojo::MakeRequest(&listener_ptr);
+  mojo::PendingRemote<network::mojom::CookieChangeListener> listener_remote;
+  mojo::PendingReceiver<network::mojom::CookieChangeListener> receiver =
+      listener_remote.InitWithNewPipeAndPassReceiver();
   sync_service_->AddChangeListener(GURL("http://example.com/test/"),
                                    GURL("http://notexample.com"),
-                                   std::move(listener_ptr));
-  TestCookieChangeListener listener(std::move(request));
+                                   std::move(listener_remote));
+  TestCookieChangeListener listener(std::move(receiver));
 
   ASSERT_THAT(listener.observed_changes(), testing::SizeIs(0));
 
@@ -800,23 +804,24 @@ TEST_P(RestrictedCookieManagerTest, ChangeSettings) {
 }
 
 TEST_P(RestrictedCookieManagerTest, AddChangeListenerFromWrongOrigin) {
-  network::mojom::CookieChangeListenerPtr bad_listener_ptr;
-  network::mojom::CookieChangeListenerRequest bad_request =
-      mojo::MakeRequest(&bad_listener_ptr);
+  mojo::PendingRemote<network::mojom::CookieChangeListener> bad_listener_remote;
+  mojo::PendingReceiver<network::mojom::CookieChangeListener> bad_receiver =
+      bad_listener_remote.InitWithNewPipeAndPassReceiver();
   ExpectBadMessage();
   sync_service_->AddChangeListener(GURL("http://not-example.com/test/"),
                                    GURL("http://not-example.com"),
-                                   std::move(bad_listener_ptr));
+                                   std::move(bad_listener_remote));
   EXPECT_TRUE(received_bad_message());
-  TestCookieChangeListener bad_listener(std::move(bad_request));
+  TestCookieChangeListener bad_listener(std::move(bad_receiver));
 
-  network::mojom::CookieChangeListenerPtr good_listener_ptr;
-  network::mojom::CookieChangeListenerRequest good_request =
-      mojo::MakeRequest(&good_listener_ptr);
+  mojo::PendingRemote<network::mojom::CookieChangeListener>
+      good_listener_remote;
+  mojo::PendingReceiver<network::mojom::CookieChangeListener> good_receiver =
+      good_listener_remote.InitWithNewPipeAndPassReceiver();
   sync_service_->AddChangeListener(GURL("http://example.com/test/"),
                                    GURL("http://example.com"),
-                                   std::move(good_listener_ptr));
-  TestCookieChangeListener good_listener(std::move(good_request));
+                                   std::move(good_listener_remote));
+  TestCookieChangeListener good_listener(std::move(good_receiver));
 
   ASSERT_THAT(bad_listener.observed_changes(), testing::SizeIs(0));
   ASSERT_THAT(good_listener.observed_changes(), testing::SizeIs(0));

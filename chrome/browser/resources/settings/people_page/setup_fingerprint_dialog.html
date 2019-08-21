@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/chromeos/cr_lottie/cr_lottie.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_fingerprint/cr_fingerprint_progress_arc.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
@@ -21,11 +22,6 @@
         width: 500px;
       }
 
-      .fingerprint-scanner-tablet-power-button {
-        background:
-            url(chrome://theme/IDR_LOGIN_FINGERPRINT_SCANNER_TABLET_POWER_BUTTON_ANIMATION);
-      }
-
       .fingerprint-scanner-laptop-bottom-right {
         background:
             url(chrome://theme/IDR_LOGIN_FINGERPRINT_SCANNER_LAPTOP_BOTTOM_RIGHT_ANIMATION);
@@ -41,6 +37,11 @@
         background-repeat: no-repeat;
         background-size: 298px 205px;
         height: 240px;
+      }
+
+      #scannerLocationLottie {
+        height: 220px;
+        padding: 10px 0;
       }
 
       #messageDiv {
@@ -67,11 +68,21 @@
             aria-live="polite">
           <span>[[getInstructionMessage_(step_, problemMessage_)]]</span>
         </div>
-        <div id="scannerLocation" hidden="[[!showScannerLocation_(step_)]]"
-            class$="[[fingerprintScannerAnimationClass_]]"
-            aria-label="$i18n{configureFingerprintScannerStepAriaLabel}"
-            aria-live="polite" >
-        </div>
+        <template is="dom-if" if="[[shouldUseLottieAnimation_]]">
+          <div id="scannerLocationLottie"
+            hidden="[[!showScannerLocation_(step_)]]" aria-live="polite"
+            aria-label="$i18n{configureFingerprintScannerStepAriaLabel}">
+            <cr-lottie animation-url="finger_print.json">
+            </cr-lottie>
+          </div>
+        </template>
+        <template is="dom-if" if="[[!shouldUseLottieAnimation_]]">
+          <div id="scannerLocation" hidden="[[!showScannerLocation_(step_)]]"
+             class$="[[fingerprintScannerAnimationClass_]]"
+             aria-label="$i18n{configureFingerprintScannerStepAriaLabel}"
+             aria-live="polite" >
+          </div>
+        </template>
         <cr-fingerprint-progress-arc id="arc" circle-radius="100"
             hidden="[[!showArc_(step_)]]">
         </cr-fingerprint-progress-arc>

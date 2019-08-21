@@ -13,7 +13,7 @@
 namespace heap_profiling {
 
 TEST(ChromeClientConnectionManager, ShouldProfileNewRenderer) {
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
 
   ChromeClientConnectionManager manager(nullptr, Mode::kNone);
 

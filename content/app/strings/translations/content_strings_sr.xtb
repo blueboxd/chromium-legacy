@@ -57,6 +57,7 @@
 <translation id="2746543609216772311">Вредност мора да буде <ph name="MINIMUM_DATE_OR_TIME" /> или новија.</translation>
 <translation id="2759744352195237655">искачуће дугме</translation>
 <translation id="2761667185364618470">Потврдите избор у овом пољу за потврду уколико желите да наставите.</translation>
+<translation id="2844350028562914727">детаљи</translation>
 <translation id="2896972712917208084">група дугмади за избор</translation>
 <translation id="2908441821576996758">Унесите листу имејл адреса раздвојених зарезима.</translation>
 <translation id="2940813599313844715">објекат</translation>
@@ -154,6 +155,7 @@
 <translation id="6166809985690652833">поговор</translation>
 <translation id="6209276755895393898">Изгледа да је ово: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">речник термина</translation>
+<translation id="6281763101136022427">URL</translation>
 <translation id="6310801910862476708">Изађи из режима слике у слици</translation>
 <translation id="6398862346408813489">Прикажи таблу за избор месеца</translation>
 <translation id="6404546809543547843">клизач за трајање аудио-садржаја</translation>
@@ -236,6 +238,7 @@
 <translation id="860475260694818407">садржај</translation>
 <translation id="8613126697340063924">контролишите репродукцију на удаљеном уређају</translation>
 <translation id="862370744433916922">титл</translation>
+<translation id="8711688047404765493">излаз</translation>
 <translation id="8750798805984357768">Изаберите неку од ових опција.</translation>
 <translation id="8808573423886751634">поглавље</translation>
 <translation id="8845239796550121995">Тренутно се пребацује на ТВ</translation>

@@ -22,7 +22,7 @@ class CompareWithDemoteByType {
   // Returns the relevance score of |match| demoted appropriately by
   // |demotions_by_type_|.
   int GetDemotedRelevance(const Match& match) const {
-    auto demotion_it = demotions_.find(match.type);
+    auto demotion_it = demotions_.find(match.GetDemotionType());
     return (demotion_it == demotions_.end())
                ? match.relevance
                : (match.relevance * demotion_it->second);

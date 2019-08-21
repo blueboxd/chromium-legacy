@@ -194,7 +194,7 @@ class UserCloudPolicyTokenForwarderTest : public testing::Test {
   // OnCloudPolicyServiceInitializationCompleted().
   void SimulateCloudPolicyServiceInitialized() { store_->NotifyStoreLoaded(); }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   base::HistogramTester histogram_tester_;
 

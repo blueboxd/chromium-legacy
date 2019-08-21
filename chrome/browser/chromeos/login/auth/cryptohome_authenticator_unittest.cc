@@ -458,7 +458,7 @@ class CryptohomeAuthenticatorTest : public testing::Test {
     auth_->SetOwnerState(owner_check_finished, check_result);
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   UserContext user_context_;
   UserContext user_context_with_transformed_key_;

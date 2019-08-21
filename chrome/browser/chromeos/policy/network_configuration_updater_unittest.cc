@@ -439,7 +439,7 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
     return network_configuration_updater_.get();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   std::unique_ptr<chromeos::onc::OncParsedCertificates> fake_certificates_;
   StrictMock<chromeos::MockManagedNetworkConfigurationHandler>

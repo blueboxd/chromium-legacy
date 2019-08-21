@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "components/gcm_driver/web_push_common.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace network {
@@ -24,9 +25,6 @@ struct WebPushMessage;
 // Class for sending a message via Firebase Cloud Messaging (FCM) Web Push.
 class WebPushSender {
  public:
-  using SendMessageCallback =
-      base::OnceCallback<void(base::Optional<std::string>)>;
-
   explicit WebPushSender(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~WebPushSender();
@@ -41,12 +39,12 @@ class WebPushSender {
   // succeeded, or base::nullopt if operation failed.
   void SendMessage(const std::string& fcm_token,
                    crypto::ECPrivateKey* vapid_key,
-                   const WebPushMessage& message,
-                   SendMessageCallback callback);
+                   WebPushMessage message,
+                   WebPushCallback callback);
 
  private:
   void OnMessageSent(std::unique_ptr<network::SimpleURLLoader> url_loader,
-                     SendMessageCallback callback,
+                     WebPushCallback callback,
                      std::unique_ptr<std::string> response_body);
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;

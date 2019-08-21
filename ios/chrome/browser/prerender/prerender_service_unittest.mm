@@ -28,7 +28,7 @@ class PrerenderServiceTest : public PlatformTest {
   ~PrerenderServiceTest() override = default;
 
  protected:
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   std::unique_ptr<PrerenderService> service_;
   web::TestWebState web_state_;

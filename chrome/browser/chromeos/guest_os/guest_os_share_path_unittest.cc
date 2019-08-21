@@ -234,7 +234,7 @@ class GuestOsSharePathTest : public testing::Test {
     guest_os_share_path_->RegisterSharedPath(crostini::kCrostiniDefaultVmName,
                                              shared_path_);
     // Run threads now to allow watcher for shared_path_ to start.
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void SetUp() override {
@@ -261,7 +261,7 @@ class GuestOsSharePathTest : public testing::Test {
     // Shutdown GuestOsSharePath to schedule FilePathWatchers to be destroyed,
     // then run thread bundle to ensure they are.
     guest_os_share_path_->Shutdown();
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     run_loop_.reset();
     scoped_user_manager_.reset();
     profile_.reset();
@@ -285,7 +285,7 @@ class GuestOsSharePathTest : public testing::Test {
   chromeos::FakeSeneschalClient* fake_seneschal_client_;
   chromeos::FakeConciergeClient* fake_concierge_client_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<base::RunLoop> run_loop_;
   std::unique_ptr<TestingProfile> profile_;
   GuestOsSharePath* guest_os_share_path_;

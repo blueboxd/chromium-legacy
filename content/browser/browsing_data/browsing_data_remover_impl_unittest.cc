@@ -425,7 +425,7 @@ class BrowsingDataRemoverImplTest : public testing::Test {
   // Cached pointer to BrowsingDataRemoverImpl for access to testing methods.
   BrowsingDataRemoverImpl* remover_;
 
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<BrowserContext> browser_context_;
 
   StoragePartitionRemovalData storage_partition_removal_data_;

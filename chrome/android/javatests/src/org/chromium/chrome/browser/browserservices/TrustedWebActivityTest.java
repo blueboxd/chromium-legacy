@@ -7,11 +7,14 @@ package org.chromium.chrome.browser.browserservices;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import static org.chromium.chrome.browser.browserservices.TrustedWebActivityTestUtil.createSession;
+import static org.chromium.chrome.browser.browserservices.TrustedWebActivityTestUtil.createTrustedWebActivityIntent;
+import static org.chromium.chrome.browser.browserservices.TrustedWebActivityTestUtil.isTrustedWebActivity;
+import static org.chromium.chrome.browser.browserservices.TrustedWebActivityTestUtil.spoofVerification;
+
 import android.content.Intent;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -24,18 +27,11 @@ import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
-import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
-import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
-import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.net.test.EmbeddedTestServer;
-import org.chromium.net.test.ServerCertificate;
+import org.chromium.net.test.EmbeddedTestServerRule;
 
 import java.util.concurrent.TimeoutException;
 
-import androidx.browser.customtabs.CustomTabsService;
-import androidx.browser.customtabs.CustomTabsSessionToken;
 import androidx.browser.customtabs.TrustedWebUtils;
 
 /**
@@ -48,12 +44,13 @@ public class TrustedWebActivityTest {
     // TODO(peconn): Add test for navigating away from the trusted origin.
     @Rule
     public CustomTabActivityTestRule mCustomTabActivityTestRule = new CustomTabActivityTestRule();
+    @Rule
+    public EmbeddedTestServerRule mEmbeddedTestServerRule = new EmbeddedTestServerRule();
 
     private static final String TEST_PAGE = "/chrome/test/data/android/google.html";
     private static final String PACKAGE_NAME =
             ContextUtils.getApplicationContext().getPackageName();
 
-    private EmbeddedTestServer mTestServer;
     private String mTestPage;
 
     @Before
@@ -61,48 +58,8 @@ public class TrustedWebActivityTest {
         // Native needs to be initialized to start the test server.
         LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
 
-        // TWAs only work with HTTPS.
-        mTestServer = EmbeddedTestServer.createAndStartHTTPSServer(
-                InstrumentationRegistry.getInstrumentation().getContext(),
-                ServerCertificate.CERT_OK);
-        mTestPage = mTestServer.getURL(TEST_PAGE);
-    }
-
-    /** Creates an Intent that will launch a Custom Tab to the given |url|. */
-    private static Intent createTrustedWebActivityIntent(String url) {
-        Intent intent  = CustomTabsTestUtils.createMinimalCustomTabIntent(
-                InstrumentationRegistry.getTargetContext(), url);
-        intent.putExtra(TrustedWebUtils.EXTRA_LAUNCH_AS_TRUSTED_WEB_ACTIVITY, true);
-        return intent;
-    }
-
-    /** Caches a successful verification for the given |packageName| and |url|. */
-    private static void spoofVerification(String packageName, String url) {
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> OriginVerifier.addVerificationOverride(packageName, new Origin(url),
-                                CustomTabsService.RELATION_HANDLE_ALL_URLS));
-    }
-
-    /** Creates a Custom Tabs Session from the Intent, specifying the |packageName|. */
-    private static void createSession(Intent intent, String packageName)
-            throws TimeoutException, InterruptedException {
-        CustomTabsSessionToken token = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
-        CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
-        connection.newSession(token);
-        connection.overridePackageNameForSessionForTesting(token, packageName);
-    }
-
-    private boolean isTrustedWebActivity() {
-        // A key part of the Trusted Web Activity UI is the lack of browser controls.
-        return !TestThreadUtils.runOnUiThreadBlockingNoException(
-                () -> TabBrowserControlsState
-                        .get(mCustomTabActivityTestRule.getActivity().getActivityTab())
-                        .canShow());
-    }
-
-    @After
-    public void tearDown() throws TimeoutException {
-        mTestServer.stopAndDestroyServer();
+        mEmbeddedTestServerRule.setServerUsesHttps(true); // TWAs only work with HTTPS.
+        mTestPage = mEmbeddedTestServerRule.getServer().getURL(TEST_PAGE);
     }
 
     @Test
@@ -114,7 +71,7 @@ public class TrustedWebActivityTest {
 
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
-        assertTrue(isTrustedWebActivity());
+        assertTrue(isTrustedWebActivity(mCustomTabActivityTestRule.getActivity()));
     }
 
     @Test
@@ -128,7 +85,7 @@ public class TrustedWebActivityTest {
 
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
-        assertFalse(isTrustedWebActivity());
+        assertFalse(isTrustedWebActivity(mCustomTabActivityTestRule.getActivity()));
     }
 
     @Test
@@ -139,6 +96,6 @@ public class TrustedWebActivityTest {
 
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
-        assertFalse(isTrustedWebActivity());
+        assertFalse(isTrustedWebActivity(mCustomTabActivityTestRule.getActivity()));
     }
 }

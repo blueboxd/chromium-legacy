@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
@@ -77,6 +78,7 @@ bool Extensions3DUtil::IsExtensionEnabled(const String& name) {
 bool Extensions3DUtil::CanUseCopyTextureCHROMIUM(GLenum dest_target) {
   switch (dest_target) {
     case GL_TEXTURE_2D:
+    case GL_TEXTURE_RECTANGLE_ARB:
     case GL_TEXTURE_CUBE_MAP_POSITIVE_X:
     case GL_TEXTURE_CUBE_MAP_NEGATIVE_X:
     case GL_TEXTURE_CUBE_MAP_POSITIVE_Y:

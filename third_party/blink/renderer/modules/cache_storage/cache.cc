@@ -454,7 +454,7 @@ class Cache::CodeCacheHandleCallbackForPut final
       scoped_refptr<CachedMetadata> cached_metadata =
           GenerateFullCodeCache(array_buffer);
       if (cached_metadata) {
-        const Vector<uint8_t>& serialized_data =
+        base::span<const uint8_t> serialized_data =
             cached_metadata->SerializedData();
         auto side_data_blob_data = std::make_unique<BlobData>();
         side_data_blob_data->AppendBytes(serialized_data.data(),

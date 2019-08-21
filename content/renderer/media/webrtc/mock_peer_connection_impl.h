@@ -161,6 +161,42 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
   void RemoveStream(webrtc::MediaStreamInterface* local_stream) override {
     NOTIMPLEMENTED();
   }
+  webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>>
+  AddTransceiver(
+      rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track) override {
+    NOTIMPLEMENTED();
+    return webrtc::RTCErrorOr<
+        rtc::scoped_refptr<webrtc::RtpTransceiverInterface>>();
+  }
+  webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>>
+  AddTransceiver(rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track,
+                 const webrtc::RtpTransceiverInit& init) override {
+    NOTIMPLEMENTED();
+    return webrtc::RTCErrorOr<
+        rtc::scoped_refptr<webrtc::RtpTransceiverInterface>>();
+  }
+
+  webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>>
+  AddTransceiver(cricket::MediaType media_type) override {
+    NOTIMPLEMENTED();
+    return webrtc::RTCErrorOr<
+        rtc::scoped_refptr<webrtc::RtpTransceiverInterface>>();
+  }
+  webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>>
+  AddTransceiver(cricket::MediaType media_type,
+                 const webrtc::RtpTransceiverInit& init) override {
+    NOTIMPLEMENTED();
+    return webrtc::RTCErrorOr<
+        rtc::scoped_refptr<webrtc::RtpTransceiverInterface>>();
+  }
+
+  rtc::scoped_refptr<webrtc::RtpSenderInterface> CreateSender(
+      const std::string& kind,
+      const std::string& stream_id) override {
+    NOTIMPLEMENTED();
+    return nullptr;
+  }
+
   webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::RtpSenderInterface>> AddTrack(
       rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track,
       const std::vector<std::string>& stream_ids) override;
@@ -169,11 +205,16 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
       const override;
   std::vector<rtc::scoped_refptr<webrtc::RtpReceiverInterface>> GetReceivers()
       const override;
+  std::vector<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>>
+  GetTransceivers() const override {
+    return {};
+  }
   MOCK_CONST_METHOD0(GetSctpTransport,
                      rtc::scoped_refptr<webrtc::SctpTransportInterface>());
   rtc::scoped_refptr<webrtc::DataChannelInterface>
       CreateDataChannel(const std::string& label,
                         const webrtc::DataChannelInit* config) override;
+
   bool GetStats(webrtc::StatsObserver* observer,
                 webrtc::MediaStreamTrackInterface* track,
                 StatsOutputLevel level) override;
@@ -202,6 +243,16 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
     NOTIMPLEMENTED();
     return PeerConnectionInterface::kIceConnectionNew;
   }
+  IceConnectionState standardized_ice_connection_state() override {
+    NOTIMPLEMENTED();
+    return PeerConnectionInterface::kIceConnectionNew;
+  }
+
+  PeerConnectionState peer_connection_state() override {
+    NOTIMPLEMENTED();
+    return PeerConnectionState::kNew;
+  }
+
   IceGatheringState ice_gathering_state() override {
     NOTIMPLEMENTED();
     return PeerConnectionInterface::kIceGatheringNew;
@@ -212,6 +263,11 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
     NOTIMPLEMENTED();
     return false;
   }
+  bool StartRtcEventLog(
+      std::unique_ptr<webrtc::RtcEventLogOutput> output) override {
+    NOTIMPLEMENTED();
+    return false;
+  }
   void StopRtcEventLog() override { NOTIMPLEMENTED(); }
 
   MOCK_METHOD0(Close, void());
@@ -219,6 +275,22 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
   const webrtc::SessionDescriptionInterface* local_description() const override;
   const webrtc::SessionDescriptionInterface* remote_description()
       const override;
+  const webrtc::SessionDescriptionInterface* current_local_description()
+      const override {
+    return nullptr;
+  }
+  const webrtc::SessionDescriptionInterface* current_remote_description()
+      const override {
+    return nullptr;
+  }
+  const webrtc::SessionDescriptionInterface* pending_local_description()
+      const override {
+    return nullptr;
+  }
+  const webrtc::SessionDescriptionInterface* pending_remote_description()
+      const override {
+    return nullptr;
+  }
 
   // JSEP01 APIs
   void CreateOffer(webrtc::CreateSessionDescriptionObserver* observer,
@@ -250,9 +322,18 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
   void SetRemoteDescriptionWorker(
       webrtc::SetSessionDescriptionObserver* observer,
       webrtc::SessionDescriptionInterface* desc);
+  webrtc::PeerConnectionInterface::RTCConfiguration GetConfiguration() {
+    NOTIMPLEMENTED();
+    return webrtc::PeerConnectionInterface::RTCConfiguration();
+  }
   bool SetConfiguration(const RTCConfiguration& configuration,
                         webrtc::RTCError* error) override;
   bool AddIceCandidate(const webrtc::IceCandidateInterface* candidate) override;
+  bool RemoveIceCandidates(
+      const std::vector<cricket::Candidate>& candidates) override {
+    NOTIMPLEMENTED();
+    return false;
+  }
 
   webrtc::RTCError SetBitrate(const webrtc::BitrateSettings& bitrate) override;
 

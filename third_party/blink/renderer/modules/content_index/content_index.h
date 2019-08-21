@@ -45,7 +45,7 @@ class ContentIndex final : public ScriptWrappable {
                        const Vector<WebSize>& icon_sizes);
   void DidGetIcons(ScriptPromiseResolver* resolver,
                    mojom::blink::ContentDescriptionPtr description,
-                   std::unique_ptr<Vector<SkBitmap>> icons);
+                   Vector<SkBitmap> icons);
   void DidAdd(ScriptPromiseResolver* resolver,
               mojom::blink::ContentIndexError error);
   void DidDeleteDescription(ScriptPromiseResolver* resolver,

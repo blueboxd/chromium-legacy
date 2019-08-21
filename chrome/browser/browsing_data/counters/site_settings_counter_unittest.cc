@@ -85,7 +85,7 @@ class SiteSettingsCounterTest : public testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
 
   scoped_refptr<HostContentSettingsMap> map_;

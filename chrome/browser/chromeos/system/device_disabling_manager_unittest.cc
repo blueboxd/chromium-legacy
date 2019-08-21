@@ -74,7 +74,7 @@ class DeviceDisablingManagerTestBase : public testing::Test,
   void SetConsumerOwned();
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
   chromeos::FakeChromeUserManager fake_user_manager_;
   std::unique_ptr<DeviceDisablingManager> device_disabling_manager_;

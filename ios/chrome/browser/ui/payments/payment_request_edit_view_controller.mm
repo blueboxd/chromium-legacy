@@ -89,7 +89,9 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
   PaymentsTextItem* errorMessageItem =
       [[PaymentsTextItem alloc] initWithType:ItemTypeErrorMessage];
   errorMessageItem.text = errorMessage;
-  errorMessageItem.leadingImage = NativeImage(IDR_IOS_PAYMENTS_WARNING);
+  errorMessageItem.leadingImage = [NativeImage(IDR_IOS_PAYMENTS_WARNING)
+      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  errorMessageItem.leadingImageTintColor = [UIColor colorNamed:kRedColor];
   errorMessageItem.accessibilityIdentifier = kWarningMessageAccessibilityID;
   return errorMessageItem;
 }

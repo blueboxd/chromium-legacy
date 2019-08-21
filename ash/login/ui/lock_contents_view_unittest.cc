@@ -34,6 +34,9 @@
 #include "ash/public/mojom/tray_action.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
+#include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_navigation_widget.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
 #include "ash/system/power/power_button_controller.h"
@@ -2663,6 +2666,21 @@ TEST_F(LockContentsViewUnitTest, MediaControlsHiddenOnLoginScreen) {
 
   // Verify that media controls view isn't created for non low-density layouts.
   EXPECT_EQ(nullptr, lock_contents.media_controls_view());
+}
+
+TEST_F(LockContentsViewUnitTest, NoNavigationWidgetOnLockScreen) {
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::LOCKED);
+  LockContentsView* contents = new LockContentsView(
+      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
+      DataDispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
+
+  ShelfWidget* shelf_widget =
+      Shelf::ForWindow(widget->GetNativeWindow())->shelf_widget();
+  EXPECT_FALSE(shelf_widget->navigation_widget()->IsVisible())
+      << "The navigation widget should not appear on the lock screen.";
 }
 
 }  // namespace ash

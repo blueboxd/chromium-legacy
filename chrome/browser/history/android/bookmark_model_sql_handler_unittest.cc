@@ -70,7 +70,7 @@ class BookmarkModelSQLHandlerTest : public testing::Test {
     content::RunAllPendingInMessageLoop();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   TestingProfileManager profile_manager_;
   BookmarkModel* bookmark_model_;

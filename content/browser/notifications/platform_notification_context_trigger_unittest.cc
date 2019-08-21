@@ -52,8 +52,8 @@ class NotificationBrowserClient : public TestContentBrowserClient {
 class PlatformNotificationContextTriggerTest : public ::testing::Test {
  public:
   PlatformNotificationContextTriggerTest()
-      : thread_bundle_(base::test::TaskEnvironment::MainThreadType::UI,
-                       base::test::TaskEnvironment::TimeSource::MOCK_TIME),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI,
+                          base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         notification_browser_client_(&browser_context_),
         success_(false) {
     SetBrowserClientForTesting(&notification_browser_client_);
@@ -126,7 +126,7 @@ class PlatformNotificationContextTriggerTest : public ::testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  TestBrowserThreadBundle thread_bundle_;  // Must be first member
+  BrowserTaskEnvironment task_environment_;  // Must be first member
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -148,7 +148,7 @@ TEST_F(PlatformNotificationContextTriggerTest, TriggerInFuture) {
   ASSERT_EQ(0u, GetDisplayedNotifications().size());
 
   // Wait until the trigger timestamp is reached.
-  thread_bundle_.FastForwardBy(TimeDelta::FromSeconds(10));
+  task_environment_.FastForwardBy(TimeDelta::FromSeconds(10));
 
   // This gets called by the notification scheduling system.
   TriggerNotifications();
@@ -171,16 +171,16 @@ TEST_F(PlatformNotificationContextTriggerTest,
   WriteNotificationData("1", Time::Now() + TimeDelta::FromSeconds(10));
   ASSERT_EQ(0u, GetDisplayedNotifications().size());
 
-  thread_bundle_.FastForwardBy(TimeDelta::FromSeconds(5));
+  task_environment_.FastForwardBy(TimeDelta::FromSeconds(5));
   ASSERT_EQ(0u, GetDisplayedNotifications().size());
 
   // Overwrites the scheduled notifications with a new trigger timestamp.
   WriteNotificationData("1", Time::Now() + TimeDelta::FromSeconds(10));
 
-  thread_bundle_.FastForwardBy(TimeDelta::FromSeconds(5));
+  task_environment_.FastForwardBy(TimeDelta::FromSeconds(5));
   ASSERT_EQ(0u, GetDisplayedNotifications().size());
 
-  thread_bundle_.FastForwardBy(TimeDelta::FromSeconds(5));
+  task_environment_.FastForwardBy(TimeDelta::FromSeconds(5));
 
   // This gets called by the notification scheduling system.
   TriggerNotifications();
@@ -192,7 +192,7 @@ TEST_F(PlatformNotificationContextTriggerTest, OverwriteExistingTriggerToPast) {
   WriteNotificationData("1", Time::Now() + TimeDelta::FromSeconds(10));
   ASSERT_EQ(0u, GetDisplayedNotifications().size());
 
-  thread_bundle_.FastForwardBy(TimeDelta::FromSeconds(5));
+  task_environment_.FastForwardBy(TimeDelta::FromSeconds(5));
 
   // Overwrites the scheduled notifications with a new trigger timestamp.
   WriteNotificationData("1", Time::Now() - TimeDelta::FromSeconds(10));
@@ -206,7 +206,7 @@ TEST_F(PlatformNotificationContextTriggerTest, OverwriteExistingTriggerToPast) {
 TEST_F(PlatformNotificationContextTriggerTest,
        OverwriteDisplayedNotificationToPast) {
   WriteNotificationData("1", Time::Now() + TimeDelta::FromSeconds(10));
-  thread_bundle_.FastForwardBy(TimeDelta::FromSeconds(10));
+  task_environment_.FastForwardBy(TimeDelta::FromSeconds(10));
 
   // Overwrites a displayed notification with a trigger timestamp in the past.
   WriteNotificationData("1", Time::Now() - TimeDelta::FromSeconds(10));
@@ -220,7 +220,7 @@ TEST_F(PlatformNotificationContextTriggerTest,
 TEST_F(PlatformNotificationContextTriggerTest,
        OverwriteDisplayedNotificationToFuture) {
   WriteNotificationData("1", Time::Now() + TimeDelta::FromSeconds(10));
-  thread_bundle_.FastForwardBy(TimeDelta::FromSeconds(10));
+  task_environment_.FastForwardBy(TimeDelta::FromSeconds(10));
 
   // This gets called by the notification scheduling system.
   TriggerNotifications();
@@ -231,7 +231,7 @@ TEST_F(PlatformNotificationContextTriggerTest,
 
   ASSERT_EQ(0u, GetDisplayedNotifications().size());
 
-  thread_bundle_.FastForwardBy(TimeDelta::FromSeconds(10));
+  task_environment_.FastForwardBy(TimeDelta::FromSeconds(10));
 
   // This gets called by the notification scheduling system.
   TriggerNotifications();

@@ -4,7 +4,8 @@
 
 #include "ash/system/unified/custom_shape_button.h"
 
-#include "ash/system/tray/tray_constants.h"
+#include "ash/style/ash_color_provider.h"
+#include "ash/style/default_color_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/unified/unified_system_tray_view.h"
 #include "ui/compositor/paint_recorder.h"
@@ -95,8 +96,13 @@ const char* CustomShapeButton::GetClassName() const {
 void CustomShapeButton::PaintCustomShapePath(gfx::Canvas* canvas) {
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
-  flags.setColor(GetEnabled() ? kUnifiedMenuButtonColor
-                              : kUnifiedMenuButtonColorDisabled);
+  const SkColor button_color =
+      AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
+          AshColorProvider::ControlsLayerType::kInactiveControlBackground,
+          kUnifiedMenuButtonColor);
+  flags.setColor(GetEnabled()
+                     ? button_color
+                     : AshColorProvider::Get()->GetDisabledColor(button_color));
   flags.setStyle(cc::PaintFlags::kFill_Style);
 
   canvas->DrawPath(CreateCustomShapePath(GetLocalBounds()), flags);

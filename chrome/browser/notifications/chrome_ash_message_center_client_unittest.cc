@@ -103,7 +103,7 @@ class ChromeAshMessageCenterClientTest : public testing::Test,
         user_manager::UserManager::Get());
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager testing_profile_manager_;
   std::unique_ptr<ChromeAshMessageCenterClient> client_;
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;

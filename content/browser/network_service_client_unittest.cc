@@ -80,7 +80,7 @@ class NetworkServiceClientTest : public testing::Test {
   }
 
  protected:
-  TestBrowserThreadBundle task_environment_;
+  BrowserTaskEnvironment task_environment_;
   TestBrowserContext browser_context_;
   network::mojom::NetworkServiceClientPtr client_ptr_;
   NetworkServiceClient client_;

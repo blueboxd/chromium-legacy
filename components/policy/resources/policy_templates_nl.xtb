@@ -1661,15 +1661,6 @@
 
           Als de optie niet is ingesteld of is ingesteld op 'False', kunnen gebruikers bestanden naar Google Drive overzetten.</translation>
 <translation id="3915395663995367577">URL naar een PAC-bestand voor de proxy</translation>
-<translation id="3920892052017026701">Geef een custom startpunt voor batterijoplading op in procenten.
-
-          De batterij begint met opladen wanneer de waarde van het custom startpunt voor batterijoplading wordt bereikt.
-
-          DeviceBatteryChargeCustomStartCharging moet lager zijn dan DeviceBatteryChargeCustomStopCharging.
-
-          Dit beleid wordt alleen gebruikt als DeviceBatteryChargeMode is ingesteld op 'custom'.
-
-          Als dit beleid niet is geconfigureerd of niet is ingesteld, wordt de standaard batterijoplaadmodus toegepast.</translation>
 <translation id="3925377537407648234">Schermresolutie en schaalfactor instellen</translation>
 <translation id="3939893074578116847">Netwerkpakketten verzenden naar de beheerserver om de online status bij te houden, zodat de server kan detecteren of het apparaat offline is.
 
@@ -3054,7 +3045,7 @@ Als dit beleid niet wordt ingesteld, kan de gebruiker ervoor kiezen de pagina 'N
       Het door de gebruiker geselecteerde kanaal wordt overschreven door het beleid ChromeOsReleaseChannel. Als het beleidskanaal echter stabieler is dan het kanaal dat is geïnstalleerd op het apparaat, wordt het kanaal pas gewijzigd nadat de versie van het stabielere kanaal een hoger versienummer bereikt dan de versie die op het apparaat is geïnstalleerd.</translation>
 <translation id="6549567350270907557">Als deze instelling is ingeschakeld, kunnen gebruikers <ph name="PRODUCT_NAME" /> laten controleren of de ingevoerde gegevens deel uitmaken van een gegevenslek.
 
-              Als dit beleid is in- of uitgeschakeld, kunnen gebruikers het niet wijzigen of overschrijven in <ph name="PRODUCT_NAME" />. Als dit beleid niet is ingesteld, is controle op gegevenslekken toegestaan (maar kan de gebruiker dit uitschakelen).</translation>
+              Als dit beleid is in- of uitgeschakeld, kunnen gebruikers het niet wijzigen of overschrijven in <ph name="PRODUCT_NAME" />. Als dit beleid niet is ingesteld, is controle op gegevenslekken toegestaan (maar kan door de gebruiker worden uitgeschakeld).</translation>
 <translation id="6553143066970470539">Percentage voor helderheid van scherm</translation>
 <translation id="6559057113164934677">Niet toestaan dat sites toegang krijgen tot de camera en microfoon</translation>
 <translation id="6561396069801924653">Toegankelijkheidsopties weergeven in het systeemvakmenu</translation>
@@ -3642,15 +3633,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als de waarde van dit beleid 0 is, wordt de standaardcachegrootte gebruikt, maar kan de gebruiker deze niet wijzigen.
 
       Als dit beleid niet is ingesteld, wordt de standaardgrootte gebruikt en kan de gebruiker deze overschrijven met de markering --disk-cache-size.</translation>
-<translation id="759389052790680884">Geef een custom batterijoplaadstop op in procenten.
-
-          De batterij stopt met opladen wanneer de waarde van de custom batterijoplaadstop wordt bereikt.
-
-          DeviceBatteryChargeCustomStartCharging moet lager zijn dan DeviceBatteryChargeCustomStopCharging.
-
-          Dit beleid wordt alleen gebruikt als DeviceBatteryChargeMode is ingesteld op 'custom'.
-
-          Als dit beleid niet is geconfigureerd of niet is ingesteld, wordt de standaard batterijoplaadmodus toegepast.</translation>
 <translation id="759957074386651883">Safe Browsing-instellingen</translation>
 <translation id="7604169113182304895">Het is mogelijk dat Android-apps deze lijst op vrijwillige basis respecteren. Je kunt ze niet dwingen om de lijst te respecteren.</translation>
 <translation id="7612157962821894603">Markeringen voor het hele systeem die worden toegepast bij het starten van <ph name="PRODUCT_NAME" /></translation>
@@ -3750,9 +3732,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7750991880413385988">Pagina 'Nieuw tabblad' openen</translation>
 <translation id="7754704193130578113">Voorafgaand aan een download vragen waar een bestand moet worden opgeslagen</translation>
 <translation id="7761446981238915769">De lijst met geïnstalleerde apps op het inlogscherm configureren</translation>
-<translation id="7763479091692861127"> De verbindingstypen die mogen worden gebruikt voor updates voor het besturingssysteem. Updates voor het besturingssysteem kunnen de verbinding zwaar belasten door hun grootte en kunnen extra kosten tot gevolg hebben. Updates voor het besturingssysteem zijn daarom standaard uitgeschakeld voor dure verbindingstypen. Dit omvat momenteel de verbindingstypen WiMax, Bluetooth en Mobiel.
-
-      De herkende verbindingstypen zijn 'ethernet', 'wifi', 'wimax', 'bluetooth' en 'mobiel'.</translation>
 <translation id="7763614521440615342">Contentsuggesties weergeven op de nieuwe tabbladpagina</translation>
 <translation id="7765879851993224640">Toestaan dat Smart Lock Signin wordt gebruikt</translation>
 <translation id="7772346342637974431">Specificeert de tijdsduur zonder gebruikersinvoer, waarna een waarschuwingsdialoogvenster wordt weergegeven wanneer op de batterij wordt gewerkt.

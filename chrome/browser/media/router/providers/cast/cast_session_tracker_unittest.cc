@@ -106,7 +106,7 @@ class CastSessionTrackerTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   cast_channel::MockCastSocketService socket_service_;
   cast_channel::MockCastMessageHandler message_handler_;

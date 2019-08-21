@@ -33,6 +33,7 @@
 #include "gpu/ipc/common/surface_handle.h"
 #include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom.h"
 #include "services/viz/privileged/mojom/gl/gpu_host.mojom.h"
 #include "services/viz/privileged/mojom/gl/gpu_service.mojom.h"
@@ -96,6 +97,10 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   // Forcefully terminates the GPU process.
   void ForceShutdown();
+
+  // Asks the GPU process to run a service instance corresponding to the
+  // specific interface receiver type carried by |receiver|.
+  void RunService(mojo::GenericPendingReceiver receiver);
 
   CONTENT_EXPORT viz::mojom::GpuService* gpu_service();
 

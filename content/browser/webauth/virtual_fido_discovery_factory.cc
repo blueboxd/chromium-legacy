@@ -64,6 +64,14 @@ VirtualAuthenticator* VirtualFidoDiscoveryFactory::GetAuthenticator(
   return authenticator->second.get();
 }
 
+std::vector<VirtualAuthenticator*>
+VirtualFidoDiscoveryFactory::GetAuthenticators() {
+  std::vector<VirtualAuthenticator*> authenticators;
+  for (auto& authenticator : authenticators_)
+    authenticators.push_back(authenticator.second.get());
+  return authenticators;
+}
+
 bool VirtualFidoDiscoveryFactory::RemoveAuthenticator(const std::string& id) {
   const bool removed = authenticators_.erase(id);
   if (removed) {

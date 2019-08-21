@@ -237,7 +237,7 @@ class IndexedDBTombstoneSweeperTest : public testing::Test {
   base::HistogramTester histogram_tester_;
 
  private:
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(IndexedDBTombstoneSweeperTest, EmptyDB) {

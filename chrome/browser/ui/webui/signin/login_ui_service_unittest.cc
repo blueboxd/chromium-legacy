@@ -43,7 +43,7 @@ class LoginUIServiceTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   TestingProfileManager profile_manager_;
   // Test profile used by all tests - this is owned by profile_manager_.

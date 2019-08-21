@@ -24,7 +24,7 @@
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/backoff_entry.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 
@@ -382,7 +382,8 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
   std::string access_token_;
 
   // Connection to the CookieManager that signals when the GAIA cookies change.
-  mojo::Binding<network::mojom::CookieChangeListener> cookie_listener_binding_;
+  mojo::Receiver<network::mojom::CookieChangeListener>
+      cookie_listener_receiver_{this};
 
   // A worklist for this class. Stores any pending requests that couldn't be
   // executed right away, since this class only permits one request to be

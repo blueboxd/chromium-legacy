@@ -4227,7 +4227,7 @@ RenderFrameImpl::CreateWorkerFetchContext() {
 scoped_refptr<blink::WebWorkerFetchContext>
 RenderFrameImpl::CreateWorkerFetchContextForPlzDedicatedWorker(
     blink::WebDedicatedWorkerHostFactoryClient* factory_client) {
-  DCHECK(blink::features::IsPlzDedicatedWorkerEnabled());
+  DCHECK(base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
   DCHECK(factory_client);
 
   mojo::PendingRemote<blink::mojom::RendererPreferenceWatcher> watcher;

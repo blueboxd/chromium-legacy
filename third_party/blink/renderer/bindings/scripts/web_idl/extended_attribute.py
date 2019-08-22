@@ -70,13 +70,6 @@ class ExtendedAttribute(object):
     def __hash__(self):
         return hash((self._key, self._values, self._arguments))
 
-    def make_copy(self):
-        return ExtendedAttribute(
-            key=self._key,
-            values=self._values,
-            arguments=self._arguments,
-            name=self._name)
-
     @property
     def syntactic_form(self):
         if self._format == self._FORM_NO_ARGS:
@@ -207,9 +200,6 @@ class ExtendedAttributes(object):
 
     def __len__(self):
         return self._length
-
-    def make_copy(self):
-        return ExtendedAttributes(map(ExtendedAttribute.make_copy, self))
 
     @property
     def syntactic_form(self):

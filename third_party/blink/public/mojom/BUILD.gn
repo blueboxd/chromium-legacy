@@ -133,6 +133,7 @@ mojom("mojom_platform") {
     "webdatabase/web_database.mojom",
     "websockets/websocket_connector.mojom",
     "window_features/window_features.mojom",
+    "worker/dedicated_worker_host.mojom",
     "worker/shared_worker.mojom",
     "worker/shared_worker_client.mojom",
     "worker/shared_worker_connector.mojom",

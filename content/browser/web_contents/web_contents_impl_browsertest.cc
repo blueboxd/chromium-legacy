@@ -1232,13 +1232,9 @@ class WebContentsSplitCacheBrowserTestEnabled
     enabled_features.push_back(net::features::kSplitCacheByNetworkIsolationKey);
 
     // When the test parameter is true, we test the split cache with
-    // PlzDedicatedWorker enabled, which itself requires
-    // OffMainThreadWorkerScriptFetch to be enabled.
-    if (GetParam()) {
+    // PlzDedicatedWorker enabled.
+    if (GetParam())
       enabled_features.push_back(blink::features::kPlzDedicatedWorker);
-      enabled_features.push_back(
-          blink::features::kOffMainThreadDedicatedWorkerScriptFetch);
-    }
 
     feature_list.InitWithFeatures(enabled_features, {});
   }

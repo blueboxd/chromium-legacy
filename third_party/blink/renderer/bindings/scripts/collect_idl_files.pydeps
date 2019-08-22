@@ -36,10 +36,11 @@ web_idl/idl_type.py
 web_idl/includes.py
 web_idl/interface.py
 web_idl/ir_builder.py
+web_idl/literal_constant.py
+web_idl/make_copy.py
 web_idl/namespace.py
 web_idl/operation.py
 web_idl/reference.py
 web_idl/typedef.py
 web_idl/union.py
 web_idl/user_defined_type.py
-web_idl/values.py

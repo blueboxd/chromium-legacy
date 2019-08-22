@@ -288,13 +288,18 @@ cca.models.FileSystem.savePhoto = function(blob, filename) {
 
 /**
  * Creates a file for saving temporary video recording result.
- * @return {Promise<?FileEntry>} Newly created temporary file.
+ * @return {!Promise<!FileEntry>} Newly created temporary file.
+ * @throws {Error} If failed to create video temp file.
  */
 cca.models.FileSystem.createTempVideoFile = async function() {
   const dir =
       cca.models.FileSystem.externalDir || cca.models.FileSystem.internalDir;
   const filename = new cca.models.Filenamer().newVideoName();
-  return await cca.models.FileSystem.getFile(dir, filename, true);
+  const file = await cca.models.FileSystem.getFile(dir, filename, true);
+  if (file === null) {
+    throw new Error('Failed to create video temp file.');
+  }
+  return file;
 };
 
 /**

@@ -17101,6 +17101,278 @@
 
       If set to 'Send user downloads for scanning and reports results', users downloads will be sent over the network to Safe Browsing for malware scanning. The results will be available in the Admin Console, but not shown to the user.'''
     },
+    {
+      'name': 'UnsafeEventsReportingEnabled',
+      'owners': ['rogerta@chromium.org', 'mad@chromium.org'],
+      'type': 'main',
+      'schema': {
+        'type': 'boolean',
+      },
+      'example_value': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'id': 585,
+      'supported_on': ['chrome.*:78-'],
+      'future': True,
+      'caption': '''Allows Chrome to report unsafe events to Google''',
+      'tags': [],
+      'desc': '''When this policy is set to enabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> reports unsafe events such as password reuse, malware downloads, interstitials, content noncompliance etc. to Google for analysis.  Some unsafe events such as content noncompliance depend on other policies that enable such checks.
+
+      If this policy is set to disabled or not set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not report unsafe events.
+      '''
+    },
+    {
+      'name': 'BlockLargeFileTransfer',
+      'owners': ['rogerta@chromium.org', 'mad@chromium.org'],
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 0, 1, 2, 3 ],
+      },
+      'items': [
+        {
+          'name': 'None',
+          'value': 0,
+          'caption': '''Don't block large files''',
+        },
+        {
+          'name': 'Block-large-downloads',
+          'value': 1,
+          'caption': '''Block large file downloads''',
+        },
+        {
+          'name': 'Block-large-uploads',
+          'value': 2,
+          'caption': '''Block large file uploads''',
+        },
+        {
+          'name': 'Block-large-uploads-and-downloads',
+          'value': 3,
+          'caption': '''Block large file uploads and downloads''',
+        },
+      ],
+      'example_value': 0,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'id': 586,
+      'supported_on': ['chrome.*:78-'],
+      'future': True,
+      'caption': '''Prevent user to transfer large files''',
+      'tags': [],
+      'desc': '''This policy controls how <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> behaves when a user attempts to either upload or download files that are too large to send for either malware or content compliance scanning (50MB or larger).  This restriction only applies to files that would need scanning as determined by <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME">SendFilesForMalwareCheck</ph>, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME">CheckContentCompliance</ph> and the policies that control the list of domains for which checks are enabled.
+
+      If this policy is not set or set to 'None', <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> allows the user to upload or download files of any size.
+
+      If this policy is set to 'Block large downloads', files that are too large to be scanned are deleted beforing making them available to the user.  Because the size cannot always be determined before downloading, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> may download files and then determine that they surpass the allowed size limit.
+
+      If this policy is set to 'Block large uploads', files that are too large to be scanned cannot be selected for upload.
+
+      If this policy is set to 'Block large file uploads and downloads', <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> behaves according to the rules described under 'Block large downloads' and 'Block large uploads'.
+      '''
+    },
+    {
+      'name': 'DelayDeliveryUntilVerdict',
+      'owners': ['rogerta@chromium.org', 'mad@chromium.org'],
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 0, 1, 2, 3 ],
+      },
+      'items': [
+        {
+          'name': 'None',
+          'value': 0,
+          'caption': '''Don't delay any deliveries''',
+        },
+        {
+          'name': 'Delay-downloads',
+          'value': 1,
+          'caption': '''Delay downloads until scan verdict is known''',
+        },
+        {
+          'name': 'Delay-uploads',
+          'value': 2,
+          'caption': '''Delay uploads until scan verdict is known''',
+        },
+        {
+          'name': 'Delay-uploads-and-downloads',
+          'value': 3,
+          'caption': '''Delay both uploads and downloads until scan verdict is known''',
+        },
+      ],
+      'example_value': 0,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'id': 587,
+      'supported_on': ['chrome.*:78-'],
+      'future': True,
+      'caption': '''Delay delivery of files until scanning verdicts are known''',
+      'tags': [],
+      'desc': '''Controls how <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> behaves with uploaded and downloaded data that is deemed to require scanning.  Delaying delivery means that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not permit the user to access a downloaded file, select a file for uploading, paste from the clipboard, or drag and drop data until it has been scanned and the verdict of that scan is known.  This restriction only applies to files or data that would need scanning as determined by <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME">SendFilesForMalwareCheck</ph>, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME">CheckContentCompliance</ph> and the policies that control the list of domains for which checks are enabled.
+
+      If this policy is not set or set to 'None', <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not delay any files for uploading, paste from the clipboard, drag and drop data or delay access to any downloaded files.  The scan will proceed in the background.
+
+      If this policy is set to 'Delay downloads', users will not be able to access downloaded files until they have been scanned and the verdict of scan is known.
+
+      If this policy is set to 'Delay uploads' and the user attempts to upload a file, paste from the clipboard, or drag and drop data the operation will not proceed until the data has been scanned and the verdict of scan is known.
+
+      If this policy is set to 'Delay both uploads and downloads', <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> behaves according to the rules described under 'Delay downloads' and 'Delay uploads'.
+      '''
+    },
+    {
+      'name': 'AllowPasswordProtectedFiles',
+      'owners': ['rogerta@chromium.org', 'mad@chromium.org'],
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 0, 1, 2, 3 ],
+      },
+      'items': [
+        {
+          'name': 'None',
+          'value': 0,
+          'caption': '''Don't allow password protected files''',
+        },
+        {
+          'name': 'Allow-downloads',
+          'value': 1,
+          'caption': '''Allow downloads of password protected files''',
+        },
+        {
+          'name': 'Allow-uploads',
+          'value': 2,
+          'caption': '''Allow uploads of password protected files''',
+        },
+        {
+          'name': 'Allow-uploads-and-downloads',
+          'value': 3,
+          'caption': '''Allow both uploads and downloads of password protected files''',
+        },
+      ],
+      'example_value': 0,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'id': 588,
+      'supported_on': ['chrome.*:78-'],
+      'future': True,
+      'caption': '''Allow users to upload or download password protected files''',
+      'tags': [],
+      'desc': '''Controls whether users are allowed to upload or download password protected files when scanning is required.  This restriction only applies to files that would need scanning as determined by <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME">SendFilesForMalwareCheck</ph>, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME">CheckContentCompliance</ph> and the policies that control the list of domains for which checks are enabled.
+
+      If this policy is not set or set to 'None', <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> blocks the user from upload or download password protected files.
+
+      If this policy is set to 'Allow downloads', <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> allows the user to download password protected files.
+
+      If this policy is set to 'Allow uploads', <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> allows the user to upload password protected files.
+
+      If this policy is set to 'Allow uploads and downloads', <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> behaves according to the rules described under 'Allow downloads' and 'Allow uploads'.
+      '''
+    },
+    {
+      'name': 'CheckContentCompliance',
+      'owners': ['rogerta@chromium.org', 'mad@chromium.org'],
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 0, 1, 2, 3 ],
+      },
+      'items': [
+        {
+          'name': 'None',
+          'value': 0,
+          'caption': '''Don't check content compliance''',
+        },
+        {
+          'name': 'Check-downloads',
+          'value': 1,
+          'caption': '''Check content compliance of downloads''',
+        },
+        {
+          'name': 'Check-uploads',
+          'value': 2,
+          'caption': '''Check content compliance of uploads''',
+        },
+        {
+          'name': 'Check-uploads-and-downloads',
+          'value': 3,
+          'caption': '''Check content compliance of uploads and downloads''',
+        },
+      ],
+      'example_value': 0,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'id': 589,
+      'supported_on': ['chrome.*:78-'],
+      'future': True,
+      'caption': '''Check content compliance''',
+      'tags': [],
+      'desc': '''Controls how <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> checks data that is uploaded, downloaded, pasted from the clipboard, or dragged and dropped for compliance with enterprise rules.
+
+      If this policy is not set or set to 'None', <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not check any data for compliance.
+
+      If this policy is set to 'Check downloads' and the user attempts to download a file from a URL in the <ph name="DOMAINS_TO_CHECK_COMPLIANCE_OF_DOWNLOADED_CONTENT_POLICTY_NAME">DomainsToCheckComplianceOfDownloadedContent</ph> policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will check the data downloaded for compiance with enterprise rules.
+
+      If this policy is set to 'Check uploads' and the user attempts to upload a file to a domain not in the <ph name="DOMAINS_TO_NOT_CHECK_COMPLIANCE_OF_UPLOADED_CONTENT_POLICY_NAME">DomainsToNotCheckComplianceOfUploadedContent</ph>, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will check the file uploaded, data pasted from the clipboard, or data dragged and dropped for compiance with enterprise rules.
+
+      If this policy is set to 'Check uploads and downloads', <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> behaves according to the rules described under 'Check downloads' and 'Check uploads'.
+      '''
+    },
+    {
+      'name': 'DomainsToCheckComplianceOfDownloadedContent',
+      'owners': ['rogerta@chromium.org', 'mad@chromium.org'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'example_value': ['my-awesome-domain.com', 'my-auxiliary-domain.com'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'id': 590,
+      'supported_on': ['chrome.*:78-'],
+      'future': True,
+      'caption': '''List of domains for which downloaded content needs to be checked for compliance''',
+      'tags': [],
+      'desc': '''List of domains for which downloaded content needs to be checked for compliance before being saved on local storage.  This policy is used only if <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME">CheckContentCompliance</ph> is set to enabled.
+
+      If this policy is not set or set to an empty list of domains, no downloaded content is checked for compliance.
+      '''
+    },
+    {
+      'name': 'DomainsToNotCheckComplianceOfUploadedContent',
+      'owners': ['rogerta@chromium.org', 'mad@chromium.org'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'example_value': ['my-awesome-domain.com', 'my-auxiliary-domain.com'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'id': 591,
+      'supported_on': ['chrome.*:78-'],
+      'future': True,
+      'caption': '''List of domains for which uploaded content need not be checked for compliance''',
+      'tags': [],
+      'desc': '''List of domains for which uploaded files, data pasted from the clipboard, or data dragged and dropped does not need to be checked for compliance.  This policy is used only if <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME">CheckContentCompliance</ph> is set to enabled.
+
+      If this policy is not set or set to an empty list of domains, all content is checked for compliance.
+      '''
+    },
   ],
 
   'messages': {
@@ -17770,7 +18042,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
         'ReportMachineIDData',
         'ReportUserIDData',
         'ReportExtensionsAndPluginsData',
-        'ReportSafeBrowsingData',
         'CloudReportingEnabled',
       ],
     },
@@ -17899,6 +18170,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562],
-  'highest_id_currently_used': 584,
+  'highest_id_currently_used': 591,
   'highest_atomic_group_id_currently_used': 37
 }

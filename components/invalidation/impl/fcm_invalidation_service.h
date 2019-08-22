@@ -17,7 +17,6 @@
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "net/base/backoff_entry.h"
-#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 class PrefService;
 class PrefRegistrySimple;
@@ -28,7 +27,8 @@ class InstanceIDDriver;
 
 namespace syncer {
 class FCMNetworkHandler;
-}
+class PerUserTopicRegistrationManager;
+}  // namespace syncer
 
 namespace invalidation {
 
@@ -36,6 +36,11 @@ using FCMNetworkHandlerCallback =
     base::RepeatingCallback<std::unique_ptr<syncer::FCMNetworkHandler>(
         const std::string& sender_id,
         const std::string& app_id)>;
+
+using PerUserTopicRegistrationManagerCallback =
+    base::RepeatingCallback<std::unique_ptr<
+        syncer::PerUserTopicRegistrationManager>(const std::string& project_id,
+                                                 bool migrate_prefs)>;
 
 // This InvalidationService wraps the C++ Invalidation Client (FCM) library.
 // It provides invalidations for desktop platforms (Win, Mac, Linux).
@@ -46,10 +51,10 @@ class FCMInvalidationService
  public:
   FCMInvalidationService(IdentityProvider* identity_provider,
                          FCMNetworkHandlerCallback fcm_network_handler_callback,
+                         PerUserTopicRegistrationManagerCallback
+                             per_user_topic_registration_manager_callback,
                          instance_id::InstanceIDDriver* client_id_driver,
                          PrefService* pref_service,
-                         const syncer::ParseJSONCallback& parse_json,
-                         network::mojom::URLLoaderFactory* loader_factory,
                          const std::string& sender_id = {});
   ~FCMInvalidationService() override;
 
@@ -132,13 +137,15 @@ class FCMInvalidationService
   InvalidationLogger logger_;
 
   FCMNetworkHandlerCallback fcm_network_handler_callback_;
+  PerUserTopicRegistrationManagerCallback
+      per_user_topic_registration_manager_callback_;
+
   instance_id::InstanceIDDriver* const instance_id_driver_;
   std::string client_id_;
 
   IdentityProvider* const identity_provider_;
   PrefService* const pref_service_;
-  syncer::ParseJSONCallback const parse_json_;
-  network::mojom::URLLoaderFactory* const loader_factory_;
+
   bool update_was_requested_ = false;
   Diagnostics diagnostic_info_;
 

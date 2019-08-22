@@ -161,8 +161,7 @@ void DedicatedWorkerGlobalScope::FetchAndRunClassicScript(
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
     WorkerResourceTimingNotifier& outside_resource_timing_notifier,
     const v8_inspector::V8StackTraceId& stack_id) {
-  DCHECK(base::FeatureList::IsEnabled(
-      features::kOffMainThreadDedicatedWorkerScriptFetch));
+  DCHECK(base::FeatureList::IsEnabled(features::kPlzDedicatedWorker));
   DCHECK(!IsContextPaused());
 
   // Step 12. "Fetch a classic worker script given url, outside settings,
@@ -257,8 +256,7 @@ void DedicatedWorkerGlobalScope::postMessage(ScriptState* script_state,
 void DedicatedWorkerGlobalScope::DidReceiveResponseForClassicScript(
     WorkerClassicScriptLoader* classic_script_loader) {
   DCHECK(IsContextThread());
-  DCHECK(base::FeatureList::IsEnabled(
-      features::kOffMainThreadDedicatedWorkerScriptFetch));
+  DCHECK(base::FeatureList::IsEnabled(features::kPlzDedicatedWorker));
   probe::DidReceiveScriptResponse(this, classic_script_loader->Identifier());
 }
 
@@ -267,8 +265,7 @@ void DedicatedWorkerGlobalScope::DidFetchClassicScript(
     WorkerClassicScriptLoader* classic_script_loader,
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK(IsContextThread());
-  DCHECK(base::FeatureList::IsEnabled(
-      features::kOffMainThreadDedicatedWorkerScriptFetch));
+  DCHECK(base::FeatureList::IsEnabled(features::kPlzDedicatedWorker));
 
   // Step 12. "If the algorithm asynchronously completes with null, then:"
   if (classic_script_loader->Failed()) {

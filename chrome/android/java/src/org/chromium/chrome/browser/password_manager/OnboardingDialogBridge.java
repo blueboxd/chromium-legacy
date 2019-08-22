@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.password_manager;
 
+import android.content.res.Resources;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -14,11 +16,13 @@ import org.chromium.ui.modaldialog.DialogDismissalCause;
 public class OnboardingDialogBridge {
     private long mNativeOnboardingDialogView;
     private final PasswordManagerDialogCoordinator mOnboardingDialog;
+    private final Resources mResources;
 
     private OnboardingDialogBridge(WindowAndroid windowAndroid, long nativeOnboardingDialogView) {
         mNativeOnboardingDialogView = nativeOnboardingDialogView;
         ChromeActivity activity = (ChromeActivity) windowAndroid.getActivity().get();
         mOnboardingDialog = new PasswordManagerDialogCoordinator(activity);
+        mResources = activity.getResources();
     }
 
     @CalledByNative
@@ -30,7 +34,9 @@ public class OnboardingDialogBridge {
     public void showDialog(String onboardingTitle, String onboardingDetails) {
         // TODO(crbug.com/983445): Replace the drawable once the real image is available.
         mOnboardingDialog.showDialog(onboardingTitle, onboardingDetails,
-                R.drawable.data_reduction_illustration, this::onClick);
+                R.drawable.data_reduction_illustration,
+                mResources.getString(R.string.continue_button),
+                mResources.getString(R.string.cancel), this::onClick);
     }
 
     @CalledByNative

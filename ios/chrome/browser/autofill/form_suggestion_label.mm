@@ -18,7 +18,7 @@
 #import "ios/chrome/browser/autofill/form_suggestion_client.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -102,17 +102,19 @@ UILabel* TextLabel(NSString* text, UIColor* textColor, BOOL bold) {
       [stackView addArrangedSubview:iconView];
     }
 
-    UILabel* label = TextLabel(suggestion.value, UIColor.cr_labelColor, YES);
+    UILabel* label = TextLabel(suggestion.value,
+                               [UIColor colorNamed:kTextPrimaryColor], YES);
     [stackView addArrangedSubview:label];
 
     if ([suggestion.displayDescription length] > 0) {
-      UILabel* description = TextLabel(suggestion.displayDescription,
-                                       UIColor.cr_secondaryLabelColor, NO);
+      UILabel* description =
+          TextLabel(suggestion.displayDescription,
+                    [UIColor colorNamed:kTextSecondaryColor], NO);
       [stackView addArrangedSubview:description];
     }
 
     if (userInteractionEnabled_) {
-      [self setBackgroundColor:UIColor.cr_secondarySystemBackgroundColor];
+      [self setBackgroundColor:[UIColor colorNamed:kGrey100Color]];
     }
 
     [self setClipsToBounds:YES];
@@ -142,19 +144,19 @@ UILabel* TextLabel(NSString* text, UIColor* textColor, BOOL bold) {
 
 - (void)touchesBegan:(NSSet*)touches withEvent:(UIEvent*)event {
   if (userInteractionEnabled_) {
-    [self setBackgroundColor:UIColor.cr_systemGray3Color];
+    [self setBackgroundColor:[UIColor colorNamed:kGrey300Color]];
   }
 }
 
 - (void)touchesCancelled:(NSSet*)touches withEvent:(UIEvent*)event {
   if (userInteractionEnabled_) {
-    [self setBackgroundColor:UIColor.cr_secondarySystemBackgroundColor];
+    [self setBackgroundColor:[UIColor colorNamed:kGrey100Color]];
   }
 }
 
 - (void)touchesEnded:(NSSet*)touches withEvent:(UIEvent*)event {
   if (userInteractionEnabled_) {
-    [self setBackgroundColor:UIColor.cr_secondarySystemBackgroundColor];
+    [self setBackgroundColor:[UIColor colorNamed:kGrey100Color]];
     [client_ didSelectSuggestion:suggestion_];
   }
 }

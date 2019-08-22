@@ -21,6 +21,8 @@ InstallationDataMap& GetInstallationDataMap(const Profile* profile) {
   return (*failure_maps)[profile];
 }
 
+extensions::InstallationReporter::TestObserver* g_test_observer = nullptr;
+
 }  // namespace
 
 namespace extensions {
@@ -42,18 +44,25 @@ std::string InstallationReporter::GetFormattedInstallationData(
   if (data.install_stage) {
     str << "; install_stage: " << static_cast<int>(data.install_stage.value());
   }
-  if (data.downloading_stage) {
+  if (data.install_stage && data.install_stage.value() == Stage::DOWNLOADING &&
+      data.downloading_stage) {
     str << "; downloading_stage: "
         << static_cast<int>(data.downloading_stage.value());
   }
   return str.str();
 }
 
+InstallationReporter::TestObserver::~TestObserver() = default;
+
 // static
 void InstallationReporter::ReportInstallationStage(const Profile* profile,
                                                    const ExtensionId& id,
                                                    Stage stage) {
-  GetInstallationDataMap(profile)[id].install_stage = stage;
+  InstallationData& data = GetInstallationDataMap(profile)[id];
+  data.install_stage = stage;
+  if (g_test_observer) {
+    g_test_observer->OnExtensionDataChanged(id, profile, data);
+  }
 }
 
 // static
@@ -61,7 +70,11 @@ void InstallationReporter::ReportDownloadingStage(
     const Profile* profile,
     const ExtensionId& id,
     ExtensionDownloaderDelegate::Stage stage) {
-  GetInstallationDataMap(profile)[id].downloading_stage = stage;
+  InstallationData& data = GetInstallationDataMap(profile)[id];
+  data.downloading_stage = stage;
+  if (g_test_observer) {
+    g_test_observer->OnExtensionDataChanged(id, profile, data);
+  }
 }
 
 // static
@@ -69,7 +82,11 @@ void InstallationReporter::ReportFailure(const Profile* profile,
                                          const ExtensionId& id,
                                          FailureReason reason) {
   DCHECK_NE(reason, FailureReason::UNKNOWN);
-  GetInstallationDataMap(profile)[id].failure_reason = reason;
+  InstallationData& data = GetInstallationDataMap(profile)[id];
+  data.failure_reason = reason;
+  if (g_test_observer) {
+    g_test_observer->OnExtensionDataChanged(id, profile, data);
+  }
 }
 
 // static
@@ -85,6 +102,9 @@ void InstallationReporter::ReportCrxInstallError(
   InstallationData& data = GetInstallationDataMap(profile)[id];
   data.failure_reason = reason;
   data.install_error_detail = crx_install_error;
+  if (g_test_observer) {
+    g_test_observer->OnExtensionDataChanged(id, profile, data);
+  }
 }
 
 // static
@@ -99,6 +119,11 @@ InstallationReporter::InstallationData InstallationReporter::Get(
 // static
 void InstallationReporter::Clear(const Profile* profile) {
   GetInstallationDataMap(profile).clear();
+}
+
+// static
+void InstallationReporter::SetTestObserver(TestObserver* observer) {
+  g_test_observer = observer;
 }
 
 }  //  namespace extensions

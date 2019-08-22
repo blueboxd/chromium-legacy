@@ -105,12 +105,6 @@ const base::Feature kNavigationPredictor {
 #endif
 };
 
-// Enable off-the-main-thread dedicated worker script fetch.
-// (https://crbug.com/835717)
-const base::Feature kOffMainThreadDedicatedWorkerScriptFetch{
-    "OffMainThreadDedicatedWorkerScriptFetch",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Start service workers on the IO thread.
 // https://crbug.com/692909
 const base::Feature kOffMainThreadServiceWorkerStartup{
@@ -323,23 +317,6 @@ const base::FeatureParam<int> kForceDarkTextLightnessThresholdParam{
 // Can also set to -1 to let Blink's internal settings control the value
 const base::FeatureParam<int> kForceDarkBackgroundLightnessThresholdParam{
     &kForceWebContentsDarkMode, "background_lightness_threshold", -1};
-
-bool IsPlzDedicatedWorkerEnabled() {
-  // PlzDedicatedWorker depends on off-the-main-thread dedicated worker script
-  // fetch.
-#if DCHECK_IS_ON()
-  if (base::FeatureList::IsEnabled(features::kPlzDedicatedWorker)) {
-    DCHECK(base::FeatureList::IsEnabled(
-        features::kOffMainThreadDedicatedWorkerScriptFetch))
-        << "PlzDedicatedWorker is enabled but "
-        << "OffMainThreadDedicatedWorkerScriptFetch isn't. PlzDedicatedWorker "
-        << "requires OffMainThreadDedicatedWorkerScriptFetch.";
-  }
-#endif  // DCHECK_IS_ON()
-  return base::FeatureList::IsEnabled(
-             features::kOffMainThreadDedicatedWorkerScriptFetch) &&
-         base::FeatureList::IsEnabled(features::kPlzDedicatedWorker);
-}
 
 const base::Feature kCanvasAlwaysDeferral{"CanvasAlwaysDeferral",
                                           base::FEATURE_ENABLED_BY_DEFAULT};

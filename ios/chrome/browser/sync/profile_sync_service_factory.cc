@@ -177,17 +177,14 @@ ProfileSyncServiceFactory::BuildServiceInstanceFor(
       base::FeatureList::IsEnabled(
           autofill::features::kAutofillEnableAccountWalletStorage);
 
-  bool use_fcm_invalidations =
-      base::FeatureList::IsEnabled(invalidation::switches::kFCMInvalidations);
-  if (use_fcm_invalidations) {
-    auto* fcm_invalidation_provider =
-        IOSChromeProfileInvalidationProviderFactory::GetForBrowserState(
-            browser_state);
-    if (fcm_invalidation_provider) {
-      init_params.invalidations_identity_providers.push_back(
-          fcm_invalidation_provider->GetIdentityProvider());
-    }
+  auto* fcm_invalidation_provider =
+      IOSChromeProfileInvalidationProviderFactory::GetForBrowserState(
+          browser_state);
+  if (fcm_invalidation_provider) {
+    init_params.invalidations_identity_providers.push_back(
+        fcm_invalidation_provider->GetIdentityProvider());
   }
+
   // This code should stay here until all invalidation client are
   // migrated from deprecated invalidation  infructructure.
   // Since invalidations will work only if ProfileSyncService calls

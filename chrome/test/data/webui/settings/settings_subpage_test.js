@@ -22,7 +22,7 @@ cr.define('settings_subpage', function() {
       assertEquals('', search.getValue());
     });
 
-    test('clear search (click)', function() {
+    test('clear search (click)', async () => {
       const subpage = document.createElement('settings-subpage');
       // Having a searchLabel will create the cr-search-field.
       subpage.searchLabel = 'test';
@@ -33,7 +33,7 @@ cr.define('settings_subpage', function() {
       search.setValue('Hello');
       assertEquals(null, search.root.activeElement);
       search.$.clearSearch.click();
-      Polymer.dom.flush();
+      await test_util.flushTasks();
       assertEquals('', search.getValue());
       assertEquals(search.$.searchInput, search.root.activeElement);
     });

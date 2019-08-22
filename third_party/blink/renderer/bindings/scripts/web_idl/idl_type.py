@@ -150,6 +150,9 @@ class IdlType(WithExtendedAttributes, WithCodeGeneratorInfo, WithDebugInfo):
     def __hash__(self):
         raise exceptions.NotImplementedError()
 
+    def make_copy(self):
+        return self
+
     @property
     def syntactic_form(self):
         """

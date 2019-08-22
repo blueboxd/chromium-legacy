@@ -70,8 +70,7 @@ void SetUpOnUI(
           },
           process_manager);
 
-  RunOrPostTaskOnThread(FROM_HERE,
-                        ServiceWorkerContextWrapper::GetCoreThreadId(),
+  RunOrPostTaskOnThread(FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
                         base::BindOnce(std::move(callback), std::move(headers),
                                        browser_context_getter));
 }

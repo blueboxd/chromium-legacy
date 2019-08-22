@@ -167,7 +167,7 @@ struct DriveError {
   mojo_base.mojom.FilePath path;
 };
 
-// Next MinVersion: 2
+// Next MinVersion: 3
 struct FileMetadata {
   [Extensible] enum Type {
     // A regular file.
@@ -211,6 +211,9 @@ struct FileMetadata {
   Capabilities capabilities;
 
   [MinVersion=1] FolderFeature? folder_feature;
+
+  // Only present in QuickAccess queries.
+  [MinVersion=2] QuickAccess? quick_access;
 };
 
 struct ImageMetadata {
@@ -243,6 +246,11 @@ struct FolderFeature {
   // Identifies an external media folder, that contains one time only uploads
   // for USB devices, SD cards etc.
   bool is_external_media = false;
+};
+
+struct QuickAccess {
+  // A [0, 1] score with the probability that a user wants this document next.
+  double score;
 };
 
 struct ItemEvent {
@@ -287,6 +295,7 @@ struct FileChange {
 };
 
 // Definition of the search request sent to DriveFS.
+// Next MinVersion: 2
 struct QueryParameters {
   // Where this request should go to.
   enum QuerySource {
@@ -333,6 +342,20 @@ struct QueryParameters {
   // How to sort the returned results.
   SortField sort_field = kNone;
   SortDirection sort_direction = kAscending;
+
+  // The kind of query to perform.
+  [MinVersion=1] QueryKind query_kind = kRegular;
+};
+
+// TODO(crbug.com/896777): Put this inside QueryParameters once linked bug is
+// fixed.
+enum QueryKind {
+  // Regular search.
+  kRegular = 0,
+
+  // QuickAccess query from the ItemSuggest API. Only page_size is used in a
+  // QuickAccess query.
+  kQuickAccess = 1,
 };
 
 // Represents a search request in progress.

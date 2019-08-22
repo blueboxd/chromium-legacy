@@ -497,10 +497,10 @@ UserMediaProcessor::UserMediaProcessor(
 
 UserMediaProcessor::~UserMediaProcessor() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  // Force-close all outstanding user media requests and local sources here,
-  // before the outstanding WeakPtrs are invalidated, to ensure a clean
-  // shutdown.
-  StopAllProcessing();
+
+  // Ensure StopAllProcessing() has been called by UserMediaClient.
+  DCHECK(!current_request_info_ && !request_completed_cb_ &&
+         !local_sources_.size());
 }
 
 UserMediaRequestInfo* UserMediaProcessor::CurrentRequest() {
@@ -540,7 +540,7 @@ void UserMediaProcessor::SetupAudioInput() {
   if (blink::IsDeviceMediaType(audio_controls.stream_type)) {
     GetMediaDevicesDispatcher()->GetAudioInputCapabilities(WTF::Bind(
         &UserMediaProcessor::SelectAudioDeviceSettings,
-        weak_factory_.GetWeakPtr(), current_request_info_->web_request()));
+        WrapWeakPersistent(this), current_request_info_->web_request()));
   } else {
     if (!blink::IsAudioInputMediaType(audio_controls.stream_type)) {
       String failed_constraint_name =
@@ -686,7 +686,7 @@ void UserMediaProcessor::SetupVideoInput() {
   if (blink::IsDeviceMediaType(video_controls.stream_type)) {
     GetMediaDevicesDispatcher()->GetVideoInputCapabilities(WTF::Bind(
         &UserMediaProcessor::SelectVideoDeviceSettings,
-        weak_factory_.GetWeakPtr(), current_request_info_->web_request()));
+        WrapWeakPersistent(this), current_request_info_->web_request()));
   } else {
     if (!blink::IsVideoInputMediaType(video_controls.stream_type)) {
       String failed_constraint_name =
@@ -794,8 +794,7 @@ void UserMediaProcessor::GenerateStreamForCurrentRequestInfo(
       blink::mojom::blink::StreamSelectionInfo::New(
           strategy, requested_audio_capture_session_id),
       WTF::Bind(&UserMediaProcessor::OnStreamGenerated,
-                weak_factory_.GetWeakPtr(),
-                current_request_info_->request_id()));
+                WrapWeakPersistent(this), current_request_info_->request_id()));
 }
 
 WebMediaStreamDeviceObserver*
@@ -872,7 +871,7 @@ void UserMediaProcessor::OnStreamGenerated(
     GetMediaDevicesDispatcher()->GetAllVideoInputDeviceFormats(
         video_device_id,
         WTF::Bind(&UserMediaProcessor::GotAllVideoInputFormatsForDevice,
-                  weak_factory_.GetWeakPtr(),
+                  WrapWeakPersistent(this),
                   current_request_info_->web_request(), label,
                   video_device_id));
   }
@@ -929,15 +928,16 @@ void UserMediaProcessor::OnStreamGeneratedForCancelledRequest(
 // static
 void UserMediaProcessor::OnAudioSourceStartedOnAudioThread(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    base::WeakPtr<UserMediaProcessor> weak_ptr,
+    UserMediaProcessor* weak_ptr,
     blink::WebPlatformMediaStreamSource* source,
     MediaStreamRequestResult result,
     const blink::WebString& result_name) {
   PostCrossThreadTask(
       *task_runner.get(), FROM_HERE,
       CrossThreadBindOnce(&UserMediaProcessor::OnAudioSourceStarted,
-                          std::move(weak_ptr), CrossThreadUnretained(source),
-                          result, String(result_name)));
+                          WrapCrossThreadWeakPersistent(weak_ptr),
+                          CrossThreadUnretained(source), result,
+                          String(result_name)));
 }
 
 void UserMediaProcessor::OnAudioSourceStarted(
@@ -1038,6 +1038,10 @@ void UserMediaProcessor::OnDeviceChanged(const MediaStreamDevice& old_device,
   source_impl->ChangeSource(new_device);
 }
 
+void UserMediaProcessor::Trace(Visitor* visitor) {
+  visitor->Trace(frame_);
+}
+
 blink::WebMediaStreamSource UserMediaProcessor::InitializeVideoSourceObject(
     const MediaStreamDevice& device) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -1047,7 +1051,7 @@ blink::WebMediaStreamSource UserMediaProcessor::InitializeVideoSourceObject(
   if (!source.GetPlatformSource()) {
     source.SetPlatformSource(CreateVideoSource(
         device, WTF::BindRepeating(&UserMediaProcessor::OnLocalSourceStopped,
-                                   weak_factory_.GetWeakPtr())));
+                                   WrapWeakPersistent(this))));
     String device_id(device.id.data());
     source.SetCapabilities(ComputeCapabilitiesForVideoSource(
         // TODO(crbug.com/704136): Change ComputeCapabilitiesForVideoSource to
@@ -1089,12 +1093,12 @@ blink::WebMediaStreamSource UserMediaProcessor::InitializeAudioSourceObject(
   blink::WebPlatformMediaStreamSource::ConstraintsRepeatingCallback
       source_ready = ConvertToBaseCallback(CrossThreadBindRepeating(
           &UserMediaProcessor::OnAudioSourceStartedOnAudioThread, task_runner_,
-          weak_factory_.GetWeakPtr()));
+          WrapCrossThreadWeakPersistent(this)));
 
   std::unique_ptr<blink::MediaStreamAudioSource> audio_source =
       CreateAudioSource(device, std::move(source_ready));
-  audio_source->SetStopCallback(BindRepeating(
-      &UserMediaProcessor::OnLocalSourceStopped, weak_factory_.GetWeakPtr()));
+  audio_source->SetStopCallback(WTF::BindRepeating(
+      &UserMediaProcessor::OnLocalSourceStopped, WrapWeakPersistent(this)));
 
 #if DCHECK_IS_ON()
   for (const auto& local_source : local_sources_) {
@@ -1219,9 +1223,9 @@ void UserMediaProcessor::StartTracks(const String& label) {
       ToStdVector(current_request_info_->audio_devices()),
       ToStdVector(current_request_info_->video_devices()),
       WTF::BindRepeating(&UserMediaProcessor::OnDeviceStopped,
-                         weak_factory_.GetWeakPtr()),
+                         WrapWeakPersistent(this)),
       WTF::BindRepeating(&UserMediaProcessor::OnDeviceChanged,
-                         weak_factory_.GetWeakPtr()));
+                         WrapWeakPersistent(this)));
 
   Vector<blink::WebMediaStreamTrack> audio_tracks(
       current_request_info_->audio_devices().size());
@@ -1240,7 +1244,7 @@ void UserMediaProcessor::StartTracks(const String& label) {
   // Wait for the tracks to be started successfully or to fail.
   current_request_info_->CallbackOnTracksStarted(
       WTF::Bind(&UserMediaProcessor::OnCreateNativeTracksCompleted,
-                weak_factory_.GetWeakPtr(), label));
+                WrapWeakPersistent(this), label));
 }
 
 void UserMediaProcessor::CreateVideoTracks(
@@ -1338,7 +1342,7 @@ void UserMediaProcessor::GetUserMediaRequestSucceeded(
   task_runner_->PostTask(
       FROM_HERE,
       WTF::Bind(&UserMediaProcessor::DelayedGetUserMediaRequestSucceeded,
-                weak_factory_.GetWeakPtr(), stream, web_request));
+                WrapWeakPersistent(this), stream, web_request));
 }
 
 void UserMediaProcessor::DelayedGetUserMediaRequestSucceeded(
@@ -1367,8 +1371,8 @@ void UserMediaProcessor::GetUserMediaRequestFailed(
   task_runner_->PostTask(
       FROM_HERE,
       WTF::Bind(&UserMediaProcessor::DelayedGetUserMediaRequestFailed,
-                weak_factory_.GetWeakPtr(),
-                current_request_info_->web_request(), result, constraint_name));
+                WrapWeakPersistent(this), current_request_info_->web_request(),
+                result, constraint_name));
 }
 
 void UserMediaProcessor::DelayedGetUserMediaRequestFailed(

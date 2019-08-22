@@ -214,7 +214,14 @@ void AuthenticatedLeakCheck::Start(const GURL& url,
 void AuthenticatedLeakCheck::OnAccessTokenRequestCompleted(
     GoogleServiceAuthError error,
     signin::AccessTokenInfo access_token_info) {
+  base::UmaHistogramEnumeration(
+      "PasswordManager.LeakDetection.AccessTokenFetchStatus", error.state(),
+      GoogleServiceAuthError::NUM_STATES);
   if (error.state() != GoogleServiceAuthError::NONE) {
+    // Network error codes are negative. See: src/net/base/net_error_list.h.
+    base::UmaHistogramSparse(
+        "PasswordManager.LeakDetection.AccessTokenNetErrorCode",
+        -error.network_error());
     DLOG(ERROR) << "Token request error: " << error.error_message();
     delegate_->OnError(LeakDetectionError::kTokenRequestFailure);
     return;
@@ -261,7 +268,7 @@ void AuthenticatedLeakCheck::OnLookupSingleLeakResponse(
   DVLOG(0) << "Leak check: number of matching encrypted prefixes="
            << response->encrypted_leak_match_prefixes.size();
 
-  AnalyzeResponseResult(
+  AnalyzeResponse(
       std::move(response), encryption_key_,
       TimeCallback(
           base::BindOnce(&AuthenticatedLeakCheck::OnAnalyzeSingleLeakResponse,
@@ -269,7 +276,11 @@ void AuthenticatedLeakCheck::OnLookupSingleLeakResponse(
           "PasswordManager.LeakDetection.AnalyzeSingleLeakResponseTime"));
 }
 
-void AuthenticatedLeakCheck::OnAnalyzeSingleLeakResponse(bool is_leaked) {
+void AuthenticatedLeakCheck::OnAnalyzeSingleLeakResponse(
+    AnalyzeResponseResult result) {
+  base::UmaHistogramEnumeration(
+      "PasswordManager.LeakDetection.AnalyzeSingleLeakResponseResult", result);
+  const bool is_leaked = result == AnalyzeResponseResult::kLeaked;
   DVLOG(0) << "Leak check result=" << is_leaked;
   delegate_->OnLeakDetectionDone(is_leaked, std::move(url_),
                                  std::move(username_), std::move(password_));

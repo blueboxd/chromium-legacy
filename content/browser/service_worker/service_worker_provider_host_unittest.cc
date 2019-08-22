@@ -318,10 +318,8 @@ class ServiceWorkerProviderHostTestWithPlzDedicatedWorker
   ServiceWorkerProviderHostTestWithPlzDedicatedWorker() {
     // ServiceWorkerProviderHost for dedicated workers is available only when
     // PlzDedicatedWorker is enabled.
-    scoped_feature_list_.InitWithFeatures(
-        {blink::features::kOffMainThreadDedicatedWorkerScriptFetch,
-         blink::features::kPlzDedicatedWorker} /* enabled_features */,
-        {} /* disabled_features */);
+    scoped_feature_list_.InitAndEnableFeature(
+        blink::features::kPlzDedicatedWorker);
   }
 
  private:
@@ -950,7 +948,8 @@ void ServiceWorkerProviderHostTest::TestReservedClientsAreNotExposed(
 
 TEST_F(ServiceWorkerProviderHostTestWithPlzDedicatedWorker,
        ReservedClientsAreNotExposedToClientsApiForDedicatedWorker) {
-  ASSERT_TRUE(blink::features::IsPlzDedicatedWorkerEnabled());
+  ASSERT_TRUE(
+      base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
   TestReservedClientsAreNotExposed(
       blink::mojom::ServiceWorkerProviderType::kForDedicatedWorker,
       GURL("https://www.example.com/dedicated_worker.js"));
@@ -1016,7 +1015,8 @@ void ServiceWorkerProviderHostTest::TestClientPhaseTransition(
 
 TEST_F(ServiceWorkerProviderHostTestWithPlzDedicatedWorker,
        ClientPhaseForDedicatedWorker) {
-  ASSERT_TRUE(blink::features::IsPlzDedicatedWorkerEnabled());
+  ASSERT_TRUE(
+      base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
   TestClientPhaseTransition(
       blink::mojom::ServiceWorkerProviderType::kForDedicatedWorker,
       GURL("https://www.example.com/dedicated_worker.js"));

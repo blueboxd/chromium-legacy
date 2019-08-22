@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/hats/hats_service.h"
 #include "chrome/browser/ui/hats/hats_service_factory.h"
+#include "chrome/browser/ui/views/hats/hats_bubble_view.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
@@ -43,19 +44,8 @@ class ScopedSetMetricsConsent {
 
 class HatsServiceBrowserTestBase : public InProcessBrowserTest {
  protected:
-  HatsServiceBrowserTestBase()
-      : on_hats_dialog_show_(
-            base::BindRepeating(&HatsServiceBrowserTestBase::OnHatsDialogShow,
-                                base::Unretained(this))) {}
+  HatsServiceBrowserTestBase() = default;
   ~HatsServiceBrowserTestBase() override = default;
-
-  void SetUpOnMainThread() override {
-    base::AddActionCallback(on_hats_dialog_show_);
-  }
-
-  void TearDownOnMainThread() override {
-    base::RemoveActionCallback(on_hats_dialog_show_);
-  }
 
   HatsService* GetHatsService() {
     return HatsServiceFactory::GetForProfile(browser()->profile(), true);
@@ -65,20 +55,16 @@ class HatsServiceBrowserTestBase : public InProcessBrowserTest {
     scoped_metrics_consent_.emplace(consent);
   }
 
-  bool HatsDialogShowRequested() { return hats_dialog_show_requested_; }
+  bool HatsBubbleShown() {
+    views::BubbleDialogDelegateView* bubble = HatsBubbleView::GetHatsBubble();
+    if (!bubble)
+      return false;
 
-  void ResetHatsDialogShowRequested() { hats_dialog_show_requested_ = false; }
-
- private:
-  void OnHatsDialogShow(const std::string& action) {
-    if (action == "HatsBubble.Show") {
-      ASSERT_FALSE(hats_dialog_show_requested_);
-      hats_dialog_show_requested_ = true;
-    }
+    views::Widget* widget = bubble->GetWidget();
+    return widget && widget->IsVisible();
   }
 
-  bool hats_dialog_show_requested_ = false;
-  base::ActionCallback on_hats_dialog_show_;
+ private:
   base::Optional<ScopedSetMetricsConsent> scoped_metrics_consent_;
 
   DISALLOW_COPY_AND_ASSIGN(HatsServiceBrowserTestBase);
@@ -86,9 +72,9 @@ class HatsServiceBrowserTestBase : public InProcessBrowserTest {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(HatsServiceBrowserTestBase, DialogNotShownOnDefault) {
+IN_PROC_BROWSER_TEST_F(HatsServiceBrowserTestBase, BubbleNotShownOnDefault) {
   GetHatsService()->LaunchSatisfactionSurvey();
-  EXPECT_FALSE(HatsDialogShowRequested());
+  EXPECT_FALSE(HatsBubbleShown());
 }
 
 namespace {
@@ -120,7 +106,7 @@ class HatsServiceProbabilityZero : public HatsServiceBrowserTestBase {
 
 IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityZero, NoShow) {
   GetHatsService()->LaunchSatisfactionSurvey();
-  EXPECT_FALSE(HatsDialogShowRequested());
+  EXPECT_FALSE(HatsBubbleShown());
 }
 
 namespace {
@@ -162,7 +148,7 @@ IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, NoShowConsentNotGiven) {
   ASSERT_FALSE(
       g_browser_process->GetMetricsServicesManager()->IsMetricsConsentGiven());
   GetHatsService()->LaunchSatisfactionSurvey();
-  EXPECT_FALSE(HatsDialogShowRequested());
+  EXPECT_FALSE(HatsBubbleShown());
 }
 
 IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, AlwaysShow) {
@@ -170,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, AlwaysShow) {
   ASSERT_TRUE(
       g_browser_process->GetMetricsServicesManager()->IsMetricsConsentGiven());
   GetHatsService()->LaunchSatisfactionSurvey();
-  EXPECT_TRUE(HatsDialogShowRequested());
+  EXPECT_TRUE(HatsBubbleShown());
 }
 
 IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne,
@@ -180,11 +166,12 @@ IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne,
       g_browser_process->GetMetricsServicesManager()->IsMetricsConsentGiven());
 
   GetHatsService()->LaunchSatisfactionSurvey();
-  EXPECT_TRUE(HatsDialogShowRequested());
-  ResetHatsDialogShowRequested();
+  EXPECT_TRUE(HatsBubbleShown());
+  views::BubbleDialogDelegateView* bubble1 = HatsBubbleView::GetHatsBubble();
 
   GetHatsService()->LaunchSatisfactionSurvey();
-  EXPECT_FALSE(HatsDialogShowRequested());
+  EXPECT_TRUE(HatsBubbleShown());
+  EXPECT_EQ(bubble1, HatsBubbleView::GetHatsBubble());
 }
 
 IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, SameMajorVersionNoShow) {
@@ -193,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, SameMajorVersionNoShow) {
   metadata.last_major_version = version_info::GetVersion().components()[0];
   GetHatsService()->SetSurveyMetadataForTesting(metadata);
   GetHatsService()->LaunchSatisfactionSurvey();
-  EXPECT_FALSE(HatsDialogShowRequested());
+  EXPECT_FALSE(HatsBubbleShown());
 }
 
 IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, DifferentMajorVersionShow) {
@@ -203,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, DifferentMajorVersionShow) {
   ASSERT_NE(42u, version_info::GetVersion().components()[0]);
   GetHatsService()->SetSurveyMetadataForTesting(metadata);
   GetHatsService()->LaunchSatisfactionSurvey();
-  EXPECT_TRUE(HatsDialogShowRequested());
+  EXPECT_TRUE(HatsBubbleShown());
 }
 
 IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne,
@@ -213,7 +200,7 @@ IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne,
   metadata.last_survey_started_time = base::Time::Now();
   GetHatsService()->SetSurveyMetadataForTesting(metadata);
   GetHatsService()->LaunchSatisfactionSurvey();
-  EXPECT_FALSE(HatsDialogShowRequested());
+  EXPECT_FALSE(HatsBubbleShown());
 }
 
 IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, ProfileTooYoungToShow) {
@@ -223,7 +210,7 @@ IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, ProfileTooYoungToShow) {
       ->SetCreationTimeForTesting(base::Time::Now() -
                                   base::TimeDelta::FromDays(15));
   GetHatsService()->LaunchSatisfactionSurvey();
-  EXPECT_FALSE(HatsDialogShowRequested());
+  EXPECT_FALSE(HatsBubbleShown());
 }
 
 IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, ProfileOldEnoughToShow) {
@@ -233,5 +220,5 @@ IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, ProfileOldEnoughToShow) {
       ->SetCreationTimeForTesting(base::Time::Now() -
                                   base::TimeDelta::FromDays(31));
   GetHatsService()->LaunchSatisfactionSurvey();
-  EXPECT_TRUE(HatsDialogShowRequested());
+  EXPECT_TRUE(HatsBubbleShown());
 }

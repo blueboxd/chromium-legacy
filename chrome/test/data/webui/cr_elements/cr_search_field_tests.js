@@ -48,7 +48,21 @@ suite('cr-search-field', function() {
     document.body.removeEventListener('search-changed', onSearchChanged);
   });
 
-  test('clear search button clears and refocuses input', function() {
+  test('clear search button clears space and refocuses input', async () => {
+    field.click();
+
+    simulateSearch(' ');
+    Polymer.dom.flush();
+    assertTrue(field.hasSearchText);
+
+    field.$$('#clearSearch').click();
+    assertEquals('', field.getValue());
+    await test_util.flushTasks();
+    assertEquals(field.$.searchInput, field.root.activeElement);
+    assertFalse(field.hasSearchText);
+  });
+
+  test('clear search button clears and refocuses input', async () => {
     field.click();
 
     simulateSearch('query1');
@@ -57,6 +71,7 @@ suite('cr-search-field', function() {
 
     field.$$('#clearSearch').click();
     assertEquals('', field.getValue());
+    await test_util.flushTasks();
     assertEquals(field.$.searchInput, field.root.activeElement);
     assertFalse(field.hasSearchText);
   });

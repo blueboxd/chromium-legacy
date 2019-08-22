@@ -2619,14 +2619,16 @@ TEST_F(TileManagerReadyToDrawTest, ReadyToDrawRespectsRequirementChange) {
   UpdateVisibleRect(pending_layer(), gfx::Rect(0, 0, 100, 100));
 
   // Mark all these tiles as ready to draw.
-  base::RunLoop run_loop;
-  host_impl()->tile_manager()->DidModifyTilePriorities();
-  host_impl()->tile_manager()->PrepareTiles(host_impl()->global_tile_state());
-  EXPECT_CALL(MockHostImpl(), NotifyReadyToActivate())
-      .WillOnce(Invoke([&run_loop]() { run_loop.Quit(); }));
-  EXPECT_CALL(*mock_raster_buffer_provider(), IsResourceReadyToDraw(_))
-      .WillRepeatedly(Return(true));
-  run_loop.Run();
+  {
+    base::RunLoop run_loop;
+    host_impl()->tile_manager()->DidModifyTilePriorities();
+    host_impl()->tile_manager()->PrepareTiles(host_impl()->global_tile_state());
+    EXPECT_CALL(MockHostImpl(), NotifyReadyToActivate())
+        .WillOnce(Invoke([&run_loop]() { run_loop.Quit(); }));
+    EXPECT_CALL(*mock_raster_buffer_provider(), IsResourceReadyToDraw(_))
+        .WillRepeatedly(Return(true));
+    run_loop.Run();
+  }
 
   EXPECT_TRUE(host_impl()->tile_manager()->IsReadyToDraw());
   EXPECT_TRUE(host_impl()->tile_manager()->IsReadyToActivate());

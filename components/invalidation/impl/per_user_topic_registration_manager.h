@@ -60,6 +60,15 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
 
   virtual ~PerUserTopicRegistrationManager();
 
+  // Just calls std::make_unique. For ease of base::Bind'ing
+  static std::unique_ptr<PerUserTopicRegistrationManager> Create(
+      invalidation::IdentityProvider* identity_provider,
+      PrefService* local_state,
+      network::mojom::URLLoaderFactory* url_loader_factory,
+      const syncer::ParseJSONCallback& parse_json,
+      const std::string& project_id,
+      bool migrate_prefs);
+
   // RegisterProfilePrefs and RegisterPrefs register the same prefs, because on
   // device level (sign in screen, device local account) we spin up separate
   // InvalidationService and on profile level (when user signed in) we have

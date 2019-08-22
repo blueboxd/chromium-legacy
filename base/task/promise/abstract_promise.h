@@ -7,7 +7,6 @@
 
 #include <utility>
 
-#include "base/containers/unique_any.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -15,10 +14,14 @@
 #include "base/task/common/checked_lock.h"
 #include "base/task/promise/dependent_list.h"
 #include "base/task/promise/promise_executor.h"
+#include "base/task/promise/promise_value.h"
 #include "base/thread_annotations.h"
 
 namespace base {
 class TaskRunner;
+
+template <typename ResolveType, typename RejectType>
+class ManualPromiseResolver;
 
 // AbstractPromise Memory Management.
 //
@@ -250,16 +253,6 @@ class TaskRunner;
 // promise has resolved. It is necessary to retain the prerequisites because a
 // ThenOn or CatchOn can be added after the promise has resolved.
 
-// std::variant, std::tuple and other templates can't contain void but they can
-// contain the empty type Void. This is the same idea as std::monospace.
-struct Void {};
-
-// Signals that a promise doesn't resolve.  E.g. Promise<NoResolve, int>
-struct NoResolve {};
-
-// Signals that a promise doesn't reject.  E.g. Promise<int, NoReject>
-struct NoReject {};
-
 // A promise for either |ResolveType| if successful or |RejectType| on error.
 template <typename ResolveType, typename RejectType>
 class Promise;
@@ -272,63 +265,13 @@ enum class RejectPolicy {
   kCatchNotRequired,
 };
 
-// Internally Resolved<> is used to store the result of a promise callback that
-// resolved. This lets us disambiguate promises with the same resolve and reject
-// type.
-template <typename T>
-struct Resolved {
-  using Type = T;
-
-  static_assert(!std::is_same<T, NoReject>::value,
-                "Can't have Resolved<NoReject>");
-
-  Resolved() {
-    static_assert(!std::is_same<T, NoResolve>::value,
-                  "Can't have Resolved<NoResolve>");
-  }
-
-  template <typename... Args>
-  Resolved(Args&&... args) noexcept : value(std::forward<Args>(args)...) {}
-
-  T value;
-};
-
-template <>
-struct Resolved<void> {
-  using Type = void;
-  Void value;
-};
-
-// Internally Rejected<> is used to store the result of a promise callback that
-// rejected. This lets us disambiguate promises with the same resolve and reject
-// type.
-template <typename T>
-struct Rejected {
-  using Type = T;
-  T value;
-
-  static_assert(!std::is_same<T, NoResolve>::value,
-                "Can't have Rejected<NoResolve>");
-
-  Rejected() {
-    static_assert(!std::is_same<T, NoReject>::value,
-                  "Can't have Rejected<NoReject>");
-  }
-
-  template <typename... Args>
-  Rejected(Args&&... args) noexcept : value(std::forward<Args>(args)...) {
-    static_assert(!std::is_same<T, NoReject>::value,
-                  "Can't have Rejected<NoReject>");
-  }
-};
-
-template <>
-struct Rejected<void> {
-  using Type = void;
-  Void value;
-};
-
 namespace internal {
+
+template <typename T, typename... Args>
+class PromiseCallbackHelper;
+
+class PromiseHolder;
+class AbstractPromiseTest;
 
 // Internal promise representation, maintains a graph of dependencies and posts
 // promises as they become ready. In debug builds various sanity checks are
@@ -349,9 +292,8 @@ class BASE_EXPORT AbstractPromise
       ConstructType tag,
       PromiseExecutor::Data&& executor_data) noexcept {
     scoped_refptr<AbstractPromise> promise = subtle::AdoptRefIfNeeded(
-        new internal::AbstractPromise(task_runner, from_here,
-                                      std::move(prerequisites), reject_policy,
-                                      tag, std::move(executor_data)),
+        new AbstractPromise(task_runner, from_here, std::move(prerequisites),
+                            reject_policy, tag, std::move(executor_data)),
         AbstractPromise::kRefCountPreference);
     // It's important this is called after |promise| has been initialized
     // because otherwise it could trigger a scoped_refptr destructor on another
@@ -389,44 +331,33 @@ class BASE_EXPORT AbstractPromise
   bool IsRejectedForTesting() const {
     return dependents_.IsRejectedForTesting();
   }
+
   bool IsResolvedForTesting() const {
     return dependents_.IsResolvedForTesting();
   }
 
-  bool IsResolvedWithPromise() const {
-    return value_.type() == TypeId::From<scoped_refptr<AbstractPromise>>();
-  }
+  bool IsResolvedWithPromise() const { return value_.ContainsCurriedPromise(); }
 
-  const unique_any& value() const { return FindNonCurriedAncestor()->value_; }
+  const PromiseValue& value() const {
+    DCHECK(!IsResolvedWithPromise());
+    return value_;
+  }
 
   class ValueHandle {
    public:
-    unique_any& value() { return value_; }
+    PromiseValue& value() { return value_; }
 
     ~ValueHandle() { value_.reset(); }
 
    private:
     friend class AbstractPromise;
 
-    explicit ValueHandle(unique_any& value) : value_(value) {}
+    explicit ValueHandle(PromiseValue& value) : value_(value) {}
 
-    unique_any& value_;
+    PromiseValue& value_;
   };
 
-  ValueHandle TakeValue() {
-    AbstractPromise* non_curried_ancestor = FindNonCurriedAncestor();
-    DCHECK(non_curried_ancestor->value_.has_value());
-    return ValueHandle(non_curried_ancestor->value_);
-  }
-
-  // If this promise isn't curried, returns this. Otherwise follows the chain of
-  // currying until a non-curried promise is found.
-  const AbstractPromise* FindNonCurriedAncestor() const;
-
-  AbstractPromise* FindNonCurriedAncestor() {
-    return const_cast<AbstractPromise*>(
-        const_cast<const AbstractPromise*>(this)->FindNonCurriedAncestor());
-  }
+  ValueHandle TakeValue() { return ValueHandle(value_); }
 
   // Returns nullptr if there isn't a curried promise.
   const AbstractPromise* GetCurriedPromise() const;
@@ -442,27 +373,12 @@ class BASE_EXPORT AbstractPromise
   }
 
   template <typename T, typename... Args>
-  void emplace(in_place_type_t<T>, Args&&... args) {
+  void emplace(in_place_type_t<T> tag, Args&&... args) {
     DCHECK(GetExecutor() != nullptr) << "Only valid to emplace once";
-    value_.emplace<T>(std::forward<Args>(args)...);
+    value_.emplace(tag, std::forward<Args>(args)...);
     static_assert(!std::is_same<std::decay_t<T>, AbstractPromise*>::value,
                   "Use scoped_refptr<AbstractPromise> instead");
   }
-
-  // Signals that this promise was cancelled. If executor hasn't run yet, this
-  // will prevent it from running and cancels any dependent promises unless they
-  // have PrerequisitePolicy::kAny, in which case they will only be canceled if
-  // all of their prerequisites are canceled. If OnCanceled() or OnResolved() or
-  // OnRejected() has already run, this does nothing.
-  void OnCanceled();
-
-  // Signals that |value_| now contains a resolve value. Dependent promises may
-  // scheduled for execution.
-  void OnResolved();
-
-  // Signals that |value_| now contains a reject value. Dependent promises may
-  // scheduled for execution.
-  void OnRejected();
 
   // This is separate from AbstractPromise to reduce the memory footprint of
   // regular PostTask without promise chains.
@@ -546,6 +462,16 @@ class BASE_EXPORT AbstractPromise
 
   friend base::RefCountedThreadSafe<AbstractPromise>;
 
+  friend class AbstractPromiseTest;
+
+  template <typename ResolveType, typename RejectType>
+  friend class base::ManualPromiseResolver;
+
+  template <typename T, typename... Args>
+  friend class PromiseCallbackHelper;
+
+  friend class PromiseHolder;
+
   template <typename ConstructType>
   AbstractPromise(const scoped_refptr<TaskRunner>& task_runner,
                   const Location& from_here,
@@ -587,6 +513,27 @@ class BASE_EXPORT AbstractPromise
   }
 
   NOINLINE ~AbstractPromise();
+
+  // Follows the chain of CurriedPromises attempting to find the non-curried
+  // root. This isn't always possible because some nodes may not have settled
+  // yet, in which case the non-settled ancestor is returned. A node may also
+  // have been canceled, in which case null is returned.
+  AbstractPromise* FindCurriedAncestor();
+
+  // Signals that this promise was cancelled. If executor hasn't run yet, this
+  // will prevent it from running and cancels any dependent promises unless they
+  // have PrerequisitePolicy::kAny, in which case they will only be canceled if
+  // all of their prerequisites are canceled. If OnCanceled() or OnResolved() or
+  // OnRejected() has already run, this does nothing.
+  void OnCanceled();
+
+  // Signals that |value_| now contains a resolve value. Dependent promises may
+  // scheduled for execution.
+  void OnResolved();
+
+  // Signals that |value_| now contains a reject value. Dependent promises may
+  // scheduled for execution.
+  void OnRejected();
 
   // Returns the curried promise if there is one or null otherwise.
   AbstractPromise* GetCurriedPromise();
@@ -673,7 +620,7 @@ class BASE_EXPORT AbstractPromise
   //                      ↓
   //        scoped_refptr<AbstractPromise>
   //
-  unique_any value_;
+  PromiseValue value_;
 
 #if DCHECK_IS_ON()
   // |on_api_error_callback| is called when an API usage error is spotted.

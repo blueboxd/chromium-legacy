@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "base/optional.h"
 #include "content/browser/sms/sms_metrics.h"
-#include "content/public/browser/sms_dialog.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 
@@ -61,7 +60,6 @@ void SmsService::Receive(base::TimeDelta timeout, ReceiveCallback callback) {
     return;
   }
 
-  DCHECK(!prompt_);
   DCHECK(!sms_);
 
   start_time_ = base::TimeTicks::Now();
@@ -74,8 +72,6 @@ void SmsService::Receive(base::TimeDelta timeout, ReceiveCallback callback) {
   timer_.Start(FROM_HERE, timeout,
                base::BindOnce(&SmsService::OnTimeout, base::Unretained(this)));
 
-  Prompt();
-
   sms_provider_->Retrieve();
 }
 
@@ -84,7 +80,6 @@ bool SmsService::OnReceive(const url::Origin& origin, const std::string& sms) {
   if (origin_ != origin)
     return false;
 
-  DCHECK(prompt_);
   DCHECK(!sms_);
   DCHECK(timer_.IsRunning());
   DCHECK(!start_time_.is_null());
@@ -96,7 +91,15 @@ bool SmsService::OnReceive(const url::Origin& origin, const std::string& sms) {
 
   sms_ = sms;
   receive_time_ = base::TimeTicks::Now();
-  prompt_->SmsReceived();
+
+  WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host());
+
+  web_contents->GetDelegate()->CreateSmsPrompt(
+      render_frame_host(), origin_,
+      base::BindOnce(&SmsService::OnConfirm, weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&SmsService::OnCancel, weak_ptr_factory_.GetWeakPtr()));
+
   return true;
 }
 
@@ -108,7 +111,7 @@ void SmsService::Process(blink::mojom::SmsStatus status,
 
   std::move(callback_).Run(status, sms);
 
-  Dismiss();
+  CleanUp();
 }
 
 void SmsService::OnTimeout() {
@@ -117,7 +120,9 @@ void SmsService::OnTimeout() {
   DCHECK(callback_);
   DCHECK(!timer_.IsRunning());
 
-  prompt_->SmsTimeout();
+  std::move(callback_).Run(blink::mojom::SmsStatus::kTimeout, base::nullopt);
+
+  CleanUp();
 }
 
 void SmsService::OnConfirm() {
@@ -134,53 +139,13 @@ void SmsService::OnCancel() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Record only when SMS has already been received.
-  if (sms_) {
-    DCHECK(!receive_time_.is_null());
-    RecordCancelOnSuccessTime(base::TimeTicks::Now() - receive_time_);
-  }
+  DCHECK(!receive_time_.is_null());
+  RecordCancelOnSuccessTime(base::TimeTicks::Now() - receive_time_);
 
   Process(SmsStatus::kCancelled, base::nullopt);
 }
 
-void SmsService::OnTryAgain() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  Process(SmsStatus::kTimeout, base::nullopt);
-}
-
-void SmsService::OnEvent(SmsDialog::Event event_type) {
-  switch (event_type) {
-    case SmsDialog::Event::kConfirm:
-      OnConfirm();
-      return;
-    case SmsDialog::Event::kCancel:
-      OnCancel();
-      return;
-    case SmsDialog::Event::kTimeout:
-      OnTryAgain();
-      return;
-  }
-  DVLOG(1) << "Unsupported event type: " << event_type;
-  NOTREACHED();
-}
-
-void SmsService::Prompt() {
-  WebContents* web_contents =
-      WebContents::FromRenderFrameHost(render_frame_host());
-  const url::Origin origin = render_frame_host()->GetLastCommittedOrigin();
-  prompt_ = web_contents->GetDelegate()->CreateSmsDialog(origin);
-  if (prompt_) {
-    prompt_->Open(render_frame_host(),
-                  base::BindOnce(&SmsService::OnEvent, base::Unretained(this)));
-  }
-}
-
-void SmsService::Dismiss() {
-  if (prompt_) {
-    prompt_->Close();
-    prompt_.reset();
-  }
-
+void SmsService::CleanUp() {
   timer_.Stop();
   callback_.Reset();
   sms_.reset();

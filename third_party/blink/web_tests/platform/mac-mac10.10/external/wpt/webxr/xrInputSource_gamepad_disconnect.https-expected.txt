@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS WebXR InputSource's gamepad gets disconnected when the input source is removed
-Harness: the test ran to completion.
-

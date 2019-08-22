@@ -603,9 +603,6 @@ base::string16 TestAXNodeWrapper::GetLocalizedStringForRoleDescription() const {
     case ax::mojom::Role::kDetails:
       return base::ASCIIToUTF16("details");
 
-    case ax::mojom::Role::kFigure:
-      return base::ASCIIToUTF16("figure");
-
     case ax::mojom::Role::kMeter:
       return base::ASCIIToUTF16("meter");
 

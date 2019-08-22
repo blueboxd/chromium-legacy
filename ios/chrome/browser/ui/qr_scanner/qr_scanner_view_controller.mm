@@ -70,7 +70,7 @@ using base::UserMetricsAction;
     case scannerViewController::ERROR_DIALOG:
       base::RecordAction(UserMetricsAction("MobileQRScannerError"));
       break;
-    case scannerViewController::SCANNED_CODE:
+    case scannerViewController::SCAN_COMPLETE:
       base::RecordAction(UserMetricsAction("MobileQRScannerScannedCode"));
       break;
     case scannerViewController::IMPOSSIBLY_UNLIKELY_AUTHORIZATION_CHANGE:
@@ -95,7 +95,7 @@ using base::UserMetricsAction;
             IDS_IOS_SCANNER_SCANNED_ACCESSIBILITY_ANNOUNCEMENT));
   } else {
     [self.scannerView animateScanningResultWithCompletion:^void(void) {
-      [self dismissForReason:scannerViewController::SCANNED_CODE
+      [self dismissForReason:scannerViewController::SCAN_COMPLETE
               withCompletion:^{
                 [self.queryLoader loadQuery:result immediately:load];
               }];

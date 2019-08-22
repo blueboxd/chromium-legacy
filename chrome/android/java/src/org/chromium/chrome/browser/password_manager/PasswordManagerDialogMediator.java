@@ -8,6 +8,8 @@ import static org.chromium.chrome.browser.password_manager.PasswordManagerDialog
 import static org.chromium.chrome.browser.password_manager.PasswordManagerDialogProperties.ILLUSTRATION;
 import static org.chromium.chrome.browser.password_manager.PasswordManagerDialogProperties.TITLE;
 
+import android.support.annotation.DrawableRes;
+
 import org.chromium.base.Callback;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
@@ -57,17 +59,21 @@ class PasswordManagerDialogMediator {
         mModalDialogBuilder = dialogBuilder;
     }
 
-    void setContents(String title, String details, int drawableId) {
+    void setContents(String title, String details, @DrawableRes int drawableId) {
         mModel.set(ILLUSTRATION, drawableId);
         mModel.set(TITLE, title);
         mModel.set(DETAILS, details);
     }
 
-    void showDialog(Callback<Boolean> onClick) {
-        mDialogModel =
-                mModalDialogBuilder
-                        .with(ModalDialogProperties.CONTROLLER, new DialogClickHandler(onClick))
-                        .build();
+    void setButtons(
+            String positiveButtonText, String negativeButtonText, Callback<Boolean> onClick) {
+        mModalDialogBuilder.with(ModalDialogProperties.CONTROLLER, new DialogClickHandler(onClick))
+                .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, positiveButtonText)
+                .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, negativeButtonText);
+    }
+
+    void showDialog() {
+        mDialogModel = mModalDialogBuilder.build();
         mDialogManager.showDialog(mDialogModel, ModalDialogManager.ModalDialogType.TAB);
     }
 

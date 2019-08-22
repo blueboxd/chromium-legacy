@@ -4,17 +4,13 @@
 
 package org.chromium.chrome.browser.autofill_assistant.form;
 
-import java.text.ChoiceFormat;
-
 abstract class AssistantFormCounter {
     private final String mLabel;
     private final String mSubtext;
-    private final ChoiceFormat mLabelChoiceFormat;
 
     private AssistantFormCounter(String label, String subtext) {
         mLabel = label;
         mSubtext = subtext;
-        mLabelChoiceFormat = new ChoiceFormat(label);
     }
 
     String getLabel() {
@@ -23,10 +19,6 @@ abstract class AssistantFormCounter {
 
     String getSubtext() {
         return mSubtext;
-    }
-
-    ChoiceFormat getLabelChoiceFormat() {
-        return mLabelChoiceFormat;
     }
 
     abstract int getValue();

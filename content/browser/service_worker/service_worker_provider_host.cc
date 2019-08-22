@@ -190,7 +190,7 @@ ServiceWorkerProviderHost::PreCreateForWebWorker(
     mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
         client_remote) {
   using ServiceWorkerProviderType = blink::mojom::ServiceWorkerProviderType;
-  DCHECK((blink::features::IsPlzDedicatedWorkerEnabled() &&
+  DCHECK((base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker) &&
           provider_type == ServiceWorkerProviderType::kForDedicatedWorker) ||
          provider_type == ServiceWorkerProviderType::kForSharedWorker);
   auto host = base::WrapUnique(new ServiceWorkerProviderHost(
@@ -256,7 +256,7 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
 }
 
 ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   if (context_)
     context_->UnregisterProviderHostByClientID(client_uuid_);
@@ -564,7 +564,7 @@ void ServiceWorkerProviderHost::RemoveServiceWorkerRegistrationObjectHost(
 
 void ServiceWorkerProviderHost::RemoveServiceWorkerObjectHost(
     int64_t version_id) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(base::Contains(service_worker_object_hosts_, version_id));
   service_worker_object_hosts_.erase(version_id);
 }
@@ -572,7 +572,7 @@ void ServiceWorkerProviderHost::RemoveServiceWorkerObjectHost(
 bool ServiceWorkerProviderHost::AllowServiceWorker(const GURL& scope,
                                                    const GURL& script_url) {
   DCHECK(IsContextAlive());
-  if (ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled()) {
+  if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
     return GetContentClient()->browser()->AllowServiceWorkerOnUI(
         scope, site_for_cookies(), script_url,
         context_->wrapper()->browser_context(),
@@ -660,7 +660,7 @@ void ServiceWorkerProviderHost::ClaimedByRegistration(
 
 void ServiceWorkerProviderHost::OnBeginNavigationCommit(int render_process_id,
                                                         int render_frame_id) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK_EQ(blink::mojom::ServiceWorkerProviderType::kForWindow, type_);
 
   DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, render_process_id_);
@@ -1266,7 +1266,7 @@ bool ServiceWorkerProviderHost::IsValidGetRegistrationForReadyMessage(
 void ServiceWorkerProviderHost::GetInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(IsProviderForServiceWorker());
   RunOrPostTaskOnThread(FROM_HERE, BrowserThread::UI,
                         base::BindOnce(&GetInterfaceImpl, interface_name,

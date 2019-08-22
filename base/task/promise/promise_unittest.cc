@@ -304,6 +304,14 @@ TEST_F(PromiseTest, ThenRejectWithTuple) {
   run_loop.Run();
 }
 
+TEST_F(PromiseTest, ManualPromiseResolverMultipleArgs) {
+  ManualPromiseResolver<int, std::tuple<bool, std::string>> p(FROM_HERE);
+  p.GetRejectCallback<bool, std::string>().Run(false, "Noes!");
+  std::tuple<bool, std::string> err = p.promise().TakeRejectValueForTesting();
+  EXPECT_FALSE(std::get<0>(err));
+  EXPECT_EQ("Noes!", std::get<1>(err));
+}
+
 TEST_F(PromiseTest, GetRejectCallbackMultipleArgs) {
   ManualPromiseResolver<int, std::tuple<bool, std::string>> p(FROM_HERE);
 
@@ -1890,6 +1898,39 @@ TEST_F(PromiseTest, All) {
   p1.Resolve(1.234f);
   p2.Resolve(1234);
   p3.Resolve(true);
+  run_loop.Run();
+}
+
+TEST_F(PromiseTest, AllWithCurriedPromises) {
+  ManualPromiseResolver<float> a1(FROM_HERE);
+  ManualPromiseResolver<int> a2(FROM_HERE);
+  ManualPromiseResolver<bool> a3(FROM_HERE);
+  ManualPromiseResolver<void> p(FROM_HERE);
+
+  Promise<float> p1 = p.promise().ThenHere(
+      FROM_HERE, BindLambdaForTesting([&]() { return a1.promise(); }));
+  Promise<int> p2 = p.promise().ThenHere(
+      FROM_HERE, BindLambdaForTesting([&]() { return a2.promise(); }));
+  Promise<bool> p3 = p.promise().ThenHere(
+      FROM_HERE, BindLambdaForTesting([&]() { return a3.promise(); }));
+
+  Promise<std::tuple<float, int, bool>> all =
+      Promises::All(FROM_HERE, p1, p2, p3);
+
+  RunLoop run_loop;
+  all.ThenHere(FROM_HERE, BindLambdaForTesting(
+                              [&](const std::tuple<float, int, bool>& result) {
+                                EXPECT_EQ(1.234f, std::get<0>(result));
+                                EXPECT_EQ(1234, std::get<1>(result));
+                                EXPECT_TRUE(std::get<2>(result));
+                                run_loop.Quit();
+                              }));
+
+  p.Resolve();
+  a1.Resolve(1.234f);
+  a2.Resolve(1234);
+  a3.Resolve(true);
+
   run_loop.Run();
 }
 

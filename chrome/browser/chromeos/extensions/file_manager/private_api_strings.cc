@@ -64,9 +64,6 @@ ExtensionFunction::ResponseAction FileManagerPrivateGetStringsFunction::Run() {
   dict->SetBoolean("FORMAT_DIALOG_ENABLED",
                    base::FeatureList::IsEnabled(
                        chromeos::features::kEnableFileManagerFormatDialog));
-  dict->SetBoolean(
-      "MY_FILES_VOLUME_ENABLED",
-      base::FeatureList::IsEnabled(chromeos::features::kMyFilesVolume));
   dict->SetBoolean("PLUGIN_VM_ENABLED",
                    plugin_vm::IsPluginVmEnabled(
                        Profile::FromBrowserContext(browser_context())));

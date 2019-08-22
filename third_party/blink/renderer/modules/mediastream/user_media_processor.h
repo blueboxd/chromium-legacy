@@ -11,7 +11,6 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom-blink.h"
@@ -56,7 +55,8 @@ struct UserMediaRequestInfo {
 // Only one MediaStream at a time can be in the process of being created.
 // UserMediaProcessor must be created, called and destroyed on the main
 // render thread. There should be only one UserMediaProcessor per frame.
-class MODULES_EXPORT UserMediaProcessor {
+class MODULES_EXPORT UserMediaProcessor
+    : public GarbageCollectedFinalized<UserMediaProcessor> {
  public:
   using MediaDevicesDispatcherCallback = base::RepeatingCallback<
       const blink::mojom::blink::MediaDevicesDispatcherHostPtr&()>;
@@ -102,6 +102,8 @@ class MODULES_EXPORT UserMediaProcessor {
       blink::mojom::blink::MediaStreamDispatcherHostPtr dispatcher_host) {
     dispatcher_host_ = std::move(dispatcher_host);
   }
+
+  void Trace(Visitor*);
 
  protected:
   // These methods are virtual for test purposes. A test can override them to
@@ -199,7 +201,7 @@ class MODULES_EXPORT UserMediaProcessor {
 
   static void OnAudioSourceStartedOnAudioThread(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      base::WeakPtr<UserMediaProcessor> weak_ptr,
+      UserMediaProcessor* weak_ptr,
       blink::WebPlatformMediaStreamSource* source,
       blink::mojom::blink::MediaStreamRequestResult result,
       const blink::WebString& result_name);
@@ -292,16 +294,10 @@ class MODULES_EXPORT UserMediaProcessor {
   MediaDevicesDispatcherCallback media_devices_dispatcher_cb_;
   base::OnceClosure request_completed_cb_;
 
-  // TODO(crbug.com/704136): Consider moving UserMediaClient to
-  // Oilpan and use a Member.
-  WeakPersistent<LocalFrame> frame_;
+  WeakMember<LocalFrame> frame_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   THREAD_CHECKER(thread_checker_);
-
-  // Note: This member must be the last to ensure all outstanding weak pointers
-  // are invalidated first.
-  base::WeakPtrFactory<UserMediaProcessor> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UserMediaProcessor);
 };

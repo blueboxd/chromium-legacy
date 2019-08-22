@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS Calling end during an input callback stops processing at the right time
-Harness: the test ran to completion.
-

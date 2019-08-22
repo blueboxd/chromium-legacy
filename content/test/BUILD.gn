@@ -78,8 +78,6 @@ jumbo_static_library("test_support") {
     "../browser/service_worker/service_worker_test_utils.h",
     "../browser/service_worker/test_service_worker_observer.cc",
     "../browser/service_worker/test_service_worker_observer.h",
-    "../browser/sms/test/mock_sms_dialog.cc",
-    "../browser/sms/test/mock_sms_dialog.h",
     "../browser/sms/test/mock_sms_provider.cc",
     "../browser/sms/test/mock_sms_provider.h",
     "../browser/sms/test/mock_sms_web_contents_delegate.cc",

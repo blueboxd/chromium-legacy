@@ -4239,11 +4239,10 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
         break;
       }
 
-      gfx::Vector2dF scroll_delta =
-          ComputeScrollDelta(*scroll_node, pending_delta);
-      if (ScrollAnimationCreate(scroll_node, scroll_delta, delayed_by)) {
-        did_scroll_x_for_scroll_gesture_ |= scroll_delta.x() != 0;
-        did_scroll_y_for_scroll_gesture_ |= scroll_delta.y() != 0;
+      gfx::Vector2dF delta = ComputeScrollDelta(*scroll_node, pending_delta);
+      if (ScrollAnimationCreate(scroll_node, delta, delayed_by)) {
+        did_scroll_x_for_scroll_gesture_ |= delta.x() != 0;
+        did_scroll_y_for_scroll_gesture_ |= delta.y() != 0;
         scroll_animating_latched_element_id_ = scroll_node->element_id;
         TRACE_EVENT_INSTANT0("cc", "created scroll animation",
                              TRACE_EVENT_SCOPE_THREAD);
@@ -4259,7 +4258,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
         return scroll_status;
       }
 
-      pending_delta -= scroll_delta;
+      pending_delta -= delta;
 
       if (!CanPropagate(scroll_node, pending_delta.x(), pending_delta.y())) {
         scroll_state.set_is_scroll_chain_cut(true);

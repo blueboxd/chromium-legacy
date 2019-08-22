@@ -20,9 +20,8 @@ class AllContainerPromiseExecutor {
  public:
   bool IsCancelled() const { return false; }
 
-  PromiseExecutor::PrerequisitePolicy GetPrerequisitePolicy() const {
-    return PromiseExecutor::PrerequisitePolicy::kAll;
-  }
+  static constexpr PromiseExecutor::PrerequisitePolicy kPrerequisitePolicy =
+      PromiseExecutor::PrerequisitePolicy::kAll;
 
   struct VoidResolveType {};
   struct NonVoidResolveType {};
@@ -37,12 +36,10 @@ class AllContainerPromiseExecutor {
     if (first_settled && first_settled->IsRejected()) {
       AllPromiseRejectHelper<Rejected<RejectType>>::Reject(promise,
                                                            first_settled);
-      promise->OnRejected();
       return;
     }
 
     ResolveInternal(promise, ResolveTypeTag());
-    promise->OnResolved();
   }
 
 #if DCHECK_IS_ON()

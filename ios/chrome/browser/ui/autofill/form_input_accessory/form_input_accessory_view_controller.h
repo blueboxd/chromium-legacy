@@ -9,10 +9,6 @@
 
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_consumer.h"
 
-namespace autofill {
-extern CGFloat const kInputAccessoryHeight;
-}  // namespace autofill
-
 @class ManualFillAccessoryViewController;
 @protocol ManualFillAccessoryViewControllerDelegate;
 

@@ -305,7 +305,7 @@ void SyncEngine::InitializeInternal(
   drive_service_ = std::move(drive_service);
   drive_service_wrapper_.reset(new DriveServiceWrapper(drive_service_.get()));
 
-  std::string account_id;
+  CoreAccountId account_id;
 
   if (identity_manager_)
     account_id = identity_manager_->GetPrimaryAccountId();

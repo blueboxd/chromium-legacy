@@ -816,9 +816,6 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
     return;
   }
 
-  // We may need to clear out old Sec- prefixed request headers. We'll attempt
-  // to do this before we re-add any.
-  MaybeRemoveSecHeaders(url_request_.get(), redirect_info.new_url);
   SetSecFetchSiteHeader(url_request_.get(), &redirect_info.new_url,
                         *factory_params_);
 

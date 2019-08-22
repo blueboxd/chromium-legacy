@@ -24,7 +24,7 @@ base::string16 GetAcceptButtonLabel(CredentialLeakType leak_type) {
           : IDS_OK);
 }
 
-base::string16 GetCloseButtonLabel() {
+base::string16 GetCancelButtonLabel() {
   return l10n_util::GetStringUTF16(IDS_CLOSE);
 }
 
@@ -61,7 +61,7 @@ bool ShouldCheckPasswords(CredentialLeakType leak_type) {
          password_manager::IsSyncingPasswordsNormally(leak_type);
 }
 
-bool ShouldShowCloseButton(CredentialLeakType leak_type) {
+bool ShouldShowCancelButton(CredentialLeakType leak_type) {
   return ShouldCheckPasswords(leak_type);
 }
 

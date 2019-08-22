@@ -439,10 +439,16 @@ class IDLParser(object):
   def p_DefaultValue(self, p):
     """DefaultValue : ConstValue
                     | string
-                    | '[' ']'"""
+                    | '[' ']'
+                    | '{' '}'
+                    | null"""
     if len(p) == 3:
-      p[0] = ListFromConcat(self.BuildAttribute('TYPE', 'sequence'),
-                            self.BuildAttribute('VALUE', '[]'))
+      if p[1] == '[':
+        p[0] = ListFromConcat(self.BuildAttribute('TYPE', 'sequence'),
+                              self.BuildAttribute('VALUE', '[]'))
+      else:
+        p[0] = ListFromConcat(self.BuildAttribute('TYPE', 'dictionary'),
+                              self.BuildAttribute('VALUE', '{}'))
     elif type(p[1]) == str:
       p[0] = ListFromConcat(self.BuildAttribute('TYPE', 'DOMString'),
                             self.BuildAttribute('VALUE', p[1]))

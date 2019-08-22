@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-PASS XRSession requestAnimationFrame calls the provided callback for an immersive session
-PASS XRSession requestAnimationFrame calls the provided callback a non-immersive session
-Harness: the test ran to completion.
-

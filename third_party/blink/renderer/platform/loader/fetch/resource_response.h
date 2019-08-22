@@ -237,13 +237,13 @@ class PLATFORM_EXPORT ResourceResponse final {
   bool CacheControlContainsNoStore() const;
   bool CacheControlContainsMustRevalidate() const;
   bool HasCacheValidatorFields() const;
-  double CacheControlMaxAge() const;
+  base::Optional<base::TimeDelta> CacheControlMaxAge() const;
   base::Optional<base::Time> Date() const;
-  double Age() const;
+  base::Optional<base::TimeDelta> Age() const;
   base::Optional<base::Time> Expires() const;
   base::Optional<base::Time> LastModified() const;
   // Will always return values >= 0.
-  double CacheControlStaleWhileRevalidate() const;
+  base::TimeDelta CacheControlStaleWhileRevalidate() const;
 
   unsigned ConnectionID() const;
   void SetConnectionID(unsigned);
@@ -543,7 +543,7 @@ class PLATFORM_EXPORT ResourceResponse final {
 
   mutable CacheControlHeader cache_control_header_;
 
-  mutable double age_ = 0.0;
+  mutable base::Optional<base::TimeDelta> age_;
   mutable base::Optional<base::Time> date_;
   mutable base::Optional<base::Time> expires_;
   mutable base::Optional<base::Time> last_modified_;

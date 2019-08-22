@@ -78,6 +78,19 @@ class PanelItem extends HTMLElement {
                   white-space: nowrap;
               }
 
+              :host([panel-type='3']) .xf-panel-label-text {
+                  display: -webkit-box;
+                  -webkit-line-clamp: 2;
+                  -webkit-box-orient: vertical;
+                  overflow: hidden;
+                  white-space: normal;
+                  width: 216px;
+              }
+
+              :host([panel-type='3']) .xf-linebreaker {
+                  display: none;
+              }
+
               .xf-panel-label-text {
                   color: rgb(32, 33, 36);
               }
@@ -133,7 +146,7 @@ class PanelItem extends HTMLElement {
                     <span class='xf-panel-label-text'>
                             Placeholder text
                     </span>
-                    <br/>
+                    <br class='xf-linebreaker'/>
                 </div>
                 <div class='xf-padder-24'></div>
                 <xf-button id='secondary-action' tabindex='-1'>

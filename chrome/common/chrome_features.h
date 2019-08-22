@@ -307,9 +307,6 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kManagedGuestSessionNotification;
 #endif
 
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kModalPermissionPrompts;
-
 #if !defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kOnConnectNative;

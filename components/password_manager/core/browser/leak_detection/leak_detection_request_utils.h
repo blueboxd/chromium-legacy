@@ -31,7 +31,21 @@ struct LookupSingleLeakData {
 using SingleLeakRequestDataCallback =
     base::OnceCallback<void(LookupSingleLeakData)>;
 
-using SingleLeakResponseAnalysisCallback = base::OnceCallback<void(bool)>;
+// Describes possible results of analyzing a leak response from the server.
+// Needs to stay in sync with the PasswordAnalyzeLeakResponseResult enum in
+// enums.xml.
+//
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class AnalyzeResponseResult {
+  kDecryptionError = 0,
+  kNotLeaked = 1,
+  kLeaked = 2,
+  kMaxValue = kLeaked,
+};
+
+using SingleLeakResponseAnalysisCallback =
+    base::OnceCallback<void(AnalyzeResponseResult)>;
 
 // Asynchronously creates a data payload for single credential check.
 // Callback is invoked on the calling thread with the protobuf and the
@@ -42,9 +56,9 @@ void PrepareSingleLeakRequestData(const std::string& username,
 
 // Analyses the |response| asynchronously and checks if the credential was
 // leaked. |callback| is invoked on the calling thread.
-void AnalyzeResponseResult(std::unique_ptr<SingleLookupResponse> response,
-                           const std::string& encryption_key,
-                           SingleLeakResponseAnalysisCallback callback);
+void AnalyzeResponse(std::unique_ptr<SingleLookupResponse> response,
+                     const std::string& encryption_key,
+                     SingleLeakResponseAnalysisCallback callback);
 
 }  // namespace password_manager
 

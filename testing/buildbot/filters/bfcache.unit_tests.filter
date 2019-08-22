@@ -1,20 +1,6 @@
 # These tests currently fail when run with --enable-features=BackForwardCache
 
-# Nullptr exception in TestNavigationURLLoader::CallOnresponseStarted().
-#
-# Updating the NavigationSimulator is needed to take into account the ones using
-# the BackForwardCache.
-#
-# See https://crbug.com/989924
--BackFwdMenuModelTest.BasicCase
--BackFwdMenuModelTest.ChapterStops
--DownloadRequestLimiterTest.HistoryBack
--DownloadRequestLimiterTest.HistoryForwardBack
--SafeBrowsingBlockingPageTest.NavigatingBackAndForth
--SafeBrowsingBlockingPageTest.PageWithMalwareResourceDontProceed
--SafeBrowsingBlockingPageTest.PageWithMultipleMalwareResourceDontProceed
--SafeBrowsingBlockingPageTest.PageWithMultipleMalwareResourceProceedThenDontProceed
--TabRestoreServiceImplTest.Basic
+# Autofill component issue. The AutofillDriver is associated with the
+# RenderFrameHost, but is is used before it has been associated.
 -TabsApiUnitTest.TabsGoForwardAndBack
 -TabsApiUnitTest.TabsGoForwardAndBackWithoutTabId
--TaskTabHelperUnitTest.TestTaskIdBackButton

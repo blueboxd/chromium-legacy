@@ -2151,8 +2151,7 @@ static bool PointIsClippedByAncestorClipNode(
       layer->layer_tree_impl()->property_trees();
   const ClipTree& clip_tree = property_trees->clip_tree;
   const TransformTree& transform_tree = property_trees->transform_tree;
-  const ClipNode* clip_node = clip_tree.Node(1);
-  gfx::Rect clip = gfx::ToEnclosingRect(clip_node->clip);
+  gfx::Rect clip = gfx::ToEnclosingRect(clip_tree.Node(1)->clip);
   if (!PointHitsRect(screen_space_point, gfx::Transform(), clip, nullptr))
     return true;
 
@@ -2160,7 +2159,7 @@ static bool PointIsClippedByAncestorClipNode(
        clip_node->id > ClipTree::kViewportNodeId;
        clip_node = clip_tree.parent(clip_node)) {
     if (clip_node->clip_type == ClipNode::ClipType::APPLIES_LOCAL_CLIP) {
-      gfx::Rect clip = gfx::ToEnclosingRect(clip_node->clip);
+      clip = gfx::ToEnclosingRect(clip_node->clip);
 
       gfx::Transform screen_space_transform =
           transform_tree.ToScreen(clip_node->transform_id);

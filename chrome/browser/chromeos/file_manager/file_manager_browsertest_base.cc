@@ -1541,12 +1541,6 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     disabled_features.emplace_back(chromeos::features::kDriveFs);
   }
 
-  if (IsMyFilesVolume()) {
-    enabled_features.emplace_back(chromeos::features::kMyFilesVolume);
-  } else {
-    disabled_features.emplace_back(chromeos::features::kMyFilesVolume);
-  }
-
   if (IsArcTest()) {
     arc::SetArcAvailableCommandLineForTesting(command_line);
   }
@@ -1717,10 +1711,6 @@ void FileManagerBrowserTestBase::TearDownOnMainThread() {
 
 bool FileManagerBrowserTestBase::GetTabletMode() const {
   return false;
-}
-
-bool FileManagerBrowserTestBase::GetEnableMyFilesVolume() const {
-  return true;
 }
 
 bool FileManagerBrowserTestBase::GetEnableDriveFs() const {

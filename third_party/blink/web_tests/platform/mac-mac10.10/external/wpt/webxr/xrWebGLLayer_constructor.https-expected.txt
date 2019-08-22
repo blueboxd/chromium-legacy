@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS Ensure that XRWebGLLayer's constructor throws appropriate errors
-Harness: the test ran to completion.
-

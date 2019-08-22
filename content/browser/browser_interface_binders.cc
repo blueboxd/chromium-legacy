@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/browser/browser_interface_binders.h"
+
 #include "content/browser/background_fetch/background_fetch_service_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -10,6 +11,7 @@
 #include "content/browser/worker_host/dedicated_worker_host.h"
 #include "content/browser/worker_host/shared_worker_host.h"
 #include "content/browser/worker_host/shared_worker_instance.h"
+#include "content/public/browser/service_worker_context.h"
 #include "third_party/blink/public/mojom/webaudio/audio_context_manager.mojom.h"
 
 namespace content {
@@ -55,6 +57,10 @@ const url::Origin& GetContextForHost(DedicatedWorkerHost* host) {
 
 void PopulateDedicatedWorkerBinders(DedicatedWorkerHost* host,
                                     service_manager::BinderMap* map) {
+  // base::Unretained(host) is safe because the map is owned by
+  // |DedicatedWorkerHost::broker_|.
+  map->Add<blink::mojom::FileSystemManager>(base::BindRepeating(
+      &DedicatedWorkerHost::BindFileSystemManager, base::Unretained(host)));
   map->Add<blink::mojom::IdleManager>(base::BindRepeating(
       &DedicatedWorkerHost::CreateIdleManager, base::Unretained(host)));
 }
@@ -62,13 +68,6 @@ void PopulateDedicatedWorkerBinders(DedicatedWorkerHost* host,
 void PopulateBinderMapWithContext(
     DedicatedWorkerHost* host,
     service_manager::BinderMapWithContext<const url::Origin&>* map) {
-  // TODO(https://crbug.com/873661): Pass origin to FileSystemManager.
-  // TODO(nhiroki): GetProcessHost() may return nullptr. Instead, add
-  // SharedWorkerHost::BindFileSystemManager to check if the render process host
-  // is alive before accessing it.
-  map->Add<blink::mojom::FileSystemManager>(
-      base::BindRepeating(&RenderProcessHost::BindFileSystemManager,
-                          base::Unretained(host->GetProcessHost())));
 }
 
 void PopulateBinderMap(DedicatedWorkerHost* host,
@@ -84,7 +83,7 @@ url::Origin GetContextForHost(SharedWorkerHost* host) {
 void PopulateSharedWorkerBinders(SharedWorkerHost* host,
                                  service_manager::BinderMap* map) {
   // base::Unretained(host) is safe because the map is owned by
-  // SharedWorkerHost.
+  // |SharedWorkerHost::broker_|.
   map->Add<blink::mojom::AppCacheBackend>(base::BindRepeating(
       &SharedWorkerHost::CreateAppCacheBackend, base::Unretained(host)));
 }
@@ -105,7 +104,7 @@ void PopulateBinderMap(SharedWorkerHost* host,
 
 // Service workers
 ServiceWorkerRunningInfo GetContextForHost(ServiceWorkerProviderHost* host) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   // TODO(crbug.com/993409): pass Origin instead of GURL
   return {host->running_hosted_version()->script_origin().GetURL(),
@@ -114,18 +113,18 @@ ServiceWorkerRunningInfo GetContextForHost(ServiceWorkerProviderHost* host) {
 
 void PopulateServiceWorkerBinders(ServiceWorkerProviderHost* host,
                                   service_manager::BinderMap* map) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 }
 
 void PopulateBinderMapWithContext(
     ServiceWorkerProviderHost* host,
     service_manager::BinderMapWithContext<const ServiceWorkerRunningInfo&>*
         map) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   // Use a task runner if ServiceWorkerProviderHost lives on the IO
   // thread, as CreateForWorker() needs to be called on the UI thread.
-  if (ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled()) {
+  if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
     map->Add<blink::mojom::BackgroundFetchService>(
         base::BindRepeating(&BackgroundFetchServiceImpl::CreateForWorker));
   } else {
@@ -137,7 +136,7 @@ void PopulateBinderMapWithContext(
 
 void PopulateBinderMap(ServiceWorkerProviderHost* host,
                        service_manager::BinderMap* map) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   PopulateServiceWorkerBinders(host, map);
 }
 

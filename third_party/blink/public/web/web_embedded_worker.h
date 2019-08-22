@@ -47,10 +47,12 @@ struct WebEmbeddedWorkerStartData;
 // to use mojo::ScopedMessagePipeHandle to pass Mojo types.
 struct WebServiceWorkerInstalledScriptsManagerParams {
   WebVector<WebURL> installed_scripts_urls;
-  // A handle for mojom::blink::ServiceWorkerInstalledScriptsManagerRequest.
-  mojo::ScopedMessagePipeHandle manager_request;
-  // A handle for mojom::blink::ServiceWorkerInstalledScriptsManagerHostPtrInfo.
-  mojo::ScopedMessagePipeHandle manager_host_ptr;
+  // A handle for
+  // mojo::PendingReceiver<mojom::blink::ServiceWorkerInstalledScriptsManager>.
+  mojo::ScopedMessagePipeHandle manager_receiver;
+  // A handle for
+  // mojo::PendingRemote<mojom::blink::ServiceWorkerInstalledScriptsManagerHost>.
+  mojo::ScopedMessagePipeHandle manager_host_remote;
 };
 
 // An interface to start and terminate an embedded worker.

@@ -119,7 +119,7 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
           : nullptr);
   wrapper_->process_manager()->SetProcessIdForTest(mock_render_process_id());
   wrapper_->process_manager()->SetNewProcessIdForTest(new_render_process_id());
-  if (!ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled())
+  if (!ServiceWorkerContext::IsServiceWorkerOnUIEnabled())
     wrapper_->InitializeResourceContext(browser_context_->GetResourceContext());
 
   // Install a mocked mojom::Renderer interface to catch requests to
@@ -191,8 +191,8 @@ void EmbeddedWorkerTestHelper::OnInstanceClientReceiver(
   instance_clients_.insert(std::move(client));
 }
 
-void EmbeddedWorkerTestHelper::OnServiceWorkerRequest(
-    blink::mojom::ServiceWorkerRequest request) {
+void EmbeddedWorkerTestHelper::OnServiceWorkerReceiver(
+    mojo::PendingReceiver<blink::mojom::ServiceWorker> receiver) {
   std::unique_ptr<FakeServiceWorker> service_worker;
   if (!pending_service_workers_.empty()) {
     // Use the service worker that was registered for this message.
@@ -206,7 +206,7 @@ void EmbeddedWorkerTestHelper::OnServiceWorkerRequest(
     service_worker = CreateServiceWorker();
   }
 
-  service_worker->Bind(std::move(request));
+  service_worker->Bind(std::move(receiver));
   service_workers_.insert(std::move(service_worker));
 }
 

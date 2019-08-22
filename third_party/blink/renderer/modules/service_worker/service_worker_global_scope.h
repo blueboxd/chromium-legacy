@@ -31,8 +31,10 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICE_WORKER_SERVICE_WORKER_GLOBAL_SCOPE_H_
 
 #include <memory>
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom-blink.h"
@@ -148,7 +150,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
 
   ScriptPromise skipWaiting(ScriptState*);
 
-  void BindServiceWorker(mojom::blink::ServiceWorkerRequest);
+  void BindServiceWorker(mojo::PendingReceiver<mojom::blink::ServiceWorker>);
   void BindControllerServiceWorker(
       mojo::PendingReceiver<mojom::blink::ControllerServiceWorker>);
   void OnNavigationPreloadResponse(
@@ -362,7 +364,8 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
 
   // Implements mojom::blink::ServiceWorker.
   void InitializeGlobalScope(
-      mojom::blink::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
+      mojo::PendingAssociatedRemote<mojom::blink::ServiceWorkerHost>
+          service_worker_host,
       mojom::blink::ServiceWorkerRegistrationObjectInfoPtr registration_info,
       mojom::blink::FetchHandlerExistence fetch_hander_existence) override;
   void DispatchInstallEvent(DispatchInstallEventCallback callback) override;
@@ -465,9 +468,9 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
 
   // Bound by the first Mojo call received on the service worker thread
   // mojom::blink::ServiceWorker::InitializeGlobalScope().
-  mojom::blink::ServiceWorkerHostAssociatedPtr service_worker_host_;
+  mojo::AssociatedRemote<mojom::blink::ServiceWorkerHost> service_worker_host_;
 
-  mojo::Binding<mojom::blink::ServiceWorker> binding_;
+  mojo::Receiver<mojom::blink::ServiceWorker> receiver_{this};
 
   // Maps for inflight event callbacks.
   // These are mapped from an event id issued from ServiceWorkerTimeoutTimer to

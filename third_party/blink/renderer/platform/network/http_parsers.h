@@ -63,16 +63,14 @@ struct CacheControlHeader {
   bool contains_no_cache : 1;
   bool contains_no_store : 1;
   bool contains_must_revalidate : 1;
-  double max_age;
-  double stale_while_revalidate;
+  base::Optional<base::TimeDelta> max_age;
+  base::Optional<base::TimeDelta> stale_while_revalidate;
 
   CacheControlHeader()
       : parsed(false),
         contains_no_cache(false),
         contains_no_store(false),
-        contains_must_revalidate(false),
-        max_age(0.0),
-        stale_while_revalidate(0.0) {}
+        contains_must_revalidate(false) {}
 };
 
 using ServerTimingHeaderVector = Vector<std::unique_ptr<ServerTimingHeader>>;

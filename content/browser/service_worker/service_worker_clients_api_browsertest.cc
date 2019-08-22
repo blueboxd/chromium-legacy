@@ -142,7 +142,7 @@ class ServiceWorkerClientsApiBrowserTest : public ContentBrowserTest {
   void DispatchNotificationClickEvent(int64_t version_id) {
     base::RunLoop run_loop;
     RunOrPostTaskOnThread(
-        FROM_HERE, ServiceWorkerContextWrapper::GetCoreThreadId(),
+        FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
         base::BindOnce(&ServiceWorkerClientsApiBrowserTest::
                            DispatchNotificationClickEventOnCoreThread,
                        base::Unretained(this), version_id,

@@ -122,34 +122,20 @@ base::FilePath GetDownloadsFolderForProfile(Profile* profile) {
   storage::ExternalMountPoints* const mount_points =
       storage::ExternalMountPoints::GetSystemInstance();
   base::FilePath path;
-  if (mount_points->GetRegisteredPath(mount_point_name, &path)) {
-    if (base::FeatureList::IsEnabled(chromeos::features::kMyFilesVolume))
-      return path.AppendASCII(kFolderNameDownloads);
-
-    return path;
-  }
+  if (mount_points->GetRegisteredPath(mount_point_name, &path))
+    return path.AppendASCII(kFolderNameDownloads);
 
   // Return $HOME/Downloads as Download folder.
   if (ShouldMountPrimaryUserDownloads(profile))
     return DownloadPrefs::GetDefaultDownloadDirectory();
 
   // Return <cryptohome>/MyFiles/Downloads if it feature is enabled.
-  if (base::FeatureList::IsEnabled(chromeos::features::kMyFilesVolume)) {
-    return profile->GetPath()
-        .AppendASCII(kFolderNameMyFiles)
-        .AppendASCII(kFolderNameDownloads);
-  }
-
-  // Return <cryptohome>/Downloads.
-  return profile->GetPath().AppendASCII(kFolderNameDownloads);
+  return profile->GetPath()
+      .AppendASCII(kFolderNameMyFiles)
+      .AppendASCII(kFolderNameDownloads);
 }
 
 base::FilePath GetMyFilesFolderForProfile(Profile* profile) {
-  // When MyFilesVolume feature is disabled this should behave just like
-  // GetDownloadsFolderForProfile.
-  if (!base::FeatureList::IsEnabled(chromeos::features::kMyFilesVolume))
-    return GetDownloadsFolderForProfile(profile);
-
   // Check if FilesApp has a registered path already. This happens for tests.
   const std::string mount_point_name =
       util::GetDownloadsMountPointName(profile);
@@ -309,18 +295,9 @@ bool ConvertFileSystemURLToPathInsideCrostini(
     }
     *inside = container_info->homedir;
   } else if (id == GetDownloadsMountPointName(profile)) {
-    // MyFiles or Downloads.
-    if (base::FeatureList::IsEnabled(chromeos::features::kMyFilesVolume)) {
-      // MyFiles.
-      *inside =
-          crostini::ContainerChromeOSBaseDirectory().Append(kFolderNameMyFiles);
-    } else {
-      // Map Downloads with MyFiles prefix to allow for seamless change when
-      // MyFiles feature is turned on.
-      *inside = crostini::ContainerChromeOSBaseDirectory()
-                    .Append(kFolderNameMyFiles)
-                    .Append(kFolderNameDownloads);
-    }
+    // MyFiles.
+    *inside =
+        crostini::ContainerChromeOSBaseDirectory().Append(kFolderNameMyFiles);
   } else if (!mount_point_name_drive.empty() && id == mount_point_name_drive) {
     // DriveFS has some more complicated mappings.
     std::vector<base::FilePath::StringType> components;

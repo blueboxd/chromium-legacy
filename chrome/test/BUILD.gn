@@ -1923,6 +1923,11 @@ if (!is_android) {
       configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
     }
 
+    if (is_chrome_branded) {
+      data +=
+          [ "//chrome/browser/internal/resources/signin/test_accounts.json" ]
+    }
+
     if (is_chromeos) {
       assert(enable_app_list)
       sources += [

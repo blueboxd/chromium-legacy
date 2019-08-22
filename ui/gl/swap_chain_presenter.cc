@@ -15,8 +15,8 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gl/dc_layer_tree.h"
 #include "ui/gl/direct_composition_surface_win.h"
+#include "ui/gl/gl_image_d3d.h"
 #include "ui/gl/gl_image_dxgi.h"
-#include "ui/gl/gl_image_dxgi_swap_chain.h"
 #include "ui/gl/gl_image_memory.h"
 #include "ui/gl/gl_switches.h"
 
@@ -716,8 +716,8 @@ bool SwapChainPresenter::PresentToSwapChain(
       GLImageMemory::FromGLImage(params.images[kYPlaneImageIndex].get());
   GLImageMemory* uv_image_memory =
       GLImageMemory::FromGLImage(params.images[kUVPlaneImageIndex].get());
-  GLImageDXGISwapChain* swap_chain_image = GLImageDXGISwapChain::FromGLImage(
-      params.images[kSwapChainImageIndex].get());
+  GLImageD3D* swap_chain_image =
+      GLImageD3D::FromGLImage(params.images[kSwapChainImageIndex].get());
 
   if (!nv12_image && (!y_image_memory || !uv_image_memory) &&
       !swap_chain_image) {

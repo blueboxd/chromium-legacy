@@ -50,6 +50,7 @@ HTMLFrameSetElement::HTMLFrameSetElement(Document& document)
       frameborder_set_(false),
       noresize_(false) {
   SetHasCustomStyleCallbacks();
+  UseCounter::Count(document, WebFeature::kHTMLFrameSetElement);
 }
 
 bool HTMLFrameSetElement::IsPresentationAttribute(

@@ -1287,6 +1287,47 @@ void DriveIntegrationService::SuspendDone(
   }
 }
 
+void DriveIntegrationService::GetQuickAccessItems(
+    int max_number,
+    GetQuickAccessItemsCallback callback) {
+  if (!GetDriveFsHost()) {
+    std::move(callback).Run(drive::FileError::FILE_ERROR_SERVICE_UNAVAILABLE,
+                            {});
+    return;
+  }
+
+  auto query = drivefs::mojom::QueryParameters::New();
+  query->page_size = max_number;
+  query->query_kind = drivefs::mojom::QueryKind::kQuickAccess;
+
+  auto on_response =
+      base::BindOnce(&DriveIntegrationService::OnGetQuickAccessItems,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback));
+
+  GetDriveFsHost()->PerformSearch(
+      std::move(query),
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+          std::move(on_response), drive::FileError::FILE_ERROR_ABORT,
+          base::Optional<std::vector<drivefs::mojom::QueryItemPtr>>()));
+}
+
+void DriveIntegrationService::OnGetQuickAccessItems(
+    GetQuickAccessItemsCallback callback,
+    drive::FileError error,
+    base::Optional<std::vector<drivefs::mojom::QueryItemPtr>> items) {
+  if (error != drive::FILE_ERROR_OK || !items.has_value()) {
+    std::move(callback).Run(error, {});
+    return;
+  }
+
+  std::vector<QuickAccessItem> result;
+  result.reserve(items->size());
+  for (const auto& item : *items) {
+    result.push_back({item->path, item->metadata->quick_access->score});
+  }
+  std::move(callback).Run(error, std::move(result));
+}
+
 //===================== DriveIntegrationServiceFactory =======================
 
 DriveIntegrationServiceFactory::FactoryCallback*

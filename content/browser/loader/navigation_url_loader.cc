@@ -33,14 +33,16 @@ std::unique_ptr<NavigationURLLoader> NavigationURLLoader::Create(
     bool is_served_from_back_forward_cache,
     std::vector<std::unique_ptr<NavigationLoaderInterceptor>>
         initial_interceptors) {
-  if (is_served_from_back_forward_cache) {
-    return CachedNavigationURLLoader::Create(std::move(request_info), delegate);
-  }
   if (g_loader_factory) {
     return g_loader_factory->CreateLoader(
         storage_partition, std::move(request_info),
-        std::move(navigation_ui_data), service_worker_handle, delegate);
+        std::move(navigation_ui_data), service_worker_handle, delegate,
+        is_served_from_back_forward_cache);
   }
+
+  if (is_served_from_back_forward_cache)
+    return CachedNavigationURLLoader::Create(std::move(request_info), delegate);
+
   return std::make_unique<NavigationURLLoaderImpl>(
       browser_context, storage_partition, std::move(request_info),
       std::move(navigation_ui_data), service_worker_handle, appcache_handle,

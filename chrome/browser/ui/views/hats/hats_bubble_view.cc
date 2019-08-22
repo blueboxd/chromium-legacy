@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/hats/hats_bubble_view.h"
 
-#include "base/metrics/user_metrics.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -32,6 +32,26 @@
 // static
 HatsBubbleView* HatsBubbleView::instance_ = nullptr;
 
+namespace {
+
+HatsBubbleView::BubbleUsageCounts BubbleUsageCountsFromWidgetCloseReason(
+    views::Widget::ClosedReason reason) {
+  switch (reason) {
+    case views::Widget::ClosedReason::kUnspecified:
+    case views::Widget::ClosedReason::kLostFocus:
+      return HatsBubbleView::BubbleUsageCounts::kIgnored;
+    case views::Widget::ClosedReason::kEscKeyPressed:
+    case views::Widget::ClosedReason::kCloseButtonClicked:
+      return HatsBubbleView::BubbleUsageCounts::kUIDismissed;
+    case views::Widget::ClosedReason::kCancelButtonClicked:
+      return HatsBubbleView::BubbleUsageCounts::kDeclined;
+    case views::Widget::ClosedReason::kAcceptButtonClicked:
+      return HatsBubbleView::BubbleUsageCounts::kAccepted;
+  }
+}
+
+}  // namespace
+
 views::BubbleDialogDelegateView* HatsBubbleView::GetHatsBubble() {
   return instance_;
 }
@@ -45,8 +65,6 @@ void HatsBubbleView::Show(Browser* browser,
   // Do not show HaTS bubble if there is no avatar menu button to anchor to.
   if (!anchor_button)
     return;
-
-  base::RecordAction(base::UserMetricsAction("HatsBubble.Show"));
 
   DCHECK(anchor_button->GetWidget());
   gfx::NativeView parent_view = anchor_button->GetWidget()->GetNativeView();
@@ -115,6 +133,12 @@ bool HatsBubbleView::Accept() {
 
 bool HatsBubbleView::ShouldShowCloseButton() const {
   return true;
+}
+
+void HatsBubbleView::OnWidgetClosing(views::Widget* widget) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Feedback.HappinessTrackingSurvey.BubbleUsage",
+      BubbleUsageCountsFromWidgetCloseReason(widget->closed_reason()));
 }
 
 void HatsBubbleView::OnWidgetDestroying(views::Widget* widget) {

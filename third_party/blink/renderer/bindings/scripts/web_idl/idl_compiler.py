@@ -12,6 +12,7 @@ from .enumeration import Enumeration
 from .identifier_ir_map import IdentifierIRMap
 from .idl_type import IdlTypeFactory
 from .interface import Interface
+from .make_copy import make_copy
 from .reference import RefByIdFactory
 from .typedef import Typedef
 from .union import Union
@@ -117,16 +118,14 @@ class IdlCompiler(object):
         self._ir_map.move_to_new_phase()
 
         for identifier, old_dictionary in old_dictionaries.iteritems():
-            new_dictionary = old_dictionary.make_copy()
+            new_dictionary = make_copy(old_dictionary)
             for partial_dictionary in old_partial_dictionaries.get(
                     identifier, []):
                 new_dictionary.add_components(partial_dictionary.components)
                 new_dictionary.debug_info.add_locations(
                     partial_dictionary.debug_info.all_locations)
-                new_dictionary.own_members.extend([
-                    member.make_copy()
-                    for member in partial_dictionary.own_members
-                ])
+                new_dictionary.own_members.extend(
+                    make_copy(partial_dictionary.own_members))
             self._ir_map.add(new_dictionary)
 
     def _merge_interface_mixins(self):
@@ -147,21 +146,19 @@ class IdlCompiler(object):
         self._ir_map.move_to_new_phase()
         self._merge_interfaces(interfaces, identifier_to_mixin_map)
 
-    def _merge_interfaces(self, old_interfaces, interfaces_to_merge):
+    def _merge_interfaces(self, old_interfaces, interfaces_to_be_merged):
         for identifier, old_interface in old_interfaces.iteritems():
-            new_interface = old_interface.make_copy()
-            for to_merge in interfaces_to_merge.get(identifier, []):
-                new_interface.add_components(to_merge.components)
+            new_interface = make_copy(old_interface)
+            for to_be_merged in interfaces_to_be_merged.get(identifier, []):
+                new_interface.add_components(to_be_merged.components)
                 new_interface.debug_info.add_locations(
-                    to_merge.debug_info.all_locations)
-                new_interface.attributes.extend([
-                    attribute.make_copy() for attribute in to_merge.attributes
-                ])
+                    to_be_merged.debug_info.all_locations)
+                new_interface.attributes.extend(
+                    make_copy(to_be_merged.attributes))
                 new_interface.constants.extend(
-                    [constant.make_copy() for constant in to_merge.constants])
-                new_interface.operations.extend([
-                    operation.make_copy() for operation in to_merge.operations
-                ])
+                    make_copy(to_be_merged.constants))
+                new_interface.operations.extend(
+                    make_copy(to_be_merged.operations))
             self._ir_map.add(new_interface)
 
     def _process_interface_inheritances(self):
@@ -178,16 +175,16 @@ class IdlCompiler(object):
             IdentifierIRMap.IR.Kind.INTERFACE)
         self._ir_map.move_to_new_phase()
         for old_interface in old_interfaces.itervalues():
-            new_interface = old_interface.make_copy()
+            new_interface = make_copy(old_interface)
             inheritance_stack = create_inheritance_stack(
                 old_interface, old_interfaces)
             for interface in inheritance_stack[1:]:
                 new_interface.attributes.extend([
-                    attribute.make_copy() for attribute in interface.attributes
+                    make_copy(attribute) for attribute in interface.attributes
                     if is_own_member(attribute)
                 ])
                 new_interface.operations.extend([
-                    operation.make_copy() for operation in interface.operations
+                    make_copy(operation) for operation in interface.operations
                     if is_own_member(operation)
                 ])
             self._ir_map.add(new_interface)

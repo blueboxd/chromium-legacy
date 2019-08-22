@@ -253,6 +253,11 @@ mojom::DriveFs* DriveFsHost::GetDriveFsInterface() const {
 mojom::QueryParameters::QuerySource DriveFsHost::PerformSearch(
     mojom::QueryParametersPtr query,
     mojom::SearchQuery::GetNextPageCallback callback) {
+  if (!mount_state_ || !mount_state_->is_mounted()) {
+    std::move(callback).Run(drive::FileError::FILE_ERROR_SERVICE_UNAVAILABLE,
+                            {});
+    return mojom::QueryParameters::QuerySource::kLocalOnly;
+  }
   return mount_state_->SearchDriveFs(std::move(query), std::move(callback));
 }
 

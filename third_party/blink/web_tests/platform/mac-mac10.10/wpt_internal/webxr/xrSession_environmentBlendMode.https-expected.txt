@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-PASS environmentBlendMode is correct for a VR device in immersive
-PASS environmentBlendMode is correct for a VR device in non-immersive
-Harness: the test ran to completion.
-

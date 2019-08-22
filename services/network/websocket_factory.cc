@@ -5,7 +5,6 @@
 #include "services/network/websocket_factory.h"
 
 #include "base/bind.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/url_util.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
@@ -30,12 +29,14 @@ void WebSocketFactory::CreateWebSocket(
     int32_t render_frame_id,
     const url::Origin& origin,
     uint32_t options,
-    mojom::WebSocketHandshakeClientPtr handshake_client,
+    mojo::PendingRemote<mojom::WebSocketHandshakeClient> handshake_client,
     mojom::AuthenticationHandlerPtr auth_handler,
     mojom::TrustedHeaderClientPtr header_client) {
   if (throttler_.HasTooManyPendingConnections(process_id)) {
     // Too many websockets!
-    handshake_client.ResetWithReason(
+    mojo::Remote<mojom::WebSocketHandshakeClient> handshake_client_remote(
+        std::move(handshake_client));
+    handshake_client_remote.ResetWithReason(
         mojom::WebSocket::kInsufficientResources,
         "Error in connection establishment: net::ERR_INSUFFICIENT_RESOURCES");
     return;

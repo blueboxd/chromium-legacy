@@ -11,7 +11,6 @@
 #import "ios/chrome/browser/autofill/form_input_navigator.h"
 #import "ios/chrome/browser/ui/image_util/image_util.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
-#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -175,7 +174,7 @@ NSString* const kFormInputAccessoryViewAccessibilityID =
     [trailingView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
   ]];
 
-  self.backgroundColor = UIColor.cr_systemBackgroundColor;
+  self.backgroundColor = [UIColor colorNamed:kBackgroundColor];
 
   CAGradientLayer* gradientLayer = [[CAGradientLayer alloc] init];
   gradientLayer.colors = @[
@@ -187,7 +186,7 @@ NSString* const kFormInputAccessoryViewAccessibilityID =
 
   UIView* gradientView = [[UIView alloc] init];
   gradientView.userInteractionEnabled = NO;
-  gradientView.backgroundColor = UIColor.cr_systemBackgroundColor;
+  gradientView.backgroundColor = [UIColor colorNamed:kBackgroundColor];
   gradientView.layer.mask = gradientLayer;
   gradientView.translatesAutoresizingMaskIntoConstraints = NO;
   if (base::i18n::IsRTL()) {
@@ -196,12 +195,12 @@ NSString* const kFormInputAccessoryViewAccessibilityID =
   [self insertSubview:gradientView belowSubview:trailingView];
 
   UIView* topGrayLine = [[UIView alloc] init];
-  topGrayLine.backgroundColor = UIColor.cr_systemGray2Color;
+  topGrayLine.backgroundColor = [UIColor colorNamed:kGrey50Color];
   topGrayLine.translatesAutoresizingMaskIntoConstraints = NO;
   [self addSubview:topGrayLine];
 
   UIView* bottomGrayLine = [[UIView alloc] init];
-  bottomGrayLine.backgroundColor = UIColor.cr_systemGray2Color;
+  bottomGrayLine.backgroundColor = [UIColor colorNamed:kGrey50Color];
   bottomGrayLine.translatesAutoresizingMaskIntoConstraints = NO;
   [self addSubview:bottomGrayLine];
 

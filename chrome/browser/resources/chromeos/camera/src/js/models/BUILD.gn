@@ -9,6 +9,8 @@ js_type_check("closure_compile") {
     ":filenamer",
     ":filesystem",
     ":gallery",
+    ":result_saver",
+    ":video_saver",
   ]
 }
 
@@ -25,4 +27,10 @@ js_library("gallery") {
   deps = [
     ":filesystem",
   ]
+}
+
+js_library("result_saver") {
+}
+
+js_library("video_saver") {
 }

@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS Updating XRBoundedReferenceSpace origin offset updates view, input matrices, and bounds geometry.
-Harness: the test ran to completion.
-

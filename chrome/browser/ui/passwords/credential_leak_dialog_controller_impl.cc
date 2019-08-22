@@ -54,8 +54,9 @@ base::string16 CredentialLeakDialogControllerImpl::GetAcceptButtonLabel()
   return leak_dialog_utils::GetAcceptButtonLabel(leak_type_);
 }
 
-base::string16 CredentialLeakDialogControllerImpl::GetCloseButtonLabel() const {
-  return leak_dialog_utils::GetCloseButtonLabel();
+base::string16 CredentialLeakDialogControllerImpl::GetCancelButtonLabel()
+    const {
+  return leak_dialog_utils::GetCancelButtonLabel();
 }
 
 base::string16 CredentialLeakDialogControllerImpl::GetDescription() const {
@@ -70,8 +71,8 @@ bool CredentialLeakDialogControllerImpl::ShouldCheckPasswords() const {
   return leak_dialog_utils::ShouldCheckPasswords(leak_type_);
 }
 
-bool CredentialLeakDialogControllerImpl::ShouldShowCloseButton() const {
-  return leak_dialog_utils::ShouldShowCloseButton(leak_type_);
+bool CredentialLeakDialogControllerImpl::ShouldShowCancelButton() const {
+  return leak_dialog_utils::ShouldShowCancelButton(leak_type_);
 }
 
 void CredentialLeakDialogControllerImpl::ResetDialog() {

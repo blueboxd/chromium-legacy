@@ -163,7 +163,7 @@ interface MyIFaceBig {
 };
 
 /** TREE
- *Interface(MyIfaceEmptySequenceDefalutValue)
+ *Interface(MyIfaceDefalutValue)
  *  Operation(foo)
  *    Arguments()
  *      Argument(arg)
@@ -175,9 +175,30 @@ interface MyIFaceBig {
  *        Default() = "[]"
  *    Type()
  *      PrimitiveType(void)
+ *  Operation(bar)
+ *    Arguments()
+ *      Argument(arg)
+ *        OPTIONAL: True
+ *        Type()
+ *          Typeref(MyDict)
+ *        Default() = "{}"
+ *    Type()
+ *      PrimitiveType(void)
+ *  Operation(baz)
+ *    Arguments()
+ *      Argument(arg)
+ *        OPTIONAL: True
+ *        Type()
+ *          NULLABLE: True
+ *          StringType(DOMString)
+ *        Default() = "NULL"
+ *    Type()
+ *      PrimitiveType(void)
  */
-interface MyIfaceEmptySequenceDefalutValue {
+interface MyIfaceDefalutValue {
   void foo(optional sequence<DOMString> arg = []);
+  void bar(optional MyDict arg = {});
+  void baz(optional DOMString? arg = null);
 };
 
 /** TREE

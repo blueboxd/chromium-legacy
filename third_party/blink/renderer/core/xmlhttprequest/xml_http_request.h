@@ -253,8 +253,8 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
 
   // Clears variables used only while the resource is being loaded.
   void ClearVariablesForLoading();
-  // Returns false iff reentry happened and a new load is started.
-  bool InternalAbort();
+  // Clears state and cancels loader.
+  void InternalAbort();
   // Clears variables holding response header and body data.
   void ClearResponse();
   void ClearRequest();

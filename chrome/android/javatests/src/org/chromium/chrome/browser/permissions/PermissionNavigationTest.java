@@ -57,7 +57,6 @@ public class PermissionNavigationTest {
     @Test
     @MediumTest
     @Feature({"Permissions"})
-    @CommandLineFlags.Add("enable-features=" + PermissionTestRule.MODAL_FLAG)
     public void testNavigationDismissesModalPermissionPrompt() throws Exception {
         mPermissionRule.setUpUrl(TEST_FILE);
         mPermissionRule.runJavaScriptCodeInCurrentTab("requestGeolocationPermission()");

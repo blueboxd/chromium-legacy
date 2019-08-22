@@ -40,6 +40,19 @@ TEST(LeakDetectionRequestUtils, PrepareSingleLeakRequestData) {
   task_env.RunUntilIdle();
 }
 
+TEST(LeakDetectionRequestUtils, AnalyzeResponseResult_DecryptionError) {
+  base::test::TaskEnvironment task_env;
+
+  // Force a decryption error by returning trash bytes.
+  auto response = std::make_unique<SingleLookupResponse>();
+  response->reencrypted_lookup_hash = "trash_bytes";
+
+  base::MockCallback<SingleLeakResponseAnalysisCallback> callback;
+  AnalyzeResponse(std::move(response), "random_key", callback.Get());
+  EXPECT_CALL(callback, Run(AnalyzeResponseResult::kDecryptionError));
+  task_env.RunUntilIdle();
+}
+
 TEST(LeakDetectionRequestUtils, AnalyzeResponseResult_NoLeak) {
   base::test::TaskEnvironment task_env;
 
@@ -61,9 +74,8 @@ TEST(LeakDetectionRequestUtils, AnalyzeResponseResult_NoLeak) {
       CipherEncryptWithKey("unrelated_trash", key_server)));
 
   base::MockCallback<SingleLeakResponseAnalysisCallback> callback;
-
-  AnalyzeResponseResult(std::move(response), key_client, callback.Get());
-  EXPECT_CALL(callback, Run(false));
+  AnalyzeResponse(std::move(response), key_client, callback.Get());
+  EXPECT_CALL(callback, Run(AnalyzeResponseResult::kNotLeaked));
   task_env.RunUntilIdle();
 }
 
@@ -96,8 +108,8 @@ TEST(LeakDetectionRequestUtils, AnalyzeResponseResult_Leak) {
 
   base::MockCallback<SingleLeakResponseAnalysisCallback> callback;
 
-  AnalyzeResponseResult(std::move(response), key_client, callback.Get());
-  EXPECT_CALL(callback, Run(true));
+  AnalyzeResponse(std::move(response), key_client, callback.Get());
+  EXPECT_CALL(callback, Run(AnalyzeResponseResult::kLeaked));
   task_env.RunUntilIdle();
 }
 

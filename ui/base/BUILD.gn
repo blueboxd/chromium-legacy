@@ -81,16 +81,6 @@ jumbo_component("base") {
   output_name = "ui_base"
 
   sources = [
-    "accelerators/media_keys_listener.cc",
-    "accelerators/media_keys_listener.h",
-    "accelerators/media_keys_util.cc",
-    "accelerators/media_keys_util.h",
-    "accelerators/menu_label_accelerator_util.cc",
-    "accelerators/menu_label_accelerator_util.h",
-    "accelerators/menu_label_accelerator_util_linux.cc",
-    "accelerators/menu_label_accelerator_util_linux.h",
-    "accelerators/platform_accelerator_cocoa.h",
-    "accelerators/platform_accelerator_cocoa.mm",
     "class_property.cc",
     "class_property.h",
     "cocoa/accessibility_focus_overrider.h",
@@ -254,11 +244,6 @@ jumbo_component("base") {
     "ui_base_switches.h",
     "ui_base_switches_util.cc",
     "ui_base_switches_util.h",
-    "ui_base_types.cc",
-    "ui_base_types.h",
-    "user_activity/user_activity_detector.cc",
-    "user_activity/user_activity_detector.h",
-    "user_activity/user_activity_observer.h",
     "view_prop.cc",
     "view_prop.h",
     "webui/i18n_source_stream.cc",
@@ -313,6 +298,16 @@ jumbo_component("base") {
       "accelerators/accelerator_history.h",
       "accelerators/accelerator_manager.cc",
       "accelerators/accelerator_manager.h",
+      "accelerators/media_keys_listener.cc",
+      "accelerators/media_keys_listener.h",
+      "accelerators/media_keys_util.cc",
+      "accelerators/media_keys_util.h",
+      "accelerators/menu_label_accelerator_util.cc",
+      "accelerators/menu_label_accelerator_util.h",
+      "accelerators/menu_label_accelerator_util_linux.cc",
+      "accelerators/menu_label_accelerator_util_linux.h",
+      "accelerators/platform_accelerator_cocoa.h",
+      "accelerators/platform_accelerator_cocoa.mm",
       "base_window.cc",
       "base_window.h",
       "cocoa/bubble_closer.h",
@@ -332,6 +327,11 @@ jumbo_component("base") {
       "pointer/touch_editing_controller.h",
       "text/bytes_formatting.cc",
       "text/bytes_formatting.h",
+      "ui_base_types.cc",
+      "ui_base_types.h",
+      "user_activity/user_activity_detector.cc",
+      "user_activity/user_activity_detector.h",
+      "user_activity/user_activity_observer.h",
     ]
   }
 
@@ -438,6 +438,10 @@ jumbo_component("base") {
       "l10n/l10n_util_mac.mm",
     ]
     public_deps += [ "//ui/events:event_constants" ]
+    deps -= [
+      "//ui/events",
+      "//ui/events/devices",
+    ]
 
     set_sources_assignment_filter(sources_assignment_filter)
   }
@@ -673,13 +677,8 @@ jumbo_static_library("test_support") {
     "resource/mock_resource_bundle_delegate.h",
     "test/material_design_controller_test_api.cc",
     "test/material_design_controller_test_api.h",
-    "test/ui_controls.h",
     "test/ui_controls_aura.cc",
     "test/ui_controls_aura.h",
-    "test/ui_controls_internal_win.cc",
-    "test/ui_controls_internal_win.h",
-    "test/ui_controls_mac.mm",
-    "test/ui_controls_win.cc",
   ]
 
   if (!is_ios) {
@@ -702,6 +701,11 @@ jumbo_static_library("test_support") {
       "test/scoped_fake_nswindow_fullscreen.mm",
       "test/scoped_preferred_scroller_style_mac.h",
       "test/scoped_preferred_scroller_style_mac.mm",
+      "test/ui_controls.h",
+      "test/ui_controls_internal_win.cc",
+      "test/ui_controls_internal_win.h",
+      "test/ui_controls_mac.mm",
+      "test/ui_controls_win.cc",
       "test/view_tree_validator.h",
       "test/view_tree_validator.mm",
       "test/windowed_nsnotification_observer.h",
@@ -733,6 +737,13 @@ jumbo_static_library("test_support") {
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
+
+  if (is_ios) {
+    deps -= [
+      "//ui/events:events_base",
+      "//ui/events:test_support",
+    ]
+  }
 
   if (build_ime) {
     sources += [
@@ -881,13 +892,13 @@ test("ui_base_unittests") {
     "template_expressions_unittest.cc",
     "test/page_transition_types_unittest.cc",
     "test/run_all_unittests.cc",
-    "user_activity/user_activity_detector_unittest.cc",
     "webui/i18n_source_stream_unittest.cc",
   ]
   if (!is_ios) {
     sources += [
       "test/scoped_fake_nswindow_fullscreen_unittest.mm",
       "test/view_tree_validator_unittest.mm",
+      "user_activity/user_activity_detector_unittest.cc",
     ]
   }
 
@@ -931,6 +942,10 @@ test("ui_base_unittests") {
     sources += [
       "l10n/l10n_util_mac_unittest.mm",
       "test/ios/ui_image_test_utils_unittest.mm",
+    ]
+    deps -= [
+      "//ui/events:events_base",
+      "//ui/events:test_support",
     ]
     set_sources_assignment_filter(sources_assignment_filter)
   } else {  # !is_ios

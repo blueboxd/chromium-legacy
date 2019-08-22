@@ -54,8 +54,8 @@ void FakeEmbeddedWorkerInstanceClient::StartWorker(
   host_.Bind(std::move(params->instance_host));
   start_params_ = std::move(params);
 
-  helper_->OnServiceWorkerRequest(
-      std::move(start_params_->service_worker_request));
+  helper_->OnServiceWorkerReceiver(
+      std::move(start_params_->service_worker_receiver));
 
   // Create message pipes. We may need to keep |devtools_agent_receiver| and
   // |devtools_agent_host_remote| if we want not to invoke

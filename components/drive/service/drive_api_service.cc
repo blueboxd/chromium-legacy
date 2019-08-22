@@ -243,7 +243,7 @@ DriveAPIService::~DriveAPIService() {
     sender_->auth_service()->RemoveObserver(this);
 }
 
-void DriveAPIService::Initialize(const std::string& account_id) {
+void DriveAPIService::Initialize(const CoreAccountId& account_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   std::vector<std::string> scopes;

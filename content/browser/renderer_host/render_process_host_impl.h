@@ -478,8 +478,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // before the process shuts down.
   void DelayProcessShutdownForUnload(const base::TimeDelta& timeout);
 
-  // Binds request to the FileSystemManager instance owned by the render process
-  // host, and is used by workers via RendererInterfaceBinders.
+  // Binds |receiver| to the FileSystemManager instance owned by the render
+  // process host, and is used by workers via RendererInterfaceBinders.
   void BindFileSystemManager(
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver) override;

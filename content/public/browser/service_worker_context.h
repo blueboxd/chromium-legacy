@@ -11,6 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/service_worker_running_info.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom-forward.h"
 #include "url/gurl.h"
@@ -55,7 +56,7 @@ enum class StartServiceWorkerForNavigationHintResult {
 // See service_worker_context_wrapper.cc for the implementation
 // of ServiceWorkerContext and ServiceWorkerContextWrapper (the
 // primary implementation of this abstract class).
-class ServiceWorkerContext {
+class CONTENT_EXPORT ServiceWorkerContext {
  public:
   using ResultCallback = base::OnceCallback<void(bool success)>;
 
@@ -80,16 +81,19 @@ class ServiceWorkerContext {
       base::OnceCallback<void(ServiceWorkerContext*,
                               const ServiceWorkerRunningInfo&)>;
 
+  // Temporary for crbug.com/824858. The thread the context core lives on.
+  static bool IsServiceWorkerOnUIEnabled();
+  static content::BrowserThread::ID GetCoreThreadId();
+
   // Returns true if |url| is within the service worker |scope|.
-  CONTENT_EXPORT static bool ScopeMatches(const GURL& scope, const GURL& url);
+  static bool ScopeMatches(const GURL& scope, const GURL& url);
 
   // Runs a |task| on task |runner| making sure that
   // |service_worker_context| is alive while the task is being run.
-  CONTENT_EXPORT static void RunTask(
-      scoped_refptr<base::SequencedTaskRunner> runner,
-      const base::Location& from_here,
-      ServiceWorkerContext* service_worker_context,
-      base::OnceClosure task);
+  static void RunTask(scoped_refptr<base::SequencedTaskRunner> runner,
+                      const base::Location& from_here,
+                      ServiceWorkerContext* service_worker_context,
+                      base::OnceClosure task);
 
   // Observer methods are always dispatched on the UI thread.
   virtual void AddObserver(ServiceWorkerContextObserver* observer) = 0;

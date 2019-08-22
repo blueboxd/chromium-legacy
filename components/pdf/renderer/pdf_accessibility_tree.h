@@ -89,6 +89,13 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
   // onto the host tree.
   void Finish();
 
+  void AddPageContent(
+      ui::AXNodeData* page_node,
+      const gfx::RectF& page_bounds,
+      uint32_t page_index,
+      const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
+      const std::vector<PP_PrivateAccessibilityCharInfo>& chars);
+
   void ComputeParagraphAndHeadingThresholds(
       const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
       double* out_heading_font_size_threshold,
@@ -105,6 +112,14 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
   gfx::Vector2dF ToVector2dF(const PP_Point& p);
   gfx::RectF ToRectF(const PP_Rect& r);
   ui::AXNodeData* CreateNode(ax::mojom::Role role);
+  ui::AXNodeData* CreateParagraphNode(double font_size,
+                                      double heading_font_size_threshold);
+  ui::AXNodeData* CreateStaticTextNode(uint32_t char_index);
+  ui::AXNodeData* CreateInlineTextBoxNode(
+      const PP_PrivateAccessibilityTextRunInfo& text_run,
+      const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
+      uint32_t char_index,
+      const gfx::RectF& page_bounds);
   float GetDeviceScaleFactor() const;
   content::RenderAccessibility* GetRenderAccessibility();
   gfx::Transform* MakeTransformFromViewInfo();

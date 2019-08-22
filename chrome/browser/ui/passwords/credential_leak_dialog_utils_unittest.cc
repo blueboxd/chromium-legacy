@@ -27,10 +27,10 @@ const struct {
   CredentialLeakType leak_type;
   // The rest of the fields specify what should be displayed for this test case.
   int accept_button_id;
-  int close_button_id;
+  int cancel_button_id;
   int leak_message_id;
   int leak_title_id;
-  bool should_show_close_button;
+  bool should_show_cancel_button;
   bool should_check_passwords;
 } kLeakTypesTestCases[] = {
     {password_manager::CreateLeakTypeFromBools(
@@ -76,11 +76,12 @@ TEST(CredentialLeakDialogUtilsTest, GetAcceptButtonLabel) {
   }
 }
 
-TEST(CredentialLeakDialogUtilsTest, GetCloseButtonLabel) {
+TEST(CredentialLeakDialogUtilsTest, GetCancelButtonLabel) {
   for (size_t i = 0; i < base::size(kLeakTypesTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << i);
-    EXPECT_EQ(l10n_util::GetStringUTF16(kLeakTypesTestCases[i].close_button_id),
-              GetCloseButtonLabel());
+    EXPECT_EQ(
+        l10n_util::GetStringUTF16(kLeakTypesTestCases[i].cancel_button_id),
+        GetCancelButtonLabel());
   }
 }
 
@@ -118,11 +119,11 @@ TEST(CredentialLeakDialogUtilsTest, ShouldCheckPasswords) {
   }
 }
 
-TEST(CredentialLeakDialogUtilsTest, ShouldShowCloseButton) {
+TEST(CredentialLeakDialogUtilsTest, ShouldShowCancelButton) {
   for (size_t i = 0; i < base::size(kLeakTypesTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << i);
-    EXPECT_EQ(kLeakTypesTestCases[i].should_show_close_button,
-              ShouldShowCloseButton(kLeakTypesTestCases[i].leak_type));
+    EXPECT_EQ(kLeakTypesTestCases[i].should_show_cancel_button,
+              ShouldShowCancelButton(kLeakTypesTestCases[i].leak_type));
   }
 }
 

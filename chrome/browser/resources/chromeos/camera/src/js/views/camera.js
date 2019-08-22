@@ -16,22 +16,15 @@ cca.views = cca.views || {};
 
 /**
  * Creates the camera-view controller.
- * @param {cca.models.Gallery} model Model object.
+ * @param {cca.models.ResultSaver} resultSaver
  * @param {cca.device.DeviceInfoUpdater} infoUpdater
  * @param {cca.device.PhotoResolPreferrer} photoPreferrer
  * @param {cca.device.VideoConstraintsPreferrer} videoPreferrer
  * @constructor
  */
 cca.views.Camera = function(
-    model, infoUpdater, photoPreferrer, videoPreferrer) {
+    resultSaver, infoUpdater, photoPreferrer, videoPreferrer) {
   cca.views.View.call(this, '#camera');
-
-  /**
-   * Gallery model used to save taken pictures.
-   * @type {cca.models.Gallery}
-   * @private
-   */
-  this.model_ = model;
 
   /**
    * @type {cca.device.DeviceInfoUpdater}
@@ -71,36 +64,37 @@ cca.views.Camera = function(
    */
   this.bannerLearnMore_ = document.querySelector('#banner-learn-more');
 
+  const doSavePhoto = async (result, name) => {
+    cca.metrics.log(
+        cca.metrics.Type.CAPTURE, this.facingMode_, 0, result.resolution);
+    try {
+      await resultSaver.savePhoto(result.blob, name);
+    } catch (e) {
+      cca.toast.show('error_msg_save_file_failed');
+      throw e;
+    }
+  };
+  const createVideoSaver = async () => resultSaver.startSaveVideo();
+  const doSaveVideo = async (result, name) => {
+    cca.metrics.log(
+        cca.metrics.Type.CAPTURE, this.facingMode_, result.duration,
+        result.resolution);
+    try {
+      await resultSaver.finishSaveVideo(result.videoSaver, name);
+    } catch (e) {
+      cca.toast.show('error_msg_save_file_failed');
+      throw e;
+    }
+  };
+
   /**
    * Modes for the camera.
    * @type {cca.views.camera.Modes}
    * @private
    */
   this.modes_ = new cca.views.camera.Modes(
-      photoPreferrer, videoPreferrer, this.restart.bind(this),
-      async (result, filename) => {
-        if (result.blob) {
-          cca.metrics.log(
-              cca.metrics.Type.CAPTURE, this.facingMode_, 0, result.resolution);
-          try {
-            await this.model_.savePhoto(result.blob, filename);
-          } catch (e) {
-            cca.toast.show('error_msg_save_file_failed');
-            throw e;
-          }
-        }
-      },
-      async (result, filename) => {
-        cca.metrics.log(
-            cca.metrics.Type.CAPTURE, this.facingMode_, result.duration,
-            result.resolution);
-        try {
-          await this.model_.saveVideo(result.chunkfile, filename);
-        } catch (e) {
-          cca.toast.show('error_msg_save_file_failed');
-          throw e;
-        }
-      });
+      photoPreferrer, videoPreferrer, this.restart.bind(this), doSavePhoto,
+      createVideoSaver, doSaveVideo);
 
   /**
    * @type {?string}

@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS Input sources are re-created when handedness or target ray mode changes
-Harness: the test ran to completion.
-

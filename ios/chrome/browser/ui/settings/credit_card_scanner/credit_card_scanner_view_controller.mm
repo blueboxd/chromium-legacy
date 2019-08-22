@@ -38,6 +38,26 @@ using base::UserMetricsAction;
       initWithCreditCardScannerDelegate:self];
 }
 
+- (void)dismissForReason:(scannerViewController::DismissalReason)reason
+          withCompletion:(void (^)(void))completion {
+  switch (reason) {
+    case scannerViewController::CLOSE_BUTTON:
+      base::RecordAction(UserMetricsAction("MobileCreditCardScannerClose"));
+      break;
+    case scannerViewController::ERROR_DIALOG:
+      base::RecordAction(UserMetricsAction("MobileCreditCardScannerError"));
+      break;
+    case scannerViewController::SCAN_COMPLETE:
+      base::RecordAction(
+          UserMetricsAction("MobileCreditCardScannerScannedCard"));
+      break;
+    case scannerViewController::IMPOSSIBLY_UNLIKELY_AUTHORIZATION_CHANGE:
+      break;
+  }
+
+  [super dismissForReason:reason withCompletion:completion];
+}
+
 #pragma mark - CreditCardScannerCameraControllerDelegate
 
 - (void)receiveCreditCardScannerResult:(CMSampleBufferRef)sampleBuffer {

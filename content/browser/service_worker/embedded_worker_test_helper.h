@@ -16,6 +16,7 @@
 #include "content/browser/service_worker/fake_service_worker.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/url_loader_factory_getter.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/http/http_response_info.h"
 #include "third_party/blink/public/mojom/service_worker/embedded_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
@@ -110,9 +111,9 @@ class EmbeddedWorkerTestHelper {
       std::unique_ptr<FakeEmbeddedWorkerInstanceClient> instance_client);
 
   // Adds the given service worker to the pending queue. The next time this
-  // helper receives a blink::mojom::ServiceWorkerRequest request (i.e., on the
-  // next start worker attempt), it uses the first service worker from this
-  // queue.
+  // helper receives a mojo::PendingReceiver<blink::mojom::ServiceWorker>
+  // receiver (i.e., on the next start worker attempt), it uses the first
+  // service worker from this queue.
   void AddPendingServiceWorker(
       std::unique_ptr<FakeServiceWorker> service_worker);
 
@@ -136,7 +137,8 @@ class EmbeddedWorkerTestHelper {
   void OnInstanceClientReceiver(
       mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>
           receiver);
-  void OnServiceWorkerRequest(blink::mojom::ServiceWorkerRequest request);
+  void OnServiceWorkerReceiver(
+      mojo::PendingReceiver<blink::mojom::ServiceWorker> receiver);
 
   // Called by the fakes to destroy themselves.
   void RemoveInstanceClient(FakeEmbeddedWorkerInstanceClient* instance_client);

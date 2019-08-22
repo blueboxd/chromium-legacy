@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-PASS Ensure that the framebuffer given by the WebGL layer is opaque for immersive
-PASS Ensure that the framebuffer given by the WebGL layer is opaque for non-immersive
-Harness: the test ran to completion.
-

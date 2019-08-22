@@ -31,11 +31,6 @@ namespace {
 
 const int kDefaultRecordRepeatCount = 100;
 
-// Parameters for base::LapTimer.
-const int kTimeLimitMillis = 1;
-const int kWarmupRuns = 0;
-const int kTimeCheckInterval = 1;
-
 const char* kModeSuffixes[RecordingSource::RECORDING_MODE_COUNT] = {
     "",
     "_painting_disabled",
@@ -141,6 +136,9 @@ void RasterizeAndRecordBenchmark::RunOnLayer(PictureLayer* layer) {
   if (!layer->DrawsContent())
     return;
 
+  const int kTimeCheckInterval = 1;
+  const int kWarmupRuns = 0;
+  const int kTimeLimitMillis = 1;
   ContentLayerClient* painter = layer->client();
   RecordingSource recording_source;
 

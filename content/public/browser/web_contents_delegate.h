@@ -21,7 +21,6 @@
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/media_stream_request.h"
 #include "content/public/browser/serial_chooser.h"
-#include "content/public/browser/sms_dialog.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/window_container_type.mojom-forward.h"
@@ -409,8 +408,11 @@ class CONTENT_EXPORT WebContentsDelegate {
       RenderFrameHost* frame,
       const BluetoothChooser::EventHandler& event_handler);
 
-  // Creates a dialog for the user to control the receiving of the SMS.
-  virtual std::unique_ptr<SmsDialog> CreateSmsDialog(const url::Origin&);
+  // Creates an info bar for the user to control the receiving of the SMS.
+  virtual void CreateSmsPrompt(RenderFrameHost*,
+                               const url::Origin&,
+                               base::OnceCallback<void()> on_confirm,
+                               base::OnceCallback<void()> on_cancel);
 
   // Shows a prompt for the user to allow/block Bluetooth scanning. The
   // observer must live at least as long as the returned prompt object.

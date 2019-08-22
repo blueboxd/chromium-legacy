@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/apps/app_service/icon_key_util.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
@@ -24,6 +25,7 @@ class ExtensionSet;
 }
 
 namespace apps {
+class ExtensionAppsEnableFlow;
 
 // An app publisher (in the App Service sense) of extension-backed apps,
 // including Chrome Apps (platform apps and legacy packaged apps) and hosted
@@ -94,7 +96,10 @@ class ExtensionApps : public apps::mojom::Publisher,
   // Checks if extension is disabled and if enable flow should be started.
   // Returns true if extension enable flow is started or there is already one
   // running.
-  bool RunExtensionEnableFlow(const std::string& app_id);
+  bool RunExtensionEnableFlow(const std::string& app_id,
+                              int32_t event_flags,
+                              apps::mojom::LaunchSource launch_source,
+                              int64_t display_id);
 
   static bool IsBlacklisted(const std::string& app_id);
 
@@ -126,6 +131,11 @@ class ExtensionApps : public apps::mojom::Publisher,
   apps_util::IncrementingIconKeyFactory icon_key_factory_;
 
   apps::mojom::AppType app_type_;
+
+  using EnableFlowPtr = std::unique_ptr<ExtensionAppsEnableFlow>;
+  std::map<std::string, EnableFlowPtr> enable_flow_map_;
+
+  base::WeakPtrFactory<ExtensionApps> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionApps);
 };

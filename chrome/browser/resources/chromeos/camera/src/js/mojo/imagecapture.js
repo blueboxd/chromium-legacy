@@ -222,7 +222,7 @@ cca.mojo.ImageCapture.prototype.getPhotoCapabilities = async function() {
  * @param {!PhotoSettings} photoSettings Photo settings for ImageCapture's
  *     takePhoto().
  * @param {?Array<cros.mojom.Effect>} photoEffects Photo effects to be applied.
- * @return {Array<Promise<Blob>>} Array of promises for the result.
+ * @return {!Array<!Promise<!Blob>>} Array of promises for the result.
  */
 cca.mojo.ImageCapture.prototype.takePhoto = function(
     photoSettings, photoEffects) {

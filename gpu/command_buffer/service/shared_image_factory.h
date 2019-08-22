@@ -36,7 +36,7 @@ struct GpuFeatureInfo;
 struct GpuPreferences;
 
 #if defined(OS_WIN)
-class SwapChainFactoryDXGI;
+class SharedImageBackingFactoryD3D;
 #endif  // OS_WIN
 
 #if defined(OS_FUCHSIA)
@@ -143,7 +143,7 @@ class GPU_GLES2_EXPORT SharedImageFactory {
 
 #if defined(OS_WIN)
   // Used for creating DXGI Swap Chain.
-  std::unique_ptr<SwapChainFactoryDXGI> swap_chain_factory_;
+  std::unique_ptr<SharedImageBackingFactoryD3D> d3d_backing_factory_;
 #endif  // OS_WIN
 
 #if defined(OS_FUCHSIA)

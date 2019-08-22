@@ -7,7 +7,6 @@
 #import <Foundation/Foundation.h>
 
 #include "base/logging.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/system/sys_info.h"
@@ -166,8 +165,9 @@ void MobileSessionShutdownMetricsProvider::ProvidePreviousSessionData(
   LogLowPowerMode(session_info.deviceWasInLowPowerMode);
   LogDeviceThermalState(session_info.deviceThermalState);
 
-  base::UmaHistogramBoolean("Stability.iOS.UTE.OSRestartedAfterPreviousSession",
-                            session_info.OSRestartedAfterPreviousSession);
+  UMA_STABILITY_HISTOGRAM_BOOLEAN(
+      "Stability.iOS.UTE.OSRestartedAfterPreviousSession",
+      session_info.OSRestartedAfterPreviousSession);
 
   bool possible_explanation =
       // Log any of the following cases as a possible explanation for the

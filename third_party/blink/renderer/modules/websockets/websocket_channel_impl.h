@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/websockets/websocket_channel.h"
 #include "third_party/blink/renderer/modules/websockets/websocket_handle.h"
+#include "third_party/blink/renderer/modules/websockets/websocket_message_chunk_accumulator.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -229,7 +230,7 @@ class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel {
   uint64_t identifier_;
   Member<BlobLoader> blob_loader_;
   HeapDeque<Member<Message>> messages_;
-  scoped_refptr<SharedBuffer> receiving_message_data_;
+  WebSocketMessageChunkAccumulator message_chunks_;
   const Member<ExecutionContext> execution_context_;
 
   bool backpressure_ = false;

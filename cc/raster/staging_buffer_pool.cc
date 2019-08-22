@@ -88,7 +88,7 @@ void StagingBuffer::DestroyGLResources(gpu::raster::RasterInterface* ri,
 }
 
 void StagingBuffer::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
-                                 viz::ResourceFormat format,
+                                 viz::ResourceFormat dump_format,
                                  bool in_free_list) const {
   if (!gpu_memory_buffer)
     return;
@@ -99,7 +99,7 @@ void StagingBuffer::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
   MemoryAllocatorDump* buffer_dump = pmd->CreateAllocatorDump(buffer_dump_name);
 
   uint64_t buffer_size_in_bytes =
-      viz::ResourceSizes::UncheckedSizeInBytes<uint64_t>(size, format);
+      viz::ResourceSizes::UncheckedSizeInBytes<uint64_t>(size, dump_format);
   buffer_dump->AddScalar(MemoryAllocatorDump::kNameSize,
                          MemoryAllocatorDump::kUnitsBytes,
                          buffer_size_in_bytes);

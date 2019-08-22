@@ -18,11 +18,6 @@ NoOpPromiseExecutor::NoOpPromiseExecutor(bool can_resolve, bool can_reject)
 
 NoOpPromiseExecutor::~NoOpPromiseExecutor() {}
 
-PromiseExecutor::PrerequisitePolicy NoOpPromiseExecutor::GetPrerequisitePolicy()
-    const {
-  return PromiseExecutor::PrerequisitePolicy::kNever;
-}
-
 bool NoOpPromiseExecutor::IsCancelled() const {
   return false;
 }

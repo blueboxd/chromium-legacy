@@ -30,7 +30,6 @@ extern const base::Feature kStopSyncInPausedState;
 extern const base::Feature
     kSyncAllowWalletDataInTransportModeWithCustomPassphrase;
 extern const base::Feature kSyncSendTabToSelf;
-extern const base::Feature kSyncSupportSecondaryAccount;
 extern const base::Feature kSyncUSSBookmarks;
 extern const base::Feature kSyncUSSPasswords;
 extern const base::Feature kSyncUSSAutofillWalletMetadata;

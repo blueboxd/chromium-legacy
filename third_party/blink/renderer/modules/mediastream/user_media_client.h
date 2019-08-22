@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "third_party/blink/public/common/mediastream/media_devices.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom-blink.h"
@@ -32,7 +31,8 @@ class LocalFrame;
 // UserMediaClient handles requests coming from the Blink MediaDevices
 // object. This includes getUserMedia and enumerateDevices. It must be created,
 // called and destroyed on the render thread.
-class MODULES_EXPORT UserMediaClient {
+class MODULES_EXPORT UserMediaClient
+    : public GarbageCollectedFinalized<UserMediaClient> {
  public:
   // TODO(guidou): Make all constructors private and replace with Create methods
   // that return a std::unique_ptr. This class is intended for instantiation on
@@ -41,7 +41,7 @@ class MODULES_EXPORT UserMediaClient {
   UserMediaClient(LocalFrame* frame,
                   scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   UserMediaClient(LocalFrame* frame,
-                  std::unique_ptr<UserMediaProcessor> user_media_processor,
+                  UserMediaProcessor* user_media_processor,
                   scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   virtual ~UserMediaClient();
 
@@ -52,6 +52,8 @@ class MODULES_EXPORT UserMediaClient {
   void ContextDestroyed();
 
   bool IsCapturing();
+
+  void Trace(Visitor*);
 
   void SetMediaDevicesDispatcherForTesting(
       blink::mojom::blink::MediaDevicesDispatcherHostPtr
@@ -99,15 +101,13 @@ class MODULES_EXPORT UserMediaClient {
   const blink::mojom::blink::MediaDevicesDispatcherHostPtr&
   GetMediaDevicesDispatcher();
 
-  // LocalFrame instance associated with the RenderFrameImpl that
+  // LocalFrame instance associated with the UserMediaController that
   // own this UserMediaClient.
-  //
-  // TODO(crbug.com/704136): Consider moving UserMediaClient to
-  // Oilpan and use a Member.
-  WeakPersistent<LocalFrame> frame_;
+  WeakMember<LocalFrame> frame_;
 
   // |user_media_processor_| is a unique_ptr for testing purposes.
-  std::unique_ptr<UserMediaProcessor> user_media_processor_;
+  Member<UserMediaProcessor> user_media_processor_;
+
   // |user_media_processor_| is a unique_ptr in order to avoid compilation
   // problems in builds that do not include WebRTC.
   std::unique_ptr<ApplyConstraintsProcessor> apply_constraints_processor_;
@@ -122,10 +122,6 @@ class MODULES_EXPORT UserMediaClient {
   Deque<Request> pending_request_infos_;
 
   THREAD_CHECKER(thread_checker_);
-
-  // Note: This member must be the last to ensure all outstanding weak pointers
-  // are invalidated first.
-  base::WeakPtrFactory<UserMediaClient> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UserMediaClient);
 };

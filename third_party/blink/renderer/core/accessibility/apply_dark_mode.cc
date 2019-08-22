@@ -17,7 +17,7 @@ namespace blink {
 namespace {
 
 const int kAlphaThreshold = 100;
-const int kBrightnessThreshold = 128;
+const int kBrightnessThreshold = 50;
 
 // TODO(https://crbug.com/925949): Add detection and classification of
 // background image color. Most sites with dark background images also have a

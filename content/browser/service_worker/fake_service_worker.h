@@ -8,7 +8,10 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 
 namespace content {
@@ -27,11 +30,13 @@ class FakeServiceWorker : public blink::mojom::ServiceWorker {
 
   ~FakeServiceWorker() override;
 
-  blink::mojom::ServiceWorkerHostAssociatedPtr& host() { return host_; }
+  mojo::AssociatedRemote<blink::mojom::ServiceWorkerHost>& host() {
+    return host_;
+  }
 
   EmbeddedWorkerTestHelper* helper() { return helper_; }
 
-  void Bind(blink::mojom::ServiceWorkerRequest request);
+  void Bind(mojo::PendingReceiver<blink::mojom::ServiceWorker> receiver);
 
   // Returns after InitializeGlobalScope() is called.
   void RunUntilInitializeGlobalScope();
@@ -45,7 +50,8 @@ class FakeServiceWorker : public blink::mojom::ServiceWorker {
  protected:
   // blink::mojom::ServiceWorker overrides:
   void InitializeGlobalScope(
-      blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
+      mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerHost>
+          service_worker_host,
       blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info,
       FetchHandlerExistence fetch_handler_existence) override;
   void DispatchInstallEvent(DispatchInstallEventCallback callback) override;
@@ -129,13 +135,13 @@ class FakeServiceWorker : public blink::mojom::ServiceWorker {
   // |helper_| owns |this|.
   EmbeddedWorkerTestHelper* const helper_;
 
-  blink::mojom::ServiceWorkerHostAssociatedPtr host_;
+  mojo::AssociatedRemote<blink::mojom::ServiceWorkerHost> host_;
   blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info_;
   FetchHandlerExistence fetch_handler_existence_ =
       FetchHandlerExistence::UNKNOWN;
   base::OnceClosure quit_closure_for_initialize_global_scope_;
 
-  mojo::Binding<blink::mojom::ServiceWorker> binding_;
+  mojo::Receiver<blink::mojom::ServiceWorker> receiver_{this};
 
   bool is_zero_idle_timer_delay_ = false;
 };

@@ -459,15 +459,15 @@ TEST(DisplayItemListTest, AsValueWithNoOps) {
 
     // The real contents of the traced value is in here.
     {
-      const base::ListValue* list;
+      const base::ListValue* params_list;
 
       // The layer_rect field is present by empty.
-      ASSERT_TRUE(params_dict->GetList("layer_rect", &list));
-      EXPECT_TRACED_RECT(0, 0, 0, 0, list);
+      ASSERT_TRUE(params_dict->GetList("layer_rect", &params_list));
+      EXPECT_TRACED_RECT(0, 0, 0, 0, params_list);
 
       // The items list is there but empty.
-      ASSERT_TRUE(params_dict->GetList("items", &list));
-      EXPECT_EQ(0u, list->GetSize());
+      ASSERT_TRUE(params_dict->GetList("items", &params_list));
+      EXPECT_EQ(0u, params_list->GetSize());
     }
   }
 
@@ -481,14 +481,14 @@ TEST(DisplayItemListTest, AsValueWithNoOps) {
 
     // The real contents of the traced value is in here.
     {
-      const base::ListValue* list;
+      const base::ListValue* params_list;
 
       // The layer_rect field is present by empty.
-      ASSERT_TRUE(params_dict->GetList("layer_rect", &list));
-      EXPECT_TRACED_RECT(0, 0, 0, 0, list);
+      ASSERT_TRUE(params_dict->GetList("layer_rect", &params_list));
+      EXPECT_TRACED_RECT(0, 0, 0, 0, params_list);
 
       // The items list is not there since we asked for no ops.
-      ASSERT_FALSE(params_dict->GetList("items", &list));
+      ASSERT_FALSE(params_dict->GetList("items", &params_list));
     }
   }
 }
@@ -542,10 +542,10 @@ TEST(DisplayItemListTest, AsValueWithOps) {
 
     // The real contents of the traced value is in here.
     {
-      const base::ListValue* layer_rect;
+      const base::ListValue* layer_rect_list;
       // The layer_rect field is present and has the bounds of the rtree.
-      ASSERT_TRUE(params_dict->GetList("layer_rect", &layer_rect));
-      EXPECT_TRACED_RECT(2, 3, 8, 9, layer_rect);
+      ASSERT_TRUE(params_dict->GetList("layer_rect", &layer_rect_list));
+      EXPECT_TRACED_RECT(2, 3, 8, 9, layer_rect_list);
 
       // The items list has 3 things in it since we built 3 visual rects.
       const base::ListValue* items;
@@ -586,13 +586,13 @@ TEST(DisplayItemListTest, AsValueWithOps) {
 
     // The real contents of the traced value is in here.
     {
-      const base::ListValue* list;
+      const base::ListValue* params_list;
       // The layer_rect field is present and has the bounds of the rtree.
-      ASSERT_TRUE(params_dict->GetList("layer_rect", &list));
-      EXPECT_TRACED_RECT(2, 3, 8, 9, list);
+      ASSERT_TRUE(params_dict->GetList("layer_rect", &params_list));
+      EXPECT_TRACED_RECT(2, 3, 8, 9, params_list);
 
       // The items list is not present since we asked for no ops.
-      ASSERT_FALSE(params_dict->GetList("items", &list));
+      ASSERT_FALSE(params_dict->GetList("items", &params_list));
     }
   }
 }

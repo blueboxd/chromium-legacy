@@ -119,6 +119,11 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
                  std::vector<std::unique_ptr<autofill::PasswordForm>>* forms)
       WARN_UNUSED_RESULT;
 
+  // Gets a list of credentials with password_value=|plain_text_password|.
+  bool GetLoginsByPassword(const base::string16& plain_text_password,
+                           std::vector<std::unique_ptr<autofill::PasswordForm>>*
+                               forms) WARN_UNUSED_RESULT;
+
   // Gets all logins created from |begin| onwards (inclusive) and before |end|.
   // You may use a null Time value to do an unbounded search in either
   // direction. |key_to_form_map| must not be null and will be used to return

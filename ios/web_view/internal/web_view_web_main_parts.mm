@@ -12,7 +12,6 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "ios/web_view/cwv_web_view_buildflags.h"
 #include "ios/web_view/internal/app/application_context.h"
 #import "ios/web_view/internal/cwv_flags_internal.h"
@@ -53,8 +52,7 @@ void WebViewWebMainParts::PreCreateThreads() {
   std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
   std::string enable_features = base::JoinString(
       {autofill::features::kAutofillEnableAccountWalletStorage.name,
-       autofill::features::kAutofillUpstream.name,
-       switches::kSyncSupportSecondaryAccount.name},
+       autofill::features::kAutofillUpstream.name},
       ",");
   std::string disabled_features = base::JoinString(
       {// Allows form_structure.cc to run heuristics on single field forms.

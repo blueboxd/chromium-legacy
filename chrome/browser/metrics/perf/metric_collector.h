@@ -66,6 +66,10 @@ class MetricCollector {
   // |collection_params_|.
   void ScheduleSessionRestoreCollection(int num_tabs_restored);
 
+  // Called when a jank started/stopped.
+  void OnJankStarted();
+  void OnJankStopped();
+
   void set_profile_done_callback(ProfileDoneCallback cb) {
     profile_done_callback_ = std::move(cb);
   }
@@ -141,6 +145,9 @@ class MetricCollector {
   // Collector specific logic for collecting a profile.
   virtual void CollectProfile(
       std::unique_ptr<SampledProfile> sampled_profile) = 0;
+
+  // Collector specific logic for stopping the current collection.
+  virtual void StopCollection() {}
 
   // Parses the given serialized perf proto of the given type (data or stat).
   // If valid, it adds it to the given sampled_profile and stores it in the

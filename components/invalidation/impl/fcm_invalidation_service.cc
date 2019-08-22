@@ -52,21 +52,21 @@ void MigratePrefs(PrefService* prefs, const std::string& sender_id) {
 FCMInvalidationService::FCMInvalidationService(
     IdentityProvider* identity_provider,
     FCMNetworkHandlerCallback fcm_network_handler_callback,
+    PerUserTopicRegistrationManagerCallback
+        per_user_topic_registration_manager_callback,
     instance_id::InstanceIDDriver* instance_id_driver,
     PrefService* pref_service,
-    const syncer::ParseJSONCallback& parse_json,
-    network::mojom::URLLoaderFactory* loader_factory,
     const std::string& sender_id)
     : sender_id_(sender_id.empty() ? kInvalidationGCMSenderId : sender_id),
       invalidator_registrar_(pref_service,
                              sender_id_,
                              sender_id_ == kInvalidationGCMSenderId),
       fcm_network_handler_callback_(std::move(fcm_network_handler_callback)),
+      per_user_topic_registration_manager_callback_(
+          std::move(per_user_topic_registration_manager_callback)),
       instance_id_driver_(instance_id_driver),
       identity_provider_(identity_provider),
       pref_service_(pref_service),
-      parse_json_(parse_json),
-      loader_factory_(loader_factory),
       update_was_requested_(false) {}
 
 FCMInvalidationService::~FCMInvalidationService() {
@@ -272,10 +272,8 @@ void FCMInvalidationService::StartInvalidator() {
   // the startup cached messages might exists.
   invalidation_listener_ =
       std::make_unique<syncer::FCMInvalidationListener>(std::move(network));
-  auto registration_manager =
-      std::make_unique<syncer::PerUserTopicRegistrationManager>(
-          identity_provider_, pref_service_, loader_factory_, parse_json_,
-          sender_id_, sender_id_ == kInvalidationGCMSenderId);
+  auto registration_manager = per_user_topic_registration_manager_callback_.Run(
+      sender_id_, /*migrate_prefs=*/sender_id_ == kInvalidationGCMSenderId);
   invalidation_listener_->Start(this, std::move(registration_manager));
 
   PopulateClientID();

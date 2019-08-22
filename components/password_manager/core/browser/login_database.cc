@@ -979,7 +979,6 @@ PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form,
     }
     return list;
   }
-
   DCHECK(!add_statement_.empty());
   sql::Statement s(
       db_.GetCachedStatement(SQL_FROM_HERE, add_statement_.c_str()));
@@ -1394,6 +1393,35 @@ bool LoginDatabase::GetLogins(
   }
   for (auto& pair : key_to_form_map) {
     forms->push_back(std::move(pair.second));
+  }
+  return true;
+}
+
+bool LoginDatabase::GetLoginsByPassword(
+    const base::string16& plain_text_password,
+    std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) {
+  DCHECK(forms);
+  forms->clear();
+
+  // Get all autofillable (not blacklisted) logins.
+  DCHECK(!blacklisted_statement_.empty());
+  sql::Statement s(
+      db_.GetCachedStatement(SQL_FROM_HERE, blacklisted_statement_.c_str()));
+  s.BindInt(0, 0);  // blacklisted = false
+
+  // Apply query, check status and copy results if successful.
+  PrimaryKeyToFormMap key_to_form_map;
+  FormRetrievalResult result =
+      StatementToForms(&s, /*matched_form=*/nullptr, &key_to_form_map);
+
+  if (result != FormRetrievalResult::kSuccess) {
+    return false;
+  }
+  for (auto& pair : key_to_form_map) {
+    if (pair.second->password_value == plain_text_password) {
+      // Only add the form the result if the password value matches.
+      forms->push_back(std::move(pair.second));
+    }
   }
   return true;
 }

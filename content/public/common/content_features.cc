@@ -256,7 +256,7 @@ const base::Feature kMediaDevicesSystemMonitorCache {
 // Instead of BrowserPlugin or GuestViews, MimeHandlerView will use a cross
 // process frame to render its handler.
 const base::Feature kMimeHandlerViewInCrossProcessFrame{
-    "MimeHandlerViewInCrossProcessFrame", base::FEATURE_DISABLED_BY_DEFAULT};
+    "MimeHandlerViewInCrossProcessFrame", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables/disables the video capture service.
 const base::Feature kMojoVideoCapture{"MojoVideoCapture",

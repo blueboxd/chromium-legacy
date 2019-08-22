@@ -40,6 +40,8 @@ public class PasswordManagerDialogTest {
     private PasswordManagerDialogCoordinator mDialog;
     private static final String TITLE = "Title";
     private static final String DETAILS = "Explanation text.";
+    private static final String OK_BUTTON = "OK";
+    private static final String CANCEL_BUTTON = "Cancel";
 
     @Mock
     private Callback<Boolean> mOnClick;
@@ -56,7 +58,8 @@ public class PasswordManagerDialogTest {
         mActivityTestRule.startMainActivityOnBlankPage();
         mDialog = new PasswordManagerDialogCoordinator(mActivityTestRule.getActivity());
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mDialog.showDialog(TITLE, DETAILS, R.drawable.data_reduction_illustration, mOnClick);
+            mDialog.showDialog(TITLE, DETAILS, R.drawable.data_reduction_illustration, OK_BUTTON,
+                    CANCEL_BUTTON, mOnClick);
         });
     }
 
@@ -66,6 +69,8 @@ public class PasswordManagerDialogTest {
         onView(withId(R.id.password_manager_dialog_title)).check(matches(withText(TITLE)));
         onView(withId(R.id.password_manager_dialog_details)).check(matches(withText(DETAILS)));
         onView(withId(R.id.password_manager_dialog_illustration)).check(matches(isDisplayed()));
+        onView(withId(R.id.positive_button)).check(matches(withText(OK_BUTTON)));
+        onView(withId(R.id.negative_button)).check(matches(withText(CANCEL_BUTTON)));
     }
 
     @Test

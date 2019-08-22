@@ -392,6 +392,7 @@ const scoped_refptr<const SecurityOrigin>& Resource::GetOrigin() const {
   return LastResourceRequest().RequestorOrigin();
 }
 
+// TODO(tkent): This should return base::TimeDelta.
 static double CurrentAge(const ResourceResponse& response,
                          base::Time response_timestamp) {
   // RFC2616 13.2.3
@@ -401,14 +402,15 @@ static double CurrentAge(const ResourceResponse& response,
       date_value
           ? std::max(0., (response_timestamp - date_value.value()).InSecondsF())
           : 0;
-  double age_value = response.Age();
-  double corrected_received_age = std::isfinite(age_value)
-                                      ? std::max(apparent_age, age_value)
-                                      : apparent_age;
+  base::Optional<base::TimeDelta> age_value = response.Age();
+  double corrected_received_age =
+      age_value ? std::max(apparent_age, age_value.value().InSecondsF())
+                : apparent_age;
   double resident_time = (Now() - response_timestamp).InSecondsF();
   return corrected_received_age + resident_time;
 }
 
+// TODO(tkent): This should return base::TimeDelta.
 static double FreshnessLifetime(const ResourceResponse& response,
                                 base::Time response_timestamp) {
 #if !defined(OS_ANDROID)
@@ -423,9 +425,9 @@ static double FreshnessLifetime(const ResourceResponse& response,
     return std::numeric_limits<double>::max();
 
   // RFC2616 13.2.4
-  double max_age_value = response.CacheControlMaxAge();
-  if (std::isfinite(max_age_value))
-    return max_age_value;
+  base::Optional<base::TimeDelta> max_age_value = response.CacheControlMaxAge();
+  if (max_age_value)
+    return max_age_value.value().InSecondsF();
   base::Optional<base::Time> expires = response.Expires();
   base::Optional<base::Time> date = response.Date();
   base::Time creation_time = date ? date.value() : response_timestamp;
@@ -456,7 +458,7 @@ static bool CanUseResponse(const ResourceResponse& response,
 
   if (response.HttpStatusCode() == 302 || response.HttpStatusCode() == 307) {
     // Default to not cacheable unless explicitly allowed.
-    bool has_max_age = std::isfinite(response.CacheControlMaxAge());
+    bool has_max_age = response.CacheControlMaxAge() != base::nullopt;
     bool has_expires = response.Expires() != base::nullopt;
     // TODO: consider catching Cache-Control "private" and "public" here.
     if (!has_max_age && !has_expires)
@@ -465,7 +467,7 @@ static bool CanUseResponse(const ResourceResponse& response,
 
   double max_life = FreshnessLifetime(response, response_timestamp);
   if (allow_stale)
-    max_life += response.CacheControlStaleWhileRevalidate();
+    max_life += response.CacheControlStaleWhileRevalidate().InSecondsF();
 
   return CurrentAge(response, response_timestamp) <= max_life;
 }
@@ -1065,8 +1067,8 @@ bool Resource::MustRevalidateDueToCacheHeaders(bool allow_stale) const {
 static bool ShouldRevalidateStaleResponse(const ResourceRequest& request,
                                           const ResourceResponse& response,
                                           base::Time response_timestamp) {
-  double staleness = response.CacheControlStaleWhileRevalidate();
-  if (staleness == 0)
+  base::TimeDelta staleness = response.CacheControlStaleWhileRevalidate();
+  if (staleness.is_zero())
     return false;
 
   return CurrentAge(response, response_timestamp) >

@@ -97,6 +97,12 @@ bool CanStoreRenderFrameHost(RenderFrameHostImpl* rfh) {
   if (is_loading)
     return false;
 
+  // If the rfh has ever granted media access, prevent it from entering cache.
+  // TODO(crbug.com/989379): Consider only blocking when there's an active
+  //                         media stream.
+  if (rfh->was_granted_media_access())
+    return false;
+
   // Don't cache the page if it uses any disallowed features.
   // TODO(lowell): Handle races involving scheduler_tracked_features.
   // One solution could be to listen for changes to scheduler_tracked_features
@@ -125,14 +131,6 @@ bool BackForwardCache::CanStoreDocument(RenderFrameHostImpl* rfh) {
     return false;
 
   if (!IsBackForwardCacheEnabled() || is_disabled_for_testing_)
-    return false;
-
-  // If the rfh has ever granted media access, prevent it from entering cache.
-  // TODO(crbug.com/989379): Consider only blocking when there's an active
-  //                         media stream.
-  // TODO(crbug.com/989379): Consider also checking whether any subframes
-  //                         have requested an media stream.
-  if (rfh->was_granted_media_access())
     return false;
 
   // Two pages in the same BrowsingInstance can script each other. When a page

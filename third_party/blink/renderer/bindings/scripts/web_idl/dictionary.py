@@ -10,9 +10,10 @@ from .composition_parts import WithIdentifier
 from .composition_parts import WithOwner
 from .identifier_ir_map import IdentifierIRMap
 from .idl_type import IdlType
+from .literal_constant import LiteralConstant
+from .make_copy import make_copy
 from .reference import RefById
 from .user_defined_type import UserDefinedType
-from .values import DefaultValue
 
 
 class Dictionary(UserDefinedType, WithExtendedAttributes,
@@ -50,29 +51,16 @@ class Dictionary(UserDefinedType, WithExtendedAttributes,
             self.inherited = inherited
             self.own_members = own_members
 
-        def make_copy(self):
-            return Dictionary.IR(
-                identifier=self.identifier,
-                is_partial=self.is_partial,
-                inherited=self.inherited,
-                own_members=map(DictionaryMember.IR.make_copy,
-                                self.own_members),
-                extended_attributes=self.extended_attributes.make_copy(),
-                code_generator_info=self.code_generator_info.make_copy(),
-                components=self.components,
-                debug_info=self.debug_info.make_copy())
-
     def __init__(self, ir):
         assert isinstance(ir, Dictionary.IR)
         assert not ir.is_partial
 
+        ir = make_copy(ir)
         UserDefinedType.__init__(self, ir.identifier)
-        WithExtendedAttributes.__init__(self,
-                                        ir.extended_attributes.make_copy())
-        WithCodeGeneratorInfo.__init__(self,
-                                       ir.code_generator_info.make_copy())
+        WithExtendedAttributes.__init__(self, ir.extended_attributes)
+        WithCodeGeneratorInfo.__init__(self, ir.code_generator_info)
         WithComponent.__init__(self, components=ir.components)
-        WithDebugInfo.__init__(self, ir.debug_info.make_copy())
+        WithDebugInfo.__init__(self, ir.debug_info)
 
         self._inherited = ir.inherited
         self._own_members = tuple([
@@ -135,7 +123,7 @@ class DictionaryMember(WithIdentifier, WithExtendedAttributes,
                      debug_info=None):
             assert isinstance(idl_type, IdlType)
             assert default_value is None or isinstance(default_value,
-                                                       DefaultValue)
+                                                       LiteralConstant)
             assert not default_value or idl_type.is_optional
 
             WithIdentifier.__init__(self, identifier)
@@ -148,28 +136,17 @@ class DictionaryMember(WithIdentifier, WithExtendedAttributes,
             self.idl_type = idl_type
             self.default_value = default_value
 
-        def make_copy(self):
-            return DictionaryMember.IR(
-                identifier=self.identifier,
-                idl_type=self.idl_type,
-                default_value=self.default_value,
-                extended_attributes=self.extended_attributes.make_copy(),
-                code_generator_info=self.code_generator_info.make_copy(),
-                components=self.components,
-                debug_info=self.debug_info.make_copy())
-
     def __init__(self, ir, owner):
         assert isinstance(ir, DictionaryMember.IR)
         assert isinstance(owner, Dictionary)
 
+        ir = make_copy(ir)
         WithIdentifier.__init__(self, ir.identifier)
-        WithExtendedAttributes.__init__(self,
-                                        ir.extended_attributes.make_copy())
-        WithCodeGeneratorInfo.__init__(self,
-                                       ir.code_generator_info.make_copy())
+        WithExtendedAttributes.__init__(self, ir.extended_attributes)
+        WithCodeGeneratorInfo.__init__(self, ir.code_generator_info)
         WithOwner.__init__(self, owner)
         WithComponent.__init__(self, components=ir.components)
-        WithDebugInfo.__init__(self, ir.debug_info.make_copy())
+        WithDebugInfo.__init__(self, ir.debug_info)
 
         self._idl_type = ir.idl_type
         self._default_value = ir.default_value

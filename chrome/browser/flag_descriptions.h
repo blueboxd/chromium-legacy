@@ -196,9 +196,6 @@ extern const char kExperimentalAccessibilityAutoclickDescription[];
 extern const char kExperimentalAccessibilityLanguageDetectionName[];
 extern const char kExperimentalAccessibilityLanguageDetectionDescription[];
 
-extern const char kFCMInvalidationsName[];
-extern const char kFCMInvalidationsDescription[];
-
 extern const char kFontSrcLocalMatchingName[];
 extern const char kFontSrcLocalMatchingDescription[];
 
@@ -1105,9 +1102,6 @@ extern const char kSuggestionsWithSubStringMatchDescription[];
 extern const char kSyncSandboxName[];
 extern const char kSyncSandboxDescription[];
 
-extern const char kSyncSupportSecondaryAccountName[];
-extern const char kSyncSupportSecondaryAccountDescription[];
-
 extern const char kTabEngagementReportingName[];
 extern const char kTabEngagementReportingDescription[];
 
@@ -1960,9 +1954,6 @@ extern const char kEnableHeuristicStylusPalmRejectionDescription[];
 
 extern const char kEnableHomeLauncherName[];
 extern const char kEnableHomeLauncherDescription[];
-
-extern const char kEnableMyFilesVolumeName[];
-extern const char kEnableMyFilesVolumeDescription[];
 
 extern const char kEnableParentalControlsSettingsName[];
 extern const char kEnableParentalControlsSettingsDescription[];

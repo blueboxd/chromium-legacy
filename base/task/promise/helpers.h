@@ -27,6 +27,10 @@ scoped_refptr<TaskRunner> BASE_EXPORT GetCurrentSequence();
 template <typename T>
 using ToNonVoidT = std::conditional_t<std::is_void<T>::value, Void, T>;
 
+template <typename T>
+using UndoToNonVoidT =
+    std::conditional_t<std::is_same<Void, T>::value, void, T>;
+
 // Tag dispatch helper for PostTaskExecutor and ThenAndCatchExecutor.
 struct CouldResolveOrReject {};
 struct CanOnlyResolve {};
@@ -331,7 +335,7 @@ template <typename RejectStorage>
 struct EmplaceInnerHelper {
   template <typename Resolve, typename Reject>
   static void Emplace(AbstractPromise* promise,
-                      PromiseResult<Resolve, Reject> result) {
+                      PromiseResult<Resolve, Reject>&& result) {
     promise->emplace(std::move(result.value()));
   }
 };
@@ -400,12 +404,11 @@ class ArgMoveSemanticsHelper {
 
  private:
   static CbArg GetImpl(AbstractPromise* arg, std::true_type should_move) {
-    return std::move(
-        unique_any_cast<ArgStorageType>(&arg->TakeValue().value())->value);
+    return std::move(arg->TakeValue().value().Get<ArgStorageType>()->value);
   }
 
   static CbArg GetImpl(AbstractPromise* arg, std::false_type should_move) {
-    return unique_any_cast<ArgStorageType>(&arg->value())->value;
+    return arg->value().Get<ArgStorageType>()->value;
   }
 };
 
@@ -434,7 +437,7 @@ struct RunHelper<OnceCallback<CbResult(CbArg)>,
                  RejectStorage> {
   using Callback = OnceCallback<CbResult(CbArg)>;
 
-  static void Run(Callback executor,
+  static void Run(Callback&& executor,
                   AbstractPromise* arg,
                   AbstractPromise* result) {
     EmplaceHelper<ResolveStorage, RejectStorage>::Emplace(
@@ -454,7 +457,7 @@ struct RunHelper<OnceCallback<void(CbArg)>,
                  RejectStorage> {
   using Callback = OnceCallback<void(CbArg)>;
 
-  static void Run(Callback executor,
+  static void Run(Callback&& executor,
                   AbstractPromise* arg,
                   AbstractPromise* result) {
     static_assert(std::is_void<typename ResolveStorage::Type>::value, "");
@@ -475,7 +478,7 @@ struct RunHelper<OnceCallback<CbResult()>,
                  RejectStorage> {
   using Callback = OnceCallback<CbResult()>;
 
-  static void Run(Callback executor,
+  static void Run(Callback&& executor,
                   AbstractPromise* arg,
                   AbstractPromise* result) {
     EmplaceHelper<ResolveStorage, RejectStorage>::Emplace(
@@ -491,7 +494,7 @@ struct RunHelper<OnceCallback<void()>,
                  ArgStorageType,
                  ResolveStorage,
                  RejectStorage> {
-  static void Run(OnceCallback<void()> executor,
+  static void Run(OnceCallback<void()>&& executor,
                   AbstractPromise* arg,
                   AbstractPromise* result) {
     static_assert(std::is_void<typename ResolveStorage::Type>::value, "");
@@ -543,12 +546,11 @@ struct RunHelper<OnceCallback<CbResult(CbArgs...)>,
   using StorageType = Resolved<std::tuple<CbArgs...>>;
   using IndexSequence = std::index_sequence_for<CbArgs...>;
 
-  static void Run(Callback executor,
+  static void Run(Callback&& executor,
                   AbstractPromise* arg,
                   AbstractPromise* result) {
     AbstractPromise::ValueHandle value = arg->TakeValue();
-    std::tuple<CbArgs...>& tuple =
-        unique_any_cast<StorageType>(&value.value())->value;
+    std::tuple<CbArgs...>& tuple = value.value().Get<StorageType>()->value;
     RunInternal(std::move(executor), tuple, result,
                 std::integral_constant<bool, std::is_void<CbResult>::value>(),
                 IndexSequence{});
@@ -556,7 +558,7 @@ struct RunHelper<OnceCallback<CbResult(CbArgs...)>,
 
  private:
   template <typename Callback, size_t... Indices>
-  static void RunInternal(Callback executor,
+  static void RunInternal(Callback&& executor,
                           std::tuple<CbArgs...>& tuple,
                           AbstractPromise* result,
                           std::false_type void_result,
@@ -568,7 +570,7 @@ struct RunHelper<OnceCallback<CbResult(CbArgs...)>,
   }
 
   template <typename Callback, size_t... Indices>
-  static void RunInternal(Callback executor,
+  static void RunInternal(Callback&& executor,
                           std::tuple<CbArgs...>& tuple,
                           AbstractPromise* result,
                           std::true_type void_result,
@@ -618,7 +620,8 @@ class PromiseCallbackHelper {
   static Callback GetResolveCallback(scoped_refptr<AbstractPromise>& promise) {
     return base::BindOnce(
         [](scoped_refptr<AbstractPromise> promise, Args... args) {
-          promise->emplace(Resolved<T>{std::forward<Args>(args)...});
+          promise->emplace(in_place_type_t<Resolved<T>>(),
+                           std::forward<Args>(args)...);
           promise->OnResolved();
         },
         PromiseHolder(promise));
@@ -628,7 +631,8 @@ class PromiseCallbackHelper {
       scoped_refptr<AbstractPromise>& promise) {
     return base::BindRepeating(
         [](scoped_refptr<AbstractPromise> promise, Args... args) {
-          promise->emplace(Resolved<T>{std::forward<Args>(args)...});
+          promise->emplace(in_place_type_t<Resolved<T>>(),
+                           std::forward<Args>(args)...);
           promise->OnResolved();
         },
         PromiseHolder(promise));
@@ -637,7 +641,8 @@ class PromiseCallbackHelper {
   static Callback GetRejectCallback(scoped_refptr<AbstractPromise>& promise) {
     return base::BindOnce(
         [](scoped_refptr<AbstractPromise> promise, Args... args) {
-          promise->emplace(Rejected<T>{std::forward<Args>(args)...});
+          promise->emplace(in_place_type_t<Rejected<T>>(),
+                           std::forward<Args>(args)...);
           promise->OnRejected();
         },
         PromiseHolder(promise));
@@ -647,7 +652,8 @@ class PromiseCallbackHelper {
       scoped_refptr<AbstractPromise>& promise) {
     return base::BindRepeating(
         [](scoped_refptr<AbstractPromise> promise, Args... args) {
-          promise->emplace(Rejected<T>{std::forward<Args>(args)...});
+          promise->emplace(in_place_type_t<Rejected<T>>(),
+                           std::forward<Args>(args)...);
           promise->OnRejected();
         },
         PromiseHolder(promise));

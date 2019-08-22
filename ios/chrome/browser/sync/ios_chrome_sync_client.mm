@@ -50,7 +50,6 @@
 #include "ios/chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
-#include "ios/chrome/browser/invalidation/ios_chrome_deprecated_profile_invalidation_provider_factory.h"
 #include "ios/chrome/browser/invalidation/ios_chrome_profile_invalidation_provider_factory.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #include "ios/chrome/browser/pref_names.h"
@@ -189,15 +188,9 @@ BookmarkUndoService* IOSChromeSyncClient::GetBookmarkUndoService() {
 
 invalidation::InvalidationService*
 IOSChromeSyncClient::GetInvalidationService() {
-  invalidation::ProfileInvalidationProvider* provider;
-
-  if (base::FeatureList::IsEnabled(invalidation::switches::kFCMInvalidations)) {
-    provider = IOSChromeProfileInvalidationProviderFactory::GetForBrowserState(
-        browser_state_);
-  } else {
-    provider = IOSChromeDeprecatedProfileInvalidationProviderFactory::
-        GetForBrowserState(browser_state_);
-  }
+  invalidation::ProfileInvalidationProvider* provider =
+      IOSChromeProfileInvalidationProviderFactory::GetForBrowserState(
+          browser_state_);
   if (provider)
     return provider->GetInvalidationService();
   return nullptr;

@@ -287,7 +287,7 @@ bool ResourceResponse::HasCacheValidatorFields() const {
          !http_header_fields_.Get(kETagHeader).IsEmpty();
 }
 
-double ResourceResponse::CacheControlMaxAge() const {
+base::Optional<base::TimeDelta> ResourceResponse::CacheControlMaxAge() const {
   if (!cache_control_header_.parsed) {
     cache_control_header_ = ParseCacheControlDirectives(
         http_header_fields_.Get(kCacheControlHeader),
@@ -296,17 +296,18 @@ double ResourceResponse::CacheControlMaxAge() const {
   return cache_control_header_.max_age;
 }
 
-double ResourceResponse::CacheControlStaleWhileRevalidate() const {
+base::TimeDelta ResourceResponse::CacheControlStaleWhileRevalidate() const {
   if (!cache_control_header_.parsed) {
     cache_control_header_ = ParseCacheControlDirectives(
         http_header_fields_.Get(kCacheControlHeader),
         http_header_fields_.Get(kPragmaHeader));
   }
-  if (!std::isfinite(cache_control_header_.stale_while_revalidate) ||
-      cache_control_header_.stale_while_revalidate < 0) {
-    return 0;
+  if (!cache_control_header_.stale_while_revalidate ||
+      cache_control_header_.stale_while_revalidate.value() <
+          base::TimeDelta()) {
+    return base::TimeDelta();
   }
-  return cache_control_header_.stale_while_revalidate;
+  return cache_control_header_.stale_while_revalidate.value();
 }
 
 static base::Optional<base::Time> ParseDateValueInHeader(
@@ -334,14 +335,17 @@ base::Optional<base::Time> ResourceResponse::Date() const {
   return date_;
 }
 
-double ResourceResponse::Age() const {
+base::Optional<base::TimeDelta> ResourceResponse::Age() const {
   if (!have_parsed_age_header_) {
     static const char kHeaderName[] = "age";
     const AtomicString& header_value = http_header_fields_.Get(kHeaderName);
     bool ok;
-    age_ = header_value.ToDouble(&ok);
-    if (!ok)
-      age_ = std::numeric_limits<double>::quiet_NaN();
+    double seconds = header_value.ToDouble(&ok);
+    if (!ok) {
+      age_ = base::nullopt;
+    } else {
+      age_ = base::TimeDelta::FromSecondsD(seconds);
+    }
     have_parsed_age_header_ = true;
   }
   return age_;

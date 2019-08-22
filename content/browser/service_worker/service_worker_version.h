@@ -38,7 +38,8 @@
 #include "content/browser/service_worker/service_worker_update_checker.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_message.h"
-#include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -335,8 +336,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   blink::mojom::ServiceWorker* endpoint() {
     DCHECK(running_status() == EmbeddedWorkerStatus::STARTING ||
            running_status() == EmbeddedWorkerStatus::RUNNING);
-    DCHECK(service_worker_ptr_.is_bound());
-    return service_worker_ptr_.get();
+    DCHECK(service_worker_remote_.is_bound());
+    return service_worker_remote_.get();
   }
 
   // Returns the 'controller' interface ptr of this worker. It is expected that
@@ -856,7 +857,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   std::set<std::string> pending_external_requests_;
 
   // Connected to ServiceWorkerContextClient while the worker is running.
-  blink::mojom::ServiceWorkerPtr service_worker_ptr_;
+  mojo::Remote<blink::mojom::ServiceWorker> service_worker_remote_;
 
   // Connection to the controller service worker.
   // |controller_receiver_| is non-null only when the |remote_controller_| is
@@ -873,7 +874,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   base::TimeTicks skip_waiting_time_;
   base::TimeTicks no_controllees_time_;
 
-  mojo::AssociatedBinding<blink::mojom::ServiceWorkerHost> binding_;
+  mojo::AssociatedReceiver<blink::mojom::ServiceWorkerHost> receiver_{this};
 
   // Set to true if the worker has no inflight events and the idle timer has
   // been triggered. Set back to false if another event starts since the worker
@@ -975,7 +976,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // This holds a mojo interface pointer info to this instance until
   // InitializeGlobalScope() is called.
-  blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host_;
+  mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerHost>
+      service_worker_host_;
 
   // TODO(crbug.com/951571): Remove once the bug is debugged.
   // This is set when this service worker becomes redundant.

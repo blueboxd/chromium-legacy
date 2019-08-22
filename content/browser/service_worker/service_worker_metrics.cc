@@ -516,7 +516,7 @@ void ServiceWorkerMetrics::RecordProcessCreated(bool is_new_process) {
 
 void ServiceWorkerMetrics::RecordStartWorkerTiming(const StartTimes& times,
                                                    StartSituation situation) {
-  if (!ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled()) {
+  if (!ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
     // This is in-process timing, so process consistency doesn't matter.
     constexpr base::TimeDelta kMinTime = base::TimeDelta::FromMicroseconds(1);
     constexpr base::TimeDelta kMaxTime = base::TimeDelta::FromMilliseconds(100);

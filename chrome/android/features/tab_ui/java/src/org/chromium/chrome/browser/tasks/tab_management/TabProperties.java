@@ -53,11 +53,22 @@ public class TabProperties {
     public static final WritableObjectPropertyKey<SelectionDelegate> TAB_SELECTION_DELEGATE =
             new WritableObjectPropertyKey<>();
 
+    public static final PropertyModel.ReadableBooleanPropertyKey IS_INCOGNITO =
+            new PropertyModel.ReadableBooleanPropertyKey();
+
+    public static final PropertyModel.ReadableIntPropertyKey SELECTED_TAB_BACKGROUND_DRAWABLE_ID =
+            new PropertyModel.ReadableIntPropertyKey();
+
+    public static final PropertyModel.ReadableIntPropertyKey TABSTRIP_FAVICON_BACKGROUND_COLOR_ID =
+            new PropertyModel.ReadableIntPropertyKey();
+
     public static final PropertyKey[] ALL_KEYS_TAB_GRID = new PropertyKey[] {TAB_ID,
             TAB_SELECTED_LISTENER, TAB_CLOSED_LISTENER, FAVICON, THUMBNAIL_FETCHER, IPH_PROVIDER,
             TITLE, IS_SELECTED, CREATE_GROUP_LISTENER, ALPHA, CARD_ANIMATION_STATUS,
-            SELECTABLE_TAB_CLICKED_LISTENER, TAB_SELECTION_DELEGATE};
+            SELECTABLE_TAB_CLICKED_LISTENER, TAB_SELECTION_DELEGATE, IS_INCOGNITO,
+            SELECTED_TAB_BACKGROUND_DRAWABLE_ID, TABSTRIP_FAVICON_BACKGROUND_COLOR_ID};
 
-    public static final PropertyKey[] ALL_KEYS_TAB_STRIP = new PropertyKey[] {
-            TAB_ID, TAB_SELECTED_LISTENER, TAB_CLOSED_LISTENER, FAVICON, IS_SELECTED, TITLE};
+    public static final PropertyKey[] ALL_KEYS_TAB_STRIP =
+            new PropertyKey[] {TAB_ID, TAB_SELECTED_LISTENER, TAB_CLOSED_LISTENER, FAVICON,
+                    IS_SELECTED, TITLE, TABSTRIP_FAVICON_BACKGROUND_COLOR_ID};
 }

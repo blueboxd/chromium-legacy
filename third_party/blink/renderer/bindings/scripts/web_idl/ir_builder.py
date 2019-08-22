@@ -23,11 +23,10 @@ from .interface import Interface
 from .interface import Iterable
 from .interface import Maplike
 from .interface import Setlike
+from .literal_constant import LiteralConstant
 from .namespace import Namespace
 from .operation import Operation
 from .typedef import Typedef
-from .values import ConstantValue
-from .values import DefaultValue
 
 
 def load_and_register_idl_definitions(
@@ -324,7 +323,7 @@ class _IRBuilder(object):
 
     def _build_constant_value(self, node):
         assert node.GetClass() == 'Value'
-        return ConstantValue()
+        return self._build_literal_constant(node)
 
     def _build_debug_info(self, node):
         return DebugInfo(
@@ -335,7 +334,7 @@ class _IRBuilder(object):
 
     def _build_default_value(self, node):
         assert node.GetClass() == 'Default'
-        return DefaultValue()
+        return self._build_literal_constant(node)
 
     def _build_extended_attributes(self, node):
         def build_extended_attribute(node):
@@ -401,6 +400,65 @@ class _IRBuilder(object):
             key_type=types[0],
             value_type=types[1],
             debug_info=self._build_debug_info(node))
+
+    def _build_literal_constant(self, node):
+        assert len(node.GetChildren()) == 0
+
+        type_token = node.GetProperty('TYPE')
+        value_token = node.GetProperty('VALUE')
+
+        debug_info = self._build_debug_info(node)
+        factory = self._idl_type_factory
+
+        if type_token == 'NULL':
+            idl_type = factory.nullable_type(
+                inner_type=factory.simple_type(
+                    name='any', debug_info=debug_info),
+                debug_info=debug_info)
+            assert value_token == 'NULL'
+            value = None
+            literal = 'null'
+        elif type_token == 'boolean':
+            idl_type = factory.simple_type(
+                name='boolean', debug_info=debug_info)
+            assert isinstance(value_token, bool)
+            value = value_token
+            literal = 'true' if value else 'false'
+        elif type_token == 'integer':
+            idl_type = factory.simple_type(name='long', debug_info=debug_info)
+            assert isinstance(value_token, str)
+            value = long(value_token, base=0)
+            literal = value_token
+        elif type_token == 'float':
+            idl_type = factory.simple_type(
+                name='double', debug_info=debug_info)
+            assert isinstance(value_token, str)
+            value = float(value_token)
+            literal = value_token
+        elif type_token == 'DOMString':
+            idl_type = factory.simple_type(
+                name='DOMString', debug_info=debug_info)
+            assert isinstance(value_token, str)
+            value = value_token
+            literal = '"{}"'.format(value)
+        elif type_token == 'sequence':
+            idl_type = factory.sequence_type(
+                element_type=factory.simple_type(
+                    name='any', debug_info=debug_info),
+                debug_info=debug_info)
+            assert value_token == '[]'
+            value = []
+            literal = '[]'
+        elif type_token == 'dictionary':
+            idl_type = factory.simple_type(
+                name='object', debug_info=debug_info)
+            assert value_token == '{}'
+            value = object()
+            literal = '{}'
+        else:
+            assert False, 'Unknown literal type: {}'.format(type_token)
+
+        return LiteralConstant(idl_type=idl_type, value=value, literal=literal)
 
     def _build_maplike(self, node):
         assert node.GetClass() == 'Maplike'

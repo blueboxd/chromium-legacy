@@ -141,7 +141,6 @@ class SelectFileDialogExtensionBrowserTest
   };
 
   void SetUp() override {
-    feature_list_.InitAndEnableFeature(chromeos::features::kMyFilesVolume);
     // Create the dialog wrapper and listener objects.
     listener_.reset(new MockSelectFileDialogListener());
     dialog_ = new SelectFileDialogExtension(listener_.get(), NULL);
@@ -326,7 +325,6 @@ class SelectFileDialogExtensionBrowserTest
       ASSERT_FALSE(dialog_->IsRunning(owning_window));
   }
 
-  base::test::ScopedFeatureList feature_list_;
   base::ScopedTempDir tmp_dir_;
   base::FilePath downloads_dir_;
 

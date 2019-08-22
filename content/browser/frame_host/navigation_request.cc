@@ -277,7 +277,10 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
 
   // TODO(mkwst): Extract this logic out somewhere that can be shared between
   // Blink and //content.
-  if (IsFetchMetadataEnabled() && IsOriginSecure(url)) {
+  //
+  // TODO(964053, 989502): These headers ought to be restricted to secure
+  // transport.
+  if (IsFetchMetadataEnabled()) {
     // Navigations that aren't triggerable from the web (e.g. typing in the
     // address bar, or clicking a bookmark) are labeled as user-initiated.
     std::string user_value = has_user_gesture ? "?1" : std::string();

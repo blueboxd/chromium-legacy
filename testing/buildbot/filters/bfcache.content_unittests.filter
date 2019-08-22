@@ -22,32 +22,26 @@
 # WebContentsImpl::IsConnectedToSerialPort() returns true, because the previous
 # document uses the WebSerial and continue to do so after entering the
 # BackForwardCache.
+#
+# See https://crbug.com/992851
 -SerialTest.OpenAndNavigateCrossOrigin
 
-# Nullptr exception in TestNavigationURLLoader::CallOnresponseStarted().
-#
-# Updating the NavigationSimulator is needed to take into account the ones using
-# the BackForwardCache.
--BackForwardCacheMetricsTest.HistoryNavigationUKM
--BackForwardCacheMetricsTest.LongDurationsAreClamped
--BackForwardCacheMetricsTest.TimeRecordedAtStart
--NavigationControllerTest.Back
--NavigationControllerTest.ClearHistoryList
--NavigationControllerTest.CopyStateFrom
--NavigationControllerTest.CopyStateFromAndPrune2
--NavigationControllerTest.CopyStateFromAndPruneNotLast
--NavigationControllerTest.CopyStateFromAndPruneTargetPending
--NavigationControllerTest.Forward
--NavigationControllerTest.Forward_GeneratesNewPage
+# Test:
+# 1) Normal navigation to a non-webui URL.
+# 2) Add the webui capability to the RenderFrameHost.
+# 3) Navigate away.
+# 4) Navigate back. Hit a CHECK. RenderFrameHost with the webui capability can't
+#    have non-webUI URL.
 -NavigationControllerTest.LoadURL_PrivilegedPending
--NavigationControllerTest.LoadURL_WithBindings
--RenderFrameHostManagerTest.NavigateAfterMissingSwapOutACK
--RenderProcessHostUnitTest.DoNotReuseError
--WebContentsImplTest.CrossSiteNavigationBackOldNavigationIgnored
 
-# Expect a speculative RenderFrameHost to exist. This is probably going to be
-# fixed by:
-# https://chromium-review.googlesource.com/c/chromium/src/+/1735379
+# navigation_simulator_impl.cc(581)] Check failed: state_ <= READY_TO_COMMIT
+-RenderFrameHostManagerTest.NavigateAfterMissingSwapOutACK
+
+# NavigationSimulator.CommitErrorPage() is not supported.
+-RenderProcessHostUnitTest.DoNotReuseError
+
+# Expect a speculative RenderFrameHost to exist.
+-WebContentsImplTest.CrossSiteNavigationBackOldNavigationIgnored
 -WebContentsImplTest.CrossSiteNavigationBackPreempted
 
 # Test expect a proxy for the old RFH's SiteInstance after a normal navigation

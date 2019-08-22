@@ -9,6 +9,9 @@
 #include "base/feature_list.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/scoped_feature_list.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
@@ -129,8 +132,8 @@ class MockServiceWorkerContextClient final
 
   void WorkerContextStarted(WebServiceWorkerContextProxy* proxy,
                             scoped_refptr<base::SequencedTaskRunner>) override {
-    mojom::blink::ServiceWorkerHostAssociatedPtrInfo host_ptr_info;
-    auto host_request = mojo::MakeRequest(&host_ptr_info);
+    mojo::PendingAssociatedRemote<mojom::blink::ServiceWorkerHost> host_remote;
+    auto host_receiver = host_remote.InitWithNewEndpointAndPassReceiver();
 
     mojom::blink::ServiceWorkerRegistrationObjectHostAssociatedPtrInfo
         registration_object_host_ptr_info;
@@ -141,11 +144,11 @@ class MockServiceWorkerContextClient final
 
     // Simulates calling blink.mojom.ServiceWorker.InitializeGlobalScope() to
     // unblock the service worker script evaluation.
-    mojom::blink::ServiceWorkerPtr service_worker;
+    mojo::Remote<mojom::blink::ServiceWorker> service_worker;
     proxy->BindServiceWorker(
-        mojo::MakeRequest(&service_worker).PassMessagePipe());
+        service_worker.BindNewPipeAndPassReceiver().PassPipe());
     service_worker->InitializeGlobalScope(
-        std::move(host_ptr_info),
+        std::move(host_remote),
         mojom::blink::ServiceWorkerRegistrationObjectInfo::New(
             2 /* registration_id */, KURL("https://example.com"),
             mojom::blink::ServiceWorkerUpdateViaCache::kImports,
@@ -155,7 +158,7 @@ class MockServiceWorkerContextClient final
         mojom::blink::FetchHandlerExistence::EXISTS);
 
     // To make the other side callable.
-    mojo::AssociateWithDisconnectedPipe(host_request.PassHandle());
+    mojo::AssociateWithDisconnectedPipe(host_receiver.PassHandle());
     mojo::AssociateWithDisconnectedPipe(
         registration_object_host_request.PassHandle());
   }
@@ -197,9 +200,11 @@ class MockServiceWorkerInstalledScriptsManager
   MockServiceWorkerInstalledScriptsManager()
       : ServiceWorkerInstalledScriptsManager(
             Vector<KURL>() /* installed_urls */,
-            mojom::blink::ServiceWorkerInstalledScriptsManagerRequest(
+            mojo::PendingReceiver<
+                mojom::blink::ServiceWorkerInstalledScriptsManager>(
                 mojo::MessagePipe().handle1),
-            mojom::blink::ServiceWorkerInstalledScriptsManagerHostPtrInfo(
+            mojo::PendingRemote<
+                mojom::blink::ServiceWorkerInstalledScriptsManagerHost>(
                 mojo::MessagePipe().handle0,
                 mojom::blink::ServiceWorkerInstalledScriptsManagerHost::
                     Version_),

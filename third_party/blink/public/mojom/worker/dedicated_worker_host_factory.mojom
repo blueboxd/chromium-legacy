@@ -10,6 +10,7 @@ import "third_party/blink/public/mojom/blob/blob_url_store.mojom";
 import "third_party/blink/public/mojom/browser_interface_broker.mojom";
 import "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom";
 import "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom";
+import "third_party/blink/public/mojom/worker/dedicated_worker_host.mojom";
 import "third_party/blink/public/mojom/worker/worker_main_script_load_params.mojom";
 import "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom";
@@ -84,7 +85,8 @@ interface DedicatedWorkerHostFactory {
       // TODO(crbug.com/990845): remove when no longer used.
       service_manager.mojom.InterfaceProvider& worker_interface_provider,
       pending_receiver<blink.mojom.BrowserInterfaceBroker>
-        browser_interface_broker);
+        browser_interface_broker,
+      pending_receiver<DedicatedWorkerHost> host);
 
   // PlzDedicatedWorker:
   // The factory client should call this instead of CreateWorkerHost() when
@@ -105,5 +107,6 @@ interface DedicatedWorkerHostFactory {
       blink.mojom.FetchClientSettingsObject
           outside_fetch_client_settings_object,
       blink.mojom.BlobURLToken? blob_url_token,
-      pending_remote<DedicatedWorkerHostFactoryClient> client);
+      pending_remote<DedicatedWorkerHostFactoryClient> client,
+      pending_receiver<DedicatedWorkerHost> host);
 };

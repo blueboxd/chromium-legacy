@@ -48,7 +48,7 @@ bool ServiceWorkerUtils::IsMainResourceType(ResourceType type) {
   // When PlzDedicatedWorker is enabled, a dedicated worker script is considered
   // to be a main resource.
   if (type == ResourceType::kWorker)
-    return blink::features::IsPlzDedicatedWorkerEnabled();
+    return base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker);
   return IsResourceTypeFrame(type) || type == ResourceType::kSharedWorker;
 }
 

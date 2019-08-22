@@ -234,19 +234,16 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
     init_params.identity_manager =
         IdentityManagerFactory::GetForProfile(profile);
 
-    bool use_fcm_invalidations =
-        base::FeatureList::IsEnabled(invalidation::switches::kFCMInvalidations);
-    if (use_fcm_invalidations) {
-      auto* fcm_invalidation_provider =
-          invalidation::ProfileInvalidationProviderFactory::GetForProfile(
-              profile);
-      if (fcm_invalidation_provider) {
-        init_params.invalidations_identity_providers.push_back(
-            fcm_invalidation_provider->GetIdentityProvider());
-      }
+    auto* fcm_invalidation_provider =
+        invalidation::ProfileInvalidationProviderFactory::GetForProfile(
+            profile);
+    if (fcm_invalidation_provider) {
+      init_params.invalidations_identity_providers.push_back(
+          fcm_invalidation_provider->GetIdentityProvider());
     }
+
     // This code should stay here until all invalidation client are
-    // migrated from deprecated invalidation  infructructure.
+    // migrated from deprecated invalidation infrastructure.
     // Since invalidations will work only if ProfileSyncService calls
     // SetActiveAccountId for all identity providers.
     auto* deprecated_invalidation_provider = invalidation::

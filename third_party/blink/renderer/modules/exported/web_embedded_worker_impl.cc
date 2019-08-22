@@ -32,6 +32,7 @@
 
 #include <memory>
 #include <utility>
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink.h"
@@ -129,8 +130,8 @@ WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
       interface_provider_info_(std::move(interface_provider_info)),
       browser_interface_broker_(std::move(browser_interface_broker)) {
   if (installed_scripts_manager_params) {
-    DCHECK(installed_scripts_manager_params->manager_request.is_valid());
-    DCHECK(installed_scripts_manager_params->manager_host_ptr.is_valid());
+    DCHECK(installed_scripts_manager_params->manager_receiver.is_valid());
+    DCHECK(installed_scripts_manager_params->manager_host_remote.is_valid());
     Vector<KURL> installed_scripts_urls;
     installed_scripts_urls.AppendRange(
         installed_scripts_manager_params->installed_scripts_urls.begin(),
@@ -138,10 +139,12 @@ WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
     installed_scripts_manager_ = std::make_unique<
         ServiceWorkerInstalledScriptsManager>(
         installed_scripts_urls,
-        mojom::blink::ServiceWorkerInstalledScriptsManagerRequest(
-            std::move(installed_scripts_manager_params->manager_request)),
-        mojom::blink::ServiceWorkerInstalledScriptsManagerHostPtrInfo(
-            std::move(installed_scripts_manager_params->manager_host_ptr),
+        mojo::PendingReceiver<
+            mojom::blink::ServiceWorkerInstalledScriptsManager>(
+            std::move(installed_scripts_manager_params->manager_receiver)),
+        mojo::PendingRemote<
+            mojom::blink::ServiceWorkerInstalledScriptsManagerHost>(
+            std::move(installed_scripts_manager_params->manager_host_remote),
             mojom::blink::ServiceWorkerInstalledScriptsManagerHost::Version_),
         Platform::Current()->GetIOTaskRunner());
   }

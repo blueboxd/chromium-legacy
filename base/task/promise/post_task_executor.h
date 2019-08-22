@@ -29,9 +29,8 @@ class PostTaskExecutor {
 
   explicit PostTaskExecutor(DoNothing task) noexcept : task_(task.Once()) {}
 
-  PromiseExecutor::PrerequisitePolicy GetPrerequisitePolicy() const {
-    return PromiseExecutor::PrerequisitePolicy::kAll;
-  }
+  static constexpr PromiseExecutor::PrerequisitePolicy kPrerequisitePolicy =
+      PromiseExecutor::PrerequisitePolicy::kAll;
 
   bool IsCancelled() const { return task_.IsCancelled(); }
 
@@ -49,7 +48,7 @@ class PostTaskExecutor {
   bool CanReject() const { return CallbackTraits::could_reject; }
 #endif
 
-  NOINLINE void Execute(AbstractPromise* promise) {
+  void Execute(AbstractPromise* promise) {
     static_assert(sizeof(CallbackBase) == sizeof(OnceCallback<ReturnType()>),
                   "We assume it's possible to cast from CallbackBase to "
                   "OnceCallback<ReturnType()>");
@@ -57,33 +56,9 @@ class PostTaskExecutor {
         static_cast<OnceCallback<ReturnType()>*>(&task_);
     internal::RunHelper<OnceCallback<ReturnType()>, void, ResolveStorage,
                         RejectStorage>::Run(std::move(*task), nullptr, promise);
-
-    using CheckResultTagType =
-        typename internal::PromiseCallbackTraits<ReturnType>::TagType;
-
-    CheckResultType(promise, CheckResultTagType());
   }
 
  private:
-  static void CheckResultType(AbstractPromise* promise, CouldResolveOrReject) {
-    if (promise->IsResolvedWithPromise() ||
-        promise->value().type() == TypeId::From<ResolveStorage>()) {
-      promise->OnResolved();
-    } else {
-      DCHECK_EQ(promise->value().type(), TypeId::From<RejectStorage>())
-          << " See " << promise->from_here().ToString();
-      promise->OnRejected();
-    }
-  }
-
-  static void CheckResultType(AbstractPromise* promise, CanOnlyResolve) {
-    promise->OnResolved();
-  }
-
-  static void CheckResultType(AbstractPromise* promise, CanOnlyReject) {
-    promise->OnRejected();
-  }
-
   CallbackBase task_;
 
   DISALLOW_COPY_AND_ASSIGN(PostTaskExecutor);

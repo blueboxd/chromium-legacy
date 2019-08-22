@@ -98,14 +98,10 @@ images/color-profile-background-image-repeat.html
 images/color-profile-background-image-space.html
 images/color-profile-border-fade.html
 images/color-profile-border-image.html
-images/color-profile-border-radius.html
-images/color-profile-filter.html
 images/color-profile-group.html
 images/color-profile-image-canvas-pattern.html
 images/color-profile-image-canvas.html
 images/color-profile-image-filter-all.html
-images/color-profile-image-profile-match.html
-images/color-profile-image.html
 images/color-profile-mask-image-svg.html
 images/color-profile-object.html
 images/color-profile-reflection.html
@@ -114,8 +110,12 @@ images/color-profile-svg.html
 images/optimize-contrast-canvas.html
 images/optimize-contrast-image.html
 images/rgb-png-with-cmyk-color-profile.html
-images/webp-color-profile-lossy.html
 images/ycbcr-with-cmyk-color-profile.html
+images/yuv-decode-eligible/color-profile-border-radius.html
+images/yuv-decode-eligible/color-profile-filter.html
+images/yuv-decode-eligible/color-profile-image-profile-match.html
+images/yuv-decode-eligible/color-profile-image.html
+images/yuv-decode-eligible/webp-color-profile-lossy.html
 media/color-profile-video-poster-image.html
 media/controls/paint-controls-webkit-appearance-none-custom-bg.html
 media/controls/paint-controls-webkit-appearance-none.html
@@ -140,7 +140,7 @@ css3/filters/blur-filter-page-scroll-self.html
 css3/filters/effect-blur-hw.html
 css3/filters/effect-combined-hw.html
 css3/filters/effect-drop-shadow-hw.html
-images/color-profile-layer-filter.html
+images/yuv-decode-eligible/color-profile-layer-filter.html
 transforms/3d/point-mapping/3d-point-mapping-deep.html
 
 # No Video Rendering - crbug.com/935570

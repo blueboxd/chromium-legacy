@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS XRInputSource attributes meet [SameObject] requirement
-Harness: the test ran to completion.
-

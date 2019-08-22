@@ -1752,6 +1752,7 @@ CrSettingsSubpageTest.prototype = {
   browsePreload: 'chrome://settings/settings_page/settings_subpage.html',
 
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../test_util.js',
     'settings_subpage_test.js',
   ]),
 };

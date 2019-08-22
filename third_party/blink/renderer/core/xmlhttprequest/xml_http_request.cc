@@ -656,8 +656,7 @@ void XMLHttpRequest::open(const AtomicString& method,
 
   DCHECK(ValidateOpenArguments(method, url, exception_state));
 
-  if (!InternalAbort())
-    return;
+  InternalAbort();
 
   State previous_state = state_;
   state_ = kUnsent;
@@ -1194,8 +1193,7 @@ void XMLHttpRequest::abort() {
   int64_t expected_length = response_.ExpectedContentLength();
   int64_t received_length = received_length_;
 
-  if (!InternalAbort())
-    return;
+  InternalAbort();
 
   // The script never gets any chance to call abort() on a sync XHR between
   // send() call and transition to the DONE state. It's because a sync XHR
@@ -1240,7 +1238,7 @@ void XMLHttpRequest::ClearVariablesForLoading() {
   }
 }
 
-bool XMLHttpRequest::InternalAbort() {
+void XMLHttpRequest::InternalAbort() {
   // If there is an existing pending abort event, cancel it. The caller of this
   // function is responsible for firing any events on XMLHttpRequest, if
   // needed.
@@ -1250,7 +1248,7 @@ bool XMLHttpRequest::InternalAbort() {
   // will happen if an XHR object is notified of context
   // destruction followed by finalization.
   if (error_ && !loader_)
-    return true;
+    return;
 
   error_ = true;
 
@@ -1263,26 +1261,12 @@ bool XMLHttpRequest::InternalAbort() {
   ClearRequest();
 
   if (!loader_)
-    return true;
+    return;
 
-  // Cancelling the ThreadableLoader loader_ may result in calling
-  // window.onload synchronously. If such an onload handler contains open()
-  // call on the same XMLHttpRequest object, reentry happens.
-  //
-  // If, window.onload contains open() and send(), m_loader will be set to
-  // non 0 value. So, we cannot continue the outer open(). In such case,
-  // just abort the outer open() by returning false.
   ThreadableLoader* loader = loader_.Release();
   loader->Cancel();
 
-  // If abort() called internalAbort() and a nested open() ended up
-  // clearing the error flag, but didn't send(), make sure the error
-  // flag is still set.
-  bool new_load_started = loader_;
-  if (!new_load_started)
-    error_ = true;
-
-  return !new_load_started;
+  DCHECK(!loader_);
 }
 
 void XMLHttpRequest::ClearResponse() {
@@ -1346,8 +1330,7 @@ void XMLHttpRequest::HandleNetworkError() {
   int64_t expected_length = response_.ExpectedContentLength();
   int64_t received_length = received_length_;
 
-  if (!InternalAbort())
-    return;
+  InternalAbort();
 
   HandleRequestError(DOMExceptionCode::kNetworkError, event_type_names::kError,
                      received_length, expected_length);
@@ -1360,8 +1343,7 @@ void XMLHttpRequest::HandleDidCancel() {
   int64_t expected_length = response_.ExpectedContentLength();
   int64_t received_length = received_length_;
 
-  if (!InternalAbort())
-    return;
+  InternalAbort();
 
   pending_abort_event_ = PostCancellableTask(
       *GetExecutionContext()->GetTaskRunner(TaskType::kNetworking), FROM_HERE,
@@ -2019,8 +2001,7 @@ void XMLHttpRequest::HandleDidTimeout() {
   int64_t expected_length = response_.ExpectedContentLength();
   int64_t received_length = received_length_;
 
-  if (!InternalAbort())
-    return;
+  InternalAbort();
 
   HandleRequestError(DOMExceptionCode::kTimeoutError,
                      event_type_names::kTimeout, received_length,

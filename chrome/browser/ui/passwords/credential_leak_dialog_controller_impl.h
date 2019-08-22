@@ -31,11 +31,11 @@ class CredentialLeakDialogControllerImpl
   void OnCheckPasswords() override;
   void OnCloseDialog() override;
   base::string16 GetAcceptButtonLabel() const override;
-  base::string16 GetCloseButtonLabel() const override;
+  base::string16 GetCancelButtonLabel() const override;
   base::string16 GetDescription() const override;
   base::string16 GetTitle() const override;
   bool ShouldCheckPasswords() const override;
-  bool ShouldShowCloseButton() const override;
+  bool ShouldShowCancelButton() const override;
 
  private:
   // Release |credential_leak_dialog_| and close the open dialog.

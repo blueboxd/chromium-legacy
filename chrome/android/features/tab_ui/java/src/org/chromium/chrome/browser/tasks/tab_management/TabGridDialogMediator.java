@@ -5,17 +5,21 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.support.annotation.Nullable;
+import android.support.v7.content.res.AppCompatResources;
 import android.view.View;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
@@ -69,6 +73,7 @@ public class TabGridDialogMediator {
     private final Context mContext;
     private final PropertyModel mModel;
     private final TabModelSelector mTabModelSelector;
+    private final TabModelSelectorObserver mTabModelSelectorObserver;
     private final TabModelObserver mTabModelObserver;
     private final TabCreatorManager mTabCreatorManager;
     private final ResetHandler mDialogResetHandler;
@@ -131,6 +136,40 @@ public class TabGridDialogMediator {
         };
         mTabModelSelector.getTabModelFilterProvider().addTabModelFilterObserver(mTabModelObserver);
 
+        mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
+            @Override
+            public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
+                boolean isIncognito = newModel.isIncognito();
+                int dialogBackgroundResource = isIncognito
+                        ? R.drawable.tab_grid_dialog_background_incognito
+                        : R.drawable.tab_grid_dialog_background;
+                ColorStateList tintList = isIncognito
+                        ? AppCompatResources.getColorStateList(mContext, R.color.tint_on_dark_bg)
+                        : AppCompatResources.getColorStateList(
+                                mContext, R.color.standard_mode_tint);
+                int ungroupBarBackgroundColorId = isIncognito
+                        ? R.color.tab_grid_dialog_background_color_incognito
+                        : R.color.tab_grid_dialog_background_color;
+                int ungroupBarHoveredBackgroundColorId = isIncognito
+                        ? R.color.tab_grid_card_selected_color_incognito
+                        : R.color.tab_grid_card_selected_color;
+                int ungroupBarTextAppearance = isIncognito
+                        ? R.style.TextAppearance_BlueTitle2Incognito
+                        : R.style.TextAppearance_BlueTitle2;
+
+                mModel.set(TabGridSheetProperties.DIALOG_BACKGROUND_RESOUCE_ID,
+                        dialogBackgroundResource);
+                mModel.set(TabGridSheetProperties.TINT, tintList);
+                mModel.set(TabGridSheetProperties.DIALOG_UNGROUP_BAR_BACKGROUND_COLOR_ID,
+                        ungroupBarBackgroundColorId);
+                mModel.set(TabGridSheetProperties.DIALOG_UNGROUP_BAR_HOVERED_BACKGROUND_COLOR_ID,
+                        ungroupBarHoveredBackgroundColorId);
+                mModel.set(TabGridSheetProperties.DIALOG_UNGROUP_BAR_TEXT_APPEARANCE,
+                        ungroupBarTextAppearance);
+            }
+        };
+        mTabModelSelector.addObserver(mTabModelSelectorObserver);
+
         // Setup toolbar property model.
         setupToolbarClickHandlers();
 
@@ -183,6 +222,7 @@ public class TabGridDialogMediator {
             mTabModelSelector.getTabModelFilterProvider().removeTabModelFilterObserver(
                     mTabModelObserver);
         }
+        mTabModelSelector.removeObserver(mTabModelSelectorObserver);
     }
 
     boolean isVisible() {

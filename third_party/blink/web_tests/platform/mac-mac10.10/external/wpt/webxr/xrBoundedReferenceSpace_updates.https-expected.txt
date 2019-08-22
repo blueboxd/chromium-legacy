@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS 'XRBoundedReferenceSpace updates properly when the changes are applied
-Harness: the test ran to completion.
-

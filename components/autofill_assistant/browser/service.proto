@@ -1460,8 +1460,7 @@ message FormInputProto {
 message CounterInputProto {
   // A single counter.
   message Counter {
-    // The label shown with the counter, that handles plurals using the format
-    // defined by java.text.ChoiceFormat. All occurrences of the '{value}'
+    // The label shown with the counter. All occurrences of the '{value}'
     // substring will be replaced by the current counter value.
     optional string label = 1;
 

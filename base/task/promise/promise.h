@@ -51,7 +51,7 @@ class Promise {
       scoped_refptr<internal::AbstractPromise> abstract_promise) noexcept
       : abstract_promise_(std::move(abstract_promise)) {}
 
-  NOINLINE ~Promise() = default;
+  ~Promise() = default;
 
   operator bool() const { return !!abstract_promise_; }
 
@@ -76,8 +76,7 @@ class Promise {
     DCHECK(abstract_promise_->IsResolved())
         << "Can't take resolved value, promise wasn't resolved.";
     return std::move(
-        unique_any_cast<Resolved<T>>(&abstract_promise_->TakeValue().value())
-            ->value);
+        abstract_promise_->TakeValue().value().Get<Resolved<T>>()->value);
   }
 
   // Waits until the promise has settled and if rejected it returns the rejected
@@ -97,8 +96,7 @@ class Promise {
     DCHECK(abstract_promise_->IsRejected())
         << "Can't take rejected value, promise wasn't rejected.";
     return std::move(
-        unique_any_cast<Rejected<T>>(&abstract_promise_->TakeValue().value())
-            ->value);
+        abstract_promise_->TakeValue().value().Get<Rejected<T>>()->value);
   }
 
   bool IsResolvedForTesting() const {
@@ -125,10 +123,9 @@ class Promise {
   // |task_runner| is const-ref to avoid bloat due the destructor (which posts a
   // task).
   template <typename RejectCb>
-  NOINLINE auto CatchOn(const scoped_refptr<TaskRunner>& task_runner,
-                        const Location& from_here,
-                        RejectCb on_reject) noexcept {
-    DCHECK(abstract_promise_);
+  auto CatchOn(const scoped_refptr<TaskRunner>& task_runner,
+               const Location& from_here,
+               RejectCb on_reject) noexcept {
     DCHECK(!on_reject.is_null());
 
     // Extract properties from the |on_reject| callback.
@@ -160,18 +157,18 @@ class Promise {
             std::is_const<std::remove_reference_t<RejectCallbackArgT>>::value,
         "Google C++ Style: References in function parameters must be const.");
 
-    internal::PromiseExecutor::Data executor_data(
-        in_place_type_t<internal::ThenAndCatchExecutor<
-            OnceClosure,  // Never called.
-            OnceCallback<typename RejectCallbackTraits::SignatureType>,
-            internal::NoCallback, RejectType, Resolved<ReturnedPromiseResolveT>,
-            Rejected<ReturnedPromiseRejectT>>>(),
-        OnceClosure(), internal::ToCallbackBase(std::move(on_reject)));
-
     return Promise<ReturnedPromiseResolveT, ReturnedPromiseRejectT>(
         ConstructAbstractPromiseWithSinglePrerequisite(
             task_runner, from_here, abstract_promise_.get(),
-            std::move(executor_data)));
+            internal::PromiseExecutor::Data(
+                in_place_type_t<internal::ThenAndCatchExecutor<
+                    OnceClosure,  // Never called.
+                    OnceCallback<typename RejectCallbackTraits::SignatureType>,
+                    internal::NoCallback, RejectType,
+                    Resolved<ReturnedPromiseResolveT>,
+                    Rejected<ReturnedPromiseRejectT>>>(),
+                OnceClosure(),
+                internal::ToCallbackBase(std::move(on_reject)))));
   }
 
   template <typename RejectCb>
@@ -202,10 +199,9 @@ class Promise {
   // |task_runner| is const-ref to avoid bloat due the destructor (which posts a
   // task).
   template <typename ResolveCb>
-  NOINLINE auto ThenOn(const scoped_refptr<TaskRunner>& task_runner,
-                       const Location& from_here,
-                       ResolveCb on_resolve) noexcept {
-    DCHECK(abstract_promise_);
+  auto ThenOn(const scoped_refptr<TaskRunner>& task_runner,
+              const Location& from_here,
+              ResolveCb on_resolve) noexcept {
     DCHECK(!on_resolve.is_null());
 
     // Extract properties from the |on_resolve| callback.
@@ -236,18 +232,17 @@ class Promise {
             std::is_const<std::remove_reference_t<ResolveCallbackArgT>>::value,
         "Google C++ Style: References in function parameters must be const.");
 
-    internal::PromiseExecutor::Data executor_data(
-        in_place_type_t<internal::ThenAndCatchExecutor<
-            OnceCallback<typename ResolveCallbackTraits::SignatureType>,
-            OnceClosure, ResolveType, internal::NoCallback,
-            Resolved<ReturnedPromiseResolveT>,
-            Rejected<ReturnedPromiseRejectT>>>(),
-        internal::ToCallbackBase(std::move(on_resolve)), OnceClosure());
-
     return Promise<ReturnedPromiseResolveT, ReturnedPromiseRejectT>(
         ConstructAbstractPromiseWithSinglePrerequisite(
             task_runner, from_here, abstract_promise_.get(),
-            std::move(executor_data)));
+            internal::PromiseExecutor::Data(
+                in_place_type_t<internal::ThenAndCatchExecutor<
+                    OnceCallback<typename ResolveCallbackTraits::SignatureType>,
+                    OnceClosure, ResolveType, internal::NoCallback,
+                    Resolved<ReturnedPromiseResolveT>,
+                    Rejected<ReturnedPromiseRejectT>>>(),
+                internal::ToCallbackBase(std::move(on_resolve)),
+                OnceClosure())));
   }
 
   template <typename ResolveCb>
@@ -285,11 +280,10 @@ class Promise {
   // |task_runner| is const-ref to avoid bloat due the destructor (which posts a
   // task).
   template <typename ResolveCb, typename RejectCb>
-  NOINLINE auto ThenOn(const scoped_refptr<TaskRunner>& task_runner,
-                       const Location& from_here,
-                       ResolveCb on_resolve,
-                       RejectCb on_reject) noexcept {
-    DCHECK(abstract_promise_);
+  auto ThenOn(const scoped_refptr<TaskRunner>& task_runner,
+              const Location& from_here,
+              ResolveCb on_resolve,
+              RejectCb on_reject) noexcept {
     DCHECK(!on_resolve.is_null());
     DCHECK(!on_reject.is_null());
 
@@ -335,26 +329,24 @@ class Promise {
             std::is_const<std::remove_reference_t<RejectCallbackArgT>>::value,
         "Google C++ Style: References in function parameters must be const.");
 
-    internal::PromiseExecutor::Data executor_data(
-        in_place_type_t<internal::ThenAndCatchExecutor<
-            OnceCallback<typename ResolveCallbackTraits::SignatureType>,
-            OnceCallback<typename RejectCallbackTraits::SignatureType>,
-            ResolveType, RejectType, Resolved<ReturnedPromiseResolveT>,
-            Rejected<ReturnedPromiseRejectT>>>(),
-        internal::ToCallbackBase(std::move(on_resolve)),
-        internal::ToCallbackBase(std::move(on_reject)));
-
     return Promise<ReturnedPromiseResolveT, ReturnedPromiseRejectT>(
         ConstructAbstractPromiseWithSinglePrerequisite(
             task_runner, from_here, abstract_promise_.get(),
-            std::move(executor_data)));
+            internal::PromiseExecutor::Data(
+                in_place_type_t<internal::ThenAndCatchExecutor<
+                    OnceCallback<typename ResolveCallbackTraits::SignatureType>,
+                    OnceCallback<typename RejectCallbackTraits::SignatureType>,
+                    ResolveType, RejectType, Resolved<ReturnedPromiseResolveT>,
+                    Rejected<ReturnedPromiseRejectT>>>(),
+                internal::ToCallbackBase(std::move(on_resolve)),
+                internal::ToCallbackBase(std::move(on_reject)))));
   }
 
   template <typename ResolveCb, typename RejectCb>
   auto ThenOn(const TaskTraits& traits,
               const Location& from_here,
-              ResolveCb&& on_resolve,
-              RejectCb&& on_reject) noexcept {
+              ResolveCb on_resolve,
+              RejectCb on_reject) noexcept {
     return ThenOn(CreateTaskRunner(traits), from_here,
                   std::forward<ResolveCb>(on_resolve),
                   std::forward<RejectCb>(on_reject));
@@ -362,8 +354,8 @@ class Promise {
 
   template <typename ResolveCb, typename RejectCb>
   auto ThenHere(const Location& from_here,
-                ResolveCb&& on_resolve,
-                RejectCb&& on_reject) noexcept {
+                ResolveCb on_resolve,
+                RejectCb on_reject) noexcept {
     return ThenOn(internal::GetCurrentSequence(), from_here,
                   std::forward<ResolveCb>(on_resolve),
                   std::forward<RejectCb>(on_reject));
@@ -379,11 +371,9 @@ class Promise {
   // |task_runner| is const-ref to avoid bloat due the destructor (which posts a
   // task).
   template <typename FinallyCb>
-  NOINLINE auto FinallyOn(const scoped_refptr<TaskRunner>& task_runner,
-                          const Location& from_here,
-                          FinallyCb finally_callback) noexcept {
-    DCHECK(abstract_promise_);
-
+  auto FinallyOn(const scoped_refptr<TaskRunner>& task_runner,
+                 const Location& from_here,
+                 FinallyCb finally_callback) noexcept {
     // Extract properties from |finally_callback| callback.
     using CallbackTraits = internal::CallbackTraits<FinallyCb>;
     using ReturnedPromiseResolveT = typename CallbackTraits::ResolveType;
@@ -393,30 +383,28 @@ class Promise {
     static_assert(std::is_void<CallbackArgT>::value,
                   "|finally_callback| callback must have no arguments");
 
-    internal::PromiseExecutor::Data executor_data(
-        in_place_type_t<internal::FinallyExecutor<
-            OnceCallback<typename CallbackTraits::ReturnType()>,
-            Resolved<ReturnedPromiseResolveT>,
-            Rejected<ReturnedPromiseRejectT>>>(),
-        internal::ToCallbackBase(std::move(finally_callback)));
-
     return Promise<ReturnedPromiseResolveT, ReturnedPromiseRejectT>(
         ConstructAbstractPromiseWithSinglePrerequisite(
             task_runner, from_here, abstract_promise_.get(),
-            std::move(executor_data)));
+            internal::PromiseExecutor::Data(
+                in_place_type_t<internal::FinallyExecutor<
+                    OnceCallback<typename CallbackTraits::ReturnType()>,
+                    Resolved<ReturnedPromiseResolveT>,
+                    Rejected<ReturnedPromiseRejectT>>>(),
+                internal::ToCallbackBase(std::move(finally_callback)))));
   }
 
   template <typename FinallyCb>
   auto FinallyOn(const TaskTraits& traits,
                  const Location& from_here,
-                 FinallyCb&& finally_callback) noexcept {
+                 FinallyCb finally_callback) noexcept {
     return FinallyOn(CreateTaskRunner(traits), from_here,
                      std::move(finally_callback));
   }
 
   template <typename FinallyCb>
   auto FinallyHere(const Location& from_here,
-                   FinallyCb&& finally_callback) noexcept {
+                   FinallyCb finally_callback) noexcept {
     return FinallyOn(internal::GetCurrentSequence(), from_here,
                      std::move(finally_callback));
   }

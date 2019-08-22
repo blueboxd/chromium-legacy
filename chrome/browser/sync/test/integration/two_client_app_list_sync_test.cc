@@ -102,6 +102,18 @@ class TwoClientAppListSyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(TwoClientAppListSyncTest);
 };
 
+class RemoveDefaultAppSyncTest : public testing::WithParamInterface<bool>,
+                                 public TwoClientAppListSyncTest {
+ public:
+  RemoveDefaultAppSyncTest() = default;
+  ~RemoveDefaultAppSyncTest() override = default;
+
+  bool MarkAppAsDefaultApp() { return GetParam(); }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RemoveDefaultAppSyncTest);
+};
+
 IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, StartWithNoApps) {
   ASSERT_TRUE(SetupSync());
 
@@ -366,7 +378,32 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, Move) {
 // Install a Default App on both clients, then sync. Remove the app on one
 // client and sync. Ensure that the app is removed on the other client and
 // that a TYPE_REMOVE_DEFAULT_APP entry exists.
-IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, RemoveDefault) {
+//
+// This test largely checks mechanism (the How), not policy (the What or Why).
+// "How" is user-invisible implementation detail, such as whether or not a
+// SyncItem exists and what its code is (e.g. TYPE_REMOVE_DEFAULT_APP). "What"
+// is user-visible effects, such as whether or not an app is (still) installed.
+//
+// To be clear, "policy" in this comment means something different than the
+// "policy" in "enterprise administrative policy can install apps". Similarly,
+// "default apps" means hardware-specific apps from OEMs, such as an "HP
+// [Hewlett Packard]" app installed by default on a HP laptop. "Default apps"
+// doesn't refer to built-in apps like the Camera or Files apps.
+//
+// This test is run twice, with MarkAppAsDefaultApp() returning either false or
+// true. Either way, the What (what's user visible, i.e. whether or not apps
+// are installed or uninstalled after synchronizing) is unaffected by whether
+// or not we mark an app as default-installed in Profile1 before we sync the
+// two profiles. It's unclear whether this non-difference is deliberate.
+//
+// This isn't ideal, but probably still better than nothing. Obviously, it
+// would be better to confirm some user-visible effect happens for
+// default-installed apps and does not happen otherwise, but it's not certain
+// what such an effect would be, or at least how to easily test it. There is
+// some discussion at https://crrev.com/c/1732092 and
+// https://crrev.com/c/1720229/1/chrome/browser/sync/test/integration/two_client_app_list_sync_test.cc#402
+// although the desired What is possibly lost to the mists of time.
+IN_PROC_BROWSER_TEST_P(RemoveDefaultAppSyncTest, Remove) {
   ASSERT_TRUE(SetupClients());
   ASSERT_TRUE(SetupSync());
 
@@ -393,8 +430,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, RemoveDefault) {
   // Mark that app as a default app, in Profile 1 only.
   using ALSS = app_list::AppListSyncableService;
   EXPECT_FALSE(ALSS::AppIsDefaultForTest(GetProfile(1), default_app_id));
-  ALSS::SetAppIsDefaultForTest(GetProfile(1), default_app_id);
-  EXPECT_TRUE(ALSS::AppIsDefaultForTest(GetProfile(1), default_app_id));
+  if (MarkAppAsDefaultApp()) {
+    ALSS::SetAppIsDefaultForTest(GetProfile(1), default_app_id);
+    EXPECT_TRUE(ALSS::AppIsDefaultForTest(GetProfile(1), default_app_id));
+  }
 
   // Remove that app in Profile 0. After sync'ing, it should also be removed
   // from Profile 1: we should go back to having N apps in both Profiles.
@@ -403,13 +442,19 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, RemoveDefault) {
   ASSERT_TRUE(AllProfilesHaveSameAppList(&number_of_apps));
   EXPECT_EQ(number_of_apps, initial_number_of_apps);
 
-  // Ensure that a TYPE_REMOVE_DEFAULT_APP SyncItem exists in both Profiles.
+  // Ensure that a TYPE_REMOVE_DEFAULT_APP SyncItem exists in both Profiles, if
+  // it was marked as a default app in Profile 1. This tests the How, not the
+  // What, but it's better than nothing.
   for (int i = 0; i < 2; i++) {
     const ALSS::SyncItem* sync_item =
         GetSyncItem(GetProfile(i), default_app_id);
-    ASSERT_TRUE(sync_item);
-    EXPECT_EQ(sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP,
-              sync_item->item_type);
+    if (MarkAppAsDefaultApp()) {
+      ASSERT_TRUE(sync_item);
+      EXPECT_EQ(sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP,
+                sync_item->item_type);
+    } else {
+      ASSERT_FALSE(sync_item);
+    }
   }
 
   // Re-Install the same app in Profile 0.
@@ -417,9 +462,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, RemoveDefault) {
   EXPECT_EQ(default_app_id, app_id2);
   WaitForAppService(GetProfile(0));
 
-  // Ensure that the TYPE_REMOVE_DEFAULT_APP SyncItem was replaced with an
-  // TYPE_APP entry, for at least Profile 0. Whether or not Profile 1 has
-  // synchronized this change might depend on what side effects (such as
+  // Ensure that the TYPE_REMOVE_DEFAULT_APP SyncItem (if present) was replaced
+  // with an TYPE_APP entry, for at least Profile 0. Whether or not Profile 1
+  // has synchronized this change might depend on what side effects (such as
   // pumping the event loop) calling WaitForAppService has.
   {
     const ALSS::SyncItem* sync_item = GetSyncItem(GetProfile(0), app_id2);
@@ -440,6 +485,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, RemoveDefault) {
     EXPECT_EQ(sync_pb::AppListSpecifics::TYPE_APP, sync_item->item_type);
   }
 }
+
+INSTANTIATE_TEST_SUITE_P(, RemoveDefaultAppSyncTest, ::testing::Bool());
 
 #if !defined(OS_MACOSX)
 

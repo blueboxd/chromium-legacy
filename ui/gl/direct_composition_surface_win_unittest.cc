@@ -21,8 +21,8 @@
 #include "ui/gl/dc_renderer_layer_params.h"
 #include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_image_d3d.h"
 #include "ui/gl/gl_image_dxgi.h"
-#include "ui/gl/gl_image_dxgi_swap_chain.h"
 #include "ui/gl/gl_image_ref_counted_memory.h"
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/init/gl_factory.h"
@@ -1132,7 +1132,7 @@ TEST_F(DirectCompositionPixelTest, SwapChainImage) {
       swap_chain->GetBuffer(1u, IID_PPV_ARGS(&front_buffer_texture))));
   ASSERT_TRUE(front_buffer_texture);
 
-  auto front_buffer_image = base::MakeRefCounted<GLImageDXGISwapChain>(
+  auto front_buffer_image = base::MakeRefCounted<GLImageD3D>(
       swap_chain_size, gfx::BufferFormat::BGRA_8888, front_buffer_texture,
       swap_chain);
   ASSERT_TRUE(front_buffer_image->Initialize());

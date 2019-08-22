@@ -59,6 +59,7 @@
 
     <!-- Misc -->
     <dimen name="default_ripple_background_border_size">0dp</dimen>
+    <dimen name="popup_bg_corner_radius">4dp</dimen>
 
     <!--
          Fallback values if the corresponding com.android.internal.R dimensions

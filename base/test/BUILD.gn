@@ -281,20 +281,6 @@ static_library("test_support") {
   }
 }
 
-component("test_support_component") {
-  testonly = true
-  sources = [
-    "type_id_test_support_a.cc",
-    "type_id_test_support_a.h",
-    "type_id_test_support_b.cc",
-    "type_id_test_support_b.h",
-  ]
-  deps = [
-    "//base",
-  ]
-  configs += [ ":base_test_implementation" ]
-}
-
 config("base_test_implementation") {
   defines = [ "IS_BASE_TEST_IMPL" ]
 }

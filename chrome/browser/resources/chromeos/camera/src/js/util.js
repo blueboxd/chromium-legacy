@@ -892,7 +892,7 @@ cca.util.setupI18nElements = function(rootElement) {
 /**
  * Reads blob into Image.
  * @param {!Blob} blob
- * @return {Promise<HTMLImageElement>}
+ * @return {!Promise<!HTMLImageElement>}
  * @throws {Error}
  */
 cca.util.blobToImage = function(blob) {

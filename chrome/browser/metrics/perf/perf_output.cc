@@ -35,6 +35,8 @@ PerfOutputCall::PerfOutputCall(base::TimeDelta duration,
                                        weak_factory_.GetWeakPtr()));
 }
 
+PerfOutputCall::PerfOutputCall() : pending_stop_(false), weak_factory_(this) {}
+
 PerfOutputCall::~PerfOutputCall() {}
 
 void PerfOutputCall::Stop() {

@@ -27,9 +27,9 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
@@ -162,7 +162,7 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
     params->pause_after_download = false;
     params->is_installed = false;
 
-    params->service_worker_request = CreateServiceWorker();
+    params->service_worker_receiver = CreateServiceWorker();
     params->controller_receiver = CreateController();
     params->installed_scripts_info = GetInstalledScriptsInfoPtr();
     params->provider_info = CreateProviderInfo(std::move(version));
@@ -178,9 +178,9 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
     return provider_info;
   }
 
-  blink::mojom::ServiceWorkerRequest CreateServiceWorker() {
+  mojo::PendingReceiver<blink::mojom::ServiceWorker> CreateServiceWorker() {
     service_workers_.emplace_back();
-    return mojo::MakeRequest(&service_workers_.back());
+    return service_workers_.back().BindNewPipeAndPassReceiver();
   }
 
   mojo::PendingReceiver<blink::mojom::ControllerServiceWorker>
@@ -198,22 +198,23 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
   GetInstalledScriptsInfoPtr() {
     installed_scripts_managers_.emplace_back();
     auto info = blink::mojom::ServiceWorkerInstalledScriptsInfo::New();
-    info->manager_request =
-        mojo::MakeRequest(&installed_scripts_managers_.back());
-    installed_scripts_manager_host_requests_.push_back(
-        mojo::MakeRequest(&info->manager_host_ptr));
+    info->manager_receiver =
+        installed_scripts_managers_.back().BindNewPipeAndPassReceiver();
+    installed_scripts_manager_host_receivers_.push_back(
+        info->manager_host_remote.InitWithNewPipeAndPassReceiver());
     return info;
   }
 
   ServiceWorkerContextCore* context() { return helper_->context(); }
 
   // Mojo endpoints.
-  std::vector<blink::mojom::ServiceWorkerPtr> service_workers_;
+  std::vector<mojo::Remote<blink::mojom::ServiceWorker>> service_workers_;
   std::vector<mojo::Remote<blink::mojom::ControllerServiceWorker>> controllers_;
-  std::vector<blink::mojom::ServiceWorkerInstalledScriptsManagerPtr>
+  std::vector<mojo::Remote<blink::mojom::ServiceWorkerInstalledScriptsManager>>
       installed_scripts_managers_;
-  std::vector<blink::mojom::ServiceWorkerInstalledScriptsManagerHostRequest>
-      installed_scripts_manager_host_requests_;
+  std::vector<mojo::PendingReceiver<
+      blink::mojom::ServiceWorkerInstalledScriptsManagerHost>>
+      installed_scripts_manager_host_receivers_;
 
   BrowserTaskEnvironment task_environment_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;

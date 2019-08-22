@@ -172,10 +172,6 @@ extern const char kEnableSyncUSSPasswordsDescription[];
 extern const char kEnableSyncUSSNigoriName[];
 extern const char kEnableSyncUSSNigoriDescription[];
 
-// Title and description for the flag to enable invaliations delivery via FCM.
-extern const char kFCMInvalidationsName[];
-extern const char kFCMInvalidationsDescription[];
-
 // Title and description for the flag to enable fill passwords on account select
 // on HTTP origins.
 extern const char kFillOnAccountSelectHttpName[];
@@ -331,11 +327,6 @@ extern const char kSnapshotDrawViewDescription[];
 // sandbox servers.
 extern const char kSyncSandboxName[];
 extern const char kSyncSandboxDescription[];
-
-// Title and description for the flag to control if Chrome Sync (in standalone
-// transport mode) supports non-primary accounts.
-extern const char kSyncSupportSecondaryAccountName[];
-extern const char kSyncSupportSecondaryAccountDescription[];
 
 // Title and description for the flag to enable the toolbar container
 // implementation.

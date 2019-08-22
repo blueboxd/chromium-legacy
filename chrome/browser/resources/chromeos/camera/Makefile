@@ -128,6 +128,8 @@ RESOURCES = \
 	src/js/models/filenamer.js \
 	src/js/models/filesystem.js \
 	src/js/models/gallery.js \
+	src/js/models/result_saver.js \
+	src/js/models/video_saver.js \
 	src/js/mojo/imagecapture.js \
 	src/js/nav.js \
 	src/js/resolution_event_broker.js \

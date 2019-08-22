@@ -3378,10 +3378,7 @@
   <message name="IDS_CROSTINI_INSTALLER_ERROR_TITLE" desc="Title of the Crostini installer when an error occurs.">
     Error installing Linux...
   </message>
-  <message name="IDS_CROSTINI_INSTALLER_COMPLETE" desc="Text shown in the Crostini installer dialog when installation is complete.">
-    Linux installation is complete.
-  </message>
-    <message name="IDS_CROSTINI_INSTALLER_LOAD_TERMINA_MESSAGE" desc="Text shown in the Crostini installer dialog when the VM component is loading">
+  <message name="IDS_CROSTINI_INSTALLER_LOAD_TERMINA_MESSAGE" desc="Text shown in the Crostini installer dialog when the VM component is loading">
     This process may take a few minutes. Downloading the virtual machine.
   </message>
   <message name="IDS_CROSTINI_INSTALLER_START_CONCIERGE_MESSAGE" desc="Text shown in the Crostini installer dialog when the VM service is starting">

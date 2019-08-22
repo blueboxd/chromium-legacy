@@ -11,7 +11,7 @@
 namespace base {
 namespace internal {
 
-PromiseHolder::PromiseHolder(scoped_refptr<internal::AbstractPromise> promise)
+PromiseHolder::PromiseHolder(scoped_refptr<AbstractPromise> promise)
     : promise_(std::move(promise)) {}
 
 PromiseHolder::~PromiseHolder() {
@@ -24,7 +24,7 @@ PromiseHolder::~PromiseHolder() {
 PromiseHolder::PromiseHolder(PromiseHolder&& other)
     : promise_(std::move(other.promise_)) {}
 
-scoped_refptr<internal::AbstractPromise> PromiseHolder::Unwrap() const {
+scoped_refptr<AbstractPromise> PromiseHolder::Unwrap() const {
   return std::move(promise_);
 }
 
@@ -39,11 +39,19 @@ DoNothing ToCallbackBase(DoNothing task) {
 scoped_refptr<AbstractPromise> ConstructAbstractPromiseWithSinglePrerequisite(
     const scoped_refptr<TaskRunner>& task_runner,
     const Location& from_here,
-    AbstractPromise* prerequsite,
+    AbstractPromise* prerequisite,
     internal::PromiseExecutor::Data&& executor_data) noexcept {
-  return internal::AbstractPromise::Create(
+  // Note |prerequisite| can legitimately be null when posting a promise chain
+  // during shutdown.
+  if (!prerequisite) {
+    // Ensure the destructor for |executor_data| runs.
+    PromiseExecutor dummy_executor(std::move(executor_data));
+    return nullptr;
+  }
+
+  return AbstractPromise::Create(
       task_runner, from_here,
-      std::make_unique<AbstractPromise::AdjacencyList>(prerequsite),
+      std::make_unique<AbstractPromise::AdjacencyList>(prerequisite),
       RejectPolicy::kMustCatchRejection,
       internal::DependentList::ConstructUnresolved(), std::move(executor_data));
 }
@@ -53,7 +61,7 @@ scoped_refptr<AbstractPromise> ConstructManualPromiseResolverPromise(
     RejectPolicy reject_policy,
     bool can_resolve,
     bool can_reject) {
-  return internal::AbstractPromise::CreateNoPrerequisitePromise(
+  return AbstractPromise::CreateNoPrerequisitePromise(
       from_here, reject_policy, internal::DependentList::ConstructUnresolved(),
       internal::PromiseExecutor::Data(
           in_place_type_t<internal::NoOpPromiseExecutor>(), can_resolve,

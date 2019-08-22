@@ -37,116 +37,117 @@ mockChrome.fileManagerPrivate = {
 
 /**
  * Logs copy-progress events from a file operation manager.
- * @param {!FileOperationManager} fileOperationManager The target file
- *    operation manager.
- * @constructor
- * @struct
  */
-function EventLogger(fileOperationManager) {
-  this.events = [];
-  this.numberOfBeginEvents = 0;
-  this.numberOfErrorEvents = 0;
-  this.numberOfSuccessEvents = 0;
-  fileOperationManager.addEventListener(
-      'copy-progress', this.onCopyProgress_.bind(this));
-}
+class EventLogger {
+  /**
+   * @param {!FileOperationManager} fileOperationManager The target file
+   *     operation manager.
+   */
+  constructor(fileOperationManager) {
+    this.events = [];
+    this.numberOfBeginEvents = 0;
+    this.numberOfErrorEvents = 0;
+    this.numberOfSuccessEvents = 0;
+    fileOperationManager.addEventListener(
+        'copy-progress', this.onCopyProgress_.bind(this));
+  }
 
-/**
- * Log file operation manager copy-progress event details.
- * @param {Event} event An event.
- * @private
- */
-EventLogger.prototype.onCopyProgress_ = function(event) {
-  event = /** @type {FileOperationProgressEvent} */ (event);
-  if (event.reason === 'BEGIN') {
-    this.events.push(event);
-    this.numberOfBeginEvents++;
+  /**
+   * Log file operation manager copy-progress event details.
+   * @param {Event} event An event.
+   * @private
+   */
+  onCopyProgress_(event) {
+    event = /** @type {FileOperationProgressEvent} */ (event);
+    if (event.reason === 'BEGIN') {
+      this.events.push(event);
+      this.numberOfBeginEvents++;
+    }
+    if (event.reason === 'ERROR') {
+      this.events.push(event);
+      this.numberOfErrorEvents++;
+    }
+    if (event.reason === 'SUCCESS') {
+      this.events.push(event);
+      this.numberOfSuccessEvents++;
+    }
   }
-  if (event.reason === 'ERROR') {
-    this.events.push(event);
-    this.numberOfErrorEvents++;
-  }
-  if (event.reason === 'SUCCESS') {
-    this.events.push(event);
-    this.numberOfSuccessEvents++;
-  }
-};
+}
 
 /**
  * Provides fake implementation of chrome.fileManagerPrivate.startCopy.
- * @param {string} blockedDestination Destination url of an entry whose request
- *     should be blocked.
- * @param {!Entry} sourceEntry Source entry. Single source entry is supported.
- * @param {!Array<!MockFileSystem>} fileSystems File systems array.
- * @constructor
- * @struct
  */
-function BlockableFakeStartCopy(blockedDestination, sourceEntry, fileSystems) {
-  this.resolveBlockedOperationCallback = null;
-  this.blockedDestination_ = blockedDestination;
-  this.sourceEntry_ = sourceEntry;
-  this.fileSystems_ = fileSystems;
-  this.startCopyId_ = 0;
+class BlockableFakeStartCopy {
+  /**
+   * @param {string} blockedDestination Destination url of an entry whose
+   *     request should be blocked.
+   * @param {!Entry} sourceEntry Source entry. Single source entry is supported.
+   * @param {!Array<!MockFileSystem>} fileSystems File systems array.
+   */
+  constructor(blockedDestination, sourceEntry, fileSystems) {
+    this.resolveBlockedOperationCallback = null;
+    this.blockedDestination_ = blockedDestination;
+    this.sourceEntry_ = sourceEntry;
+    this.fileSystems_ = fileSystems;
+    this.startCopyId_ = 0;
+  }
+
+  /**
+   * Fake implementation of startCopy function.
+   * @param {!Entry} source
+   * @param {!Entry} destination
+   * @param {string} newName
+   * @param {function(number)} callback
+   */
+  startCopyFunc(source, destination, newName, callback) {
+    const makeStatus = type => {
+      return {
+        type: type,
+        sourceUrl: source.toURL(),
+        destinationUrl: destination.toURL()
+      };
+    };
+
+    const completeCopyOperation = copyId => {
+      const newPath = joinPath('/', newName);
+      const fileSystem =
+          getFileSystemForURL(this.fileSystems_, destination.toURL());
+      const mockEntry = /** @type {!MockEntry} */ (this.sourceEntry_);
+      fileSystem.entries[newPath] =
+          /** @type {!MockEntry} */ (mockEntry.clone(newPath));
+      listener(copyId, makeStatus('end_copy_entry'));
+      listener(copyId, makeStatus('success'));
+    };
+
+    this.startCopyId_++;
+
+    callback(this.startCopyId_);
+    var listener = mockChrome.fileManagerPrivate.onCopyProgress.listener_;
+    listener(this.startCopyId_, makeStatus('begin_copy_entry'));
+    listener(this.startCopyId_, makeStatus('progress'));
+
+    if (destination.toURL() === this.blockedDestination_) {
+      this.resolveBlockedOperationCallback =
+          completeCopyOperation.bind(this, this.startCopyId_);
+    } else {
+      completeCopyOperation(this.startCopyId_);
+    }
+  }
 }
 
 /**
- * Fake implementation of startCopy function.
- * @param {!Entry} source
- * @param {!Entry} destination
- * @param {string} newName
- * @param {function(number)} callback
- */
-BlockableFakeStartCopy.prototype.startCopyFunc = function(
-    source, destination, newName, callback) {
-  const makeStatus = type => {
-    return {
-      type: type,
-      sourceUrl: source.toURL(),
-      destinationUrl: destination.toURL()
-    };
-  };
-
-  const completeCopyOperation = copyId => {
-    const newPath = joinPath('/', newName);
-    const fileSystem =
-        getFileSystemForURL(this.fileSystems_, destination.toURL());
-    const mockEntry = /** @type {!MockEntry} */ (this.sourceEntry_);
-    fileSystem.entries[newPath] =
-        /** @type {!MockEntry} */ (mockEntry.clone(newPath));
-    listener(copyId, makeStatus('end_copy_entry'));
-    listener(copyId, makeStatus('success'));
-  };
-
-  this.startCopyId_++;
-
-  callback(this.startCopyId_);
-  var listener = mockChrome.fileManagerPrivate.onCopyProgress.listener_;
-  listener(this.startCopyId_, makeStatus('begin_copy_entry'));
-  listener(this.startCopyId_, makeStatus('progress'));
-
-  if (destination.toURL() === this.blockedDestination_) {
-    this.resolveBlockedOperationCallback =
-        completeCopyOperation.bind(this, this.startCopyId_);
-  } else {
-    completeCopyOperation(this.startCopyId_);
-  }
-};
-
-/**
  * Fake volume manager.
- * @constructor
- * @struct
  */
-function FakeVolumeManager() {}
-
-/**
- * Returns fake volume info.
- * @param {!Entry} entry
- * @return {!Object}
- */
-FakeVolumeManager.prototype.getVolumeInfo = function(entry) {
-  return {volumeId: entry.filesystem.name};
-};
+class FakeVolumeManager {
+  /**
+   * Returns fake volume info.
+   * @param {!Entry} entry
+   * @return {!Object}
+   */
+  getVolumeInfo(entry) {
+    return {volumeId: entry.filesystem.name};
+  }
+}
 
 /**
  * Returns file system of the url.

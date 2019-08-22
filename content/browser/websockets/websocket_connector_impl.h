@@ -34,12 +34,12 @@ class WebSocketConnectorImpl final : public blink::mojom::WebSocketConnector {
   ~WebSocketConnectorImpl() override;
 
   // WebSocketConnector implementation
-  void Connect(
-      const GURL& url,
-      const std::vector<std::string>& requested_protocols,
-      const GURL& site_for_cookies,
-      const base::Optional<std::string>& user_agent,
-      network::mojom::WebSocketHandshakeClientPtr handshake_client) override;
+  void Connect(const GURL& url,
+               const std::vector<std::string>& requested_protocols,
+               const GURL& site_for_cookies,
+               const base::Optional<std::string>& user_agent,
+               mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>
+                   handshake_client) override;
 
  private:
   static void ConnectCalledByContentBrowserClient(
@@ -51,7 +51,8 @@ class WebSocketConnectorImpl final : public blink::mojom::WebSocketConnector {
       uint32_t options,
       const GURL& url,
       std::vector<network::mojom::HttpHeaderPtr> additional_headers,
-      network::mojom::WebSocketHandshakeClientPtr handshake_client,
+      mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>
+          handshake_client,
       network::mojom::AuthenticationHandlerPtr auth_handler,
       network::mojom::TrustedHeaderClientPtr trusted_header_client);
 

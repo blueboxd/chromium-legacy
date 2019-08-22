@@ -92,29 +92,31 @@ bool IsCorrectHWIDv3(const std::string& hwid) {
     return false;
 
   // HWIDv3 format:
-  //   Regular: "<MODEL> <COMPONENT><CHECKSUM>"
-  //   Extended: "<MODEL>-<RLZ> <CONFIGLESS> <COMPONENT><CHECKSUM>"
+  //   <MODEL>[-<RLZ>] [CONFIGLESS] <COMPONENT><CHECKSUM>
+  // Fields in [] are optional.
   std::vector<std::string> parts =
       base::SplitString(hwid, " ", base::WhitespaceHandling::TRIM_WHITESPACE,
                         base::SplitResult::SPLIT_WANT_ALL);
   std::string not_checksum, checksum;
 
+  // <MODEL> or <MODEL>-<RLZ>
   constexpr char model[] = "[-A-Z0-9]+";
-  constexpr char configless_field[] = "(?:[[:xdigit:]]+-){3}[[:xdigit:]]+";
+  // Configless field is composed by dash "-" separated hex numbers.
+  constexpr char configless_field[] = "(?:[[:xdigit:]]+-)+[[:xdigit:]]+";
   constexpr char component_and_checksum[] =
       "(?:[A-Z2-7][2-9][A-Z2-7]-)*[A-Z2-7][2-9][A-Z2-7]";
 
   int component_field_index;
 
   if (parts.size() == 2) {
-    //   Regular: "<MODEL> <COMPONENT><CHECKSUM>"
+    // <MODEL>[-RLZ] <COMPONENT><CHECKSUM>
     if (!RE2::FullMatch(parts[0], model) ||
         !RE2::FullMatch(parts[1], component_and_checksum)) {
       return false;
     }
     component_field_index = 1;
   } else if (parts.size() == 3) {
-    //   Extended: "<MODEL>-<RLZ> <CONFIGLESS> <COMPONENT><CHECKSUM>"
+    // <MODEL>-<RLZ> <CONFIGLESS> <COMPONENT><CHECKSUM>
     if (!RE2::FullMatch(parts[0], model) ||
         !RE2::FullMatch(parts[1], configless_field) ||
         !RE2::FullMatch(parts[2], component_and_checksum)) {

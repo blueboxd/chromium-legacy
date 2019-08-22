@@ -47,16 +47,6 @@ struct TestCase {
     return *this;
   }
 
-  TestCase& EnableMyFilesVolume() {
-    enable_myfiles_volume.emplace(true);
-    return *this;
-  }
-
-  TestCase& DisableMyFilesVolume() {
-    enable_myfiles_volume.emplace(false);
-    return *this;
-  }
-
   TestCase& DisableDriveFs() {
     enable_drivefs.emplace(false);
     return *this;
@@ -136,9 +126,6 @@ struct TestCase {
     if (!test.enable_native_smb)
       name.append("_DisableNativeSmb");
 
-    if (test.enable_myfiles_volume.value_or(false))
-      name.append("_MyFilesVolume");
-
     if (test.enable_documents_provider.value_or(false))
       name.append("_DocumentsProvider");
 
@@ -199,11 +186,6 @@ class FilesAppBrowserTest : public FileManagerBrowserTestBase,
 
   bool GetTabletMode() const override { return GetParam().tablet_mode; }
 
-  bool GetEnableMyFilesVolume() const override {
-    return GetParam().enable_myfiles_volume.value_or(
-        FileManagerBrowserTestBase::GetEnableMyFilesVolume());
-  }
-
   bool GetEnableDriveFs() const override {
     return GetParam().enable_drivefs.value_or(
         FileManagerBrowserTestBase::GetEnableDriveFs());
@@ -263,13 +245,13 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FileDisplay, /* file_display.js */
     FilesAppBrowserTest,
     ::testing::Values(
-        TestCase("fileDisplayDownloads").EnableMyFilesVolume(),
-        TestCase("fileDisplayDownloads").InGuestMode().EnableMyFilesVolume(),
-        TestCase("fileDisplayDownloads").TabletMode().EnableMyFilesVolume(),
+        TestCase("fileDisplayDownloads"),
+        TestCase("fileDisplayDownloads").InGuestMode(),
+        TestCase("fileDisplayDownloads").TabletMode(),
         TestCase("fileDisplayDrive").DisableDriveFs(),
         TestCase("fileDisplayDrive").TabletMode().DisableDriveFs(),
         TestCase("fileDisplayDrive").TabletMode().EnableDriveFs(),
-        TestCase("fileDisplayDrive").EnableDriveFs().EnableMyFilesVolume(),
+        TestCase("fileDisplayDrive").EnableDriveFs(),
         TestCase("fileDisplayDriveOffline").Offline().EnableDriveFs(),
         TestCase("fileDisplayDriveOnline").EnableDriveFs(),
         TestCase("fileDisplayDriveOnline").DisableDriveFs(),
@@ -280,30 +262,22 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("fileDisplayUsbToast"),
         TestCase("fileDisplayUsbNoToast"),
         TestCase("fileDisplayPartitionFileTable"),
-        TestCase("fileSearch").EnableMyFilesVolume(),
-        TestCase("fileDisplayWithoutDownloadsVolume")
-            .DontMountVolumes()
-            .EnableMyFilesVolume(),
-        TestCase("fileDisplayWithoutVolumes")
-            .DontMountVolumes()
-            .EnableMyFilesVolume(),
+        TestCase("fileSearch"),
+        TestCase("fileDisplayWithoutDownloadsVolume").DontMountVolumes(),
+        TestCase("fileDisplayWithoutVolumes").DontMountVolumes(),
         TestCase("fileDisplayWithoutVolumesThenMountDownloads")
-            .EnableMyFilesVolume()
+
             .DontMountVolumes(),
         TestCase("fileDisplayWithoutVolumesThenMountDrive")
             .DontMountVolumes()
-            .EnableDriveFs()
-            .EnableMyFilesVolume(),
+            .EnableDriveFs(),
         TestCase("fileDisplayWithoutDrive").DontMountVolumes(),
-        TestCase("fileDisplayWithoutDriveThenDisable")
-            .DontMountVolumes()
-            .EnableMyFilesVolume(),
-        TestCase("fileDisplayMountWithFakeItemSelected").EnableMyFilesVolume(),
-        TestCase("fileDisplayUnmountDriveWithSharedWithMeSelected")
-            .EnableMyFilesVolume(),
-        TestCase("fileDisplayUnmountRemovableRoot").EnableMyFilesVolume(),
-        TestCase("fileDisplayUnmountFirstPartition").EnableMyFilesVolume(),
-        TestCase("fileDisplayUnmountLastPartition").EnableMyFilesVolume(),
+        TestCase("fileDisplayWithoutDriveThenDisable").DontMountVolumes(),
+        TestCase("fileDisplayMountWithFakeItemSelected"),
+        TestCase("fileDisplayUnmountDriveWithSharedWithMeSelected"),
+        TestCase("fileDisplayUnmountRemovableRoot"),
+        TestCase("fileDisplayUnmountFirstPartition"),
+        TestCase("fileDisplayUnmountLastPartition"),
         TestCase("fileSearchCaseInsensitive"),
         TestCase("fileSearchNotFound"),
         TestCase("fileDisplayDownloadsWithBlockedFileTaskRunner"),
@@ -385,16 +359,13 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     CreateNewFolder, /* create_new_folder.js */
     FilesAppBrowserTest,
-    ::testing::Values(
-        TestCase("selectCreateFolderDownloads")
-            .InGuestMode()
-            .EnableMyFilesVolume(),
-        TestCase("selectCreateFolderDownloads").EnableMyFilesVolume(),
-        TestCase("createFolderDownloads").InGuestMode(),
-        TestCase("createFolderDownloads").EnableMyFilesVolume(),
-        TestCase("createFolderNestedDownloads").EnableMyFilesVolume(),
-        TestCase("createFolderDrive").DisableDriveFs(),
-        TestCase("createFolderDrive").EnableDriveFs().EnableMyFilesVolume()));
+    ::testing::Values(TestCase("selectCreateFolderDownloads").InGuestMode(),
+                      TestCase("selectCreateFolderDownloads"),
+                      TestCase("createFolderDownloads").InGuestMode(),
+                      TestCase("createFolderDownloads"),
+                      TestCase("createFolderNestedDownloads"),
+                      TestCase("createFolderDrive").DisableDriveFs(),
+                      TestCase("createFolderDrive").EnableDriveFs()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     KeyboardOperations, /* keyboard_operations.js */
@@ -497,14 +468,14 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("checkNewFolderDisabledInsideReadOnlyFolder").EnableDriveFs(),
         TestCase("checkPasteEnabledInsideReadWriteFolder").EnableDriveFs(),
         TestCase("checkPasteDisabledInsideReadOnlyFolder").EnableDriveFs(),
-        TestCase("checkDownloadsContextMenu").EnableMyFilesVolume(),
-        TestCase("checkPlayFilesContextMenu").EnableMyFilesVolume(),
+        TestCase("checkDownloadsContextMenu"),
+        TestCase("checkPlayFilesContextMenu"),
         TestCase("checkLinuxFilesContextMenu"),
         TestCase("checkDeleteDisabledInDocProvider").EnableDocumentsProvider(),
         TestCase("checkDeleteEnabledInDocProvider").EnableDocumentsProvider(),
         TestCase("checkRenameDisabledInDocProvider").EnableDocumentsProvider(),
         TestCase("checkRenameEnabledInDocProvider").EnableDocumentsProvider(),
-        TestCase("checkContextMenuFocus").EnableMyFilesVolume()));
+        TestCase("checkContextMenuFocus")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Toolbar, /* toolbar.js */
@@ -556,39 +527,37 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     DirectoryTreeContextMenu, /* directory_tree_context_menu.js */
     FilesAppBrowserTest,
     ::testing::Values(
-        TestCase("dirCopyWithContextMenu").InGuestMode().EnableMyFilesVolume(),
-        TestCase("dirCopyWithContextMenu").EnableMyFilesVolume(),
-        TestCase("dirCopyWithKeyboard").InGuestMode().EnableMyFilesVolume(),
-        TestCase("dirCopyWithKeyboard").EnableMyFilesVolume(),
-        TestCase("dirCopyWithoutChangingCurrent").EnableMyFilesVolume(),
-        TestCase("dirCutWithContextMenu").InGuestMode().EnableMyFilesVolume(),
-        TestCase("dirCutWithContextMenu").EnableMyFilesVolume(),
-        TestCase("dirCutWithKeyboard").InGuestMode().EnableMyFilesVolume(),
-        TestCase("dirCutWithKeyboard").EnableMyFilesVolume(),
-        TestCase("dirPasteWithContextMenu").InGuestMode().EnableMyFilesVolume(),
-        TestCase("dirPasteWithContextMenu").EnableMyFilesVolume(),
-        TestCase("dirPasteWithoutChangingCurrent").EnableMyFilesVolume(),
-        TestCase("dirRenameWithContextMenu")
-            .InGuestMode()
-            .EnableMyFilesVolume(),
-        TestCase("dirRenameWithContextMenu").EnableMyFilesVolume(),
-        TestCase("dirRenameUpdateChildrenBreadcrumbs").EnableMyFilesVolume(),
-        TestCase("dirRenameWithKeyboard").InGuestMode().EnableMyFilesVolume(),
-        TestCase("dirRenameWithKeyboard").EnableMyFilesVolume(),
-        TestCase("dirRenameWithoutChangingCurrent").EnableMyFilesVolume(),
-        TestCase("dirRenameToEmptyString").InGuestMode().EnableMyFilesVolume(),
-        TestCase("dirRenameToEmptyString").EnableMyFilesVolume(),
-        TestCase("dirRenameToExisting").InGuestMode().EnableMyFilesVolume(),
-        TestCase("dirRenameToExisting").EnableDriveFs().EnableMyFilesVolume(),
+        TestCase("dirCopyWithContextMenu").InGuestMode(),
+        TestCase("dirCopyWithContextMenu"),
+        TestCase("dirCopyWithKeyboard").InGuestMode(),
+        TestCase("dirCopyWithKeyboard"),
+        TestCase("dirCopyWithoutChangingCurrent"),
+        TestCase("dirCutWithContextMenu").InGuestMode(),
+        TestCase("dirCutWithContextMenu"),
+        TestCase("dirCutWithKeyboard").InGuestMode(),
+        TestCase("dirCutWithKeyboard"),
+        TestCase("dirPasteWithContextMenu").InGuestMode(),
+        TestCase("dirPasteWithContextMenu"),
+        TestCase("dirPasteWithoutChangingCurrent"),
+        TestCase("dirRenameWithContextMenu").InGuestMode(),
+        TestCase("dirRenameWithContextMenu"),
+        TestCase("dirRenameUpdateChildrenBreadcrumbs"),
+        TestCase("dirRenameWithKeyboard").InGuestMode(),
+        TestCase("dirRenameWithKeyboard"),
+        TestCase("dirRenameWithoutChangingCurrent"),
+        TestCase("dirRenameToEmptyString").InGuestMode(),
+        TestCase("dirRenameToEmptyString"),
+        TestCase("dirRenameToExisting").InGuestMode(),
+        TestCase("dirRenameToExisting").EnableDriveFs(),
         TestCase("dirRenameRemovableWithKeyboard"),
         TestCase("dirRenameRemovableWithKeyboard").InGuestMode(),
         TestCase("dirRenameRemovableWithKeyboard").EnableDriveFs(),
         TestCase("dirRenameRemovableWithContentMenu"),
         TestCase("dirRenameRemovableWithContentMenu").InGuestMode(),
         TestCase("dirRenameRemovableWithContentMenu").EnableDriveFs(),
-        TestCase("dirCreateWithContextMenu").EnableMyFilesVolume(),
-        TestCase("dirCreateWithKeyboard").EnableMyFilesVolume(),
-        TestCase("dirCreateWithoutChangingCurrent").EnableMyFilesVolume(),
+        TestCase("dirCreateWithContextMenu"),
+        TestCase("dirCreateWithKeyboard"),
+        TestCase("dirCreateWithoutChangingCurrent"),
 #if !(defined(ADDRESS_SANITIZER) || !defined(NDEBUG))
         // Zip tests times out too often on ASAN and DEBUG. crbug.com/936429
         // and crbug.com/944697
@@ -596,8 +565,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         ZipCase("dirEjectContextMenuZip"),
 #endif
         TestCase("dirContextMenuRecent"),
-        TestCase("dirContextMenuMyFiles").EnableMyFilesVolume(),
-        TestCase("dirContextMenuMyFilesWithPaste").EnableMyFilesVolume(),
+        TestCase("dirContextMenuMyFiles"),
+        TestCase("dirContextMenuMyFilesWithPaste"),
         TestCase("dirContextMenuCrostini"),
         TestCase("dirContextMenuPlayFiles"),
         TestCase("dirContextMenuUsbs"),
@@ -648,8 +617,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         TestCase("transferFromDriveToDownloads").DisableDriveFs(),
         TestCase("transferFromDriveToDownloads").EnableDriveFs(),
-        TestCase("transferFromDownloadsToMyFiles").EnableMyFilesVolume(),
-        TestCase("transferFromDownloadsToMyFilesMove").EnableMyFilesVolume(),
+        TestCase("transferFromDownloadsToMyFiles"),
+        TestCase("transferFromDownloadsToMyFilesMove"),
         TestCase("transferFromDownloadsToDrive").DisableDriveFs(),
         TestCase("transferFromDownloadsToDrive").EnableDriveFs(),
         TestCase("transferFromSharedToDownloads").DisableDriveFs(),
@@ -762,80 +731,49 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     TabIndex, /* tab_index.js: */
     FilesAppBrowserTest,
     ::testing::Values(
-        TestCase("tabindexSearchBoxFocus").EnableMyFilesVolume(),
-        TestCase("tabindexFocus").EnableMyFilesVolume(),
-        TestCase("tabindexFocusDownloads").EnableMyFilesVolume(),
-        TestCase("tabindexFocusDownloads").InGuestMode().EnableMyFilesVolume(),
+        TestCase("tabindexSearchBoxFocus"),
+        TestCase("tabindexFocus"),
+        TestCase("tabindexFocusDownloads"),
+        TestCase("tabindexFocusDownloads").InGuestMode(),
         TestCase("tabindexFocusBreadcrumbBackground"),
-        TestCase("tabindexFocusDirectorySelected").EnableMyFilesVolume(),
+        TestCase("tabindexFocusDirectorySelected"),
         TestCase("tabindexOpenDialogDrive").WithBrowser().DisableDriveFs(),
         TestCase("tabindexOpenDialogDownloads").WithBrowser(),
-        TestCase("tabindexOpenDialogDownloads")
-            .WithBrowser()
-            .EnableMyFilesVolume(),
-        TestCase("tabindexOpenDialogDownloads")
-            .WithBrowser()
-            .InGuestMode()
-            .EnableMyFilesVolume(),
+        TestCase("tabindexOpenDialogDownloads").WithBrowser().InGuestMode(),
         TestCase("tabindexSaveFileDialogDrive").WithBrowser().DisableDriveFs(),
-        TestCase("tabindexSaveFileDialogDrive")
-            .WithBrowser()
-            .EnableDriveFs()
-            .EnableMyFilesVolume(),
+        TestCase("tabindexSaveFileDialogDrive").WithBrowser().EnableDriveFs(),
         TestCase("tabindexSaveFileDialogDownloads").WithBrowser(),
         TestCase("tabindexSaveFileDialogDownloads")
             .WithBrowser()
-            .InGuestMode()
-            .EnableMyFilesVolume()));
+            .InGuestMode()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FileDialog, /* file_dialog.js */
     FilesAppBrowserTest,
     ::testing::Values(
-        TestCase("openFileDialogUnload").WithBrowser().EnableMyFilesVolume(),
-        TestCase("openFileDialogDownloads").WithBrowser().EnableMyFilesVolume(),
-        TestCase("openFileDialogDownloads")
-            .WithBrowser()
-            .InGuestMode()
-            .EnableMyFilesVolume(),
-        TestCase("openFileDialogDownloads")
-            .WithBrowser()
-            .InIncognito()
-            .EnableMyFilesVolume(),
+        TestCase("openFileDialogUnload").WithBrowser(),
+        TestCase("openFileDialogDownloads").WithBrowser(),
+        TestCase("openFileDialogDownloads").WithBrowser().InGuestMode(),
+        TestCase("openFileDialogDownloads").WithBrowser().InIncognito(),
         TestCase("openFileDialogPanelsDisabled").WithBrowser(),
-        TestCase("saveFileDialogDownloads").WithBrowser().EnableMyFilesVolume(),
-        TestCase("saveFileDialogDownloads")
-            .WithBrowser()
-            .InGuestMode()
-            .EnableMyFilesVolume(),
-        TestCase("saveFileDialogDownloads")
-            .WithBrowser()
-            .InIncognito()
-            .EnableMyFilesVolume(),
-        TestCase("saveFileDialogDownloadsNewFolderButton")
-            .WithBrowser()
-            .EnableMyFilesVolume(),
+        TestCase("saveFileDialogDownloads").WithBrowser(),
+        TestCase("saveFileDialogDownloads").WithBrowser().InGuestMode(),
+        TestCase("saveFileDialogDownloads").WithBrowser().InIncognito(),
+        TestCase("saveFileDialogDownloadsNewFolderButton").WithBrowser(),
         TestCase("saveFileDialogPanelsDisabled").WithBrowser(),
-        TestCase("openFileDialogCancelDownloads")
-            .WithBrowser()
-            .EnableMyFilesVolume(),
-        TestCase("openFileDialogEscapeDownloads")
-            .WithBrowser()
-            .EnableMyFilesVolume(),
+        TestCase("openFileDialogCancelDownloads").WithBrowser(),
+        TestCase("openFileDialogEscapeDownloads").WithBrowser(),
         TestCase("openFileDialogDrive").WithBrowser().DisableDriveFs(),
         TestCase("openFileDialogDrive")
             .WithBrowser()
             .InIncognito()
             .DisableDriveFs(),
-        TestCase("openFileDialogDrive")
-            .WithBrowser()
-            .EnableDriveFs()
-            .EnableMyFilesVolume(),
+        TestCase("openFileDialogDrive").WithBrowser().EnableDriveFs(),
         TestCase("openFileDialogDrive")
             .WithBrowser()
             .InIncognito()
             .EnableDriveFs(),
-        TestCase("saveFileDialogDrive").WithBrowser().EnableMyFilesVolume(),
+        TestCase("saveFileDialogDrive").WithBrowser(),
         TestCase("saveFileDialogDrive").WithBrowser().InIncognito(),
         TestCase("openFileDialogDriveFromBrowser")
             .WithBrowser()
@@ -870,9 +808,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("saveFileDialogDriveOfflinePinned").WithBrowser().Offline(),
         TestCase("openFileDialogDefaultFilter").WithBrowser(),
         TestCase("saveFileDialogDefaultFilter").WithBrowser(),
-        TestCase("openFileDialogFileListShowContextMenu")
-            .WithBrowser()
-            .EnableMyFilesVolume()));
+        TestCase("openFileDialogFileListShowContextMenu").WithBrowser()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     CopyBetweenWindows, /* copy_between_windows.js */
@@ -958,17 +894,16 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     MyFiles, /* my_files.js */
     FilesAppBrowserTest,
-    ::testing::Values(
-        TestCase("directoryTreeRefresh").EnableMyFilesVolume(),
-        TestCase("showMyFiles").EnableMyFilesVolume(),
-        TestCase("myFilesDisplaysAndOpensEntries").EnableMyFilesVolume(),
-        TestCase("myFilesFolderRename").EnableMyFilesVolume(),
-        TestCase("myFilesUpdatesWhenAndroidVolumeMounts")
-            .EnableMyFilesVolume()
-            .DontMountVolumes(),
-        TestCase("myFilesUpdatesChildren").EnableMyFilesVolume(),
-        TestCase("myFilesAutoExpandOnce").EnableMyFilesVolume(),
-        TestCase("myFilesToolbarDelete").EnableMyFilesVolume()));
+    ::testing::Values(TestCase("directoryTreeRefresh"),
+                      TestCase("showMyFiles"),
+                      TestCase("myFilesDisplaysAndOpensEntries"),
+                      TestCase("myFilesFolderRename"),
+                      TestCase("myFilesUpdatesWhenAndroidVolumeMounts")
+
+                          .DontMountVolumes(),
+                      TestCase("myFilesUpdatesChildren"),
+                      TestCase("myFilesAutoExpandOnce"),
+                      TestCase("myFilesToolbarDelete")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     InstallLinuxPackageDialog, /* install_linux_package_dialog.js */
@@ -978,10 +913,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     LauncherSearch, /* launcher_search.js */
     FilesAppBrowserTest,
-    ::testing::Values(
-        TestCase("launcherOpenSearchResult"),
-        TestCase("launcherSearch").EnableMyFilesVolume(),
-        TestCase("launcherSearchOffline").Offline().EnableMyFilesVolume()));
+    ::testing::Values(TestCase("launcherOpenSearchResult"),
+                      TestCase("launcherSearch"),
+                      TestCase("launcherSearchOffline").Offline()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Recents, /* recents.js */
@@ -1002,13 +936,13 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesAppBrowserTest,
     ::testing::Values(
         TestCase("metadataDocumentsProvider").EnableDocumentsProvider(),
-        TestCase("metadataDownloads").EnableMyFilesVolume(),
+        TestCase("metadataDownloads"),
         TestCase("metadataDrive").DisableDriveFs(),
-        TestCase("metadataDrive").EnableDriveFs().EnableMyFilesVolume(),
+        TestCase("metadataDrive").EnableDriveFs(),
         TestCase("metadataTeamDrives").DisableDriveFs(),
-        TestCase("metadataTeamDrives").EnableDriveFs().EnableMyFilesVolume(),
+        TestCase("metadataTeamDrives").EnableDriveFs(),
         TestCase("metadataLargeDrive").DisableDriveFs(),
-        TestCase("metadataLargeDrive").EnableDriveFs().EnableMyFilesVolume()));
+        TestCase("metadataLargeDrive").EnableDriveFs()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     NavigationList, /* navigation_list.js */
@@ -1031,10 +965,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Breadcrumbs, /* breadcrumbs.js */
     FilesAppBrowserTest,
-    ::testing::Values(
-        TestCase("breadcrumbsNavigate").EnableMyFilesVolume(),
-        TestCase("breadcrumbsLeafNoFocus").EnableMyFilesVolume(),
-        TestCase("breadcrumbsDownloadsTranslation").EnableMyFilesVolume()));
+    ::testing::Values(TestCase("breadcrumbsNavigate"),
+                      TestCase("breadcrumbsLeafNoFocus"),
+                      TestCase("breadcrumbsDownloadsTranslation")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FormatDialog, /* format_dialog.js */
@@ -1219,21 +1152,18 @@ class DriveFsFilesAppBrowserTest : public FileManagerBrowserTestBase {
     return profile()->GetPath().Append("drive/v1");
   }
 
-  bool GetEnableMyFilesVolume() const override { return true; }
-
  private:
   std::string test_case_name_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveFsFilesAppBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(DriveFsFilesAppBrowserTest,
-                       PRE_MigratePinnedFilesMyFiles) {
+IN_PROC_BROWSER_TEST_F(DriveFsFilesAppBrowserTest, PRE_MigratePinnedFiles) {
   set_test_case_name("PRE_driveMigratePinnedFile");
   StartTest();
 }
 
-IN_PROC_BROWSER_TEST_F(DriveFsFilesAppBrowserTest, MigratePinnedFilesMyFiles) {
+IN_PROC_BROWSER_TEST_F(DriveFsFilesAppBrowserTest, MigratePinnedFiles) {
   set_test_case_name("driveMigratePinnedFile");
   StartTest();
 
@@ -1241,8 +1171,7 @@ IN_PROC_BROWSER_TEST_F(DriveFsFilesAppBrowserTest, MigratePinnedFilesMyFiles) {
   EXPECT_TRUE(base::IsDirectoryEmpty(GetDriveDataDirectory()));
 }
 
-IN_PROC_BROWSER_TEST_F(DriveFsFilesAppBrowserTest,
-                       PRE_RecoverDirtyFilesMyFiles) {
+IN_PROC_BROWSER_TEST_F(DriveFsFilesAppBrowserTest, PRE_RecoverDirtyFiles) {
   set_test_case_name("PRE_driveRecoverDirtyFiles");
   StartTest();
 
@@ -1254,7 +1183,7 @@ IN_PROC_BROWSER_TEST_F(DriveFsFilesAppBrowserTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_F(DriveFsFilesAppBrowserTest, RecoverDirtyFilesMyFiles) {
+IN_PROC_BROWSER_TEST_F(DriveFsFilesAppBrowserTest, RecoverDirtyFiles) {
   set_test_case_name("driveRecoverDirtyFiles");
   StartTest();
 

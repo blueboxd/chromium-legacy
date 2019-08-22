@@ -21,6 +21,8 @@ js_library("camera3_device_info") {
 js_library("constraints_preferrer") {
   deps = [
     "..:resolution_event_broker",
+    "..:state",
+    ":camera3_device_info",
     "../browser_proxy:browser_proxy",
   ]
 }

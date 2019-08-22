@@ -4864,7 +4864,8 @@ void ChromeContentBrowserClient::CreateWebSocket(
     const GURL& url,
     const GURL& site_for_cookies,
     const base::Optional<std::string>& user_agent,
-    network::mojom::WebSocketHandshakeClientPtr handshake_client) {
+    mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>
+        handshake_client) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (!frame) {
     return;

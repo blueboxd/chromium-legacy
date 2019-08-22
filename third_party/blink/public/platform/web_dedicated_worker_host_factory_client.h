@@ -9,6 +9,7 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#include "third_party/blink/public/mojom/frame/lifecycle.mojom-shared.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 
 namespace base {
@@ -50,6 +51,10 @@ class WebDedicatedWorkerHostFactoryClient {
   virtual scoped_refptr<WebWorkerFetchContext> CloneWorkerFetchContext(
       WebWorkerFetchContext*,
       scoped_refptr<base::SingleThreadTaskRunner>) = 0;
+
+  // Called when a dedicated worker's lifecycle will change.
+  virtual void LifecycleStateChanged(
+      blink::mojom::FrameLifecycleState state) = 0;
 };
 
 }  // namespace blink

@@ -278,11 +278,6 @@ const char kDecodeLossyWebPImagesToYUVDescription[] =
     "Decode and render lossy WebP images from YUV instead of RGB. "
     "You must also have GPU rasterization or OOP rasterization.";
 
-const char kFCMInvalidationsName[] =
-    "Enable invalidations delivery via new FCM based protocol";
-const char kFCMInvalidationsDescription[] =
-    "Use the new FCM-based protocol for deliveling invalidations";
-
 const char kFocusMode[] = "Focus Mode";
 const char kFocusModeDescription[] =
     "If enabled, allows the user to switch to Focus Mode";
@@ -1845,13 +1840,6 @@ const char kSuggestionsWithSubStringMatchDescription[] =
     "Match Autofill suggestions based on substrings (token prefixes) rather "
     "than just prefixes.";
 
-const char kSyncSupportSecondaryAccountName[] =
-    "Support secondary accounts for Sync standalone transport";
-const char kSyncSupportSecondaryAccountDescription[] =
-    "If enabled, allows Chrome Sync to start in standalone transport mode for "
-    "a signed-in account that has not been chosen as Chrome's primary account. "
-    "This only has an effect if sync-standalone-transport is also enabled.";
-
 const char kSyncSandboxName[] = "Use Chrome Sync sandbox";
 const char kSyncSandboxDescription[] =
     "Connects to the testing server for Chrome Sync.";
@@ -3277,11 +3265,6 @@ const char kEnableHeuristicStylusPalmRejectionDescription[] =
 const char kEnableHomeLauncherName[] = "Enable home launcher";
 const char kEnableHomeLauncherDescription[] =
     "Enable home launcher in tablet mode.";
-
-const char kEnableMyFilesVolumeName[] = "Enable MyFiles as Volume";
-const char kEnableMyFilesVolumeDescription[] =
-    "Enables use of MyFiles as a read/write volume. This should be only "
-    "used for testing or for trying to restore the previous Downloads content.";
 
 const char kEnableParentalControlsSettingsName[] =
     "Enable Parental controls settings";

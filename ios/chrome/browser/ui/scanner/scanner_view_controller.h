@@ -16,7 +16,7 @@ namespace scannerViewController {
 enum DismissalReason {
   CLOSE_BUTTON,
   ERROR_DIALOG,
-  SCANNED_CODE,
+  SCAN_COMPLETE,
   // Not reported. Should be kept last of enum.
   IMPOSSIBLY_UNLIKELY_AUTHORIZATION_CHANGE
 };

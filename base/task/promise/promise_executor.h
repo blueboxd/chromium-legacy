@@ -6,8 +6,8 @@
 #define BASE_TASK_PROMISE_PROMISE_EXECUTOR_H_
 
 #include "base/base_export.h"
-#include "base/containers/unique_any.h"
 #include "base/logging.h"
+#include "base/task/promise/promise_value.h"
 
 namespace base {
 namespace internal {
@@ -42,8 +42,9 @@ class BASE_EXPORT PromiseExecutor {
     template <typename Derived, typename... Args>
     explicit Data(in_place_type_t<Derived>, Args&&... args) {
       static_assert(sizeof(Derived) <= MaxSize, "Derived is too big");
-      static_assert(sizeof(PromiseExecutor) <= sizeof(AnyInternal::InlineAlloc),
-                    "Executor is too big");
+      static_assert(
+          sizeof(PromiseExecutor) <= sizeof(PromiseValueInternal::InlineAlloc),
+          "Executor is too big");
       vtable_ = &VTableHelper<Derived>::vtable_;
       new (storage_.array) Derived(std::forward<Args>(args)...);
     }
@@ -100,11 +101,15 @@ class BASE_EXPORT PromiseExecutor {
   };
 
   // Returns the associated PrerequisitePolicy.
-  PrerequisitePolicy GetPrerequisitePolicy() const;
+  PrerequisitePolicy GetPrerequisitePolicy() const {
+    return data_.vtable_->prerequsite_policy;
+  }
 
   // NB if there is both a resolve and a reject executor we require them to
   // be both canceled at the same time.
-  bool IsCancelled() const;
+  bool IsCancelled() const {
+    return data_.vtable_->is_cancelled(data_.storage_.array);
+  }
 
   // Describes an executor callback.
   enum class ArgumentPassingType : uint8_t {
@@ -130,18 +135,18 @@ class BASE_EXPORT PromiseExecutor {
 
   // Invokes the associate callback for |promise|. If the callback was
   // cancelled it should call |promise->OnCanceled()|. If the callback
-  // resolved it should store the resolve result via |promise->emplace()| and
-  // call |promise->OnResolved()|. If the callback was rejected it should
-  // store the reject result in |promise->state()| and call
-  // |promise->OnResolved()|.
-  // Caution the Executor will be destructed when |promise->state()| is
-  // written to.
-  void Execute(AbstractPromise* promise);
+  // resolved it should store the resolve result via |promise->emplace()|. If
+  // the callback was rejected it should store the reject result in
+  // |promise->state()|. Caution the Executor will be destructed when
+  // |promise->state()| is written to.
+  void Execute(AbstractPromise* promise) {
+    return data_.vtable_->execute(data_.storage_.array, promise);
+  }
 
  private:
   struct VTable {
     void (*destructor)(void* self);
-    PrerequisitePolicy (*get_prerequisite_policy)(const void* self);
+    PrerequisitePolicy prerequsite_policy;
     bool (*is_cancelled)(const void* self);
 #if DCHECK_IS_ON()
     ArgumentPassingType (*resolve_argument_passing_type)(const void* self);
@@ -163,6 +168,9 @@ class BASE_EXPORT PromiseExecutor {
     static void Destructor(void* self) {
       static_cast<DerivedType*>(self)->~DerivedType();
     }
+
+    static constexpr PromiseExecutor::PrerequisitePolicy kPrerequisitePolicy =
+        DerivedType::kPrerequisitePolicy;
 
     static PrerequisitePolicy GetPrerequisitePolicy(const void* self) {
       return static_cast<const DerivedType*>(self)->GetPrerequisitePolicy();
@@ -197,7 +205,7 @@ class BASE_EXPORT PromiseExecutor {
 
     static constexpr VTable vtable_ = {
         &VTableHelper::Destructor,
-        &VTableHelper::GetPrerequisitePolicy,
+        VTableHelper::kPrerequisitePolicy,
         &VTableHelper::IsCancelled,
 #if DCHECK_IS_ON()
         &VTableHelper::ResolveArgumentPassingType,

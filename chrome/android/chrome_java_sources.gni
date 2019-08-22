@@ -1457,7 +1457,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/signin/SigninView.java",
   "java/src/org/chromium/chrome/browser/signin/SyncPromoView.java",
   "java/src/org/chromium/chrome/browser/signin/UnifiedConsentServiceBridge.java",
-  "java/src/org/chromium/chrome/browser/sms/SmsReceiverDialog.java",
+  "java/src/org/chromium/chrome/browser/sms/SmsReceiverInfoBar.java",
   "java/src/org/chromium/chrome/browser/snackbar/BottomContainer.java",
   "java/src/org/chromium/chrome/browser/snackbar/Snackbar.java",
   "java/src/org/chromium/chrome/browser/snackbar/SnackbarCollection.java",

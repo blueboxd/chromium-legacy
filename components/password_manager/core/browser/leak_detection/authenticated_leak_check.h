@@ -27,6 +27,7 @@ class IdentityManager;
 
 namespace password_manager {
 
+enum class AnalyzeResponseResult;
 class LeakDetectionDelegateInterface;
 struct LookupSingleLeakData;
 struct SingleLookupResponse;
@@ -81,7 +82,7 @@ class AuthenticatedLeakCheck : public LeakDetectionCheck {
 
   // Called when the network response is analazyed on the background thread. The
   // method is called on the main thread.
-  void OnAnalyzeSingleLeakResponse(bool is_leaked);
+  void OnAnalyzeSingleLeakResponse(AnalyzeResponseResult result);
 
   // Delegate for the instance. Should outlive |this|.
   LeakDetectionDelegateInterface* const delegate_;

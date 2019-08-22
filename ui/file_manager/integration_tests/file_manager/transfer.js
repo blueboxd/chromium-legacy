@@ -591,4 +591,7 @@ testcase.transferDeletedFile = async () => {
   chrome.test.assertEq(
       `Whoops, ${entry.nameText} no longer exists.`,
       element.attributes['primary-text']);
+
+  // Check that only one line of text is shown.
+  chrome.test.assertFalse(!!element.attributes['secondary-text']);
 };

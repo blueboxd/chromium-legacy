@@ -6,7 +6,8 @@
 
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -22,7 +23,7 @@ namespace {
 class BrowserSideSender
     : mojom::blink::ServiceWorkerInstalledScriptsManagerHost {
  public:
-  BrowserSideSender() : binding_(this) {}
+  BrowserSideSender() = default;
   ~BrowserSideSender() override = default;
 
   mojom::blink::ServiceWorkerInstalledScriptsInfoPtr CreateAndBind(
@@ -32,8 +33,9 @@ class BrowserSideSender
     EXPECT_FALSE(meta_data_handle_.is_valid());
     auto scripts_info = mojom::blink::ServiceWorkerInstalledScriptsInfo::New();
     scripts_info->installed_urls = installed_urls;
-    scripts_info->manager_request = mojo::MakeRequest(&manager_);
-    binding_.Bind(mojo::MakeRequest(&scripts_info->manager_host_ptr));
+    scripts_info->manager_receiver = manager_.BindNewPipeAndPassReceiver();
+    receiver_.Bind(
+        scripts_info->manager_host_remote.InitWithNewPipeAndPassReceiver());
     return scripts_info;
   }
 
@@ -99,9 +101,9 @@ class BrowserSideSender
   base::OnceClosure requested_script_closure_;
   KURL waiting_requested_url_;
 
-  mojom::blink::ServiceWorkerInstalledScriptsManagerPtr manager_;
-  mojo::Binding<mojom::blink::ServiceWorkerInstalledScriptsManagerHost>
-      binding_;
+  mojo::Remote<mojom::blink::ServiceWorkerInstalledScriptsManager> manager_;
+  mojo::Receiver<mojom::blink::ServiceWorkerInstalledScriptsManagerHost>
+      receiver_{this};
 
   mojo::ScopedDataPipeProducerHandle body_handle_;
   mojo::ScopedDataPipeProducerHandle meta_data_handle_;
@@ -141,8 +143,8 @@ class ServiceWorkerInstalledScriptsManagerTest : public testing::Test {
     installed_scripts_manager_ =
         std::make_unique<ServiceWorkerInstalledScriptsManager>(
             std::move(installed_scripts_info->installed_urls),
-            std::move(installed_scripts_info->manager_request),
-            std::move(installed_scripts_info->manager_host_ptr),
+            std::move(installed_scripts_info->manager_receiver),
+            std::move(installed_scripts_info->manager_host_remote),
             io_thread_->GetTaskRunner());
   }
 

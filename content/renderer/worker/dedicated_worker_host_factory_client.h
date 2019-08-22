@@ -11,6 +11,7 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
+#include "third_party/blink/public/mojom/worker/dedicated_worker_host.mojom.h"
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host_factory.mojom.h"
 #include "third_party/blink/public/platform/web_dedicated_worker_host_factory_client.h"
 
@@ -56,6 +57,7 @@ class DedicatedWorkerHostFactoryClient final
   scoped_refptr<blink::WebWorkerFetchContext> CloneWorkerFetchContext(
       blink::WebWorkerFetchContext* web_worker_fetch_context,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
+  void LifecycleStateChanged(blink::mojom::FrameLifecycleState state) override;
 
   scoped_refptr<WebWorkerFetchContextImpl> CreateWorkerFetchContext(
       blink::mojom::RendererPreferences renderer_preference,
@@ -88,6 +90,7 @@ class DedicatedWorkerHostFactoryClient final
   mojo::Remote<blink::mojom::DedicatedWorkerHostFactory> factory_;
   mojo::Receiver<blink::mojom::DedicatedWorkerHostFactoryClient> receiver_{
       this};
+  mojo::Remote<blink::mojom::DedicatedWorkerHost> remote_host_;
 };
 
 }  // namespace content

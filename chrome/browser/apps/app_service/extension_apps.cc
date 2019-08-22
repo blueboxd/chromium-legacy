@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "ash/public/cpp/app_list/app_list_metrics.h"
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/launch_util.h"
@@ -22,6 +24,8 @@
 #include "chrome/browser/ui/app_list/extension_uninstaller.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/extensions/extension_enable_flow.h"
+#include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
@@ -66,6 +70,47 @@ const ContentSettingsType kSupportedPermissionTypes[] = {
 }  // namespace
 
 namespace apps {
+
+// Attempts to enable and launch an extension app.
+class ExtensionAppsEnableFlow : public ExtensionEnableFlowDelegate {
+ public:
+  ExtensionAppsEnableFlow(Profile* profile, const std::string& app_id)
+      : profile_(profile), app_id_(app_id) {}
+
+  ~ExtensionAppsEnableFlow() override {}
+
+  using Callback = base::OnceCallback<void()>;
+
+  void Run(Callback callback) {
+    callback_ = std::move(callback);
+
+    if (!flow_) {
+      flow_ = std::make_unique<ExtensionEnableFlow>(profile_, app_id_, this);
+      flow_->StartForNativeWindow(nullptr);
+    }
+  }
+
+ private:
+  // ExtensionEnableFlowDelegate overrides.
+  void ExtensionEnableFlowFinished() override {
+    flow_.reset();
+    // Automatically launch app after enabling.
+    if (!callback_.is_null()) {
+      std::move(callback_).Run();
+    }
+  }
+
+  void ExtensionEnableFlowAborted(bool user_initiated) override {
+    flow_.reset();
+  }
+
+  Profile* profile_;
+  std::string app_id_;
+  Callback callback_;
+  std::unique_ptr<ExtensionEnableFlow> flow_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionAppsEnableFlow);
+};
 
 ExtensionApps::ExtensionApps()
     : binding_(this),
@@ -163,7 +208,7 @@ void ExtensionApps::Launch(const std::string& app_id,
       extensions::ExtensionRegistry::Get(profile_)->GetInstalledExtension(
           app_id);
   if (!extension || !extensions::util::IsAppLaunchable(app_id, profile_) ||
-      RunExtensionEnableFlow(app_id)) {
+      RunExtensionEnableFlow(app_id, event_flags, launch_source, display_id)) {
     return;
   }
 
@@ -362,6 +407,8 @@ void ExtensionApps::OnExtensionUninstalled(
   if (!Accepts(extension)) {
     return;
   }
+
+  enable_flow_map_.erase(extension->id());
 
   // Construct an App with only the information required to identify an
   // uninstallation.
@@ -596,20 +643,23 @@ void ExtensionApps::ConvertVector(const extensions::ExtensionSet& extensions,
   }
 }
 
-bool ExtensionApps::RunExtensionEnableFlow(const std::string& app_id) {
+bool ExtensionApps::RunExtensionEnableFlow(
+    const std::string& app_id,
+    int32_t event_flags,
+    apps::mojom::LaunchSource launch_source,
+    int64_t display_id) {
   if (extensions::util::IsAppLaunchableWithoutEnabling(app_id, profile_)) {
     return false;
   }
 
-  // TODO(crbug.com/826982): run the extension enable flow, doing what
-  // chrome/browser/ui/app_list/extension_app_item.h does, even if we don't do
-  // it in exactly the same way.
-  //
-  // Re-using the ExtensionEnableFlow code is not entirely trivial. An
-  // ExtensionEnableFlow is created for one particular app_id, the same way
-  // that an ExtensionAppItem maps 1:1 to an app_id. In contrast, this class
-  // (the ExtensionApps publisher) handles all app_id's, not just one.
+  if (enable_flow_map_.find(app_id) == enable_flow_map_.end()) {
+    enable_flow_map_[app_id] =
+        std::make_unique<ExtensionAppsEnableFlow>(profile_, app_id);
+  }
 
+  enable_flow_map_[app_id]->Run(
+      base::BindOnce(&ExtensionApps::Launch, weak_factory_.GetWeakPtr(), app_id,
+                     event_flags, launch_source, display_id));
   return true;
 }
 

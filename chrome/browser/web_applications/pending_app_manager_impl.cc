@@ -40,27 +40,21 @@ PendingAppManagerImpl::~PendingAppManagerImpl() = default;
 
 void PendingAppManagerImpl::Install(ExternalInstallOptions install_options,
                                     OnceInstallCallback callback) {
-  pending_tasks_and_callbacks_.push_front(std::make_unique<TaskAndCallback>(
+  pending_installs_.push_front(std::make_unique<TaskAndCallback>(
       CreateInstallationTask(std::move(install_options)), std::move(callback)));
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&PendingAppManagerImpl::MaybeStartNextInstallation,
-                     weak_ptr_factory_.GetWeakPtr()));
+  PostMaybeStartNext();
 }
 
 void PendingAppManagerImpl::InstallApps(
     std::vector<ExternalInstallOptions> install_options_list,
     const RepeatingInstallCallback& callback) {
   for (auto& install_options : install_options_list) {
-    pending_tasks_and_callbacks_.push_back(std::make_unique<TaskAndCallback>(
+    pending_installs_.push_back(std::make_unique<TaskAndCallback>(
         CreateInstallationTask(std::move(install_options)), callback));
   }
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&PendingAppManagerImpl::MaybeStartNextInstallation,
-                     weak_ptr_factory_.GetWeakPtr()));
+  PostMaybeStartNext();
 }
 
 void PendingAppManagerImpl::UninstallApps(std::vector<GURL> uninstall_urls,
@@ -75,8 +69,8 @@ void PendingAppManagerImpl::UninstallApps(std::vector<GURL> uninstall_urls,
 }
 
 void PendingAppManagerImpl::Shutdown() {
-  pending_tasks_and_callbacks_.clear();
-  current_task_and_callback_.reset();
+  pending_installs_.clear();
+  current_install_.reset();
   web_contents_.reset();
 }
 
@@ -93,14 +87,20 @@ PendingAppManagerImpl::CreateInstallationTask(
                                                  std::move(install_options));
 }
 
-void PendingAppManagerImpl::MaybeStartNextInstallation() {
-  if (current_task_and_callback_)
+void PendingAppManagerImpl::PostMaybeStartNext() {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&PendingAppManagerImpl::MaybeStartNext,
+                                weak_ptr_factory_.GetWeakPtr()));
+}
+
+void PendingAppManagerImpl::MaybeStartNext() {
+  if (current_install_)
     return;
 
-  while (!pending_tasks_and_callbacks_.empty()) {
+  while (!pending_installs_.empty()) {
     std::unique_ptr<TaskAndCallback> front =
-        std::move(pending_tasks_and_callbacks_.front());
-    pending_tasks_and_callbacks_.pop_front();
+        std::move(pending_installs_.front());
+    pending_installs_.pop_front();
 
     const ExternalInstallOptions& install_options =
         front->task->install_options();
@@ -169,12 +169,12 @@ void PendingAppManagerImpl::MaybeStartNextInstallation() {
 
 void PendingAppManagerImpl::StartInstallationTask(
     std::unique_ptr<TaskAndCallback> task) {
-  DCHECK(!current_task_and_callback_);
-  current_task_and_callback_ = std::move(task);
+  DCHECK(!current_install_);
+  current_install_ = std::move(task);
 
   CreateWebContentsIfNecessary();
 
-  url_loader_->LoadUrl(current_task_and_callback_->task->install_options().url,
+  url_loader_->LoadUrl(current_install_->task->install_options().url,
                        web_contents_.get(),
                        base::BindOnce(&PendingAppManagerImpl::OnUrlLoaded,
                                       weak_ptr_factory_.GetWeakPtr()));
@@ -190,7 +190,7 @@ void PendingAppManagerImpl::CreateWebContentsIfNecessary() {
 }
 
 void PendingAppManagerImpl::OnUrlLoaded(WebAppUrlLoader::Result result) {
-  current_task_and_callback_->task->Install(
+  current_install_->task->Install(
       web_contents_.get(), result,
       base::BindOnce(&PendingAppManagerImpl::OnInstalled,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -206,15 +206,10 @@ void PendingAppManagerImpl::CurrentInstallationFinished(
   // Post a task to avoid InstallableManager crashing and do so before
   // running the callback in case the callback tries to install another
   // app.
-  // TODO(crbug.com/943848): Run next installation synchronously once
-  // InstallableManager is fixed.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&PendingAppManagerImpl::MaybeStartNextInstallation,
-                     weak_ptr_factory_.GetWeakPtr()));
+  PostMaybeStartNext();
 
   std::unique_ptr<TaskAndCallback> task_and_callback;
-  task_and_callback.swap(current_task_and_callback_);
+  task_and_callback.swap(current_install_);
   std::move(task_and_callback->callback)
       .Run(task_and_callback->task->install_options().url, code);
 }

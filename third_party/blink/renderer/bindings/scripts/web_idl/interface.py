@@ -11,6 +11,7 @@ from .constant import Constant
 from .identifier_ir_map import IdentifierIRMap
 from .idl_member import IdlMember
 from .idl_type import IdlType
+from .make_copy import make_copy
 from .operation import Operation
 from .reference import RefById
 from .user_defined_type import UserDefinedType
@@ -88,34 +89,16 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
             self.maplike = maplike
             self.setlike = setlike
 
-        def make_copy(self):
-            return Interface.IR(
-                identifier=self.identifier,
-                is_partial=self.is_partial,
-                is_mixin=self.is_mixin,
-                inherited=self.inherited,
-                attributes=map(Attribute.IR.make_copy, self.attributes),
-                constants=map(Constant.IR.make_copy, self.constants),
-                operations=map(Operation.IR.make_copy, self.operations),
-                iterable=self.iterable,
-                maplike=self.maplike,
-                setlike=self.setlike,
-                extended_attributes=self.extended_attributes.make_copy(),
-                code_generator_info=self.code_generator_info.make_copy(),
-                components=self.components,
-                debug_info=self.debug_info.make_copy())
-
     def __init__(self, ir):
         assert isinstance(ir, Interface.IR)
         assert not ir.is_partial
 
+        ir = make_copy(ir)
         UserDefinedType.__init__(self, ir.identifier)
-        WithExtendedAttributes.__init__(self,
-                                        ir.extended_attributes.make_copy())
-        WithCodeGeneratorInfo.__init__(self,
-                                       ir.code_generator_info.make_copy())
+        WithExtendedAttributes.__init__(self, ir.extended_attributes)
+        WithCodeGeneratorInfo.__init__(self, ir.code_generator_info)
         WithComponent.__init__(self, components=ir.components)
-        WithDebugInfo.__init__(self, ir.debug_info.make_copy())
+        WithDebugInfo.__init__(self, ir.debug_info)
 
         self._is_mixin = ir.is_mixin
         self._inherited = ir.inherited

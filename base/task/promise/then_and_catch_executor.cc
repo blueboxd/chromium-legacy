@@ -18,31 +18,21 @@ bool ThenAndCatchExecutorCommon::IsCancelled() const {
   return reject_callback_.IsCancelled();
 }
 
-PromiseExecutor::PrerequisitePolicy
-ThenAndCatchExecutorCommon::GetPrerequisitePolicy() const {
-  return PromiseExecutor::PrerequisitePolicy::kAll;
-}
-
 void ThenAndCatchExecutorCommon::Execute(AbstractPromise* promise,
                                          ExecuteCallback execute_then,
                                          ExecuteCallback execute_catch) {
-  AbstractPromise* prerequisite =
-      promise->GetOnlyPrerequisite()->FindNonCurriedAncestor();
+  AbstractPromise* prerequisite = promise->GetOnlyPrerequisite();
   if (prerequisite->IsResolved()) {
-    if (ProcessNullCallback(resolve_callback_, prerequisite, promise)) {
-      promise->OnResolved();
+    if (ProcessNullCallback(resolve_callback_, prerequisite, promise))
       return;
-    }
 
-    execute_then(prerequisite, promise, this);
+    execute_then(prerequisite, promise, &resolve_callback_);
   } else {
     DCHECK(prerequisite->IsRejected());
-    if (ProcessNullCallback(reject_callback_, prerequisite, promise)) {
-      promise->OnResolved();
+    if (ProcessNullCallback(reject_callback_, prerequisite, promise))
       return;
-    }
 
-    execute_catch(prerequisite, promise, this);
+    execute_catch(prerequisite, promise, &reject_callback_);
   }
 }
 

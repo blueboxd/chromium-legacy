@@ -1030,7 +1030,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
           // Worker integration.
           if (service_worker_navigation_handle_) {
             RunOrPostTaskOnThread(
-                FROM_HERE, ServiceWorkerContextWrapper::GetCoreThreadId(),
+                FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
                 base::BindOnce(
                     [](ServiceWorkerNavigationHandleCore* core) {
                       base::WeakPtr<ServiceWorkerProviderHost> host =

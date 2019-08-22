@@ -178,9 +178,11 @@ class FCMInvalidationServiceTestDelegate {
         identity_provider_.get(),
         base::BindRepeating(&syncer::FCMNetworkHandler::Create,
                             gcm_driver_.get(), mock_instance_id_driver_.get()),
-        mock_instance_id_driver_.get(), &pref_service_,
-        base::BindRepeating(&data_decoder::SafeJsonParser::Parse, nullptr),
-        &url_loader_factory_);
+        base::BindRepeating(
+            &syncer::PerUserTopicRegistrationManager::Create,
+            identity_provider_.get(), &pref_service_, &url_loader_factory_,
+            base::BindRepeating(&data_decoder::SafeJsonParser::Parse, nullptr)),
+        mock_instance_id_driver_.get(), &pref_service_);
   }
 
   void InitializeInvalidationService() {

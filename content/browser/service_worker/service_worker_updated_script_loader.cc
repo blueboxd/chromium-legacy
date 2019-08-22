@@ -60,7 +60,7 @@ ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper::
         const network::ResourceRequest& resource_request,
         network::mojom::URLLoaderClientPtrInfo client,
         const net::NetworkTrafficAnnotationTag& traffic_annotation) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   auto wrapper = base::WrapUnique(new ThrottlingURLLoaderCoreWrapper());
 
   RunOrPostTaskOnThread(

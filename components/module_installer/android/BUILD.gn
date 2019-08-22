@@ -32,14 +32,6 @@ android_library("module_installer_java") {
   jacoco_never_instrument = true
 }
 
-# Temporary java_group so that /clank (downstream) doesn't break
-# Will be removed as soon as the downstream CL lands
-java_group("module_installer_stub_java") {
-  deps = [
-    ":module_installer_java",
-  ]
-}
-
 android_library("module_installer_test_java") {
   testonly = true
   java_files = [ "javatests/src/org/chromium/components/module_installer/ModuleInstallerRule.java" ]

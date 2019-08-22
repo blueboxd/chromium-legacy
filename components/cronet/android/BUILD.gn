@@ -1348,6 +1348,7 @@ if (!is_component_build) {
       "//chrome/VERSION",
       "api_version.txt",
       "cronet_impl_common_proguard.cfg",
+      "cronet_impl_fake_proguard.cfg",
       "cronet_impl_platform_proguard.cfg",
     ]
     outputs = [

@@ -17,8 +17,8 @@ namespace leak_dialog_utils {
 base::string16 GetAcceptButtonLabel(
     password_manager::CredentialLeakType leak_type);
 
-// Returns the label for the leak dialog close button.
-base::string16 GetCloseButtonLabel();
+// Returns the label for the leak dialog cancel button.
+base::string16 GetCancelButtonLabel();
 
 // Returns the leak dialog message based on leak type.
 base::string16 GetDescription(password_manager::CredentialLeakType leak_type,
@@ -30,8 +30,8 @@ base::string16 GetTitle(password_manager::CredentialLeakType leak_type);
 // Checks whether the leak dialog should prompt user to password checkup.
 bool ShouldCheckPasswords(password_manager::CredentialLeakType leak_type);
 
-// Checks whether the leak dialog should show close button.
-bool ShouldShowCloseButton(password_manager::CredentialLeakType leak_type);
+// Checks whether the leak dialog should show cancel button.
+bool ShouldShowCancelButton(password_manager::CredentialLeakType leak_type);
 
 }  // namespace leak_dialog_utils
 

@@ -32,7 +32,7 @@ class BASE_EXPORT ThenAndCatchExecutorCommon {
 
   using ExecuteCallback = void (*)(AbstractPromise* prerequisite,
                                    AbstractPromise* promise,
-                                   ThenAndCatchExecutorCommon* executor);
+                                   CallbackBase* callback);
 
   void Execute(AbstractPromise* promise,
                ExecuteCallback execute_then,
@@ -74,9 +74,8 @@ class ThenAndCatchExecutor {
 
   bool IsCancelled() const { return common_.IsCancelled(); }
 
-  PromiseExecutor::PrerequisitePolicy GetPrerequisitePolicy() const {
-    return common_.GetPrerequisitePolicy();
-  }
+  static constexpr PromiseExecutor::PrerequisitePolicy kPrerequisitePolicy =
+      PromiseExecutor::PrerequisitePolicy::kAll;
 
   using ExecuteCallback = ThenAndCatchExecutorCommon::ExecuteCallback;
 
@@ -115,81 +114,50 @@ class ThenAndCatchExecutor {
  private:
   static void ExecuteThen(AbstractPromise* prerequisite,
                           AbstractPromise* promise,
-                          ThenAndCatchExecutorCommon* common) {
-    ExecuteThenInternal(prerequisite, promise, common,
+                          CallbackBase* resolve_callback) {
+    ExecuteThenInternal(prerequisite, promise, resolve_callback,
                         PrerequisiteCouldResolve());
   }
 
   static void ExecuteCatch(AbstractPromise* prerequisite,
                            AbstractPromise* promise,
-                           ThenAndCatchExecutorCommon* common) {
-    ExecuteCatchInternal(prerequisite, promise, common,
+                           CallbackBase* reject_callback) {
+    ExecuteCatchInternal(prerequisite, promise, reject_callback,
                          PrerequisiteCouldReject());
   }
 
   static void ExecuteThenInternal(AbstractPromise* prerequisite,
                                   AbstractPromise* promise,
-                                  ThenAndCatchExecutorCommon* common,
+                                  CallbackBase* resolve_callback,
                                   std::true_type can_resolve) {
-    ResolveOnceCallback* resolve_callback =
-        static_cast<ResolveOnceCallback*>(&common->resolve_callback_);
     RunHelper<ResolveOnceCallback, Resolved<ArgResolve>, ResolveStorage,
-              RejectStorage>::Run(std::move(*resolve_callback), prerequisite,
-                                  promise);
-
-    using CheckResultTagType =
-        typename PromiseCallbackTraits<ResolveReturnT>::TagType;
-
-    CheckResultType(promise, CheckResultTagType());
+              RejectStorage>::
+        Run(std::move(*static_cast<ResolveOnceCallback*>(resolve_callback)),
+            prerequisite, promise);
   }
 
   static void ExecuteThenInternal(AbstractPromise* prerequisite,
                                   AbstractPromise* promise,
-                                  ThenAndCatchExecutorCommon* common,
+                                  CallbackBase* resolve_callback,
                                   std::false_type can_resolve) {
     // |prerequisite| can't resolve so don't generate dead code.
   }
 
   static void ExecuteCatchInternal(AbstractPromise* prerequisite,
                                    AbstractPromise* promise,
-                                   ThenAndCatchExecutorCommon* common,
+                                   CallbackBase* reject_callback,
                                    std::true_type can_reject) {
-    RejectOnceCallback* reject_callback =
-        static_cast<RejectOnceCallback*>(&common->reject_callback_);
     RunHelper<RejectOnceCallback, Rejected<ArgReject>, ResolveStorage,
-              RejectStorage>::Run(std::move(*reject_callback), prerequisite,
-                                  promise);
-
-    using CheckResultTagType =
-        typename PromiseCallbackTraits<RejectReturnT>::TagType;
-
-    CheckResultType(promise, CheckResultTagType());
+              RejectStorage>::
+        Run(std::move(*static_cast<RejectOnceCallback*>(reject_callback)),
+            prerequisite, promise);
   }
 
   static void ExecuteCatchInternal(AbstractPromise* prerequisite,
                                    AbstractPromise* promise,
-                                   ThenAndCatchExecutorCommon* common,
+                                   CallbackBase* reject_callback,
                                    std::false_type can_reject) {
     // |prerequisite| can't reject so don't generate dead code.
-  }
-
-  static void CheckResultType(AbstractPromise* promise, CouldResolveOrReject) {
-    if (promise->IsResolvedWithPromise() ||
-        promise->value().type() == TypeId::From<ResolveStorage>()) {
-      promise->OnResolved();
-    } else {
-      DCHECK_EQ(promise->value().type(), TypeId::From<RejectStorage>())
-          << " See " << promise->from_here().ToString();
-      promise->OnRejected();
-    }
-  }
-
-  static void CheckResultType(AbstractPromise* promise, CanOnlyResolve) {
-    promise->OnResolved();
-  }
-
-  static void CheckResultType(AbstractPromise* promise, CanOnlyReject) {
-    promise->OnRejected();
   }
 
   ThenAndCatchExecutorCommon common_;

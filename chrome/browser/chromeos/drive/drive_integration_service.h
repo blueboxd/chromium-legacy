@@ -69,6 +69,11 @@ enum class DriveMountStatus {
   kMaxValue = kTimeout,
 };
 
+struct QuickAccessItem {
+  base::FilePath path;
+  double confidence;
+};
+
 // Interface for classes that need to observe events from
 // DriveIntegrationService.  All events are notified on UI thread.
 class DriveIntegrationServiceObserver {
@@ -106,6 +111,8 @@ class DriveIntegrationService : public KeyedService,
   class PreferenceWatcher;
   using DriveFsMojoListenerFactory = base::RepeatingCallback<
       std::unique_ptr<drivefs::DriveFsBootstrapListener>()>;
+  using GetQuickAccessItemsCallback =
+      base::OnceCallback<void(drive::FileError, std::vector<QuickAccessItem>)>;
 
   // test_drive_service, test_mount_point_name, test_cache_root and
   // test_file_system are used by tests to inject customized instances.
@@ -186,6 +193,9 @@ class DriveIntegrationService : public KeyedService,
   // connected.
   drivefs::mojom::DriveFs* GetDriveFsInterface() const;
 
+  void GetQuickAccessItems(int max_number,
+                           GetQuickAccessItemsCallback callback);
+
  private:
   enum State {
     NOT_INITIALIZED,
@@ -253,6 +263,11 @@ class DriveIntegrationService : public KeyedService,
   // chromeos::PowerManagerClient::Observer overrides:
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
+
+  void OnGetQuickAccessItems(
+      GetQuickAccessItemsCallback callback,
+      drive::FileError error,
+      base::Optional<std::vector<drivefs::mojom::QueryItemPtr>> items);
 
   friend class DriveIntegrationServiceFactory;
 

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Copyright 2019 The Chromium Authors. All rights reserved.
+
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file.
+-->
+
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- TODO(996512): Consider to add this TextAppearance to the main styles.xml -->
+    <style name="TextAppearance.BlueTitle2Incognito" parent="TextAppearance.BlueTitle2" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/modern_blue_300</item>
+    </style>
+</resources>

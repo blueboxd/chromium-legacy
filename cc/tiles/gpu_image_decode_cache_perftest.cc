@@ -176,7 +176,7 @@ TEST_P(GpuImageDecodeCachePerfTest, AcquireExistingImages) {
   cache_.DrawWithImageFinished(image, decoded_image);
 
   do {
-    DecodedDrawImage decoded_image = cache_.GetDecodedImageForDraw(image);
+    decoded_image = cache_.GetDecodedImageForDraw(image);
     cache_.DrawWithImageFinished(image, decoded_image);
     timer_.NextLap();
   } while (!timer_.HasTimeLimitExpired());

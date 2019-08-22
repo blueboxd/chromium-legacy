@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS XRInputSources can be properly added and removed from the session
-Harness: the test ran to completion.
-

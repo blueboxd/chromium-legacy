@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_PENDING_APP_MANAGER_IMPL_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_PENDING_APP_MANAGER_IMPL_H_
 
-#include <deque>
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -59,7 +59,9 @@ class PendingAppManagerImpl : public PendingAppManager {
  private:
   struct TaskAndCallback;
 
-  void MaybeStartNextInstallation();
+  void PostMaybeStartNext();
+
+  void MaybeStartNext();
 
   void StartInstallationTask(std::unique_ptr<TaskAndCallback> task);
 
@@ -76,7 +78,7 @@ class PendingAppManagerImpl : public PendingAppManager {
   void CurrentInstallationFinished(const base::Optional<std::string>& app_id,
                                    InstallResultCode code);
 
-  Profile* profile_;
+  Profile* const profile_;
   ExternallyInstalledWebAppPrefs externally_installed_app_prefs_;
 
   // unique_ptr so that it can be replaced in tests.
@@ -84,9 +86,9 @@ class PendingAppManagerImpl : public PendingAppManager {
 
   std::unique_ptr<content::WebContents> web_contents_;
 
-  std::unique_ptr<TaskAndCallback> current_task_and_callback_;
+  std::unique_ptr<TaskAndCallback> current_install_;
 
-  std::deque<std::unique_ptr<TaskAndCallback>> pending_tasks_and_callbacks_;
+  base::circular_deque<std::unique_ptr<TaskAndCallback>> pending_installs_;
 
   base::WeakPtrFactory<PendingAppManagerImpl> weak_ptr_factory_{this};
 

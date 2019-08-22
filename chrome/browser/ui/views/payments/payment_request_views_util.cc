@@ -86,7 +86,7 @@ std::unique_ptr<views::View> GetBaseProfileLabel(
       label->SetEnabledColor(label->GetNativeTheme()->GetSystemColor(
           ui::NativeTheme::kColorId_LabelDisabledColor));
     }
-    container->AddChildView(label.release());
+    container->AddChildView(std::move(label));
   }
 
   if (!s2.empty()) {
@@ -97,7 +97,7 @@ std::unique_ptr<views::View> GetBaseProfileLabel(
       label->SetEnabledColor(label->GetNativeTheme()->GetSystemColor(
           ui::NativeTheme::kColorId_LabelDisabledColor));
     }
-    container->AddChildView(label.release());
+    container->AddChildView(std::move(label));
   }
 
   if (!s3.empty()) {
@@ -108,7 +108,7 @@ std::unique_ptr<views::View> GetBaseProfileLabel(
       label->SetEnabledColor(label->GetNativeTheme()->GetSystemColor(
           ui::NativeTheme::kColorId_LabelDisabledColor));
     }
-    container->AddChildView(label.release());
+    container->AddChildView(std::move(label));
   }
 
   *accessible_content = l10n_util::GetStringFUTF16(
@@ -287,7 +287,7 @@ std::unique_ptr<views::View> CreateProductLogoFooterView() {
                             .GetImageNamed(IDR_PRODUCT_LOGO_NAME_22)
                             .AsImageSkia());
   chrome_logo->set_tooltip_text(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
-  content_view->AddChildView(chrome_logo.release());
+  content_view->AddChildView(std::move(chrome_logo));
 
   return content_view;
 }
@@ -305,7 +305,7 @@ std::unique_ptr<views::View> GetShippingAddressLabelWithMissingInfo(
 
   base::string16 missing = comp.GetStringForMissingShippingFields(profile);
   if (!missing.empty()) {
-    base_label->AddChildView(GetLabelForMissingInformation(missing).release());
+    base_label->AddChildView(GetLabelForMissingInformation(missing));
     *accessible_content = l10n_util::GetStringFUTF16(
         IDS_PAYMENTS_ACCESSIBLE_LABEL_WITH_ERROR, *accessible_content, missing);
   }
@@ -340,7 +340,7 @@ std::unique_ptr<views::View> GetContactInfoLabel(
 
   base::string16 missing = comp.GetStringForMissingContactFields(profile);
   if (!missing.empty()) {
-    base_label->AddChildView(GetLabelForMissingInformation(missing).release());
+    base_label->AddChildView(GetLabelForMissingInformation(missing));
     *accessible_content = l10n_util::GetStringFUTF16(
         IDS_PAYMENTS_ACCESSIBLE_LABEL_WITH_ERROR, *accessible_content, missing);
   }
@@ -406,13 +406,13 @@ std::unique_ptr<views::View> CreateShippingOptionLabel(
     shipping_label->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
     shipping_label->SetID(
         static_cast<int>(DialogViewID::SHIPPING_OPTION_DESCRIPTION));
-    container->AddChildView(shipping_label.release());
+    container->AddChildView(std::move(shipping_label));
 
     std::unique_ptr<views::Label> amount_label =
         std::make_unique<views::Label>(formatted_amount);
     amount_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     amount_label->SetID(static_cast<int>(DialogViewID::SHIPPING_OPTION_AMOUNT));
-    container->AddChildView(amount_label.release());
+    container->AddChildView(std::move(amount_label));
 
     *accessible_content = l10n_util::GetStringFUTF16(
         IDS_PAYMENTS_PROFILE_LABELS_ACCESSIBLE_FORMAT, text, formatted_amount,
@@ -452,12 +452,12 @@ std::unique_ptr<views::View> CreateWarningView(const base::string16& message,
         vector_icons::kWarningIcon, 16,
         warning_icon->GetNativeTheme()->GetSystemColor(
             ui::NativeTheme::kColorId_AlertSeverityHigh)));
-    header_view->AddChildView(warning_icon.release());
+    header_view->AddChildView(std::move(warning_icon));
     label->SetEnabledColor(label->GetNativeTheme()->GetSystemColor(
         ui::NativeTheme::kColorId_AlertSeverityHigh));
   }
 
-  header_view->AddChildView(label.release());
+  header_view->AddChildView(std::move(label));
   return header_view;
 }
 

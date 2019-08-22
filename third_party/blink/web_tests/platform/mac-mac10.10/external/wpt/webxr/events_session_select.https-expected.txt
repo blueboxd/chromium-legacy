@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS XRInputSources primary input presses properly fires off the right events
-Harness: the test ran to completion.
-

@@ -256,11 +256,8 @@ void SyncEngineBackend::DoOnInvalidatorStateChange(InvalidatorState state) {
 bool SyncEngineBackend::ShouldIgnoreRedundantInvalidation(
     const Invalidation& invalidation,
     ModelType type) {
-  bool fcm_invalidation =
-      (base::FeatureList::IsEnabled(
-           invalidation::switches::kFCMInvalidations) &&
-       base::FeatureList::IsEnabled(
-           invalidation::switches::kFCMInvalidationsForSyncDontCheckVersion));
+  bool fcm_invalidation = base::FeatureList::IsEnabled(
+      invalidation::switches::kFCMInvalidationsForSyncDontCheckVersion);
   bool redundant_invalidation = false;
   auto last_invalidation = last_invalidation_versions_.find(type);
   if (!invalidation.is_unknown_version() &&

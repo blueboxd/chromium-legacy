@@ -200,7 +200,7 @@ ServiceWorkerObjectHost::ServiceWorkerObjectHost(
       provider_host_(provider_host),
       provider_origin_(url::Origin::Create(provider_host->url())),
       version_(std::move(version)) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(context_ && provider_host_ && version_);
   DCHECK(context_->GetLiveRegistration(version_->registration_id()));
   version_->AddObserver(this);
@@ -209,7 +209,7 @@ ServiceWorkerObjectHost::ServiceWorkerObjectHost(
 }
 
 ServiceWorkerObjectHost::~ServiceWorkerObjectHost() {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   version_->RemoveObserver(this);
 }
 

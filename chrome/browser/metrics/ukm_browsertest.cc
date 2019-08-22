@@ -334,9 +334,7 @@ class UkmBrowserTest : public UkmBrowserTestBase,
 
 class UkmBrowserTestWithSyncTransport : public UkmBrowserTest {
  public:
-  UkmBrowserTestWithSyncTransport() {
-    features_.InitAndEnableFeature(switches::kSyncSupportSecondaryAccount);
-  }
+  UkmBrowserTestWithSyncTransport() {}
 
   void SetUpInProcessBrowserTestFixture() override {
     // This is required to support (fake) secondary-account-signin (based on
@@ -355,8 +353,6 @@ class UkmBrowserTestWithSyncTransport : public UkmBrowserTest {
   }
 
  private:
-  base::test::ScopedFeatureList features_;
-
   secondary_account_helper::ScopedSigninClientFactory
       test_signin_client_factory_;
 

@@ -32,6 +32,8 @@ public class TabListFaviconProvider {
     private final Context mContext;
     @ColorInt
     private final int mDefaultIconColor;
+    @ColorInt
+    private final int mIncognitoIconColor;
 
     /**
      * Construct the provider that provides favicons for tab list.
@@ -59,6 +61,7 @@ public class TabListFaviconProvider {
             sRoundedChromeDrawable = processBitmap(chromeBitmap);
         }
         mDefaultIconColor = mContext.getResources().getColor(R.color.default_icon_color);
+        mIncognitoIconColor = mContext.getResources().getColor(R.color.default_icon_color_white);
     }
 
     private Drawable processBitmap(Bitmap bitmap) {
@@ -69,9 +72,10 @@ public class TabListFaviconProvider {
 
     /**
      * @return The scaled rounded Globe Drawable as default favicon.
+     * @param isIncognito Whether the {@link Drawable} is used for incognito mode.
      */
-    public Drawable getDefaultFaviconDrawable() {
-        return getRoundedGlobeDrawable();
+    public Drawable getDefaultFaviconDrawable(boolean isIncognito) {
+        return getRoundedGlobeDrawable(isIncognito);
     }
 
     /**
@@ -83,12 +87,12 @@ public class TabListFaviconProvider {
     public void getFaviconForUrlAsync(
             String url, boolean isIncognito, Callback<Drawable> faviconCallback) {
         if (NativePageFactory.isNativePageUrl(url, isIncognito)) {
-            faviconCallback.onResult(getRoundedChromeDrawable());
+            faviconCallback.onResult(getRoundedChromeDrawable(isIncognito));
         } else {
             mFaviconHelper.getLocalFaviconImageForURL(
                     mProfile, url, mFaviconSize, (image, iconUrl) -> {
                         if (image == null) {
-                            faviconCallback.onResult(getRoundedGlobeDrawable());
+                            faviconCallback.onResult(getRoundedGlobeDrawable(isIncognito));
                         } else {
                             faviconCallback.onResult(processBitmap(image));
                         }
@@ -106,25 +110,30 @@ public class TabListFaviconProvider {
     public Drawable getFaviconForUrlSync(String url, boolean isIncognito, Bitmap icon) {
         if (icon == null) {
             boolean isNativeUrl = NativePageFactory.isNativePageUrl(url, isIncognito);
-            return isNativeUrl ? getRoundedChromeDrawable() : getRoundedGlobeDrawable();
+            return isNativeUrl ? getRoundedChromeDrawable(isIncognito)
+                               : getRoundedGlobeDrawable(isIncognito);
         } else {
             return processBitmap(icon);
         }
     }
 
-    private Drawable getRoundedChromeDrawable() {
+    private Drawable getRoundedChromeDrawable(boolean isIncognito) {
+        @ColorInt
+        int color = isIncognito ? mIncognitoIconColor : mDefaultIconColor;
         // Since static variable is still loaded when activity is destroyed due to configuration
         // changes, e.g. light/dark theme changes, setColorFilter is needed when we retrieve the
         // drawable. setColorFilter would be a no-op if color and the mode are the same.
-        sRoundedChromeDrawable.setColorFilter(mDefaultIconColor, PorterDuff.Mode.SRC_IN);
+        sRoundedChromeDrawable.setColorFilter(color, PorterDuff.Mode.SRC_IN);
         return sRoundedChromeDrawable;
     }
 
-    private Drawable getRoundedGlobeDrawable() {
+    private Drawable getRoundedGlobeDrawable(boolean isIncognito) {
+        @ColorInt
+        int color = isIncognito ? mIncognitoIconColor : mDefaultIconColor;
         // Since static variable is still loaded when activity is destroyed due to configuration
         // changes, e.g. light/dark theme changes, setColorFilter is needed when we retrieve the
         // drawable. setColorFilter would be a no-op if color and the mode are the same.
-        sRoundedGlobeDrawable.setColorFilter(mDefaultIconColor, PorterDuff.Mode.SRC_IN);
+        sRoundedGlobeDrawable.setColorFilter(color, PorterDuff.Mode.SRC_IN);
         return sRoundedGlobeDrawable;
     }
 }

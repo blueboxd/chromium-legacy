@@ -12,9 +12,11 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
+#include "third_party/blink/public/mojom/filesystem/file_system.mojom-forward.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom-forward.h"
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom-forward.h"
 #include "third_party/blink/public/mojom/websockets/websocket_connector.mojom-forward.h"
+#include "third_party/blink/public/mojom/worker/dedicated_worker_host.mojom.h"
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host_factory.mojom.h"
 
 namespace url {
@@ -40,12 +42,15 @@ void CreateDedicatedWorkerHostFactory(
 // DedicatedWorkerGlobalScope of the corresponding worker in the renderer via a
 // StrongBinding. This lives on the UI thread.
 class DedicatedWorkerHost final
-    : public service_manager::mojom::InterfaceProvider {
+    : public service_manager::mojom::InterfaceProvider,
+      public blink::mojom::DedicatedWorkerHost {
  public:
-  DedicatedWorkerHost(int worker_process_id,
-                      int ancestor_render_frame_id,
-                      int creator_render_frame_id,
-                      const url::Origin& origin);
+  DedicatedWorkerHost(
+      int worker_process_id,
+      int ancestor_render_frame_id,
+      int creator_render_frame_id,
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::DedicatedWorkerHost> host);
   ~DedicatedWorkerHost() final;
 
   void BindBrowserInterfaceBrokerReceiver(
@@ -57,12 +62,22 @@ class DedicatedWorkerHost final
   }
   const url::Origin& GetOrigin() { return origin_; }
 
+  void BindFileSystemManager(
+      mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver);
   void CreateIdleManager(
       mojo::PendingReceiver<blink::mojom::IdleManager> receiver);
 
   // service_manager::mojom::InterfaceProvider:
   void GetInterface(const std::string& interface_name,
                     mojo::ScopedMessagePipeHandle interface_pipe) override;
+
+  // blink::mojom::DedicatedWorkerHost:
+  void LifecycleStateChanged(blink::mojom::FrameLifecycleState state) override;
+
+  // TODO(dtapuska): This state needs to be hooked up to the
+  // ServiceWorkerProviderHost so the correct state is queried when looking
+  // for frozen dedicated workers. crbug.com/968417
+  bool is_frozen() const { return is_frozen_; }
 
   // PlzDedicatedWorker:
   void StartScriptLoad(
@@ -156,6 +171,10 @@ class DedicatedWorkerHost final
       this};
   mojo::Receiver<blink::mojom::BrowserInterfaceBroker> broker_receiver_{
       &broker_};
+  mojo::Receiver<blink::mojom::DedicatedWorkerHost> host_receiver_;
+
+  // The liveness state of the dedicated worker in the renderer.
+  bool is_frozen_ = false;
 
   base::WeakPtrFactory<DedicatedWorkerHost> weak_factory_{this};
 

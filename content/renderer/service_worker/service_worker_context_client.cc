@@ -96,7 +96,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     const GURL& script_url,
     bool is_starting_installed_worker,
     blink::mojom::RendererPreferencesPtr renderer_preferences,
-    blink::mojom::ServiceWorkerRequest service_worker_request,
+    mojo::PendingReceiver<blink::mojom::ServiceWorker> service_worker_receiver,
     mojo::PendingReceiver<blink::mojom::ControllerServiceWorker>
         controller_receiver,
     mojo::PendingAssociatedRemote<blink::mojom::EmbeddedWorkerInstanceHost>
@@ -120,7 +120,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
       preference_watcher_receiver_(std::move(preference_watcher_receiver)),
       initiator_thread_task_runner_(std::move(initiator_thread_task_runner)),
       proxy_(nullptr),
-      pending_service_worker_request_(std::move(service_worker_request)),
+      pending_service_worker_receiver_(std::move(service_worker_receiver)),
       controller_receiver_(std::move(controller_receiver)),
       pending_subresource_loader_updater_(
           std::move(subresource_loader_updater)),
@@ -260,8 +260,8 @@ void ServiceWorkerContextClient::WorkerContextStarted(
 
   context_ = std::make_unique<WorkerContextData>(this);
 
-  DCHECK(pending_service_worker_request_.is_pending());
-  proxy_->BindServiceWorker(pending_service_worker_request_.PassMessagePipe());
+  DCHECK(pending_service_worker_receiver_.is_valid());
+  proxy_->BindServiceWorker(pending_service_worker_receiver_.PassPipe());
 
   DCHECK(controller_receiver_.is_valid());
   proxy_->BindControllerServiceWorker(controller_receiver_.PassPipe());

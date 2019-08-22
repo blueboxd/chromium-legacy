@@ -187,7 +187,7 @@ void WebSocket::WebSocketEventHandler::OnAddChannelResponse(
       std::move(websocket_to_pass), mojo::MakeRequest(&impl_->client_),
       selected_protocol, extensions, receive_quota_threshold,
       std::move(readable));
-  impl_->handshake_client_ = nullptr;
+  impl_->handshake_client_.reset();
   impl_->auth_handler_ = nullptr;
   impl_->header_client_ = nullptr;
   impl_->client_.set_connection_error_handler(
@@ -369,7 +369,7 @@ WebSocket::WebSocket(
     const url::Origin& origin,
     uint32_t options,
     HasRawHeadersAccess has_raw_headers_access,
-    mojom::WebSocketHandshakeClientPtr handshake_client,
+    mojo::PendingRemote<mojom::WebSocketHandshakeClient> handshake_client,
     mojom::AuthenticationHandlerPtr auth_handler,
     mojom::TrustedHeaderClientPtr header_client,
     WebSocketThrottler::PendingConnection pending_connection_tracker,
@@ -402,7 +402,7 @@ WebSocket::WebSocket(
     header_client_.set_connection_error_handler(
         base::BindOnce(&WebSocket::OnConnectionError, base::Unretained(this)));
   }
-  handshake_client_.set_connection_error_handler(
+  handshake_client_.set_disconnect_handler(
       base::BindOnce(&WebSocket::OnConnectionError, base::Unretained(this)));
   if (delay_ > base::TimeDelta()) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -680,7 +680,7 @@ void WebSocket::OnHeadersReceivedComplete(
 }
 
 void WebSocket::Reset() {
-  handshake_client_ = nullptr;
+  handshake_client_.reset();
   client_ = nullptr;
   auth_handler_ = nullptr;
   header_client_ = nullptr;

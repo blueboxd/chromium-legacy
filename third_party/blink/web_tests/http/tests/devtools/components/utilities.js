@@ -129,32 +129,6 @@
       next();
     },
 
-    function qselectTest(next) {
-      var testArrays =
-          [[], [0], [0, 0, 0, 0, 0, 0, 0, 0], [4, 3, 2, 1], [1, 2, 3, 4, 5], [-1, 3, 2, 7, 7, 7, 10, 12, 3, 4, -1, 2]];
-
-      function testArray(array) {
-        function compare(a, b) {
-          return a - b;
-        }
-        var sorted = array.slice(0).sort(compare);
-
-        var reference = {min: sorted[0], median: sorted[Math.floor(sorted.length / 2)], max: sorted[sorted.length - 1]};
-
-        var actual = {
-          min: array.slice(0).qselect(0),
-          median: array.slice(0).qselect(Math.floor(array.length / 2)),
-          max: array.slice(0).qselect(array.length - 1)
-        };
-        TestRunner.addResult('Array: ' + JSON.stringify(array));
-        TestRunner.addResult('Reference: ' + JSON.stringify(reference));
-        TestRunner.addResult('Actual:    ' + JSON.stringify(actual));
-      }
-      for (var i = 0, l = testArrays.length; i < l; ++i)
-        testArray(testArrays[i]);
-      next();
-    },
-
     function sortRangeTest(next) {
       var testArrays = [[], [1], [2, 1], [6, 4, 2, 7, 10, 15, 1], [10, 44, 3, 6, 56, 66, 10, 55, 32, 56, 2, 5]];
 

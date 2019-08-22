@@ -135,7 +135,7 @@ void SetupOnUIThread(
     SetupProcessCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::Optional<base::TimeDelta> thread_hop_time;
-  if (!ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled())
+  if (!ServiceWorkerContext::IsServiceWorkerOnUIEnabled())
     thread_hop_time = base::Time::Now() - io_post_time.value();
 
   auto process_info =
@@ -148,7 +148,7 @@ void SetupOnUIThread(
 
   if (!process_manager) {
     base::Optional<base::Time> ui_post_time;
-    if (!ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled())
+    if (!ServiceWorkerContext::IsServiceWorkerOnUIEnabled())
       ui_post_time = base::Time::Now();
 
     ServiceWorkerContextWrapper::RunOrPostTaskOnCoreThread(
@@ -170,7 +170,7 @@ void SetupOnUIThread(
           process_info.get());
   if (status != blink::ServiceWorkerStatusCode::kOk) {
     base::Optional<base::Time> ui_post_time;
-    if (!ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled())
+    if (!ServiceWorkerContext::IsServiceWorkerOnUIEnabled())
       ui_post_time = base::Time::Now();
 
     ServiceWorkerContextWrapper::RunOrPostTaskOnCoreThread(
@@ -265,10 +265,10 @@ void SetupOnUIThread(
 
   // Continue to OnSetupCompleted on the core thread.
   base::Optional<base::Time> ui_post_time;
-  if (!ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled())
+  if (!ServiceWorkerContext::IsServiceWorkerOnUIEnabled())
     ui_post_time = base::Time::Now();
   RunOrPostTaskOnThread(
-      FROM_HERE, ServiceWorkerContextWrapper::GetCoreThreadId(),
+      FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
       base::BindOnce(std::move(callback), status, std::move(params),
                      std::move(process_info), std::move(devtools_proxy),
                      std::move(factory_bundle_for_new_scripts),
@@ -321,8 +321,8 @@ class EmbeddedWorkerInstance::DevToolsProxy {
         ui_task_runner_(base::CreateSequencedTaskRunner({BrowserThread::UI})) {}
 
   ~DevToolsProxy() {
-    DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
-    if (ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled()) {
+    DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+    if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
       NotifyWorkerDestroyedOnUI(process_id_, agent_route_id_);
     } else {
       ui_task_runner_->PostTask(
@@ -334,8 +334,8 @@ class EmbeddedWorkerInstance::DevToolsProxy {
   void NotifyWorkerReadyForInspection(
       mojo::PendingRemote<blink::mojom::DevToolsAgent> agent_remote,
       mojo::PendingReceiver<blink::mojom::DevToolsAgentHost> host_receiver) {
-    DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
-    if (ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled()) {
+    DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+    if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
       NotifyWorkerReadyForInspectionOnUI(process_id_, agent_route_id_,
                                          std::move(agent_remote),
                                          std::move(host_receiver));
@@ -349,8 +349,8 @@ class EmbeddedWorkerInstance::DevToolsProxy {
   }
 
   void NotifyWorkerVersionInstalled() {
-    DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
-    if (ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled()) {
+    DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+    if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
       NotifyWorkerVersionInstalledOnUI(process_id_, agent_route_id_);
     } else {
       ui_task_runner_->PostTask(FROM_HERE,
@@ -360,8 +360,8 @@ class EmbeddedWorkerInstance::DevToolsProxy {
   }
 
   void NotifyWorkerVersionDoomed() {
-    DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
-    if (ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled()) {
+    DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+    if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
       NotifyWorkerVersionDoomedOnUI(process_id_, agent_route_id_);
     } else {
       ui_task_runner_->PostTask(
@@ -422,13 +422,13 @@ class EmbeddedWorkerInstance::WorkerProcessHandle {
         embedded_worker_id_(embedded_worker_id),
         process_id_(process_id),
         ui_task_runner_(std::move(ui_task_runner)) {
-    DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+    DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
     DCHECK_NE(ChildProcessHost::kInvalidUniqueID, process_id_);
   }
 
   ~WorkerProcessHandle() {
-    DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
-    if (ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled()) {
+    DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+    if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
       process_manager_->ReleaseWorkerProcess(embedded_worker_id_);
     } else {
       ui_task_runner_->PostTask(
@@ -473,14 +473,14 @@ class EmbeddedWorkerInstance::StartTask {
         started_during_browser_startup_(false),
         skip_recording_startup_time_(instance_->devtools_attached()),
         start_time_(start_time) {
-    DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+    DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("ServiceWorker",
                                       "EmbeddedWorkerInstance::Start", this,
                                       "Script", script_url.spec());
   }
 
   ~StartTask() {
-    DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+    DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
     if (did_send_start_) {
       TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker",
                                       "INITIALIZING_ON_RENDERER", this);
@@ -539,7 +539,7 @@ class EmbeddedWorkerInstance::StartTask {
 
   void Start(blink::mojom::EmbeddedWorkerStartParamsPtr params,
              StatusCallback sent_start_callback) {
-    DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+    DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
     DCHECK(instance_->context_);
     base::WeakPtr<ServiceWorkerContextCore> context = instance_->context_;
     state_ = ProcessAllocationState::ALLOCATING;
@@ -559,7 +559,7 @@ class EmbeddedWorkerInstance::StartTask {
 
     // Perform process allocation and setup on the UI thread. We will continue
     // on the core thread in StartTask::OnSetupCompleted().
-    if (ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled()) {
+    if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
       SetupOnUIThread(
           instance_->embedded_worker_id(), process_manager,
           can_use_existing_process, std::move(params), std::move(receiver_),
@@ -596,9 +596,9 @@ class EmbeddedWorkerInstance::StartTask {
       blink::mojom::CacheStoragePtrInfo cache_storage,
       const base::Optional<base::TimeDelta>& thread_hop_time,
       const base::Optional<base::Time>& ui_post_time) {
-    DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+    DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
-    if (!ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled())
+    if (!ServiceWorkerContext::IsServiceWorkerOnUIEnabled())
       thread_hop_time_ =
           thread_hop_time.value() + (base::Time::Now() - ui_post_time.value());
 
@@ -695,7 +695,7 @@ class EmbeddedWorkerInstance::StartTask {
 };
 
 EmbeddedWorkerInstance::~EmbeddedWorkerInstance() {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   devtools_proxy_.reset();
   ReleaseProcess();
 }
@@ -803,7 +803,7 @@ EmbeddedWorkerInstance::EmbeddedWorkerInstance(
       foreground_notified_(false),
       ui_task_runner_(base::CreateSequencedTaskRunner({BrowserThread::UI})) {
   DCHECK(owner_version_);
-  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(context_);
 }
 
@@ -838,7 +838,7 @@ void EmbeddedWorkerInstance::OnRegisteredToDevToolsManager(
 void EmbeddedWorkerInstance::SendStartWorker(
     blink::mojom::EmbeddedWorkerStartParamsPtr params) {
   DCHECK(context_);
-  DCHECK(params->service_worker_request.is_pending());
+  DCHECK(params->service_worker_receiver.is_valid());
   DCHECK(params->controller_receiver.is_valid());
   DCHECK(!instance_host_receiver_.is_bound());
 
@@ -989,7 +989,7 @@ void EmbeddedWorkerInstance::OnStopped() {
 }
 
 void EmbeddedWorkerInstance::Detach() {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   if (status() == EmbeddedWorkerStatus::STOPPED)
     return;
 
@@ -1000,7 +1000,7 @@ void EmbeddedWorkerInstance::Detach() {
 }
 
 void EmbeddedWorkerInstance::UpdateForegroundPriority() {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   if (process_handle_ &&
       owner_version_->ShouldRequireForegroundPriority(process_id())) {
     NotifyForegroundServiceWorkerAdded();
@@ -1012,7 +1012,7 @@ void EmbeddedWorkerInstance::UpdateForegroundPriority() {
 void EmbeddedWorkerInstance::UpdateLoaderFactories(
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo> script_bundle,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_bundle) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(subresource_loader_updater_.is_bound());
 
   subresource_loader_updater_->UpdateSubresourceLoaderFactories(
@@ -1247,14 +1247,14 @@ void EmbeddedWorkerInstance::SetNetworkFactoryForTesting(
 }
 
 void EmbeddedWorkerInstance::NotifyForegroundServiceWorkerAdded() {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   if (!process_handle_ || foreground_notified_)
     return;
 
   foreground_notified_ = true;
 
-  if (ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled()) {
+  if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
     NotifyForegroundServiceWorkerOnUIThread(true /* added */, process_id());
   } else {
     ui_task_runner_->PostTask(
@@ -1264,14 +1264,14 @@ void EmbeddedWorkerInstance::NotifyForegroundServiceWorkerAdded() {
 }
 
 void EmbeddedWorkerInstance::NotifyForegroundServiceWorkerRemoved() {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   if (!process_handle_ || !foreground_notified_)
     return;
 
   foreground_notified_ = false;
 
-  if (ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled()) {
+  if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
     NotifyForegroundServiceWorkerOnUIThread(false /* added */, process_id());
   } else {
     ui_task_runner_->PostTask(

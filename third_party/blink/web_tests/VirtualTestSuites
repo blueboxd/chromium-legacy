@@ -583,93 +583,93 @@
   {
     "prefix": "omt-worker-fetch",
     "base": "external/wpt/content-security-policy/inside-worker",
-    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,PlzDedicatedWorker"]
+    "args": ["--enable-features=PlzDedicatedWorker"]
   },
   {
     "prefix": "omt-worker-fetch",
     "base": "external/wpt/content-security-policy/worker-src",
-    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,PlzDedicatedWorker"]
+    "args": ["--enable-features=PlzDedicatedWorker"]
   },
   {
     "prefix": "omt-worker-fetch",
     "base": "external/wpt/fetch/",
-    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,PlzDedicatedWorker"]
+    "args": ["--enable-features=PlzDedicatedWorker"]
   },
   {
     "prefix": "omt-worker-fetch",
     "base": "external/wpt/html/browsers/offline/appcache/workers/",
-    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,PlzDedicatedWorker"]
+    "args": ["--enable-features=PlzDedicatedWorker"]
   },
   {
     "prefix": "omt-worker-fetch",
     "base": "external/wpt/mixed-content/classic-data-worker-fetch",
-    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,PlzDedicatedWorker"]
+    "args": ["--enable-features=PlzDedicatedWorker"]
   },
   {
     "prefix": "omt-worker-fetch",
     "base": "external/wpt/mixed-content/module-data-worker-import",
-    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,PlzDedicatedWorker"]
+    "args": ["--enable-features=PlzDedicatedWorker"]
   },
   {
     "prefix": "omt-worker-fetch",
     "base": "external/wpt/mixed-content/module-worker-top-level",
-    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,PlzDedicatedWorker"]
+    "args": ["--enable-features=PlzDedicatedWorker"]
   },
   {
     "prefix": "omt-worker-fetch",
     "base": "external/wpt/mixed-content/worker-request",
-    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,PlzDedicatedWorker"]
+    "args": ["--enable-features=PlzDedicatedWorker"]
   },
   {
     "prefix": "omt-worker-fetch",
     "base": "external/wpt/referrer-policy",
-    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,PlzDedicatedWorker"]
+    "args": ["--enable-features=PlzDedicatedWorker"]
   },
   {
     "prefix": "omt-worker-fetch",
     "base": "external/wpt/resource-timing",
-    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,PlzDedicatedWorker"]
+    "args": ["--enable-features=PlzDedicatedWorker"]
   },
   {
     "prefix": "omt-worker-fetch",
     "base": "external/wpt/service-workers",
-    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,PlzDedicatedWorker"]
+    "args": ["--enable-features=PlzDedicatedWorker"]
   },
   {
     "prefix": "omt-worker-fetch",
     "base": "external/wpt/upgrade-insecure-requests",
-    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,PlzDedicatedWorker"]
+    "args": ["--enable-features=PlzDedicatedWorker"]
   },
   {
     "prefix": "omt-worker-fetch",
     "base": "external/wpt/workers",
-    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,PlzDedicatedWorker"]
+    "args": ["--enable-features=PlzDedicatedWorker"]
   },
   {
     "prefix": "omt-worker-fetch",
     "base": "external/wpt/xhr",
-    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,PlzDedicatedWorker"]
+    "args": ["--enable-features=PlzDedicatedWorker"]
   },
   {
     "prefix": "omt-worker-fetch",
     "base": "fast/workers",
-    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,PlzDedicatedWorker"]
+    "args": ["--enable-features=PlzDedicatedWorker"]
   },
   {
     "prefix": "omt-worker-fetch",
     "base": "http/tests/origin_trials",
-    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,PlzDedicatedWorker"]
+    "args": ["--enable-features=PlzDedicatedWorker"]
   },
   {
     "prefix": "omt-worker-fetch",
     "base": "http/tests/security/cors-rfc1918",
-    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,PlzDedicatedWorker",
+    "args": ["--enable-features=PlzDedicatedWorker",
              "--enable-blink-features=CorsRFC1918"]
   },
   {
     "prefix": "omt-worker-fetch",
     "base": "http/tests/workers",
-    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,PlzDedicatedWorker"]
+    "args": ["--enable-features=PlzDedicatedWorker"]
   },
   {
     "prefix": "webrtc-wpt-plan-b",

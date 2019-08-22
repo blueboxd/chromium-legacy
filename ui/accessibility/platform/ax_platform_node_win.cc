@@ -5897,7 +5897,7 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
       return UIA_PaneControlTypeId;
 
     case ax::mojom::Role::kArticle:
-      return UIA_GroupControlTypeId;
+      return UIA_DocumentControlTypeId;
 
     case ax::mojom::Role::kAudio:
       return UIA_GroupControlTypeId;

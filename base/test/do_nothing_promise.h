@@ -18,18 +18,18 @@ struct DoNothingPromiseBuilder {
   bool can_reject = false;
   RejectPolicy reject_policy = RejectPolicy::kMustCatchRejection;
 
-  DoNothingPromiseBuilder& SetCanResolve(bool can_resolve) {
-    this->can_resolve = can_resolve;
+  DoNothingPromiseBuilder& SetCanResolve(bool can_resolve_v) {
+    can_resolve = can_resolve_v;
     return *this;
   }
 
-  DoNothingPromiseBuilder& SetCanReject(bool can_reject) {
-    this->can_reject = can_reject;
+  DoNothingPromiseBuilder& SetCanReject(bool can_reject_v) {
+    can_reject = can_reject_v;
     return *this;
   }
 
-  DoNothingPromiseBuilder& SetRejectPolicy(RejectPolicy reject_policy) {
-    this->reject_policy = reject_policy;
+  DoNothingPromiseBuilder& SetRejectPolicy(RejectPolicy reject_policy_v) {
+    reject_policy = reject_policy_v;
     return *this;
   }
 

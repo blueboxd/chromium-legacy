@@ -139,7 +139,7 @@ class SelfDeleteInstaller
         partition->GetPaymentAppContext();
 
     RunOrPostTaskOnThread(
-        FROM_HERE, ServiceWorkerContextWrapper::GetCoreThreadId(),
+        FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
         base::BindOnce(&SelfDeleteInstaller::SetPaymentAppInfoOnCoreThread,
                        this, payment_app_context, registration_id_,
                        scope_.spec(), app_name_, app_icon_, method_));
@@ -152,7 +152,7 @@ class SelfDeleteInstaller
       const std::string& name,
       const std::string& app_icon,
       const std::string& method) {
-    DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+    DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
     payment_app_context->payment_app_database()
         ->SetPaymentAppInfoForRegisteredServiceWorker(
@@ -161,7 +161,7 @@ class SelfDeleteInstaller
   }
 
   void OnSetPaymentAppInfo(payments::mojom::PaymentHandlerStatus status) {
-    DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+    DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
     RunOrPostTaskOnThread(
         FROM_HERE, BrowserThread::UI,

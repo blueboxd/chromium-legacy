@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS inlineVerticalFieldOfView is set appropriately on immersively sessions
-Harness: the test ran to completion.
-

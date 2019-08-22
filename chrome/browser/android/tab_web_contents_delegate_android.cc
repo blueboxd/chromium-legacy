@@ -35,7 +35,7 @@
 #include "chrome/browser/ui/android/device_dialog/bluetooth_chooser_android.h"
 #include "chrome/browser/ui/android/device_dialog/bluetooth_scanning_prompt_android.h"
 #include "chrome/browser/ui/android/infobars/framebust_block_infobar.h"
-#include "chrome/browser/ui/android/sms/sms_dialog_android.h"
+#include "chrome/browser/ui/android/sms/sms_infobar.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker.h"
 #include "chrome/browser/ui/blocked_content/popup_tracker.h"
@@ -162,9 +162,15 @@ TabWebContentsDelegateAndroid::RunBluetoothChooser(
   return std::make_unique<BluetoothChooserAndroid>(frame, event_handler);
 }
 
-std::unique_ptr<content::SmsDialog>
-TabWebContentsDelegateAndroid::CreateSmsDialog(const url::Origin& origin) {
-  return std::make_unique<SmsDialogAndroid>(origin);
+void TabWebContentsDelegateAndroid::CreateSmsPrompt(
+    content::RenderFrameHost* host,
+    const url::Origin& origin,
+    base::OnceClosure on_confirm,
+    base::OnceClosure on_cancel) {
+  auto* web_contents = content::WebContents::FromRenderFrameHost(host);
+  auto* infobar_service = InfoBarService::FromWebContents(web_contents);
+  SmsInfoBar::Create(infobar_service, origin, std::move(on_confirm),
+                     std::move(on_cancel));
 }
 
 std::unique_ptr<content::BluetoothScanningPrompt>

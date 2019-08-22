@@ -263,7 +263,7 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
         scope_url, blink::mojom::ScriptType::kClassic,
         blink::mojom::ServiceWorkerUpdateViaCache::kImports);
     RunOrPostTaskOnThread(
-        FROM_HERE, ServiceWorkerContextWrapper::GetCoreThreadId(),
+        FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
         base::BindOnce(
             &ServiceWorkerContextWrapper::RegisterServiceWorker,
             base::Unretained(service_worker_context), js_url, options,
@@ -274,7 +274,7 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
     // Wait for its activation.
     base::RunLoop run_loop;
     RunOrPostTaskOnThread(
-        FROM_HERE, ServiceWorkerContextWrapper::GetCoreThreadId(),
+        FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
         base::BindOnce(&ServiceWorkerActivationObserver::SignalActivation,
                        base::Unretained(service_worker_context),
                        run_loop.QuitClosure()));
@@ -293,7 +293,7 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
     base::RunLoop run_loop;
 
     RunOrPostTaskOnThread(
-        FROM_HERE, ServiceWorkerContextWrapper::GetCoreThreadId(),
+        FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
         base::BindOnce(
             &ServiceWorkerContextWrapper::GetAllOriginsInfo,
             base::Unretained(service_worker_context),

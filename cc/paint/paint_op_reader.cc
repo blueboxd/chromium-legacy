@@ -595,9 +595,9 @@ void PaintOpReader::Read(sk_sp<PaintShader>* shader) {
     ref.cached_shader_ = entry->shader()->GetSkShader();
   } else {
     ref.CreateSkShader();
-    std::unique_ptr<ServiceShaderTransferCacheEntry> entry(
-        new ServiceShaderTransferCacheEntry(*shader, shader_size));
-    options_.transfer_cache->CreateLocalEntry(shader_id, std::move(entry));
+    options_.transfer_cache->CreateLocalEntry(
+        shader_id, std::make_unique<ServiceShaderTransferCacheEntry>(
+                       *shader, shader_size));
   }
 }
 

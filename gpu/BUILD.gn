@@ -396,7 +396,9 @@ test("gl_tests") {
       "//ui/platform_window",
       "//ui/platform_window:platform_impls",
     ]
-    sources += [ "command_buffer/service/swap_chain_factory_dxgi_unittest.cc" ]
+    sources += [
+      "command_buffer/service/shared_image_backing_factory_d3d_unittest.cc",
+    ]
   }
 
   if (use_dawn) {

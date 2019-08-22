@@ -12,11 +12,9 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.history.HistoryManagerUtils;
-import org.chromium.chrome.browser.invalidation.InvalidationController;
 import org.chromium.chrome.browser.invalidation.SessionsInvalidationManager;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSession;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSessionTab;
@@ -119,12 +117,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
         mForeignSessionHelper.triggerSessionSync();
         registerObservers();
 
-        if (ChromeFeatureList.isInitialized()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.FCM_INVALIDATIONS)) {
-            SessionsInvalidationManager.get(mProfile).onRecentTabsPageOpened();
-        } else {
-            InvalidationController.get().onRecentTabsPageOpened();
-        }
+        SessionsInvalidationManager.get(mProfile).onRecentTabsPageOpened();
     }
 
     /**
@@ -152,12 +145,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
         mPrefs.destroy();
         mPrefs = null;
 
-        if (ChromeFeatureList.isInitialized()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.FCM_INVALIDATIONS)) {
-            SessionsInvalidationManager.get(mProfile).onRecentTabsPageClosed();
-        } else {
-            InvalidationController.get().onRecentTabsPageClosed();
-        }
+        SessionsInvalidationManager.get(mProfile).onRecentTabsPageClosed();
 
         mForeignSessionHelper.destroy();
         mForeignSessionHelper = null;

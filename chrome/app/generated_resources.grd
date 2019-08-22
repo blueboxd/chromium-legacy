@@ -9982,6 +9982,20 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <message name="IDS_NOTIFICATION_DEFAULT_UNHELPFUL_BUTTON_TEXT" desc="Text body for the unhelpful button in notifications sent from notification scheduler.">
       Not Helpful
     </message>
+
+    <!-- SMS strings -->
+    <message name="IDS_SMS_INFOBAR_TITLE" desc="Title shown when Chrome is waiting for an SMS on the user's behalf">
+      Do you want to enter the code on this site?
+    </message>
+
+    <message name="IDS_SMS_INFOBAR_STATUS_SMS_RECEIVED" desc="Message shown when Chrome has received an SMS on the user's behalf">
+      <ph name="ORIGIN">$1<ex>example.com</ex></ph> sent a verification code to your phone
+    </message>
+
+    <message name="IDS_SMS_INFOBAR_BUTTON_OK" desc="Text for the button shown when Chrome has received an SMS on the user's behalf">
+      Enter code
+    </message>
+
   </messages>
 </release>
 </grit>

@@ -16,13 +16,14 @@
 namespace content {
 
 FakeServiceWorker::FakeServiceWorker(EmbeddedWorkerTestHelper* helper)
-    : helper_(helper), binding_(this) {}
+    : helper_(helper) {}
 
 FakeServiceWorker::~FakeServiceWorker() = default;
 
-void FakeServiceWorker::Bind(blink::mojom::ServiceWorkerRequest request) {
-  binding_.Bind(std::move(request));
-  binding_.set_connection_error_handler(base::BindOnce(
+void FakeServiceWorker::Bind(
+    mojo::PendingReceiver<blink::mojom::ServiceWorker> receiver) {
+  receiver_.Bind(std::move(receiver));
+  receiver_.set_disconnect_handler(base::BindOnce(
       &FakeServiceWorker::CallOnConnectionError, base::Unretained(this)));
 }
 
@@ -35,7 +36,8 @@ void FakeServiceWorker::RunUntilInitializeGlobalScope() {
 }
 
 void FakeServiceWorker::InitializeGlobalScope(
-    blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
+    mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerHost>
+        service_worker_host,
     blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info,
     blink::mojom::FetchHandlerExistence fetch_handler_existence) {
   host_.Bind(std::move(service_worker_host));

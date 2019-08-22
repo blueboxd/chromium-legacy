@@ -283,12 +283,7 @@ void SyncEngineImpl::FinishConfigureDataTypesOnFrontendLoop(
   if (invalidator_) {
     ModelTypeSet invalidation_enabled_types(enabled_types);
 #if defined(OS_ANDROID)
-    // TODO(melandory): On Android, we should call
-    // SetInvalidationsForSessionsEnabled(falls) on start-up when feature is
-    // enabled. Once it's dome remove checking of the feature from here.
-    if (base::FeatureList::IsEnabled(
-            invalidation::switches::kFCMInvalidations) &&
-        !sessions_invalidation_enabled_) {
+    if (!sessions_invalidation_enabled_) {
       invalidation_enabled_types.Remove(syncer::SESSIONS);
       invalidation_enabled_types.Remove(syncer::FAVICON_IMAGES);
       invalidation_enabled_types.Remove(syncer::FAVICON_TRACKING);

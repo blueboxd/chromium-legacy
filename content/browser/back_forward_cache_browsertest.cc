@@ -770,6 +770,34 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       DoesNotCacheIfSubframeRecordingAudio) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Navigate to a page with an iframe.
+  GURL url(embedded_test_server()->GetURL("/page_with_iframe.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  RenderFrameHostImpl* rfh = current_frame_host();
+
+  // Request for audio recording from the subframe.
+  EXPECT_EQ("success", EvalJs(rfh->child_at(0)->current_frame_host(), R"(
+    new Promise(resolve => {
+      navigator.mediaDevices.getUserMedia({audio: true})
+        .then(m => { resolve("success"); })
+        .catch(() => { resolve("error"); });
+    });
+  )"));
+
+  RenderFrameDeletedObserver deleted(current_frame_host());
+
+  // 2) Navigate away.
+  shell()->LoadURL(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // The page was still recording audio when we navigated away, so it shouldn't
+  // have been cached.
+  deleted.WaitUntilDeleted();
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                        DoesNotCacheIfMainFrameStillLoading) {
   net::test_server::ControllableHttpResponse response(embedded_test_server(),
                                                       "/main_document");

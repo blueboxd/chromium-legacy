@@ -149,8 +149,9 @@ static void PushLayerPropertiesInternal(Iterator source_layers_begin,
       bool host_set_on_source = source_layer->layer_tree_host() == host_tree;
 
       bool source_found_by_iterator = false;
-      for (auto it = host_tree->begin(); it != host_tree->end(); ++it) {
-        if (*it == source_layer) {
+      for (auto host_tree_it = host_tree->begin();
+           host_tree_it != host_tree->end(); ++it) {
+        if (*host_tree_it == source_layer) {
           source_found_by_iterator = true;
           break;
         }

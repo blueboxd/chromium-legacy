@@ -8,7 +8,7 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_cell_utils.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_content_delegate.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
-#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -154,7 +154,8 @@
     attributedString = [[NSMutableAttributedString alloc]
         initWithString:blackText
             attributes:@{
-              NSForegroundColorAttributeName : UIColor.cr_labelColor,
+              NSForegroundColorAttributeName :
+                  [UIColor colorNamed:kTextPrimaryColor],
               NSFontAttributeName :
                   [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
             }];
@@ -162,7 +163,8 @@
       NSString* formattedGrayText =
           [NSString stringWithFormat:@" –– %@", grayText];
       NSDictionary* attributes = @{
-        NSForegroundColorAttributeName : UIColor.cr_secondaryLabelColor,
+        NSForegroundColorAttributeName :
+            [UIColor colorNamed:kTextSecondaryColor],
         NSFontAttributeName :
             [UIFont preferredFontForTextStyle:UIFontTextStyleBody]
       };

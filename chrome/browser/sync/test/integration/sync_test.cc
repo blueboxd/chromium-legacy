@@ -20,7 +20,6 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -644,25 +643,13 @@ void SyncTest::SetUpInvalidations(int index) {
       break;
 
     case IN_PROCESS_FAKE_SERVER: {
-      KeyedService* test_factory;
-      if (base::FeatureList::IsEnabled(
-              invalidation::switches::kFCMInvalidations)) {
-        test_factory =
-            invalidation::ProfileInvalidationProviderFactory::GetInstance()
-                ->SetTestingFactoryAndUse(
-                    GetProfile(index),
-                    base::BindRepeating(
-                        &BuildFakeServerProfileInvalidationProvider));
+      KeyedService* test_factory =
+          invalidation::ProfileInvalidationProviderFactory::GetInstance()
+              ->SetTestingFactoryAndUse(
+                  GetProfile(index),
+                  base::BindRepeating(
+                      &BuildFakeServerProfileInvalidationProvider));
 
-      } else {
-        test_factory =
-            invalidation::DeprecatedProfileInvalidationProviderFactory::
-                GetInstance()
-                    ->SetTestingFactoryAndUse(
-                        GetProfile(index),
-                        base::BindRepeating(
-                            &BuildFakeServerProfileInvalidationProvider));
-      }
       invalidation::InvalidationService* invalidation_service =
           static_cast<invalidation::ProfileInvalidationProvider*>(test_factory)
               ->GetInvalidationService();

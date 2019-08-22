@@ -22,7 +22,7 @@ template <typename Tuple, size_t... Indices>
 struct TupleConstructor<Tuple, std::index_sequence<Indices...>> {
   template <typename ArgType>
   static auto GetResolvedValueFromPromise(AbstractPromise* arg) {
-    using ResolvedType = base::Resolved<ArgType>;
+    using ResolvedType = base::Resolved<UndoToNonVoidT<ArgType>>;
     return ArgMoveSemanticsHelper<ArgType, ResolvedType>::Get(arg);
   }
 
@@ -56,16 +56,14 @@ class AllTuplePromiseExecutor {
 
   bool IsCancelled() const { return false; }
 
-  PromiseExecutor::PrerequisitePolicy GetPrerequisitePolicy() const {
-    return PromiseExecutor::PrerequisitePolicy::kAll;
-  }
+  static constexpr PromiseExecutor::PrerequisitePolicy kPrerequisitePolicy =
+      PromiseExecutor::PrerequisitePolicy::kAll;
 
   void Execute(AbstractPromise* promise) {
     // All is rejected if any prerequisites are rejected.
     AbstractPromise* first_settled = promise->GetFirstSettledPrerequisite();
     if (first_settled && first_settled->IsRejected()) {
       AllPromiseRejectHelper<RejectT>::Reject(promise, first_settled);
-      promise->OnRejected();
       return;
     }
 
@@ -73,7 +71,6 @@ class AllTuplePromiseExecutor {
         promise->prerequisite_list();
     DCHECK(prerequisite_list);
     TupleConstructor<ResolveTuple>::ConstructTuple(prerequisite_list, promise);
-    promise->OnResolved();
   }
 
 #if DCHECK_IS_ON()

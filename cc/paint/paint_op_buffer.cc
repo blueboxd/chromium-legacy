@@ -1933,9 +1933,9 @@ size_t PaintOp::Serialize(void* memory,
     return 0u;
 
   // Update skip and type now that the size is known.
-  uint32_t skip = static_cast<uint32_t>(aligned_written);
-  static_cast<uint32_t*>(memory)[0] = type | skip << 8;
-  return skip;
+  uint32_t bytes_to_skip = static_cast<uint32_t>(aligned_written);
+  static_cast<uint32_t*>(memory)[0] = type | bytes_to_skip << 8;
+  return bytes_to_skip;
 }
 
 PaintOp* PaintOp::Deserialize(const volatile void* input,
@@ -2090,9 +2090,9 @@ bool PaintOpWithFlags::HasDiscardableImagesFromFlags() const {
 }
 
 void PaintOpWithFlags::RasterWithFlags(SkCanvas* canvas,
-                                       const PaintFlags* flags,
+                                       const PaintFlags* raster_flags,
                                        const PlaybackParams& params) const {
-  g_raster_with_flags_functions[type](this, flags, canvas, params);
+  g_raster_with_flags_functions[type](this, raster_flags, canvas, params);
 }
 
 int ClipPathOp::CountSlowPaths() const {

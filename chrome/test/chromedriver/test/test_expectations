@@ -108,8 +108,10 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
     'ReferrerTest.crossDomainHistoryNavigationWithoutAProxy',
     'ReferrerTest.basicHistoryNavigationWithoutAProxy',
 
-    # Test with file upload not supported on Android
+    # Test using local files; not supported on Android
+    'UploadTest.testFileUploading',
     'UploadTest.testUploadingWithHiddenFileInput',
+    'UploadTest.testUploadingWithInvisibleFileInput',
 
     # This tests are failing because of Keys.CONTROL/SHIFT/.. are not being supported for drop down items.
     'CombinedInputActionsTest.testControlClickingOnMultiSelectionList',
@@ -135,8 +137,6 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
     "GetLogsTest.turningOffLogShouldMeanNoLogMessages",
     "SessionHandlingTest.callingAnyOperationAfterQuitShouldThrowAnException",
     "SessionHandlingTest.callingQuitMoreThanOnceOnASessionIsANoOp",
-    # Test is written using local files; doesn't work on Android.
-    'UploadTest.testFileUploading',
 
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2861
     'PageLoadingTest.testShouldTimeoutIfAPageTakesTooLongToLoadAfterClick',
@@ -202,9 +202,6 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
 
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2697
     'CorrectEventFiringTest.testShouldEmitClickEventWhenClickingOnATextInputElement',
-
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2860
-    'UploadTest.testUploadingWithInvisibleFileInput',
 ]
 
 _OS_NEGATIVE_FILTER['android:chrome_stable'] = (

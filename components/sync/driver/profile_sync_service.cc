@@ -1260,7 +1260,7 @@ void ProfileSyncService::ConfigureDataTypeManager(ConfigureReason reason) {
   ModelTypeSet types = GetPreferredDataTypes();
   // In transport-only mode, only a subset of data types is supported.
   if (use_transport_only_mode) {
-    ModelTypeSet allowed_types = {USER_CONSENTS};
+    ModelTypeSet allowed_types = {USER_CONSENTS, SECURITY_EVENTS};
 
     if (autofill_enable_account_wallet_storage_) {
       if (!GetUserSettings()->IsUsingSecondaryPassphrase() ||

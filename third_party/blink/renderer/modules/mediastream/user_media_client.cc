@@ -100,41 +100,53 @@ UserMediaClient::Request::MoveUserMediaRequest() {
 
 UserMediaClient::UserMediaClient(
     LocalFrame* frame,
-    std::unique_ptr<UserMediaProcessor> user_media_processor,
+    UserMediaProcessor* user_media_processor,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : frame_(frame),
-      user_media_processor_(std::move(user_media_processor)),
+      user_media_processor_(user_media_processor),
+      // WrapWeakPersistent is safe because UserMediaClient owns
+      // ApplyConstraintsProcessor.
       apply_constraints_processor_(new ApplyConstraintsProcessor(
-          WTF::BindRepeating(&UserMediaClient::GetMediaDevicesDispatcher,
-                             WTF::Unretained(this)),
+          WTF::BindRepeating(
+              [](UserMediaClient* client)
+                  -> const mojom::blink::MediaDevicesDispatcherHostPtr& {
+                DCHECK(client);
+                return client->GetMediaDevicesDispatcher();
+              },
+              WrapWeakPersistent(this)),
           std::move(task_runner))) {
   if (frame_) {
-    // WTF::Unretained is safe because the |frame_| owns UMCI.
+    // WrapWeakPersistent is safe because the |frame_| owns UserMediaClient.
     frame_->SetIsCapturingMediaCallback(WTF::BindRepeating(
-        &UserMediaClient::IsCapturing, WTF::Unretained(this)));
+        [](UserMediaClient* client) { return client && client->IsCapturing(); },
+        WrapWeakPersistent(this)));
   }
 }
 
-// WTF::Unretained(this) is safe here because |this| owns
-// |user_media_processor_|.
 UserMediaClient::UserMediaClient(
     LocalFrame* frame,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : UserMediaClient(
           frame,
-          std::make_unique<UserMediaProcessor>(
+          // WrapWeakPersistent is safe because UserMediaClient owns
+          // UserMediaProcessor.
+          MakeGarbageCollected<UserMediaProcessor>(
               frame,
-              WTF::BindRepeating(&UserMediaClient::GetMediaDevicesDispatcher,
-                                 WTF::Unretained(this)),
+              WTF::BindRepeating(
+                  [](UserMediaClient* client)
+                      -> const mojom::blink::MediaDevicesDispatcherHostPtr& {
+                    DCHECK(client);
+                    return client->GetMediaDevicesDispatcher();
+                  },
+                  WrapWeakPersistent(this)),
               frame->GetTaskRunner(blink::TaskType::kInternalMedia)),
           std::move(task_runner)) {}
 
 UserMediaClient::~UserMediaClient() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  // Force-close all outstanding user media requests and local sources here,
-  // before the outstanding WeakPtrs are invalidated, to ensure a clean
-  // shutdown.
-  DeleteAllUserMediaRequests();
+
+  // Ensure that ContextDestroyed() gets called before the destructor.
+  DCHECK(!is_processing_request_);
 }
 
 void UserMediaClient::RequestUserMedia(
@@ -207,18 +219,16 @@ void UserMediaClient::MaybeProcessNextRequestInfo() {
   pending_request_infos_.pop_front();
   is_processing_request_ = true;
 
-  // WTF::Unretained() is safe here because |this| owns
-  // |user_media_processor_|.
   if (current_request.IsUserMedia()) {
     user_media_processor_->ProcessRequest(
         current_request.MoveUserMediaRequest(),
         WTF::Bind(&UserMediaClient::CurrentRequestCompleted,
-                  WTF::Unretained(this)));
+                  WrapWeakPersistent(this)));
   } else if (current_request.IsApplyConstraints()) {
     apply_constraints_processor_->ProcessRequest(
         current_request.apply_constraints_request(),
         WTF::Bind(&UserMediaClient::CurrentRequestCompleted,
-                  WTF::Unretained(this)));
+                  WrapWeakPersistent(this)));
   } else {
     DCHECK(current_request.IsStopTrack());
     blink::WebPlatformMediaStreamTrack* track =
@@ -226,7 +236,7 @@ void UserMediaClient::MaybeProcessNextRequestInfo() {
             current_request.web_track_to_stop());
     if (track) {
       track->StopAndNotify(WTF::Bind(&UserMediaClient::CurrentRequestCompleted,
-                                     weak_factory_.GetWeakPtr()));
+                                     WrapWeakPersistent(this)));
     } else {
       CurrentRequestCompleted();
     }
@@ -240,7 +250,7 @@ void UserMediaClient::CurrentRequestCompleted() {
     frame_->GetTaskRunner(blink::TaskType::kInternalMedia)
         ->PostTask(FROM_HERE,
                    WTF::Bind(&UserMediaClient::MaybeProcessNextRequestInfo,
-                             weak_factory_.GetWeakPtr()));
+                             WrapWeakPersistent(this)));
   }
 }
 
@@ -293,6 +303,11 @@ void UserMediaClient::ContextDestroyed() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // Cancel all outstanding UserMediaRequests.
   DeleteAllUserMediaRequests();
+}
+
+void UserMediaClient::Trace(Visitor* visitor) {
+  visitor->Trace(frame_);
+  visitor->Trace(user_media_processor_);
 }
 
 void UserMediaClient::SetMediaDevicesDispatcherForTesting(

@@ -86,6 +86,9 @@ class Proxy(object):
             if not attr.startswith('_')
         ])
 
+    def make_copy(self):
+        return self
+
     def set_target_object(self, target_object):
         assert self._target_object is None
         assert isinstance(target_object, object)

@@ -7,7 +7,6 @@
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/sms/sms_service.h"
-#include "content/browser/sms/test/mock_sms_dialog.h"
 #include "content/browser/sms/test/mock_sms_provider.h"
 #include "content/browser/sms/test/mock_sms_web_contents_delegate.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -102,22 +101,11 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Receive) {
 
   shell()->web_contents()->SetDelegate(&delegate_);
 
-  auto* dialog = new NiceMock<MockSmsDialog>();
-
-  SmsDialog::EventHandler hdl;
-
-  EXPECT_CALL(delegate_, CreateSmsDialog(_))
-      .WillOnce(Return(ByMove(base::WrapUnique(dialog))));
-
-  EXPECT_CALL(*dialog, Open(_, _))
-      .WillOnce(
-          Invoke([&hdl](RenderFrameHost*, SmsDialog::EventHandler handler) {
-            hdl = std::move(handler);
-          }));
-
-  EXPECT_CALL(*dialog, SmsReceived()).WillOnce(Invoke([&hdl]() {
-    std::move(hdl).Run(SmsDialog::Event::kConfirm);
-  }));
+  EXPECT_CALL(delegate_, CreateSmsPrompt(_, _, _, _))
+      .WillOnce(Invoke([&](RenderFrameHost*, const url::Origin&,
+                           base::OnceClosure on_confirm, base::OnceClosure) {
+        std::move(on_confirm).Run();
+      }));
 
   auto* provider = new NiceMock<MockSmsProvider>();
   BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(
@@ -148,22 +136,11 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, AtMostOnePendingSmsRequest) {
 
   shell()->web_contents()->SetDelegate(&delegate_);
 
-  auto* dialog = new NiceMock<MockSmsDialog>();
-
-  SmsDialog::EventHandler hdl;
-
-  EXPECT_CALL(delegate_, CreateSmsDialog(_))
-      .WillOnce(Return(ByMove(base::WrapUnique(dialog))));
-
-  EXPECT_CALL(*dialog, Open(_, _))
-      .WillOnce(
-          Invoke([&hdl](RenderFrameHost*, SmsDialog::EventHandler handler) {
-            hdl = std::move(handler);
-          }));
-
-  EXPECT_CALL(*dialog, SmsReceived()).WillOnce(Invoke([&hdl]() {
-    std::move(hdl).Run(SmsDialog::Event::kConfirm);
-  }));
+  EXPECT_CALL(delegate_, CreateSmsPrompt(_, _, _, _))
+      .WillOnce(Invoke([&](RenderFrameHost*, const url::Origin&,
+                           base::OnceClosure on_confirm, base::OnceClosure) {
+        std::move(on_confirm).Run();
+      }));
 
   auto* provider = new NiceMock<MockSmsProvider>();
   BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(
@@ -292,28 +269,14 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsSameOrigin) {
     true
   )";
 
-  SmsDialog::EventHandler hdl_1;
-  SmsDialog::EventHandler hdl_2;
-
   {
     base::RunLoop loop;
 
-    auto* dialog = new NiceMock<MockSmsDialog>();
-
     tab1->web_contents()->SetDelegate(&delegate_);
-
-    EXPECT_CALL(delegate_, CreateSmsDialog(_))
-        .WillOnce(Return(ByMove(base::WrapUnique(dialog))));
 
     EXPECT_CALL(*provider, Retrieve()).WillOnce(Invoke([&loop]() {
       loop.Quit();
     }));
-
-    EXPECT_CALL(*dialog, Open(_, _))
-        .WillOnce(
-            Invoke([&hdl_1](RenderFrameHost*, SmsDialog::EventHandler handler) {
-              hdl_1 = std::move(handler);
-            }));
 
     // First tab registers an observer.
     EXPECT_EQ(true, EvalJs(tab1, script));
@@ -324,22 +287,11 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsSameOrigin) {
   {
     base::RunLoop loop;
 
-    auto* dialog = new NiceMock<MockSmsDialog>();
-
     tab2->web_contents()->SetDelegate(&delegate_);
-
-    EXPECT_CALL(delegate_, CreateSmsDialog(_))
-        .WillOnce(Return(ByMove(base::WrapUnique(dialog))));
 
     EXPECT_CALL(*provider, Retrieve()).WillOnce(Invoke([&loop]() {
       loop.Quit();
     }));
-
-    EXPECT_CALL(*dialog, Open(_, _))
-        .WillOnce(
-            Invoke([&hdl_2](RenderFrameHost*, SmsDialog::EventHandler handler) {
-              hdl_2 = std::move(handler);
-            }));
 
     // Second tab registers an observer.
     EXPECT_EQ(true, EvalJs(tab2, script));
@@ -349,21 +301,44 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsSameOrigin) {
 
   ASSERT_TRUE(provider->HasObservers());
 
-  provider->NotifyReceive(url::Origin::Create(url), "hello1");
+  {
+    base::RunLoop loop;
 
-  std::move(hdl_1).Run(SmsDialog::Event::kConfirm);
+    EXPECT_CALL(delegate_, CreateSmsPrompt(_, _, _, _))
+        .WillOnce(
+            Invoke([&loop](RenderFrameHost*, const url::Origin&,
+                           base::OnceClosure on_confirm, base::OnceClosure) {
+              std::move(on_confirm).Run();
+              loop.Quit();
+            }));
+
+    provider->NotifyReceive(url::Origin::Create(url), "hello1");
+
+    loop.Run();
+  }
 
   EXPECT_EQ("hello1", EvalJs(tab1, "sms"));
 
   ASSERT_TRUE(provider->HasObservers());
 
-  ExpectOutcomeUKM(url, blink::SMSReceiverOutcome::kSuccess);
+  {
+    base::RunLoop loop;
+    ExpectOutcomeUKM(url, blink::SMSReceiverOutcome::kSuccess);
 
-  ukm_recorder()->Purge();
+    ukm_recorder()->Purge();
 
-  provider->NotifyReceive(url::Origin::Create(url), "hello2");
+    EXPECT_CALL(delegate_, CreateSmsPrompt(_, _, _, _))
+        .WillOnce(
+            Invoke([&loop](RenderFrameHost*, const url::Origin&,
+                           base::OnceClosure on_confirm, base::OnceClosure) {
+              std::move(on_confirm).Run();
+              loop.Quit();
+            }));
 
-  std::move(hdl_2).Run(SmsDialog::Event::kConfirm);
+    provider->NotifyReceive(url::Origin::Create(url), "hello2");
+
+    loop.Run();
+  }
 
   EXPECT_EQ("hello2", EvalJs(tab2, "sms"));
 
@@ -406,27 +381,6 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsDifferentOrigin) {
   tab1->web_contents()->SetDelegate(&delegate_);
   tab2->web_contents()->SetDelegate(&delegate_);
 
-  auto* dialog1 = new NiceMock<MockSmsDialog>();
-  auto* dialog2 = new NiceMock<MockSmsDialog>();
-
-  SmsDialog::EventHandler hdl_1;
-  SmsDialog::EventHandler hdl_2;
-
-  EXPECT_CALL(delegate_, CreateSmsDialog(_))
-      .WillOnce(Return(ByMove(base::WrapUnique(dialog1))))
-      .WillOnce(Return(ByMove(base::WrapUnique(dialog2))));
-
-  EXPECT_CALL(*dialog1, Open(_, _))
-      .WillOnce(
-          Invoke([&hdl_1](RenderFrameHost*, SmsDialog::EventHandler handler) {
-            hdl_1 = std::move(handler);
-          }));
-
-  EXPECT_CALL(*dialog2, Open(_, _))
-      .WillOnce(
-          Invoke([&hdl_2](RenderFrameHost*, SmsDialog::EventHandler handler) {
-            hdl_2 = std::move(handler);
-          }));
 
   EXPECT_EQ(true, EvalJs(tab1, script));
   EXPECT_EQ(true, EvalJs(tab2, script));
@@ -435,17 +389,35 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsDifferentOrigin) {
 
   ASSERT_TRUE(provider->HasObservers());
 
-  provider->NotifyReceive(url::Origin::Create(url1), "hello1");
-
-  std::move(hdl_1).Run(SmsDialog::Event::kConfirm);
+  {
+    base::RunLoop loop;
+    EXPECT_CALL(delegate_, CreateSmsPrompt(_, _, _, _))
+        .WillOnce(
+            Invoke([&loop](RenderFrameHost*, const url::Origin&,
+                           base::OnceClosure on_confirm, base::OnceClosure) {
+              std::move(on_confirm).Run();
+              loop.Quit();
+            }));
+    provider->NotifyReceive(url::Origin::Create(url1), "hello1");
+    loop.Run();
+  }
 
   EXPECT_EQ("hello1", EvalJs(tab1, "sms"));
 
   ASSERT_TRUE(provider->HasObservers());
 
-  provider->NotifyReceive(url::Origin::Create(url2), "hello2");
-
-  std::move(hdl_2).Run(SmsDialog::Event::kConfirm);
+  {
+    base::RunLoop loop;
+    EXPECT_CALL(delegate_, CreateSmsPrompt(_, _, _, _))
+        .WillOnce(
+            Invoke([&loop](RenderFrameHost*, const url::Origin&,
+                           base::OnceClosure on_confirm, base::OnceClosure) {
+              std::move(on_confirm).Run();
+              loop.Quit();
+            }));
+    provider->NotifyReceive(url::Origin::Create(url2), "hello2");
+    loop.Run();
+  }
 
   EXPECT_EQ("hello2", EvalJs(tab2, "sms"));
 
@@ -494,35 +466,34 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Cancels) {
   BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(
       base::WrapUnique(provider));
 
-  StrictMock<MockSmsWebContentsDelegate> delegate;
-  shell()->web_contents()->SetDelegate(&delegate);
+  shell()->web_contents()->SetDelegate(&delegate_);
 
-  auto* dialog = new StrictMock<MockSmsDialog>();
+  base::RunLoop loop;
 
-  EXPECT_CALL(delegate, CreateSmsDialog(_))
-      .WillOnce(Return(ByMove(base::WrapUnique(dialog))));
-
-  EXPECT_CALL(*dialog, Open(_, _))
-      .WillOnce(Invoke([](RenderFrameHost*, SmsDialog::EventHandler handler) {
+  EXPECT_CALL(delegate_, CreateSmsPrompt(_, _, _, _))
+      .WillOnce(Invoke([&loop](RenderFrameHost*, const url::Origin&,
+                               base::OnceClosure, base::OnceClosure on_cancel) {
         // Simulates the user pressing "cancel".
-        std::move(handler).Run(SmsDialog::Event::kCancel);
+        std::move(on_cancel).Run();
+        loop.Quit();
       }));
 
-  EXPECT_CALL(*dialog, Close()).WillOnce(Return());
+  EXPECT_CALL(*provider, Retrieve()).WillOnce(Invoke([&provider, &url]() {
+    provider->NotifyReceive(url::Origin::Create(url), "hello");
+  }));
 
   std::string script = R"(
-    (async () => {
-      try {
-        await navigator.sms.receive({timeout: 10});
-        return false;
-      } catch (e) {
-        // Expects an exception to be thrown.
-        return e.name;
-      }
-    }) ();
+    navigator.sms.receive({timeout: 60}).catch(({name}) => {
+      error = name;
+    });
+    true;
   )";
 
-  EXPECT_EQ("AbortError", EvalJs(shell(), script));
+  EXPECT_EQ(true, EvalJs(shell(), script));
+
+  loop.Run();
+
+  EXPECT_EQ("AbortError", EvalJs(shell(), "error"));
 
   ExpectOutcomeUKM(url, blink::SMSReceiverOutcome::kCancelled);
 }
@@ -535,22 +506,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TimesOut) {
   BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(
       base::WrapUnique(provider));
 
-  StrictMock<MockSmsWebContentsDelegate> delegate;
-  shell()->web_contents()->SetDelegate(&delegate);
-
-  auto* dialog = new StrictMock<MockSmsDialog>();
-
-  EXPECT_CALL(delegate, CreateSmsDialog(_))
-      .WillOnce(Return(ByMove(base::WrapUnique(dialog))));
-
-  EXPECT_CALL(*dialog, Open(_, _))
-      .WillOnce(Invoke([](content::RenderFrameHost*,
-                          content::SmsDialog::EventHandler event_handler) {
-        // Simulates the user pressing "Try again".
-        std::move(event_handler).Run(SmsDialog::Event::kTimeout);
-      }));
-
-  EXPECT_CALL(*dialog, Close()).WillOnce(Return());
+  shell()->web_contents()->SetDelegate(&delegate_);
 
   std::string script = R"(
     (async () => {

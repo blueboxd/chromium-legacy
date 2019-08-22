@@ -19,5 +19,5 @@ interface WebSocketConnector {
           array<string> requested_protocols,
           url.mojom.Url site_for_cookies,
           string? user_agent,
-          network.mojom.WebSocketHandshakeClient handshake_client);
+          pending_remote<network.mojom.WebSocketHandshakeClient> handshake_client);
 };

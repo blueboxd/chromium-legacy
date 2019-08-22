@@ -14,7 +14,6 @@
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -728,34 +727,8 @@ TEST_F(SyncEngineImplTest, ModelTypeConnectorValidDuringShutdown) {
   backend_.reset();
 }
 
-TEST_F(SyncEngineImplTest, EnabledTypesStayUnchangedWhenFCMIsDisabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      invalidation::switches::kFCMInvalidations);
-
-  // Making sure that the noisy types we're interested in are in the
-  // |enabled_types_|.
-  enabled_types_.Put(SESSIONS);
-  enabled_types_.Put(FAVICON_IMAGES);
-  enabled_types_.Put(FAVICON_TRACKING);
-
-  InitializeBackend(true);
-  EXPECT_CALL(invalidator_,
-              UpdateRegisteredInvalidationIds(
-                  backend_.get(), ModelTypeSetToObjectIdSet(enabled_types_)));
-  ConfigureDataTypes();
-
-  // At shutdown, we clear the registered invalidation ids.
-  EXPECT_CALL(invalidator_,
-              UpdateRegisteredInvalidationIds(backend_.get(), ObjectIdSet()));
-}
-
-TEST_F(
-    SyncEngineImplTest,
-    NoisyDataTypesInvalidationAreDiscardedByDefaultOnAndroidWhenFCMIsEnabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      invalidation::switches::kFCMInvalidations);
+TEST_F(SyncEngineImplTest,
+       NoisyDataTypesInvalidationAreDiscardedByDefaultOnAndroid) {
   // Making sure that the noisy types we're interested in are in the
   // |enabled_types_|.
   enabled_types_.Put(SESSIONS);
@@ -784,10 +757,7 @@ TEST_F(
               UpdateRegisteredInvalidationIds(backend_.get(), ObjectIdSet()));
 }
 
-TEST_F(SyncEngineImplTest, WhenEnabledTypesStayDisabledFCMIsEnabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      invalidation::switches::kFCMInvalidations);
+TEST_F(SyncEngineImplTest, WhenEnabledTypesStayDisabled) {
   // Testing that noisy types doesn't used for registration, when
   // they're disabled in Sync, hence removing noisy datatypes from
   // |enabled_types_|.
@@ -808,7 +778,6 @@ TEST_F(SyncEngineImplTest, WhenEnabledTypesStayDisabledFCMIsEnabled) {
 
 TEST_F(SyncEngineImplTest,
        EnabledTypesChangesWhenSetInvalidationsForSessionsCalled) {
-  base::test::ScopedFeatureList scoped_feature_list;
   // Making sure that the noisy types we're interested in are in the
   // |enabled_types_|.
   enabled_types_.Put(SESSIONS);

@@ -34,11 +34,6 @@ Full steps to add a new third party library:
 3. Run `fetch_all.py --update-all` to update your current workspace with the
    changes. This will update, among other things, your top-level DEPS file,
    and print a series of commands to create new CIPD packages.
-    - One option to thoroughly test your change is to run
-      `rm -rf third_party/android_deps/libs/[!O]* && tools/android/roll/android_deps/fetch_all.py --update-all`.
-      This will ensure all your deps are fresh. The commands
-      printed out in the following step will ensure you do not upload
-      duplicate instances.
     - Every package in CIPD has to have a unique tag other wise it will cause
       problems. The cipd commands output by `fetch_all.py --update-all` already
       check for uniqueness of the tag before uploading a new version. You can
@@ -53,6 +48,12 @@ Full steps to add a new third party library:
       with the same package and tag as an existing instance currently in use
       can break all builds, and there is no easy way to delete an instance.
       - If this happens, file an infra-trooper bug immediately.
+
+5. Thoroughly test your change on a clean checkout.
+    - Run the following command:
+      `rm -rf third_party/android_deps/libs/[!O]* && tools/android/roll/android_deps/fetch_all.py --update-all`.
+    - This ensures that all your deps are fresh. You do not need to run the
+      commands printed out in this step.
 
 5. Create a commit & follow [`//docs/adding_to_third_party.md`][docs_link] for
    the review.

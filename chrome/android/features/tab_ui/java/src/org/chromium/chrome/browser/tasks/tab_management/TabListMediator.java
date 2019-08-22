@@ -44,6 +44,7 @@ import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
+import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -313,7 +314,7 @@ class TabListMediator {
             if (mModel.indexFromId(tab.getId()) == TabModel.INVALID_TAB_INDEX) return;
             mModel.get(mModel.indexFromId(tab.getId()))
                     .set(TabProperties.FAVICON,
-                            mTabListFaviconProvider.getDefaultFaviconDrawable());
+                            mTabListFaviconProvider.getDefaultFaviconDrawable(tab.isIncognito()));
         }
 
         @Override
@@ -669,7 +670,7 @@ class TabListMediator {
         sTabClosedFromMapTabClosedFromMap.put(tabId, TabClosedFrom.GRID_TAB_SWITCHER_GROUP);
     }
 
-    void setActionOnAllRelatedTabsForTest(boolean actionOnAllRelatedTabs) {
+    void setActionOnAllRelatedTabsForTesting(boolean actionOnAllRelatedTabs) {
         mActionsOnAllRelatedTabs = actionOnAllRelatedTabs;
     }
 
@@ -929,12 +930,21 @@ class TabListMediator {
             }
         }
 
+        int selectedTabBackgroundDrawableId = tab.isIncognito()
+                ? R.drawable.selected_tab_background_incognito
+                : R.drawable.selected_tab_background;
+
+        int tabstripFaviconBackgroundDrawableId = tab.isIncognito()
+                ? R.color.favicon_background_color_incognito
+                : R.color.favicon_background_color;
+
         PropertyModel tabInfo =
                 new PropertyModel.Builder(TabProperties.ALL_KEYS_TAB_GRID)
                         .with(TabProperties.TAB_ID, tab.getId())
                         .with(TabProperties.TITLE, mTitleProvider.getTitle(tab))
                         .with(TabProperties.FAVICON,
-                                mTabListFaviconProvider.getDefaultFaviconDrawable())
+                                mTabListFaviconProvider.getDefaultFaviconDrawable(
+                                        tab.isIncognito()))
                         .with(TabProperties.IS_SELECTED, isSelected)
                         .with(TabProperties.IPH_PROVIDER, showIPH ? mIphProvider : null)
                         .with(TabProperties.TAB_SELECTED_LISTENER, tabSelectedListener)
@@ -947,6 +957,11 @@ class TabListMediator {
                         .with(TabProperties.SELECTABLE_TAB_CLICKED_LISTENER,
                                 mSelectableTabOnClickListener)
                         .with(TabProperties.TAB_SELECTION_DELEGATE, getTabSelectionDelegate())
+                        .with(TabProperties.IS_INCOGNITO, tab.isIncognito())
+                        .with(TabProperties.SELECTED_TAB_BACKGROUND_DRAWABLE_ID,
+                                selectedTabBackgroundDrawableId)
+                        .with(TabProperties.TABSTRIP_FAVICON_BACKGROUND_COLOR_ID,
+                                tabstripFaviconBackgroundDrawableId)
                         .build();
 
         if (index >= mModel.size()) {

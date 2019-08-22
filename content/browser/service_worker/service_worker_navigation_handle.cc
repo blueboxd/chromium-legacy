@@ -27,8 +27,8 @@ ServiceWorkerNavigationHandle::ServiceWorkerNavigationHandle(
 ServiceWorkerNavigationHandle::~ServiceWorkerNavigationHandle() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Delete the ServiceWorkerNavigationHandleCore on the core thread.
-  BrowserThread::DeleteSoon(ServiceWorkerContextWrapper::GetCoreThreadId(),
-                            FROM_HERE, core_);
+  BrowserThread::DeleteSoon(ServiceWorkerContext::GetCoreThreadId(), FROM_HERE,
+                            core_);
 }
 
 void ServiceWorkerNavigationHandle::OnCreatedProviderHost(

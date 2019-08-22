@@ -9,7 +9,7 @@
     android:id="@+id/tab_group_toolbar"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/tab_grid_card_background">
+    android:background="@drawable/tab_grid_dialog_background">
     <LinearLayout
         android:id="@+id/main_content"
         android:layout_width="match_parent"

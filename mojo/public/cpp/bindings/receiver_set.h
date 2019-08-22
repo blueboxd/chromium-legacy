@@ -231,9 +231,22 @@ class ReceiverSetBase {
   }
 
   void FlushForTesting() {
-    for (const auto& it : receivers_) {
-      if (it.second)
-        it.second->FlushForTesting();
+    // We avoid flushing while iterating over |receivers_| because this set
+    // may be mutated during individual flush operations.  Instead, snapshot
+    // the ReceiverIds first, then iterate over them. This is less efficient,
+    // but it's only a testing API. This also allows for correct behavior in
+    // reentrant calls to FlushForTesting().
+    std::vector<ReceiverId> ids;
+    for (const auto& receiver : receivers_)
+      ids.push_back(receiver.first);
+
+    auto weak_self = weak_ptr_factory_.GetWeakPtr();
+    for (const auto& id : ids) {
+      if (!weak_self)
+        return;
+      auto it = receivers_.find(id);
+      if (it != receivers_.end())
+        it->second->FlushForTesting();
     }
   }
 

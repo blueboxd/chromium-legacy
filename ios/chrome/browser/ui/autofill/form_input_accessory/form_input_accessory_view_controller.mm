@@ -54,10 +54,7 @@ CGFloat const kInputAccessoryHeight = 44.0f;
 
 @end
 
-@implementation FormInputAccessoryViewController {
-  // Whether suggestions have previously been shown.
-  BOOL _suggestionsHaveBeenShown;
-}
+@implementation FormInputAccessoryViewController
 
 @synthesize addressButtonHidden = _addressButtonHidden;
 @synthesize creditCardButtonHidden = _creditCardButtonHidden;
@@ -78,8 +75,6 @@ CGFloat const kInputAccessoryHeight = 44.0f;
         manualFillAccessoryViewControllerDelegate;
     _manualFillAccessoryViewController =
         [[ManualFillAccessoryViewController alloc] initWithDelegate:self];
-
-    _suggestionsHaveBeenShown = NO;
   }
   return self;
 }

@@ -683,7 +683,7 @@ void OnAuthRequiredContinuationForWindowId(
     return;
   }
 
-  if (ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled()) {
+  if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
     OnAuthRequiredContinuation(process_id, routing_id, request_id, url,
                                *is_main_frame_opt, first_auth_attempt,
                                auth_info, head,
@@ -1592,7 +1592,7 @@ void StoragePartitionImpl::OnAuthRequired(
     const base::Optional<network::ResourceResponseHead>& head,
     network::mojom::AuthChallengeResponderPtr auth_challenge_responder) {
   if (window_id) {
-    if (ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled()) {
+    if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
       OnAuthRequiredContinuationForWindowId(
           *window_id, process_id, routing_id, request_id, url,
           first_auth_attempt, auth_info, head,
@@ -1624,7 +1624,7 @@ void StoragePartitionImpl::OnCertificateRequested(
     network::mojom::ClientCertificateResponderPtr cert_responder) {
   // Use |window_id| if it's provided.
   if (window_id) {
-    if (ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled()) {
+    if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
       OnCertificateRequestedContinuation(
           process_id, routing_id, request_id, cert_info,
           cert_responder.PassInterface(),

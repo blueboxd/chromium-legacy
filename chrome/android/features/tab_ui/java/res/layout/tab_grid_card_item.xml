@@ -5,14 +5,14 @@
 <!-- TODO(crbug/928388): Handle elevation for KitKat.-->
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
        xmlns:app="http://schemas.android.com/apk/res-auto">
-    <View
+    <org.chromium.ui.widget.ChromeImageView
         android:id="@+id/background_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@drawable/hovered_tab_grid_card_background"
         android:layout_margin="8dp"
         android:visibility="gone"/>
-    <View
+    <org.chromium.ui.widget.ChromeImageView
         android:id="@+id/selected_view_below_lollipop"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -24,6 +24,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
         <RelativeLayout
+            android:id="@+id/card_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="center"

@@ -374,7 +374,7 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
           gl->CreateAndConsumeTextureCHROMIUM(backing->mailbox.name);
 
       {
-        ScopedGpuRaster gpu_raster(context_provider);
+        ScopedGpuRaster scoped_gpu_raster(context_provider);
         viz::ClientResourceProvider::ScopedSkSurface scoped_surface(
             context_provider->GrContext(),
             pool_resource.color_space().ToSkColorSpace(), mailbox_texture_id,
@@ -399,9 +399,8 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
     // into a software bitmap and upload it to a texture for compositing.
     DCHECK(pool_resource.gpu_backing());
     auto* backing = static_cast<HudGpuBacking*>(pool_resource.gpu_backing());
-    viz::ContextProvider* context_provider =
-        layer_tree_impl()->context_provider();
-    gpu::gles2::GLES2Interface* gl = context_provider->ContextGL();
+    gpu::gles2::GLES2Interface* gl =
+        layer_tree_impl()->context_provider()->ContextGL();
 
     if (!staging_surface_ ||
         gfx::SkISizeToSize(staging_surface_->getCanvas()->getBaseLayerSize()) !=

@@ -209,8 +209,7 @@ ServiceWorkerGlobalScope::ServiceWorkerGlobalScope(
     mojom::blink::CacheStoragePtrInfo cache_storage_info,
     base::TimeTicks time_origin)
     : WorkerGlobalScope(std::move(creation_params), thread, time_origin),
-      cache_storage_info_(std::move(cache_storage_info)),
-      binding_(this) {
+      cache_storage_info_(std::move(cache_storage_info)) {
   // Create the idle timer. At this point the timer is not started. It will be
   // started by DidEvaluateScript().
   timeout_timer_ =
@@ -355,7 +354,7 @@ void ServiceWorkerGlobalScope::Dispose() {
   controller_receivers_.Clear();
   timeout_timer_.reset();
   service_worker_host_.reset();
-  binding_.Close();
+  receiver_.reset();
   WorkerGlobalScope::Dispose();
 }
 
@@ -588,14 +587,14 @@ ScriptPromise ServiceWorkerGlobalScope::skipWaiting(ScriptState* script_state) {
 }
 
 void ServiceWorkerGlobalScope::BindServiceWorker(
-    mojom::blink::ServiceWorkerRequest request) {
+    mojo::PendingReceiver<mojom::blink::ServiceWorker> receiver) {
   DCHECK(IsContextThread());
-  DCHECK(!binding_.is_bound());
+  DCHECK(!receiver_.is_bound());
   // TODO(falken): Consider adding task types for "the handle fetch task source"
   // and "handle functional event task source" defined in the service worker
   // spec and use them when dispatching events.
-  binding_.Bind(std::move(request),
-                GetThread()->GetTaskRunner(TaskType::kInternalDefault));
+  receiver_.Bind(std::move(receiver),
+                 GetThread()->GetTaskRunner(TaskType::kInternalDefault));
 }
 
 void ServiceWorkerGlobalScope::BindControllerServiceWorker(
@@ -1416,7 +1415,8 @@ void ServiceWorkerGlobalScope::Clone(
 }
 
 void ServiceWorkerGlobalScope::InitializeGlobalScope(
-    mojom::blink::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
+    mojo::PendingAssociatedRemote<mojom::blink::ServiceWorkerHost>
+        service_worker_host,
     mojom::blink::ServiceWorkerRegistrationObjectInfoPtr registration_info,
     mojom::blink::FetchHandlerExistence fetch_hander_existence) {
   DCHECK(IsContextThread());

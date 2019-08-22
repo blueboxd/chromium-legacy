@@ -304,7 +304,7 @@ void FakeDriveService::SetQuotaValue(int64_t used, int64_t total) {
   about_resource_->set_quota_bytes_total(total);
 }
 
-void FakeDriveService::Initialize(const std::string& account_id) {
+void FakeDriveService::Initialize(const CoreAccountId& account_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 

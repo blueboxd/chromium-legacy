@@ -12,6 +12,8 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/task/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
@@ -21,6 +23,8 @@
 #include "chrome/browser/metrics/perf/windowed_incognito_observer.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "components/services/heap_profiling/public/cpp/settings.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/sampled_profile.pb.h"
@@ -115,7 +119,10 @@ class TestProfileProvider : public ProfileProvider {
   }
 
   using ProfileProvider::collectors_;
+  using ProfileProvider::jank_monitor;
+  using ProfileProvider::jankiness_collection_min_interval;
   using ProfileProvider::LoggedInStateChanged;
+  using ProfileProvider::OnJankStarted;
   using ProfileProvider::OnSessionRestoreDone;
   using ProfileProvider::SuspendDone;
 
@@ -299,6 +306,182 @@ TEST_F(ProfileProviderTest, OnSessionRestoreDone) {
   std::vector<SampledProfile> stored_profiles;
   EXPECT_TRUE(profile_provider_->GetSampledProfiles(&stored_profiles));
   ExpectTwoStoredPerfProfiles<SampledProfile::RESTORE_SESSION>(stored_profiles);
+}
+
+// Test profile collection triggered when a jank starts.
+TEST_F(ProfileProviderTest, JankMonitorCallbacks) {
+  // Jankiness collection requires that the user is logged in.
+  chromeos::LoginState::Get()->SetLoggedInState(
+      chromeos::LoginState::LOGGED_IN_ACTIVE,
+      chromeos::LoginState::LOGGED_IN_USER_REGULAR);
+
+  // Trigger a jankiness collection.
+  profile_provider_->OnJankStarted();
+  task_environment_.RunUntilIdle();
+
+  // We should find two profiles, one for each collector.
+  std::vector<SampledProfile> stored_profiles;
+  EXPECT_TRUE(profile_provider_->GetSampledProfiles(&stored_profiles));
+
+  EXPECT_EQ(2U, stored_profiles.size());
+  ExpectTwoStoredPerfProfiles<SampledProfile::JANKY_TASK>(stored_profiles);
+}
+
+// Test throttling of JANKY_TASK collections: no consecutive collections within
+// jankiness_collection_min_interval().
+TEST_F(ProfileProviderTest, JankinessCollectionThrottled) {
+  // Jankiness collection requires that the user is logged in.
+  chromeos::LoginState::Get()->SetLoggedInState(
+      chromeos::LoginState::LOGGED_IN_ACTIVE,
+      chromeos::LoginState::LOGGED_IN_USER_REGULAR);
+
+  // The first JANKY_TASK collection should succeed.
+  profile_provider_->OnJankStarted();
+  task_environment_.RunUntilIdle();
+
+  std::vector<SampledProfile> stored_profiles;
+
+  EXPECT_TRUE(profile_provider_->GetSampledProfiles(&stored_profiles));
+  EXPECT_EQ(2U, stored_profiles.size());
+  ExpectTwoStoredPerfProfiles<SampledProfile::JANKY_TASK>(stored_profiles);
+
+  stored_profiles.clear();
+
+  // We are about to fast forward the clock a lot. Deactivate all collectors
+  // to disable periodic collections.
+  for (auto& collector : profile_provider_->collectors_) {
+    collector->Deactivate();
+  }
+
+  // Fast forward time to 1 second before the throttling duration is over.
+  task_environment_.FastForwardBy(
+      profile_provider_->jankiness_collection_min_interval() -
+      base::TimeDelta::FromSeconds(1));
+
+  // This collection within the minimum interval should be throttled.
+  profile_provider_->OnJankStarted();
+  task_environment_.RunUntilIdle();
+
+  EXPECT_FALSE(profile_provider_->GetSampledProfiles(&stored_profiles));
+  stored_profiles.clear();
+
+  // Move the clock forward past the throttling duration. The next JANKY_TASK
+  // collection should succeed.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  profile_provider_->OnJankStarted();
+  task_environment_.RunUntilIdle();
+
+  EXPECT_TRUE(profile_provider_->GetSampledProfiles(&stored_profiles));
+  EXPECT_EQ(2U, stored_profiles.size());
+  ExpectTwoStoredPerfProfiles<SampledProfile::JANKY_TASK>(stored_profiles);
+}
+
+// This class enables the jank monitor to test collections triggered by jank
+// callbacks from the jank monitor.
+class ProfileProviderJankinessTest : public ProfileProviderTest {
+ public:
+  ProfileProviderJankinessTest() : ProfileProviderTest() {
+    const base::Feature kBrowserJankinessProfiling{
+        "BrowserJankinessProfiling", base::FEATURE_DISABLED_BY_DEFAULT};
+    scoped_feature_list_.InitAndEnableFeature(kBrowserJankinessProfiling);
+  }
+
+  void SetUp() override {
+    ProfileProviderTest::SetUp();
+    // Jankiness collection requires that the user is logged in.
+    chromeos::LoginState::Get()->SetLoggedInState(
+        chromeos::LoginState::LOGGED_IN_ACTIVE,
+        chromeos::LoginState::LOGGED_IN_USER_REGULAR);
+    // Deactivate each collectors to disable periodic collections.
+    for (auto& collector : profile_provider_->collectors_) {
+      collector->Deactivate();
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Test profile collection triggered by a UI thread jank.
+TEST_F(ProfileProviderJankinessTest, JankMonitor_UI) {
+  EXPECT_TRUE(profile_provider_->jank_monitor());
+  // Post a janky task to the UI thread.
+  base::PostTask(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindLambdaForTesting([&]() {
+        // This is a janky task that runs for 2 seconds.
+        task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(2));
+      }));
+  task_environment_.RunUntilIdle();
+
+  std::vector<SampledProfile> stored_profiles;
+  EXPECT_TRUE(profile_provider_->GetSampledProfiles(&stored_profiles));
+
+  EXPECT_EQ(2U, stored_profiles.size());
+  ExpectTwoStoredPerfProfiles<SampledProfile::JANKY_TASK>(stored_profiles);
+}
+
+// Test profile collection triggered by an IO thread jank.
+TEST_F(ProfileProviderJankinessTest, JankMonitor_IO) {
+  EXPECT_TRUE(profile_provider_->jank_monitor());
+  // Post a janky task to the IO thread.
+  base::PostTask(
+      FROM_HERE, {content::BrowserThread::IO},
+      base::BindLambdaForTesting([&]() {
+        // This is a janky task that runs for 2 seconds.
+        task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(2));
+      }));
+  task_environment_.RunUntilIdle();
+
+  std::vector<SampledProfile> stored_profiles;
+  EXPECT_TRUE(profile_provider_->GetSampledProfiles(&stored_profiles));
+
+  EXPECT_EQ(2U, stored_profiles.size());
+  ExpectTwoStoredPerfProfiles<SampledProfile::JANKY_TASK>(stored_profiles);
+}
+
+TEST(ProfileProviderJankinessParamTest, SetFeatureParam) {
+  content::BrowserTaskEnvironment task_environment;
+
+  // Enable the jankiness profiler feature.
+  const base::Feature kBrowserJankinessProfiling{
+      "BrowserJankinessProfiling", base::FEATURE_DISABLED_BY_DEFAULT};
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kBrowserJankinessProfiling);
+
+  chromeos::PowerManagerClient::InitializeFake();
+  chromeos::LoginState::Initialize();
+
+  std::unique_ptr<TestProfileProvider> profile_provider =
+      std::make_unique<TestProfileProvider>();
+  profile_provider->Init();
+
+  // Get default minimum interval is expected to be 30 minutes.
+  EXPECT_EQ(profile_provider->jankiness_collection_min_interval(),
+            base::TimeDelta::FromMinutes(30));
+
+  profile_provider.reset();
+
+  scoped_feature_list.Reset();
+
+  // Init the feature with non-default feature param value.
+  std::map<std::string, std::string> params;
+  params.insert(std::make_pair("JankinessCollectionMinIntervalSec", "180"));
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kBrowserJankinessProfiling, params);
+
+  // Init an instance of TestProfileProvider and check that the feature param
+  // value takes effect.
+  profile_provider = std::make_unique<TestProfileProvider>();
+  profile_provider->Init();
+  EXPECT_EQ(profile_provider->jankiness_collection_min_interval(),
+            base::TimeDelta::FromSeconds(180));
+
+  profile_provider.reset();
+
+  chromeos::LoginState::Shutdown();
+  chromeos::PowerManagerClient::Shutdown();
 }
 
 namespace {

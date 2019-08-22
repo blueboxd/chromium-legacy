@@ -194,6 +194,7 @@ WebSocketChannelImpl::WebSocketChannelImpl(
     : handle_(std::move(handle)),
       client_(client),
       identifier_(CreateUniqueIdentifier()),
+      message_chunks_(execution_context->GetTaskRunner(TaskType::kNetworking)),
       execution_context_(execution_context),
       location_at_construction_(std::move(location)),
       file_reading_task_runner_(
@@ -684,15 +685,14 @@ void WebSocketChannelImpl::DidReceiveData(WebSocketHandle* handle,
 
   switch (type) {
     case WebSocketHandle::kMessageTypeText:
-      DCHECK(!receiving_message_data_);
+      DCHECK_EQ(message_chunks_.GetSize(), 0u);
       receiving_message_type_is_text_ = true;
       break;
     case WebSocketHandle::kMessageTypeBinary:
-      DCHECK(!receiving_message_data_);
+      DCHECK_EQ(message_chunks_.GetSize(), 0u);
       receiving_message_type_is_text_ = false;
       break;
     case WebSocketHandle::kMessageTypeContinuation:
-      DCHECK(receiving_message_data_);
       break;
   }
 
@@ -700,28 +700,20 @@ void WebSocketChannelImpl::DidReceiveData(WebSocketHandle* handle,
   if (!backpressure_)
     AddReceiveFlowControlIfNecessary();
 
-  const size_t message_size_so_far =
-      (receiving_message_data_ ? receiving_message_data_->size() : 0) + size;
+  const size_t message_size_so_far = message_chunks_.GetSize();
   if (message_size_so_far > std::numeric_limits<wtf_size_t>::max()) {
-    receiving_message_data_ = nullptr;
+    message_chunks_.Clear();
     FailAsError("Message size is too large.");
     return;
   }
 
   if (!fin) {
-    if (!receiving_message_data_) {
-      receiving_message_data_ = SharedBuffer::Create();
-    }
-    receiving_message_data_->Append(data, size);
+    message_chunks_.Append(base::make_span(data, size));
     return;
   }
 
   const wtf_size_t message_size = static_cast<wtf_size_t>(message_size_so_far);
-  Vector<base::span<const char>> chunks;
-  if (receiving_message_data_) {
-    chunks.AppendRange(receiving_message_data_->begin(),
-                       receiving_message_data_->end());
-  }
+  Vector<base::span<const char>> chunks = message_chunks_.GetView();
   if (size > 0) {
     chunks.push_back(base::make_span(data, size));
   }
@@ -754,7 +746,7 @@ void WebSocketChannelImpl::DidReceiveData(WebSocketHandle* handle,
   } else {
     client_->DidReceiveBinaryMessage(chunks);
   }
-  receiving_message_data_ = nullptr;
+  message_chunks_.Clear();
 }
 
 void WebSocketChannelImpl::DidClose(WebSocketHandle* handle,

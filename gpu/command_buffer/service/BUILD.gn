@@ -402,8 +402,8 @@ target(link_target_type, "gles2_sources") {
 
   if (is_win) {
     sources += [
-      "swap_chain_factory_dxgi.cc",
-      "swap_chain_factory_dxgi.h",
+      "shared_image_backing_factory_d3d.cc",
+      "shared_image_backing_factory_d3d.h",
     ]
   }
 }

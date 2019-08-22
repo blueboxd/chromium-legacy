@@ -17,7 +17,6 @@ extern const char kInvalidationUseGCMChannel[];
 
 extern const char kSyncNotificationHostPort[];
 extern const char kSyncAllowInsecureXmppConnection[];
-extern const base::Feature kFCMInvalidations;
 extern const base::Feature kFCMInvalidationsConservativeEnabling;
 extern const base::Feature kFCMInvalidationsStartOnceActiveAccountAvailable;
 extern const base::Feature kFCMInvalidationsForSyncDontCheckVersion;

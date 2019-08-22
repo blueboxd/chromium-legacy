@@ -12,7 +12,6 @@ import org.junit.runners.model.Statement;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.modaldialog.ModalDialogTestUtils;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -50,8 +49,6 @@ import java.util.concurrent.ExecutionException;
  * JS call with a gesture, and whether an infobar or a dialog is expected.
  */
 public class PermissionTestRule extends ChromeActivityTestRule<ChromeActivity> {
-    public static final String MODAL_FLAG = ChromeFeatureList.MODAL_PERMISSION_PROMPTS;
-
     private InfoBarTestAnimationListener mListener;
     private EmbeddedTestServer mTestServer;
 

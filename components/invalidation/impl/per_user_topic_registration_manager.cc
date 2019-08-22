@@ -217,6 +217,20 @@ PerUserTopicRegistrationManager::PerUserTopicRegistrationManager(
 
 PerUserTopicRegistrationManager::~PerUserTopicRegistrationManager() {}
 
+// static
+std::unique_ptr<PerUserTopicRegistrationManager>
+PerUserTopicRegistrationManager::Create(
+    invalidation::IdentityProvider* identity_provider,
+    PrefService* local_state,
+    network::mojom::URLLoaderFactory* url_loader_factory,
+    const ParseJSONCallback& parse_json,
+    const std::string& project_id,
+    bool migrate_prefs) {
+  return std::make_unique<PerUserTopicRegistrationManager>(
+      identity_provider, local_state, url_loader_factory, parse_json,
+      project_id, migrate_prefs);
+}
+
 void PerUserTopicRegistrationManager::Init() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (migrate_prefs_) {

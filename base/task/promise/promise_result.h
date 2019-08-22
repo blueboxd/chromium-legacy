@@ -7,7 +7,7 @@
 
 #include <type_traits>
 
-#include "base/containers/unique_any.h"
+#include "base/task/promise/promise_value.h"
 
 namespace base {
 
@@ -57,7 +57,7 @@ class PromiseResult {
   PromiseResult(const PromiseResult&) = delete;
   PromiseResult& operator=(const PromiseResult&) = delete;
 
-  unique_any& value() { return value_; }
+  internal::PromiseValue& value() { return value_; }
 
  private:
   struct IsWrapped {};
@@ -137,7 +137,7 @@ class PromiseResult {
   template <typename T>
   PromiseResult(IsWrapped, T&& t) : value_(std::forward<T>(t)) {}
 
-  unique_any value_;
+  internal::PromiseValue value_;
 };
 
 }  // namespace base

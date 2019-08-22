@@ -80,10 +80,6 @@ using base::UserMetricsAction;
   ]];
 
   AVCaptureVideoPreviewLayer* previewLayer = [self.scannerView getPreviewLayer];
-  //  CGRect rect = [self.scannerView frame];
-  // NSLog(@"%@", NSStringFromCGRect(rect));
-  previewLayer.frame = CGRectMakeCenteredRectInFrame(
-      [self.scannerView frame].size, [self.scannerView viewportSize]);
 
   switch ([self.cameraController getAuthorizationStatus]) {
     case AVAuthorizationStatusNotDetermined:
@@ -253,7 +249,7 @@ using base::UserMetricsAction;
               l10n_util::GetNSString(
                   IDS_IOS_SCANNER_SCANNED_ACCESSIBILITY_ANNOUNCEMENT)]) {
     DCHECK(_result);
-    [self dismissForReason:scannerViewController::SCANNED_CODE
+    [self dismissForReason:scannerViewController::SCAN_COMPLETE
             withCompletion:^{
               [self.queryLoader loadQuery:_result
                               immediately:_loadResultImmediately];

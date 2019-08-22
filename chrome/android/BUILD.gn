@@ -2626,7 +2626,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/signin/SigninPromoUtil.java",
     "java/src/org/chromium/chrome/browser/signin/SigninUtils.java",
     "java/src/org/chromium/chrome/browser/signin/UnifiedConsentServiceBridge.java",
-    "java/src/org/chromium/chrome/browser/sms/SmsReceiverDialog.java",
+    "java/src/org/chromium/chrome/browser/sms/SmsReceiverInfoBar.java",
     "java/src/org/chromium/chrome/browser/snackbar/smartlockautosignin/AutoSigninSnackbarController.java",
     "java/src/org/chromium/chrome/browser/ssl/CaptivePortalHelper.java",
     "java/src/org/chromium/chrome/browser/ssl/SecurityStateModel.java",

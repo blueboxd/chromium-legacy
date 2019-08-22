@@ -56,8 +56,10 @@ void GetPaymentInformationAction::InternalProcessAction(
     std::move(callback).Run(std::move(processed_action_proto_));
     return;
   }
-
   auto get_payment_information = proto_.get_payment_information();
+  if (get_payment_information.has_prompt()) {
+    delegate_->SetStatusMessage(get_payment_information.prompt());
+  }
   payment_options->confirm_callback = base::BindOnce(
       &GetPaymentInformationAction::OnGetPaymentInformation,
       weak_ptr_factory_.GetWeakPtr(), std::move(get_payment_information));
@@ -76,9 +78,6 @@ void GetPaymentInformationAction::InternalProcessAction(
     delegate_->GetPersonalDataManager()->AddObserver(this);
   }
 
-  if (get_payment_information.has_prompt()) {
-    delegate_->SetStatusMessage(get_payment_information.prompt());
-  }
   delegate_->GetPaymentInformation(std::move(payment_options));
 }
 

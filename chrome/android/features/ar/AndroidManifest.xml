@@ -10,7 +10,7 @@
     <dist:module
         dist:onDemand="true"
         dist:title="@string/ar_module_title">
-        <dist:fusing dist:include="true" />
+        <dist:fusing dist:include="false" />
     </dist:module>
 
     <application>

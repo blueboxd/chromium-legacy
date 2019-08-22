@@ -3426,12 +3426,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // OS_CHROMEOS
 
 #if defined(OS_CHROMEOS)
-    {"enable-myfiles-volume", flag_descriptions::kEnableMyFilesVolumeName,
-     flag_descriptions::kEnableMyFilesVolumeDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kMyFilesVolume)},
-#endif  // OS_CHROMEOS
-
-#if defined(OS_CHROMEOS)
     {"enable-native-controls",
      flag_descriptions::kEnableVideoPlayerNativeControlsName,
      flag_descriptions::kEnableVideoPlayerNativeControlsDescription, kOsCrOS,
@@ -3573,11 +3567,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          blink::features::kServiceWorkerImportedScriptUpdateCheck)},
 
-    {"sync-support-secondary-account",
-     flag_descriptions::kSyncSupportSecondaryAccountName,
-     flag_descriptions::kSyncSupportSecondaryAccountDescription, kOsAll,
-     FEATURE_VALUE_TYPE(switches::kSyncSupportSecondaryAccount)},
-
     {"use-multilogin-endpoint", flag_descriptions::kUseMultiloginEndpointName,
      flag_descriptions::kUseMultiloginEndpointDescription, kOsAll,
      FEATURE_VALUE_TYPE(kUseMultiloginEndpoint)},
@@ -3614,9 +3603,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTranslateAndroidManualTriggerDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(translate::kTranslateMobileManualTrigger)},
 #endif
-    {"fcm-invalidations", flag_descriptions::kFCMInvalidationsName,
-     flag_descriptions::kFCMInvalidationsDescription, kOsAll,
-     FEATURE_VALUE_TYPE(invalidation::switches::kFCMInvalidations)},
 #if defined(OS_ANDROID)
     {"enable-ephemeral-tab", flag_descriptions::kEphemeralTabName,
      flag_descriptions::kEphemeralTabDescription, kOsAndroid,

@@ -14,7 +14,6 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
-#include "content/browser/sms/test/mock_sms_dialog.h"
 #include "content/browser/sms/test/mock_sms_provider.h"
 #include "content/browser/sms/test/mock_sms_web_contents_delegate.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -78,25 +77,19 @@ class Service {
   NiceMock<MockSmsWebContentsDelegate>* delegate() { return &delegate_; }
   NiceMock<MockSmsProvider>* provider() { return &provider_; }
 
-  void SetupSmsDialog(RenderFrameHost* rfh) {
-    auto* dialog = new NiceMock<MockSmsDialog>();
-
-    EXPECT_CALL(*delegate(), CreateSmsDialog(_))
-        .WillOnce(Return(ByMove(base::WrapUnique(dialog))));
-
-    EXPECT_CALL(*dialog, Open(rfh, _))
-        .WillOnce(
-            Invoke([&](RenderFrameHost*, SmsDialog::EventHandler handler) {
-              handler_ = std::move(handler);
-            }));
-
-    EXPECT_CALL(*dialog, SmsReceived()).WillOnce(Invoke([&]() {
-      // Simulates user clicking the "Confirm" button to verify received
-      // sms.
-      std::move(handler_).Run(SmsDialog::Event::kConfirm);
-    }));
-
-    EXPECT_CALL(*dialog, Close()).WillOnce(Return());
+  void CreateSmsPrompt(RenderFrameHost* rfh, bool confirm) {
+    EXPECT_CALL(*delegate(), CreateSmsPrompt(rfh, _, _, _))
+        .WillOnce(Invoke([=](RenderFrameHost*, const Origin& origin,
+                             base::OnceClosure on_confirm,
+                             base::OnceClosure on_cancel) {
+          if (confirm) {
+            // Simulates user clicking the "Enter code" button to verify
+            // received sms.
+            std::move(on_confirm).Run();
+          } else {
+            std::move(on_cancel).Run();
+          }
+        }));
   }
 
   void MakeRequest(TimeDelta timeout, SmsReceiver::ReceiveCallback callback) {
@@ -112,7 +105,6 @@ class Service {
   NiceMock<MockSmsProvider> provider_;
   blink::mojom::SmsReceiverPtr service_ptr_;
   std::unique_ptr<SmsService> service_;
-  SmsDialog::EventHandler handler_;
 };
 
 class SmsServiceTest : public RenderViewHostTestHarness {
@@ -140,7 +132,7 @@ TEST_F(SmsServiceTest, Basic) {
 
   base::RunLoop loop;
 
-  service.SetupSmsDialog(main_rfh());
+  service.CreateSmsPrompt(main_rfh(), true);
 
   EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
     service.NotifyReceive(GURL(kTestUrl), "hi");
@@ -150,8 +142,8 @@ TEST_F(SmsServiceTest, Basic) {
       TimeDelta::FromSeconds(10),
       BindLambdaForTesting(
           [&loop](SmsStatus status, const Optional<string>& sms) {
-            EXPECT_EQ("hi", sms.value());
             EXPECT_EQ(SmsStatus::kSuccess, status);
+            EXPECT_EQ("hi", sms.value());
             loop.Quit();
           }));
 
@@ -168,7 +160,7 @@ TEST_F(SmsServiceTest, HandlesMultipleCalls) {
   {
     base::RunLoop loop;
 
-    service.SetupSmsDialog(main_rfh());
+    service.CreateSmsPrompt(main_rfh(), true);
 
     EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
       service.NotifyReceive(GURL(kTestUrl), "first");
@@ -189,7 +181,7 @@ TEST_F(SmsServiceTest, HandlesMultipleCalls) {
   {
     base::RunLoop loop;
 
-    service.SetupSmsDialog(main_rfh());
+    service.CreateSmsPrompt(main_rfh(), true);
 
     EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
       service.NotifyReceive(GURL(kTestUrl), "second");
@@ -218,7 +210,7 @@ TEST_F(SmsServiceTest, IgnoreFromOtherOrigins) {
 
   base::RunLoop sms_loop;
 
-  service.SetupSmsDialog(main_rfh());
+  service.CreateSmsPrompt(main_rfh(), true);
 
   EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
     // Delivers an SMS from an unrelated origin first and expect the
@@ -252,7 +244,7 @@ TEST_F(SmsServiceTest, ExpectOneReceiveTwo) {
 
   base::RunLoop sms_loop;
 
-  service.SetupSmsDialog(main_rfh());
+  service.CreateSmsPrompt(main_rfh(), true);
 
   EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
     // Delivers two SMSes for the same origin, even if only one was being
@@ -290,9 +282,9 @@ TEST_F(SmsServiceTest, AtMostOnePendingSmsRequest) {
 
   base::RunLoop sms1_loop, sms2_loop;
 
-  // Expects only one CreateSmsDialog() and Open() call to be made since at most
-  // one sms request can be pending.
-  service.SetupSmsDialog(main_rfh());
+  // Expects only one CreateSmsDialog() and OnReceive() call to be made since at
+  // most one sms request can be pending.
+  service.CreateSmsPrompt(main_rfh(), true);
 
   // Expects only one Retrieve() call to be made since at most one sms request
   // can be pending.
@@ -349,18 +341,6 @@ TEST_F(SmsServiceTest, Timeout) {
             loop.Quit();
           }));
 
-  auto* dialog = new NiceMock<MockSmsDialog>();
-
-  EXPECT_CALL(*service.delegate(), CreateSmsDialog(_))
-      .WillOnce(Return(ByMove(base::WrapUnique(dialog))));
-
-  EXPECT_CALL(*dialog, Open(main_rfh(), _))
-      .WillOnce(Invoke([](content::RenderFrameHost*,
-                          content::SmsDialog::EventHandler event_handler) {
-        // Simulates the user pressing "Try again".
-        std::move(event_handler).Run(SmsDialog::Event::kTimeout);
-      }));
-
   loop.Run();
 }
 
@@ -411,7 +391,7 @@ TEST_F(SmsServiceTest, PromptsDialog) {
 
   base::RunLoop loop;
 
-  service.SetupSmsDialog(main_rfh());
+  service.CreateSmsPrompt(main_rfh(), true);
 
   EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
     service.NotifyReceive(GURL(kTestUrl), "hi");
@@ -447,57 +427,20 @@ TEST_F(SmsServiceTest, Cancel) {
             loop.Quit();
           }));
 
-  auto* dialog = new NiceMock<MockSmsDialog>();
+  EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
+    service.NotifyReceive(GURL(kTestUrl), "hi");
+  }));
 
-  EXPECT_CALL(*service.delegate(), CreateSmsDialog(_))
-      .WillOnce(Return(ByMove(base::WrapUnique(dialog))));
-
-  EXPECT_CALL(*dialog, Open(main_rfh(), _))
-      .WillOnce(Invoke([](RenderFrameHost*, SmsDialog::EventHandler handler) {
+  EXPECT_CALL(*service.delegate(), CreateSmsPrompt(main_rfh(), _, _, _))
+      .WillOnce(Invoke([&](RenderFrameHost*, const Origin&, base::OnceClosure,
+                           base::OnceClosure on_cancel) {
         // Simulates the user pressing "Cancel".
-        std::move(handler).Run(SmsDialog::Event::kCancel);
+        std::move(on_cancel).Run();
       }));
 
   loop.Run();
 
   ASSERT_FALSE(service.provider()->HasObservers());
-}
-
-TEST_F(SmsServiceTest, TimeoutClosesDialog) {
-  NavigateAndCommit(GURL(kTestUrl));
-
-  Service service(web_contents());
-
-  base::RunLoop loop;
-
-  service.MakeRequest(
-      TimeDelta::FromSeconds(0),
-      BindLambdaForTesting(
-          [&loop](SmsStatus status, const Optional<string>& sms) {
-            EXPECT_EQ(SmsStatus::kTimeout, status);
-            EXPECT_EQ(base::nullopt, sms);
-            loop.Quit();
-          }));
-
-  auto* dialog = new NiceMock<MockSmsDialog>();
-
-  EXPECT_CALL(*service.delegate(), CreateSmsDialog(_))
-      .WillOnce(Return(ByMove(base::WrapUnique(dialog))));
-
-  EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Return());
-
-  // Deliberately avoid calling the on_cancel callback, to simulate the
-  // sms being timed out before the user cancels it.
-  EXPECT_CALL(*dialog, Open(main_rfh(), _))
-      .WillOnce(Invoke([](content::RenderFrameHost*,
-                          content::SmsDialog::EventHandler event_handler) {
-        // Simulates the user pressing "Try again".
-        std::move(event_handler).Run(SmsDialog::Event::kTimeout);
-      }));
-
-  EXPECT_CALL(*dialog, Close()).WillOnce(Return());
-
-  loop.Run();
 }
 
 TEST_F(SmsServiceTest, SecondRequestTimesOutEarlierThanFirstRequest) {
@@ -507,31 +450,7 @@ TEST_F(SmsServiceTest, SecondRequestTimesOutEarlierThanFirstRequest) {
 
   base::RunLoop sms_loop1, sms_loop2;
 
-  auto* dialog1 = new NiceMock<MockSmsDialog>();
-  auto* dialog2 = new NiceMock<MockSmsDialog>();
-
-  SmsDialog::EventHandler hdl;
-
-  EXPECT_CALL(*service.delegate(), CreateSmsDialog(_))
-      .WillOnce(Return(ByMove(base::WrapUnique(dialog1))))
-      .WillOnce(Return(ByMove(base::WrapUnique(dialog2))));
-
-  EXPECT_CALL(*dialog1, Open(main_rfh(), _))
-      .WillOnce(
-          Invoke([&hdl](RenderFrameHost*, SmsDialog::EventHandler handler) {
-            hdl = std::move(handler);
-          }));
-
-  EXPECT_CALL(*dialog2, Open(main_rfh(), _))
-      .WillOnce(Invoke([](content::RenderFrameHost*,
-                          content::SmsDialog::EventHandler event_handler) {
-        // Simulates the user pressing "Try again".
-        std::move(event_handler).Run(SmsDialog::Event::kTimeout);
-      }));
-
-  EXPECT_CALL(*dialog1, SmsReceived()).WillOnce(Invoke([&hdl]() {
-    std::move(hdl).Run(SmsDialog::Event::kConfirm);
-  }));
+  service.CreateSmsPrompt(main_rfh(), true);
 
   EXPECT_CALL(*service.provider(), Retrieve())
       .WillOnce(Invoke([&service]() {
@@ -572,7 +491,7 @@ TEST_F(SmsServiceTest, RecordTimeMetricsForContinueOnSuccess) {
 
   base::RunLoop loop;
 
-  service.SetupSmsDialog(main_rfh());
+  service.CreateSmsPrompt(main_rfh(), true);
 
   EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
     service.NotifyReceive(GURL(kTestUrl), "hi");
@@ -602,84 +521,32 @@ TEST_F(SmsServiceTest, RecordMetricsForCancelOnSuccess) {
 
   Service service(web_contents());
 
-  {
-    // Histogram will not be recorded if the user cancels the operation before
-    // the SMS arrives.
-    base::RunLoop loop;
+  // Histogram will be recorded if the SMS has already arrived.
+  base::RunLoop loop;
 
-    service.MakeRequest(
-        TimeDelta::FromSeconds(10),
-        BindLambdaForTesting(
-            [&loop](SmsStatus status, const Optional<string>& sms) {
-              loop.Quit();
-            }));
+  EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
+    service.NotifyReceive(GURL(kTestUrl), "hi");
+  }));
 
-    auto* dialog = new NiceMock<MockSmsDialog>();
+  service.MakeRequest(
+      TimeDelta::FromSeconds(10),
+      BindLambdaForTesting(
+          [&loop](SmsStatus status, const Optional<string>& sms) {
+            loop.Quit();
+          }));
 
-    EXPECT_CALL(*service.delegate(), CreateSmsDialog(_))
-        .WillOnce(Return(ByMove(base::WrapUnique(dialog))));
+  service.CreateSmsPrompt(main_rfh(), false);
 
-    EXPECT_CALL(*dialog, Open(main_rfh(), _))
-        .WillOnce(Invoke([](RenderFrameHost*, SmsDialog::EventHandler handler) {
-          // Simulates the user pressing "Cancel".
-          std::move(handler).Run(SmsDialog::Event::kCancel);
-        }));
+  loop.Run();
 
-    loop.Run();
+  std::unique_ptr<base::HistogramSamples> samples(
+      GetHistogramSamplesSinceTestStart(
+          "Blink.Sms.Receive.TimeCancelOnSuccess"));
+  EXPECT_EQ(1, samples->TotalCount());
 
-    std::unique_ptr<base::HistogramSamples> samples(
-        GetHistogramSamplesSinceTestStart(
-            "Blink.Sms.Receive.TimeCancelOnSuccess"));
-    EXPECT_EQ(0, samples->TotalCount());
-
-    std::unique_ptr<base::HistogramSamples> receive_samples(
-        GetHistogramSamplesSinceTestStart("Blink.Sms.Receive.TimeSmsReceive"));
-    EXPECT_EQ(0, receive_samples->TotalCount());
-  }
-
-  {
-    // Histogram will be recorded if the SMS has already arrived.
-    base::RunLoop loop;
-
-    EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
-      service.NotifyReceive(GURL(kTestUrl), "hi");
-    }));
-
-    service.MakeRequest(
-        TimeDelta::FromSeconds(10),
-        BindLambdaForTesting(
-            [&loop](SmsStatus status, const Optional<string>& sms) {
-              loop.Quit();
-            }));
-
-    auto* dialog = new NiceMock<MockSmsDialog>();
-    SmsDialog::EventHandler hdl;
-
-    EXPECT_CALL(*service.delegate(), CreateSmsDialog(_))
-        .WillOnce(Return(ByMove(base::WrapUnique(dialog))));
-
-    EXPECT_CALL(*dialog, Open(main_rfh(), _))
-        .WillOnce(
-            Invoke([&hdl](RenderFrameHost*, SmsDialog::EventHandler handler) {
-              hdl = std::move(handler);
-            }));
-
-    EXPECT_CALL(*dialog, SmsReceived()).WillOnce(Invoke([&]() {
-      // Simulates user clicking the "Cancel" once the SMS has been received.
-      std::move(hdl).Run(SmsDialog::Event::kCancel);
-    }));
-
-    loop.Run();
-
-    std::unique_ptr<base::HistogramSamples> samples(
-        GetHistogramSamplesSinceTestStart(
-            "Blink.Sms.Receive.TimeCancelOnSuccess"));
-    EXPECT_EQ(1, samples->TotalCount());
-
-    std::unique_ptr<base::HistogramSamples> receive_samples(
-        GetHistogramSamplesSinceTestStart("Blink.Sms.Receive.TimeSmsReceive"));
-    EXPECT_EQ(1, receive_samples->TotalCount());
-  }
+  std::unique_ptr<base::HistogramSamples> receive_samples(
+      GetHistogramSamplesSinceTestStart("Blink.Sms.Receive.TimeSmsReceive"));
+  EXPECT_EQ(1, receive_samples->TotalCount());
 }
 
 }  // namespace content

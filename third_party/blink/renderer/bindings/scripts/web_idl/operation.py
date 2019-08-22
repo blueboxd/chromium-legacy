@@ -47,17 +47,6 @@ class Operation(IdlMember):
 
             self.is_static = is_static
 
-        def make_copy(self):
-            return Operation.IR(
-                identifier=self.identifier,
-                arguments=map(Argument.IR.make_copy, self.arguments),
-                return_type=self.return_type,
-                is_static=self.is_static,
-                extended_attributes=self.extended_attributes.make_copy(),
-                code_generator_info=self.code_generator_info.make_copy(),
-                components=self.components,
-                debug_info=self.debug_info.make_copy())
-
     @property
     def is_static(self):
         """

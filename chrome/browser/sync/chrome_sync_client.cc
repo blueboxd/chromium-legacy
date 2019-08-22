@@ -20,7 +20,6 @@
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
@@ -293,12 +292,20 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
       &syncer::ReportUnrecoverableError, chrome::GetChannel());
 
   if (!disabled_types.Has(syncer::SECURITY_EVENTS)) {
+    syncer::ModelTypeControllerDelegate* delegate =
+        SecurityEventRecorderFactory::GetForProfile(profile_)
+            ->GetControllerDelegate()
+            .get();
+    // Forward both on-disk and in-memory storage modes to the same delegate,
+    // since behavior for SECURITY_EVENTS does not differ.
     controllers.push_back(std::make_unique<syncer::ModelTypeController>(
         syncer::SECURITY_EVENTS,
+        /*delegate_on_disk=*/
         std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
-            SecurityEventRecorderFactory::GetForProfile(profile_)
-                ->GetControllerDelegate()
-                .get())));
+            delegate),
+        /*delegate_in_memory=*/
+        std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
+            delegate)));
   }
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -413,14 +420,9 @@ BookmarkUndoService* ChromeSyncClient::GetBookmarkUndoService() {
 }
 
 invalidation::InvalidationService* ChromeSyncClient::GetInvalidationService() {
-  invalidation::ProfileInvalidationProvider* provider;
-  if (base::FeatureList::IsEnabled(invalidation::switches::kFCMInvalidations)) {
-    provider = invalidation::ProfileInvalidationProviderFactory::GetForProfile(
-        profile_);
-  } else {
-    provider = invalidation::DeprecatedProfileInvalidationProviderFactory::
-        GetForProfile(profile_);
-  }
+  invalidation::ProfileInvalidationProvider* provider =
+      invalidation::ProfileInvalidationProviderFactory::GetForProfile(profile_);
+
   if (provider)
     return provider->GetInvalidationService();
   return nullptr;

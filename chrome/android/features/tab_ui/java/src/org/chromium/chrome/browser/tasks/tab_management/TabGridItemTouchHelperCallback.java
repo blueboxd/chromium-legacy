@@ -47,6 +47,7 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
     private int mSelectedTabIndex = TabModel.INVALID_TAB_INDEX;
     private int mHoveredTabIndex = TabModel.INVALID_TAB_INDEX;
     private int mUnGroupTabIndex = TabModel.INVALID_TAB_INDEX;
+    private int mCurrentActionState = ItemTouchHelper.ACTION_STATE_IDLE;
     private RecyclerView mRecyclerView;
     private Profile mProfile;
 
@@ -154,11 +155,12 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
             if (mHoveredTabIndex != TabModel.INVALID_TAB_INDEX && mActionsOnAllRelatedTabs) {
                 RecyclerView.ViewHolder selectedViewHolder =
                         mRecyclerView.findViewHolderForAdapterPosition(mSelectedTabIndex);
-                assert selectedViewHolder != null;
-                View selectedItemView = selectedViewHolder.itemView;
-                onTabMergeToGroup(mSelectedTabIndex, mHoveredTabIndex);
-                mRecyclerView.getLayoutManager().removeView(selectedItemView);
-                RecordUserAction.record("GridTabSwitcher.Drag.AddToGroupOrCreateGroup");
+                if (selectedViewHolder != null) {
+                    View selectedItemView = selectedViewHolder.itemView;
+                    onTabMergeToGroup(mSelectedTabIndex, mHoveredTabIndex);
+                    mRecyclerView.getLayoutManager().removeView(selectedItemView);
+                    RecordUserAction.record("GridTabSwitcher.Drag.AddToGroupOrCreateGroup");
+                }
             }
             mModel.updateSelectedTabForMergeToGroup(mSelectedTabIndex, false);
             if (mHoveredTabIndex != TabModel.INVALID_TAB_INDEX) {
@@ -173,11 +175,13 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
                                 .getCurrentTabModelFilter();
                 RecyclerView.ViewHolder ungroupViewHolder =
                         mRecyclerView.findViewHolderForAdapterPosition(mUnGroupTabIndex);
-                assert ungroupViewHolder != null;
-                View ungroupItemView = ungroupViewHolder.itemView;
-                filter.moveTabOutOfGroup(mModel.get(mUnGroupTabIndex).get(TabProperties.TAB_ID));
-                mRecyclerView.getLayoutManager().removeView(ungroupItemView);
-                RecordUserAction.record("TabGridDialog.Drag.RemoveFromGroup");
+                if (ungroupViewHolder != null) {
+                    View ungroupItemView = ungroupViewHolder.itemView;
+                    filter.moveTabOutOfGroup(
+                            mModel.get(mUnGroupTabIndex).get(TabProperties.TAB_ID));
+                    mRecyclerView.getLayoutManager().removeView(ungroupItemView);
+                    RecordUserAction.record("TabGridDialog.Drag.RemoveFromGroup");
+                }
             }
             mHoveredTabIndex = TabModel.INVALID_TAB_INDEX;
             mSelectedTabIndex = TabModel.INVALID_TAB_INDEX;
@@ -186,6 +190,20 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
                 mTabGridDialogHandler.updateUngroupBarStatus(
                         TabGridDialogParent.UngroupBarStatus.HIDE);
             }
+        }
+    }
+
+    @Override
+    public void clearView(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+        super.clearView(recyclerView, viewHolder);
+        int prevActionState = mCurrentActionState;
+        mCurrentActionState = ItemTouchHelper.ACTION_STATE_IDLE;
+        if (prevActionState != ItemTouchHelper.ACTION_STATE_DRAG) return;
+        // If this item view becomes stale after the dragging animation is finished, manually clean
+        // it out. TODO(yuezhanggg): Figure out why the deleting signal is not properly sent when
+        // item is being dragged (crbug: 995799).
+        if (recyclerView.getAdapter().getItemCount() == 0 && recyclerView.getChildCount() != 0) {
+            recyclerView.getLayoutManager().removeView(viewHolder.itemView);
         }
     }
 
@@ -204,7 +222,10 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
                 viewHolder.itemView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
             }
             mIsSwipingToDismiss = isOverThreshold;
-        } else if (actionState == ItemTouchHelper.ACTION_STATE_DRAG && mActionsOnAllRelatedTabs) {
+            return;
+        }
+        mCurrentActionState = actionState;
+        if (actionState == ItemTouchHelper.ACTION_STATE_DRAG && mActionsOnAllRelatedTabs) {
             if (!FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) return;
             int prev_hovered = mHoveredTabIndex;
             mHoveredTabIndex = TabListRecyclerView.getHoveredTabIndex(
@@ -255,22 +276,27 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
     }
 
     @VisibleForTesting
-    void setActionsOnAllRelatedTabsForTest(boolean flag) {
+    void setActionsOnAllRelatedTabsForTesting(boolean flag) {
         mActionsOnAllRelatedTabs = flag;
     }
 
     @VisibleForTesting
-    void setHoveredTabIndexForTest(int index) {
+    void setHoveredTabIndexForTesting(int index) {
         mHoveredTabIndex = index;
     }
 
     @VisibleForTesting
-    void setSelectedTabIndexForTest(int index) {
+    void setSelectedTabIndexForTesting(int index) {
         mSelectedTabIndex = index;
     }
 
     @VisibleForTesting
-    void setUnGroupTabIndexForTest(int index) {
+    void setUnGroupTabIndexForTesting(int index) {
         mUnGroupTabIndex = index;
+    }
+
+    @VisibleForTesting
+    void setCurrentActionStateForTesting(int actionState) {
+        mCurrentActionState = actionState;
     }
 }

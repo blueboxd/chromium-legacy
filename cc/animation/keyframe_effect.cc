@@ -991,17 +991,18 @@ void KeyframeEffect::MarkKeyframeModelsForDeletion(
     // not yet aborted. These will be set to WAITING_FOR_DELETION which also
     // ensures we don't try to delete them again.
     for (size_t j = 0; j < keyframe_models_in_same_group.size(); ++j) {
-      KeyframeModel* keyframe_model =
+      KeyframeModel* same_group_keyframe_model =
           keyframe_models_[keyframe_models_in_same_group[j]].get();
 
       // Skip any keyframe model in this group which is already processed.
-      if (keyframe_model->run_state() == KeyframeModel::WAITING_FOR_DELETION ||
-          keyframe_model->run_state() == KeyframeModel::ABORTED)
+      if (same_group_keyframe_model->run_state() ==
+              KeyframeModel::WAITING_FOR_DELETION ||
+          same_group_keyframe_model->run_state() == KeyframeModel::ABORTED)
         continue;
 
-      GenerateEvent(events, *keyframe_model, AnimationEvent::FINISHED,
-                    monotonic_time);
-      MarkForDeletion(keyframe_model);
+      GenerateEvent(events, *same_group_keyframe_model,
+                    AnimationEvent::FINISHED, monotonic_time);
+      MarkForDeletion(same_group_keyframe_model);
     }
   }
 

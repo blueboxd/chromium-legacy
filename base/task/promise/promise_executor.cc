@@ -13,15 +13,6 @@ PromiseExecutor::~PromiseExecutor() {
   data_.vtable_ = nullptr;
 }
 
-PromiseExecutor::PrerequisitePolicy PromiseExecutor::GetPrerequisitePolicy()
-    const {
-  return data_.vtable_->get_prerequisite_policy(data_.storage_.array);
-}
-
-bool PromiseExecutor::IsCancelled() const {
-  return data_.vtable_->is_cancelled(data_.storage_.array);
-}
-
 #if DCHECK_IS_ON()
 PromiseExecutor::ArgumentPassingType
 PromiseExecutor::ResolveArgumentPassingType() const {
@@ -41,10 +32,6 @@ bool PromiseExecutor::CanReject() const {
   return data_.vtable_->can_reject(data_.storage_.array);
 }
 #endif
-
-void PromiseExecutor::Execute(AbstractPromise* promise) {
-  return data_.vtable_->execute(data_.storage_.array, promise);
-}
 
 }  // namespace internal
 }  // namespace base

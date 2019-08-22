@@ -6312,6 +6312,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="HatsBubble.Show">
+  <obsolete>
+    Deprecated as of 08/2019. Replaced by HappinessTrackingSurvey.BubbleUsage
+    histogram.
+  </obsolete>
   <owner>jeffreycohen@chromium.org</owner>
   <description>User saw a Happiness Tracking Survey.</description>
 </action>
@@ -11867,6 +11871,27 @@ should be able to be added at any place in this file.
   <obsolete>Deprecated as of 8/2015</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="MobileCreditCardScannerClose">
+  <owner>gambard@chromium.org</owner>
+  <description>
+    User closed the Credit Card Scanner without scanning a credit card.
+  </description>
+</action>
+
+<action name="MobileCreditCardScannerError">
+  <owner>gambard@chromium.org</owner>
+  <description>
+    User closed the Credit Card Scanner from an error dialog.
+  </description>
+</action>
+
+<action name="MobileCreditCardScannerScannedCard">
+  <owner>gambard@chromium.org</owner>
+  <description>
+    User scanned a credit card using the Credit Card Scanner.
+  </description>
 </action>
 
 <action name="MobileCustomFeedback">

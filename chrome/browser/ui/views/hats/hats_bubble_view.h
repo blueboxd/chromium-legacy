@@ -20,6 +20,17 @@ class Browser;
 // It displays a WebUI that hosts the survey.
 class HatsBubbleView : public views::BubbleDialogDelegateView {
  public:
+  // Histogram enum on how users interact with the bubble.
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class BubbleUsageCounts {
+    kAccepted = 0,
+    kDeclined = 1,
+    kUIDismissed = 2,
+    kIgnored = 3,
+    kMaxValue = kIgnored,
+  };
+
   // Returns a pointer to the Hats Bubble being shown. For testing only.
   static views::BubbleDialogDelegateView* GetHatsBubble();
   // Creates and shows the bubble that leads to a survey identified by
@@ -38,6 +49,7 @@ class HatsBubbleView : public views::BubbleDialogDelegateView {
   bool Accept() override;
 
   // views::WidgetObserver:
+  void OnWidgetClosing(views::Widget* widget) override;
   void OnWidgetDestroying(views::Widget* widget) override;
 
   // views::View:

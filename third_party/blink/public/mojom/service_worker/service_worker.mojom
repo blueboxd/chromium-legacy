@@ -171,7 +171,7 @@ interface ServiceWorker {
   // ServiceWorkerGlobalScope#registration object. JavaScript execution of the
   // service worker does not start until this message is received.
   InitializeGlobalScope(
-      associated ServiceWorkerHost service_worker_host,
+      pending_associated_remote<ServiceWorkerHost> service_worker_host,
       ServiceWorkerRegistrationObjectInfo registration_info,
       FetchHandlerExistence fetch_handler_existence);
 

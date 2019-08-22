@@ -449,7 +449,7 @@ class UserMediaClientUnderTest : public UserMediaClient {
                            RequestState* state)
       : UserMediaClient(
             nullptr,
-            base::WrapUnique(user_media_processor),
+            user_media_processor,
             blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
         state_(state) {}
 
@@ -487,7 +487,7 @@ class UserMediaClientTest : public ::testing::Test {
         user_media_processor_host_proxy;
     binding_user_media_processor_.Bind(
         mojo::MakeRequest(&user_media_processor_host_proxy));
-    user_media_processor_ = new UserMediaProcessorUnderTest(
+    user_media_processor_ = MakeGarbageCollected<UserMediaProcessorUnderTest>(
         base::WrapUnique(msd_observer),
         std::move(user_media_processor_host_proxy), &state_);
     blink::mojom::blink::MediaStreamDispatcherHostPtr dispatcher_host =
@@ -495,7 +495,7 @@ class UserMediaClientTest : public ::testing::Test {
     user_media_processor_->set_media_stream_dispatcher_host_for_testing(
         std::move(dispatcher_host));
 
-    user_media_client_impl_ = std::make_unique<UserMediaClientUnderTest>(
+    user_media_client_impl_ = MakeGarbageCollected<UserMediaClientUnderTest>(
         user_media_processor_, &state_);
     blink::mojom::blink::MediaDevicesDispatcherHostPtr
         user_media_client_host_proxy;
@@ -506,7 +506,9 @@ class UserMediaClientTest : public ::testing::Test {
   }
 
   void TearDown() override {
-    user_media_client_impl_.reset();
+    user_media_client_impl_->ContextDestroyed();
+    user_media_client_impl_ = nullptr;
+
     blink::WebHeap::CollectAllGarbageForTesting();
   }
 
@@ -650,9 +652,8 @@ class UserMediaClientTest : public ::testing::Test {
   mojo::Binding<blink::mojom::blink::MediaDevicesDispatcherHost>
       binding_user_media_client_;
 
-  UserMediaProcessorUnderTest* user_media_processor_ =
-      nullptr;  // Owned by |user_media_client_impl_|
-  std::unique_ptr<UserMediaClientUnderTest> user_media_client_impl_;
+  WeakPersistent<UserMediaProcessorUnderTest> user_media_processor_;
+  Persistent<UserMediaClientUnderTest> user_media_client_impl_;
   RequestState state_ = REQUEST_NOT_STARTED;
 };
 
@@ -846,7 +847,8 @@ TEST_F(UserMediaClientTest, MediaStreamImplShutDown) {
   user_media_client_impl_->RequestUserMediaForTest();
   EXPECT_EQ(1, mock_dispatcher_host_.request_stream_counter());
   EXPECT_EQ(REQUEST_NOT_COMPLETE, request_state());
-  user_media_client_impl_.reset();
+  // TearDown() nulls out |user_media_client_impl_| and forces GC to garbage
+  // collect it.
 }
 
 // This test what happens if a new document is loaded in the frame while the

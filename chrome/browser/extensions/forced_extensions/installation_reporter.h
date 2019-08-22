@@ -174,6 +174,14 @@ class InstallationReporter {
     base::Optional<extensions::CrxInstallErrorDetail> install_error_detail;
   };
 
+  class TestObserver {
+   public:
+    virtual ~TestObserver();
+    virtual void OnExtensionDataChanged(const ExtensionId& id,
+                                        const Profile* profile,
+                                        const InstallationData& data) = 0;
+  };
+
   // Remembers failure reason and in-progress stages in memory.
   static void ReportInstallationStage(const Profile* profile,
                                       const ExtensionId& id,
@@ -196,6 +204,8 @@ class InstallationReporter {
 
   // Clears all failures for the given profile.
   static void Clear(const Profile* profile);
+
+  static void SetTestObserver(TestObserver* observer);
 };
 
 }  // namespace extensions

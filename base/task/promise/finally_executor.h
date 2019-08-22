@@ -38,23 +38,14 @@ class FinallyExecutor {
 
   bool IsCancelled() const { return common_.IsCancelled(); }
 
-  PromiseExecutor::PrerequisitePolicy GetPrerequisitePolicy() const {
-    return PromiseExecutor::PrerequisitePolicy::kAll;
-  }
+  static constexpr PromiseExecutor::PrerequisitePolicy kPrerequisitePolicy =
+      PromiseExecutor::PrerequisitePolicy::kAll;
 
   void Execute(AbstractPromise* promise) {
     AbstractPromise* prerequisite = promise->GetOnlyPrerequisite();
     CallbackT* resolve_executor = static_cast<CallbackT*>(&common_.callback_);
     RunHelper<CallbackT, void, ResolveStorage, RejectStorage>::Run(
         std::move(*resolve_executor), prerequisite, promise);
-
-    if (promise->IsResolvedWithPromise() ||
-        promise->value().type() == TypeId::From<ResolveStorage>()) {
-      promise->OnResolved();
-    } else {
-      DCHECK_EQ(promise->value().type(), TypeId::From<RejectStorage>());
-      promise->OnRejected();
-    }
   }
 
 #if DCHECK_IS_ON()

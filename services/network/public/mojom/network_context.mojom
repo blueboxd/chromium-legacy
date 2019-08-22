@@ -995,7 +995,7 @@ interface NetworkContext {
         int32 render_frame_id,
         url.mojom.Origin origin,
         uint32 options,
-        WebSocketHandshakeClient handshake_client,
+        pending_remote<WebSocketHandshakeClient> handshake_client,
         AuthenticationHandler? auth_handler,
         TrustedHeaderClient? header_client);
 

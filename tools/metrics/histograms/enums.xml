@@ -7680,6 +7680,11 @@ histogram as enum -->
   <int value="3" label="Reading"/>
 </enum>
 
+<enum name="ChromeOSJankinessTriggerStatus">
+  <int value="0" label="CollectionAttempted"/>
+  <int value="1" label="Throttled"/>
+</enum>
+
 <enum name="ChromeOSMachineIdReason">
   <int value="0" label="Unknown"/>
   <int value="1" label="Network"/>
@@ -17796,6 +17801,13 @@ Called by update_net_error_codes.py.-->
   <int value="582" label="DnsOverHttpsMode"/>
   <int value="583" label="SendFilesForMalwareCheck"/>
   <int value="584" label="PolicyAtomicGroupsEnabled"/>
+  <int value="585" label="UnsafeEventsReportingEnabled"/>
+  <int value="586" label="BlockLargeFileTransfer"/>
+  <int value="587" label="DelayDeliveryUntilVerdict"/>
+  <int value="588" label="AllowPasswordProtectedFiles"/>
+  <int value="589" label="CheckContentCompliance"/>
+  <int value="590" label="DomainsToCheckComplianceOfDownloadedContent"/>
+  <int value="591" label="DomainsToNotCheckComplianceOfUploadedContent"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -24359,6 +24371,7 @@ Called by update_net_error_codes.py.-->
   <int value="3006" label="WakeLockAcquireSystemLock"/>
   <int value="3007" label="ThirdPartyServiceWorker"/>
   <int value="3008" label="JSSelfProfiling"/>
+  <int value="3009" label="HTMLFrameSetElement"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -29408,7 +29421,18 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="Checked dont launch"/>
 </enum>
 
+<enum name="HappinessTrackingSurveyDesktopBubbleUsage">
+  <int value="0" label="Accepted"/>
+  <int value="1" label="No Thanks"/>
+  <int value="2" label="Closed Intentionally"/>
+  <int value="3" label="Ignored"/>
+</enum>
+
 <enum name="HappinessTrackingSurveyDesktopResponse">
+  <obsolete>
+    Deprecated as of 08/2019. Replaced with
+    HappinessTrackingSurveyDesktopBubbleUsage.
+  </obsolete>
   <int value="0" label="Shown"/>
   <int value="1" label="Completed"/>
   <int value="2" label="Dismissed"/>
@@ -30810,6 +30834,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="92" label="SEND_TAB_TO_SELF_INFOBAR_DELEGATE"/>
   <int value="93" label="TAB_SHARING_INFOBAR_DELEGATE"/>
   <int value="94" label="SAFETY_TIP_INFOBAR_DELEGATE"/>
+  <int value="95" label="SMS_RECEIVER_INFOBAR_DELEGATE"/>
 </enum>
 
 <enum name="InfoBarResponse">
@@ -45827,6 +45852,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="DB Error"/>
 </enum>
 
+<enum name="PasswordAnalyzeLeakResponseResult">
+  <int value="0" label="Decryption Error"/>
+  <int value="1" label="No Leaked Credentials"/>
+  <int value="2" label="Leaked Credentials"/>
+</enum>
+
 <enum name="PasswordApplySyncChangesState">
   <int value="0" label="Apply OK"/>
   <int value="1" label="Apply ADD failed"/>
@@ -45939,6 +45970,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Password import failed due to malformed CSV"/>
   <int value="3" label="Password import failed due to missing content"/>
   <int value="4" label="Boundary value"/>
+</enum>
+
+<enum name="PasswordLeakLookupResponseResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Network/server error"/>
+  <int value="2" label="Malformed response"/>
 </enum>
 
 <enum name="PasswordManagerActionsTaken">

@@ -213,9 +213,6 @@ class AssistantFormCounterInput extends AssistantFormInput {
     private void updateLabelAndValue(AssistantFormCounter counter, CounterViewHolder view) {
         // Update the label.
         String label = counter.getLabel();
-        if (counter.getLabelChoiceFormat().getLimits().length > 0) {
-            label = counter.getLabelChoiceFormat().format(counter.getValue());
-        }
         label = label.replaceAll(QUOTED_VALUE, Integer.toString(counter.getValue()));
         view.mLabelView.setText(label);
 

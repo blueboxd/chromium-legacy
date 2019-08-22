@@ -21,8 +21,8 @@ class CredentialLeakDialogController : public PasswordBaseDialogController {
   // Returns the label for the accept button.
   virtual base::string16 GetAcceptButtonLabel() const = 0;
 
-  // Returns the label for the close button.
-  virtual base::string16 GetCloseButtonLabel() const = 0;
+  // Returns the label for the cancel button.
+  virtual base::string16 GetCancelButtonLabel() const = 0;
 
   // Returns the dialog message based on credential leak type.
   virtual base::string16 GetDescription() const = 0;
@@ -33,8 +33,8 @@ class CredentialLeakDialogController : public PasswordBaseDialogController {
   // Checks whether the dialog should prompt user to password checkup.
   virtual bool ShouldCheckPasswords() const = 0;
 
-  // Checks whether the dialog should show close button.
-  virtual bool ShouldShowCloseButton() const = 0;
+  // Checks whether the dialog should show cancel button.
+  virtual bool ShouldShowCancelButton() const = 0;
 
  protected:
   ~CredentialLeakDialogController() override = default;

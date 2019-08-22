@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-PASS Immersive XRSession requestReferenceSpace returns expected objects
-PASS Non-immersive XRSession requestReferenceSpace returns expected objects
-Harness: the test ran to completion.
-

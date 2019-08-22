@@ -57,18 +57,6 @@ const base::Feature kStopSyncInPausedState{"StopSyncInPausedState",
 const base::Feature kSyncSendTabToSelf{"SyncSendTabToSelf",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
-// If enabled, allows the Sync machinery to start with a signed-in account that
-// has *not* been chosen as Chrome's primary account (see IdentityManager).
-const base::Feature kSyncSupportSecondaryAccount {
-  "SyncSupportSecondaryAccount",
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
-
 // Enable USS implementation of Bookmarks datatype.
 const base::Feature kSyncUSSBookmarks{"SyncUSSBookmarks",
                                       base::FEATURE_ENABLED_BY_DEFAULT};

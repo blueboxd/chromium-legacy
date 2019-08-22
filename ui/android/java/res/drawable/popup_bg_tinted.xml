@@ -9,7 +9,7 @@
     <item android:drawable="@drawable/popup_bg" />
     <item>
         <shape>
-            <corners android:radius="4dp" />
+            <corners android:radius="@dimen/popup_bg_corner_radius" />
             <solid android:color="@color/popup_bg_color" />
         </shape>
     </item>

@@ -1964,6 +1964,7 @@ void RenderProcessHostImpl::BindFileSystemManager(
     const url::Origin& origin,
     mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // TODO(https://crbug.com/873661): Pass origin to FileSystemManager.
   base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&FileSystemManagerImpl::BindRequest,

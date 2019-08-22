@@ -17,8 +17,9 @@
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/network_delegate.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
@@ -46,7 +47,8 @@ class WebRequestProxyingWebSocket
   WebRequestProxyingWebSocket(
       WebSocketFactory factory,
       const network::ResourceRequest& request,
-      network::mojom::WebSocketHandshakeClientPtr handshake_client,
+      mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>
+          handshake_client,
       bool has_extra_headers,
       int process_id,
       int render_frame_id,
@@ -87,7 +89,8 @@ class WebRequestProxyingWebSocket
       const GURL& url,
       const GURL& site_for_cookies,
       const base::Optional<std::string>& user_agent,
-      network::mojom::WebSocketHandshakeClientPtrInfo handshake_client,
+      mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>
+          handshake_client,
       bool has_extra_headers,
       int process_id,
       int render_frame_id,
@@ -116,9 +119,10 @@ class WebRequestProxyingWebSocket
 
   WebSocketFactory factory_;
   content::BrowserContext* const browser_context_;
-  network::mojom::WebSocketHandshakeClientPtr forwarding_handshake_client_;
-  mojo::Binding<network::mojom::WebSocketHandshakeClient>
-      binding_as_handshake_client_;
+  mojo::Remote<network::mojom::WebSocketHandshakeClient>
+      forwarding_handshake_client_;
+  mojo::Receiver<network::mojom::WebSocketHandshakeClient>
+      binding_as_handshake_client_{this};
   mojo::Binding<network::mojom::AuthenticationHandler> binding_as_auth_handler_;
   mojo::Binding<network::mojom::TrustedHeaderClient> binding_as_header_client_;
 

@@ -25,7 +25,8 @@ void WebSocketConnectorImpl::Connect(
     const std::vector<std::string>& requested_protocols,
     const GURL& site_for_cookies,
     const base::Optional<std::string>& user_agent,
-    network::mojom::WebSocketHandshakeClientPtr handshake_client) {
+    mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>
+        handshake_client) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   RenderProcessHost* process = RenderProcessHost::FromID(process_id_);
   if (!process) {
@@ -64,7 +65,8 @@ void WebSocketConnectorImpl::ConnectCalledByContentBrowserClient(
     uint32_t options,
     const GURL& url,
     std::vector<network::mojom::HttpHeaderPtr> additional_headers,
-    network::mojom::WebSocketHandshakeClientPtr handshake_client,
+    mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>
+        handshake_client,
     network::mojom::AuthenticationHandlerPtr auth_handler,
     network::mojom::TrustedHeaderClientPtr trusted_header_client) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

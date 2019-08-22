@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS XRViewerPose.views meets [SameObject] requirement
-Harness: the test ran to completion.
-

@@ -100,7 +100,7 @@ class CORE_EXPORT PropertyHandle {
     return PropertyHandle(kHandleDeletedValueForHashTraits);
   }
 
-  bool IsDeletedValueForHashTraits() {
+  bool IsDeletedValueForHashTraits() const {
     return handle_type_ == kHandleDeletedValueForHashTraits;
   }
 
@@ -143,7 +143,7 @@ struct HashTraits<blink::PropertyHandle>
     new (NotNull, &slot) blink::PropertyHandle(
         blink::PropertyHandle::DeletedValueForHashTraits());
   }
-  static bool IsDeletedValue(blink::PropertyHandle value) {
+  static bool IsDeletedValue(const blink::PropertyHandle& value) {
     return value.IsDeletedValueForHashTraits();
   }
 

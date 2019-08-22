@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS XRView projection matrices update near and far depths on the next frame
-Harness: the test ran to completion.
-

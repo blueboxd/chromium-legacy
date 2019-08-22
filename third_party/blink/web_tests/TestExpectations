@@ -244,6 +244,8 @@ crbug.com/980969 [ Mac ] http/tests/input/discard-events-to-unstable-iframe.html
 crbug.com/955533 wpt_internal/display-lock/sizing/overflow-auto-with-overflow.html [ Failure ]
 # Skip some tests for rendersubtree
 crbug.com/991095 wpt_internal/display-lock/rendersubtree/sizing [ Skip ]
+# MSAN failure
+crbug.com/996625 inspector-protocol/accessibility/accessibility-getFullAXTree-display-locked.js [ Skip ]
 
 # virtual-scroller failures
 crbug.com/986574 wpt_internal/virtual-scroller/ [ Failure ]
@@ -595,6 +597,23 @@ crbug.com/881057 virtual/layout_ng_experimental/external/wpt/css/vendor-imports/
 crbug.com/965491 virtual/layout_ng_experimental/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-fieldset-002.html [ Failure ]
 crbug.com/845235 virtual/layout_ng_experimental/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-flex-001.html [ Failure ]
 crbug.com/845235 virtual/layout_ng_experimental/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-inline-flex-001.html [ Failure ]
+
+# We're sending `Sec-Fetch-*` headers over non-secure transport until we fix https://crbug.com/995745
+crbug.com/995745 external/wpt/fetch/sec-metadata/fetch.tentative.sub.html [ Failure ]
+crbug.com/995745 external/wpt/fetch/sec-metadata/iframe.tentative.sub.html [ Failure ]
+crbug.com/995745 external/wpt/fetch/sec-metadata/redirect/multiple-redirect-https-downgrade-upgrade.tentative.sub.html [ Failure ]
+crbug.com/995745 external/wpt/fetch/sec-metadata/redirect/redirect-http-upgrade.tentative.sub.html [ Failure ]
+crbug.com/995745 external/wpt/fetch/sec-metadata/script.tentative.sub.html [ Failure ]
+crbug.com/995745 virtual/blink-cors/external/wpt/fetch/sec-metadata/fetch.tentative.sub.html [ Failure ]
+crbug.com/995745 virtual/blink-cors/external/wpt/fetch/sec-metadata/iframe.tentative.sub.html [ Failure ]
+crbug.com/995745 virtual/blink-cors/external/wpt/fetch/sec-metadata/redirect/multiple-redirect-https-downgrade-upgrade.tentative.sub.html [ Failure ]
+crbug.com/995745 virtual/blink-cors/external/wpt/fetch/sec-metadata/redirect/redirect-http-upgrade.tentative.sub.html [ Failure ]
+crbug.com/995745 virtual/blink-cors/external/wpt/fetch/sec-metadata/script.tentative.sub.html [ Failure ]
+crbug.com/995745 virtual/omt-worker-fetch/external/wpt/fetch/sec-metadata/fetch.tentative.sub.html [ Failure ]
+crbug.com/995745 virtual/omt-worker-fetch/external/wpt/fetch/sec-metadata/iframe.tentative.sub.html [ Failure ]
+crbug.com/995745 virtual/omt-worker-fetch/external/wpt/fetch/sec-metadata/redirect/multiple-redirect-https-downgrade-upgrade.tentative.sub.html [ Failure ]
+crbug.com/995745 virtual/omt-worker-fetch/external/wpt/fetch/sec-metadata/redirect/redirect-http-upgrade.tentative.sub.html [ Failure ]
+crbug.com/995745 virtual/omt-worker-fetch/external/wpt/fetch/sec-metadata/script.tentative.sub.html [ Failure ]
 
 # [css-align]
 
@@ -3232,7 +3251,22 @@ crbug.com/991295 external/wpt/web-animations/timing-model/timelines/document-tim
 crbug.com/994214 external/wpt/html/cross-origin-opener-policy/coop-navigated-popup.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 [ Mac10.10 ] external/wpt/webxr/exclusive_requestFrame_nolayer.https.html [ Failure Timeout ]
+crbug.com/626703 [ Mac10.11 ] external/wpt/webxr/xrStationaryReferenceSpace_floorlevel_updates.https.html [ Failure Timeout ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/webxr/xrStationaryReferenceSpace_floorlevel_updates.https.html [ Failure Timeout ]
+crbug.com/626703 [ Mac10.13 ] external/wpt/webxr/xrStationaryReferenceSpace_floorlevel_updates.https.html [ Failure Timeout ]
+crbug.com/626703 [ Retina ] external/wpt/webxr/xrStationaryReferenceSpace_floorlevel_updates.https.html [ Failure Timeout ]
+crbug.com/626703 [ Mac10.11 ] wpt_internal/webxr/xrSession_dataProviderDisconnect_inline.https.html [ Failure Timeout ]
+crbug.com/626703 [ Mac10.12 ] wpt_internal/webxr/xrSession_dataProviderDisconnect_inline.https.html [ Failure Timeout ]
+crbug.com/626703 [ Mac10.13 ] wpt_internal/webxr/xrSession_dataProviderDisconnect_inline.https.html [ Failure Timeout ]
+crbug.com/626703 [ Retina ] wpt_internal/webxr/xrSession_dataProviderDisconnect_inline.https.html [ Failure Timeout ]
+crbug.com/626703 [ Mac10.11 ] wpt_internal/webxr/render_state_vertical_fov_inline.https.html [ Failure Timeout ]
+crbug.com/626703 [ Mac10.12 ] wpt_internal/webxr/render_state_vertical_fov_inline.https.html [ Failure Timeout ]
+crbug.com/626703 [ Mac10.13 ] wpt_internal/webxr/render_state_vertical_fov_inline.https.html [ Failure Timeout ]
+crbug.com/626703 [ Retina ] wpt_internal/webxr/render_state_vertical_fov_inline.https.html [ Failure Timeout ]
+crbug.com/626703 [ Mac10.11 ] external/wpt/webxr/xrSession_requestAnimationFrame_getViewerPose.https.html [ Failure Timeout ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/webxr/xrSession_requestAnimationFrame_getViewerPose.https.html [ Failure Timeout ]
+crbug.com/626703 [ Mac10.13 ] external/wpt/webxr/xrSession_requestAnimationFrame_getViewerPose.https.html [ Failure Timeout ]
+crbug.com/626703 [ Retina ] external/wpt/webxr/xrSession_requestAnimationFrame_getViewerPose.https.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.10 ] wpt_internal/webxr/xrSession_dataProviderDisconnect_inline.https.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.10 ] wpt_internal/webxr/render_state_vertical_fov_inline.https.html [ Failure Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/webvtt/rendering/cues-with-video/processing-model/snap-to-line.html [ Failure ]
@@ -3444,7 +3478,6 @@ crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/fetch/api/request/de
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-referrer/http-rp/cross-origin/http-http/fetch-request/keep-origin-redirect/generic.http.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/fetch/api/cors/cors-preflight-star.any.worker.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-referrer/meta-referrer/cross-origin/http-https/img-tag/keep-origin-redirect/generic.http.html [ Timeout ]
-crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/fetch/sec-metadata/script.tentative.sub.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/fetch/api/basic/request-forbidden-headers.any.worker.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-https/fetch-request/no-redirect/upgrade-protocol.http.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-referrer-when-downgrade/meta-referrer/same-origin/http-http/worker-request/no-redirect/insecure-protocol.http.html [ Timeout ]
@@ -3487,7 +3520,6 @@ crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-r
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/fetch/sec-metadata/fetch-via-serviceworker--respondWith.tentative.https.sub.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/fetch/content-type/script.window.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/origin-when-cross-origin/attr-referrer/cross-origin/http-http/a-tag/no-redirect/cross-origin.http.html [ Timeout ]
-crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/fetch/sec-metadata/redirect/multiple-redirect-https-downgrade-upgrade.tentative.sub.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/fetch/api/response/response-stream-disturbed-1.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/fetch/nosniff/importscripts.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-referrer-when-downgrade/attr-referrer/cross-origin/http-https/script-tag/swap-origin-redirect/upgrade-protocol.http.html [ Timeout ]
@@ -6492,3 +6524,15 @@ crbug.com/914134 [ Mac ] vr/requestPresent_resolve_repeatwithoutgesture.html [ F
 crbug.com/914134 [ Mac ] vr/requestPresent_resolve_then_reject.html [ Failure ]
 
 crbug.com/996219 [ Win ] fast/text/emoji-vertical-origin-visual.html [ Failure ]
+
+crbug.com/996597 [ Win ] css2.1/t0905-c5525-flthw-00-c-g.html [ Failure ]
+
+# Sheriff 2019-08-22
+crbug.com/994008 [ Linux Win ] http/tests/devtools/elements/styles-3/styles-computed-trace.js [ Pass Failure ]
+crbug.com/994034 [ Linux Win ] http/tests/devtools/elements/styles-3/styles-add-new-rule-colon.js [ Pass Failure ]
+crbug.com/994027 [ Linux Win ] http/tests/devtools/elements/styles-2/force-pseudo-state.js [ Pass Failure ]
+crbug.com/995142 crbug.com/900706 [ Mac ] fast/canvas/canvas-large-pattern.html [ Pass Failure ]
+crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/canvas-large-pattern.html [ Pass Failure ]
+
+# Pending enabling scroll to text feature
+crbug.com/919204 external/wpt/scroll-to-text-fragment/scroll-to-text-fragment.html [ Skip ]

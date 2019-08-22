@@ -258,6 +258,7 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
         if (mTabGridIphItemCoordinator != null) {
             mTabGridIphItemCoordinator.destroy();
         }
+        mMultiThumbnailCardProvider.destroy();
         mMediator.destroy();
         mLifecycleDispatcher.unregister(this);
     }

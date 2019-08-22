@@ -478,9 +478,9 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void BindCacheStorage(blink::mojom::CacheStorageRequest request,
                                 const url::Origin& origin) = 0;
 
-  // Binds |request| to the FileSystemManager instance. The binding is
-  // sent to the IO thread. This is for internal use only, and is only exposed
-  // here to support MockRenderProcessHost usage in tests.
+  // Binds |receiver| to the FileSystemManager instance. The receiver is sent to
+  // the IO thread. This is for internal use only, and is only exposed here to
+  // support MockRenderProcessHost usage in tests.
   virtual void BindFileSystemManager(
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver) = 0;

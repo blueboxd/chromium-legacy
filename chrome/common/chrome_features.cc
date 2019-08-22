@@ -485,11 +485,6 @@ const base::Feature kOnConnectNative{"OnConnectNative",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-// Enables or disables modal permission prompts.
-// TODO(https://crbug.com/935900): Remove this.
-const base::Feature kModalPermissionPrompts{"ModalPermissionPrompts",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables the use of native notification centers instead of using the Message
 // Center for displaying the toasts. The feature is hardcoded to enabled for
 // Chrome OS.

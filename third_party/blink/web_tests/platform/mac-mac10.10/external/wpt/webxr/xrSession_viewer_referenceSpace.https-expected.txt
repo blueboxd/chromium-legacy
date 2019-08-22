@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-PASS Identity reference space provides correct poses for inline sessions
-PASS Identity reference space provides correct poses for immersive sessions
-Harness: the test ran to completion.
-

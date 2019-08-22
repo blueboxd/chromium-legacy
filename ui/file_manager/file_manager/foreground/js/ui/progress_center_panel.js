@@ -466,10 +466,7 @@ class ProgressCenterPanel {
           break;
         case 'error':
           panelItem.panelType = panelItem.panelTypeError;
-          panelItem.setAttribute(
-              'primary-text', item.message.replace(/\. .*/, '.'));
-          panelItem.setAttribute(
-              'secondary-text', item.message.replace(/.*\. /, ''));
+          panelItem.setAttribute('primary-text', item.message);
           break;
       }
     } else if (panelItem) {

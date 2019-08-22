@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_SMS_TEST_MOCK_SMS_WEB_CONTENTS_DELEGATE_H_
 
 #include "base/macros.h"
-#include "content/public/browser/sms_dialog.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -17,7 +16,11 @@ class MockSmsWebContentsDelegate : public WebContentsDelegate {
   MockSmsWebContentsDelegate();
   ~MockSmsWebContentsDelegate() override;
 
-  MOCK_METHOD1(CreateSmsDialog, std::unique_ptr<SmsDialog>(const url::Origin&));
+  MOCK_METHOD4(CreateSmsPrompt,
+               void(RenderFrameHost*,
+                    const url::Origin&,
+                    base::OnceCallback<void()> on_confirm,
+                    base::OnceCallback<void()> on_cancel));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSmsWebContentsDelegate);

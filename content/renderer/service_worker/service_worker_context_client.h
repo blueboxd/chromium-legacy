@@ -91,7 +91,8 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       const GURL& script_url,
       bool is_starting_installed_worker,
       blink::mojom::RendererPreferencesPtr renderer_preferences,
-      blink::mojom::ServiceWorkerRequest service_worker_request,
+      mojo::PendingReceiver<blink::mojom::ServiceWorker>
+          service_worker_receiver,
       mojo::PendingReceiver<blink::mojom::ControllerServiceWorker>
           controller_receiver,
       mojo::PendingAssociatedRemote<blink::mojom::EmbeddedWorkerInstanceHost>
@@ -222,7 +223,8 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   blink::WebServiceWorkerContextProxy* proxy_;
 
   // These Mojo objects are bound on the worker thread.
-  blink::mojom::ServiceWorkerRequest pending_service_worker_request_;
+  mojo::PendingReceiver<blink::mojom::ServiceWorker>
+      pending_service_worker_receiver_;
   mojo::PendingReceiver<blink::mojom::ControllerServiceWorker>
       controller_receiver_;
   mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>

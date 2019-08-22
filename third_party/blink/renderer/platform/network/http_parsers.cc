@@ -391,9 +391,8 @@ CacheControlHeader ParseCacheControlDirectives(
     const AtomicString& pragma_value) {
   CacheControlHeader cache_control_header;
   cache_control_header.parsed = true;
-  cache_control_header.max_age = std::numeric_limits<double>::quiet_NaN();
-  cache_control_header.stale_while_revalidate =
-      std::numeric_limits<double>::quiet_NaN();
+  cache_control_header.max_age = base::nullopt;
+  cache_control_header.stale_while_revalidate = base::nullopt;
 
   static const char kNoCacheDirective[] = "no-cache";
   static const char kNoStoreDirective[] = "no-store";
@@ -420,25 +419,27 @@ CacheControlHeader ParseCacheControlDirectives(
         cache_control_header.contains_must_revalidate = true;
       } else if (DeprecatedEqualIgnoringCase(directives[i].first,
                                              kMaxAgeDirective)) {
-        if (!std::isnan(cache_control_header.max_age)) {
+        if (cache_control_header.max_age) {
           // First max-age directive wins if there are multiple ones.
           continue;
         }
         bool ok;
         double max_age = directives[i].second.ToDouble(&ok);
         if (ok)
-          cache_control_header.max_age = max_age;
+          cache_control_header.max_age = base::TimeDelta::FromSecondsD(max_age);
       } else if (DeprecatedEqualIgnoringCase(directives[i].first,
                                              kStaleWhileRevalidateDirective)) {
-        if (!std::isnan(cache_control_header.stale_while_revalidate)) {
+        if (cache_control_header.stale_while_revalidate) {
           // First stale-while-revalidate directive wins if there are multiple
           // ones.
           continue;
         }
         bool ok;
         double stale_while_revalidate = directives[i].second.ToDouble(&ok);
-        if (ok)
-          cache_control_header.stale_while_revalidate = stale_while_revalidate;
+        if (ok) {
+          cache_control_header.stale_while_revalidate =
+              base::TimeDelta::FromSecondsD(stale_while_revalidate);
+        }
       }
     }
   }

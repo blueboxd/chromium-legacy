@@ -5,7 +5,8 @@
 from .composition_parts import WithIdentifier
 from .composition_parts import WithOwner
 from .idl_type import IdlType
-from .values import DefaultValue
+from .literal_constant import LiteralConstant
+from .make_copy import make_copy
 
 
 class Argument(WithIdentifier, WithOwner):
@@ -14,7 +15,7 @@ class Argument(WithIdentifier, WithOwner):
             assert isinstance(index, int)
             assert isinstance(idl_type, IdlType)
             assert (default_value is None
-                    or isinstance(default_value, DefaultValue))
+                    or isinstance(default_value, LiteralConstant))
 
             WithIdentifier.__init__(self, identifier)
 
@@ -22,16 +23,10 @@ class Argument(WithIdentifier, WithOwner):
             self.idl_type = idl_type
             self.default_value = default_value
 
-        def make_copy(self):
-            return Argument.IR(
-                identifier=self.identifier,
-                index=self.index,
-                idl_type=self.idl_type,
-                default_value=self.default_value)
-
     def __init__(self, ir, owner):
         assert isinstance(ir, Argument.IR)
 
+        ir = make_copy(ir)
         WithIdentifier.__init__(self, ir.identifier)
         WithOwner.__init__(self, owner)
 

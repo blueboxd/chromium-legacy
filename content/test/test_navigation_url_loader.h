@@ -31,7 +31,8 @@ class TestNavigationURLLoader
       public base::SupportsWeakPtr<TestNavigationURLLoader> {
  public:
   TestNavigationURLLoader(std::unique_ptr<NavigationRequestInfo> request_info,
-                          NavigationURLLoaderDelegate* delegate);
+                          NavigationURLLoaderDelegate* delegate,
+                          bool is_served_from_back_forward_cache);
 
   // NavigationURLLoader implementation.
   void FollowRedirect(const std::vector<std::string>& removed_headers,
@@ -60,6 +61,8 @@ class TestNavigationURLLoader
   std::unique_ptr<NavigationRequestInfo> request_info_;
   NavigationURLLoaderDelegate* delegate_;
   int redirect_count_;
+
+  bool is_served_from_back_forward_cache_;
 };
 
 }  // namespace content

@@ -361,7 +361,6 @@ bool DrawAndScaleImage(const DrawImage& draw_image,
     SkPixmap unscaled_pixmap_y;
     SkPixmap unscaled_pixmap_u;
     SkPixmap unscaled_pixmap_v;
-    void* planes[SkYUVASizeInfo::kMaxCount];
     SetYuvPixmapsFromSizeInfo(&unscaled_pixmap_y, &unscaled_pixmap_u,
                               &unscaled_pixmap_v, yuva_size_info, planes,
                               decode_info, decode_pixmap.writable_addr());

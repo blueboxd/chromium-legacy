@@ -1362,11 +1362,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-myfiles-volume",
-    "owners": [ "lucmult", "noel" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-nacl",
     "owners": [ "dschuff", "native-client-dev@googlegroups.com" ],
     "expiry_milestone": 87

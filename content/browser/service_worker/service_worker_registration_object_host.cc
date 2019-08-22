@@ -43,7 +43,7 @@ void ExecuteUpdate(base::WeakPtr<ServiceWorkerContextCore> context,
                    bool skip_script_comparison,
                    ServiceWorkerContextCore::UpdateCallback callback,
                    blink::ServiceWorkerStatusCode status) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   if (status != blink::ServiceWorkerStatusCode::kOk) {
     // The delay was already very long and update() is rejected immediately.
@@ -236,8 +236,7 @@ void ServiceWorkerRegistrationObjectHost::DelayUpdate(
     return;
   }
 
-  base::PostDelayedTask(FROM_HERE,
-                        {ServiceWorkerContextWrapper::GetCoreThreadId()},
+  base::PostDelayedTask(FROM_HERE, {ServiceWorkerContext::GetCoreThreadId()},
                         base::BindOnce(std::move(update_function),
                                        blink::ServiceWorkerStatusCode::kOk),
                         delay);

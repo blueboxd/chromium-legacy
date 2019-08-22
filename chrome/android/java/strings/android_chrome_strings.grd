@@ -3977,20 +3977,6 @@ The site does NOT gain access to the camera. The camera images are only visible 
         Developer UI
       </message>
 
-      <!-- SMS strings -->
-      <message name="IDS_SMS_DIALOG_TITLE" desc="Title shown when Chrome is waiting for an SMS on the user's behalf">
-        <ph name="ORIGIN">%1$s<ex>example.com</ex></ph> sent a text message to your phone number. If you confirm, the site will be able to know it's you.
-      </message>
-      <message name="IDS_SMS_DIALOG_STATUS_WAITING" desc="Message shown when Chrome is waiting for an SMS on the user's behalf">
-        Waiting for text message
-      </message>
-      <message name="IDS_SMS_DIALOG_STATUS_SMS_RECEIVED" desc="Message shown when Chrome has received an SMS on the user's behalf">
-        Text message received
-      </message>
-      <message name="IDS_SMS_DIALOG_STATUS_TIMEOUT" desc="Message shown when SMS verification timed out.">
-        Something went wrong
-      </message>
-
       <message name="IDS_TEST_DUMMY_MODULE_TITLE"
         translateable="false"
         desc="Text shown when the test dummy module is referenced in install start, success,

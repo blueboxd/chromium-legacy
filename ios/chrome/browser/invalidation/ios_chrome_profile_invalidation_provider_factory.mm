@@ -86,12 +86,15 @@ IOSChromeProfileInvalidationProviderFactory::BuildServiceInstanceFor(
               IOSChromeInstanceIDProfileServiceFactory::GetForBrowserState(
                   browser_state)
                   ->driver()),
+          base::BindRepeating(&syncer::PerUserTopicRegistrationManager::Create,
+                              identity_provider.get(),
+                              browser_state->GetPrefs(),
+                              browser_state->GetURLLoaderFactory(),
+                              base::BindRepeating(&InProcessJsonParser::Parse)),
           IOSChromeInstanceIDProfileServiceFactory::GetForBrowserState(
               browser_state)
               ->driver(),
-          browser_state->GetPrefs(),
-          base::BindRepeating(&InProcessJsonParser::Parse),
-          browser_state->GetURLLoaderFactory());
+          browser_state->GetPrefs());
   service->Init();
 
   return std::make_unique<ProfileInvalidationProvider>(

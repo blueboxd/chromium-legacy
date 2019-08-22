@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import copy
-
 from .extended_attribute import ExtendedAttributes
 from .exposure import Exposure
 
@@ -39,9 +37,6 @@ class WithExtendedAttributes(object):
 
 class CodeGeneratorInfo(dict):
     """A bag of properties to be used by bindings code generators"""
-
-    def make_copy(self):
-        return copy.deepcopy(self)
 
 
 class WithCodeGeneratorInfo(object):
@@ -131,12 +126,6 @@ class Location(object):
             text += ':{}'.format(self._line_number)
         return text
 
-    def make_copy(self):
-        return Location(
-            filepath=self._filepath,
-            line_number=self._line_number,
-            position=self._position)
-
     @property
     def filepath(self):
         return self._filepath
@@ -167,9 +156,6 @@ class DebugInfo(object):
             self._locations = locations
         else:
             self._locations = [location or Location()]
-
-    def make_copy(self):
-        return DebugInfo(locations=map(Location.make_copy, self._locations))
 
     @property
     def location(self):

@@ -18,7 +18,7 @@ cca.App = function() {
    * @type {cca.models.Gallery}
    * @private
    */
-  this.model_ = new cca.models.Gallery();
+  this.gallery_ = new cca.models.Gallery();
 
   /**
    * @type {cca.ResolutionEventBroker}
@@ -51,20 +51,20 @@ cca.App = function() {
    * @type {cca.GalleryButton}
    * @private
    */
-  this.galleryButton_ = new cca.GalleryButton(this.model_);
+  this.galleryButton_ = new cca.GalleryButton(this.gallery_);
 
   /**
    * @type {cca.views.Browser}
    * @private
    */
-  this.browserView_ = new cca.views.Browser(this.model_);
+  this.browserView_ = new cca.views.Browser(this.gallery_);
 
   /**
    * @type {cca.views.Camera}
    * @private
    */
   this.cameraView_ = new cca.views.Camera(
-      this.model_, this.infoUpdater_, this.photoPreferrer_,
+      this.gallery_, this.infoUpdater_, this.photoPreferrer_,
       this.videoPreferrer_);
 
   // End of properties. Seal the object.
@@ -163,11 +163,11 @@ cca.App.prototype.start = function() {
         });
   }).then((external) => {
     cca.state.set('ext-fs', external);
-    this.model_.addObserver(this.galleryButton_);
+    this.gallery_.addObserver(this.galleryButton_);
     if (!cca.App.useGalleryApp()) {
-      this.model_.addObserver(this.browserView_);
+      this.gallery_.addObserver(this.browserView_);
     }
-    this.model_.load();
+    this.gallery_.load();
     cca.nav.open('camera');
   }).catch((error) => {
     console.error(error);

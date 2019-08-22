@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.password_manager;
 
-import android.content.res.Resources;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,10 +34,11 @@ public class PasswordManagerDialogCoordinator {
                 mModel, customView, PasswordManagerDialogViewBinder::bind);
     }
 
-    public void showDialog(
-            String title, String details, int drawableId, Callback<Boolean> onClick) {
+    public void showDialog(String title, String details, @DrawableRes int drawableId,
+            String positiveButtonText, String negativeButtonText, Callback<Boolean> onClick) {
         mMediator.setContents(title, details, drawableId);
-        mMediator.showDialog(onClick);
+        mMediator.setButtons(positiveButtonText, negativeButtonText, onClick);
+        mMediator.showDialog();
     }
 
     public void dismissDialog(@DialogDismissalCause int dismissalClause) {
@@ -45,11 +46,7 @@ public class PasswordManagerDialogCoordinator {
     }
 
     private static PropertyModel.Builder createDialogModelBuilder(View customView) {
-        Resources resources = customView.getResources();
         return new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
-                .with(ModalDialogProperties.CUSTOM_VIEW, customView)
-                .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, resources,
-                        R.string.continue_button)
-                .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, resources, R.string.cancel);
+                .with(ModalDialogProperties.CUSTOM_VIEW, customView);
     }
 }

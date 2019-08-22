@@ -12,6 +12,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -58,8 +59,8 @@ public class QuotaTest {
     @Test
     @MediumTest
     @Feature({"QuotaPermissions"})
-    @CommandLineFlags.Add("disable-features=" + PermissionTestRule.MODAL_FLAG)
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_REQUIRES_TOUCH})
+    @DisabledTest(message = "Modals are now enabled and test needs to be reworked crbug.com/935900")
     public void testQuotaShowsInfobar() throws Exception {
         testQuotaPermissionsPlumbing("initiate_requestQuota(1024)", 1, false, false);
     }

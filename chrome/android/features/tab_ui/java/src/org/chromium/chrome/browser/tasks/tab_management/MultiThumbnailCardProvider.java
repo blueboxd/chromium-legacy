@@ -22,7 +22,10 @@ import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
+import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
@@ -38,6 +41,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProvider {
     private final TabContentManager mTabContentManager;
     private final TabModelSelector mTabModelSelector;
+    private final TabModelSelectorObserver mTabModelSelectorObserver;
 
     private final float mRadius;
     private final float mFaviconCirclePadding;
@@ -217,6 +221,8 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
                 ApiCompatibilityUtils.getColor(resource, R.color.divider_bg_color));
         mThumbnailFramePaint.setAntiAlias(true);
 
+        // TODO(996048): Use pre-defined styles to avoid style out of sync if any text/color styles
+        // changes.
         mTextPaint = new Paint();
         mTextPaint.setTextSize(resource.getDimension(R.dimen.compositor_tab_title_text_size));
         mTextPaint.setFakeBoldText(true);
@@ -266,6 +272,28 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
                     Math.round(thumbnailRect.right - thumbnailFaviconPadding),
                     Math.round(thumbnailRect.bottom - thumbnailFaviconPadding)));
         }
+
+        mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
+            @Override
+            public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
+                boolean isIncognito = newModel.isIncognito();
+                mEmptyThumbnailPaint.setColor(
+                        TabUiColorProvider.getMiniThumbnailPlaceHolderColor(context, isIncognito));
+                mThumbnailFramePaint.setColor(
+                        TabUiColorProvider.getMiniThumbnailFrameColor(context, isIncognito));
+                mTextPaint.setColor(TabUiColorProvider.getTitleTextColor(context, isIncognito));
+                mFaviconBackgroundPaint.setColor(
+                        TabUiColorProvider.getFaviconBackgroundColor(context, isIncognito));
+            }
+        };
+        mTabModelSelector.addObserver(mTabModelSelectorObserver);
+    }
+
+    /**
+     * Destroy any member that needs clean up.
+     */
+    public void destroy() {
+        mTabModelSelector.removeObserver(mTabModelSelectorObserver);
     }
 
     @Override

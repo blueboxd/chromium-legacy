@@ -1254,7 +1254,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   using WebSocketFactory = base::OnceCallback<void(
       const GURL& /* url */,
       std::vector<network::mojom::HttpHeaderPtr> /* additional_headers */,
-      network::mojom::WebSocketHandshakeClientPtr,
+      mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>,
       network::mojom::AuthenticationHandlerPtr,
       network::mojom::TrustedHeaderClientPtr)>;
 
@@ -1273,7 +1273,8 @@ class CONTENT_EXPORT ContentBrowserClient {
       const GURL& url,
       const GURL& site_for_cookies,
       const base::Optional<std::string>& user_agent,
-      network::mojom::WebSocketHandshakeClientPtr handshake_client);
+      mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>
+          handshake_client);
 
   // Allows the embedder to intercept or replace the mojo objects used for
   // preference-following access to cookies. This is primarily used for objects

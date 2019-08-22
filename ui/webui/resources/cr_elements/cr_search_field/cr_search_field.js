@@ -28,6 +28,8 @@ Polymer({
   /** @private */
   onTapClear_: function() {
     this.setValue('');
-    this.$.searchInput.focus();
+    setTimeout(() => {
+      this.$.searchInput.focus();
+    });
   },
 });

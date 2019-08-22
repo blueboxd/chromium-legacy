@@ -63,6 +63,7 @@
 #include "chrome/browser/extensions/extension_management_constants.h"
 #include "chrome/browser/extensions/extension_management_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/forced_extensions/installation_reporter.h"
 #include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
@@ -308,8 +309,10 @@ using content::BrowserThread;
 using net::URLRequestMockHTTPJob;
 using safe_browsing::ReusedPasswordAccountType;
 using testing::_;
+using testing::AtLeast;
 using testing::Mock;
 using testing::Return;
+using testing::Sequence;
 using webrtc_event_logging::WebRtcEventLogManager;
 
 namespace policy {
@@ -2535,6 +2538,37 @@ class ExtensionRequestInterceptor {
   content::URLLoaderInterceptor interceptor_;
 };
 
+class MockedInstallationReporterObserver
+    : public extensions::InstallationReporter::TestObserver {
+ public:
+  explicit MockedInstallationReporterObserver(const Profile* profile)
+      : profile_(profile) {}
+  ~MockedInstallationReporterObserver() override = default;
+
+  MOCK_METHOD1(ExtensionStageChanged,
+               void(extensions::InstallationReporter::Stage));
+
+  void OnExtensionDataChanged(
+      const extensions::ExtensionId& id,
+      const Profile* profile,
+      const extensions::InstallationReporter::InstallationData& data) override {
+    // For simplicity policies are pushed into all profiles, so we need to track
+    // only one here.
+    if (profile != profile_) {
+      return;
+    }
+    if (data.install_stage && stage_ != data.install_stage.value()) {
+      stage_ = data.install_stage.value();
+      ExtensionStageChanged(stage_);
+    }
+  }
+
+ private:
+  extensions::InstallationReporter::Stage stage_ =
+      extensions::InstallationReporter::Stage::CREATED;
+  const Profile* profile_;
+};
+
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
@@ -2564,8 +2598,45 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                forcelist.CreateDeepCopy(), nullptr);
   extensions::TestExtensionRegistryObserver observer(extension_registry());
+  MockedInstallationReporterObserver reporter_observer(browser()->profile());
+  // CREATED is the default stage in MockedInstallationReporterObserver, so it
+  // wouldn't be reported here.
+  Sequence sequence;
+  EXPECT_CALL(
+      reporter_observer,
+      ExtensionStageChanged(
+          extensions::InstallationReporter::Stage::NOTIFIED_FROM_MANAGEMENT))
+      .InSequence(sequence);
+  EXPECT_CALL(
+      reporter_observer,
+      ExtensionStageChanged(
+          extensions::InstallationReporter::Stage::SEEN_BY_POLICY_LOADER))
+      .InSequence(sequence);
+  EXPECT_CALL(
+      reporter_observer,
+      ExtensionStageChanged(
+          extensions::InstallationReporter::Stage::SEEN_BY_EXTERNAL_PROVIDER))
+      .InSequence(sequence);
+  EXPECT_CALL(
+      reporter_observer,
+      ExtensionStageChanged(extensions::InstallationReporter::Stage::PENDING))
+      .InSequence(sequence);
+  EXPECT_CALL(reporter_observer,
+              ExtensionStageChanged(
+                  extensions::InstallationReporter::Stage::DOWNLOADING))
+      .InSequence(sequence);
+  EXPECT_CALL(reporter_observer,
+              ExtensionStageChanged(
+                  extensions::InstallationReporter::Stage::INSTALLING))
+      .InSequence(sequence);
+  EXPECT_CALL(
+      reporter_observer,
+      ExtensionStageChanged(extensions::InstallationReporter::Stage::COMPLETE))
+      .InSequence(sequence);
+  extensions::InstallationReporter::SetTestObserver(&reporter_observer);
   UpdateProviderPolicy(policies);
   observer.WaitForExtensionWillBeInstalled();
+  extensions::InstallationReporter::SetTestObserver(nullptr);
   // Note: Cannot check that the notification details match the expected
   // exception, since the details object has already been freed prior to
   // the completion of observer.WaitForExtensionWillBeInstalled().

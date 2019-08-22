@@ -406,11 +406,13 @@ TEST_F(PictureLayerImplTest, ClonePartialInvalidation) {
   SetupPendingTreeWithFixedTileSize(lost_raster_source, gfx::Size(50, 50),
                                     Region());
   ActivateTree();
-  // Add a unique tiling on the active tree.
-  PictureLayerTiling* tiling =
-      active_layer()->AddTiling(gfx::AxisTransform2d(3.f, gfx::Vector2dF()));
-  tiling->set_resolution(HIGH_RESOLUTION);
-  tiling->CreateAllTilesForTesting();
+  {
+    // Add a unique tiling on the active tree.
+    PictureLayerTiling* tiling =
+        active_layer()->AddTiling(gfx::AxisTransform2d(3.f, gfx::Vector2dF()));
+    tiling->set_resolution(HIGH_RESOLUTION);
+    tiling->CreateAllTilesForTesting();
+  }
 
   // Ensure UpdateTiles won't remove any tilings.
   active_layer()->MarkAllTilingsUsed();

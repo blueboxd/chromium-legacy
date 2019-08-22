@@ -156,6 +156,10 @@ message OmniboxEventProto {
     // box of the ChromeOS app list (a.k.a., launcher).
     CHROMEOS_APP_LIST = 14;
 
+    // The new tab page in which this omnibox interaction started with the user
+    // having focus in the realbox.
+    NTP_REALBOX = 15;
+
     // When adding new classifications, please consider adding them in
     // chromium's chrome/browser/resources/omnibox/omnibox.html
     // so that these new options are displayed on about:omnibox.

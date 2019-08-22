@@ -7,6 +7,7 @@ from .composition_parts import WithComponent
 from .composition_parts import WithDebugInfo
 from .composition_parts import WithIdentifier
 from .identifier_ir_map import IdentifierIRMap
+from .make_copy import make_copy
 
 
 class Typedef(WithIdentifier, WithCodeGeneratorInfo, WithComponent,
@@ -34,11 +35,11 @@ class Typedef(WithIdentifier, WithCodeGeneratorInfo, WithComponent,
     def __init__(self, ir):
         assert isinstance(ir, Typedef.IR)
 
+        ir = make_copy(ir)
         WithIdentifier.__init__(self, ir.identifier)
-        WithCodeGeneratorInfo.__init__(self,
-                                       ir.code_generator_info.make_copy())
+        WithCodeGeneratorInfo.__init__(self, ir.code_generator_info)
         WithComponent.__init__(self, components=ir.components)
-        WithDebugInfo.__init__(self, ir.debug_info.make_copy())
+        WithDebugInfo.__init__(self, ir.debug_info)
 
         self._idl_type = ir.idl_type
 

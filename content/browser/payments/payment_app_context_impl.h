@@ -26,7 +26,7 @@ class ServiceWorkerContextWrapper;
 // One instance of this exists per StoragePartition, and services multiple child
 // processes/origins. Most logic is delegated to the owned PaymentAppDatabase
 // instance, which is only accessed on the thread identified by
-// ServiceWorkerContextWrapper::GetCoreThreadId() (the service worker "core"
+// ServiceWorkerContext::GetCoreThreadId() (the service worker "core"
 // thread).
 //
 // This class is created/destructed by StoragePartitionImpl on UI thread.

@@ -1302,8 +1302,7 @@ class SingleClientWalletSecondaryAccountSyncTest
  public:
   SingleClientWalletSecondaryAccountSyncTest() {
     InitWithFeatures(
-        /*enabled_features=*/{switches::kSyncSupportSecondaryAccount,
-                              autofill::features::
+        /*enabled_features=*/{autofill::features::
                                   kAutofillEnableAccountWalletStorage},
         /*disabled_features=*/{});
   }

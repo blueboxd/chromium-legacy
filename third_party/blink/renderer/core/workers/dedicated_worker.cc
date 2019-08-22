@@ -221,7 +221,7 @@ void DedicatedWorker::Start() {
   // calling into the debugger can cause a breakpoint.
   v8_stack_trace_id_ = ThreadDebugger::From(GetExecutionContext()->GetIsolate())
                            ->StoreCurrentStackTrace("Worker Created");
-  if (blink::features::IsPlzDedicatedWorkerEnabled()) {
+  if (base::FeatureList::IsEnabled(features::kPlzDedicatedWorker)) {
     // For classic script, always use "same-origin" credentials mode.
     // https://html.spec.whatwg.org/C/#fetch-a-classic-worker-script
     // For module script, respect the credentials mode specified by
@@ -257,17 +257,6 @@ void DedicatedWorker::Start() {
   factory_client_->CreateWorkerHostDeprecated(
       WebSecurityOrigin(GetExecutionContext()->GetSecurityOrigin()));
 
-  if (base::FeatureList::IsEnabled(
-          features::kOffMainThreadDedicatedWorkerScriptFetch) ||
-      options_->type() == "module") {
-    // Specify empty source code here because scripts will be fetched on the
-    // worker thread.
-    ContinueStart(
-        script_request_url_, OffMainThreadWorkerScriptFetchOption::kEnabled,
-        network::mojom::ReferrerPolicy::kDefault,
-        base::nullopt /* response_address_space */, String() /* source_code */);
-    return;
-  }
   if (options_->type() == "classic") {
     // Legacy code path (to be deprecated, see https://crbug.com/835717):
     // A worker thread will start after scripts are fetched on the current
@@ -280,6 +269,15 @@ void DedicatedWorker::Start() {
         network::mojom::CredentialsMode::kSameOrigin,
         WTF::Bind(&DedicatedWorker::OnResponse, WrapPersistent(this)),
         WTF::Bind(&DedicatedWorker::OnFinished, WrapPersistent(this)));
+    return;
+  }
+  if (options_->type() == "module") {
+    // Specify empty source code here because scripts will be fetched on the
+    // worker thread.
+    ContinueStart(
+        script_request_url_, OffMainThreadWorkerScriptFetchOption::kEnabled,
+        network::mojom::ReferrerPolicy::kDefault,
+        base::nullopt /* response_address_space */, String() /* source_code */);
     return;
   }
   NOTREACHED() << "Invalid type: " << options_->type();
@@ -342,7 +340,7 @@ void DedicatedWorker::OnWorkerHostCreated(
 }
 
 void DedicatedWorker::OnScriptLoadStarted() {
-  DCHECK(features::IsPlzDedicatedWorkerEnabled());
+  DCHECK(base::FeatureList::IsEnabled(features::kPlzDedicatedWorker));
   // Specify empty source code here because scripts will be fetched on the
   // worker thread.
   ContinueStart(
@@ -352,7 +350,7 @@ void DedicatedWorker::OnScriptLoadStarted() {
 }
 
 void DedicatedWorker::OnScriptLoadStartFailed() {
-  DCHECK(features::IsPlzDedicatedWorkerEnabled());
+  DCHECK(base::FeatureList::IsEnabled(features::kPlzDedicatedWorker));
   context_proxy_->DidFailToFetchScript();
   factory_client_.reset();
 }
@@ -484,7 +482,7 @@ DedicatedWorker::CreateWebWorkerFetchContext() {
   if (auto* document = DynamicTo<Document>(GetExecutionContext())) {
     scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context;
     LocalFrame* frame = document->GetFrame();
-    if (features::IsPlzDedicatedWorkerEnabled()) {
+    if (base::FeatureList::IsEnabled(features::kPlzDedicatedWorker)) {
       web_worker_fetch_context =
           frame->Client()->CreateWorkerFetchContextForPlzDedicatedWorker(
               factory_client_.get());
@@ -519,12 +517,14 @@ void DedicatedWorker::ContextLifecycleStateChanged(
       break;
     case mojom::FrameLifecycleState::kFrozen:
     case mojom::FrameLifecycleState::kFrozenAutoResumeMedia:
+      factory_client_->LifecycleStateChanged(state);
       if (!requested_frozen_) {
         requested_frozen_ = true;
         context_proxy_->Freeze();
       }
       break;
     case mojom::FrameLifecycleState::kRunning:
+      factory_client_->LifecycleStateChanged(state);
       if (requested_frozen_) {
         context_proxy_->Resume();
         requested_frozen_ = false;

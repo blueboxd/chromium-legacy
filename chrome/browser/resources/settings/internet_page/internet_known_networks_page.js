@@ -184,15 +184,30 @@ Polymer({
     event.stopPropagation();
   },
 
+  /**
+   * @param {!chromeos.networkConfig.mojom.ConfigProperties} config
+   * @private
+   */
+  setProperties_: function(config) {
+    this.networkConfig_.setProperties(this.selectedGuid_, config)
+        .then(response => {
+          if (!response.success) {
+            console.error(
+                'Unable to set properties for: ' + this.selectedGuid_ + ': ' +
+                JSON.stringify(config));
+          }
+        });
+  },
+
   /** @private */
   onRemovePreferredTap_: function() {
-    this.networkingPrivate.setProperties(this.selectedGuid_, {Priority: 0});
+    this.setProperties_({priority: {value: 0}});
     /** @type {!CrActionMenuElement} */ (this.$.dotsMenu).close();
   },
 
   /** @private */
   onAddPreferredTap_: function() {
-    this.networkingPrivate.setProperties(this.selectedGuid_, {Priority: 1});
+    this.setProperties_({priority: {value: 1}});
     /** @type {!CrActionMenuElement} */ (this.$.dotsMenu).close();
   },
 

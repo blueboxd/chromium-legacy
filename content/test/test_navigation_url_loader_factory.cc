@@ -26,9 +26,10 @@ TestNavigationURLLoaderFactory::CreateLoader(
     std::unique_ptr<NavigationRequestInfo> request_info,
     std::unique_ptr<NavigationUIData> navigation_ui_data,
     ServiceWorkerNavigationHandle* service_worker_handle,
-    NavigationURLLoaderDelegate* delegate) {
-  return std::unique_ptr<NavigationURLLoader>(
-      new TestNavigationURLLoader(std::move(request_info), delegate));
+    NavigationURLLoaderDelegate* delegate,
+    bool is_served_from_back_forward_cache) {
+  return std::unique_ptr<NavigationURLLoader>(new TestNavigationURLLoader(
+      std::move(request_info), delegate, is_served_from_back_forward_cache));
 }
 
 }  // namespace content

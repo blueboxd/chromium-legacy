@@ -49,7 +49,7 @@ struct StagingBuffer {
   void DestroyGLResources(gpu::raster::RasterInterface* gl,
                           gpu::SharedImageInterface* sii);
   void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
-                    viz::ResourceFormat format,
+                    viz::ResourceFormat dump_format,
                     bool is_free) const;
 
   const gfx::Size size;

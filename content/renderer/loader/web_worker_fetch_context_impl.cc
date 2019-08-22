@@ -246,7 +246,7 @@ void WebWorkerFetchContextImpl::SetTerminateSyncLoadEvent(
 scoped_refptr<WebWorkerFetchContextImpl>
 WebWorkerFetchContextImpl::CloneForNestedWorkerDeprecated(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  DCHECK(!blink::features::IsPlzDedicatedWorkerEnabled());
+  DCHECK(!base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
 
   blink::mojom::ServiceWorkerWorkerClientRequest service_worker_client_request;
   blink::mojom::ServiceWorkerWorkerClientRegistryPtrInfo
@@ -286,7 +286,7 @@ WebWorkerFetchContextImpl::CloneForNestedWorker(
     std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory_info,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  DCHECK(blink::features::IsPlzDedicatedWorkerEnabled());
+  DCHECK(base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
   DCHECK(loader_factory_info);
   DCHECK(fallback_factory_info);
   DCHECK(task_runner);
@@ -410,9 +410,10 @@ void WebWorkerFetchContextImpl::WillSendRequest(blink::WebURLRequest& request) {
   }
   if (response_override_) {
     using RequestContextType = blink::mojom::RequestContextType;
-    DCHECK((blink::features::IsPlzDedicatedWorkerEnabled() &&
-            request.GetRequestContext() == RequestContextType::WORKER) ||
-           request.GetRequestContext() == RequestContextType::SHARED_WORKER)
+    DCHECK(
+        (base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker) &&
+         request.GetRequestContext() == RequestContextType::WORKER) ||
+        request.GetRequestContext() == RequestContextType::SHARED_WORKER)
         << request.GetRequestContext();
     extra_data->set_navigation_response_override(std::move(response_override_));
   }

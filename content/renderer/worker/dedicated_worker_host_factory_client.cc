@@ -33,13 +33,14 @@ DedicatedWorkerHostFactoryClient::~DedicatedWorkerHostFactoryClient() = default;
 
 void DedicatedWorkerHostFactoryClient::CreateWorkerHostDeprecated(
     const blink::WebSecurityOrigin& script_origin) {
-  DCHECK(!blink::features::IsPlzDedicatedWorkerEnabled());
+  DCHECK(!base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
   service_manager::mojom::InterfaceProviderPtr interface_provider_ptr;
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker;
   factory_->CreateWorkerHost(
       script_origin, mojo::MakeRequest(&interface_provider_ptr),
-      browser_interface_broker.InitWithNewPipeAndPassReceiver());
+      browser_interface_broker.InitWithNewPipeAndPassReceiver(),
+      remote_host_.BindNewPipeAndPassReceiver());
   OnWorkerHostCreated(std::move(interface_provider_ptr),
                       std::move(browser_interface_broker));
 }
@@ -53,7 +54,7 @@ void DedicatedWorkerHostFactoryClient::CreateWorkerHost(
     const blink::WebURL& fetch_client_outgoing_referrer,
     const blink::WebInsecureRequestPolicy fetch_client_insecure_request_policy,
     mojo::ScopedMessagePipeHandle blob_url_token) {
-  DCHECK(blink::features::IsPlzDedicatedWorkerEnabled());
+  DCHECK(base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
 
   auto outside_fetch_client_settings_object =
       blink::mojom::FetchClientSettingsObject::New();
@@ -71,7 +72,8 @@ void DedicatedWorkerHostFactoryClient::CreateWorkerHost(
       std::move(outside_fetch_client_settings_object),
       blink::mojom::BlobURLTokenPtr(blink::mojom::BlobURLTokenPtrInfo(
           std::move(blob_url_token), blink::mojom::BlobURLToken::Version_)),
-      receiver_.BindNewPipeAndPassRemote());
+      receiver_.BindNewPipeAndPassRemote(),
+      remote_host_.BindNewPipeAndPassReceiver());
 }
 
 scoped_refptr<blink::WebWorkerFetchContext>
@@ -79,7 +81,7 @@ DedicatedWorkerHostFactoryClient::CloneWorkerFetchContext(
     blink::WebWorkerFetchContext* web_worker_fetch_context,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   scoped_refptr<WebWorkerFetchContextImpl> worker_fetch_context;
-  if (blink::features::IsPlzDedicatedWorkerEnabled()) {
+  if (base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker)) {
     worker_fetch_context =
         static_cast<WebWorkerFetchContextImpl*>(web_worker_fetch_context)
             ->CloneForNestedWorker(service_worker_provider_context_.get(),
@@ -97,12 +99,18 @@ DedicatedWorkerHostFactoryClient::CloneWorkerFetchContext(
   return worker_fetch_context;
 }
 
+void DedicatedWorkerHostFactoryClient::LifecycleStateChanged(
+    blink::mojom::FrameLifecycleState state) {
+  if (remote_host_)
+    remote_host_->LifecycleStateChanged(state);
+}
+
 scoped_refptr<WebWorkerFetchContextImpl>
 DedicatedWorkerHostFactoryClient::CreateWorkerFetchContext(
     blink::mojom::RendererPreferences renderer_preference,
     mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
         watcher_receiver) {
-  DCHECK(blink::features::IsPlzDedicatedWorkerEnabled());
+  DCHECK(base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
   DCHECK(subresource_loader_factory_bundle_);
   scoped_refptr<WebWorkerFetchContextImpl> worker_fetch_context =
       WebWorkerFetchContextImpl::Create(
@@ -130,7 +138,7 @@ void DedicatedWorkerHostFactoryClient::OnScriptLoadStarted(
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factory_bundle_info,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info) {
-  DCHECK(blink::features::IsPlzDedicatedWorkerEnabled());
+  DCHECK(base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
   DCHECK(main_script_load_params);
   DCHECK(subresource_loader_factory_bundle_info);
 
@@ -171,7 +179,7 @@ void DedicatedWorkerHostFactoryClient::OnScriptLoadStarted(
 }
 
 void DedicatedWorkerHostFactoryClient::OnScriptLoadStartFailed() {
-  DCHECK(blink::features::IsPlzDedicatedWorkerEnabled());
+  DCHECK(base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
   worker_->OnScriptLoadStartFailed();
   // |this| may be destroyed at this point.
 }

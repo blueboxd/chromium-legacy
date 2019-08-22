@@ -23,18 +23,7 @@ PermissionPromptAndroid::PermissionPromptAndroid(
     : web_contents_(web_contents), delegate_(delegate) {
   DCHECK(web_contents);
 
-  if (PermissionDialogDelegate::ShouldShowDialog()) {
-    PermissionDialogDelegate::Create(web_contents_, this);
-    return;
-  }
-
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents_);
-  if (!infobar_service)
-    return;
-
-  GroupedPermissionInfoBarDelegate::Create(weak_factory_.GetWeakPtr(),
-                                           infobar_service);
+  PermissionDialogDelegate::Create(web_contents_, this);
 }
 
 PermissionPromptAndroid::~PermissionPromptAndroid() {}

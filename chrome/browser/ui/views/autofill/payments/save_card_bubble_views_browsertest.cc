@@ -1287,8 +1287,7 @@ class SaveCardBubbleViewsSyncTransportFullFormBrowserTest
     // signins. Also add wallet data type to the list of enabled types.
     scoped_feature_list_.InitWithFeatures(
         /*enabled_features=*/{features::kAutofillUpstream,
-                              features::kAutofillEnableAccountWalletStorage,
-                              switches::kSyncSupportSecondaryAccount},
+                              features::kAutofillEnableAccountWalletStorage},
         /*disabled_features=*/{});
     test_signin_client_factory_ =
         secondary_account_helper::SetUpSigninClient(test_url_loader_factory());
@@ -1391,8 +1390,7 @@ class
         // Enabled
         {features::kAutofillUpstream,
          features::kAutofillUpstreamEditableCardholderName,
-         features::kAutofillEnableAccountWalletStorage,
-         switches::kSyncSupportSecondaryAccount},
+         features::kAutofillEnableAccountWalletStorage},
         // Disabled
         {});
     test_signin_client_factory_ =

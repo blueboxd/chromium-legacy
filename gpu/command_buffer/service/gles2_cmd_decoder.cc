@@ -119,7 +119,7 @@
 #endif  // OS_MACOSX
 
 #if defined(OS_WIN)
-#include "gpu/command_buffer/service/swap_chain_factory_dxgi.h"
+#include "gpu/command_buffer/service/shared_image_backing_factory_d3d.h"
 #endif  // OS_WIN
 
 // Note: this undefs far and near so include this after other Windows headers.
@@ -4233,7 +4233,8 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   caps.protected_video_swap_chain = surface_->SupportsProtectedVideo();
   caps.gpu_vsync = surface_->SupportsGpuVSync();
 #if defined(OS_WIN)
-  caps.shared_image_swap_chain = SwapChainFactoryDXGI::IsSupported();
+  caps.shared_image_swap_chain =
+      SharedImageBackingFactoryD3D::IsSwapChainSupported();
 #endif  // OS_WIN
   caps.blend_equation_advanced =
       feature_info_->feature_flags().blend_equation_advanced;

@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.invalidation;
 
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 import org.chromium.components.invalidation.InvalidationClientService;
 
@@ -16,10 +15,7 @@ public class ChromeInvalidationClientService extends InvalidationClientService {
     @Override
     public void onCreate() {
         ProcessInitializationHandler.getInstance().initializePreNative();
-        boolean isFCMInvalidationsEnabled = ChromeFeatureList.isInitialized()
-                ? ChromeFeatureList.isEnabled(ChromeFeatureList.FCM_INVALIDATIONS)
-                : false;
-        super.setShouldCreateService(!isFCMInvalidationsEnabled);
+        super.setShouldCreateService(false);
         super.onCreate();
     }
 }

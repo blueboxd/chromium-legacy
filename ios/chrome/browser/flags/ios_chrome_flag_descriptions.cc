@@ -210,11 +210,6 @@ const char kEnableSyncUSSNigoriName[] = "Enable USS for sync encryption keys";
 const char kEnableSyncUSSNigoriDescription[] =
     "Enables the new, experimental implementation of sync encryption keys";
 
-const char kFCMInvalidationsName[] =
-    "Enable invalidations delivery via new FCM based protocol";
-const char kFCMInvalidationsDescription[] =
-    "Use the new FCM-based protocol for deliveling invalidations";
-
 const char kFillOnAccountSelectHttpName[] =
     "Fill passwords on account selection on HTTP origins";
 const char kFillOnAccountSelectHttpDescription[] =
@@ -386,13 +381,6 @@ const char kSnapshotDrawViewDescription[] =
 const char kSyncSandboxName[] = "Use Chrome Sync sandbox";
 const char kSyncSandboxDescription[] =
     "Connects to the testing server for Chrome Sync.";
-
-const char kSyncSupportSecondaryAccountName[] =
-    "Support secondary accounts for Sync standalone transport";
-const char kSyncSupportSecondaryAccountDescription[] =
-    "If enabled, allows Chrome Sync to start in standalone transport mode for "
-    "a signed-in account that has not been chosen as Chrome's primary account. "
-    "This only has an effect if sync-standalone-transport is also enabled.";
 
 const char kToolbarContainerName[] = "Use Toolbar Containers";
 const char kToolbarContainerDescription[] =

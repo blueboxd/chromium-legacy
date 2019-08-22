@@ -41,29 +41,6 @@ class WorkerClients;
 // called DedicatedWorker. This lives on the thread that created the worker (the
 // thread that called `new Worker()`), i.e., the main thread if a document
 // created the worker or a worker thread in the case of nested workers.
-//
-// We have been rearchitecting the worker startup sequence, and now there are
-// 3 paths as follows. The path is chosen based on runtime flags:
-//
-//  A) Legacy on-the-main-thread worker script loading (default)
-//  - DedicatedWorker::Start()
-//    - (Async script loading on the main thread)
-//      - DedicatedWorker::OnFinished()
-//        - DedicatedWorker::ContinueStart()
-//
-//  B) Off-the-main-thread worker script loading
-//     (kOffMainThreadDedicatedWorkerScriptFetch)
-//  - DedicatedWorker::Start()
-//    - DedicatedWorker::ContinueStart()
-//      - (Async script loading on the worker thread)
-//
-//  C) Off-the-main-thread worker script loading w/ PlzDedicatedWorker
-//     (kOffMainThreadDedicatedWorkerScriptFetch + kPlzDedicatedWorker)
-//  - DedicatedWorker::Start()
-//    - (Start script loading in the browser)
-//      - DedicatedWorker::OnScriptLoadStarted()
-//        - DedicatedWorker::ContinueStart()
-//          - (Async script loading on the worker thread)
 class CORE_EXPORT DedicatedWorker final
     : public AbstractWorker,
       public ActiveScriptWrappable<DedicatedWorker>,

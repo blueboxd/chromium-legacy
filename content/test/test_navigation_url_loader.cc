@@ -23,19 +23,23 @@ namespace content {
 
 TestNavigationURLLoader::TestNavigationURLLoader(
     std::unique_ptr<NavigationRequestInfo> request_info,
-    NavigationURLLoaderDelegate* delegate)
+    NavigationURLLoaderDelegate* delegate,
+    bool is_served_from_back_forward_cache)
     : request_info_(std::move(request_info)),
       delegate_(delegate),
-      redirect_count_(0) {}
+      redirect_count_(0),
+      is_served_from_back_forward_cache_(is_served_from_back_forward_cache) {}
 
 void TestNavigationURLLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
     PreviewsState new_previews_state) {
+  DCHECK(!is_served_from_back_forward_cache_);
   redirect_count_++;
 }
 
 void TestNavigationURLLoader::SimulateServerRedirect(const GURL& redirect_url) {
+  DCHECK(!is_served_from_back_forward_cache_);
   net::RedirectInfo redirect_info;
   redirect_info.status_code = 302;
   redirect_info.new_method = "GET";
@@ -47,17 +51,20 @@ void TestNavigationURLLoader::SimulateServerRedirect(const GURL& redirect_url) {
 }
 
 void TestNavigationURLLoader::SimulateError(int error_code) {
+  DCHECK(!is_served_from_back_forward_cache_);
   SimulateErrorWithStatus(network::URLLoaderCompletionStatus(error_code));
 }
 
 void TestNavigationURLLoader::SimulateErrorWithStatus(
     const network::URLLoaderCompletionStatus& status) {
+  DCHECK(!is_served_from_back_forward_cache_);
   delegate_->OnRequestFailed(status);
 }
 
 void TestNavigationURLLoader::CallOnRequestRedirected(
     const net::RedirectInfo& redirect_info,
     const scoped_refptr<network::ResourceResponse>& response_head) {
+  DCHECK(!is_served_from_back_forward_cache_);
   delegate_->OnRequestRedirected(redirect_info, response_head);
 }
 

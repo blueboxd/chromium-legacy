@@ -9,7 +9,8 @@ from .composition_parts import WithExtendedAttributes
 from .composition_parts import WithIdentifier
 from .composition_parts import WithOwner
 from .idl_type import IdlType
-from .values import ConstantValue
+from .literal_constant import LiteralConstant
+from .make_copy import make_copy
 
 
 class Constant(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo,
@@ -28,7 +29,7 @@ class Constant(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo,
                      components=None,
                      debug_info=None):
             assert isinstance(idl_type, IdlType)
-            assert isinstance(value, ConstantValue)
+            assert isinstance(value, LiteralConstant)
 
             WithIdentifier.__init__(self, identifier)
             WithExtendedAttributes.__init__(self, extended_attributes)
@@ -40,27 +41,16 @@ class Constant(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo,
             self.idl_type = idl_type
             self.value = value
 
-        def make_copy(self):
-            return Constant.IR(
-                identifier=self.identifier,
-                idl_type=self.idl_type,
-                value=self.value,
-                extended_attributes=self.extended_attributes.make_copy(),
-                code_generator_info=self.code_generator_info.make_copy(),
-                components=self.components,
-                debug_info=self.debug_info.make_copy())
-
     def __init__(self, ir, owner):
         assert isinstance(ir, Constant.IR)
 
+        ir = make_copy(ir)
         WithIdentifier.__init__(self, ir.identifier)
-        WithExtendedAttributes.__init__(self,
-                                        ir.extended_attributes.make_copy())
-        WithCodeGeneratorInfo.__init__(self,
-                                       ir.code_generator_info.make_copy())
+        WithExtendedAttributes.__init__(self, ir.extended_attributes)
+        WithCodeGeneratorInfo.__init__(self, ir.code_generator_info)
         WithOwner.__init__(self, owner)
         WithComponent.__init__(self, components=ir.components)
-        WithDebugInfo.__init__(self, ir.debug_info.make_copy())
+        WithDebugInfo.__init__(self, ir.debug_info)
 
         self._idl_type = ir.idl_type
         self._value = ir.value

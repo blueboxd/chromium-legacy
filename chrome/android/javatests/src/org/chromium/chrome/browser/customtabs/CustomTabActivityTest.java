@@ -75,7 +75,6 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
@@ -158,8 +157,8 @@ public class CustomTabActivityTest {
     private static final int NUM_CHROME_MENU_ITEMS = 5;
     private static final String TEST_PAGE = "/chrome/test/data/android/google.html";
     private static final String TEST_PAGE_2 = "/chrome/test/data/android/test.html";
-    private static final String GEOLOCATION_PAGE =
-            "/chrome/test/data/geolocation/geolocation_on_load.html";
+    private static final String POPUP_PAGE =
+            "/chrome/test/data/popup_blocker/popup-window-open.html";
     private static final String SELECT_POPUP_PAGE = "/chrome/test/data/android/select.html";
     private static final String FRAGMENT_TEST_PAGE = "/chrome/test/data/android/fragment.html";
     private static final String TARGET_BLANK_TEST_PAGE =
@@ -815,19 +814,16 @@ public class CustomTabActivityTest {
 
     /**
      * Test whether a custom tab can be reparented to a new activity while showing an infobar.
-     *
-     * TODO(timloh): Use a different InfoBar type once we only use modals for permission prompts.
      */
     @Test
     @SmallTest
-    @DisableFeatures(ChromeFeatureList.MODAL_PERMISSION_PROMPTS)
     @RetryOnFailure
     public void testTabReparentingInfoBar() throws InterruptedException {
         LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
                 CustomTabsTestUtils.createMinimalCustomTabIntent(
                         InstrumentationRegistry.getTargetContext(),
-                        mTestServer.getURL(GEOLOCATION_PAGE)));
+                        mTestServer.getURL(POPUP_PAGE)));
         CriteriaHelper.pollUiThread(
                 () -> isInfoBarSizeOne(mCustomTabActivityTestRule.getActivity().getActivityTab()));
 

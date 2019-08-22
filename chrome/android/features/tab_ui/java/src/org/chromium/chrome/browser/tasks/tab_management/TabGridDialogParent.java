@@ -17,11 +17,13 @@ import android.content.ComponentCallbacks;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Rect;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.support.annotation.IntDef;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.v4.widget.ImageViewCompat;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -34,6 +36,7 @@ import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.widget.ScrimView;
@@ -121,6 +124,9 @@ public class TabGridDialogParent {
     private int mCurrentScreenWidth;
     private int mOrientation;
     private int mUngroupBarStatus = UngroupBarStatus.HIDE;
+    private int mUngroupBarBackgroundColorResourceId = R.color.tab_grid_dialog_background_color;
+    private int mUngroupBarHoveredBackgroundColorResourceId = R.color.tab_grid_card_selected_color;
+    private int mUngroupBarTextAppearance = R.style.TextAppearance_BlueTitle2;
 
     TabGridDialogParent(Context context, ViewGroup parent) {
         mParent = parent;
@@ -564,17 +570,33 @@ public class TabGridDialogParent {
         params.width = view.getWidth();
         params.height = view.getHeight();
         if (view.findViewById(R.id.tab_title) == null) return;
+
+        mAnimationCardView.findViewById(R.id.card_view)
+                .setBackground(view.findViewById(R.id.card_view).getBackground());
+
         ((ImageView) (mAnimationCardView.findViewById(R.id.tab_favicon)))
                 .setImageDrawable(
                         ((ImageView) (view.findViewById(R.id.tab_favicon))).getDrawable());
+
         ((TextView) (mAnimationCardView.findViewById(R.id.tab_title)))
                 .setText(((TextView) (view.findViewById(R.id.tab_title))).getText());
+        ((TextView) (mAnimationCardView.findViewById(R.id.tab_title)))
+                .setTextColor(((TextView) (view.findViewById(R.id.tab_title))).getTextColors());
+
         ((ImageView) (mAnimationCardView.findViewById(R.id.tab_thumbnail)))
                 .setImageDrawable(
                         ((ImageView) (view.findViewById(R.id.tab_thumbnail))).getDrawable());
-        ((ImageView) (mAnimationCardView.findViewById(R.id.action_button)))
-                .setImageDrawable(
-                        ((ImageView) (view.findViewById(R.id.action_button))).getDrawable());
+
+        ImageView actionButton = mAnimationCardView.findViewById(R.id.action_button);
+        actionButton.setImageDrawable(
+                ((ImageView) (view.findViewById(R.id.action_button))).getDrawable());
+        ApiCompatibilityUtils.setImageTintList(actionButton,
+                ImageViewCompat.getImageTintList((view.findViewById(R.id.action_button))));
+
+        View dividerView = mAnimationCardView.findViewById(R.id.divider_view);
+        dividerView.setBackgroundColor(
+                ((ColorDrawable) view.findViewById(R.id.divider_view).getBackground()).getColor());
+
         mAnimationCardView.findViewById(R.id.background_view).setBackground(null);
     }
 
@@ -676,9 +698,48 @@ public class TabGridDialogParent {
         Context context = mParent.getContext();
         GradientDrawable background = (GradientDrawable) mUngroupBarTextView.getBackground();
         background.setColor(ContextCompat.getColor(context,
-                isHovered ? R.color.light_active_color : R.color.tab_grid_dialog_background_color));
+                isHovered ? mUngroupBarHoveredBackgroundColorResourceId
+                          : mUngroupBarBackgroundColorResourceId));
         mUngroupBarTextView.setTextAppearance(context,
-                isHovered ? R.style.TextAppearance_WhiteTitle2 : R.style.TextAppearance_BlueTitle2);
+                isHovered ? R.style.TextAppearance_WhiteTitle2 : mUngroupBarTextAppearance);
+    }
+
+    /**
+     * Update the dialog container background.
+     *
+     * @param backgroundResourceId The new background resource id to use.
+     */
+    void updateDialogContainerBackgroundResource(int backgroundResourceId) {
+        mDialogContainerView.setBackgroundResource(backgroundResourceId);
+        mBackgroundFrame.setBackgroundResource(backgroundResourceId);
+    }
+
+    /**
+     * Update the ungroup bar background color.
+     *
+     * @param colorResource The new background color resource to use when ungroup bar is visible.
+     */
+    void updateUngroupBarBackgroundColor(int colorResource) {
+        mUngroupBarBackgroundColorResourceId = colorResource;
+    }
+
+    /**
+     * Update the ungroup bar background color when the ungroup bar is hovered.
+     *
+     * @param colorResource The new background color resource to use when ungroup bar is visible
+     *                      and hovered.
+     */
+    void updateUngroupBarHoveredBackgroundColor(int colorResource) {
+        mUngroupBarHoveredBackgroundColorResourceId = colorResource;
+    }
+
+    /**
+     * Update the ungroup bar text appearance when the ungroup bar is visible but not hovered.
+     *
+     * @param textAppearance The new text appearance to use.
+     */
+    void updateUngroupBarTextAppearance(int textAppearance) {
+        mUngroupBarTextAppearance = textAppearance;
     }
 
     @VisibleForTesting

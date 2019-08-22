@@ -5311,7 +5311,7 @@ void RenderFrameHostImpl::CommitNavigation(
     // sent, it can be used, so add it to ServiceWorkerObjectHost.
     if (remote_object.is_valid()) {
       RunOrPostTaskOnThread(
-          FROM_HERE, ServiceWorkerContextWrapper::GetCoreThreadId(),
+          FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
           base::BindOnce(
               &ServiceWorkerObjectHost::AddRemoteObjectPtrAndUpdateState,
               subresource_loader_params->controller_service_worker_object_host,

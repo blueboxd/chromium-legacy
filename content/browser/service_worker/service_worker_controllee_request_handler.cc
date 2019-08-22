@@ -254,7 +254,7 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithRegistration(
   }
 
   bool allow_service_worker = false;
-  if (ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled()) {
+  if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
     allow_service_worker =
         GetContentClient()->browser()->AllowServiceWorkerOnUI(
             registration->scope(), provider_host_->site_for_cookies(), GURL(),

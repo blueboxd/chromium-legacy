@@ -41,11 +41,6 @@ void PermissionDialogDelegate::Create(
   new PermissionDialogDelegate(tab, permission_prompt);
 }
 
-// static
-bool PermissionDialogDelegate::ShouldShowDialog() {
-  return base::FeatureList::IsEnabled(features::kModalPermissionPrompts);
-}
-
 void PermissionDialogDelegate::CreateJavaDelegate(JNIEnv* env,
                                                   TabAndroid* tab) {
   base::android::ScopedJavaLocalRef<jstring> primaryButtonText =

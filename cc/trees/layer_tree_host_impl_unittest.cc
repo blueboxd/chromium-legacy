@@ -5272,10 +5272,12 @@ TEST_F(CommitToPendingTreeLayerTreeHostImplTest,
   root->test_properties()->force_render_surface = true;
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
-  TestFrameData frame;
-  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
-  host_impl_->DrawLayers(&frame);
-  host_impl_->DidDrawAllLayers(frame);
+  {
+    TestFrameData frame;
+    EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
+    host_impl_->DrawLayers(&frame);
+    host_impl_->DidDrawAllLayers(frame);
+  }
 
   for (size_t i = 0; i < cases.size(); ++i) {
     // Clean up host_impl_ state.
@@ -6855,6 +6857,7 @@ TEST_F(LayerTreeHostImplTest, ScrollChildBeyondLimit) {
       CreateBasicVirtualViewportLayers(surface_size, surface_size);
 
   root->test_properties()->force_render_surface = true;
+
   std::unique_ptr<LayerImpl> grand_child =
       CreateScrollableLayer(13, content_size);
 
@@ -6892,16 +6895,12 @@ TEST_F(LayerTreeHostImplTest, ScrollChildBeyondLimit) {
         host_impl_->ProcessScrollDeltas();
 
     // The grand child should have scrolled up to its limit.
-    LayerImpl* child = host_impl_->active_tree()
-                           ->root_layer_for_testing()
-                           ->test_properties()
-                           ->children[0];
     EXPECT_TRUE(ScrollInfoContains(*scroll_info.get(),
                                    grand_child_layer->element_id(),
                                    gfx::ScrollOffset(0, -5)));
 
     // The child should not have scrolled.
-    ExpectNone(*scroll_info.get(), child->element_id());
+    ExpectNone(*scroll_info.get(), child_layer->element_id());
   }
 }
 
@@ -6913,8 +6912,6 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedLatchToChild) {
 
   LayerImpl* root =
       CreateBasicVirtualViewportLayers(surface_size, surface_size);
-  root->test_properties()->force_render_surface = true;
-
   root->test_properties()->force_render_surface = true;
   std::unique_ptr<LayerImpl> grand_child =
       CreateScrollableLayer(13, content_size);

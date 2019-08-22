@@ -21,7 +21,6 @@ ServiceWorkerInstalledScriptsSender::ServiceWorkerInstalledScriptsSender(
       main_script_id_(
           owner_->script_cache_map()->LookupResourceId(main_script_url_)),
       sent_main_script_(false),
-      binding_(this),
       state_(State::kNotStarted),
       last_finished_reason_(
           ServiceWorkerInstalledScriptReader::FinishedReason::kNotFinished) {
@@ -49,9 +48,9 @@ ServiceWorkerInstalledScriptsSender::CreateInfoAndBind() {
       << "At least the main script should be installed.";
 
   auto info = blink::mojom::ServiceWorkerInstalledScriptsInfo::New();
-  info->manager_request = mojo::MakeRequest(&manager_);
+  info->manager_receiver = manager_.BindNewPipeAndPassReceiver();
   info->installed_urls = std::move(installed_urls);
-  binding_.Bind(mojo::MakeRequest(&info->manager_host_ptr));
+  receiver_.Bind(info->manager_host_remote.InitWithNewPipeAndPassReceiver());
   return info;
 }
 
@@ -178,7 +177,7 @@ void ServiceWorkerInstalledScriptsSender::Abort(
       // connection here, the service worker would be blocked waiting for the
       // script data and won't respond to Stop.
       manager_.reset();
-      binding_.Close();
+      receiver_.reset();
 
       // Delete the registration data since the data was corrupted.
       if (owner_->context()) {
@@ -197,7 +196,7 @@ void ServiceWorkerInstalledScriptsSender::Abort(
       // service worker to stop, and the error handler of EmbeddedWorkerInstance
       // is invoked soon.
       manager_.reset();
-      binding_.Close();
+      receiver_.reset();
       return;
   }
 }

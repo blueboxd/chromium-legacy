@@ -235,7 +235,6 @@ public abstract class ChromeFeatureList {
     public static final String EPHEMERAL_TAB = "EphemeralTab";
     public static final String EXPLICIT_LANGUAGE_ASK = "ExplicitLanguageAsk";
     public static final String EXPLORE_SITES = "ExploreSites";
-    public static final String FCM_INVALIDATIONS = "FCMInvalidations";
     public static final String GENERIC_SENSOR_EXTRA_CLASSES = "GenericSensorExtraClasses";
     public static final String GRANT_NOTIFICATIONS_TO_DSE = "GrantNotificationsToDSE";
     public static final String HANDLE_MEDIA_INTENTS = "HandleMediaIntents";

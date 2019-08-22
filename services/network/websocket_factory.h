@@ -11,7 +11,6 @@
 #include "base/callback_forward.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/memory/weak_ptr.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/websocket.mojom.h"
 #include "services/network/websocket.h"
@@ -37,17 +36,18 @@ class WebSocketFactory final {
   explicit WebSocketFactory(NetworkContext* context);
   ~WebSocketFactory();
 
-  void CreateWebSocket(const GURL& url,
-                       const std::vector<std::string>& requested_protocols,
-                       const GURL& site_for_cookies,
-                       std::vector<mojom::HttpHeaderPtr> additional_headers,
-                       int32_t process_id,
-                       int32_t render_frame_id,
-                       const url::Origin& origin,
-                       uint32_t options,
-                       mojom::WebSocketHandshakeClientPtr handshake_client,
-                       mojom::AuthenticationHandlerPtr auth_handler,
-                       mojom::TrustedHeaderClientPtr header_client);
+  void CreateWebSocket(
+      const GURL& url,
+      const std::vector<std::string>& requested_protocols,
+      const GURL& site_for_cookies,
+      std::vector<mojom::HttpHeaderPtr> additional_headers,
+      int32_t process_id,
+      int32_t render_frame_id,
+      const url::Origin& origin,
+      uint32_t options,
+      mojo::PendingRemote<mojom::WebSocketHandshakeClient> handshake_client,
+      mojom::AuthenticationHandlerPtr auth_handler,
+      mojom::TrustedHeaderClientPtr header_client);
 
   // Returns a URLRequestContext associated with this factory.
   net::URLRequestContext* GetURLRequestContext();

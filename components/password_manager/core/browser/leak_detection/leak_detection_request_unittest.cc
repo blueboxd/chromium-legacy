@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/leak_detection/leak_detection_request.h"
 
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_api.pb.h"
@@ -25,6 +26,7 @@ class LeakDetectionRequestTest : public testing::Test {
   ~LeakDetectionRequestTest() override = default;
 
   base::test::TaskEnvironment& task_env() { return task_env_; }
+  base::HistogramTester& histogram_tester() { return histogram_tester_; }
   network::TestURLLoaderFactory* test_url_loader_factory() {
     return &test_url_loader_factory_;
   }
@@ -32,6 +34,7 @@ class LeakDetectionRequestTest : public testing::Test {
 
  private:
   base::test::TaskEnvironment task_env_;
+  base::HistogramTester histogram_tester_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   LeakDetectionRequest request_;
 };
@@ -42,7 +45,7 @@ constexpr char LeakDetectionRequestTest::kAccessToken[];
 constexpr char LeakDetectionRequestTest::kUsername[];
 constexpr char LeakDetectionRequestTest::kPassword[];
 
-TEST_F(LeakDetectionRequestTest, EmptyServerResponse) {
+TEST_F(LeakDetectionRequestTest, ServerError) {
   test_url_loader_factory()->AddResponse(
       LeakDetectionRequest::kLookupSingleLeakEndpoint, "",
       net::HTTP_INTERNAL_SERVER_ERROR);
@@ -52,31 +55,59 @@ TEST_F(LeakDetectionRequestTest, EmptyServerResponse) {
                              kPassword, callback.Get());
   EXPECT_CALL(callback, Run(Eq(nullptr)));
   task_env().RunUntilIdle();
+
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.LeakDetection.LookupSingleLeakResponseResult",
+      LeakDetectionRequest::LeakLookupResponseResult::kFetchError, 1);
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.LeakDetection.HttpResponseCode",
+      net::HTTP_INTERNAL_SERVER_ERROR, 1);
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.LeakDetection.NetErrorCode", -net::ERR_FAILED, 1);
 }
 
 TEST_F(LeakDetectionRequestTest, MalformedServerResponse) {
+  static constexpr base::StringPiece kMalformedResponse = "\x01\x02\x03";
   test_url_loader_factory()->AddResponse(
-      LeakDetectionRequest::kLookupSingleLeakEndpoint, "\x01\x02\x03");
+      LeakDetectionRequest::kLookupSingleLeakEndpoint,
+      std::string(kMalformedResponse));
 
   base::MockCallback<LeakDetectionRequest::LookupSingleLeakCallback> callback;
   request().LookupSingleLeak(test_url_loader_factory(), kAccessToken, kUsername,
                              kPassword, callback.Get());
   EXPECT_CALL(callback, Run(Eq(nullptr)));
   task_env().RunUntilIdle();
+
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.LeakDetection.LookupSingleLeakResponseResult",
+      LeakDetectionRequest::LeakLookupResponseResult::kParseError, 1);
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.LeakDetection.SingleLeakResponseSize",
+      kMalformedResponse.size(), 1);
 }
 
 TEST_F(LeakDetectionRequestTest, WellformedServerResponse) {
   google::internal::identity::passwords::leak::check::v1::
       LookupSingleLeakResponse response;
+  std::string response_string = response.SerializeAsString();
   test_url_loader_factory()->AddResponse(
-      LeakDetectionRequest::kLookupSingleLeakEndpoint,
-      response.SerializeAsString());
+      LeakDetectionRequest::kLookupSingleLeakEndpoint, response_string);
 
   base::MockCallback<LeakDetectionRequest::LookupSingleLeakCallback> callback;
   request().LookupSingleLeak(test_url_loader_factory(), kAccessToken, kUsername,
                              kPassword, callback.Get());
   EXPECT_CALL(callback, Run(testing::Pointee(SingleLookupResponse())));
   task_env().RunUntilIdle();
+
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.LeakDetection.LookupSingleLeakResponseResult",
+      LeakDetectionRequest::LeakLookupResponseResult::kSuccess, 1);
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.LeakDetection.SingleLeakResponseSize",
+      response_string.size(), 1);
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.LeakDetection.SingleLeakResponsePrefixes",
+      response.encrypted_leak_match_prefix().size(), 1);
 }
 
 }  // namespace password_manager

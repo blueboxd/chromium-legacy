@@ -2,14 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import exceptions
-
-from .function_like import FunctionLike
 from .composition_parts import WithCodeGeneratorInfo
 from .composition_parts import WithComponent
 from .composition_parts import WithDebugInfo
 from .composition_parts import WithExtendedAttributes
+from .function_like import FunctionLike
 from .identifier_ir_map import IdentifierIRMap
+from .make_copy import make_copy
 from .user_defined_type import UserDefinedType
 
 
@@ -44,14 +43,13 @@ class CallbackFunction(UserDefinedType, FunctionLike, WithExtendedAttributes,
     def __init__(self, ir):
         assert isinstance(ir, CallbackFunction.IR)
 
+        ir = make_copy(ir)
         UserDefinedType.__init__(self, ir.identifier)
         FunctionLike.__init__(self, ir)
-        WithExtendedAttributes.__init__(self,
-                                        ir.extended_attributes.make_copy())
-        WithCodeGeneratorInfo.__init__(self,
-                                       ir.code_generator_info.make_copy())
+        WithExtendedAttributes.__init__(self, ir.extended_attributes)
+        WithCodeGeneratorInfo.__init__(self, ir.code_generator_info)
         WithComponent.__init__(self, components=ir.components)
-        WithDebugInfo.__init__(self, ir.debug_info.make_copy())
+        WithDebugInfo.__init__(self, ir.debug_info)
 
     # UserDefinedType overrides
     @property

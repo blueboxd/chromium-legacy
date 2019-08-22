@@ -257,7 +257,7 @@ public class TabListMediatorUnitTest {
     @Test
     public void updatesFavicon_SingleTab_GTS() {
         initAndAssertAllProperties();
-        mMediator.setActionOnAllRelatedTabsForTest(true);
+        mMediator.setActionOnAllRelatedTabsForTesting(true);
 
         mModel.get(0).set(TabProperties.FAVICON, null);
         assertNull(mModel.get(0).get(TabProperties.FAVICON));
@@ -282,7 +282,7 @@ public class TabListMediatorUnitTest {
     @Test
     public void updatesFavicon_TabGroup_GTS() {
         initAndAssertAllProperties();
-        mMediator.setActionOnAllRelatedTabsForTest(true);
+        mMediator.setActionOnAllRelatedTabsForTesting(true);
 
         assertNotNull(mModel.get(0).get(TabProperties.FAVICON));
         // Assert that tab1 is in a group.
@@ -357,7 +357,7 @@ public class TabListMediatorUnitTest {
         initAndAssertAllProperties();
         FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
         TabGridItemTouchHelperCallback itemTouchHelperCallback = getItemTouchHelperCallback();
-        itemTouchHelperCallback.setActionsOnAllRelatedTabsForTest(true);
+        itemTouchHelperCallback.setActionsOnAllRelatedTabsForTesting(true);
 
         doReturn(mTabGroupModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
 
@@ -386,11 +386,11 @@ public class TabListMediatorUnitTest {
     public void sendsMergeTabSignalCorrectly() {
         initAndAssertAllProperties();
         FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
-        mMediator.setActionOnAllRelatedTabsForTest(true);
+        mMediator.setActionOnAllRelatedTabsForTesting(true);
         TabGridItemTouchHelperCallback itemTouchHelperCallback = getItemTouchHelperCallback();
-        itemTouchHelperCallback.setActionsOnAllRelatedTabsForTest(true);
-        itemTouchHelperCallback.setHoveredTabIndexForTest(POSITION1);
-        itemTouchHelperCallback.setSelectedTabIndexForTest(POSITION2);
+        itemTouchHelperCallback.setActionsOnAllRelatedTabsForTesting(true);
+        itemTouchHelperCallback.setHoveredTabIndexForTesting(POSITION1);
+        itemTouchHelperCallback.setSelectedTabIndexForTesting(POSITION2);
         itemTouchHelperCallback.getMovementFlags(mRecyclerView, mDummyViewHolder1);
 
         doReturn(mTabGroupModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
@@ -410,11 +410,11 @@ public class TabListMediatorUnitTest {
     public void neverSendsMergeTabSignal_Without_Group() {
         initAndAssertAllProperties();
         FeatureUtilities.setTabGroupsAndroidEnabledForTesting(false);
-        mMediator.setActionOnAllRelatedTabsForTest(true);
+        mMediator.setActionOnAllRelatedTabsForTesting(true);
         TabGridItemTouchHelperCallback itemTouchHelperCallback = getItemTouchHelperCallback();
-        itemTouchHelperCallback.setActionsOnAllRelatedTabsForTest(true);
-        itemTouchHelperCallback.setHoveredTabIndexForTest(POSITION1);
-        itemTouchHelperCallback.setSelectedTabIndexForTest(POSITION2);
+        itemTouchHelperCallback.setActionsOnAllRelatedTabsForTesting(true);
+        itemTouchHelperCallback.setHoveredTabIndexForTesting(POSITION1);
+        itemTouchHelperCallback.setSelectedTabIndexForTesting(POSITION2);
         itemTouchHelperCallback.getMovementFlags(mRecyclerView, mDummyViewHolder1);
 
         doReturn(mTabGroupModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
@@ -434,11 +434,11 @@ public class TabListMediatorUnitTest {
     public void neverSendsMergeTabSignal_With_Group_Without_Group_Improvement() {
         initAndAssertAllProperties();
         FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
-        mMediator.setActionOnAllRelatedTabsForTest(true);
+        mMediator.setActionOnAllRelatedTabsForTesting(true);
         TabGridItemTouchHelperCallback itemTouchHelperCallback = getItemTouchHelperCallback();
-        itemTouchHelperCallback.setActionsOnAllRelatedTabsForTest(true);
-        itemTouchHelperCallback.setHoveredTabIndexForTest(POSITION1);
-        itemTouchHelperCallback.setSelectedTabIndexForTest(POSITION2);
+        itemTouchHelperCallback.setActionsOnAllRelatedTabsForTesting(true);
+        itemTouchHelperCallback.setHoveredTabIndexForTesting(POSITION1);
+        itemTouchHelperCallback.setSelectedTabIndexForTesting(POSITION2);
         itemTouchHelperCallback.getMovementFlags(mRecyclerView, mDummyViewHolder1);
 
         doReturn(mTabGroupModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
@@ -462,8 +462,8 @@ public class TabListMediatorUnitTest {
         FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
 
         TabGridItemTouchHelperCallback itemTouchHelperCallback = getItemTouchHelperCallback();
-        itemTouchHelperCallback.setActionsOnAllRelatedTabsForTest(false);
-        itemTouchHelperCallback.setUnGroupTabIndexForTest(POSITION1);
+        itemTouchHelperCallback.setActionsOnAllRelatedTabsForTesting(false);
+        itemTouchHelperCallback.setUnGroupTabIndexForTesting(POSITION1);
         itemTouchHelperCallback.getMovementFlags(mRecyclerView, mDummyViewHolder1);
 
         doReturn(mTabGroupModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
@@ -501,7 +501,7 @@ public class TabListMediatorUnitTest {
     @Test
     public void tabAddition_RestoreNotComplete() {
         initAndAssertAllProperties();
-        mMediator.setActionOnAllRelatedTabsForTest(true);
+        mMediator.setActionOnAllRelatedTabsForTesting(true);
 
         Tab newTab = prepareTab(TAB3_ID, TAB3_TITLE);
         doReturn(mTab1).when(mTabModelFilter).getTabAt(0);
@@ -521,7 +521,7 @@ public class TabListMediatorUnitTest {
     @Test
     public void tabAddition_Restore() {
         initAndAssertAllProperties();
-        mMediator.setActionOnAllRelatedTabsForTest(true);
+        mMediator.setActionOnAllRelatedTabsForTesting(true);
         // Mock that tab restoring stage is over.
         mMediator.setTabRestoreCompletedForTesting(true);
         TabListMediator.TabActionListener actionListenerBeforeUpdate =
@@ -551,7 +551,7 @@ public class TabListMediatorUnitTest {
     @Test
     public void tabAddition_GTS() {
         initAndAssertAllProperties();
-        mMediator.setActionOnAllRelatedTabsForTest(true);
+        mMediator.setActionOnAllRelatedTabsForTesting(true);
         mMediator.setTabRestoreCompletedForTesting(true);
 
         Tab newTab = prepareTab(TAB3_ID, TAB3_TITLE);
@@ -574,7 +574,7 @@ public class TabListMediatorUnitTest {
     @Test
     public void tabAddition_GTS_Skip() {
         initAndAssertAllProperties();
-        mMediator.setActionOnAllRelatedTabsForTest(true);
+        mMediator.setActionOnAllRelatedTabsForTesting(true);
         mMediator.setTabRestoreCompletedForTesting(true);
 
         // Add a new tab to the group with mTab2.
@@ -595,7 +595,7 @@ public class TabListMediatorUnitTest {
     @Test
     public void tabAddition_GTS_Middle() {
         initAndAssertAllProperties();
-        mMediator.setActionOnAllRelatedTabsForTest(true);
+        mMediator.setActionOnAllRelatedTabsForTesting(true);
         mMediator.setTabRestoreCompletedForTesting(true);
 
         Tab newTab = prepareTab(TAB3_ID, TAB3_TITLE);

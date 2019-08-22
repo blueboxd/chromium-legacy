@@ -98,11 +98,10 @@ void ServiceWorkerRegisterJob::Start() {
   // may show a message like "offline enabled". For update, give it a lower
   // priority as (soft) update doesn't affect user interactions directly.
   // TODO(bashi): For explicit update() API, we may want to prioritize it too.
-  auto traits =
-      (job_type_ == REGISTRATION_JOB)
-          ? base::TaskTraits(ServiceWorkerContextWrapper::GetCoreThreadId())
-          : base::TaskTraits(ServiceWorkerContextWrapper::GetCoreThreadId(),
-                             base::TaskPriority::BEST_EFFORT);
+  auto traits = (job_type_ == REGISTRATION_JOB)
+                    ? base::TaskTraits(ServiceWorkerContext::GetCoreThreadId())
+                    : base::TaskTraits(ServiceWorkerContext::GetCoreThreadId(),
+                                       base::TaskPriority::BEST_EFFORT);
   base::PostTask(FROM_HERE, std::move(traits),
                  base::BindOnce(&ServiceWorkerRegisterJob::StartImpl,
                                 weak_factory_.GetWeakPtr()));

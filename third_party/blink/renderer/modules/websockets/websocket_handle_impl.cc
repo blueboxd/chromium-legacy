@@ -26,7 +26,6 @@ WebSocketHandleImpl::WebSocketHandleImpl(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : task_runner_(std::move(task_runner)),
       channel_(nullptr),
-      handshake_client_binding_(this),
       client_binding_(this),
       readable_watcher_(FROM_HERE,
                         mojo::SimpleWatcher::ArmingPolicy::MANUAL,
@@ -54,15 +53,11 @@ void WebSocketHandleImpl::Connect(
   DCHECK(channel);
   channel_ = channel;
 
-  Vector<network::mojom::blink::HttpHeaderPtr> additional_headers;
-  network::mojom::blink::WebSocketHandshakeClientPtr handshake_client_proxy;
-  handshake_client_binding_.Bind(
-      mojo::MakeRequest(&handshake_client_proxy, task_runner_), task_runner_);
-  handshake_client_binding_.set_connection_error_with_reason_handler(WTF::Bind(
+  connector->Connect(
+      url, protocols, site_for_cookies, user_agent_override,
+      handshake_client_receiver_.BindNewPipeAndPassRemote(task_runner_));
+  handshake_client_receiver_.set_disconnect_with_reason_handler(WTF::Bind(
       &WebSocketHandleImpl::OnConnectionError, WTF::Unretained(this)));
-
-  connector->Connect(url, protocols, site_for_cookies, user_agent_override,
-                     std::move(handshake_client_proxy));
 }
 
 void WebSocketHandleImpl::Send(bool fin,
@@ -166,7 +161,7 @@ void WebSocketHandleImpl::OnConnectionEstablished(
     return;
 
   // From now on, we will detect mojo errors via |client_binding_|.
-  handshake_client_binding_.Close();
+  handshake_client_receiver_.reset();
   client_binding_.Bind(std::move(client_receiver), task_runner_);
   client_binding_.set_connection_error_with_reason_handler(WTF::Bind(
       &WebSocketHandleImpl::OnConnectionError, WTF::Unretained(this)));

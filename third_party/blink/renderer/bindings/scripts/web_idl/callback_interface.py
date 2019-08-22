@@ -9,6 +9,7 @@ from .composition_parts import WithComponent
 from .composition_parts import WithDebugInfo
 from .composition_parts import WithExtendedAttributes
 from .identifier_ir_map import IdentifierIRMap
+from .make_copy import make_copy
 from .user_defined_type import UserDefinedType
 
 
@@ -36,13 +37,12 @@ class CallbackInterface(UserDefinedType, WithExtendedAttributes,
     def __init__(self, ir):
         assert isinstance(ir, CallbackInterface.IR)
 
+        ir = make_copy(ir)
         UserDefinedType.__init__(self, ir.identifier)
-        WithExtendedAttributes.__init__(self,
-                                        ir.extended_attributes.make_copy())
-        WithCodeGeneratorInfo.__init__(self,
-                                       ir.code_generator_info.make_copy())
+        WithExtendedAttributes.__init__(self, ir.extended_attributes)
+        WithCodeGeneratorInfo.__init__(self, ir.code_generator_info)
         WithComponent.__init__(self, components=ir.components)
-        WithDebugInfo.__init__(self, ir.debug_info.make_copy())
+        WithDebugInfo.__init__(self, ir.debug_info)
 
     @property
     def inherited_callback_interface(self):

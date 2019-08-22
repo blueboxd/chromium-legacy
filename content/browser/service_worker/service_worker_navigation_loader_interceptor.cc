@@ -33,7 +33,7 @@ void LoaderCallbackWrapperOnCoreThread(
     base::WeakPtr<ServiceWorkerNavigationLoaderInterceptor> interceptor_on_ui,
     NavigationLoaderInterceptor::LoaderCallback loader_callback,
     SingleRequestURLLoaderFactory::RequestHandler handler) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   base::Optional<SubresourceLoaderParams> subresource_loader_params;
   if (handle_core->interceptor()) {
@@ -53,7 +53,7 @@ void FallbackCallbackWrapperOnCoreThread(
     base::WeakPtr<ServiceWorkerNavigationLoaderInterceptor> interceptor_on_ui,
     NavigationLoaderInterceptor::FallbackCallback fallback_callback,
     bool reset_subresource_loader_params) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   RunOrPostTaskOnThread(
       FROM_HERE, BrowserThread::UI,
@@ -68,7 +68,7 @@ void InvokeRequestHandlerOnCoreThread(
     const network::ResourceRequest& resource_request,
     network::mojom::URLLoaderRequest request,
     network::mojom::URLLoaderClientPtrInfo client_info) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   network::mojom::URLLoaderClientPtr client(std::move(client_info));
   std::move(handler).Run(resource_request, std::move(request),
                          std::move(client));
@@ -89,12 +89,12 @@ void MaybeCreateLoaderOnCoreThread(
     NavigationLoaderInterceptor::LoaderCallback loader_callback,
     NavigationLoaderInterceptor::FallbackCallback fallback_callback,
     bool initialize_provider_only) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   ServiceWorkerContextCore* context_core =
       handle_core->context_wrapper()->context();
   ResourceContext* resource_context =
-      ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled()
+      ServiceWorkerContext::IsServiceWorkerOnUIEnabled()
           ? nullptr
           : handle_core->context_wrapper()->resource_context();
   if (!context_core || (!resource_context && !browser_context)) {
@@ -209,7 +209,7 @@ void ServiceWorkerNavigationLoaderInterceptor::MaybeCreateLoader(
 
   bool initialize_provider_only = false;
   LoaderCallback original_callback;
-  if (!ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled() &&
+  if (!ServiceWorkerContext::IsServiceWorkerOnUIEnabled() &&
       !handle_->context_wrapper()->HasRegistrationForOrigin(
           tentative_resource_request.url.GetOrigin())) {
     // We have no registrations, so it's safe to continue the request now

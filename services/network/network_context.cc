@@ -36,7 +36,6 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_service_factory.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/layered_network_delegate.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -1250,7 +1249,7 @@ void NetworkContext::CreateWebSocket(
     int32_t render_frame_id,
     const url::Origin& origin,
     uint32_t options,
-    mojom::WebSocketHandshakeClientPtr handshake_client,
+    mojo::PendingRemote<mojom::WebSocketHandshakeClient> handshake_client,
     mojom::AuthenticationHandlerPtr auth_handler,
     mojom::TrustedHeaderClientPtr header_client) {
 #if !defined(OS_IOS)

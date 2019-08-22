@@ -231,7 +231,7 @@ static NSTimeInterval MFAnimationDuration = 0.2;
 }
 
 - (UIColor*)activeTintColor {
-  return [UIColor colorWithWhite:0.5 alpha:1.0];
+  return [UIColor colorNamed:kToolbarButtonColor];
 }
 
 - (void)animateKeyboardButtonHidden:(BOOL)hidden {

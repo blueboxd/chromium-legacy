@@ -75,9 +75,9 @@ class ServiceWorkerGlobalScopeProxy final : public WebServiceWorkerContextProxy,
   ~ServiceWorkerGlobalScopeProxy() override;
 
   // WebServiceWorkerContextProxy overrides:
-  void BindServiceWorker(mojo::ScopedMessagePipeHandle request) override;
+  void BindServiceWorker(mojo::ScopedMessagePipeHandle receiver_pipe) override;
   void BindControllerServiceWorker(
-      mojo::ScopedMessagePipeHandle request) override;
+      mojo::ScopedMessagePipeHandle receiver_pipe) override;
   void OnNavigationPreloadResponse(
       int fetch_event_id,
       std::unique_ptr<WebURLResponse>,

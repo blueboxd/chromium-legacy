@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/invalidation/impl/invalidation_logger.h"
@@ -29,13 +28,8 @@ namespace {
 
 invalidation::ProfileInvalidationProvider* GetInvalidationProvider(
     Profile* profile) {
-  if (base::FeatureList::IsEnabled(invalidation::switches::kFCMInvalidations)) {
-    return invalidation::ProfileInvalidationProviderFactory::GetForProfile(
-        profile);
-  } else {
-    return invalidation::DeprecatedProfileInvalidationProviderFactory::
-        GetForProfile(profile);
-  }
+  return invalidation::ProfileInvalidationProviderFactory::GetForProfile(
+      profile);
 }
 
 }  // namespace

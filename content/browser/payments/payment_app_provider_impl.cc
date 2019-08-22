@@ -57,12 +57,12 @@ class RespondWithCallbacks;
 class InvokePaymentAppCallbackRepository {
  public:
   static InvokePaymentAppCallbackRepository* GetInstance() {
-    DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+    DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
     return base::Singleton<InvokePaymentAppCallbackRepository>::get();
   }
 
   RespondWithCallbacks* GetCallback(BrowserContext* browser_context) {
-    DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+    DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
     auto it = invoke_callbacks_.find(browser_context);
     if (it != invoke_callbacks_.end()) {
       return it->second;
@@ -72,12 +72,12 @@ class InvokePaymentAppCallbackRepository {
 
   void SetCallback(BrowserContext* browser_context,
                    RespondWithCallbacks* callback) {
-    DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+    DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
     invoke_callbacks_[browser_context] = callback;
   }
 
   void RemoveCallback(BrowserContext* browser_context) {
-    DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+    DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
     invoke_callbacks_.erase(browser_context);
   }
 
@@ -137,7 +137,7 @@ class RespondWithCallbacks
 
   void OnResponseForPaymentRequest(
       payments::mojom::PaymentHandlerResponsePtr response) override {
-    DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+    DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
     service_worker_version_->FinishRequest(request_id_, false);
     RunOrPostTaskOnThread(
         FROM_HERE, BrowserThread::UI,
@@ -149,7 +149,7 @@ class RespondWithCallbacks
   }
 
   void OnResponseForCanMakePayment(bool can_make_payment) override {
-    DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+    DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
     service_worker_version_->FinishRequest(request_id_, false);
     RunOrPostTaskOnThread(
         FROM_HERE, BrowserThread::UI,
@@ -159,7 +159,7 @@ class RespondWithCallbacks
   }
 
   void OnResponseForAbortPayment(bool payment_aborted) override {
-    DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+    DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
     service_worker_version_->FinishRequest(request_id_, false);
     RunOrPostTaskOnThread(
         FROM_HERE, BrowserThread::UI,
@@ -171,7 +171,7 @@ class RespondWithCallbacks
   }
 
   void RespondWithErrorAndDeleteSelf(PaymentEventResponseType response_type) {
-    DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+    DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
     if (event_type_ == ServiceWorkerMetrics::EventType::PAYMENT_REQUEST) {
       RunOrPostTaskOnThread(
@@ -195,7 +195,7 @@ class RespondWithCallbacks
   }
 
   void OnErrorStatus(blink::ServiceWorkerStatusCode service_worker_status) {
-    DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+    DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
     DCHECK(service_worker_status != blink::ServiceWorkerStatusCode::kOk);
 
     PaymentEventResponseType response_type =
@@ -216,7 +216,7 @@ class RespondWithCallbacks
   int request_id() { return request_id_; }
 
   void AbortPaymentSinceOpennedWindowClosing(PaymentEventResponseType reason) {
-    DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+    DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
     service_worker_version_->FinishRequest(request_id_, false);
     RespondWithErrorAndDeleteSelf(reason);
@@ -226,7 +226,7 @@ class RespondWithCallbacks
   ~RespondWithCallbacks() override {}
 
   void ClearCallbackRepositoryAndCloseWindow() {
-    DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+    DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
     InvokePaymentAppCallbackRepository::GetInstance()->RemoveCallback(
         browser_context_);
@@ -264,7 +264,7 @@ void DidGetAllPaymentAppsOnCoreThread(
 void GetAllPaymentAppsOnCoreThread(
     scoped_refptr<PaymentAppContextImpl> payment_app_context,
     PaymentAppProvider::GetAllPaymentAppsCallback callback) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   payment_app_context->payment_app_database()->ReadAllPaymentApps(
       base::BindOnce(&DidGetAllPaymentAppsOnCoreThread, std::move(callback)));
@@ -275,7 +275,7 @@ void DispatchAbortPaymentEvent(
     PaymentAppProvider::PaymentEventResultCallback callback,
     scoped_refptr<ServiceWorkerVersion> active_version,
     blink::ServiceWorkerStatusCode service_worker_status) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   if (service_worker_status != blink::ServiceWorkerStatusCode::kOk) {
     base::PostTask(FROM_HERE, {BrowserThread::UI},
@@ -304,7 +304,7 @@ void DispatchCanMakePaymentEvent(
     PaymentAppProvider::PaymentEventResultCallback callback,
     scoped_refptr<ServiceWorkerVersion> active_version,
     blink::ServiceWorkerStatusCode service_worker_status) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   if (service_worker_status != blink::ServiceWorkerStatusCode::kOk) {
     base::PostTask(FROM_HERE, {BrowserThread::UI},
@@ -333,7 +333,7 @@ void DispatchPaymentRequestEvent(
     PaymentAppProvider::InvokePaymentAppCallback callback,
     scoped_refptr<ServiceWorkerVersion> active_version,
     blink::ServiceWorkerStatusCode service_worker_status) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   if (service_worker_status != blink::ServiceWorkerStatusCode::kOk) {
     base::PostTask(
@@ -365,7 +365,7 @@ void DidFindRegistrationOnCoreThread(
     ServiceWorkerStartCallback callback,
     blink::ServiceWorkerStatusCode service_worker_status,
     scoped_refptr<ServiceWorkerRegistration> service_worker_registration) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   if (service_worker_status != blink::ServiceWorkerStatusCode::kOk) {
     std::move(callback).Run(nullptr, service_worker_status);
@@ -385,7 +385,7 @@ void FindRegistrationOnCoreThread(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
     int64_t registration_id,
     ServiceWorkerStartCallback callback) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   service_worker_context->FindReadyRegistrationForIdOnly(
       registration_id,
@@ -402,8 +402,7 @@ void StartServiceWorkerForDispatch(BrowserContext* browser_context,
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context =
       partition->GetServiceWorkerContext();
 
-  RunOrPostTaskOnThread(FROM_HERE,
-                        ServiceWorkerContextWrapper::GetCoreThreadId(),
+  RunOrPostTaskOnThread(FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
                         base::BindOnce(&FindRegistrationOnCoreThread,
                                        std::move(service_worker_context),
                                        registration_id, std::move(callback)));
@@ -454,7 +453,7 @@ void CheckPermissionForPaymentApps(
 
 void AbortInvokePaymentApp(BrowserContext* browser_context,
                            PaymentEventResponseType reason) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   RespondWithCallbacks* callback =
       InvokePaymentAppCallbackRepository::GetInstance()->GetCallback(
@@ -602,7 +601,7 @@ void PaymentAppProviderImpl::GetAllPaymentApps(
       partition->GetPaymentAppContext();
 
   RunOrPostTaskOnThread(
-      FROM_HERE, ServiceWorkerContextWrapper::GetCoreThreadId(),
+      FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
       base::BindOnce(&GetAllPaymentAppsOnCoreThread, payment_app_context,
                      base::BindOnce(&CheckPermissionForPaymentApps,
                                     browser_context, std::move(callback))));
@@ -779,7 +778,7 @@ void PaymentAppProviderImpl::OnClosingOpenedWindow(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RunOrPostTaskOnThread(
-      FROM_HERE, ServiceWorkerContextWrapper::GetCoreThreadId(),
+      FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
       base::BindOnce(&AbortInvokePaymentApp, browser_context, reason));
 }
 

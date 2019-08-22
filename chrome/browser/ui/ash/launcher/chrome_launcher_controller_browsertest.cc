@@ -26,6 +26,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
@@ -53,6 +54,7 @@
 #include "chrome/browser/ui/test/test_app_window_icon_observer.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/test/web_app_install_observer.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -1871,6 +1873,54 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, WindowedHostedAndBookmarkApps) {
             shelf_model()->ItemByID(hosted_app_shelf_id)->status);
   EXPECT_EQ(ash::STATUS_RUNNING,
             shelf_model()->ItemByID(bookmark_app_shelf_id)->status);
+}
+
+// Windowed progressive web apps should have shelf activity indicator showing
+// after install.
+IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest,
+                       WindowedPwasHaveActivityIndicatorSet) {
+  // Start server and open test page.
+  ASSERT_TRUE(embedded_test_server()->Start());
+  AddTabAtIndex(
+      1,
+      GURL(embedded_test_server()->GetURL("/banners/manifest_test_page.html")),
+      ui::PAGE_TRANSITION_LINK);
+  // Install PWA.
+  chrome::SetAutoAcceptPWAInstallConfirmationForTesting(true);
+  web_app::WebAppInstallObserver observer(profile());
+  chrome::ExecuteCommand(browser(), IDC_INSTALL_PWA);
+  web_app::AppId app_id = observer.AwaitNextInstall();
+  chrome::SetAutoAcceptPWAInstallConfirmationForTesting(false);
+
+  ash::ShelfID shelf_id(app_id);
+  EXPECT_TRUE(ChromeLauncherController::instance()->IsPinned(shelf_id));
+  EXPECT_EQ(
+      shelf_id,
+      ChromeLauncherController::instance()->shelf_model()->active_shelf_id());
+}
+
+// Windowed shortcut apps should have shelf activity indicator showing after
+// install.
+IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest,
+                       WindowedShortcutAppsHaveActivityIndicatorSet) {
+  // Start server and open test page.
+  ASSERT_TRUE(embedded_test_server()->Start());
+  AddTabAtIndex(
+      1,
+      GURL(embedded_test_server()->GetURL("/banners/manifest_test_page.html")),
+      ui::PAGE_TRANSITION_LINK);
+  // Install shortcut app.
+  chrome::SetAutoAcceptBookmarkAppDialogForTesting(true);
+  web_app::WebAppInstallObserver observer(profile());
+  chrome::ExecuteCommand(browser(), IDC_CREATE_SHORTCUT);
+  web_app::AppId app_id = observer.AwaitNextInstall();
+  chrome::SetAutoAcceptBookmarkAppDialogForTesting(false);
+
+  ash::ShelfID shelf_id(app_id);
+  EXPECT_TRUE(ChromeLauncherController::instance()->IsPinned(shelf_id));
+  EXPECT_EQ(
+      shelf_id,
+      ChromeLauncherController::instance()->shelf_model()->active_shelf_id());
 }
 
 // Test that "Close" is shown in the context menu when there are opened browsers

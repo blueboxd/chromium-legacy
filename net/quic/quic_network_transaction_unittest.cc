@@ -23,6 +23,7 @@
 #include "net/base/features.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/mock_network_change_notifier.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/test_completion_callback.h"
 #include "net/base/test_proxy_delegate.h"
 #include "net/cert/ct_policy_enforcer.h"
@@ -159,7 +160,7 @@ std::string GenerateQuicVersionsListForAltSvcHeader(
 std::vector<PoolingTestParams> GetPoolingTestParams() {
   std::vector<PoolingTestParams> params;
   quic::ParsedQuicVersionVector all_supported_versions =
-      quic::AllSupportedVersions();
+      quic::AllVersionsExcept99();
   for (const quic::ParsedQuicVersion version : all_supported_versions) {
     // TODO(rch): crbug.com/978745 - Make this work with TLS
     if (version.handshake_protocol != quic::PROTOCOL_TLS1_3) {
@@ -773,7 +774,8 @@ class QuicNetworkTransactionTest
     AlternativeService alternative_service(kProtoQUIC, server.host(), 443);
     base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
     http_server_properties_->SetQuicAlternativeService(
-        server, alternative_service, expiration, supported_versions_);
+        server, NetworkIsolationKey(), alternative_service, expiration,
+        supported_versions_);
   }
 
   void AddQuicRemoteAlternativeServiceMapping(
@@ -785,7 +787,8 @@ class QuicNetworkTransactionTest
                                            alternative.port());
     base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
     http_server_properties_->SetQuicAlternativeService(
-        server, alternative_service, expiration, supported_versions_);
+        server, NetworkIsolationKey(), alternative_service, expiration,
+        supported_versions_);
   }
 
   void ExpectBrokenAlternateProtocolMapping() {
@@ -967,7 +970,7 @@ class QuicNetworkTransactionTest
 
 quic::ParsedQuicVersionVector AllSupportedVersionsWithoutTls() {
   quic::ParsedQuicVersionVector versions;
-  for (auto version : quic::AllSupportedVersions()) {
+  for (auto version : quic::AllVersionsExcept99()) {
     // TODO(rch): crbug.com/978745 - Make this work with TLS
     if (version.handshake_protocol != quic::PROTOCOL_TLS1_3) {
       versions.push_back(version);
@@ -1527,7 +1530,8 @@ TEST_P(QuicNetworkTransactionTest, DoNotUseQuicForUnsupportedVersion) {
                                          443);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties_->SetQuicAlternativeService(
-      server, alternative_service, expiration, {unsupported_version});
+      server, NetworkIsolationKey(), alternative_service, expiration,
+      {unsupported_version});
 
   AlternativeServiceInfoVector alt_svc_info_vector =
       http_server_properties_->GetAlternativeServiceInfos(
@@ -1627,7 +1631,8 @@ TEST_P(QuicNetworkTransactionTest, RetryMisdirectedRequest) {
                                          443);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties_->SetQuicAlternativeService(
-      server, alternative_service, expiration, supported_versions_);
+      server, NetworkIsolationKey(), alternative_service, expiration,
+      supported_versions_);
 
   // First try: The alternative job uses QUIC and reports an HTTP 421
   // Misdirected Request error.  The main job uses TCP, but |http_data| below is
@@ -4155,14 +4160,14 @@ TEST_P(QuicNetworkTransactionTest,
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   AlternativeService alternative1(kProtoQUIC, origin1.host(), 443);
   http_server_properties_->SetQuicAlternativeService(
-      url::SchemeHostPort(origin1), alternative1, expiration,
-      supported_versions_);
+      url::SchemeHostPort(origin1), NetworkIsolationKey(), alternative1,
+      expiration, supported_versions_);
 
   // Set up alternative service for |origin2|.
   AlternativeService alternative2(kProtoQUIC, origin2.host(), 443);
   http_server_properties_->SetQuicAlternativeService(
-      url::SchemeHostPort(origin2), alternative2, expiration,
-      supported_versions_);
+      url::SchemeHostPort(origin2), NetworkIsolationKey(), alternative2,
+      expiration, supported_versions_);
 
   // First request opens connection to |destination1|
   // with quic::QuicServerId.host() == origin1.host().
@@ -4427,7 +4432,8 @@ TEST_P(QuicNetworkTransactionTest, PoolByOrigin) {
   AlternativeService alternative_service(kProtoQUIC, destination1, 443);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties_->SetQuicAlternativeService(
-      server, alternative_service, expiration, supported_versions_);
+      server, NetworkIsolationKey(), alternative_service, expiration,
+      supported_versions_);
   // First request opens connection to |destination1|
   // with quic::QuicServerId.host() == kDefaultServerHostName.
   SendRequestAndExpectQuicResponse("hello!");
@@ -4435,7 +4441,8 @@ TEST_P(QuicNetworkTransactionTest, PoolByOrigin) {
   // Set up alternative service entry to a different destination.
   alternative_service = AlternativeService(kProtoQUIC, destination2, 443);
   http_server_properties_->SetQuicAlternativeService(
-      server, alternative_service, expiration, supported_versions_);
+      server, NetworkIsolationKey(), alternative_service, expiration,
+      supported_versions_);
   // Second request pools to existing connection with same quic::QuicServerId,
   // even though alternative service destination is different.
   SendRequestAndExpectQuicResponse("hello!");
@@ -4514,8 +4521,8 @@ TEST_P(QuicNetworkTransactionTest, PoolByDestination) {
   AlternativeService alternative_service1(kProtoQUIC, destination1, 443);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties_->SetQuicAlternativeService(
-      url::SchemeHostPort(origin1), alternative_service1, expiration,
-      supported_versions_);
+      url::SchemeHostPort(origin1), NetworkIsolationKey(), alternative_service1,
+      expiration, supported_versions_);
 
   // Set up multiple alternative service entries for |origin2|,
   // the first one with a different destination as for |origin1|,
@@ -4728,9 +4735,9 @@ TEST_P(QuicNetworkTransactionTest, ConfirmAlternativeService) {
 
   EXPECT_FALSE(http_server_properties_->WasAlternativeServiceRecentlyBroken(
       alternative_service));
-  EXPECT_NE(nullptr,
-            http_server_properties_->GetServerNetworkStats(
-                url::SchemeHostPort("https", request_.url.host(), 443)));
+  EXPECT_NE(nullptr, http_server_properties_->GetServerNetworkStats(
+                         url::SchemeHostPort("https", request_.url.host(), 443),
+                         NetworkIsolationKey()));
 }
 
 TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceForQuicForHttps) {
@@ -4907,9 +4914,9 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithHttpRace) {
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
   SendRequestAndExpectQuicResponse("hello!");
 
-  EXPECT_EQ(nullptr,
-            http_server_properties_->GetServerNetworkStats(
-                url::SchemeHostPort("https", request_.url.host(), 443)));
+  EXPECT_EQ(nullptr, http_server_properties_->GetServerNetworkStats(
+                         url::SchemeHostPort("https", request_.url.host(), 443),
+                         NetworkIsolationKey()));
 }
 
 TEST_P(QuicNetworkTransactionTest, ZeroRTTWithNoHttpRace) {
@@ -6776,8 +6783,8 @@ class QuicNetworkTransactionWithDestinationTest
     AlternativeService alternative_service(kProtoQUIC, destination);
     base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
     http_server_properties_.SetQuicAlternativeService(
-        url::SchemeHostPort("https", origin, 443), alternative_service,
-        expiration, supported_versions_);
+        url::SchemeHostPort("https", origin, 443), NetworkIsolationKey(),
+        alternative_service, expiration, supported_versions_);
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket>

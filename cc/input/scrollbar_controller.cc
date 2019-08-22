@@ -88,6 +88,8 @@ InputHandlerPointerResult ScrollbarController::HandleMouseDown(
     return scroll_result;
 
   currently_captured_scrollbar_ = layer_impl->ToScrollbarLayer();
+  scroll_result.target_scroller =
+      currently_captured_scrollbar_->scroll_element_id();
   scroll_result.type = PointerResultType::kScrollbarScroll;
   layer_tree_host_impl_->active_tree()->UpdateScrollbarGeometries();
   const ScrollbarPart scrollbar_part =

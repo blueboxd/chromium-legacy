@@ -71,10 +71,11 @@ WakeLockType ToBlinkWakeLockType(device::mojom::blink::WakeLockType type) {
 MockWakeLock::MockWakeLock() = default;
 MockWakeLock::~MockWakeLock() = default;
 
-void MockWakeLock::Bind(device::mojom::blink::WakeLockRequest request) {
-  DCHECK(!binding_.is_bound());
-  binding_.Bind(std::move(request));
-  binding_.set_connection_error_handler(
+void MockWakeLock::Bind(
+    mojo::PendingReceiver<device::mojom::blink::WakeLock> receiver) {
+  DCHECK(!receiver_.is_bound());
+  receiver_.Bind(std::move(receiver));
+  receiver_.set_disconnect_handler(
       WTF::Bind(&MockWakeLock::OnConnectionError, WTF::Unretained(this)));
 }
 
@@ -97,8 +98,7 @@ void MockWakeLock::WaitForCancelation() {
 }
 
 void MockWakeLock::OnConnectionError() {
-  if (binding_.is_bound())
-    binding_.Unbind();
+  receiver_.reset();
   CancelWakeLock();
 }
 
@@ -125,8 +125,8 @@ MockWakeLockService::MockWakeLockService() = default;
 MockWakeLockService::~MockWakeLockService() = default;
 
 void MockWakeLockService::BindRequest(mojo::ScopedMessagePipeHandle handle) {
-  bindings_.AddBinding(this,
-                       mojom::blink::WakeLockServiceRequest(std::move(handle)));
+  receivers_.Add(this, mojo::PendingReceiver<mojom::blink::WakeLockService>(
+                           std::move(handle)));
 }
 
 MockWakeLock& MockWakeLockService::get_wake_lock(WakeLockType type) {

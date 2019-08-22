@@ -87,13 +87,12 @@ public class AutofillAssistantModuleEntryProvider {
         ModuleInstallUi ui = new ModuleInstallUi(tab, R.string.autofill_assistant_module_title,
                 new ModuleInstallUi.FailureUiListener() {
                     @Override
-                    public void onRetry() {
-                        loadDynamicModuleWithUi(tab, callback);
-                    }
-
-                    @Override
-                    public void onCancel() {
-                        callback.onResult(null);
+                    public void onFailureUiResponse(boolean retry) {
+                        if (retry) {
+                            loadDynamicModuleWithUi(tab, callback);
+                        } else {
+                            callback.onResult(null);
+                        }
                     }
                 });
         // Shows toast informing user about install start.

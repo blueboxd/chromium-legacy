@@ -12,6 +12,8 @@
 NSString* const kBackgroundColor = @"background_color";
 NSString* const kCloseButtonColor = @"close_button_color";
 NSString* const kDisabledTintColor = @"disabled_tint_color";
+NSString* const kGridThemeSelectionTintColor =
+    @"grid_theme_selection_tint_color";
 NSString* const kFaviconBackgroundColor = @"favicon_background_color";
 NSString* const kMDCInkColor = @"mdc_ink_color";
 NSString* const kPlaceholderImageTintColor = @"placeholder_image_tint_color";
@@ -48,6 +50,8 @@ NSString* const kGrey900Color = @"grey_900_color";
 
 NSString* const kBackgroundDarkColor = @"background_dark_color";
 NSString* const kCloseButtonDarkColor = @"close_button_dark_color";
+NSString* const kGridThemeDarkSelectionTintColor =
+    @"grid_theme_dark_selection_tint_color";
 NSString* const kTableViewRowHighlightDarkColor =
     @"table_view_row_highlight_dark_color";
 NSString* const kTextPrimaryDarkColor = @"text_primary_dark_color";

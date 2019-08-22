@@ -49,7 +49,7 @@ class CookieStoreIOSPersistent : public CookieStoreIOS {
   void GetCookieListWithOptionsAsync(const GURL& url,
                                      const net::CookieOptions& options,
                                      GetCookieListCallback callback) override;
-  void GetAllCookiesAsync(GetCookieListCallback callback) override;
+  void GetAllCookiesAsync(GetAllCookiesCallback callback) override;
   void DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
                                   DeleteCallback callback) override;
   void DeleteAllCreatedInTimeRangeAsync(

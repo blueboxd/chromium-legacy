@@ -229,7 +229,11 @@ SBOX_TESTS_COMMAND int CheckPolicy(int argc, wchar_t** argv) {
         return SBOX_TEST_NOT_FOUND;
       }
       if (!policy.DisallowWin32kSystemCalls)
-        return SBOX_TEST_FAILED;
+        return SBOX_TEST_FIRST_ERROR;
+
+      // Check if we can call a Win32k API. Fail if it succeeds.
+      if (::GetDC(nullptr))
+        return SBOX_TEST_SECOND_ERROR;
 
       break;
     }
@@ -825,9 +829,23 @@ TEST(ProcessMitigationsTest, CheckWin10MsSigned_Failure) {
                     false /* add_directory_permission */);
 }
 
+// ASAN doesn't initialize early enough for the intercepts in NtCreateSection to
+// be able to use std::unique_ptr, so disable pre-launch CIG on ASAN builds.
+#if !defined(ADDRESS_SANITIZER)
+#define MAYBE_CheckWin10MsSignedWithIntercept_Success \
+  CheckWin10MsSignedWithIntercept_Success
+#define MAYBE_CheckWin10MsSigned_FailurePreSpawn \
+  CheckWin10MsSigned_FailurePreSpawn
+#else
+#define MAYBE_CheckWin10MsSignedWithIntercept_Success \
+  DISABLED_CheckWin10MsSignedWithIntercept_Success
+#define MAYBE_CheckWin10MsSigned_FailurePreSpawn \
+  DISABLED_CheckWin10MsSigned_FailurePreSpawn
+#endif
+
 // This test validates that setting the MITIGATION_FORCE_MS_SIGNED_BINS
 // mitigation allows the loading of an unsigned DLL if intercept in place.
-TEST(ProcessMitigationsTest, CheckWin10MsSignedWithIntercept_Success) {
+TEST(ProcessMitigationsTest, MAYBE_CheckWin10MsSignedWithIntercept_Success) {
   if (base::win::GetVersion() < base::win::Version::WIN10_TH2)
     return;
 
@@ -854,7 +872,7 @@ TEST(ProcessMitigationsTest, CheckWin10MsSignedWithIntercept_Success) {
 
 // This test validates that setting the MITIGATION_FORCE_MS_SIGNED_BINS
 // mitigation pre-load prevents the loading of an unsigned DLL.
-TEST(ProcessMitigationsTest, CheckWin10MsSigned_FailurePreSpawn) {
+TEST(ProcessMitigationsTest, MAYBE_CheckWin10MsSigned_FailurePreSpawn) {
   if (base::win::GetVersion() < base::win::Version::WIN10_TH2)
     return;
 

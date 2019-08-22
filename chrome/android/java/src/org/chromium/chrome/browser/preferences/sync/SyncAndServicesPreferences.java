@@ -103,7 +103,8 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
     private static final String PREF_CONTEXTUAL_SEARCH = "contextual_search";
 
     @IntDef({SyncError.NO_ERROR, SyncError.ANDROID_SYNC_DISABLED, SyncError.AUTH_ERROR,
-            SyncError.PASSPHRASE_REQUIRED, SyncError.CLIENT_OUT_OF_DATE, SyncError.OTHER_ERRORS})
+            SyncError.PASSPHRASE_REQUIRED, SyncError.CLIENT_OUT_OF_DATE,
+            SyncError.SYNC_SETUP_INCOMPLETE, SyncError.OTHER_ERRORS})
     @Retention(RetentionPolicy.SOURCE)
     private @interface SyncError {
         int NO_ERROR = -1;
@@ -111,6 +112,7 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
         int AUTH_ERROR = 1;
         int PASSPHRASE_REQUIRED = 2;
         int CLIENT_OUT_OF_DATE = 3;
+        int SYNC_SETUP_INCOMPLETE = 4;
         int OTHER_ERRORS = 128;
     }
 
@@ -326,6 +328,12 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
         if (PREF_SYNC_REQUESTED.equals(key)) {
             assert canDisableSync();
             SyncPreferenceUtils.enableSync((boolean) newValue);
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_MANUAL_START_ANDROID)
+                    && wasSigninFlowInterrupted()) {
+                // This flow should only be reached when user toggles sync on.
+                assert (boolean) newValue;
+                mProfileSyncService.setFirstSetupComplete();
+            }
             PostTask.postTask(UiThreadTaskTraits.DEFAULT, this::updatePreferences);
         } else if (PREF_SEARCH_SUGGESTIONS.equals(key)) {
             mPrefServiceBridge.setSearchSuggestEnabled((boolean) newValue);
@@ -358,6 +366,11 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
     /** Returns whether Sync can be disabled. */
     private boolean canDisableSync() {
         return !Profile.getLastUsedProfile().isChild();
+    }
+
+    /** Returns whether user did not complete the sign in flow. */
+    private boolean wasSigninFlowInterrupted() {
+        return !mIsFromSigninScreen && !mProfileSyncService.isFirstSetupComplete();
     }
 
     private void displayPassphraseDialog() {
@@ -431,7 +444,27 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
             return SyncError.PASSPHRASE_REQUIRED;
         }
 
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_MANUAL_START_ANDROID)
+                && wasSigninFlowInterrupted()) {
+            return SyncError.SYNC_SETUP_INCOMPLETE;
+        }
+
         return SyncError.NO_ERROR;
+    }
+
+    /**
+     * Gets title message for sync error.
+     * @param error The sync error.
+     */
+    private String getSyncErrorTitle(@SyncError int error) {
+        Resources res = getActivity().getResources();
+        switch (error) {
+            case SyncError.SYNC_SETUP_INCOMPLETE:
+                assert ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_MANUAL_START_ANDROID);
+                return res.getString(R.string.sync_settings_not_confirmed_title);
+            default:
+                return res.getString(R.string.sync_error_card_title);
+        }
     }
 
     /**
@@ -452,6 +485,9 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
                 return res.getString(R.string.hint_other_sync_errors);
             case SyncError.PASSPHRASE_REQUIRED:
                 return res.getString(R.string.hint_passphrase_required);
+            case SyncError.SYNC_SETUP_INCOMPLETE:
+                assert ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_MANUAL_START_ANDROID);
+                return res.getString(R.string.hint_sync_settings_not_confirmed_description);
             case SyncError.NO_ERROR:
             default:
                 return null;
@@ -552,12 +588,18 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
         if (mCurrentSyncError == SyncError.NO_ERROR) {
             mSyncCategory.removePreference(mSyncErrorCard);
         } else {
-            String summary = getSyncErrorHint(mCurrentSyncError);
-            mSyncErrorCard.setSummary(summary);
+            mSyncErrorCard.setTitle(getSyncErrorTitle(mCurrentSyncError));
+            mSyncErrorCard.setSummary(getSyncErrorHint(mCurrentSyncError));
             mSyncCategory.addPreference(mSyncErrorCard);
         }
 
         mSyncRequested.setChecked(AndroidSyncSettings.get().isChromeSyncEnabled());
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_MANUAL_START_ANDROID)
+                && wasSigninFlowInterrupted()) {
+            // If sync setup was not completed the sync request toggle should be off.
+            // In this situation, switching it on will trigger a call to setFirstSetupComplete.
+            mSyncRequested.setChecked(false);
+        }
         mSyncRequested.setEnabled(canDisableSync());
     }
 
@@ -588,6 +630,15 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
 
     @Override
     public boolean onBackPressed() {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_MANUAL_START_ANDROID)
+                && wasSigninFlowInterrupted()) {
+            // If the setup flow was previously interrupted, and now the user dismissed the page
+            // without turning sync on, then mark first setup as complete (so that we won't show the
+            // error again), but turn sync off.
+            assert !mSyncRequested.isChecked();
+            SyncPreferenceUtils.enableSync(false);
+            mProfileSyncService.setFirstSetupComplete();
+        }
         if (!mIsFromSigninScreen) return false; // Let parent activity handle it.
         showCancelSyncDialog();
         return true;

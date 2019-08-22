@@ -292,13 +292,13 @@ bool DownloadItemModel::ShouldRemoveFromShelfWhenComplete() const {
       if (IsDangerous())
         return false;
 
-      // If the download is an extension, temporary, or will be opened
+      // If the download is a trusted extension, temporary, or will be opened
       // automatically, then it should be removed from the shelf on completion.
       // TODO(asanka): The logic for deciding opening behavior should be in a
       //               central location. http://crbug.com/167702
-      return (download_crx_util::IsExtensionDownload(*download_) ||
-              download_->IsTemporary() ||
-              download_->GetOpenWhenComplete() ||
+      return (download_crx_util::IsTrustedExtensionDownload(profile(),
+                                                            *download_) ||
+              download_->IsTemporary() || download_->GetOpenWhenComplete() ||
               download_->ShouldOpenFileBasedOnExtension());
 
     case DownloadItem::COMPLETE:
@@ -322,7 +322,7 @@ bool DownloadItemModel::ShouldRemoveFromShelfWhenComplete() const {
 
 bool DownloadItemModel::ShouldShowDownloadStartedAnimation() const {
   return !download_->IsSavePackageDownload() &&
-      !download_crx_util::IsExtensionDownload(*download_);
+         !download_crx_util::IsTrustedExtensionDownload(profile(), *download_);
 }
 
 bool DownloadItemModel::ShouldShowInShelf() const {

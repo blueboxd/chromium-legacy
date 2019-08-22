@@ -94,9 +94,14 @@ uint32_t DisplayList::UpdateDisplay(const Display& display, Type type) {
     changed_values |= DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR;
   }
   if (local_display->color_space() != display.color_space() ||
-      local_display->sdr_white_level() != display.sdr_white_level()) {
+      local_display->sdr_white_level() != display.sdr_white_level() ||
+      local_display->color_depth() != display.color_depth()) {
+    const int32_t color_depth = display.color_depth();
+    const int32_t depth_per_component = display.depth_per_component();
     local_display->SetColorSpaceAndDepth(display.color_space(),
                                          display.sdr_white_level());
+    local_display->set_depth_per_component(depth_per_component);
+    local_display->set_color_depth(color_depth);
     changed_values |= DisplayObserver::DISPLAY_METRIC_COLOR_SPACE;
   }
   if (should_notify_observers()) {

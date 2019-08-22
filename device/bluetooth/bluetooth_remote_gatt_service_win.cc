@@ -31,8 +31,7 @@ BluetoothRemoteGattServiceWin::BluetoothRemoteGattServiceWin(
       service_attribute_handle_(service_attribute_handle),
       is_primary_(is_primary),
       parent_service_(parent_service),
-      ui_task_runner_(std::move(ui_task_runner)),
-      weak_ptr_factory_(this) {
+      ui_task_runner_(std::move(ui_task_runner)) {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!service_path_.empty());
   DCHECK(service_uuid_.IsValid());

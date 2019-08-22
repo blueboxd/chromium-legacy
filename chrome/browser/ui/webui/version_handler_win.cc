@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/webui/version_util_win.h"
 #include "content/public/browser/web_ui.h"
 
-VersionHandlerWindows::VersionHandlerWindows() : weak_factory_(this) {}
+VersionHandlerWindows::VersionHandlerWindows() {}
 
 VersionHandlerWindows::~VersionHandlerWindows() {}
 

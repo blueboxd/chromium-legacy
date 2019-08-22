@@ -100,7 +100,7 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 
   // Starts recording of metrics. This can only be called after we have a file
   // thread.
-  void StartMetricsRecording();
+  static void StartMetricsRecording();
 
   // Record time from process startup to present time in an UMA histogram.
   void RecordBrowserStartupTime();

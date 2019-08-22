@@ -26,7 +26,7 @@ class ChromeViewsTestBase : public views::ViewsTestBase {
       : views::ViewsTestBase(
             views::ViewsTestBase::SubclassManagesTaskEnvironment()),
         task_environment_(
-            base::test::TaskEnvironment::MainThreadType::UI,
+            content::BrowserTaskEnvironment::MainThreadType::UI,
             base::trait_helpers::GetEnum<
                 content::BrowserTaskEnvironment::TimeSource,
                 content::BrowserTaskEnvironment::TimeSource::MOCK_TIME>(

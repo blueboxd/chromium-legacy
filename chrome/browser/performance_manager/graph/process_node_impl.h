@@ -80,7 +80,7 @@ class ProcessNodeImpl
   // access, but will return kNullProcessId when the process is not valid. It
   // will also retain the process ID for a process that has exited.
   base::ProcessId process_id() const { return process_id_; }
-  const base::Process& process() const { return process_; }
+  const base::Process& process() const { return process_.value(); }
   base::Time launch_time() const { return launch_time_; }
   base::Optional<int32_t> exit_status() const { return exit_status_; }
 
@@ -145,7 +145,11 @@ class ProcessNodeImpl
   uint64_t private_footprint_kb_ = 0u;
 
   base::ProcessId process_id_ = base::kNullProcessId;
-  base::Process process_;
+  ObservedProperty::NotifiesAlways<
+      base::Process,
+      &ProcessNodeObserver::OnProcessLifetimeChange>
+      process_;
+
   base::Time launch_time_;
   base::Optional<int32_t> exit_status_;
 

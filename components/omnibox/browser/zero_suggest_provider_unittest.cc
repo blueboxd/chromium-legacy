@@ -52,9 +52,6 @@ class FakeEmptyTopSites : public history::TopSites {
     return false;
   }
   void ClearBlacklistedURLs() override {}
-  bool IsKnownURL(const GURL& url) override {
-    return false;
-  }
   bool IsFull() override { return false; }
   bool loaded() const override {
     return false;

@@ -87,6 +87,12 @@ void HTMLPortalElement::ConsumePortal() {
 
 void HTMLPortalElement::ExpireAdoptionLifetime() {
   was_just_adopted_ = false;
+
+  // After dispatching the portalactivate event, we check to see if we need to
+  // cleanup the portal hosting the predecessor. If the portal was created,
+  // but wasn't inserted or activated, we destroy it.
+  if (!CanHaveGuestContents() && !IsActivating())
+    ConsumePortal();
 }
 
 // https://wicg.github.io/portals/#htmlportalelement-may-have-a-guest-browsing-context

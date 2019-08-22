@@ -8,6 +8,8 @@ source_set("credit_card_scanner") {
     "credit_card_scanner_camera_controller.h",
     "credit_card_scanner_camera_controller.mm",
     "credit_card_scanner_camera_controller_delegate.h",
+    "credit_card_scanner_coordinator.h",
+    "credit_card_scanner_coordinator.mm",
     "credit_card_scanner_view.h",
     "credit_card_scanner_view.mm",
     "credit_card_scanner_view_controller.h",
@@ -15,6 +17,7 @@ source_set("credit_card_scanner") {
   ]
   deps = [
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/qr_scanner",
     "//ios/chrome/browser/ui/scanner",
     "//ios/chrome/browser/ui/util",

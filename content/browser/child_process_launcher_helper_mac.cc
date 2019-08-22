@@ -68,6 +68,8 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
 
   options->environment = delegate_->GetEnvironment();
 
+  options->disclaim_responsibility = delegate_->DisclaimResponsibility();
+
   auto sandbox_type =
       service_manager::SandboxTypeFromCommandLine(*command_line_);
 

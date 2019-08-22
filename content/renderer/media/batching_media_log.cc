@@ -44,8 +44,7 @@ BatchingMediaLog::BatchingMediaLog(
       event_handler_(std::move(event_handler)),
       tick_clock_(base::DefaultTickClock::GetInstance()),
       last_ipc_send_time_(tick_clock_->NowTicks()),
-      ipc_send_pending_(false),
-      weak_factory_(this) {
+      ipc_send_pending_(false) {
   DCHECK(RenderThread::Get())
       << "BatchingMediaLog must be constructed on the render thread";
   // Pre-bind the WeakPtr on the right thread since we'll receive calls from

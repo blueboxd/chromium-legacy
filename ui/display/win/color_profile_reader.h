@@ -63,7 +63,7 @@ class DISPLAY_EXPORT ColorProfileReader {
   bool update_in_flight_ = false;
   DeviceToPathMap device_to_path_map_;
   std::map<int64_t, gfx::ICCProfile> display_id_to_profile_map_;
-  base::WeakPtrFactory<ColorProfileReader> weak_factory_;
+  base::WeakPtrFactory<ColorProfileReader> weak_factory_{this};
 };
 
 }  // namespace win

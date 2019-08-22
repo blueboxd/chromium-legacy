@@ -43,12 +43,6 @@ XRRuntimeManager* g_xr_runtime_manager = nullptr;
 base::LazyInstance<base::ObserverList<XRRuntimeManagerObserver>>::Leaky
     g_xr_runtime_manager_observers;
 
-// Returns true if any of the AR-related features are enabled.
-bool AreArFeaturesEnabled() {
-  return base::FeatureList::IsEnabled(features::kWebXrHitTest) ||
-         base::FeatureList::IsEnabled(features::kWebXrPlaneDetection);
-}
-
 }  // namespace
 
 scoped_refptr<XRRuntimeManager> XRRuntimeManager::GetOrCreateInstance() {
@@ -59,7 +53,9 @@ scoped_refptr<XRRuntimeManager> XRRuntimeManager::GetOrCreateInstance() {
   // Register VRDeviceProviders for the current platform
   ProviderList providers;
 
-  if (AreArFeaturesEnabled()) {
+  // TODO(https://crbug.com/966647) remove this check when AR features ships as
+  // enabled by default or as an origin trial.
+  if (base::FeatureList::IsEnabled(features::kWebXrArModule)) {
 #if defined(OS_ANDROID)
 #if BUILDFLAG(ENABLE_ARCORE)
     providers.emplace_back(device::ArCoreDeviceProviderFactory::Create());

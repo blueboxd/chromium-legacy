@@ -6,7 +6,7 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_contents_client_bridge.h"
-#include "android_webview/browser/aw_contents_io_thread_client.h"
+#include "android_webview/browser/aw_contents_network_client.h"
 #include "android_webview/browser/network_service/aw_web_resource_request.h"
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_ui_manager.h"
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_whitelist_manager.h"
@@ -67,15 +67,15 @@ bool AwUrlCheckerDelegateImpl::ShouldSkipRequestCheck(
     int render_process_id,
     int render_frame_id,
     bool originated_from_service_worker) {
-  std::unique_ptr<AwContentsIoThreadClient> client;
+  std::unique_ptr<AwContentsNetworkClient> client;
 
   if (originated_from_service_worker)
-    client = AwContentsIoThreadClient::GetServiceWorkerIoThreadClient();
+    client = AwContentsNetworkClient::GetServiceWorkerNetworkClient();
   else if (render_process_id == -1 || render_frame_id == -1) {
-    client = AwContentsIoThreadClient::FromID(frame_tree_node_id);
+    client = AwContentsNetworkClient::FromID(frame_tree_node_id);
   } else {
     client =
-        AwContentsIoThreadClient::FromID(render_process_id, render_frame_id);
+        AwContentsNetworkClient::FromID(render_process_id, render_frame_id);
   }
 
   // Consider the request as whitelisted, if SafeBrowsing is not enabled.

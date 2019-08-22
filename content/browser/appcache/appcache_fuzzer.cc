@@ -141,7 +141,8 @@ DEFINE_BINARY_PROTO_FUZZER(const fuzzing::proto::Session& session) {
 
   mojo::Remote<blink::mojom::AppCacheBackend> host;
   SingletonEnv().appcache_service->CreateBackend(
-      /*process_id=*/1, host.BindNewPipeAndPassReceiver());
+      /*process_id=*/1, /*routing_id=*/MSG_ROUTING_NONE,
+      host.BindNewPipeAndPassReceiver());
 
   std::map<int, mojo::Remote<blink::mojom::AppCacheHost>> registered_hosts;
   std::map<int, base::UnguessableToken> registered_host_ids_;

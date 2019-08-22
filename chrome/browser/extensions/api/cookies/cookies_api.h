@@ -104,8 +104,8 @@ class CookiesGetFunction : public ExtensionFunction {
   ResponseAction Run() override;
 
  private:
-  void GetCookieCallback(const net::CookieList& cookie_list,
-                         const net::CookieStatusList& excluded_cookies);
+  void GetCookieListCallback(const net::CookieStatusList& cookie_status_list,
+                             const net::CookieStatusList& excluded_cookies);
 
   GURL url_;
   network::mojom::CookieManagerPtr store_browser_cookie_manager_;
@@ -126,7 +126,10 @@ class CookiesGetAllFunction : public ExtensionFunction {
   ResponseAction Run() override;
 
  private:
-  void GetAllCookiesCallback(const net::CookieList& cookie_list,
+  // For the two different callback signatures for getting cookies for a URL vs
+  // getting all cookies. They do the same thing.
+  void GetAllCookiesCallback(const net::CookieList& cookie_list);
+  void GetCookieListCallback(const net::CookieStatusList& cookie_status_list,
                              const net::CookieStatusList& excluded_cookies);
 
   GURL url_;
@@ -148,7 +151,7 @@ class CookiesSetFunction : public ExtensionFunction {
  private:
   void SetCanonicalCookieCallback(
       net::CanonicalCookie::CookieInclusionStatus set_cookie_result);
-  void GetCookieListCallback(const net::CookieList& cookie_list,
+  void GetCookieListCallback(const net::CookieStatusList& cookie_list,
                              const net::CookieStatusList& excluded_cookies);
 
   enum { NO_RESPONSE, SET_COMPLETED, GET_COMPLETED } state_;

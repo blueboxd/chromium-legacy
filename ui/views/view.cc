@@ -2386,19 +2386,13 @@ void View::SnapLayerToPixelBoundary(const LayerOffsetData& offset_data) {
     DCHECK_EQ(layer()->parent(), layer_beneath->parent());
 #endif  // DCHECK_IS_ON()
 
-  if (snap_layer_to_pixel_boundary_ && layer()->parent() &&
-      layer()->GetCompositor()) {
-    if (layer()->GetCompositor()->is_pixel_canvas()) {
-      layer()->SetSubpixelPositionOffset(offset_data.GetSubpixelOffset());
-      for (ui::Layer* layer_beneath : layers_beneath_)
-        layer_beneath->SetSubpixelPositionOffset(
-            offset_data.GetSubpixelOffset());
-    }
-  } else {
-    // Reset the offset.
-    layer()->SetSubpixelPositionOffset(gfx::Vector2dF());
+  if (layer()->GetCompositor() && layer()->GetCompositor()->is_pixel_canvas()) {
+    gfx::Vector2dF offset = snap_layer_to_pixel_boundary_ && layer()->parent()
+                                ? offset_data.GetSubpixelOffset()
+                                : gfx::Vector2dF();
+    layer()->SetSubpixelPositionOffset(offset);
     for (ui::Layer* layer_beneath : layers_beneath_)
-      layer_beneath->SetSubpixelPositionOffset(gfx::Vector2dF());
+      layer_beneath->SetSubpixelPositionOffset(offset);
   }
 }
 

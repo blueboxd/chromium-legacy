@@ -19,18 +19,11 @@ class QuicSimpleServerSessionHelper
 
   ~QuicSimpleServerSessionHelper() override;
 
-  quic::QuicConnectionId GenerateConnectionIdForReject(
-      quic::QuicTransportVersion /*version*/,
-      quic::QuicConnectionId /*connection_id*/) const override;
-
   bool CanAcceptClientHello(const quic::CryptoHandshakeMessage& message,
                             const quic::QuicSocketAddress& client_address,
                             const quic::QuicSocketAddress& peer_address,
                             const quic::QuicSocketAddress& self_address,
                             std::string* error_details) const override;
-
- private:
-  quic::QuicRandom* random_;  // Unowned.
 };
 
 }  // namespace net

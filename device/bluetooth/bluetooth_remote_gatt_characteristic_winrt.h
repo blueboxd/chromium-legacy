@@ -146,7 +146,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWinrt
   base::Optional<EventRegistrationToken> value_changed_token_;
 
   base::WeakPtrFactory<BluetoothRemoteGattCharacteristicWinrt>
-      weak_ptr_factory_;
+      weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattCharacteristicWinrt);
 };

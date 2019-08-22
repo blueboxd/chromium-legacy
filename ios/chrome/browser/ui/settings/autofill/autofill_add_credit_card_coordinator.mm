@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_mediator.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_mediator_delegate.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_view_controller.h"
+#import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_scanner_coordinator.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -22,6 +23,10 @@
 
 // Displays message for invalid credit card data.
 @property(nonatomic, strong) AlertCoordinator* alertCoordinator;
+
+// The Credit Card Scanner Coordinator.
+@property(nonatomic, strong)
+    CreditCardScannerCoordinator* creditCardScannerCoordinator;
 
 // The view controller attached to this coordinator.
 @property(nonatomic, strong)
@@ -56,6 +61,8 @@
 }
 
 - (void)stop {
+  [self.creditCardScannerCoordinator stop];
+  self.creditCardScannerCoordinator = nil;
   [self.addCreditCardViewController.navigationController
       dismissViewControllerAnimated:YES
                          completion:nil];
@@ -81,6 +88,13 @@
   [self showAlertWithMessage:
             l10n_util::GetNSString(
                 IDS_IOS_ADD_CREDIT_CARD_INVALID_EXPIRATION_DATE_ALERT)];
+}
+
+- (void)creditCardMediatorShowScanner:(AutofillAddCreditCardMediator*)mediator {
+  self.creditCardScannerCoordinator = [[CreditCardScannerCoordinator alloc]
+      initWithBaseViewController:self.addCreditCardViewController];
+
+  [self.creditCardScannerCoordinator start];
 }
 
 #pragma mark - Helper Methods

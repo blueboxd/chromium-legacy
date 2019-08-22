@@ -162,8 +162,7 @@ InputMethodWinBase::InputMethodWinBase(internal::InputMethodDelegate* delegate,
     : InputMethodBase(delegate,
                       CreateKeyboardController(toplevel_window_handle)),
       toplevel_window_handle_(toplevel_window_handle),
-      pending_requested_direction_(base::i18n::UNKNOWN_DIRECTION),
-      weak_ptr_factory_(this) {}
+      pending_requested_direction_(base::i18n::UNKNOWN_DIRECTION) {}
 
 InputMethodWinBase::~InputMethodWinBase() {}
 

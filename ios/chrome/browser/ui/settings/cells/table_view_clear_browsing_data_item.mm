@@ -8,6 +8,7 @@
 #include "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #include "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -20,10 +21,6 @@ const CGFloat kImageTrailingPadding = 14;
 const CGFloat kImageWidth = 30;
 const CGFloat kImageHeight = 30;
 
-// Tint color for cell's imageView when highlighted/selected.
-const int kSelectedImageViewTintColor = 0x4285F4;
-// Tint color for cell's imageView when unhighlighted/unselected.
-const int kUnselectedImageViewTintColor = 0x9AA0A6;
 }  // namespace
 
 @implementation TableViewClearBrowsingDataItem
@@ -60,13 +57,13 @@ const int kUnselectedImageViewTintColor = 0x9AA0A6;
 
 - (void)setSelectedStyle:(TableViewClearBrowsingDataCell*)cell {
   cell.backgroundView.backgroundColor = self.checkedBackgroundColor;
-  cell.imageView.tintColor = UIColorFromRGB(kSelectedImageViewTintColor);
+  cell.imageView.tintColor = [UIColor colorNamed:kBlueColor];
   cell.accessoryType = UITableViewCellAccessoryCheckmark;
 }
 
 - (void)setUnselectedStyle:(TableViewClearBrowsingDataCell*)cell {
   cell.backgroundView.backgroundColor = nil;
-  cell.imageView.tintColor = UIColorFromRGB(kUnselectedImageViewTintColor);
+  cell.imageView.tintColor = [UIColor colorNamed:kGrey500Color];
   cell.accessoryType = UITableViewCellAccessoryNone;
 }
 
@@ -122,8 +119,7 @@ const int kUnselectedImageViewTintColor = 0x9AA0A6;
 
     _optionalTextLabel = [[UILabel alloc] init];
     _optionalTextLabel.numberOfLines = 0;
-    _optionalTextLabel.textColor =
-        UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
+    _optionalTextLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
     _optionalTextLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _optionalTextLabel.font =
         [UIFont preferredFontForTextStyle:kTableViewSublabelFontStyle];
@@ -236,12 +232,12 @@ const int kUnselectedImageViewTintColor = 0x9AA0A6;
 }
 
 - (void)setHighlightedStyle {
-  self.imageView.tintColor = UIColorFromRGB(kSelectedImageViewTintColor);
+  self.imageView.tintColor = [UIColor colorNamed:kBlueColor];
   self.backgroundView.backgroundColor = self.highlightedBackgroundColor;
 }
 
 - (void)setUnhighlightedStyle {
-  self.imageView.tintColor = UIColorFromRGB(kUnselectedImageViewTintColor);
+  self.imageView.tintColor = [UIColor colorNamed:kGrey500Color];
   self.backgroundView.backgroundColor = nil;
 }
 

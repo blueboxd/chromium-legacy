@@ -121,14 +121,15 @@ class UsbServiceImpl final :
   std::set<libusb_device*> devices_being_enumerated_;
 
 #if defined(OS_WIN)
-  ScopedObserver<DeviceMonitorWin, DeviceMonitorWin::Observer> device_observer_;
+  ScopedObserver<DeviceMonitorWin, DeviceMonitorWin::Observer> device_observer_{
+      this};
 #endif  // OS_WIN
 
   // This WeakPtr is used to safely post hotplug events back to the thread this
   // object lives on.
   base::WeakPtr<UsbServiceImpl> weak_self_;
 
-  base::WeakPtrFactory<UsbServiceImpl> weak_factory_;
+  base::WeakPtrFactory<UsbServiceImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UsbServiceImpl);
 };

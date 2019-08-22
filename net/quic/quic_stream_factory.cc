@@ -1039,7 +1039,8 @@ void QuicStreamRequest::OnHostResolutionComplete(int rv) {
 base::TimeDelta QuicStreamRequest::GetTimeDelayForWaitingJob() const {
   if (!factory_)
     return base::TimeDelta();
-  return factory_->GetTimeDelayForWaitingJob(session_key_.server_id());
+  return factory_->GetTimeDelayForWaitingJob(
+      session_key_.server_id(), session_key_.network_isolation_key());
 }
 
 void QuicStreamRequest::SetPriority(RequestPriority priority) {
@@ -1187,7 +1188,8 @@ void QuicStreamFactory::set_require_confirmation(bool require_confirmation) {
 }
 
 base::TimeDelta QuicStreamFactory::GetTimeDelayForWaitingJob(
-    const quic::QuicServerId& server_id) {
+    const quic::QuicServerId& server_id,
+    const NetworkIsolationKey& network_isolation_key) {
   if (require_confirmation_) {
     IPAddress last_address;
     if (!need_to_check_persisted_supports_quic_ ||
@@ -1196,8 +1198,8 @@ base::TimeDelta QuicStreamFactory::GetTimeDelayForWaitingJob(
     }
   }
 
-  int64_t srtt =
-      1.5 * GetServerNetworkStatsSmoothedRttInMicroseconds(server_id);
+  int64_t srtt = 1.5 * GetServerNetworkStatsSmoothedRttInMicroseconds(
+                           server_id, network_isolation_key);
   // Picked 300ms based on mean time from
   // Net.QuicSession.HostResolution.HandshakeConfirmedTime histogram.
   const int kDefaultRTT = 300 * quic::kNumMicrosPerMilli;
@@ -1840,7 +1842,8 @@ int QuicStreamFactory::CreateSession(
       kQuicSessionMaxRecvWindowSize);
   config.SetInitialStreamFlowControlWindowToSend(kQuicStreamMaxRecvWindowSize);
   config.SetBytesForConnectionIdToSend(0);
-  ConfigureInitialRttEstimate(server_id, &config);
+  ConfigureInitialRttEstimate(
+      server_id, key.session_key().network_isolation_key(), &config);
   if (quic_version.transport_version <= quic::QUIC_VERSION_43 &&
       !config.HasClientSentConnectionOption(quic::kNSTP,
                                             quic::Perspective::IS_CLIENT)) {
@@ -1920,8 +1923,10 @@ void QuicStreamFactory::ActivateSession(const QuicSessionAliasKey& key,
 
 void QuicStreamFactory::ConfigureInitialRttEstimate(
     const quic::QuicServerId& server_id,
+    const NetworkIsolationKey& network_isolation_key,
     quic::QuicConfig* config) {
-  const base::TimeDelta* srtt = GetServerNetworkStatsSmoothedRtt(server_id);
+  const base::TimeDelta* srtt =
+      GetServerNetworkStatsSmoothedRtt(server_id, network_isolation_key);
   if (srtt != nullptr) {
     SetInitialRttEstimate(*srtt, INITIAL_RTT_CACHED, config);
     return;
@@ -1953,18 +1958,22 @@ void QuicStreamFactory::ConfigureInitialRttEstimate(
 }
 
 const base::TimeDelta* QuicStreamFactory::GetServerNetworkStatsSmoothedRtt(
-    const quic::QuicServerId& server_id) const {
+    const quic::QuicServerId& server_id,
+    const NetworkIsolationKey& network_isolation_key) const {
   url::SchemeHostPort server("https", server_id.host(), server_id.port());
   const ServerNetworkStats* stats =
-      http_server_properties_->GetServerNetworkStats(server);
+      http_server_properties_->GetServerNetworkStats(server,
+                                                     network_isolation_key);
   if (stats == nullptr)
     return nullptr;
   return &(stats->srtt);
 }
 
 int64_t QuicStreamFactory::GetServerNetworkStatsSmoothedRttInMicroseconds(
-    const quic::QuicServerId& server_id) const {
-  const base::TimeDelta* srtt = GetServerNetworkStatsSmoothedRtt(server_id);
+    const quic::QuicServerId& server_id,
+    const NetworkIsolationKey& network_isolation_key) const {
+  const base::TimeDelta* srtt =
+      GetServerNetworkStatsSmoothedRtt(server_id, network_isolation_key);
   return srtt == nullptr ? 0 : srtt->InMicroseconds();
 }
 
@@ -2052,11 +2061,14 @@ void QuicStreamFactory::ProcessGoingAwaySession(
     ServerNetworkStats network_stats;
     network_stats.srtt = base::TimeDelta::FromMicroseconds(stats.srtt_us);
     network_stats.bandwidth_estimate = stats.estimated_bandwidth;
-    http_server_properties_->SetServerNetworkStats(server, network_stats);
+    http_server_properties_->SetServerNetworkStats(
+        server, session->quic_session_key().network_isolation_key(),
+        network_stats);
     return;
   }
 
-  http_server_properties_->ClearServerNetworkStats(server);
+  http_server_properties_->ClearServerNetworkStats(
+      server, session->quic_session_key().network_isolation_key());
 
   UMA_HISTOGRAM_COUNTS_1M("Net.QuicHandshakeNotConfirmedNumPacketsReceived",
                           stats.packets_received);

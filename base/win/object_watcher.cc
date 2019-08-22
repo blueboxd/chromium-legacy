@@ -15,7 +15,7 @@ namespace win {
 
 //-----------------------------------------------------------------------------
 
-ObjectWatcher::ObjectWatcher() : weak_factory_(this) {}
+ObjectWatcher::ObjectWatcher() {}
 
 ObjectWatcher::~ObjectWatcher() {
   StopWatching();

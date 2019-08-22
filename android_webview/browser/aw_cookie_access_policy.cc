@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "android_webview/browser/aw_contents_io_thread_client.h"
+#include "android_webview/browser/aw_contents_network_client.h"
 #include "base/logging.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -50,24 +50,21 @@ bool AwCookieAccessPolicy::GetShouldAcceptThirdPartyCookies(
     int render_process_id,
     int render_frame_id,
     int frame_tree_node_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  std::unique_ptr<AwContentsIoThreadClient> io_thread_client =
+  std::unique_ptr<AwContentsNetworkClient> network_client =
       (frame_tree_node_id != content::RenderFrameHost::kNoFrameTreeNodeId)
-          ? AwContentsIoThreadClient::FromID(frame_tree_node_id)
-          : AwContentsIoThreadClient::FromID(render_process_id,
-                                             render_frame_id);
+          ? AwContentsNetworkClient::FromID(frame_tree_node_id)
+          : AwContentsNetworkClient::FromID(render_process_id, render_frame_id);
 
-  if (!io_thread_client) {
+  if (!network_client) {
     return false;
   }
-  return io_thread_client->ShouldAcceptThirdPartyCookies();
+  return network_client->ShouldAcceptThirdPartyCookies();
 }
 
 bool AwCookieAccessPolicy::AllowCookies(const GURL& url,
                                         const GURL& first_party,
                                         int render_process_id,
                                         int render_frame_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   bool third_party = GetShouldAcceptThirdPartyCookies(
       render_process_id, render_frame_id,
       content::RenderFrameHost::kNoFrameTreeNodeId);

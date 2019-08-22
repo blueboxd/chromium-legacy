@@ -37,7 +37,7 @@
 \bsaint\s+gall\b	sg
 \bsan\s+gallen\b	sg
 \bsankt\s+gall\b	sg
-\bst\\.\s+gallen\b	sg
+\bst\.\s+gallen\b	sg
 \bvaud\s+waadt\b	vd
 \bwaadt\s+vaud\b	vd
 \bcinquieme\b	5
@@ -51,13 +51,13 @@
 \bsciaffusa\b	sh
 \bsolothurn\b	so
 \bst\s+gallen\b	sg
-\bst\\.\s+gallo\b	sg
+\bst\.\s+gallo\b	sg
 \bthurgovia\b	tg
 \bthurgovie\b	tg
 \btreizieme\b	13
 \btroisieme\b	3
 \bvingtieme\b	20
-\bd\\\\\'uster\b	uster
+\bd\\\'uster\b	uster
 \bdeuxieme\b	2
 \bdouzieme\b	12
 \bfreiburg\b	fr
@@ -72,10 +72,10 @@
 \bobwalden\b	ow
 \bpremiere\b	1
 \bsan\s+gall\b	sg
-\bseizieme\b	16
+\bseizième\b	16
 \bseptieme\b	7
 \bst\s+gallo\b	sg
-\bst\\.\s+gall\b	sg
+\bst\.\s+gall\b	sg
 \bturgovia\b	tg
 \bzofingue\b	zofingen
 \bargovia\b	ag

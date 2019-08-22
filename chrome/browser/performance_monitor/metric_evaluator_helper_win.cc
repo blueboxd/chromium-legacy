@@ -29,8 +29,7 @@ MetricEvaluatorsHelperWin::MetricEvaluatorsHelperWin()
            base::MayBlock(),
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
       wmi_refresher_(new win::WMIRefresher(),
-                     base::OnTaskRunnerDeleter(wmi_initialization_sequence_)),
-      weak_factory_(this) {
+                     base::OnTaskRunnerDeleter(wmi_initialization_sequence_)) {
   DCHECK(!g_metric_evaluator_instance);
   g_metric_evaluator_instance = this;
 

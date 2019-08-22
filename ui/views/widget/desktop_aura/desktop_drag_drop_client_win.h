@@ -56,7 +56,7 @@ class VIEWS_EXPORT DesktopDragDropClientWin
 
   scoped_refptr<DesktopDropTargetWin> drop_target_;
 
-  base::WeakPtrFactory<DesktopDragDropClientWin> weak_factory_;
+  base::WeakPtrFactory<DesktopDragDropClientWin> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DesktopDragDropClientWin);
 };

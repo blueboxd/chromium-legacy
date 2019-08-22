@@ -101,13 +101,13 @@ bool GetVirtualDesksBarEnabled(OverviewItem* item) {
 OverviewWindowDragController::OverviewWindowDragController(
     OverviewSession* overview_session,
     OverviewItem* item,
-    bool allow_drag_to_close)
+    bool is_touch_dragging)
     : overview_session_(overview_session),
       split_view_controller_(Shell::Get()->split_view_controller()),
       item_(item),
       on_desks_bar_item_size_(GetItemSizeWhenOnDesksBar(item)),
       display_count_(Shell::GetAllRootWindows().size()),
-      should_allow_drag_to_close_(allow_drag_to_close),
+      is_touch_dragging_(is_touch_dragging),
       should_allow_split_view_(ShouldAllowSplitView()),
       virtual_desks_bar_enabled_(GetVirtualDesksBarEnabled(item)) {}
 
@@ -141,14 +141,12 @@ void OverviewWindowDragController::Drag(const gfx::PointF& location_in_screen) {
       return;
     }
 
-    if (should_allow_drag_to_close_ &&
-        (std::abs(distance.x()) < std::abs(distance.y()))) {
+    if (is_touch_dragging_ && std::abs(distance.x()) < std::abs(distance.y()))
       StartDragToCloseMode();
-    } else if (should_allow_split_view_ || virtual_desks_bar_enabled_) {
+    else if (should_allow_split_view_ || virtual_desks_bar_enabled_)
       StartNormalDragMode(location_in_screen);
-    } else {
+    else
       return;
-    }
   }
 
   if (current_drag_behavior_ == DragBehavior::kDragToClose)
@@ -310,7 +308,7 @@ void OverviewWindowDragController::ResetOverviewSession() {
 }
 
 void OverviewWindowDragController::StartDragToCloseMode() {
-  DCHECK(should_allow_drag_to_close_);
+  DCHECK(is_touch_dragging_);
 
   did_move_ = true;
   current_drag_behavior_ = DragBehavior::kDragToClose;

@@ -39,7 +39,8 @@ void OnIconFetched(
 
   if (bitmap.drawsNothing()) {
     if (icons.empty()) {
-      base::PostTask(FROM_HERE, {BrowserThread::IO},
+      base::PostTask(FROM_HERE,
+                     {ServiceWorkerContextWrapper::GetCoreThreadId()},
                      base::BindOnce(std::move(callback), std::string()));
     } else {
       // If could not download or decode the chosen image(e.g. not supported,
@@ -57,7 +58,7 @@ void OnIconFetched(
       base::StringPiece(reinterpret_cast<const char*>(&bitmap_data[0]),
                         bitmap_data.size()),
       &encoded_data);
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
+  base::PostTask(FROM_HERE, {ServiceWorkerContextWrapper::GetCoreThreadId()},
                  base::BindOnce(std::move(callback), encoded_data));
 }
 
@@ -69,7 +70,7 @@ void DownloadBestMatchingIcon(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (web_contents == nullptr) {
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
+    base::PostTask(FROM_HERE, {ServiceWorkerContextWrapper::GetCoreThreadId()},
                    base::BindOnce(std::move(callback), std::string()));
     return;
   }
@@ -85,7 +86,7 @@ void DownloadBestMatchingIcon(
     // developers in advance unlike when fetching or decoding fails. We already
     // checked whether they are valid in renderer side. So, if the icon url is
     // invalid, it's something wrong.
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
+    base::PostTask(FROM_HERE, {ServiceWorkerContextWrapper::GetCoreThreadId()},
                    base::BindOnce(std::move(callback), std::string()));
     return;
   }
@@ -151,11 +152,12 @@ void PaymentInstrumentIconFetcher::Start(
     std::unique_ptr<std::vector<GlobalFrameRoutingId>> provider_hosts,
     const std::vector<blink::Manifest::ImageResource>& icons,
     PaymentInstrumentIconFetcherCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&StartOnUI, scope, std::move(provider_hosts),
-                                icons, std::move(callback)));
+  RunOrPostTaskOnThread(
+      FROM_HERE, BrowserThread::UI,
+      base::BindOnce(&StartOnUI, scope, std::move(provider_hosts), icons,
+                     std::move(callback)));
 }
 
 }  // namespace content

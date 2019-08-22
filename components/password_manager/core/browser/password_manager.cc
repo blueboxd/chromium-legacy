@@ -856,11 +856,6 @@ void PasswordManager::CreateFormManagers(
   // Find new forms.
   std::vector<const PasswordForm*> new_forms;
   for (const PasswordForm& form : forms) {
-    // TODO(https://crbug.com/831123): Implement inside NewPasswordFormManger
-    // not-filling Gaia forms that should be ignored instead of non-creating
-    // NewPasswordFormManger instance.
-    if (form.form_data.is_gaia_with_skip_save_password_form)
-      continue;
     if (!client_->IsFillingEnabled(form.origin))
       continue;
 
@@ -1191,7 +1186,7 @@ void PasswordManager::OnLoginSuccessful() {
 
   client_->GetStoreResultFilter()->ReportFormLoginSuccess(*submitted_manager);
 #if !defined(OS_IOS)
-  leak_delegate_.StartLeakCheck(*submitted_manager->GetSubmittedForm());
+  leak_delegate_.StartLeakCheck(submitted_manager->GetPendingCredentials());
 #endif
 
   auto submission_event =

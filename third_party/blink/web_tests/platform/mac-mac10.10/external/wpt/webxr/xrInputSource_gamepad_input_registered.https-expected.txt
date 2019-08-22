@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+PASS WebXR InputSource's gamepad properly registers input
+Harness: the test ran to completion.
+

@@ -72,14 +72,17 @@ bool NGFlexLayoutAlgorithm::IsContainerCrossSizeDefinite() const {
     return true;
 
   Length cross_size = Style().LogicalHeight();
-  if (cross_size.IsAuto())
+  if (cross_size.IsAuto() || cross_size.IsMinContent() ||
+      cross_size.IsMaxContent() || cross_size.IsFitContent()) {
     return false;
+  }
   return !BlockLengthUnresolvable(ConstraintSpace(), cross_size,
                                   LengthResolvePhase::kLayout);
 }
 
 bool NGFlexLayoutAlgorithm::DoesItemStretch(const NGBlockNode& child) const {
-  DCHECK(IsItemCrossSizeAuto(child));
+  if (!DoesItemCrossSizeComputeToAuto(child))
+    return false;
   const ComputedStyle& child_style = child.Style();
   // https://drafts.csswg.org/css-flexbox/#valdef-align-items-stretch
   // If the cross size property of the flex item computes to auto, and neither
@@ -94,18 +97,12 @@ bool NGFlexLayoutAlgorithm::DoesItemStretch(const NGBlockNode& child) const {
          ItemPosition::kStretch;
 }
 
-bool NGFlexLayoutAlgorithm::IsItemCrossSizeAuto(
+bool NGFlexLayoutAlgorithm::DoesItemCrossSizeComputeToAuto(
     const NGBlockNode& child) const {
   const ComputedStyle& child_style = child.Style();
-  Length cross_size =
-      is_horizontal_flow_ ? child_style.Height() : child_style.Width();
-  // The following DCHECK assures that the container's cross axis is the
-  // same direction as the inline axis of the item, so the cross axis is never
-  // the item's block axis. That absolves this function of having to check for
-  // the cross axis being auto due to being a block-size percent without a
-  // definite block size to resolve against.
-  DCHECK(!MainAxisIsInlineAxis(child));
-  return cross_size.IsAuto();
+  if (is_horizontal_flow_)
+    return child_style.Height().IsAuto();
+  return child_style.Width().IsAuto();
 }
 
 // This function is used to handle two requirements from the spec.
@@ -122,24 +119,35 @@ bool NGFlexLayoutAlgorithm::IsItemCrossSizeAuto(
 bool NGFlexLayoutAlgorithm::ShouldItemShrinkToFit(
     const NGBlockNode& child) const {
   if (MainAxisIsInlineAxis(child)) {
-    // The cross size isn't needed to determine main size, so don't use
+    // In this case, the cross size is in the item's block axis. The item's
+    // block size is never needed to determine its inline size so don't use
     // fit-content.
     return false;
   }
-  if (!IsItemCrossSizeAuto(child)) {
-    // The cross size is already specified, so don't use fit-content.
+  if (!child.Style().LogicalWidth().IsAuto()) {
+    DCHECK(!DoesItemCrossSizeComputeToAuto(child));
+    // The cross size (item's inline size) is already specified, so don't use
+    // fit-content.
     return false;
   }
-  // We also don't use fit-content if the item qualifies for the first case in
+  DCHECK(DoesItemCrossSizeComputeToAuto(child));
+  // If execution reaches here, the item's inline size is its cross size and
+  // computes to auto. In that situation, we only don't use fit-content if the
+  // item qualifies for the first case in
   // https://drafts.csswg.org/css-flexbox/#definite-sizes :
   // 1. If a single-line flex container has a definite cross size, the outer
   // cross size of any stretched flex items is the flex container’s inner cross
   // size (clamped to the flex item’s min and max cross size) and is considered
   // definite.
-  if (!algorithm_->IsMultiline() && IsContainerCrossSizeDefinite() &&
-      DoesItemStretch(child))
+  if (WillChildCrossSizeBeContainerCrossSize(child))
     return false;
   return true;
+}
+
+bool NGFlexLayoutAlgorithm::WillChildCrossSizeBeContainerCrossSize(
+    const NGBlockNode& child) const {
+  return !algorithm_->IsMultiline() && IsContainerCrossSizeDefinite() &&
+         DoesItemStretch(child);
 }
 
 void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
@@ -159,6 +167,14 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
 
     if (ShouldItemShrinkToFit(child))
       space_builder.SetIsShrinkToFit(true);
+    if (WillChildCrossSizeBeContainerCrossSize(child)) {
+      if (is_column_) {
+        space_builder.SetIsFixedInlineSize(true);
+      } else {
+        space_builder.SetIsFixedBlockSize(true);
+        DCHECK_NE(content_box_size_.block_size, kIndefiniteSize);
+      }
+    }
 
     // TODO(dgrogan): Change SetPercentageResolutionSize everywhere in this file
     // to use CalculateChildPercentageSize.
@@ -423,6 +439,13 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
         available_size.block_size = content_box_size_.block_size;
         space_builder.SetIsFixedInlineSize(true);
       }
+      if (WillChildCrossSizeBeContainerCrossSize(flex_item.ng_input_node)) {
+        if (is_column_)
+          space_builder.SetIsFixedInlineSize(true);
+        else
+          space_builder.SetIsFixedBlockSize(true);
+      }
+
       space_builder.SetAvailableSize(available_size);
       // https://drafts.csswg.org/css-flexbox/#algo-cross-item
       // Determine the hypothetical cross size of each item by performing layout

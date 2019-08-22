@@ -72,14 +72,22 @@ class ASH_EXPORT TrayDetailedView : public views::View,
 
   // Adds a targetable row to |scroll_content_| containing |icon|, |text|, and a
   // checkbox. |checked| determines whether the checkbox is checked or not.
-  HoverHighlightView* AddScrollListCheckableItem(const gfx::VectorIcon& icon,
-                                                 const base::string16& text,
-                                                 bool checked);
+  // |enterprise_managed| determines whether or not there will be an enterprise
+  // managed icon for that item.
+  HoverHighlightView* AddScrollListCheckableItem(
+      const gfx::VectorIcon& icon,
+      const base::string16& text,
+      bool checked,
+      bool enterprise_managed = false);
 
   // Adds a targetable row to |scroll_content_| containing |text| and a
   // checkbox. |checked| determines whether the checkbox is checked or not.
-  HoverHighlightView* AddScrollListCheckableItem(const base::string16& text,
-                                                 bool checked);
+  // |enterprise_managed| determines whether or not there will be an enterprise
+  // managed icon for that item.
+  HoverHighlightView* AddScrollListCheckableItem(
+      const base::string16& text,
+      bool checked,
+      bool enterprise_managed = false);
 
   // Adds connected sub label to the |view| with appropriate style.
   void SetupConnectedScrollListItem(HoverHighlightView* view);

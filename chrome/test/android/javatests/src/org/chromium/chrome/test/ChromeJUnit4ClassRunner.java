@@ -127,7 +127,7 @@ public class ChromeJUnit4ClassRunner extends ContentJUnit4ClassRunner {
                 // Getting the current viewer type may result in a disk write in VrCore, so allow
                 // that to prevent StrictMode errors.
                 Integer viewerType;
-                try (StrictModeContext smc = StrictModeContext.allowDiskWrites()) {
+                try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
                     viewerType = (Integer) currentViewerMethod.invoke(daydreamApiInstance);
                 }
                 Method closeMethod = daydreamApiClass.getMethod("close");

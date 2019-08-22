@@ -43,6 +43,8 @@ ChromeVoxLanguageSwitchingTest.prototype = {
     ::switches::kEnableExperimentalAccessibilityLanguageDetection);
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
     ::switches::kEnableExperimentalAccessibilityChromeVoxLanguageSwitching);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+    ::switches::kEnableExperimentalAccessibilityChromeVoxSubNodeLanguageSwitching);
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(::switches::kLang, "en-US");
 
   // Copy-pasted from chromevox_e2e_test_base.js.
@@ -233,6 +235,24 @@ TEST_F('ChromeVoxLanguageSwitchingTest', 'JapaneseAndEnglishUnlabeledTest', func
       .expectSpeechWithLanguage('ja', '日本語: どうぞよろしくお願いします.');
     mockFeedback.replay();
   });
+});
+
+TEST_F('ChromeVoxLanguageSwitchingTest', 'JapaneseAndEnglishUnlabeledTestSubNodeSwitchingDisabled',
+  function() {
+    var mockFeedback = this.createMockFeedback();
+    this.runWithLoadedTree(this.japaneseAndEnglishDoc, function(root) {
+      localStorage['languageSwitching'] = 'true';
+      // Disable sub-node-switching.
+      LanguageSwitching.sub_node_switching_enabled_ = false;
+      mockFeedback.call(doCmd('jumpToTop'))
+        // Expect the node's contents to be read in one language (English) because sub-node
+        // switching has been disabled. Since node-level detection does not run on small runs of
+        // text, like the one in this test, we are falling back on the UI language of the browser,
+        // which is en-US. Please see testGenPreamble for more details.
+        .expectSpeechWithLanguage('en-us', "Hello, my name is 太田あきひろ. It's a pleasure to meet"
+          + " you. どうぞよろしくお願いします.");
+      mockFeedback.replay();
+    });
 });
 
 TEST_F('ChromeVoxLanguageSwitchingTest', 'SwitchWhenUnlabeledTest', function() {

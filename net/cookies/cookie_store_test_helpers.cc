@@ -11,6 +11,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/cookie_store.h"
+#include "net/cookies/cookie_util.h"
 #include "url/gurl.h"
 
 using net::registry_controlled_domains::GetDomainAndRegistry;
@@ -79,9 +80,10 @@ void DelayedCookieMonster::SetCookiesInternalCallback(
 }
 
 void DelayedCookieMonster::GetCookieListWithOptionsInternalCallback(
-    const CookieList& cookie_list,
+    const CookieStatusList& cookie_list,
     const CookieStatusList& excluded_cookies) {
-  cookie_list_ = cookie_list;
+  cookie_status_list_ = cookie_list;
+  cookie_list_ = cookie_util::StripStatuses(cookie_status_list_);
   did_run_ = true;
 }
 
@@ -121,7 +123,7 @@ void DelayedCookieMonster::GetCookieListWithOptionsAsync(
       base::TimeDelta::FromMilliseconds(kDelayedTime));
 }
 
-void DelayedCookieMonster::GetAllCookiesAsync(GetCookieListCallback callback) {
+void DelayedCookieMonster::GetAllCookiesAsync(GetAllCookiesCallback callback) {
   cookie_monster_->GetAllCookiesAsync(std::move(callback));
 }
 
@@ -134,7 +136,7 @@ void DelayedCookieMonster::InvokeSetCookiesCallback(
 void DelayedCookieMonster::InvokeGetCookieListCallback(
     CookieMonster::GetCookieListCallback callback) {
   if (!callback.is_null())
-    std::move(callback).Run(cookie_list_, CookieStatusList());
+    std::move(callback).Run(cookie_status_list_, CookieStatusList());
 }
 
 void DelayedCookieMonster::DeleteCanonicalCookieAsync(

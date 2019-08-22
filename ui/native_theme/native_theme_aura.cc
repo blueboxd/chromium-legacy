@@ -597,12 +597,19 @@ void NativeThemeAura::PaintTextField(cc::PaintCanvas* canvas,
 
   // Paint the border: 1px solid.
   cc::PaintFlags stroke_flags;
-  if (state == kHovered) {
-    stroke_flags.setColor(kInputBorderHoveredColor);
-  } else if (state == kDisabled) {
-    stroke_flags.setColor(kInputBorderDisabledColor);
+  if (UsesHighContrastColors()) {
+    ColorId color_id = (state == kDisabled)
+                           ? NativeTheme::kColorId_ButtonDisabledColor
+                           : NativeTheme::kColorId_ButtonEnabledColor;
+    stroke_flags.setColor(GetSystemColor(color_id, color_scheme));
   } else {
-    stroke_flags.setColor(kInputBorderColor);
+    if (state == kHovered) {
+      stroke_flags.setColor(kInputBorderHoveredColor);
+    } else if (state == kDisabled) {
+      stroke_flags.setColor(kInputBorderDisabledColor);
+    } else {
+      stroke_flags.setColor(kInputBorderColor);
+    }
   }
   stroke_flags.setStyle(cc::PaintFlags::kStroke_Style);
   stroke_flags.setStrokeWidth(borderWidth);
@@ -624,12 +631,17 @@ void NativeThemeAura::PaintButton(cc::PaintCanvas* canvas,
   SkRect skrect = gfx::RectToSkRect(rect);
 
   SkColor background_color;
-  if (state == kHovered) {
-    background_color = kButtonBackgroundHoveredColor;
-  } else if (state == kDisabled) {
-    background_color = kButtonBackgroundDisabledColor;
+  if (UsesHighContrastColors()) {
+    background_color =
+        GetSystemColor(NativeTheme::kColorId_WindowBackground, color_scheme);
   } else {
-    background_color = kButtonBackgroundColor;
+    if (state == kHovered) {
+      background_color = kButtonBackgroundHoveredColor;
+    } else if (state == kDisabled) {
+      background_color = kButtonBackgroundDisabledColor;
+    } else {
+      background_color = kButtonBackgroundColor;
+    }
   }
 
   flags.setAntiAlias(true);
@@ -650,12 +662,19 @@ void NativeThemeAura::PaintButton(cc::PaintCanvas* canvas,
   // Paint the border: 1px solid.
   if (button.has_border) {
     SkColor border_color;
-    if (state == kHovered) {
-      border_color = kButtonBorderHoveredColor;
-    } else if (state == kDisabled) {
-      border_color = kButtonBorderDisabledColor;
+    if (UsesHighContrastColors()) {
+      ColorId color_id = (state == kDisabled)
+                             ? NativeTheme::kColorId_ButtonDisabledColor
+                             : NativeTheme::kColorId_ButtonEnabledColor;
+      border_color = GetSystemColor(color_id, color_scheme);
     } else {
-      border_color = kButtonBorderColor;
+      if (state == kHovered) {
+        border_color = kButtonBorderHoveredColor;
+      } else if (state == kDisabled) {
+        border_color = kButtonBorderDisabledColor;
+      } else {
+        border_color = kButtonBorderColor;
+      }
     }
 
     flags.setStyle(cc::PaintFlags::kStroke_Style);

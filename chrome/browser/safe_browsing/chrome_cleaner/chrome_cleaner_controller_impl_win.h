@@ -152,7 +152,7 @@ class ChromeCleanerControllerImpl : public ChromeCleanerController {
 
   THREAD_CHECKER(thread_checker_);
 
-  base::WeakPtrFactory<ChromeCleanerControllerImpl> weak_factory_;
+  base::WeakPtrFactory<ChromeCleanerControllerImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ChromeCleanerControllerImpl);
 };

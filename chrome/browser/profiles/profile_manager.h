@@ -25,11 +25,14 @@
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/common/buildflags.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class ProfileAttributesStorage;
 class ProfileInfoCache;
 
-class ProfileManager : public Profile::Delegate {
+class ProfileManager : public content::NotificationObserver,
+                       public Profile::Delegate {
  public:
   typedef base::RepeatingCallback<void(Profile*, Profile::CreateStatus)>
       CreateCallback;
@@ -232,6 +235,11 @@ class ProfileManager : public Profile::Delegate {
 
   const base::FilePath& user_data_dir() const { return user_data_dir_; }
 
+  // content::NotificationObserver implementation.
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
+
   // Profile::Delegate implementation:
   void OnProfileCreated(Profile* profile,
                         bool success,
@@ -399,8 +407,15 @@ class ProfileManager : public Profile::Delegate {
   // to an access to this member.
   std::unique_ptr<ProfileInfoCache> profile_info_cache_;
 
+  content::NotificationRegistrar registrar_;
+
   // The path to the user data directory (DIR_USER_DATA).
   const base::FilePath user_data_dir_;
+
+  // Indicates that a user has logged in and that the profile specified
+  // in the --login-profile command line argument should be used as the
+  // default.
+  bool logged_in_ = false;
 
 #if !defined(OS_ANDROID)
   BrowserListObserver browser_list_observer_{this};
@@ -421,6 +436,7 @@ class ProfileManager : public Profile::Delegate {
   // On startup we launch the active profiles in the order they became active
   // during the last run. This is why they are kept in a list, not in a set.
   std::vector<Profile*> active_profiles_;
+  bool closing_all_browsers_ = false;
 
   // TODO(chrome/browser/profiles/OWNERS): Usage of this in profile_manager.cc
   // should likely be turned into DCHECK_CURRENTLY_ON(BrowserThread::UI) for

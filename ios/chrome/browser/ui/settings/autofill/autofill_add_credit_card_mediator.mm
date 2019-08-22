@@ -45,7 +45,8 @@
 
 #pragma mark - AddCreditCardViewControllerDelegate
 
-- (void)addCreditCardViewController:(UIViewController*)viewController
+- (void)addCreditCardViewController:
+            (AutofillAddCreditCardViewController*)viewController
         addCreditCardWithHolderName:(NSString*)cardHolderName
                          cardNumber:(NSString*)cardNumber
                     expirationMonth:(NSString*)expirationMonth
@@ -94,8 +95,14 @@
   [self.addCreditCardMediatorDelegate creditCardMediatorDidFinish:self];
 }
 
-- (void)addCreditCardViewControllerDidCancel:(UIViewController*)viewController {
+- (void)addCreditCardViewControllerDidCancel:
+    (AutofillAddCreditCardViewController*)viewController {
   [self.addCreditCardMediatorDelegate creditCardMediatorDidFinish:self];
+}
+
+- (void)addCreditCardViewControllerDidUseCamera:
+    (AutofillAddCreditCardViewController*)viewController {
+  [self.addCreditCardMediatorDelegate creditCardMediatorShowScanner:self];
 }
 
 #pragma mark - Private

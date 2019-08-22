@@ -186,6 +186,13 @@
         min-height: inherit;
       }
 
+      /* Link buttons use FocusOutlineManager to only show outlines when focus
+       * was triggered by keyboard. */
+      :host-context(html:not(.focus-outline-visible))
+          .list-button[is='action-link'] {
+        outline: none;
+      }
+
       /* A row with two lines of text. Often the lower line will be .secondary.
        */
       .two-line {

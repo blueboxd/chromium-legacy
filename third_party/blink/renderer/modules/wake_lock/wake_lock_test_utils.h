@@ -7,9 +7,10 @@
 
 #include "base/callback.h"
 #include "base/optional.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/device/public/mojom/wake_lock.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/public/mojom/wake_lock/wake_lock.mojom-blink.h"
@@ -33,7 +34,7 @@ class MockWakeLock : public device::mojom::blink::WakeLock {
 
   bool is_acquired() const { return is_acquired_; }
 
-  void Bind(device::mojom::blink::WakeLockRequest request);
+  void Bind(mojo::PendingReceiver<device::mojom::blink::WakeLock> receiver);
 
   // Forcefully terminate a binding to test connection errors.
   void Unbind();
@@ -60,7 +61,7 @@ class MockWakeLock : public device::mojom::blink::WakeLock {
   base::OnceClosure request_wake_lock_callback_;
   base::OnceClosure cancel_wake_lock_callback_;
 
-  mojo::Binding<device::mojom::blink::WakeLock> binding_{this};
+  mojo::Receiver<device::mojom::blink::WakeLock> receiver_{this};
 };
 
 // Mock WakeLockService implementation that creates a MockWakeLock in its
@@ -82,7 +83,7 @@ class MockWakeLockService : public mojom::blink::WakeLockService {
                    device::mojom::blink::WakeLockRequest request) override;
 
   MockWakeLock mock_wake_lock_[kWakeLockTypeCount];
-  mojo::BindingSet<mojom::blink::WakeLockService> bindings_;
+  mojo::ReceiverSet<mojom::blink::WakeLockService> receivers_;
 };
 
 // Mock PermissionService implementation. It only implements the bits required

@@ -7,7 +7,7 @@
 #include <unordered_set>
 #include <utility>
 
-#include "base/atomic_sequence_num.h"
+#include "base/unguessable_token.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/inspector/inspected_frames.h"
@@ -17,8 +17,6 @@ namespace blink {
 
 const char MediaInspectorContextImpl::kSupplementName[] =
     "MediaInspectorContextImpl";
-
-base::AtomicSequenceNumber player_id_generator_;
 
 // static
 void MediaInspectorContextImpl::ProvideToLocalFrame(LocalFrame& frame) {
@@ -45,10 +43,7 @@ MediaInspectorContextImpl* MediaInspectorContextImpl::FromHtmlMediaElement(
 }
 
 MediaInspectorContextImpl::MediaInspectorContextImpl(LocalFrame& frame)
-    : Supplement<LocalFrame>(frame) {
-  // 0 is an invalid key in a HashMap, so our keys should be 1-indexed.
-  (void)player_id_generator_.GetNext();
-}
+    : Supplement<LocalFrame>(frame) {}
 
 // Garbage collection method.
 void MediaInspectorContextImpl::Trace(blink::Visitor* visitor) {
@@ -83,7 +78,8 @@ MediaInspectorContextImpl::GetPropertiesAndEvents(const WebString& player_id) {
 }
 
 WebString MediaInspectorContextImpl::CreatePlayer() {
-  String next_player_id = String::Number(player_id_generator_.GetNext());
+  String next_player_id =
+      String::FromUTF8(base::UnguessableToken::Create().ToString());
   players_.insert(next_player_id, MakeGarbageCollected<MediaPlayer>());
   probe::PlayersCreated(GetSupplementable(), {next_player_id});
   return next_player_id;

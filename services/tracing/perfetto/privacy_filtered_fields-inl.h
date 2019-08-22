@@ -127,9 +127,9 @@ constexpr MessageInfo kTraceMetadata = {kTraceMetadataIndices,
                                         kTraceMetadataComplexMessages};
 
 // Proto Message: ChromeMetadataPacket
-constexpr int kChromeMetadataPacketIndices[] = {1, -1};
+constexpr int kChromeMetadataPacketIndices[] = {1, 2, -1};
 constexpr MessageInfo const* kChromeMetadataPacketComplexMessages[] = {
-    &kTraceMetadata};
+    &kTraceMetadata, nullptr};
 constexpr MessageInfo kChromeMetadataPacket = {
     kChromeMetadataPacketIndices, kChromeMetadataPacketComplexMessages};
 

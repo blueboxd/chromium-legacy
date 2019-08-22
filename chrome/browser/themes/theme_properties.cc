@@ -154,7 +154,6 @@ base::Optional<SkColor> GetIncognitoColor(int id) {
       return gfx::kGoogleGrey900;
     case ThemeProperties::COLOR_BOOKMARK_TEXT:
     case ThemeProperties::COLOR_TAB_TEXT:
-    case ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON:
       return gfx::kGoogleGrey100;
     case ThemeProperties::COLOR_NTP_TEXT:
       return gfx::kGoogleGrey200;
@@ -255,16 +254,25 @@ color_utils::HSL ThemeProperties::GetDefaultTint(int id, bool incognito) {
          "equivalents and an appropriate |incognito| value.";
   // If you change these defaults, you must increment the version number in
   // browser_theme_pack.cc.
-  if (incognito) {
-    if (id == TINT_FRAME)
-      return {-1, 0.7, 0.075};  // #DEE1E6 -> kGoogleGrey900
-    if (id == TINT_FRAME_INACTIVE)
+
+  // TINT_BUTTONS is used by ThemeService::GetDefaultColor() for both incognito
+  // and dark mode, and so must be applied to both.
+  if ((id == TINT_BUTTONS) &&
+      (incognito ||
+       ui::NativeTheme::GetInstanceForNativeUi()->ShouldUseDarkColors()))
+    return {-1, 0.57, 0.9605};  // kChromeIconGrey -> kGoogleGrey100
+
+  // The frame tints are used only when parsing browser themes, and should not
+  // take dark mode into account, lest themes with custom frame images get those
+  // images unexpectedly modified just because the user is in dark mode.
+  if ((id == TINT_FRAME) && incognito)
+    return {-1, 0.7, 0.075};  // #DEE1E6 -> kGoogleGrey900
+  if (id == TINT_FRAME_INACTIVE) {
+    if (incognito)
       return {0.57, 0.65, 0.1405};  // #DEE1E6 -> kGoogleGrey800
-    if (id == TINT_BUTTONS)
-      return {-1, 0.57, 0.9605};  // kChromeIconGrey -> kGoogleGrey100
-  } else if (id == TINT_FRAME_INACTIVE) {
-    return {-1, -1, 0.642};  // #DEE1E6 -> #E7EAED
+    return {-1, -1, 0.642};         // #DEE1E6 -> #E7EAED
   }
+
   return {-1, -1, -1};
 }
 

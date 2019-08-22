@@ -150,7 +150,7 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
 
   // Callback functions for Cookie Monster
   void SetCookieHeaderAndStart(const CookieOptions& options,
-                               const CookieList& cookie_list,
+                               const CookieStatusList& cookie_list,
                                const CookieStatusList& excluded_list);
 
   // Another Cookie Monster callback

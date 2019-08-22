@@ -67,8 +67,7 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
 #endif  // !defined(OS_CHROMEOS)
       browser_list_observer_(this),
       profile_observer_(this),
-      identity_manager_observer_(this),
-      weak_ptr_factory_(this) {
+      identity_manager_observer_(this) {
   if (IsIncognito())
     browser_list_observer_.Add(BrowserList::GetInstance());
 

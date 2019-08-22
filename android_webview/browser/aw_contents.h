@@ -92,7 +92,7 @@ class AwContents : public FindHelper::Listener,
       const base::android::JavaParamRef<jobject>& aw_contents,
       const base::android::JavaParamRef<jobject>& web_contents_delegate,
       const base::android::JavaParamRef<jobject>& contents_client_bridge,
-      const base::android::JavaParamRef<jobject>& io_thread_client,
+      const base::android::JavaParamRef<jobject>& network_client,
       const base::android::JavaParamRef<jobject>& intercept_navigation_delegate,
       const base::android::JavaParamRef<jobject>& autofill_provider);
   base::android::ScopedJavaLocalRef<jobject> GetWebContents(

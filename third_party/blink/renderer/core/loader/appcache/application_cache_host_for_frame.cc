@@ -43,11 +43,9 @@ void RestartNavigation(LocalFrame* frame) {
 
 ApplicationCacheHostForFrame::ApplicationCacheHostForFrame(
     DocumentLoader* document_loader,
-    mojom::blink::DocumentInterfaceBroker* interface_broker,
+    const BrowserInterfaceBrokerProxy* interface_broker_proxy,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : ApplicationCacheHost(interface_broker,
-                           /*interface_broker_proxy=*/nullptr,
-                           std::move(task_runner)),
+    : ApplicationCacheHost(interface_broker_proxy, std::move(task_runner)),
       local_frame_(document_loader->GetFrame()),
       document_loader_(document_loader) {}
 
@@ -153,7 +151,8 @@ void ApplicationCacheHostForFrame::WillStartLoadingMainResource(
   // We defer binding to backend to avoid unnecessary binding around creating
   // empty documents. At this point, we're initiating a main resource load for
   // the document, so its for real.
-  BindBackend();
+  if (!BindBackend())
+    return;
 
   original_main_resource_url_ = ClearUrlRef(url);
   is_get_method_ = (method == kHttpGETMethod);

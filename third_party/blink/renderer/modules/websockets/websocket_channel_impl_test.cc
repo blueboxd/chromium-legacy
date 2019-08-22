@@ -87,7 +87,7 @@ class MockWebSocketHandle : public WebSocketHandle {
 
   ~MockWebSocketHandle() override = default;
 
-  void Connect(blink::mojom::blink::WebSocketConnectorPtr connector,
+  void Connect(mojo::Remote<blink::mojom::blink::WebSocketConnector> connector,
                const KURL& url,
                const Vector<String>& protocols,
                const KURL& site_for_cookies,

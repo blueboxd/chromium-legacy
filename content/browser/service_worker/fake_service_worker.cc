@@ -212,6 +212,12 @@ void FakeServiceWorker::SetIdleTimerDelayToZero() {
   is_zero_idle_timer_delay_ = true;
 }
 
+void FakeServiceWorker::AddMessageToConsole(
+    blink::mojom::ConsoleMessageLevel level,
+    const std::string& message) {
+  NOTIMPLEMENTED();
+}
+
 void FakeServiceWorker::OnConnectionError() {
   // Destroys |this|.
   helper_->RemoveServiceWorker(this);

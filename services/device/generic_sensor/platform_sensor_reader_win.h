@@ -68,7 +68,7 @@ class PlatformSensorReaderWin32 final : public PlatformSensorReaderWinBase {
   Client* client_;
   Microsoft::WRL::ComPtr<ISensor> sensor_;
   scoped_refptr<EventListener> event_listener_;
-  base::WeakPtrFactory<PlatformSensorReaderWin32> weak_factory_;
+  base::WeakPtrFactory<PlatformSensorReaderWin32> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PlatformSensorReaderWin32);
 };

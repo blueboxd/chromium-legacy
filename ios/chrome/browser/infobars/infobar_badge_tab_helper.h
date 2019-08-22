@@ -41,10 +41,16 @@ class InfobarBadgeTabHelper
 
   ~InfobarBadgeTabHelper() override;
 
- private:
-  friend class web::WebStateUserData<InfobarBadgeTabHelper>;
+ protected:
   // Constructor.
   explicit InfobarBadgeTabHelper(web::WebState* web_state);
+  // Delegate which displays the Infobar badge.
+  __weak id<InfobarBadgeTabHelperDelegate> delegate_ = nil;
+  // Holds the state of each displaying badge keyed by its InfobarType.
+  std::unordered_map<InfobarType, InfobarBadgeModel*> infobar_badge_models_;
+
+ private:
+  friend class web::WebStateUserData<InfobarBadgeTabHelper>;
   // InfoBarManagerObserver implementation.
   void OnInfoBarAdded(infobars::InfoBar* infobar) override;
   void OnInfoBarRemoved(infobars::InfoBar* infobar, bool animate) override;
@@ -55,11 +61,6 @@ class InfobarBadgeTabHelper
   // Manages this object as an observer of infobars.
   ScopedObserver<infobars::InfoBarManager, infobars::InfoBarManager::Observer>
       infobar_observer_;
-
-  // Delegate which displays the Infobar badge.
-  __weak id<InfobarBadgeTabHelperDelegate> delegate_ = nil;
-  // Holds the state of each displaying badge keyed by its InfobarType.
-  std::unordered_map<InfobarType, InfobarBadgeModel*> infobar_badge_models_;
 
   WEB_STATE_USER_DATA_KEY_DECL();
   DISALLOW_COPY_AND_ASSIGN(InfobarBadgeTabHelper);

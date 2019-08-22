@@ -72,7 +72,7 @@ class BinaryFCMService : public gcm::GCMAppHandler {
   std::string instance_id_;
   std::unordered_map<std::string, OnMessageCallback> message_token_map_;
 
-  base::WeakPtrFactory<BinaryFCMService> weakptr_factory_;
+  base::WeakPtrFactory<BinaryFCMService> weakptr_factory_{this};
 };
 
 }  // namespace safe_browsing

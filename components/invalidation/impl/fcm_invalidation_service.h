@@ -19,10 +19,6 @@
 #include "net/base/backoff_entry.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
-namespace gcm {
-class GCMDriver;
-}
-
 class PrefService;
 class PrefRegistrySimple;
 
@@ -30,7 +26,16 @@ namespace instance_id {
 class InstanceIDDriver;
 }
 
+namespace syncer {
+class FCMNetworkHandler;
+}
+
 namespace invalidation {
+
+using FCMNetworkHandlerCallback =
+    base::RepeatingCallback<std::unique_ptr<syncer::FCMNetworkHandler>(
+        const std::string& sender_id,
+        const std::string& app_id)>;
 
 // This InvalidationService wraps the C++ Invalidation Client (FCM) library.
 // It provides invalidations for desktop platforms (Win, Mac, Linux).
@@ -40,7 +45,7 @@ class FCMInvalidationService
       public syncer::FCMInvalidationListener::Delegate {
  public:
   FCMInvalidationService(IdentityProvider* identity_provider,
-                         gcm::GCMDriver* gcm_driver,
+                         FCMNetworkHandlerCallback fcm_network_handler_callback,
                          instance_id::InstanceIDDriver* client_id_driver,
                          PrefService* pref_service,
                          const syncer::ParseJSONCallback& parse_json,
@@ -126,14 +131,14 @@ class FCMInvalidationService
   // and invalidations.
   InvalidationLogger logger_;
 
-  gcm::GCMDriver* gcm_driver_;
-  instance_id::InstanceIDDriver* instance_id_driver_;
+  FCMNetworkHandlerCallback fcm_network_handler_callback_;
+  instance_id::InstanceIDDriver* const instance_id_driver_;
   std::string client_id_;
 
-  IdentityProvider* identity_provider_;
-  PrefService* pref_service_;
-  syncer::ParseJSONCallback parse_json_;
-  network::mojom::URLLoaderFactory* loader_factory_;
+  IdentityProvider* const identity_provider_;
+  PrefService* const pref_service_;
+  syncer::ParseJSONCallback const parse_json_;
+  network::mojom::URLLoaderFactory* const loader_factory_;
   bool update_was_requested_ = false;
   Diagnostics diagnostic_info_;
 

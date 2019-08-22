@@ -567,13 +567,13 @@ foreach(locale, cast_locales) {
 
     if (chromecast_branding != "public") {
       sources += [
-        "$root_gen_dir/chromecast/internal/webui/app_strings_${locale}.pak",
+        "$root_gen_dir/chromecast/internal/castui/app_strings_${locale}.pak",
       ]
-      deps += [ "//chromecast/internal/webui:chromecast_app_strings" ]
+      deps += [ "//chromecast/internal/castui:cast_ui_app_strings" ]
 
       if (enable_chromecast_webui) {
-        sources += [ "$root_gen_dir/chromecast/internal/webui/webui_localized_${locale}.pak" ]
-        deps += [ "//chromecast/internal/webui:chromecast_webui_localized" ]
+        sources += [ "$root_gen_dir/chromecast/internal/castui/ui_localized_${locale}.pak" ]
+        deps += [ "//chromecast/internal/castui:cast_ui_localized" ]
       }
     }
   }

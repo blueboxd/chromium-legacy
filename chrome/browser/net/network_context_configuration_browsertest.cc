@@ -598,7 +598,7 @@ class NetworkContextConfigurationBrowserTest
         url, net::CookieOptions(),
         base::BindOnce(
             [](std::string* cookies_out, base::RunLoop* run_loop,
-               const std::vector<net::CanonicalCookie>& cookies,
+               const net::CookieStatusList& cookies,
                const net::CookieStatusList& excluded_cookies) {
               *cookies_out = net::CanonicalCookie::BuildCookieLine(cookies);
               run_loop->Quit();

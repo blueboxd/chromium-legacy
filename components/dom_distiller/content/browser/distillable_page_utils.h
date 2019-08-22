@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DOM_DISTILLER_CONTENT_BROWSER_DISTILLABLE_PAGE_UTILS_H_
 #define COMPONENTS_DOM_DISTILLER_CONTENT_BROWSER_DISTILLABLE_PAGE_UTILS_H_
 
+#include <ostream>
+
 #include "base/callback.h"
 
 namespace content {
@@ -24,13 +26,18 @@ void IsDistillablePageForDetector(content::WebContents* web_contents,
                                   const DistillablePageDetector* detector,
                                   base::Callback<void(bool)> callback);
 
+struct DistillabilityResult {
+  bool is_distillable;
+  bool is_last;
+  bool is_mobile_friendly;
+};
+std::ostream& operator<<(std::ostream& os, const DistillabilityResult& result);
+
 // Set the delegate to receive the result of whether the page is distillable.
 //
 // |web_contents| must be non-null.
 using DistillabilityDelegate =
-    base::RepeatingCallback<void(bool /* is_distillable */,
-                                 bool /* is_last */,
-                                 bool /* is_mobile_friendly */)>;
+    base::RepeatingCallback<void(const DistillabilityResult&)>;
 void SetDelegate(content::WebContents* web_contents,
                  DistillabilityDelegate delegate);
 

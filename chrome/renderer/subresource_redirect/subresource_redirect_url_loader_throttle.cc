@@ -5,6 +5,7 @@
 #include "chrome/renderer/subresource_redirect/subresource_redirect_url_loader_throttle.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "chrome/renderer/subresource_redirect/subresource_redirect_experiments.h"
 #include "chrome/renderer/subresource_redirect/subresource_redirect_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "content/public/common/resource_type.h"
@@ -26,6 +27,12 @@ void SubresourceRedirectURLLoaderThrottle::WillStartRequest(
             static_cast<int>(content::ResourceType::kImage));
 
   DCHECK(request->url.SchemeIs(url::kHttpsScheme));
+
+  // Image subresources that have paths that do not end in one of the
+  // following common formats are commonly single pixel images that will not
+  // benefit from being sent to the compression server.
+  if (!ShouldIncludeMediaSuffix(request->url))
+    return;
 
   request->url = GetSubresourceURLForURL(request->url);
   *defer = false;

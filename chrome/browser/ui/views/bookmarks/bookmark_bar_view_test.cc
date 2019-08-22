@@ -1800,6 +1800,7 @@ class BookmarkBarViewTest20 : public BookmarkBarViewEventTestBase {
   void DoTestOnMessageLoop() override {
     // Add |test_view_| next to |bb_view_|.
     views::View* parent = bb_view_->parent();
+    parent->RemoveChildView(bb_view_.get());
     container_view_ = std::make_unique<ContainerViewForMenuExit>();
     container_view_->set_owned_by_client();
     container_view_->AddChildView(bb_view_.get());

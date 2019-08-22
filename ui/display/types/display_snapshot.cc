@@ -69,6 +69,7 @@ DisplaySnapshot::DisplaySnapshot(int64_t display_id,
                                  bool has_color_correction_matrix,
                                  bool color_correction_in_linear_space,
                                  const gfx::ColorSpace& color_space,
+                                 uint32_t bits_per_channel,
                                  std::string display_name,
                                  const base::FilePath& sys_path,
                                  DisplayModeList modes,
@@ -88,6 +89,7 @@ DisplaySnapshot::DisplaySnapshot(int64_t display_id,
       has_color_correction_matrix_(has_color_correction_matrix),
       color_correction_in_linear_space_(color_correction_in_linear_space),
       color_space_(color_space),
+      bits_per_channel_(bits_per_channel),
       display_name_(display_name),
       sys_path_(sys_path),
       modes_(std::move(modes)),
@@ -127,9 +129,10 @@ std::unique_ptr<DisplaySnapshot> DisplaySnapshot::Clone() {
       display_id_, origin_, physical_size_, type_,
       is_aspect_preserving_scaling_, has_overscan_,
       has_color_correction_matrix_, color_correction_in_linear_space_,
-      color_space_, display_name_, sys_path_, std::move(clone_modes),
-      panel_orientation_, edid_, cloned_current_mode, cloned_native_mode,
-      product_code_, year_of_manufacture_, maximum_cursor_size_);
+      color_space_, bits_per_channel_, display_name_, sys_path_,
+      std::move(clone_modes), panel_orientation_, edid_, cloned_current_mode,
+      cloned_native_mode, product_code_, year_of_manufacture_,
+      maximum_cursor_size_);
 }
 
 std::string DisplaySnapshot::ToString() const {

@@ -102,4 +102,22 @@ TEST_F(PDFiumPageLinkTest, TestLinkGeneration) {
   }
 }
 
+using PDFiumPageImageTest = PDFiumTestBase;
+
+TEST_F(PDFiumPageImageTest, TestCalculateImages) {
+  TestClient client;
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("image_alt_text.pdf"));
+  ASSERT_TRUE(engine);
+  ASSERT_EQ(1, engine->GetNumberOfPages());
+
+  PDFiumPage* page = GetPDFiumPageForTest(engine.get(), 0);
+  ASSERT_TRUE(page);
+  page->CalculateImages();
+  ASSERT_EQ(3u, page->images_.size());
+  CompareRect({380, 78, 67, 68}, page->images_[0].bounding_rect);
+  CompareRect({380, 385, 27, 28}, page->images_[1].bounding_rect);
+  CompareRect({380, 678, 1, 1}, page->images_[2].bounding_rect);
+}
+
 }  // namespace chrome_pdf

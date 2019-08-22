@@ -71,12 +71,10 @@ void GainHandler::Process(uint32_t frames_to_process) {
       // Apply sample-accurate gain scaling for precise envelopes, grain
       // windows, etc.
       DCHECK_LE(frames_to_process, sample_accurate_gain_values_.size());
-      if (frames_to_process <= sample_accurate_gain_values_.size()) {
-        float* gain_values = sample_accurate_gain_values_.Data();
-        gain_->CalculateSampleAccurateValues(gain_values, frames_to_process);
-        output_bus->CopyWithSampleAccurateGainValuesFrom(
-            *input_bus, gain_values, frames_to_process);
-      }
+      float* gain_values = sample_accurate_gain_values_.Data();
+      gain_->CalculateSampleAccurateValues(gain_values, frames_to_process);
+      output_bus->CopyWithSampleAccurateGainValuesFrom(*input_bus, gain_values,
+                                                       frames_to_process);
     } else {
       // Apply the gain.
       if (gain_->Value() == 0) {
@@ -111,8 +109,6 @@ void GainHandler::CheckNumberOfChannelsForInput(AudioNodeInput* input) {
 
   DCHECK(input);
   DCHECK_EQ(input, &this->Input(0));
-  if (input != &this->Input(0))
-    return;
 
   unsigned number_of_channels = input->NumberOfChannels();
 

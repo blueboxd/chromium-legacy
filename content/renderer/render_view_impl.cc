@@ -470,14 +470,12 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
 }
 
 void RenderViewImpl::Initialize(
-    std::unique_ptr<RenderWidget> render_widget,
+    CompositorDependencies* compositor_deps,
     mojom::CreateViewParamsPtr params,
     RenderWidget::ShowCallback show_callback,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(RenderThread::IsMainThread());
 
-  render_widget_ = std::move(render_widget);
-  GetWidget()->set_delegate(this);
   RenderThread::Get()->AddRoute(routing_id_, this);
 
 #if defined(OS_ANDROID)
@@ -490,14 +488,6 @@ void RenderViewImpl::Initialize(
   webview_ = WebView::Create(this, params->hidden,
                              /*compositing_enabled=*/true,
                              opener_frame ? opener_frame->View() : nullptr);
-
-  // Note: The GetWidget->Init() call causes an AddRef() to itself meaning that
-  // IPC system has taken conceptual ownership of the object. Though it is
-  // tempting to have RenderView retain the RenderWidget(), this lifecycle
-  // only requires single ownership and adding scoped_refptr<RenderWidget>
-  // muddies this unnecessarily -- especially since this RenderWidget should
-  // ultimately be own by the main frame.
-  GetWidget()->Init(std::move(show_callback), webview_->MainFrameWidget());
 
   g_view_map.Get().insert(std::make_pair(webview(), this));
   g_routing_id_view_map.Get().insert(std::make_pair(GetRoutingID(), this));
@@ -512,26 +502,26 @@ void RenderViewImpl::Initialize(
             params->proxy_routing_id != MSG_ROUTING_NONE);
 
   if (params->main_frame_routing_id != MSG_ROUTING_NONE) {
-    CHECK(params->main_frame_interface_bundle);
-    service_manager::mojom::InterfaceProviderPtr main_frame_interface_provider(
-        std::move(params->main_frame_interface_bundle->interface_provider));
-
     main_render_frame_ = RenderFrameImpl::CreateMainFrame(
-        this, params->main_frame_routing_id,
-        std::move(main_frame_interface_provider),
-        blink::mojom::DocumentInterfaceBrokerPtr(
-            std::move(params->main_frame_interface_bundle
-                          ->document_interface_broker_content)),
-        blink::mojom::DocumentInterfaceBrokerPtr(
-            std::move(params->main_frame_interface_bundle
-                          ->document_interface_broker_blink)),
-        std::move(
-            params->main_frame_interface_bundle->browser_interface_broker),
-        params->main_frame_widget_routing_id, GetWidget()->GetWebScreenInfo(),
-        GetWidget()->compositor_deps(), opener_frame,
-        params->devtools_main_frame_token, params->replicated_frame_state,
-        params->has_committed_real_load);
+        this, compositor_deps, opener_frame, &params, std::move(show_callback));
   } else {
+    // TODO(https://crbug.com/995981): We should not need to create a
+    // RenderWidget for a remote main frame.
+    render_widget_ = RenderWidget::CreateForFrame(
+        params->main_frame_widget_routing_id, compositor_deps,
+        params->visual_properties.screen_info,
+        params->visual_properties.display_mode,
+        /*is_frozen=*/params->main_frame_routing_id == MSG_ROUTING_NONE,
+        params->never_visible);
+    GetWidget()->set_delegate(this);
+    // Note: The GetWidget->Init() call causes an AddRef() to itself meaning
+    // that IPC system has taken conceptual ownership of the object. Though it
+    // is tempting to have RenderView retain the RenderWidget(), this lifecycle
+    // only requires single ownership and adding scoped_refptr<RenderWidget>
+    // muddies this unnecessarily -- especially since this RenderWidget should
+    // ultimately be own by the main frame.
+    GetWidget()->Init(std::move(show_callback), webview_->MainFrameWidget());
+
     RenderFrameProxy::CreateFrameProxy(params->proxy_routing_id, GetRoutingID(),
                                        opener_frame, MSG_ROUTING_NONE,
                                        params->replicated_frame_state,
@@ -1019,25 +1009,13 @@ RenderViewImpl* RenderViewImpl::Create(
   DCHECK(params->main_frame_widget_routing_id != MSG_ROUTING_NONE);
   RenderViewImpl* render_view;
 
-  std::unique_ptr<RenderWidget> render_widget = RenderWidget::CreateForFrame(
-      params->main_frame_widget_routing_id, compositor_deps,
-      params->visual_properties.screen_info,
-      params->visual_properties.display_mode,
-      /*is_frozen=*/params->main_frame_routing_id == MSG_ROUTING_NONE,
-      params->never_visible,
-      /*widget_request=*/nullptr);
-
   if (g_create_render_view_impl) {
     render_view = g_create_render_view_impl(compositor_deps, *params);
   } else {
     render_view = new RenderViewImpl(compositor_deps, *params);
   }
 
-  // After this call, the |render_widget| will be self-owning.
-  //
-  // TODO(http://crbug.com/419087): This refcoutning is messy. get the
-  // RenderWidget initialization out of the render_view::Initialize() function.
-  render_view->Initialize(std::move(render_widget), std::move(params),
+  render_view->Initialize(compositor_deps, std::move(params),
                           std::move(show_callback), std::move(task_runner));
   return render_view;
 }

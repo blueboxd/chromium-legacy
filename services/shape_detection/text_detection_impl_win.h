@@ -54,7 +54,7 @@ class TextDetectionImplWin : public mojom::TextDetection {
           win_bitmap,
       Microsoft::WRL::ComPtr<ABI::Windows::Media::Ocr::IOcrResult> ocr_result);
 
-  base::WeakPtrFactory<TextDetectionImplWin> weak_factory_;
+  base::WeakPtrFactory<TextDetectionImplWin> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TextDetectionImplWin);
 };

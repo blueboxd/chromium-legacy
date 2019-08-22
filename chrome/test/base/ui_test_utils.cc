@@ -71,6 +71,7 @@
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
+#include "net/cookies/cookie_util.h"
 #include "services/device/public/mojom/geoposition.mojom.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
@@ -499,9 +500,9 @@ namespace {
 
 void GetCookieCallback(base::RepeatingClosure callback,
                        net::CookieList* cookies,
-                       const net::CookieList& cookie_list,
+                       const net::CookieStatusList& cookie_list,
                        const net::CookieStatusList& excluded_cookies) {
-  *cookies = cookie_list;
+  *cookies = net::cookie_util::StripStatuses(cookie_list);
   callback.Run();
 }
 

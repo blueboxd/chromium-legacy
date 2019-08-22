@@ -844,10 +844,11 @@ void GaiaScreenHandler::OnGetCookiesForCompleteAuthentication(
     bool using_saml,
     const ::login::StringList& services,
     const SamlPasswordAttributes& password_attributes,
-    const std::vector<net::CanonicalCookie>& cookies,
+    const net::CookieStatusList& cookies,
     const net::CookieStatusList& excluded_cookies) {
   std::string auth_code, gaps_cookie;
-  for (const auto& cookie : cookies) {
+  for (const auto& cookie_with_status : cookies) {
+    const auto& cookie = cookie_with_status.cookie;
     if (cookie.Name() == kOAUTHCodeCookie)
       auth_code = cookie.Value();
     else if (cookie.Name() == kGAPSCookie)

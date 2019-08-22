@@ -516,15 +516,12 @@ void AudioParamTimeline::InsertEvent(std::unique_ptr<ParamEvent> event,
 
   // Sanity check the event. Be super careful we're not getting infected with
   // NaN or Inf. These should have been handled by the caller.
-  bool is_valid = event->GetType() < ParamEvent::kLastType &&
-                  std::isfinite(event->Value()) &&
-                  std::isfinite(event->Time()) &&
-                  std::isfinite(event->TimeConstant()) &&
-                  std::isfinite(event->Duration()) && event->Duration() >= 0;
-
-  DCHECK(is_valid);
-  if (!is_valid)
-    return;
+  DCHECK_LT(event->GetType(), ParamEvent::kLastType);
+  DCHECK(std::isfinite(event->Value()));
+  DCHECK(std::isfinite(event->Time()));
+  DCHECK(std::isfinite(event->TimeConstant()));
+  DCHECK(std::isfinite(event->Duration()));
+  DCHECK_GE(event->Duration(), 0);
 
   unsigned i = 0;
   double insert_time = event->Time();

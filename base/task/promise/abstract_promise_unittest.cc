@@ -7,7 +7,6 @@
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/do_nothing_promise.h"
-#include "base/test/gtest_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread.h"
@@ -15,13 +14,12 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// Even trivial DCHECK_DEATH_TESTs like
-// AbstractPromiseTest.CantRejectIfpromiseDeclaredAsNonRejecting can flakily
-// timeout on the chromeos bots.
-#if defined(OS_CHROMEOS)
-#define ABSTRACT_PROMISE_DEATH_TEST(test_name) DISABLED_##test_name
+// Errors from PROMISE_API_DCHECK are only observable in builds where DCHECKS
+// are on.
+#if DCHECK_IS_ON()
+#define PROMISE_API_DCHECK_TEST(test_name) test_name
 #else
-#define ABSTRACT_PROMISE_DEATH_TEST(test_name) test_name
+#define PROMISE_API_DCHECK_TEST(test_name) DISABLED_##test_name
 #endif
 
 using testing::ElementsAre;
@@ -100,6 +98,19 @@ class TestExecutor {
 
 class AbstractPromiseTest : public testing::Test {
  public:
+  void SetUp() override {
+#if DCHECK_IS_ON()
+    AbstractPromise::SetApiErrorObserverForTesting(RepeatingClosure());
+#endif
+  }
+
+  void SetApiErrorObserver(RepeatingClosure on_api_error_callback) {
+#if DCHECK_IS_ON()
+    AbstractPromise::SetApiErrorObserverForTesting(
+        std::move(on_api_error_callback));
+#endif
+  }
+
   enum class CallbackResultType : uint8_t {
     kNoCallback,
     kCanResolve,
@@ -1175,28 +1186,37 @@ TEST_F(AbstractPromiseTest, CurriedRejectedPromiseAny) {
 }
 
 TEST_F(AbstractPromiseTest,
-       ABSTRACT_PROMISE_DEATH_TEST(DetectResolveDoubleMoveHazard)) {
+       PROMISE_API_DCHECK_TEST(DetectResolveDoubleMoveHazard)) {
   scoped_refptr<AbstractPromise> p0 = ThenPromise(FROM_HERE, nullptr);
 
   scoped_refptr<AbstractPromise> p1 =
       ThenPromise(FROM_HERE, p0).WithResolve(ArgumentPassingType::kMove);
 
-  EXPECT_DCHECK_DEATH({
+  bool api_error_reported = false;
+  SetApiErrorObserver(BindLambdaForTesting([&] { api_error_reported = true; }));
+
+  {
     scoped_refptr<AbstractPromise> p2 =
         ThenPromise(FROM_HERE, p0).WithResolve(ArgumentPassingType::kMove);
-  });
+  }
+
+  EXPECT_TRUE(api_error_reported);
 }
 
-TEST_F(AbstractPromiseTest,
-       ABSTRACT_PROMISE_DEATH_TEST(
-           DetectMixedResolveCallbackMoveAndNonMoveHazard)) {
+TEST_F(
+    AbstractPromiseTest,
+    PROMISE_API_DCHECK_TEST(DetectMixedResolveCallbackMoveAndNonMoveHazard)) {
   scoped_refptr<AbstractPromise> p0 = ThenPromise(FROM_HERE, nullptr);
 
   scoped_refptr<AbstractPromise> p1 =
       ThenPromise(FROM_HERE, p0).WithResolve(ArgumentPassingType::kMove);
 
-  EXPECT_DCHECK_DEATH(
-      { scoped_refptr<AbstractPromise> p2 = ThenPromise(FROM_HERE, p0); });
+  bool api_error_reported = false;
+  SetApiErrorObserver(BindLambdaForTesting([&] { api_error_reported = true; }));
+
+  { scoped_refptr<AbstractPromise> p2 = ThenPromise(FROM_HERE, p0); }
+
+  EXPECT_TRUE(api_error_reported);
 }
 
 TEST_F(AbstractPromiseTest, MultipleNonMoveCatchCallbacksAreOK) {
@@ -1224,7 +1244,7 @@ TEST_F(AbstractPromiseTest, MultipleNonMoveCatchCallbacksAreOK) {
 }
 
 TEST_F(AbstractPromiseTest,
-       ABSTRACT_PROMISE_DEATH_TEST(DetectCatchCallbackDoubleMoveHazard)) {
+       PROMISE_API_DCHECK_TEST(DetectCatchCallbackDoubleMoveHazard)) {
   /*
    * Key:  T = Then, C = Catch
    *
@@ -1244,15 +1264,19 @@ TEST_F(AbstractPromiseTest,
   scoped_refptr<AbstractPromise> p1 =
       CatchPromise(FROM_HERE, p0).WithReject(ArgumentPassingType::kMove);
 
-  EXPECT_DCHECK_DEATH({
+  bool api_error_reported = false;
+  SetApiErrorObserver(BindLambdaForTesting([&] { api_error_reported = true; }));
+
+  {
     scoped_refptr<AbstractPromise> p2 =
         CatchPromise(FROM_HERE, p0).WithReject(ArgumentPassingType::kMove);
-  });
+  }
+
+  EXPECT_TRUE(api_error_reported);
 }
 
-TEST_F(
-    AbstractPromiseTest,
-    ABSTRACT_PROMISE_DEATH_TEST(DetectCatchCallbackDoubleMoveHazardInChain)) {
+TEST_F(AbstractPromiseTest,
+       PROMISE_API_DCHECK_TEST(DetectCatchCallbackDoubleMoveHazardInChain)) {
   /*
    * Key:  T = Then, C = Catch
    *
@@ -1279,15 +1303,20 @@ TEST_F(
   scoped_refptr<AbstractPromise> p3 =
       CatchPromise(FROM_HERE, p1).WithReject(ArgumentPassingType::kMove);
 
-  EXPECT_DCHECK_DEATH({
+  bool api_error_reported = false;
+  SetApiErrorObserver(BindLambdaForTesting([&] { api_error_reported = true; }));
+
+  {
     scoped_refptr<AbstractPromise> p4 =
         CatchPromise(FROM_HERE, p2).WithReject(ArgumentPassingType::kMove);
-  });
+  }
+
+  EXPECT_TRUE(api_error_reported);
 }
 
 TEST_F(
     AbstractPromiseTest,
-    ABSTRACT_PROMISE_DEATH_TEST(
+    PROMISE_API_DCHECK_TEST(
         DetectCatchCallbackDoubleMoveHazardInChainIntermediateThensCanReject)) {
   /*
    * Key:  T = Then, C = Catch
@@ -1318,15 +1347,19 @@ TEST_F(
   scoped_refptr<AbstractPromise> p3 =
       CatchPromise(FROM_HERE, p1).WithReject(ArgumentPassingType::kMove);
 
-  EXPECT_DCHECK_DEATH({
+  bool api_error_reported = false;
+  SetApiErrorObserver(BindLambdaForTesting([&] { api_error_reported = true; }));
+
+  {
     scoped_refptr<AbstractPromise> p4 =
         CatchPromise(FROM_HERE, p2).WithReject(ArgumentPassingType::kMove);
-  });
+  }
+
+  EXPECT_TRUE(api_error_reported);
 }
 
-TEST_F(
-    AbstractPromiseTest,
-    ABSTRACT_PROMISE_DEATH_TEST(DetectMixedCatchCallbackMoveAndNonMoveHazard)) {
+TEST_F(AbstractPromiseTest,
+       PROMISE_API_DCHECK_TEST(DetectMixedCatchCallbackMoveAndNonMoveHazard)) {
   /*
    * Key:  T = Then, C = Catch
    *
@@ -1354,12 +1387,16 @@ TEST_F(
   scoped_refptr<AbstractPromise> p3 =
       CatchPromise(FROM_HERE, p1).WithReject(ArgumentPassingType::kMove);
 
-  EXPECT_DCHECK_DEATH(
-      { scoped_refptr<AbstractPromise> p4 = CatchPromise(FROM_HERE, p2); });
+  bool api_error_reported = false;
+  SetApiErrorObserver(BindLambdaForTesting([&] { api_error_reported = true; }));
+
+  { scoped_refptr<AbstractPromise> p4 = CatchPromise(FROM_HERE, p2); }
+
+  EXPECT_TRUE(api_error_reported);
 }
 
 TEST_F(AbstractPromiseTest,
-       ABSTRACT_PROMISE_DEATH_TEST(DetectThenCallbackDoubleMoveHazardInChain)) {
+       PROMISE_API_DCHECK_TEST(DetectThenCallbackDoubleMoveHazardInChain)) {
   /*
    * Key:  T = Then, C = Catch
    *
@@ -1384,13 +1421,18 @@ TEST_F(AbstractPromiseTest,
   scoped_refptr<AbstractPromise> p3 =
       ThenPromise(FROM_HERE, p1).WithResolve(ArgumentPassingType::kMove);
 
-  EXPECT_DCHECK_DEATH({
+  bool api_error_reported = false;
+  SetApiErrorObserver(BindLambdaForTesting([&] { api_error_reported = true; }));
+
+  {
     scoped_refptr<AbstractPromise> p4 =
         ThenPromise(FROM_HERE, p2).WithResolve(ArgumentPassingType::kMove);
-  });
+  }
+
+  EXPECT_TRUE(api_error_reported);
 }
 
-TEST_F(AbstractPromiseTest, SimpleMissingCatch) {
+TEST_F(AbstractPromiseTest, PROMISE_API_DCHECK_TEST(SimpleMissingCatch)) {
   scoped_refptr<AbstractPromise> p0 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
 
@@ -1405,15 +1447,16 @@ TEST_F(AbstractPromiseTest, SimpleMissingCatch) {
   p0->OnResolved();
   RunLoop().RunUntilIdle();
 
-  // This should DCHECK when |p1| is deleted.
-  EXPECT_DCHECK_DEATH({ p1 = nullptr; });
+  // An error should be reported when |p1| is deleted.
+  bool api_error_reported = false;
+  SetApiErrorObserver(BindLambdaForTesting([&] { api_error_reported = true; }));
 
-  // Under the hood EXPECT_DCHECK_DEATH uses fork() so |p1| isn't actually
-  // cleared so we need to tidy up.
-  p1->IgnoreUncaughtCatchForTesting();
+  { p1 = nullptr; }
+
+  EXPECT_TRUE(api_error_reported);
 }
 
-TEST_F(AbstractPromiseTest, ABSTRACT_PROMISE_DEATH_TEST(MissingCatch)) {
+TEST_F(AbstractPromiseTest, PROMISE_API_DCHECK_TEST(MissingCatch)) {
   scoped_refptr<AbstractPromise> p0 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
 
@@ -1431,12 +1474,13 @@ TEST_F(AbstractPromiseTest, ABSTRACT_PROMISE_DEATH_TEST(MissingCatch)) {
   p0->OnResolved();
   RunLoop().RunUntilIdle();
 
-  // This should DCHECK when |p2| is deleted.
-  EXPECT_DCHECK_DEATH({ p2 = nullptr; });
+  // An error should be reported when |p2| is deleted.
+  bool api_error_reported = false;
+  SetApiErrorObserver(BindLambdaForTesting([&] { api_error_reported = true; }));
 
-  // Under the hood EXPECT_DCHECK_DEATH uses fork() so |p2| isn't actually
-  // cleared so we need to tidy up.
-  p2->IgnoreUncaughtCatchForTesting();
+  { p2 = nullptr; }
+
+  EXPECT_TRUE(api_error_reported);
 }
 
 TEST_F(AbstractPromiseTest, MissingCatchNotRequired) {
@@ -1461,7 +1505,7 @@ TEST_F(AbstractPromiseTest, MissingCatchNotRequired) {
 }
 
 TEST_F(AbstractPromiseTest,
-       ABSTRACT_PROMISE_DEATH_TEST(MissingCatchFromCurriedPromise)) {
+       PROMISE_API_DCHECK_TEST(MissingCatchFromCurriedPromise)) {
   scoped_refptr<AbstractPromise> p0 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
 
@@ -1488,17 +1532,17 @@ TEST_F(AbstractPromiseTest,
   p0->OnResolved();
   RunLoop().RunUntilIdle();
 
-  // This should DCHECK when |p2| is deleted.
-  EXPECT_DCHECK_DEATH({ p2 = nullptr; });
+  // An error should be reported when |p2| is deleted.
+  bool api_error_reported = false;
+  SetApiErrorObserver(BindLambdaForTesting([&] { api_error_reported = true; }));
 
-  // Under the hood EXPECT_DCHECK_DEATH uses fork() so |p2| isn't actually
-  // cleared so we need to tidy up.
-  p2->IgnoreUncaughtCatchForTesting();
+  { p2 = nullptr; }
+
+  EXPECT_TRUE(api_error_reported);
 }
 
-TEST_F(
-    AbstractPromiseTest,
-    ABSTRACT_PROMISE_DEATH_TEST(MissingCatchFromCurriedPromiseWithDependent)) {
+TEST_F(AbstractPromiseTest,
+       PROMISE_API_DCHECK_TEST(MissingCatchFromCurriedPromiseWithDependent)) {
   scoped_refptr<AbstractPromise> p0 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
 
@@ -1527,16 +1571,17 @@ TEST_F(
   p0->OnResolved();
   RunLoop().RunUntilIdle();
 
-  // This should DCHECK when |p3| is deleted.
-  EXPECT_DCHECK_DEATH({ p3 = nullptr; });
+  // An error should be reported when |p3| is deleted.
+  bool api_error_reported = false;
+  SetApiErrorObserver(BindLambdaForTesting([&] { api_error_reported = true; }));
 
-  // Under the hood EXPECT_DCHECK_DEATH uses fork() so |p3| isn't actually
-  // cleared so we need to tidy up.
-  p3->IgnoreUncaughtCatchForTesting();
+  { p3 = nullptr; }
+
+  EXPECT_TRUE(api_error_reported);
 }
 
 TEST_F(AbstractPromiseTest,
-       ABSTRACT_PROMISE_DEATH_TEST(
+       PROMISE_API_DCHECK_TEST(
            MissingCatchFromCurriedPromiseWithDependentAddedAfterExecution)) {
   scoped_refptr<AbstractPromise> p0 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
@@ -1567,16 +1612,16 @@ TEST_F(AbstractPromiseTest,
   scoped_refptr<AbstractPromise> p3 = ThenPromise(FROM_HERE, p2);
   RunLoop().RunUntilIdle();
 
-  // This should DCHECK when |p3| is deleted.
-  EXPECT_DCHECK_DEATH({ p3 = nullptr; });
+  // An error should be reported when |p3| is deleted.
+  bool api_error_reported = false;
+  SetApiErrorObserver(BindLambdaForTesting([&] { api_error_reported = true; }));
 
-  // Under the hood EXPECT_DCHECK_DEATH uses fork() so |p3| isn't actually
-  // cleared so we need to tidy up.
-  p3->IgnoreUncaughtCatchForTesting();
+  { p3 = nullptr; }
+
+  EXPECT_TRUE(api_error_reported);
 }
 
-TEST_F(AbstractPromiseTest,
-       ABSTRACT_PROMISE_DEATH_TEST(MissingCatchLongChain)) {
+TEST_F(AbstractPromiseTest, PROMISE_API_DCHECK_TEST(MissingCatchLongChain)) {
   scoped_refptr<AbstractPromise> p0 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
 
@@ -1595,51 +1640,58 @@ TEST_F(AbstractPromiseTest,
   p0->OnResolved();
   RunLoop().RunUntilIdle();
 
-  // This should DCHECK when |p4| is deleted.
-  EXPECT_DCHECK_DEATH({ p4 = nullptr; });
+  // An error should be reported when |p4| is deleted.
+  bool api_error_reported = false;
+  SetApiErrorObserver(BindLambdaForTesting([&] { api_error_reported = true; }));
 
-  // Under the hood EXPECT_DCHECK_DEATH uses fork() so |p4| isn't actually
-  // cleared so we need to tidy up.
-  p4->IgnoreUncaughtCatchForTesting();
+  { p4 = nullptr; }
+
+  EXPECT_TRUE(api_error_reported);
 }
 
 TEST_F(AbstractPromiseTest,
-       ABSTRACT_PROMISE_DEATH_TEST(
+       PROMISE_API_DCHECK_TEST(
            ThenAddedToSettledPromiseWithMissingCatchAndSeveralDependents)) {
-  scoped_refptr<AbstractPromise> p0 =
-      DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
+  bool api_error_reported = false;
 
-  scoped_refptr<AbstractPromise> p1 =
-      ThenPromise(FROM_HERE, p0)
-          .With(CallbackResultType::kCanReject)
-          .With(BindOnce([](AbstractPromise* p) {
-            p->emplace(Rejected<void>());
-            p->OnRejected();
-          }));
+  {
+    scoped_refptr<AbstractPromise> p0 =
+        DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
 
-  scoped_refptr<AbstractPromise> p2 = ThenPromise(FROM_HERE, p1);
-  scoped_refptr<AbstractPromise> p3 = ThenPromise(FROM_HERE, p2);
-  scoped_refptr<AbstractPromise> p4 = ThenPromise(FROM_HERE, p2);
+    scoped_refptr<AbstractPromise> p1 =
+        ThenPromise(FROM_HERE, p0)
+            .With(CallbackResultType::kCanReject)
+            .With(BindOnce([](AbstractPromise* p) {
+              p->emplace(Rejected<void>());
+              p->OnRejected();
+            }));
 
-  p0->OnResolved();
-  RunLoop().RunUntilIdle();
+    scoped_refptr<AbstractPromise> p2 = ThenPromise(FROM_HERE, p1);
+    scoped_refptr<AbstractPromise> p3 = ThenPromise(FROM_HERE, p2);
+    scoped_refptr<AbstractPromise> p4 = ThenPromise(FROM_HERE, p2);
 
-  scoped_refptr<AbstractPromise> p5 = ThenPromise(FROM_HERE, p2);
+    p0->OnResolved();
+    RunLoop().RunUntilIdle();
 
-  RunLoop().RunUntilIdle();
+    scoped_refptr<AbstractPromise> p5 = ThenPromise(FROM_HERE, p2);
 
-  // This should DCHECK when |p5| is deleted.
-  EXPECT_DCHECK_DEATH({ p5 = nullptr; });
+    RunLoop().RunUntilIdle();
 
-  // Tidy up.
-  p3->IgnoreUncaughtCatchForTesting();
-  p4->IgnoreUncaughtCatchForTesting();
-  p5->IgnoreUncaughtCatchForTesting();
+    // An error should be reported when |p5| is deleted.
+    SetApiErrorObserver(
+        BindLambdaForTesting([&] { api_error_reported = true; }));
+
+    { p5 = nullptr; }
+
+    EXPECT_TRUE(api_error_reported);
+  }
+
+  // Ignore any subsequent errors.
+  SetApiErrorObserver(RepeatingClosure());
 }
 
-TEST_F(
-    AbstractPromiseTest,
-    ABSTRACT_PROMISE_DEATH_TEST(ThenAddedAfterChainExecutionWithMissingCatch)) {
+TEST_F(AbstractPromiseTest,
+       PROMISE_API_DCHECK_TEST(ThenAddedAfterChainExecutionWithMissingCatch)) {
   scoped_refptr<AbstractPromise> p0 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
 
@@ -1661,12 +1713,13 @@ TEST_F(
   scoped_refptr<AbstractPromise> p4 = ThenPromise(FROM_HERE, p3);
   RunLoop().RunUntilIdle();
 
-  // This should DCHECK when |p4| is deleted.
-  EXPECT_DCHECK_DEATH({ p4 = nullptr; });
+  // An error should be reported when |p4| is deleted.
+  bool api_error_reported = false;
+  SetApiErrorObserver(BindLambdaForTesting([&] { api_error_reported = true; }));
 
-  // Under the hood EXPECT_DCHECK_DEATH uses fork() so |p4| isn't actually
-  // cleared so we need to tidy up.
-  p4->IgnoreUncaughtCatchForTesting();
+  { p4 = nullptr; }
+
+  EXPECT_TRUE(api_error_reported);
 }
 
 TEST_F(AbstractPromiseTest, CatchAddedAfterChainExecution) {
@@ -1695,7 +1748,7 @@ TEST_F(AbstractPromiseTest, CatchAddedAfterChainExecution) {
 }
 
 TEST_F(AbstractPromiseTest,
-       ABSTRACT_PROMISE_DEATH_TEST(MultipleThensAddedAfterChainExecution)) {
+       PROMISE_API_DCHECK_TEST(MultipleThensAddedAfterChainExecution)) {
   scoped_refptr<AbstractPromise> p0 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
 
@@ -1722,16 +1775,19 @@ TEST_F(AbstractPromiseTest,
   scoped_refptr<AbstractPromise> p7 = ThenPromise(FROM_HERE, p3);
   RunLoop().RunUntilIdle();
 
-  // This should DCHECK when |p5|, |p6| or |p7| are deleted.
-  EXPECT_DCHECK_DEATH({ p5 = nullptr; });
-  EXPECT_DCHECK_DEATH({ p6 = nullptr; });
-  EXPECT_DCHECK_DEATH({ p7 = nullptr; });
+  // An error should be reported when |p5|, |p6| or |p7| are deleted.
+  bool api_error_reported = false;
+  SetApiErrorObserver(BindLambdaForTesting([&] { api_error_reported = true; }));
+  { p5 = nullptr; }
+  EXPECT_TRUE(api_error_reported);
 
-  // Under the hood EXPECT_DCHECK_DEATH uses fork() so |p5|, |p6| & |p7| aren't
-  // actually cleared so we need to tidy up.
-  p5->IgnoreUncaughtCatchForTesting();
-  p6->IgnoreUncaughtCatchForTesting();
-  p7->IgnoreUncaughtCatchForTesting();
+  api_error_reported = false;
+  { p6 = nullptr; }
+  EXPECT_TRUE(api_error_reported);
+
+  api_error_reported = false;
+  { p7 = nullptr; }
+  EXPECT_TRUE(api_error_reported);
 }
 
 TEST_F(AbstractPromiseTest, MultipleDependentsAddedAfterChainExecution) {
@@ -1783,9 +1839,8 @@ TEST_F(AbstractPromiseTest, CatchAfterLongChain) {
   RunLoop().RunUntilIdle();
 }
 
-TEST_F(
-    AbstractPromiseTest,
-    ABSTRACT_PROMISE_DEATH_TEST(MissingCatchOneSideOfBranchedExecutionChain)) {
+TEST_F(AbstractPromiseTest,
+       PROMISE_API_DCHECK_TEST(MissingCatchOneSideOfBranchedExecutionChain)) {
   /*
    * Key:  T = Then, C = Catch
    *
@@ -1814,31 +1869,42 @@ TEST_F(
   p0->OnRejected();
 
   RunLoop().RunUntilIdle();
-  // This should DCHECK when |p4| is deleted.
-  EXPECT_DCHECK_DEATH({ p4 = nullptr; });
 
-  // Under the hood EXPECT_DCHECK_DEATH uses fork() so |p4| isn't actually
-  // cleared so we need to tidy up.
-  p4->IgnoreUncaughtCatchForTesting();
-}
+  bool api_error_reported = false;
+  SetApiErrorObserver(BindLambdaForTesting([&] { api_error_reported = true; }));
 
-TEST_F(
-    AbstractPromiseTest,
-    ABSTRACT_PROMISE_DEATH_TEST(CantResolveIfpromiseDeclaredAsNonResolving)) {
-  scoped_refptr<AbstractPromise> p = DoNothingPromiseBuilder(FROM_HERE);
+  // An error should be reported when |p4| is deleted.
+  { p4 = nullptr; }
 
-  EXPECT_DCHECK_DEATH({ p->OnResolved(); });
+  EXPECT_TRUE(api_error_reported);
 }
 
 TEST_F(AbstractPromiseTest,
-       ABSTRACT_PROMISE_DEATH_TEST(CantRejectIfpromiseDeclaredAsNonRejecting)) {
+       PROMISE_API_DCHECK_TEST(CantResolveIfPromiseDeclaredAsNonResolving)) {
   scoped_refptr<AbstractPromise> p = DoNothingPromiseBuilder(FROM_HERE);
 
-  EXPECT_DCHECK_DEATH({ p->OnRejected(); });
+  bool api_error_reported = false;
+  SetApiErrorObserver(BindLambdaForTesting([&] { api_error_reported = true; }));
+
+  { p->OnResolved(); }
+
+  EXPECT_TRUE(api_error_reported);
 }
 
 TEST_F(AbstractPromiseTest,
-       ABSTRACT_PROMISE_DEATH_TEST(DoubleMoveDoNothingPromise)) {
+       PROMISE_API_DCHECK_TEST(CantRejectIfPromiseDeclaredAsNonRejecting)) {
+  scoped_refptr<AbstractPromise> p = DoNothingPromiseBuilder(FROM_HERE);
+
+  bool api_error_reported = false;
+  SetApiErrorObserver(BindLambdaForTesting([&] { api_error_reported = true; }));
+
+  { p->OnRejected(); }
+
+  EXPECT_TRUE(api_error_reported);
+}
+
+TEST_F(AbstractPromiseTest,
+       PROMISE_API_DCHECK_TEST(DoubleMoveDoNothingPromise)) {
   scoped_refptr<AbstractPromise> p1 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
 
@@ -1850,7 +1916,10 @@ TEST_F(AbstractPromiseTest,
             p->OnResolved();
           }));
 
-  EXPECT_DCHECK_DEATH({
+  bool api_error_reported = false;
+  SetApiErrorObserver(BindLambdaForTesting([&] { api_error_reported = true; }));
+
+  {
     scoped_refptr<AbstractPromise> p3 =
         ThenPromise(FROM_HERE, p1)
             .WithResolve(ArgumentPassingType::kMove)
@@ -1858,7 +1927,9 @@ TEST_F(AbstractPromiseTest,
               p->emplace(Resolved<int>(42));
               p->OnResolved();
             }));
-  });
+  }
+
+  EXPECT_TRUE(api_error_reported);
 }
 
 TEST_F(AbstractPromiseTest, CatchBothSidesOfBranchedExecutionChain) {

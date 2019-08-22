@@ -119,7 +119,6 @@ void SafetyTipPageInfoBubbleView::OnWidgetDestroying(views::Widget* widget) {
 
   switch (widget->closed_reason()) {
     case views::Widget::ClosedReason::kUnspecified:
-    case views::Widget::ClosedReason::kEscKeyPressed:
     case views::Widget::ClosedReason::kLostFocus:
       // We require that the user explicitly interact with the bubble, so do
       // nothing in these cases.
@@ -128,6 +127,7 @@ void SafetyTipPageInfoBubbleView::OnWidgetDestroying(views::Widget* widget) {
       // If they've left the site, we can still ignore the result; if they
       // stumble there again, we should warn again.
       break;
+    case views::Widget::ClosedReason::kEscKeyPressed:
     case views::Widget::ClosedReason::kCloseButtonClicked:
     case views::Widget::ClosedReason::kCancelButtonClicked:
       Browser* browser = chrome::FindBrowserWithWebContents(web_contents());

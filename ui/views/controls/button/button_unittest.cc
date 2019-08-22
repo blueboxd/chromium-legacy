@@ -592,9 +592,9 @@ TEST_F(ButtonTest, HideInkDropHighlightWhenRemoved) {
   // being removed.
   views::View parent_test_container;
   parent_test_container.set_owned_by_client();
+  widget()->SetContentsView(&parent_test_container);
   parent_test_container.AddChildView(&test_container);
   test_container.AddChildView(button());
-  widget()->SetContentsView(&parent_test_container);
 
   // Trigger hovering and then remove from the indirect parent. This should
   // propagate down to Button which should remove the highlight effect.

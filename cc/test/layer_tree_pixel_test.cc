@@ -39,7 +39,6 @@ namespace cc {
 
 LayerTreePixelTest::LayerTreePixelTest()
     : pixel_comparator_(new ExactPixelComparator(true)),
-      property_trees_(nullptr),
       pending_texture_mailbox_callbacks_(0) {}
 
 LayerTreePixelTest::~LayerTreePixelTest() = default;
@@ -140,7 +139,7 @@ void LayerTreePixelTest::ReadbackResult(
 void LayerTreePixelTest::BeginTest() {
   Layer* target =
       readback_target_ ? readback_target_ : layer_tree_host()->root_layer();
-  if (!property_trees_) {
+  if (!layer_tree_host()->IsUsingLayerLists()) {
     target->RequestCopyOfOutput(CreateCopyOutputRequest());
   } else {
     layer_tree_host()->property_trees()->effect_tree.AddCopyRequest(
@@ -260,49 +259,12 @@ void LayerTreePixelTest::RunPixelTest(RendererType renderer_type,
   RunTest(CompositorMode::THREADED);
 }
 
-void LayerTreePixelTest::RunPixelTestWithLayerList(
-    RendererType renderer_type,
-    scoped_refptr<Layer> root_layer,
-    base::FilePath file_name,
-    PropertyTrees* property_trees) {
+void LayerTreePixelTest::RunPixelTestWithLayerList(RendererType renderer_type,
+                                                   base::FilePath file_name) {
   renderer_type_ = renderer_type;
-  content_root_ = root_layer;
-  property_trees_ = property_trees;
   readback_target_ = nullptr;
   ref_file_ = file_name;
   RunTest(CompositorMode::THREADED);
-}
-
-void LayerTreePixelTest::InitializeForLayerListMode(
-    scoped_refptr<Layer>* root_layer,
-    PropertyTrees* property_trees) {
-  ClipNode clip_node;
-  property_trees->clip_tree.Insert(clip_node, 0);
-
-  EffectNode root_effect;
-  root_effect.clip_id = 1;
-  root_effect.stable_id = 1;
-  root_effect.transform_id = 1;
-  root_effect.render_surface_reason = RenderSurfaceReason::kTest;
-  property_trees->effect_tree.Insert(root_effect, 0);
-
-  ScrollNode scroll_node;
-  property_trees->scroll_tree.Insert(scroll_node, 0);
-
-  TransformTree& transform_tree = property_trees->transform_tree;
-  auto& transform_node =
-      *transform_tree.Node(transform_tree.Insert(TransformNode(), 0));
-  transform_node.source_node_id = transform_node.parent_id;
-  transform_tree.set_needs_update(true);
-
-  *root_layer = Layer::Create();
-  (*root_layer)->SetBounds(gfx::Size(100, 100));
-  (*root_layer)->SetEffectTreeIndex(1);
-  (*root_layer)->SetClipTreeIndex(1);
-  (*root_layer)->SetScrollTreeIndex(1);
-  (*root_layer)->SetTransformTreeIndex(1);
-  (*root_layer)
-      ->set_property_tree_sequence_number(property_trees->sequence_number);
 }
 
 void LayerTreePixelTest::RunSingleThreadedPixelTest(
@@ -329,16 +291,16 @@ void LayerTreePixelTest::RunPixelTestWithReadbackTarget(
 }
 
 void LayerTreePixelTest::SetupTree() {
-  if (property_trees_) {
-    layer_tree_host()->SetRootLayer(content_root_);
-    layer_tree_host()->SetPropertyTreesForTesting(property_trees_);
-  } else {
-    scoped_refptr<Layer> root = Layer::Create();
-    root->SetBounds(content_root_->bounds());
-    root->AddChild(content_root_);
-    layer_tree_host()->SetRootLayer(root);
+  if (layer_tree_host()->IsUsingLayerLists()) {
+    // In layer list mode, content_root_ is not used. The subclass should call
+    // SetInitialRootBounds() if needed.
+    LayerTreeTest::SetupTree();
+    return;
   }
+
+  SetInitialRootBounds(content_root_->bounds());
   LayerTreeTest::SetupTree();
+  layer_tree_host()->root_layer()->AddChild(content_root_);
 }
 
 SkBitmap LayerTreePixelTest::CopyMailboxToBitmap(

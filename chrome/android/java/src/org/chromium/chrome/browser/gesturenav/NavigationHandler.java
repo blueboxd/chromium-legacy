@@ -130,7 +130,8 @@ public class NavigationHandler {
     public void onTouchEvent(int action) {
         if (action == MotionEvent.ACTION_UP) {
             if (mState == GestureState.DRAGGED && mSideSlideLayout != null) {
-                mSideSlideLayout.release(true);
+                mSideSlideLayout.release(!mNavigationSheet.isPeeked());
+                mNavigationSheet.release();
             } else if (mState == GestureState.GLOW && mGlowEffect != null) {
                 mGlowEffect.release();
             }
@@ -254,7 +255,7 @@ public class NavigationHandler {
     public void release(boolean allowNav) {
         if (mState == GestureState.DRAGGED && mSideSlideLayout != null) {
             cancelStopNavigatingRunnable();
-            mSideSlideLayout.release(allowNav && !mNavigationSheet.isExpanded());
+            mSideSlideLayout.release(allowNav && !mNavigationSheet.isPeeked());
             mNavigationSheet.release();
         } else if (mState == GestureState.GLOW && mGlowEffect != null) {
             mGlowEffect.release();

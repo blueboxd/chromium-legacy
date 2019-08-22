@@ -14,6 +14,7 @@
 #include "ios/chrome/browser/ui/scanner/scanner_presenting.h"
 #include "ios/chrome/browser/ui/scanner/scanner_transitioning_delegate.h"
 #include "ios/chrome/browser/ui/scanner/scanner_view.h"
+#import "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -79,6 +80,11 @@ using base::UserMetricsAction;
   ]];
 
   AVCaptureVideoPreviewLayer* previewLayer = [self.scannerView getPreviewLayer];
+  //  CGRect rect = [self.scannerView frame];
+  // NSLog(@"%@", NSStringFromCGRect(rect));
+  previewLayer.frame = CGRectMakeCenteredRectInFrame(
+      [self.scannerView frame].size, [self.scannerView viewportSize]);
+
   switch ([self.cameraController getAuthorizationStatus]) {
     case AVAuthorizationStatusNotDetermined:
       [self.cameraController

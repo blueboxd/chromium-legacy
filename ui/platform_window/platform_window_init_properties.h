@@ -13,6 +13,7 @@
 
 #if defined(OS_FUCHSIA)
 #include <fuchsia/ui/views/cpp/fidl.h>
+#include <lib/ui/scenic/cpp/view_ref_pair.h>
 #endif
 
 namespace ui {
@@ -55,6 +56,7 @@ struct PlatformWindowInitProperties {
 
 #if defined(OS_FUCHSIA)
   fuchsia::ui::views::ViewToken view_token;
+  scenic::ViewRefPair view_ref_pair;
 #endif
 
   bool activatable = true;

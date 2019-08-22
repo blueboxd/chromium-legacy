@@ -31,7 +31,7 @@
 #include "content/public/common/content_switches.h"
 #include "services/audio/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/constants.mojom.h"
-#include "services/identity/public/mojom/constants.mojom.h"
+#include "services/identity/public/mojom/identity_service.mojom.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
 
@@ -215,8 +215,9 @@ void AssistantClient::RequestAudioDecoderFactory(
 
 void AssistantClient::RequestIdentityAccessor(
     mojo::PendingReceiver<identity::mojom::IdentityAccessor> receiver) {
-  content::BrowserContext::GetConnectorFor(profile_)->Connect(
-      identity::mojom::kServiceName, std::move(receiver));
+  identity::mojom::IdentityService* service = profile_->GetIdentityService();
+  if (service)
+    service->BindIdentityAccessor(std::move(receiver));
 }
 
 void AssistantClient::RequestAudioFocusManager(

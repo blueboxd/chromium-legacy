@@ -1,14 +1,14 @@
 \bwesterhaar\s+vriezenveensewijk\b	westerhaar-vriezenv wijk
 \bnoord\s+brabant\b	nb
 \bnoord\s+holland\b	nh
-\bnoord\\-brabant\b	nb
-\bnoord\\-holland\b	nh
+\bnoord\-brabant\b	nb
+\bnoord\-holland\b	nh
 \balphen\s+chaam\b	ac
 \bburgemeester\b	burg
 \bnoordbrabant\b	nb
 \bs\s+gravenhage\b	sgravenhage
 \bzuid\s+holland\b	zh
-\bzuid\\-holland\b	zh
+\bzuid\-holland\b	zh
 \bmonseigneur\b	mgr
 \bnetherlands\b	nl
 \bnordholland\b	nh
@@ -43,18 +43,18 @@
 \bvierde\b	4
 \bvijfde\b	5
 \bderde\b	3
-\bnl\\-dr\b	dr
-\bnl\\-fl\b	fl
-\bnl\\-fr\b	fr
-\bnl\\-ge\b	ge
-\bnl\\-gr\b	gn
-\bnl\\-li\b	l
-\bnl\\-nb\b	nb
-\bnl\\-nh\b	nh
-\bnl\\-ov\b	ov
-\bnl\\-ut\b	u
-\bnl\\-ze\b	z
-\bnl\\-zh\b	zh
+\bnl\-dr\b	dr
+\bnl\-fl\b	fl
+\bnl\-fr\b	fr
+\bnl\-ge\b	ge
+\bnl\-gr\b	gn
+\bnl\-li\b	l
+\bnl\-nb\b	nb
+\bnl\-nh\b	nh
+\bnl\-ov\b	ov
+\bnl\-ut\b	u
+\bnl\-ze\b	z
+\bnl\-zh\b	zh
 \bzesde\b	6
 \bsint\b	st
 \ba\s+d\b	ad
@@ -71,4 +71,4 @@
 \but\b	u
 \bze\b	z
 \bzl\b	z
-\b\\#\b	
+\b\#\b	

@@ -90,9 +90,9 @@ DisplayLockUtilities::ScopedChainForcedUpdate::ScopedChainForcedUpdate(
   const_cast<Node*>(node)->UpdateDistributionForFlatTreeTraversal();
 
   // Get the right ancestor view. Only use inclusive ancestors if the node
-  // itself is locked and it prevents self layout. If self layout is not
-  // prevented, we don't need to force the subtree layout, so use exclusive
-  // ancestors in that case.
+  // itself is locked and it prevents self layout, or if |include_self| is true.
+  // If self layout is not prevented, we don't need to force the subtree layout,
+  // so use exclusive ancestors in that case.
   auto ancestor_view = [node, include_self] {
     if (auto* element = DynamicTo<Element>(node)) {
       auto* context = element->GetDisplayLockContext();
@@ -113,8 +113,11 @@ DisplayLockUtilities::ScopedChainForcedUpdate::ScopedChainForcedUpdate(
     auto* ancestor_node = DynamicTo<Element>(ancestor);
     if (!ancestor_node)
       continue;
-    if (auto* context = ancestor_node->GetDisplayLockContext())
+    if (auto* context = ancestor_node->GetDisplayLockContext()) {
+      if (context->UpdateForced())
+        break;
       scoped_update_forced_list_.push_back(context->GetScopedForcedUpdate());
+    }
   }
 }
 
@@ -226,6 +229,22 @@ Element* DisplayLockUtilities::NearestLockedExclusiveAncestor(
   if (auto* parent = object.Parent())
     return NearestLockedInclusiveAncestor(*parent);
   return nullptr;
+}
+
+bool DisplayLockUtilities::IsInNonActivatableLockedSubtree(const Node& node) {
+  if (!RuntimeEnabledFeatures::DisplayLockingEnabled() ||
+      node.GetDocument().LockedDisplayLockCount() == 0 ||
+      node.GetDocument().ActivationBlockingDisplayLockCount() == 0 ||
+      !node.CanParticipateInFlatTree()) {
+    return false;
+  }
+
+  for (auto* element = NearestLockedExclusiveAncestor(node); element;
+       element = NearestLockedExclusiveAncestor(*element)) {
+    if (!element->GetDisplayLockContext()->IsActivatable())
+      return true;
+  }
+  return false;
 }
 
 bool DisplayLockUtilities::IsInLockedSubtreeCrossingFrames(

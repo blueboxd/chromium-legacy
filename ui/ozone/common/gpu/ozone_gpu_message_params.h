@@ -46,6 +46,7 @@ struct DisplaySnapshot_Params {
   bool has_color_correction_matrix = false;
   bool color_correction_in_linear_space = false;
   gfx::ColorSpace color_space;
+  uint32_t bits_per_channel = 0;
   std::string display_name;
   base::FilePath sys_path;
   std::vector<DisplayMode_Params> modes;

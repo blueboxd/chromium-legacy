@@ -405,6 +405,9 @@ class CORE_EXPORT SiblingInvalidationSet final : public InvalidationSet {
     return base::AdoptRef(new SiblingInvalidationSet(std::move(descendants)));
   }
 
+  static constexpr unsigned kDirectAdjacentMax =
+      std::numeric_limits<unsigned>::max();
+
   unsigned MaxDirectAdjacentSelectors() const {
     return max_direct_adjacent_selectors_;
   }

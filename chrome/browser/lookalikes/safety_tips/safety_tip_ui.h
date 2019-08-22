@@ -32,9 +32,10 @@ enum class SafetyTipType {
   kMax = kLookalikeUrl,
 };
 
-// Shows Safety Tip UI using the specified information. |virtual_url| is the
-// virtual url of the page/frame the info applies to. |safe_url| is the URL
-// that the "Leave" action redirects to. Implemented in platform-specific files.
+// Shows Safety Tip UI using the specified information if it is not already
+// showing. |virtual_url| is the virtual url of the page/frame the info applies
+// to. |safe_url| is the URL that the "Leave" action redirects to. Implemented
+// in platform-specific files.
 void ShowSafetyTipDialog(content::WebContents* web_contents,
                          SafetyTipType type,
                          const GURL& virtual_url);

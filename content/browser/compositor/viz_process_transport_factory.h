@@ -76,7 +76,6 @@ class VizProcessTransportFactory : public ui::ContextFactory,
 
   // ImageTransportFactory implementation.
   void DisableGpuCompositing() override;
-  bool IsGpuCompositingDisabled() override;
   ui::ContextFactory* GetContextFactory() override;
   ui::ContextFactoryPrivate* GetContextFactoryPrivate() override;
 
@@ -89,6 +88,8 @@ class VizProcessTransportFactory : public ui::ContextFactory,
   // creating a new LayerTreeFrameSink for UI compositor it should be passed in
   // as |guilty_compositor| to avoid extra work and reentrancy problems.
   void DisableGpuCompositing(ui::Compositor* guilty_compositor);
+
+  bool IsGpuCompositingDisabled();
 
   // Provided as a callback when the GPU process has crashed.
   void OnGpuProcessLost();

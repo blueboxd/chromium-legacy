@@ -1268,10 +1268,6 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
         ->RegisterNonNetworkNavigationURLLoaderFactories(
             frame_tree_node_id, &non_network_url_loader_factories_);
 
-    // Navigation requests are not associated with any particular
-    // |network::ResourceRequest::request_initiator| origin - using an opaque
-    // origin instead.
-    url::Origin navigation_request_initiator = url::Origin();
     // The embedder may want to proxy all network-bound URLLoaderFactory
     // requests that it can. If it elects to do so, we'll pass its proxy
     // endpoints off to the URLLoaderRequestController where wthey will be
@@ -1281,9 +1277,8 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
     bool use_proxy = GetContentClient()->browser()->WillCreateURLLoaderFactory(
         partition->browser_context(), frame_tree_node->current_frame_host(),
         frame_tree_node->current_frame_host()->GetProcess()->GetID(),
-        ContentBrowserClient::URLLoaderFactoryType::kNavigation,
-        navigation_request_initiator, &factory_receiver, &header_client,
-        &bypass_redirect_checks);
+        ContentBrowserClient::URLLoaderFactoryType::kNavigation, url::Origin(),
+        &factory_receiver, &header_client, &bypass_redirect_checks);
     if (devtools_instrumentation::WillCreateURLLoaderFactory(
             frame_tree_node->current_frame_host(), true /* is_navigation */,
             false /* is_download */, &factory_receiver)) {
@@ -1475,20 +1470,15 @@ void NavigationURLLoaderImpl::BindNonNetworkURLLoaderFactoryRequest(
     return;
   }
 
-  // Navigation requests are not associated with any particular
-  // |network::ResourceRequest::request_initiator| origin - using an opaque
-  // origin instead.
-  url::Origin navigation_request_initiator = url::Origin();
-
   FrameTreeNode* frame_tree_node =
       FrameTreeNode::GloballyFindByID(frame_tree_node_id);
   auto* frame = frame_tree_node->current_frame_host();
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       frame->GetSiteInstance()->GetBrowserContext(), frame,
       frame->GetProcess()->GetID(),
-      ContentBrowserClient::URLLoaderFactoryType::kNavigation,
-      navigation_request_initiator, &factory_receiver,
-      nullptr /* header_client */, nullptr /* bypass_redirect_checks */);
+      ContentBrowserClient::URLLoaderFactoryType::kNavigation, url::Origin(),
+      &factory_receiver, nullptr /* header_client */,
+      nullptr /* bypass_redirect_checks */);
   it->second->Clone(std::move(factory_receiver));
 }
 

@@ -41,7 +41,34 @@ class ASH_EXPORT LockScreenMediaControlsView
       public views::ButtonListener,
       public ui::ImplicitAnimationObserver {
  public:
+  // The name of the histogram that records the reason why the controls were
+  // hidden.
+  static const char kMediaControlsHideHistogramName[];
+
+  // The name of the histogram that records whether the media controls were
+  // shown and the reason why.
+  static const char kMediaControlsShownHistogramName[];
+
   using MediaControlsEnabled = base::RepeatingCallback<bool()>;
+
+  // The reason why the media controls were hidden. This is recorded in
+  // metrics and new values should only be added to the end.
+  enum class HideReason {
+    kSessionChanged,
+    kDismissedByUser,
+    kUnlocked,
+    kMaxValue = kUnlocked
+  };
+
+  // Whether the controls were shown or not shown and the reason why. This is
+  // recorded in metrics and new values should only be added to the end.
+  enum class Shown {
+    kNotShownControlsDisabled,
+    kNotShownNoSession,
+    kNotShownSessionPaused,
+    kShown,
+    kMaxValue = kShown
+  };
 
   struct Callbacks {
     Callbacks();
@@ -114,6 +141,12 @@ class ASH_EXPORT LockScreenMediaControlsView
 
  private:
   friend class LockScreenMediaControlsViewTest;
+
+  // Hide the controls because of |reason|.
+  void Hide(HideReason reason);
+
+  // Set whether the controls should be shown and record the reason why.
+  void SetShown(Shown shown);
 
   // Performs "SeekTo" through |media_controller_ptr_|. The seek time is
   // calculated using |seek_progress| and the total duration of the media.
@@ -197,6 +230,12 @@ class ASH_EXPORT LockScreenMediaControlsView
 
   // Contains the visible and draggable UI of the media controls.
   views::View* contents_view_ = nullptr;
+
+  // The reason we hid the media controls.
+  base::Optional<HideReason> hide_reason_;
+
+  // Whether the controls were shown or not and the reason why.
+  base::Optional<Shown> shown_;
 
   // Container views attached to |contents_view_|.
   MediaControlsHeaderView* header_row_ = nullptr;

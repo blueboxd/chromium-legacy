@@ -542,6 +542,8 @@ class BASE_EXPORT AbstractPromise
   void IgnoreUncaughtCatchForTesting();
 
  private:
+  friend class AbstractPromiseTest;
+
   friend base::RefCountedThreadSafe<AbstractPromise>;
 
   template <typename ConstructType>
@@ -674,6 +676,10 @@ class BASE_EXPORT AbstractPromise
   unique_any value_;
 
 #if DCHECK_IS_ON()
+  // |on_api_error_callback| is called when an API usage error is spotted.
+  static void SetApiErrorObserverForTesting(
+      RepeatingClosure on_api_error_callback);
+
   void MaybeInheritChecks(AbstractPromise* source)
       EXCLUSIVE_LOCKS_REQUIRED(GetCheckedLock());
 

@@ -95,6 +95,7 @@
 #include "net/base/filename_util.h"
 #include "net/base/io_buffer.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_util.h"
 #include "net/filter/gzip_header.h"
 #include "net/filter/gzip_source_stream.h"
 #include "net/filter/mock_source_stream.h"
@@ -1774,7 +1775,7 @@ std::string GetCookies(BrowserContext* browser_context, const GURL& url) {
       url, options,
       base::BindOnce(
           [](std::string* cookies_out, base::RunLoop* run_loop,
-             const std::vector<net::CanonicalCookie>& cookies,
+             const net::CookieStatusList& cookies,
              const net::CookieStatusList& excluded_cookies) {
             *cookies_out = net::CanonicalCookie::BuildCookieLine(cookies);
             run_loop->Quit();
@@ -1802,9 +1803,9 @@ std::vector<net::CanonicalCookie> GetCanonicalCookies(
       base::BindOnce(
           [](base::RunLoop* run_loop,
              std::vector<net::CanonicalCookie>* cookies_out,
-             const std::vector<net::CanonicalCookie>& cookies,
+             const net::CookieStatusList& cookies,
              const net::CookieStatusList& excluded_cookies) {
-            *cookies_out = cookies;
+            *cookies_out = net::cookie_util::StripStatuses(cookies);
             run_loop->Quit();
           },
           &run_loop, &cookies));

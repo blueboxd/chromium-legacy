@@ -57,7 +57,7 @@ class TestQuery : public PrinterQuery {
     auto worker = std::make_unique<TestPrintJobWorker>();
     EXPECT_TRUE(worker->Start());
     worker->printing_context()->UseDefaultSettings();
-    SetSettingsForTest(worker->printing_context()->ExtractSettings());
+    SetSettingsForTest(worker->printing_context()->TakeAndResetSettings());
 
     return std::move(worker);
   }

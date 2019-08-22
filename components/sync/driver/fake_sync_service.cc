@@ -156,7 +156,8 @@ void FakeSyncService::GetAllNodesForDebugging(
 
 void FakeSyncService::SetInvalidationsForSessionsEnabled(bool enabled) {}
 
-UserDemographicsResult FakeSyncService::GetUserDemographics(base::Time now) {
+UserDemographicsResult FakeSyncService::GetUserNoisedBirthYearAndGender(
+    base::Time now) {
   return UserDemographicsResult::ForStatus(
       UserDemographicsStatus::kIneligibleDemographicsData);
 }

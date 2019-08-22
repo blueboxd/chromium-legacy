@@ -128,8 +128,7 @@ TextDetectionImplWin::TextDetectionImplWin(
     ComPtr<IOcrEngine> ocr_engine,
     ComPtr<ISoftwareBitmapStatics> bitmap_factory)
     : ocr_engine_(std::move(ocr_engine)),
-      bitmap_factory_(std::move(bitmap_factory)),
-      weak_factory_(this) {
+      bitmap_factory_(std::move(bitmap_factory)) {
   DCHECK(ocr_engine_);
   DCHECK(bitmap_factory_);
 }

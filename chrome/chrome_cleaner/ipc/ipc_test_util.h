@@ -14,6 +14,7 @@
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/time/time.h"
+#include "chrome/chrome_cleaner/ipc/chrome_prompt_ipc.h"
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
 #include "chrome/chrome_cleaner/logging/scoped_logging.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
@@ -125,6 +126,27 @@ class ChildProcess : public base::RefCountedThreadSafe<ChildProcess> {
   // TargetServices was initialized successfully.
   bool target_services_initialized_ = false;
 };
+
+class ChromePromptIPCTestErrorHandler : public ChromePromptIPC::ErrorHandler {
+ public:
+  ChromePromptIPCTestErrorHandler(base::OnceClosure on_closed,
+                                  base::OnceClosure on_closed_after_done);
+
+  ~ChromePromptIPCTestErrorHandler() override;
+
+  void OnConnectionClosed() override;
+  void OnConnectionClosedAfterDone() override;
+
+ private:
+  base::OnceClosure on_closed_;
+  base::OnceClosure on_closed_after_done_;
+};
+
+namespace internal {
+base::FilePath::StringPieceType GetLogPathSuffix();
+bool DeleteChildProcessLogs();
+void PrintChildProcessLogs();
+}  // namespace internal
 
 }  // namespace chrome_cleaner
 

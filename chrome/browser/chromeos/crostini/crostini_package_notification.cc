@@ -256,8 +256,8 @@ void CrostiniPackageNotification::ForceAllowAutoHide() {
 }
 
 void CrostiniPackageNotification::Close(bool by_user) {
-  if (current_status_ == PackageOperationStatus::RUNNING ||
-      current_status_ == PackageOperationStatus::QUEUED) {
+  if (current_status_ != PackageOperationStatus::SUCCEEDED &&
+      current_status_ != PackageOperationStatus::FAILED) {
     // We don't want to delete ourselves yet; we want to forcibly redisplay
     // when we hit success or failure. Just note that we are hidden.
     visible_ = false;

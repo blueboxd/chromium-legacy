@@ -141,6 +141,10 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 // Tests that requesting desktop site of a page works and going back re-opens
 // mobile version of the page.
 - (void)testRequestDesktopSiteGoBackToMobile {
+  // TODO(crbug.com/990186): Re-enable this test.
+  if ([ChromeEarlGrey isSlimNavigationManagerEnabled])
+    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
+
   std::unique_ptr<web::DataResponseProvider> provider(
       new UserAgentResponseProvider());
   web::test::SetUpHttpServer(std::move(provider));

@@ -30,6 +30,11 @@
 #include "services/tracing/public/cpp/trace_event_agent.h"
 #include "services/tracing/public/cpp/tracing_features.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/system/fake_statistics_provider.h"
+#include "chromeos/system/statistics_provider.h"
+#endif
+
 using base::trace_event::RECORD_CONTINUOUSLY;
 using base::trace_event::RECORD_UNTIL_FULL;
 using base::trace_event::TraceConfig;
@@ -108,6 +113,14 @@ class TracingControllerTest : public ContentBrowserTest {
     get_categories_done_callback_count_ = 0;
     enable_recording_done_callback_count_ = 0;
     disable_recording_done_callback_count_ = 0;
+
+#if defined(OS_CHROMEOS)
+    // Set statistic provider for hardware class tests.
+    chromeos::system::StatisticsProvider::SetTestProvider(
+        &fake_statistics_provider_);
+    fake_statistics_provider_.SetMachineStatistic(
+        chromeos::system::kHardwareClassKey, "test-hardware-class");
+#endif
     ContentBrowserTest::SetUp();
   }
 
@@ -156,7 +169,7 @@ class TracingControllerTest : public ContentBrowserTest {
     last_actual_recording_file_path_ = file_path;
   }
 
-    int get_categories_done_callback_count() const {
+  int get_categories_done_callback_count() const {
     return get_categories_done_callback_count_;
   }
 
@@ -331,6 +344,11 @@ class TracingControllerTest : public ContentBrowserTest {
     }
   }
 
+#if defined(OS_CHROMEOS)
+ protected:
+  chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
+#endif
+
  private:
   int get_categories_done_callback_count_;
   int enable_recording_done_callback_count_;
@@ -380,6 +398,11 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest,
   std::string trace_config;
   last_metadata()->GetString("trace-config", &trace_config);
   EXPECT_EQ(TraceConfig().ToString(), trace_config);
+#if defined(OS_CHROMEOS)
+  std::string hardware_class;
+  last_metadata()->GetString("hardware-class", &hardware_class);
+  EXPECT_EQ(hardware_class, "test-hardware-class");
+#endif
 }
 
 IN_PROC_BROWSER_TEST_F(TracingControllerTest, NotWhitelistedMetadataStripped) {
@@ -398,6 +421,11 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest, NotWhitelistedMetadataStripped) {
   last_metadata()->GetString("user-agent", &user_agent);
   EXPECT_FALSE(user_agent.empty());
   EXPECT_TRUE(user_agent != "__stripped__");
+#if defined(OS_CHROMEOS)
+  std::string hardware_class;
+  last_metadata()->GetString("hardware-class", &hardware_class);
+  EXPECT_EQ(hardware_class, "test-hardware-class");
+#endif
 
   // Check that the not whitelisted metadata is stripped.
   std::string not_whitelisted;
@@ -417,6 +445,9 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest, NotWhitelistedMetadataStripped) {
   EXPECT_TRUE(KeyNotEquals(metadata_json, "network-type", "__stripped__"));
   EXPECT_TRUE(KeyNotEquals(metadata_json, "os-name", "__stripped__"));
   EXPECT_TRUE(KeyNotEquals(metadata_json, "user-agent", "__stripped__"));
+#if defined(OS_CHROMEOS)
+  EXPECT_TRUE(KeyNotEquals(metadata_json, "hardware-class", "__stripped__"));
+#endif
 
   // The following field is not whitelisted and is supposed to be stripped.
   EXPECT_TRUE(KeyEquals(metadata_json, "v8-version", "__stripped__"));

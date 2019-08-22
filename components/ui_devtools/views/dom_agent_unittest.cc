@@ -528,6 +528,7 @@ TEST_F(DOMAgentTest, ViewRearranged) {
   EXPECT_TRUE(WasChildNodeInserted(parent_view));
 
   int child_id = GetIDForBackendElement(child_view);
+  parent_view->RemoveChildView(child_view);
   target_view->AddChildView(child_view);
   EXPECT_TRUE(WasChildNodeRemoved(parent_view, child_id));
   EXPECT_TRUE(WasChildNodeInserted(target_view));

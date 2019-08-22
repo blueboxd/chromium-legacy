@@ -64,7 +64,7 @@ class FaceDetectionImplWin : public mojom::FaceDetection {
   DetectCallback detected_face_callback_;
   mojo::StrongBindingPtr<mojom::FaceDetection> binding_;
 
-  base::WeakPtrFactory<FaceDetectionImplWin> weak_factory_;
+  base::WeakPtrFactory<FaceDetectionImplWin> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FaceDetectionImplWin);
 };

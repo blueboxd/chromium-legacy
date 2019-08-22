@@ -77,7 +77,7 @@ bool PendingAnimations::Update(
         started_synchronized_on_compositor = true;
       }
 
-      if (animation->Playing() && !animation->startTime() &&
+      if (animation->Playing() && animation->pending() &&
           animation->timeline() && animation->timeline()->IsActive()) {
         waiting_for_start_time.push_back(animation.Get());
       }
@@ -94,7 +94,7 @@ bool PendingAnimations::Update(
         waiting_for_start_time);
   } else {
     for (auto& animation : waiting_for_start_time) {
-      DCHECK(!animation->startTime());
+      DCHECK(animation->pending());
       // TODO(crbug.com/916117): Handle start time of scroll-linked animations.
       animation->NotifyCompositorStartTime(
           animation->timeline()->CurrentTimeSeconds().value_or(0));
@@ -140,10 +140,9 @@ void PendingAnimations::NotifyCompositorAnimationStarted(
   TRACE_EVENT0("blink", "PendingAnimations::notifyCompositorAnimationStarted");
   HeapVector<Member<Animation>> animations;
   animations.swap(waiting_for_compositor_animation_start_);
-
   for (auto animation : animations) {
-    if (animation->startTime() || !animation->NeedsCompositorTimeSync() ||
-        !animation->timeline() || !animation->timeline()->IsActive()) {
+    if (!animation->pending() || !animation->timeline() ||
+        !animation->timeline()->IsActive()) {
       // Already started or no longer relevant.
       continue;
     }

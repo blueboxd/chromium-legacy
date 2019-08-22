@@ -717,6 +717,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/gcore/LifecycleHook.java",
   "java/src/org/chromium/chrome/browser/gesturenav/AndroidUiNavigationGlow.java",
   "java/src/org/chromium/chrome/browser/gesturenav/CompositorNavigationGlow.java",
+  "java/src/org/chromium/chrome/browser/gesturenav/GestureNavMetrics.java",
   "java/src/org/chromium/chrome/browser/gesturenav/HistoryNavigationDelegate.java",
   "java/src/org/chromium/chrome/browser/gesturenav/HistoryNavigationDelegateFactory.java",
   "java/src/org/chromium/chrome/browser/gesturenav/HistoryNavigationLayout.java",

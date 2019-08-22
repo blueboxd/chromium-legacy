@@ -111,7 +111,7 @@ class AvatarToolbarButton : public ToolbarButton,
   ScopedObserver<ui::MaterialDesignController, AvatarToolbarButton>
       md_observer_{this};
 
-  base::WeakPtrFactory<AvatarToolbarButton> weak_ptr_factory_;
+  base::WeakPtrFactory<AvatarToolbarButton> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(AvatarToolbarButton);
 };
 

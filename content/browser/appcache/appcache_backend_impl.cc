@@ -19,9 +19,9 @@
 namespace content {
 
 AppCacheBackendImpl::AppCacheBackendImpl(AppCacheServiceImpl* service,
-                                         int process_id)
-    : service_(service),
-      process_id_(process_id) {
+                                         int process_id,
+                                         int routing_id)
+    : service_(service), process_id_(process_id), routing_id_(routing_id) {
   DCHECK(service);
 }
 
@@ -32,7 +32,7 @@ void AppCacheBackendImpl::RegisterHost(
     mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend_remote,
     const base::UnguessableToken& host_id) {
   service_->RegisterHost(std::move(host_receiver), std::move(frontend_remote),
-                         host_id, MSG_ROUTING_NONE, process_id_,
+                         host_id, routing_id_, process_id_,
                          mojo::GetBadMessageCallback());
 }
 

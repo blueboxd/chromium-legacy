@@ -344,10 +344,17 @@ void CrostiniPackageService::UpdatePackageOperationStatus(
     int progress_percent) {
   // Update the notification window, if any.
   auto it = running_notifications_.find(container_id);
-  DCHECK(it != running_notifications_.end())
-      << ContainerIdToString(container_id) << " has no notification to update";
-  DCHECK(it->second) << ContainerIdToString(container_id)
-                     << " has null notification pointer";
+  if (it == running_notifications_.end()) {
+    LOG(ERROR) << ContainerIdToString(container_id)
+               << " has no notification to update";
+    return;
+  }
+  if (it->second == nullptr) {
+    LOG(ERROR) << ContainerIdToString(container_id)
+               << " has null notification pointer";
+    running_notifications_.erase(it);
+    return;
+  }
 
   // If an operation has finished, but there are still app list updates pending,
   // don't finish the flow yet.

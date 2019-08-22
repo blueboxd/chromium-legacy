@@ -30,8 +30,7 @@ FaceDetectionImplWin::FaceDetectionImplWin(
     BitmapPixelFormat pixel_format)
     : face_detector_(std::move(face_detector)),
       bitmap_factory_(std::move(bitmap_factory)),
-      pixel_format_(pixel_format),
-      weak_factory_(this) {
+      pixel_format_(pixel_format) {
   DCHECK(face_detector_);
   DCHECK(bitmap_factory_);
 }

@@ -337,9 +337,17 @@ bool TrayPopupUtils::CanOpenWebUISettings() {
 }
 
 void TrayPopupUtils::InitializeAsCheckableRow(HoverHighlightView* container,
-                                              bool checked) {
+                                              bool checked,
+                                              bool enterprise_managed) {
+  const int dip_size = GetDefaultSizeOfVectorIcon(kCheckCircleIcon);
   gfx::ImageSkia check_mark =
-      CreateVectorIcon(kCheckCircleIcon, gfx::kGoogleGreenDark600);
+      CreateVectorIcon(kCheckCircleIcon, dip_size, gfx::kGoogleGreenDark600);
+  if (enterprise_managed) {
+    gfx::ImageSkia enterprise_managed_icon = CreateVectorIcon(
+        kLoginScreenEnterpriseIcon, dip_size, gfx::kGoogleGrey100);
+    container->AddRightIcon(enterprise_managed_icon,
+                            enterprise_managed_icon.width());
+  }
   container->AddRightIcon(check_mark, check_mark.width());
   UpdateCheckMarkVisibility(container, checked);
 }

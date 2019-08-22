@@ -7484,7 +7484,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
           Sync isn’t working. Try signing out and back in again.
         </message>
         <message name="IDS_SYNC_STATUS_NEEDS_PASSWORD" desc="Message indicating user must re-enter their sync password.">
-          Enter your passphrase to start sync
+          Enter your passphrase to sync your data
         </message>
         <message name="IDS_SYNC_STATUS_NEEDS_PASSWORD_LINK_LABEL" desc="Hyperlink text indicating user must re-enter their sync password.">
           Enter passphrase

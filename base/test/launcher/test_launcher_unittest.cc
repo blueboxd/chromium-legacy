@@ -78,14 +78,9 @@ class MockTestLauncherDelegate : public TestLauncherDelegate {
   MOCK_METHOD2(WillRunTest,
                bool(const std::string& test_case_name,
                     const std::string& test_name));
-  MOCK_METHOD6(
-      ProcessTestResults,
-      std::vector<TestResult>(const std::vector<std::string>& test_names,
-                              const base::FilePath& output_file,
-                              const std::string& output,
-                              const base::TimeDelta& elapsed_time,
-                              int exit_code,
-                              bool was_timeout));
+  MOCK_METHOD2(ProcessTestResults,
+               void(std::vector<TestResult>& test_names,
+                    TimeDelta elapsed_time));
   MOCK_METHOD3(GetCommandLine,
                CommandLine(const std::vector<std::string>& test_names,
                            const FilePath& temp_dir_,
@@ -127,7 +122,7 @@ class TestLauncherTest : public testing::Test {
                                    testing::Return(true)));
     EXPECT_CALL(delegate, WillRunTest(_, _))
         .WillRepeatedly(testing::Return(true));
-    EXPECT_CALL(delegate, ProcessTestResults(_, _, _, _, _, _)).Times(0);
+    EXPECT_CALL(delegate, ProcessTestResults(_, _)).Times(0);
     EXPECT_CALL(delegate, GetCommandLine(_, _, _))
         .WillRepeatedly(testing::Return(CommandLine(CommandLine::NO_PROGRAM)));
     EXPECT_CALL(delegate, GetWrapper())
@@ -658,17 +653,21 @@ TEST_F(UnitTestLauncherDelegateTester, BatchSize) {
 // The following 3 tests are disabled as they are meant to only run from
 // |RunMockTests| to validate tests launcher output for known results.
 
-// Basic Test to pass
+// Basic test to pass
 TEST(MockUnitTests, DISABLED_PassTest) {
   ASSERT_TRUE(true);
 }
-// Basic Test to fail
+// Basic test to fail
 TEST(MockUnitTests, DISABLED_FailTest) {
   ASSERT_TRUE(false);
 }
-// Basic Test to crash
+// Basic test to crash
 TEST(MockUnitTests, DISABLED_CrashTest) {
   IMMEDIATE_CRASH();
+}
+// Basic test will not be reached with default batch size.
+TEST(MockUnitTests, DISABLED_NoRunTest) {
+  ASSERT_TRUE(true);
 }
 
 // Using TestLauncher to launch 3 simple unitests
@@ -681,7 +680,7 @@ TEST_F(UnitTestLauncherDelegateTester, RunMockTests) {
   FilePath path = dir.GetPath().AppendASCII("SaveSummaryResult.json");
   command_line.AppendSwitchPath("test-launcher-summary-output", path);
   command_line.AppendSwitch("gtest_also_run_disabled_tests");
-  command_line.AppendSwitch("--test-launcher-retry-limit=0");
+  command_line.AppendSwitchASCII("test-launcher-retry-limit", "0");
 #if defined(OS_WIN)
   // In Windows versions prior to Windows 8, nested job objects are
   // not allowed and cause this test to fail.
@@ -699,16 +698,18 @@ TEST_F(UnitTestLauncherDelegateTester, RunMockTests) {
 
   Value* val = root->FindDictKey("test_locations");
   ASSERT_TRUE(val);
-  EXPECT_EQ(3u, val->DictSize());
+  EXPECT_EQ(4u, val->DictSize());
   // If path or test location changes, the following expectation
   // will need to change accordingly.
   std::string file_name = "../../base/test/launcher/test_launcher_unittest.cc";
   EXPECT_TRUE(test_launcher_utils::ValidateTestLocation(
-      val, "MockUnitTests.DISABLED_PassTest", file_name, 662));
+      val, "MockUnitTests.DISABLED_PassTest", file_name, 657));
   EXPECT_TRUE(test_launcher_utils::ValidateTestLocation(
-      val, "MockUnitTests.DISABLED_FailTest", file_name, 666));
+      val, "MockUnitTests.DISABLED_FailTest", file_name, 661));
   EXPECT_TRUE(test_launcher_utils::ValidateTestLocation(
-      val, "MockUnitTests.DISABLED_CrashTest", file_name, 670));
+      val, "MockUnitTests.DISABLED_CrashTest", file_name, 665));
+  EXPECT_TRUE(test_launcher_utils::ValidateTestLocation(
+      val, "MockUnitTests.DISABLED_NoRunTest", file_name, 669));
 
   val = root->FindListKey("per_iteration_data");
   ASSERT_TRUE(val);
@@ -717,7 +718,7 @@ TEST_F(UnitTestLauncherDelegateTester, RunMockTests) {
   Value* iteration_val = &(val->GetList().at(0));
   ASSERT_TRUE(iteration_val);
   ASSERT_TRUE(iteration_val->is_dict());
-  EXPECT_EQ(3u, iteration_val->DictSize());
+  EXPECT_EQ(4u, iteration_val->DictSize());
   // We expect the result to be stripped of disabled prefix.
   EXPECT_TRUE(test_launcher_utils::ValidateTestResult(
       iteration_val, "MockUnitTests.PassTest", "SUCCESS", 0u));
@@ -725,6 +726,8 @@ TEST_F(UnitTestLauncherDelegateTester, RunMockTests) {
       iteration_val, "MockUnitTests.FailTest", "FAILURE", 1u));
   EXPECT_TRUE(test_launcher_utils::ValidateTestResult(
       iteration_val, "MockUnitTests.CrashTest", "CRASH", 0u));
+  EXPECT_TRUE(test_launcher_utils::ValidateTestResult(
+      iteration_val, "MockUnitTests.NoRunTest", "NOTRUN", 0u));
 }
 
 }  // namespace

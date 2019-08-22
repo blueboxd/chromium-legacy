@@ -3,10 +3,7 @@
 // found in the LICENSE file.
 #include "components/password_manager/core/browser/credential_manager_impl.h"
 
-#include <memory>
 #include <string>
-#include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/metrics/user_metrics.h"
@@ -27,7 +24,12 @@ void RunGetCallback(GetCallback callback, const CredentialInfo& info) {
 }  // namespace
 
 CredentialManagerImpl::CredentialManagerImpl(PasswordManagerClient* client)
-    : client_(client) {
+    : client_(client)
+#if !defined(OS_IOS)
+      ,
+      leak_delegate_(client)
+#endif  // !defined(OS_IOS)
+{
   auto_signin_enabled_.Init(prefs::kCredentialsEnableAutosignin,
                             client_->GetPrefs());
 }
@@ -55,6 +57,12 @@ void CredentialManagerImpl::Store(const CredentialInfo& credential,
 
   std::unique_ptr<autofill::PasswordForm> form(
       CreatePasswordFormFromCredentialInfo(credential, origin));
+
+  // Check whether a stored password credential was leaked.
+#if !defined(OS_IOS)
+  if (credential.type == CredentialType::CREDENTIAL_TYPE_PASSWORD)
+    leak_delegate_.StartLeakCheck(*form);
+#endif
 
   std::string signon_realm = origin.GetOrigin().spec();
   PasswordStore::FormDigest observed_digest(

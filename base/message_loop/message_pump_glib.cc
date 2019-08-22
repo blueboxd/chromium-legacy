@@ -292,7 +292,7 @@ bool MessagePumpGlib::FdWatchController::InitOrUpdate(int fd,
   source_ = g_source_new(&g_fd_watch_source_funcs, sizeof(FdWatchSource));
   DCHECK(source_);
   g_source_add_poll(source_, poll_fd_.get());
-  g_source_set_can_recurse(source_, FALSE);
+  g_source_set_can_recurse(source_, TRUE);
   g_source_set_callback(source_, nullptr, nullptr, nullptr);
 
   watcher_ = watcher;

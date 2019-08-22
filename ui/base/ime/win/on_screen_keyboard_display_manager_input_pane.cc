@@ -180,8 +180,7 @@ OnScreenKeyboardDisplayManagerInputPane::
           base::MakeRefCounted<OnScreenKeyboardDisplayManagerInputPane::
                                    VirtualKeyboardInputPane>(
               main_task_runner_)),
-      is_keyboard_visible_(false),
-      weak_factory_(this) {
+      is_keyboard_visible_(false) {
   DCHECK_GE(base::win::GetVersion(), base::win::Version::WIN10_RS1);
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 

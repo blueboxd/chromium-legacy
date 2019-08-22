@@ -110,6 +110,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   bool IsNativeImage() const;
   bool IsNativeTextControl() const final;
   bool IsNonNativeTextControl() const final;
+  bool IsOffScreen() const override;
   bool IsPasswordField() const final;
   bool IsProgressIndicator() const override;
   bool IsRichlyEditable() const override;

@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/aom/accessible_node.h"
 #include "third_party/blink/renderer/core/aom/accessible_node_list.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -3149,7 +3150,12 @@ bool AXObject::InternalSetAccessibilityFocusAction() {
 
 bool AXObject::OnNativeScrollToMakeVisibleAction() const {
   Node* node = GetNode();
-  LayoutObject* layout_object = node ? node->GetLayoutObject() : nullptr;
+  if (!node)
+    return false;
+  if (Element* locked_ancestor =
+          DisplayLockUtilities::NearestLockedInclusiveAncestor(*node))
+    locked_ancestor->ActivateDisplayLockIfNeeded();
+  LayoutObject* layout_object = node->GetLayoutObject();
   if (!layout_object || !node->isConnected())
     return false;
   PhysicalRect target_rect(layout_object->AbsoluteBoundingBoxRect());

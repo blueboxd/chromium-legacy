@@ -289,7 +289,8 @@ ManagedDisplayInfo::ManagedDisplayInfo()
       is_zoom_factor_from_ui_scale_(false),
       native_(false),
       is_aspect_preserving_scaling_(false),
-      clear_overscan_insets_(false) {}
+      clear_overscan_insets_(false),
+      bits_per_channel_(0) {}
 
 ManagedDisplayInfo::ManagedDisplayInfo(int64_t id,
                                        const std::string& name,
@@ -309,7 +310,8 @@ ManagedDisplayInfo::ManagedDisplayInfo(int64_t id,
       is_zoom_factor_from_ui_scale_(false),
       native_(false),
       is_aspect_preserving_scaling_(false),
-      clear_overscan_insets_(false) {}
+      clear_overscan_insets_(false),
+      bits_per_channel_(0) {}
 
 ManagedDisplayInfo::ManagedDisplayInfo(const ManagedDisplayInfo& other) =
     default;
@@ -353,6 +355,7 @@ void ManagedDisplayInfo::Copy(const ManagedDisplayInfo& native_info) {
   display_modes_ = native_info.display_modes_;
   maximum_cursor_size_ = native_info.maximum_cursor_size_;
   color_space_ = native_info.color_space_;
+  bits_per_channel_ = native_info.bits_per_channel_;
   refresh_rate_ = native_info.refresh_rate_;
   is_interlaced_ = native_info.is_interlaced_;
 

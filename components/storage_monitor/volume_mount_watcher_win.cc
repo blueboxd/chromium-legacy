@@ -317,8 +317,7 @@ VolumeMountWatcherWin::VolumeMountWatcherWin()
           {base::ThreadPool(), base::MayBlock(),
            base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
-      notifications_(nullptr),
-      weak_factory_(this) {}
+      notifications_(nullptr) {}
 
 // static
 base::FilePath VolumeMountWatcherWin::DriveNumberToFilePath(int drive_number) {

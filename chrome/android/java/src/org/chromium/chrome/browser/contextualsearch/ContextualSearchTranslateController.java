@@ -40,7 +40,7 @@ public class ContextualSearchTranslateController implements ContextualSearchTran
      */
     static public ContextualSearchTranslation getContextualSearchTranslation(
             ContextualSearchPolicy policy, ContextualSearchTranslateInterface hostInterface) {
-        if (useChromeLanguageModel()) {
+        if (useChromeLanguageModel() && !policy.isTranslationDisabled()) {
             return new ContextualSearchTranslationImpl(policy);
         } else {
             return new ContextualSearchTranslateController(policy, hostInterface);

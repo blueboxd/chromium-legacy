@@ -433,7 +433,6 @@ source_set("chrome_content_browser_overlay_manifest") {
     "//components/services/heap_profiling/public/mojom",
     "//components/translate/content/common",
     "//extensions/buildflags",
-    "//services/identity/public/cpp:manifest",
     "//services/image_annotation/public/cpp:manifest",
     "//services/preferences/public/cpp:manifest",
     "//services/service_manager/public/cpp",
@@ -508,6 +507,7 @@ source_set("chrome_content_renderer_overlay_manifest") {
 
   deps = [
     "//base",
+    "//base/allocator:buildflags",
     "//chrome/common:mojo_bindings",
     "//chrome/common:search_mojom",
     "//components/autofill/content/common/mojom",
@@ -522,6 +522,10 @@ source_set("chrome_content_renderer_overlay_manifest") {
     "//services/service_manager/public/cpp",
     "//third_party/blink/public/common",
   ]
+
+  if (is_linux) {
+    deps += [ "//chrome/common/performance_manager/mojom" ]
+  }
 
   if (is_chromeos) {
     deps += [ "//chromeos/services/network_config/public/mojom" ]

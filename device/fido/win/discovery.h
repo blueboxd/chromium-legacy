@@ -31,7 +31,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) WinWebAuthnApiAuthenticatorDiscovery
   std::unique_ptr<WinWebAuthnApiAuthenticator> authenticator_;
   const HWND parent_window_;
 
-  base::WeakPtrFactory<WinWebAuthnApiAuthenticatorDiscovery> weak_factory_;
+  base::WeakPtrFactory<WinWebAuthnApiAuthenticatorDiscovery> weak_factory_{
+      this};
 };
 
 }  // namespace device

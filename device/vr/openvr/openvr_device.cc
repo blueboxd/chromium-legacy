@@ -126,8 +126,7 @@ OpenVRDevice::OpenVRDevice()
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       exclusive_controller_binding_(this),
       gamepad_provider_factory_binding_(this),
-      compositor_host_binding_(this),
-      weak_ptr_factory_(this) {
+      compositor_host_binding_(this) {
   render_loop_ = std::make_unique<OpenVRRenderLoop>();
 
   OnPollingEvents();

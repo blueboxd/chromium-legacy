@@ -163,7 +163,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   void GetCookieListWithOptionsAsync(const GURL& url,
                                      const CookieOptions& options,
                                      GetCookieListCallback callback) override;
-  void GetAllCookiesAsync(GetCookieListCallback callback) override;
+  void GetAllCookiesAsync(GetAllCookiesCallback callback) override;
   void DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
                                   DeleteCallback callback) override;
   void DeleteAllCreatedInTimeRangeAsync(
@@ -351,7 +351,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
                           const CookieOptions& options,
                           SetCookiesCallback callback);
 
-  void GetAllCookies(GetCookieListCallback callback);
+  void GetAllCookies(GetAllCookiesCallback callback);
 
   void GetCookieListWithOptions(const GURL& url,
                                 const CookieOptions& options,
@@ -421,12 +421,12 @@ class NET_EXPORT CookieMonster : public CookieStore {
       const GURL& url,
       std::vector<CanonicalCookie*>* cookies);
 
-  void FilterCookiesWithOptions(
-      const GURL url,
-      const CookieOptions options,
-      std::vector<CanonicalCookie*>* cookie_ptrs,
-      std::vector<CanonicalCookie*>* included_cookie_ptrs,
-      CookieStatusList* excluded_cookie_ptrs);
+  void FilterCookiesWithOptions(const GURL url,
+                                const CookieOptions options,
+                                std::vector<CanonicalCookie*>* cookie_ptrs,
+                                CookieStatusList* included_cookies,
+                                CookieStatusList* excluded_cookies);
+
   // Delete any cookies that are equivalent to |ecc| (same path, domain, etc).
   // |source_secure| indicates if the source may override existing secure
   // cookies.

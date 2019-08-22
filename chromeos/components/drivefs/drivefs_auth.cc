@@ -6,9 +6,7 @@
 
 #include "base/bind.h"
 #include "components/account_id/account_id.h"
-#include "services/identity/public/mojom/constants.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace drivefs {
 
@@ -112,10 +110,8 @@ void DriveFsAuth::AuthTimeout() {
 
 identity::mojom::IdentityAccessor& DriveFsAuth::GetIdentityAccessor() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!identity_accessor_) {
-    delegate_->GetConnector()->BindInterface(
-        identity::mojom::kServiceName, mojo::MakeRequest(&identity_accessor_));
-  }
+  if (!identity_accessor_)
+    delegate_->BindIdentityAccessor(mojo::MakeRequest(&identity_accessor_));
   return *identity_accessor_;
 }
 

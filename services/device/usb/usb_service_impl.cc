@@ -219,12 +219,7 @@ void OnDeviceOpenedReadDescriptors(
 }  // namespace
 
 UsbServiceImpl::UsbServiceImpl()
-    : UsbService(),
-      task_runner_(base::SequencedTaskRunnerHandle::Get()),
-#if defined(OS_WIN)
-      device_observer_(this),
-#endif
-      weak_factory_(this) {
+    : task_runner_(base::SequencedTaskRunnerHandle::Get()) {
   weak_self_ = weak_factory_.GetWeakPtr();
   base::PostTaskAndReplyWithResult(
       FROM_HERE, kBlockingTaskTraits,

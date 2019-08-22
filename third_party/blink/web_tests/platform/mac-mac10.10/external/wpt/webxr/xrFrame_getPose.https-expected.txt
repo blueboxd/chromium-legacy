@@ -1,0 +1,5 @@
+This is a testharness.js-based test.
+PASS XRFrame.getPose works for immersive sessions
+PASS XRFrame.getPose works for non-immersive sessions
+Harness: the test ran to completion.
+

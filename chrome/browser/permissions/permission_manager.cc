@@ -104,7 +104,10 @@ ContentSetting PermissionStatusToContentSetting(PermissionStatus status) {
 }
 
 // Helper method to convert PermissionType to ContentSettingType.
-ContentSettingsType PermissionTypeToContentSetting(PermissionType permission) {
+// If PermissionType is not supported or found, returns
+// CONTENT_SETTINGS_TYPE_DEFAULT.
+ContentSettingsType PermissionTypeToContentSettingSafe(
+    PermissionType permission) {
   switch (permission) {
     case PermissionType::MIDI:
       return CONTENT_SETTINGS_TYPE_MIDI;
@@ -118,7 +121,6 @@ ContentSettingsType PermissionTypeToContentSetting(PermissionType permission) {
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
       return CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER;
 #else
-      NOTIMPLEMENTED();
       break;
 #endif
     case PermissionType::DURABLE_STORAGE:
@@ -152,13 +154,20 @@ ContentSettingsType PermissionTypeToContentSetting(PermissionType permission) {
     case PermissionType::WAKE_LOCK_SYSTEM:
       return CONTENT_SETTINGS_TYPE_WAKE_LOCK_SYSTEM;
     case PermissionType::NUM:
-      // This will hit the NOTREACHED below.
       break;
   }
 
-  NOTREACHED() << "Unknown content setting for permission "
-               << static_cast<int>(permission);
   return CONTENT_SETTINGS_TYPE_DEFAULT;
+}
+
+// Helper method to convert PermissionType to ContentSettingType.
+ContentSettingsType PermissionTypeToContentSetting(PermissionType permission) {
+  ContentSettingsType content_setting =
+      PermissionTypeToContentSettingSafe(permission);
+  DCHECK_NE(content_setting, CONTENT_SETTINGS_TYPE_DEFAULT)
+      << "Unknown content setting for permission "
+      << static_cast<int>(permission);
+  return content_setting;
 }
 
 void SubscriptionCallbackWrapper(
@@ -603,6 +612,16 @@ PermissionStatus PermissionManager::GetPermissionStatusForFrame(
   return ContentSettingToPermissionStatus(result.content_setting);
 }
 
+bool PermissionManager::IsPermissionOverridableByDevTools(
+    content::PermissionType permission,
+    const GURL& origin) {
+  ContentSettingsType type = PermissionTypeToContentSettingSafe(permission);
+  PermissionContextBase* context = GetPermissionContext(type);
+
+  return context && !context->IsPermissionKillSwitchOn() &&
+         context->IsPermissionAvailableToOrigins(origin, origin);
+}
+
 int PermissionManager::SubscribePermissionStatusChange(
     PermissionType permission,
     content::RenderFrameHost* render_frame_host,
@@ -747,8 +766,10 @@ void PermissionManager::SetPermissionOverridesForDevTools(
     const PermissionOverrides& overrides) {
   ContentSettingsTypeOverrides result;
   for (const auto& item : overrides) {
-    result[PermissionTypeToContentSetting(item.first)] =
-        PermissionStatusToContentSetting(item.second);
+    ContentSettingsType content_setting =
+        PermissionTypeToContentSettingSafe(item.first);
+    if (content_setting != CONTENT_SETTINGS_TYPE_DEFAULT)
+      result[content_setting] = PermissionStatusToContentSetting(item.second);
   }
   devtools_permission_overrides_[url::Origin::Create(origin)] =
       std::move(result);

@@ -109,7 +109,7 @@
     }
     strongSelf.viewportRect = viewportRect;
     if (strongSelf.metadataOutput) {
-      [strongSelf.metadataOutput setRectOfInterest:_viewportRect];
+      //[strongSelf.metadataOutput setRectOfInterest:_viewportRect];
     }
   });
 }

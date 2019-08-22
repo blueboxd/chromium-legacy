@@ -37,8 +37,7 @@ FakeVideoDecodeAccelerator::FakeVideoDecodeAccelerator(
       client_(NULL),
       make_context_current_cb_(make_context_current_cb),
       frame_buffer_size_(size),
-      flushing_(false),
-      weak_this_factory_(this) {}
+      flushing_(false) {}
 
 FakeVideoDecodeAccelerator::~FakeVideoDecodeAccelerator() = default;
 

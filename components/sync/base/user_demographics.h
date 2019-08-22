@@ -43,22 +43,22 @@ struct UserDemographics {
       metrics::UserDemographicsProto::Gender_MIN;
 };
 
-// Represents the status of providing user demographics that is logged to UMA.
-// Entries of the enum should not be renumbered and numeric values should never
-// be reused. Please keep in sync with "UserDemographicsStatus" in
-// src/tools/metrics/histograms/enums.xml.  There should only be one entry
-// representing demographic data that is ineligible to be provided. A finer
-// grained division of kIneligibleDemographicsData (e.g., INVALID_BIRTH_YEAR)
-// might help inferring categories of demographics that should not be exposed to
-// protect privacy.
+// Represents the status of providing user demographics (noised birth year and
+// gender) that are logged to UMA. Entries of the enum should not be renumbered
+// and numeric values should never be reused. Please keep in sync with
+// "UserDemographicsStatus" in src/tools/metrics/histograms/enums.xml.  There
+// should only be one entry representing demographic data that is ineligible to
+// be provided. A finer grained division of kIneligibleDemographicsData (e.g.,
+// INVALID_BIRTH_YEAR) might help inferring categories of demographics that
+// should not be exposed to protect privacy.
 enum class UserDemographicsStatus {
-  // Could get user demographics.
+  // Could get the user's noised birth year and gender.
   kSuccess = 0,
   // Sync is not enabled.
   kSyncNotEnabled = 1,
-  // Demographics are ineligible to be provided either because some of them
-  // don't
-  // exist (missing data) or some of them are not eligible to be provided.
+  // User's birth year and gender are ineligible to be provided either because
+  // some of them don't exist (missing data) or some of them are not eligible to
+  // be provided.
   kIneligibleDemographicsData = 2,
   // Could not get the time needed to compute the user's age.
   kCannotGetTime = 3,
@@ -73,13 +73,14 @@ enum class UserDemographicsStatus {
 };
 
 // Container and handler for data related to the retrieval of user demographics.
+// Holds either valid demographics data or an error code.
 class UserDemographicsResult {
  public:
   // Builds a UserDemographicsResult that contains user demographics and has a
   // UserDemographicsStatus::kSuccess status.
   static UserDemographicsResult ForValue(UserDemographics value);
 
-  // Build a UserDemographicsResult that does not have user demographics (only
+  // Builds a UserDemographicsResult that does not have user demographics (only
   // default values) and has a status other than
   // UserDemographicsStatus::kSuccess.
   static UserDemographicsResult ForStatus(UserDemographicsStatus status);
@@ -101,8 +102,8 @@ class UserDemographicsResult {
   UserDemographicsStatus status_ = UserDemographicsStatus::kMaxValue;
 };
 
-// Log user demographic status in the histogram.
-void LogUserDemographicsStatus(UserDemographicsStatus status);
+// Log user demographic status in the UMA.UserDemographics.Status histogram.
+void LogUserDemographicsStatusInHistogram(UserDemographicsStatus status);
 
 }  // namespace syncer
 

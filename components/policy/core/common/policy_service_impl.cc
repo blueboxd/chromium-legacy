@@ -248,6 +248,20 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
     chrome_policies.ApplyEnterpriseUsersDefaults(GetEnterpriseUsersDefaults());
   }
 
+  // This has to be done after setting enterprise default values since it is
+  // enabled by default for enterprise users.
+  auto* atomic_policy_group_enabled_policy_value =
+      chrome_policies.Get(key::kPolicyAtomicGroupsEnabled);
+
+  // This policy has to be ignored if it comes from a user signed-in profile.
+  bool atomic_policy_group_enabled =
+      atomic_policy_group_enabled_policy_value &&
+      atomic_policy_group_enabled_policy_value->value->GetBool() &&
+      !((atomic_policy_group_enabled_policy_value->source ==
+             POLICY_SOURCE_CLOUD ||
+         atomic_policy_group_enabled_policy_value->source ==
+             POLICY_SOURCE_PRIORITY_CLOUD) &&
+        atomic_policy_group_enabled_policy_value->scope == POLICY_SCOPE_USER);
   auto* value =
       chrome_policies.GetValue(key::kExtensionInstallListsMergeEnabled);
   if (value && value->GetBool()) {
@@ -264,7 +278,7 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
                                      &policy_dictionary_merger};
 
   PolicyGroupMerger policy_group_merger;
-  if (base::FeatureList::IsEnabled(features::kPolicyAtomicGroup))
+  if (atomic_policy_group_enabled && atomic_policy_group_enabled_policy_value)
     mergers.push_back(&policy_group_merger);
 
   for (auto it = bundle.begin(); it != bundle.end(); ++it)

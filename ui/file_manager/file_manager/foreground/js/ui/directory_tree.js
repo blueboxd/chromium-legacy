@@ -863,10 +863,6 @@ class EntryListItem extends DirectoryItem {
       return [];
     }
 
-    if (!util.isMyFilesVolumeEnabled()) {
-      return DirectoryItem.prototype.sortEntries.apply(this, [entries]);
-    }
-
     // If the root entry hasn't been resolved yet.
     if (!this.entry) {
       return DirectoryItem.prototype.sortEntries.apply(this, [entries]);

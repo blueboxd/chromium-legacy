@@ -237,8 +237,6 @@ void ConvolverHandler::CheckNumberOfChannelsForInput(AudioNodeInput* input) {
 
   DCHECK(input);
   DCHECK_EQ(input, &this->Input(0));
-  if (input != &this->Input(0))
-    return;
 
   if (shared_buffer_) {
     unsigned number_of_output_channels = ComputeNumberOfOutputChannels(

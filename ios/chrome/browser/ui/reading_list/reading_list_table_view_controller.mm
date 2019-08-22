@@ -290,6 +290,15 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
   return [self.tableViewModel itemAtIndexPath:indexPath].type == ItemTypeItem;
 }
 
+#pragma mark - UIAdaptivePresentationControllerDelegate
+
+- (void)presentationControllerDidDismiss:
+    (UIPresentationController*)presentationController {
+  // Call the delegate dismissReadingListListViewController to clean up state
+  // and stop the Coordinator.
+  [self.delegate dismissReadingListListViewController:self];
+}
+
 #pragma mark - ChromeTableViewController
 
 - (void)loadModel {

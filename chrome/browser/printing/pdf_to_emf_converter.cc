@@ -195,7 +195,7 @@ class PdfConverterImpl : public PdfConverter {
 
   mojom::PdfToEmfConverterFactoryPtr pdf_to_emf_converter_factory_;
 
-  base::WeakPtrFactory<PdfConverterImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<PdfConverterImpl> weak_ptr_factory_{this};
 
   static bool simulate_failure_initializing_conversion_;
 
@@ -240,9 +240,7 @@ bool PostScriptMetaFile::SafePlayback(HDC hdc) const {
 PdfConverterImpl::PdfConverterImpl(scoped_refptr<base::RefCountedMemory> data,
                                    const PdfRenderSettings& settings,
                                    StartCallback start_callback)
-    : settings_(settings),
-      start_callback_(std::move(start_callback)),
-      weak_ptr_factory_(this) {
+    : settings_(settings), start_callback_(std::move(start_callback)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(start_callback_);
 

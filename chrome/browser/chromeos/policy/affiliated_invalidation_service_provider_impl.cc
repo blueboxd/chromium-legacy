@@ -27,6 +27,7 @@
 #include "chrome/common/chrome_features.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
 #include "components/invalidation/impl/fcm_invalidation_service.h"
+#include "components/invalidation/impl/fcm_network_handler.h"
 #include "components/invalidation/impl/invalidation_state_tracker.h"
 #include "components/invalidation/impl/invalidator_storage.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
@@ -408,7 +409,10 @@ AffiliatedInvalidationServiceProviderImpl::
     DCHECK(device_instance_id_driver_);
     auto device_invalidation_service =
         std::make_unique<invalidation::FCMInvalidationService>(
-            device_identity_provider_.get(), g_browser_process->gcm_driver(),
+            device_identity_provider_.get(),
+            base::BindRepeating(&syncer::FCMNetworkHandler::Create,
+                                g_browser_process->gcm_driver(),
+                                device_instance_id_driver_.get()),
             device_instance_id_driver_.get(), g_browser_process->local_state(),
             base::BindRepeating(data_decoder::SafeJsonParser::Parse,
                                 content::GetSystemConnector()),

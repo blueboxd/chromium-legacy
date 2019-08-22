@@ -28,12 +28,14 @@
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/referrer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
@@ -59,20 +61,18 @@ class ClickEvent : public ui::Event {
 // ui_test_utils::NavigateToURL(const GURL&) because it simulates the user
 // typing the URL, causing the site to have a site engagement score of at
 // least LOW.
-void NavigateToURL(Browser* browser, const GURL& url) {
+//
+// This function waits for the load to complete since it is based on the
+// synchronous ui_test_utils::NavigatToURL.
+void NavigateToURL(Browser* browser,
+                   const GURL& url,
+                   WindowOpenDisposition disposition) {
   NavigateParams params(browser, url, ui::PAGE_TRANSITION_LINK);
   params.initiator_origin = url::Origin::Create(GURL("about:blank"));
-  params.disposition = WindowOpenDisposition::CURRENT_TAB;
+  params.disposition = disposition;
   params.is_renderer_initiated = true;
-  ui_test_utils::NavigateToURL(&params);
-}
 
-// Same as NavigateToUrl, but wait for the load to complete before returning.
-void NavigateToURLSync(Browser* browser, const GURL& url) {
-  content::TestNavigationObserver navigation_observer(
-      browser->tab_strip_model()->GetActiveWebContents(), 1);
-  NavigateToURL(browser, url);
-  navigation_observer.Wait();
+  ui_test_utils::NavigateToURL(&params);
 }
 
 void PerformMouseClickOnView(views::View* view) {
@@ -147,10 +147,13 @@ void BlockPatterns(std::vector<std::pair<std::string, FlagType>> patterns) {
 }
 
 // Go to |url| in such a way as to trigger a warning. This is just for
-// convenience, since how we trigger warnings will change.
+// convenience, since how we trigger warnings will change. Even if the warning
+// is triggered, it may not be shown if the URL is opened in the background.
 //
 // This function blocks the entire host + path, ignoring query parameters.
-void TriggerWarning(Browser* browser, const GURL& url) {
+void TriggerWarning(Browser* browser,
+                    const GURL& url,
+                    WindowOpenDisposition disposition) {
   std::string host;
   std::string path;
   std::string query;
@@ -159,7 +162,7 @@ void TriggerWarning(Browser* browser, const GURL& url) {
   // For simplicity, ignore query
   BlockPatterns({{host + path, FlaggedPage::BAD_REP}});
   SetEngagementScore(browser, url, kLowEngagement);
-  NavigateToURLSync(browser, url);
+  NavigateToURL(browser, url, disposition);
 }
 
 }  // namespace
@@ -207,7 +210,7 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
                        NoShowOnLowEngagement) {
   auto kNavigatedUrl = GetURL("site1.com");
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
-  NavigateToURLSync(browser(), kNavigatedUrl);
+  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
   EXPECT_FALSE(IsUIShowing());
 
   CheckPageInfoDoesNotShowSafetyTipInfo(browser());
@@ -220,7 +223,7 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
   BlockPatterns({{"site1.com/", FlaggedPage::BAD_REP}});
 
   SetEngagementScore(browser(), kNavigatedUrl, kHighEngagement);
-  NavigateToURLSync(browser(), kNavigatedUrl);
+  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
   EXPECT_FALSE(IsUIShowing());
 
   CheckPageInfoDoesNotShowSafetyTipInfo(browser());
@@ -231,7 +234,7 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest, ShowOnBlock) {
   auto kNavigatedUrl = GetURL("site1.com");
   BlockPatterns({{"site1.com/", FlaggedPage::BAD_REP}});
 
-  NavigateToURLSync(browser(), kNavigatedUrl);
+  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
   EXPECT_TRUE(IsUIShowing());
 
   CheckPageInfoShowsSafetyTipInfo(browser());
@@ -241,7 +244,7 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest, ShowOnBlock) {
 IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
                        LeaveSiteLeavesSite) {
   auto kNavigatedUrl = GetURL("site1.com");
-  TriggerWarning(browser(), kNavigatedUrl);
+  TriggerWarning(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
 
   CloseWarningLeaveSite(browser());
   EXPECT_FALSE(IsUIShowing());
@@ -256,11 +259,11 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
 IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
                        LeaveSiteStillWarnsAfter) {
   auto kNavigatedUrl = GetURL("site1.com");
-  TriggerWarning(browser(), kNavigatedUrl);
+  TriggerWarning(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
 
   CloseWarningLeaveSite(browser());
 
-  NavigateToURLSync(browser(), kNavigatedUrl);
+  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
 
   EXPECT_TRUE(IsUIShowing());
   EXPECT_EQ(kNavigatedUrl,
@@ -273,7 +276,7 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
 IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
                        IgnoreWarningStaysOnPage) {
   auto kNavigatedUrl = GetURL("site1.com");
-  TriggerWarning(browser(), kNavigatedUrl);
+  TriggerWarning(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
 
   CloseWarningIgnore();
   EXPECT_FALSE(IsUIShowing());
@@ -288,11 +291,11 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
 IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
                        IgnoreWarningStopsWarning) {
   auto kNavigatedUrl = GetURL("site1.com");
-  TriggerWarning(browser(), kNavigatedUrl);
+  TriggerWarning(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
 
   CloseWarningIgnore();
 
-  NavigateToURLSync(browser(), kNavigatedUrl);
+  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
 
   EXPECT_FALSE(IsUIShowing());
   EXPECT_EQ(kNavigatedUrl,
@@ -311,8 +314,24 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
   BlockPatterns({{"a.com/", FlaggedPage::BAD_REP}});
 
-  NavigateToURLSync(browser(), kNavigatedUrl);
+  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
   EXPECT_TRUE(IsUIShowing());
 
   CheckPageInfoShowsSafetyTipInfo(browser());
+}
+
+// Background tabs shouldn't open a bubble initially, but should when they
+// become visible.
+IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
+                       BubbleWaitsForVisible) {
+  auto kFlaggedUrl = GetURL("site1.com");
+
+  TriggerWarning(browser(), kFlaggedUrl,
+                 WindowOpenDisposition::NEW_BACKGROUND_TAB);
+  EXPECT_FALSE(IsUIShowing());
+
+  auto* tab_strip = browser()->tab_strip_model();
+  tab_strip->ActivateTabAt(tab_strip->active_index() + 1);
+
+  EXPECT_TRUE(IsUIShowing());
 }

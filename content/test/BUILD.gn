@@ -453,7 +453,12 @@ jumbo_static_library("test_support") {
   ]
 
   if (is_android) {
+    sources += [
+      "test_view_android_delegate.cc",
+      "test_view_android_delegate.h",
+    ]
     deps += [
+      ":content_unittests_jni_headers",
       "//content/shell:android_shell_descriptors",
       "//mojo/public/java/system:native_support",
       "//testing/android/native_test:native_browser_test_support",
@@ -1378,6 +1383,7 @@ test("content_browsertests") {
     deps += [
       "//chromeos/audio",
       "//chromeos/dbus/audio",
+      "//chromeos/system",
     ]
   }
 
@@ -2425,7 +2431,10 @@ group("test_buildbucket_api_gpu_use_cases") {
 }
 
 if (is_android) {
-  content_java_sources_needing_jni = [ "//content/public/android/javatests/src/org/chromium/content/browser/sms/Fakes.java" ]
+  content_java_sources_needing_jni = [
+    "//content/public/android/javatests/src/org/chromium/content/browser/sms/Fakes.java",
+    "//content/public/android/javatests/src/org/chromium/content/browser/fakes/TestViewAndroidDelegate.java",
+  ]
 
   generate_jni("content_unittests_jni_headers") {
     sources = content_java_sources_needing_jni
@@ -2441,6 +2450,7 @@ if (is_android) {
       "$google_play_services_package:google_play_services_tasks_java",
       "//base:base_java",
       "//content/public/android:content_java",
+      "//ui/android:ui_full_java",
     ]
   }
 }

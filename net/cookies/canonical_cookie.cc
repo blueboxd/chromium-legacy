@@ -89,6 +89,18 @@ int PartialCookieOrdering(const CanonicalCookie& a, const CanonicalCookie& b) {
   return a.Path().compare(b.Path());
 }
 
+void AppendCookieLineEntry(const CanonicalCookie& cookie,
+                           std::string* cookie_line) {
+  if (!cookie_line->empty())
+    *cookie_line += "; ";
+  // In Mozilla, if you set a cookie like "AAA", it will have an empty token
+  // and a value of "AAA". When it sends the cookie back, it will send "AAA",
+  // so we need to avoid sending "=AAA" for a blank token value.
+  if (!cookie.Name().empty())
+    *cookie_line += cookie.Name() + "=";
+  *cookie_line += cookie.Value();
+}
+
 }  // namespace
 
 // Keep defaults here in sync with content/public/common/cookie_manager.mojom.
@@ -555,18 +567,21 @@ CookieSameSite CanonicalCookie::GetEffectiveSameSiteForTesting() const {
 }
 
 // static
-std::string CanonicalCookie::BuildCookieLine(
-    const std::vector<CanonicalCookie>& cookies) {
+std::string CanonicalCookie::BuildCookieLine(const CookieList& cookies) {
   std::string cookie_line;
   for (const auto& cookie : cookies) {
-    if (!cookie_line.empty())
-      cookie_line += "; ";
-    // In Mozilla, if you set a cookie like "AAA", it will have an empty token
-    // and a value of "AAA". When it sends the cookie back, it will send "AAA",
-    // so we need to avoid sending "=AAA" for a blank token value.
-    if (!cookie.Name().empty())
-      cookie_line += cookie.Name() + "=";
-    cookie_line += cookie.Value();
+    AppendCookieLineEntry(cookie, &cookie_line);
+  }
+  return cookie_line;
+}
+
+// static
+std::string CanonicalCookie::BuildCookieLine(
+    const CookieStatusList& cookie_status_list) {
+  std::string cookie_line;
+  for (const auto& cookie_with_status : cookie_status_list) {
+    const CanonicalCookie& cookie = cookie_with_status.cookie;
+    AppendCookieLineEntry(cookie, &cookie_line);
   }
   return cookie_line;
 }

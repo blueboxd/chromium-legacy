@@ -195,7 +195,7 @@ class D3D11CdmProxy::HardwareEventWatcher
 class D3D11CdmContext : public CdmContext {
  public:
   explicit D3D11CdmContext(const GUID& key_info_guid)
-      : cdm_proxy_context_(key_info_guid), weak_factory_(this) {}
+      : cdm_proxy_context_(key_info_guid) {}
   ~D3D11CdmContext() override = default;
 
   // The pointers are owned by the caller.
@@ -242,7 +242,7 @@ class D3D11CdmContext : public CdmContext {
 
   CallbackRegistry<EventCB::RunType> event_callbacks_;
 
-  base::WeakPtrFactory<D3D11CdmContext> weak_factory_;
+  base::WeakPtrFactory<D3D11CdmContext> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(D3D11CdmContext);
 };
@@ -254,8 +254,7 @@ D3D11CdmProxy::D3D11CdmProxy(const GUID& crypto_type,
       protocol_(protocol),
       function_id_map_(function_id_map),
       cdm_context_(std::make_unique<D3D11CdmContext>(crypto_type)),
-      create_device_func_(base::BindRepeating(D3D11CreateDevice)),
-      weak_factory_(this) {}
+      create_device_func_(base::BindRepeating(D3D11CreateDevice)) {}
 
 D3D11CdmProxy::~D3D11CdmProxy() {}
 

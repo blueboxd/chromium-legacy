@@ -407,17 +407,16 @@ std::unique_ptr<RenderWidget> RenderWidget::CreateForFrame(
     const ScreenInfo& screen_info,
     blink::WebDisplayMode display_mode,
     bool is_frozen,
-    bool never_visible,
-    mojom::WidgetRequest widget_request) {
+    bool never_visible) {
   if (g_create_render_widget_for_frame) {
-    return g_create_render_widget_for_frame(
-        widget_routing_id, compositor_deps, screen_info, display_mode,
-        is_frozen, never_visible, std::move(widget_request));
+    return g_create_render_widget_for_frame(widget_routing_id, compositor_deps,
+                                            screen_info, display_mode,
+                                            is_frozen, never_visible, nullptr);
   }
 
   return std::make_unique<RenderWidget>(
       widget_routing_id, compositor_deps, screen_info, display_mode, is_frozen,
-      /*hidden=*/true, never_visible, std::move(widget_request));
+      /*hidden=*/true, never_visible, nullptr);
 }
 
 RenderWidget* RenderWidget::CreateForPopup(

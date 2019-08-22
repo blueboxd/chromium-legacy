@@ -698,6 +698,7 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
   box-shadow: 0 1px 3px 0 rgba(var(--GG800-rgb), .3),
               0 4px 8px 3px rgba(var(--GG800-rgb), .15);
   color: rgb(var(--GG700-rgb));
+  font-size: 0;  /* Remove extra spacing between inline-block elements. */
   height: 528px;
   min-width: 800px;
   padding: 0;
@@ -710,6 +711,10 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
     box-shadow: var(--dark-mode-shadow);
     color: rgb(var(--GG200-rgb));
   }
+}
+
+#customization-menu > div {
+  font-size: 13px;
 }
 
 #menu-nav-panel {
@@ -880,11 +885,8 @@ html[dir=rtl] .menu-option {
   margin-inline-end: 8px;
 }
 
-#menu-inner {
-  display: flex;
-}
-
 #menu-contents {
+  display: inline-block;
   height: 464px;
   margin-inline-start: 40px;
   position: relative;
@@ -892,8 +894,6 @@ html[dir=rtl] .menu-option {
 }
 
 .menu-panel {
-  display: flex;
-  flex-flow: wrap;
   height: 384px;
   left: 0;
   /* Pad the content by 5px top/left. This will prevent the focus outline on
@@ -916,7 +916,6 @@ html[dir=rtl] .menu-option {
 #backgrounds-menu .bg-sel-tile-bg,
 #backgrounds-image-menu .bg-sel-tile-bg {
   border-radius: 4px;
-  display: block;
   height: 176px;
   margin-bottom: 45px;
   margin-inline-end: 8px;
@@ -1000,6 +999,12 @@ html[dir=rtl] .menu-option {
   #backgrounds-image-menu .bg-sel-tile-bg.selected {
     background-color: rgba(var(--GB200-rgb), .1);
   }
+}
+
+#backgrounds-menu,
+#colors-menu {
+  /* Remove extra spacing between inline-block elements. */
+  font-size: 0;
 }
 
 #backgrounds-upload.bg-sel-tile-bg {
@@ -1569,7 +1574,6 @@ input:checked + .toggle .highlight {
   border-radius: 50%;
   box-sizing: border-box;
   cursor: pointer;
-  display: block;
   height: var(--tile-size);
   margin-bottom: var(--tile-margin);
   margin-inline-end: var(--tile-margin);

@@ -1013,7 +1013,7 @@ TEST_F(DeferredCookieTaskTest, DeferredGetAllCookies) {
                       "X=1; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
                       Time::Now() + TimeDelta::FromDays(3));
 
-  GetCookieListCallback call1;
+  GetAllCookiesCallback call1;
   cookie_monster_->GetAllCookiesAsync(call1.MakeCallback());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(call1.was_run());
@@ -1023,7 +1023,7 @@ TEST_F(DeferredCookieTaskTest, DeferredGetAllCookies) {
   EXPECT_THAT(call1.cookies(), MatchesCookieLine("X=1"));
   EXPECT_EQ("LOAD; ", TakeCommandSummary());
 
-  GetCookieListCallback call2;
+  GetAllCookiesCallback call2;
   cookie_monster_->GetAllCookiesAsync(call2.MakeCallback());
   EXPECT_TRUE(call2.was_run());
   EXPECT_THAT(call2.cookies(), MatchesCookieLine("X=1"));
@@ -1205,7 +1205,7 @@ TEST_F(DeferredCookieTaskTest, DeferredTaskOrder) {
   base::RunLoop run_loop;
   cookie_monster_->GetCookieListWithOptionsAsync(
       http_www_foo_.url(), CookieOptions(),
-      base::BindLambdaForTesting([&](const CookieList& cookies,
+      base::BindLambdaForTesting([&](const CookieStatusList& cookies,
                                      const CookieStatusList& excluded_list) {
         // This should complete before the set.
         get_cookie_list_callback_was_run = true;
@@ -2204,8 +2204,8 @@ TEST_F(CookieMonsterTest, WhileLoadingLoadCompletesBeforeKeyLoadCompletes) {
   cm->SetCanonicalCookieAsync(std::move(cookie), kUrl.scheme(), CookieOptions(),
                               set_cookie_callback.MakeCallback());
 
-  GetCookieListCallback get_cookie_list_callback1;
-  cm->GetAllCookiesAsync(get_cookie_list_callback1.MakeCallback());
+  GetAllCookiesCallback get_cookies_callback1;
+  cm->GetAllCookiesAsync(get_cookies_callback1.MakeCallback());
 
   // Two load events should have been queued.
   ASSERT_EQ(2u, store->commands().size());
@@ -2222,18 +2222,18 @@ TEST_F(CookieMonsterTest, WhileLoadingLoadCompletesBeforeKeyLoadCompletes) {
   EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
             set_cookie_callback.result());
 
-  get_cookie_list_callback1.WaitUntilDone();
-  EXPECT_EQ(1u, get_cookie_list_callback1.cookies().size());
+  get_cookies_callback1.WaitUntilDone();
+  EXPECT_EQ(1u, get_cookies_callback1.cookies().size());
 
   // The loaded for key event completes late, with not cookies (Since they
   // were already loaded).
   store->TakeCallbackAt(1).Run(std::vector<std::unique_ptr<CanonicalCookie>>());
 
   // The just set cookie should still be in the store.
-  GetCookieListCallback get_cookie_list_callback2;
-  cm->GetAllCookiesAsync(get_cookie_list_callback2.MakeCallback());
-  get_cookie_list_callback2.WaitUntilDone();
-  EXPECT_EQ(1u, get_cookie_list_callback2.cookies().size());
+  GetAllCookiesCallback get_cookies_callback2;
+  cm->GetAllCookiesAsync(get_cookies_callback2.MakeCallback());
+  get_cookies_callback2.WaitUntilDone();
+  EXPECT_EQ(1u, get_cookies_callback2.cookies().size());
 }
 
 // Tests that case that DeleteAll is waiting for load to complete, and then a
@@ -2283,8 +2283,8 @@ TEST_F(CookieMonsterTest, WhileLoadingGetAllSetGetAll) {
   store->set_store_load_commands(true);
   std::unique_ptr<CookieMonster> cm(new CookieMonster(store.get(), &net_log_));
 
-  GetCookieListCallback get_cookie_list_callback1;
-  cm->GetAllCookiesAsync(get_cookie_list_callback1.MakeCallback());
+  GetAllCookiesCallback get_cookies_callback1;
+  cm->GetAllCookiesAsync(get_cookies_callback1.MakeCallback());
 
   auto cookie = CanonicalCookie::Create(kUrl, "a=b", base::Time::Now(),
                                         base::nullopt /* server_time */);
@@ -2293,8 +2293,8 @@ TEST_F(CookieMonsterTest, WhileLoadingGetAllSetGetAll) {
   cm->SetCanonicalCookieAsync(std::move(cookie), kUrl.scheme(), CookieOptions(),
                               set_cookie_callback.MakeCallback());
 
-  GetCookieListCallback get_cookie_list_callback2;
-  cm->GetAllCookiesAsync(get_cookie_list_callback2.MakeCallback());
+  GetAllCookiesCallback get_cookies_callback2;
+  cm->GetAllCookiesAsync(get_cookies_callback2.MakeCallback());
 
   // Only the main load should have been queued.
   ASSERT_EQ(1u, store->commands().size());
@@ -2303,22 +2303,21 @@ TEST_F(CookieMonsterTest, WhileLoadingGetAllSetGetAll) {
   // The load completes (With no cookies).
   store->TakeCallbackAt(0).Run(std::vector<std::unique_ptr<CanonicalCookie>>());
 
-  get_cookie_list_callback1.WaitUntilDone();
-  EXPECT_EQ(0u, get_cookie_list_callback1.cookies().size());
+  get_cookies_callback1.WaitUntilDone();
+  EXPECT_EQ(0u, get_cookies_callback1.cookies().size());
 
   set_cookie_callback.WaitUntilDone();
   EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
             set_cookie_callback.result());
 
-  get_cookie_list_callback2.WaitUntilDone();
-  EXPECT_EQ(1u, get_cookie_list_callback2.cookies().size());
+  get_cookies_callback2.WaitUntilDone();
+  EXPECT_EQ(1u, get_cookies_callback2.cookies().size());
 }
 
 namespace {
 
-void RunClosureOnCookieListReceived(base::OnceClosure closure,
-                                    const CookieList& cookie_list,
-                                    const CookieStatusList& excluded_cookies) {
+void RunClosureOnAllCookiesReceived(base::OnceClosure closure,
+                                    const CookieList& cookie_list) {
   std::move(closure).Run();
 }
 
@@ -2340,7 +2339,7 @@ TEST_F(CookieMonsterTest, CheckOrderOfCookieTaskQueueWhenLoadingCompletes) {
   ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
       set_cookie_callback;
   cm->GetAllCookiesAsync(base::BindOnce(
-      &RunClosureOnCookieListReceived,
+      &RunClosureOnAllCookiesReceived,
       base::BindOnce(&CookieStore::SetCanonicalCookieAsync,
                      base::Unretained(cm.get()), std::move(cookie),
                      kUrl.scheme(), CookieOptions(),
@@ -2348,8 +2347,8 @@ TEST_F(CookieMonsterTest, CheckOrderOfCookieTaskQueueWhenLoadingCompletes) {
 
   // Get cookie task. Queued before the delete task is executed, so should not
   // see the set cookie.
-  GetCookieListCallback get_cookie_list_callback1;
-  cm->GetAllCookiesAsync(get_cookie_list_callback1.MakeCallback());
+  GetAllCookiesCallback get_cookies_callback1;
+  cm->GetAllCookiesAsync(get_cookies_callback1.MakeCallback());
 
   // Only the main load should have been queued.
   ASSERT_EQ(1u, store->commands().size());
@@ -2359,18 +2358,18 @@ TEST_F(CookieMonsterTest, CheckOrderOfCookieTaskQueueWhenLoadingCompletes) {
   store->TakeCallbackAt(0).Run(std::vector<std::unique_ptr<CanonicalCookie>>());
 
   // The get cookies call should see no cookies set.
-  get_cookie_list_callback1.WaitUntilDone();
-  EXPECT_EQ(0u, get_cookie_list_callback1.cookies().size());
+  get_cookies_callback1.WaitUntilDone();
+  EXPECT_EQ(0u, get_cookies_callback1.cookies().size());
 
   set_cookie_callback.WaitUntilDone();
   EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
             set_cookie_callback.result());
 
   // A subsequent get cookies call should see the new cookie.
-  GetCookieListCallback get_cookie_list_callback2;
-  cm->GetAllCookiesAsync(get_cookie_list_callback2.MakeCallback());
-  get_cookie_list_callback2.WaitUntilDone();
-  EXPECT_EQ(1u, get_cookie_list_callback2.cookies().size());
+  GetAllCookiesCallback get_cookies_callback2;
+  cm->GetAllCookiesAsync(get_cookies_callback2.MakeCallback());
+  get_cookies_callback2.WaitUntilDone();
+  EXPECT_EQ(1u, get_cookies_callback2.cookies().size());
 }
 
 // Test that FlushStore() is forwarded to the store and callbacks are posted.
@@ -3498,7 +3497,7 @@ TEST_F(CookieMonsterNotificationTest, GlobalNotBroadcast) {
   auto monster = std::make_unique<CookieMonster>(store.get(), nullptr);
 
   // Trigger load dispatch and confirm it.
-  monster->GetAllCookiesAsync(CookieStore::GetCookieListCallback());
+  monster->GetAllCookiesAsync(CookieStore::GetAllCookiesCallback());
   EXPECT_EQ(1u, store->commands().size());
   EXPECT_EQ(CookieStoreCommand::LOAD, store->commands()[0].type);
 

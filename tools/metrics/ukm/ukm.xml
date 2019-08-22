@@ -2452,6 +2452,25 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="ContactsPicker.ShareStatistics">
+  <owner>finnur@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
+  <summary>
+    Measures statistics about the contacts shared in the contacts picker (when
+    the Contacts Picker dialog is dismissed.)
+  </summary>
+  <metric name="SelectCount">
+    <summary>
+      Measures the total number of contacts selected in the contacts picker.
+    </summary>
+  </metric>
+  <metric name="SelectPercentage">
+    <summary>
+      Measures the percentage of contacts selected in the contacts picker.
+    </summary>
+  </metric>
+</event>
+
 <event name="ContentIndex.Added">
   <owner>rayankans@chromium.org</owner>
   <summary>
@@ -7156,6 +7175,21 @@ be describing additional metrics about the same event.
   <metric name="NeededSniffing">
     <summary>
       Whether the HTTP response needed sniffing to confirm its MIME type.
+    </summary>
+  </metric>
+</event>
+
+<event name="SMSReceiver">
+  <owner>goto@chromium.org</owner>
+  <owner>reillyg@chromium.org</owner>
+  <owner>juncai@chromium.org</owner>
+  <owner>ayui@chromium.org</owner>
+  <summary>
+    Records performance metrics for SMSReceiver API.
+  </summary>
+  <metric name="Outcome" enum="SMSReceiverOutcome">
+    <summary>
+      Records the result of a call to the SmsReceiver API.
     </summary>
   </metric>
 </event>

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_PROPERTIES_H_
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_PROPERTIES_H_
 
+#include <utility>
+
 namespace performance_manager {
 
 // TODO(chrisha): Deprecate the private observer type and have everyone use the
@@ -35,7 +37,7 @@ class ObservedPropertyImpl {
 
     // Sets the property and sends a notification.
     void SetAndNotify(NodeImplType* node, PropertyType value) {
-      value_ = value;
+      value_ = std::forward<PropertyType>(value);
       for (auto* observer : node->GetObservers())
         ((observer)->*(NotifyFunctionPtr))(node);
     }
@@ -65,7 +67,7 @@ class ObservedPropertyImpl {
     bool SetAndMaybeNotify(NodeImplType* node, PropertyType value) {
       if (value_ == value)
         return false;
-      value_ = value;
+      value_ = std::forward<PropertyType>(value);
       for (auto* observer : node->GetObservers())
         ((observer)->*(NotifyFunctionPtr))(node);
       return true;

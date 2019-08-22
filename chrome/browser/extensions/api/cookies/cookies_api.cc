@@ -249,25 +249,26 @@ ExtensionFunction::ResponseAction CookiesGetFunction::Run() {
   if (!parsed_args_->details.store_id.get())
     parsed_args_->details.store_id.reset(new std::string(store_id));
 
+  DCHECK(!url_.is_empty() && url_.is_valid());
   cookies_helpers::GetCookieListFromManager(
       cookie_manager, url_,
-      base::BindOnce(&CookiesGetFunction::GetCookieCallback, this));
+      base::BindOnce(&CookiesGetFunction::GetCookieListCallback, this));
 
   // Will finish asynchronously.
   return RespondLater();
 }
 
-void CookiesGetFunction::GetCookieCallback(
-    const net::CookieList& cookie_list,
+void CookiesGetFunction::GetCookieListCallback(
+    const net::CookieStatusList& cookie_status_list,
     const net::CookieStatusList& excluded_cookies) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  for (const net::CanonicalCookie& cookie : cookie_list) {
+  for (const net::CookieWithStatus& cookie_with_status : cookie_status_list) {
     // Return the first matching cookie. Relies on the fact that the
     // CookieManager interface returns them in canonical order (longest path,
     // then earliest creation time).
-    if (cookie.Name() == parsed_args_->details.name) {
+    if (cookie_with_status.cookie.Name() == parsed_args_->details.name) {
       api::cookies::Cookie api_cookie = cookies_helpers::CreateCookie(
-          cookie, *parsed_args_->details.store_id);
+          cookie_with_status.cookie, *parsed_args_->details.store_id);
       Respond(ArgumentList(api::cookies::Get::Results::Create(api_cookie)));
       return;
     }
@@ -306,22 +307,46 @@ ExtensionFunction::ResponseAction CookiesGetAllFunction::Run() {
     parsed_args_->details.store_id.reset(new std::string(store_id));
 
   DCHECK(url_.is_empty() || url_.is_valid());
-  cookies_helpers::GetCookieListFromManager(
-      cookie_manager, url_,
-      base::BindOnce(&CookiesGetAllFunction::GetAllCookiesCallback, this));
+  if (url_.is_empty()) {
+    cookies_helpers::GetAllCookiesFromManager(
+        cookie_manager,
+        base::BindOnce(&CookiesGetAllFunction::GetAllCookiesCallback, this));
+  } else {
+    cookies_helpers::GetCookieListFromManager(
+        cookie_manager, url_,
+        base::BindOnce(&CookiesGetAllFunction::GetCookieListCallback, this));
+  }
 
   return RespondLater();
 }
 
 void CookiesGetAllFunction::GetAllCookiesCallback(
-    const net::CookieList& cookie_list,
+    const net::CookieList& cookie_list) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  ResponseValue response;
+  if (extension()) {
+    std::vector<api::cookies::Cookie> match_vector;
+    cookies_helpers::AppendMatchingCookiesFromCookieListToVector(
+        cookie_list, &parsed_args_->details, extension(), &match_vector);
+
+    response =
+        ArgumentList(api::cookies::GetAll::Results::Create(match_vector));
+  } else {
+    // TODO(devlin): When can |extension()| be null for this function?
+    response = NoArguments();
+  }
+  Respond(std::move(response));
+}
+
+void CookiesGetAllFunction::GetCookieListCallback(
+    const net::CookieStatusList& cookie_status_list,
     const net::CookieStatusList& excluded_cookies) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ResponseValue response;
   if (extension()) {
     std::vector<api::cookies::Cookie> match_vector;
-    cookies_helpers::AppendMatchingCookiesToVector(
-        cookie_list, url_, &parsed_args_->details, extension(), &match_vector);
+    cookies_helpers::AppendMatchingCookiesFromCookieStatusListToVector(
+        cookie_status_list, &parsed_args_->details, extension(), &match_vector);
 
     response =
         ArgumentList(api::cookies::GetAll::Results::Create(match_vector));
@@ -415,7 +440,7 @@ ExtensionFunction::ResponseAction CookiesSetFunction::Run() {
     // is generated.
     success_ = false;
     state_ = SET_COMPLETED;
-    GetCookieListCallback(net::CookieList(), net::CookieStatusList());
+    GetCookieListCallback(net::CookieStatusList(), net::CookieStatusList());
     return AlreadyResponded();
   }
 
@@ -426,6 +451,7 @@ ExtensionFunction::ResponseAction CookiesSetFunction::Run() {
   options.set_include_httponly();
   options.set_same_site_cookie_context(
       net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+  DCHECK(!url_.is_empty() && url_.is_valid());
   cookie_manager->SetCanonicalCookie(
       *cc, url_.scheme(), options,
       base::BindOnce(&CookiesSetFunction::SetCanonicalCookieCallback, this));
@@ -447,7 +473,7 @@ void CookiesSetFunction::SetCanonicalCookieCallback(
 }
 
 void CookiesSetFunction::GetCookieListCallback(
-    const net::CookieList& cookie_list,
+    const net::CookieStatusList& cookie_list,
     const net::CookieStatusList& excluded_cookies) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(SET_COMPLETED, state_);
@@ -463,16 +489,16 @@ void CookiesSetFunction::GetCookieListCallback(
   }
 
   ResponseValue value;
-  for (const net::CanonicalCookie& cookie : cookie_list) {
+  for (const net::CookieWithStatus& cookie_with_status : cookie_list) {
     // Return the first matching cookie. Relies on the fact that the
     // CookieMonster returns them in canonical order (longest path, then
     // earliest creation time).
     std::string name =
         parsed_args_->details.name.get() ? *parsed_args_->details.name
                                          : std::string();
-    if (cookie.Name() == name) {
+    if (cookie_with_status.cookie.Name() == name) {
       api::cookies::Cookie api_cookie = cookies_helpers::CreateCookie(
-          cookie, *parsed_args_->details.store_id);
+          cookie_with_status.cookie, *parsed_args_->details.store_id);
       value = ArgumentList(api::cookies::Set::Results::Create(api_cookie));
       break;
     }

@@ -29,6 +29,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_link_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -109,7 +110,7 @@
                action:@selector(showClearBrowsingDataAlertController:)];
     _clearBrowsingDataBarButton.accessibilityIdentifier =
         kClearBrowsingDataButtonIdentifier;
-    _clearBrowsingDataBarButton.tintColor = [UIColor redColor];
+    _clearBrowsingDataBarButton.tintColor = [UIColor colorNamed:kRedColor];
   }
   return _clearBrowsingDataBarButton;
 }

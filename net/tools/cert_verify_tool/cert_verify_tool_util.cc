@@ -8,7 +8,12 @@
 
 #include "base/files/file_util.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "net/cert/pem_tokenizer.h"
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#include "net/cert/internal/trust_store_mac.h"
+#endif
 
 namespace {
 
@@ -97,4 +102,16 @@ void PrintCertError(const std::string& error, const CertInput& cert) {
   if (!cert.source_details.empty())
     std::cerr << " (" << cert.source_details << ")";
   std::cerr << "\n";
+}
+
+void PrintDebugData(const base::SupportsUserData* debug_data) {
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  auto* mac_trust_debug_info =
+      net::TrustStoreMac::ResultDebugData::Get(debug_data);
+  if (mac_trust_debug_info) {
+    std::cout << base::StringPrintf(
+        "TrustStoreMac::ResultDebugData::combined_trust_debug_info: 0x%x\n",
+        mac_trust_debug_info->combined_trust_debug_info());
+  }
+#endif
 }

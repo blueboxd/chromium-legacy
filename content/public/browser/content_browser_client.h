@@ -1182,14 +1182,21 @@ class CONTENT_EXPORT ContentBrowserClient {
   // URLLoaderFactory will be used.
   //
   // |request_initiator| indicates which origin will be the initiator of
-  // requests that will use the URLLoaderFactory (see also
-  // |network::ResourceRequest::requests|). It's set when this factory is
+  // requests that will use the URLLoaderFactory. It's set when this factory is
   // created a) for a renderer to use to fetch subresources
   // (kDocumentSubResource, kWorkerSubResource, kServiceWorkerSubResource), or
-  // b) for the browser to use to fetch a worker (kWorkerMainResource). It's not
-  // set when creating a factory for navigation requests, because navigation
-  // requests are made on behalf of the browser, rather than on behalf of any
-  // particular origin.
+  // b) for the browser to use to fetch a worker (kWorkerMainResource). An
+  // opaque origin is passed currently for navigation (kNavigation) and
+  // download (kDownload) factories even though requests from these factories
+  // can have a valid |network::ResourceRequest::request_initiator|.
+  // Note: For the kDocumentSubResource case, the |request_initiator| may be
+  // incorrect in some cases:
+  // - Sandboxing flags of the frame are not taken into account, which may mean
+  //   that |request_initiator| might need to be opaque but isn't.
+  // - For about:blank frames, the |request_initiator| might be opaque or might
+  //   be the process lock.
+  // TODO(lukasza): https://crbug.com/888079: Ensure that |request_initiator| is
+  // always accurate.
   //
   // |*factory_request| is always valid upon entry and MUST be valid upon
   // return. The embedder may swap out the value of |*factory_request| for its

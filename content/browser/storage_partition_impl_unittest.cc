@@ -164,7 +164,7 @@ class RemoveCookieTester {
   }
 
  private:
-  void GetCookieListCallback(const net::CookieList& cookie_list,
+  void GetCookieListCallback(const net::CookieStatusList& cookie_list,
                              const net::CookieStatusList& excluded_cookies) {
     std::string cookie_line =
         net::CanonicalCookie::BuildCookieLine(cookie_list);

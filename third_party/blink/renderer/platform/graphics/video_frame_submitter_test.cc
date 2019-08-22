@@ -20,6 +20,7 @@
 #include "components/viz/test/test_context_provider.h"
 #include "media/base/video_frame.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom-blink.h"
 #include "services/viz/public/mojom/hit_test/hit_test_region_list.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -595,7 +596,7 @@ TEST_F(VideoFrameSubmitterTest, WaitingForAckPreventsNewFrame) {
 // SurfaceEmbedder isn't.
 TEST_F(VideoFrameSubmitterTest, RecreateCompositorFrameSinkAfterContextLost) {
   MockEmbeddedFrameSinkProvider mock_embedded_frame_sink_provider;
-  mojo::Binding<mojom::blink::EmbeddedFrameSinkProvider>
+  mojo::Receiver<mojom::blink::EmbeddedFrameSinkProvider>
       embedded_frame_sink_provider_binding(&mock_embedded_frame_sink_provider);
   auto override =
       mock_embedded_frame_sink_provider.CreateScopedOverrideMojoInterface(

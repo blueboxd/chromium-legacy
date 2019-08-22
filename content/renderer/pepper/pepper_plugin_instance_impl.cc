@@ -540,6 +540,7 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       isolate_(v8::Isolate::GetCurrent()),
       is_deleted_(false),
       initialized_(false),
+      created_in_process_instance_(false),
       audio_controller_(std::make_unique<PepperAudioController>(this)) {
   pp_instance_ = HostGlobals::Get()->AddInstance(this);
 
@@ -555,6 +556,7 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
     SetContentAreaFocus(render_frame_->GetLocalRootRenderWidget()->has_focus());
 
     if (!module_->IsProxied()) {
+      created_in_process_instance_ = true;
       PepperBrowserConnection* browser_connection =
           PepperBrowserConnection::Get(render_frame_);
       browser_connection->DidCreateInProcessInstance(
@@ -600,7 +602,7 @@ PepperPluginInstanceImpl::~PepperPluginInstanceImpl() {
   if (render_frame_)
     render_frame_->PepperInstanceDeleted(this);
 
-  if (!module_->IsProxied() && render_frame_) {
+  if (created_in_process_instance_) {
     PepperBrowserConnection* browser_connection =
         PepperBrowserConnection::Get(render_frame_);
     browser_connection->DidDeleteInProcessInstance(pp_instance());

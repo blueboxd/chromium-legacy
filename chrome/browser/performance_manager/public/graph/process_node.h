@@ -113,6 +113,11 @@ class ProcessNodeObserver {
   // Called when a |process_node| is added to the graph.
   virtual void OnProcessNodeAdded(const ProcessNode* process_node) = 0;
 
+  // The process associated with |process_node| has been started or has exited.
+  // This implies some or all of the process, process_id, launch time and/or
+  // exit status properties have changed.
+  virtual void OnProcessLifetimeChange(const ProcessNode* process_node) = 0;
+
   // Called before a |process_node| is removed from the graph.
   virtual void OnBeforeProcessNodeRemoved(const ProcessNode* process_node) = 0;
 
@@ -144,6 +149,7 @@ class ProcessNode::ObserverDefaultImpl : public ProcessNodeObserver {
 
   // ProcessNodeObserver implementation:
   void OnProcessNodeAdded(const ProcessNode* process_node) override {}
+  void OnProcessLifetimeChange(const ProcessNode* process_node) override {}
   void OnBeforeProcessNodeRemoved(const ProcessNode* process_node) override {}
   void OnExpectedTaskQueueingDurationSample(
       const ProcessNode* process_node) override {}

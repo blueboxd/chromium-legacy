@@ -22,6 +22,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 
 using cocoa_test_event_utils::SynthesizeKeyEvent;
@@ -47,13 +48,6 @@ void SendEvent(NSEvent* ns_event) {
 
 }  // namespace
 
-// Test that global keyboard shortcuts are handled by the native window.
-// https://crbug.com/852232
-#if defined(OS_MACOSX)
-#define MAYBE_SwitchTabsMac DISABLED_SwitchTabsMac
-#else
-#define MAYBE_SwitchTabsMac
-#endif
 IN_PROC_BROWSER_TEST_F(GlobalKeyboardShortcutsTest, SwitchTabsMac) {
   NSWindow* ns_window =
       browser()->window()->GetNativeWindow().GetNativeNSWindow();
@@ -184,13 +178,16 @@ IN_PROC_BROWSER_TEST_F(GlobalKeyboardShortcutsTest, ReopenPreviousTab) {
   ASSERT_EQ(tab_strip->GetActiveWebContents()->GetLastCommittedURL(), test_url);
 
   // Close a tab.
-  ui_test_utils::SendGlobalKeyEventsAndWait(kVK_ANSI_W, ui::EF_COMMAND_DOWN);
+  ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
+      browser()->window()->GetNativeWindow(), ui::VKEY_W, false, false, false,
+      true));
   EXPECT_EQ(1, tab_strip->count());
   ASSERT_NE(tab_strip->GetActiveWebContents()->GetLastCommittedURL(), test_url);
 
   // Reopen a tab.
-  ui_test_utils::SendGlobalKeyEventsAndWait(
-      kVK_ANSI_T, ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN);
+  ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
+      browser()->window()->GetNativeWindow(), ui::VKEY_T, false, true, false,
+      true));
   EXPECT_EQ(2, tab_strip->count());
   ASSERT_EQ(tab_strip->GetActiveWebContents()->GetLastCommittedURL(), test_url);
 }

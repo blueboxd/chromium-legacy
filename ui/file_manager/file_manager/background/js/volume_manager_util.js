@@ -60,11 +60,7 @@ volumeManagerUtil.createVolumeInfo = volumeMetadata => {
   let localizedLabel;
   switch (volumeMetadata.volumeType) {
     case VolumeManagerCommon.VolumeType.DOWNLOADS:
-      if (util.isMyFilesVolumeEnabled()) {
-        localizedLabel = str('MY_FILES_ROOT_LABEL');
-      } else {
-        localizedLabel = str('DOWNLOADS_DIRECTORY_LABEL');
-      }
+      localizedLabel = str('MY_FILES_ROOT_LABEL');
       break;
     case VolumeManagerCommon.VolumeType.DRIVE:
       localizedLabel = str('DRIVE_DIRECTORY_LABEL');

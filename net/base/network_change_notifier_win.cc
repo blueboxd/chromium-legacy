@@ -42,8 +42,7 @@ NetworkChangeNotifierWin::NetworkChangeNotifierWin()
           {base::ThreadPool(), base::MayBlock()})),
       last_computed_connection_type_(RecomputeCurrentConnectionType()),
       last_announced_offline_(last_computed_connection_type_ ==
-                              CONNECTION_NONE),
-      weak_factory_(this) {
+                              CONNECTION_NONE) {
   memset(&addr_overlapped_, 0, sizeof addr_overlapped_);
   addr_overlapped_.hEvent = WSACreateEvent();
 }

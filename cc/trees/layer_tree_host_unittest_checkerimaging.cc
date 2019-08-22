@@ -27,7 +27,6 @@ class LayerTreeHostCheckerImagingTest : public LayerTreeTest {
     layer_tree_host()->SetSourceURL(ukm_source_id_, url_);
     PostSetNeedsCommitToMainThread();
   }
-  void AfterTest() override {}
 
   void VerifyUkmAndEndTest(LayerTreeHostImpl* impl) {
     auto* recorder = static_cast<ukm::TestUkmRecorder*>(

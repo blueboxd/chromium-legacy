@@ -432,6 +432,9 @@ bool ProxyingURLLoaderFactory::MaybeProxyRequest(
   if (is_navigation)
     return false;
 
+  if (!render_frame_host)
+    return false;
+
   // This proxy should only be installed for subresource requests from a frame
   // that is rendering the GAIA signon realm.
   if (!gaia::IsGaiaSignonRealm(request_initiator.GetURL()))

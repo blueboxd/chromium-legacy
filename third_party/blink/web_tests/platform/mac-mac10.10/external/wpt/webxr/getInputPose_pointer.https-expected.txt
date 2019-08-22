@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+PASS XRInputSources with a target ray mode of 'tracked-pointer' properly communicate their poses
+Harness: the test ran to completion.
+

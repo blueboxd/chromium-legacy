@@ -19,6 +19,7 @@ class CustomLayoutScope;
 class FragmentResultOptions;
 struct LogicalSize;
 class NGBlockNode;
+struct NGBoxStrut;
 class NGConstraintSpace;
 class ScriptState;
 class SerializedScriptValue;
@@ -53,10 +54,11 @@ class CSSLayoutDefinition final
     // Runs the web developer defined layout, returns true if everything
     // succeeded. It populates the FragmentResultOptions dictionary, and
     // fragment_result_data.
-    bool Layout(const NGConstraintSpace& space,
-                const Document& document,
-                const NGBlockNode& node,
+    bool Layout(const NGConstraintSpace&,
+                const Document&,
+                const NGBlockNode&,
                 const LogicalSize& border_box_size,
+                const NGBoxStrut& border_scrollbar_padding,
                 CustomLayoutScope*,
                 FragmentResultOptions*,
                 scoped_refptr<SerializedScriptValue>* fragment_result_data);

@@ -111,6 +111,16 @@ FCMNetworkHandler::~FCMNetworkHandler() {
   StopListening();
 }
 
+// static
+std::unique_ptr<syncer::FCMNetworkHandler> FCMNetworkHandler::Create(
+    gcm::GCMDriver* gcm_driver,
+    instance_id::InstanceIDDriver* instance_id_driver,
+    const std::string& sender_id,
+    const std::string& app_id) {
+  return std::make_unique<syncer::FCMNetworkHandler>(
+      gcm_driver, instance_id_driver, sender_id, app_id);
+}
+
 void FCMNetworkHandler::StartListening() {
   if (IsListening()) {
     StopListening();

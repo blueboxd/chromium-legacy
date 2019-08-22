@@ -34,8 +34,10 @@ quic::QuicCryptoClientConfig* QuicStreamFactoryPeer::GetCryptoConfig(
 
 bool QuicStreamFactoryPeer::HasActiveSession(
     QuicStreamFactory* factory,
-    const quic::QuicServerId& server_id) {
-  return factory->HasActiveSession(QuicSessionKey(server_id, SocketTag()));
+    const quic::QuicServerId& server_id,
+    const NetworkIsolationKey& network_isolation_key) {
+  return factory->HasActiveSession(
+      QuicSessionKey(server_id, SocketTag(), network_isolation_key));
 }
 
 bool QuicStreamFactoryPeer::HasActiveJob(QuicStreamFactory* factory,
@@ -64,8 +66,9 @@ QuicChromiumClientSession* QuicStreamFactoryPeer::GetPendingSession(
 
 QuicChromiumClientSession* QuicStreamFactoryPeer::GetActiveSession(
     QuicStreamFactory* factory,
-    const quic::QuicServerId& server_id) {
-  QuicSessionKey session_key(server_id, SocketTag());
+    const quic::QuicServerId& server_id,
+    const NetworkIsolationKey& network_isolation_key) {
+  QuicSessionKey session_key(server_id, SocketTag(), network_isolation_key);
   DCHECK(factory->HasActiveSession(session_key));
   return factory->active_sessions_[session_key];
 }

@@ -445,7 +445,7 @@ bool SharedImageStub::OnMemoryDump(
   if (args.level_of_detail ==
       base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND) {
     std::string dump_name =
-        base::StringPrintf("gpu/gl/textures/client_0x%" PRIX32, ClientId());
+        base::StringPrintf("gpu/shared_images/client_0x%" PRIX32, ClientId());
     base::trace_event::MemoryAllocatorDump* dump =
         pmd->CreateAllocatorDump(dump_name);
     dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,

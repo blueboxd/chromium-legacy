@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+PASS A frame should be submitted if the base layer was written to during requestAnimationFrame
+Harness: the test ran to completion.
+

@@ -5,7 +5,7 @@
     <dist:module
         dist:onDemand="true"
         dist:title="@string/autofill_assistant_module_title">
-        <dist:fusing dist:include="false" />
+        <dist:fusing dist:include="true" />
     </dist:module>
 
     <application>

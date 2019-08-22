@@ -32,6 +32,7 @@
 #include "ios/web/public/init/ios_global_state_configuration.h"
 #include "net/base/http_user_agent_settings.h"
 #include "net/base/network_change_notifier.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/url_util.h"
 #include "net/cert/cert_verifier.h"
 #include "net/dns/host_resolver.h"
@@ -400,8 +401,8 @@ void CronetEnvironment::InitializeOnNetworkThread() {
     url::SchemeHostPort quic_hint_server("https", quic_hint.host(),
                                          quic_hint.port());
     main_context_->http_server_properties()->SetQuicAlternativeService(
-        quic_hint_server, alternative_service, base::Time::Max(),
-        quic::ParsedQuicVersionVector());
+        quic_hint_server, net::NetworkIsolationKey(), alternative_service,
+        base::Time::Max(), quic::ParsedQuicVersionVector());
   }
 
   main_context_->transport_security_state()

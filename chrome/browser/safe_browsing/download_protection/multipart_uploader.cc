@@ -54,8 +54,7 @@ MultipartUploadRequest::MultipartUploadRequest(
       current_backoff_(base::TimeDelta::FromSeconds(kInitialBackoffSeconds)),
       retry_count_(0),
       url_loader_factory_(url_loader_factory),
-      traffic_annotation_(traffic_annotation),
-      weak_factory_(this) {
+      traffic_annotation_(traffic_annotation) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 

@@ -285,6 +285,7 @@ android_library("chrome_java") {
     "//chrome/android/webapk/libs/common:splash_java",
     "//chrome/android/webapk/libs/runtime_library:webapk_service_aidl_java",
     "//chrome/browser/android/thin_webview:factory_java",
+    "//chrome/browser/android/thin_webview:java",
     "//chrome/browser/ui/android/widget:java",
     "//chrome/lib/image_fetcher/public/android:java",
     "//chrome/lib/lifecycle/public/android:java",
@@ -696,7 +697,7 @@ junit_binary("chrome_junit_tests") {
     "//components/bookmarks/common/android:bookmarks_java",
     "//components/invalidation/impl:java",
     "//components/minidump_uploader:minidump_uploader_java",
-    "//components/module_installer/android:module_installer_stub_java",
+    "//components/module_installer/android:module_installer_java",
     "//components/offline_items_collection/core:core_java",
     "//components/payments/content/android:java",
     "//components/payments/mojom:mojom_java",
@@ -1050,7 +1051,6 @@ if (enable_vr || enable_arcore) {
             "//third_party/gvr-android-sdk:gvr_common_java",
             ":chrome_test_util_java",
             "//components/module_installer/android:module_installer_java",
-            "//components/module_installer/android:module_installer_stub_java",
             "//components/module_installer/android:module_installer_test_java",
           ]
 

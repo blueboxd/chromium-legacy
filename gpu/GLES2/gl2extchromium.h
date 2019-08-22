@@ -215,8 +215,13 @@ typedef void (GL_APIENTRYP PFNGLBINDUNIFORMLOCATIONCHROMIUMPROC) (
 #define GL_CHROMIUM_command_buffer_query 1
 
 #ifndef GL_COMMANDS_ISSUED_CHROMIUM
-// TODO(gman): Get official numbers for this constants.
+// TODO(andrescj): Get official numbers for these constants.
 #define GL_COMMANDS_ISSUED_CHROMIUM 0x6004
+#endif
+
+#ifndef GL_COMMANDS_ISSUED_TIMESTAMP_CHROMIUM
+// TODO(andrescj): Get official numbers for these constants.
+#define GL_COMMANDS_ISSUED_TIMESTAMP_CHROMIUM 0x6005
 #endif
 #endif  /* GL_CHROMIUM_command_buffer_query */
 

@@ -1413,43 +1413,55 @@ RenderFrameImpl* RenderFrameImpl::FromRoutingID(int routing_id) {
 // static
 RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
     RenderViewImpl* render_view,
-    int32_t routing_id,
-    service_manager::mojom::InterfaceProviderPtr interface_provider,
-    blink::mojom::DocumentInterfaceBrokerPtr document_interface_broker_content,
-    blink::mojom::DocumentInterfaceBrokerPtr document_interface_broker_blink,
-    mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
-        browser_interface_broker,
-    int32_t widget_routing_id,
-    const ScreenInfo& screen_info,
     CompositorDependencies* compositor_deps,
     blink::WebFrame* opener,
-    const base::UnguessableToken& devtools_frame_token,
-    const FrameReplicationState& replicated_state,
-    bool has_committed_real_load) {
-  // A main frame RenderFrame must have a RenderWidget.
-  DCHECK_NE(MSG_ROUTING_NONE, widget_routing_id);
+    mojom::CreateViewParamsPtr* params_ptr,
+    RenderWidget::ShowCallback show_callback) {
+  mojom::CreateViewParamsPtr& params = *params_ptr;
 
+  // A main frame RenderFrame must have a RenderWidget.
+  DCHECK_NE(MSG_ROUTING_NONE, params->main_frame_widget_routing_id);
+
+  CHECK(params->main_frame_interface_bundle);
+  service_manager::mojom::InterfaceProviderPtr main_frame_interface_provider(
+      std::move(params->main_frame_interface_bundle->interface_provider));
+
+  blink::mojom::DocumentInterfaceBrokerPtr document_interface_broker_content(
+      std::move(params->main_frame_interface_bundle
+                    ->document_interface_broker_content));
   RenderFrameImpl* render_frame = RenderFrameImpl::Create(
-      render_view, routing_id, std::move(interface_provider),
+      render_view, params->main_frame_routing_id,
+      std::move(main_frame_interface_provider),
       std::move(document_interface_broker_content),
-      std::move(browser_interface_broker), devtools_frame_token);
+      std::move(params->main_frame_interface_bundle->browser_interface_broker),
+      params->devtools_main_frame_token);
   render_frame->InitializeBlameContext(nullptr);
+
+  blink::mojom::DocumentInterfaceBrokerPtr document_interface_broker_blink(
+      std::move(params->main_frame_interface_bundle
+                    ->document_interface_broker_blink));
   WebLocalFrame* web_frame = WebLocalFrame::CreateMainFrame(
       render_view->webview(), render_frame,
       render_frame->blink_interface_registry_.get(),
       document_interface_broker_blink.PassInterface().PassHandle(), opener,
       // This conversion is a little sad, as this often comes from a
       // WebString...
-      WebString::FromUTF8(replicated_state.name),
-      replicated_state.frame_policy.sandbox_flags,
-      replicated_state.opener_feature_state);
-  if (has_committed_real_load)
+      WebString::FromUTF8(params->replicated_frame_state.name),
+      params->replicated_frame_state.frame_policy.sandbox_flags,
+      params->replicated_frame_state.opener_feature_state);
+  if (params->has_committed_real_load)
     render_frame->frame_->SetCommittedFirstRealLoad();
 
-  // The RenderViewImpl and its RenderWidget already exist by the time we get
-  // here.
-  // TODO(crbug.com/419087): We probably want to create the RenderWidget here
-  // though (when we make the WebFrameWidget?).
+  // TODO(http://crbug.com/419087): Move ownership of the RenderWidget to the
+  // RenderFrame.
+  render_view->render_widget_ = RenderWidget::CreateForFrame(
+      params->main_frame_widget_routing_id, compositor_deps,
+      params->visual_properties.screen_info,
+      params->visual_properties.display_mode,
+      /*is_frozen=*/params->main_frame_routing_id == MSG_ROUTING_NONE,
+      params->never_visible);
+  render_view->GetWidget()->set_delegate(render_view);
+
   RenderWidget* render_widget = render_view->GetWidget();
 
   // Non-owning pointer that is self-referencing and destroyed by calling
@@ -1457,6 +1469,10 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   // WebFrameWidget, which is now attached here.
   auto* web_frame_widget = blink::WebFrameWidget::CreateForMainFrame(
       render_view->GetWidget(), web_frame);
+
+  render_widget->Init(std::move(show_callback),
+                      render_view->webview()->MainFrameWidget());
+
   render_view->AttachWebFrameWidget(web_frame_widget);
   // TODO(crbug.com/419087): This was added in 6ccadf770766e89c3 to prevent an
   // empty ScreenInfo, but the WebView has already been created and initialized
@@ -1663,8 +1679,7 @@ void RenderFrameImpl::CreateFrame(
     std::unique_ptr<RenderWidget> render_widget = RenderWidget::CreateForFrame(
         widget_params.routing_id, compositor_deps, screen_info_from_main_frame,
         blink::kWebDisplayModeUndefined,
-        /*is_frozen=*/false, /*never_visible=*/false,
-        /*widget_request=*/nullptr);
+        /*is_frozen=*/false, /*never_visible=*/false);
 
     // Non-owning pointer that is self-referencing and destroyed by calling
     // Close(). We use the new RenderWidget as the client for this

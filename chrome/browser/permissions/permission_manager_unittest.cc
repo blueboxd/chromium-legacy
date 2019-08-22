@@ -8,9 +8,11 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/permissions/permission_result.h"
@@ -22,6 +24,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -586,6 +589,57 @@ TEST_F(PermissionManagerTest, InsecureOrigin) {
 
   EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
+}
+
+TEST_F(PermissionManagerTest, InsecureOriginIsNotOverridable) {
+  const GURL kInsecureOrigin("http://example.com/geolocation");
+  const GURL kSecureOrigin("https://example.com/geolocation");
+  EXPECT_FALSE(
+      GetPermissionControllerDelegate()->IsPermissionOverridableByDevTools(
+          PermissionType::GEOLOCATION, kInsecureOrigin));
+  EXPECT_TRUE(
+      GetPermissionControllerDelegate()->IsPermissionOverridableByDevTools(
+          PermissionType::GEOLOCATION, kSecureOrigin));
+}
+
+TEST_F(PermissionManagerTest, MissingContextIsNotOverridable) {
+  // Permissions that are not implemented should be denied overridability.
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+  EXPECT_FALSE(
+      GetPermissionControllerDelegate()->IsPermissionOverridableByDevTools(
+          PermissionType::PROTECTED_MEDIA_IDENTIFIER,
+          GURL("http://localhost")));
+#endif
+  EXPECT_TRUE(
+      GetPermissionControllerDelegate()->IsPermissionOverridableByDevTools(
+          PermissionType::MIDI_SYSEX, GURL("http://localhost")));
+}
+
+TEST_F(PermissionManagerTest, KillSwitchOnIsNotOverridable) {
+  EXPECT_TRUE(
+      GetPermissionControllerDelegate()->IsPermissionOverridableByDevTools(
+          PermissionType::GEOLOCATION, GURL("http://localhost")));
+
+  // Turn on kill switch for GEOLOCATION.
+  base::FieldTrialList field_trial_list(
+      std::make_unique<base::MockEntropyProvider>());
+  variations::testing::ClearAllVariationParams();
+  std::map<std::string, std::string> params;
+  params[PermissionUtil::GetPermissionString(
+      CONTENT_SETTINGS_TYPE_GEOLOCATION)] =
+      PermissionContextBase::kPermissionsKillSwitchBlockedValue;
+  variations::AssociateVariationParams(
+      PermissionContextBase::kPermissionsKillSwitchFieldStudy, "TestGroup",
+      params);
+  base::FieldTrialList::CreateFieldTrial(
+      PermissionContextBase::kPermissionsKillSwitchFieldStudy, "TestGroup");
+
+  EXPECT_FALSE(
+      GetPermissionControllerDelegate()->IsPermissionOverridableByDevTools(
+          PermissionType::GEOLOCATION, GURL("http://localhost")));
+
+  // Clean-up.
+  variations::testing::ClearAllVariationParams();
 }
 
 TEST_F(PermissionManagerTest, GetCanonicalOriginSearch) {

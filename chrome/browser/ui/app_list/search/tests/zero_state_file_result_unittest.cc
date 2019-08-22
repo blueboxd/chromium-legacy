@@ -36,4 +36,14 @@ TEST_F(ZeroStateFileResultTest, CheckMetadata) {
   EXPECT_EQ(result.relevance(), 0.2f);
 }
 
+TEST_F(ZeroStateFileResultTest, HostedExtensionsIgnored) {
+  ZeroStateFileResult result_1(base::FilePath("my/Document.gdoc"), 0.2f,
+                               profile_.get());
+  ZeroStateFileResult result_2(base::FilePath("my/Map.gmaps"), 0.2f,
+                               profile_.get());
+
+  EXPECT_EQ(base::UTF16ToUTF8(result_1.title()), std::string("Document"));
+  EXPECT_EQ(base::UTF16ToUTF8(result_2.title()), std::string("Map"));
+}
+
 }  // namespace app_list

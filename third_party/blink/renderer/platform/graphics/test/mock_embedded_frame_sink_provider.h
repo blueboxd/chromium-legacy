@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "components/viz/common/surfaces/frame_sink_id.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/mojom/frame_sinks/embedded_frame_sink.mojom-blink.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
@@ -49,21 +50,20 @@ class MockEmbeddedFrameSinkProvider
   // Utility method to create a scoped EmbeddedFrameSinkProvider override.
   std::unique_ptr<TestingPlatformSupport::ScopedOverrideMojoInterface>
   CreateScopedOverrideMojoInterface(
-      mojo::Binding<mojom::blink::EmbeddedFrameSinkProvider>* binding) {
+      mojo::Receiver<mojom::blink::EmbeddedFrameSinkProvider>* receiver) {
     using mojom::blink::EmbeddedFrameSinkProvider;
     using mojom::blink::EmbeddedFrameSinkProviderRequest;
 
     return std::make_unique<
         TestingPlatformSupport::ScopedOverrideMojoInterface>(WTF::BindRepeating(
-        [](mojo::Binding<EmbeddedFrameSinkProvider>* binding,
+        [](mojo::Receiver<EmbeddedFrameSinkProvider>* receiver,
            const char* interface_name, mojo::ScopedMessagePipeHandle pipe) {
           if (strcmp(interface_name, EmbeddedFrameSinkProvider::Name_))
             return;
-          if (binding->is_bound())
-            binding->Unbind();
-          binding->Bind(EmbeddedFrameSinkProviderRequest(std::move(pipe)));
+          receiver->reset();
+          receiver->Bind(EmbeddedFrameSinkProviderRequest(std::move(pipe)));
         },
-        WTF::Unretained(binding)));
+        WTF::Unretained(receiver)));
   }
   MockCompositorFrameSink& mock_compositor_frame_sink() const {
     return *mock_compositor_frame_sink_;

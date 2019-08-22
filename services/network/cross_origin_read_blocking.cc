@@ -344,7 +344,7 @@ SniffingResult CrossOriginReadBlocking::SniffForHTML(StringPiece data) {
   // TODO(dsjang): Once CrossOriginReadBlocking is moved into the browser
   // process, we should do single-thread checking here for the static
   // initializer.
-  static const StringPiece kHtmlSignatures[] = {
+  static constexpr StringPiece kHtmlSignatures[] = {
       StringPiece("<!doctype html"),  // HTML5 spec
       StringPiece("<script"),         // HTML5 spec, Mozilla
       StringPiece("<html"),           // HTML5 spec, Mozilla
@@ -384,7 +384,7 @@ SniffingResult CrossOriginReadBlocking::SniffForXML(base::StringPiece data) {
   // process, we should do single-thread checking here for the static
   // initializer.
   AdvancePastWhitespace(&data);
-  static const StringPiece kXmlSignatures[] = {StringPiece("<?xml")};
+  static constexpr StringPiece kXmlSignatures[] = {StringPiece("<?xml")};
   return MatchesSignature(&data, kXmlSignatures, base::size(kXmlSignatures),
                           base::CompareCase::SENSITIVE);
 }
@@ -466,7 +466,7 @@ SniffingResult CrossOriginReadBlocking::SniffForFetchOnlyResource(
   // infinite loop. In either case, the prefix must create a guarantee that no
   // matter what bytes follow it, the entire response would be worthless to
   // execute as a <script>.
-  static const StringPiece kScriptBreakingPrefixes[] = {
+  static constexpr StringPiece kScriptBreakingPrefixes[] = {
       // Parser breaker prefix.
       //
       // Built into angular.js (followed by a comma and a newline):
@@ -486,7 +486,8 @@ SniffingResult CrossOriginReadBlocking::SniffForFetchOnlyResource(
 
       // Infinite loops.
       StringPiece("for(;;);"),  // observed on facebook.com
-      StringPiece("while(1);"), StringPiece("for (;;);"),
+      StringPiece("while(1);"),
+      StringPiece("for (;;);"),
       StringPiece("while (1);"),
   };
   SniffingResult has_parser_breaker = MatchesSignature(

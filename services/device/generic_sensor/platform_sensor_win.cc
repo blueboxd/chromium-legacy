@@ -21,8 +21,7 @@ PlatformSensorWin::PlatformSensorWin(
     std::unique_ptr<PlatformSensorReaderWinBase> sensor_reader)
     : PlatformSensor(type, reading_buffer, provider),
       sensor_thread_runner_(sensor_thread_runner),
-      sensor_reader_(sensor_reader.release()),
-      weak_factory_(this) {
+      sensor_reader_(sensor_reader.release()) {
   DCHECK(sensor_reader_);
   sensor_reader_->SetClient(this);
 }

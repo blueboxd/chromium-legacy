@@ -62,7 +62,7 @@ class UsbServiceWin final : public DeviceMonitorWin::Observer,
 
   ScopedObserver<DeviceMonitorWin, DeviceMonitorWin::Observer> device_observer_;
 
-  base::WeakPtrFactory<UsbServiceWin> weak_factory_;
+  base::WeakPtrFactory<UsbServiceWin> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UsbServiceWin);
 };

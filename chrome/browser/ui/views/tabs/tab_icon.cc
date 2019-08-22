@@ -41,7 +41,6 @@ constexpr int kLoadingAnimationStrokeWidthDp = 2;
 bool ShouldThemifyFaviconForUrl(const GURL& url) {
   return url.SchemeIs(content::kChromeUIScheme) &&
          url.host_piece() != chrome::kChromeUIHelpHost &&
-         url.host_piece() != chrome::kChromeUIUberHost &&
          url.host_piece() != chrome::kChromeUIAppLauncherPageHost;
 }
 

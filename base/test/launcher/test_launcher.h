@@ -49,18 +49,9 @@ class TestLauncherDelegate {
   // must put the result in |output| and return true on success.
   virtual bool GetTests(std::vector<TestIdentifier>* output) = 0;
 
-  // Invoked after a child process finishes, reporting the process |exit_code|,
-  // child process |elapsed_time|, whether or not the process was terminated as
-  // a result of a timeout, and the output of the child (stdout and stderr
-  // together). NOTE: this method is invoked on the main thread.
-  // Returns test results of child process.
-  virtual std::vector<TestResult> ProcessTestResults(
-      const std::vector<std::string>& test_names,
-      const base::FilePath& output_file,
-      const std::string& output,
-      const base::TimeDelta& elapsed_time,
-      int exit_code,
-      bool was_timeout) = 0;
+  // Additional delegate TestResult processing.
+  virtual void ProcessTestResults(std::vector<TestResult>& test_results,
+                                  TimeDelta elapsed_time) {}
 
   // Called to get the command line for the specified tests.
   // |output_file_| is populated with the path to the result file, and must
@@ -72,7 +63,7 @@ class TestLauncherDelegate {
   // Invoked when a test process exceeds its runtime, immediately before it is
   // terminated. |command_line| is the command line used to launch the process.
   // NOTE: this method is invoked on the thread the process is launched on.
-  virtual void OnTestTimedOut(const base::CommandLine& cmd_line) {}
+  virtual void OnTestTimedOut(const CommandLine& cmd_line) {}
 
   // Returns the delegate specific wrapper for command line.
   // If it is not empty, it is prepended to the final command line.
@@ -204,10 +195,16 @@ class TestLauncher {
   // wait for child processes). virtual to mock in testing.
   virtual void CreateAndStartThreadPool(int num_parallel_jobs);
 
+  // Callback to receive result of a test.
+  // |result_file| is a path to xml file written by child process.
+  // It contains information about test and failed
+  // EXPECT/ASSERT/DCHECK statements. Test launcher parses that
+  // file to get additional information about test run (status,
+  // error-messages, stack-traces and file/line for failures).
   void ProcessTestResults(const std::vector<std::string>& test_names,
-                          const base::FilePath& result_file,
+                          const FilePath& result_file,
                           const std::string& output,
-                          const base::TimeDelta& elapsed_time,
+                          TimeDelta elapsed_time,
                           int exit_code,
                           bool was_timeout);
 

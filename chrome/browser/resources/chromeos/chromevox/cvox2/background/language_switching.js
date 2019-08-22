@@ -21,9 +21,30 @@ LanguageSwitching.currentLanguage_ =
 /**
  * Confidence threshold to meet before assigning inner-node language.
  * @const
- * @type {number}
+ * @private {number}
  */
 LanguageSwitching.PROBABILITY_THRESHOLD = 0.9;
+
+/**
+ * Stores whether or not ChromeVox inner-node language switching is enabled or
+ * disabled.
+ * @private {boolean}
+ */
+LanguageSwitching.sub_node_switching_enabled_ = false;
+
+/**
+ * Initialization function for language switching.
+ */
+LanguageSwitching.init = function() {
+  // Enable inner-node language switching if inner-node switching feature flag
+  // is enabled.
+  chrome.commandLinePrivate.hasSwitch(
+      'enable-experimental-accessibility-chromevox-sub-node-language-' +
+          'switching',
+      function(enabled) {
+        LanguageSwitching.sub_node_switching_enabled_ = enabled;
+      });
+};
 
 /*
  * Main language switching function.
@@ -41,9 +62,35 @@ LanguageSwitching.assignLanguagesForStringAttribute = function(
     node, stringAttribute, appendStringWithLanguage) {
   if (!node)
     return;
-  var languageAnnotation =
-      node.languageAnnotationForStringAttribute(stringAttribute);
   var stringAttributeValue = node[stringAttribute];
+  var languageAnnotation;
+
+  // Quick note:
+  // The decideNewLanguage function, which contains the core language switching
+  // logic, is setup to prefer sub-node switching if the detected language's
+  // probability exceeds the PROBABILITY_THRESHOLD_; otherwise node-level
+  // switching will be used as a fallback.
+  if (LanguageSwitching.sub_node_switching_enabled_) {
+    languageAnnotation =
+        node.languageAnnotationForStringAttribute(stringAttribute);
+  } else {
+    // Use node-level language switching if inner-node switching is
+    // disabled. We use this logic because the API is disabled when sub-node
+    // switching is disabled.
+    var nodeLevelLanguageData = {};
+    // Ensure that we span the entire stringAttributeValue.
+    nodeLevelLanguageData.startIndex = 0;
+    nodeLevelLanguageData.endIndex = stringAttributeValue.length;
+    // To force the decideNewLanguage function to use node-level switching, we
+    // pass in an empty language with probability that doesn't exceed the
+    // PROBABILITY_THRESHOLD. As previously mentioned, if we are not confident
+    // enough in inner-node detected languages, we fall back on node-level
+    // language.
+    nodeLevelLanguageData.language = '';
+    nodeLevelLanguageData.probability = 0;
+    languageAnnotation = [nodeLevelLanguageData];
+  }
+
   // If no language annotation is found, append entire stringAttributeValue to
   // buffer and do not switch languages.
   // TODO(akihiroota): Decide if we simply want to return if

@@ -328,7 +328,7 @@ void SharedWorkerHost::CreateAppCacheBackend(
   if (!storage_partition_impl)
     return;
   storage_partition_impl->GetAppCacheService()->CreateBackend(
-      worker_process_host->GetID(), std::move(receiver));
+      worker_process_host->GetID(), MSG_ROUTING_NONE, std::move(receiver));
 }
 
 void SharedWorkerHost::TerminateWorker() {

@@ -121,7 +121,7 @@ class SystemMemoryPressureEvaluator
 
   // Weak pointer factory to ourself used for scheduling calls to
   // CheckMemoryPressure/CheckMemoryPressureAndRecordStatistics via |timer_|.
-  base::WeakPtrFactory<SystemMemoryPressureEvaluator> weak_ptr_factory_;
+  base::WeakPtrFactory<SystemMemoryPressureEvaluator> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SystemMemoryPressureEvaluator);
 };

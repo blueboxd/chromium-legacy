@@ -335,8 +335,12 @@ void DownloadsListTracker::SetChunkSizeForTesting(size_t chunk_size) {
 }
 
 bool DownloadsListTracker::ShouldShow(const DownloadItem& item) const {
-  return !download_crx_util::IsExtensionDownload(item) && !item.IsTemporary() &&
-         !item.IsTransient() && !item.GetFileNameToReportUser().empty() &&
+  return !download_crx_util::IsTrustedExtensionDownload(
+             Profile::FromBrowserContext(
+                 GetMainNotifierManager()->GetBrowserContext()),
+             item) &&
+         !item.IsTemporary() && !item.IsTransient() &&
+         !item.GetFileNameToReportUser().empty() &&
          !item.GetTargetFilePath().empty() && !item.GetURL().is_empty() &&
          DownloadItemModel(const_cast<DownloadItem*>(&item))
              .ShouldShowInShelf() &&

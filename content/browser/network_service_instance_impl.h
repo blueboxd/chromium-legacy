@@ -39,6 +39,17 @@ enum class NetworkServiceAvailability {
   kMaxValue = NOT_RESPONDING
 };
 
+constexpr char kSSLKeyLogFileHistogram[] = "Net.SSLKeyLogFileUse";
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class SSLKeyLogFileAction {
+  kLogFileEnabled = 0,
+  kSwitchFound = 1,
+  kEnvVarFound = 2,
+  kMaxValue = kEnvVarFound,
+};
+
 // TODO(http://crbug.com/934317): Remove these when done debugging renderer
 // hangs.
 CONTENT_EXPORT NetworkServiceAvailability GetNetworkServiceAvailability();

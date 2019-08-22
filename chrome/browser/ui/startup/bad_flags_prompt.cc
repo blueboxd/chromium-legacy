@@ -9,10 +9,8 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
-#include "base/environment.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
@@ -144,9 +142,6 @@ static const char* kBadFlags[] = {
     // A flag to support local file based BundledExchanges loading, only for
     // testing purpose.
     switches::kTrustableBundledExchangesFile,
-
-    // This flag causes plaintext of TLS traffic to be logged to a file.
-    network::switches::kSSLKeyLogFile,
 };
 #endif  // OS_ANDROID
 
@@ -170,18 +165,6 @@ void ShowBadFeatureFlagsInfoBar(content::WebContents* web_contents,
       false);
 }
 
-#if !defined(OS_ANDROID)
-void ShowBadEnvVarsInfoBar(content::WebContents* web_contents,
-                           int message_id,
-                           base::StringPiece env_var) {
-  SimpleAlertInfoBarDelegate::Create(
-      InfoBarService::FromWebContents(web_contents),
-      infobars::InfoBarDelegate::BAD_FLAGS_INFOBAR_DELEGATE, nullptr,
-      l10n_util::GetStringFUTF16(message_id, base::ASCIIToUTF16(env_var)),
-      false);
-}
-#endif  // OS_ANDROID
-
 }  // namespace
 
 void ShowBadFlagsPrompt(content::WebContents* web_contents) {
@@ -193,17 +176,6 @@ void ShowBadFlagsPrompt(content::WebContents* web_contents) {
       ShowBadFlagsInfoBar(web_contents, IDS_BAD_FLAGS_WARNING_MESSAGE, flag);
       return;
     }
-  }
-
-  // Check for the environment variable that triggers the same behavior as the
-  // network::switches::kSSLKeyLogFile flag.
-  static constexpr base::StringPiece kSSLKeyLogFileVar("SSLKEYLOGFILE");
-  std::unique_ptr<base::Environment> env(base::Environment::Create());
-  if (env->HasVar(kSSLKeyLogFileVar)) {
-    ShowBadEnvVarsInfoBar(web_contents,
-                          IDS_BAD_ENVIRONMENT_VARIABLES_WARNING_MESSAGE,
-                          kSSLKeyLogFileVar);
-    return;
   }
 #endif  // OS_ANDROID
 

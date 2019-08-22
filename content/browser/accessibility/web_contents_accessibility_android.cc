@@ -667,61 +667,18 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
   if (!node)
     return false;
 
-  // TODO(crbug.com/974444): This crash key string is temporary in order
-  // to get some useful information about the state when the crash occurs.
-  // Remove the crash key string and additional logic once resolved.
-  static auto* crbug_974444_crash_key = base::debug::AllocateCrashKeyString(
-      "crbug_974444", base::debug::CrashKeySize::Size64);
-  std::stringstream base_message;
-  base_message << "node_role: " << node->GetData().role;
-  std::string tag;
-  if (node->GetData().GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag,
-                                         &tag))
-    base_message << ", node_tag: <" << tag.c_str() << ">";
-  if (node->IsIgnored())
-    base_message << ", IGNORED";
-  if (BrowserAccessibilityManager* manager = node->manager()) {
-    if (ui::AXTree* tree = manager->ax_tree()) {
-      if (tree->GetTreeUpdateInProgressState())
-        base_message << ", TREE_UPDATE_IN_PROGRESS";
-    } else {
-      base_message << ", NO_AX_TREE";
-    }
-  } else {
-    base_message << ", NO_MANAGER";
-  }
-
   if (node->PlatformGetParent()) {
     auto* android_node =
         static_cast<BrowserAccessibilityAndroid*>(node->PlatformGetParent());
-    std::stringstream message;
-    message << base_message.str() << ", PlatformGetParent";
-    base::debug::SetCrashKeyString(crbug_974444_crash_key, message.str());
     Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoParent(
         env, obj, info, android_node->unique_id());
-    base::debug::ClearCrashKeyString(crbug_974444_crash_key);
   }
-  unsigned child_index = 0;
   for (BrowserAccessibility::PlatformChildIterator it =
            node->PlatformChildrenBegin();
        it != node->PlatformChildrenEnd(); ++it) {
     auto* android_node = static_cast<BrowserAccessibilityAndroid*>(it.get());
-    if (!android_node) {
-      std::stringstream message;
-      message << base_message.str() << ", PlatformGetChild [" << child_index
-              << "/" << node->PlatformChildCount() << "]";
-      const size_t actual_unignored_child_count =
-          ActualUnignoredChildCount(node->node());
-      if (actual_unignored_child_count != node->PlatformChildCount()) {
-        message << ", unignored_child_count_ [found: "
-                << node->PlatformChildCount()
-                << ", expected: " << actual_unignored_child_count << "]";
-      }
-      base::debug::SetCrashKeyString(crbug_974444_crash_key, message.str());
-    }
     Java_WebContentsAccessibilityImpl_addAccessibilityNodeInfoChild(
         env, obj, info, android_node->unique_id());
-    base::debug::ClearCrashKeyString(crbug_974444_crash_key);
   }
   Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoBooleanAttributes(
       env, obj, info, unique_id, node->IsCheckable(), node->IsChecked(),

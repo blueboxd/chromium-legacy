@@ -52,10 +52,6 @@ const base::Feature kEnableUnifiedAudioFocusFeature{
 const base::Feature kFilePickerExperimentFeature{
     "ArcFilePickerExperiment", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Controls experimental ARC graphic buffers visualization tools.
-const base::Feature kGraphicBuffersVisualizationTool{
-    "ArcGraphicBuffersVisualizationTool", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Controls experimental native bridge feature for ARC.
 const base::Feature kNativeBridgeExperimentFeature {
     "ArcNativeBridgeExperiment", base::FEATURE_ENABLED_BY_DEFAULT

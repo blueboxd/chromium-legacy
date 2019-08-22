@@ -70,8 +70,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstanceClientImpl
   // blink::mojom::EmbeddedWorkerInstanceClient implementation
   void StartWorker(blink::mojom::EmbeddedWorkerStartParamsPtr params) override;
   void ResumeAfterDownload() override;
-  void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
-                           const std::string& message) override;
 
   // Handler of connection error bound to |receiver_|.
   void OnError();

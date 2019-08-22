@@ -53,6 +53,11 @@ struct CC_EXPORT InputHandlerPointerResult {
   // pointer event (due to the latency attribution that happens at the
   // InputHandlerProxy level).
   gfx::ScrollOffset scroll_offset;
+
+  // Used to determine which scroll_node needs to be scrolled. The primary
+  // purpose of this is to avoid hit testing for gestures that already know
+  // which scroller to target.
+  ElementId target_scroller;
 };
 
 struct CC_EXPORT InputHandlerScrollResult {

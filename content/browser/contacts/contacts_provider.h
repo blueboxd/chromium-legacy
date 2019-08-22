@@ -11,17 +11,21 @@ namespace content {
 
 class ContactsProvider {
  public:
+  using ContactsSelectedCallback = base::OnceCallback<void(
+      base::Optional<std::vector<blink::mojom::ContactInfoPtr>> contacts,
+      int percentage_shared)>;
+
   ContactsProvider() = default;
   virtual ~ContactsProvider() = default;
 
   // Launches the Contacts Picker Dialog and waits for the results to come back.
-  // |callback| is called with the contacts list, once the operation finishes.
-  virtual void Select(
-      bool multiple,
-      bool include_names,
-      bool include_emails,
-      bool include_tel,
-      blink::mojom::ContactsManager::SelectCallback callback) = 0;
+  // |callback| is called with the contacts list and share statistics, once the
+  // operation finishes. See above for details.
+  virtual void Select(bool multiple,
+                      bool include_names,
+                      bool include_emails,
+                      bool include_tel,
+                      ContactsSelectedCallback callback) = 0;
 };
 
 }  // namespace content

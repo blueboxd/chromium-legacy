@@ -428,12 +428,16 @@ void RuleFeatureSet::UpdateFeaturesFromCombinator(
         }
       }
     }
-    if (sibling_features->max_direct_adjacent_selectors == UINT_MAX)
+    if (sibling_features->max_direct_adjacent_selectors ==
+        SiblingInvalidationSet::kDirectAdjacentMax) {
       return;
-    if (last_in_compound.Relation() == CSSSelector::kDirectAdjacent)
+    }
+    if (last_in_compound.Relation() == CSSSelector::kDirectAdjacent) {
       ++sibling_features->max_direct_adjacent_selectors;
-    else
-      sibling_features->max_direct_adjacent_selectors = UINT_MAX;
+    } else {
+      sibling_features->max_direct_adjacent_selectors =
+          SiblingInvalidationSet::kDirectAdjacentMax;
+    }
     return;
   }
 
@@ -566,7 +570,7 @@ InvalidationSet* RuleFeatureSet::InvalidationSetForSimpleSelector(
 void RuleFeatureSet::UpdateInvalidationSets(const RuleData* rule_data) {
   // Given a rule, update the descendant invalidation sets for the features
   // found in its selector. The first step is to extract the features from the
-  // rightmost compound selector (extractInvalidationSetFeaturesFromCompound).
+  // rightmost compound selector (ExtractInvalidationSetFeaturesFromCompound).
   // Secondly, add those features to the invalidation sets for the features
   // found in the other compound selectors (addFeaturesToInvalidationSets). If
   // we find a feature in the right-most compound selector that requires a

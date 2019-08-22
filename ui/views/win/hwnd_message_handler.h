@@ -783,7 +783,7 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   CR_MSG_MAP_CLASS_DECLARATIONS(HWNDMessageHandler)
 
   // The factory used to lookup appbar autohide edges.
-  base::WeakPtrFactory<HWNDMessageHandler> autohide_factory_;
+  base::WeakPtrFactory<HWNDMessageHandler> autohide_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HWNDMessageHandler);
 };

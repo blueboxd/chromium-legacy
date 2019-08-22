@@ -74,7 +74,7 @@ class ReportGenerator {
 
   size_t maximum_report_size_;
 
-  base::WeakPtrFactory<ReportGenerator> weak_ptr_factory_;
+  base::WeakPtrFactory<ReportGenerator> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ReportGenerator);
 };

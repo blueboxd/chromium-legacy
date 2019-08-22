@@ -112,8 +112,7 @@ D3D11VideoDecoder::D3D11VideoDecoder(
       gpu_workarounds_(gpu_workarounds),
       get_d3d11_device_cb_(std::move(get_d3d11_device_cb)),
       get_helper_cb_(std::move(get_helper_cb)),
-      supported_configs_(std::move(supported_configs)),
-      weak_factory_(this) {
+      supported_configs_(std::move(supported_configs)) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(media_log_);
 

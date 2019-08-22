@@ -14,6 +14,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_utils.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_util.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 
 namespace {
@@ -37,7 +38,7 @@ class RemoveCookieTester {
                  const std::string& value);
 
  private:
-  void GetCookieListCallback(const std::vector<net::CanonicalCookie>& cookies,
+  void GetCookieListCallback(const net::CookieStatusList& cookies,
                              const net::CookieStatusList& excluded_cookies);
   void SetCanonicalCookieCallback(
       net::CanonicalCookie::CookieInclusionStatus result);
@@ -104,9 +105,9 @@ void RemoveCookieTester::AddCookie(const std::string& host,
 }
 
 void RemoveCookieTester::GetCookieListCallback(
-    const std::vector<net::CanonicalCookie>& cookies,
+    const net::CookieStatusList& cookies,
     const net::CookieStatusList& excluded_cookies) {
-  last_cookies_ = cookies;
+  last_cookies_ = net::cookie_util::StripStatuses(cookies);
   Notify();
 }
 

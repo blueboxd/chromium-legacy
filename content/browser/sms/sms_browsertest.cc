@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/sms/sms_service.h"
 #include "content/browser/sms/test/mock_sms_dialog.h"
@@ -16,7 +19,9 @@
 #include "content/shell/browser/shell.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/common/sms/sms_receiver_outcome.h"
 
 using ::testing::_;
 using ::testing::ByMove;
@@ -31,6 +36,8 @@ namespace {
 
 class SmsBrowserTest : public ContentBrowserTest {
  public:
+  using Entry = ukm::builders::SMSReceiver;
+
   SmsBrowserTest() = default;
   ~SmsBrowserTest() override = default;
 
@@ -42,10 +49,31 @@ class SmsBrowserTest : public ContentBrowserTest {
     cert_verifier_.SetUpCommandLine(command_line);
   }
 
+  void ExpectOutcomeUKM(const GURL& url, blink::SMSReceiverOutcome outcome) {
+    auto entries = ukm_recorder()->GetEntriesByName(Entry::kEntryName);
+
+    if (entries.empty())
+      FAIL() << "No SMSReceiverOutcome was recorded";
+
+    for (const auto* const entry : entries) {
+      const int64_t* metric = ukm_recorder()->GetEntryMetric(entry, "Outcome");
+      if (*metric == static_cast<int>(outcome)) {
+        SUCCEED();
+        return;
+      }
+    }
+    FAIL() << "Expected SMSReceiverOutcome was not recorded";
+  }
+
+  void ExpectNoOutcomeUKM() {
+    EXPECT_TRUE(ukm_recorder()->GetEntriesByName(Entry::kEntryName).empty());
+  }
+
  protected:
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
     cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
+    ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
   }
 
   void SetUpInProcessBrowserTestFixture() override {
@@ -56,10 +84,14 @@ class SmsBrowserTest : public ContentBrowserTest {
     cert_verifier_.TearDownInProcessBrowserTestFixture();
   }
 
+  ukm::TestAutoSetUkmRecorder* ukm_recorder() { return ukm_recorder_.get(); }
+
   NiceMock<MockSmsWebContentsDelegate> delegate_;
   // Similar to net::MockCertVerifier, but also updates the CertVerifier
   // used by the NetworkService.
   ContentMockCertVerifier cert_verifier_;
+
+  std::unique_ptr<ukm::TestAutoSetUkmRecorder> ukm_recorder_;
 };
 
 }  // namespace
@@ -106,6 +138,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Receive) {
   EXPECT_EQ("hello", EvalJs(shell(), script));
 
   ASSERT_FALSE(provider->HasObservers());
+
+  ExpectOutcomeUKM(url, blink::SMSReceiverOutcome::kSuccess);
 }
 
 IN_PROC_BROWSER_TEST_F(SmsBrowserTest, AtMostOnePendingSmsRequest) {
@@ -148,6 +182,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, AtMostOnePendingSmsRequest) {
 
   EXPECT_EQ("AbortError", EvalJs(shell(), script));
 
+  ExpectOutcomeUKM(url, blink::SMSReceiverOutcome::kCancelled);
+
   loop.Run();
 
   provider->NotifyReceive(url::Origin::Create(url), "hello");
@@ -155,6 +191,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, AtMostOnePendingSmsRequest) {
   EXPECT_EQ("hello", EvalJs(shell(), "first"));
 
   ASSERT_FALSE(provider->HasObservers());
+
+  ExpectOutcomeUKM(url, blink::SMSReceiverOutcome::kSuccess);
 }
 
 IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Reload) {
@@ -175,7 +213,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Reload) {
   base::RunLoop loop;
 
   EXPECT_CALL(*provider, Retrieve()).WillOnce(Invoke([&loop]() {
-    // deliberately avoid calling NotifyReceive() to simulate
+    // Deliberately avoid calling NotifyReceive() to simulate
     // a request that has been received but not fulfilled.
     loop.Quit();
   }));
@@ -186,10 +224,20 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Reload) {
 
   ASSERT_TRUE(provider->HasObservers());
 
-  // reload the page.
+  // Wait for UKM to be recorded to avoid race condition.
+  base::RunLoop ukm_loop;
+
+  ukm_recorder()->SetOnAddEntryCallback(Entry::kEntryName,
+                                        ukm_loop.QuitClosure());
+
+  // Reload the page.
   NavigateToURL(shell(), url);
 
+  ukm_loop.Run();
+
   ASSERT_FALSE(provider->HasObservers());
+
+  ExpectOutcomeUKM(url, blink::SMSReceiverOutcome::kTimeout);
 }
 
 IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Close) {
@@ -220,6 +268,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Close) {
   shell()->Close();
 
   ASSERT_FALSE(provider->HasObservers());
+
+  ExpectNoOutcomeUKM();
 }
 
 IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsSameOrigin) {
@@ -307,6 +357,10 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsSameOrigin) {
 
   ASSERT_TRUE(provider->HasObservers());
 
+  ExpectOutcomeUKM(url, blink::SMSReceiverOutcome::kSuccess);
+
+  ukm_recorder()->Purge();
+
   provider->NotifyReceive(url::Origin::Create(url), "hello2");
 
   std::move(hdl_2).Run(SmsDialog::Event::kConfirm);
@@ -314,6 +368,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsSameOrigin) {
   EXPECT_EQ("hello2", EvalJs(tab2, "sms"));
 
   ASSERT_FALSE(provider->HasObservers());
+
+  ExpectOutcomeUKM(url, blink::SMSReceiverOutcome::kSuccess);
 }
 
 IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsDifferentOrigin) {
@@ -394,6 +450,9 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsDifferentOrigin) {
   EXPECT_EQ("hello2", EvalJs(tab2, "sms"));
 
   ASSERT_FALSE(provider->HasObservers());
+
+  ExpectOutcomeUKM(url1, blink::SMSReceiverOutcome::kSuccess);
+  ExpectOutcomeUKM(url2, blink::SMSReceiverOutcome::kSuccess);
 }
 
 IN_PROC_BROWSER_TEST_F(SmsBrowserTest, SmsReceivedAfterTabIsClosed) {
@@ -423,6 +482,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, SmsReceivedAfterTabIsClosed) {
   shell()->Close();
 
   provider->NotifyReceive(url::Origin::Create(url), "hello");
+
+  ExpectNoOutcomeUKM();
 }
 
 IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Cancels) {
@@ -462,6 +523,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Cancels) {
   )";
 
   EXPECT_EQ("AbortError", EvalJs(shell(), script));
+
+  ExpectOutcomeUKM(url, blink::SMSReceiverOutcome::kCancelled);
 }
 
 IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TimesOut) {
@@ -502,6 +565,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TimesOut) {
   )";
 
   EXPECT_EQ("TimeoutError", EvalJs(shell(), script));
+
+  ExpectOutcomeUKM(url, blink::SMSReceiverOutcome::kTimeout);
 }
 
 }  // namespace content

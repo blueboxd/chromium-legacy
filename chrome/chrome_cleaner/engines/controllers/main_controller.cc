@@ -120,8 +120,7 @@ MainController::MainController(RebooterAPI* rebooter,
       rebooter_(rebooter),
       component_manager_(this),
       result_code_(RESULT_CODE_INVALID),
-      registry_logger_(registry_logger),
-      weak_factory_(this) {
+      registry_logger_(registry_logger) {
   Settings* settings = Settings::GetInstance();
   ExecutionMode execution_mode = settings->execution_mode();
   DCHECK(execution_mode == ExecutionMode::kScanning ||

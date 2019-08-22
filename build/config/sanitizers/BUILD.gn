@@ -499,6 +499,7 @@ config("ubsan_flags") {
       "-fsanitize=signed-integer-overflow",
       "-fsanitize=unreachable",
       "-fsanitize=vla-bound",
+      "-fsanitize=bool",
       "-fsanitize-blacklist=$ubsan_blacklist_path",
     ]
 

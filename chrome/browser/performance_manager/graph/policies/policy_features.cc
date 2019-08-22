@@ -9,6 +9,10 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 
+#if defined(OS_LINUX)
+#include "base/allocator/buildflags.h"
+#endif
+
 namespace performance_manager {
 namespace features {
 
@@ -19,7 +23,7 @@ const base::Feature kTrimOnMemoryPressure{"TrimOnMemoryPressure",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kTrimOnFreeze{"TrimOnFreeze",
-                                  base::FEATURE_ENABLED_BY_DEFAULT};
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::FeatureParam<int> kGraphWalkBackoffTimeSec = {
     &kTrimOnMemoryPressure, "GraphWalkBackoffTimeSec", 120};
@@ -50,7 +54,29 @@ TrimOnMemoryPressureParams TrimOnMemoryPressureParams::GetParams() {
 }
 
 }  // namespace chromeos
-#endif
+#endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_LINUX)
+namespace linux {
+
+#if BUILDFLAG(USE_TCMALLOC)
+// This flag will allow the browser process to adjust the tcmalloc tunables to
+// balance performance and memory utilization.
+const base::Feature kDynamicTcmallocTuning{"DynamicTcmallocTuning",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+// The time between attempting to update tcmalloc tunables.
+const base::FeatureParam<int> kDynamicTuningTimeSec = {
+    &kDynamicTcmallocTuning, "DynamicTcmallocTuneTimeSec", 120};
+
+// The time a frame must be invisible before being additionally scaled. -1 will
+// disable invisible scaling.
+extern const base::FeatureParam<int> kDynamicTuningScaleInvisibleTimeSec = {
+    &kDynamicTcmallocTuning, "DynamicTcmallocScaleInvisibleTimeSec", -1};
+#endif  // BUILDFLAG(USE_TCMALLOC)
+
+}  // namespace linux
+#endif  // defined(OS_LINUX)
 
 }  // namespace features
 }  // namespace performance_manager

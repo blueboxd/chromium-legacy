@@ -125,12 +125,13 @@ bool VirtualFidoDevice::State::InjectResidentKey(
     base::span<const uint8_t> credential_id,
     const std::string& relying_party_id,
     base::span<const uint8_t> user_id,
-    const std::string& user_name,
-    const std::string& user_display_name) {
+    base::Optional<std::string> user_name,
+    base::Optional<std::string> user_display_name) {
   return InjectResidentKey(
       credential_id, PublicKeyCredentialRpEntity(std::move(relying_party_id)),
       PublicKeyCredentialUserEntity(fido_parsing_utils::Materialize(user_id),
-                                    user_name, user_display_name,
+                                    std::move(user_name),
+                                    std::move(user_display_name),
                                     /*icon_url=*/base::nullopt));
 }
 

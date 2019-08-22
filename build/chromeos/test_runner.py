@@ -257,9 +257,7 @@ class TastTest(RemoteTest):
 
     self._test_cmd += [
         '--deploy',
-        # Mounting the browser gives it enough disk space to not need stripping.
         '--mount',
-        '--nostrip',
         '--build-dir', os.path.relpath(self._path_to_outdir, CHROMIUM_SRC_PATH),
     ]
 
@@ -295,6 +293,9 @@ class TastTest(RemoteTest):
           './' + os.path.relpath(self._on_device_script, self._path_to_outdir)
       ]
     else:
+      # Mounting the browser gives it enough disk space to not need stripping,
+      # but only for browsers not instrumented with code coverage.
+      self._test_cmd.append('--nostrip')
       # Capture tast's results in the logs dir as well.
       if self._logs_dir:
         self._test_cmd += [
@@ -645,7 +646,9 @@ def host_cmd(args, unknown_args):
   if args.deploy_chrome:
     cros_run_test_cmd += [
         '--deploy',
+        # Mounting the browser gives it enough disk space to not need stripping.
         '--mount',
+        '--nostrip',
         '--build-dir', os.path.abspath(args.path_to_outdir),
     ]
 

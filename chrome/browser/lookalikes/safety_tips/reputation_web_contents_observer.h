@@ -10,6 +10,7 @@
 #include "chrome/browser/lookalikes/safety_tips/reputation_service.h"
 #include "chrome/browser/lookalikes/safety_tips/safety_tip_ui.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/visibility.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/views/widget/widget.h"
@@ -33,6 +34,7 @@ class ReputationWebContentsObserver
       content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void OnVisibilityChanged(content::Visibility visibility) override;
 
   SafetyTipType last_shown_safety_tip_type() const {
     return last_shown_safety_tip_type_;
@@ -42,6 +44,9 @@ class ReputationWebContentsObserver
   friend class content::WebContentsUserData<ReputationWebContentsObserver>;
 
   explicit ReputationWebContentsObserver(content::WebContents* web_contents);
+
+  // Possibly show a Safety Tip. Called on visibility changes and page load.
+  void MaybeShowSafetyTip();
 
   // A ReputationCheckCallback. Called by the reputation service when a
   // reputation result is available.
@@ -55,7 +60,7 @@ class ReputationWebContentsObserver
   // new top frame navigations.
   safety_tips::SafetyTipType last_shown_safety_tip_type_ = SafetyTipType::kNone;
 
-  base::WeakPtrFactory<ReputationWebContentsObserver> weak_factory_;
+  base::WeakPtrFactory<ReputationWebContentsObserver> weak_factory_{this};
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
 

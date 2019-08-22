@@ -540,7 +540,6 @@ TEST_F(RootViewTest, ClearMouseMoveHandlerOnMouseExitDispatch) {
 
   View* child = new NestedEventOnEvent(ui::ET_MOUSE_EXITED, root_view);
   content->AddChildView(child);
-  root_view->AddChildView(content);
   // Make |child| smaller than the containing Widget and RootView.
   child->SetBounds(100, 100, 100, 100);
 

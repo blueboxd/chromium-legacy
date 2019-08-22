@@ -153,6 +153,14 @@
 #include "chrome/renderer/searchbox/searchbox_extension.h"
 #endif
 
+#if defined(OS_LINUX)
+#include "base/allocator/buildflags.h"
+#if BUILDFLAG(USE_TCMALLOC)
+#include "chrome/common/performance_manager/mojom/tcmalloc.mojom.h"
+#include "chrome/renderer/performance_manager/mechanisms/tcmalloc_tunables_impl.h"
+#endif  // BUILDFLAG(USE_TCMALLOC)
+#endif  // defined(OS_LINUX)
+
 #if defined(OS_WIN)
 #endif
 
@@ -1659,6 +1667,16 @@ void ChromeContentRendererClient::BindReceiverOnMainThread(
     return;
   }
 #endif
+
+#if defined(OS_LINUX)
+#if BUILDFLAG(USE_TCMALLOC)
+  if (auto setter_receiver = receiver.As<tcmalloc::mojom::TcmallocTunables>()) {
+    performance_manager::mechanism::TcmallocTunablesImpl::Create(
+        std::move(setter_receiver));
+    return;
+  }
+#endif  // BUILDFLAG(USE_TCMALLOC)
+#endif  // defined(OS_LINUX)
 
   // TODO(crbug.com/977637): Get rid of the use of BinderRegistry here. This was
   // done only to avoid churning spellcheck code while eliminting the "chrome"

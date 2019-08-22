@@ -20,7 +20,7 @@ constexpr base::FilePath::CharType kFilePath[] = FILE_PATH_LITERAL("some_path");
 }
 
 TEST(WebRequestInfoTest, CreateRequestBodyDataFromFile) {
-  content::BrowserTaskEnvironment test_bundle;
+  content::BrowserTaskEnvironment task_environment_;
 
   network::ResourceRequest request;
   request.method = "POST";

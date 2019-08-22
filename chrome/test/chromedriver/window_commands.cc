@@ -1288,25 +1288,42 @@ Status ExecutePerformActions(Session* session,
         if (!session->input_state_table.GetDictionary(id, &input_state))
           return Status(kUnknownError, "missing input state");
 
+        action->GetString("type", &type);
         if (i == 0) {
           if (pointer_id_set.find(id) != pointer_id_set.end())
             return Status(kInvalidArgument, "'id' already exists");
           pointer_id_set.insert(id);
           action_input_states.push_back(input_state);
+
+          if (type == "pointer") {
+            Status status = WindowViewportSize(
+                session, web_view, &viewport_width, &viewport_height);
+            if (status.IsError())
+              return status;
+
+            input_state->GetInteger("x", &init_x);
+            input_state->GetInteger("y", &init_y);
+            action_locations.insert(
+                std::make_pair(id, gfx::Point(init_x, init_y)));
+
+            std::string pointer_type;
+            action->GetString("pointerType", &pointer_type);
+            if (pointer_type == "mouse" || pointer_type == "pen")
+              buttons[id] = input_state->FindKey("pressed")->GetInt();
+            else if (pointer_type == "touch")
+              has_touch_start[id] = false;
+          }
         }
 
-        action->GetString("type", &type);
         action->GetString("subtype", &action_type);
         int duration = 0;
         if (action_type == "pause") {
           GetOptionalInt(action, "duration", &duration);
           tick_duration = std::max(tick_duration, duration);
-        }
-
-        if (type == "key") {
-          std::list<KeyEvent> dispatch_key_events;
-          KeyEventBuilder builder;
-          if (action_type != "pause") {
+        } else {
+          if (type == "key") {
+            std::list<KeyEvent> dispatch_key_events;
+            KeyEventBuilder builder;
             Status status = ConvertKeyActionToKeyEvent(action, input_state,
                                                        action_type == "keyDown",
                                                        &dispatch_key_events);
@@ -1327,33 +1344,10 @@ Status ExecutePerformActions(Session* session,
               if (status.IsError())
                 return status;
             }
-          }
-        } else if (type == "pointer") {
-          std::string pointer_type;
-          action->GetString("pointerType", &pointer_type);
-          if (i == 0) {
-            Status status = WindowViewportSize(
-                session, web_view, &viewport_width, &viewport_height);
-            if (status.IsError())
-              return status;
-
-            input_state->GetInteger("x", &init_x);
-            input_state->GetInteger("y", &init_y);
-            action_locations.insert(
-                std::make_pair(id, gfx::Point(init_x, init_y)));
-
-            if (pointer_type == "mouse" || pointer_type == "pen")
-              buttons[id] = input_state->FindKey("pressed")->GetInt();
-            else if (pointer_type == "touch")
-              has_touch_start[id] = false;
-          }
-
-          if (action_type != "pause") {
-            std::list<MouseEvent> dispatch_mouse_events;
-            std::list<TouchEvent> dispatch_touch_events;
-            double x = 0;
-            double y = 0;
-
+          } else if (type == "pointer") {
+            std::string pointer_type;
+            action->GetString("pointerType", &pointer_type);
+            double x = 0, y = 0;
             OriginType origin = kViewPort;
             std::string element_id = "";
             if (action_type == "pointerMove") {
@@ -1364,13 +1358,29 @@ Status ExecutePerformActions(Session* session,
                 if (action->GetDictionary("origin", &origin_dict)) {
                   origin = kElement;
                   origin_dict->GetString(GetElementKey(), &element_id);
+                  if (!element_id.empty()) {
+                    int center_x = 0, center_y = 0;
+                    Status status = ElementInViewCenter(
+                        session, web_view, element_id, &center_x, &center_y);
+                    if (status.IsError())
+                      return status;
+                    x += center_x;
+                    y += center_y;
+                  }
                 } else {
                   std::string origin_str;
                   action->GetString("origin", &origin_str);
-                  if (origin_str == "pointer")
+                  if (origin_str == "pointer") {
                     origin = kPointer;
+                    x += action_locations[id].x();
+                    y += action_locations[id].y();
+                  }
                 }
               }
+              if (x < 0 || x > viewport_width || y < 0 || y > viewport_height)
+                return Status(kMoveTargetOutOfBounds);
+
+              action_locations[id] = gfx::Point(x, y);
 
               duration = 0;
               GetOptionalInt(action, "duration", &duration);
@@ -1378,6 +1388,7 @@ Status ExecutePerformActions(Session* session,
             }
 
             if (pointer_type == "mouse" || pointer_type == "pen") {
+              std::list<MouseEvent> dispatch_mouse_events;
               int click_count = 0;
               if (action_type == "pointerDown" || action_type == "pointerUp") {
                 std::string button;
@@ -1388,36 +1399,11 @@ Status ExecutePerformActions(Session* session,
                 button_type[id].clear();
               }
               MouseEvent event(StringToMouseEventType(action_type),
-                               StringToMouseButton(button_type[id]), x, y, 0,
-                               buttons[id], click_count);
+                               StringToMouseButton(button_type[id]),
+                               action_locations[id].x(),
+                               action_locations[id].y(), 0, buttons[id],
+                               click_count);
               event.pointer_type = StringToPointerType(pointer_type);
-              if (action_type == "pointerDown")
-                buttons[id] |= StringToModifierMouseButton(button_type[id]);
-              else if (action_type == "pointerUp")
-                buttons[id] &= ~StringToModifierMouseButton(button_type[id]);
-
-              if (event.type == kMovedMouseEventType) {
-                if (origin == kPointer) {
-                  event.x += action_locations[id].x();
-                  event.y += action_locations[id].y();
-                } else if (!element_id.empty()) {
-                  int center_x = 0, center_y = 0;
-                  Status status = ElementInViewCenter(
-                      session, web_view, element_id, &center_x, &center_y);
-                  if (status.IsError())
-                    return status;
-                  event.x += center_x;
-                  event.y += center_y;
-                }
-                if (event.x < 0 || event.x > viewport_width || event.y < 0 ||
-                    event.y > viewport_height) {
-                  return Status(kMoveTargetOutOfBounds);
-                }
-                action_locations[id] = gfx::Point(event.x, event.y);
-              } else {
-                event.x = action_locations[id].x();
-                event.y = action_locations[id].y();
-              }
               event.modifiers = session->sticky_modifiers;
               if (event.type == kPressedMouseEventType) {
                 base::TimeTicks timestamp = base::TimeTicks::Now();
@@ -1426,14 +1412,10 @@ Status ExecutePerformActions(Session* session,
                     session->mouse_position.y, session->click_count, timestamp,
                     session->mouse_click_timestamp);
                 event.click_count = is_repeated_click ? 2 : 1;
+                buttons[id] |= StringToModifierMouseButton(button_type[id]);
                 session->mouse_position = WebPoint(event.x, event.y);
                 session->click_count = event.click_count;
                 session->mouse_click_timestamp = timestamp;
-              } else if (event.type == kReleasedMouseEventType) {
-                event.click_count = session->click_count;
-              }
-              dispatch_mouse_events.push_back(event);
-              if (event.type == kPressedMouseEventType) {
                 session->input_cancel_list.emplace_back(
                     action_input_states[j], &event, nullptr, nullptr);
                 action_input_states[j]->SetInteger(
@@ -1441,12 +1423,14 @@ Status ExecutePerformActions(Session* session,
                     action_input_states[j]->FindKey("pressed")->GetInt() |
                         (1 << event.button));
               } else if (event.type == kReleasedMouseEventType) {
+                event.click_count = session->click_count;
+                buttons[id] &= ~StringToModifierMouseButton(button_type[id]);
                 action_input_states[j]->SetInteger(
                     "pressed",
                     action_input_states[j]->FindKey("pressed")->GetInt() &
                         ~(1 << event.button));
               }
-
+              dispatch_mouse_events.push_back(event);
               Status status = web_view->DispatchMouseEvents(
                   dispatch_mouse_events, session->GetCurrentFrameId());
               if (status.IsError())
@@ -1454,29 +1438,9 @@ Status ExecutePerformActions(Session* session,
             } else if (pointer_type == "touch") {
               if (action_type == "pointerDown")
                 has_touch_start[id] = true;
-
-              TouchEvent event(StringToTouchEventType(action_type), x, y);
-              if (event.type == kTouchMove) {
-                if (origin == kPointer) {
-                  event.x += action_locations[id].x();
-                  event.y += action_locations[id].y();
-                } else if (!element_id.empty()) {
-                  int center_x = 0, center_y = 0;
-                  Status status = ElementInViewCenter(
-                      session, web_view, element_id, &center_x, &center_y);
-                  if (status.IsError())
-                    return status;
-                  event.x += center_x;
-                  event.y += center_y;
-                }
-                if (event.x < 0 || event.x > viewport_width || event.y < 0 ||
-                    event.y > viewport_height)
-                  return Status(kMoveTargetOutOfBounds);
-                action_locations[id] = gfx::Point(event.x, event.y);
-              } else {
-                event.x = action_locations[id].x();
-                event.y = action_locations[id].y();
-              }
+              TouchEvent event(StringToTouchEventType(action_type),
+                               action_locations[id].x(),
+                               action_locations[id].y());
               if (event.type == kTouchStart) {
                 session->input_cancel_list.emplace_back(
                     action_input_states[j], nullptr, &event, nullptr);
@@ -1485,18 +1449,16 @@ Status ExecutePerformActions(Session* session,
                 action_input_states[j]->SetInteger("pressed", 0);
               }
               if (has_touch_start[id]) {
-                dispatch_touch_events.push_back(event);
-                Status status =
-                    web_view->DispatchTouchEvents(dispatch_touch_events);
+                Status status = web_view->DispatchTouchEvent(event);
                 if (status.IsError())
                   return status;
               }
               if (action_type == "pointerUp")
                 has_touch_start[id] = false;
             }
+            action_input_states[j]->SetInteger("x", action_locations[id].x());
+            action_input_states[j]->SetInteger("y", action_locations[id].y());
           }
-          action_input_states[j]->SetInteger("x", action_locations[id].x());
-          action_input_states[j]->SetInteger("y", action_locations[id].y());
         }
 
         if (tick_duration > 0) {

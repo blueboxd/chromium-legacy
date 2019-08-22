@@ -75,7 +75,7 @@ class ManagedUIHandlerTest : public testing::Test {
   }
 
  private:
-  content::BrowserTaskEnvironment bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   testing::NiceMock<policy::MockConfigurationPolicyProvider> policy_provider_;
   std::unique_ptr<TestingProfile> profile_;

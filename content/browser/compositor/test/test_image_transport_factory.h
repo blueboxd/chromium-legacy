@@ -85,7 +85,6 @@ class TestImageTransportFactory : public ui::ContextFactory,
 
   // ImageTransportFactory implementation.
   void DisableGpuCompositing() override;
-  bool IsGpuCompositingDisabled() override;
   ui::ContextFactory* GetContextFactory() override;
   ui::ContextFactoryPrivate* GetContextFactoryPrivate() override;
 

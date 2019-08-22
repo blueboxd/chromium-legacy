@@ -913,6 +913,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   std::vector<MailboxRefCount> texture_ref_counts_;
 
   bool initialized_;
+  bool created_in_process_instance_;
 
   // The controller for all active audios of this pepper instance.
   std::unique_ptr<PepperAudioController> audio_controller_;

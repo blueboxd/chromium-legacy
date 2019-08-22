@@ -378,15 +378,32 @@ void AutocompleteResult::AppendDedicatedPedalMatches(
 void AutocompleteResult::ConvertOpenTabMatches(
     AutocompleteProviderClient* client,
     const AutocompleteInput* input) {
+  ACMatches matches_to_add;
   for (auto& match : matches_) {
     // If already converted this match, don't re-search through open tabs and
-    // possibly re-change the description.
-    if (match.has_tab_match)
+    // possibly re-change the description. Also skip submatches.
+    if (match.has_tab_match || match.IsSubMatch())
       continue;
     // If URL is in a tab, remember that.
-    if (client->IsTabOpenWithURL(match.destination_url, input))
+    if (client->IsTabOpenWithURL(match.destination_url, input)) {
       match.has_tab_match = true;
+      // If will have dedicated row, add a match for it.
+      if (OmniboxFieldTrial::IsTabSwitchSuggestionsDedicatedRowEnabled()) {
+        if (match.subrelevance == 0)
+          match.subrelevance = AutocompleteMatch::GetNextFamilyID();
+        AutocompleteMatch tab_switch_match = match;
+        tab_switch_match.SetSubMatch(
+            match.subrelevance + AutocompleteMatch::TAB_SWITCH_FAMILY_ID,
+            match.type);
+        tab_switch_match.contents =
+            l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT);
+        tab_switch_match.contents_class = {{0, ACMatchClassification::NONE}};
+        matches_to_add.push_back(tab_switch_match);
+      }
+    }
   }
+  std::copy(matches_to_add.begin(), matches_to_add.end(),
+            std::back_inserter(matches_));
 }
 
 bool AutocompleteResult::HasCopiedMatches() const {

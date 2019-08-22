@@ -87,7 +87,7 @@ class TtsPlatformImplWin : public TtsPlatformImpl {
 
   friend struct base::DefaultSingletonTraits<TtsPlatformImplWin>;
 
-  base::WeakPtrFactory<TtsPlatformImplWin> weak_factory_;
+  base::WeakPtrFactory<TtsPlatformImplWin> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TtsPlatformImplWin);
 };
@@ -340,8 +340,7 @@ TtsPlatformImplWin::TtsPlatformImplWin()
       prefix_len_(0),
       stream_number_(0),
       char_position_(0),
-      paused_(false),
-      weak_factory_(this) {
+      paused_(false) {
   ::CoCreateInstance(CLSID_SpVoice, nullptr, CLSCTX_ALL,
                      IID_PPV_ARGS(&speech_synthesizer_));
   if (speech_synthesizer_.Get()) {

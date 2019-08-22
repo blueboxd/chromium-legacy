@@ -82,11 +82,11 @@ _COMMANDS = {
     "DeleteCookie": (Method.DELETE, "/session/:sessionId/cookie/:name"),
     "DeleteNetworkConditions":
     (Method.DELETE, "/session/:sessionId/chromium/network_conditions"),
-    "DismissAlert": (Method.POST, "/session/:sessionId/dismiss_alert"),
+    "DismissAlert": command_executor.Command.DISMISS_ALERT,
     "DoubleClick": (Method.POST, "/session/:sessionId/doubleclick"),
     "ElementScreenshot":
     (Method.GET, "/session/:sessionId/element/:id/screenshot"),
-    "ExecuteAsyncScript": (Method.POST, "/session/:sessionId/execute_async"),
+    "ExecuteAsyncScript": command_executor.Command.EXECUTE_ASYNC_SCRIPT,
     "ExecuteCDP": (Method.POST, "/session/:sessionId/goog/cdp/execute"),
     "ExecuteScript": (Method.POST, "/session/:sessionId/execute/sync"),
     "FindChildElement":
@@ -97,7 +97,7 @@ _COMMANDS = {
     "FindElements": (Method.POST, "/session/:sessionId/elements"),
     "Freeze": (Method.POST, "/session/:sessionId/goog/page/freeze"),
     "FullscreenWindow": (Method.POST, "/session/:sessionId/window/fullscreen"),
-    "GetActiveElement": (Method.POST, "/session/:sessionId/element/active"),
+    "GetActiveElement": command_executor.Command.GET_ACTIVE_ELEMENT,
     "GetAlertMessage": (Method.GET, "/session/:sessionId/alert_text"),
     "GetCookies": (Method.GET, "/session/:sessionId/cookie"),
     "GetElementAttribute":
@@ -185,7 +185,7 @@ _COMMANDS = {
     (Method.POST, "/session/:sessionId/chromium/send_command_and_get_result"),
     "SendCommandFromWebSocket":
     (Method.POST, "session/:sessionId/chromium/send_command_from_websocket"),
-    "SetAlertPrompt": (Method.POST, "/session/:sessionId/alert_text"),
+    "SetAlertPrompt": command_executor.Command.SET_ALERT_VALUE,
     "SetGeolocation": (Method.POST, "/session/:sessionId/location"),
     "SetImplicitWait":
     (Method.POST, "/session/:sessionId/timeouts/implicit_wait"),

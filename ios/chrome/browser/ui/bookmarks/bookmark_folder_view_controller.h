@@ -25,6 +25,8 @@ class BookmarkNode;
 // Called when the user is done with the picker, either by tapping the Cancel or
 // the Back button.
 - (void)folderPickerDidCancel:(BookmarkFolderViewController*)folderPicker;
+// Called when the user dismisses the picker by swiping down.
+- (void)folderPickerDidDismiss:(BookmarkFolderViewController*)folderPicker;
 @end
 
 // A folder selector view controller.
@@ -32,7 +34,8 @@ class BookmarkNode;
 // This controller monitors the state of the bookmark model, so changes to the
 // bookmark model can affect this controller's state.
 // The bookmark model is assumed to be loaded, thus also not to be NULL.
-@interface BookmarkFolderViewController : ChromeTableViewController
+@interface BookmarkFolderViewController
+    : ChromeTableViewController <UIAdaptivePresentationControllerDelegate>
 
 @property(nonatomic, weak) id<BookmarkFolderViewControllerDelegate> delegate;
 

@@ -41,7 +41,8 @@ enum class SerializationStatus {
   kHourBinPredictorLoadingError = 12,
   kMarkovPredictorLoadingError = 13,
   kExponentialWeightsEnsembleLoadingError = 14,
-  kMaxValue = kExponentialWeightsEnsembleLoadingError,
+  kFrequencyPredictorLoadingError = 15,
+  kMaxValue = kFrequencyPredictorLoadingError,
 };
 
 // Represents various uses of a RecurrenceRanker. These values persist to logs.

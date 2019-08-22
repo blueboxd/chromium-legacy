@@ -107,6 +107,9 @@ class TracingControllerImpl : public TracingController,
 
   void InitStartupTracingForDuration();
   void EndStartupTracing();
+#if defined(OS_CHROMEOS)
+  void OnMachineStatisticsLoaded();
+#endif
   base::FilePath GetStartupTraceFileName() const;
 
   std::unique_ptr<PerfettoFileTracer> perfetto_file_tracer_;
@@ -124,6 +127,12 @@ class TracingControllerImpl : public TracingController,
   base::FilePath startup_trace_file_;
   // This timer initiates trace file saving.
   base::OneShotTimer startup_trace_timer_;
+
+#if defined(OS_CHROMEOS)
+  bool are_statistics_loaded_ = false;
+  std::string hardware_class_;
+  base::WeakPtrFactory<TracingControllerImpl> weak_ptr_factory_{this};
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(TracingControllerImpl);
 };

@@ -578,7 +578,7 @@ if (is_android) {
       "//chrome/android:chrome_all_java",
       "//components/crash/android:handler_java",
       "//components/crash/android:java",
-      "//components/module_installer/android:module_installer_impl_java",
+      "//components/module_installer/android:module_installer_java",
       "//content/public/android:content_java",
       "//content/public/test/android:android_test_message_pump_support_java",
       "//content/shell/android:content_shell_browsertests_java",
@@ -3019,6 +3019,7 @@ test("unit_tests") {
     "../browser/performance_manager/graph/node_attached_data_unittest.cc",
     "../browser/performance_manager/graph/node_base_unittest.cc",
     "../browser/performance_manager/graph/page_node_impl_unittest.cc",
+    "../browser/performance_manager/graph/policies/dynamic_tcmalloc_policy_linux_unittest.cc",
     "../browser/performance_manager/graph/policies/working_set_trimmer_policy_chromeos_unittest.cc",
     "../browser/performance_manager/graph/policies/working_set_trimmer_policy_unittest.cc",
     "../browser/performance_manager/graph/process_node_impl_unittest.cc",
@@ -3259,6 +3260,7 @@ test("unit_tests") {
     "../renderer/page_load_metrics/page_timing_metrics_sender_unittest.cc",
     "../renderer/plugins/plugin_uma_unittest.cc",
     "../renderer/prerender/prerender_dispatcher_unittest.cc",
+    "../renderer/subresource_redirect/subresource_redirect_experiments_unittest.cc",
     "../renderer/subresource_redirect/subresource_redirect_url_loader_throttle_unittest.cc",
     "../renderer/subresource_redirect/subresource_redirect_util_unittest.cc",
     "../renderer/v8_unwinder_unittest.cc",
@@ -3562,7 +3564,7 @@ test("unit_tests") {
       "//components/favicon/core/test:test_support",
       "//components/gcm_driver/instance_id/android:instance_id_driver_java",
       "//components/gcm_driver/instance_id/android:instance_id_driver_test_support_java",
-      "//components/module_installer/android:module_installer_stub_java",
+      "//components/module_installer/android:module_installer_java",
       "//content/public/android:content_java",
     ]
     if (use_v8_context_snapshot) {
@@ -3864,8 +3866,7 @@ test("unit_tests") {
       "//ui/native_theme:test_support",
     ]
     if (is_win) {
-      deps +=
-          [ "//chrome/browser/safe_browsing/chrome_cleaner:test_only_proto" ]
+      deps += [ "//components/chrome_cleaner/public/proto:test_only_proto" ]
     }
     if (is_mac) {
       deps += [ ":firefox_importer_interface" ]

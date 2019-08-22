@@ -106,6 +106,11 @@ class CONTENT_EXPORT PermissionControllerDelegate {
   // Removes overrides that have been set, if any, for all origins. If delegate
   // does not maintain own permission set, then nothing happens.
   virtual void ResetPermissionOverridesForDevTools() {}
+
+  // Returns whether permission can be overridden by
+  // DevToolsPermissionOverrides.
+  virtual bool IsPermissionOverridableByDevTools(PermissionType permission,
+                                                 const GURL& origin);
 };
 
 }  // namespace content

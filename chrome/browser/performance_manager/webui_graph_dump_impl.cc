@@ -208,6 +208,11 @@ void WebUIGraphDumpImpl::OnProcessNodeAdded(const ProcessNode* process_node) {
   SendProcessNotification(process_node, true);
 }
 
+void WebUIGraphDumpImpl::OnProcessLifetimeChange(
+    const ProcessNode* process_node) {
+  SendProcessNotification(process_node, false);
+}
+
 void WebUIGraphDumpImpl::OnBeforeProcessNodeRemoved(
     const ProcessNode* process_node) {
   SendDeletionNotification(process_node);

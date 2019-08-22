@@ -20,13 +20,6 @@ namespace extensions {
 
 namespace {
 
-// The entry into the ExtensionPrefs indicating that an extension should be
-// granted all the requested host permissions without requiring explicit runtime
-// permission from the user. The preference name is different for legacy
-// reasons.
-const char kGrantExtensionAllHostPermissionsPrefName[] =
-    "extension_can_script_all_urls";
-
 // Returns true if Chrome can potentially withhold permissions from the
 // extension.
 bool CanWithholdFromExtension(const Extension& extension) {
@@ -98,32 +91,6 @@ bool ShouldConsiderExtension(const Extension& extension) {
     return false;
 
   return true;
-}
-
-base::Optional<bool> GetWithholdPermissionsPrefValue(
-    const ExtensionPrefs& prefs,
-    const ExtensionId& id) {
-  bool permissions_allowed = false;
-  if (!prefs.ReadPrefAsBoolean(id, kGrantExtensionAllHostPermissionsPrefName,
-                               &permissions_allowed)) {
-    return base::nullopt;
-  }
-  // NOTE: For legacy reasons, the preference stores whether the extension was
-  // allowed access to all its host permissions, rather than if Chrome should
-  // withhold permissions. Invert the boolean for backwards compatibility.
-  return !permissions_allowed;
-}
-
-void SetWithholdPermissionsPrefValue(ExtensionPrefs* prefs,
-                                     const ExtensionId& id,
-                                     bool should_withhold) {
-  // NOTE: For legacy reasons, the preference stores whether the extension was
-  // allowed access to all its host permissions, rather than if Chrome should
-  // withhold permissions. Invert the boolean for backwards compatibility.
-  bool permissions_allowed = !should_withhold;
-  prefs->UpdateExtensionPref(
-      id, kGrantExtensionAllHostPermissionsPrefName,
-      std::make_unique<base::Value>(permissions_allowed));
 }
 
 // Retrieves the effective list of runtime-granted permissions for a given
@@ -219,8 +186,8 @@ void ScriptingPermissionsModifier::SetWithholdHostPermissions(
 
   // Set the pref first, so that listeners for permission changes get the proper
   // value if they query HasWithheldHostPermissions().
-  SetWithholdPermissionsPrefValue(extension_prefs_, extension_->id(),
-                                  should_withhold);
+  extension_prefs_->SetShouldWithholdPermissions(extension_->id(),
+                                                 should_withhold);
 
   if (should_withhold)
     WithholdHostPermissions();
@@ -232,7 +199,7 @@ bool ScriptingPermissionsModifier::HasWithheldHostPermissions() const {
   DCHECK(CanAffectExtension());
 
   base::Optional<bool> pref_value =
-      GetWithholdPermissionsPrefValue(*extension_prefs_, extension_->id());
+      extension_prefs_->GetShouldWithholdPermissions(extension_->id());
   if (!pref_value.has_value()) {
     // If there is no value present, default to false.
     return false;
@@ -395,7 +362,7 @@ ScriptingPermissionsModifier::WithholdPermissionsIfNecessary(
   bool should_withhold = false;
   if (ShouldConsiderExtension(extension)) {
     base::Optional<bool> pref_value =
-        GetWithholdPermissionsPrefValue(extension_prefs, extension.id());
+        extension_prefs.GetShouldWithholdPermissions(extension.id());
     should_withhold = pref_value.has_value() && pref_value.value() == true;
   }
 

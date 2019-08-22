@@ -47,8 +47,7 @@ BOOL CALLBACK EnumMonitorForProfilePathCallback(HMONITOR monitor,
 
 }  // namespace
 
-ColorProfileReader::ColorProfileReader(Client* client)
-    : client_(client), weak_factory_(this) {}
+ColorProfileReader::ColorProfileReader(Client* client) : client_(client) {}
 
 ColorProfileReader::~ColorProfileReader() {}
 

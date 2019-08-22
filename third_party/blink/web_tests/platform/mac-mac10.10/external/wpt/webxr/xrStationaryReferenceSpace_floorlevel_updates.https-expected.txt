@@ -1,0 +1,5 @@
+This is a testharness.js-based test.
+PASS 'floor-level' XRStationaryReferenceSpace updates properly when the transform changes for immersive sessions
+PASS 'floor-level' XRStationaryReferenceSpace updates properly when the transform changes for non-immersive sessions
+Harness: the test ran to completion.
+

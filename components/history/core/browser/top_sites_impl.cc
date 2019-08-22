@@ -7,7 +7,6 @@
 #include <stdint.h>
 #include <algorithm>
 #include <memory>
-#include <set>
 #include <utility>
 
 #include "base/bind.h"
@@ -28,12 +27,12 @@
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/page_usage_data.h"
-#include "components/history/core/browser/top_sites_cache.h"
 #include "components/history/core/browser/top_sites_observer.h"
 #include "components/history/core/browser/url_utils.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "url/gurl.h"
 
 namespace history {
 namespace {
@@ -91,8 +90,6 @@ TopSitesImpl::TopSitesImpl(PrefService* pref_service,
                            const PrepopulatedPageList& prepopulated_pages,
                            const CanAddURLToHistoryFn& can_add_url_to_history)
     : backend_(nullptr),
-      cache_(std::make_unique<TopSitesCache>()),
-      thread_safe_cache_(std::make_unique<TopSitesCache>()),
       prepopulated_pages_(prepopulated_pages),
       pref_service_(pref_service),
       history_service_(history_service),
@@ -128,7 +125,7 @@ void TopSitesImpl::GetMostVisitedURLs(
           base::RetainedRef(base::ThreadTaskRunnerHandle::Get()), callback));
       return;
     }
-    filtered_urls = thread_safe_cache_->top_sites();
+    filtered_urls = thread_safe_cache_;
   }
   callback.Run(filtered_urls);
 }
@@ -197,12 +194,8 @@ void TopSitesImpl::ClearBlacklistedURLs() {
   NotifyTopSitesChanged(TopSitesObserver::ChangeReason::BLACKLIST);
 }
 
-bool TopSitesImpl::IsKnownURL(const GURL& url) {
-  return loaded_ && cache_->IsKnownURL(url);
-}
-
 bool TopSitesImpl::IsFull() {
-  return loaded_ && cache_->GetNumURLs() >= kTopSitesNumber;
+  return loaded_ && top_sites_.size() >= kTopSitesNumber;
 }
 
 PrepopulatedPageList TopSitesImpl::GetPrepopulatedPages() {
@@ -349,7 +342,7 @@ void TopSitesImpl::SetTopSites(const MostVisitedURLList& new_top_sites,
   AddPrepopulatedPages(&top_sites);
 
   TopSitesDelta delta;
-  DiffMostVisited(cache_->top_sites(), top_sites, &delta);
+  DiffMostVisited(top_sites_, top_sites, &delta);
 
   TopSitesBackend::RecordHistogram record_or_not =
       TopSitesBackend::RECORD_HISTOGRAM_NO;
@@ -377,12 +370,12 @@ void TopSitesImpl::SetTopSites(const MostVisitedURLList& new_top_sites,
   // If there is no url change in top sites, check if the titles have changes.
   // Notify observers if there's a change in titles.
   if (!should_notify_observers)
-    should_notify_observers = DoTitlesDiffer(cache_->top_sites(), top_sites);
+    should_notify_observers = DoTitlesDiffer(top_sites_, top_sites);
 
   // We always do the following steps (setting top sites in cache, and resetting
   // thread safe cache ...) as this method is invoked during startup at which
   // point the caches haven't been updated yet.
-  cache_->SetTopSites(top_sites);
+  top_sites_ = top_sites;
 
   ResetThreadSafeCache();
 
@@ -413,7 +406,7 @@ void TopSitesImpl::MoveStateToLoaded() {
     // Now that we're loaded we can service the queued up callbacks. Copy them
     // here and service them outside the lock.
     if (!pending_callbacks_.empty()) {
-      urls = thread_safe_cache_->top_sites();
+      urls = thread_safe_cache_;
       pending_callbacks.swap(pending_callbacks_);
     }
   }
@@ -429,9 +422,9 @@ void TopSitesImpl::MoveStateToLoaded() {
 
 void TopSitesImpl::ResetThreadSafeCache() {
   base::AutoLock lock(lock_);
-  MostVisitedURLList cached;
-  ApplyBlacklist(cache_->top_sites(), &cached);
-  thread_safe_cache_->SetTopSites(cached);
+  MostVisitedURLList filtered;
+  ApplyBlacklist(top_sites_, &filtered);
+  thread_safe_cache_ = filtered;
 }
 
 void TopSitesImpl::ScheduleUpdateTimer() {
@@ -446,9 +439,8 @@ void TopSitesImpl::OnGotMostVisitedURLs(
     const scoped_refptr<MostVisitedThreadSafe>& sites) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // Set the top sites directly in the cache so that SetTopSites diffs
-  // correctly.
-  cache_->SetTopSites(sites->data);
+  // Set |top_sites_| directly so that SetTopSites() diffs correctly.
+  top_sites_ = sites->data;
   SetTopSites(sites->data, CALL_LOCATION_FROM_ON_GOT_MOST_VISITED_URLS);
 
   MoveStateToLoaded();
@@ -470,22 +462,6 @@ void TopSitesImpl::OnURLsDeleted(HistoryService* history_service,
   if (deletion_info.IsAllHistory()) {
     SetTopSites(MostVisitedURLList(), CALL_LOCATION_FROM_OTHER_PLACES);
     backend_->ResetDatabase();
-  } else {
-    std::set<size_t> indices_to_delete;  // Indices into top_sites_.
-    for (const auto& row : deletion_info.deleted_rows()) {
-      if (cache_->IsKnownURL(row.url()))
-        indices_to_delete.insert(cache_->GetURLIndex(row.url()));
-    }
-
-    if (indices_to_delete.empty())
-      return;
-
-    MostVisitedURLList new_top_sites(cache_->top_sites());
-    for (auto i = indices_to_delete.rbegin(); i != indices_to_delete.rend();
-         i++) {
-      new_top_sites.erase(new_top_sites.begin() + *i);
-    }
-    SetTopSites(new_top_sites, CALL_LOCATION_FROM_OTHER_PLACES);
   }
   StartQueryForMostVisited();
 }

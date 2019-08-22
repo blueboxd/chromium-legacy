@@ -31,6 +31,7 @@
 #include <math.h>
 
 #include "third_party/blink/renderer/core/aom/accessible_node.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
@@ -340,6 +341,15 @@ bool AXNodeObject::ComputeAccessibilityIsIgnored(
       return true;
     }
     return false;
+  }
+
+  if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*GetNode())) {
+    if (DisplayLockUtilities::IsInNonActivatableLockedSubtree(*GetNode())) {
+      if (ignored_reasons)
+        ignored_reasons->push_back(IgnoredReason(kAXNotRendered));
+      return true;
+    }
+    return ShouldIncludeBasedOnSemantics(ignored_reasons) == kIgnoreObject;
   }
 
   auto* element = DynamicTo<Element>(GetNode());
@@ -1089,6 +1099,10 @@ bool AXNodeObject::IsNonNativeTextControl() const {
     return true;
 
   return false;
+}
+
+bool AXNodeObject::IsOffScreen() const {
+  return DisplayLockUtilities::NearestLockedExclusiveAncestor(*GetNode());
 }
 
 bool AXNodeObject::IsPasswordField() const {

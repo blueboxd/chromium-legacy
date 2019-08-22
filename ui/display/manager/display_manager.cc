@@ -2096,6 +2096,13 @@ Display DisplayManager::CreateDisplayFromDisplayInfoById(int64_t id) {
   new_display.set_touch_support(display_info.touch_support());
   new_display.set_maximum_cursor_size(display_info.maximum_cursor_size());
   new_display.SetColorSpaceAndDepth(display_info.color_space());
+  constexpr uint32_t kNormalBitDepthNumBitsPerChannel = 8u;
+  if (display_info.bits_per_channel() > kNormalBitDepthNumBitsPerChannel) {
+    new_display.set_depth_per_component(display_info.bits_per_channel());
+    constexpr uint32_t kRGBNumChannels = 3u;
+    new_display.set_color_depth(display_info.bits_per_channel() *
+                                kRGBNumChannels);
+  }
   new_display.set_display_frequency(display_info.refresh_rate());
 
   if (internal_display_has_accelerometer_ && Display::IsInternalDisplayId(id)) {

@@ -399,6 +399,9 @@ bool IsTabSwitchSuggestionsEnabled();
 // Returns true if the feature of reversing the tab switch logic is enabled.
 bool IsTabSwitchLogicReversed();
 
+// Returns true if dedicated rows for tab switch suggestions is enabled.
+bool IsTabSwitchSuggestionsDedicatedRowEnabled();
+
 // Returns true if the #omnibox-pedal-suggestions feature is enabled.
 bool IsPedalSuggestionsEnabled();
 

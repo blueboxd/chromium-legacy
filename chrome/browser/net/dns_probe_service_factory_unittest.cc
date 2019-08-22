@@ -98,7 +98,7 @@ class DnsProbeServiceTest : public testing::Test {
   }
 
   base::SimpleTestTickClock tick_clock_;
-  BrowserTaskEnvironment bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<FakeHostResolverNetworkContext> network_context_;
   std::unique_ptr<FakeDnsConfigChangeManager> dns_config_change_manager_;
   std::unique_ptr<DnsProbeService> service_;

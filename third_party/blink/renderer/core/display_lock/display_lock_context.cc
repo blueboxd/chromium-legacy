@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/memory/ptr_util.h"
+#include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_options.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
@@ -235,6 +236,11 @@ void DisplayLockContext::StartAcquire() {
       kLocalStyleChange,
       StyleChangeReasonForTracing::Create(style_change_reason::kDisplayLock));
   ScheduleAnimation();
+
+  // We need to notify the AX cache (if it exists) to update the  childrens
+  // of |element_| in the AX cache.
+  if (AXObjectCache* cache = element_->GetDocument().ExistingAXObjectCache())
+    cache->ChildrenChanged(element_);
 
   auto* layout_object = element_->GetLayoutObject();
   if (!layout_object) {
@@ -598,6 +604,11 @@ void DisplayLockContext::StartCommit() {
 
   // We're committing without a budget, so ensure we can reach style.
   MarkForStyleRecalcIfNeeded();
+
+  // We also need to notify the AX cache (if it exists) to update the childrens
+  // of |element_| in the AX cache.
+  if (AXObjectCache* cache = element_->GetDocument().ExistingAXObjectCache())
+    cache->ChildrenChanged(element_);
 
   auto* layout_object = element_->GetLayoutObject();
   // We might commit without connecting, so there is no layout object yet.

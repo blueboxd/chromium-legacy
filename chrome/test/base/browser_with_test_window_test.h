@@ -88,17 +88,19 @@ class BrowserWithTestWindowTest : public testing::Test {
   // the initial window will be a tabbed browser created on the native desktop,
   // which is not a hosted app.
   template <
-      class... ArgTypes,
+      typename... TaskEnvironmentTraits,
       class CheckArgumentsAreValid = std::enable_if_t<
-          base::trait_helpers::AreValidTraits<ValidTraits, ArgTypes...>::value>>
-  NOINLINE BrowserWithTestWindowTest(const ArgTypes... args)
+          base::trait_helpers::AreValidTraits<ValidTraits,
+                                              TaskEnvironmentTraits...>::value>>
+  NOINLINE explicit BrowserWithTestWindowTest(TaskEnvironmentTraits... traits)
       : BrowserWithTestWindowTest(
             std::make_unique<content::BrowserTaskEnvironment>(
                 base::trait_helpers::Exclude<HostedApp, Browser::Type>::Filter(
-                    args)...),
+                    traits)...),
             base::trait_helpers::GetEnum<Browser::Type, Browser::TYPE_NORMAL>(
-                args...),
-            base::trait_helpers::HasTrait<HostedApp, ArgTypes...>()) {}
+                traits...),
+            base::trait_helpers::HasTrait<HostedApp,
+                                          TaskEnvironmentTraits...>()) {}
 
   ~BrowserWithTestWindowTest() override;
 

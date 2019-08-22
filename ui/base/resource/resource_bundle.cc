@@ -722,7 +722,7 @@ const gfx::FontList& ResourceBundle::GetFontListWithTypefaceAndDelta(
           : gfx::FontList({typeface}, default_font_list.GetFontStyle(),
                           default_font_list.GetFontSize(),
                           default_font_list.GetFontWeight());
-  font_cache_.insert({base_key, base_font_list});
+  font_cache_.emplace(base_key, base_font_list);
   gfx::FontList& base = font_cache_.find(base_key)->second;
   if (styled_key == base_key)
     return base;

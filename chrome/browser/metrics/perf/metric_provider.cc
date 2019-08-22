@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/metrics_proto/sampled_profile.pb.h"
@@ -31,15 +32,12 @@ using MetricCollector = internal::MetricCollector;
 MetricProvider::MetricProvider(std::unique_ptr<MetricCollector> collector)
     : upload_uma_histogram_(std::string(kUploadCountHistogramPrefix) +
                             collector->ToolName()),
-      // Run the collector at a higher priority to enable fast triggering of
-      // profile collections. In particular, we want fast triggering when
-      // jankiness is detected, but even random based periodic collection
-      // benefits from a higher priority, to avoid biasing the collection to
-      // times when the system is not busy. The work performed on the dedicated
-      // sequence is short and infrequent. Expensive parsing operations are
-      // executed asynchronously on the thread pool.
-      collector_task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::TaskPriority::USER_VISIBLE})),
+      // Run the collectors on the UI thread temporarily, because the perf
+      // collector must issues dbus commands and the dbus client is not thread
+      // safe.
+      // TODO(b/139818457): Move back to a dedicated sequence once the dbus
+      // client is thread safe.
+      collector_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       metric_collector_(std::move(collector)),
       weak_factory_(this) {
   metric_collector_->set_profile_done_callback(base::BindRepeating(

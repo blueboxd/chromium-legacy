@@ -196,6 +196,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/chrome_feature_list.h"
+#include "chrome/browser/android/metrics/uma_session_stats.h"
 #include "chrome/browser/metrics/thread_watcher_android.h"
 #include "ui/base/resource/resource_bundle_android.h"
 #else
@@ -683,8 +684,19 @@ void ChromeBrowserMainParts::SetupMetrics() {
       ->RegisterSyntheticTrials();
 }
 
+// static
 void ChromeBrowserMainParts::StartMetricsRecording() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::StartMetricsRecording");
+
+#if defined(OS_ANDROID)
+  UmaSessionStats::OnStartup();
+
+  // Android updates the metrics service dynamically depending on whether the
+  // application is in the foreground or not. Do not start here unless
+  // kUmaBackgroundSessions is enabled.
+  if (!base::FeatureList::IsEnabled(chrome::android::kUmaBackgroundSessions))
+    return;
+#endif
 
   g_browser_process->metrics_service()->CheckForClonedInstall();
 
@@ -1306,18 +1318,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   IncognitoModePrefs::InitializePlatformParentalControls();
 #endif
 
-  // Android updates the metrics service dynamically depending on whether the
-  // application is in the foreground or not. Do not start here.
-#if !defined(OS_ANDROID)
-  // Now that the file thread has been started, start recording.
+  // Now that the file thread has been started, start metrics.
   StartMetricsRecording();
-#else
-  // When kUmaBackgroundSessions is enabled, start metrics recording for every
-  // Chrome start. Otherwise, recording is only started when Chrome becomes
-  // foregrounded.
-  if (base::FeatureList::IsEnabled(chrome::android::kUmaBackgroundSessions))
-    StartMetricsRecording();
-#endif  // !defined(OS_ANDROID)
 
   if (!base::debug::BeingDebugged()) {
     // Create watchdog thread after creating all other threads because it will

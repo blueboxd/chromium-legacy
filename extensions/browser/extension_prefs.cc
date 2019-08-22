@@ -137,6 +137,12 @@ constexpr const char kPrefUserDraggedApp[] = "user_dragged_app_ntp";
 constexpr const char kPrefActivePermissions[] = "active_permissions";
 constexpr const char kPrefGrantedPermissions[] = "granted_permissions";
 
+// A preference indicating if an extension should be granted all the requested
+// host permissions without requiring explicit runtime permission from the user.
+// The preference name is different for legacy reasons.
+const char kGrantExtensionAllHostPermissions[] =
+    "extension_can_script_all_urls";
+
 // The set of permissions that were granted at runtime, rather than at install
 // time. This includes permissions granted through the permissions API and
 // runtime host permissions.
@@ -1017,6 +1023,30 @@ void ExtensionPrefs::SetActivePermissions(const std::string& extension_id,
                                           const PermissionSet& permissions) {
   SetExtensionPrefPermissionSet(
       extension_id, kPrefActivePermissions, permissions);
+}
+
+void ExtensionPrefs::SetShouldWithholdPermissions(
+    const ExtensionId& extension_id,
+    bool should_withhold) {
+  // NOTE: For legacy reasons, the preference stores whether the extension was
+  // allowed access to all its host permissions, rather than if Chrome should
+  // withhold permissions. Invert the boolean for backwards compatibility.
+  bool permissions_allowed = !should_withhold;
+  UpdateExtensionPref(extension_id, kGrantExtensionAllHostPermissions,
+                      std::make_unique<base::Value>(permissions_allowed));
+}
+
+base::Optional<bool> ExtensionPrefs::GetShouldWithholdPermissions(
+    const ExtensionId& extension_id) const {
+  bool permissions_allowed = false;
+  if (!ReadPrefAsBoolean(extension_id, kGrantExtensionAllHostPermissions,
+                         &permissions_allowed)) {
+    return base::nullopt;
+  }
+  // NOTE: For legacy reasons, the preference stores whether the extension was
+  // allowed access to all its host permissions, rather than if Chrome should
+  // withhold permissions. Invert the boolean for backwards compatibility.
+  return !permissions_allowed;
 }
 
 std::unique_ptr<const PermissionSet>

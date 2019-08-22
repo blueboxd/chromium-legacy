@@ -20,9 +20,9 @@
 #include "base/time/time.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_delegate.h"
+#include "components/previews/content/previews_decider.h"
 #include "components/previews/content/previews_optimization_guide.h"
 #include "components/previews/core/previews_black_list.h"
-#include "components/previews/core/previews_decider.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_logger.h"
 #include "net/nqe/effective_connection_type.h"
@@ -34,6 +34,10 @@ class Clock;
 
 namespace blacklist {
 class OptOutStore;
+}
+
+namespace content {
+class NavigationHandle;
 }
 
 namespace previews {
@@ -106,12 +110,13 @@ class PreviewsDeciderImpl : public PreviewsDecider,
   PreviewsBlackList* black_list() const { return previews_black_list_.get(); }
 
   // PreviewsDecider implementation:
-  bool ShouldAllowPreviewAtNavigationStart(PreviewsUserData* previews_data,
-                                           const GURL& url,
-                                           bool is_reload,
-                                           PreviewsType type) const override;
+  bool ShouldAllowPreviewAtNavigationStart(
+      PreviewsUserData* previews_data,
+      content::NavigationHandle* navigation_handle,
+      bool is_reload,
+      PreviewsType type) const override;
   bool ShouldCommitPreview(PreviewsUserData* previews_data,
-                           const GURL& committed_url,
+                           content::NavigationHandle* navigation_handle,
                            PreviewsType type) const override;
 
   // Set whether to ignore the long term blacklist rules for server previews.
@@ -157,7 +162,7 @@ class PreviewsDeciderImpl : public PreviewsDecider,
   // Determines the eligibility of the preview |type| for |url|.
   PreviewsEligibilityReason DeterminePreviewEligibility(
       PreviewsUserData* previews_data,
-      const GURL& url,
+      content::NavigationHandle* navigation_handle,
       bool is_reload,
       PreviewsType type,
       bool is_drp_server_preview,
@@ -169,7 +174,7 @@ class PreviewsDeciderImpl : public PreviewsDecider,
   // to deny the preview for consideration.
   PreviewsEligibilityReason ShouldAllowPreviewPerOptimizationHints(
       PreviewsUserData* previews_data,
-      const GURL& url,
+      content::NavigationHandle* navigation_handle,
       PreviewsType type,
       std::vector<PreviewsEligibilityReason>* passed_reasons) const;
 
@@ -178,7 +183,7 @@ class PreviewsDeciderImpl : public PreviewsDecider,
   // navigation URL against any specific hint details.
   PreviewsEligibilityReason ShouldCommitPreviewPerOptimizationHints(
       PreviewsUserData* previews_data,
-      const GURL& url,
+      content::NavigationHandle* navigation_handle,
       PreviewsType type,
       std::vector<PreviewsEligibilityReason>* passed_reasons) const;
 

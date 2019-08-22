@@ -80,8 +80,10 @@ class MockVideoFrameFactory : public VideoFrameFactory {
     if (!surface_bundle) {
       texture_owner_ = nullptr;
     } else {
-      texture_owner_ =
-          surface_bundle->overlay() ? nullptr : surface_bundle->texture_owner();
+      texture_owner_ = surface_bundle->overlay()
+                           ? nullptr
+                           : surface_bundle->codec_buffer_wait_coordinator()
+                                 ->texture_owner();
     }
   }
 

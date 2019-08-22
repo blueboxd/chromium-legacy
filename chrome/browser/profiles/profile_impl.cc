@@ -156,7 +156,6 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/identity/identity_service.h"
-#include "services/identity/public/mojom/constants.mojom.h"
 #include "services/image_annotation/image_annotation_service.h"
 #include "services/image_annotation/public/mojom/constants.mojom.h"
 #include "services/preferences/public/cpp/in_process_service_factory.h"
@@ -821,6 +820,10 @@ ProfileImpl::~ProfileImpl() {
 
   FullBrowserTransitionManager::Get()->OnProfileDestroyed(this);
 
+  // Must be called before the IdentityManager is destroyed, which will happen
+  // during DependencyManager shutdown below.
+  identity_service_impl_.reset();
+
   // The SimpleDependencyManager should always be passed after the
   // BrowserContextDependencyManager. This is because the KeyedService instances
   // in the BrowserContextDependencyManager's dependency graph can depend on the
@@ -1094,6 +1097,15 @@ bool ProfileImpl::ShouldPersistSessionCookies() {
   return true;
 }
 
+identity::mojom::IdentityService* ProfileImpl::GetIdentityService() {
+  if (!identity_service_impl_) {
+    identity_service_impl_ = std::make_unique<identity::IdentityService>(
+        IdentityManagerFactory::GetForProfile(this),
+        remote_identity_service_.BindNewPipeAndPassReceiver());
+  }
+  return remote_identity_service_.get();
+}
+
 PrefService* ProfileImpl::GetPrefs() {
   return const_cast<PrefService*>(
       static_cast<const ProfileImpl*>(this)->GetPrefs());
@@ -1290,11 +1302,6 @@ ProfileImpl::GetSharedCorsOriginAccessList() {
 std::unique_ptr<service_manager::Service> ProfileImpl::HandleServiceRequest(
     const std::string& service_name,
     service_manager::mojom::ServiceRequest request) {
-  if (service_name == identity::mojom::kServiceName) {
-    return std::make_unique<identity::IdentityService>(
-        IdentityManagerFactory::GetForProfile(this), std::move(request));
-  }
-
   if (service_name == prefs::mojom::kServiceName) {
     return InProcessPrefServiceFactoryFactory::GetInstanceForKey(key_.get())
         ->CreatePrefService(std::move(request));

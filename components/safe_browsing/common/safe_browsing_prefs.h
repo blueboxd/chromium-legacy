@@ -87,7 +87,11 @@ extern const char kPasswordProtectedAllowed[];
 // Whether or not to check URLs in real time. This is configured by enterprise
 // policy. For consumers, this pref is irrelevant.
 extern const char kSafeBrowsingRealTimeLookupEnabled[];
-}
+
+// Whether or not to send downloads to Safe Browsing for deep scanning. This
+// is configured by enterprise policy.
+extern const char kSafeBrowsingSendFilesForMalwareCheck[];
+}  // namespace prefs
 
 namespace safe_browsing {
 

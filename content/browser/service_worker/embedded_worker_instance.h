@@ -29,12 +29,10 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
-#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/embedded_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom.h"
-#include "third_party/blink/public/web/web_console_message.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -202,10 +200,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
 
   // Called when the worker is doomed.
   void OnWorkerVersionDoomed();
-
-  // Add message to the devtools console.
-  void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
-                           const std::string& message);
 
   static std::string StatusToString(EmbeddedWorkerStatus status);
   static std::string StartingPhaseToString(StartingPhase phase);

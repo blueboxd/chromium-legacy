@@ -97,6 +97,21 @@ locking can be toggled off and on using the same command.
 
 ![lock and inspect bubble]
 
+### UI Element Tree Search
+
+In the elements panel, Ctrl+F to open the search bar at the bottom. The search functionality allows
+developers to search the UI element tree quickly by name, tag <>, and style properties. 
+The search can do substring matches or exact matches (specified with quotations). The search returns
+all matches and highlights the specific nodes on the tree that are matched. The up and down arrows
+on the right of the search bar or ENTER are used to traverse through the matches.
+
+![ui element tree search]
+
+The search feature can also search the element's style properties in the UI element tree. The special
+key word 'style:' must be typed in the search bar.
+
+![search style]
+
 [expand elements]: images/expand_elements.gif
 [browser frame properties]: images/browser_frame_properties.png
 [image view properties]: images/image_view_properties.png
@@ -109,3 +124,5 @@ locking can be toggled off and on using the same command.
 [sources panel]: images/sources_panel.png
 [debug bounds rectangles]: images/debug_bounds_rectangles.png
 [lock and inspect bubble]: images/lock_and_inspect_bubble.gif
+[ui element tree search]: images/ui_element_tree_search.gif
+[search style]: images/search_style.png

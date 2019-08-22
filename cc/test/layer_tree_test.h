@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread.h"
 #include "cc/animation/animation_delegate.h"
+#include "cc/test/property_tree_test_utils.h"
 #include "cc/test/test_hooks.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/compositor_mode.h"
@@ -32,23 +33,6 @@ class Proxy;
 class SingleKeyframeEffectAnimation;
 class TestLayerTreeFrameSink;
 class TestTaskGraphRunner;
-
-// Creates the virtual viewport layer hierarchy under the given root_layer.
-// Convenient overload of the method below that creates a scrolling layer as
-// the outer viewport scroll layer.
-void CreateVirtualViewportLayers(Layer* root_layer,
-                                 const gfx::Size& inner_bounds,
-                                 const gfx::Size& outer_bounds,
-                                 const gfx::Size& scroll_bounds,
-                                 LayerTreeHost* host);
-
-// Creates the virtual viewport layer hierarchy under the given root_layer.
-// Uses the given scroll layer as the content "outer viewport scroll layer".
-void CreateVirtualViewportLayers(Layer* root_layer,
-                                 scoped_refptr<Layer> outer_scroll_layer,
-                                 const gfx::Size& outer_bounds,
-                                 const gfx::Size& scroll_bounds,
-                                 LayerTreeHost* host);
 
 class LayerTreeHostClientForTesting;
 
@@ -123,7 +107,18 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   AnimationHost* animation_host() const { return animation_host_.get(); }
 
-  void SetUseLayerList() { settings_.use_layer_lists = true; }
+  // Creates viewport layers and (in layer list mode) paint properties.
+  // Convenient overload of the method below that creates a scrolling layer as
+  // the outer viewport scroll layer.
+  void SetupViewport(const gfx::Size& outer_bounds,
+                     const gfx::Size& scroll_bounds);
+
+  // Creates viewport layers and (in layer list mode) paint properties.
+  // Uses the given scroll layer as the content "outer viewport scroll layer".
+  void SetupViewport(scoped_refptr<Layer> outer_scroll_layer,
+                     const gfx::Size& outer_bounds);
+
+  void SetUseLayerLists() { settings_.use_layer_lists = true; }
 
  protected:
   LayerTreeTest();
@@ -138,8 +133,14 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void SetInitialDeviceScaleFactor(float initial_device_scale_factor) {
     initial_device_scale_factor_ = initial_device_scale_factor;
   }
+  // Used when LayerTreeTest::SetupTree() creates the root layer. Not used if
+  // the root layer is created before LayerTreeTest::SetupTree() is called.
+  // The default is 1x1.
+  void SetInitialRootBounds(const gfx::Size& bounds) {
+    initial_root_bounds_ = bounds;
+  }
 
-  virtual void AfterTest() = 0;
+  virtual void AfterTest() {}
   virtual void WillBeginTest();
   virtual void BeginTest() = 0;
   virtual void SetupTree();
@@ -237,6 +238,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   LayerTreeSettings settings_;
   float initial_device_scale_factor_ = 1.f;
+  gfx::Size initial_root_bounds_;
 
   CompositorMode mode_;
 

@@ -157,6 +157,16 @@ gpu::GpuExtraInfo GpuDataManagerImpl::GetGpuExtraInfo() const {
   return private_->GetGpuExtraInfo();
 }
 
+bool GpuDataManagerImpl::IsGpuCompositingDisabled() const {
+  base::AutoLock auto_lock(lock_);
+  return private_->IsGpuCompositingDisabled();
+}
+
+void GpuDataManagerImpl::SetGpuCompositingDisabled() {
+  base::AutoLock auto_lock(lock_);
+  private_->SetGpuCompositingDisabled();
+}
+
 void GpuDataManagerImpl::UpdateGpuPreferences(
     gpu::GpuPreferences* gpu_preferences,
     GpuProcessKind kind) const {
@@ -216,11 +226,6 @@ bool GpuDataManagerImpl::UpdateActiveGpu(uint32_t vendor_id,
                                          uint32_t device_id) {
   base::AutoLock auto_lock(lock_);
   return private_->UpdateActiveGpu(vendor_id, device_id);
-}
-
-void GpuDataManagerImpl::NotifyGpuInfoUpdate() {
-  base::AutoLock auto_lock(lock_);
-  private_->NotifyGpuInfoUpdate();
 }
 
 gpu::GpuMode GpuDataManagerImpl::GetGpuMode() const {

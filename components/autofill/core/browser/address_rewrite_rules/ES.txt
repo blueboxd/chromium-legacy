@@ -80,8 +80,8 @@
 \bleon\b	le
 \blugo\b	lu
 \bwest\b	o
-\bc\\.\\/\b	c
-\bc\\/\\.\b	c
+\bc\.\/\b	c
+\bc\/\.\b	c
 \bdal\b	
 \bdel\b	
 \blas\b	
@@ -89,7 +89,7 @@
 \blos\b	
 \bsur\b	s
 \bal\b	
-\bc\\/\b	c
+\bc\/\b	c
 \bde\b	
 \bel\b	
 \ben\b	

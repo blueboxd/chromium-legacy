@@ -155,8 +155,7 @@ BluetoothDeviceWinrt::BluetoothDeviceWinrt(BluetoothAdapterWinrt* adapter,
                                            uint64_t raw_address)
     : BluetoothDevice(adapter),
       raw_address_(raw_address),
-      address_(CanonicalizeAddress(raw_address)),
-      weak_ptr_factory_(this) {}
+      address_(CanonicalizeAddress(raw_address)) {}
 
 BluetoothDeviceWinrt::~BluetoothDeviceWinrt() {
   CloseDevice(ble_device_);

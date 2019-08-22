@@ -151,7 +151,7 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   // Declared last to ensure that all weak pointers are invalidated before
   // other destructors run.
   base::WeakPtrFactory<MediaFoundationVideoEncodeAccelerator>
-      encoder_task_weak_factory_;
+      encoder_task_weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaFoundationVideoEncodeAccelerator);
 };

@@ -1850,6 +1850,10 @@ const CSSValue* Content::ParseSingleValue(CSSParserTokenRange& range,
     if (!parsed_value) {
       if (RuntimeEnabledFeatures::CSSAltTextEnabled() &&
           css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range)) {
+        // No values were parsed before the slash, so nothing to apply the
+        // alternative text to.
+        if (!values->length())
+          return nullptr;
         alt_text_present = true;
       } else {
         return nullptr;

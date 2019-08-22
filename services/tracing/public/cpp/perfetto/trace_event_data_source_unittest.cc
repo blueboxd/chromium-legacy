@@ -1062,7 +1062,9 @@ TEST_F(TraceEventDataSourceTest, FilteringMetadataSource) {
 TEST_F(TraceEventDataSourceTest, ProtoMetadataSource) {
   auto* metadata_source = TraceEventMetadataSource::GetInstance();
   metadata_source->AddGeneratorFunction(base::BindRepeating(
-      [](perfetto::protos::pbzero::ChromeMetadataPacket* metadata) {
+      [](perfetto::protos::pbzero::ChromeMetadataPacket* metadata,
+         bool privacy_filtering_enabled) {
+        EXPECT_TRUE(privacy_filtering_enabled);
         auto* field1 = metadata->set_background_tracing_metadata();
         auto* rule = field1->set_triggered_rule();
         rule->set_trigger_type(

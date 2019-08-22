@@ -232,16 +232,6 @@ class NavigationListModel extends cr.EventTarget {
     this.removableModels_ = new Map();
 
     /**
-     * True when MyFiles should be a volume and Downloads just a plain folder
-     * inside it. When false MyFiles is an EntryList, which means UI only type,
-     * which contains Downloads as a child volume.
-     * @private {boolean}
-     */
-    this.myFilesVolumeEnabled_ =
-        loadTimeData.valueExists('MY_FILES_VOLUME_ENABLED') &&
-        loadTimeData.getBoolean('MY_FILES_VOLUME_ENABLED');
-
-    /**
      * All root navigation items in display order.
      * @private {!Array<!NavigationModelItem>}
      */
@@ -572,41 +562,27 @@ class NavigationListModel extends cr.EventTarget {
 
     let myFilesEntry, myFilesModel;
     if (!this.myFilesModel_) {
-      if (this.myFilesVolumeEnabled_) {
-        // When MyFilesVolume is enabled we use the Downloads volume to be the
-        // MyFiles volume.
-        const myFilesVolumeModel =
-            getSingleVolume(VolumeManagerCommon.VolumeType.DOWNLOADS);
-        if (myFilesVolumeModel) {
-          myFilesEntry = new VolumeEntry(myFilesVolumeModel.volumeInfo);
-          myFilesModel = new NavigationModelFakeItem(
-              str('MY_FILES_ROOT_LABEL'), NavigationModelItemType.ENTRY_LIST,
-              myFilesEntry);
-          myFilesModel.section = NavigationSection.MY_FILES;
-          this.myFilesModel_ = myFilesModel;
-        } else {
-          // When MyFilesVolume isn't available we create a empty EntryList to
-          // be MyFiles to be able to display Linux or Play volumes. However we
-          // don't save it back to this.MyFilesModel_ so it's always re-created.
-          myFilesEntry = new EntryList(
-              str('MY_FILES_ROOT_LABEL'),
-              VolumeManagerCommon.RootType.MY_FILES);
-          myFilesModel = new NavigationModelFakeItem(
-              myFilesEntry.label, NavigationModelItemType.ENTRY_LIST,
-              myFilesEntry);
-          myFilesModel.section = NavigationSection.MY_FILES;
-        }
+      // When MyFilesVolume is enabled we use the Downloads volume to be the
+      // MyFiles volume.
+      const myFilesVolumeModel =
+          getSingleVolume(VolumeManagerCommon.VolumeType.DOWNLOADS);
+      if (myFilesVolumeModel) {
+        myFilesEntry = new VolumeEntry(myFilesVolumeModel.volumeInfo);
+        myFilesModel = new NavigationModelFakeItem(
+            str('MY_FILES_ROOT_LABEL'), NavigationModelItemType.ENTRY_LIST,
+            myFilesEntry);
+        myFilesModel.section = NavigationSection.MY_FILES;
+        this.myFilesModel_ = myFilesModel;
       } else {
-        // Here is the initial version for MyFiles, which is only an entry in JS
-        // to be displayed in the DirectoryTree, cotaining Downloads, Linux and
-        // Play files volumes.
+        // When MyFiles volume isn't available we create a empty EntryList to
+        // be MyFiles to be able to display Linux or Play volumes. However we
+        // don't save it back to this.MyFilesModel_ so it's always re-created.
         myFilesEntry = new EntryList(
             str('MY_FILES_ROOT_LABEL'), VolumeManagerCommon.RootType.MY_FILES);
         myFilesModel = new NavigationModelFakeItem(
             myFilesEntry.label, NavigationModelItemType.ENTRY_LIST,
             myFilesEntry);
         myFilesModel.section = NavigationSection.MY_FILES;
-        this.myFilesModel_ = myFilesModel;
       }
     } else {
       myFilesEntry = this.myFilesModel_.entry;
@@ -614,22 +590,6 @@ class NavigationListModel extends cr.EventTarget {
     }
     this.directoryModel_.setMyFiles(myFilesEntry);
     this.navigationItems_.push(myFilesModel);
-
-    // Add Downloads to My Files.
-    if (!this.myFilesVolumeEnabled_) {
-      const downloadsVolume =
-          getSingleVolume(VolumeManagerCommon.VolumeType.DOWNLOADS);
-      if (downloadsVolume) {
-        // Only add volume if MyFiles doesn't have it yet.
-        if (myFilesEntry.findIndexByVolumeInfo(downloadsVolume.volumeInfo) ===
-            -1) {
-          myFilesEntry.addEntry(new VolumeEntry(downloadsVolume.volumeInfo));
-        }
-      } else {
-        myFilesEntry.removeByVolumeType(
-            VolumeManagerCommon.VolumeType.DOWNLOADS);
-      }
-    }
 
     // Add Android to My Files.
     const androidVolume =

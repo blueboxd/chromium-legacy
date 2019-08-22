@@ -103,17 +103,6 @@ TEST_F(FrameNodeImplTest, RemoveChildFrame) {
   EXPECT_TRUE(!parent_frame_node->parent_frame_node());
 }
 
-TEST_F(FrameNodeImplTest, IsAdFrame) {
-  auto process = CreateNode<ProcessNodeImpl>();
-  auto page = CreateNode<PageNodeImpl>();
-  auto frame_node = CreateNode<FrameNodeImpl>(process.get(), page.get());
-  EXPECT_FALSE(frame_node->is_ad_frame());
-  frame_node->SetIsAdFrame();
-  EXPECT_TRUE(frame_node->is_ad_frame());
-  frame_node->SetIsAdFrame();
-  EXPECT_TRUE(frame_node->is_ad_frame());
-}
-
 namespace {
 
 class LenientMockObserver : public FrameNodeImpl::Observer {
@@ -126,8 +115,10 @@ class LenientMockObserver : public FrameNodeImpl::Observer {
   MOCK_METHOD1(OnIsCurrentChanged, void(const FrameNode*));
   MOCK_METHOD1(OnNetworkAlmostIdleChanged, void(const FrameNode*));
   MOCK_METHOD1(OnFrameLifecycleStateChanged, void(const FrameNode*));
-  MOCK_METHOD1(OnNonPersistentNotificationCreated, void(const FrameNode*));
   MOCK_METHOD1(OnURLChanged, void(const FrameNode*));
+  MOCK_METHOD1(OnIsAdFrameChanged, void(const FrameNode*));
+  MOCK_METHOD1(OnNonPersistentNotificationCreated, void(const FrameNode*));
+  MOCK_METHOD1(OnPriorityAndReasonChanged, void(const FrameNode*));
 
   void SetNotifiedFrameNode(const FrameNode* frame_node) {
     notified_frame_node_ = frame_node;
@@ -203,6 +194,74 @@ TEST_F(FrameNodeImplTest, ObserverWorks) {
       .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedFrameNode));
   frame_node.reset();
   EXPECT_EQ(raw_frame_node, obs.TakeNotifiedFrameNode());
+
+  graph()->RemoveFrameNodeObserver(&obs);
+}
+
+TEST_F(FrameNodeImplTest, IsAdFrame) {
+  auto process = CreateNode<ProcessNodeImpl>();
+  auto page = CreateNode<PageNodeImpl>();
+  auto frame_node = CreateNode<FrameNodeImpl>(process.get(), page.get());
+
+  MockObserver obs;
+  graph()->AddFrameNodeObserver(&obs);
+
+  EXPECT_FALSE(frame_node->is_ad_frame());
+  EXPECT_CALL(obs, OnIsAdFrameChanged(frame_node.get()));
+  frame_node->SetIsAdFrame();
+  EXPECT_TRUE(frame_node->is_ad_frame());
+  frame_node->SetIsAdFrame();
+  EXPECT_TRUE(frame_node->is_ad_frame());
+
+  graph()->RemoveFrameNodeObserver(&obs);
+}
+
+TEST_F(FrameNodeImplTest, Priority) {
+  using PriorityAndReason = frame_priority::PriorityAndReason;
+
+  auto process = CreateNode<ProcessNodeImpl>();
+  auto page = CreateNode<PageNodeImpl>();
+  auto frame_node = CreateNode<FrameNodeImpl>(process.get(), page.get());
+
+  MockObserver obs;
+  graph()->AddFrameNodeObserver(&obs);
+
+  // By default the priority should be "lowest", and there should be no
+  // reason.
+  EXPECT_EQ(PriorityAndReason(base::TaskPriority::LOWEST, nullptr),
+            frame_node->priority_and_reason());
+
+  // Changed the reason only.
+  static const char kDummyReason[] = "this is a reason!";
+  EXPECT_CALL(obs, OnPriorityAndReasonChanged(frame_node.get()));
+  frame_node->SetPriorityAndReason(
+      PriorityAndReason(base::TaskPriority::LOWEST, kDummyReason));
+  EXPECT_EQ(PriorityAndReason(base::TaskPriority::LOWEST, kDummyReason),
+            frame_node->priority_and_reason());
+  testing::Mock::VerifyAndClear(&obs);
+
+  // Change the priority only.
+  EXPECT_CALL(obs, OnPriorityAndReasonChanged(frame_node.get()));
+  frame_node->SetPriorityAndReason(
+      PriorityAndReason(base::TaskPriority::HIGHEST, kDummyReason));
+  EXPECT_EQ(PriorityAndReason(base::TaskPriority::HIGHEST, kDummyReason),
+            frame_node->priority_and_reason());
+  testing::Mock::VerifyAndClear(&obs);
+
+  // Change neither.
+  frame_node->SetPriorityAndReason(
+      PriorityAndReason(base::TaskPriority::HIGHEST, kDummyReason));
+  EXPECT_EQ(PriorityAndReason(base::TaskPriority::HIGHEST, kDummyReason),
+            frame_node->priority_and_reason());
+  testing::Mock::VerifyAndClear(&obs);
+
+  // Change both the priority and the reason.
+  EXPECT_CALL(obs, OnPriorityAndReasonChanged(frame_node.get()));
+  frame_node->SetPriorityAndReason(
+      PriorityAndReason(base::TaskPriority::LOWEST, nullptr));
+  EXPECT_EQ(PriorityAndReason(base::TaskPriority::LOWEST, nullptr),
+            frame_node->priority_and_reason());
+  testing::Mock::VerifyAndClear(&obs);
 
   graph()->RemoveFrameNodeObserver(&obs);
 }

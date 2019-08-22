@@ -169,11 +169,9 @@
       </cr-action-menu>
     </div>
 
-    <cr-toast id="account-removed-toast" duration="3000">
+    <cr-toast id="account-toast" duration="3000">
       <!-- Gets displayed with black font without div and id :-/ -->
-      <div id="account-removed-toast-label">
-        $i18n{kerberosAccountsAccountRemovedTip}
-      </div>
+      <div id="account-toast-label">[[accountToastText_]]</div>
     </cr-toast>
 
     <template is="dom-if" if="[[showAddAccountDialog_]]" restamp>

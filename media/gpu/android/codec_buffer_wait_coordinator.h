@@ -25,7 +25,10 @@ class MEDIA_GPU_EXPORT CodecBufferWaitCoordinator
   explicit CodecBufferWaitCoordinator(
       scoped_refptr<gpu::TextureOwner> texture_owner);
 
-  scoped_refptr<gpu::TextureOwner> texture_owner() { return texture_owner_; }
+  scoped_refptr<gpu::TextureOwner> texture_owner() const {
+    DCHECK(texture_owner_);
+    return texture_owner_;
+  }
 
   // Codec buffer wait management apis.
   // Sets the expectation of onFrameAVailable for a new frame because a buffer

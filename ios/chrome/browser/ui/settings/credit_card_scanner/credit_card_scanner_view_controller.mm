@@ -7,8 +7,7 @@
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
-#import "ios/chrome/browser/ui/qr_scanner/qr_scanner_camera_controller.h"
-#import "ios/chrome/browser/ui/scanner/scanner_transitioning_delegate.h"
+#import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_scanner_camera_controller.h"
 #include "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_scanner_view.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

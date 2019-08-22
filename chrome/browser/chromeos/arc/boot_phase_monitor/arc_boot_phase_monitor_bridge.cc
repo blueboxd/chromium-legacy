@@ -153,9 +153,6 @@ void ArcBootPhaseMonitorBridge::Reset() {
   app_launch_time_ = base::TimeTicks();
   first_app_launch_delay_recorded_ = false;
   boot_completed_ = false;
-
-  // Do not reset |extensions_ready_| here. That variable is not tied to the
-  // instance.
 }
 
 void ArcBootPhaseMonitorBridge::SetDelegateForTesting(

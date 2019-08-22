@@ -45,9 +45,7 @@ void ProductDataToProto(const GoogleUpdateSettings::ProductData& product_data,
 
 }  // namespace
 
-GoogleUpdateMetricsProviderWin::GoogleUpdateMetricsProviderWin()
-    : weak_ptr_factory_(this) {
-}
+GoogleUpdateMetricsProviderWin::GoogleUpdateMetricsProviderWin() {}
 
 GoogleUpdateMetricsProviderWin::~GoogleUpdateMetricsProviderWin() {
 }

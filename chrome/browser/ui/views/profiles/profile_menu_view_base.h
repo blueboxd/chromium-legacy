@@ -160,12 +160,15 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
                          const content::ContextMenuParams& params) override;
 
   // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) final;
+  void ButtonPressed(views::Button* button, const ui::Event& event) final;
 
   // views::StyledLabelListener:
-  void StyledLabelLinkClicked(views::StyledLabel* label,
+  void StyledLabelLinkClicked(views::StyledLabel* link,
                               const gfx::Range& range,
                               int event_flags) final;
+
+  // Handles all click events.
+  void OnClick(views::View* clickable_view);
 
   void RegisterClickAction(views::View* clickable_view,
                            base::RepeatingClosure action);

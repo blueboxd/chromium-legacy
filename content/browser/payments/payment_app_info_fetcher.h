@@ -32,7 +32,7 @@ class PaymentAppInfoFetcher {
   using PaymentAppInfoFetchCallback =
       base::OnceCallback<void(std::unique_ptr<PaymentAppInfo> app_info)>;
 
-  // Only accessed on the IO thread.
+  // Only accessed on the service worker core thread.
   static void Start(
       const GURL& context_url,
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,

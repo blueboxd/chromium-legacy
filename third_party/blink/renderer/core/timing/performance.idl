@@ -82,7 +82,7 @@ interface Performance : EventTarget {
 
     // JS Self-Profiling API
     // https://github.com/WICG/js-self-profiling/
-    [CallWith=ScriptState, RuntimeEnabled=ExperimentalJSProfiler, RaisesException] Promise<Profiler> profile(ProfilerInitOptions options);
+    [MeasureAs=JSSelfProfiling, CallWith=ScriptState, RuntimeEnabled=ExperimentalJSProfiler, RaisesException] Promise<Profiler> profile(ProfilerInitOptions options);
 
     [CallWith=ScriptState, ImplementedAs=toJSONForBinding] object toJSON();
 };

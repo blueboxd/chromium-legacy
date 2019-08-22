@@ -136,9 +136,7 @@ MixedRealityRenderLoop::MixedRealityRenderLoop(
     base::RepeatingCallback<void(mojom::VRDisplayInfoPtr)>
         on_display_info_changed)
     : XRCompositorCommon(),
-      on_display_info_changed_(std::move(on_display_info_changed)),
-      weak_ptr_factory_(this) {
-}
+      on_display_info_changed_(std::move(on_display_info_changed)) {}
 
 MixedRealityRenderLoop::~MixedRealityRenderLoop() {
   Stop();

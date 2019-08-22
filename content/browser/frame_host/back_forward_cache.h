@@ -31,11 +31,11 @@ class CONTENT_EXPORT BackForwardCache {
   // state.
   bool CanStoreDocument(RenderFrameHostImpl* render_frame_host);
 
-  // Moves |render_frame_host| into the BackForwardCache. It can be reused in
+  // Moves |rfh| into the BackForwardCache. It can be reused in
   // a future history navigation by using RestoreDocument(). When the
   // BackForwardCache is full, the least recently used document is evicted.
   // Precondition: CanStoreDocument(render_frame_host).
-  void StoreDocument(std::unique_ptr<RenderFrameHostImpl>);
+  void StoreDocument(std::unique_ptr<RenderFrameHostImpl> rfh);
 
   // Iterates over all the RenderViewHost inside |main_rfh| and freeze or
   // resume them.

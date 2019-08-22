@@ -180,9 +180,10 @@ class CookieRetrieverNetworkService
   CookieRetrieverNetworkService(std::unique_ptr<GetCookiesCallback> callback)
       : callback_(std::move(callback)) {}
 
-  void GotCookies(const std::vector<net::CanonicalCookie>& cookies,
+  void GotCookies(const net::CookieStatusList& cookies,
                   const net::CookieStatusList& excluded_cookies) {
-    for (const auto& cookie : cookies) {
+    for (const auto& cookie_with_status : cookies) {
+      const net::CanonicalCookie& cookie = cookie_with_status.cookie;
       std::string key = base::StringPrintf(
           "%s::%s::%s::%d", cookie.Name().c_str(), cookie.Domain().c_str(),
           cookie.Path().c_str(), cookie.IsSecure());

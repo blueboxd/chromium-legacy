@@ -4,6 +4,7 @@
 
 static_library("content") {
   sources = [
+    "previews_decider.h",
     "previews_decider_impl.cc",
     "previews_decider_impl.h",
     "previews_hints.cc",
@@ -26,6 +27,7 @@ static_library("content") {
     "//components/previews/core",
     "//components/url_matcher",
     "//components/variations",
+    "//content/public/browser",
     "//content/public/common",
     "//net",
     "//services/network:network_service",
@@ -54,7 +56,9 @@ source_set("unit_tests") {
     "//components/prefs:test_support",
     "//components/previews/core",
     "//components/variations",
+    "//content/public/browser",
     "//content/public/common",
+    "//content/test:test_support",
     "//net:test_support",
     "//services/network:network_service",
     "//services/network:test_support",

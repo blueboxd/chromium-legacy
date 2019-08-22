@@ -25,7 +25,7 @@ namespace content {
 TransactionalLevelDBTransaction::TransactionalLevelDBTransaction(
     TransactionalLevelDBDatabase* db,
     std::unique_ptr<LevelDBScope> scope)
-    : db_(db), scope_(std::move(scope)), weak_factory_(this) {
+    : db_(db), scope_(std::move(scope)) {
   DCHECK(db_);
   DCHECK(scope_);
 }

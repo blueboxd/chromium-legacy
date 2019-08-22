@@ -114,8 +114,9 @@ const base::Feature kOmniboxShortBookmarkSuggestions{
 const base::Feature kOmniboxTailSuggestions{
     "OmniboxTailSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature that enables the tab-switch button on suggestions corresponding to an
-// open tab. Enabled by default on Desktop and iOS.
+// Feature that enables the tab-switch suggestions corresponding to an open
+// tab, for a button or dedicated suggestion. Enabled by default on Desktop
+// and iOS.
 const base::Feature kOmniboxTabSwitchSuggestions{
   "OmniboxTabSwitchSuggestions",
 #if defined(OS_ANDROID)
@@ -124,6 +125,11 @@ const base::Feature kOmniboxTabSwitchSuggestions{
       base::FEATURE_ENABLED_BY_DEFAULT
 #endif
 };
+
+// Feature that enables tab-switch suggestions in their own row.
+const base::Feature kOmniboxTabSwitchSuggestionsDedicatedRow{
+    "OmniboxTabSwitchSuggestionsDedicatedRow",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Feature that enables wrapping the Omnibox position between top and bottom.
 // The feature is enabled by default, but remains as a kill-switch.

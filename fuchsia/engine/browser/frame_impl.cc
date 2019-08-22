@@ -4,6 +4,7 @@
 
 #include "fuchsia/engine/browser/frame_impl.h"
 
+#include <lib/ui/scenic/cpp/view_ref_pair.h>
 #include <limits>
 
 #include "base/bind_helpers.h"
@@ -402,6 +403,7 @@ void FrameImpl::CreateView(fuchsia::ui::views::ViewToken view_token) {
 
   ui::PlatformWindowInitProperties properties;
   properties.view_token = std::move(view_token);
+  properties.view_ref_pair = scenic::ViewRefPair::New();
 
   window_tree_host_ =
       std::make_unique<ScenicWindowTreeHost>(std::move(properties));

@@ -70,8 +70,7 @@ void CookieManager::AddReceiver(
 }
 
 void CookieManager::GetAllCookies(GetAllCookiesCallback callback) {
-  cookie_store_->GetAllCookiesAsync(
-      net::cookie_util::IgnoreCookieStatusList(std::move(callback)));
+  cookie_store_->GetAllCookiesAsync(std::move(callback));
 }
 
 void CookieManager::GetCookieList(const GURL& url,

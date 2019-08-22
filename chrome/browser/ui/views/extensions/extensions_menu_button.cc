@@ -18,6 +18,7 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/button/menu_button.h"
+#include "ui/views/controls/button/menu_button_controller.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/vector_icons.h"
@@ -52,7 +53,10 @@ ExtensionsMenuButton::ExtensionsMenuButton(
                   true),
       browser_(browser),
       controller_(std::move(controller)),
-      model_(ToolbarActionsModel::Get(browser_->profile())) {
+      model_(ToolbarActionsModel::Get(browser_->profile())),
+      context_menu_controller_(nullptr, controller_.get()) {
+  set_context_menu_controller(&context_menu_controller_);
+
   // Set so the extension button receives enter/exit on children to retain hover
   // status when hovering child views.
   set_notify_enter_exit_on_child(true);
@@ -107,7 +111,8 @@ const char* ExtensionsMenuButton::GetClassName() const {
 void ExtensionsMenuButton::ButtonPressed(Button* sender,
                                          const ui::Event& event) {
   if (sender->GetID() == EXTENSION_CONTEXT_MENU) {
-    RunExtensionContextMenu(ui::MENU_SOURCE_MOUSE);
+    context_menu_controller()->ShowContextMenuForView(
+        context_menu_button_, gfx::Point(), ui::MENU_SOURCE_MOUSE);
     return;
   } else if (sender->GetID() == EXTENSION_PINNING) {
     model_->SetActionVisibility(controller_->GetId(), !IsPinned());
@@ -150,38 +155,7 @@ void ExtensionsMenuButton::UpdateState() {
 }
 
 bool ExtensionsMenuButton::IsMenuRunning() const {
-  return menu_runner_ && menu_runner_->IsRunning();
-}
-
-void ExtensionsMenuButton::RunExtensionContextMenu(
-    ui::MenuSourceType source_type) {
-  ui::MenuModel* model = controller_->GetContextMenu();
-  if (!model)
-    return;
-
-  // Unretained() is safe here as ExtensionsMenuButton will always outlive the
-  // menu. Any action that would lead to the deletion of |this| first triggers
-  // the closing of the menu through lost capture.
-  menu_adapter_ = std::make_unique<views::MenuModelAdapter>(
-      model, base::BindRepeating(&ExtensionsMenuButton::OnMenuClosed,
-                                 base::Unretained(this)));
-
-  menu_runner_ = std::make_unique<views::MenuRunner>(
-      menu_adapter_->CreateMenu(), views::MenuRunner::HAS_MNEMONICS);
-  menu_runner_->RunMenuAt(GetWidget(),
-                          context_menu_button_->button_controller(),
-                          context_menu_button_->GetAnchorBoundsInScreen(),
-                          views::MenuAnchorPosition::kTopRight, source_type);
-}
-
-void ExtensionsMenuButton::OnMenuClosed() {
-  menu_runner_.reset();
-  controller_->OnContextMenuClosed();
-  menu_adapter_.reset();
-  // OnMouseExited is triggered when the context menu is opened. Since we don't
-  // hide the pin button OnMouseExited if the context menu is open we must
-  // update its state to hide it when the context menu is closed.
-  UpdatePinButton();
+  return context_menu_controller_.IsMenuRunning();
 }
 
 void ExtensionsMenuButton::ConfigureSecondaryView() {

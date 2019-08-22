@@ -43,14 +43,15 @@ class CookieChangeDispatcher;
 class NET_EXPORT CookieStore {
  public:
   // Callback definitions.
-  typedef base::OnceCallback<void(const CookieList& cookies,
-                                  const CookieStatusList& excluded_list)>
-      GetCookieListCallback;
-  typedef base::OnceCallback<void(
-      CanonicalCookie::CookieInclusionStatus status)>
-      SetCookiesCallback;
-  typedef base::OnceCallback<void(uint32_t num_deleted)> DeleteCallback;
-  typedef base::OnceCallback<void(bool success)> SetCookieableSchemesCallback;
+  using GetCookieListCallback =
+      base::OnceCallback<void(const CookieStatusList& included_cookies,
+                              const CookieStatusList& excluded_list)>;
+  using GetAllCookiesCallback =
+      base::OnceCallback<void(const CookieList& cookies)>;
+  using SetCookiesCallback =
+      base::OnceCallback<void(CanonicalCookie::CookieInclusionStatus status)>;
+  using DeleteCallback = base::OnceCallback<void(uint32_t num_deleted)>;
+  using SetCookieableSchemesCallback = base::OnceCallback<void(bool success)>;
 
   virtual ~CookieStore();
 
@@ -79,7 +80,7 @@ class NET_EXPORT CookieStore {
   // Returns all the cookies, for use in management UI, etc. This does not mark
   // the cookies as having been accessed. The returned cookies are ordered by
   // longest path, then by earliest creation date.
-  virtual void GetAllCookiesAsync(GetCookieListCallback callback) = 0;
+  virtual void GetAllCookiesAsync(GetAllCookiesCallback callback) = 0;
 
   // Deletes one specific cookie. |cookie| must have been returned by a previous
   // query on this CookieStore. Invokes |callback| with 1 if a cookie was

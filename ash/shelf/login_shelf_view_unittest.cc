@@ -523,11 +523,13 @@ TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterShutdownButtonStatusChange) {
   EXPECT_TRUE(IsButtonEnabled(LoginShelfView::kShutdown));
 }
 
-TEST_F(LoginShelfViewTest, ShouldNotShowNavigationWidget) {
+TEST_F(LoginShelfViewTest, ShouldNotShowNavigationAndHotseat) {
   gfx::NativeWindow window = login_shelf_view_->GetWidget()->GetNativeWindow();
   ShelfWidget* shelf_widget = Shelf::ForWindow(window)->shelf_widget();
   EXPECT_FALSE(shelf_widget->navigation_widget()->IsVisible())
       << "The navigation widget should not appear in the login shelf.";
+  EXPECT_FALSE(shelf_widget->hotseat_widget()->IsVisible())
+      << "The hotseat widget should not appear in the login shelf.";
 }
 
 TEST_F(LoginShelfViewTest, ParentAccessButtonVisibility) {

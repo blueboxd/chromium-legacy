@@ -43,12 +43,9 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_client.h"
-#include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/blink/public/web/web_settings.h"
-#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
-#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/worker_devtools_params.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
@@ -206,16 +203,6 @@ void WebEmbeddedWorkerImpl::TerminateWorkerContext() {
 void WebEmbeddedWorkerImpl::ResumeAfterDownload() {
   // TODO(bashi): Remove this method. This does nothing anymore.
   DCHECK(!asked_to_terminate_);
-}
-
-void WebEmbeddedWorkerImpl::AddMessageToConsole(
-    const WebConsoleMessage& message) {
-  // TODO(bashi): Remove this method, or consider to have alternative.
-  // This method was used to show messages (e.g. reporting force update) on the
-  // "parent" DevTools console. The parent was a DevTools session which is
-  // associated with a shadow page. However, we removed shadow page
-  // dependency from service workers. Unlike dedicated workers there is no
-  // parent context so there is no drop-in replacement.
 }
 
 void WebEmbeddedWorkerImpl::StartWorkerThread(

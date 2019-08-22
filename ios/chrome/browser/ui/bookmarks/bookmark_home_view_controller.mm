@@ -451,7 +451,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   self.sharedState.currentlyShowingSearchResults = NO;
 
   // Configure the table view.
-  self.sharedState.tableView.accessibilityIdentifier = @"bookmarksTableView";
+  self.sharedState.tableView.accessibilityIdentifier =
+      kBookmarkHomeTableViewIdentifier;
   self.sharedState.tableView.estimatedRowHeight = kEstimatedRowHeight;
   self.tableView.sectionHeaderHeight = 0;
   // Setting a sectionFooterHeight of 0 will be the same as not having a
@@ -866,6 +867,11 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 - (void)folderPickerDidCancel:(BookmarkFolderViewController*)folderPicker {
   [self setTableViewEditing:NO];
   [self.navigationController dismissViewControllerAnimated:YES completion:NULL];
+  self.folderSelector.delegate = nil;
+  self.folderSelector = nil;
+}
+
+- (void)folderPickerDidDismiss:(BookmarkFolderViewController*)folderPicker {
   self.folderSelector.delegate = nil;
   self.folderSelector = nil;
 }

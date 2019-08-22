@@ -3410,6 +3410,8 @@ error::Error GLES2DecoderPassthroughImpl::DoQueryCounterEXT(
   pending_query.shm = std::move(buffer);
   pending_query.sync = sync;
   pending_query.submit_count = submit_count;
+  if (target == GL_COMMANDS_ISSUED_TIMESTAMP_CHROMIUM)
+    pending_query.commands_issued_timestamp = base::TimeTicks::Now();
   pending_queries_.push_back(std::move(pending_query));
 
   return ProcessQueries(false);

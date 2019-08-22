@@ -411,6 +411,9 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kNativeSmb;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSoundContentSetting;
 
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kSubresourceRedirectIncludedMediaSuffixes;
+
 #if defined(OS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSysInternals;

@@ -45,7 +45,7 @@ class FaceDetectionProviderWin
           face_detector);
 
   mojo::StrongBindingPtr<mojom::FaceDetectionProvider> binding_;
-  base::WeakPtrFactory<FaceDetectionProviderWin> weak_factory_;
+  base::WeakPtrFactory<FaceDetectionProviderWin> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FaceDetectionProviderWin);
 };

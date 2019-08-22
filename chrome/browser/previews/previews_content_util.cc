@@ -274,9 +274,9 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
                         ->ShouldAttemptOfflinePreview(url);
   }
   allow_offline =
-      allow_offline &&
-      previews_decider->ShouldAllowPreviewAtNavigationStart(
-          previews_data, url, is_reload, previews::PreviewsType::OFFLINE);
+      allow_offline && previews_decider->ShouldAllowPreviewAtNavigationStart(
+                           previews_data, navigation_handle, is_reload,
+                           previews::PreviewsType::OFFLINE);
 
   if (allow_offline)
     previews_state |= content::OFFLINE_PAGE_ON;
@@ -284,19 +284,20 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
   // Check PageHint preview types first.
   bool should_load_page_hints = false;
   if (previews_decider->ShouldAllowPreviewAtNavigationStart(
-          previews_data, url, is_reload,
+          previews_data, navigation_handle, is_reload,
           previews::PreviewsType::DEFER_ALL_SCRIPT)) {
     previews_state |= content::DEFER_ALL_SCRIPT_ON;
     should_load_page_hints = true;
   }
   if (previews_decider->ShouldAllowPreviewAtNavigationStart(
-          previews_data, url, is_reload,
+          previews_data, navigation_handle, is_reload,
           previews::PreviewsType::RESOURCE_LOADING_HINTS)) {
     previews_state |= content::RESOURCE_LOADING_HINTS_ON;
     should_load_page_hints = true;
   }
   if (previews_decider->ShouldAllowPreviewAtNavigationStart(
-          previews_data, url, is_reload, previews::PreviewsType::NOSCRIPT)) {
+          previews_data, navigation_handle, is_reload,
+          previews::PreviewsType::NOSCRIPT)) {
     previews_state |= content::NOSCRIPT_ON;
     should_load_page_hints = true;
   }
@@ -308,7 +309,7 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
 
   if ((!has_page_hints || params::LitePagePreviewsOverridePageHints()) &&
       previews_decider->ShouldAllowPreviewAtNavigationStart(
-          previews_data, url, is_reload,
+          previews_data, navigation_handle, is_reload,
           previews::PreviewsType::LITE_PAGE_REDIRECT) &&
       ShouldAllowRedirectPreview(navigation_handle)) {
     previews_state |= content::LITE_PAGE_REDIRECT_ON;
@@ -405,7 +406,8 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
     // if the committed URL has HTTPS scheme and is allowed by decider.
     if (is_https && previews_decider &&
         previews_decider->ShouldCommitPreview(
-            previews_data, url, previews::PreviewsType::DEFER_ALL_SCRIPT)) {
+            previews_data, navigation_handle,
+            previews::PreviewsType::DEFER_ALL_SCRIPT)) {
       LogCommittedPreview(previews_data, PreviewsType::DEFER_ALL_SCRIPT);
       return content::DEFER_ALL_SCRIPT_ON;
     }
@@ -419,7 +421,7 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
     // with it if the committed URL has HTTPS scheme and is allowed by decider.
     if (is_https && previews_decider &&
         previews_decider->ShouldCommitPreview(
-            previews_data, url,
+            previews_data, navigation_handle,
             previews::PreviewsType::RESOURCE_LOADING_HINTS)) {
       LogCommittedPreview(previews_data, PreviewsType::RESOURCE_LOADING_HINTS);
       return content::RESOURCE_LOADING_HINTS_ON;
@@ -434,7 +436,8 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
     // if the committed URL has HTTPS scheme and is allowed by decider.
     if (is_https && previews_decider &&
         previews_decider->ShouldCommitPreview(
-            previews_data, url, previews::PreviewsType::NOSCRIPT)) {
+            previews_data, navigation_handle,
+            previews::PreviewsType::NOSCRIPT)) {
       LogCommittedPreview(previews_data, PreviewsType::NOSCRIPT);
       return content::NOSCRIPT_ON;
     }

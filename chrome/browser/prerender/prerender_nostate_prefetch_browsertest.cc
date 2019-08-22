@@ -518,17 +518,17 @@ IN_PROC_BROWSER_TEST_F(HTMLCSSScriptNoStatePrefetchBrowserTest,
 }
 
 void GetCookieCallback(base::RepeatingClosure callback,
-                       const net::CookieList& cookie_list,
+                       const net::CookieStatusList& cookie_with_status_list,
                        const net::CookieStatusList& excluded_cookies) {
   bool found_chocolate = false;
   bool found_oatmeal = false;
-  for (const auto& c : cookie_list) {
-    if (c.Name() == "chocolate-chip") {
-      EXPECT_EQ("the-best", c.Value());
+  for (const auto& c : cookie_with_status_list) {
+    if (c.cookie.Name() == "chocolate-chip") {
+      EXPECT_EQ("the-best", c.cookie.Value());
       found_chocolate = true;
     }
-    if (c.Name() == "oatmeal") {
-      EXPECT_EQ("sublime", c.Value());
+    if (c.cookie.Name() == "oatmeal") {
+      EXPECT_EQ("sublime", c.cookie.Value());
       found_oatmeal = true;
     }
   }

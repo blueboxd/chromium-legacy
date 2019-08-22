@@ -15,7 +15,7 @@
 #include "android_webview/browser/aw_content_renderer_overlay_manifest.h"
 #include "android_webview/browser/aw_contents.h"
 #include "android_webview/browser/aw_contents_client_bridge.h"
-#include "android_webview/browser/aw_contents_io_thread_client.h"
+#include "android_webview/browser/aw_contents_network_client.h"
 #include "android_webview/browser/aw_cookie_access_policy.h"
 #include "android_webview/browser/aw_devtools_manager_delegate.h"
 #include "android_webview/browser/aw_feature_list.h"
@@ -166,7 +166,8 @@ AwContentsMessageFilter::~AwContentsMessageFilter() {
 void AwContentsMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message,
     BrowserThread::ID* thread) {
-  if (message.type() == AwViewHostMsg_ShouldOverrideUrlLoading::ID) {
+  if (message.type() == AwViewHostMsg_ShouldOverrideUrlLoading::ID ||
+      message.type() == AwViewHostMsg_SubFrameCreated::ID) {
     *thread = BrowserThread::UI;
   }
 }
@@ -208,8 +209,8 @@ void AwContentsMessageFilter::OnShouldOverrideUrlLoading(
 
 void AwContentsMessageFilter::OnSubFrameCreated(int parent_render_frame_id,
                                                 int child_render_frame_id) {
-  AwContentsIoThreadClient::SubFrameCreated(
-      process_id_, parent_render_frame_id, child_render_frame_id);
+  AwContentsNetworkClient::SubFrameCreated(process_id_, parent_render_frame_id,
+                                           child_render_frame_id);
 }
 
 // A dummy binder for mojo interface autofill::mojom::PasswordManagerDriver.
@@ -875,22 +876,10 @@ bool AwContentBrowserClient::HandleExternalProtocol(
     bool has_user_gesture,
     network::mojom::URLLoaderFactoryPtr* out_factory) {
   auto request = mojo::MakeRequest(out_factory);
-  if (content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {
-    // Manages its own lifetime.
-    new android_webview::AwProxyingURLLoaderFactory(0 /* process_id */,
-                                                    std::move(request), nullptr,
-                                                    true /* intercept_only */);
-  } else {
-    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                   base::BindOnce(
-                       [](network::mojom::URLLoaderFactoryRequest request) {
-                         // Manages its own lifetime.
-                         new android_webview::AwProxyingURLLoaderFactory(
-                             0 /* process_id */, std::move(request), nullptr,
-                             true /* intercept_only */);
-                       },
-                       std::move(request)));
-  }
+  // Manages its own lifetime.
+  new android_webview::AwProxyingURLLoaderFactory(0 /* process_id */,
+                                                  std::move(request), nullptr,
+                                                  true /* intercept_only */);
   return false;
 }
 
@@ -942,10 +931,8 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
       type == URLLoaderFactoryType::kNavigation ? 0 : render_process_id;
 
   // Android WebView has one non off-the-record browser context.
-  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 base::BindOnce(&AwProxyingURLLoaderFactory::CreateProxy,
-                                process_id, std::move(proxied_receiver),
-                                std::move(target_factory_info)));
+  AwProxyingURLLoaderFactory::CreateProxy(
+      process_id, std::move(proxied_receiver), std::move(target_factory_info));
   return true;
 }
 
@@ -958,10 +945,8 @@ void AwContentBrowserClient::WillCreateURLLoaderFactoryForAppCacheSubresource(
   mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory_receiver =
       pending_factory->InitWithNewPipeAndPassReceiver();
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 base::BindOnce(&AwProxyingURLLoaderFactory::CreateProxy,
-                                render_process_id, std::move(factory_receiver),
-                                std::move(pending_proxy)));
+  AwProxyingURLLoaderFactory::CreateProxy(
+      render_process_id, std::move(factory_receiver), std::move(pending_proxy));
 }
 
 uint32_t AwContentBrowserClient::GetWebSocketOptions(

@@ -136,8 +136,6 @@ class LayerTreeHostPictureTestTwinLayer
       EndTest();
   }
 
-  void AfterTest() override {}
-
   int activates_ = 0;
 
   int picture_id1_;
@@ -201,8 +199,6 @@ class LayerTreeHostPictureTestResizeViewportWithGpuRaster
         EndTest();
     }
   }
-
-  void AfterTest() override {}
 
   gfx::Size tile_size_;
   FakeContentLayerClient client_;
@@ -311,8 +307,6 @@ class LayerTreeHostPictureTestChangeLiveTilesRectWithRecycleTree
       EndTest();
   }
 
-  void AfterTest() override {}
-
   int frame_;
   bool did_post_commit_;
   FakeContentLayerClient client_;
@@ -397,8 +391,6 @@ class LayerTreeHostPictureTestRSLLMembership : public LayerTreeHostPictureTest {
         child_->SetOpacity(1.f);
     }
   }
-
-  void AfterTest() override {}
 
   FakeContentLayerClient client_;
   scoped_refptr<Layer> child_;
@@ -564,8 +556,6 @@ class LayerTreeHostPictureTestRSLLMembershipWithScale
     }
   }
 
-  void AfterTest() override {}
-
   FakeContentLayerClient client_;
   scoped_refptr<Layer> pinch_;
   scoped_refptr<FakePictureLayer> picture_;
@@ -676,8 +666,6 @@ class LayerTreeHostPictureTestForceRecalculateScales
     top_layer_->SetTransform(transform);
     layer_tree_host()->SetNeedsRecalculateRasterScales();
   }
-
-  void AfterTest() override {}
 
   scoped_refptr<Layer> top_layer_;
   scoped_refptr<FakePictureLayer> will_change_layer_;

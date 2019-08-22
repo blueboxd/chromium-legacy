@@ -17366,6 +17366,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ProfileChooser_Show">
+  <obsolete>This is replaced with ProfileMenu_Opened.</obsolete>
   <owner>vasilii@chromium.org</owner>
   <owner>ewald@chromium.org</owner>
   <description>The user opened the profile chooser menu.</description>
@@ -17385,6 +17386,20 @@ should be able to be added at any place in this file.
   <description>
     The profile chooser opened with 'Sign in again' button.
   </description>
+</action>
+
+<action name="ProfileMenu_ActionableItemClicked">
+  <owner>msarda@chromium.org</owner>
+  <owner>tangltom@chromium.org</owner>
+  <description>
+    The user clicked a button or a link in the profile menu.
+  </description>
+</action>
+
+<action name="ProfileMenu_Opened">
+  <owner>msarda@chromium.org</owner>
+  <owner>tangltom@chromium.org</owner>
+  <description>The user opened the profile menu.</description>
 </action>
 
 <action name="PWAInstallIcon">
@@ -20317,6 +20332,62 @@ should be able to be added at any place in this file.
   <obsolete>Replaced with Signin_Impression_FromBookmarkManager.</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of the metric.</description>
+</action>
+
+<action name="StartSurface.SinglePane">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Metric record when the single pane start surface is shown (the user taps the
+    tab switcher button or on chrome start).
+  </description>
+</action>
+
+<action name="StartSurface.SinglePane.MoreTabs">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Metric record when the user taps the more tabs button on the single pane
+    start surface.
+  </description>
+</action>
+
+<action name="StartSurface.TwoPanes">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Metric record when the two panes start surface is shown (the user taps the
+    tab switcher button or on chrome start).
+  </description>
+</action>
+
+<action name="StartSurface.TwoPanes.BottomBar.TapExploreSurface">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Metric record when the user taps the explore button on the two panes start
+    surface.
+  </description>
+</action>
+
+<action name="StartSurface.TwoPanes.BottomBar.TapHome">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Metric record when the user taps the home button on the two panes start
+    surface
+  </description>
+</action>
+
+<action name="StartSurface.TwoPanes.DefaultOnExploreSurface">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Metric record when the two panes start surface is shown with explore surface
+    visible by default.
+  </description>
+</action>
+
+<action name="StartSurface.TwoPanes.DefaultOnHomeSurface">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Metric record when the two panes start surface is shown with home surface
+    visible by default.
+  </description>
 </action>
 
 <action name="StartupTick" not_user_triggered="true">

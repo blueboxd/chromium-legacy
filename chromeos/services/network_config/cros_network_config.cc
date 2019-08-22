@@ -391,6 +391,25 @@ base::Optional<std::vector<std::string>> GetStringList(const base::Value* dict,
   return result;
 }
 
+void SetString(const char* key,
+               const base::Optional<std::string>& property,
+               base::Value* dict) {
+  if (!property)
+    return;
+  dict->SetStringKey(key, *property);
+}
+
+void SetStringList(const char* key,
+                   const base::Optional<std::vector<std::string>>& property,
+                   base::Value* dict) {
+  if (!property)
+    return;
+  base::Value list(base::Value::Type::LIST);
+  for (const std::string& s : *property)
+    list.GetList().push_back(base::Value(s));
+  dict->SetKey(key, std::move(list));
+}
+
 // GetManagedDictionary() returns a ManagedDictionary representing the active
 // and policy values for a managed property. The types of |active_value| and
 // |policy_value| are expected to match the ONC signature for the property type.
@@ -458,6 +477,9 @@ ManagedDictionary GetManagedDictionary(const base::Value* onc_dict) {
                                : mojom::PolicySource::kDevicePolicyRecommended;
     if (device_policy)
       result.policy_value = device_policy->Clone();
+  } else if (effective == ::onc::kAugmentationUserSetting ||
+             effective == ::onc::kAugmentationSharedSetting) {
+    // User or shared setting, no policy source.
   } else {
     // Unexpected ONC. No policy source or value will be set.
     NET_LOG(ERROR) << "Unexpected ONC property: " << *onc_dict;
@@ -625,6 +647,17 @@ mojom::ManagedProxyLocationPtr GetManagedProxyLocation(const base::Value* dict,
   proxy_location->host = GetManagedString(location_dict, ::onc::proxy::kHost);
   proxy_location->port = GetManagedInt32(location_dict, ::onc::proxy::kPort);
   return proxy_location;
+}
+
+void SetProxyLocation(const char* key,
+                      const mojom::ProxyLocationPtr& location,
+                      base::Value* dict) {
+  if (location.is_null())
+    return;
+  base::Value location_dict(base::Value::Type::DICTIONARY);
+  location_dict.SetStringKey(::onc::proxy::kHost, location->host);
+  location_dict.SetIntKey(::onc::proxy::kPort, location->port);
+  dict->SetKey(key, std::move(location_dict));
 }
 
 mojom::ManagedProxySettingsPtr GetManagedProxySettings(
@@ -1419,6 +1452,136 @@ void CrosNetworkConfig::GetManagedPropertiesFailure(
                  << " Error: " << error_name;
   std::move(iter->second).Run(nullptr);
   get_managed_properties_callbacks_.erase(iter);
+}
+
+void CrosNetworkConfig::SetProperties(const std::string& guid,
+                                      mojom::ConfigPropertiesPtr properties,
+                                      SetPropertiesCallback callback) {
+  if (!network_configuration_handler_) {
+    NET_LOG(ERROR) << "SetProperties called with no handler";
+    std::move(callback).Run(false);
+    return;
+  }
+  const NetworkState* network =
+      network_state_handler_->GetNetworkStateFromGuid(guid);
+  if (!network || network->profile_path().empty()) {
+    NET_LOG(ERROR) << "SetProperties called with unconfigured network: "
+                   << guid;
+    std::move(callback).Run(false);
+    return;
+  }
+
+  base::DictionaryValue onc;
+  base::Value type_dict(base::Value::Type::DICTIONARY);
+  if (properties->auto_connect) {
+    auto type = NetworkTypePattern::Primitive(network->type());
+    if (type.Equals(NetworkTypePattern::Cellular()) ||
+        type.Equals(NetworkTypePattern::VPN()) ||
+        type.Equals(NetworkTypePattern::WiFi())) {
+      // Note: All type dicts use the same kAutoConnect key.
+      type_dict.SetBoolKey(::onc::wifi::kAutoConnect,
+                           properties->auto_connect->value);
+    }
+  }
+  if (properties->cellular) {
+    if (properties->cellular->apn) {
+      const mojom::ApnProperties& apn = *properties->cellular->apn;
+      base::Value apn_dict(base::Value::Type::DICTIONARY);
+      apn_dict.SetStringKey(::onc::cellular_apn::kAccessPointName,
+                            apn.access_point_name);
+      SetString(::onc::cellular_apn::kAuthentication, apn.authentication,
+                &apn_dict);
+      SetString(::onc::cellular_apn::kLanguage, apn.language, &apn_dict);
+      SetString(::onc::cellular_apn::kLocalizedName, apn.localized_name,
+                &apn_dict);
+      SetString(::onc::cellular_apn::kName, apn.name, &apn_dict);
+      SetString(::onc::cellular_apn::kPassword, apn.password, &apn_dict);
+      SetString(::onc::cellular_apn::kUsername, apn.username, &apn_dict);
+      type_dict.SetKey(::onc::cellular::kAPN, std::move(apn_dict));
+    }
+  }
+  if (properties->ip_address_config_type) {
+    onc.SetStringKey(::onc::network_config::kIPAddressConfigType,
+                     *properties->ip_address_config_type);
+  }
+  SetString(::onc::network_config::kNameServersConfigType,
+            properties->name_servers_config_type, &onc);
+  if (properties->priority) {
+    onc.SetIntKey(::onc::network_config::kPriority,
+                  properties->priority->value);
+  }
+  if (properties->proxy_settings) {
+    const mojom::ProxySettings& proxy = *properties->proxy_settings;
+    base::Value proxy_dict(base::Value::Type::DICTIONARY);
+    proxy_dict.SetStringKey(::onc::proxy::kType, proxy.type);
+    if (proxy.manual) {
+      const mojom::ManualProxySettings& manual = *proxy.manual;
+      base::Value manual_dict(base::Value::Type::DICTIONARY);
+      SetProxyLocation(::onc::proxy::kHttp, manual.http_proxy, &manual_dict);
+      SetProxyLocation(::onc::proxy::kHttps, manual.secure_http_proxy,
+                       &manual_dict);
+      SetProxyLocation(::onc::proxy::kFtp, manual.ftp_proxy, &manual_dict);
+      SetProxyLocation(::onc::proxy::kSocks, manual.socks, &manual_dict);
+      proxy_dict.SetKey(::onc::proxy::kManual, std::move(manual_dict));
+    }
+    SetStringList(::onc::proxy::kExcludeDomains, proxy.exclude_domains,
+                  &proxy_dict);
+    SetString(::onc::proxy::kPAC, proxy.pac, &proxy_dict);
+    onc.SetKey(::onc::network_config::kProxySettings, std::move(proxy_dict));
+  }
+  if (properties->static_ip_config) {
+    const mojom::IPConfigProperties& ip_config = *properties->static_ip_config;
+    base::Value ip_config_dict(base::Value::Type::DICTIONARY);
+    SetString(::onc::ipconfig::kGateway, ip_config.gateway, &ip_config_dict);
+    SetString(::onc::ipconfig::kIPAddress, ip_config.ip_address,
+              &ip_config_dict);
+    SetStringList(::onc::ipconfig::kNameServers, ip_config.name_servers,
+                  &ip_config_dict);
+    ip_config_dict.SetIntKey(::onc::ipconfig::kRoutingPrefix,
+                             ip_config.routing_prefix);
+    SetString(::onc::ipconfig::kType, ip_config.type, &ip_config_dict);
+    SetString(::onc::ipconfig::kWebProxyAutoDiscoveryUrl,
+              ip_config.web_proxy_auto_discovery_url, &ip_config_dict);
+  }
+  if (!type_dict.DictEmpty()) {
+    std::string type = network_util::TranslateShillTypeToONC(network->type());
+    onc.SetKey(type, std::move(type_dict));
+  }
+  int callback_id = callback_id_++;
+  set_properties_callbacks_[callback_id] = std::move(callback);
+
+  network_configuration_handler_->SetProperties(
+      network->path(), onc,
+      base::Bind(&CrosNetworkConfig::SetPropertiesSuccess,
+                 weak_factory_.GetWeakPtr(), callback_id),
+      base::Bind(&CrosNetworkConfig::SetPropertiesFailure,
+                 weak_factory_.GetWeakPtr(), guid, callback_id));
+}
+
+void CrosNetworkConfig::SetPropertiesSuccess(int callback_id) {
+  auto iter = set_properties_callbacks_.find(callback_id);
+  if (iter == set_properties_callbacks_.end()) {
+    LOG(ERROR) << "Unexpected callback id not found (success): " << callback_id;
+    return;
+  }
+  std::move(iter->second).Run(/*success=*/true);
+  set_properties_callbacks_.erase(iter);
+}
+
+void CrosNetworkConfig::SetPropertiesFailure(
+    const std::string& guid,
+    int callback_id,
+    const std::string& error_name,
+    std::unique_ptr<base::DictionaryValue> error_data) {
+  auto iter = set_properties_callbacks_.find(callback_id);
+  if (iter == set_properties_callbacks_.end()) {
+    LOG(ERROR) << "Unexpected callback id not found (failure): " << callback_id;
+    return;
+  }
+  NET_LOG(ERROR) << "Failed to set network properties: " << guid
+                 << " Error: " << error_name;
+  std::move(iter->second).Run(/*success=*/false);
+  set_properties_callbacks_.erase(iter);
 }
 
 void CrosNetworkConfig::SetNetworkTypeEnabledState(

@@ -4,7 +4,7 @@
 
 #include "android_webview/browser/network_service/net_helpers.h"
 
-#include "android_webview/browser/aw_contents_io_thread_client.h"
+#include "android_webview/browser/aw_contents_network_client.h"
 #include "android_webview/common/url_constants.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -26,18 +26,18 @@ int UpdateCacheControlFlags(int load_flags, int cache_control_flags) {
 }
 
 // Gets the net-layer load_flags which reflect |client|'s cache mode.
-int GetCacheModeForClient(AwContentsIoThreadClient* client) {
+int GetCacheModeForClient(AwContentsNetworkClient* client) {
   DCHECK(client);
-  AwContentsIoThreadClient::CacheMode cache_mode = client->GetCacheMode();
+  AwContentsNetworkClient::CacheMode cache_mode = client->GetCacheMode();
   switch (cache_mode) {
-    case AwContentsIoThreadClient::LOAD_CACHE_ELSE_NETWORK:
+    case AwContentsNetworkClient::LOAD_CACHE_ELSE_NETWORK:
       // If the resource is in the cache (even if expired), load from cache.
       // Otherwise, fall back to network.
       return net::LOAD_SKIP_CACHE_VALIDATION;
-    case AwContentsIoThreadClient::LOAD_NO_CACHE:
+    case AwContentsNetworkClient::LOAD_NO_CACHE:
       // Always load from the network, don't use the cache.
       return net::LOAD_BYPASS_CACHE;
-    case AwContentsIoThreadClient::LOAD_CACHE_ONLY:
+    case AwContentsNetworkClient::LOAD_CACHE_ONLY:
       // If the resource is in the cache (even if expired), load from cache. Do
       // not fall back to the network.
       return net::LOAD_ONLY_FROM_CACHE | net::LOAD_SKIP_CACHE_VALIDATION;
@@ -50,7 +50,7 @@ int GetCacheModeForClient(AwContentsIoThreadClient* client) {
 
 }  // namespace
 
-int UpdateLoadFlags(int load_flags, AwContentsIoThreadClient* client) {
+int UpdateLoadFlags(int load_flags, AwContentsNetworkClient* client) {
   if (!client)
     return load_flags;
 
@@ -67,7 +67,7 @@ int UpdateLoadFlags(int load_flags, AwContentsIoThreadClient* client) {
   return UpdateCacheControlFlags(load_flags, cache_mode);
 }
 
-bool ShouldBlockURL(const GURL& url, AwContentsIoThreadClient* client) {
+bool ShouldBlockURL(const GURL& url, AwContentsNetworkClient* client) {
   if (!client)
     return false;
 

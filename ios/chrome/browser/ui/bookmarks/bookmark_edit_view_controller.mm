@@ -574,6 +574,12 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
   self.folderViewController = nil;
 }
 
+- (void)folderPickerDidDismiss:(BookmarkFolderViewController*)folderPicker {
+  self.folderViewController.delegate = nil;
+  self.folderViewController = nil;
+  [self dismiss];
+}
+
 #pragma mark - BookmarkModelBridgeObserver
 
 - (void)bookmarkModelLoaded {

@@ -18,12 +18,6 @@ constexpr base::TimeDelta kDefaultImpressionExpiration =
 constexpr base::TimeDelta kDefaultSuppressionDuration =
     base::TimeDelta::FromDays(56);
 
-// The morning task by default will run at 7am.
-constexpr int kDefaultMorningTaskHour = 7;
-
-// The evening task by default will run at 6pm.
-constexpr int kDefaultEveningTaskHour = 18;
-
 // Check consecutive notification dismisses in this duration to generate a
 // dismiss event.
 constexpr base::TimeDelta kDefaultDimissDuration = base::TimeDelta::FromDays(7);
@@ -33,8 +27,8 @@ constexpr base::TimeDelta kDefaultBackgroundTaskWindowDuration =
     base::TimeDelta::FromHours(1);
 
 // Default randomized time window to distribute load from user actions.
-constexpr base::TimeDelta kDefaultBackgroundTaskRandomTimeWindow =
-    base::TimeDelta::FromHours(1);
+constexpr base::TimeDelta kDefaultBackgroundTaskMinInterval =
+    base::TimeDelta::FromMinutes(10);
 
 // static
 std::unique_ptr<SchedulerConfig> SchedulerConfig::Create() {
@@ -50,11 +44,8 @@ SchedulerConfig::SchedulerConfig()
       suppression_duration(kDefaultSuppressionDuration),
       dismiss_count(3),
       dismiss_duration(kDefaultDimissDuration),
-      morning_task_hour(kDefaultMorningTaskHour),
-      evening_task_hour(kDefaultEveningTaskHour),
       background_task_window_duration(kDefaultBackgroundTaskWindowDuration),
-      background_task_random_time_window(
-          kDefaultBackgroundTaskRandomTimeWindow) {
+      background_task_min_interval(kDefaultBackgroundTaskMinInterval) {
   // TODO(xingliu): Add constructor using finch data.
 }
 

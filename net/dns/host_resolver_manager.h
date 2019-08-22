@@ -295,14 +295,13 @@ class NET_EXPORT HostResolverManager
       std::deque<TaskType>* out_tasks,
       base::Optional<HostCache::EntryStaleness>* out_stale_info);
 
-  // Attempts to create and start a Job to asynchronously attempt to resolve
-  // |request|. On success, returns ERR_IO_PENDING and attaches the Job to
-  // |request|. On error, marks |request| completed and returns the error.
-  int CreateAndStartJob(DnsQueryType effective_query_type,
-                        HostResolverFlags effective_host_resolver_flags,
-                        DnsConfig::SecureDnsMode effective_secure_dns_mode,
-                        std::deque<TaskType> tasks,
-                        RequestImpl* request);
+  // Creates and starts a Job to asynchronously attempt to resolve
+  // |request|.
+  void CreateAndStartJob(DnsQueryType effective_query_type,
+                         HostResolverFlags effective_host_resolver_flags,
+                         DnsConfig::SecureDnsMode effective_secure_dns_mode,
+                         std::deque<TaskType> tasks,
+                         RequestImpl* request);
 
   // Tries to resolve |key| and its possible IP address representation,
   // |ip_address|. Returns a results entry iff the input can be resolved.

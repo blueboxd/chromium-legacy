@@ -656,6 +656,13 @@ const base::Feature kNativeSmb{"NativeSmb", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kSoundContentSetting{"SoundContentSetting",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables filtering URLs by suffix to include subresources that look
+// like image resources for compression. For example,
+// http://chromium.org/image.jpg would be included.
+const base::Feature kSubresourceRedirectIncludedMediaSuffixes{
+    "SubresourceRedirectIncludedMediaSuffixes",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
 #if defined(OS_CHROMEOS)
 // Enables or disables chrome://sys-internals.
 const base::Feature kSysInternals{"SysInternals",

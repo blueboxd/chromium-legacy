@@ -10,6 +10,7 @@ import "mojo/public/mojom/base/time.mojom";
 import "services/network/public/mojom/cookie_manager.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
 import "third_party/blink/public/mojom/background_fetch/background_fetch.mojom";
+import "third_party/blink/public/mojom/devtools/console_message.mojom";
 import "third_party/blink/public/mojom/fetch/fetch_api_response.mojom";
 import "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom";
 import "third_party/blink/public/mojom/messaging/transferable_message.mojom";
@@ -278,6 +279,9 @@ interface ServiceWorker {
   // Lets the idle timer request termination immediately after all inflight
   // events are handled without delay.
   SetIdleTimerDelayToZero();
+
+  // Adds a message to DevTools console which is associated with this worker.
+  AddMessageToConsole(ConsoleMessageLevel level, string message);
 };
 
 // This is another interface for talking to a running service worker in

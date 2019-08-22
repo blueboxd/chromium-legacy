@@ -241,3 +241,47 @@ QuicParseCommandLineFlagsResult::QuicParseCommandLineFlagsResult(
 QuicParseCommandLineFlagsResult::~QuicParseCommandLineFlagsResult() = default;
 
 }  // namespace quic
+
+namespace {
+
+void SetQuicFlagByName_bool(bool* flag, const std::string& value) {
+  if (value == "true" || value == "True")
+    *flag = true;
+  else if (value == "false" || value == "False")
+    *flag = false;
+}
+void SetQuicFlagByName_double(double* flag, const std::string& value) {
+  double val;
+  if (base::StringToDouble(value, &val))
+    *flag = val;
+}
+
+void SetQuicFlagByName_uint32_t(uint32_t* flag, const std::string& value) {
+  int val;
+  if (base::StringToInt(value, &val) && val >= 0)
+    *flag = val;
+}
+
+void SetQuicFlagByName_int32_t(int32_t* flag, const std::string& value) {
+  int val;
+  if (base::StringToInt(value, &val))
+    *flag = val;
+}
+
+void SetQuicFlagByName_int64_t(int64_t* flag, const std::string& value) {
+  int64_t val;
+  if (base::StringToInt64(value, &val))
+    *flag = val;
+}
+
+}  // namespace
+
+void SetQuicFlagByName(const std::string& flag_name, const std::string& value) {
+#define QUIC_FLAG(type, flag, default_value) \
+  if (flag_name == #flag) {                  \
+    SetQuicFlagByName_##type(&flag, value);  \
+    return;                                  \
+  }
+#include "net/quic/quic_flags_list.h"
+#undef QUIC_FLAG
+}

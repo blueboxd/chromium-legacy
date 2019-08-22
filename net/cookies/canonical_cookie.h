@@ -22,6 +22,14 @@ class GURL;
 namespace net {
 
 class ParsedCookie;
+class CanonicalCookie;
+
+struct CookieWithStatus;
+struct CookieAndLineWithStatus;
+
+using CookieList = std::vector<CanonicalCookie>;
+using CookieStatusList = std::vector<CookieWithStatus>;
+using CookieAndLineStatusList = std::vector<CookieAndLineWithStatus>;
 
 class NET_EXPORT CanonicalCookie {
  public:
@@ -247,8 +255,10 @@ class NET_EXPORT CanonicalCookie {
 
   // Returns the cookie line (e.g. "cookie1=value1; cookie2=value2") represented
   // by |cookies|. The string is built in the same order as the given list.
-  static std::string BuildCookieLine(
-      const std::vector<CanonicalCookie>& cookies);
+  static std::string BuildCookieLine(const CookieList& cookies);
+
+  // Same as above but takes a CookieStatusList (ignores the statuses).
+  static std::string BuildCookieLine(const CookieStatusList& cookies);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(CanonicalCookieTest, TestPrefixHistograms);
@@ -340,12 +350,6 @@ struct NET_EXPORT CookieAndLineWithStatus {
   std::string cookie_string;
   CanonicalCookie::CookieInclusionStatus status;
 };
-
-typedef std::vector<CanonicalCookie> CookieList;
-
-typedef std::vector<CookieWithStatus> CookieStatusList;
-
-typedef std::vector<CookieAndLineWithStatus> CookieAndLineStatusList;
 
 }  // namespace net
 

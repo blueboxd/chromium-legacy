@@ -171,8 +171,8 @@ AuthenticatedLeakCheck::AuthenticatedLeakCheck(
       payload_helper_(new RequestPayloadHelper(this,
                                                identity_manager,
                                                std::move(url_loader_factory))),
-      network_request_factory_(std::make_unique<LeakDetectionRequestFactory>()),
-      weak_ptr_factory_(this) {
+      network_request_factory_(
+          std::make_unique<LeakDetectionRequestFactory>()) {
   DCHECK(delegate_);
 }
 

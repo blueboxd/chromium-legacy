@@ -1550,12 +1550,13 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
           model()->AcceptInput(WindowOpenDisposition::NEW_WINDOW,
                                event.time_stamp());
         } else {
-          if (!(OmniboxFieldTrial::IsTabSwitchLogicReversed() &&
-                model()->popup_model()->SelectedLineHasTabMatch())) {
-            model()->AcceptInput(WindowOpenDisposition::CURRENT_TAB,
+          if ((OmniboxFieldTrial::IsTabSwitchLogicReversed() &&
+               model()->popup_model()->SelectedLineHasTabMatch()) ||
+              model()->popup_model()->SelectedLineIsTabSwitchSuggestion()) {
+            model()->AcceptInput(WindowOpenDisposition::SWITCH_TO_TAB,
                                  event.time_stamp());
           } else {
-            model()->AcceptInput(WindowOpenDisposition::SWITCH_TO_TAB,
+            model()->AcceptInput(WindowOpenDisposition::CURRENT_TAB,
                                  event.time_stamp());
           }
         }

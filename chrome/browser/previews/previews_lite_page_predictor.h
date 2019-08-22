@@ -73,7 +73,8 @@ class PreviewsLitePagePredictor
   // Virtual for testing.
   virtual bool DataSaverIsEnabled() const;
   virtual bool ECTIsSlow() const;
-  virtual bool PageIsBlacklisted(const GURL& url) const;
+  virtual bool PageIsBlacklisted(
+      content::NavigationHandle* navigation_handle) const;
 
   // Returns true when this |web_contents| is the active tab and Chrome is in
   // the foreground. Virtual for testing.
@@ -101,12 +102,13 @@ class PreviewsLitePagePredictor
                            ToggleMultipleTimes_Visibility);
 
   // Returns the GURL that should be preresolved, if any.
-  base::Optional<GURL> ShouldPreresolveOnPage() const;
+  base::Optional<GURL> ShouldPreresolveOnPage(
+      content::NavigationHandle* navigation_handle) const;
 
   // Toggles preresolving to either start or stop as needed. This operates
   // statelessly, but should be called every time a change potentially needs to
   // be made. See observers below.
-  void MaybeTogglePreresolveTimer();
+  void MaybeTogglePreresolveTimer(content::NavigationHandle* navigation_handle);
 
   // Immediately causes |url_| to be preresolved.
   void Preresolve() const;

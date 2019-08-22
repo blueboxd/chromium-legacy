@@ -17,10 +17,9 @@
 
 namespace {
 
-bool IsUberOrUberReplacementURL(const GURL& url) {
+bool ShouldClearPageState(const GURL& url) {
   return url.SchemeIs(content::kChromeUIScheme) &&
          (url.host_piece() == chrome::kChromeUIHistoryHost ||
-          url.host_piece() == chrome::kChromeUIUberHost ||
           url.host_piece() == chrome::kChromeUISettingsHost ||
           url.host_piece() == chrome::kChromeUIHelpHost);
 }
@@ -45,11 +44,8 @@ void ChromeSerializedNavigationDriver::Sanitize(
   content::Referrer new_referrer = content::Referrer::SanitizeForRequest(
       navigation->virtual_url(), old_referrer);
 
-  // Clear any Uber UI page state so that these pages are reloaded rather than
-  // restored from page state. This fixes session restore when WebUI URLs
-  // change.
-  if (IsUberOrUberReplacementURL(navigation->virtual_url()) &&
-      IsUberOrUberReplacementURL(navigation->original_request_url())) {
+  if (ShouldClearPageState(navigation->virtual_url()) &&
+      ShouldClearPageState(navigation->original_request_url())) {
     navigation->set_encoded_page_state(std::string());
   }
 

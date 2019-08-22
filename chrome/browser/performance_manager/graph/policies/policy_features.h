@@ -7,6 +7,10 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 
+#if defined(OS_LINUX)
+#include "base/allocator/buildflags.h"
+#endif
+
 #ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_POLICIES_POLICY_FEATURES_H_
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_POLICIES_POLICY_FEATURES_H_
 
@@ -53,6 +57,25 @@ struct TrimOnMemoryPressureParams {
 
 }  // namespace chromeos
 #endif
+
+#if defined(OS_LINUX)
+namespace linux {
+
+#if BUILDFLAG(USE_TCMALLOC)
+// If enabled then tcmalloc will be tuned dynamically based on system memory
+// pressure.
+extern const base::Feature kDynamicTcmallocTuning;
+
+// The time in seconds between trying to tune renderers tcmalloc params.
+extern const base::FeatureParam<int> kDynamicTuningTimeSec;
+
+// The time in seconds a frame needs to be invisible before being further scaled
+// down, -1 will disable this.
+extern const base::FeatureParam<int> kDynamicTuningScaleInvisibleTimeSec;
+#endif
+
+}  // namespace linux
+#endif  // defined(OS_LINUX)
 
 }  // namespace features
 }  // namespace performance_manager

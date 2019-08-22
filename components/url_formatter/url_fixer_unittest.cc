@@ -380,7 +380,7 @@ struct FixupCase {
     {"::1", "http://:1/"},
     // Semicolon as scheme separator for standard schemes.
     {"http;//www.google.com/", "http://www.google.com/"},
-    {"about;chrome", "chrome://chrome/"},
+    {"about;help", "chrome://help/"},
     // Semicolon in non-standard schemes is not replaced by colon.
     {"whatsup;//fool", "http://whatsup%3B//fool"},
     // Semicolon left as-is in URL itself.

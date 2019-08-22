@@ -127,7 +127,7 @@ bool GetAsVector(IVectorView<T*>* view, std::vector<ComPtr<I>>* vector) {
 
 BluetoothGattDiscovererWinrt::BluetoothGattDiscovererWinrt(
     ComPtr<IBluetoothLEDevice> ble_device)
-    : ble_device_(std::move(ble_device)), weak_ptr_factory_(this) {}
+    : ble_device_(std::move(ble_device)) {}
 
 BluetoothGattDiscovererWinrt::~BluetoothGattDiscovererWinrt() = default;
 

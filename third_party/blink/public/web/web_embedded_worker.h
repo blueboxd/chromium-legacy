@@ -41,7 +41,6 @@ namespace blink {
 
 class WebServiceWorkerContextClient;
 class WebURL;
-struct WebConsoleMessage;
 struct WebEmbeddedWorkerStartData;
 
 // As we're on the border line between non-Blink and Blink variants, we need
@@ -80,9 +79,6 @@ class BLINK_EXPORT WebEmbeddedWorker {
   // Resumes starting a worker startup that was paused via
   // WebEmbeddedWorkerStartData.pauseAfterDownloadMode.
   virtual void ResumeAfterDownload() = 0;
-
-  // Inspector related methods.
-  virtual void AddMessageToConsole(const WebConsoleMessage&) = 0;
 };
 
 }  // namespace blink

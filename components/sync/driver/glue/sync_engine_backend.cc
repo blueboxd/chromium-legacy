@@ -322,12 +322,6 @@ void SyncEngineBackend::DoOnIncomingInvalidation(
 void SyncEngineBackend::DoInitialize(SyncEngine::InitParams params) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // Blow away the partial or corrupt sync data folder before doing any more
-  // initialization, if necessary.
-  if (params.delete_sync_data_folder) {
-    syncable::Directory::DeleteDirectoryFiles(sync_data_folder_);
-  }
-
   // Make sure that the directory exists before initializing the backend.
   // If it already exists, this will do no harm.
   if (!base::CreateDirectory(sync_data_folder_)) {

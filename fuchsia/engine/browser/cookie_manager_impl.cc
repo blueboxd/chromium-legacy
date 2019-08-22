@@ -64,6 +64,17 @@ class CookiesIteratorImpl : public fuchsia::web::CookiesIterator,
           cookie, network::mojom::CookieChangeCause::INSERTED);
     }
   }
+  // Same as above except it takes CookieStatusList instead of just CookieList.
+  CookiesIteratorImpl(
+      const std::vector<net::CookieWithStatus>& cookies_with_statuses,
+      fidl::InterfaceRequest<fuchsia::web::CookiesIterator> iterator)
+      : CookiesIteratorImpl(std::move(iterator)) {
+    for (const auto& cookie_with_status : cookies_with_statuses) {
+      queued_cookies_[cookie_with_status.cookie.UniqueKey()] =
+          ConvertCanonicalCookie(cookie_with_status.cookie,
+                                 network::mojom::CookieChangeCause::INSERTED);
+    }
+  }
   ~CookiesIteratorImpl() final = default;
 
   // fuchsia::web::CookiesIterator implementation:
@@ -139,7 +150,7 @@ class CookiesIteratorImpl : public fuchsia::web::CookiesIterator,
   DISALLOW_COPY_AND_ASSIGN(CookiesIteratorImpl);
 };
 
-void OnCookiesReceived(
+void OnAllCookiesReceived(
     fidl::InterfaceRequest<fuchsia::web::CookiesIterator> iterator,
     const std::vector<net::CanonicalCookie>& cookies) {
   new CookiesIteratorImpl(cookies, std::move(iterator));
@@ -147,12 +158,12 @@ void OnCookiesReceived(
 
 void OnCookiesAndExcludedReceived(
     fidl::InterfaceRequest<fuchsia::web::CookiesIterator> iterator,
-    const std::vector<net::CanonicalCookie>& cookies,
+    const std::vector<net::CookieWithStatus>& cookies_with_statuses,
     const std::vector<net::CookieWithStatus>& excluded_cookies) {
   // Since CookieOptions::set_return_excluded_cookies() is not used when calling
   // the Mojo GetCookieList() API, |excluded_cookies| should be empty.
   DCHECK(excluded_cookies.empty());
-  OnCookiesReceived(std::move(iterator), cookies);
+  new CookiesIteratorImpl(cookies_with_statuses, std::move(iterator));
 }
 
 }  // namespace
@@ -192,7 +203,7 @@ void CookieManagerImpl::GetCookieList(
 
   if (!url && !name) {
     cookie_manager_->GetAllCookies(
-        base::BindOnce(&OnCookiesReceived, std::move(iterator)));
+        base::BindOnce(&OnAllCookiesReceived, std::move(iterator)));
   } else {
     if (!name) {
       // Include HTTP and 1st-party-only cookies in those returned.

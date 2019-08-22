@@ -40,6 +40,7 @@ source_set("grid_ui") {
     "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/tab_grid/transitions",
     "//ios/chrome/browser/ui/util",
+    "//ios/chrome/common/colors",
     "//ios/chrome/common/ui_util",
     "//ui/base",
   ]

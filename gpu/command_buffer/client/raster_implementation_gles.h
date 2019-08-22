@@ -38,12 +38,19 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
   GLenum GetGraphicsResetStatusKHR() override;
   void LoseContextCHROMIUM(GLenum current, GLenum other) override;
 
-  // Queries: GL_COMMANDS_ISSUED_CHROMIUM / GL_COMMANDS_COMPLETED_CHROMIUM.
+  // Queries:
+  // - GL_COMMANDS_ISSUED_CHROMIUM
+  // - GL_COMMANDS_ISSUED_TIMESTAMP_CHROMIUM
+  // - GL_COMMANDS_COMPLETED_CHROMIUM
   void GenQueriesEXT(GLsizei n, GLuint* queries) override;
   void DeleteQueriesEXT(GLsizei n, const GLuint* queries) override;
   void BeginQueryEXT(GLenum target, GLuint id) override;
   void EndQueryEXT(GLenum target) override;
+  void QueryCounterEXT(GLuint id, GLenum target) override;
   void GetQueryObjectuivEXT(GLuint id, GLenum pname, GLuint* params) override;
+  void GetQueryObjectui64vEXT(GLuint id,
+                              GLenum pname,
+                              GLuint64* params) override;
 
   // Texture copying.
   void CopySubTexture(const gpu::Mailbox& source_mailbox,

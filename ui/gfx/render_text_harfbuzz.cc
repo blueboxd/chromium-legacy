@@ -67,6 +67,22 @@ const size_t kMaxTextLength = 10000;
 // character to belong to more scripts.
 const size_t kMaxScripts = 5;
 
+// Font fallback mechanism used to Shape runs (see ShapeRuns(...)).
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class ShapeRunFallback {
+  FAILED = 0,
+  NO_FALLBACK = 1,
+  FALLBACK = 2,
+  FALLBACKS = 3,
+  kMaxValue = FALLBACKS
+};
+
+// Log the fallback font mechanism used for shaping to UMA (see ShapeRuns(...)).
+void RecordShapeRunsFallback(ShapeRunFallback fallback) {
+  UMA_HISTOGRAM_ENUMERATION("RenderTextHarfBuzz.ShapeRunsFallback", fallback);
+}
+
 // Returns true if characters of |block_code| may trigger font fallback.
 bool IsUnusualBlockCode(UBlockCode block_code) {
   return block_code == UBLOCK_GEOMETRIC_SHAPES ||
@@ -1941,8 +1957,10 @@ void RenderTextHarfBuzz::ShapeRuns(
     }
   }
   runs.swap(need_shaping_runs);
-  if (runs.empty())
+  if (runs.empty()) {
+    RecordShapeRunsFallback(ShapeRunFallback::NO_FALLBACK);
     return;
+  }
 
   const Font& primary_font = font_list().GetPrimaryFont();
 
@@ -1952,8 +1970,10 @@ void RenderTextHarfBuzz::ShapeRuns(
                                                 font.GetFontRenderParams())) {
       ShapeRunsWithFont(text, test_font_params, &runs);
     }
-    if (runs.empty())
+    if (runs.empty()) {
+      RecordShapeRunsFallback(ShapeRunFallback::NO_FALLBACK);
       return;
+    }
   }
 
   std::string preferred_fallback_family;
@@ -1976,8 +1996,10 @@ void RenderTextHarfBuzz::ShapeRuns(
             fallback_font, fallback_font.GetFontRenderParams())) {
       ShapeRunsWithFont(text, test_font_params, &runs);
     }
-    if (runs.empty())
+    if (runs.empty()) {
+      RecordShapeRunsFallback(ShapeRunFallback::FALLBACK);
       return;
+    }
   }
 
   std::vector<Font> fallback_font_list;
@@ -2044,6 +2066,7 @@ void RenderTextHarfBuzz::ShapeRuns(
       TRACE_EVENT_INSTANT1("ui", "RenderTextHarfBuzz::FallbackFont",
                            TRACE_EVENT_SCOPE_THREAD, "font_name",
                            TRACE_STR_COPY(font_name.c_str()));
+      RecordShapeRunsFallback(ShapeRunFallback::FALLBACKS);
       return;
     }
   }
@@ -2054,6 +2077,8 @@ void RenderTextHarfBuzz::ShapeRuns(
       run->shape.width = 0.0f;
     }
   }
+
+  RecordShapeRunsFallback(ShapeRunFallback::FAILED);
 }
 
 void RenderTextHarfBuzz::ShapeRunsWithFont(

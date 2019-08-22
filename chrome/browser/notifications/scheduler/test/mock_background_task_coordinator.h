@@ -15,10 +15,9 @@ class MockBackgroundTaskCoordinator : public BackgroundTaskCoordinator {
  public:
   MockBackgroundTaskCoordinator();
   ~MockBackgroundTaskCoordinator() override;
-  MOCK_METHOD3(ScheduleBackgroundTask,
+  MOCK_METHOD2(ScheduleBackgroundTask,
                void(BackgroundTaskCoordinator::Notifications notifications,
-                    BackgroundTaskCoordinator::ClientStates client_states,
-                    SchedulerTaskTime task_start_time));
+                    BackgroundTaskCoordinator::ClientStates client_states));
 };
 
 }  // namespace test

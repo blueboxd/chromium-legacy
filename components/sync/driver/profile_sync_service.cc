@@ -1673,16 +1673,17 @@ void ProfileSyncService::SetInvalidationsForSessionsEnabled(bool enabled) {
   }
 }
 
-UserDemographicsResult ProfileSyncService::GetUserDemographics(base::Time now) {
-  // Do not provide demographics when sync is disabled or paused because user
-  // demographics should only be provided when the other sync data can be
-  // uploaded to the sync server.
+UserDemographicsResult ProfileSyncService::GetUserNoisedBirthYearAndGender(
+    base::Time now) {
+  // Do not provide the synced user’s birth year and gender when sync is
+  // disabled or paused because the user’s birth year and gender should only be
+  // provided when the sync prefs are synced with the sync server.
   if (!IsSyncFeatureEnabled() || auth_manager_->IsSyncPaused()) {
     return UserDemographicsResult::ForStatus(
         UserDemographicsStatus::kSyncNotEnabled);
   }
 
-  return sync_prefs_.GetUserDemographics(now);
+  return sync_prefs_.GetUserNoisedBirthYearAndGender(now);
 }
 
 base::WeakPtr<JsController> ProfileSyncService::GetJsController() {

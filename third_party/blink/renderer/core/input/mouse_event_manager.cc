@@ -338,8 +338,10 @@ WebInputEventResult MouseEventManager::DispatchMouseClickIfNeeded(
     return WebInputEventResult::kNotHandled;
 
   Node* click_target_node = nullptr;
+  Node* old_click_target_node = nullptr;
   if (mouse_down_element_ == mouse_release_target) {
     click_target_node = mouse_down_element_;
+    old_click_target_node = click_target_node;
   } else if (mouse_down_element_->GetDocument() ==
              mouse_release_target->GetDocument()) {
     // Updates distribution because a 'mouseup' event listener can make the
@@ -349,9 +351,17 @@ WebInputEventResult MouseEventManager::DispatchMouseClickIfNeeded(
     mouse_release_target->UpdateDistributionForFlatTreeTraversal();
     click_target_node = mouse_release_target->CommonAncestor(
         *mouse_down_element_, event_handling_util::ParentForClickEvent);
+
+    // Record how often interactive element might change the click target.
+    old_click_target_node = mouse_release_target->CommonAncestor(
+        *mouse_down_element_,
+        event_handling_util::ParentForClickEventInteractiveElementSensitive);
   }
   if (!click_target_node)
     return WebInputEventResult::kNotHandled;
+
+  UMA_HISTOGRAM_BOOLEAN("Event.ClickTargetChangedDueToInteractiveElement",
+                        click_target_node != old_click_target_node);
 
   DEFINE_STATIC_LOCAL(BooleanHistogram, histogram,
                       ("Event.ClickNotFiredDueToDomManipulation"));

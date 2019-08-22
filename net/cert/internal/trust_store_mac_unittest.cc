@@ -92,6 +92,11 @@ std::vector<std::string> ParsedCertificateListAsDER(
   return result;
 }
 
+class DebugData : public base::SupportsUserData {
+ public:
+  ~DebugData() override = default;
+};
+
 }  // namespace
 
 // Test the trust store using known test certificates in a keychain.  Tests
@@ -197,8 +202,11 @@ TEST(TrustStoreMacTest, MultiRootNotTrusted) {
   for (const auto& cert :
        {a_by_b, b_by_c, b_by_f, c_by_d, c_by_e, f_by_e, d_by_d, e_by_e}) {
     CertificateTrust trust = CertificateTrust::ForTrustAnchor();
-    trust_store.GetTrust(cert.get(), &trust);
+    DebugData debug_data;
+    trust_store.GetTrust(cert.get(), &trust, &debug_data);
     EXPECT_EQ(CertificateTrustType::UNSPECIFIED, trust.type);
+    // Certs without trust settings should not add debug info to debug_data.
+    EXPECT_FALSE(TrustStoreMac::ResultDebugData::Get(&debug_data));
   }
 }
 
@@ -265,7 +273,8 @@ TEST(TrustStoreMacTest, SystemCerts) {
     }
     // Check if this cert is considered a trust anchor by TrustStoreMac.
     CertificateTrust cert_trust;
-    trust_store.GetTrust(cert, &cert_trust);
+    DebugData debug_data;
+    trust_store.GetTrust(cert, &cert_trust, &debug_data);
     bool is_trust_anchor = cert_trust.IsTrustAnchor();
 
     // Check if this cert is considered a trust anchor by the OS.
@@ -294,6 +303,15 @@ TEST(TrustStoreMacTest, SystemCerts) {
            (trust_result == kSecTrustResultUnspecified)) &&
           (SecTrustGetCertificateCount(trust) == 1);
       EXPECT_EQ(expected_trust_anchor, is_trust_anchor);
+      if (is_trust_anchor) {
+        auto* trust_debug_data =
+            TrustStoreMac::ResultDebugData::Get(&debug_data);
+        ASSERT_TRUE(trust_debug_data);
+        // Since this test queries the real trust store, can't know exactly
+        // what bits should be set in the trust debug info, but it should at
+        // least have something set.
+        EXPECT_NE(0, trust_debug_data->combined_trust_debug_info());
+      }
     }
   }
 }

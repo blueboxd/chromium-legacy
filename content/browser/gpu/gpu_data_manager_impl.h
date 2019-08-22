@@ -93,6 +93,13 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
 
   gpu::GpuExtraInfo GetGpuExtraInfo() const;
 
+  bool IsGpuCompositingDisabled() const;
+
+  // This only handles the state of GPU compositing. Instead call
+  // ImageTransportFactory::DisableGpuCompositing() to perform a fallback to
+  // software compositing.
+  void SetGpuCompositingDisabled();
+
   // Update GpuPreferences based on blacklisting decisions.
   void UpdateGpuPreferences(gpu::GpuPreferences* gpu_preferences,
                             GpuProcessKind kind) const;
@@ -130,10 +137,6 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   // Set the active gpu.
   // Return true if it's a different GPU from the previous active one.
   bool UpdateActiveGpu(uint32_t vendor_id, uint32_t device_id);
-
-  // Notify all observers whenever there is a GPU info or GPU feature
-  // status update.
-  void NotifyGpuInfoUpdate();
 
   // Return mode describing what the GPU process will be launched to run.
   gpu::GpuMode GetGpuMode() const;

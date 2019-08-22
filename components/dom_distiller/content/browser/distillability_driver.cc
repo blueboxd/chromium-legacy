@@ -32,8 +32,13 @@ class DistillabilityServiceImpl : public mojom::DistillabilityService {
                            bool is_mobile_friendly) override {
     if (!distillability_driver_)
       return;
-    distillability_driver_->OnDistillability(is_distillable, is_last_update,
-                                             is_mobile_friendly);
+    DistillabilityResult result;
+    result.is_distillable = is_distillable;
+    result.is_last = is_last_update;
+    result.is_mobile_friendly = is_mobile_friendly;
+    DVLOG(1) << "Notifying observers of distillability service result: "
+             << result;
+    distillability_driver_->OnDistillability(result);
   }
 
  private:
@@ -60,18 +65,16 @@ void DistillabilityDriver::CreateDistillabilityService(
       std::move(request));
 }
 
-void DistillabilityDriver::SetDelegate(
-    const base::RepeatingCallback<void(bool, bool, bool)>& delegate) {
+void DistillabilityDriver::SetDelegate(const DistillabilityDelegate& delegate) {
   m_delegate_ = delegate;
 }
 
-void DistillabilityDriver::OnDistillability(bool distillable,
-                                            bool is_last,
-                                            bool is_mobile_friendly) {
+void DistillabilityDriver::OnDistillability(
+    const DistillabilityResult& result) {
   if (m_delegate_.is_null())
     return;
 
-  m_delegate_.Run(distillable, is_last, is_mobile_friendly);
+  m_delegate_.Run(result);
 }
 
 void DistillabilityDriver::OnInterfaceRequestFromFrame(

@@ -2277,6 +2277,10 @@
     "note": "This policy has no pref as it is only directly read by the policy system."
   },
 
+  "PolicyAtomicGroupsEnabled": {
+    "note": "This policy has no pref as it is only directly read by the policy system."
+  },
+
   "EnterpriseWebStoreURL": {
     "note": "This policy is retired, see http://crbug.com/178938."
   },
@@ -5006,6 +5010,16 @@
     },
     "pref_mappings": [
       { "pref": "ash.lock_screen_media_controls_enabled" }
+    ]
+  },
+
+  "SendFilesForMalwareCheck": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": {
+      "SendFilesForMalwareCheck": 2
+    },
+    "pref_mappings": [
+      { "pref": "safebrowsing.send_files_for_malware_check" }
     ]
   }
 }

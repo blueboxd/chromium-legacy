@@ -13,8 +13,7 @@
 #include "content/public/browser/web_ui.h"
 
 ConflictsHandler::ConflictsHandler()
-    : conflicts_data_fetcher_(nullptr, base::OnTaskRunnerDeleter(nullptr)),
-      weak_ptr_factory_(this) {}
+    : conflicts_data_fetcher_(nullptr, base::OnTaskRunnerDeleter(nullptr)) {}
 
 ConflictsHandler::~ConflictsHandler() = default;
 

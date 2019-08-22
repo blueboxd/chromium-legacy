@@ -9,6 +9,7 @@
 
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
+#include "chrome/browser/ui/views/extensions/extension_context_menu_controller.h"
 #include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view_delegate_views.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
@@ -17,8 +18,6 @@ namespace views {
 class Button;
 class ImageButton;
 class MenuButton;
-class MenuModelAdapter;
-class MenuRunner;
 }  // namespace views
 
 class ExtensionsMenuButton : public HoverButton,
@@ -53,17 +52,14 @@ class ExtensionsMenuButton : public HoverButton,
   void UpdateState() override;
   bool IsMenuRunning() const override;
 
-  void RunExtensionContextMenu(ui::MenuSourceType source_type);
-
-  // Callback for MenuModelAdapter.
-  void OnMenuClosed();
-
   // Configures the secondary (right-hand-side) view of this HoverButton.
   void ConfigureSecondaryView();
 
   bool IsPinned();
 
   Browser* const browser_;
+
+  // Responsible for executing the extension's actions.
   const std::unique_ptr<ToolbarActionViewController> controller_;
   ToolbarActionsModel* const model_;
 
@@ -75,11 +71,9 @@ class ExtensionsMenuButton : public HoverButton,
 
   views::ImageButton* pin_button_ = nullptr;
 
-  // Responsible for converting the context menu model into |menu_|.
-  std::unique_ptr<views::MenuModelAdapter> menu_adapter_;
-
-  // Responsible for running the menu.
-  std::unique_ptr<views::MenuRunner> menu_runner_;
+  // This controller is responsible for showing the context menu for an
+  // extension.
+  ExtensionContextMenuController context_menu_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsMenuButton);
 };

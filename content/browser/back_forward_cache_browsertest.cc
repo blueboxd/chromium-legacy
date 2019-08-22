@@ -676,6 +676,25 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   delete_observer_rfh_a.WaitUntilDeleted();
 }
 
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       SubframeWithDisallowedFeatureNotCached) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Navigate to a page with an iframe that contains a dedicated worker.
+  EXPECT_TRUE(NavigateToURL(
+      shell(),
+      embedded_test_server()->GetURL(
+          "a.com", "/back_forward_cache/dedicated_worker_in_subframe.html")));
+  RenderFrameDeletedObserver delete_rfh_a(current_frame_host());
+
+  // Navigate away.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("b.com", "/title1.html")));
+
+  // The page with the unsupported feature should be deleted (not cached).
+  delete_rfh_a.WaitUntilDeleted();
+}
+
 // Check that unload event handlers are not dispatched when the page goes
 // into BackForwardCache.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
@@ -807,22 +826,25 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   delete_observer_rfh_a.WaitUntilDeleted();
 }
 
-// Test is flaky (https://crbug.com/986742).
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
-                       DISABLED_LoadingSubframeDoesNotPreventCaching) {
-  // Note: This test is only documenting current behavior. Not trying to say it
-  // should work this way...
-
+                       DoesNotCacheLoadingSubframe) {
+  net::test_server::ControllableHttpResponse response(embedded_test_server(),
+                                                      "/controlled");
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // 1) Navigate to a page with an iframe that loads forever.
-  GURL url(embedded_test_server()->GetURL("a.com",
-                                          "/infinitely_loading_iframe.html"));
+  GURL url(embedded_test_server()->GetURL(
+      "a.com", "/back_forward_cache/controllable_subframe.html"));
   TestNavigationManager navigation_manager(shell()->web_contents(), url);
   shell()->LoadURL(url);
 
   // The navigation finishes while the iframe is still loading.
   navigation_manager.WaitForNavigationFinished();
+
+  // Wait for the iframe request to arrive, and leave it hanging with no
+  // response.
+  response.WaitForRequest();
+
   RenderFrameHostImpl* rfh_a = current_frame_host();
   RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
 
@@ -830,9 +852,41 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   shell()->LoadURL(embedded_test_server()->GetURL("b.com", "/title1.html"));
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
-  // The page with the infinitely loading iframe was cached.
-  EXPECT_FALSE(delete_observer_rfh_a.deleted());
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  // The page should not have been added to cache, since it had a subframe that
+  // was still loading at the time it was navigated away from.
+  delete_observer_rfh_a.WaitUntilDeleted();
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       DoesNotCacheLoadingSubframeOfSubframe) {
+  net::test_server::ControllableHttpResponse response(embedded_test_server(),
+                                                      "/controlled");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // 1) Navigate to a page with an iframe that contains yet another iframe, that
+  // hangs while loading.
+  GURL url(embedded_test_server()->GetURL(
+      "a.com", "/back_forward_cache/controllable_subframe_of_subframe.html"));
+  TestNavigationManager navigation_manager(shell()->web_contents(), url);
+  shell()->LoadURL(url);
+
+  // The navigation finishes while the iframe within an iframe is still loading.
+  navigation_manager.WaitForNavigationFinished();
+
+  // Wait for the innermost iframe request to arrive, and leave it hanging with
+  // no response.
+  response.WaitForRequest();
+
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_rfh_a(rfh_a);
+
+  // 2) Navigate away.
+  shell()->LoadURL(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  // The page should not have been added to the cache, since it had an iframe
+  // that was still loading at the time it was navigated away from.
+  delete_rfh_a.WaitUntilDeleted();
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, DoesNotCacheIfWebGL) {

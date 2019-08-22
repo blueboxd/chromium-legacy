@@ -7,8 +7,6 @@
 #include "base/feature_list.h"
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
-#include "ios/chrome/browser/ui/scanner/scanner_presenting.h"
-#import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_scanner_view_controller.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
@@ -40,7 +38,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 }  // namespace
 
-@interface AutofillAddCreditCardViewController () <ScannerPresenting>
+@interface AutofillAddCreditCardViewController ()
 
 // The AddCreditCardViewControllerDelegate for this ViewController.
 @property(nonatomic, weak) id<AddCreditCardViewControllerDelegate> delegate;
@@ -240,19 +238,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 // Presents the credit card scanner camera screen.
 - (void)handleCameraButton {
-  CreditCardScannerViewController* scannerController =
-      [[CreditCardScannerViewController alloc]
-          initWithPresentationProvider:self];
-  scannerController.modalPresentationStyle = UIModalPresentationFullScreen;
-
-  [self presentViewController:scannerController animated:YES completion:nil];
-}
-
-#pragma mark - ScannerPresenting
-
-- (void)dismissScannerViewController:(UIViewController*)controller
-                          completion:(void (^)(void))completion {
-  [self dismissViewControllerAnimated:YES completion:completion];
+  [self.delegate addCreditCardViewControllerDidUseCamera:self];
 }
 
 @end

@@ -98,7 +98,8 @@ class OzonePlatformScenic
       return nullptr;
     }
     return std::make_unique<ScenicWindow>(window_manager_.get(), delegate,
-                                          std::move(properties.view_token));
+                                          std::move(properties.view_token),
+                                          std::move(properties.view_ref_pair));
   }
 
   const PlatformProperties& GetPlatformProperties() override {

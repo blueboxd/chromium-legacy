@@ -230,7 +230,7 @@ class BrowserActionsContainer : public views::View,
   bool ShownInsideMenu() const override;
   bool CanShowIconInToolbar() const override;
   void OnToolbarActionViewDragDone() override;
-  views::LabelButton* GetOverflowReferenceView() override;
+  views::LabelButton* GetOverflowReferenceView() const override;
   gfx::Size GetToolbarActionSize() override;
 
   // ToolbarActionsBarDelegate:

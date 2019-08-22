@@ -256,8 +256,7 @@ UDPSocketWin::UDPSocketWin(DatagramSocket::BindType bind_type,
       read_iobuffer_len_(0),
       write_iobuffer_len_(0),
       recv_from_address_(nullptr),
-      net_log_(NetLogWithSource::Make(net_log, NetLogSourceType::UDP_SOCKET)),
-      event_pending_(this) {
+      net_log_(NetLogWithSource::Make(net_log, NetLogSourceType::UDP_SOCKET)) {
   EnsureWinsockInit();
   net_log_.BeginEventReferencingSource(NetLogEventType::SOCKET_ALIVE, source);
 }
@@ -1241,7 +1240,7 @@ DatagramBuffers UDPSocketWin::GetUnwrittenBuffers() {
   return result;
 }
 DscpManager::DscpManager(QwaveApi* api, SOCKET socket)
-    : api_(api), socket_(socket), weak_ptr_factory_(this) {
+    : api_(api), socket_(socket) {
   RequestHandle();
 }
 

@@ -587,6 +587,51 @@ struct ManagedProperties {
   ManagedWiFiProperties? wifi;
 };
 
+// Properties for SetProperties.
+
+// Wrappers for optional configuration properties. If not provided the existing
+// property will not be changed.
+struct AutoConnectConfig {
+  bool value;
+};
+
+struct PriorityConfig {
+  int32 value;
+};
+
+struct ProxyLocation {
+  string host;
+  int32 port;
+};
+
+struct ManualProxySettings {
+  ProxyLocation? http_proxy;
+  ProxyLocation? secure_http_proxy;
+  ProxyLocation? ftp_proxy;
+  ProxyLocation? socks;
+};
+
+struct ProxySettings {
+  string type;
+  ManualProxySettings? manual;
+  array<string>? exclude_domains;
+  string? pac;
+};
+
+struct CellularConfigProperties {
+  ApnProperties? apn;
+};
+
+struct ConfigProperties {
+  AutoConnectConfig? auto_connect;
+  CellularConfigProperties? cellular;
+  string? ip_address_config_type;
+  string? name_servers_config_type;
+  PriorityConfig? priority;
+  ProxySettings? proxy_settings;
+  IPConfigProperties? static_ip_config;
+};
+
 // Properties provided to SetCellularSimState.
 struct CellularSimState {
   // The current PIN or PUK. Required for unlocking the SIM, or when setting
@@ -620,6 +665,9 @@ interface CrosNetworkConfig {
   // dictionaries (e.g. ManagedString). If the network properties are not
   // available returns null.
   GetManagedProperties(string guid) => (ManagedProperties? result);
+
+  // Sets properties for the network matching |guid|. Returns true on success.
+  SetProperties(string guid, ConfigProperties properties) => (bool success);
 
   // Sets a single network type (e.g. WiFi) to enabled or disabled. Types
   // describing multiple technologies (e.g. kWireless) are not supported.

@@ -37,10 +37,10 @@
 \bxviii\b	18
 \baceh\b	ac
 \bbali\b	ba
-\bblk\\.\b	blk
+\bblk\.\b	blk
 \bblok\b	blk
 \beast\b	e
-\bjln\\.\b	jl
+\bjln\.\b	jl
 \briau\b	ri
 \broad\b	rd
 \bviii\b	8
@@ -48,9 +48,9 @@
 \bxiii\b	13
 \bxvii\b	17
 \biii\b	3
-\bjl\\.\b	jl
+\bjl\.\b	jl
 \bjln\b	jl
-\bno\\.\b	#
+\bno\.\b	#
 \bnum\b	#
 \bvii\b	7
 \bxii\b	12

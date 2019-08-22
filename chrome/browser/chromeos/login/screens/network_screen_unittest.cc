@@ -68,7 +68,7 @@ class NetworkScreenUnitTest : public testing::Test {
   }
 
   // Test versions of core browser infrastructure.
-  content::BrowserTaskEnvironment threads_;
+  content::BrowserTaskEnvironment task_environment_;
 
   // More accessory objects needed by NetworkScreen.
   MockNetworkScreenView mock_view_;

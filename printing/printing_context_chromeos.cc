@@ -365,7 +365,7 @@ PrintingContext::Result PrintingContextChromeos::DocumentDone() {
     return OnError();
   }
 
-  DeleteSettings();
+  ResetSettings();
   return OK;
 }
 

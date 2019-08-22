@@ -148,7 +148,8 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
   bool IsSupportedConfig(BackgroundTracingConfigImpl* config);
   std::unique_ptr<base::DictionaryValue> GenerateMetadataDict();
   void GenerateMetadataProto(
-      perfetto::protos::pbzero::ChromeMetadataPacket* metadata);
+      perfetto::protos::pbzero::ChromeMetadataPacket* metadata,
+      bool privacy_filtering_enabled);
   bool IsTriggerHandleValid(TriggerHandle handle) const;
   void OnScenarioAborted();
   static void AddPendingAgentConstructor(base::OnceClosure constructor);

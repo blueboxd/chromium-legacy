@@ -227,11 +227,9 @@ float AudioParamHandler::FinalValue() {
 void AudioParamHandler::CalculateSampleAccurateValues(
     float* values,
     unsigned number_of_values) {
-  bool is_safe =
-      GetDeferredTaskHandler().IsAudioThread() && values && number_of_values;
-  DCHECK(is_safe);
-  if (!is_safe)
-    return;
+  DCHECK(GetDeferredTaskHandler().IsAudioThread());
+  DCHECK(values);
+  DCHECK_GT(number_of_values, 0u);
 
   CalculateFinalValues(values, number_of_values, IsAudioRate());
 }
@@ -239,11 +237,9 @@ void AudioParamHandler::CalculateSampleAccurateValues(
 void AudioParamHandler::CalculateFinalValues(float* values,
                                              unsigned number_of_values,
                                              bool sample_accurate) {
-  bool is_good =
-      GetDeferredTaskHandler().IsAudioThread() && values && number_of_values;
-  DCHECK(is_good);
-  if (!is_good)
-    return;
+  DCHECK(GetDeferredTaskHandler().IsAudioThread());
+  DCHECK(values);
+  DCHECK_GT(number_of_values, 0u);
 
   // The calculated result will be the "intrinsic" value summed with all
   // audio-rate connections.

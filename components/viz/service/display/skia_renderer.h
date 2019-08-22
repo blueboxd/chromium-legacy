@@ -21,6 +21,7 @@
 class SkColorFilter;
 class SkNWayCanvas;
 class SkPictureRecorder;
+class SkRuntimeColorFilterFactory;
 
 namespace gpu {
 struct Capabilities;
@@ -259,7 +260,9 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   ContextProvider* context_provider_ = nullptr;
   base::Optional<SyncQueryCollection> sync_queries_;
 
-  std::map<gfx::ColorSpace, std::map<gfx::ColorSpace, sk_sp<SkColorFilter>>>
+  std::map<
+      gfx::ColorSpace,
+      std::map<gfx::ColorSpace, std::unique_ptr<SkRuntimeColorFilterFactory>>>
       color_filter_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(SkiaRenderer);

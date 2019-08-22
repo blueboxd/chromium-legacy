@@ -10,9 +10,9 @@
 #include "base/command_line.h"
 #include "base/numerics/ranges.h"
 #include "base/optional.h"
-#include "base/rand_util.h"
 #include "base/time/clock.h"
 #include "chrome/browser/notifications/scheduler/internal/impression_types.h"
+#include "chrome/browser/notifications/scheduler/internal/notification_entry.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduler_config.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduler_utils.h"
 #include "chrome/browser/notifications/scheduler/public/features.h"
@@ -26,32 +26,30 @@ class BackgroundTaskCoordinatorHelper {
   BackgroundTaskCoordinatorHelper(
       NotificationBackgroundTaskScheduler* background_task,
       const SchedulerConfig* config,
-      BackgroundTaskCoordinator::TimeRandomizer time_randomizer,
       base::Clock* clock)
       : background_task_(background_task),
         config_(config),
-        time_randomizer_(time_randomizer),
         clock_(clock) {}
   ~BackgroundTaskCoordinatorHelper() = default;
 
   void ScheduleBackgroundTask(
       BackgroundTaskCoordinator::Notifications notifications,
-      BackgroundTaskCoordinator::ClientStates client_states,
-      SchedulerTaskTime task_start_time) {
+      BackgroundTaskCoordinator::ClientStates client_states) {
     if (notifications.empty()) {
       background_task_->Cancel();
       return;
     }
+
+    base::Time tomorrow;
+    base::Time now = clock_->Now();
+    bool success = ToLocalHour(0, now, 1 /*day_delta*/, &tomorrow);
+    DCHECK(success);
 
     std::map<SchedulerClientType, int> shown_per_type;
     int shown_total = 0;
     SchedulerClientType last_shown_type = SchedulerClientType::kUnknown;
     NotificationsShownToday(client_states, &shown_per_type, &shown_total,
                             &last_shown_type, clock_);
-    bool reach_max_today_all_type =
-        shown_total >= config_->max_daily_shown_all_type;
-    base::Time next_morning = NextMorning();
-    base::Time this_evening = ThisEvening();
 
     for (const auto& pair : notifications) {
       auto type = pair.first;
@@ -60,88 +58,58 @@ class BackgroundTaskCoordinatorHelper {
         continue;
 
       const ClientState* client_state = it->second;
-
-      // Try to schedule on the day that suppression expires.
-      if (client_state->suppression_info.has_value()) {
-        const auto& suppression = client_state->suppression_info.value();
-        base::Time suppression_expire;
-        ToLocalHour(config_->morning_task_hour, suppression.ReleaseTime(),
-                    0 /*day_delta*/, &suppression_expire);
-        MaybeUpdateBackgroundTaskTime(
-            std::max(suppression_expire, next_morning));
-        continue;
-      }
-
-      // Has met the quota for this notification type or for all types, only can
-      // send more on next day.
       bool reach_max_today =
-          shown_per_type[type] >= client_state->current_max_daily_show;
-      if (reach_max_today || reach_max_today_all_type) {
-        MaybeUpdateBackgroundTaskTime(next_morning);
-        continue;
-      }
+          shown_per_type[type] >= client_state->current_max_daily_show ||
+          shown_total >= config_->max_daily_shown_all_type;
 
-      switch (task_start_time) {
-        case SchedulerTaskTime::kMorning:
-          // Still can send more in the evening.
-          MaybeUpdateBackgroundTaskTime(this_evening);
-          break;
-        case SchedulerTaskTime::kEvening:
-          // Wait until the next calendar day.
-          MaybeUpdateBackgroundTaskTime(next_morning);
-          break;
-        case SchedulerTaskTime::kUnknown:
-          auto now = clock_->Now();
-          auto this_morning = ThisMorning();
-          if (now <= this_morning)
-            MaybeUpdateBackgroundTaskTime(this_morning);
-          else if (now <= this_evening)
-            MaybeUpdateBackgroundTaskTime(this_evening);
-          else
-            MaybeUpdateBackgroundTaskTime(next_morning);
-          // TODO(xingliu): Support arbitrary time background task.
-          break;
+      // Find the eariliest notification to launch the background task.
+      for (const auto* entry : pair.second) {
+        // Currently only support deliver time window.
+        if (!entry->schedule_params.deliver_time_start.has_value()) {
+          continue;
+        }
+
+        base::Time deliver_time_start =
+            entry->schedule_params.deliver_time_start.value();
+
+        // Each background task has a minimum interval.
+        if (deliver_time_start < now + config_->background_task_min_interval)
+          deliver_time_start = now + config_->background_task_min_interval;
+
+        // Consider suppression time.
+        if (client_state->suppression_info.has_value() &&
+            deliver_time_start <
+                client_state->suppression_info->ReleaseTime()) {
+          deliver_time_start = client_state->suppression_info->ReleaseTime();
+        }
+
+        // Consider daily limit throttling.
+        if (reach_max_today && deliver_time_start < tomorrow)
+          deliver_time_start = tomorrow;
+
+        // Deliver time window has passed.
+        DCHECK(entry->schedule_params.deliver_time_end.has_value());
+        if (!entry->schedule_params.deliver_time_end.has_value() ||
+            deliver_time_start >
+                entry->schedule_params.deliver_time_end.value()) {
+          continue;
+        }
+
+        MaybeUpdateBackgroundTaskTime(deliver_time_start);
       }
     }
 
-    ScheduleBackgroundTaskInternal(task_start_time);
+    ScheduleBackgroundTaskInternal();
   }
 
  private:
-  // Returns the morning background task time on the next day.
-  base::Time NextMorning() {
-    base::Time next_morning;
-    bool success = ToLocalHour(config_->morning_task_hour, clock_->Now(),
-                               1 /*day_delta*/, &next_morning);
-    DCHECK(success);
-    return next_morning;
-  }
-
-  // Returns the morning background task time today.
-  base::Time ThisMorning() {
-    base::Time this_morning;
-    bool success = ToLocalHour(config_->morning_task_hour, clock_->Now(),
-                               0 /*day_delta*/, &this_morning);
-    DCHECK(success);
-    return this_morning;
-  }
-
-  // Returns the evening background task time on today.
-  base::Time ThisEvening() {
-    base::Time this_evening;
-    bool success = ToLocalHour(config_->evening_task_hour, clock_->Now(),
-                               0 /*day_delta*/, &this_evening);
-    DCHECK(success);
-    return this_evening;
-  }
-
   void MaybeUpdateBackgroundTaskTime(const base::Time& time) {
     if (!background_task_time_.has_value() ||
         time < background_task_time_.value())
       background_task_time_ = time;
   }
 
-  void ScheduleBackgroundTaskInternal(SchedulerTaskTime task_start_time) {
+  void ScheduleBackgroundTaskInternal() {
     if (!background_task_time_.has_value())
       return;
 
@@ -150,30 +118,22 @@ class BackgroundTaskCoordinatorHelper {
     window_start_time = base::ClampToRange(window_start_time, base::TimeDelta(),
                                            base::TimeDelta::Max());
 
+    // TODO(xingliu): Remove SchedulerTaskTime.
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kNotificationSchedulerImmediateBackgroundTask)) {
       background_task_->Schedule(
-          task_start_time, base::TimeDelta(),
+          SchedulerTaskTime::kMorning, base::TimeDelta(),
           base::TimeDelta() + base::TimeDelta::FromMinutes(1));
       return;
     }
 
-    // Adds a randomized time delta to distribute the click loads.
-    // TODO(xingliu): Maybe show notifications one by one and spread into a time
-    // window.  See https://crbug.com/986614
-    base::TimeDelta random_interval;
-    if (task_start_time != SchedulerTaskTime::kUnknown)
-      random_interval = time_randomizer_.Run();
-
     background_task_->Schedule(
-        task_start_time, window_start_time + random_interval,
-        window_start_time + config_->background_task_window_duration +
-            random_interval);
+        SchedulerTaskTime::kMorning, window_start_time,
+        window_start_time + config_->background_task_window_duration);
   }
 
   NotificationBackgroundTaskScheduler* background_task_;
   const SchedulerConfig* config_;
-  BackgroundTaskCoordinator::TimeRandomizer time_randomizer_;
   base::Clock* clock_;
   base::Optional<base::Time> background_task_time_;
 
@@ -182,22 +142,14 @@ class BackgroundTaskCoordinatorHelper {
 
 }  // namespace
 
-// static
-base::TimeDelta BackgroundTaskCoordinator::DefaultTimeRandomizer(
-    const base::TimeDelta& time_window) {
-  return base::RandDouble() * time_window;
-}
-
 class BackgroundTaskCoordinatorImpl : public BackgroundTaskCoordinator {
  public:
   BackgroundTaskCoordinatorImpl(
       std::unique_ptr<NotificationBackgroundTaskScheduler> background_task,
       const SchedulerConfig* config,
-      TimeRandomizer time_randomizer,
       base::Clock* clock)
       : background_task_(std::move(background_task)),
         config_(config),
-        time_randomizer_(time_randomizer),
         clock_(clock) {}
 
   ~BackgroundTaskCoordinatorImpl() override = default;
@@ -205,12 +157,11 @@ class BackgroundTaskCoordinatorImpl : public BackgroundTaskCoordinator {
  private:
   // BackgroundTaskCoordinator implementation.
   void ScheduleBackgroundTask(Notifications notifications,
-                              ClientStates client_states,
-                              SchedulerTaskTime task_start_time) override {
+                              ClientStates client_states) override {
     auto helper = std::make_unique<BackgroundTaskCoordinatorHelper>(
-        background_task_.get(), config_, time_randomizer_, clock_);
+        background_task_.get(), config_, clock_);
     helper->ScheduleBackgroundTask(std::move(notifications),
-                                   std::move(client_states), task_start_time);
+                                   std::move(client_states));
   }
 
   // The class that actually schedules platform background task.
@@ -218,10 +169,6 @@ class BackgroundTaskCoordinatorImpl : public BackgroundTaskCoordinator {
 
   // System configuration.
   const SchedulerConfig* config_;
-
-  // Randomize the time to show the notification, to avoid large number of users
-  // to perform actions at the same time.
-  TimeRandomizer time_randomizer_;
 
   // Clock to query the current timestamp.
   base::Clock* clock_;
@@ -233,10 +180,9 @@ class BackgroundTaskCoordinatorImpl : public BackgroundTaskCoordinator {
 std::unique_ptr<BackgroundTaskCoordinator> BackgroundTaskCoordinator::Create(
     std::unique_ptr<NotificationBackgroundTaskScheduler> background_task,
     const SchedulerConfig* config,
-    TimeRandomizer time_randomizer,
     base::Clock* clock) {
   return std::make_unique<BackgroundTaskCoordinatorImpl>(
-      std::move(background_task), config, time_randomizer, clock);
+      std::move(background_task), config, clock);
 }
 
 BackgroundTaskCoordinator::~BackgroundTaskCoordinator() = default;

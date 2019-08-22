@@ -232,7 +232,7 @@ interface CookieManager {
   // blocked from being sent along with the reason each cookie was blocked. By
   // default, that option is not set and |excluded_cookies| is an empty list.
   GetCookieList(url.mojom.Url url, CookieOptions cookie_options)
-      => (array<CanonicalCookie> cookies,
+      => (array<CookieWithStatus> cookies,
           array<CookieWithStatus> excluded_cookies);
 
   // Set a cookie.  |source_scheme| is used to check whether existing secure

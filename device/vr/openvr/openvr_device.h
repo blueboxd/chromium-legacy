@@ -81,7 +81,7 @@ class DEVICE_VR_EXPORT OpenVRDevice
   mojo::Binding<mojom::XRCompositorHost> compositor_host_binding_;
   mojom::ImmersiveOverlayRequest overlay_request_;
 
-  base::WeakPtrFactory<OpenVRDevice> weak_ptr_factory_;
+  base::WeakPtrFactory<OpenVRDevice> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OpenVRDevice);
 };

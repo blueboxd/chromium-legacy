@@ -5,9 +5,12 @@
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui.h"
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/tab_strip_resources.h"
 #include "chrome/grit/tab_strip_resources_map.h"
+#include "components/favicon_base/favicon_url_parser.h"
+#include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui_data_source.h"
 
 TabStripUI::TabStripUI(content::WebUI* web_ui)
@@ -30,6 +33,10 @@ TabStripUI::TabStripUI(content::WebUI* web_ui)
   html_source->SetDefaultResource(IDR_TAB_STRIP_HTML);
 
   content::WebUIDataSource::Add(profile, html_source);
+
+  content::URLDataSource::Add(
+      profile, std::make_unique<FaviconSource>(
+                   profile, chrome::FaviconUrlFormat::kFavicon2));
 }
 
 TabStripUI::~TabStripUI() {}

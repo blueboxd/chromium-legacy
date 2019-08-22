@@ -33,7 +33,8 @@ class MockShareService : public ShareService {
   ~MockShareService() override = default;
 
   void Bind(mojo::ScopedMessagePipeHandle handle) {
-    receiver_.Bind(mojom::blink::ShareServiceRequest(std::move(handle)));
+    receiver_.Bind(
+        mojo::PendingReceiver<mojom::blink::ShareService>(std::move(handle)));
   }
 
   void set_error(mojom::ShareError value) { error_ = value; }

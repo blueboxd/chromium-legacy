@@ -20,7 +20,6 @@ class ClientNativePixmapFuchsia : public gfx::ClientNativePixmap {
  public:
   explicit ClientNativePixmapFuchsia(gfx::NativePixmapHandle handle)
       : handle_(std::move(handle)) {
-    DCHECK(!handle_.planes.empty());
   }
 
   ~ClientNativePixmapFuchsia() override {
@@ -32,10 +31,8 @@ class ClientNativePixmapFuchsia : public gfx::ClientNativePixmap {
     if (mapping_)
       return true;
 
-    if (!handle_.planes[0].vmo) {
-      NOTREACHED();
+    if (handle_.planes.empty() || !handle_.planes[0].vmo)
       return false;
-    }
 
     uintptr_t addr;
 
@@ -110,8 +107,6 @@ class ScenicClientNativePixmapFactory : public gfx::ClientNativePixmapFactory {
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage) override {
-    if (handle.planes.empty())
-      return nullptr;
     return std::make_unique<ClientNativePixmapFuchsia>(std::move(handle));
   }
 

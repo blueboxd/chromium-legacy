@@ -78,12 +78,6 @@ class LayerTreePixelTest : public LayerTreeTest {
       int border_width,
       SkColor border_color);
 
-  // Initializes the root layer and root PropertyTrees for layer list mode.
-  // In this mode, all other layers are direct children of |root_layer| and
-  // any property nodes are descendants of node id 1 in the respective trees.
-  void InitializeForLayerListMode(scoped_refptr<Layer>* root_layer,
-                                  PropertyTrees* property_trees);
-
   void RunPixelTest(RendererType renderer_type,
                     scoped_refptr<Layer> content_root,
                     base::FilePath file_name);
@@ -93,9 +87,7 @@ class LayerTreePixelTest : public LayerTreeTest {
                     const SkBitmap& expected_bitmap);
 
   void RunPixelTestWithLayerList(RendererType renderer_type,
-                                 scoped_refptr<Layer> root_layer,
-                                 base::FilePath file_name,
-                                 PropertyTrees* property_trees);
+                                 base::FilePath file_name);
 
   void RunSingleThreadedPixelTest(RendererType renderer_type,
                                   scoped_refptr<Layer> content_root,
@@ -129,8 +121,7 @@ class LayerTreePixelTest : public LayerTreeTest {
 
   gl::DisableNullDrawGLBindings enable_pixel_output_;
   std::unique_ptr<PixelComparator> pixel_comparator_;
-  scoped_refptr<Layer> content_root_;
-  PropertyTrees* property_trees_;
+  scoped_refptr<Layer> content_root_;  // Not used in layer list mode.
   Layer* readback_target_;
   base::FilePath ref_file_;
   SkBitmap expected_bitmap_;

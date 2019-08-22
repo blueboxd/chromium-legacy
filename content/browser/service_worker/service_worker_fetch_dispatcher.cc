@@ -300,13 +300,6 @@ void CreateNetworkFactoryForNavigationPreloadOnUI(
     return;
   }
 
-  // Follow what NavigationURLLoaderImpl does for the initiator passed to
-  // WillCreateURLLoaderFactory():
-  // Navigation requests are not associated with any particular
-  // |network::ResourceRequest::request_initiator| origin - using an opaque
-  // origin instead.
-  url::Origin initiator = url::Origin();
-
   // We ignore the value of |bypass_redirect_checks_unused| since a redirect is
   // just relayed to the service worker where preloadResponse is resolved as
   // redirect.
@@ -317,7 +310,7 @@ void CreateNetworkFactoryForNavigationPreloadOnUI(
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       partition->browser_context(), frame_tree_node->current_frame_host(),
       frame_tree_node->current_frame_host()->GetProcess()->GetID(),
-      ContentBrowserClient::URLLoaderFactoryType::kNavigation, initiator,
+      ContentBrowserClient::URLLoaderFactoryType::kNavigation, url::Origin(),
       &receiver, &header_client, &bypass_redirect_checks_unused);
 
   // Make the network factory.

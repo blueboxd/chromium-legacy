@@ -258,6 +258,7 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotCurrentAndNativeModesNull) {
   const bool has_color_correction_matrix = true;
   const bool color_correction_in_linear_space = true;
   const gfx::ColorSpace display_color_space = gfx::ColorSpace::CreateREC709();
+  const int32_t bits_per_channel = 8;
   const std::string display_name("whatever display_name");
   const base::FilePath sys_path = base::FilePath::FromUTF8Unsafe("a/cb");
   const int64_t product_code = 19;
@@ -275,8 +276,8 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotCurrentAndNativeModesNull) {
   std::unique_ptr<DisplaySnapshot> input = std::make_unique<DisplaySnapshot>(
       display_id, origin, physical_size, type, is_aspect_preserving_scaling,
       has_overscan, has_color_correction_matrix,
-      color_correction_in_linear_space, display_color_space, display_name,
-      sys_path, std::move(modes), display::PanelOrientation::kNormal, edid,
+      color_correction_in_linear_space, display_color_space, bits_per_channel,
+      display_name, sys_path, std::move(modes), PanelOrientation::kNormal, edid,
       current_mode, native_mode, product_code, year_of_manufacture,
       maximum_cursor_size);
 
@@ -299,6 +300,7 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotCurrentModeNull) {
   const bool has_color_correction_matrix = true;
   const bool color_correction_in_linear_space = true;
   const gfx::ColorSpace display_color_space = gfx::ColorSpace::CreateREC709();
+  const uint32_t bits_per_channel = 8u;
   const std::string display_name("whatever display_name");
   const base::FilePath sys_path = base::FilePath::FromUTF8Unsafe("z/b");
   const int64_t product_code = 9;
@@ -316,8 +318,8 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotCurrentModeNull) {
   std::unique_ptr<DisplaySnapshot> input = std::make_unique<DisplaySnapshot>(
       display_id, origin, physical_size, type, is_aspect_preserving_scaling,
       has_overscan, has_color_correction_matrix,
-      color_correction_in_linear_space, display_color_space, display_name,
-      sys_path, std::move(modes), display::PanelOrientation::kNormal, edid,
+      color_correction_in_linear_space, display_color_space, bits_per_channel,
+      display_name, sys_path, std::move(modes), PanelOrientation::kNormal, edid,
       current_mode, native_mode, product_code, year_of_manufacture,
       maximum_cursor_size);
 
@@ -341,6 +343,7 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotExternal) {
   const bool color_correction_in_linear_space = false;
   const std::string display_name("HP Z24i");
   const gfx::ColorSpace display_color_space = gfx::ColorSpace::CreateSRGB();
+  const uint32_t bits_per_channel = 8u;
   const base::FilePath sys_path = base::FilePath::FromUTF8Unsafe("a/cb");
   const int64_t product_code = 139;
   const int32_t year_of_manufacture = 2018;
@@ -361,8 +364,8 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotExternal) {
   std::unique_ptr<DisplaySnapshot> input = std::make_unique<DisplaySnapshot>(
       display_id, origin, physical_size, type, is_aspect_preserving_scaling,
       has_overscan, has_color_correction_matrix,
-      color_correction_in_linear_space, display_color_space, display_name,
-      sys_path, std::move(modes), display::PanelOrientation::kLeftUp, edid,
+      color_correction_in_linear_space, display_color_space, bits_per_channel,
+      display_name, sys_path, std::move(modes), PanelOrientation::kLeftUp, edid,
       current_mode, native_mode, product_code, year_of_manufacture,
       maximum_cursor_size);
 
@@ -385,6 +388,7 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotInternal) {
   const bool color_correction_in_linear_space = false;
   const gfx::ColorSpace display_color_space =
       gfx::ColorSpace::CreateDisplayP3D65();
+  const uint32_t bits_per_channel = 9u;
   const std::string display_name("");
   const base::FilePath sys_path;
   const int64_t product_code = 139;
@@ -402,9 +406,9 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotInternal) {
   std::unique_ptr<DisplaySnapshot> input = std::make_unique<DisplaySnapshot>(
       display_id, origin, physical_size, type, is_aspect_preserving_scaling,
       has_overscan, has_color_correction_matrix,
-      color_correction_in_linear_space, display_color_space, display_name,
-      sys_path, std::move(modes), display::PanelOrientation::kRightUp, edid,
-      current_mode, native_mode, product_code, year_of_manufacture,
+      color_correction_in_linear_space, display_color_space, bits_per_channel,
+      display_name, sys_path, std::move(modes), PanelOrientation::kRightUp,
+      edid, current_mode, native_mode, product_code, year_of_manufacture,
       maximum_cursor_size);
 
   std::unique_ptr<DisplaySnapshot> output;

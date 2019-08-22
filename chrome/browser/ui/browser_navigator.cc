@@ -772,7 +772,6 @@ bool IsHostAllowedInIncognito(const GURL& url) {
          host != chrome::kChromeUIHistoryHost &&
          host != chrome::kChromeUIExtensionsHost &&
          host != chrome::kChromeUIBookmarksHost &&
-         host != chrome::kChromeUIUberHost &&
          host != chrome::kChromeUIThumbnailHost &&
          host != chrome::kChromeUIThumbnailHost2 &&
          host != chrome::kChromeUIThumbnailListHost &&
@@ -794,15 +793,5 @@ bool IsURLAllowedInIncognito(const GURL& url,
            IsURLAllowedInIncognito(stripped_url, browser_context);
   }
 
-  if (!IsHostAllowedInIncognito(url))
-    return false;
-
-  GURL rewritten_url = url;
-  bool reverse_on_redirect = false;
-  content::BrowserURLHandler::GetInstance()->RewriteURLIfNecessary(
-      &rewritten_url, browser_context, &reverse_on_redirect);
-
-  // Some URLs are mapped to uber subpages. Do not allow them in incognito.
-  return !(rewritten_url.scheme_piece() == content::kChromeUIScheme &&
-           rewritten_url.host_piece() == chrome::kChromeUIUberHost);
+  return IsHostAllowedInIncognito(url);
 }

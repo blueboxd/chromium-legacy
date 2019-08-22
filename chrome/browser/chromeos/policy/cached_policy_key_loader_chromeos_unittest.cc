@@ -69,7 +69,7 @@ class CachedPolicyKeyLoaderTest : public testing::Test {
         &CachedPolicyKeyLoaderTest::OnPolicyKeyLoaded, base::Unretained(this)));
   }
 
-  base::test::TaskEnvironment task_environment_ = {
+  base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::MainThreadType::UI};
   chromeos::FakeCryptohomeClient cryptohome_client_;
   const AccountId account_id_ = AccountId::FromUserEmail(kTestUserName);

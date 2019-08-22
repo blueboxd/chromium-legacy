@@ -10,7 +10,7 @@
 
 namespace syncer {
 
-void LogUserDemographicsStatus(UserDemographicsStatus status) {
+void LogUserDemographicsStatusInHistogram(UserDemographicsStatus status) {
   UMA_HISTOGRAM_ENUMERATION("UMA.UserDemographics.Status", status);
 }
 

@@ -77,16 +77,6 @@ void BackgroundSyncLauncherAndroid::ScheduleBrowserWakeUp(
 }
 
 // static
-void BackgroundSyncLauncherAndroid::LaunchBrowserWithWakeUpDelta(
-    blink::mojom::BackgroundSyncType sync_type,
-    base::TimeDelta soonest_wakeup_delta) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  Get()->ScheduleBrowserWakeUpWithWakeUpDeltaImpl(sync_type,
-                                                  soonest_wakeup_delta);
-}
-
-// static
 void BackgroundSyncLauncherAndroid::SetPlayServicesVersionCheckDisabledForTests(
     bool disabled) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

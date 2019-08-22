@@ -145,7 +145,7 @@ class NET_EXPORT DscpManager {
   bool handle_is_initializing_ = false;
   // 0 means no flow has been constructed.
   QOS_FLOWID flow_id_ = 0;
-  base::WeakPtrFactory<DscpManager> weak_ptr_factory_;
+  base::WeakPtrFactory<DscpManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DscpManager);
 };
@@ -489,7 +489,7 @@ class NET_EXPORT UDPSocketWin : public base::win::ObjectWatcher::Delegate {
 
   // Used to prevent null dereferences in OnObjectSignaled, when passing an
   // error to both read and write callbacks. Cleared in Close()
-  base::WeakPtrFactory<UDPSocketWin> event_pending_;
+  base::WeakPtrFactory<UDPSocketWin> event_pending_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UDPSocketWin);
 };

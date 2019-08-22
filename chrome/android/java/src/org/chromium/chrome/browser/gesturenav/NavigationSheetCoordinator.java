@@ -14,6 +14,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import org.chromium.base.Supplier;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.gesturenav.NavigationSheetMediator.ItemProperties;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
@@ -53,10 +54,7 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
     private final BottomSheetObserver mSheetObserver = new EmptyBottomSheetObserver() {
         @Override
         public void onSheetStateChanged(int newState) {
-            if (newState == BottomSheet.SheetState.HIDDEN) {
-                setVisible(false);
-                hide(false);
-            }
+            if (newState == BottomSheet.SheetState.HIDDEN) hide(false);
         }
     };
 
@@ -89,6 +87,9 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
 
     private boolean mShowCloseIndicator;
 
+    // Metrics. True if sheet has ever been triggered (in peeked state) for an edge swipe.
+    private boolean mSheetTriggered;
+
     /**
      * Construct a new NavigationSheet.
      */
@@ -101,10 +102,15 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
         mToolbarView = mLayoutInflater.inflate(R.layout.navigation_sheet_toolbar, null);
         mContentView =
                 (NavigationSheetView) mLayoutInflater.inflate(R.layout.navigation_sheet, null);
-        mMediator = new NavigationSheetMediator(context, mModelList, (index) -> {
+        mMediator = new NavigationSheetMediator(context, mModelList, (position, index) -> {
             mDelegate.navigateToIndex(index);
-            setVisible(false);
             hide(false);
+            GestureNavMetrics.recordHistogram("GestureNavigation.Sheet.Used", mForward);
+
+            // Logs position of the clicked item. Back navigation has negative value,
+            // while forward positive. Show full history is zero.
+            RecordHistogram.recordSparseHistogram("GestureNavigation.Sheet.Selected",
+                    index == -1 ? 0 : (mForward ? position + 1 : -position - 1));
         });
         mModelAdapter.registerType(NAVIGATION_LIST_ITEM_TYPE_ID, () -> {
             return mLayoutInflater.inflate(R.layout.navigation_popup_item, null);
@@ -131,6 +137,7 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
         mShowCloseIndicator = showCloseIndicator;
         setVisible(false);
         mBottomSheetController.get().getBottomSheet().addObserver(mSheetObserver);
+        mSheetTriggered = false;
     }
 
     @Override
@@ -150,12 +157,13 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
     public void release() {
         mHandler.removeCallbacks(mSheetPeekRunnable);
         // Show navigation sheet if released at peek state.
-        if (isPeeked()) mBottomSheetController.get().expandSheet();
-    }
-
-    @Override
-    public boolean isExpanded() {
-        return isVisible() && getTargetOrCurrentState() == SheetState.FULL;
+        if (mSheetTriggered) {
+            GestureNavMetrics.recordHistogram("GestureNavigation.Sheet.Peeked", mForward);
+        }
+        if (isPeeked()) {
+            mBottomSheetController.get().expandSheet();
+            GestureNavMetrics.recordHistogram("GestureNavigation.Sheet.Viewed", mForward);
+        }
     }
 
     /**
@@ -166,6 +174,7 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
         mMediator.populateEntries(mDelegate.getHistory(forward));
         mBottomSheetController.get().requestShowContent(this, true);
         setVisible(true);
+        mSheetTriggered = true;
     }
 
     /**
@@ -174,6 +183,7 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
      */
     private void hide(boolean animate) {
         if (!isHidden()) mBottomSheetController.get().hideContent(this, animate);
+        setVisible(false);
         mBottomSheetController.get().getBottomSheet().removeObserver(mSheetObserver);
         mMediator.clear();
         mModelAdapter.notifyDataSetChanged();
@@ -186,10 +196,8 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
         return !isVisible() && getTargetOrCurrentState() == SheetState.HIDDEN;
     }
 
-    /**
-     * @return {@code true} if the sheet is in peek state.
-     */
-    private boolean isPeeked() {
+    @Override
+    public boolean isPeeked() {
         return isVisible() && getTargetOrCurrentState() == SheetState.PEEK;
     }
 
@@ -199,6 +207,13 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
         @SheetState
         int state = sheet.getTargetSheetState();
         return state != SheetState.NONE ? state : sheet.getSheetState();
+    }
+
+    /**
+     * @return {@code true} if the sheet is in fully expanded state.
+     */
+    private boolean isExpanded() {
+        return isVisible() && getTargetOrCurrentState() == SheetState.FULL;
     }
 
     /**

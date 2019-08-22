@@ -224,7 +224,7 @@
 #include "ipc/ipc_sync_channel.h"
 #include "media/audio/android/audio_manager_android.h"
 #else
-#include "content/browser/compositor/image_transport_factory.h"
+#include "content/browser/gpu/gpu_data_manager_impl.h"
 #endif
 
 #if defined(OS_LINUX)
@@ -3115,7 +3115,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
   // is inherently racey, as it may change while the renderer is being launched,
   // but the renderer will hear about the correct state eventually. This
   // optimizes the common case to avoid wasted work.
-  if (ImageTransportFactory::GetInstance()->IsGpuCompositingDisabled())
+  if (GpuDataManagerImpl::GetInstance()->IsGpuCompositingDisabled())
     renderer_cmd->AppendSwitch(switches::kDisableGpuCompositing);
 #endif  // defined(OS_ANDROID)
 

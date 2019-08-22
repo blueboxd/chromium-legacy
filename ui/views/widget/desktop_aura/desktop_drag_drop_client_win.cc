@@ -14,12 +14,9 @@
 
 namespace views {
 
-DesktopDragDropClientWin::DesktopDragDropClientWin(
-    aura::Window* root_window,
-    HWND window)
-    : drag_drop_in_progress_(false),
-      drag_operation_(0),
-      weak_factory_(this) {
+DesktopDragDropClientWin::DesktopDragDropClientWin(aura::Window* root_window,
+                                                   HWND window)
+    : drag_drop_in_progress_(false), drag_operation_(0) {
   drop_target_ = new DesktopDropTargetWin(root_window);
   drop_target_->Init(window);
 }

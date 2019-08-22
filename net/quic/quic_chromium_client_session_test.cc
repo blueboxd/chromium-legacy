@@ -256,7 +256,7 @@ class QuicChromiumClientSessionTest
 INSTANTIATE_TEST_SUITE_P(
     VersionIncludeStreamDependencySequence,
     QuicChromiumClientSessionTest,
-    ::testing::Combine(::testing::ValuesIn(quic::AllSupportedVersions()),
+    ::testing::Combine(::testing::ValuesIn(quic::AllVersionsExcept99()),
                        ::testing::Bool()));
 
 // TODO(950069): Add testing for frame_origin in NetworkIsolationKey using

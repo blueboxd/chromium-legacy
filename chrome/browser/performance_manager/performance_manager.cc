@@ -20,6 +20,7 @@
 #include "chrome/browser/performance_manager/decorators/page_almost_idle_decorator.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
+#include "chrome/browser/performance_manager/graph/policies/policy_features.h"
 #include "chrome/browser/performance_manager/graph/policies/working_set_trimmer_policy.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/graph/system_node_impl.h"
@@ -27,7 +28,16 @@
 #include "chrome/browser/performance_manager/observers/isolation_context_metrics.h"
 #include "chrome/browser/performance_manager/observers/metrics_collector.h"
 #include "content/public/browser/system_connector.h"
+#include "content/public/common/content_features.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
+
+#if defined(OS_LINUX)
+#include "base/allocator/buildflags.h"
+#if BUILDFLAG(USE_TCMALLOC)
+#include "chrome/browser/performance_manager/graph/policies/dynamic_tcmalloc_policy_linux.h"
+#include "chrome/common/performance_manager/mojom/tcmalloc.mojom.h"
+#endif  // BUILDFLAG(USE_TCMALLOC)
+#endif  // defined(OS_LINUX)
 
 namespace performance_manager {
 
@@ -327,6 +337,14 @@ void PerformanceManager::OnStartImpl(
     graph_.PassToGraph(
         policies::WorkingSetTrimmerPolicy::CreatePolicyForPlatform());
   }
+
+#if defined(OS_LINUX)
+#if BUILDFLAG(USE_TCMALLOC)
+  if (base::FeatureList::IsEnabled(features::linux::kDynamicTcmallocTuning)) {
+    graph_.PassToGraph(std::make_unique<policies::DynamicTcmallocPolicy>());
+  }
+#endif  // BUILDFLAG(USE_TCMALLOC)
+#endif  // defined(OS_LINUX)
 
   interface_registry_.AddInterface(base::BindRepeating(
       &PerformanceManager::BindWebUIGraphDump, base::Unretained(this)));

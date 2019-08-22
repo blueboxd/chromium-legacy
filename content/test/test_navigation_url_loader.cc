@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "content/browser/loader/navigation_url_loader_delegate.h"
+#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/render_frame_host.h"
@@ -62,16 +63,6 @@ void TestNavigationURLLoader::CallOnRequestRedirected(
 
 void TestNavigationURLLoader::CallOnResponseStarted(
     const scoped_refptr<network::ResourceResponse>& response_head) {
-  // Start the request_ids at 1000 to avoid collisions with request ids from
-  // network resources (it should be rare to compare these in unit tests).
-  static int request_id = 1000;
-  int child_id =
-      WebContents::FromFrameTreeNodeId(request_info_->frame_tree_node_id)
-          ->GetMainFrame()
-          ->GetProcess()
-          ->GetID();
-  GlobalRequestID global_id(child_id, ++request_id);
-
   // Create a bidirectionnal communication pipe between a URLLoader and a
   // URLLoaderClient. It will be closed at the end of this function. The sole
   // purpose of this is not to violate some DCHECKs when the navigation commits.
@@ -87,7 +78,8 @@ void TestNavigationURLLoader::CallOnResponseStarted(
 
   delegate_->OnResponseStarted(
       std::move(url_loader_client_endpoints), response_head,
-      mojo::ScopedDataPipeConsumerHandle(), global_id, false,
+      mojo::ScopedDataPipeConsumerHandle(),
+      NavigationURLLoaderImpl::MakeGlobalRequestID(), false,
       NavigationDownloadPolicy(), base::nullopt);
 }
 

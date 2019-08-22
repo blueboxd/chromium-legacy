@@ -6,6 +6,7 @@
 #define CHROME_TEST_BASE_CHROME_RENDER_VIEW_HOST_TEST_HARNESS_H_
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -20,9 +21,10 @@ class ChromeRenderViewHostTestHarness
  public:
   // Construct a ChromeRenderViewHostTestHarness with zero or more arguments
   // passed to content::RenderViewHostTestHarness.
-  template <typename... Args>
-  constexpr ChromeRenderViewHostTestHarness(Args... args)
-      : content::RenderViewHostTestHarness(args...) {}
+  template <typename... TaskEnvironmentTraits>
+  explicit ChromeRenderViewHostTestHarness(TaskEnvironmentTraits&&... traits)
+      : content::RenderViewHostTestHarness(
+            std::forward<TaskEnvironmentTraits>(traits)...) {}
 
   ~ChromeRenderViewHostTestHarness() override;
 

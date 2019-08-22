@@ -57,8 +57,8 @@ namespace {
 
 // Convenience macro to block the test procedure until all pending tasks have
 // run on the device thread.
-#define WAIT_FOR_DEVICE_TASKS()            \
-  browser_threads_.RunIOThreadUntilIdle(); \
+#define WAIT_FOR_DEVICE_TASKS()             \
+  task_environment_.RunIOThreadUntilIdle(); \
   RUN_UI_TASKS()
 
 // Capture parameters.
@@ -288,7 +288,7 @@ class FrameSinkVideoCaptureDeviceForTest : public FrameSinkVideoCaptureDevice {
 class FrameSinkVideoCaptureDeviceTest : public testing::Test {
  public:
   FrameSinkVideoCaptureDeviceTest()
-      : browser_threads_(BrowserTaskEnvironment::REAL_IO_THREAD) {}
+      : task_environment_(BrowserTaskEnvironment::REAL_IO_THREAD) {}
 
   ~FrameSinkVideoCaptureDeviceTest() override { EXPECT_FALSE(device_); }
 
@@ -411,7 +411,7 @@ class FrameSinkVideoCaptureDeviceTest : public testing::Test {
 
  protected:
   // See the threading notes at top of this file.
-  BrowserTaskEnvironment browser_threads_;
+  BrowserTaskEnvironment task_environment_;
 
   NiceMock<MockFrameSinkVideoCapturer> capturer_;
   std::unique_ptr<FrameSinkVideoCaptureDevice> device_;

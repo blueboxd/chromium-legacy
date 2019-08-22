@@ -355,8 +355,12 @@ Length CSSPrimitiveValue::ConvertToLength(
     const CSSToLengthConversionData& conversion_data) const {
   if (IsLength())
     return ComputeLength<Length>(conversion_data);
-  if (IsPercentage())
-    return Length::Percent(GetDoubleValue());
+  if (IsPercentage()) {
+    if (IsNumericLiteralValue() ||
+        !To<CSSMathFunctionValue>(this)->AllowsNegativePercentageReference()) {
+      return Length::Percent(GetDoubleValue());
+    }
+  }
   DCHECK(IsCalculated());
   return To<CSSMathFunctionValue>(this)->ConvertToLength(conversion_data);
 }

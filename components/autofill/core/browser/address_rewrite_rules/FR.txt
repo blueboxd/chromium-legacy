@@ -93,7 +93,7 @@
 \bneuvieme\b	9
 \bpicardie\b	s
 \bpremiere\b	1
-\bseizieme\b	16
+\bseizième\b	16
 \bseptieme\b	7
 \bvaucluse\b	84
 \byvelines\b	78

@@ -76,8 +76,27 @@ class BASE_EXPORT ThreadPoolInstance {
     CommonThreadPoolEnvironment common_thread_pool_environment =
         CommonThreadPoolEnvironment::DEFAULT;
 
-    // Suggested time after which an unused thread can be reclaimed.
-    TimeDelta suggested_reclaim_time = TimeDelta::FromSeconds(30);
+    // An experiment conducted in July 2019 revealed that on Android, changing
+    // the reclaim time from 30 seconds to 5 minutes:
+    // - Reduces jank by 5% at 99th percentile
+    // - Reduces first input delay by 5% at 99th percentile
+    // - Reduces input delay by 3% at 50th percentile
+    // - Reduces navigation to first contentful paint by 2-3% at 25-95th
+    //   percentiles
+    // On Windows and Mac, we instead see no impact or small regressions.
+    //
+    // TODO(scheduler-dev): Conduct experiments to find the optimal value for
+    // each process type on each platform. In particular, due to regressions at
+    // high percentiles for *HeartbeatLatencyMicroseconds.Renderer* histograms,
+    // it was suggested that we might want a different reclaim time in
+    // renderers. Note that the regression is not present in
+    // *TaskLatencyMicroseconds.Renderer* histograms.
+    TimeDelta suggested_reclaim_time =
+#if defined(OS_ANDROID)
+        TimeDelta::FromMinutes(5);
+#else
+        TimeDelta::FromSeconds(30);
+#endif
   };
 
   // A Scoped(BestEffort)ExecutionFence prevents new tasks of any/BEST_EFFORT

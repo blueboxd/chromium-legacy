@@ -35,6 +35,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/core/aom/accessible_node.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -233,6 +234,22 @@ AXObject* AXObjectCacheImpl::Get(LayoutObject* layout_object) {
 
   AXID ax_id = layout_object_mapping_.at(layout_object);
   DCHECK(!HashTraits<AXID>::IsDeletedValue(ax_id));
+
+  Node* node = layout_object->GetNode();
+  if (node && DisplayLockUtilities::NearestLockedExclusiveAncestor(*node)) {
+    // It's in a locked subtree so we need to search by node instead of by
+    // layout object.
+    if (ax_id) {
+      // We previously saved the node in the cache with its layout object,
+      // but now it's in a locked subtree so we should remove the entry with its
+      // layout object and replace it with an AXNodeObject created from the node
+      // instead.
+      Remove(ax_id);
+      return GetOrCreate(node);
+    }
+    return Get(node);
+  }
+
   if (!ax_id)
     return nullptr;
 
@@ -267,6 +284,17 @@ AXObject* AXObjectCacheImpl::Get(const Node* node) {
 
   AXID node_id = node_object_mapping_.at(node);
   DCHECK(!HashTraits<AXID>::IsDeletedValue(node_id));
+
+  if (layout_object &&
+      DisplayLockUtilities::NearestLockedExclusiveAncestor(*node)) {
+    // The node is in a display locked subtree, but we've previously put it in
+    // the cache with its layout object.
+    if (layout_id) {
+      Remove(layout_id);
+      layout_id = 0;
+    }
+    layout_object = nullptr;
+  }
 
   if (layout_object && node_id && !layout_id && !IsMenuListOption(node) &&
       !IsA<HTMLAreaElement>(node)) {
@@ -446,10 +474,12 @@ AXObject* AXObjectCacheImpl::GetOrCreate(Node* node) {
     return obj;
 
   // If the node has a layout object, prefer using that as the primary key for
-  // the AXObject, with the exception of an HTMLAreaElement, which is
-  // created based on its node.
-  if (node->GetLayoutObject() && !IsA<HTMLAreaElement>(node))
+  // the AXObject, with the exception of the HTMLAreaElement and nodes within
+  // a locked subtree, which are created based on its node.
+  if (node->GetLayoutObject() && !IsA<HTMLAreaElement>(node) &&
+      !DisplayLockUtilities::NearestLockedExclusiveAncestor(*node)) {
     return GetOrCreate(node->GetLayoutObject());
+  }
 
   if (!LayoutTreeBuilderTraversal::Parent(*node))
     return nullptr;
@@ -463,7 +493,7 @@ AXObject* AXObjectCacheImpl::GetOrCreate(Node* node) {
   DCHECK(!Get(node));
 
   const AXID ax_id = GetOrCreateAXID(new_obj);
-
+  DCHECK(!HashTraits<AXID>::IsDeletedValue(ax_id));
   node_object_mapping_.Set(node, ax_id);
   new_obj->Init();
   new_obj->SetLastKnownIsIgnoredValue(new_obj->AccessibilityIsIgnored());
@@ -487,6 +517,9 @@ AXObject* AXObjectCacheImpl::GetOrCreate(LayoutObject* layout_object) {
   if (node && (IsMenuListOption(node) || IsA<HTMLAreaElement>(node)))
     return nullptr;
 
+  if (node && DisplayLockUtilities::NearestLockedExclusiveAncestor(*node))
+    return GetOrCreate(layout_object->GetNode());
+
   AXObject* new_obj = CreateFromRenderer(layout_object);
 
   // Will crash later if we have two objects for the same layoutObject.
@@ -502,7 +535,7 @@ AXObject* AXObjectCacheImpl::GetOrCreate(LayoutObject* layout_object) {
   if (node && node->GetLayoutObject() == layout_object) {
     AXID prev_axid = node_object_mapping_.at(node);
     if (prev_axid != 0 && prev_axid != axid) {
-      Remove(node);
+      Remove(prev_axid);
       node_object_mapping_.Set(node, axid);
     }
     MaybeNewRelationTarget(node, new_obj);

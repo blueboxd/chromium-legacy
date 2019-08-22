@@ -1,0 +1,23 @@
+Tests accessibility values of display locked nodes
+
+WebArea
+  GenericContainer
+    GenericContainer
+      text "locked"
+      GenericContainer
+        text "child"
+        GenericContainer
+          text "grandChild"
+        text
+      text
+      GenericContainer
+        text "invisible"
+      text
+      GenericContainer
+        text "nested"
+      text "text"
+    GenericContainer
+    GenericContainer
+      text "normal text"
+        InlineTextBox
+

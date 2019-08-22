@@ -37,6 +37,8 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  enum class CrossDocumentAccessFeaturePolicy { kAllowed, kDisallowed };
+
   ~DOMWindow() override;
 
   Frame* GetFrame() const {
@@ -108,9 +110,11 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData {
   DOMWindow* AnonymousIndexedGetter(uint32_t index) const;
 
   String SanitizedCrossDomainAccessErrorMessage(
-      const LocalDOMWindow* accessing_window) const;
+      const LocalDOMWindow* accessing_window,
+      CrossDocumentAccessFeaturePolicy cross_document_access) const;
   String CrossDomainAccessErrorMessage(
-      const LocalDOMWindow* accessing_window) const;
+      const LocalDOMWindow* accessing_window,
+      CrossDocumentAccessFeaturePolicy cross_document_access) const;
 
   // FIXME: When this DOMWindow is no longer the active DOMWindow (i.e.,
   // when its document is no longer the document that is displayed in its

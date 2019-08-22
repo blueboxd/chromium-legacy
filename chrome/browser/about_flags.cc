@@ -157,6 +157,10 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/native_theme/native_theme_features.h"
 
+#if defined(OS_LINUX)
+#include "base/allocator/buildflags.h"
+#endif
+
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/explore_sites/explore_sites_feature.h"
@@ -1090,6 +1094,10 @@ const FeatureEntry::FeatureParam kResamplingInputEventsLinearFirstEnabled[] = {
     {"predictor", ui::input_prediction::kScrollPredictorNameLinearFirst}};
 const FeatureEntry::FeatureParam kResamplingInputEventsLinearSecondEnabled[] = {
     {"predictor", ui::input_prediction::kScrollPredictorNameLinearSecond}};
+const FeatureEntry::FeatureParam
+    kResamplingInputEventsLinearResamplingEnabled[] = {
+        {"predictor",
+         ui::input_prediction::kScrollPredictorNameLinearResampling}};
 
 const FeatureEntry::FeatureVariation kResamplingInputEventsFeatureVariations[] =
     {{ui::input_prediction::kScrollPredictorNameLsq,
@@ -1103,7 +1111,10 @@ const FeatureEntry::FeatureVariation kResamplingInputEventsFeatureVariations[] =
       base::size(kResamplingInputEventsLinearFirstEnabled), nullptr},
      {ui::input_prediction::kScrollPredictorNameLinearSecond,
       kResamplingInputEventsLinearSecondEnabled,
-      base::size(kResamplingInputEventsLinearSecondEnabled), nullptr}};
+      base::size(kResamplingInputEventsLinearSecondEnabled), nullptr},
+     {ui::input_prediction::kScrollPredictorNameLinearResampling,
+      kResamplingInputEventsLinearResamplingEnabled,
+      base::size(kResamplingInputEventsLinearResamplingEnabled), nullptr}};
 
 const FeatureEntry::FeatureParam kFilteringPredictionEmptyFilterEnabled[] = {
     {"filter", ui::input_prediction::kFilterNameEmpty}};
@@ -1908,6 +1919,12 @@ const FeatureEntry kFeatureEntries[] = {
     {"terminal-system-app", flag_descriptions::kTerminalSystemAppName,
      flag_descriptions::kTerminalSystemAppDescription, kOsCrOS | kOsLinux,
      FEATURE_VALUE_TYPE(features::kTerminalSystemApp)},
+#if BUILDFLAG(USE_TCMALLOC)
+    {"dynamic-tcmalloc-tuning", flag_descriptions::kDynamicTcmallocName,
+     flag_descriptions::kDynamicTcmallocDescription, kOsCrOS | kOsLinux,
+     FEATURE_VALUE_TYPE(
+         performance_manager::features::linux::kDynamicTcmallocTuning)},
+#endif  // BUILDFLAG(USE_TCMALLOC)
 #endif  // OS_CHROMEOS || OS_LINUX
 #if defined(OS_ANDROID)
     {"enable-credit-card-assist", flag_descriptions::kCreditCardAssistName,
@@ -2082,6 +2099,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"webxr", flag_descriptions::kWebXrName,
      flag_descriptions::kWebXrDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebXr)},
+    {"webxr-ar-module", flag_descriptions::kWebXrArModuleName,
+     flag_descriptions::kWebXrArModuleDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kWebXrArModule)},
     {"webxr-hit-test", flag_descriptions::kWebXrHitTestName,
      flag_descriptions::kWebXrHitTestDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebXrHitTest)},
@@ -2390,6 +2410,16 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(
          ::switches::
              kEnableExperimentalAccessibilityChromeVoxLanguageSwitching)},
+    {"enable-experimental-accessibility-chromevox-sub-node-language-"
+     "switching",
+     flag_descriptions::
+         kExperimentalAccessibilityChromeVoxSubNodeLanguageSwitchingName,
+     flag_descriptions::
+         kExperimentalAccessibilityChromeVoxSubNodeLanguageSwitchingDescription,
+     kOsCrOS,
+     SINGLE_VALUE_TYPE(
+         ::switches::
+             kEnableExperimentalAccessibilityChromeVoxSubNodeLanguageSwitching)},
     {"enable-experimental-kernel-vm-support",
      flag_descriptions::kKernelnextVMsName,
      flag_descriptions::kKernelnextVMsDescription, kOsCrOS,
@@ -2470,10 +2500,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kArcFilePickerExperimentName,
      flag_descriptions::kArcFilePickerExperimentDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kFilePickerExperimentFeature)},
-    {"arc-graphics-buffer-visualization-tool",
-     flag_descriptions::kArcGraphicBuffersVisualizationToolName,
-     flag_descriptions::kArcGraphicBuffersVisualizationToolDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(arc::kGraphicBuffersVisualizationTool)},
     {"arc-native-bridge-experiment",
      flag_descriptions::kArcNativeBridgeExperimentName,
      flag_descriptions::kArcNativeBridgeExperimentDescription, kOsCrOS,
@@ -2684,6 +2710,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxTabSwitchSuggestionsName,
      flag_descriptions::kOmniboxTabSwitchSuggestionsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxTabSwitchSuggestions)},
+    {"omnibox-tab-switch-suggestions-dedicated-row",
+     flag_descriptions::kOmniboxTabSwitchSuggestionsDedicatedRowName,
+     flag_descriptions::kOmniboxTabSwitchSuggestionsDedicatedRowDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kOmniboxTabSwitchSuggestionsDedicatedRow)},
     {"omnibox-wrap-popup-position",
      flag_descriptions::kOmniboxWrapPopupPositionName,
      flag_descriptions::kOmniboxWrapPopupPositionDescription, kOsDesktop,

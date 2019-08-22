@@ -23,7 +23,6 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/top_sites.h"
-#include "components/history/core/browser/top_sites_cache.h"
 #include "components/history/core/browser/top_sites_observer.h"
 #include "components/history/core/browser/visit_delegate.h"
 #include "components/history/core/test/history_service_test_util.h"
@@ -203,10 +202,6 @@ class TopSitesImplTest : public HistoryUnitTestBase {
 
   // Wrappers that allow private TopSites functions to be called from the
   // individual tests without making them all be friends.
-  GURL GetCanonicalURL(const GURL& url) {
-    return top_sites()->cache_->GetCanonicalURL(url);
-  }
-
   void SetTopSites(const MostVisitedURLList& new_top_sites) {
     top_sites()->SetTopSites(new_top_sites,
                              TopSitesImpl::CALL_LOCATION_FROM_OTHER_PLACES);
@@ -222,8 +217,7 @@ class TopSitesImplTest : public HistoryUnitTestBase {
 
   void EmptyThreadSafeCache() {
     base::AutoLock lock(top_sites()->lock_);
-    MostVisitedURLList empty;
-    top_sites()->thread_safe_cache_->SetTopSites(empty);
+    top_sites()->thread_safe_cache_.clear();
   }
 
   void ResetTopSites() {
@@ -306,37 +300,6 @@ void AppendMostVisitedURLwithTitle(const GURL& url,
   mv.title = title;
   mv.redirects.push_back(url);
   list->push_back(mv);
-}
-
-// Tests GetCanonicalURL.
-TEST_F(TopSitesImplTest, GetCanonicalURL) {
-  // Have two chains:
-  //   google.com -> www.google.com
-  //   news.google.com (no redirects)
-  GURL news("http://news.google.com/");
-  GURL source("http://google.com/");
-  GURL dest("http://www.google.com/");
-
-  std::vector<MostVisitedURL> most_visited;
-  AppendMostVisitedURLWithRedirect(source, dest, &most_visited);
-  AppendMostVisitedURL(news, &most_visited);
-  SetTopSites(most_visited);
-
-  // Random URLs not in the database are returned unchanged.
-  GURL result = GetCanonicalURL(GURL("http://fark.com/"));
-  EXPECT_EQ(GURL("http://fark.com/"), result);
-
-  // Easy case, there are no redirects and the exact URL is stored.
-  result = GetCanonicalURL(news);
-  EXPECT_EQ(news, result);
-
-  // The URL in question is the source URL in a redirect list.
-  result = GetCanonicalURL(source);
-  EXPECT_EQ(dest, result);
-
-  // The URL in question is the destination of a redirect.
-  result = GetCanonicalURL(dest);
-  EXPECT_EQ(dest, result);
 }
 
 class MockTopSitesObserver : public TopSitesObserver {
@@ -634,6 +597,9 @@ TEST_F(TopSitesImplTest, DeleteNotifications) {
 
   // Wait for history to process the deletion.
   WaitForHistory();
+  // The deletion called back to TopSitesImpl (on the main thread), which
+  // triggers a history query. Wait for that to complete.
+  WaitForHistory();
 
   {
     TopSitesQuerier querier;
@@ -659,6 +625,9 @@ TEST_F(TopSitesImplTest, DeleteNotifications) {
   DeleteURL(google1_url);
 
   // Wait for history to process the deletion.
+  WaitForHistory();
+  // The deletion called back to TopSitesImpl (on the main thread), which
+  // triggers a history query. Wait for that to complete.
   WaitForHistory();
 
   {

@@ -424,14 +424,8 @@ IN_PROC_BROWSER_TEST_F(AppControllerNewProfileManagementBrowserTest,
   UserManager::Hide();
 }
 
-#if defined(ADDRESS_SANITIZER)
-// Flaky under ASAN. See https://crbug.com/674475.
-#define MAYBE_AboutChromeForcesUserManager DISABLED_AboutChromeForcesUserManager
-#else
-#define MAYBE_AboutChromeForcesUserManager AboutChromeForcesUserManager
-#endif
 IN_PROC_BROWSER_TEST_F(AppControllerNewProfileManagementBrowserTest,
-                       MAYBE_AboutChromeForcesUserManager) {
+                       AboutChromeForcesUserManager) {
   AppController* ac = base::mac::ObjCCast<AppController>(
       [[NSApplication sharedApplication] delegate]);
   ASSERT_TRUE(ac);

@@ -51,6 +51,12 @@ bool CSSMathFunctionValue::MayHaveRelativeUnit() const {
 }
 
 double CSSMathFunctionValue::DoubleValue() const {
+#if DCHECK_IS_ON()
+  if (IsPercentage()) {
+    DCHECK(!AllowsNegativePercentageReference() ||
+           !expression_->InvolvesPercentageComparisons());
+  }
+#endif
   return ClampToPermittedRange(expression_->DoubleValue());
 }
 

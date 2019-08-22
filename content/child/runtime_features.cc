@@ -198,6 +198,9 @@ void SetIndividualRuntimeFeatures(
   if (base::FeatureList::IsEnabled(features::kWebXr))
     WebRuntimeFeatures::EnableWebXR(true);
 
+  if (base::FeatureList::IsEnabled(features::kWebXrArModule))
+    WebRuntimeFeatures::EnableWebXRARModule(true);
+
   if (base::FeatureList::IsEnabled(features::kWebXrHitTest))
     WebRuntimeFeatures::EnableWebXRHitTest(true);
 

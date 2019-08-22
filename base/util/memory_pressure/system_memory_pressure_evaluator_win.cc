@@ -58,8 +58,7 @@ SystemMemoryPressureEvaluator::SystemMemoryPressureEvaluator(
     : util::SystemMemoryPressureEvaluator(std::move(voter)),
       moderate_threshold_mb_(0),
       critical_threshold_mb_(0),
-      moderate_pressure_repeat_count_(0),
-      weak_ptr_factory_(this) {
+      moderate_pressure_repeat_count_(0) {
   InferThresholds();
   StartObserving();
 }
@@ -71,8 +70,7 @@ SystemMemoryPressureEvaluator::SystemMemoryPressureEvaluator(
     : util::SystemMemoryPressureEvaluator(std::move(voter)),
       moderate_threshold_mb_(moderate_threshold_mb),
       critical_threshold_mb_(critical_threshold_mb),
-      moderate_pressure_repeat_count_(0),
-      weak_ptr_factory_(this) {
+      moderate_pressure_repeat_count_(0) {
   DCHECK_GE(moderate_threshold_mb_, critical_threshold_mb_);
   DCHECK_LE(0, critical_threshold_mb_);
   StartObserving();

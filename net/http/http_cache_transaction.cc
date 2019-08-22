@@ -197,6 +197,8 @@ HttpCache::Transaction::Transaction(RequestPriority priority, HttpCache* cache)
 
 HttpCache::Transaction::~Transaction() {
   TRACE_EVENT0("io", "HttpCacheTransaction::~Transaction");
+  RecordHistograms();
+
   // We may have to issue another IO, but we should never invoke the callback_
   // after this point.
   callback_.Reset();
@@ -630,8 +632,6 @@ size_t HttpCache::Transaction::EstimateMemoryUsage() const {
 }
 
 void HttpCache::Transaction::WriterAboutToBeRemovedFromEntry(int result) {
-  RecordHistograms();
-
   // Since the transaction can no longer access the network transaction, save
   // all network related info now.
   if (moved_network_transaction_to_writers_ &&
@@ -1815,7 +1815,7 @@ int HttpCache::Transaction::DoSuccessfulSendRequest() {
 
   // Invalidate any cached GET with a successful PUT or DELETE.
   if (mode_ == WRITE && (method_ == "PUT" || method_ == "DELETE")) {
-    if (NonErrorResponse(new_response->headers->response_code()) &&
+    if (NonErrorResponse(new_response_->headers->response_code()) &&
         (entry_ && !entry_->doomed)) {
       int ret = cache_->DoomEntry(cache_key_, nullptr);
       DCHECK_EQ(OK, ret);
@@ -1826,11 +1826,11 @@ int HttpCache::Transaction::DoSuccessfulSendRequest() {
 
   // Invalidate any cached GET with a successful POST.
   if (!(effective_load_flags_ & LOAD_DISABLE_CACHE) && method_ == "POST" &&
-      NonErrorResponse(new_response->headers->response_code())) {
+      NonErrorResponse(new_response_->headers->response_code())) {
     cache_->DoomMainEntryForUrl(request_->url, request_->network_isolation_key);
   }
 
-  RecordNoStoreHeaderHistogram(request_->load_flags, new_response);
+  RecordNoStoreHeaderHistogram(request_->load_flags, new_response_);
 
   if (new_response_->headers->response_code() == 416 &&
       (method_ == "GET" || method_ == "POST")) {
@@ -3154,11 +3154,6 @@ void HttpCache::Transaction::DoneWithEntry(bool entry_is_complete) {
   if (!entry_)
     return;
 
-  // For a writer, histograms will be recorded in
-  // WriterAboutToBeRemovedFromEntry.
-  if (!InWriters())
-    RecordHistograms();
-
   cache_->DoneWithEntry(entry_, this, entry_is_complete, partial_ != nullptr);
   entry_ = nullptr;
   mode_ = NONE;  // switch to 'pass through' mode
@@ -3257,8 +3252,11 @@ int HttpCache::Transaction::DoRestartPartialRequest() {
 
   // WRITE + Doom + STATE_INIT_ENTRY == STATE_CREATE_ENTRY (without an attempt
   // to Doom the entry again).
-  mode_ = WRITE;
   ResetPartialState(!range_requested_);
+
+  // Change mode to WRITE after ResetPartialState as that may have changed the
+  // mode to NONE.
+  mode_ = WRITE;
   TransitionToState(STATE_CREATE_ENTRY);
   return OK;
 }
@@ -3463,11 +3461,12 @@ void HttpCache::Transaction::RecordHistograms() {
         cache_entry_status_ == CacheEntryStatus::ENTRY_UPDATED ||
         cache_entry_status_ == CacheEntryStatus::ENTRY_CANT_CONDITIONALIZE)) ||
       (!did_send_request &&
-       cache_entry_status_ == CacheEntryStatus::ENTRY_USED));
+       (cache_entry_status_ == CacheEntryStatus::ENTRY_USED ||
+        cache_entry_status_ == CacheEntryStatus::ENTRY_CANT_CONDITIONALIZE)));
 
   if (!did_send_request) {
-    DCHECK(cache_entry_status_ == CacheEntryStatus::ENTRY_USED);
-    UMA_HISTOGRAM_TIMES("HttpCache.AccessToDone.Used", total_time);
+    if (cache_entry_status_ == CacheEntryStatus::ENTRY_USED)
+      UMA_HISTOGRAM_TIMES("HttpCache.AccessToDone.Used", total_time);
     return;
   }
 

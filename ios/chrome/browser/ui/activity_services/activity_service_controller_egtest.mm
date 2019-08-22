@@ -103,6 +103,11 @@ id<GREYMatcher> ShareMenuCollectionView() {
 }
 
 - (void)testActivityServiceControllerIsDisabled {
+  // TODO(crbug.com/996541) Starting in Xcode 11 beta 6, the share button does
+  // not appear (even with a delay) flakily.
+  if (@available(iOS 13, *))
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS13.");
+
   // Open an un-shareable page.
   GURL kURL("chrome://version");
   [ChromeEarlGrey loadURL:kURL];

@@ -32,6 +32,7 @@
 #include "content/test/content_browser_test_utils_internal.h"
 #include "ipc/ipc_security_test_util.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom-test-utils.h"
@@ -91,9 +92,10 @@ std::string GetCookiesDirect(WebContentsImpl* tab, const GURL& url) {
       ->GetCookieManagerForBrowserProcess()
       ->GetCookieList(url, options,
                       base::BindLambdaForTesting(
-                          [&](const net::CookieList& cookie_list,
+                          [&](const net::CookieStatusList& cookie_list,
                               const net::CookieStatusList& excluded_cookies) {
-                            result = cookie_list;
+                            result =
+                                net::cookie_util::StripStatuses(cookie_list);
                             run_loop.Quit();
                           }));
   run_loop.Run();

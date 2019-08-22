@@ -20,7 +20,7 @@ constexpr char kTestData[] = "Test Data";
 
 class DataSourceTest : public testing::Test {
  protected:
-  base::test::TaskEnvironment task_environment_ = {
+  base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::MainThreadType::DEFAULT,
       base::test::TaskEnvironment::ThreadPoolExecutionMode::ASYNC};
 };

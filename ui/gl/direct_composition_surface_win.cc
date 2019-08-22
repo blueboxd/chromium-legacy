@@ -203,8 +203,7 @@ DirectCompositionSurfaceWin::DirectCompositionSurfaceWin(
           std::make_unique<GLSurfacePresentationHelper>(vsync_provider.get())),
       vsync_provider_(std::move(vsync_provider)),
       vsync_callback_(std::move(vsync_callback)),
-      max_pending_frames_(settings.max_pending_frames),
-      weak_factory_(this) {
+      max_pending_frames_(settings.max_pending_frames) {
   // Call GetWeakPtr() on main thread before calling on vsync thread so that the
   // internal weak reference is initialized in a thread-safe way.
   weak_ptr_ = weak_factory_.GetWeakPtr();

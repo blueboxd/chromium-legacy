@@ -118,8 +118,7 @@ public class FakeUrlResponseTest {
         String nameNotInOriginalList = "nameNotInOriginalList";
         String valueNotInOriginalList = "valueNotInOriginalList";
         AbstractMap.SimpleEntry<String, String> entryNotInOriginalList =
-                new AbstractMap.SimpleEntry<>(
-                        nameNotInOriginalList.toLowerCase(Locale.ROOT), valueNotInOriginalList);
+                new AbstractMap.SimpleEntry<>(nameNotInOriginalList, valueNotInOriginalList);
 
         FakeUrlResponse testResponseWithHeader =
                 mTestResponse.toBuilder()
@@ -201,5 +200,19 @@ public class FakeUrlResponseTest {
 
         assertNotEquals(
                 defaultResponse.getAllHeadersList(), defaultResponseWithHeader.getAllHeadersList());
+    }
+
+    @Test
+    @SmallTest
+    public void testUrlResponseInfoHeadersMapIsCaseInsensitve() {
+        UrlResponseInfo info = new UrlResponseInfoImpl(new ArrayList<>(), 200, "OK",
+                mTestResponse.getAllHeadersList(), mTestResponse.getWasCached(),
+                mTestResponse.getNegotiatedProtocol(), mTestResponse.getProxyServer(),
+                mTestResponse.getResponseBody().length);
+
+        Map infoMap = info.getAllHeaders();
+
+        assertTrue(infoMap.containsKey(TEST_HEADER_NAME.toLowerCase(Locale.ROOT)));
+        assertTrue(infoMap.containsKey(TEST_HEADER_NAME.toUpperCase(Locale.ROOT)));
     }
 }

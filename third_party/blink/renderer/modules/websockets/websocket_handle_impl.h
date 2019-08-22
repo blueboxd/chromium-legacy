@@ -53,7 +53,7 @@ class WebSocketHandleImpl
   explicit WebSocketHandleImpl(scoped_refptr<base::SingleThreadTaskRunner>);
   ~WebSocketHandleImpl() override;
 
-  void Connect(mojom::blink::WebSocketConnectorPtr,
+  void Connect(mojo::Remote<mojom::blink::WebSocketConnector>,
                const KURL&,
                const Vector<String>& protocols,
                const KURL& site_for_cookies,

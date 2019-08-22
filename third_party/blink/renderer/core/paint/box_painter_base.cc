@@ -274,7 +274,8 @@ BoxPainterBase::FillLayerInfo::FillLayerInfo(
     const FillLayer& layer,
     BackgroundBleedAvoidance bleed_avoidance,
     bool include_left,
-    bool include_right)
+    bool include_right,
+    bool is_inline)
     : image(layer.GetImage()),
       color(bg_color),
       include_left_edge(include_left),
@@ -300,6 +301,13 @@ BoxPainterBase::FillLayerInfo::FillLayerInfo(
       image = nullptr;
     }
   }
+
+  // Background images are not allowed at the inline level in forced colors
+  // mode when forced-color-adjust is auto. This ensures that the inline images
+  // are not painted on top of the forced colors mode backplate.
+  if (doc.InForcedColorsMode() && is_inline &&
+      style.ForcedColorAdjust() != EForcedColorAdjust::kNone)
+    image = nullptr;
 
   const bool has_rounded_border =
       style.HasBorderRadius() && (include_left_edge || include_right_edge);

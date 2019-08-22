@@ -4,6 +4,8 @@
 
 #include "components/previews/content/previews_optimization_guide.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -29,6 +31,7 @@
 #include "components/previews/content/previews_hints.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_switches.h"
+#include "content/public/browser/navigation_handle.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 
@@ -97,7 +100,7 @@ PreviewsOptimizationGuide::~PreviewsOptimizationGuide() {
 
 bool PreviewsOptimizationGuide::IsWhitelisted(
     PreviewsUserData* previews_data,
-    const GURL& url,
+    content::NavigationHandle* navigation_handle,
     PreviewsType type,
     net::EffectiveConnectionType* out_ect_threshold) const {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
@@ -108,7 +111,8 @@ bool PreviewsOptimizationGuide::IsWhitelisted(
   *out_ect_threshold = params::GetECTThresholdForPreview(type);
   int inflation_percent = 0;
   std::string serialized_hint_version_string;
-  if (!hints_->IsWhitelisted(url, type, &inflation_percent, out_ect_threshold,
+  if (!hints_->IsWhitelisted(navigation_handle->GetURL(), type,
+                             &inflation_percent, out_ect_threshold,
                              &serialized_hint_version_string)) {
     return false;
   }
@@ -125,8 +129,9 @@ bool PreviewsOptimizationGuide::IsWhitelisted(
   return true;
 }
 
-bool PreviewsOptimizationGuide::IsBlacklisted(const GURL& url,
-                                              PreviewsType type) const {
+bool PreviewsOptimizationGuide::IsBlacklisted(
+    content::NavigationHandle* navigation_handle,
+    PreviewsType type) const {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   if (type == PreviewsType::LITE_PAGE_REDIRECT) {
@@ -138,7 +143,8 @@ bool PreviewsOptimizationGuide::IsBlacklisted(const GURL& url,
     if (!hints_)
       return true;
 
-    return hints_->IsBlacklisted(url, PreviewsType::LITE_PAGE_REDIRECT);
+    return hints_->IsBlacklisted(navigation_handle->GetURL(),
+                                 PreviewsType::LITE_PAGE_REDIRECT);
   }
 
   // This function is only used by lite page redirect.

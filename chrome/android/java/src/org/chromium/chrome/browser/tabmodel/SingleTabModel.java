@@ -35,8 +35,14 @@ public class SingleTabModel implements TabModel {
      * @param tab Tab to manage.
      */
     void setTab(Tab tab) {
+        if (mTab == tab) return;
         Tab oldTab = mTab;
         mTab = tab;
+        if (oldTab != null) {
+            for (TabModelObserver observer : mObservers) {
+                observer.willCloseTab(oldTab, false);
+            }
+        }
         if (tab != null) {
             assert mTab.isIncognito() == mIsIncognito;
 
@@ -52,9 +58,6 @@ public class SingleTabModel implements TabModel {
             }
         }
         if (oldTab != null && oldTab.isInitialized()) {
-            for (TabModelObserver observer : mObservers) {
-                observer.willCloseTab(oldTab, false);
-            }
             for (TabModelObserver observer : mObservers) {
                 observer.didCloseTab(oldTab.getId(), oldTab.isIncognito());
             }

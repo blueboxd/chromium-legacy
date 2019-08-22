@@ -131,7 +131,6 @@ struct BookmarkNodeData {
 
   // Reads bookmarks from the specified clipboard. Prefers data written via
   // WriteToClipboard() but will also attempt to read a plain bookmark.
-  // TODO(huangdarwin): Remove |buffer|, which only uses 1 enum value.
   bool ReadFromClipboard(ui::ClipboardBuffer buffer);
 
 #if defined(TOOLKIT_VIEWS)

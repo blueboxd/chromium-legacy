@@ -57,6 +57,8 @@ class CC_DEBUG_EXPORT DebugColors {
   static SkColor OOMTileBorderColor();
   static int OOMTileBorderWidth(float device_scale_factor);
 
+  static SkColor MissingOpaqueTileColor();
+
   static SkColor DirectPictureBorderColor();
   static int DirectPictureBorderWidth(float device_scale_factor);
 

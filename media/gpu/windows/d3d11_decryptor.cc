@@ -134,7 +134,7 @@ UINT To16Multiple(size_t num) {
 }  // namespace
 
 D3D11Decryptor::D3D11Decryptor(CdmProxyContext* cdm_proxy_context)
-    : cdm_proxy_context_(cdm_proxy_context), weak_factory_(this) {
+    : cdm_proxy_context_(cdm_proxy_context) {
   DCHECK(cdm_proxy_context_);
 }
 

@@ -9,3 +9,11 @@ proto_library("proto") {
     "chrome_prompt.proto",
   ]
 }
+
+proto_library("test_only_proto") {
+  testonly = true
+  generate_python = false
+  sources = [
+    "chrome_prompt_for_tests.proto",
+  ]
+}

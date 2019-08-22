@@ -181,7 +181,7 @@ class ModuleInspector : public ModuleDatabaseObserver {
 
   // Weak pointers are used to safely post the inspection result back to the
   // ModuleInspector from the task scheduler.
-  base::WeakPtrFactory<ModuleInspector> weak_ptr_factory_;
+  base::WeakPtrFactory<ModuleInspector> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ModuleInspector);
 };

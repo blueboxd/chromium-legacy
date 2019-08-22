@@ -93,8 +93,8 @@ class ExtensionAppShimHandler : public AppShimHandler,
   ~ExtensionAppShimHandler() override;
 
   // Get the host corresponding to a profile and app id, or null if there is
-  // none. Virtual for tests.
-  virtual AppShimHost* FindHost(Profile* profile, const std::string& app_id);
+  // none.
+  AppShimHost* FindHost(Profile* profile, const std::string& app_id);
 
   // Return the host corresponding to |profile| and |app_id|, if one exists.
   // If one does not exist, create one, and launch the app shim (so that the
@@ -179,7 +179,6 @@ class ExtensionAppShimHandler : public AppShimHandler,
 
   // Exposed for testing.
   void set_delegate(Delegate* delegate);
-  HostMap& hosts() { return hosts_; }
   content::NotificationRegistrar& registrar() { return registrar_; }
 
  private:

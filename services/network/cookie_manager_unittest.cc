@@ -22,6 +22,7 @@
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_store_test_callbacks.h"
 #include "net/cookies/cookie_store_test_helpers.h"
+#include "net/cookies/cookie_util.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/session_cleanup_cookie_store.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -89,9 +90,9 @@ class SynchronousCookieManager {
         url, options,
         base::BindLambdaForTesting(
             [&run_loop, &cookies_out](
-                const std::vector<net::CanonicalCookie>& cookies,
+                const net::CookieStatusList& cookies,
                 const net::CookieStatusList& excluded_cookies) {
-              cookies_out = cookies;
+              cookies_out = net::cookie_util::StripStatuses(cookies);
               run_loop.Quit();
             }));
     run_loop.Run();
@@ -106,7 +107,7 @@ class SynchronousCookieManager {
         url, options,
         base::BindLambdaForTesting(
             [&run_loop, &cookies_out](
-                const std::vector<net::CanonicalCookie>& cookies,
+                const net::CookieStatusList& cookies,
                 const net::CookieStatusList& excluded_cookies) {
               cookies_out = excluded_cookies;
               run_loop.Quit();

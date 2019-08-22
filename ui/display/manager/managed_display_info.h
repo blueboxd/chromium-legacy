@@ -251,6 +251,11 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
     color_space_ = color_space;
   }
 
+  uint32_t bits_per_channel() const { return bits_per_channel_; }
+  void set_bits_per_channel(uint32_t bits_per_channel) {
+    bits_per_channel_ = bits_per_channel;
+  }
+
   bool is_aspect_preserving_scaling() const {
     return is_aspect_preserving_scaling_;
   }
@@ -347,6 +352,9 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
   // Colorimetry information of the Display (if IsValid()), including e.g.
   // transfer and primaries information, retrieved from its EDID.
   gfx::ColorSpace color_space_;
+  // Bit depth of every channel, extracted from its EDID, usually 8, but can be
+  // 0 if EDID says so or if the EDID (retrieval) was faulty.
+  uint32_t bits_per_channel_;
 
   // If you add a new member, you need to update Copy().
 };

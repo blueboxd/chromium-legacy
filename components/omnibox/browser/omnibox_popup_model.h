@@ -150,6 +150,10 @@ class OmniboxPopupModel {
   // the tab key.
   bool SelectedLineHasButton();
 
+  // Helper function to see if current selection is a tab switch suggestion
+  // dedicated row.
+  bool SelectedLineIsTabSwitchSuggestion();
+
   // If |closes| is set true, the popup will close when the omnibox is blurred.
   bool popup_closes_on_blur() const { return popup_closes_on_blur_; }
   void set_popup_closes_on_blur(bool closes) { popup_closes_on_blur_ = closes; }

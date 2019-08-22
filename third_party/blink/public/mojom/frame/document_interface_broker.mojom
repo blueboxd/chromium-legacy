@@ -4,8 +4,6 @@
 
 module blink.mojom;
 
-import "mojo/public/mojom/base/unguessable_token.mojom";
-import "third_party/blink/public/mojom/appcache/appcache.mojom";
 import "third_party/blink/public/mojom/credentialmanager/credential_manager.mojom";
 import "third_party/blink/public/mojom/frame/frame_host_test_interface.mojom";
 import "third_party/blink/public/mojom/push_messaging/push_messaging.mojom";
@@ -42,14 +40,4 @@ interface DocumentInterfaceBroker {
   // environment that allows talking virtual authenticators via the WebAuth API.
   GetVirtualAuthenticatorManager(
       pending_receiver<blink.test.mojom.VirtualAuthenticatorManager> receiver);
-
-  // Binds the blink.mojom.AppCacheHost pending receiver to its remote
-  // implementation in the browser process, to allow handling and interacting
-  // with the AppCache for a given host, referenced by the |host_id| parameter.
-  // This method also requires a remote of the blink.mojom.AppCacheFrontend
-  // interface, referenced by |frontend|, to enable communicating with the
-  // renderer process from the AppCacheService's implementation.
-  RegisterAppCacheHost(pending_receiver<blink.mojom.AppCacheHost> host_receiver,
-                       pending_remote<blink.mojom.AppCacheFrontend> frontend_remote,
-                       mojo_base.mojom.UnguessableToken host_id);
 };

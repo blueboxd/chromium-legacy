@@ -241,7 +241,10 @@ jumbo_source_set("internal") {
     ]
   }
   if (is_mac) {
-    libs = [ "CoreFoundation.framework" ]
+    libs = [
+      "CoreFoundation.framework",
+      "SystemConfiguration.framework",
+    ]
   }
   if (is_ios || is_mac) {
     sources += [

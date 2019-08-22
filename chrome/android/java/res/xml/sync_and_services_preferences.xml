@@ -25,8 +25,7 @@
 
         <Preference
             android:key="sync_error_card"
-            android:layout="@layout/account_management_account_row"
-            android:title="@string/sync_error_card_title"/>
+            android:layout="@layout/account_management_account_row"/>
         <Preference
             android:key="sync_disabled_by_administrator"
             android:layout="@layout/account_management_account_row"

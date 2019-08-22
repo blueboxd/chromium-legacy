@@ -164,7 +164,7 @@ Timing::CalculatedTiming Timing::CalculateTimings(
   base::Optional<double> progress;
   const double iteration_duration = IterationDuration().InSecondsF();
 
-  const double overall_progress =
+  const base::Optional<double> overall_progress =
       CalculateOverallProgress(current_phase, active_time, iteration_duration,
                                iteration_count, iteration_start);
   const double simple_iteration_progress = CalculateSimpleIterationProgress(
@@ -175,15 +175,12 @@ Timing::CalculatedTiming Timing::CalculateTimings(
                                 overall_progress, simple_iteration_progress);
   const bool current_direction_is_forwards =
       IsCurrentDirectionForwards(current_iteration, direction);
-  const double directed_progress = CalculateDirectedProgress(
+  const base::Optional<double> directed_progress = CalculateDirectedProgress(
       simple_iteration_progress, current_iteration, direction);
 
   progress = CalculateTransformedProgress(
       current_phase, directed_progress, iteration_duration,
       current_direction_is_forwards, timing_function);
-  if (IsNull(progress.value())) {
-    progress.reset();
-  }
 
   double time_to_next_iteration = std::numeric_limits<double>::infinity();
   // Conditionally compute the time to next iteration, which is only

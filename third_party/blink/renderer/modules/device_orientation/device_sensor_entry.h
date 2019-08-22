@@ -5,7 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_SENSOR_ENTRY_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_SENSOR_ENTRY_H_
 
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/sensor.mojom-blink.h"
 #include "services/device/public/mojom/sensor_provider.mojom-blink.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -74,8 +75,8 @@ class DeviceSensorEntry : public GarbageCollectedFinalized<DeviceSensorEntry>,
 
   State state_ = State::NOT_INITIALIZED;
 
-  device::mojom::blink::SensorPtr sensor_;
-  mojo::Binding<device::mojom::blink::SensorClient> client_binding_{this};
+  mojo::Remote<device::mojom::blink::Sensor> sensor_remote_;
+  mojo::Receiver<device::mojom::blink::SensorClient> client_receiver_{this};
 
   device::mojom::blink::SensorType type_;
 

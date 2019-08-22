@@ -660,6 +660,11 @@ bool OmniboxFieldTrial::IsTabSwitchLogicReversed() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxReverseTabSwitchLogic);
 }
 
+bool OmniboxFieldTrial::IsTabSwitchSuggestionsDedicatedRowEnabled() {
+  return base::FeatureList::IsEnabled(
+      omnibox::kOmniboxTabSwitchSuggestionsDedicatedRow);
+}
+
 bool OmniboxFieldTrial::IsPedalSuggestionsEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxPedalSuggestions);
 }

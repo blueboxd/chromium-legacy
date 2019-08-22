@@ -129,7 +129,8 @@ BoxPainterBase::FillLayerInfo BoxModelObjectPainter::GetFillLayerInfo(
       box_model_.GetDocument(), box_model_.StyleRef(),
       box_model_.HasOverflowClip(), color, bg_layer, bleed_avoidance,
       (flow_box_ ? flow_box_->IncludeLogicalLeftEdge() : true),
-      (flow_box_ ? flow_box_->IncludeLogicalRightEdge() : true));
+      (flow_box_ ? flow_box_->IncludeLogicalRightEdge() : true),
+      box_model_.IsInline());
 }
 
 }  // namespace blink

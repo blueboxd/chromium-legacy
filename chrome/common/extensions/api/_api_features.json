@@ -321,8 +321,7 @@
     "contexts": ["webui"],
     "matches": [
       "chrome://extensions/*",
-      "chrome://extensions-frame/*",
-      "chrome://chrome/extensions/*"
+      "chrome://extensions-frame/*"  // TODO(dbeam): still needed?
     ]
   }],
   // All devtools APIs are implemented by hand, so don't compile them.

@@ -10,6 +10,7 @@
 #include "base/system/sys_info.h"
 #include "chrome/browser/android/feature_utilities.h"
 #include "chrome/browser/android/locale/locale_manager.h"
+#include "chrome/browser/android/metrics/uma_session_stats.h"
 
 namespace {
 
@@ -55,6 +56,7 @@ void AndroidMetricsProvider::ProvideCurrentSessionData(
   UMA_HISTOGRAM_BOOLEAN(
       "Android.MultiWindowMode.Active",
       chrome::android::GetIsInMultiWindowModeValue());
+  UmaSessionStats::GetInstance()->ProvideCurrentSessionData();
   EmitAppNotificationStatusHistogram();
   LocaleManager::RecordUserTypeMetrics();
 }

@@ -53,8 +53,7 @@ RemoteModuleWatcher::RemoteModuleWatcher(
       delay_timer_(FROM_HERE,
                    kIdleDelay,
                    this,
-                   &RemoteModuleWatcher::OnTimerFired),
-      weak_ptr_factory_(this) {}
+                   &RemoteModuleWatcher::OnTimerFired) {}
 
 void RemoteModuleWatcher::InitializeOnTaskRunner(
     std::unique_ptr<service_manager::Connector> connector) {

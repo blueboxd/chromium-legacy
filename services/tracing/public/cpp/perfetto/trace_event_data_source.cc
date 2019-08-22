@@ -21,11 +21,13 @@
 #include "base/no_destructor.h"
 #include "base/pickle.h"
 #include "base/sequence_checker.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/task/common/scoped_defer_task_posting.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_log.h"
+#include "build/build_config.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_producer.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
@@ -43,13 +45,35 @@
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_event.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#endif
+
 using TraceLog = base::trace_event::TraceLog;
 using TraceEvent = base::trace_event::TraceEvent;
 using TraceConfig = base::trace_event::TraceConfig;
+using perfetto::protos::pbzero::ChromeMetadataPacket;
 
 namespace tracing {
 namespace {
+
 TraceEventMetadataSource* g_trace_event_metadata_source_for_testing = nullptr;
+
+void WriteMetadataProto(ChromeMetadataPacket* metadata_proto,
+                        bool privacy_filtering_enabled) {
+#if defined(OS_ANDROID) && defined(OFFICIAL_BUILD)
+  // Version code is only set for official builds on Android.
+  const char* version_code_str =
+      base::android::BuildInfo::GetInstance()->package_version_code();
+  if (version_code_str) {
+    int version_code = 0;
+    bool res = base::StringToInt(version_code_str, &version_code);
+    DCHECK(res);
+    metadata_proto->set_chrome_version_code(version_code);
+  }
+#endif  // defined(OS_ANDROID) && defined(OFFICIAL_BUILD)
+}
+
 }  // namespace
 
 using ChromeEventBundleHandle =
@@ -66,6 +90,7 @@ TraceEventMetadataSource::TraceEventMetadataSource()
       origin_task_runner_(base::SequencedTaskRunnerHandle::Get()) {
   g_trace_event_metadata_source_for_testing = this;
   PerfettoTracedProcess::Get()->AddDataSource(this);
+  AddGeneratorFunction(base::BindRepeating(&WriteMetadataProto));
   AddGeneratorFunction(base::BindRepeating(
       &TraceEventMetadataSource::GenerateTraceConfigMetadataDict,
       base::Unretained(this)));
@@ -115,7 +140,7 @@ void TraceEventMetadataSource::GenerateMetadata(
   auto trace_packet = trace_writer->NewTracePacket();
   auto* chrome_metadata = trace_packet->set_chrome_metadata();
   for (auto& generator : generator_functions_) {
-    generator.Run(chrome_metadata);
+    generator.Run(chrome_metadata, privacy_filtering_enabled_);
   }
   trace_packet = perfetto::TraceWriter::TracePacketHandle();
 
@@ -172,7 +197,7 @@ void TraceEventMetadataSource::StopTracing(
     base::OnceClosure stop_complete_callback) {
   if (trace_writer_) {
     // Write metadata at the end of tracing to make it less likely that it is
-    // overridden by other trace data in perfetto's ring buffer.
+    // overwritten by other trace data in perfetto's ring buffer.
     origin_task_runner_->PostTaskAndReply(
         FROM_HERE,
         base::BindOnce(&TraceEventMetadataSource::GenerateMetadata,

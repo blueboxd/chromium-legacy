@@ -4,6 +4,8 @@
 
 #include "chrome/browser/previews/previews_lite_page_predictor.h"
 
+#include <vector>
+
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
@@ -34,7 +36,8 @@ class TestPreviewsLitePagePredictor : public PreviewsLitePagePredictor {
   // PreviewsLitePagePredictor:
   bool DataSaverIsEnabled() const override { return data_saver_enabled_; }
   bool ECTIsSlow() const override { return ect_is_slow_; }
-  bool PageIsBlacklisted(const GURL& url) const override {
+  bool PageIsBlacklisted(
+      content::NavigationHandle* navigation_handle) const override {
     return page_is_blacklisted_;
   }
   bool IsVisible() const override { return is_visible_; }
@@ -102,7 +105,8 @@ TEST_F(PreviewsLitePagePredictorUnitTest, AllConditionsMet_Origin) {
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kTestUrl));
 
-  EXPECT_TRUE(preresolver()->ShouldPreresolveOnPage());
+  EXPECT_TRUE(
+      preresolver()->ShouldPreresolveOnPage(/*navigation_handle=*/nullptr));
   histogram_tester.ExpectUniqueSample(
       "Previews.ServerLitePage.ToggledPreresolve", true, 1);
   histogram_tester.ExpectUniqueSample(
@@ -121,7 +125,8 @@ TEST_F(PreviewsLitePagePredictorUnitTest, AllConditionsMet_Preview) {
           PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
               GURL(kTestUrl)));
 
-  EXPECT_TRUE(preresolver()->ShouldPreresolveOnPage());
+  EXPECT_TRUE(
+      preresolver()->ShouldPreresolveOnPage(/*navigation_handle=*/nullptr));
   histogram_tester.ExpectUniqueSample(
       "Previews.ServerLitePage.ToggledPreresolve", true, 1);
   histogram_tester.ExpectUniqueSample(
@@ -136,7 +141,8 @@ TEST_F(PreviewsLitePagePredictorUnitTest, FeatureDisabled) {
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kTestUrl));
 
-  EXPECT_FALSE(preresolver()->ShouldPreresolveOnPage());
+  EXPECT_FALSE(
+      preresolver()->ShouldPreresolveOnPage(/*navigation_handle=*/nullptr));
 }
 
 TEST_F(PreviewsLitePagePredictorUnitTest, DataSaverDisabled) {
@@ -147,7 +153,8 @@ TEST_F(PreviewsLitePagePredictorUnitTest, DataSaverDisabled) {
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kTestUrl));
 
-  EXPECT_FALSE(preresolver()->ShouldPreresolveOnPage());
+  EXPECT_FALSE(
+      preresolver()->ShouldPreresolveOnPage(/*navigation_handle=*/nullptr));
 }
 
 TEST_F(PreviewsLitePagePredictorUnitTest, ECTNotSlow) {
@@ -158,7 +165,8 @@ TEST_F(PreviewsLitePagePredictorUnitTest, ECTNotSlow) {
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kTestUrl));
 
-  EXPECT_FALSE(preresolver()->ShouldPreresolveOnPage());
+  EXPECT_FALSE(
+      preresolver()->ShouldPreresolveOnPage(/*navigation_handle=*/nullptr));
 }
 
 TEST_F(PreviewsLitePagePredictorUnitTest, PageBlacklisted) {
@@ -169,7 +177,8 @@ TEST_F(PreviewsLitePagePredictorUnitTest, PageBlacklisted) {
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kTestUrl));
 
-  EXPECT_FALSE(preresolver()->ShouldPreresolveOnPage());
+  EXPECT_FALSE(
+      preresolver()->ShouldPreresolveOnPage(/*navigation_handle=*/nullptr));
 }
 
 TEST_F(PreviewsLitePagePredictorUnitTest, NotVisible) {
@@ -180,7 +189,8 @@ TEST_F(PreviewsLitePagePredictorUnitTest, NotVisible) {
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kTestUrl));
 
-  EXPECT_FALSE(preresolver()->ShouldPreresolveOnPage());
+  EXPECT_FALSE(
+      preresolver()->ShouldPreresolveOnPage(/*navigation_handle=*/nullptr));
 }
 
 TEST_F(PreviewsLitePagePredictorUnitTest, InsecurePage) {
@@ -191,7 +201,8 @@ TEST_F(PreviewsLitePagePredictorUnitTest, InsecurePage) {
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL("http://test.com"));
 
-  EXPECT_FALSE(preresolver()->ShouldPreresolveOnPage());
+  EXPECT_FALSE(
+      preresolver()->ShouldPreresolveOnPage(/*navigation_handle=*/nullptr));
 }
 
 TEST_F(PreviewsLitePagePredictorUnitTest, ToggleMultipleTimes_Navigations) {
@@ -203,11 +214,13 @@ TEST_F(PreviewsLitePagePredictorUnitTest, ToggleMultipleTimes_Navigations) {
 
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kTestUrl));
-  EXPECT_TRUE(preresolver()->ShouldPreresolveOnPage());
+  EXPECT_TRUE(
+      preresolver()->ShouldPreresolveOnPage(/*navigation_handle=*/nullptr));
 
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kTestUrl));
-  EXPECT_TRUE(preresolver()->ShouldPreresolveOnPage());
+  EXPECT_TRUE(
+      preresolver()->ShouldPreresolveOnPage(/*navigation_handle=*/nullptr));
 
   histogram_tester.ExpectBucketCount(
       "Previews.ServerLitePage.ToggledPreresolve", true, 2);
@@ -226,12 +239,14 @@ TEST_F(PreviewsLitePagePredictorUnitTest, ToggleMultipleTimes_ECT) {
 
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kTestUrl));
-  EXPECT_TRUE(preresolver()->ShouldPreresolveOnPage());
+  EXPECT_TRUE(
+      preresolver()->ShouldPreresolveOnPage(/*navigation_handle=*/nullptr));
 
   preresolver()->set_ect_is_slow(false);
   preresolver()->OnEffectiveConnectionTypeChanged(
       net::EFFECTIVE_CONNECTION_TYPE_4G);
-  EXPECT_FALSE(preresolver()->ShouldPreresolveOnPage());
+  EXPECT_FALSE(
+      preresolver()->ShouldPreresolveOnPage(/*navigation_handle=*/nullptr));
 
   histogram_tester.ExpectBucketCount(
       "Previews.ServerLitePage.ToggledPreresolve", true, 1);
@@ -250,11 +265,13 @@ TEST_F(PreviewsLitePagePredictorUnitTest, ToggleMultipleTimes_Visibility) {
 
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kTestUrl));
-  EXPECT_TRUE(preresolver()->ShouldPreresolveOnPage());
+  EXPECT_TRUE(
+      preresolver()->ShouldPreresolveOnPage(/*navigation_handle=*/nullptr));
 
   preresolver()->set_is_visible(false);
   preresolver()->OnVisibilityChanged(content::Visibility::HIDDEN);
-  EXPECT_FALSE(preresolver()->ShouldPreresolveOnPage());
+  EXPECT_FALSE(
+      preresolver()->ShouldPreresolveOnPage(/*navigation_handle=*/nullptr));
 
   histogram_tester.ExpectBucketCount(
       "Previews.ServerLitePage.ToggledPreresolve", true, 1);

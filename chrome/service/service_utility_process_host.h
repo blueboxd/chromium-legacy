@@ -175,7 +175,7 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
       service_manager_connection_;
   service_manager::Identity utility_service_instance_identity_;
 
-  base::WeakPtrFactory<ServiceUtilityProcessHost> weak_ptr_factory_;
+  base::WeakPtrFactory<ServiceUtilityProcessHost> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceUtilityProcessHost);
 };

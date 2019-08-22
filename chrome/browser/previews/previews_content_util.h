@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_PREVIEWS_PREVIEWS_CONTENT_UTIL_H_
 #define CHROME_BROWSER_PREVIEWS_PREVIEWS_CONTENT_UTIL_H_
 
-#include "components/previews/core/previews_decider.h"
+#include "components/previews/content/previews_decider.h"
 #include "content/public/common/previews_state.h"
 
 namespace content {

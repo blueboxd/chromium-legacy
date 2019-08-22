@@ -66,8 +66,8 @@ crbug.com/862029 [ Linux ] http/tests/devtools/tracing/timeline-misc/timeline-wi
 crbug.com/874442 [ Linux ] svg/animations/mpath-remove-from-dependents-on-delete-crash.html [ Pass Crash ]
 
 # Sheriff 2018-08-17
-crbug.com/847114 [ Linux ] http/tests/devtools/tracing/decode-resize.js [ Pass Failure ]
-crbug.com/847114 [ Linux ] virtual/threaded/http/tests/devtools/tracing/decode-resize.js [ Pass Failure ]
+crbug.com/847114 [ Linux ] http/tests/devtools/tracing/decode-resize.js [ Pass Failure Leak ]
+crbug.com/847114 [ Linux ] virtual/threaded/http/tests/devtools/tracing/decode-resize.js [ Pass Failure Leak ]
 
 # Sheriff 2018-08-29
 crbug.com/878724 [ Linux ] editing/selection/modify_extend/extend_by_character.html [ Pass Leak ]
@@ -86,15 +86,19 @@ crbug.com/919117 [ Linux ] virtual/mouseevent_fractional/fast/events/middleClick
 # Sheriff 2019-01-07
 crbug.com/919497 [ Linux ] virtual/threaded/http/tests/devtools/tracing/timeline-gpu-tasks.js [ Pass Leak ]
 
-#Sheriff 2019-02-19
+# Sheriff 2019-02-19
 crbug.com/927454 [ Linux ] external/wpt/pointerevents/pointerevent_pointerleave_descendant_over.html [ Pass Leak ]
 crbug.com/927454 [ Linux ] external/wpt/pointerevents/pointerevent_lostpointercapture_is_first.html [ Pass Leak ]
 
-#Sheriff 2019-02-21
+# Sheriff 2019-02-21
 crbug.com/934144 [ Linux ] http/tests/devtools/tracing/timeline-misc/timeline-flame-chart-automatically-size-window.js [ Pass Leak ]
 
-#Sheriff 2019-04-10
+# Sheriff 2019-04-10
 crbug.com/951453 [ Linux ] external/wpt/html/user-activation/activation-transfer-cross-origin-with-click.sub.tentative.html [ Pass Leak ]
+
+# Sheriff 2019-08-21
+crbug.com/996235 [ Linux ] media/controls/doubletap-to-jump-backwards-at-start.html [ Pass Leak ]
+crbug.com/996235 [ Linux ] virtual/audio-service/media/controls/doubletap-to-jump-backwards-at-start.html [ Pass Leak ]
 
 ###########################################################################
 # WARNING: Memory leaks must be fixed asap. Sheriff is expected to revert #

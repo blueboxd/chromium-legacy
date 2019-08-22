@@ -114,12 +114,12 @@ base::OnceClosure BindSetCookiesCallback(
 }
 
 // Adds cookies in |cookies| with name |name| to |filtered|.
-void OnlyCookiesWithName(const net::CookieList& cookies,
+void OnlyCookiesWithName(const net::CookieStatusList& cookies,
                          const std::string& name,
                          net::CookieList* filtered) {
-  for (const auto& cookie : cookies) {
-    if (cookie.Name() == name)
-      filtered->push_back(cookie);
+  for (const auto& cookie_with_status : cookies) {
+    if (cookie_with_status.cookie.Name() == name)
+      filtered->push_back(cookie_with_status.cookie);
   }
 }
 
@@ -286,7 +286,7 @@ void CookieStoreIOS::GetCookieListWithOptionsAsync(
                      weak_factory_.GetWeakPtr(), base::Passed(&callback)));
 }
 
-void CookieStoreIOS::GetAllCookiesAsync(GetCookieListCallback callback) {
+void CookieStoreIOS::GetAllCookiesAsync(GetAllCookiesCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // If cookies are not allowed, a CookieStoreIOS subclass should be used
@@ -296,7 +296,7 @@ void CookieStoreIOS::GetAllCookiesAsync(GetCookieListCallback callback) {
   // TODO(crbug.com/459154): If/when iOS supports Same-Site cookies, we'll need
   // to pass options in here as well.
   system_store_->GetAllCookiesAsync(
-      base::BindOnce(&CookieStoreIOS::RunGetCookieListCallbackOnSystemCookies,
+      base::BindOnce(&CookieStoreIOS::RunGetAllCookiesCallbackOnSystemCookies,
                      weak_factory_.GetWeakPtr(), base::Passed(&callback)));
 }
 
@@ -611,7 +611,7 @@ void CookieStoreIOS::RunCallbacksForCookies(
 
 void CookieStoreIOS::GotCookieListFor(
     const std::pair<GURL, std::string> key,
-    const net::CookieList& cookies,
+    const net::CookieStatusList& cookies,
     const net::CookieStatusList& excluded_cookies) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -675,13 +675,36 @@ CookieStoreIOS::CanonicalCookieListFromSystemCookies(NSArray* cookies) {
   return cookie_list;
 }
 
+net::CookieStatusList
+CookieStoreIOS::CanonicalCookieWithStatusListFromSystemCookies(
+    NSArray* cookies) {
+  net::CookieStatusList cookie_list;
+  cookie_list.reserve([cookies count]);
+  for (NSHTTPCookie* cookie in cookies) {
+    base::Time created = system_store_->GetCookieCreationTime(cookie);
+    cookie_list.push_back(
+        {CanonicalCookieFromSystemCookie(cookie, created),
+         net::CanonicalCookie::CookieInclusionStatus::INCLUDE});
+  }
+  return cookie_list;
+}
+
 void CookieStoreIOS::RunGetCookieListCallbackOnSystemCookies(
     CookieStoreIOS::GetCookieListCallback callback,
     NSArray<NSHTTPCookie*>* cookies) {
   if (!callback.is_null()) {
     net::CookieStatusList excluded_cookies;
-    std::move(callback).Run(CanonicalCookieListFromSystemCookies(cookies),
-                            excluded_cookies);
+    std::move(callback).Run(
+        CanonicalCookieWithStatusListFromSystemCookies(cookies),
+        excluded_cookies);
+  }
+}
+
+void CookieStoreIOS::RunGetAllCookiesCallbackOnSystemCookies(
+    CookieStoreIOS::GetAllCookiesCallback callback,
+    NSArray<NSHTTPCookie*>* cookies) {
+  if (!callback.is_null()) {
+    std::move(callback).Run(CanonicalCookieListFromSystemCookies(cookies));
   }
 }
 

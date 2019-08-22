@@ -930,7 +930,11 @@ class Document::SecurityContextInit : public FeaturePolicyParserDelegate {
       }
     }
 
-    if (frame) {
+    // If we are allowed to share our document with other windows then we need
+    // to look at the window agent factory, otherwise we should create our own
+    // window agent.
+    if (frame && feature_policy_->IsFeatureEnabled(
+                     mojom::FeaturePolicyFeature::kDocumentAccess)) {
       bool has_potential_universal_access_privilege = false;
       if (Settings* settings = frame->GetSettings()) {
         // TODO(keishi): Also check if AllowUniversalAccessFromFileURLs might

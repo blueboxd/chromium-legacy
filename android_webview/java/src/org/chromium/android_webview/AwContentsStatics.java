@@ -82,9 +82,9 @@ public class AwContentsStatics {
         return nativeGetProductVersion();
     }
 
-    public static void setServiceWorkerIoThreadClient(AwContentsIoThreadClient ioThreadClient,
-            AwBrowserContext browserContext) {
-        nativeSetServiceWorkerIoThreadClient(ioThreadClient, browserContext);
+    public static void setServiceWorkerNetworkClient(
+            AwContentsNetworkClient ioThreadClient, AwBrowserContext browserContext) {
+        nativeSetServiceWorkerNetworkClient(ioThreadClient, browserContext);
     }
 
     @CalledByNative
@@ -157,8 +157,8 @@ public class AwContentsStatics {
     private static native void nativeClearClientCertPreferences(Runnable callback);
     private static native String nativeGetUnreachableWebDataUrl();
     private static native String nativeGetProductVersion();
-    private static native void nativeSetServiceWorkerIoThreadClient(
-            AwContentsIoThreadClient ioThreadClient, AwBrowserContext browserContext);
+    private static native void nativeSetServiceWorkerNetworkClient(
+            AwContentsNetworkClient ioThreadClient, AwBrowserContext browserContext);
     private static native void nativeSetSafeBrowsingWhitelist(
             String[] urls, Callback<Boolean> callback);
     private static native void nativeSetCheckClearTextPermitted(boolean permitted);

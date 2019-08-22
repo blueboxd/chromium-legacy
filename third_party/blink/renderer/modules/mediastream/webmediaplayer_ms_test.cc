@@ -527,8 +527,7 @@ class WebMediaPlayerMSTest
         submitter_(std::make_unique<NiceMock<MockWebVideoFrameSubmitter>>()),
         layer_set_(false),
         rendering_(false),
-        background_rendering_(false),
-        weak_factory_(this) {
+        background_rendering_(false) {
     surface_layer_bridge_ptr_ = surface_layer_bridge_.get();
     submitter_ptr_ = submitter_.get();
   }
@@ -653,7 +652,7 @@ class WebMediaPlayerMSTest
   bool rendering_;
   bool background_rendering_;
 
-  base::WeakPtrFactory<WebMediaPlayerMSTest> weak_factory_;
+  base::WeakPtrFactory<WebMediaPlayerMSTest> weak_factory_{this};
 };
 
 void WebMediaPlayerMSTest::InitializeWebMediaPlayerMS() {

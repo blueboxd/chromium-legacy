@@ -383,6 +383,10 @@ class SupervisedUserServiceExtensionTestBase
         CreateDefaultInitParams();
     params.profile_is_supervised = is_supervised_;
     InitializeExtensionService(params);
+    // Flush the message loop, to ensure that credentials have been loaded in
+    // Identity Manager.
+    base::RunLoop().RunUntilIdle();
+
     SupervisedUserService* service =
         SupervisedUserServiceFactory::GetForProfile(profile_.get());
     service->Init();

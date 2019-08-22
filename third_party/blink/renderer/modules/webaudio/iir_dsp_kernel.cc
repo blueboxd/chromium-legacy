@@ -28,11 +28,10 @@ void IIRDSPKernel::GetFrequencyResponse(int n_frequencies,
                                         const float* frequency_hz,
                                         float* mag_response,
                                         float* phase_response) {
-  bool is_good =
-      n_frequencies > 0 && frequency_hz && mag_response && phase_response;
-  DCHECK(is_good);
-  if (!is_good)
-    return;
+  DCHECK_GT(n_frequencies, 0);
+  DCHECK(frequency_hz);
+  DCHECK(mag_response);
+  DCHECK(phase_response);
 
   Vector<float> frequency(n_frequencies);
 

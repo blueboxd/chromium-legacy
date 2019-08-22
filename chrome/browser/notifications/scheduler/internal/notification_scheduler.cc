@@ -267,7 +267,7 @@ class NotificationSchedulerImpl : public NotificationScheduler,
     context_->impression_tracker()->GetClientStates(&client_states);
 
     context_->background_task_coordinator()->ScheduleBackgroundTask(
-        std::move(notifications), std::move(client_states), task_start_time_);
+        std::move(notifications), std::move(client_states));
   }
 
   void OnUserAction(const UserActionData& action_data) override {

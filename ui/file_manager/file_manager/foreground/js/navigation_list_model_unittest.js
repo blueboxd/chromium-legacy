@@ -39,7 +39,6 @@ let hoge;
 function setUp() {
   // Mock LoadTimeData strings.
   window.loadTimeData.data = {
-    MY_FILES_VOLUME_ENABLED: false,
     MY_FILES_ROOT_LABEL: 'My files',
     DOWNLOADS_DIRECTORY_LABEL: 'Downloads',
     DRIVE_DIRECTORY_LABEL: 'My Drive',
@@ -110,9 +109,8 @@ function testModel() {
   // Downloads and Crostini are displayed within My files.
   const myFilesItem = /** @type NavigationModelFakeItem */ (model.item(2));
   const myFilesEntryList = /** @type {!EntryList} */ (myFilesItem.entry);
-  assertEquals(2, myFilesEntryList.getUIChildren().length);
-  assertEquals('Downloads', myFilesEntryList.getUIChildren()[0].name);
-  assertEquals('linux-files-label', myFilesEntryList.getUIChildren()[1].name);
+  assertEquals(1, myFilesEntryList.getUIChildren().length);
+  assertEquals('linux-files-label', myFilesEntryList.getUIChildren()[0].name);
 }
 
 /**
@@ -285,9 +283,6 @@ function testAddAndRemoveVolumes() {
  * 3. keeps MTP/Archive/Removable volumes on the original order.
  */
 function testOrderAndNestItems() {
-  // Enable My files.
-  loadTimeData.data_['MY_FILES_VOLUME_ENABLED'] = true;
-
   const volumeManager = new MockVolumeManager();
 
   const shortcutListModel = new MockFolderShortcutDataModel([
@@ -447,9 +442,6 @@ function testOrderAndNestItems() {
  * Tests model with My files enabled.
  */
 function testMyFilesVolumeEnabled(callback) {
-  // Enable My files.
-  loadTimeData.data_['MY_FILES_VOLUME_ENABLED'] = true;
-
   const volumeManager = new MockVolumeManager();
   // Item 1 of the volume info list should have Downloads volume type.
   assertEquals(

@@ -31,14 +31,6 @@ class BackgroundSyncLauncherAndroid {
   // partitions, the wake-up task is cancelled.
   static void ScheduleBrowserWakeUp(blink::mojom::BackgroundSyncType sync_type);
 
-  // Schedule a background task to bring up Chrome when the device next goes
-  // online after |soonest_wakeup_delta| has passed.
-  // If |soonest_wakeup_delta| is set to base::TimeDelta::Max(), the wake-up
-  // task is cancelled.
-  static void LaunchBrowserWithWakeUpDelta(
-      blink::mojom::BackgroundSyncType sync_type,
-      base::TimeDelta soonest_wakeup_delta);
-
   static bool ShouldDisableBackgroundSync();
 
   // TODO(iclelland): Remove this once the bots have their play services package

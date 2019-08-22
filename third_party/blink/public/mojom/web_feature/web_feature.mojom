@@ -2383,6 +2383,7 @@ enum WebFeature {
   kWakeLockAcquireScreenLock = 3005,
   kWakeLockAcquireSystemLock = 3006,
   kThirdPartyServiceWorker = 3007,
+  kJSSelfProfiling = 3008,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

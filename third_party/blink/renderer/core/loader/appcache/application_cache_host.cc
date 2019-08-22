@@ -64,11 +64,9 @@ const char* const kEventNames[] = {"Checking",    "Error",    "NoUpdate",
 }  // namespace
 
 ApplicationCacheHost::ApplicationCacheHost(
-    mojom::blink::DocumentInterfaceBroker* interface_broker,
     const BrowserInterfaceBrokerProxy* interface_broker_proxy,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : task_runner_(std::move(task_runner)),
-      interface_broker_(interface_broker),
       interface_broker_proxy_(interface_broker_proxy) {}
 
 ApplicationCacheHost::~ApplicationCacheHost() = default;
@@ -253,6 +251,9 @@ void ApplicationCacheHost::GetAssociatedCacheInfo(
 bool ApplicationCacheHost::BindBackend() {
   if (!task_runner_)
     return false;
+  // Some tests don't have the interface broker proxy.
+  if (!interface_broker_proxy_)
+    return false;
 
   DCHECK(!host_id_.is_empty());
 
@@ -260,18 +261,6 @@ bool ApplicationCacheHost::BindBackend() {
   receiver_.Bind(frontend_remote.InitWithNewPipeAndPassReceiver(),
                  task_runner_);
 
-  // For Frame.
-  // TODO(nhiroki): Deprecate this, and instead use |interface_broker_proxy_|
-  // like Shared Worker.
-  if (interface_broker_) {
-    interface_broker_->RegisterAppCacheHost(
-        backend_host_.BindNewPipeAndPassReceiver(std::move(task_runner_)),
-        std::move(frontend_remote), host_id_);
-    return true;
-  }
-
-  // For Shared Worker.
-  DCHECK(interface_broker_proxy_);
   mojo::PendingReceiver<mojom::blink::AppCacheBackend> receiver =
       backend_remote_.BindNewPipeAndPassReceiver(task_runner_);
   interface_broker_proxy_->GetInterface(std::move(receiver));

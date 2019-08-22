@@ -6,18 +6,20 @@
 
 #include <stdint.h>
 
-#include <memory>
+#include <algorithm>
+#include <map>
 #include <string>
 #include <tuple>
-#include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
+#include "build/build_config.h"
 #include "components/password_manager/core/browser/android_affiliation/mock_affiliated_match_helper.h"
+#include "components/password_manager/core/browser/leak_detection/leak_detection_check.h"
+#include "components/password_manager/core/browser/leak_detection/leak_detection_check_factory.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/test_password_store.h"
@@ -25,6 +27,7 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -43,6 +46,20 @@ namespace {
 const char kTestWebOrigin[] = "https://example.com/";
 const char kTestAndroidRealm1[] = "android://hash@com.example.one.android/";
 const char kTestAndroidRealm2[] = "android://hash@com.example.two.android/";
+
+class MockLeakDetectionCheck : public LeakDetectionCheck {
+ public:
+  MOCK_METHOD3(Start, void(const GURL&, base::string16, base::string16));
+};
+
+class MockLeakDetectionCheckFactory : public LeakDetectionCheckFactory {
+ public:
+  MOCK_CONST_METHOD3(TryCreateLeakCheck,
+                     std::unique_ptr<LeakDetectionCheck>(
+                         LeakDetectionDelegateInterface*,
+                         signin::IdentityManager*,
+                         scoped_refptr<network::SharedURLLoaderFactory>));
+};
 
 class MockPasswordManagerClient : public StubPasswordManagerClient {
  public:
@@ -72,6 +89,8 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
                                             true);
     prefs_->registry()->RegisterBooleanPref(
         prefs::kWasAutoSignInFirstRunExperienceShown, true);
+    prefs_->registry()->RegisterBooleanPref(
+        prefs::kPasswordLeakDetectionEnabled, true);
   }
   ~MockPasswordManagerClient() override {}
 
@@ -1648,5 +1667,44 @@ TEST_F(CredentialManagerImplTest,
 
   RunAllPendingTasks();
 }
+
+#if !defined(OS_IOS)
+// Check that following a call to store() a federated credential is not checked
+// for leaks.
+TEST_F(CredentialManagerImplTest,
+       StoreFederatedCredentialDoesNotStartLeakDetection) {
+  auto mock_factory =
+      std::make_unique<testing::StrictMock<MockLeakDetectionCheckFactory>>();
+  EXPECT_CALL(*mock_factory, TryCreateLeakCheck).Times(0);
+  cm_service_impl()->set_leak_factory(std::move(mock_factory));
+
+  form_.federation_origin = url::Origin::Create(GURL("https://example.com/"));
+  form_.password_value = base::string16();
+  form_.signon_realm = "federation://example.com/example.com";
+  CallStore({form_, CredentialType::CREDENTIAL_TYPE_FEDERATED},
+            base::DoNothing());
+
+  RunAllPendingTasks();
+}
+
+// Check that following a call to store() a password credential is checked for
+// leaks.
+TEST_F(CredentialManagerImplTest, StorePasswordCredentialStartsLeakDetection) {
+  auto mock_factory =
+      std::make_unique<testing::StrictMock<MockLeakDetectionCheckFactory>>();
+  auto* weak_factory = mock_factory.get();
+  cm_service_impl()->set_leak_factory(std::move(mock_factory));
+
+  auto check_instance = std::make_unique<MockLeakDetectionCheck>();
+  EXPECT_CALL(*check_instance,
+              Start(form_.origin, form_.username_value, form_.password_value));
+  EXPECT_CALL(*weak_factory, TryCreateLeakCheck)
+      .WillOnce(testing::Return(testing::ByMove(std::move(check_instance))));
+  CallStore({form_, CredentialType::CREDENTIAL_TYPE_PASSWORD},
+            base::DoNothing());
+
+  RunAllPendingTasks();
+}
+#endif  // !defined(OS_IOS)
 
 }  // namespace password_manager

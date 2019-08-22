@@ -23,6 +23,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_confirmation_result.h"
+#include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_prompt_status.h"
 #include "chrome/browser/download/download_stats.h"
@@ -1431,9 +1432,40 @@ TEST_F(DownloadTargetDeterminerTest, ContinueWithConfirmation_SaveAs) {
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 // These test cases are run with "Prompt for download" user preference set to
-// true. Automatic extension downloads shouldn't cause prompting.
+// true. For non-trusted extensions, download should cause prompting.
 // Android doesn't support extensions.
-TEST_F(DownloadTargetDeterminerTest, PromptAlways_Extension) {
+TEST_F(DownloadTargetDeterminerTest, PromptAlways_NonTrustedExtension) {
+  const DownloadTestCase kPromptingTestCases[] = {
+      {// 0: Automatic Browser Extension download. - Shouldn't prompt for
+       //    browser extension downloads even if "Prompt for download"
+       //    preference is set.
+       AUTOMATIC, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+       DownloadFileType::NOT_DANGEROUS, "http://example.com/foo.kindabad",
+       extensions::Extension::kMimeType, FILE_PATH_LITERAL(""),
+
+       FILE_PATH_LITERAL("foo.crx"), DownloadItem::TARGET_DISPOSITION_PROMPT,
+
+       EXPECT_CRDOWNLOAD},
+
+      {// 1: Automatic User Script - Shouldn't prompt for user script downloads
+       //    even if "Prompt for download" preference is set.
+       AUTOMATIC, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+       DownloadFileType::NOT_DANGEROUS, "http://example.com/foo.user.js", "",
+       FILE_PATH_LITERAL(""),
+
+       FILE_PATH_LITERAL("foo.user.js"),
+       DownloadItem::TARGET_DISPOSITION_PROMPT,
+
+       EXPECT_CRDOWNLOAD},
+  };
+
+  SetPromptForDownload(true);
+  RunTestCasesWithActiveItem(kPromptingTestCases,
+                             base::size(kPromptingTestCases));
+}
+
+// Trusted extension download should not cause prompting.
+TEST_F(DownloadTargetDeterminerTest, PromptAlways_TrustedExtension) {
   const DownloadTestCase kPromptingTestCases[] = {
       {// 0: Automatic Browser Extension download. - Shouldn't prompt for
        //    browser extension downloads even if "Prompt for download"
@@ -1458,6 +1490,8 @@ TEST_F(DownloadTargetDeterminerTest, PromptAlways_Extension) {
        EXPECT_CRDOWNLOAD},
   };
 
+  auto allow_offstore_install =
+      download_crx_util::OverrideOffstoreInstallAllowedForTesting(true);
   SetPromptForDownload(true);
   RunTestCasesWithActiveItem(kPromptingTestCases,
                              base::size(kPromptingTestCases));

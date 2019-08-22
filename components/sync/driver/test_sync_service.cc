@@ -275,7 +275,8 @@ void TestSyncService::GetAllNodesForDebugging(
 
 void TestSyncService::SetInvalidationsForSessionsEnabled(bool enabled) {}
 
-UserDemographicsResult TestSyncService::GetUserDemographics(base::Time now) {
+UserDemographicsResult TestSyncService::GetUserNoisedBirthYearAndGender(
+    base::Time now) {
   return user_demographics_result_;
 }
 

@@ -179,11 +179,8 @@ static void ClampFrequency(float* frequency,
 
 bool OscillatorHandler::CalculateSampleAccuratePhaseIncrements(
     uint32_t frames_to_process) {
-  bool is_good = frames_to_process <= phase_increments_.size() &&
-                 frames_to_process <= detune_values_.size();
-  DCHECK(is_good);
-  if (!is_good)
-    return false;
+  DCHECK_LE(frames_to_process, phase_increments_.size());
+  DCHECK_LE(frames_to_process, detune_values_.size());
 
   if (first_render_) {
     first_render_ = false;
@@ -364,8 +361,6 @@ void OscillatorHandler::Process(uint32_t frames_to_process) {
   }
 
   DCHECK_LE(frames_to_process, phase_increments_.size());
-  if (frames_to_process > phase_increments_.size())
-    return;
 
   // The audio thread can't block on this lock, so we call tryLock() instead.
   MutexTryLocker try_locker(process_lock_);

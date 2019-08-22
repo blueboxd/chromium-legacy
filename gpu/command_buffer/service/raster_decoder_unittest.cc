@@ -74,6 +74,7 @@ TEST_P(RasterDecoderTest, BeginEndQueryEXTCommandsCompletedCHROMIUM) {
   QueryManager::Query* query = query_manager->GetQuery(kNewClientId);
   ASSERT_TRUE(query != nullptr);
   EXPECT_FALSE(query->IsPending());
+  EXPECT_TRUE(query->IsActive());
 
   EXPECT_CALL(*gl_, Flush()).RetiresOnSaturation();
   EXPECT_CALL(*gl_, FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0))
@@ -90,6 +91,7 @@ TEST_P(RasterDecoderTest, BeginEndQueryEXTCommandsCompletedCHROMIUM) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(end_cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
   EXPECT_TRUE(query->IsPending());
+  EXPECT_FALSE(query->IsActive());
 
 #if DCHECK_IS_ON()
   EXPECT_CALL(*gl_, IsSync(kGlSync))
@@ -140,13 +142,32 @@ TEST_P(RasterDecoderTest, BeginEndQueryEXTCommandsIssuedCHROMIUM) {
   QueryManager::Query* query = query_manager->GetQuery(kNewClientId);
   ASSERT_TRUE(query != nullptr);
   EXPECT_FALSE(query->IsPending());
+  EXPECT_TRUE(query->IsActive());
 
-  // Test end succeeds
+  // Test end succeeds.
   EndQueryEXT end_cmd;
   end_cmd.Init(GL_COMMANDS_ISSUED_CHROMIUM, 1);
   EXPECT_EQ(error::kNoError, ExecuteCmd(end_cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
   EXPECT_FALSE(query->IsPending());
+  EXPECT_FALSE(query->IsActive());
+}
+
+TEST_P(RasterDecoderTest, QueryCounterEXTCommandsIssuedTimestampCHROMIUM) {
+  GenHelper<GenQueriesEXTImmediate>(kNewClientId);
+
+  QueryCounterEXT query_counter_cmd;
+  query_counter_cmd.Init(kNewClientId, GL_COMMANDS_ISSUED_TIMESTAMP_CHROMIUM,
+                         shared_memory_id_, kSharedMemoryOffset, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(query_counter_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  QueryManager* query_manager = decoder_->GetQueryManager();
+  ASSERT_TRUE(query_manager != nullptr);
+  QueryManager::Query* query = query_manager->GetQuery(kNewClientId);
+  ASSERT_TRUE(query != nullptr);
+  EXPECT_FALSE(query->IsPending());
+  EXPECT_FALSE(query->IsActive());
 }
 
 TEST_P(RasterDecoderTest, CopyTexSubImage2DSizeMismatch) {

@@ -197,8 +197,6 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'SessionHandlingTest.testGetSessions',
         # Android doesn't use the chrome://print dialog.
         'ChromeDriverTest.testCanSwitchToPrintPreviewDialog',
-        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1175
-        'ChromeDriverTest.testChromeDriverSendLargeData',
         # Chrome 44+ for Android doesn't dispatch the dblclick event
         'ChromeDriverTest.testMouseDoubleClick',
         # Page cannot be loaded from file:// URI in Android unless it
@@ -1382,7 +1380,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.ExecuteScript('debugger;')
 
   def testChromeDriverSendLargeData(self):
-    script = 'var s = ""; for (var i = 0; i < 10e6; i++) s += "0"; return s;'
+    script = 'return "0".repeat(10e6);'
     lots_of_data = self._driver.ExecuteScript(script)
     self.assertEquals('0'.zfill(int(10e6)), lots_of_data)
 

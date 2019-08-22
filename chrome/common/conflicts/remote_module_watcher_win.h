@@ -82,7 +82,7 @@ class RemoteModuleWatcher {
   // been received for |kIdleDelay| amount of time.
   base::DelayTimer delay_timer_;
 
-  base::WeakPtrFactory<RemoteModuleWatcher> weak_ptr_factory_;
+  base::WeakPtrFactory<RemoteModuleWatcher> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RemoteModuleWatcher);
 };

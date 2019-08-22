@@ -24,7 +24,28 @@ void ReputationWebContentsObserver::DidStartNavigation(
 void ReputationWebContentsObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame() ||
-      navigation_handle->IsSameDocument()) {
+      navigation_handle->IsSameDocument() ||
+      !navigation_handle->HasCommitted()) {
+    return;
+  }
+
+  MaybeShowSafetyTip();
+}
+
+void ReputationWebContentsObserver::OnVisibilityChanged(
+    content::Visibility visibility) {
+  MaybeShowSafetyTip();
+}
+
+ReputationWebContentsObserver::ReputationWebContentsObserver(
+    content::WebContents* web_contents)
+    : WebContentsObserver(web_contents),
+      profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
+      weak_factory_(this) {}
+
+void ReputationWebContentsObserver::MaybeShowSafetyTip() {
+  if (web_contents()->GetMainFrame()->GetVisibilityState() !=
+      content::PageVisibilityState::kVisible) {
     return;
   }
 
@@ -39,12 +60,6 @@ void ReputationWebContentsObserver::DidFinishNavigation(
                &ReputationWebContentsObserver::HandleReputationCheckResult,
                weak_factory_.GetWeakPtr()));
 }
-
-ReputationWebContentsObserver::ReputationWebContentsObserver(
-    content::WebContents* web_contents)
-    : WebContentsObserver(web_contents),
-      profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
-      weak_factory_(this) {}
 
 void ReputationWebContentsObserver::HandleReputationCheckResult(
     SafetyTipType type,

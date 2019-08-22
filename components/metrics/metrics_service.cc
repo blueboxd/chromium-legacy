@@ -316,15 +316,16 @@ void MetricsService::EnableRecording() {
   state_manager_->ForceClientIdCreation();
   client_->SetMetricsClientId(state_manager_->client_id());
 
-  SystemProfileProto system_profile;
-  MetricsLog::RecordCoreSystemProfile(client_, &system_profile);
-  GlobalPersistentSystemProfile::GetInstance()->SetSystemProfile(
-      system_profile, /*complete=*/false);
-
   if (!log_manager_.current_log())
     OpenNewLog();
 
   delegating_provider_.OnRecordingEnabled();
+
+  // Fill in the system profile in the log and persist it (to prefs, .pma and
+  // crashpad). This includes running the providers so that information like
+  // field trials and hardware info is provided. If Chrome crashes before this
+  // log is completed, the .pma file will have this system profile.
+  RecordCurrentEnvironment(log_manager_.current_log(), /*complete=*/false);
 
   base::RemoveActionCallback(action_callback_);
   action_callback_ = base::Bind(&MetricsService::OnUserAction,
@@ -415,10 +416,18 @@ void MetricsService::OnAppEnterBackground(bool keep_recording_in_background) {
   }
 }
 
-void MetricsService::OnAppEnterForeground() {
+void MetricsService::OnAppEnterForeground(bool force_open_new_log) {
   state_manager_->clean_exit_beacon()->WriteBeaconValue(false);
   StartSchedulerIfNecessary();
+
+  if (force_open_new_log && recording_active() && state_ >= SENDING_LOGS) {
+    // Because state_ >= SENDING_LOGS, PushPendingLogsToPersistentStorage()
+    // will close the log, allowing a new log to be opened.
+    PushPendingLogsToPersistentStorage();
+    OpenNewLog();
+  }
 }
+
 #else
 void MetricsService::LogNeedForCleanShutdown() {
   state_manager_->clean_exit_beacon()->WriteBeaconValue(false);
@@ -620,7 +629,7 @@ void MetricsService::CloseCurrentLog() {
   // MetricsLog class.
   MetricsLog* current_log = log_manager_.current_log();
   DCHECK(current_log);
-  RecordCurrentEnvironment(current_log);
+  RecordCurrentEnvironment(current_log, /*complete=*/true);
   base::TimeDelta incremental_uptime;
   base::TimeDelta uptime;
   GetUptimes(local_state_, &incremental_uptime, &uptime);
@@ -752,7 +761,7 @@ bool MetricsService::PrepareInitialStabilityLog(
 void MetricsService::PrepareInitialMetricsLog() {
   DCHECK_EQ(INIT_TASK_DONE, state_);
 
-  RecordCurrentEnvironment(initial_metrics_log_.get());
+  RecordCurrentEnvironment(initial_metrics_log_.get(), /*complete=*/true);
   base::TimeDelta incremental_uptime;
   base::TimeDelta uptime;
   GetUptimes(local_state_, &incremental_uptime, &uptime);
@@ -806,6 +815,14 @@ std::unique_ptr<MetricsLog> MetricsService::CreateLog(
                                       log_type, client_);
 }
 
+void MetricsService::SetPersistentSystemProfile(
+    const std::string& serialized_proto,
+    bool complete) {
+  GlobalPersistentSystemProfile::GetInstance()->SetSystemProfile(
+      serialized_proto, complete);
+}
+
+// static
 std::string MetricsService::RecordCurrentEnvironmentHelper(
     MetricsLog* log,
     PrefService* local_state,
@@ -816,12 +833,12 @@ std::string MetricsService::RecordCurrentEnvironmentHelper(
   return recorder.SerializeAndRecordEnvironmentToPrefs(system_profile);
 }
 
-void MetricsService::RecordCurrentEnvironment(MetricsLog* log) {
+void MetricsService::RecordCurrentEnvironment(MetricsLog* log, bool complete) {
   DCHECK(client_);
   std::string serialized_proto =
       RecordCurrentEnvironmentHelper(log, local_state_, &delegating_provider_);
-  GlobalPersistentSystemProfile::GetInstance()->SetSystemProfile(
-      serialized_proto, /*complete=*/true);
+
+  SetPersistentSystemProfile(serialized_proto, complete);
   client_->OnEnvironmentUpdate(&serialized_proto);
 }
 

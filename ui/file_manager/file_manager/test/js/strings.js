@@ -19,7 +19,6 @@ loadTimeData.overrideValues({
       'https://support.google.com/chromebook/?p=filemanager_drive',
   'HIDE_SPACE_INFO': false,
   'ARC_USB_STORAGE_UI_ENABLED': true,
-  'MY_FILES_VOLUME_ENABLED': true,
   'PLUGIN_VM_ENABLED': true,
   'UI_LOCALE': 'en_US',
   'language': 'en-US',

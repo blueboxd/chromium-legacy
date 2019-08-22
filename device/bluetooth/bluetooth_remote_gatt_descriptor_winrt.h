@@ -97,7 +97,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptorWinrt
   std::unique_ptr<PendingReadCallbacks> pending_read_callbacks_;
   std::unique_ptr<PendingWriteCallbacks> pending_write_callbacks_;
 
-  base::WeakPtrFactory<BluetoothRemoteGattDescriptorWinrt> weak_ptr_factory_;
+  base::WeakPtrFactory<BluetoothRemoteGattDescriptorWinrt> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattDescriptorWinrt);
 };

@@ -770,8 +770,8 @@ void ServiceWorkerVersion::ReportError(blink::ServiceWorkerStatusCode status,
 }
 
 void ServiceWorkerVersion::ReportForceUpdateToDevTools() {
-  embedded_worker_->AddMessageToConsole(
-      blink::mojom::ConsoleMessageLevel::kWarning, kForceUpdateInfoMessage);
+  AddMessageToConsole(blink::mojom::ConsoleMessageLevel::kWarning,
+                      kForceUpdateInfoMessage);
 }
 
 void ServiceWorkerVersion::SetStartWorkerStatusCode(
@@ -2139,6 +2139,15 @@ bool ServiceWorkerVersion::ShouldRequireForegroundPriority(
 
 void ServiceWorkerVersion::UpdateForegroundPriority() {
   embedded_worker_->UpdateForegroundPriority();
+}
+
+void ServiceWorkerVersion::AddMessageToConsole(
+    blink::mojom::ConsoleMessageLevel message_level,
+    const std::string& message) {
+  if (running_status() == EmbeddedWorkerStatus::STARTING ||
+      running_status() == EmbeddedWorkerStatus::RUNNING) {
+    endpoint()->AddMessageToConsole(message_level, message);
+  }
 }
 
 void ServiceWorkerVersion::MaybeReportConsoleMessageToInternals(

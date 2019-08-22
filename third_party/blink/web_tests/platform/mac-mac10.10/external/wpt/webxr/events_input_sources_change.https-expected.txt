@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+PASS Transient input sources fire events in the right order
+Harness: the test ran to completion.
+

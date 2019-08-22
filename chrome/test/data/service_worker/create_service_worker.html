@@ -32,9 +32,12 @@ async function register(worker_url, scope) {
   }
 }
 
-async function update() {
+async function update(scope) {
   try {
-    const registration = await navigator.serviceWorker.ready;
+    const registration =
+        scope ?
+            await navigator.serviceWorker.getRegistration(scope) :
+            await navigator.serviceWorker.ready;
     await registration.update();
     return 'DONE';
   } catch (error) {

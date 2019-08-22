@@ -1126,7 +1126,7 @@ void DocumentLoader::StartLoadingInternal() {
   DCHECK(params_);
   state_ = kProvisional;
   application_cache_host_ = MakeGarbageCollected<ApplicationCacheHostForFrame>(
-      this, GetFrame()->Client()->GetDocumentInterfaceBroker(),
+      this, GetFrame()->Client()->GetBrowserInterfaceBrokerProxy(),
       GetFrame()->GetTaskRunner(TaskType::kNetworking));
 
   if (url_.IsEmpty() &&

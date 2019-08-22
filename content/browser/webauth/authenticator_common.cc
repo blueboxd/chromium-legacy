@@ -926,13 +926,15 @@ void AuthenticatorCommon::GetAssertion(
         std::move(options->challenge));
   }
 
-  if (options->allow_credentials.empty() &&
-      (!base::FeatureList::IsEnabled(device::kWebAuthResidentKeys) ||
-       !request_delegate_->SupportsResidentKeys())) {
-    InvokeCallbackAndCleanup(
-        std::move(callback),
-        blink::mojom::AuthenticatorStatus::RESIDENT_CREDENTIALS_UNSUPPORTED);
-    return;
+  if (options->allow_credentials.empty()) {
+    if (!base::FeatureList::IsEnabled(device::kWebAuthResidentKeys) ||
+        !request_delegate_->SupportsResidentKeys()) {
+      InvokeCallbackAndCleanup(
+          std::move(callback),
+          blink::mojom::AuthenticatorStatus::RESIDENT_CREDENTIALS_UNSUPPORTED);
+      return;
+    }
+    empty_allow_list_ = true;
   }
 
   if (options->appid) {
@@ -1298,13 +1300,15 @@ void AuthenticatorCommon::OnSignResponse(
             *authenticator->AuthenticatorTransport());
       }
 
-      // Show an account picker for requests with empty allow lists (where
-      // num_credentials() is set in the response). Authenticators may omit the
-      // user entity if only one credential matches, or if they have account
-      // selection UI built-in. In that case, consider that credential
-      // pre-selected.
-      if (response_data->at(0).num_credentials() &&
-          (response_data->size() > 1 || response_data->at(0).user_entity())) {
+      // Show an account picker for requests with empty allow lists.
+      // Authenticators may omit the identifying information in the user entity
+      // if only one credential matches, or if they have account selection UI
+      // built-in. In that case, consider that credential pre-selected.
+      if (empty_allow_list_ &&
+          (response_data->size() > 1 ||
+           (response_data->at(0).user_entity() &&
+            (response_data->at(0).user_entity()->name ||
+             response_data->at(0).user_entity()->display_name)))) {
         request_delegate_->SelectAccount(
             std::move(*response_data),
             base::BindOnce(&AuthenticatorCommon::OnAccountSelected,
@@ -1465,6 +1469,7 @@ void AuthenticatorCommon::Cleanup() {
   caller_origin_ = url::Origin();
   relying_party_id_.clear();
   attestation_requested_ = false;
+  empty_allow_list_ = false;
   error_awaiting_user_acknowledgement_ =
       blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
 }

@@ -8,7 +8,9 @@ include_rules = [
   "+components/previews/core",
   "+components/url_matcher",
   "+components/variations",
+  "+content/public/browser",
   "+content/public/common",
+  "+content/public/test",
   "+net",
   "+services/network",
 ]

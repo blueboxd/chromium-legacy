@@ -1,0 +1,5 @@
+This is a testharness.js-based test.
+PASS XRFrame methods throw exceptions outside of the requestAnimationFrame callback for immersive sessions
+PASS XRFrame methods throw exceptions outside of the requestAnimationFrame callback for non-immersive sessions
+Harness: the test ran to completion.
+

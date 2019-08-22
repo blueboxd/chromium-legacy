@@ -89,16 +89,6 @@ public class TouchlessDialogPresenter extends Presenter {
         });
         ViewGroup dialogView = (ViewGroup) LayoutInflater.from(mDialog.getContext())
                 .inflate(R.layout.touchless_dialog_view, null);
-        if (model.get(TouchlessDialogProperties.LIST_MODELS) != null) {
-            ModelListAdapter adapter =
-                    new ModelListAdapter(model.get(TouchlessDialogProperties.LIST_MODELS));
-            adapter.registerType(ListItemType.DEFAULT,
-                    () -> LayoutInflater.from(mActivity).inflate(R.layout.dialog_list_item, null),
-                    TouchlessDialogPresenter::bindListItem);
-            ListView dialogOptions = dialogView.findViewById(R.id.touchless_dialog_option_list);
-            dialogOptions.setAdapter(adapter);
-            dialogOptions.setItemsCanFocus(true);
-        }
         mModelChangeProcessor = PropertyModelChangeProcessor.create(
                 model, dialogView, TouchlessDialogPresenter::bind);
         mDialog.setContentView(dialogView);
@@ -166,6 +156,16 @@ public class TouchlessDialogPresenter extends Presenter {
             ViewGroup customGroup = view.findViewById(R.id.custom);
             customGroup.addView(model.get(ModalDialogProperties.CUSTOM_VIEW));
             customGroup.setVisibility(View.VISIBLE);
+        } else if (TouchlessDialogProperties.LIST_MODELS == propertyKey) {
+            ModelListAdapter adapter =
+                    new ModelListAdapter(model.get(TouchlessDialogProperties.LIST_MODELS));
+            adapter.registerType(ListItemType.DEFAULT,
+                    () -> LayoutInflater.from(view.getContext())
+                            .inflate(R.layout.dialog_list_item, null),
+                    TouchlessDialogPresenter::bindListItem);
+            ListView dialogOptions = view.findViewById(R.id.touchless_dialog_option_list);
+            dialogOptions.setAdapter(adapter);
+            dialogOptions.setItemsCanFocus(true);
         } else if (TouchlessDialogProperties.FORCE_SINGLE_LINE_TITLE == propertyKey) {
             TextView textView = view.findViewById(R.id.touchless_dialog_title);
             textView.setMaxLines(model.get(TouchlessDialogProperties.FORCE_SINGLE_LINE_TITLE)

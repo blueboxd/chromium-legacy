@@ -160,7 +160,6 @@ const char kChromeUIThumbnailListHost[] = "thumbnails";
 const char kChromeUIThumbnailURL[] = "chrome://thumb/";
 const char kChromeUITranslateInternalsHost[] = "translate-internals";
 const char kChromeUIUkmHost[] = "ukm";
-const char kChromeUIUberHost[] = "chrome";
 const char kChromeUIUsbInternalsHost[] = "usb-internals";
 const char kChromeUIUserActionsHost[] = "user-actions";
 const char kChromeUIVersionHost[] = "version";
@@ -552,7 +551,6 @@ const char* const kChromeHostURLs[] = {
     kChromeUIInspectHost,
     kChromeUISettingsHost,
     kChromeUISystemInfoHost,
-    kChromeUIUberHost,
 #endif
 #if defined(OS_ANDROID)
     kChromeUIExploreSitesInternalsHost,

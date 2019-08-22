@@ -22,6 +22,7 @@
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/document_provider.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_pedal.h"
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "components/omnibox/common/omnibox_features.h"
@@ -1053,12 +1054,17 @@ size_t AutocompleteMatch::EstimateMemoryUsage() const {
   return res;
 }
 
-bool AutocompleteMatch::ShouldShowTabMatch() const {
-  return has_tab_match && !associated_keyword;
+bool AutocompleteMatch::ShouldShowTabMatchButton() const {
+  return has_tab_match && !associated_keyword &&
+         !OmniboxFieldTrial::IsTabSwitchSuggestionsDedicatedRowEnabled();
 }
 
 bool AutocompleteMatch::ShouldShowButton() const {
-  return ShouldShowTabMatch();
+  return ShouldShowTabMatchButton();
+}
+
+bool AutocompleteMatch::IsTabSwitchSuggestion() const {
+  return (subrelevance & ~FAMILY_SIZE_MASK) == TAB_SWITCH_FAMILY_ID;
 }
 
 void AutocompleteMatch::UpgradeMatchWithPropertiesFrom(

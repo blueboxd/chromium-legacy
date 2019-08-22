@@ -76,20 +76,6 @@ GURL GetClearBrowsingDataURL() {
   return GetSettingsURL().Resolve(chrome::kClearBrowserDataSubPage);
 }
 
-// Converts long uber URLs ("chrome://chrome/foo/") to short (virtual) URLs
-// ("chrome://foo/"). This should be used to convert the return value of
-// WebContentsImpl::GetURL before comparison because it can return either the
-// real URL or the virtual URL.
-GURL ShortenUberURL(const GURL& url) {
-  std::string url_string = url.spec();
-  const std::string long_prefix = "chrome://chrome/";
-  const std::string short_prefix = "chrome://";
-  if (!base::StartsWith(url_string, long_prefix, base::CompareCase::SENSITIVE))
-    return url;
-  url_string.replace(0, long_prefix.length(), short_prefix);
-  return GURL(url_string);
-}
-
 void ShowSettings(Browser* browser) {
   // chrome::ShowSettings just calls ShowSettingsSubPageInTabbedBrowser on
   // non chromeos, but we want to test tab navigation here so call
@@ -1194,10 +1180,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(browser(), params.browser);
   EXPECT_EQ(3, browser()->tab_strip_model()->count());
   EXPECT_EQ(2, browser()->tab_strip_model()->active_index());
-  EXPECT_EQ(
-      GetContentSettingsURL(),
-      ShortenUberURL(
-          browser()->tab_strip_model()->GetActiveWebContents()->GetURL()));
+  EXPECT_EQ(GetContentSettingsURL(),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
 // This test verifies that constructing params with disposition = SINGLETON_TAB
@@ -1229,10 +1213,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(browser(), params.browser);
   EXPECT_EQ(3, browser()->tab_strip_model()->count());
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
-  EXPECT_EQ(
-      GetContentSettingsURL(),
-      ShortenUberURL(
-          browser()->tab_strip_model()->GetActiveWebContents()->GetURL()));
+  EXPECT_EQ(GetContentSettingsURL(),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
 // This test verifies that constructing params with disposition = SINGLETON_TAB
@@ -1264,10 +1246,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(browser(), params.browser);
   EXPECT_EQ(3, browser()->tab_strip_model()->count());
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
-  EXPECT_EQ(
-      GetClearBrowsingDataURL(),
-      ShortenUberURL(
-          browser()->tab_strip_model()->GetActiveWebContents()->GetURL()));
+  EXPECT_EQ(GetClearBrowsingDataURL(),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
 // This test verifies that constructing params with disposition = SINGLETON_TAB
@@ -1297,10 +1277,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(browser(), params.browser);
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
-  EXPECT_EQ(
-      singleton_url_target,
-      ShortenUberURL(
-          browser()->tab_strip_model()->GetActiveWebContents()->GetURL()));
+  EXPECT_EQ(singleton_url_target,
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
 // This test verifies that constructing params with disposition = SINGLETON_TAB
@@ -1378,10 +1356,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   }
 
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
-  EXPECT_EQ(
-      GetSettingsURL(),
-      ShortenUberURL(
-          browser()->tab_strip_model()->GetActiveWebContents()->GetURL()));
+  EXPECT_EQ(GetSettingsURL(),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
 // Settings page is expected to always open in normal mode regardless
@@ -1447,10 +1423,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     observer.Wait();
   }
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
-  EXPECT_EQ(
-      GetSettingsURL(),
-      ShortenUberURL(
-          browser()->tab_strip_model()->GetActiveWebContents()->GetURL()));
+  EXPECT_EQ(GetSettingsURL(),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
@@ -1467,10 +1441,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     observer.Wait();
   }
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
-  EXPECT_EQ(
-      GetSettingsURL(),
-      ShortenUberURL(
-          browser()->tab_strip_model()->GetActiveWebContents()->GetURL()));
+  EXPECT_EQ(GetSettingsURL(),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
@@ -1490,10 +1462,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     observer.Wait();
   }
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
-  EXPECT_EQ(
-      GetSettingsURL(),
-      ShortenUberURL(
-          browser()->tab_strip_model()->GetActiveWebContents()->GetURL()));
+  EXPECT_EQ(GetSettingsURL(),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
@@ -1513,10 +1483,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     observer.Wait();
   }
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
-  EXPECT_EQ(
-      GetSettingsURL(),
-      ShortenUberURL(
-          browser()->tab_strip_model()->GetActiveWebContents()->GetURL()));
+  EXPECT_EQ(GetSettingsURL(),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
@@ -1541,10 +1509,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     observer.Wait();
   }
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
-  EXPECT_EQ(
-      GetSettingsURL(),
-      ShortenUberURL(
-          browser()->tab_strip_model()->GetActiveWebContents()->GetURL()));
+  EXPECT_EQ(GetSettingsURL(),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
@@ -1599,10 +1565,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   ShowSettings(browser());
 
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
-  EXPECT_EQ(
-      GetSettingsURL(),
-      ShortenUberURL(
-          browser()->tab_strip_model()->GetActiveWebContents()->GetURL()));
+  EXPECT_EQ(GetSettingsURL(),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, CloseSingletonTab) {

@@ -47,8 +47,9 @@ class NavigationSheetMediator {
     interface ClickListener {
         /**
          * @param index Index from {@link NavigationEntry#getIndex()}.
+         * @param position Position of the clicked item in the list, starting from 0.
          */
-        void click(int index);
+        void click(int position, int index);
     }
 
     static class ItemProperties {
@@ -86,8 +87,9 @@ class NavigationSheetMediator {
             PropertyModel model = new PropertyModel(Arrays.asList(ItemProperties.ALL_KEYS));
             NavigationEntry entry = mHistory.getEntryAtIndex(i);
             model.set(ItemProperties.LABEL, getEntryText(entry));
+            final int position = i;
             model.set(ItemProperties.CLICK_LISTENER,
-                    (view) -> { mClickListener.click(entry.getIndex()); });
+                    (view) -> { mClickListener.click(position, entry.getIndex()); });
             mModelList.add(new ListItem(NAVIGATION_LIST_ITEM_TYPE_ID, model));
             if (entry.getFavicon() != null) continue;
             final String pageUrl = entry.getUrl();

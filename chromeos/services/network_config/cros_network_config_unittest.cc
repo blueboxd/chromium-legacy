@@ -220,6 +220,22 @@ class CrosNetworkConfigTest : public testing::Test {
     return result;
   }
 
+  bool SetProperties(const std::string& guid,
+                     mojom::ConfigPropertiesPtr properties) {
+    bool success = false;
+    base::RunLoop run_loop;
+    cros_network_config()->SetProperties(
+        guid, std::move(properties),
+        base::BindOnce(
+            [](bool* successp, base::OnceClosure quit_closure, bool success) {
+              *successp = success;
+              std::move(quit_closure).Run();
+            },
+            &success, run_loop.QuitClosure()));
+    run_loop.Run();
+    return success;
+  }
+
   bool SetCellularSimState(const std::string& current_pin_or_puk,
                            base::Optional<std::string> new_pin,
                            bool require_pin) {
@@ -486,6 +502,48 @@ TEST_F(CrosNetworkConfigTest, GetManagedPropertiesPolicy) {
   EXPECT_EQ(mojom::PolicySource::kUserPolicyEnforced,
             properties->priority->policy_source);
   EXPECT_EQ(0, properties->priority->policy_value);
+}
+
+TEST_F(CrosNetworkConfigTest, SetProperties) {
+  // Use wifi3 since it has a profile path (i.e. it is 'saved'). and is not
+  // policy controoled.
+  const char* kGUID = "wifi3_guid";
+  // Assert initial state.
+  mojom::ManagedPropertiesPtr properties = GetManagedProperties(kGUID);
+  ASSERT_TRUE(properties);
+  ASSERT_EQ(kGUID, properties->guid);
+  ASSERT_TRUE(properties->wifi);
+  ASSERT_FALSE(properties->wifi->auto_connect);
+  ASSERT_FALSE(properties->priority);
+
+  // Set priority.
+  auto config = mojom::ConfigProperties::New();
+  config->priority = mojom::PriorityConfig::New();
+  config->priority->value = 1;
+  bool success = SetProperties(kGUID, std::move(config));
+  ASSERT_TRUE(success);
+  properties = GetManagedProperties(kGUID);
+  ASSERT_TRUE(properties);
+  ASSERT_EQ(kGUID, properties->guid);
+  ASSERT_TRUE(properties->wifi);
+  ASSERT_FALSE(properties->wifi->auto_connect);
+  ASSERT_TRUE(properties->priority);
+  EXPECT_EQ(1, properties->priority->active_value);
+
+  // Set auto connect only. Priority should remain unchanged.
+  config = mojom::ConfigProperties::New();
+  config->auto_connect = mojom::AutoConnectConfig::New();
+  config->auto_connect->value = true;
+  success = SetProperties(kGUID, std::move(config));
+  ASSERT_TRUE(success);
+  properties = GetManagedProperties(kGUID);
+  ASSERT_TRUE(properties);
+  ASSERT_EQ(kGUID, properties->guid);
+  ASSERT_TRUE(properties->wifi);
+  ASSERT_TRUE(properties->wifi->auto_connect);
+  EXPECT_TRUE(properties->wifi->auto_connect->active_value);
+  ASSERT_TRUE(properties->priority);
+  EXPECT_EQ(1, properties->priority->active_value);
 }
 
 TEST_F(CrosNetworkConfigTest, SetNetworkTypeEnabledState) {

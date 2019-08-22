@@ -96,14 +96,17 @@ TEST_F(FieldTrialsProviderTest, ProvideSyntheticTrials) {
   // Make sure these trials are older than the log.
   WaitUntilTimeChanges(base::TimeTicks::Now());
 
-  provider.OnDidCreateMetricsLog();
+  // Get the current time and wait for it to change.
+  base::TimeTicks log_creation_time = base::TimeTicks::Now();
+
   // Make sure that the log is older than the trials that should be excluded.
-  WaitUntilTimeChanges(base::TimeTicks::Now());
+  WaitUntilTimeChanges(log_creation_time);
 
   RegisterExtraSyntheticTrial();
 
   metrics::SystemProfileProto proto;
-  provider.ProvideSystemProfileMetrics(&proto);
+  provider.ProvideSystemProfileMetricsWithLogCreationTime(log_creation_time,
+                                                          &proto);
 
   ASSERT_EQ(base::size(kFieldTrialIds) + base::size(kSyntheticTrials),
             static_cast<size_t>(proto.field_trial_size()));
@@ -115,7 +118,8 @@ TEST_F(FieldTrialsProviderTest, NoSyntheticTrials) {
   TestProvider provider(nullptr, base::StringPiece());
 
   metrics::SystemProfileProto proto;
-  provider.ProvideSystemProfileMetrics(&proto);
+  provider.ProvideSystemProfileMetricsWithLogCreationTime(base::TimeTicks(),
+                                                          &proto);
 
   ASSERT_EQ(base::size(kFieldTrialIds),
             static_cast<size_t>(proto.field_trial_size()));

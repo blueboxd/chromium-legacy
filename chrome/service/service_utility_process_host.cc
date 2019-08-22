@@ -259,8 +259,7 @@ ServiceUtilityProcessHost::ServiceUtilityProcessHost(
     base::SingleThreadTaskRunner* client_task_runner)
     : client_(client),
       client_task_runner_(client_task_runner),
-      waiting_for_reply_(false),
-      weak_ptr_factory_(this) {
+      waiting_for_reply_(false) {
   child_process_host_ = ChildProcessHost::Create(this);
 }
 

@@ -127,7 +127,7 @@ class InputDispatcher {
   // The desired mouse position for a mouse move event.
   const gfx::Point expected_mouse_location_;
 
-  base::WeakPtrFactory<InputDispatcher> weak_factory_;
+  base::WeakPtrFactory<InputDispatcher> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InputDispatcher);
 };
@@ -171,8 +171,7 @@ InputDispatcher::InputDispatcher(base::OnceClosure callback,
                                  UINT system_queue_flag)
     : callback_(std::move(callback)),
       message_waiting_for_(message_waiting_for),
-      system_queue_flag_(system_queue_flag),
-      weak_factory_(this) {
+      system_queue_flag_(system_queue_flag) {
   InstallHook();
 }
 
@@ -183,8 +182,7 @@ InputDispatcher::InputDispatcher(base::OnceClosure callback,
     : callback_(std::move(callback)),
       message_waiting_for_(message_waiting_for),
       system_queue_flag_(system_queue_flag),
-      num_keyups_awaited_(num_keyups_awaited),
-      weak_factory_(this) {
+      num_keyups_awaited_(num_keyups_awaited) {
   DCHECK_EQ(message_waiting_for_, static_cast<WPARAM>(WM_KEYUP));
   InstallHook();
 }
@@ -196,8 +194,7 @@ InputDispatcher::InputDispatcher(base::OnceClosure callback,
     : callback_(std::move(callback)),
       message_waiting_for_(message_waiting_for),
       system_queue_flag_(system_queue_flag),
-      expected_mouse_location_(screen_point),
-      weak_factory_(this) {
+      expected_mouse_location_(screen_point) {
   DCHECK_EQ(message_waiting_for_, static_cast<WPARAM>(WM_MOUSEMOVE));
   InstallHook();
 }

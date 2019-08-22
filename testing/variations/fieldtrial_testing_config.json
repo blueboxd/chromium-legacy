@@ -1654,6 +1654,21 @@
             ]
         }
     ],
+    "ContextualSearchTranslation": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "ContextualSearchTranslationModel",
+                    "enable_features": [
+                        "ContextualSearchTranslationModel"
+                    ]
+                }
+            ]
+        }
+    ],
     "CopylessPaste": [
         {
             "platforms": [
@@ -2173,21 +2188,6 @@
             ]
         }
     ],
-    "EnableChromeOSAccountManager": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ChromeOSAccountManager"
-                    ]
-                }
-            ]
-        }
-    ],
     "EnableCsrssLockdown": [
         {
             "platforms": [
@@ -2349,6 +2349,24 @@
                     "name": "Enabled_FCMInvalidations_20190507",
                     "enable_features": [
                         "FCMInvalidations"
+                    ]
+                }
+            ]
+        }
+    ],
+    "FFmpegDecodeOpaqueVP8": [
+        {
+            "platforms": [
+                "chromeos",
+                "mac",
+                "linux",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "libvpx_for_vp8",
+                    "disable_features": [
+                        "FFmpegDecodeOpaqueVP8"
                     ]
                 }
             ]
@@ -3883,7 +3901,8 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "OmniboxGroupSuggestionsBySearchVsUrl"
+                        "OmniboxGroupSuggestionsBySearchVsUrl",
+                        "OmniboxPreserveDefaultMatchScore"
                     ]
                 }
             ]

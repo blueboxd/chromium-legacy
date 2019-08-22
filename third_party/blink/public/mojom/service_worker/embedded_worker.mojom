@@ -145,7 +145,6 @@ interface EmbeddedWorkerInstanceClient {
   // The response is sent back via EmbeddedWorkerInstanceHost.OnStopped().
   StopWorker();
   ResumeAfterDownload();
-  AddMessageToConsole(ConsoleMessageLevel level, string message);
 };
 
 // EmbeddedWorkerInstanceHost is the browser-side ("Host") of

@@ -67,8 +67,6 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnLayer
     EndTest();
   }
 
-  void AfterTest() override {}
-
  private:
   scoped_refptr<Layer> child_;
 };
@@ -121,8 +119,6 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnSurface
         surface->occlusion_in_content_space());
     EndTest();
   }
-
-  void AfterTest() override {}
 
  private:
   scoped_refptr<Layer> child_;
@@ -193,8 +189,6 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnMask
     EndTest();
   }
 
-  void AfterTest() override {}
-
  private:
   FakeContentLayerClient client_;
   scoped_refptr<Layer> child_;
@@ -257,8 +251,6 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnScaledMask
         mask->draw_properties().occlusion_in_content_space);
     EndTest();
   }
-
-  void AfterTest() override {}
 
  private:
   FakeContentLayerClient client_;

@@ -312,8 +312,10 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ax::mojom::Event event_type) {
     PostAnnouncementNotification(announcement_text);
     return;
   }
-  NSAccessibilityPostNotification(
-      target, [AXPlatformNodeCocoa nativeNotificationFromAXEvent:event_type]);
+  NSString* notification =
+      [AXPlatformNodeCocoa nativeNotificationFromAXEvent:event_type];
+  if (notification)
+    NSAccessibilityPostNotification(target, notification);
 }
 
 // Returns true if |action| should be added implicitly for |data|.

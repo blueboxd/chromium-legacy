@@ -5,6 +5,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test_utils.h"
@@ -175,6 +176,20 @@ class SubresourceRedirectBrowserTest : public InProcessBrowserTest {
   bool compression_server_fail_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceRedirectBrowserTest);
+};
+
+class DifferentMediaInclusionSubresourceRedirectBrowserTest
+    : public SubresourceRedirectBrowserTest {
+ public:
+  void SetUp() override {
+    feature_list_.InitAndEnableFeatureWithParameters(
+        features::kSubresourceRedirectIncludedMediaSuffixes,
+        {{"included_path_suffixes", ".svg"}});
+    SubresourceRedirectBrowserTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
 //  NOTE: It is indirectly verified that correct requests are being sent to
@@ -359,6 +374,26 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
 
   histogram_tester()->ExpectBucketCount(
       "SubresourceRedirect.CompressionAttempt.ServerResponded", false, 1);
+
+  EXPECT_TRUE(RunScriptExtractBool("checkImage()"));
+
+  EXPECT_EQ(GURL(RunScriptExtractString("imageSrc()")).port(),
+            https_url().port());
+}
+
+//  This test loads image.html, but with
+//  SubresourceRedirectIncludedMediaSuffixes set to only allow .svg, so no
+//  internal redirect should occur.
+IN_PROC_BROWSER_TEST_F(DifferentMediaInclusionSubresourceRedirectBrowserTest,
+                       NoTriggerWhenNotIncludedInMeidaSuffixes) {
+  ui_test_utils::NavigateToURL(browser(),
+                               HttpsURLWithPath("/load_image/image.html"));
+
+  content::FetchHistogramsFromChildProcesses();
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+
+  histogram_tester()->ExpectTotalCount(
+      "SubresourceRedirect.CompressionAttempt.ResponseCode", 0);
 
   EXPECT_TRUE(RunScriptExtractBool("checkImage()"));
 

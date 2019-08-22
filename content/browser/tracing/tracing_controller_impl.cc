@@ -47,6 +47,7 @@
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
+#include "chromeos/system/statistics_provider.h"
 #include "content/browser/tracing/cros_tracing_agent.h"
 #endif
 
@@ -176,6 +177,14 @@ TracingControllerImpl::TracingControllerImpl()
   // process however.
   if (PerfettoFileTracer::ShouldEnable())
     perfetto_file_tracer_ = std::make_unique<PerfettoFileTracer>();
+
+#if defined(OS_CHROMEOS)
+  // Bind hwclass once the statistics are available.
+  chromeos::system::StatisticsProvider::GetInstance()
+      ->ScheduleOnMachineStatisticsLoaded(
+          base::BindOnce(&TracingControllerImpl::OnMachineStatisticsLoaded,
+                         weak_ptr_factory_.GetWeakPtr()));
+#endif
 }
 
 TracingControllerImpl::~TracingControllerImpl() = default;
@@ -258,9 +267,11 @@ TracingControllerImpl::GenerateMetadataDict() {
   // OS
 #if defined(OS_CHROMEOS)
   metadata_dict->SetString("os-name", "CrOS");
+  if (are_statistics_loaded_)
+    metadata_dict->SetString("hardware-class", hardware_class_);
 #else
   metadata_dict->SetString("os-name", base::SysInfo::OperatingSystemName());
-#endif
+#endif  // defined(OS_CHROMEOS)
   metadata_dict->SetString("os-version",
                            base::SysInfo::OperatingSystemVersion());
 #if defined(OS_WIN)
@@ -620,6 +631,14 @@ void TracingControllerImpl::OnMetadataAvailable(base::Value metadata) {
   if (is_data_complete_)
     CompleteFlush();
 }
+
+#if defined(OS_CHROMEOS)
+void TracingControllerImpl::OnMachineStatisticsLoaded() {
+  chromeos::system::StatisticsProvider::GetInstance()->GetMachineStatistic(
+      chromeos::system::kHardwareClassKey, &hardware_class_);
+  are_statistics_loaded_ = true;
+}
+#endif
 
 void TracingControllerImpl::SetTracingDelegateForTesting(
     std::unique_ptr<TracingDelegate> delegate) {

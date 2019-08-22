@@ -1045,7 +1045,7 @@ customize.richerPicker_toggleRefreshDaily = function(toggledOn) {
   $(customize.IDS.REFRESH_TOGGLE).checked = toggledOn;
   if (!toggledOn) {
     customize.richerPicker_selectBackgroundTile(
-        $(customize.IDS.BACKGROUNDS_DEFAULT));
+        $(customize.IDS.BACKGROUNDS_DEFAULT_ICON));
     return;
   }
 
@@ -1923,12 +1923,14 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
 
   $(customize.IDS.BACKGROUNDS_MENU).onkeydown = function(event) {
     if (customize.arrowKeys.includes(event.keyCode)) {
+      event.preventDefault();
       $(customize.IDS.BACKGROUNDS_UPLOAD_ICON).focus();
     }
   };
 
   $(customize.IDS.BACKGROUNDS_IMAGE_MENU).onkeydown = function(event) {
     if (customize.arrowKeys.includes(event.keyCode)) {
+      event.preventDefault();
       document.querySelector('[id$="img_tile_0"]').focus();
     }
   };

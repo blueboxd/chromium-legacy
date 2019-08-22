@@ -51,7 +51,6 @@ const CLASSES = {
   GRID_REORDER: 'grid-reorder',
   GRID_TILE: 'grid-tile',
   GRID_TILE_CONTAINER: 'grid-tile-container',
-  HIDE: 'hide',        // Applied when the tiles are hidden by the user.
   REORDER: 'reorder',  // Applied to the tile being moved while reordering.
   // Applied while we are reordering. Disables hover styling.
   REORDERING: 'reordering',
@@ -830,7 +829,7 @@ function handleCommand(data) {
     // TODO(crbug.com/946225): If this happens before we have finished loading
     // the previous tiles, we probably get into a bad state. If/when the iframe
     // is removed this might no longer be a concern.
-    showTiles(data);
+    showTiles();
   } else if (cmd == 'updateTheme') {
     updateTheme(data);
   } else if (cmd === 'focusMenu') {
@@ -842,12 +841,8 @@ function handleCommand(data) {
 
 /**
  * Handler for the 'show' message from the host page.
- * @param {!Object} info Data received in the message.
  */
-function showTiles(info) {
-  document.body.classList.toggle(
-      CLASSES.HIDE, !chrome.embeddedSearch.newTabPage.areShortcutsVisible);
-
+function showTiles() {
   utils.setPlatformClass(document.body);
   countLoad();
 }

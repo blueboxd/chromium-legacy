@@ -161,7 +161,7 @@ class UsbDeviceHandleWin : public UsbDeviceHandle {
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
-  base::WeakPtrFactory<UsbDeviceHandleWin> weak_factory_;
+  base::WeakPtrFactory<UsbDeviceHandleWin> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UsbDeviceHandleWin);
 };

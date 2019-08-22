@@ -15,16 +15,3 @@ source_set("cpp_types") {
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
-
-source_set("manifest") {
-  sources = [
-    "manifest.cc",
-    "manifest.h",
-  ]
-
-  deps = [
-    "//base",
-    "//services/identity/public/mojom",
-    "//services/service_manager/public/cpp",
-  ]
-}

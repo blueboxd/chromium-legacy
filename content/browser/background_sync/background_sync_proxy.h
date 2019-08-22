@@ -40,7 +40,7 @@ class CONTENT_EXPORT BackgroundSyncProxy {
 
   std::unique_ptr<Core, BrowserThread::DeleteOnUIThread> ui_core_;
   base::WeakPtr<Core> ui_core_weak_ptr_;
-  base::WeakPtrFactory<BackgroundSyncProxy> weak_ptr_factory_;
+  base::WeakPtrFactory<BackgroundSyncProxy> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncProxy);
 };

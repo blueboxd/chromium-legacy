@@ -2718,6 +2718,17 @@ Unknown properties are collapsed to zero. -->
       label="Failed to enable CloudDPC due to an unspecified error."/>
 </enum>
 
+<enum name="ArcTracingToolAction">
+  <summary>Defines Arc Tracing tool actions</summary>
+  <int value="0" label="UI Shown"/>
+  <int value="1" label="Model built"/>
+  <int value="2" label="Model failed to build"/>
+  <int value="3" label="Model reloaded on initialization"/>
+  <int value="4" label="Model failed to reload on initialization"/>
+  <int value="5" label="Model loaded"/>
+  <int value="6" label="Model failed to load"/>
+</enum>
+
 <enum name="ArcUserInteraction">
   <summary>Defines Arc User Interactions</summary>
   <int value="0" label="Action not user initiated"/>
@@ -17783,6 +17794,8 @@ Called by update_net_error_codes.py.-->
   <int value="580" label="PasswordLeakDetectionEnabled"/>
   <int value="581" label="LockScreenMediaPlaybackEnabled"/>
   <int value="582" label="DnsOverHttpsMode"/>
+  <int value="583" label="SendFilesForMalwareCheck"/>
+  <int value="584" label="PolicyAtomicGroupsEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -24345,6 +24358,7 @@ Called by update_net_error_codes.py.-->
   <int value="3005" label="WakeLockAcquireScreenLock"/>
   <int value="3006" label="WakeLockAcquireSystemLock"/>
   <int value="3007" label="ThirdPartyServiceWorker"/>
+  <int value="3008" label="JSSelfProfiling"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -24430,6 +24444,7 @@ Called by update_net_error_codes.py.-->
   <int value="62" label="ClientHintUAPlatform"/>
   <int value="63" label="ClientHintViewportWidth"/>
   <int value="64" label="ClientHintWidth"/>
+  <int value="65" label="DocumentAccess"/>
 </enum>
 
 <enum name="FeaturePolicyImageCompressionFormat">
@@ -28105,6 +28120,11 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="Only the old token had a gesture"/>
   <int value="2" label="Only the new token had a gesture"/>
   <int value="3" label="Both tokens had a gesture"/>
+</enum>
+
+<enum name="GestureNavigationDirection">
+  <int value="0" label="Gesture navigation back"/>
+  <int value="1" label="Gesture navigation forward"/>
 </enum>
 
 <enum name="GesturePredictionResult">
@@ -34099,6 +34119,19 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="6" label="Wrong encryption key"/>
 </enum>
 
+<enum name="LockScreenMediaControlsHideReason">
+  <int value="0" label="Session changed"/>
+  <int value="1" label="Dismissed by user"/>
+  <int value="2" label="Device unlocked"/>
+</enum>
+
+<enum name="LockScreenMediaControlsShown">
+  <int value="0" label="Not shown - controls disabled"/>
+  <int value="1" label="Not shown - no session"/>
+  <int value="2" label="Not shown - session paused"/>
+  <int value="3" label="Shown"/>
+</enum>
+
 <enum name="LockScreenNoteAppStatusOnLaunch">
   <int value="0" label="Enabled"/>
   <int value="1" label="Terminated - reloaded"/>
@@ -34369,6 +34402,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1911316813" label="BlockTabUnders:disabled"/>
   <int value="-1911153473" label="enable-easy-signin"/>
   <int value="-1909983714" label="ExperimentalTabController:disabled"/>
+  <int value="-1909702940" label="WebXRARModule:disabled"/>
   <int value="-1909356390"
       label="OverlayScrollbarFlashAfterAnyScrollUpdate:enabled"/>
   <int value="-1907565048" label="HtmlBaseUsernameDetector:disabled"/>
@@ -35235,6 +35269,7 @@ from previous Chrome versions.
   <int value="-763900417" label="CCTModuleUseIntentExtras:enabled"/>
   <int value="-763759697" label="enable-audio-support-for-desktop-share"/>
   <int value="-763730918" label="CCTTargetTranslateLanguage:disabled"/>
+  <int value="-763640405" label="WebXRARModule:enabled"/>
   <int value="-762738927" label="LogJsConsoleMessages:enabled"/>
   <int value="-762687134" label="ExperimentalCrostiniUI:enabled"/>
   <int value="-759830869" label="enable-tab-discarding"/>
@@ -35297,6 +35332,8 @@ from previous Chrome versions.
   <int value="-694622753" label="VizHitTest:disabled"/>
   <int value="-694187898" label="MashOopViz:disabled"/>
   <int value="-684900739" label="disable-merge-key-char-events"/>
+  <int value="-684503292"
+      label="OmniboxTabSwitchSuggestionsDedicatedRow:enabled"/>
   <int value="-684223908" label="enable-android-wallpapers-app"/>
   <int value="-683370370" label="EnableAppDataSearch:enabled"/>
   <int value="-683306022" label="OverscrollHistoryNavigation:enabled"/>
@@ -36337,6 +36374,7 @@ from previous Chrome versions.
   <int value="779849093" label="OfflinePagesCTSuppressNotifications:disabled"/>
   <int value="782167080" label="enable-new-qp-input-view"/>
   <int value="783270752" label="AndroidHistoryManager:enabled"/>
+  <int value="787080596" label="DynamicTcmallocTuning:enabled"/>
   <int value="787385958" label="RegionalLocalesAsDisplayUI:enabled"/>
   <int value="799680074" label="ContextualSearchTranslationModel:enabled"/>
   <int value="803282885" label="PreferHtmlOverPlugins:disabled"/>
@@ -36880,6 +36918,8 @@ from previous Chrome versions.
       label="DataReductionProxyEnabledWithNetworkService:enabled"/>
   <int value="1579461102" label="MemoryCoordinator:disabled"/>
   <int value="1581002467" label="enable-explicit-dma-fences"/>
+  <int value="1585660881"
+      label="enable-experimental-accessibility-chromevox-sub-node-language-switching"/>
   <int value="1586022426" label="AutofillCreditCardAssist:enabled"/>
   <int value="1587521886" label="SSLCommittedInterstitials:enabled"/>
   <int value="1589341623" label="disable-easy-unlock"/>
@@ -36933,6 +36973,7 @@ from previous Chrome versions.
   <int value="1640386037" label="ContextualSuggestionsSlimPeekUI:disabled"/>
   <int value="1645479440" label="HistoryManipulationIntervention:disabled"/>
   <int value="1646498561" label="OfflineBookmarks:disabled"/>
+  <int value="1649121568" label="DynamicTcmallocTuning:disabled"/>
   <int value="1651141490" label="SaveEditedPDFForm:enabled"/>
   <int value="1657713458" label="disable-virtual-keyboard-overscroll"/>
   <int value="1658644418" label="disable-app-list-voice-search"/>
@@ -36994,6 +37035,8 @@ from previous Chrome versions.
   <int value="1735934914" label="OverlayScrollbarFlashWhenMouseEnter:disabled"/>
   <int value="1736698988" label="FsNosymfollow:disabled"/>
   <int value="1739456903" label="PWAFullCodeCache:enabled"/>
+  <int value="1741855651"
+      label="OmniboxTabSwitchSuggestionsDedicatedRow:disabled"/>
   <int value="1742398600"
       label="OmniboxUIExperimentBoldUserTextOnSearchSuggestions:enabled"/>
   <int value="1745053254" label="ClickToCallOpenDialerDirectly:enabled"/>
@@ -49570,6 +49613,24 @@ Called by update_net_trust_anchors.py.-->
   </int>
 </enum>
 
+<enum name="ProfileMenuActionableItem">
+  <int value="0" label="Manage your Google Account button"/>
+  <int value="1" label="Passwords button"/>
+  <int value="2" label="Credit cards button"/>
+  <int value="3" label="Addresses button"/>
+  <int value="4" label="Guest profile button"/>
+  <int value="5" label="Manage profiles button"/>
+  <int value="6" label="Lock button"/>
+  <int value="7" label="Exit profile button"/>
+  <int value="8" label="Sync error button"/>
+  <int value="9" label="Current profile card"/>
+  <int value="10" label="Sign-in and turn on sync button"/>
+  <int value="11" label="Turn on sync for account button"/>
+  <int value="12" label="Sign-out button"/>
+  <int value="13" label="Switch to another profile button"/>
+  <int value="14" label="Cookies cleared on exit link"/>
+</enum>
+
 <enum name="ProfileNetUserCount">
   <int value="0" label="Added new user"/>
   <int value="1" label="Deleted a profile"/>
@@ -50819,6 +50880,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="12" label="HourBinPredictorLoadingError"/>
   <int value="13" label="MarkovPredictorLoadingError"/>
   <int value="14" label="ExponentialWeightsEnsembleLoadingError"/>
+  <int value="15" label="FrequencyPredictorLoadingError"/>
 </enum>
 
 <enum name="RecurrenceRankerUsage">
@@ -54014,6 +54076,17 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="SHADER_MODEL_5_0"/>
 </enum>
 
+<enum name="ShapeRunFallback">
+  <int value="0" label="FAILED">Finding a fallback font failed.</int>
+  <int value="1" label="NO_FALLBACK">No fallback font was required.</int>
+  <int value="2" label="FALLBACK">
+    Call to GetFallbackFont(...) was required to find the appropriate font.
+  </int>
+  <int value="3" label="FALLBACKS">
+    Call to GetFallbackFonts(...) was required find the appropriate font.
+  </int>
+</enum>
+
 <enum name="SharedMemoryCreateError">
   <int value="0" label="SUCCESS">
     The shared memory region was successfully created.
@@ -56698,6 +56771,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="EXPIRED_AND_DO_NOT_PROCEED"/>
   <int value="2" label="NOT_EXPIRED_AND_PROCEED"/>
   <int value="3" label="NOT_EXPIRED_AND_DO_NOT_PROCEED"/>
+</enum>
+
+<enum name="SSLKeyLogFileAction">
+  <int value="0" label="SSLKeyLogger enabled"/>
+  <int value="1" label="ssl-key-log-file switch set"/>
+  <int value="2" label="SSLKEYLOGFILE environment variable set"/>
 </enum>
 
 <enum name="SSLNegotiatedAlpnProtocol">

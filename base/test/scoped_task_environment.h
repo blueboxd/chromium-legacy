@@ -162,20 +162,21 @@ class TaskEnvironment {
 
   // Constructor accepts zero or more traits which customize the testing
   // environment.
-  template <class... ArgTypes,
+  template <typename... TaskEnvironmentTraits,
             class CheckArgumentsAreValid = std::enable_if_t<
-                trait_helpers::AreValidTraits<ValidTrait, ArgTypes...>::value>>
-  NOINLINE TaskEnvironment(ArgTypes... args)
+                trait_helpers::AreValidTraits<ValidTrait,
+                                              TaskEnvironmentTraits...>::value>>
+  NOINLINE explicit TaskEnvironment(TaskEnvironmentTraits... traits)
       : TaskEnvironment(
-            trait_helpers::GetEnum<TimeSource, TimeSource::DEFAULT>(args...),
+            trait_helpers::GetEnum<TimeSource, TimeSource::DEFAULT>(traits...),
             trait_helpers::GetEnum<MainThreadType, MainThreadType::DEFAULT>(
-                args...),
+                traits...),
             trait_helpers::GetEnum<ThreadPoolExecutionMode,
-                                   ThreadPoolExecutionMode::DEFAULT>(args...),
+                                   ThreadPoolExecutionMode::DEFAULT>(traits...),
             trait_helpers::GetEnum<ThreadingMode, ThreadingMode::DEFAULT>(
-                args...),
+                traits...),
             trait_helpers::HasTrait<SubclassCreatesDefaultTaskRunner,
-                                    ArgTypes...>(),
+                                    TaskEnvironmentTraits...>(),
             trait_helpers::NotATraitTag()) {}
 
   // Waits until no undelayed ThreadPool tasks remain. Then, unregisters the

@@ -77,6 +77,38 @@ class VoteConsumer;
 using VoterId = uint32_t;
 constexpr VoterId kInvalidVoterId = 0;
 
+// Helper function equivalent to strcmp, but that is safe to use with nullptr.
+int ReasonCompare(const char* reason1, const char* reason2);
+
+// Helper class for storing a priority and a reason.
+class PriorityAndReason {
+ public:
+  PriorityAndReason() = default;
+  PriorityAndReason(base::TaskPriority priority, const char* reason)
+      : priority_(priority), reason_(reason) {}
+  PriorityAndReason(const PriorityAndReason&) = default;
+  PriorityAndReason& operator=(const PriorityAndReason&) = default;
+  ~PriorityAndReason() = default;
+
+  base::TaskPriority priority() const { return priority_; }
+  const char* reason() const { return reason_; }
+
+  // Returns -1, 0 or 1 indicating the outcome of a comparison of this value
+  // and |other|.
+  int Compare(const PriorityAndReason& other) const;
+
+  bool operator==(const PriorityAndReason& other) const;
+  bool operator!=(const PriorityAndReason& other) const;
+  bool operator<=(const PriorityAndReason& other) const;
+  bool operator>=(const PriorityAndReason& other) const;
+  bool operator<(const PriorityAndReason& other) const;
+  bool operator>(const PriorityAndReason& other) const;
+
+ private:
+  base::TaskPriority priority_ = base::TaskPriority::LOWEST;
+  const char* reason_ = nullptr;
+};
+
 // Contains a single vote. Specifically allows copying, etc, so as to be STL
 // container friendly.
 class Vote final {

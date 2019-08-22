@@ -41,9 +41,11 @@ void ChromeAppCacheService::Initialize(
 
 void ChromeAppCacheService::CreateBackend(
     int process_id,
+    int routing_id,
     mojo::PendingReceiver<blink::mojom::AppCacheBackend> receiver) {
-  receivers_.Add(std::make_unique<AppCacheBackendImpl>(this, process_id),
-                 std::move(receiver));
+  receivers_.Add(
+      std::make_unique<AppCacheBackendImpl>(this, process_id, routing_id),
+      std::move(receiver));
 }
 
 void ChromeAppCacheService::Shutdown() {

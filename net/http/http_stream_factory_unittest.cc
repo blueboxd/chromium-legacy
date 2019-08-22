@@ -76,15 +76,14 @@
 #include "net/third_party/quiche/src/quic/test_tools/mock_random.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
 
 // This file can be included from net/http even though
 // it is in net/websockets because it doesn't
 // introduce any link dependency to net/websockets.
 #include "net/websockets/websocket_handshake_stream_base.h"
-
-#include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::Contains;
 using ::testing::ElementsAre;
@@ -1190,7 +1189,7 @@ TEST_F(HttpStreamFactoryTest, UsePreConnectIfNoZeroRTT) {
     url::SchemeHostPort server("https", host_port_pair.host(),
                                host_port_pair.port());
     http_server_properties.SetQuicAlternativeService(
-        server, alternative_service, expiration,
+        server, NetworkIsolationKey(), alternative_service, expiration,
         session_params.quic_params.supported_versions);
 
     HttpNetworkSession::Context session_context =
@@ -2379,7 +2378,8 @@ class HttpStreamFactoryBidirectionalQuicTest
                                                  443);
     base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
     http_server_properties_.SetQuicAlternativeService(
-        url::SchemeHostPort(default_url_), alternative_service, expiration,
+        url::SchemeHostPort(default_url_), NetworkIsolationKey(),
+        alternative_service, expiration,
         session_->params().quic_params.supported_versions);
   }
 

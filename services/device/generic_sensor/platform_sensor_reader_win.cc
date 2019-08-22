@@ -408,8 +408,7 @@ PlatformSensorReaderWin32::PlatformSensorReaderWin32(
       sensor_active_(false),
       client_(nullptr),
       sensor_(sensor),
-      event_listener_(new EventListener(this)),
-      weak_factory_(this) {
+      event_listener_(new EventListener(this)) {
   DCHECK(init_params_);
   DCHECK(init_params_->reader_func);
   DCHECK(sensor_);

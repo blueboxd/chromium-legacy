@@ -38,7 +38,7 @@ constexpr char kFileSystemId[] = "test-filesystem";
 TEST(FileManagerFileAPIUtilTest,
      ConvertSelectedFileInfoListToFileChooserFileInfoList) {
   // Prepare the test environment.
-  content::BrowserTaskEnvironment threads;
+  content::BrowserTaskEnvironment task_environment_;
   content::TestServiceManagerContext service_manager_context;
   TestingProfileManager profile_manager(TestingBrowserProcess::GetGlobal());
   ASSERT_TRUE(profile_manager.SetUp());

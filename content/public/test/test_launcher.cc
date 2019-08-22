@@ -144,19 +144,9 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
   // ProcessLifetimeObserver) to the caller's content::TestLauncherDelegate.
   void OnTestTimedOut(const base::CommandLine& command_line) override;
 
-  // Callback to receive result of a test.
-  // |output_file| is a path to xml file written by test-launcher
-  // child process. It contains information about test and failed
-  // EXPECT/ASSERT/DCHECK statements. Test launcher parses that
-  // file to get additional information about test run (status,
-  // error-messages, stack-traces and file/line for failures).
-  std::vector<base::TestResult> ProcessTestResults(
-      const std::vector<std::string>& test_names,
-      const base::FilePath& output_file,
-      const std::string& output,
-      const base::TimeDelta& elapsed_time,
-      int exit_code,
-      bool was_timeout) override;
+  // Delegate additional TestResult processing.
+  void ProcessTestResults(std::vector<base::TestResult>& test_results,
+                          base::TimeDelta elapsed_time) override;
 
   content::TestLauncherDelegate* launcher_delegate_;
 
@@ -240,66 +230,14 @@ void WrapperTestLauncherDelegate::OnTestTimedOut(
   launcher_delegate_->OnTestTimedOut(command_line);
 }
 
-std::vector<base::TestResult> WrapperTestLauncherDelegate::ProcessTestResults(
-    const std::vector<std::string>& test_names,
-    const base::FilePath& output_file,
-    const std::string& output,
-    const base::TimeDelta& elapsed_time,
-    int exit_code,
-    bool was_timeout) {
-  base::TestResult result;
-  DCHECK_EQ(1u, test_names.size());
-  std::string test_name = test_names.front();
-  result.full_name = test_name;
+void WrapperTestLauncherDelegate::ProcessTestResults(
+    std::vector<base::TestResult>& test_results,
+    base::TimeDelta elapsed_time) {
+  CHECK_EQ(1u, test_results.size());
 
-  bool crashed = false;
-  std::vector<base::TestResult> parsed_results;
-  bool have_test_results =
-      base::ProcessGTestOutput(output_file, &parsed_results, &crashed);
+  test_results.front().elapsed_time = elapsed_time;
 
-  if (!base::DeleteFile(output_file.DirName(), true)) {
-    LOG(WARNING) << "Failed to delete output file: " << output_file.value();
-  }
-
-  // Use GTest XML to determine test status. Fallback to exit code if
-  // parsing failed.
-  if (have_test_results && !parsed_results.empty()) {
-    // We expect only one test result here.
-    DCHECK_EQ(1U, parsed_results.size())
-        << "Unexpectedly ran test more than once: " << test_name;
-    DCHECK_EQ(test_name, parsed_results.front().full_name);
-
-    result = parsed_results.front();
-
-    if (was_timeout) {
-      // Fix up test status: we forcibly kill the child process
-      // after the timeout, so from XML results it looks like
-      // a crash.
-      result.status = base::TestResult::TEST_TIMEOUT;
-    } else if (result.status == base::TestResult::TEST_SUCCESS &&
-               exit_code != 0) {
-      // This is a bit surprising case: test is marked as successful,
-      // but the exit code was not zero. This can happen e.g. under
-      // memory tools that report leaks this way. Mark test as a
-      // failure on exit.
-      result.status = base::TestResult::TEST_FAILURE_ON_EXIT;
-    }
-  } else {
-    if (was_timeout)
-      result.status = base::TestResult::TEST_TIMEOUT;
-    else if (exit_code != 0)
-      result.status = base::TestResult::TEST_FAILURE;
-    else
-      result.status = base::TestResult::TEST_UNKNOWN;
-  }
-
-  result.elapsed_time = elapsed_time;
-
-  result.output_snippet = GetTestOutputSnippet(result, output);
-
-  launcher_delegate_->PostRunTest(&result);
-
-  return std::vector<base::TestResult>({result});
+  launcher_delegate_->PostRunTest(&test_results.front());
 }
 
 }  // namespace

@@ -23,8 +23,6 @@ source_set("lib") {
     "//google_apis",
     "//services/identity/public/cpp:cpp_types",
     "//services/identity/public/mojom",
-    "//services/service_manager/public/cpp",
-    "//services/service_manager/public/mojom",
   ]
 }
 
@@ -43,8 +41,6 @@ source_set("tests") {
     "//components/signin/public/identity_manager:test_support",
     "//services/identity/public/cpp:cpp_types",
     "//services/identity/public/mojom",
-    "//services/service_manager/public/cpp",
-    "//services/service_manager/public/cpp/test:test_support",
     "//testing/gtest",
   ]
 }

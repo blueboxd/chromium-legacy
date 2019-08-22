@@ -114,9 +114,7 @@ VizProcessTransportFactory::VizProcessTransportFactory(
       base::BindRepeating(&VizProcessTransportFactory::OnGpuProcessLost,
                           weak_ptr_factory_.GetWeakPtr()));
 
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDisableGpu) ||
-      command_line->HasSwitch(switches::kDisableGpuCompositing)) {
+  if (GpuDataManagerImpl::GetInstance()->IsGpuCompositingDisabled()) {
     DisableGpuCompositing(nullptr);
   }
 }
@@ -267,10 +265,6 @@ void VizProcessTransportFactory::DisableGpuCompositing() {
     DisableGpuCompositing(nullptr);
 }
 
-bool VizProcessTransportFactory::IsGpuCompositingDisabled() {
-  return context_factory_private_.is_gpu_compositing_disabled();
-}
-
 ui::ContextFactory* VizProcessTransportFactory::GetContextFactory() {
   return this;
 }
@@ -307,8 +301,11 @@ void VizProcessTransportFactory::DisableGpuCompositing(
 
   DLOG(ERROR) << "Switching to software compositing.";
 
-  // Change the result of IsGpuCompositingDisabled() before notifying anything.
   context_factory_private_.set_is_gpu_compositing_disabled(true);
+
+  // Change the result of GpuDataManagerImpl::IsGpuCompositingDisabled() before
+  // notifying anything.
+  GpuDataManagerImpl::GetInstance()->SetGpuCompositingDisabled();
 
   compositing_mode_reporter_->SetUsingSoftwareCompositing();
 
@@ -344,9 +341,11 @@ void VizProcessTransportFactory::DisableGpuCompositing(
     if (visible)
       compositor->SetVisible(true);
   }
-
-  GpuDataManagerImpl::GetInstance()->NotifyGpuInfoUpdate();
 #endif
+}
+
+bool VizProcessTransportFactory::IsGpuCompositingDisabled() {
+  return context_factory_private_.is_gpu_compositing_disabled();
 }
 
 void VizProcessTransportFactory::OnGpuProcessLost() {

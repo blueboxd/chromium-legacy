@@ -484,6 +484,8 @@ cc_test_static_library("test_support") {
     "test/pixel_test_output_surface.h",
     "test/pixel_test_utils.cc",
     "test/pixel_test_utils.h",
+    "test/property_tree_test_utils.cc",
+    "test/property_tree_test_utils.h",
     "test/push_properties_counting_layer.cc",
     "test/push_properties_counting_layer.h",
     "test/push_properties_counting_layer_impl.cc",

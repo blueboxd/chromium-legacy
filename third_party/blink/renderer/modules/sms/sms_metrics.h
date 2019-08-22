@@ -7,24 +7,23 @@
 
 #include <stdint.h>
 
+#include "services/metrics/public/cpp/ukm_source_id.h"
+#include "third_party/blink/public/common/sms/sms_receiver_outcome.h"
+
 namespace base {
 class TimeDelta;
-}
+}  // namespace base
+
+namespace ukm {
+class UkmRecorder;
+}  // namespace ukm
 
 namespace blink {
 
-// Don't change the meaning of these values because they are being recorded in a
-// metric.
-enum class SMSReceiverOutcome {
-  kSuccess = 0,
-  kTimeout = 1,
-  kConnectionError = 2,
-  kCancelled = 3,
-  kMaxValue = kCancelled
-};
-
 // Records the result of a call to the SMSReceiver API.
-void RecordSMSOutcome(SMSReceiverOutcome outcome);
+void RecordSMSOutcome(SMSReceiverOutcome outcome,
+                      ukm::SourceId source_id,
+                      ukm::UkmRecorder* ukm_recorder);
 
 // Records the time from when the API is called to when the user successfully
 // receives the SMS and presses continue to move on with the verification flow.

@@ -69,16 +69,14 @@ public class ArCoreInstallUtils implements ModuleInstallUi.FailureUiListener {
     }
 
     @Override
-    public void onRetry() {
+    public void onFailureUiResponse(boolean retry) {
         if (mNativeArCoreInstallUtils == 0) return;
-        requestInstallArModule(mTab);
-    }
-
-    @Override
-    public void onCancel() {
-        if (mNativeArCoreInstallUtils == 0) return;
-        ArCoreInstallUtilsJni.get().onRequestInstallArModuleResult(
-                mNativeArCoreInstallUtils, false);
+        if (retry) {
+            requestInstallArModule(mTab);
+        } else {
+            ArCoreInstallUtilsJni.get().onRequestInstallArModuleResult(
+                    mNativeArCoreInstallUtils, false);
+        }
     }
 
     @CalledByNative
@@ -124,7 +122,7 @@ public class ArCoreInstallUtils implements ModuleInstallUi.FailureUiListener {
                 } else {
                     ui.showInstallFailureUi();
                     // early exit - user will be offered a choice to retry & install flow will
-                    // continue from onRetry / onCancel
+                    // continue from onFailureUiResponse().
                     return;
                 }
             }

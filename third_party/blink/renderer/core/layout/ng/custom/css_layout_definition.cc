@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_child.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_constraints.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_edges.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_scope.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/fragment_result_options.h"
@@ -64,6 +65,7 @@ bool CSSLayoutDefinition::Instance::Layout(
     const Document& document,
     const NGBlockNode& node,
     const LogicalSize& border_box_size,
+    const NGBoxStrut& border_scrollbar_padding,
     CustomLayoutScope* custom_layout_scope,
     FragmentResultOptions* fragment_result_options,
     scoped_refptr<SerializedScriptValue>* fragment_result_data) {
@@ -89,8 +91,8 @@ bool CSSLayoutDefinition::Instance::Layout(
     children.push_back(layout_child);
   }
 
-  // TODO(ikilpatrick): Fill in layout edges.
-  ScriptValue edges(script_state, v8::Undefined(isolate));
+  CustomLayoutEdges* edges =
+      MakeGarbageCollected<CustomLayoutEdges>(border_scrollbar_padding);
 
   CustomLayoutConstraints* constraints =
       MakeGarbageCollected<CustomLayoutConstraints>(

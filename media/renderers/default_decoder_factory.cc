@@ -10,6 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
+#include "components/viz/common/gpu/context_provider.h"
 #include "media/base/decoder_factory.h"
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
@@ -104,7 +105,11 @@ void DefaultDecoderFactory::CreateVideoDecoders(
   }
 
 #if defined(OS_FUCHSIA)
-  video_decoders->push_back(CreateFuchsiaVideoDecoder());
+  if (gpu_factories) {
+    video_decoders->push_back(CreateFuchsiaVideoDecoder(
+        gpu_factories->SharedImageInterface(),
+        gpu_factories->GetMediaContextProvider()->ContextSupport()));
+  }
 #endif
 
 #if BUILDFLAG(ENABLE_LIBVPX)

@@ -189,8 +189,7 @@ WatcherMetricsProviderWin::WatcherMetricsProviderWin(
       user_data_dir_(user_data_dir),
       crash_dir_(crash_dir),
       exe_details_cb_(exe_details_cb),
-      task_runner_(CreateBackgroundTaskRunner()),
-      weak_ptr_factory_(this) {}
+      task_runner_(CreateBackgroundTaskRunner()) {}
 
 WatcherMetricsProviderWin::~WatcherMetricsProviderWin() {
 }

@@ -331,12 +331,16 @@ gfx::Image OmniboxPopupModel::GetMatchIcon(const AutocompleteMatch& match,
 
 bool OmniboxPopupModel::SelectedLineHasTabMatch() {
   return selected_line_ != kNoMatch &&
-         result().match_at(selected_line_).ShouldShowTabMatch();
+         result().match_at(selected_line_).ShouldShowTabMatchButton();
 }
 
 bool OmniboxPopupModel::SelectedLineHasButton() {
   return selected_line_ != kNoMatch &&
          result().match_at(selected_line_).ShouldShowButton();
+}
+
+bool OmniboxPopupModel::SelectedLineIsTabSwitchSuggestion() {
+  return result().match_at(selected_line_).IsTabSwitchSuggestion();
 }
 
 void OmniboxPopupModel::OnFaviconFetched(const GURL& page_url,

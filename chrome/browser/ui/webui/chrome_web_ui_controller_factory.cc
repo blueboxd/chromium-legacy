@@ -181,7 +181,6 @@
 #include "chromeos/components/multidevice/debug_webui/url_constants.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "components/arc/arc_features.h"
 #endif
 
 #if defined(OS_CHROMEOS) && !defined(OFFICIAL_BUILD)
@@ -574,11 +573,9 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<chromeos::CameraUI>;
   }
 
-  if (url.host_piece() == chrome::kChromeUIArcGraphicsTracingHost) {
-    if (!base::FeatureList::IsEnabled(arc::kGraphicBuffersVisualizationTool))
-      return nullptr;
+  if (url.host_piece() == chrome::kChromeUIArcGraphicsTracingHost)
     return &NewWebUI<chromeos::ArcGraphicsTracingUI>;
-  }
+
 #if !defined(OFFICIAL_BUILD)
   if (!base::SysInfo::IsRunningOnChromeOS()) {
     if (url.host_piece() == chrome::kChromeUIDeviceEmulatorHost)

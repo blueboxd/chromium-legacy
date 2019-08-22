@@ -80,11 +80,11 @@ Profiler* ProfilerGroup::CreateProfiler(ScriptState* script_state,
   DCHECK(cpu_profiler_);
 
   String profiler_id = NextProfilerId();
-  v8::CpuProfilingOptions options(v8::kLeafNodeLineNumbers,
-                                  init_options.hasMaxBufferSize()
-                                      ? init_options.maxBufferSize()
+  v8::CpuProfilingOptions options(
+      v8::kLeafNodeLineNumbers,
+      init_options.hasMaxBufferSize() ? init_options.maxBufferSize()
                                       : v8::CpuProfilingOptions::kNoSampleLimit,
-                                  static_cast<int>(sample_interval_us));
+      static_cast<int>(sample_interval_us), script_state->GetContext());
 
   cpu_profiler_->StartProfiling(V8String(isolate_, profiler_id), options);
 

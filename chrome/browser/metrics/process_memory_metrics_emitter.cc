@@ -57,7 +57,12 @@ const char kSize[] = "size";
 const char kAllocatedObjectsSize[] = "allocated_objects_size";
 const bool kLargeMetric = true;
 
-enum class EmitTo { kCountsInUkmOnly, kSizeInUkmAndUma, kSizeInUmaOnly };
+enum class EmitTo {
+  kCountsInUkmOnly,
+  kSizeInUkmAndUma,
+  kSizeInUmaOnly,
+  kIgnored
+};
 
 struct Metric {
   // The root dump name that represents the required metric.
@@ -113,6 +118,8 @@ const Metric kAllocatorDumpNamesForMetrics[] = {
      EmitTo::kSizeInUkmAndUma, &Memory_Experimental::SetCommandBuffer},
     {"gpu/gr_shader_cache", "Gpu.GrShaderCache", !kLargeMetric, kEffectiveSize,
      EmitTo::kSizeInUmaOnly, nullptr},
+    {"gpu/shared_images", "gpu::SharedImageStub", !kLargeMetric, kEffectiveSize,
+     EmitTo::kIgnored, nullptr},
     {"history", "History", !kLargeMetric, kEffectiveSize,
      EmitTo::kSizeInUkmAndUma, &Memory_Experimental::SetHistory},
     {"java_heap", "JavaHeap", kLargeMetric, kEffectiveSize,
@@ -169,6 +176,10 @@ const Metric kAllocatorDumpNamesForMetrics[] = {
      &Memory_Experimental::SetSiteStorage_SessionStorage},
     {"skia", "Skia", kLargeMetric, kEffectiveSize, EmitTo::kSizeInUkmAndUma,
      &Memory_Experimental::SetSkia},
+    {"skia/gpu_resources", "SharedContextState", kLargeMetric, kEffectiveSize,
+     EmitTo::kIgnored, nullptr},
+    {"skia/gpu_resources", "VizProcessContextProvider", kLargeMetric,
+     kEffectiveSize, EmitTo::kIgnored, nullptr},
     {"skia/sk_glyph_cache", "Skia.SkGlyphCache", kLargeMetric, kEffectiveSize,
      EmitTo::kSizeInUkmAndUma, &Memory_Experimental::SetSkia_SkGlyphCache},
     {"skia/sk_resource_cache", "Skia.SkResourceCache", kLargeMetric,
@@ -353,6 +364,8 @@ void EmitProcessUmaAndUkm(const GlobalMemoryDump::ProcessDump& pmd,
         if (record_uma)
           EmitProcessUma(process_type, item, value.value());
         break;
+      case EmitTo::kIgnored:
+        break;
       default:
         NOTREACHED();
     }
@@ -401,7 +414,7 @@ void EmitSummedGpuMemory(const GlobalMemoryDump::ProcessDump& pmd,
   // Combine several categories together to sum up Chrome-reported gpu memory.
   static const char* gpu_categories[] = {
       "gpu/gl",
-      "gpu/shared-images",
+      "gpu/shared_images",
       "skia/gpu_resources",
   };
   Metric synthetic_metric = {nullptr,
@@ -416,6 +429,12 @@ void EmitSummedGpuMemory(const GlobalMemoryDump::ProcessDump& pmd,
     total +=
         pmd.GetMetric(gpu_categories[i], synthetic_metric.metric).value_or(0);
   }
+
+  // We log this metric for both the browser and GPU process, and only one will
+  // have entries for |gpu_categories|, so only log if |total| > 0. There should
+  // be almost no meaningful cases where |total| is actually zero.
+  if (total == 0)
+    return;
 
   // Always use kGpu as the process name for this even for the in process
   // command buffer case.

@@ -17,6 +17,7 @@
 #include "base/threading/thread.h"
 #include "components/grpc_support/include/bidirectional_stream_c.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/network_isolation_key.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/dns/mapped_host_resolver.h"
 #include "net/dns/mock_host_resolver.h"
@@ -64,8 +65,8 @@ class BidirectionalStreamTestURLRequestContextGetter
       url::SchemeHostPort quic_hint_server(
           "https", net::QuicSimpleTestServer::GetHost(), 443);
       request_context_->http_server_properties()->SetQuicAlternativeService(
-          quic_hint_server, alternative_service, base::Time::Max(),
-          quic::ParsedQuicVersionVector());
+          quic_hint_server, net::NetworkIsolationKey(), alternative_service,
+          base::Time::Max(), quic::ParsedQuicVersionVector());
     }
     return request_context_.get();
   }

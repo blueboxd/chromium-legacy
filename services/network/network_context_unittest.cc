@@ -61,6 +61,7 @@
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
+#include "net/cookies/cookie_util.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/dns/context_host_resolver.h"
 #include "net/dns/dns_test_util.h"
@@ -2086,9 +2087,9 @@ void SetCookieCallback(base::RunLoop* run_loop,
 
 void GetCookieListCallback(base::RunLoop* run_loop,
                            net::CookieList* result_out,
-                           const net::CookieList& result,
+                           const net::CookieStatusList& result,
                            const net::CookieStatusList& excluded_cookies) {
-  *result_out = result;
+  *result_out = net::cookie_util::StripStatuses(result);
   run_loop->Quit();
 }
 

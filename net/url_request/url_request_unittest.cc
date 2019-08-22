@@ -291,8 +291,7 @@ CookieList GetAllCookies(URLRequestContext* request_context) {
   CookieList cookie_list;
   base::RunLoop run_loop;
   request_context->cookie_store()->GetAllCookiesAsync(
-      base::BindLambdaForTesting([&](const CookieList& cookies,
-                                     const CookieStatusList& excluded_list) {
+      base::BindLambdaForTesting([&](const CookieList& cookies) {
         cookie_list = cookies;
         run_loop.Quit();
       }));

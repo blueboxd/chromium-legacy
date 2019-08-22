@@ -25,8 +25,7 @@ class BackgroundSyncProxy::Core {
   Core(const base::WeakPtr<BackgroundSyncProxy>& io_parent,
        scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
       : io_parent_(io_parent),
-        service_worker_context_(std::move(service_worker_context)),
-        weak_ptr_factory_(this) {
+        service_worker_context_(std::move(service_worker_context)) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(service_worker_context_);
   }
@@ -80,14 +79,13 @@ class BackgroundSyncProxy::Core {
  private:
   base::WeakPtr<BackgroundSyncProxy> io_parent_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
-  base::WeakPtrFactory<Core> weak_ptr_factory_;
+  base::WeakPtrFactory<Core> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
 BackgroundSyncProxy::BackgroundSyncProxy(
-    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
-    : weak_ptr_factory_(this) {
+    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(service_worker_context);
   ui_core_ = std::unique_ptr<Core, BrowserThread::DeleteOnUIThread>(new Core(

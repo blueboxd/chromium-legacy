@@ -297,6 +297,14 @@ bool VizProcessContextProvider::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
   DCHECK_EQ(context_result_, gpu::ContextResult::kSuccess);
+  if (args.level_of_detail ==
+      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND) {
+    if (gr_context_)
+      gpu::raster::DumpBackgroundGrMemoryStatistics(gr_context_->get(), pmd);
+
+    // Early out, no need for more detail in a BACKGROUND dump.
+    return true;
+  }
 
   gles2_implementation_->OnMemoryDump(args, pmd);
   gles2_helper_->OnMemoryDump(args, pmd);

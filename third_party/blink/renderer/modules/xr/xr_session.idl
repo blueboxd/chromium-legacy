@@ -7,7 +7,7 @@
 enum XRSessionMode {
   "inline",
   "immersive-vr",
-  /* [RuntimeEnabled=WebXRHitTest OR RuntimeEnabled=WebXRPlaneDetection] */ "immersive-ar",
+  /* [RuntimeEnabled=WebXRARModule] */ "immersive-ar",
 };
 
 enum XREnvironmentBlendMode {
@@ -28,7 +28,7 @@ enum XRVisibilityState {
     Exposed=Window,
     RuntimeEnabled=WebXR
 ] interface XRSession : EventTarget {
-  [RuntimeEnabled=WebXRHitTest] readonly attribute XREnvironmentBlendMode environmentBlendMode;
+  [RuntimeEnabled=WebXRARModule] readonly attribute XREnvironmentBlendMode environmentBlendMode;
   readonly attribute XRVisibilityState visibilityState;
   [SameObject] readonly attribute XRRenderState renderState;
   [MeasureAs=XRSessionGetInputSources, SameObject] readonly attribute XRInputSourceArray inputSources;

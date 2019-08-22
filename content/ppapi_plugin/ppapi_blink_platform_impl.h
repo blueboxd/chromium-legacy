@@ -34,7 +34,6 @@ class PpapiBlinkPlatformImpl : public BlinkPlatformImpl {
   bool IsLinkVisited(uint64_t link_hash) override;
   blink::WebString DefaultLocale() override;
   blink::WebThemeEngine* ThemeEngine() override;
-  blink::WebData GetDataResource(const char* name) override;
 
  private:
 #if defined(OS_LINUX) || defined(OS_MACOSX)

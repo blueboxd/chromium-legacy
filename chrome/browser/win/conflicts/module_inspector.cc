@@ -102,8 +102,7 @@ ModuleInspector::ModuleInspector(
       has_new_inspection_results_(false),
       connection_error_retry_count_(kConnectionErrorRetryCount),
       background_inspection_disabled_(
-          base::FeatureList::IsEnabled(kDisableBackgroundModuleInspection)),
-      weak_ptr_factory_(this) {
+          base::FeatureList::IsEnabled(kDisableBackgroundModuleInspection)) {
   // Use BEST_EFFORT as those will only run after startup is finished.
   content::BrowserThread::PostBestEffortTask(
       FROM_HERE, base::SequencedTaskRunnerHandle::Get(),

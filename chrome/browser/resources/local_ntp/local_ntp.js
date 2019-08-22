@@ -586,6 +586,9 @@ function reloadTiles() {
   }
   cmds.push({cmd: 'show'});
 
+  $(IDS.MOST_VISITED).hidden =
+      !chrome.embeddedSearch.newTabPage.areShortcutsVisible;
+
   const iframe = $(IDS.TILES_IFRAME);
   if (iframe) {
     iframe.contentWindow.postMessage(cmds, '*');

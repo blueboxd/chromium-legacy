@@ -56,7 +56,7 @@ void PostTaskToUIThread(int iteration, base::subtle::Atomic32* tasks_run) {
 }  // namespace
 
 TEST(BrowserTaskEnvironmentTest, RunUntilIdle) {
-  BrowserTaskEnvironment browser_task_environment;
+  BrowserTaskEnvironment task_environment;
 
   base::subtle::Atomic32 tasks_run = 0;
 
@@ -70,7 +70,7 @@ TEST(BrowserTaskEnvironmentTest, RunUntilIdle) {
     }
   }
 
-  browser_task_environment.RunUntilIdle();
+  task_environment.RunUntilIdle();
 
   EXPECT_EQ(kNumTasks * kNumHops, base::subtle::NoBarrier_Load(&tasks_run));
 }
@@ -93,7 +93,7 @@ void PostRecurringTaskToIOThread(int iteration, int* tasks_run) {
 }  // namespace
 
 TEST(BrowserTaskEnvironmentTest, RunIOThreadUntilIdle) {
-  BrowserTaskEnvironment browser_task_environment(
+  BrowserTaskEnvironment task_environment(
       BrowserTaskEnvironment::Options::REAL_IO_THREAD);
 
   int tasks_run = 0;
@@ -102,7 +102,7 @@ TEST(BrowserTaskEnvironmentTest, RunIOThreadUntilIdle) {
     PostRecurringTaskToIOThread(0, &tasks_run);
   }
 
-  browser_task_environment.RunIOThreadUntilIdle();
+  task_environment.RunIOThreadUntilIdle();
 
   EXPECT_EQ(kNumTasks * kNumHops, tasks_run);
 }
@@ -115,7 +115,7 @@ TEST(BrowserTaskEnvironmentTest, MessageLoopTypeMismatch) {
 
   EXPECT_DEATH_IF_SUPPORTED(
       {
-        BrowserTaskEnvironment browser_task_environment(
+        BrowserTaskEnvironment task_environment(
             BrowserTaskEnvironment::IO_MAINLOOP);
       },
       "");
@@ -126,14 +126,14 @@ TEST(BrowserTaskEnvironmentTest, MultipleBrowserTaskEnvironment) {
 
   EXPECT_DEATH_IF_SUPPORTED(
       {
-        BrowserTaskEnvironment browser_task_environment;
-        BrowserTaskEnvironment other_browser_task_environment;
+        BrowserTaskEnvironment task_environment;
+        BrowserTaskEnvironment other_task_environment;
       },
       "");
 }
 
 TEST(BrowserTaskEnvironmentTest, TraitsConstructor) {
-  BrowserTaskEnvironment browser_task_environment(
+  BrowserTaskEnvironment task_environment(
       BrowserTaskEnvironment::Options::REAL_IO_THREAD,
       base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED);
   // Should set up a UI main thread.
@@ -159,12 +159,12 @@ TEST(BrowserTaskEnvironmentTest, TraitsConstructor) {
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
   EXPECT_FALSE(task_ran.IsSet());
 
-  browser_task_environment.RunUntilIdle();
+  task_environment.RunUntilIdle();
   EXPECT_TRUE(task_ran.IsSet());
 }
 
 TEST(BrowserTaskEnvironmentTest, TraitsConstructorOverrideMainThreadType) {
-  BrowserTaskEnvironment browser_task_environment(
+  BrowserTaskEnvironment task_environment(
       base::test::TaskEnvironment::MainThreadType::UI,
       base::test::TaskEnvironment::TimeSource::MOCK_TIME);
 
@@ -173,7 +173,7 @@ TEST(BrowserTaskEnvironmentTest, TraitsConstructorOverrideMainThreadType) {
   EXPECT_FALSE(base::MessageLoopCurrentForIO::IsSet());
 
   // There should be a mock clock.
-  EXPECT_THAT(browser_task_environment.GetMockClock(), testing::NotNull());
+  EXPECT_THAT(task_environment.GetMockClock(), testing::NotNull());
 }
 
 }  // namespace content

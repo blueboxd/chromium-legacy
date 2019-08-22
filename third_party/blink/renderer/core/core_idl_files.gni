@@ -311,6 +311,7 @@ core_idl_files =
                     "intersection_observer/intersection_observer_entry.idl",
                     "invisible_dom/activate_invisible_event.idl",
                     "layout/ng/custom/layout_constraints.idl",
+                    "layout/ng/custom/layout_edges.idl",
                     "layout/ng/custom/layout_fragment.idl",
                     "layout/ng/custom/layout_child.idl",
                     "layout/ng/custom/layout_worklet_global_scope.idl",

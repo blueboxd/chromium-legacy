@@ -94,7 +94,8 @@ void TrustStoreNSS::SyncGetIssuersOf(const ParsedCertificate* cert,
 }
 
 void TrustStoreNSS::GetTrust(const scoped_refptr<ParsedCertificate>& cert,
-                             CertificateTrust* out_trust) const {
+                             CertificateTrust* out_trust,
+                             base::SupportsUserData* debug_data) const {
   crypto::EnsureNSSInit();
 
   // TODO(eroman): Inefficient -- path building will convert between

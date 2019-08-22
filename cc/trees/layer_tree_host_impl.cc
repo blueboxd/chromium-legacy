@@ -3911,9 +3911,18 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
       }
     }
 
-    scrolling_node = FindScrollNodeForDeviceViewportPoint(
-        device_viewport_point, layer_impl, &scroll_on_main_thread,
-        &scroll_status.main_thread_scrolling_reasons);
+    ElementId current_native_scrolling_element =
+        scroll_state->data()->current_native_scrolling_element();
+    if (current_native_scrolling_element.GetInternalValue() != 0) {
+      auto& scroll_tree = active_tree_->property_trees()->scroll_tree;
+      scrolling_node =
+          scroll_tree.FindNodeFromElementId(current_native_scrolling_element);
+      did_lock_scrolling_layer_ = true;
+    } else {
+      scrolling_node = FindScrollNodeForDeviceViewportPoint(
+          device_viewport_point, layer_impl, &scroll_on_main_thread,
+          &scroll_status.main_thread_scrolling_reasons);
+    }
   }
 
   if (scroll_on_main_thread) {
@@ -4514,7 +4523,12 @@ void LayerTreeHostImpl::DistributeScrollDelta(ScrollState* scroll_state) {
   ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
   ScrollNode* scroll_node = scroll_tree.CurrentlyScrollingNode();
   ScrollNode* viewport_scroll_node = ViewportMainScrollNode();
-  if (scroll_node) {
+  if (did_lock_scrolling_layer_) {
+    DCHECK(scroll_node);
+
+    // Needed for non-animated scrolls.
+    current_scroll_chain.push_front(scroll_node);
+  } else if (scroll_node) {
     // TODO(bokan): The loop checks for a null parent but don't we still want to
     // distribute to the root scroll node?
     for (; scroll_tree.parent(scroll_node);

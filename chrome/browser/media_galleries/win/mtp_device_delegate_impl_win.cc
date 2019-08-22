@@ -362,8 +362,7 @@ MTPDeviceDelegateImplWin::MTPDeviceDelegateImplWin(
       storage_device_info_(pnp_device_id,
                            registered_device_path,
                            storage_object_id),
-      task_in_progress_(false),
-      weak_ptr_factory_(this) {
+      task_in_progress_(false) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!registered_device_path.empty());
   DCHECK(!pnp_device_id.empty());

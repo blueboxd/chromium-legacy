@@ -249,6 +249,7 @@ TEST_F(WindowReordererTest, HostViewParentHasLayer) {
             ui::test::ChildLayerNamesAsString(*parent_window->layer()));
 
   // Test moving the host view from one view with a layer to another.
+  v1->RemoveChildView(v12);
   v2->AddChildView(v12);
   EXPECT_EQ("w", ChildWindowNamesAsString(*parent_window));
   EXPECT_EQ("v1 v2 w",

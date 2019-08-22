@@ -62,7 +62,7 @@ class FakeVideoDecodeAccelerator : public VideoDecodeAccelerator {
   bool flushing_;
 
   // The WeakPtrFactory for |weak_this_|.
-  base::WeakPtrFactory<FakeVideoDecodeAccelerator> weak_this_factory_;
+  base::WeakPtrFactory<FakeVideoDecodeAccelerator> weak_this_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeVideoDecodeAccelerator);
 };

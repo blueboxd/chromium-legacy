@@ -13,14 +13,10 @@
 #include "base/test/simple_test_clock.h"
 #include "base/timer/mock_timer.h"
 #include "components/account_id/account_id.h"
-#include "services/identity/public/mojom/constants.mojom.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/identity/public/mojom/identity_accessor.mojom-test-utils.h"
+#include "services/identity/public/mojom/identity_service.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -31,11 +27,11 @@ using testing::_;
 
 class AuthDelegateImpl : public DriveFsAuth::Delegate {
  public:
-  AuthDelegateImpl(std::unique_ptr<service_manager::Connector> connector,
+  AuthDelegateImpl(identity::mojom::IdentityService* identity_service,
                    const AccountId& account_id)
-      : connector_(std::move(connector)), account_id_(account_id) {}
+      : identity_service_(identity_service), account_id_(account_id) {}
 
-  ~AuthDelegateImpl() override {}
+  ~AuthDelegateImpl() override = default;
 
  private:
   // AuthDelegate::Delegate:
@@ -43,8 +39,10 @@ class AuthDelegateImpl : public DriveFsAuth::Delegate {
       override {
     return nullptr;
   }
-  service_manager::Connector* GetConnector() override {
-    return connector_.get();
+  void BindIdentityAccessor(
+      mojo::PendingReceiver<identity::mojom::IdentityAccessor> receiver)
+      override {
+    identity_service_->BindIdentityAccessor(std::move(receiver));
   }
   const AccountId& GetAccountId() override { return account_id_; }
   std::string GetObfuscatedAccountId() override {
@@ -53,7 +51,7 @@ class AuthDelegateImpl : public DriveFsAuth::Delegate {
 
   bool IsMetricsCollectionEnabled() override { return false; }
 
-  const std::unique_ptr<service_manager::Connector> connector_;
+  identity::mojom::IdentityService* const identity_service_;
   const AccountId account_id_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthDelegateImpl);
@@ -73,15 +71,11 @@ class MockIdentityAccessor {
 
 class FakeIdentityService
     : public identity::mojom::IdentityAccessorInterceptorForTesting,
-      public service_manager::Service {
+      public identity::mojom::IdentityService {
  public:
   explicit FakeIdentityService(MockIdentityAccessor* mock,
-                               const base::Clock* clock,
-                               service_manager::mojom::ServiceRequest request)
-      : mock_(mock), clock_(clock), binding_(this, std::move(request)) {
-    binder_registry_.AddInterface(
-        base::BindRepeating(&FakeIdentityService::BindIdentityAccessorRequest,
-                            base::Unretained(this)));
+                               const base::Clock* clock)
+      : mock_(mock), clock_(clock) {
     mock_->bindings_ = &bindings_;
   }
 
@@ -90,15 +84,11 @@ class FakeIdentityService
   void set_auth_enabled(bool enabled) { auth_enabled_ = enabled; }
 
  private:
-  void OnBindInterface(const service_manager::BindSourceInfo& source,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override {
-    binder_registry_.BindInterface(interface_name, std::move(interface_pipe));
-  }
-
-  void BindIdentityAccessorRequest(
-      identity::mojom::IdentityAccessorRequest request) {
-    bindings_.AddBinding(this, std::move(request));
+  // identity::mojom::IdentityService:
+  void BindIdentityAccessor(
+      mojo::PendingReceiver<identity::mojom::IdentityAccessor> receiver)
+      override {
+    bindings_.AddBinding(this, std::move(receiver));
   }
 
   // identity::mojom::IdentityAccessorInterceptorForTesting overrides:
@@ -130,8 +120,6 @@ class FakeIdentityService
 
   MockIdentityAccessor* const mock_;
   const base::Clock* const clock_;
-  service_manager::ServiceBinding binding_;
-  service_manager::BinderRegistry binder_registry_;
   mojo::BindingSet<identity::mojom::IdentityAccessor> bindings_;
   bool auth_enabled_ = true;
 
@@ -147,12 +135,11 @@ class DriveFsAuthTest : public ::testing::Test {
     account_id_ = AccountId::FromUserEmailGaiaId("test@example.com", "ID");
     clock_.SetNow(base::Time::Now());
     identity_service_ = std::make_unique<FakeIdentityService>(
-        &mock_identity_accessor_, &clock_,
-        connector_factory_.RegisterInstance(identity::mojom::kServiceName));
+        &mock_identity_accessor_, &clock_);
     auto timer = std::make_unique<base::MockOneShotTimer>();
     timer_ = timer.get();
-    delegate_ = std::make_unique<AuthDelegateImpl>(
-        connector_factory_.CreateConnector(), account_id_);
+    delegate_ = std::make_unique<AuthDelegateImpl>(identity_service_.get(),
+                                                   account_id_);
     auth_ = std::make_unique<DriveFsAuth>(&clock_,
                                           base::FilePath("/path/to/profile"),
                                           std::move(timer), delegate_.get());
@@ -179,7 +166,6 @@ class DriveFsAuthTest : public ::testing::Test {
   }
 
   base::test::TaskEnvironment task_environment_;
-  service_manager::TestConnectorFactory connector_factory_;
   MockIdentityAccessor mock_identity_accessor_;
   base::SimpleTestClock clock_;
   std::unique_ptr<FakeIdentityService> identity_service_;

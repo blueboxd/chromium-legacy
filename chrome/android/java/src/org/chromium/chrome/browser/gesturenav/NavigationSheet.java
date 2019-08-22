@@ -53,7 +53,7 @@ interface NavigationSheet {
         public void release() {}
 
         @Override
-        public boolean isExpanded() {
+        public boolean isPeeked() {
             return false;
         }
     };
@@ -79,7 +79,7 @@ interface NavigationSheet {
     void release();
 
     /**
-     * {@code true} if navigation sheet is in fully expanded state.
+     * {@code true} if navigation sheet is in peeked state.
      */
-    boolean isExpanded();
+    boolean isPeeked();
 }

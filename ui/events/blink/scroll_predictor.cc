@@ -71,8 +71,6 @@ std::unique_ptr<EventWithCallback> ScrollPredictor::ResampleScrollEvents(
     if (original_events.empty())
       return event_with_callback;
 
-    TRACE_EVENT_BEGIN0("input", "ScrollPredictor::ResampleScrollEvents");
-
     temporary_accumulated_delta_ = current_accumulated_delta_;
     for (auto& coalesced_event : original_events)
       ComputeAccuracy(coalesced_event.event_);
@@ -83,10 +81,6 @@ std::unique_ptr<EventWithCallback> ScrollPredictor::ResampleScrollEvents(
     if (should_resample_scroll_events_)
       ResampleEvent(frame_time, event_with_callback->event_pointer(),
                     event_with_callback->mutable_latency_info());
-
-    TRACE_EVENT_END2("input", "ScrollPredictor::ResampleScrollEvents",
-                     "OriginalPosition", current_accumulated_delta_.ToString(),
-                     "PredictedPosition", last_accumulated_delta_.ToString());
   } else if (event_with_callback->event().GetType() ==
              WebInputEvent::kGestureScrollEnd) {
     should_resample_scroll_events_ = false;
@@ -130,29 +124,31 @@ void ScrollPredictor::ResampleEvent(base::TimeTicks time_stamp,
   DCHECK(event->GetType() == WebInputEvent::kGestureScrollUpdate);
   WebGestureEvent* gesture_event = static_cast<WebGestureEvent*>(event);
 
+  TRACE_EVENT_BEGIN1("input", "ScrollPredictor::ResampleScrollEvents",
+                     "OriginalDelta",
+                     gfx::PointF(gesture_event->data.scroll_update.delta_x,
+                                 gesture_event->data.scroll_update.delta_y)
+                         .ToString());
   gfx::PointF predicted_accumulated_delta = current_accumulated_delta_;
   InputPredictor::InputData result;
 
   base::TimeDelta prediction_delta = time_stamp - gesture_event->TimeStamp();
   bool predicted = false;
-  // Disable prediction when dt < 0.
-  if (prediction_delta > base::TimeDelta()) {
-    // For resampling, we don't want to predict too far away because the result
-    // will likely be inaccurate in that case. We cut off the prediction to the
-    // maximum available for the current predictor
-    prediction_delta =
-        std::min(prediction_delta, predictor_->MaxResampleTime());
 
-    // Compute the prediction timestamp
-    base::TimeTicks prediction_time =
-        gesture_event->TimeStamp() + prediction_delta;
+  // For resampling, we don't want to predict too far away because the result
+  // will likely be inaccurate in that case. We cut off the prediction to the
+  // maximum available for the current predictor
+  prediction_delta = std::min(prediction_delta, predictor_->MaxResampleTime());
 
-    if (predictor_->HasPrediction() &&
-        predictor_->GeneratePrediction(prediction_time, &result)) {
-      predicted_accumulated_delta = result.pos;
-      gesture_event->SetTimeStamp(prediction_time);
-      predicted = true;
-    }
+  // Compute the prediction timestamp
+  base::TimeTicks prediction_time =
+      gesture_event->TimeStamp() + prediction_delta;
+
+  if (predictor_->HasPrediction() &&
+      predictor_->GeneratePrediction(prediction_time, &result)) {
+    predicted_accumulated_delta = result.pos;
+    gesture_event->SetTimeStamp(prediction_time);
+    predicted = true;
   }
 
   // Feed the filter with the first non-predicted events but only apply
@@ -163,9 +159,9 @@ void ScrollPredictor::ResampleEvent(base::TimeTicks time_stamp,
     predicted_accumulated_delta = filtered_pos;
 
   // If the last resampled GSU over predict the delta, new GSU might try to
-  // scroll back to make up the difference, which cause the scroll to jump back.
-  // So we set the new delta to 0 when predicted delta is in different direction
-  // to the original event.
+  // scroll back to make up the difference, which cause the scroll to jump
+  // back. So we set the new delta to 0 when predicted delta is in different
+  // direction to the original event.
   gfx::Vector2dF new_delta =
       predicted_accumulated_delta - last_accumulated_delta_;
   gesture_event->data.scroll_update.delta_x =
@@ -179,6 +175,11 @@ void ScrollPredictor::ResampleEvent(base::TimeTicks time_stamp,
   // Sync the predicted delta_y to latency_info for AverageLag metric.
   latency_info->set_predicted_scroll_update_delta(new_delta.y());
 
+  TRACE_EVENT_END1("input", "ScrollPredictor::ResampleScrollEvents",
+                   "PredictedDelta",
+                   gfx::PointF(gesture_event->data.scroll_update.delta_x,
+                               gesture_event->data.scroll_update.delta_y)
+                       .ToString());
   last_accumulated_delta_.Offset(gesture_event->data.scroll_update.delta_x,
                                  gesture_event->data.scroll_update.delta_y);
 }

@@ -723,6 +723,10 @@ const base::Feature kWebUsb{"WebUSB", base::FEATURE_ENABLED_BY_DEFAULT};
 // Controls whether the WebXR Device API is enabled.
 const base::Feature kWebXr{"WebXR", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables access to AR features via the WebXR API.
+const base::Feature kWebXrArModule{"WebXRARModule",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables access to anchors via WebXR API.
 const base::Feature kWebXrAnchors{"WebXRAnchors",
                                   base::FEATURE_DISABLED_BY_DEFAULT};

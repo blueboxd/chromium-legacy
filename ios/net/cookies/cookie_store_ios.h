@@ -90,7 +90,7 @@ class CookieStoreIOS : public net::CookieStore,
   void GetCookieListWithOptionsAsync(const GURL& url,
                                      const net::CookieOptions& options,
                                      GetCookieListCallback callback) override;
-  void GetAllCookiesAsync(GetCookieListCallback callback) override;
+  void GetAllCookiesAsync(GetAllCookiesCallback callback) override;
   void DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
                                   DeleteCallback callback) override;
   void DeleteAllCreatedInTimeRangeAsync(
@@ -239,7 +239,7 @@ class CookieStoreIOS : public net::CookieStore,
   // UpdateCachesFromCookieMonster completes. Updates the cookie cache and runs
   // callbacks if the cache changed.
   void GotCookieListFor(const std::pair<GURL, std::string> key,
-                        const net::CookieList& cookies,
+                        const net::CookieStatusList& cookies,
                         const net::CookieStatusList& excluded_cookies);
 
   // Fetches new values for all (url, name) pairs that have hooks registered,
@@ -274,8 +274,19 @@ class CookieStoreIOS : public net::CookieStore,
   // creation date.
   net::CookieList CanonicalCookieListFromSystemCookies(NSArray* cookies);
 
-  // Runs |callback| on CanonicalCookie List converted from cookies.
+  // Takes an NSArray of NSHTTPCookies as returns a net::CookieStatusList.
+  // A status of "INCLUDE" is assigned to each cookie.
+  // The returned cookies are ordered by longest path, then earliest
+  // creation date.
+  net::CookieStatusList CanonicalCookieWithStatusListFromSystemCookies(
+      NSArray* cookies);
+
+  // Runs |callback| on CanonicalCookie with status List converted from cookies.
   void RunGetCookieListCallbackOnSystemCookies(GetCookieListCallback callback,
+                                               NSArray<NSHTTPCookie*>* cookies);
+
+  // Runs |callback| on CanonicalCookie List converted from cookies.
+  void RunGetAllCookiesCallbackOnSystemCookies(GetAllCookiesCallback callback,
                                                NSArray<NSHTTPCookie*>* cookies);
 
   // Cached values of system cookies. Only cookies which have an observer added

@@ -38,6 +38,8 @@
 #include "gpu/config/gpu_blacklist.h"
 #include "gpu/config/gpu_driver_bug_list.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
+#include "gpu/config/gpu_feature_info.h"
+#include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_preferences.h"
@@ -296,8 +298,11 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(GpuDataManagerImpl* owner)
       observer_list_(base::MakeRefCounted<GpuDataManagerObserverList>()) {
   DCHECK(owner_);
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDisableGpu))
+  if (command_line->HasSwitch(switches::kDisableGpu)) {
     DisableHardwareAcceleration();
+  } else if (command_line->HasSwitch(switches::kDisableGpuCompositing)) {
+    SetGpuCompositingDisabled();
+  }
 
   if (command_line->HasSwitch(switches::kSingleProcess) ||
       command_line->HasSwitch(switches::kInProcessGPU)) {
@@ -547,18 +552,22 @@ void GpuDataManagerImplPrivate::UpdateGpuFeatureInfo(
     const base::Optional<gpu::GpuFeatureInfo>&
         gpu_feature_info_for_hardware_gpu) {
   gpu_feature_info_ = gpu_feature_info;
+  if (IsGpuCompositingDisabled()) {
+    gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING] =
+        gpu::kGpuFeatureStatusDisabled;
+  }
   if (!gpu_feature_info_for_hardware_gpu_.IsInitialized()) {
     if (gpu_feature_info_for_hardware_gpu.has_value()) {
       DCHECK(gpu_feature_info_for_hardware_gpu->IsInitialized());
       gpu_feature_info_for_hardware_gpu_ =
           gpu_feature_info_for_hardware_gpu.value();
     } else {
-      gpu_feature_info_for_hardware_gpu_ = gpu_feature_info;
+      gpu_feature_info_for_hardware_gpu_ = gpu_feature_info_;
     }
   }
   if (update_histograms_) {
-    UpdateFeatureStats(gpu_feature_info);
-    UpdateDriverBugListStats(gpu_feature_info);
+    UpdateFeatureStats(gpu_feature_info_);
+    UpdateDriverBugListStats(gpu_feature_info_);
   }
 }
 
@@ -578,6 +587,23 @@ gpu::GpuFeatureInfo GpuDataManagerImplPrivate::GetGpuFeatureInfoForHardwareGpu()
 
 gpu::GpuExtraInfo GpuDataManagerImplPrivate::GetGpuExtraInfo() const {
   return gpu_extra_info_;
+}
+
+bool GpuDataManagerImplPrivate::IsGpuCompositingDisabled() const {
+  return disable_gpu_compositing_ ||
+         gpu_mode_ != gpu::GpuMode::HARDWARE_ACCELERATED;
+}
+
+void GpuDataManagerImplPrivate::SetGpuCompositingDisabled() {
+  disable_gpu_compositing_ = true;
+
+  if (gpu_feature_info_.IsInitialized() &&
+      gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING] ==
+          gpu::kGpuFeatureStatusEnabled) {
+    gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING] =
+        gpu::kGpuFeatureStatusDisabled;
+    NotifyGpuInfoUpdate();
+  }
 }
 
 void GpuDataManagerImplPrivate::AppendGpuCommandLine(
@@ -672,6 +698,7 @@ void GpuDataManagerImplPrivate::DisableHardwareAcceleration() {
   if (!HardwareAccelerationEnabled())
     return;
 
+  SetGpuCompositingDisabled();
   if (SwiftShaderAllowed()) {
     gpu_mode_ = gpu::GpuMode::SWIFTSHADER;
   } else {

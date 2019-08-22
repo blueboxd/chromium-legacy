@@ -103,7 +103,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
       const net::CookieOptions& net_options,
       mojom::CookieManagerGetOptionsPtr options,
       GetAllForUrlCallback callback,
-      const net::CookieList& cookie_list,
+      const net::CookieStatusList& cookie_list,
       const net::CookieStatusList& excluded_cookies);
 
   // Reports the result of setting the cookie to |network_context_client_|, and

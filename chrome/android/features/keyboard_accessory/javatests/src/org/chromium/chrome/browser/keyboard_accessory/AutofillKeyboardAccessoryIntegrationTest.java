@@ -30,6 +30,7 @@ import org.junit.runner.RunWith;
 import org.chromium.autofill.mojom.FocusedFieldType;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -114,6 +115,7 @@ public class AutofillKeyboardAccessoryIntegrationTest {
      */
     @Test
     @MediumTest
+    @FlakyTest(message = "https://crbug.com/984489")
     public void testSwitchFieldsRescrollsKeyboardAccessory()
             throws ExecutionException, InterruptedException, TimeoutException {
         loadTestPage(FakeKeyboard::new);

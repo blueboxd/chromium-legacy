@@ -4,7 +4,9 @@
 
 #include "chrome/browser/previews/previews_content_util.h"
 
+#include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/test/gtest_util.h"
@@ -60,15 +62,16 @@ class PreviewEnabledPreviewsDecider : public PreviewsDecider {
   PreviewEnabledPreviewsDecider() {}
   ~PreviewEnabledPreviewsDecider() override {}
 
-  bool ShouldAllowPreviewAtNavigationStart(PreviewsUserData* previews_data,
-                                           const GURL& url,
-                                           bool is_reload,
-                                           PreviewsType type) const override {
+  bool ShouldAllowPreviewAtNavigationStart(
+      PreviewsUserData* previews_data,
+      content::NavigationHandle* navigation_handle,
+      bool is_reload,
+      PreviewsType type) const override {
     return IsEnabled(type);
   }
 
   bool ShouldCommitPreview(PreviewsUserData* previews_data,
-                           const GURL& url,
+                           content::NavigationHandle* navigation_handle,
                            PreviewsType type) const override {
     EXPECT_TRUE(type == PreviewsType::NOSCRIPT ||
                 type == PreviewsType::RESOURCE_LOADING_HINTS ||

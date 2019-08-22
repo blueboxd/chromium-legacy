@@ -452,8 +452,7 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate,
       pointer_events_for_touch_(::features::IsUsingWMPointerForTouch()),
       precision_touchpad_scroll_phase_enabled_(base::FeatureList::IsEnabled(
           ::features::kPrecisionTouchpadScrollPhase)),
-      is_remote_session_(base::win::IsCurrentSessionRemote()),
-      autohide_factory_(this) {}
+      is_remote_session_(base::win::IsCurrentSessionRemote()) {}
 
 HWNDMessageHandler::~HWNDMessageHandler() {
   DCHECK(delegate_->GetHWNDMessageDelegateInputMethod());

@@ -1,0 +1,5 @@
+This is a testharness.js-based test.
+PASS end event fires when immersive session ends
+PASS end event fires when non-immersive session ends
+Harness: the test ran to completion.
+

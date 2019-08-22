@@ -1154,7 +1154,7 @@ util.getEntryLabel = (locationInfo, entry) => {
   // Special case for MyFiles/Downloads and MyFiles/PvmDefault.
   if (locationInfo &&
       locationInfo.rootType == VolumeManagerCommon.RootType.DOWNLOADS) {
-    if (util.isMyFilesVolumeEnabled() && entry.fullPath == '/Downloads') {
+    if (entry.fullPath == '/Downloads') {
       return str('DOWNLOADS_DIRECTORY_LABEL');
     }
     if (util.isPluginVmEnabled() && entry.fullPath == '/PvmDefault') {
@@ -1193,7 +1193,7 @@ util.isNonModifiable = (volumeManager, entry) => {
   }
 
   if (volumeInfo.volumeType === VolumeManagerCommon.RootType.DOWNLOADS) {
-    if (util.isMyFilesVolumeEnabled() && entry.fullPath === '/Downloads') {
+    if (entry.fullPath === '/Downloads') {
       return true;
     }
     if (util.isPluginVmEnabled() && entry.fullPath === '/PvmDefault') {
@@ -1547,12 +1547,6 @@ util.unwrapEntry = entry => {
 util.isArcUsbStorageUIEnabled = () => {
   return loadTimeData.valueExists('ARC_USB_STORAGE_UI_ENABLED') &&
       loadTimeData.getBoolean('ARC_USB_STORAGE_UI_ENABLED');
-};
-
-/** @return {boolean} */
-util.isMyFilesVolumeEnabled = () => {
-  return loadTimeData.valueExists('MY_FILES_VOLUME_ENABLED') &&
-      loadTimeData.getBoolean('MY_FILES_VOLUME_ENABLED');
 };
 
 /** @return {boolean} */

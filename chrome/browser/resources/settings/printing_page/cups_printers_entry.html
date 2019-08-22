@@ -1,7 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="cups_printer_types.html">
 <link rel="import" href="cups_printers_browser_proxy.html">
 <link rel="import" href="../settings_shared_css.html">
@@ -31,15 +30,15 @@
           if="[[isDiscoveredPrinter_(printerEntry.printerType)]]">
         <cr-button class="action-button"
             on-click="onOpenManufacturerModelDialogTap_">
-          $i18n{configurePrinter}
+          $i18n{setupPrinter}
         </cr-button>
       </template>
       <template is="dom-if"
           if="[[isAutomaticPrinter_(printerEntry.printerType)]]">
-        <cr-icon-button class="icon-add-circle"
-            on-click="onAddAutomaticPrinterTap_"
-            title="$i18n{moreActions}">
-        </cr-icon-button>
+        <cr-button id="savePrinterButton" class="action-button"
+          on-click="onAddAutomaticPrinterTap_">
+          $i18n{savePrinter}
+        </cr-button>
       </template>
     </div>
   </template>

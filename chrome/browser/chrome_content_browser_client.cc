@@ -232,10 +232,10 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/previews/content/previews_decider.h"
 #include "components/previews/content/previews_decider_impl.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/content/previews_user_data.h"
-#include "components/previews/core/previews_decider.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
@@ -684,13 +684,14 @@ const char* const kPredefinedAllowedSocketOrigins[] = {
 };
 #endif
 
-#if defined(OS_WIN) && !defined(COMPONENT_BUILD)
+#if defined(OS_WIN) && !defined(COMPONENT_BUILD) && !defined(ADDRESS_SANITIZER)
 // Enables pre-launch Code Integrity Guard (CIG) for Chrome renderers, when
 // running on Windows 10 1511 and above. See
 // https://blogs.windows.com/blog/tag/code-integrity-guard/.
 const base::Feature kRendererCodeIntegrity{"RendererCodeIntegrity",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // defined(OS_WIN) && !defined(COMPONENT_BUILD)
+#endif  // defined(OS_WIN) && !defined(COMPONENT_BUILD) &&
+        // !defined(ADDRESS_SANITIZER)
 
 enum AppLoadedInTabSource {
   // A platform app page tried to load one of its own URLs in a tab.
@@ -1027,7 +1028,7 @@ void MaybeAppendSecureOriginsAllowlistSwitch(base::CommandLine* cmdline) {
   }
 }
 
-#if defined(OS_WIN) && !defined(COMPONENT_BUILD)
+#if defined(OS_WIN) && !defined(COMPONENT_BUILD) && !defined(ADDRESS_SANITIZER)
 // Returns the full path to |module_name|. Both dev builds (where |module_name|
 // is in the current executable's directory) and proper installs (where
 // |module_name| is in a versioned sub-directory of the current executable's
@@ -1049,7 +1050,8 @@ base::FilePath GetModulePath(base::StringPiece16 module_name) {
   // directory. This is the expected location of modules for dev builds.
   return exe_dir.Append(module_name);
 }
-#endif  // defined(OS_WIN) && !defined(COMPONENT_BUILD)
+#endif  // defined(OS_WIN) && !defined(COMPONENT_BUILD) &&
+        // !defined(ADDRESS_SANITIZER)
 
 }  // namespace
 
@@ -3612,7 +3614,11 @@ bool ChromeContentBrowserClient::PreSpawnRenderer(
   if (result != sandbox::SBOX_ALL_OK)
     return false;
 
-#if !defined(COMPONENT_BUILD)
+// Does not work under component build because all the component DLLs would need
+// to be manually added and maintained. Does not work under ASAN build because
+// ASAN has not yet fully initialized its instrumentation by the time the CIG
+// intercepts run.
+#if !defined(COMPONENT_BUILD) && !defined(ADDRESS_SANITIZER)
   if (!base::FeatureList::IsEnabled(kRendererCodeIntegrity))
     return true;
 
@@ -3645,7 +3651,7 @@ bool ChromeContentBrowserClient::PreSpawnRenderer(
     if (result != sandbox::SBOX_ALL_OK)
       return false;
   }
-#endif  // !defined(COMPONENT_BUILD)
+#endif  // !defined(COMPONENT_BUILD) && !defined(ADDRESS_SANITIZER)
 
   return true;
 }
@@ -5103,11 +5109,9 @@ void ChromeContentBrowserClient::RegisterRendererPreferenceWatcher(
 bool ChromeContentBrowserClient::HandleWebUI(
     GURL* url,
     content::BrowserContext* browser_context) {
-  // Rewrite chrome://help and chrome://chrome to chrome://settings/help.
+  // Rewrite chrome://help to chrome://settings/help.
   if (url->SchemeIs(content::kChromeUIScheme) &&
-      (url->host() == chrome::kChromeUIHelpHost ||
-       (url->host() == chrome::kChromeUIUberHost &&
-        (url->path().empty() || url->path() == "/")))) {
+      url->host() == chrome::kChromeUIHelpHost) {
     *url = ReplaceURLHostAndPath(*url, chrome::kChromeUISettingsHost,
                                  chrome::kChromeUIHelpHost);
     return true;  // Return true to update the displayed URL.
@@ -5149,8 +5153,7 @@ bool ChromeContentBrowserClient::ShowPaymentHandlerWindow(
 #endif
 }
 
-// Static; reverse URL handler for Web UI. Maps "chrome://chrome/foo/" to
-// "chrome://foo/".
+// static
 bool ChromeContentBrowserClient::HandleWebUIReverse(
     GURL* url,
     content::BrowserContext* browser_context) {
@@ -5333,7 +5336,7 @@ ChromeContentBrowserClient::DetermineAllowedPreviewsWithoutHoldback(
         (previews_data->AllowedPreviewsState() & server_previews_enabled_state);
   } else {
     if (previews_decider_impl->ShouldAllowPreviewAtNavigationStart(
-            previews_data, current_navigation_url, is_reload,
+            previews_data, navigation_handle, is_reload,
             previews::PreviewsType::LITE_PAGE)) {
       previews_state |= server_previews_enabled_state;
     }

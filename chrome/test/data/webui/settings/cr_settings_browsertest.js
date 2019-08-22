@@ -624,6 +624,7 @@ CrSettingsPeoplePageKerberosAccountsTest.prototype = {
   /** @override */
   extraLibraries: CrSettingsBrowserTestCrOS.prototype.extraLibraries.concat([
     '../test_browser_proxy.js',
+    '../test_util.js',
     'chromeos/people_page_kerberos_accounts_test.js',
   ]),
 };

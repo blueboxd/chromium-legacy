@@ -253,8 +253,6 @@ class LayerTreeHostCopyRequestCompletionCausesCommit
     EXPECT_FALSE(result->IsEmpty());
   }
 
-  void AfterTest() override {}
-
   FakeContentLayerClient client_;
   scoped_refptr<FakePictureLayer> root_;
   scoped_refptr<FakePictureLayer> layer_;
@@ -357,8 +355,6 @@ class LayerTreeHostCopyRequestTestLayerDestroyed
     EXPECT_TRUE(result->IsEmpty());
     ++callback_count_;
   }
-
-  void AfterTest() override {}
 
   int callback_count_;
   FakeContentLayerClient client_;
@@ -465,8 +461,6 @@ class LayerTreeHostCopyRequestTestInHiddenSubtree
         break;
     }
   }
-
-  void AfterTest() override {}
 
   int callback_count_;
   FakeContentLayerClient client_;
@@ -649,8 +643,6 @@ class LayerTreeHostCopyRequestTestClippedOut
     EndTest();
   }
 
-  void AfterTest() override {}
-
   FakeContentLayerClient client_;
   scoped_refptr<FakePictureLayer> root_;
   scoped_refptr<FakePictureLayer> parent_layer_;
@@ -711,8 +703,6 @@ class LayerTreeHostCopyRequestTestScaledLayer
     EXPECT_EQ(gfx::Size(10, 10), result->size());
     EndTest();
   }
-
-  void AfterTest() override {}
 
   FakeContentLayerClient client_;
   scoped_refptr<Layer> root_;
@@ -948,8 +938,6 @@ class LayerTreeHostCopyRequestTestDeleteSharedImage
         break;
     }
   }
-
-  void AfterTest() override {}
 
   scoped_refptr<viz::TestContextProvider> display_context_provider_;
   int num_swaps_ = 0;
@@ -1189,8 +1177,6 @@ class LayerTreeHostCopyRequestTestDestroyBeforeCopy
     }
   }
 
-  void AfterTest() override {}
-
   int callback_count_;
   FakeContentLayerClient client_;
   scoped_refptr<FakePictureLayer> root_;
@@ -1406,8 +1392,6 @@ class LayerTreeHostCopyRequestTestMultipleDrawsHiddenCopyRequest
     if (draw_happened_ && copy_happened_)
       EndTest();
   }
-
-  void AfterTest() override {}
 
   scoped_refptr<FakePictureLayer> child_;
   FakeContentLayerClient client_;

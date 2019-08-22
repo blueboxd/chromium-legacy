@@ -10,6 +10,7 @@
 #include "third_party/blink/public/mojom/sms/sms_receiver.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/sms/sms.h"
@@ -85,22 +86,25 @@ void SMSReceiver::OnReceive(ScriptPromiseResolver* resolver,
                             const WTF::String& sms) {
   requests_.erase(resolver);
 
+  ukm::SourceId source_id = GetDocument()->UkmSourceID();
+  ukm::UkmRecorder* recorder = GetDocument()->UkmRecorder();
+
   if (status == mojom::blink::SmsStatus::kTimeout) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kTimeoutError, "SMSReceiver timed out."));
     RecordSMSTimeoutExceededTime(base::TimeTicks::Now() - start_time);
-    RecordSMSOutcome(SMSReceiverOutcome::kTimeout);
+    RecordSMSOutcome(SMSReceiverOutcome::kTimeout, source_id, recorder);
     return;
   } else if (status == mojom::blink::SmsStatus::kCancelled) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kAbortError, "SMSReceiver was aborted."));
     RecordSMSCancelTime(base::TimeTicks::Now() - start_time);
-    RecordSMSOutcome(SMSReceiverOutcome::kCancelled);
+    RecordSMSOutcome(SMSReceiverOutcome::kCancelled, source_id, recorder);
     return;
   }
 
   RecordSMSSuccessTime(base::TimeTicks::Now() - start_time);
-  RecordSMSOutcome(SMSReceiverOutcome::kSuccess);
+  RecordSMSOutcome(SMSReceiverOutcome::kSuccess, source_id, recorder);
 
   resolver->Resolve(MakeGarbageCollected<blink::SMS>(sms));
 }
@@ -110,7 +114,9 @@ void SMSReceiver::OnSMSReceiverConnectionError() {
   for (ScriptPromiseResolver* request : requests_) {
     request->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotFoundError, "SMSReceiver not available."));
-    RecordSMSOutcome(SMSReceiverOutcome::kConnectionError);
+    RecordSMSOutcome(SMSReceiverOutcome::kConnectionError,
+                     GetDocument()->UkmSourceID(),
+                     GetDocument()->UkmRecorder());
   }
   requests_.clear();
 }

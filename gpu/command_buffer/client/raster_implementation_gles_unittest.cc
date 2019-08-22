@@ -59,13 +59,19 @@ class RasterMockGLES2Interface : public gles2::GLES2InterfaceStub {
   MOCK_METHOD2(GetIntegerv, void(GLenum pname, GLint* params));
   MOCK_METHOD2(LoseContextCHROMIUM, void(GLenum current, GLenum other));
 
-  // Queries: GL_COMMANDS_ISSUED_CHROMIUM / GL_COMMANDS_COMPLETED_CHROMIUM.
+  // Queries:
+  // - GL_COMMANDS_ISSUED_CHROMIUM
+  // - GL_COMMANDS_ISSUED_TIMESTAMP_CHROMIUM
+  // - GL_COMMANDS_COMPLETED_CHROMIUM
   MOCK_METHOD2(GenQueriesEXT, void(GLsizei n, GLuint* queries));
   MOCK_METHOD2(DeleteQueriesEXT, void(GLsizei n, const GLuint* queries));
   MOCK_METHOD2(BeginQueryEXT, void(GLenum target, GLuint id));
   MOCK_METHOD1(EndQueryEXT, void(GLenum target));
+  MOCK_METHOD2(QueryCounterEXT, void(GLuint id, GLenum target));
   MOCK_METHOD3(GetQueryObjectuivEXT,
                void(GLuint id, GLenum pname, GLuint* params));
+  MOCK_METHOD3(GetQueryObjectui64vEXT,
+               void(GLuint id, GLenum pname, GLuint64* params));
 
   // Texture objects.
   MOCK_METHOD2(GenTextures, void(GLsizei n, GLuint* textures));
@@ -353,7 +359,7 @@ TEST_F(RasterImplementationGLESTest, DeleteQueriesEXT) {
 }
 
 TEST_F(RasterImplementationGLESTest, BeginQueryEXT) {
-  const GLsizei kQueryTarget = GL_COMMANDS_ISSUED_CHROMIUM;
+  const GLenum kQueryTarget = GL_COMMANDS_ISSUED_CHROMIUM;
   const GLuint kQueryId = 23;
 
   EXPECT_CALL(*gl_, BeginQueryEXT(kQueryTarget, kQueryId)).Times(1);
@@ -361,10 +367,18 @@ TEST_F(RasterImplementationGLESTest, BeginQueryEXT) {
 }
 
 TEST_F(RasterImplementationGLESTest, EndQueryEXT) {
-  const GLsizei kQueryTarget = GL_COMMANDS_ISSUED_CHROMIUM;
+  const GLenum kQueryTarget = GL_COMMANDS_ISSUED_CHROMIUM;
 
   EXPECT_CALL(*gl_, EndQueryEXT(kQueryTarget)).Times(1);
   ri_->EndQueryEXT(kQueryTarget);
+}
+
+TEST_F(RasterImplementationGLESTest, QueryCounterEXT) {
+  const GLenum kQueryTarget = GL_COMMANDS_ISSUED_TIMESTAMP_CHROMIUM;
+  const GLuint kQueryId = 23;
+
+  EXPECT_CALL(*gl_, QueryCounterEXT(kQueryId, kQueryTarget)).Times(1);
+  ri_->QueryCounterEXT(kQueryId, kQueryTarget);
 }
 
 TEST_F(RasterImplementationGLESTest, GetQueryObjectuivEXT) {
@@ -375,6 +389,16 @@ TEST_F(RasterImplementationGLESTest, GetQueryObjectuivEXT) {
   EXPECT_CALL(*gl_, GetQueryObjectuivEXT(kQueryId, kQueryParam, &result))
       .Times(1);
   ri_->GetQueryObjectuivEXT(kQueryId, kQueryParam, &result);
+}
+
+TEST_F(RasterImplementationGLESTest, GetQueryObjectui64vEXT) {
+  const GLuint kQueryId = 23;
+  const GLsizei kQueryParam = GL_QUERY_RESULT_AVAILABLE_EXT;
+  GLuint64 result = 0;
+
+  EXPECT_CALL(*gl_, GetQueryObjectui64vEXT(kQueryId, kQueryParam, &result))
+      .Times(1);
+  ri_->GetQueryObjectui64vEXT(kQueryId, kQueryParam, &result);
 }
 
 TEST_F(RasterImplementationGLESTest, DeleteGpuRasterTexture) {

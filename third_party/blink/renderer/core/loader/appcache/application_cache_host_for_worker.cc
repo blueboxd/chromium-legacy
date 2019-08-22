@@ -10,9 +10,7 @@ ApplicationCacheHostForWorker::ApplicationCacheHostForWorker(
     const base::UnguessableToken& appcache_host_id,
     const BrowserInterfaceBrokerProxy* interface_broker_proxy,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : ApplicationCacheHost(nullptr, /* interface_broker */
-                           interface_broker_proxy,
-                           std::move(task_runner)) {
+    : ApplicationCacheHost(interface_broker_proxy, std::move(task_runner)) {
   SetHostID(appcache_host_id ? appcache_host_id
                              : base::UnguessableToken::Create());
   BindBackend();

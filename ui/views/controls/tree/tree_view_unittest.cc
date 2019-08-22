@@ -274,18 +274,40 @@ TEST_F(TreeViewTest, TreeNodesRemoved) {
   EXPECT_EQ("c1", GetSelectedNodeTitle());
   model_.Remove(GetNodeByTitle("c")->parent(), GetNodeByTitle("c"));
   EXPECT_EQ("root [a]", TreeViewContentsAsString());
-  EXPECT_EQ("root", GetSelectedNodeTitle());
+  EXPECT_EQ("a", GetSelectedNodeTitle());
+  EXPECT_EQ(2, GetRowCount());
+
+  // Add 'c1', 'c2', 'c3', select 'c2', remove it and 'c3" should be selected.
+  Add(GetNodeByTitle("a"), 0, "c1");
+  Add(GetNodeByTitle("a"), 1, "c2");
+  Add(GetNodeByTitle("a"), 2, "c3");
+  tree_.SetSelectedNode(GetNodeByTitle("c2"));
+  model_.Remove(GetNodeByTitle("c2")->parent(), GetNodeByTitle("c2"));
+  EXPECT_EQ("root [a [c1 c3]]", TreeViewContentsAsString());
+  EXPECT_EQ("c3", GetSelectedNodeTitle());
+  EXPECT_EQ(4, GetRowCount());
+
+  // Now delete 'c3' and then 'c1' should be selected.
+  model_.Remove(GetNodeByTitle("c3")->parent(), GetNodeByTitle("c3"));
+  EXPECT_EQ("root [a [c1]]", TreeViewContentsAsString());
+  EXPECT_EQ("c1", GetSelectedNodeTitle());
+  EXPECT_EQ(3, GetRowCount());
+
+  // Finally delete 'c1' and then 'a' should be selected.
+  model_.Remove(GetNodeByTitle("c1")->parent(), GetNodeByTitle("c1"));
+  EXPECT_EQ("root [a]", TreeViewContentsAsString());
+  EXPECT_EQ("a", GetSelectedNodeTitle());
   EXPECT_EQ(2, GetRowCount());
 
   tree_.SetRootShown(false);
-  // Add 'b' select it and remove it. Because we're not showing the root
-  // selection should change to 'a'.
+  // Add 'b' and 'c', select 'b' and remove it. Selection should change to 'c'.
   Add(GetNodeByTitle("root"), 1, "b");
+  Add(GetNodeByTitle("root"), 2, "c");
   tree_.SetSelectedNode(GetNodeByTitle("b"));
   model_.Remove(GetNodeByTitle("b")->parent(), GetNodeByTitle("b"));
-  EXPECT_EQ("root [a]", TreeViewContentsAsString());
-  EXPECT_EQ("a", GetSelectedNodeTitle());
-  EXPECT_EQ(1, GetRowCount());
+  EXPECT_EQ("root [a c]", TreeViewContentsAsString());
+  EXPECT_EQ("c", GetSelectedNodeTitle());
+  EXPECT_EQ(2, GetRowCount());
 }
 
 // Verifies changing a node title works.

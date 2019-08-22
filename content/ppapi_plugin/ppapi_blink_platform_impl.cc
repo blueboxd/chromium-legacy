@@ -88,9 +88,4 @@ blink::WebThemeEngine* PpapiBlinkPlatformImpl::ThemeEngine() {
   return nullptr;
 }
 
-blink::WebData PpapiBlinkPlatformImpl::GetDataResource(const char* name) {
-  NOTREACHED();
-  return blink::WebData();
-}
-
 }  // namespace content

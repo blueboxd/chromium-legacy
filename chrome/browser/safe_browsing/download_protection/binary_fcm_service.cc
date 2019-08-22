@@ -57,9 +57,7 @@ std::unique_ptr<BinaryFCMService> BinaryFCMService::Create(Profile* profile) {
 BinaryFCMService::BinaryFCMService(
     gcm::GCMDriver* gcm_driver,
     instance_id::InstanceIDDriver* instance_id_driver)
-    : gcm_driver_(gcm_driver),
-      instance_id_(kInvalidId),
-      weakptr_factory_(this) {
+    : gcm_driver_(gcm_driver), instance_id_(kInvalidId) {
   gcm_driver->AddAppHandler(kBinaryFCMServiceAppId, this);
   instance_id_driver->GetInstanceID(kBinaryFCMServiceAppId)
       ->GetToken(kBinaryFCMServiceSenderId, instance_id::kGCMScope,

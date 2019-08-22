@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+PASS Ensure framebuffer scaling works as expected.
+Harness: the test ran to completion.
+

@@ -139,8 +139,8 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
   net::BackoffEntry request_access_token_backoff_;
 
   // The callback for Parsing JSON.
-  ParseJSONCallback parse_json_;
-  network::mojom::URLLoaderFactory* url_loader_factory_;
+  ParseJSONCallback const parse_json_;
+  network::mojom::URLLoaderFactory* const url_loader_factory_;
 
   const std::string project_id_;
   const bool migrate_prefs_;

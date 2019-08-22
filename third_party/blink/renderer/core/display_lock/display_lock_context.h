@@ -153,6 +153,8 @@ class CORE_EXPORT DisplayLockContext final
   // context at a time.
   ScopedForcedUpdate GetScopedForcedUpdate();
 
+  bool UpdateForced() const { return update_forced_; }
+
   // This is called when the element with which this context is associated is
   // moved to a new document. Used to listen to the lifecycle update from the
   // right document's view.

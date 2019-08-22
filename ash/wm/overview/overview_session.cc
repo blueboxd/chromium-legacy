@@ -468,10 +468,10 @@ void OverviewSession::RemoveItem(OverviewItem* overview_item) {
 
 void OverviewSession::InitiateDrag(OverviewItem* item,
                                    const gfx::PointF& location_in_screen,
-                                   bool allow_drag_to_close) {
+                                   bool is_touch_dragging) {
   highlight_controller_->SetFocusHighlightVisibility(false);
   window_drag_controller_ = std::make_unique<OverviewWindowDragController>(
-      this, item, allow_drag_to_close);
+      this, item, is_touch_dragging);
   window_drag_controller_->InitiateDrag(location_in_screen);
 
   for (std::unique_ptr<OverviewGrid>& grid : grid_list_)

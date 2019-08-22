@@ -466,7 +466,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   // It returns the amount of time waiting job should be delayed.
   base::TimeDelta GetTimeDelayForWaitingJob(
-      const quic::QuicServerId& server_id);
+      const quic::QuicServerId& server_id,
+      const NetworkIsolationKey& network_isolation_key);
 
   QuicChromiumConnectionHelper* helper() { return helper_.get(); }
 
@@ -527,20 +528,24 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
                        QuicChromiumClientSession* session);
   void MarkAllActiveSessionsGoingAway();
 
-  void ConfigureInitialRttEstimate(const quic::QuicServerId& server_id,
-                                   quic::QuicConfig* config);
+  void ConfigureInitialRttEstimate(
+      const quic::QuicServerId& server_id,
+      const NetworkIsolationKey& network_isolation_key,
+      quic::QuicConfig* config);
 
   // Returns |srtt| in micro seconds from ServerNetworkStats. Returns 0 if there
   // is no |http_server_properties_| or if |http_server_properties_| doesn't
   // have ServerNetworkStats for the given |server_id|.
   int64_t GetServerNetworkStatsSmoothedRttInMicroseconds(
-      const quic::QuicServerId& server_id) const;
+      const quic::QuicServerId& server_id,
+      const NetworkIsolationKey& network_isolation_key) const;
 
   // Returns |srtt| from ServerNetworkStats. Returns null if there
   // is no |http_server_properties_| or if |http_server_properties_| doesn't
   // have ServerNetworkStats for the given |server_id|.
   const base::TimeDelta* GetServerNetworkStatsSmoothedRtt(
-      const quic::QuicServerId& server_id) const;
+      const quic::QuicServerId& server_id,
+      const NetworkIsolationKey& network_isolation_key) const;
 
   // Helper methods.
   bool WasQuicRecentlyBroken(const quic::QuicServerId& server_id) const;

@@ -437,12 +437,12 @@ void ViewAndroid::OnBottomControlsChanged(float bottom_controls_offset,
       env, delegate, bottom_controls_offset, bottom_content_offset);
 }
 
-int ViewAndroid::GetSystemWindowInsetBottom() {
+int ViewAndroid::GetViewportInsetBottom() {
   ScopedJavaLocalRef<jobject> delegate(GetViewAndroidDelegate());
   if (delegate.is_null())
     return 0;
   JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_ViewAndroidDelegate_getSystemWindowInsetBottom(env, delegate);
+  return Java_ViewAndroidDelegate_getViewportInsetBottom(env, delegate);
 }
 
 void ViewAndroid::OnSizeChanged(int width, int height) {

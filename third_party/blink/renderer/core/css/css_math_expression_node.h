@@ -123,6 +123,14 @@ class CORE_EXPORT CSSMathExpressionNode
   bool IsNestedCalc() const { return is_nested_calc_; }
   void SetIsNestedCalc() { is_nested_calc_ = true; }
 
+#if DCHECK_IS_ON()
+  // There's a subtle issue in comparing two percentages, e.g., min(10%, 20%).
+  // It doesn't always resolve into 10%, because the reference value may be
+  // negative. We use this to prevent comparing two percentages without knowing
+  // the sign of the reference value.
+  virtual bool InvolvesPercentageComparisons() const = 0;
+#endif
+
   virtual void Trace(blink::Visitor* visitor) {}
 
  protected:
@@ -163,6 +171,10 @@ class CORE_EXPORT CSSMathExpressionNumericLiteral final
   bool operator==(const CSSMathExpressionNode& other) const final;
   CSSPrimitiveValue::UnitType ResolvedUnitType() const final;
   void Trace(blink::Visitor* visitor) final;
+
+#if DCHECK_IS_ON()
+  bool InvolvesPercentageComparisons() const final;
+#endif
 
  private:
   Member<CSSNumericLiteralValue> value_;
@@ -213,6 +225,10 @@ class CORE_EXPORT CSSMathExpressionBinaryOperation final
   bool operator==(const CSSMathExpressionNode& exp) const final;
   CSSPrimitiveValue::UnitType ResolvedUnitType() const final;
   void Trace(blink::Visitor* visitor) final;
+
+#if DCHECK_IS_ON()
+  bool InvolvesPercentageComparisons() const final;
+#endif
 
  private:
   static CSSMathExpressionNode* GetNumberSide(
@@ -274,6 +290,10 @@ class CSSMathExpressionVariadicOperation final : public CSSMathExpressionNode {
   bool operator==(const CSSMathExpressionNode& other) const final;
   CSSPrimitiveValue::UnitType ResolvedUnitType() const final;
   void Trace(blink::Visitor* visitor) final;
+
+#if DCHECK_IS_ON()
+  bool InvolvesPercentageComparisons() const final;
+#endif
 
  private:
   // Helper for iterating from the 2nd to the last operands

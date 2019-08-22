@@ -40,7 +40,7 @@ class ConflictsHandler : public content::WebUIMessageHandler {
   // lives on a different sequence.
   ConflictsDataFetcher::UniquePtr conflicts_data_fetcher_;
 
-  base::WeakPtrFactory<ConflictsHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<ConflictsHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ConflictsHandler);
 };

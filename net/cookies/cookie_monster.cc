@@ -427,7 +427,7 @@ void CookieMonster::GetCookieListWithOptionsAsync(
       url);
 }
 
-void CookieMonster::GetAllCookiesAsync(GetCookieListCallback callback) {
+void CookieMonster::GetAllCookiesAsync(GetAllCookiesCallback callback) {
   DoCookieCallback(base::BindOnce(
       // base::Unretained is safe as DoCookieCallbackForURL stores
       // the callback on |*this|, so the callback will not outlive
@@ -558,7 +558,7 @@ CookieMonster::~CookieMonster() {
   net_log_.EndEvent(NetLogEventType::COOKIE_STORE_ALIVE);
 }
 
-void CookieMonster::GetAllCookies(GetCookieListCallback callback) {
+void CookieMonster::GetAllCookies(GetAllCookiesCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // This function is being called to scrape the cookie list for management UI
@@ -585,7 +585,7 @@ void CookieMonster::GetAllCookies(GetCookieListCallback callback) {
   for (auto* cookie_ptr : cookie_ptrs)
     cookie_list.push_back(*cookie_ptr);
 
-  MaybeRunCookieCallback(std::move(callback), cookie_list, CookieStatusList());
+  MaybeRunCookieCallback(std::move(callback), cookie_list);
 }
 
 void CookieMonster::GetCookieListWithOptions(const GURL& url,
@@ -593,24 +593,21 @@ void CookieMonster::GetCookieListWithOptions(const GURL& url,
                                              GetCookieListCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  CookieList cookies;
+  CookieStatusList included_cookies;
   CookieStatusList excluded_cookies;
   if (HasCookieableScheme(url)) {
     std::vector<CanonicalCookie*> cookie_ptrs;
     FindCookiesForRegistryControlledHost(url, &cookie_ptrs);
     std::sort(cookie_ptrs.begin(), cookie_ptrs.end(), CookieSorter);
 
-    cookies.reserve(cookie_ptrs.size());
+    included_cookies.reserve(cookie_ptrs.size());
     std::vector<CanonicalCookie*> included_cookie_ptrs;
-    FilterCookiesWithOptions(url, options, &cookie_ptrs, &included_cookie_ptrs,
+    FilterCookiesWithOptions(url, options, &cookie_ptrs, &included_cookies,
                              &excluded_cookies);
-
-    for (auto* cookie : included_cookie_ptrs) {
-      cookies.push_back(*cookie);
-    }
   }
 
-  MaybeRunCookieCallback(std::move(callback), cookies, excluded_cookies);
+  MaybeRunCookieCallback(std::move(callback), included_cookies,
+                         excluded_cookies);
 }
 
 void CookieMonster::DeleteAllCreatedInTimeRange(const TimeRange& creation_range,
@@ -960,7 +957,7 @@ void CookieMonster::FilterCookiesWithOptions(
     const GURL url,
     const CookieOptions options,
     std::vector<CanonicalCookie*>* cookie_ptrs,
-    std::vector<CanonicalCookie*>* included_cookie_ptrs,
+    CookieStatusList* included_cookies,
     CookieStatusList* excluded_cookies) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -987,7 +984,7 @@ void CookieMonster::FilterCookiesWithOptions(
     if (options.update_access_time())
       InternalUpdateCookieAccessTime(*it, current_time);
 
-    included_cookie_ptrs->push_back(*it);
+    included_cookies->push_back({**it, status});
   }
 }
 

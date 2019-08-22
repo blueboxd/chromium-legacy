@@ -152,6 +152,56 @@ class Panel {
   }
 
   /**
+   * Update the position attributes of the buttons based on the order of IDs
+   * in the button order array parameter.
+   * TODO(b/994256) : Use this to set custom menu orders for users.
+   * @param {!Array<string>} buttonOrder
+   * @private
+   */
+  updatePositionAttributes_(buttonOrder) {
+    this.menuManager_.exit();
+    for (let pos = 0; pos < buttonOrder.length; pos++) {
+      let buttonPosition = pos;
+      let button = document.getElementById(buttonOrder[pos]);
+      button.setAttribute('data-position', String(buttonPosition));
+    }
+    this.updateButtonOrder_('switchaccess_menu_actions');
+  }
+
+  /**
+   * Update the order of the buttons based on their position attributes.
+   * Lower numbers will be put into the menu first.
+   * @param {string} menuId
+   * @private
+   */
+  updateButtonOrder_(menuId) {
+    let buttonList = document.getElementById(menuId);
+    let menuButtons = buttonList.children;
+    // Call slice() on menuButtons indirectly, as .children returns an
+    // HTMLCollection rather than an array.
+    let buttonArray = [].slice.call(menuButtons);
+    buttonArray.sort(this.buttonComesBefore_);
+    for (const button of buttonArray) {
+      if (button.id) {
+        buttonList.appendChild(button);
+      }
+    }
+  }
+
+  /**
+   * Compare buttonA's and buttonB's position attributes and return the
+   * difference.
+   * Used to sort the array of buttons in terms of position attribute.
+   * @param {!Element} buttonA
+   * @param {!Element} buttonB
+   */
+  buttonComesBefore_(buttonA, buttonB) {
+    const buttonAPos = parseInt(buttonA.getAttribute('data-position'), 10);
+    const buttonBPos = parseInt(buttonB.getAttribute('data-position'), 10);
+    return buttonAPos - buttonBPos;
+  }
+
+  /**
    * Either adds or removes the class |className| for the element with the given
    * |id|.
    * @param {string} id

@@ -8,8 +8,10 @@
 #include "ash/login/ui/media_controls_header_view.h"
 #include "ash/media/media_controller_impl.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "base/metrics/histogram_functions.h"
 #include "components/media_message_center/media_controls_progress_view.h"
 #include "components/media_message_center/media_notification_util.h"
 #include "services/media_session/public/cpp/util.h"
@@ -121,6 +123,12 @@ const gfx::VectorIcon& GetVectorIconForMediaAction(MediaSessionAction action) {
 }
 
 }  // namespace
+
+const char LockScreenMediaControlsView::kMediaControlsHideHistogramName[] =
+    "Media.LockScreenControls.Hide";
+
+const char LockScreenMediaControlsView::kMediaControlsShownHistogramName[] =
+    "Media.LockScreenControls.Shown";
 
 LockScreenMediaControlsView::Callbacks::Callbacks() = default;
 
@@ -306,7 +314,17 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
       icon_observer_receiver_.BindNewPipeAndPassRemote());
 }
 
-LockScreenMediaControlsView::~LockScreenMediaControlsView() = default;
+LockScreenMediaControlsView::~LockScreenMediaControlsView() {
+  // If the screen is now unlocked and we were not hidden for another reason
+  // then we are being hidden because the device is now unlocked.
+  if (shown_ == Shown::kShown) {
+    if (!hide_reason_ && !Shell::Get()->session_controller()->IsScreenLocked())
+      hide_reason_ = HideReason::kUnlocked;
+
+    base::UmaHistogramEnumeration(kMediaControlsHideHistogramName,
+                                  *hide_reason_);
+  }
+}
 
 const char* LockScreenMediaControlsView::GetClassName() const {
   return kLockScreenMediaControlsViewName;
@@ -355,24 +373,31 @@ void LockScreenMediaControlsView::MediaSessionInfoChanged(
   if (hide_controls_timer_->IsRunning())
     return;
 
-  // If controls aren't enabled or there is no session to show, don't show the
-  // controls.
-  if (!media_controls_enabled_.Run() || !session_info) {
-    hide_media_controls_.Run();
-  } else if (!IsDrawn() &&
-             session_info->playback_state ==
-                 media_session::mojom::MediaPlaybackState::kPaused) {
-    // If the screen is locked while media is paused, don't show the controls.
-    hide_media_controls_.Run();
-  } else if (!IsDrawn()) {
-    show_media_controls_.Run();
+  // If the controls are disabled then don't show the controls.
+  if (!media_controls_enabled_.Run()) {
+    SetShown(Shown::kNotShownControlsDisabled);
+    return;
   }
 
-  if (IsDrawn()) {
-    SetIsPlaying(session_info &&
-                 session_info->playback_state ==
-                     media_session::mojom::MediaPlaybackState::kPlaying);
+  // If there is no session to show then don't show the controls.
+  if (!session_info) {
+    SetShown(Shown::kNotShownNoSession);
+    return;
   }
+
+  bool is_paused = session_info->playback_state ==
+                   media_session::mojom::MediaPlaybackState::kPaused;
+
+  // If the screen is locked while media is paused then don't show the controls.
+  if (is_paused && !IsDrawn()) {
+    SetShown(Shown::kNotShownSessionPaused);
+    return;
+  }
+
+  if (!IsDrawn())
+    SetShown(Shown::kShown);
+
+  SetIsPlaying(!is_paused);
 }
 
 void LockScreenMediaControlsView::MediaSessionMetadataChanged(
@@ -421,10 +446,13 @@ void LockScreenMediaControlsView::MediaSessionChanged(
 
   // If this session is different than the previous one, wait to see if the
   // previous one resumes before hiding the controls.
-  if (request_id != media_session_id_) {
-    hide_controls_timer_->Start(FROM_HERE, kNextMediaDelay,
-                                hide_media_controls_);
-  }
+  if (request_id == media_session_id_)
+    return;
+
+  hide_controls_timer_->Start(
+      FROM_HERE, kNextMediaDelay,
+      base::BindOnce(&LockScreenMediaControlsView::Hide, base::Unretained(this),
+                     HideReason::kSessionChanged));
 }
 
 void LockScreenMediaControlsView::MediaSessionPositionChanged(
@@ -599,9 +627,29 @@ void LockScreenMediaControlsView::SeekTo(double seek_progress) {
   media_controller_remote_->SeekTo(seek_progress * position_->duration());
 }
 
+void LockScreenMediaControlsView::Hide(HideReason reason) {
+  if (!hide_reason_ && GetVisible())
+    hide_reason_ = reason;
+
+  hide_media_controls_.Run();
+}
+
+void LockScreenMediaControlsView::SetShown(Shown shown) {
+  DCHECK(!shown_);
+  shown_ = shown;
+
+  base::UmaHistogramEnumeration(kMediaControlsShownHistogramName, shown);
+
+  if (shown == Shown::kShown) {
+    show_media_controls_.Run();
+  } else {
+    hide_media_controls_.Run();
+  }
+}
+
 void LockScreenMediaControlsView::Dismiss() {
   media_controller_remote_->Stop();
-  hide_media_controls_.Run();
+  Hide(HideReason::kDismissedByUser);
 }
 
 void LockScreenMediaControlsView::SetArtwork(

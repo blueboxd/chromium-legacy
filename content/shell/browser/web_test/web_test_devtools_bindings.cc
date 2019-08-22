@@ -88,18 +88,10 @@ GURL WebTestDevToolsBindings::MapTestURLIfNeeded(const GURL& test_url,
   base::FilePath dev_tools_path;
   bool is_debug_dev_tools = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDebugDevTools);
-  std::string url_string;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kCustomDevToolsFrontend)) {
-    url_string = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-        switches::kCustomDevToolsFrontend);
-  } else {
-    // The test runner hosts DevTools resources at this path by default.
-    url_string = "http://localhost:8000/inspector-sources/";
-    if (is_debug_dev_tools)
-      url_string += "debug/";
-  }
-
+  // The test runner hosts DevTools resources at this path.
+  std::string url_string = "http://localhost:8000/inspector-sources/";
+  if (is_debug_dev_tools)
+    url_string += "debug/";
   url_string += "integration_test_runner.html?experiments=true";
   if (is_debug_dev_tools)
     url_string += "&debugFrontend=true";

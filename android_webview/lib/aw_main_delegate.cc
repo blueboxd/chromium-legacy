@@ -37,9 +37,11 @@
 #include "cc/base/switches.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/crash/core/common/crash_key.h"
+#include "components/gwp_asan/buildflags/buildflags.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler_bridge.h"
 #include "components/services/heap_profiling/public/cpp/profiling_client.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
+#include "components/version_info/android/channel_getter.h"
 #include "components/viz/common/features.h"
 #include "content/public/browser/android/media_url_interceptor_register.h"
 #include "content/public/browser/browser_main_runner.h"
@@ -62,6 +64,10 @@
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "components/spellcheck/common/spellcheck_features.h"
 #endif  // ENABLE_SPELLCHECK
+
+#if BUILDFLAG(ENABLE_GWP_ASAN)
+#include "components/gwp_asan/client/gwp_asan.h"  // nogncheck
+#endif
 
 namespace android_webview {
 
@@ -312,6 +318,30 @@ bool AwMainDelegate::ShouldCreateFeatureList() {
 void AwMainDelegate::PostEarlyInitialization(bool is_running_tests) {
   InitIcuAndResourceBundleBrowserSide();
   aw_feature_list_creator_->CreateFeatureListAndFieldTrials();
+  PostFieldTrialInitialization();
+}
+
+void AwMainDelegate::PostFieldTrialInitialization() {
+  version_info::Channel channel = version_info::android::GetChannel();
+  bool is_canary_dev = (channel == version_info::Channel::CANARY ||
+                        channel == version_info::Channel::DEV);
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  std::string process_type =
+      command_line.GetSwitchValueASCII(switches::kProcessType);
+  bool is_browser_process = process_type.empty();
+
+  ALLOW_UNUSED_LOCAL(is_canary_dev);
+  ALLOW_UNUSED_LOCAL(is_browser_process);
+
+#if BUILDFLAG(ENABLE_GWP_ASAN_MALLOC)
+  gwp_asan::EnableForMalloc(is_canary_dev || is_browser_process,
+                            process_type.c_str());
+#endif
+
+#if BUILDFLAG(ENABLE_GWP_ASAN_PARTITIONALLOC)
+  gwp_asan::EnableForPartitionAlloc(is_canary_dev, process_type.c_str());
+#endif
 }
 
 content::ContentBrowserClient* AwMainDelegate::CreateContentBrowserClient() {

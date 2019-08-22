@@ -173,9 +173,11 @@ class SyncPrefs : public CryptoSyncPrefs,
   // Gets the local sync backend enabled state.
   bool IsLocalSyncEnabled() const;
 
-  // Gets user demographics. Returns an error status with an empty value when
-  // demographics cannot be provided.
-  UserDemographicsResult GetUserDemographics(base::Time now);
+  // Gets the synced user’s birth year and gender from synced prefs and adds
+  // noise to the birth year, see doc of UserDemographicsStatus in
+  // components/sync/base/user_demographics.h for more details. You need to
+  // provide an accurate |now| time that represents the current time.
+  UserDemographicsResult GetUserNoisedBirthYearAndGender(base::Time now);
 
  private:
   static void RegisterTypeSelectedPref(user_prefs::PrefRegistrySyncable* prefs,

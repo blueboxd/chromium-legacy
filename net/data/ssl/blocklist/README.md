@@ -277,6 +277,12 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=1423400
   * [3d3d823fad13dfeef32da580166d4a4992bed5a22d695d12c8b08cc3463c67a2.pem](3d3d823fad13dfeef32da580166d4a4992bed5a22d695d12c8b08cc3463c67a2.pem)
   * [c43807a64c51a3fbde5421011698013d8b46f4e315c46186dc23aea2670cd34f.pem](c43807a64c51a3fbde5421011698013d8b46f4e315c46186dc23aea2670cd34f.pem)
 
+### Qaznet Trust Network
+
+For details, see <https://security.googleblog.com/2019/08/protecting-chrome-users-in-kazakhstan.html>
+
+  * [00309c736dd661da6f1eb24173aa849944c168a43a15bffd192eecfdb6f8dbd2.pem](00309c736dd661da6f1eb24173aa849944c168a43a15bffd192eecfdb6f8dbd2.pem)
+
 ### revoked.badssl.com
 
   * [2e0f66a9f9e764c33008482058fe0d92fc0ec0b122fbe994ed7bf6463668cdd4.pem](2e0f66a9f9e764c33008482058fe0d92fc0ec0b122fbe994ed7bf6463668cdd4.pem)

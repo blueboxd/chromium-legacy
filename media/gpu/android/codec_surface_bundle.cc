@@ -23,8 +23,11 @@ CodecSurfaceBundle::CodecSurfaceBundle(
     scoped_refptr<gpu::TextureOwner> texture_owner)
     : RefCountedDeleteOnSequence<CodecSurfaceBundle>(
           base::SequencedTaskRunnerHandle::Get()),
-      texture_owner_(std::move(texture_owner)),
-      texture_owner_surface_(texture_owner_->CreateJavaSurface()) {}
+      codec_buffer_wait_coordinator_(
+          base::MakeRefCounted<CodecBufferWaitCoordinator>(
+              std::move(texture_owner))),
+      texture_owner_surface_(codec_buffer_wait_coordinator_->texture_owner()
+                                 ->CreateJavaSurface()) {}
 
 CodecSurfaceBundle::~CodecSurfaceBundle() {
   // Explicitly free the surface first, just to be sure that it's deleted before
@@ -32,16 +35,18 @@ CodecSurfaceBundle::~CodecSurfaceBundle() {
   texture_owner_surface_ = gl::ScopedJavaSurface();
 
   // Also release the back buffers.
-  if (!texture_owner_)
+  if (!codec_buffer_wait_coordinator_)
     return;
 
-  auto task_runner = texture_owner_->task_runner();
+  auto task_runner =
+      codec_buffer_wait_coordinator_->texture_owner()->task_runner();
   if (task_runner->RunsTasksInCurrentSequence()) {
-    texture_owner_->ReleaseBackBuffers();
+    codec_buffer_wait_coordinator_->texture_owner()->ReleaseBackBuffers();
   } else {
     task_runner->PostTask(
-        FROM_HERE, base::BindRepeating(&gpu::TextureOwner::ReleaseBackBuffers,
-                                       texture_owner_));
+        FROM_HERE,
+        base::BindRepeating(&gpu::TextureOwner::ReleaseBackBuffers,
+                            codec_buffer_wait_coordinator_->texture_owner()));
   }
 }
 

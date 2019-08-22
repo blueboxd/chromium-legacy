@@ -252,14 +252,15 @@ bool WebSocketChannelImpl::Connect(const KURL& url, const String& protocol) {
     return true;
   }
 
-  mojom::blink::WebSocketConnectorPtr connector;
+  mojo::Remote<mojom::blink::WebSocketConnector> connector;
   if (execution_context_->GetInterfaceProvider()) {
-    execution_context_->GetInterfaceProvider()->GetInterface(mojo::MakeRequest(
-        &connector, execution_context_->GetTaskRunner(TaskType::kWebSocket)));
+    execution_context_->GetInterfaceProvider()->GetInterface(
+        connector.BindNewPipeAndPassReceiver(
+            execution_context_->GetTaskRunner(TaskType::kWebSocket)));
   } else {
     // Create a fake request. This will lead to a closed WebSocket due to
     // a mojo connection error.
-    mojo::MakeRequest(&connector);
+    ignore_result(connector.BindNewPipeAndPassReceiver());
   }
   handle_->Connect(std::move(connector), url, protocols,
                    GetBaseFetchContext()->GetSiteForCookies(),

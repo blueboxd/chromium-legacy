@@ -78,13 +78,8 @@ UkmService::UkmService(PrefService* pref_service,
                        bool restrict_to_whitelist_entries)
     : pref_service_(pref_service),
       restrict_to_whitelist_entries_(restrict_to_whitelist_entries),
-      client_id_(0),
-      session_id_(0),
-      report_count_(0),
       client_(client),
-      reporting_service_(client, pref_service),
-      initialize_started_(false),
-      initialize_complete_(false) {
+      reporting_service_(client, pref_service) {
   DCHECK(pref_service_);
   DCHECK(client_);
   DVLOG(1) << "UkmService::Constructor";
@@ -131,6 +126,7 @@ void UkmService::EnableReporting() {
   if (reporting_service_.reporting_active())
     return;
 
+  log_creation_time_ = base::TimeTicks::Now();
   metrics_providers_.OnRecordingEnabled();
 
   if (!initialize_started_)
@@ -260,8 +256,8 @@ void UkmService::BuildAndStoreLog() {
   metrics::MetricsLog::RecordCoreSystemProfile(client_,
                                                report.mutable_system_profile());
 
-  metrics_providers_.ProvideSystemProfileMetrics(
-      report.mutable_system_profile());
+  metrics_providers_.ProvideSystemProfileMetricsWithLogCreationTime(
+      log_creation_time_, report.mutable_system_profile());
 
   std::string serialized_log;
   report.SerializeToString(&serialized_log);

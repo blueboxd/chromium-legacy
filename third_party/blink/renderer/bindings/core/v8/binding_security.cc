@@ -60,13 +60,17 @@ void BindingSecurity::Init() {
 
 namespace {
 
-void ReportOrThrowSecurityError(const LocalDOMWindow* accessing_window,
-                                const DOMWindow* target_window,
-                                ExceptionState& exception_state) {
+void ReportOrThrowSecurityError(
+    const LocalDOMWindow* accessing_window,
+    const DOMWindow* target_window,
+    DOMWindow::CrossDocumentAccessFeaturePolicy cross_document_access,
+    ExceptionState& exception_state) {
   if (target_window) {
     exception_state.ThrowSecurityError(
-        target_window->SanitizedCrossDomainAccessErrorMessage(accessing_window),
-        target_window->CrossDomainAccessErrorMessage(accessing_window));
+        target_window->SanitizedCrossDomainAccessErrorMessage(
+            accessing_window, cross_document_access),
+        target_window->CrossDomainAccessErrorMessage(accessing_window,
+                                                     cross_document_access));
   } else {
     exception_state.ThrowSecurityError("Cross origin access was denied.");
   }
@@ -75,13 +79,15 @@ void ReportOrThrowSecurityError(const LocalDOMWindow* accessing_window,
 void ReportOrThrowSecurityError(
     const LocalDOMWindow* accessing_window,
     const DOMWindow* target_window,
+    DOMWindow::CrossDocumentAccessFeaturePolicy cross_document_access,
     BindingSecurity::ErrorReportOption reporting_option) {
   if (reporting_option == BindingSecurity::ErrorReportOption::kDoNotReport)
     return;
 
   if (accessing_window && target_window) {
     accessing_window->PrintErrorMessage(
-        target_window->CrossDomainAccessErrorMessage(accessing_window));
+        target_window->CrossDomainAccessErrorMessage(accessing_window,
+                                                     cross_document_access));
   } else if (accessing_window) {
     accessing_window->PrintErrorMessage("Cross origin access was denied.");
   } else {
@@ -89,10 +95,14 @@ void ReportOrThrowSecurityError(
   }
 }
 
-bool CanAccessWindowInternal(const LocalDOMWindow* accessing_window,
-                             const DOMWindow* target_window) {
+bool CanAccessWindowInternal(
+    const LocalDOMWindow* accessing_window,
+    const DOMWindow* target_window,
+    DOMWindow::CrossDocumentAccessFeaturePolicy* cross_document_access) {
   SECURITY_CHECK(!(target_window && target_window->GetFrame()) ||
                  target_window == target_window->GetFrame()->DomWindow());
+  DCHECK_EQ(DOMWindow::CrossDocumentAccessFeaturePolicy::kAllowed,
+            *cross_document_access);
 
   // It's important to check that target_window is a LocalDOMWindow: it's
   // possible for a remote frame and local frame to have the same security
@@ -119,11 +129,17 @@ bool CanAccessWindowInternal(const LocalDOMWindow* accessing_window,
                    : WebFeature::kDocumentDomainBlockedCrossOriginAccess);
   }
   if (!can_access) {
-    // TODO(dtapuska): Adjust this security check to consult the feature
-    // policies. But for now There shouldn't yet be an agent cluster failure
-    // yet.
-    SECURITY_CHECK(detail != SecurityOrigin::AccessResultDomainDetail::
-                                 kDomainNotRelevantAgentClusterMismatch);
+    // Ensure that if we got a cluster mismatch that it was due to a feature
+    // policy being enabled and not a logic bug.
+    if (detail == SecurityOrigin::AccessResultDomainDetail::
+                      kDomainNotRelevantAgentClusterMismatch) {
+      SECURITY_CHECK(!accessing_window->document()->IsFeatureEnabled(
+                         mojom::FeaturePolicyFeature::kDocumentAccess) ||
+                     !local_target_window->document()->IsFeatureEnabled(
+                         mojom::FeaturePolicyFeature::kDocumentAccess));
+      *cross_document_access =
+          DOMWindow::CrossDocumentAccessFeaturePolicy::kDisallowed;
+    }
     return false;
   }
 
@@ -140,10 +156,14 @@ template <typename ExceptionStateOrErrorReportOption>
 bool CanAccessWindow(const LocalDOMWindow* accessing_window,
                      const DOMWindow* target_window,
                      ExceptionStateOrErrorReportOption& error_report) {
-  if (CanAccessWindowInternal(accessing_window, target_window))
+  DOMWindow::CrossDocumentAccessFeaturePolicy cross_document_access =
+      DOMWindow::CrossDocumentAccessFeaturePolicy::kAllowed;
+  if (CanAccessWindowInternal(accessing_window, target_window,
+                              &cross_document_access))
     return true;
 
-  ReportOrThrowSecurityError(accessing_window, target_window, error_report);
+  ReportOrThrowSecurityError(accessing_window, target_window,
+                             cross_document_access, error_report);
   return false;
 }
 
@@ -333,8 +353,9 @@ bool ShouldAllowAccessToV8ContextInternal(
   // remote_object->CreationContext() returns the empty handle. Remote contexts
   // are unconditionally treated as cross origin.
   if (target_context.IsEmpty()) {
-    ReportOrThrowSecurityError(ToLocalDOMWindow(accessing_context), nullptr,
-                               error_report);
+    ReportOrThrowSecurityError(
+        ToLocalDOMWindow(accessing_context), nullptr,
+        DOMWindow::CrossDocumentAccessFeaturePolicy::kAllowed, error_report);
     return false;
   }
 
@@ -438,13 +459,24 @@ void BindingSecurity::FailedAccessCheckFor(v8::Isolate* isolate,
   if (!target->GetFrame())
     return;
 
+  auto* local_dom_window = CurrentDOMWindow(isolate);
+  DOMWindow::CrossDocumentAccessFeaturePolicy cross_document_access =
+      (local_dom_window->document()->IsFeatureEnabled(
+           mojom::FeaturePolicyFeature::kDocumentAccess) &&
+       (target->GetFrame()->GetSecurityContext()->IsFeatureEnabled(
+           mojom::FeaturePolicyFeature::kDocumentAccess)))
+          ? DOMWindow::CrossDocumentAccessFeaturePolicy::kAllowed
+          : DOMWindow::CrossDocumentAccessFeaturePolicy::kDisallowed;
+
   // TODO(dcheng): Add ContextType, interface name, and property name as
   // arguments, so the generated exception can be more descriptive.
   ExceptionState exception_state(isolate, ExceptionState::kUnknownContext,
                                  nullptr, nullptr);
   exception_state.ThrowSecurityError(
-      target->SanitizedCrossDomainAccessErrorMessage(CurrentDOMWindow(isolate)),
-      target->CrossDomainAccessErrorMessage(CurrentDOMWindow(isolate)));
+      target->SanitizedCrossDomainAccessErrorMessage(local_dom_window,
+                                                     cross_document_access),
+      target->CrossDomainAccessErrorMessage(local_dom_window,
+                                            cross_document_access));
 }
 
 bool BindingSecurity::ShouldAllowNamedAccessTo(

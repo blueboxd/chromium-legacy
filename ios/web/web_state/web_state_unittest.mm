@@ -464,7 +464,10 @@ TEST_P(WebStateTest, CallStopDuringSessionRestore) {
   EXPECT_TRUE(navigation_manager->CanGoForward());
 
   // Now wait until the last committed item is fully loaded.
-  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+  // TODO(crbug.com/996544) On Xcode 11 beta 6 this became very slow.  This
+  // appears to only affect simulator, and will hopefully be fixed in a future
+  // Xcode release.  Revert this to |kWaitForPageLoadTimeout| alone when fixed.
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout * 5, ^{
     return !navigation_manager->GetPendingItem() && !web_state_ptr->IsLoading();
   }));
 }

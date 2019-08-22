@@ -164,6 +164,8 @@ class AnimationAnimationTestNoCompositing : public RenderingTest {
   }
 
   bool SimulateFrame(double time_ms) {
+    animation->CommitAllUpdatesForTesting();
+    animation->Update(kTimingUpdateForAnimationFrame);
     last_frame_time = time_ms;
     const auto* paint_artifact_compositor =
         GetDocument().GetFrame()->View()->GetPaintArtifactCompositor();
@@ -176,11 +178,7 @@ class AnimationAnimationTestNoCompositing : public RenderingTest {
     return animation->Update(kTimingUpdateForAnimationFrame);
   }
 
-  void SimulateAwaitReady() {
-    // TOOD(crbug/958433): This should trigger a call to the microtask for
-    // applying updates.
-    SimulateFrame(last_frame_time);
-  }
+  void SimulateAwaitReady() { animation->CommitAllUpdatesForTesting(); }
 
   Persistent<DocumentTimeline> timeline;
   Persistent<Animation> animation;
@@ -348,39 +346,33 @@ TEST_F(AnimationAnimationTestNoCompositing, SetStartTime) {
 }
 
 TEST_F(AnimationAnimationTestNoCompositing, SetStartTimeLimitsAnimation) {
-  // TODO(crbug/958433): Fix to align with spec.
   // Setting the start time is a seek operation, which is not constrained by the
   // normal limits on the animation.
   animation->setStartTime(-50000, false);
   EXPECT_EQ("finished", animation->playState());
   EXPECT_TRUE(animation->Limited());
-  // This value is not to spec. Should be 50s.
-  EXPECT_EQ(30000, animation->currentTime());
+  EXPECT_EQ(50000, animation->currentTime());
   animation->setPlaybackRate(-1);
   EXPECT_EQ("running", animation->playState());
   animation->setStartTime(-100000, false);
   EXPECT_EQ("finished", animation->playState());
-  // This value is not to spec. Should be -100s.
-  EXPECT_EQ(0, animation->currentTime());
+  EXPECT_EQ(-100000, animation->currentTime());
   EXPECT_TRUE(animation->Limited());
 }
 
 TEST_F(AnimationAnimationTestNoCompositing, SetStartTimeOnLimitedAnimation) {
-  // TODO(crbug/958433): Fix to align with spec.
   // The setStartTime method is a seek and thus not constrained by the normal
   // limits on the animation.
   SimulateFrame(30000);
   animation->setStartTime(-10000, false);
   EXPECT_EQ("finished", animation->playState());
-  // This value is not to spec. Should be 40s.
-  EXPECT_EQ(30000, animation->currentTime());
+  EXPECT_EQ(40000, animation->currentTime());
   EXPECT_TRUE(animation->Limited());
 
   animation->setCurrentTime(50000, false);
   EXPECT_EQ(50000, animation->currentTime());
   animation->setStartTime(-40000, false);
-  // This value is not to spec. Should be 70s.
-  EXPECT_EQ(30000, animation->currentTime());
+  EXPECT_EQ(70000, animation->currentTime());
   EXPECT_EQ("finished", animation->playState());
   EXPECT_TRUE(animation->Limited());
 }
@@ -424,14 +416,13 @@ TEST_F(AnimationAnimationTestNoCompositing, StartTimeFinishPause) {
   EXPECT_FALSE(animation->startTime());
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, StartTimeWithZeroPlaybackRate) {
+TEST_F(AnimationAnimationTestNoCompositing, RunningWithZeroPlaybackRate) {
   animation->setPlaybackRate(0);
   EXPECT_EQ("running", animation->playState());
-  SimulateAwaitReady();
-  EXPECT_FALSE(animation->startTime());
 
   SimulateFrame(10000);
   EXPECT_EQ("running", animation->playState());
+  EXPECT_EQ(0, animation->currentTime());
 }
 
 TEST_F(AnimationAnimationTestNoCompositing, PausePlay) {
@@ -622,9 +613,8 @@ TEST_F(AnimationAnimationTestNoCompositing, FinishAfterEffectEnd) {
   NonThrowableExceptionState exception_state;
   animation->setCurrentTime(40000, false);
   animation->finish(exception_state);
-  // TODO(crbug/958433): This is not to spec.  Finish should trigger a snap to
-  // the upper boundary.
-  EXPECT_EQ(40000, animation->currentTime());
+  // Finish should trigger a snap to the upper boundary.
+  EXPECT_EQ(30000, animation->currentTime());
 }
 
 TEST_F(AnimationAnimationTestNoCompositing, FinishBeforeStart) {
@@ -730,13 +720,11 @@ TEST_F(AnimationAnimationTestNoCompositing, SetPlaybackRateWhileLimited) {
   EXPECT_EQ(30000, animation->currentTime());
   EXPECT_TRUE(animation->Limited());
   animation->setPlaybackRate(2);
-  SimulateAwaitReady();
 
   // Already at the end of the animation.
   SimulateFrame(50000);
   EXPECT_EQ(30000, animation->currentTime());
   animation->setPlaybackRate(-2);
-  SimulateAwaitReady();
 
   SimulateFrame(60000);
   EXPECT_FALSE(animation->Limited());
@@ -1337,6 +1325,7 @@ TEST_F(AnimationAnimationTestNoCompositing, ScrollLinkedAnimationCreation) {
   EXPECT_FALSE(is_null);
 
   UpdateAllLifecyclePhasesForTest();
+
   // Verify start and current times in Playing state.
   EXPECT_EQ(0, scroll_animation->startTime(is_null));
   EXPECT_FALSE(is_null);

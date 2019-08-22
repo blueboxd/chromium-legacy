@@ -65,7 +65,8 @@ scoped_refptr<const NGLayoutResult> NGCustomLayoutAlgorithm::Layout() {
       FragmentResultOptions::Create();
   scoped_refptr<SerializedScriptValue> fragment_result_data;
   if (!instance->Layout(ConstraintSpace(), document, Node(),
-                        container_builder_.InitialBorderBoxSize(), &scope,
+                        container_builder_.InitialBorderBoxSize(),
+                        border_scrollbar_padding_, &scope,
                         fragment_result_options, &fragment_result_data)) {
     // TODO(ikilpatrick): Report this error to the developer.
     return FallbackLayout();

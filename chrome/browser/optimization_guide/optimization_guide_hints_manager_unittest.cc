@@ -320,7 +320,7 @@ class OptimizationGuideHintsManagerTest
                               serialized_config.size()));
   }
 
-  content::BrowserTaskEnvironment task_environment_ = {
+  content::BrowserTaskEnvironment task_environment_{
       base::test::TaskEnvironment::MainThreadType::UI,
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   TestingProfile testing_profile_;

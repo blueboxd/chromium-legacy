@@ -129,7 +129,7 @@ void GaiaAuthFetcherIOSNSURLSessionBridge::SetCanonicalCookiesFromResponse(
 }
 
 void GaiaAuthFetcherIOSNSURLSessionBridge::FetchPendingRequestWithCookies(
-    const std::vector<net::CanonicalCookie>& cookies,
+    const net::CookieStatusList& cookies_with_statuses,
     const net::CookieStatusList& excluded_cookies) {
   DCHECK(!url_session_);
   url_session_ = CreateNSURLSession(url_session_delegate_);
@@ -145,9 +145,10 @@ void GaiaAuthFetcherIOSNSURLSessionBridge::FetchPendingRequestWithCookies(
                                                          error:error];
                       }];
   NSMutableArray* http_cookies =
-      [[NSMutableArray alloc] initWithCapacity:cookies.size()];
-  for (const net::CanonicalCookie& cookie : cookies) {
-    [http_cookies addObject:net::SystemCookieFromCanonicalCookie(cookie)];
+      [[NSMutableArray alloc] initWithCapacity:cookies_with_statuses.size()];
+  for (const auto& cookie_with_status : cookies_with_statuses) {
+    [http_cookies addObject:net::SystemCookieFromCanonicalCookie(
+                                cookie_with_status.cookie)];
   }
   [url_session_.configuration.HTTPCookieStorage
       storeCookies:http_cookies

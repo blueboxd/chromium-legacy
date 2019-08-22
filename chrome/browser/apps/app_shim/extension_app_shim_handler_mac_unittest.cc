@@ -152,11 +152,6 @@ class TestingExtensionAppShimHandler : public ExtensionAppShimHandler {
     ExtensionAppShimHandler::OnShimFocus(host, focus_type, files);
   }
 
-  AppShimHost* FindHost(Profile* profile, const std::string& app_id) {
-    HostMap::const_iterator it = hosts().find(make_pair(profile, app_id));
-    return it == hosts().end() ? NULL : it->second;
-  }
-
   void SetAcceptablyCodeSigned(bool is_acceptable_code_signed) {
     is_acceptably_code_signed_ = is_acceptable_code_signed;
   }

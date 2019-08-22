@@ -149,7 +149,6 @@ TEST_F(PrintingContextTest, PrintAll) {
 
   base::test::TaskEnvironment task_environment;
   MockPrintingContextWin context(this);
-  context.ResetSettings();
   context.AskUserForSettings(
       123, false, false,
       base::BindOnce(&PrintingContextTest::PrintSettingsCallback,
@@ -165,7 +164,6 @@ TEST_F(PrintingContextTest, Color) {
 
   base::test::TaskEnvironment task_environment;
   MockPrintingContextWin context(this);
-  context.ResetSettings();
   context.AskUserForSettings(
       123, false, false,
       base::BindOnce(&PrintingContextTest::PrintSettingsCallback,

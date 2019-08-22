@@ -70,7 +70,7 @@ class SerialIoHandlerWin : public SerialIoHandler,
   // The helper lives on the UI thread and holds a weak reference back to the
   // handler that owns it.
   UiThreadHelper* helper_;
-  base::WeakPtrFactory<SerialIoHandlerWin> weak_factory_;
+  base::WeakPtrFactory<SerialIoHandlerWin> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SerialIoHandlerWin);
 };

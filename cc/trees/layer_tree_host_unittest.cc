@@ -99,7 +99,7 @@ bool LayerSubtreeHasCopyRequest(Layer* layer) {
   return node->subtree_has_copy_request;
 }
 
-class LayerTreeHostTest : public LayerTreeTest {};
+using LayerTreeHostTest = LayerTreeTest;
 
 class LayerTreeHostTestHasImplThreadTest : public LayerTreeHostTest {
  public:
@@ -136,8 +136,6 @@ class LayerTreeHostTestSetNeedsCommitInsideLayout : public LayerTreeHostTest {
     EXPECT_EQ(1, layer_tree_host()->SourceFrameNumber());
     EndTest();
   }
-
-  void AfterTest() override {}
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSetNeedsCommitInsideLayout);
@@ -253,8 +251,6 @@ class LayerTreeHostTestRequestedMainFrame : public LayerTreeHostTest {
     // SetNeeds{Animate,UpdateLayers,Commit}() will mean a MainFrame is pending.
     EXPECT_TRUE(layer_tree_host()->RequestedMainFramePendingForTesting());
   }
-
-  void AfterTest() override {}
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestRequestedMainFrame);
@@ -272,8 +268,6 @@ class LayerTreeHostTestSetNeedsUpdateInsideLayout : public LayerTreeHostTest {
     EXPECT_EQ(1, layer_tree_host()->SourceFrameNumber());
     EndTest();
   }
-
-  void AfterTest() override {}
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSetNeedsUpdateInsideLayout);
@@ -536,7 +530,6 @@ class LayerTreeHostContextCacheTest : public LayerTreeHostTest {
   }
 
   void BeginTest() override {}
-  void AfterTest() override {}
 
  protected:
   class MockContextSupport : public viz::TestContextSupport {
@@ -763,9 +756,7 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestSetNeedsCommit2);
 class LayerTreeHostTestPushPropertiesTo : public LayerTreeHostTest {
  protected:
   void SetupTree() override {
-    scoped_refptr<Layer> root = Layer::Create();
-    root->SetBounds(gfx::Size(10, 10));
-    layer_tree_host()->SetRootLayer(root);
+    SetInitialRootBounds(gfx::Size(10, 10));
     LayerTreeHostTest::SetupTree();
   }
 
@@ -798,8 +789,6 @@ class LayerTreeHostTestPushPropertiesTo : public LayerTreeHostTest {
 
     SetAfterValues(layer_tree_host()->root_layer());
   }
-
-  void AfterTest() override {}
 
   void VerifyBeforeValues(Layer* layer) {
     EXPECT_EQ(gfx::Size(10, 10).ToString(), layer->bounds().ToString());
@@ -949,8 +938,6 @@ class LayerTreeHostTestPushNodeOwnerToNodeIdMap : public LayerTreeHostTest {
     }
   }
 
-  void AfterTest() override {}
-
  private:
   scoped_refptr<Layer> root_;
   scoped_refptr<Layer> child_;
@@ -1050,8 +1037,6 @@ class LayerTreeHostTestPushElementIdToNodeIdMap : public LayerTreeHostTest {
     EndTest();
   }
 
-  void AfterTest() override {}
-
  private:
   scoped_refptr<Layer> root_;
   scoped_refptr<Layer> child_;
@@ -1133,8 +1118,6 @@ class LayerTreeHostTestSurfaceDamage : public LayerTreeHostTest {
     return draw_result;
   }
 
-  void AfterTest() override {}
-
  private:
   scoped_refptr<Layer> root_;
   scoped_refptr<Layer> child_;
@@ -1145,42 +1128,36 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSurfaceDamage);
 
 class LayerTreeHostTestLayerListSurfaceDamage : public LayerTreeHostTest {
  protected:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->use_layer_lists = true;
-  }
+  LayerTreeHostTestLayerListSurfaceDamage() { SetUseLayerLists(); }
 
   void SetupTree() override {
-    root_ = Layer::Create();
-    child_a_ = Layer::Create();
-    child_b_ = Layer::Create();
-    child_c_ = Layer::Create();
-
-    layer_tree_host()->SetRootLayer(root_);
-
-    root_->AddChild(child_a_);
-    root_->AddChild(child_b_);
-    root_->AddChild(child_c_);
-
-    root_->SetBounds(gfx::Size(50, 50));
-
-    child_a_->SetBounds(gfx::Size(10, 20));
-    child_a_->SetForceRenderSurfaceForTesting(true);
-    child_a_->SetIsDrawable(true);
-
-    child_b_->SetBounds(gfx::Size(20, 10));
-    child_b_->SetForceRenderSurfaceForTesting(true);
-    child_b_->SetIsDrawable(true);
-
-    child_c_->SetBounds(gfx::Size(15, 15));
-    child_c_->SetForceRenderSurfaceForTesting(true);
-    child_c_->SetIsDrawable(true);
-
-    // TODO(pdr): Do not use the property tree builder for testing in layer list
-    // mode. This will require rewriting this test to manually build property
-    // trees.
-    layer_tree_host()->BuildPropertyTreesForTesting();
-
+    SetInitialRootBounds(gfx::Size(50, 50));
     LayerTreeHostTest::SetupTree();
+    root_ = layer_tree_host()->root_layer();
+
+    child_a_ = Layer::Create();
+    child_a_->SetBounds(gfx::Size(10, 20));
+    child_a_->SetIsDrawable(true);
+    CopyProperties(root_, child_a_.get());
+    auto& effect_a = CreateEffectNode(child_a_.get());
+    effect_a.render_surface_reason = RenderSurfaceReason::kTest;
+    root_->AddChild(child_a_);
+
+    child_b_ = Layer::Create();
+    child_b_->SetBounds(gfx::Size(20, 10));
+    child_b_->SetIsDrawable(true);
+    CopyProperties(root_, child_b_.get());
+    auto& effect_b = CreateEffectNode(child_b_.get());
+    effect_b.render_surface_reason = RenderSurfaceReason::kTest;
+    root_->AddChild(child_b_);
+
+    child_c_ = Layer::Create();
+    child_c_->SetBounds(gfx::Size(15, 15));
+    child_c_->SetIsDrawable(true);
+    CopyProperties(root_, child_c_.get());
+    auto& effect_c = CreateEffectNode(child_c_.get());
+    effect_c.render_surface_reason = RenderSurfaceReason::kTest;
+    root_->AddChild(child_c_);
   }
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
@@ -1298,10 +1275,8 @@ class LayerTreeHostTestLayerListSurfaceDamage : public LayerTreeHostTest {
     return draw_result;
   }
 
-  void AfterTest() override {}
-
  private:
-  scoped_refptr<Layer> root_;
+  Layer* root_;
   scoped_refptr<Layer> child_a_;
   scoped_refptr<Layer> child_b_;
   scoped_refptr<Layer> child_c_;
@@ -1383,8 +1358,6 @@ class LayerTreeHostTestNoDamageCausesNoInvalidate : public LayerTreeHostTest {
         ADD_FAILURE();
     }
   }
-
-  void AfterTest() override {}
 
  private:
   scoped_refptr<Layer> layer_;
@@ -1599,8 +1572,6 @@ class LayerTreeHostTestCantDrawBeforeCommit : public LayerTreeHostTest {
     EXPECT_TRUE(host_impl->CanDraw());
     EndTest();
   }
-
-  void AfterTest() override {}
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestCantDrawBeforeCommit);
@@ -1622,8 +1593,6 @@ class LayerTreeHostTestCantDrawBeforeCommitActivate : public LayerTreeHostTest {
     EXPECT_TRUE(host_impl->CanDraw());
     EndTest();
   }
-
-  void AfterTest() override {}
 };
 
 // Single thread mode commits directly to the active tree, so CanDraw()
@@ -1716,8 +1685,6 @@ class LayerTreeHostTestPropertyTreesChangedSync : public LayerTreeHostTest {
     }
   }
 
-  void AfterTest() override {}
-
  private:
   int index_;
   scoped_refptr<Layer> root_;
@@ -1726,46 +1693,16 @@ class LayerTreeHostTestPropertyTreesChangedSync : public LayerTreeHostTest {
 
 SINGLE_THREAD_TEST_F(LayerTreeHostTestPropertyTreesChangedSync);
 
-// Simple base class for tests that just need to mutate the layer tree
-// host and observe results without any impl thread, multi-layer, or
-// multi-frame antics.
-class LayerTreeHostTestLayerListsTest : public LayerTreeHostTest {
- public:
-  explicit LayerTreeHostTestLayerListsTest(bool use_layer_lists)
-      : use_layer_lists_(use_layer_lists) {}
-
- protected:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->use_layer_lists = use_layer_lists_;
-  }
-
-  void SetupTree() override {
-    root_ = Layer::Create();
-    layer_tree_host()->SetRootLayer(root_);
-    LayerTreeHostTest::SetupTree();
-  }
-
-  void AfterTest() override {}
-
-  scoped_refptr<Layer> root_;
-
- private:
-  bool use_layer_lists_;
-};
-
 class LayerTreeHostTestAnimationOpacityMutatedNotUsingLayerLists
-    : public LayerTreeHostTestLayerListsTest {
- public:
-  LayerTreeHostTestAnimationOpacityMutatedNotUsingLayerLists()
-      : LayerTreeHostTestLayerListsTest(false) {}
-
+    : public LayerTreeHostTest {
  protected:
   void BeginTest() override {
-    EXPECT_EQ(1.0f, root_->opacity());
-    layer_tree_host()->SetElementOpacityMutated(root_->element_id(),
+    Layer* root = layer_tree_host()->root_layer();
+    EXPECT_EQ(1.0f, root->opacity());
+    layer_tree_host()->SetElementOpacityMutated(root->element_id(),
                                                 ElementListType::ACTIVE, 0.3f);
     // When not using layer lists, opacity is stored on the layer.
-    EXPECT_EQ(0.3f, root_->opacity());
+    EXPECT_EQ(0.3f, root->opacity());
     EndTest();
   }
 };
@@ -1774,40 +1711,31 @@ SINGLE_THREAD_TEST_F(
     LayerTreeHostTestAnimationOpacityMutatedNotUsingLayerLists);
 
 class LayerTreeHostTestAnimationOpacityMutatedUsingLayerLists
-    : public LayerTreeHostTestLayerListsTest {
+    : public LayerTreeHostTest {
  public:
-  LayerTreeHostTestAnimationOpacityMutatedUsingLayerLists()
-      : LayerTreeHostTestLayerListsTest(true) {}
+  LayerTreeHostTestAnimationOpacityMutatedUsingLayerLists() {
+    SetUseLayerLists();
+  }
 
  protected:
   void BeginTest() override {
-    // Insert a dummy effect node to observe its mutation. This would
-    // normally have been created by PaintArtifactCompositor.
-    int effect_node_id =
-        layer_tree_host()->property_trees()->effect_tree.Insert(
-            EffectNode(), EffectTree::kInvalidNodeId);
-    layer_tree_host()
-        ->property_trees()
-        ->element_id_to_effect_node_index[root_->element_id()] = effect_node_id;
+    Layer* root = layer_tree_host()->root_layer();
+    EXPECT_EQ(1.0f, root->opacity());
+    EXPECT_EQ(1.0f, layer_tree_host()
+                        ->property_trees()
+                        ->effect_tree.FindNodeFromElementId(root->element_id())
+                        ->opacity);
 
-    EXPECT_EQ(1.0f, root_->opacity());
-    EXPECT_EQ(1.0f,
-              layer_tree_host()
-                  ->property_trees()
-                  ->effect_tree.FindNodeFromElementId(root_->element_id())
-                  ->opacity);
-
-    layer_tree_host()->SetElementOpacityMutated(root_->element_id(),
+    layer_tree_host()->SetElementOpacityMutated(root->element_id(),
                                                 ElementListType::ACTIVE, 0.3f);
 
     // When using layer lists, we don't have to store the opacity on the layer.
-    EXPECT_EQ(1.0f, root_->opacity());
+    EXPECT_EQ(1.0f, root->opacity());
     // The opacity should have been set directly on the effect node instead.
-    EXPECT_EQ(0.3f,
-              layer_tree_host()
-                  ->property_trees()
-                  ->effect_tree.FindNodeFromElementId(root_->element_id())
-                  ->opacity);
+    EXPECT_EQ(0.3f, layer_tree_host()
+                        ->property_trees()
+                        ->effect_tree.FindNodeFromElementId(root->element_id())
+                        ->opacity);
     EndTest();
   }
 };
@@ -1815,20 +1743,17 @@ class LayerTreeHostTestAnimationOpacityMutatedUsingLayerLists
 SINGLE_THREAD_TEST_F(LayerTreeHostTestAnimationOpacityMutatedUsingLayerLists);
 
 class LayerTreeHostTestAnimationTransformMutatedNotUsingLayerLists
-    : public LayerTreeHostTestLayerListsTest {
- public:
-  LayerTreeHostTestAnimationTransformMutatedNotUsingLayerLists()
-      : LayerTreeHostTestLayerListsTest(false) {}
-
+    : public LayerTreeHostTest {
  protected:
   void BeginTest() override {
-    EXPECT_EQ(gfx::Transform(), root_->transform());
+    Layer* root = layer_tree_host()->root_layer();
+    EXPECT_EQ(gfx::Transform(), root->transform());
     gfx::Transform expected_transform;
     expected_transform.Translate(42, 42);
     layer_tree_host()->SetElementTransformMutated(
-        root_->element_id(), ElementListType::ACTIVE, expected_transform);
+        root->element_id(), ElementListType::ACTIVE, expected_transform);
     // When not using layer lists, transform is stored on the layer.
-    EXPECT_EQ(expected_transform, root_->transform());
+    EXPECT_EQ(expected_transform, root->transform());
     EndTest();
   }
 };
@@ -1837,44 +1762,36 @@ SINGLE_THREAD_TEST_F(
     LayerTreeHostTestAnimationTransformMutatedNotUsingLayerLists);
 
 class LayerTreeHostTestAnimationTransformMutatedUsingLayerLists
-    : public LayerTreeHostTestLayerListsTest {
+    : public LayerTreeHostTest {
  public:
-  LayerTreeHostTestAnimationTransformMutatedUsingLayerLists()
-      : LayerTreeHostTestLayerListsTest(true) {}
+  LayerTreeHostTestAnimationTransformMutatedUsingLayerLists() {
+    SetUseLayerLists();
+  }
 
  protected:
   void BeginTest() override {
-    // Insert a dummy transform node to observe its mutation. This would
-    // normally have been created by PaintArtifactCompositor.
-    int transform_node_id =
-        layer_tree_host()->property_trees()->transform_tree.Insert(
-            TransformNode(), TransformTree::kInvalidNodeId);
-    layer_tree_host()
-        ->property_trees()
-        ->element_id_to_transform_node_index[root_->element_id()] =
-        transform_node_id;
-
-    EXPECT_EQ(gfx::Transform(), root_->transform());
+    Layer* root = layer_tree_host()->root_layer();
+    EXPECT_EQ(gfx::Transform(), root->transform());
     EXPECT_EQ(gfx::Transform(),
               layer_tree_host()
                   ->property_trees()
-                  ->transform_tree.FindNodeFromElementId(root_->element_id())
+                  ->transform_tree.FindNodeFromElementId(root->element_id())
                   ->local);
 
     gfx::Transform expected_transform;
     expected_transform.Translate(42, 42);
     layer_tree_host()->SetElementTransformMutated(
-        root_->element_id(), ElementListType::ACTIVE, expected_transform);
+        root->element_id(), ElementListType::ACTIVE, expected_transform);
 
     // When using layer lists, we don't have to store the transform on the
     // layer.
-    EXPECT_EQ(gfx::Transform(), root_->transform());
+    EXPECT_EQ(gfx::Transform(), root->transform());
     // The transform should have been set directly on the transform node
     // instead.
     EXPECT_EQ(expected_transform,
               layer_tree_host()
                   ->property_trees()
-                  ->transform_tree.FindNodeFromElementId(root_->element_id())
+                  ->transform_tree.FindNodeFromElementId(root->element_id())
                   ->local);
     EndTest();
   }
@@ -1883,21 +1800,18 @@ class LayerTreeHostTestAnimationTransformMutatedUsingLayerLists
 SINGLE_THREAD_TEST_F(LayerTreeHostTestAnimationTransformMutatedUsingLayerLists);
 
 class LayerTreeHostTestAnimationFilterMutatedNotUsingLayerLists
-    : public LayerTreeHostTestLayerListsTest {
- public:
-  LayerTreeHostTestAnimationFilterMutatedNotUsingLayerLists()
-      : LayerTreeHostTestLayerListsTest(false) {}
-
+    : public LayerTreeHostTest {
  protected:
   void BeginTest() override {
+    Layer* root = layer_tree_host()->root_layer();
     FilterOperations filters;
-    EXPECT_EQ(FilterOperations(), root_->filters());
+    EXPECT_EQ(FilterOperations(), root->filters());
     filters.Append(FilterOperation::CreateOpacityFilter(0.5f));
     layer_tree_host()->SetElementFilterMutated(
-        root_->element_id(), ElementListType::ACTIVE, filters);
+        root->element_id(), ElementListType::ACTIVE, filters);
     // When not using layer lists, filters are just stored directly on the
     // layer.
-    EXPECT_EQ(filters, root_->filters());
+    EXPECT_EQ(filters, root->filters());
     EndTest();
   }
 };
@@ -1905,41 +1819,34 @@ class LayerTreeHostTestAnimationFilterMutatedNotUsingLayerLists
 SINGLE_THREAD_TEST_F(LayerTreeHostTestAnimationFilterMutatedNotUsingLayerLists);
 
 class LayerTreeHostTestAnimationFilterMutatedUsingLayerLists
-    : public LayerTreeHostTestLayerListsTest {
+    : public LayerTreeHostTest {
  public:
-  LayerTreeHostTestAnimationFilterMutatedUsingLayerLists()
-      : LayerTreeHostTestLayerListsTest(true) {}
+  LayerTreeHostTestAnimationFilterMutatedUsingLayerLists() {
+    SetUseLayerLists();
+  }
 
  protected:
   void BeginTest() override {
-    // Insert a dummy effect node to observe its mutation. This would
-    // normally have been created by PaintArtifactCompositor.
-    int effect_node_id =
-        layer_tree_host()->property_trees()->effect_tree.Insert(
-            EffectNode(), EffectTree::kInvalidNodeId);
-    layer_tree_host()
-        ->property_trees()
-        ->element_id_to_effect_node_index[root_->element_id()] = effect_node_id;
-
-    EXPECT_EQ(FilterOperations(), root_->filters());
+    Layer* root = layer_tree_host()->root_layer();
+    EXPECT_EQ(FilterOperations(), root->filters());
     EXPECT_EQ(FilterOperations(),
               layer_tree_host()
                   ->property_trees()
-                  ->effect_tree.FindNodeFromElementId(root_->element_id())
+                  ->effect_tree.FindNodeFromElementId(root->element_id())
                   ->filters);
 
     FilterOperations filters;
     filters.Append(FilterOperation::CreateOpacityFilter(0.5f));
     layer_tree_host()->SetElementFilterMutated(
-        root_->element_id(), ElementListType::ACTIVE, filters);
+        root->element_id(), ElementListType::ACTIVE, filters);
 
     // When using layer lists, we don't have to store the filters on the layer.
-    EXPECT_EQ(FilterOperations(), root_->filters());
+    EXPECT_EQ(FilterOperations(), root->filters());
     // The filter should have been set directly on the effect node instead.
     EXPECT_EQ(filters,
               layer_tree_host()
                   ->property_trees()
-                  ->effect_tree.FindNodeFromElementId(root_->element_id())
+                  ->effect_tree.FindNodeFromElementId(root->element_id())
                   ->filters);
     EndTest();
   }
@@ -2044,8 +1951,6 @@ class LayerTreeHostTestEffectTreeSync : public LayerTreeHostTest {
     }
   }
 
-  void AfterTest() override {}
-
  private:
   scoped_refptr<Layer> root_;
   FilterOperations blur_filter_;
@@ -2129,8 +2034,6 @@ class LayerTreeHostTestTransformTreeSync : public LayerTreeHostTest {
     }
   }
 
-  void AfterTest() override {}
-
  private:
   scoped_refptr<Layer> layer_;
 };
@@ -2203,8 +2106,6 @@ class LayerTreeHostTestTransformTreeDamageIsUpdated : public LayerTreeHostTest {
       impl->active_tree()->SetTransformMutated(child_->element_id(), scale);
     }
   }
-
-  void AfterTest() override {}
 
  private:
   scoped_refptr<Layer> root_;
@@ -2286,8 +2187,6 @@ class LayerTreeHostTestSwitchMaskLayer : public LayerTreeHostTest {
         break;
     }
   }
-
-  void AfterTest() override {}
 
   FakeContentLayerClient client_;
   scoped_refptr<UpdateCountingLayer> mask_layer_;
@@ -2461,8 +2360,6 @@ class LayerTreeHostTestGpuRasterDeviceSizeChanged : public LayerTreeHostTest {
     }
   }
 
-  void AfterTest() override {}
-
  private:
   int num_draws_;
   const gfx::Size bounds_;
@@ -2566,8 +2463,6 @@ class LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate
     }
   }
 
-  void AfterTest() override {}
-
  private:
   FakeContentLayerClient client_;
   scoped_refptr<Layer> root_layer_;
@@ -2631,8 +2526,6 @@ class LayerTreeHostTestDeviceScaleFactorChange : public LayerTreeHostTest {
 
     return draw_result;
   }
-
-  void AfterTest() override {}
 
  private:
   FakeContentLayerClient client_;
@@ -2752,8 +2645,6 @@ class LayerTreeHostTestRasterColorSpaceChange : public LayerTreeHostTest {
         break;
     }
   }
-
-  void AfterTest() override {}
 
  private:
   gfx::ColorSpace space1_;
@@ -2942,8 +2833,6 @@ class LayerTreeHostTestUndrawnLayersDamageLater : public LayerTreeHostTest {
     }
   }
 
-  void AfterTest() override {}
-
  private:
   FakeContentLayerClient client_;
   scoped_refptr<FakePictureLayer> root_layer_;
@@ -3048,8 +2937,6 @@ class LayerTreeHostTestDamageWithScale : public LayerTreeHostTest {
     }
   }
 
-  void AfterTest() override {}
-
  private:
   FakeContentLayerClient client_;
   scoped_refptr<Layer> root_layer_;
@@ -3097,8 +2984,6 @@ class LayerTreeHostTestCommit : public LayerTreeHostTest {
 
     EndTest();
   }
-
-  void AfterTest() override {}
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestCommit);
@@ -3148,8 +3033,6 @@ class LayerTreeHostTestFrameTimeUpdatesAfterActivationFails
   void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
     EXPECT_GT(frame_count_with_pending_tree_, 1);
   }
-
-  void AfterTest() override {}
 
  private:
   int frame_count_with_pending_tree_;
@@ -3201,8 +3084,6 @@ class LayerTreeHostTestFrameTimeUpdatesAfterDraw : public LayerTreeHostTest {
       EXPECT_EQ(0, frame_);
   }
 
-  void AfterTest() override {}
-
  private:
   int frame_;
   base::TimeTicks first_frame_time_;
@@ -3229,8 +3110,7 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
                                        2 * root_layer->bounds().height()));
     scroll_layer_->SetScrollOffset(gfx::ScrollOffset());
 
-    CreateVirtualViewportLayers(root_layer, scroll_layer_, root_layer->bounds(),
-                                root_layer->bounds(), layer_tree_host());
+    SetupViewport(scroll_layer_, root_layer->bounds());
 
     layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 0.5f, 2.f);
     client_.set_bounds(root_layer->bounds());
@@ -3276,8 +3156,6 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
         break;
     }
   }
-
-  void AfterTest() override {}
 
   FakeContentLayerClient client_;
   scoped_refptr<Layer> scroll_layer_;
@@ -3457,8 +3335,6 @@ class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
 
     EndTest();
   }
-
-  void AfterTest() override {}
 
  private:
   FakeContentLayerClient client_;
@@ -4026,8 +3902,6 @@ class LayerTreeHostTestLCDChange : public LayerTreeHostTest {
     }
   }
 
-  void AfterTest() override {}
-
  private:
   FakeContentLayerClient client_;
   int num_tiles_rastered_;
@@ -4051,8 +3925,6 @@ class LayerTreeHostTestBeginFrameNotificationShutdownWhileEnabled
         FROM_HERE,
         base::BindOnce(&LayerTreeHostTest::EndTest, base::Unretained(this)));
   }
-
-  void AfterTest() override {}
 };
 
 MULTI_THREAD_TEST_F(
@@ -4201,8 +4073,6 @@ class LayerTreeHostTestUninvertibleTransformDoesNotBlockActivation
     EndTest();
   }
 
-  void AfterTest() override {}
-
   FakeContentLayerClient client_;
 };
 
@@ -4248,8 +4118,6 @@ class LayerTreeHostTestNumFramesPending : public LayerTreeHostTest {
         break;
     }
   }
-
-  void AfterTest() override {}
 
  protected:
   int frame_;
@@ -4328,8 +4196,6 @@ class LayerTreeHostTestUIResource : public LayerTreeHostTest {
         break;
     }
   }
-
-  void AfterTest() override {}
 
  private:
   // Must clear all resources before exiting.
@@ -4534,8 +4400,6 @@ class LayerTreeHostTestLayersPushProperties : public LayerTreeHostTest {
     if (leaf_always_pushing_layer_->layer_tree_host())
       ++expected_push_properties_leaf_layer_;
   }
-
-  void AfterTest() override {}
 
   int num_commits_;
   FakeContentLayerClient client_;
@@ -4801,8 +4665,6 @@ class LayerTreeHostTestPropertyChangesDuringUpdateArePushed
     }
   }
 
-  void AfterTest() override {}
-
   scoped_refptr<Layer> root_;
   scoped_refptr<FakePaintedScrollbarLayer> scrollbar_layer_;
 };
@@ -4860,8 +4722,6 @@ class LayerTreeHostTestSetDrawableCausesCommit : public LayerTreeHostTest {
     }
   }
 
-  void AfterTest() override {}
-
   scoped_refptr<PushPropertiesCountingLayer> root_;
   scoped_refptr<PushPropertiesCountingLayer> child_;
 };
@@ -4896,8 +4756,6 @@ class LayerTreeHostTestCasePushPropertiesThreeGrandChildren
     LayerTreeHostTest::SetupTree();
     client_.set_bounds(root_->bounds());
   }
-
-  void AfterTest() override {}
 
   FakeContentLayerClient client_;
   scoped_refptr<PushPropertiesCountingLayer> root_;
@@ -5486,8 +5344,6 @@ class LayerTreeHostTestPushHiddenLayer : public LayerTreeHostTest {
     }
   }
 
-  void AfterTest() override {}
-
   scoped_refptr<Layer> root_layer_;
   scoped_refptr<SolidColorLayer> parent_layer_;
   scoped_refptr<SolidColorLayer> child_layer_;
@@ -5520,8 +5376,6 @@ class LayerTreeHostTestUpdateLayerInEmptyViewport : public LayerTreeHostTest {
     EXPECT_GT(root_layer_->update_count(), 0);
     EndTest();
   }
-
-  void AfterTest() override {}
 
   FakeContentLayerClient client_;
   scoped_refptr<FakePictureLayer> root_layer_;
@@ -5617,8 +5471,6 @@ class LayerTreeHostTestElasticOverscroll : public LayerTreeHostTest {
         NOTREACHED();
     }
   }
-
-  void AfterTest() override {}
 
  private:
   FakeContentLayerClient client_;
@@ -5920,8 +5772,6 @@ class LayerTreeHostTestKeepSwapPromise : public LayerTreeHostTest {
     }
   }
 
-  void AfterTest() override {}
-
  private:
   int num_swaps_ = 0;
   scoped_refptr<Layer> layer_;
@@ -6102,8 +5952,6 @@ class LayerTreeHostTestDeferSwapPromiseForVisibility
     EndTest();
   }
 
-  void AfterTest() override {}
-
   TestSwapPromiseResult swap_promise_result_;
   bool sent_queue_request_ = false;
 };
@@ -6188,8 +6036,6 @@ class LayerTreeHostTestSwapPromiseDuringCommit : public LayerTreeHostTest {
     EndTest();
   }
 
-  void AfterTest() override {}
-
   TestSwapPromiseResult swap_promise_result_[2];
 };
 
@@ -6244,8 +6090,6 @@ class LayerTreeHostTestSimpleSwapPromiseMonitor : public LayerTreeHostTest {
 
     EndTest();
   }
-
-  void AfterTest() override {}
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSimpleSwapPromiseMonitor);
@@ -6287,8 +6131,6 @@ class LayerTreeHostTestHighResRequiredAfterEvictingUIResources
     ui_resource_ = nullptr;
     EndTest();
   }
-
-  void AfterTest() override {}
 
   std::unique_ptr<FakeScopedUIResource> ui_resource_;
 };
@@ -6344,8 +6186,6 @@ class LayerTreeHostTestGpuRasterizationDefault : public LayerTreeHostTest {
     EndTest();
   }
 
-  void AfterTest() override {}
-
   FakeContentLayerClient layer_client_;
   FakePictureLayer* layer_;
   FakeRecordingSource* recording_source_;
@@ -6394,8 +6234,6 @@ class LayerTreeHostTestEmptyLayerGpuRasterization : public LayerTreeHostTest {
     EXPECT_FALSE(host_impl->use_gpu_rasterization());
     EndTest();
   }
-
-  void AfterTest() override {}
 
   FakeContentLayerClient layer_client_;
   FakePictureLayer* layer_;
@@ -6486,8 +6324,6 @@ class LayerTreeHostTestGpuRasterizationEnabled
     EXPECT_TRUE(host_impl->use_gpu_rasterization());
     EndTest();
   }
-
-  void AfterTest() override {}
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationEnabled);
@@ -6546,8 +6382,6 @@ class LayerTreeHostTestGpuRasterizationReenabled
       EndTest();
   }
 
-  void AfterTest() override {}
-
   int num_commits_ = 0;
   bool expected_use_msaa_ = true;
 };
@@ -6600,8 +6434,6 @@ class LayerTreeHostTestGpuRasterizationNonAASticky
     if (num_commits_ > 100)
       EndTest();
   }
-
-  void AfterTest() override {}
 
   int num_commits_ = 0;
   bool expected_use_msaa_ = true;
@@ -6668,8 +6500,6 @@ class LayerTreeHostTestGpuRasterizationForced : public LayerTreeHostTest {
     EXPECT_TRUE(host_impl->use_gpu_rasterization());
     EndTest();
   }
-
-  void AfterTest() override {}
 
   FakeContentLayerClient layer_client_;
   FakePictureLayer* layer_;
@@ -6913,8 +6743,6 @@ class LayerTreeHostTestRenderSurfaceEffectTreeIndex : public LayerTreeHostTest {
             root_->bounds(), 1.f, viz::LocalSurfaceIdAllocation());
     }
   }
-
-  void AfterTest() override {}
 
  private:
   scoped_refptr<Layer> root_;
@@ -7247,8 +7075,6 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
     EXPECT_NE(4, frame_) << tile->contents_scale_key();
   }
 
-  void AfterTest() override {}
-
   FakeContentLayerClient client_;
   int frame_;
   bool posted_;
@@ -7320,7 +7146,6 @@ class RasterizeWithGpuRasterizationCreatesResources : public LayerTreeHostTest {
     EndTest();
     return draw_result;
   }
-  void AfterTest() override {}
 
   FakeContentLayerClient client_;
 };
@@ -7362,8 +7187,6 @@ class GpuRasterizationRasterizesBorderTiles : public LayerTreeHostTest {
     EndTest();
     return draw_result;
   }
-
-  void AfterTest() override {}
 
  private:
   FakeContentLayerClient client_;
@@ -7649,8 +7472,6 @@ class LayerTreeHostTestActivationCausesPrepareTiles : public LayerTreeHostTest {
     ++scheduled_prepare_tiles_count_;
   }
 
-  void AfterTest() override {}
-
  protected:
   FakeContentLayerClient client_;
   int scheduled_prepare_tiles_count_;
@@ -7742,8 +7563,6 @@ class LayerTreeHostTestUpdateCopyRequests : public LayerTreeHostTest {
     }
   }
 
-  void AfterTest() override {}
-
  private:
   scoped_refptr<Layer> root;
   scoped_refptr<Layer> child;
@@ -7809,8 +7628,6 @@ class LayerTreeTestPageScaleFlags : public LayerTreeTest {
     EndTest();
   }
 
-  void AfterTest() override {}
-
   std::vector<int> affected_by_page_scale_;
   std::vector<int> not_affected_by_page_scale_;
 };
@@ -7827,8 +7644,6 @@ class LayerTreeHostTestDestroyWhileInitializingOutputSurface
     // the correct thread.
     EndTest();
   }
-
-  void AfterTest() override {}
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestDestroyWhileInitializingOutputSurface);
@@ -7866,8 +7681,6 @@ class LayerTreeHostTestPaintedDeviceScaleFactor : public LayerTreeHostTest {
     EXPECT_EQ(2.0f, frame.metadata.device_scale_factor);
     EndTest();
   }
-
-  void AfterTest() override {}
 };
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestPaintedDeviceScaleFactor);
 
@@ -7930,8 +7743,6 @@ class LayerTreeHostTestLocalSurfaceId : public LayerTreeHostTest {
     EndTest();
   }
 
-  void AfterTest() override {}
-
   viz::LocalSurfaceIdAllocation expected_local_surface_id_allocation_;
   viz::ParentLocalSurfaceIdAllocator allocator_;
 };
@@ -7993,8 +7804,6 @@ class LayerTreeHostTestLocalSurfaceIdSkipChildNum : public LayerTreeHostTest {
     EndTest();
   }
 
-  void AfterTest() override {}
-
   viz::LocalSurfaceIdAllocation expected_local_surface_id_allocation_;
   viz::LocalSurfaceIdAllocation child_local_surface_id_allocation_;
   viz::ParentLocalSurfaceIdAllocator allocator_;
@@ -8048,8 +7857,6 @@ class LayerTreeHostTestRequestNewLocalSurfaceId : public LayerTreeHostTest {
         host_impl->active_tree()->new_local_surface_id_request_for_testing());
     EndTest();
   }
-
-  void AfterTest() override {}
 
   viz::LocalSurfaceIdAllocation expected_parent_local_surface_id_allocation_;
   viz::ParentLocalSurfaceIdAllocator allocator_;
@@ -8122,8 +7929,6 @@ class GpuRasterizationSucceedsWithLargeImage : public LayerTreeHostTest {
 
   void DidCommit() override { EndTest(); }
 
-  void AfterTest() override {}
-
  private:
   FakeContentLayerClient client_;
   const gfx::Size viewport_size_;
@@ -8159,8 +7964,6 @@ class LayerTreeHostTestSubmitFrameMetadata : public LayerTreeHostTest {
 
     EndTest();
   }
-
-  void AfterTest() override {}
 
   int num_swaps_ = 0;
   gfx::Rect drawn_viewport_;
@@ -8231,8 +8034,6 @@ class LayerTreeHostTestSubmitFrameResources : public LayerTreeHostTest {
 
     EndTest();
   }
-
-  void AfterTest() override {}
 
   std::vector<viz::ResourceId> resources_;
 };
@@ -8338,8 +8139,6 @@ class LayerTreeHostTestQueueImageDecode : public LayerTreeHostTest {
       EndTest();
   }
 
-  void AfterTest() override {}
-
  private:
   bool first_ = true;
   bool one_commit_done_ = false;
@@ -8375,8 +8174,6 @@ class LayerTreeHostTestQueueImageDecodeNonLazy : public LayerTreeHostTest {
     EndTest();
   }
 
-  void AfterTest() override {}
-
  private:
   bool first_ = true;
   SkBitmap bitmap_;
@@ -8386,25 +8183,17 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestQueueImageDecodeNonLazy);
 
 class LayerTreeHostTestHudLayerWithLayerLists : public LayerTreeHostTest {
  public:
+  LayerTreeHostTestHudLayerWithLayerLists() { SetUseLayerLists(); }
+
   void InitializeSettings(LayerTreeSettings* settings) override {
     settings->initial_debug_state.show_paint_rects = true;
-    settings->use_layer_lists = true;
   }
 
-  void SetupTree() override {
-    LayerTreeHostTest::SetupTree();
-
-    // Build the property trees for the root layer.
-    // TODO(pdr): Do not use the property tree builder for testing in layer list
-    // mode. This will require rewriting this test to manually build property
-    // trees.
-    layer_tree_host()->BuildPropertyTreesForTesting();
-
-    // The HUD layer should not have been setup by the property tree building.
+  void BeginTest() override {
+    // The HUD layer should not have been setup.
     DCHECK_EQ(layer_tree_host()->hud_layer(), nullptr);
+    PostSetNeedsCommitToMainThread();
   }
-
-  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override { EndTest(); }
 
@@ -8417,8 +8206,6 @@ class LayerTreeHostTestHudLayerWithLayerLists : public LayerTreeHostTest {
     DCHECK_EQ(hud->effect_tree_index(), root_layer->effect_tree_index());
     DCHECK_EQ(hud->scroll_tree_index(), root_layer->scroll_tree_index());
   }
-
-  void AfterTest() override {}
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestHudLayerWithLayerLists);
@@ -8495,8 +8282,6 @@ class LayerTreeHostTestDiscardAckAfterRelease : public LayerTreeHostTest {
     }
     received_ack_ = false;
   }
-
-  void AfterTest() override {}
 
  private:
   bool received_ack_ = false;
@@ -8713,8 +8498,6 @@ class LayerTreeHostTestImageDecodingHints : public LayerTreeHostTest {
     EndTest();
   }
 
-  void AfterTest() override {}
-
  private:
   FakeContentLayerClient content_layer_client_;
 };
@@ -8778,8 +8561,6 @@ class LayerTreeHostTestCheckerboardUkm : public LayerTreeHostTest {
 
     EndTest();
   }
-
-  void AfterTest() override {}
 
  private:
   const GURL url_;
@@ -8856,8 +8637,6 @@ class DontUpdateLayersWithEmptyBounds : public LayerTreeTest {
     }
   }
 
-  void AfterTest() override {}
-
   scoped_refptr<FakePictureLayer> child_;
   scoped_refptr<FakePictureLayer> mask_;
   FakeContentLayerClient root_client_;
@@ -8904,7 +8683,6 @@ class LayerTreeHostTestNewLocalSurfaceIdForcesDraw : public LayerTreeHostTest {
     }
   }
 
-  void AfterTest() override {}
   viz::LocalSurfaceIdAllocation local_surface_id_allocation_;
   viz::ParentLocalSurfaceIdAllocator allocator_;
 };
@@ -8936,8 +8714,6 @@ class DidReceiveCompositorFrameAckNotSentWhenNotNeeded
       EndTest();
     }
   }
-
-  void AfterTest() override {}
 
  private:
   bool received_first_frame_ = false;
@@ -9039,7 +8815,6 @@ class LayerTreeHostTestPartialTileDamage : public LayerTreeHostTest {
       : partial_damage_(20, 20, 45, 60), layer_size_(512, 512) {}
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
-  void AfterTest() override {}
 
   void InitializeSettings(LayerTreeSettings* settings) override {
     settings->default_tile_size = gfx::Size(256, 256);

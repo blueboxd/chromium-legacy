@@ -11,14 +11,14 @@ class GURL;
 
 namespace android_webview {
 
-class AwContentsIoThreadClient;
+class AwContentsNetworkClient;
 
 // Returns the updated request's |load_flags| based on the settings.
-int UpdateLoadFlags(int load_flags, AwContentsIoThreadClient* client);
+int UpdateLoadFlags(int load_flags, AwContentsNetworkClient* client);
 
 // Returns true if the given URL should be aborted with
 // net::ERR_ACCESS_DENIED.
-bool ShouldBlockURL(const GURL& url, AwContentsIoThreadClient* client);
+bool ShouldBlockURL(const GURL& url, AwContentsNetworkClient* client);
 
 // Determines the desired size for WebView's on-disk HttpCache, measured in
 // Bytes.

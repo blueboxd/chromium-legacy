@@ -352,10 +352,14 @@ class SyncService : public KeyedService {
   // USER DEMOGRAPHICS
   //////////////////////////////////////////////////////////////////////////////
 
-  // Gets user synced demographics. Returns an error status with an empty value
-  // when demographics cannot be provided. You need to provide an accurate |now|
-  // time that represents the user's current time.
-  virtual UserDemographicsResult GetUserDemographics(base::Time now) = 0;
+  // Gets the synced user’s noised birth year and gender, see doc of
+  // metrics::DemographicMetricsProvider in
+  // components/metrics/demographic_metrics_provider.h for more details. Returns
+  // an error status with an empty value when the user's birth year or gender
+  // cannot be provided. You need to provide an accurate |now| time that
+  // represents the current time.
+  virtual UserDemographicsResult GetUserNoisedBirthYearAndGender(
+      base::Time now) = 0;
 
   //////////////////////////////////////////////////////////////////////////////
   // OBSERVERS

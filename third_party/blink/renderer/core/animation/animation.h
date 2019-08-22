@@ -73,6 +73,9 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   USING_GARBAGE_COLLECTED_MIXIN(Animation);
 
  public:
+  // The pending state is not to spec; however, it is currently used for
+  // worklet-animations and dev tools.
+  // https://www.w3.org/TR/web-animations-1/#the-animationplaystate-enumeration
   enum AnimationPlayState {
     kUnset,
     kIdle,
@@ -122,14 +125,18 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   void cancel();
 
   double currentTime(bool& is_null);
-  double currentTime();
+  double currentTime() const;
   void setCurrentTime(double new_current_time,
                       bool is_null,
                       ExceptionState& = ASSERT_NO_EXCEPTION);
   double UnlimitedCurrentTimeInternal() const;
 
+  // https://drafts.csswg.org/web-animations/#play-states
+  AnimationPlayState CalculateAnimationPlayState() const;
   static const char* PlayStateString(AnimationPlayState);
-  String playState() const { return PlayStateString(animation_play_state_); }
+  String playState() const {
+    return PlayStateString(CalculateAnimationPlayState());
+  }
 
   bool pending() const;
 
@@ -144,24 +151,16 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   ScriptPromise ready(ScriptState*);
 
   bool Paused() const {
-    return GetPlayState() == kPaused && !is_paused_for_testing_;
+    return CalculateAnimationPlayState() == kPaused && !is_paused_for_testing_;
   }
 
   bool Playing() const override {
-    return GetPlayState() == kRunning && !Limited() && !is_paused_for_testing_;
+    return CalculateAnimationPlayState() == kRunning && !Limited() &&
+           !is_paused_for_testing_;
   }
-
-  // Indicates if the animation is out of sync with the compositor. A change to
-  // the play state (running/paused) requires synchronization with the
-  // compositor.
-  bool NeedsCompositorTimeSync() const {
-    // TODO(crbug.com/958433): Eliminate need for pending play state.
-    return internal_play_state_ == kPending;
-  }
-
-  AnimationPlayState GetPlayState() const;
 
   bool Limited() const { return Limited(CurrentTimeInternal()); }
+
   bool FinishedInternal() const { return finished_; }
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(finish, kFinish)
@@ -172,7 +171,7 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   bool HasPendingActivity() const final;
   void ContextDestroyed(ExecutionContext*) override;
 
-  double playbackRate() const;
+  double playbackRate() const { return playback_rate_; }
   void setPlaybackRate(double, ExceptionState& = ASSERT_NO_EXCEPTION);
   AnimationTimeline* timeline() { return timeline_; }
   Document* GetDocument();
@@ -212,7 +211,7 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   bool HasActiveAnimationsOnCompositor();
   void SetCompositorPending(bool effect_changed = false);
   void NotifyCompositorStartTime(double timeline_time);
-  void NotifyStartTime(double timeline_time);
+
   // CompositorAnimationClient implementation.
   CompositorAnimation* GetCompositorAnimation() const override {
     return compositor_animation_ ? compositor_animation_->GetAnimation()
@@ -245,20 +244,16 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
 
   bool CompositorPendingForTesting() const { return compositor_pending_; }
 
+  void CommitAllUpdatesForTesting() { ApplyUpdates(); }
+
  protected:
   DispatchEventResult DispatchEventInternal(Event&) override;
   void AddedEventListener(const AtomicString& event_type,
                           RegisteredEventListener&) override;
 
  private:
-  // TODO(crbug.com/960944): Deprecate. This version of the play state is not to
-  // spec due to the inclusion of a 'pending' state. Whether or not an animation
-  // is pending is separate from the actual play state.
-  AnimationPlayState PlayStateInternal() const;
-
   double CurrentTimeInternal() const;
-  void SetCurrentTimeInternal(double new_current_time,
-                              TimingUpdateReason = kTimingUpdateOnDemand);
+  void SetCurrentTimeInternal(double new_current_time);
 
   void ClearOutdated();
   void ForceServiceOnNextFrame();
@@ -272,26 +267,10 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   double EffectivePlaybackRate() const;
   void ResolvePendingPlaybackRate();
 
-  // https://drafts.csswg.org/web-animations/#play-states
-  // Per spec the viable states are: idle, running, paused and finished.
-  // Our implementation has an additional state called 'pending' which serves a
-  // similar purpose to micro-tasks in the spec. This additional state is for
-  // internal flow control only and should not be reported via
-  // animation.playState.
-  // TODO(crbug.com/958433): Cleanup implementation to better align with the
-  // spec.
-  AnimationPlayState CalculatePlayState() const;
-  // Spec compliant variant of play state calculation that is reported via
-  // animation.playState.
-  AnimationPlayState CalculateAnimationPlayState() const;
-
   base::Optional<double> CalculateStartTime(double current_time) const;
   double CalculateCurrentTime() const;
 
-  void UnpauseInternal();
-  void SetPlaybackRateInternal(double);
   void SetStartTimeInternal(base::Optional<double>);
-  void UpdateCurrentTimingState(TimingUpdateReason);
 
   void BeginUpdatingState();
   void EndUpdatingState();
@@ -318,28 +297,47 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
 
   void QueueFinishedEvent();
 
-  void ResetPendingTasks();
+  bool ResetPendingTasks();
   double TimelineTime() const;
   DocumentTimeline& TickingTimeline();
 
+  void ScheduleAsyncFinish();
+  void AsyncFinishMicrotask();
+  void ApplyUpdates();
+  void ApplyUpdates(double ready_time);
+  void ApplyPendingPlaybackRate();
+
+  // Updates the finished state of the animation. If the update is the result of
+  // a discontinuous time change then the value for current time is not bound by
+  // the limits of the animation. The finished notification may be synchronous
+  // or asynchronous. A synchronous notification is used in the case of
+  // explicitly calling finish on an animation.
+  enum class UpdateType { kContinuous, kDiscontinuous };
+  enum class NotificationType { kAsync, kSync };
+  void UpdateFinishedState(UpdateType update_context,
+                           NotificationType notification_type);
+
+  // Plays an animation. When auto_rewind is enabled, the current time can be
+  // adjusted to accommodate reversal of an animation or snapping to an
+  // endpoint.
+  enum class AutoRewind { kDisabled, kEnabled };
+  void PlayInternal(AutoRewind auto_rewind, ExceptionState& exception_state);
+
+  void CommitPendingPause(double ready_time);
+  void CommitPendingPlay(double ready_time);
+  void CommitFinishNotification();
+
+  // Tracking the state of animations in dev tools.
+  void NotifyProbe();
+
   String id_;
 
-  // Extended play state with additional pending state for managing timing of
-  // micro-tasks.
-  AnimationPlayState internal_play_state_;
-  // Web exposed play state, which does not have pending state.
   AnimationPlayState animation_play_state_;
   double playback_rate_;
-  // Playback rate that is currently in effect if differing from playback_rate_.
-  // When playback_rate_ is modified, the new rate takes effect on the next
-  // async tick. The currently active value is stored for use by the
-  // Animation.playbackRate method.
-  // TODO(crbug.com/960944): Switch to using pending_playback_rate_ once the
-  // web-animations implementation is more closely aligned with the spec (i.e.
-  // supports scheduling of pending tasks).
-  base::Optional<double> active_playback_rate_;
+  base::Optional<double> pending_playback_rate_;
   base::Optional<double> start_time_;
   base::Optional<double> hold_time_;
+  base::Optional<double> previous_current_time_;
 
   unsigned sequence_number_;
 
@@ -352,22 +350,28 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   Member<Document> document_;
   Member<AnimationTimeline> timeline_;
 
-  // Reflects all pausing, including via pauseForTesting().
-  bool paused_;
+  // Testing flags.
   bool is_paused_for_testing_;
   bool is_composited_animation_disabled_for_testing_;
 
-  // Pending micro-tasks. These flags are used for tracking purposes only for
-  // the Animation.pending attribute, and do not otherwise affect internal flow
-  // control.
+  // Pending tasks.
   bool pending_pause_;
   bool pending_play_;
+  bool pending_effect_;
+  bool pending_finish_notification_;
+  bool has_queued_microtask_;
 
   // This indicates timing information relevant to the animation's effect
-  // has changed by means other than the ordinary progression of time
+  // has changed by means other than the ordinary progression of time.
   bool outdated_;
 
+  // Indicates if completion of the animation has already been handled. Finish
+  // promises and events should only be rearmed if leaving and re-entering the
+  // finished state.  By spec, we would check if the finished promise is
+  // pending; however, we only create a finished promise if explicitly requested
+  // in the executing script.
   bool finished_;
+
   // Holds a 'finished' event queued for asynchronous dispatch via the
   // ScriptedAnimationController. This object remains active until the
   // event is actually dispatched.
@@ -401,21 +405,6 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
     kSetCompositorPending,
     kSetCompositorPendingWithEffectChanged,
     kDoNotSetCompositorPending,
-  };
-
-  class PlayStateUpdateScope {
-    STACK_ALLOCATED();
-
-   public:
-    PlayStateUpdateScope(Animation&,
-                         TimingUpdateReason,
-                         CompositorPendingChange = kSetCompositorPending);
-    ~PlayStateUpdateScope();
-
-   private:
-    Member<Animation> animation_;
-    AnimationPlayState initial_play_state_;
-    CompositorPendingChange compositor_pending_change_;
   };
 
   // CompositorAnimation objects need to eagerly sever their connection to their
@@ -454,7 +443,6 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
 
   Member<CompositorAnimationHolder> compositor_animation_;
 
-  bool current_time_pending_;
   bool state_is_being_updated_;
 
   bool effect_suppressed_;

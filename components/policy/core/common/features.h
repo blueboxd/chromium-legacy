@@ -12,6 +12,7 @@ namespace policy {
 
 namespace features {
 
+// TODO(994227) Remove references to this now unused feature.
 POLICY_EXPORT extern const base::Feature kPolicyAtomicGroup;
 
 }

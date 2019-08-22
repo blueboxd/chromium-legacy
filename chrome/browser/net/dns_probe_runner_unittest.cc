@@ -97,7 +97,7 @@ class DnsProbeRunnerTest : public testing::Test {
     return network_context_.get();
   }
 
-  BrowserTaskEnvironment bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<network::mojom::NetworkContext> network_context_;
   std::unique_ptr<DnsProbeRunner> runner_;
 };

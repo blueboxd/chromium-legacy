@@ -23,6 +23,7 @@
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_store_change_unittest.h"
 #include "net/cookies/cookie_store_unittest.h"
+#include "net/cookies/cookie_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -88,9 +89,9 @@ INSTANTIATE_TYPED_TEST_SUITE_P(CookieStoreIOS,
 namespace {
 
 // Helper callback to be passed to CookieStore::GetAllCookiesForURLAsync().
-class GetAllCookiesCallback {
+class GetAllCookiesHelperCallback {
  public:
-  GetAllCookiesCallback() : did_run_(false) {}
+  GetAllCookiesHelperCallback() : did_run_(false) {}
 
   // Returns true if the callback has been run.
   bool did_run() { return did_run_; }
@@ -98,11 +99,11 @@ class GetAllCookiesCallback {
   // Returns the parameter of the callback.
   const net::CookieList& cookie_list() { return cookie_list_; }
 
-  void Run(const net::CookieList& cookie_list,
+  void Run(const net::CookieStatusList& cookie_status_list,
            const net::CookieStatusList& excluded_cookies) {
     ASSERT_FALSE(did_run_);
     did_run_ = true;
-    cookie_list_ = cookie_list;
+    cookie_list_ = net::cookie_util::StripStatuses(cookie_status_list);
   }
 
  private:
@@ -110,7 +111,7 @@ class GetAllCookiesCallback {
   net::CookieList cookie_list_;
 };
 
-void IgnoreList(const net::CookieList& ignored,
+void IgnoreList(const net::CookieStatusList& ignored,
                 const net::CookieStatusList& excluded_cookies) {}
 
 }  // namespace
@@ -255,11 +256,12 @@ TEST_F(CookieStoreIOSTest, DeleteCanonicalCookie) {
 
   // Cookie should still exist.
   base::RunLoop run_loop2;
-  GetCookies(base::BindLambdaForTesting(
-      [&](const CookieList& cookies, const CookieStatusList& excluded_list) {
+  GetCookies(
+      base::BindLambdaForTesting([&](const CookieStatusList& cookies,
+                                     const CookieStatusList& excluded_list) {
         ASSERT_EQ(1u, cookies.size());
-        EXPECT_EQ("abc", cookies[0].Name());
-        EXPECT_EQ("def", cookies[0].Value());
+        EXPECT_EQ("abc", cookies[0].cookie.Name());
+        EXPECT_EQ("def", cookies[0].cookie.Value());
         run_loop2.Quit();
       }));
   run_loop2.Run();
@@ -279,8 +281,9 @@ TEST_F(CookieStoreIOSTest, DeleteCanonicalCookie) {
 
   // Cookie should no longer exist.
   base::RunLoop run_loop4;
-  GetCookies(base::BindLambdaForTesting(
-      [&](const CookieList& cookies, const CookieStatusList& excluded_list) {
+  GetCookies(
+      base::BindLambdaForTesting([&](const CookieStatusList& cookies,
+                                     const CookieStatusList& excluded_list) {
         EXPECT_EQ(0u, cookies.size());
         run_loop4.Quit();
       }));
@@ -338,10 +341,11 @@ TEST_F(CookieStoreIOSTest, GetAllCookies) {
                                         net::CookieOptions::MakeAllInclusive(),
                                         net::CookieStore::SetCookiesCallback());
   // Check we can get the cookie.
-  GetAllCookiesCallback callback;
+  GetAllCookiesHelperCallback callback;
   cookie_store->GetCookieListWithOptionsAsync(
       kTestCookieURLFooBar, net::CookieOptions::MakeAllInclusive(),
-      base::Bind(&GetAllCookiesCallback::Run, base::Unretained(&callback)));
+      base::Bind(&GetAllCookiesHelperCallback::Run,
+                 base::Unretained(&callback)));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(callback.did_run());
   EXPECT_EQ(1u, callback.cookie_list().size());

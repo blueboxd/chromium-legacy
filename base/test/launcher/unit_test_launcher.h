@@ -129,14 +129,6 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
   // TestLauncherDelegate:
   bool GetTests(std::vector<TestIdentifier>* output) override;
 
-  std::vector<TestResult> ProcessTestResults(
-      const std::vector<std::string>& test_names,
-      const base::FilePath& output_file,
-      const std::string& output,
-      const base::TimeDelta& elapsed_time,
-      int exit_code,
-      bool was_timeout) override;
-
   CommandLine GetCommandLine(const std::vector<std::string>& test_names,
                              const FilePath& temp_dir,
                              FilePath* output_file) override;

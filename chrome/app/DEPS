@@ -69,6 +69,8 @@ specific_include_rules = {
     "+components/arc/mojom",
   ],
   "chrome_content_renderer_overlay_manifest\.cc": [
+    "+base/allocator",
+    "+chrome/common/performance_manager/mojom",
     "+chromeos/services/network_config/public",
     "+components/autofill/content/common",
     "+components/dom_distiller/content/common",

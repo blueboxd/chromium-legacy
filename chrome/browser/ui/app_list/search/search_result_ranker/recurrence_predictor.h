@@ -26,6 +26,8 @@ using ConditionalFrequencyPredictorConfig =
     RecurrencePredictorConfigProto::ConditionalFrequencyPredictorConfig;
 using FrecencyPredictorConfig =
     RecurrencePredictorConfigProto::FrecencyPredictorConfig;
+using FrequencyPredictorConfig =
+    RecurrencePredictorConfigProto::FrequencyPredictorConfig;
 using HourBinPredictorConfig =
     RecurrencePredictorConfigProto::HourBinPredictorConfig;
 using MarkovPredictorConfig =
@@ -117,6 +119,30 @@ class DefaultPredictor : public RecurrencePredictor {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DefaultPredictor);
+};
+
+// A simple frequency predictor that scores targets by their normalized counts.
+class FrequencyPredictor : public RecurrencePredictor {
+ public:
+  explicit FrequencyPredictor(const std::string& model_identifier);
+  FrequencyPredictor(const FrequencyPredictorConfig& config,
+                     const std::string& model_identifier);
+  ~FrequencyPredictor() override;
+
+  // RecurrencePredictor:
+  void Train(unsigned int target, unsigned int condition) override;
+  std::map<unsigned int, float> Rank(unsigned int condition) override;
+  void Cleanup(const std::vector<unsigned int>& valid_targets) override;
+  void ToProto(RecurrencePredictorProto* proto) const override;
+  void FromProto(const RecurrencePredictorProto& proto) override;
+  const char* GetPredictorName() const override;
+
+  static const char kPredictorName[];
+
+ private:
+  std::map<unsigned int, int> counts_;
+
+  DISALLOW_COPY_AND_ASSIGN(FrequencyPredictor);
 };
 
 // Represents a conditional probability table which stores the frequency of

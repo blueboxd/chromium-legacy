@@ -16,11 +16,7 @@
 #include "ui/views/drag_controller.h"
 #include "ui/views/view.h"
 
-namespace views {
-class MenuItemView;
-class MenuModelAdapter;
-class MenuRunner;
-}
+class ExtensionContextMenuController;
 
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarActionView
@@ -28,8 +24,7 @@ class MenuRunner;
 // action in the BrowserActionsContainer.
 class ToolbarActionView : public views::MenuButton,
                           public ToolbarActionViewDelegateViews,
-                          public views::MenuButtonListener,
-                          public views::ContextMenuController {
+                          public views::MenuButtonListener {
  public:
   // Need DragController here because ToolbarActionView could be
   // dragged/dropped.
@@ -49,7 +44,7 @@ class ToolbarActionView : public views::MenuButton,
 
     // Returns the view of the toolbar actions overflow menu to use as a
     // reference point for a popup when this view isn't visible.
-    virtual views::LabelButton* GetOverflowReferenceView() = 0;
+    virtual views::LabelButton* GetOverflowReferenceView() const = 0;
 
     // Returns the preferred size of the ToolbarActionView.
     virtual gfx::Size GetToolbarActionSize() = 0;
@@ -73,7 +68,6 @@ class ToolbarActionView : public views::MenuButton,
       const override;
   bool IsTriggerableEvent(const ui::Event& event) override;
   SkColor GetInkDropBaseColor() const override;
-  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
@@ -98,7 +92,9 @@ class ToolbarActionView : public views::MenuButton,
 
   bool wants_to_run_for_testing() const { return wants_to_run_; }
 
-  views::MenuItemView* menu_for_testing() { return menu_; }
+  ExtensionContextMenuController* context_menu_controller_for_testing() const {
+    return context_menu_controller_.get();
+  }
 
   static const char kClassName[];
 
@@ -112,6 +108,7 @@ class ToolbarActionView : public views::MenuButton,
   void OnDragDone() override;
   void ViewHierarchyChanged(
       const views::ViewHierarchyChangedDetails& details) override;
+  void StateChanged(views::Button::ButtonState old_state) override;
 
   // ToolbarActionViewDelegateViews:
   views::View* GetAsView() override;
@@ -121,23 +118,6 @@ class ToolbarActionView : public views::MenuButton,
   bool CanShowIconInToolbar() const override;
   void OnPopupShown(bool by_user) override;
   void OnPopupClosed() override;
-
-  // views::ContextMenuController:
-  void ShowContextMenuForViewImpl(views::View* source,
-                                  const gfx::Point& point,
-                                  ui::MenuSourceType source_type) override;
-
-  // Shows the context menu (if one exists) for the toolbar action.
-  void DoShowContextMenu(ui::MenuSourceType source_type);
-
-  // Closes the currently-active menu, if needed. This is the case when there
-  // is an active menu that wouldn't close automatically when a new one is
-  // opened.
-  // Returns true if a menu was closed, false otherwise.
-  bool CloseActiveMenuIfNeeded();
-
-  // Callback for MenuModelAdapter.
-  void OnMenuClosed();
 
   // A lock to keep the MenuButton pressed when a menu or popup is visible.
   std::unique_ptr<views::MenuButtonController::PressedLock> pressed_lock_;
@@ -160,15 +140,9 @@ class ToolbarActionView : public views::MenuButton,
   // tab.
   bool wants_to_run_ = false;
 
-  // Responsible for converting the context menu model into |menu_|.
-  std::unique_ptr<views::MenuModelAdapter> menu_adapter_;
-
-  // Responsible for running the menu.
-  std::unique_ptr<views::MenuRunner> menu_runner_;
-
-  // The root MenuItemView for the context menu, or null if no menu is being
-  // shown.
-  views::MenuItemView* menu_ = nullptr;
+  // This controller is responsible for showing the context menu for an
+  // extension.
+  std::unique_ptr<ExtensionContextMenuController> context_menu_controller_;
 
   base::WeakPtrFactory<ToolbarActionView> weak_factory_{this};
 

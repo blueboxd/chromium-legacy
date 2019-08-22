@@ -389,9 +389,9 @@ Polymer({
     if (!this.networkProperties_ || !this.guid) {
       return;
     }
-    const onc = this.getEmptyNetworkProperties_();
-    CrOnc.setTypeProperty(onc, 'AutoConnect', !!this.autoConnect_.value);
-    this.setNetworkProperties_(onc);
+    const config = {};
+    config.autoConnect = {value: !!this.autoConnect_.value};
+    this.setMojoNetworkProperties_(config);
   },
 
   /**
@@ -434,9 +434,9 @@ Polymer({
     if (!this.networkProperties_ || !this.guid) {
       return;
     }
-    const onc = this.getEmptyNetworkProperties_();
-    onc.Priority = this.preferNetwork_ ? 1 : 0;
-    this.setNetworkProperties_(onc);
+    const config = {};
+    config.priority = {value: this.preferNetwork_ ? 1 : 0};
+    this.setMojoNetworkProperties_(config);
   },
 
   /** @private */
@@ -574,10 +574,28 @@ Polymer({
     if (!this.networkPropertiesReceived_) {
       return;
     }
-
     assert(this.guid);
     this.networkingPrivate.setProperties(this.guid, onc, () => {
       if (chrome.runtime.lastError) {
+        // An error typically indicates invalid input; request the properties
+        // to update any invalid fields.
+        this.getNetworkDetails_();
+      }
+    });
+  },
+
+  /**
+   * @param {!mojom.ConfigProperties} config
+   * @private
+   */
+  setMojoNetworkProperties_: function(config) {
+    if (!this.networkPropertiesReceived_) {
+      return;
+    }
+    assert(this.guid);
+    this.networkConfig_.setProperties(this.guid, config).then(response => {
+      if (!response.success) {
+        console.error('Unable to set properties: ' + JSON.stringify(config));
         // An error typically indicates invalid input; request the properties
         // to update any invalid fields.
         this.getNetworkDetails_();

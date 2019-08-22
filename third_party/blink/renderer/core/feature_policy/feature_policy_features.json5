@@ -105,6 +105,11 @@
       depends_on: ["ClientHintsFeaturePolicy"],
     },
     {
+      name: "DocumentAccess",
+      feature_policy_name: "document-access",
+      depends_on: ["ExperimentalProductivityFeatures"],
+    },
+    {
       name: "DocumentDomain",
       feature_policy_name: "document-domain",
     },

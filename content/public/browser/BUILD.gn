@@ -241,6 +241,7 @@ jumbo_source_set("browser_sources") {
     "pepper_flash_settings_helper.h",
     "pepper_vpn_provider_resource_host_proxy.h",
     "permission_controller.h",
+    "permission_controller_delegate.cc",
     "permission_controller_delegate.h",
     "permission_type.cc",
     "permission_type.h",

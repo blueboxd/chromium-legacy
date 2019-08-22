@@ -403,7 +403,7 @@ class GLRenderingVDAClient
   const std::unique_ptr<media::test::VideoFrameFileWriter> video_frame_writer_;
 
   base::WeakPtr<GLRenderingVDAClient> weak_this_;
-  base::WeakPtrFactory<GLRenderingVDAClient> weak_this_factory_;
+  base::WeakPtrFactory<GLRenderingVDAClient> weak_this_factory_{this};
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(GLRenderingVDAClient);
 };
@@ -442,8 +442,7 @@ GLRenderingVDAClient::GLRenderingVDAClient(
           std::move(encoded_data),
           config_.profile)),
       video_frame_validator_(std::move(video_frame_validator)),
-      video_frame_writer_(std::move(video_frame_writer)),
-      weak_this_factory_(this) {
+      video_frame_writer_(std::move(video_frame_writer)) {
   DCHECK_NE(config.profile, VIDEO_CODEC_PROFILE_UNKNOWN);
   LOG_ASSERT(config_.num_in_flight_decodes > 0);
   LOG_ASSERT(config_.num_play_throughs > 0);

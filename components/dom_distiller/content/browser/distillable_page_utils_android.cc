@@ -18,12 +18,10 @@ namespace dom_distiller {
 namespace android {
 namespace {
 void OnIsPageDistillableUpdate(const JavaRef<jobject>& callback,
-                               bool isDistillable,
-                               bool isLast,
-                               bool isMobileFriendly) {
+                               const DistillabilityResult& result) {
   Java_DistillablePageUtils_callOnIsPageDistillableUpdate(
-      base::android::AttachCurrentThread(), callback, isDistillable, isLast,
-      isMobileFriendly);
+      base::android::AttachCurrentThread(), callback, result.is_distillable,
+      result.is_last, result.is_mobile_friendly);
 }
 }  // namespace
 

@@ -418,7 +418,8 @@ BackgroundTracingManagerImpl::GenerateMetadataDict() {
 }
 
 void BackgroundTracingManagerImpl::GenerateMetadataProto(
-    perfetto::protos::pbzero::ChromeMetadataPacket* metadata) {
+    perfetto::protos::pbzero::ChromeMetadataPacket* metadata,
+    bool privacy_filtering_enabled) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (active_scenario_) {
     active_scenario_->GenerateMetadataProto(metadata);

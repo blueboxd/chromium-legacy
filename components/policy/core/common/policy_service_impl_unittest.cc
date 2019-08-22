@@ -12,11 +12,9 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "components/policy/core/common/external_data_fetcher.h"
-#include "components/policy/core/common/features.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/mock_policy_service.h"
 #include "components/policy/core/common/policy_types.h"
@@ -132,8 +130,6 @@ class PolicyServiceTest : public testing::Test {
     provider2_.Shutdown();
   }
 
-  base::test::ScopedFeatureList& features() { return features_; }
-
   MOCK_METHOD2(OnPolicyValueUpdated, void(const base::Value*,
                                           const base::Value*));
 
@@ -159,7 +155,6 @@ class PolicyServiceTest : public testing::Test {
   PolicyMap policy1_;
   PolicyMap policy2_;
   std::unique_ptr<PolicyServiceImpl> policy_service_;
-  base::test::ScopedFeatureList features_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PolicyServiceTest);
@@ -855,7 +850,7 @@ TEST_F(PolicyServiceTest, ListsPoliciesMerging) {
   EXPECT_TRUE(VerifyPolicies(chrome_namespace, expected_chrome));
 }
 
-TEST_F(PolicyServiceTest, GroupPoliciesMergingDisabledByDefault) {
+TEST_F(PolicyServiceTest, GroupPoliciesMergingDisabledForCloudUsers) {
   const PolicyNamespace chrome_namespace(POLICY_DOMAIN_CHROME, std::string());
 
   std::unique_ptr<base::ListValue> list1 = std::make_unique<base::ListValue>();
@@ -885,6 +880,11 @@ TEST_F(PolicyServiceTest, GroupPoliciesMergingDisabledByDefault) {
                                 nullptr);
   policy_map1.Set(key::kExtensionInstallForcelist, entry_list_1.DeepCopy());
   policy_map1.Set(key::kExtensionInstallBlacklist, entry_list_1.DeepCopy());
+  PolicyMap::Entry atomic_policy_enabled(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+      std::make_unique<base::Value>(true), nullptr);
+  policy_map1.Set(key::kPolicyAtomicGroupsEnabled,
+                  atomic_policy_enabled.DeepCopy());
 
   auto policy_bundle2 = std::make_unique<PolicyBundle>();
   PolicyMap& policy_map2 = policy_bundle2->Get(chrome_namespace);
@@ -910,6 +910,8 @@ TEST_F(PolicyServiceTest, GroupPoliciesMergingDisabledByDefault) {
   expected_chrome.Set(key::kExtensionInstallForcelist, merged.DeepCopy());
   expected_chrome.Set(key::kExtensionInstallBlacklist, std::move(merged));
   expected_chrome.Set(key::kExtensionInstallWhitelist, std::move(entry_list_3));
+  expected_chrome.Set(key::kPolicyAtomicGroupsEnabled,
+                      atomic_policy_enabled.DeepCopy());
 
   provider0_.UpdatePolicy(std::move(policy_bundle1));
   provider1_.UpdatePolicy(std::move(policy_bundle2));
@@ -920,7 +922,6 @@ TEST_F(PolicyServiceTest, GroupPoliciesMergingDisabledByDefault) {
 
 TEST_F(PolicyServiceTest, GroupPoliciesMergingEnabled) {
   const PolicyNamespace chrome_namespace(POLICY_DOMAIN_CHROME, std::string());
-  features().InitAndEnableFeature(features::kPolicyAtomicGroup);
 
   std::unique_ptr<base::ListValue> list1 = std::make_unique<base::ListValue>();
   list1->GetList().push_back(base::Value("google.com"));
@@ -949,6 +950,11 @@ TEST_F(PolicyServiceTest, GroupPoliciesMergingEnabled) {
                                 nullptr);
   policy_map1.Set(key::kExtensionInstallForcelist, entry_list_1.DeepCopy());
   policy_map1.Set(key::kExtensionInstallBlacklist, entry_list_1.DeepCopy());
+  PolicyMap::Entry atomic_policy_enabled(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_PLATFORM,
+      std::make_unique<base::Value>(true), nullptr);
+  policy_map1.Set(key::kPolicyAtomicGroupsEnabled,
+                  atomic_policy_enabled.DeepCopy());
 
   auto policy_bundle2 = std::make_unique<PolicyBundle>();
   PolicyMap& policy_map2 = policy_bundle2->Get(chrome_namespace);
@@ -975,6 +981,8 @@ TEST_F(PolicyServiceTest, GroupPoliciesMergingEnabled) {
   expected_chrome.Set(key::kExtensionInstallForcelist, merged.DeepCopy());
   expected_chrome.Set(key::kExtensionInstallBlacklist, std::move(merged));
   expected_chrome.Set(key::kExtensionInstallWhitelist, std::move(entry_list_3));
+  expected_chrome.Set(key::kPolicyAtomicGroupsEnabled,
+                      atomic_policy_enabled.DeepCopy());
 
   provider0_.UpdatePolicy(std::move(policy_bundle1));
   provider1_.UpdatePolicy(std::move(policy_bundle2));

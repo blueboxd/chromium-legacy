@@ -172,15 +172,9 @@ std::unique_ptr<quic::QuicConnection> CreateQuicConnection(
 class DummyCryptoServerStreamHelper
     : public quic::QuicCryptoServerStream::Helper {
  public:
-  explicit DummyCryptoServerStreamHelper(quic::QuicRandom* random)
-      : random_(random) {}
-  ~DummyCryptoServerStreamHelper() override {}
+  explicit DummyCryptoServerStreamHelper(quic::QuicRandom* random) {}
 
-  quic::QuicConnectionId GenerateConnectionIdForReject(
-      quic::QuicTransportVersion /*version*/,
-      quic::QuicConnectionId connection_id) const override {
-    return quic::QuicUtils::CreateRandomConnectionId(random_);
-  }
+  ~DummyCryptoServerStreamHelper() override {}
 
   bool CanAcceptClientHello(const quic::CryptoHandshakeMessage& message,
                             const quic::QuicSocketAddress& client_address,
@@ -189,10 +183,6 @@ class DummyCryptoServerStreamHelper
                             std::string* error_details) const override {
     return true;
   }
-
- private:
-  // Used to generate random connection IDs. Needs to outlive this.
-  quic::QuicRandom* random_;
 };
 }  // namespace
 

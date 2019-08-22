@@ -73,6 +73,9 @@ public class ContactsPickerDialogTest
     // The final set of contacts picked by the dialog.
     private List<ContactsPickerListener.Contact> mLastSelectedContacts;
 
+    // The percentage of contacts shared.
+    private int mLastPercentageShared;
+
     // The list of currently selected contacts (built piecemeal).
     private List<ContactDetails> mCurrentContactSelection;
 
@@ -104,10 +107,11 @@ public class ContactsPickerDialogTest
     // ContactsPickerDialog.ContactsPickerListener:
 
     @Override
-    public void onContactsPickerUserAction(
-            @ContactsPickerAction int action, List<ContactsPickerListener.Contact> contacts) {
+    public void onContactsPickerUserAction(@ContactsPickerAction int action,
+            List<ContactsPickerListener.Contact> contacts, int percentageShared) {
         mLastActionRecorded = action;
         mLastSelectedContacts = (contacts != null) ? new ArrayList<>(contacts) : null;
+        mLastPercentageShared = percentageShared;
         onActionCallback.notifyCalled();
     }
 
@@ -302,6 +306,7 @@ public class ContactsPickerDialogTest
         clickCancel();
 
         Assert.assertEquals(null, mLastSelectedContacts);
+        Assert.assertEquals(0, mLastPercentageShared);
         Assert.assertEquals(ContactsPickerAction.CANCEL, mLastActionRecorded);
 
         dismissDialog();
@@ -325,6 +330,7 @@ public class ContactsPickerDialogTest
         Assert.assertEquals(1, mLastSelectedContacts.size());
         Assert.assertEquals(
                 mTestContacts.get(1).getDisplayName(), mLastSelectedContacts.get(0).names.get(0));
+        Assert.assertEquals(16, mLastPercentageShared);
 
         dismissDialog();
     }
@@ -352,6 +358,7 @@ public class ContactsPickerDialogTest
                 mTestContacts.get(2).getDisplayName(), mLastSelectedContacts.get(1).names.get(0));
         Assert.assertEquals(
                 mTestContacts.get(0).getDisplayName(), mLastSelectedContacts.get(2).names.get(0));
+        Assert.assertEquals(50, mLastPercentageShared);
 
         dismissDialog();
     }
@@ -375,6 +382,7 @@ public class ContactsPickerDialogTest
         Assert.assertEquals(new ArrayList<String>(), mLastSelectedContacts.get(0).names);
         Assert.assertEquals(mTestContacts.get(0).getEmails().get(0),
                 mLastSelectedContacts.get(0).emails.get(0));
+        Assert.assertEquals(16, mLastPercentageShared);
 
         dismissDialog();
     }
@@ -398,6 +406,7 @@ public class ContactsPickerDialogTest
         Assert.assertEquals(
                 mTestContacts.get(0).getDisplayName(), mLastSelectedContacts.get(0).names.get(0));
         Assert.assertEquals(new ArrayList<String>(), mLastSelectedContacts.get(0).emails);
+        Assert.assertEquals(16, mLastPercentageShared);
 
         dismissDialog();
     }
@@ -421,6 +430,7 @@ public class ContactsPickerDialogTest
         Assert.assertEquals(
                 mTestContacts.get(0).getDisplayName(), mLastSelectedContacts.get(0).names.get(0));
         Assert.assertEquals(new ArrayList<String>(), mLastSelectedContacts.get(0).tel);
+        Assert.assertEquals(16, mLastPercentageShared);
 
         dismissDialog();
     }

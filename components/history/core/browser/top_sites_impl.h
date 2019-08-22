@@ -7,9 +7,6 @@
 
 #include <stddef.h>
 
-#include <list>
-#include <memory>
-#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -27,8 +24,6 @@
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/history/core/browser/top_sites_backend.h"
-#include "third_party/skia/include/core/SkColor.h"
-#include "url/gurl.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -40,7 +35,6 @@ class FilePath;
 namespace history {
 
 class HistoryService;
-class TopSitesCache;
 class TopSitesImplTest;
 
 // This class allows requests for most visited urls on any thread. All other
@@ -72,7 +66,6 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
   void RemoveBlacklistedURL(const GURL& url) override;
   bool IsBlacklisted(const GURL& url) override;
   void ClearBlacklistedURLs() override;
-  bool IsKnownURL(const GURL& url) override;
   bool IsFull() override;
   PrepopulatedPageList GetPrepopulatedPages() override;
   bool loaded() const override;
@@ -174,16 +167,16 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
 
   scoped_refptr<TopSitesBackend> backend_;
 
+  // Lock used to access |thread_safe_cache_|.
+  mutable base::Lock lock_;
+
   // The top sites data.
-  std::unique_ptr<TopSitesCache> cache_;
+  MostVisitedURLList top_sites_;
 
   // Copy of the top sites data that may be accessed on any thread (assuming
   // you hold |lock_|). The data in |thread_safe_cache_| has blacklisted urls
-  // applied (|cache_| does not).
-  std::unique_ptr<TopSitesCache> thread_safe_cache_;
-
-  // Lock used to access |thread_safe_cache_|.
-  mutable base::Lock lock_;
+  // applied (|top_sites_| does not).
+  MostVisitedURLList thread_safe_cache_ GUARDED_BY(lock_);
 
   // Task tracker for history and backend requests.
   base::CancelableTaskTracker cancelable_task_tracker_;

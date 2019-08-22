@@ -2586,21 +2586,6 @@ void WebLocalFrameImpl::OnPortalActivated(
   if (debugger)
     debugger->ExternalAsyncTaskFinished(blink_data.sender_stack_trace_id);
   event->ExpireAdoptionLifetime();
-
-  // After dispatching the portalactivate event, we check to see if we need to
-  // cleanup the portal hosting the predecessor. If the portal was created,
-  // but wasn't inserted or activated, we destroy it.
-  //
-  // TODO(jbroman): This should probably be done as part of
-  // ExpireAdoptionLifetime, now that the event knows about the adopted
-  // HTMLPortalElement explicitly.
-  HTMLPortalElement* portal_element =
-      DocumentPortals::From(*(GetFrame()->GetDocument()))
-          .GetPortal(portal_token);
-  if (portal_element && !portal_element->isConnected() &&
-      !portal_element->IsActivating()) {
-    portal_element->ConsumePortal();
-  }
 }
 
 void WebLocalFrameImpl::ForwardMessageFromHost(

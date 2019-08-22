@@ -127,18 +127,15 @@ class PRINTING_EXPORT PrintingContext {
 
   const PrintSettings& settings() const;
 
-  std::unique_ptr<PrintSettings> ExtractSettings();
+  std::unique_ptr<PrintSettings> TakeAndResetSettings();
 
   int job_id() const { return job_id_; }
 
-  // Reinitializes the settings for object reuse.
-  void ResetSettings();
-
-  // Cleans up object settings.
-  void DeleteSettings();
-
  protected:
   explicit PrintingContext(Delegate* delegate);
+
+  // Reinitializes the settings for object reuse.
+  void ResetSettings();
 
   // Does bookkeeping when an error occurs.
   PrintingContext::Result OnError();
@@ -159,8 +156,6 @@ class PRINTING_EXPORT PrintingContext {
   int job_id_;
 
  private:
-  void ResetSettingsImpl(bool create_empty);
-
   DISALLOW_COPY_AND_ASSIGN(PrintingContext);
 };
 

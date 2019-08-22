@@ -35,7 +35,7 @@ namespace video_capture {
 // the same as the one calling the constructor.
 class VideoCaptureServiceImpl::GpuDependenciesContext {
  public:
-  GpuDependenciesContext() : weak_factory_for_gpu_io_thread_(this) {
+  GpuDependenciesContext() {
     gpu_io_task_runner_ = base::CreateSequencedTaskRunner(
         {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
          base::MayBlock()});
@@ -82,7 +82,8 @@ class VideoCaptureServiceImpl::GpuDependenciesContext {
   mojom::AcceleratorFactoryPtr accelerator_factory_;
 #endif  // defined(OS_CHROMEOS)
 
-  base::WeakPtrFactory<GpuDependenciesContext> weak_factory_for_gpu_io_thread_;
+  base::WeakPtrFactory<GpuDependenciesContext> weak_factory_for_gpu_io_thread_{
+      this};
 };
 
 VideoCaptureServiceImpl::VideoCaptureServiceImpl(

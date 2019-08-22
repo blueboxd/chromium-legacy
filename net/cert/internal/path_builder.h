@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/supports_user_data.h"
 #include "net/base/net_export.h"
 #include "net/cert/internal/cert_errors.h"
 #include "net/cert/internal/parsed_certificate.h"
@@ -104,10 +105,10 @@ class NET_EXPORT CertPathBuilder {
  public:
   // Provides the overall result of path building. This includes the paths that
   // were attempted.
-  struct NET_EXPORT Result {
+  struct NET_EXPORT Result : public base::SupportsUserData {
     Result();
     Result(Result&&);
-    ~Result();
+    ~Result() override;
     Result& operator=(Result&&);
 
     // Returns true if there was a valid path.
@@ -189,8 +190,7 @@ class NET_EXPORT CertPathBuilder {
   Result Run();
 
  private:
-  void AddResultPath(std::unique_ptr<CertPathBuilderResultPath> result_path,
-                     Result* out_result);
+  void AddResultPath(std::unique_ptr<CertPathBuilderResultPath> result_path);
 
   std::unique_ptr<CertPathIter> cert_path_iter_;
   CertPathBuilderDelegate* delegate_;

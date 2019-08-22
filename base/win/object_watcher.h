@@ -120,7 +120,7 @@ class BASE_EXPORT ObjectWatcher {
 
   bool run_once_ = true;
 
-  WeakPtrFactory<ObjectWatcher> weak_factory_;
+  WeakPtrFactory<ObjectWatcher> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ObjectWatcher);
 };

@@ -420,8 +420,7 @@ ChromePromptChannelMojo::ChromePromptChannelMojo(
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : ChromePromptChannel(std::move(on_connection_closed),
                           std::move(actions),
-                          std::move(task_runner)),
-      weak_factory_(this) {}
+                          std::move(task_runner)) {}
 
 ChromePromptChannelMojo::~ChromePromptChannelMojo() = default;
 
@@ -476,8 +475,7 @@ ChromePromptChannelProtobuf::ChromePromptChannelProtobuf(
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : ChromePromptChannel(std::move(on_connection_closed),
                           std::move(actions),
-                          std::move(task_runner)),
-      weak_factory_(this) {
+                          std::move(task_runner)) {
   // The sequence checker validates that all handler methods and the destructor
   // are called from the same sequence, which is not the same sequence as the
   // constructor.

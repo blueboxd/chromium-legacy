@@ -206,6 +206,14 @@ struct BASE_EXPORT LaunchOptions {
   //
   // See base/mac/mach_port_rendezvous.h for details.
   MachPortsForRendezvous mach_ports_for_rendezvous;
+
+  // When a child process is launched, the system tracks the parent process
+  // with a concept of "responsibility". The responsible process will be
+  // associated with any requests for private data stored on the system via
+  // the TCC subsystem. When launching processes that run foreign/third-party
+  // code, the responsibility for the child process should be disclaimed so
+  // that any TCC requests are not associated with the parent.
+  bool disclaim_responsibility = false;
 #endif
 
 #if defined(OS_FUCHSIA)

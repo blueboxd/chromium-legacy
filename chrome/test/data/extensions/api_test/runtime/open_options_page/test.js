@@ -45,8 +45,6 @@ function getActiveTab(callback) {
 
 // Tests refocusing an existing page.
 function testRefocusExistingOptionsPage() {
-  // Note that using chrome://chrome/ as |testUrl| would be problematic here,
-  // because the options page will happily overwrite the tab pointing to it.
   var testUrl = 'about:blank';
 
   // There will already be an options page open from the last test. Find it,

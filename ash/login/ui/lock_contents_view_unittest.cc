@@ -2668,7 +2668,7 @@ TEST_F(LockContentsViewUnitTest, MediaControlsHiddenOnLoginScreen) {
   EXPECT_EQ(nullptr, lock_contents.media_controls_view());
 }
 
-TEST_F(LockContentsViewUnitTest, NoNavigationWidgetOnLockScreen) {
+TEST_F(LockContentsViewUnitTest, NoNavigationOrHotseatOnLockScreen) {
   GetSessionControllerClient()->SetSessionState(
       session_manager::SessionState::LOCKED);
   LockContentsView* contents = new LockContentsView(
@@ -2681,6 +2681,8 @@ TEST_F(LockContentsViewUnitTest, NoNavigationWidgetOnLockScreen) {
       Shelf::ForWindow(widget->GetNativeWindow())->shelf_widget();
   EXPECT_FALSE(shelf_widget->navigation_widget()->IsVisible())
       << "The navigation widget should not appear on the lock screen.";
+  EXPECT_FALSE(shelf_widget->hotseat_widget()->IsVisible())
+      << "The hotseat widget should not appear on the lock screen.";
 }
 
 }  // namespace ash

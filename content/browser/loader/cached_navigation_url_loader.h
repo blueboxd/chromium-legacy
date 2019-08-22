@@ -32,7 +32,7 @@ class CachedNavigationURLLoader : public NavigationURLLoader {
   void OnResponseStarted();
   std::unique_ptr<NavigationRequestInfo> request_info_;
   NavigationURLLoaderDelegate* delegate_;
-  base::WeakPtrFactory<CachedNavigationURLLoader> weak_factory_;
+  base::WeakPtrFactory<CachedNavigationURLLoader> weak_factory_{this};
 };
 
 }  // namespace content

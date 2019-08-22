@@ -20,6 +20,10 @@
 #include "ui/android/buildflags.h"
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_LINUX)
+#include "base/allocator/buildflags.h"
+#endif  // defined(OS_LINUX)
+
 // This file declares strings used in chrome://flags. These messages are not
 // translated, because instead of end-users they target Chromium developers and
 // testers. See https://crbug.com/587272 and https://crbug.com/703134 for more
@@ -1266,6 +1270,9 @@ extern const char kWebvrDescription[];
 extern const char kWebXrName[];
 extern const char kWebXrDescription[];
 
+extern const char kWebXrArModuleName[];
+extern const char kWebXrArModuleDescription[];
+
 extern const char kWebXrHitTestName[];
 extern const char kWebXrHitTestDescription[];
 
@@ -1675,6 +1682,9 @@ extern const char kOmniboxSuggestionTransparencyOptionsDescription[];
 extern const char kOmniboxTabSwitchSuggestionsName[];
 extern const char kOmniboxTabSwitchSuggestionsDescription[];
 
+extern const char kOmniboxTabSwitchSuggestionsDedicatedRowName[];
+extern const char kOmniboxTabSwitchSuggestionsDedicatedRowDescription[];
+
 extern const char kOmniboxWrapPopupPositionName[];
 extern const char kOmniboxWrapPopupPositionDescription[];
 
@@ -1794,9 +1804,6 @@ extern const char kArcDocumentsProviderDescription[];
 
 extern const char kArcFilePickerExperimentName[];
 extern const char kArcFilePickerExperimentDescription[];
-
-extern const char kArcGraphicBuffersVisualizationToolName[];
-extern const char kArcGraphicBuffersVisualizationToolDescription[];
 
 extern const char kArcNativeBridgeExperimentName[];
 extern const char kArcNativeBridgeExperimentDescription[];
@@ -1982,6 +1989,11 @@ extern const char kExperimentalAccessibilityChromeVoxLanguageSwitchingName[];
 extern const char
     kExperimentalAccessibilityChromeVoxLanguageSwitchingDescription[];
 
+extern const char
+    kExperimentalAccessibilityChromeVoxSubNodeLanguageSwitchingName[];
+extern const char
+    kExperimentalAccessibilityChromeVoxSubNodeLanguageSwitchingDescription[];
+
 extern const char kExperimentalAccessibilitySwitchAccessName[];
 extern const char kExperimentalAccessibilitySwitchAccessDescription[];
 
@@ -2124,6 +2136,12 @@ extern const char kWakeOnPacketsDescription[];
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 extern const char kTerminalSystemAppName[];
 extern const char kTerminalSystemAppDescription[];
+
+#if BUILDFLAG(USE_TCMALLOC)
+extern const char kDynamicTcmallocName[];
+extern const char kDynamicTcmallocDescription[];
+#endif  // BUILDFLAG(USE_TCMALLOC)
+
 #endif  // #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 
 // All views-based platforms --------------------------------------------------

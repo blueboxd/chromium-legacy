@@ -2144,6 +2144,11 @@ const char kWebXrDescription[] =
     "Enables access to experimental APIs to interact with Virtual Reality (VR) "
     "and Augmented Reality (AR) devices.";
 
+const char kWebXrArModuleName[] = "WebXR AR Module";
+const char kWebXrArModuleDescription[] =
+    "Enables access to Augmented Reality features defined in the WebXR AR "
+    "Module";
+
 const char kWebXrAnchorsName[] = "WebXR Anchors";
 const char kWebXrAnchorsDescription[] =
     "Enables access to anchors via WebXR API.";
@@ -2850,6 +2855,12 @@ const char kOmniboxTabSwitchSuggestionsName[] =
 const char kOmniboxTabSwitchSuggestionsDescription[] =
     "Enable suggestions for switching to open tabs within the Omnibox.";
 
+const char kOmniboxTabSwitchSuggestionsDedicatedRowName[] =
+    "Omnibox dedicated row tab switch suggestions";
+const char kOmniboxTabSwitchSuggestionsDedicatedRowDescription[] =
+    "Put tab switch suggestions in separate suggestion, immediately following "
+    "the original suggestion.";
+
 const char kOmniboxWrapPopupPositionName[] = "Omnibox wrap pop-up position";
 const char kOmniboxWrapPopupPositionDescription[] =
     "Enable wrapping the Omnibox pop-up position between top and bottom.";
@@ -3016,12 +3027,6 @@ const char kArcFilePickerExperimentName[] =
     "Enable file picker experiment for ARC";
 const char kArcFilePickerExperimentDescription[] =
     "Enables using Chrome OS file picker in ARC.";
-
-const char kArcGraphicBuffersVisualizationToolName[] =
-    "Enable ARC graphic buffers visualization tool";
-const char kArcGraphicBuffersVisualizationToolDescription[] =
-    "Enable ARC graphic buffers visualization tool "
-    "(chrome://arc-graphics-tracing).";
 
 const char kArcNativeBridgeExperimentName[] =
     "Enable native bridge experiment for ARC";
@@ -3314,6 +3319,15 @@ const char kExperimentalAccessibilityChromeVoxLanguageSwitchingDescription[] =
     "Enable ChromeVox language switching, which changes ChromeVox's "
     "output language upon detection of new language.";
 
+const char kExperimentalAccessibilityChromeVoxSubNodeLanguageSwitchingName[] =
+    "Enable experimental ChromeVox sub-node (word-level) language switching.";
+const char
+    kExperimentalAccessibilityChromeVoxSubNodeLanguageSwitchingDescription[] =
+        "Enable ChromeVox language switching at the sub-node level, "
+        "which changes ChromeVox's output language upon detection of a new "
+        "language. This type of switching is more granular than the ChromeVox"
+        "node-level language switching.";
+
 const char kExperimentalAccessibilitySwitchAccessName[] =
     "Experimental feature Switch Access";
 const char kExperimentalAccessibilitySwitchAccessDescription[] =
@@ -3537,6 +3551,14 @@ const char kTerminalSystemAppName[] = "Terminal System App";
 const char kTerminalSystemAppDescription[] =
     "Enables the Terminal System App at chrome://terminal which is used for "
     "the Chrome OS Linux terminal.";
+
+#if BUILDFLAG(USE_TCMALLOC)
+const char kDynamicTcmallocName[] = "Dynamic Tcmalloc Tuning";
+const char kDynamicTcmallocDescription[] =
+    "Allows tcmalloc to dynamically adjust tunables based on system resource "
+    "utilization.";
+#endif  // BUILDFLAG(USE_TCMALLOC)
+
 #endif  // #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 
 // All views-based platforms --------------------------------------------------

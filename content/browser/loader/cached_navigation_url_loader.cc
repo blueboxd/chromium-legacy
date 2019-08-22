@@ -20,9 +20,7 @@ namespace content {
 CachedNavigationURLLoader::CachedNavigationURLLoader(
     std::unique_ptr<NavigationRequestInfo> request_info,
     NavigationURLLoaderDelegate* delegate)
-    : request_info_(std::move(request_info)),
-      delegate_(delegate),
-      weak_factory_(this) {
+    : request_info_(std::move(request_info)), delegate_(delegate) {
   // Respond with a fake response. We use PostTask here to mimic the flow of
   // a normal navigation.
   //

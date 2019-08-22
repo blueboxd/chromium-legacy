@@ -1953,4 +1953,13 @@ void ServiceWorkerGlobalScope::SetIdleTimerDelayToZero() {
   timeout_timer_->SetIdleTimerDelayToZero();
 }
 
+void ServiceWorkerGlobalScope::AddMessageToConsole(
+    mojom::blink::ConsoleMessageLevel level,
+    const String& message) {
+  AddConsoleMessage(ConsoleMessage::Create(
+      mojom::ConsoleMessageSource::kOther, level, message,
+      SourceLocation::Capture(/* url= */ "", /* line_number= */ 0,
+                              /* column_number= */ 0)));
+}
+
 }  // namespace blink

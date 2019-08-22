@@ -56,6 +56,7 @@
 #include "content/renderer/input/input_target_client_impl.h"
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
 #include "content/renderer/media/media_factory.h"
+#include "content/renderer/render_widget.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_platform_file.h"
 #include "media/base/routing_token_callback.h"
@@ -172,7 +173,6 @@ struct CSPViolationParams;
 struct CustomContextMenuContext;
 struct FrameOwnerProperties;
 struct FrameReplicationState;
-struct ScreenInfo;
 
 class CONTENT_EXPORT RenderFrameImpl
     : public RenderFrame,
@@ -190,20 +190,10 @@ class CONTENT_EXPORT RenderFrameImpl
   // Creates a new RenderFrame as the main frame of |render_view|.
   static RenderFrameImpl* CreateMainFrame(
       RenderViewImpl* render_view,
-      int32_t routing_id,
-      service_manager::mojom::InterfaceProviderPtr interface_provider,
-      blink::mojom::DocumentInterfaceBrokerPtr
-          document_interface_broker_content,
-      blink::mojom::DocumentInterfaceBrokerPtr document_interface_broker_blink,
-      mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
-          browser_interface_broker,
-      int32_t widget_routing_id,
-      const ScreenInfo& screen_info,
       CompositorDependencies* compositor_deps,
       blink::WebFrame* opener,
-      const base::UnguessableToken& devtools_frame_token,
-      const FrameReplicationState& replicated_state,
-      bool has_committed_real_load);
+      mojom::CreateViewParamsPtr* params,
+      RenderWidget::ShowCallback show_callback);
 
   // Creates a new RenderFrame with |routing_id|. If |previous_routing_id| is
   // MSG_ROUTING_NONE, it creates the Blink WebLocalFrame and inserts it into

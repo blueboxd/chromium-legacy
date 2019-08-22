@@ -199,8 +199,7 @@ class CONTENT_EXPORT RenderWidget
       const ScreenInfo& screen_info,
       blink::WebDisplayMode display_mode,
       bool is_frozen,
-      bool never_visible,
-      mojom::WidgetRequest widget_request);
+      bool never_visible);
 
   // Creates a RenderWidget for a popup. This is separate from CreateForFrame()
   // because popups do not not need to be faked out.

@@ -68,8 +68,6 @@ class LayerTreeHostProxyTestSetNeedsCommit : public LayerTreeHostProxyTest {
               GetProxyMain()->current_pipeline_stage());
     EndTest();
   }
-
-  void AfterTest() override {}
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostProxyTestSetNeedsCommit);
@@ -105,8 +103,6 @@ class LayerTreeHostProxyTestSetNeedsAnimate : public LayerTreeHostProxyTest {
     EXPECT_EQ(0, update_check_layer()->update_count());
     EndTest();
   }
-
-  void AfterTest() override {}
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostProxyTestSetNeedsAnimate);
@@ -143,8 +139,6 @@ class LayerTreeHostProxyTestSetNeedsUpdateLayers
     EXPECT_EQ(1, update_check_layer()->update_count());
     EndTest();
   }
-
-  void AfterTest() override {}
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostProxyTestSetNeedsUpdateLayers);
@@ -190,8 +184,6 @@ class LayerTreeHostProxyTestSetNeedsUpdateLayersWhileAnimating
     EXPECT_EQ(1, update_check_layer()->update_count());
     EndTest();
   }
-
-  void AfterTest() override {}
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostProxyTestSetNeedsUpdateLayersWhileAnimating);
@@ -236,8 +228,6 @@ class LayerTreeHostProxyTestSetNeedsCommitWhileAnimating
     EXPECT_EQ(1, update_check_layer()->update_count());
     EndTest();
   }
-
-  void AfterTest() override {}
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostProxyTestSetNeedsCommitWhileAnimating);
@@ -321,8 +311,6 @@ class LayerTreeHostProxyTestCommitWaitsForActivation
     }
     impl->BlockNotifyReadyToActivateForTesting(false);
   }
-
-  void AfterTest() override {}
 
  private:
   base::Lock activate_blocked_lock_;
@@ -430,8 +418,6 @@ class LayerTreeHostProxyTestCommitWaitsForActivationMFBA
     impl->BlockNotifyReadyToActivateForTesting(false);
   }
 
-  void AfterTest() override {}
-
  private:
   base::Lock activate_blocked_lock_;
   bool activate_blocked_ = false;
@@ -469,8 +455,6 @@ class LayerTreeHostProxyTestImplFrameCausesAnimatePending
       default: { NOTREACHED(); }
     }
   }
-
-  void AfterTest() override {}
 };
 
 SINGLE_THREAD_TEST_F(LayerTreeHostProxyTestImplFrameCausesAnimatePending);
@@ -517,8 +501,6 @@ class LayerTreeHostProxyTestNeedsCommitFromImpl
     EXPECT_FALSE(proxy()->CommitRequested());
     EndTest();
   }
-
-  void AfterTest() override {}
 };
 
 SINGLE_THREAD_TEST_F(LayerTreeHostProxyTestNeedsCommitFromImpl);
@@ -553,8 +535,6 @@ class LayerTreeHostProxyTestDelayedCommitDueToVisibility
   }
 
   void DidCommit() override { EndTest(); }
-
-  void AfterTest() override {}
 
  private:
   bool set_invisible_once_ = false;

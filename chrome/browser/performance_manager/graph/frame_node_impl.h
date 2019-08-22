@@ -100,6 +100,7 @@ class FrameNodeImpl
   bool network_almost_idle() const;
   bool is_ad_frame() const;
   const base::flat_set<WorkerNodeImpl*>& child_worker_nodes() const;
+  const PriorityAndReason& priority_and_reason() const;
 
   // Setters are not thread safe.
   void SetIsCurrent(bool is_current);
@@ -110,6 +111,9 @@ class FrameNodeImpl
   // Invoked by |worker_node| when it starts/stops being a child of this frame.
   void AddChildWorker(WorkerNodeImpl* worker_node);
   void RemoveChildWorker(WorkerNodeImpl* worker_node);
+
+  // Invoked to set the frame priority, and the reason behind it.
+  void SetPriorityAndReason(const PriorityAndReason& priority_and_reason);
 
   // Sets the same policy for all intervention types in this frame. Causes
   // Page::OnFrameInterventionPolicyChanged to be invoked.
@@ -137,6 +141,7 @@ class FrameNodeImpl
   bool GetNetworkAlmostIdle() const override;
   bool IsAdFrame() const override;
   const base::flat_set<const WorkerNode*> GetChildWorkerNodes() const override;
+  const PriorityAndReason& GetPriorityAndReason() const override;
 
   // Properties associated with a Document, which are reset when a
   // different-document navigation is committed in the frame.
@@ -201,7 +206,9 @@ class FrameNodeImpl
       lifecycle_state_{LifecycleState::kRunning};
 
   // This is a one way switch. Once marked an ad-frame, always an ad-frame.
-  bool is_ad_frame_ = false;
+  ObservedProperty::
+      NotifiesOnlyOnChanges<bool, &FrameNodeObserver::OnIsAdFrameChanged>
+          is_ad_frame_{false};
 
   ObservedProperty::NotifiesOnlyOnChanges<
       bool,
@@ -228,6 +235,12 @@ class FrameNodeImpl
 
   // The child workers of this frame.
   base::flat_set<WorkerNodeImpl*> child_worker_nodes_;
+
+  // Frame priority information.
+  ObservedProperty::NotifiesOnlyOnChanges<
+      PriorityAndReason,
+      &FrameNodeObserver::OnPriorityAndReasonChanged>
+      priority_and_reason_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameNodeImpl);
 };

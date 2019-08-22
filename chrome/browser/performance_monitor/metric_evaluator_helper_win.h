@@ -61,7 +61,7 @@ class MetricEvaluatorsHelperWin : public MetricEvaluatorsHelper {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<MetricEvaluatorsHelperWin> weak_factory_;
+  base::WeakPtrFactory<MetricEvaluatorsHelperWin> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MetricEvaluatorsHelperWin);
 };

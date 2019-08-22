@@ -317,8 +317,7 @@ class OpenSystemSettingsHelper {
   OpenSystemSettingsHelper(const wchar_t* const protocols[],
                            const base::Closure& on_finished_callback)
       : scoped_user_protocol_entry_(protocols[0]),
-        on_finished_callback_(on_finished_callback),
-        weak_ptr_factory_(this) {
+        on_finished_callback_(on_finished_callback) {
     static const wchar_t kUrlAssociationFormat[] =
         L"SOFTWARE\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\"
         L"%ls\\UserChoice";
@@ -418,7 +417,7 @@ class OpenSystemSettingsHelper {
   // Weak ptrs are used to bind this class to the callbacks of the timer and the
   // registry watcher. This makes it possible to self-delete after one of the
   // callbacks is executed to cancel the remaining ones.
-  base::WeakPtrFactory<OpenSystemSettingsHelper> weak_ptr_factory_;
+  base::WeakPtrFactory<OpenSystemSettingsHelper> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OpenSystemSettingsHelper);
 };

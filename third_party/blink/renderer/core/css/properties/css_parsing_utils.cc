@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/core/css/css_grid_template_areas_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_initial_value.h"
+#include "third_party/blink/renderer/core/css/css_math_function_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_path_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
@@ -708,6 +709,11 @@ CSSValue* ConsumeBackgroundSize(CSSParserTokenRange& range,
                                             CSSValuePair::kKeepIdenticalValues);
 }
 
+static void SetAllowsNegativePercentageReference(CSSValue* value) {
+  if (auto* math_value = DynamicTo<CSSMathFunctionValue>(value))
+    math_value->SetAllowsNegativePercentageReference();
+}
+
 bool ConsumeBackgroundPosition(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
@@ -721,6 +727,12 @@ bool ConsumeBackgroundPosition(
             range, context, unitless,
             WebFeature::kThreeValuedPositionBackground, position_x, position_y))
       return false;
+    // TODO(crbug.com/825895): So far, 'background-position' is the only
+    // property that allows resolving a percentage against a negative value. If
+    // we have more of such properties, we should instead pass an additional
+    // argument to ask the parser to set this flag.
+    SetAllowsNegativePercentageReference(position_x);
+    SetAllowsNegativePercentageReference(position_y);
     AddBackgroundValue(result_x, position_x);
     AddBackgroundValue(result_y, position_y);
   } while (css_property_parser_helpers::ConsumeCommaIncludingWhitespace(range));

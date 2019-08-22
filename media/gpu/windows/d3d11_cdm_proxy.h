@@ -116,7 +116,7 @@ class MEDIA_GPU_EXPORT D3D11CdmProxy : public CdmProxy {
   UINT private_input_size_ = 0;
   UINT private_output_size_ = 0;
 
-  base::WeakPtrFactory<D3D11CdmProxy> weak_factory_;
+  base::WeakPtrFactory<D3D11CdmProxy> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(D3D11CdmProxy);
 };

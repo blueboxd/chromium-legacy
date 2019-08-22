@@ -43,6 +43,22 @@ class CORE_EXPORT CSSMathFunctionValue : public CSSPrimitiveValue {
     return IsNonNegative() ? kValueRangeNonNegative : kValueRangeAll;
   }
 
+  // When |false|, comparisons between percentage values can be resolved without
+  // providing a reference value (e.g., min(10%, 20%) == 10%). When |true|, the
+  // result depends on the sign of the reference value (e.g., when referring to
+  // a negative value, min(10%, 20%) == 20%).
+  // Note: 'background-position' property allows negative reference values.
+  bool AllowsNegativePercentageReference() const {
+    return allows_negative_percentage_reference_;
+  }
+  void SetAllowsNegativePercentageReference() {
+    // TODO(crbug.com/825895): So far, 'background-position' is the only
+    // property that allows resolving a percentage against a negative value. If
+    // we have more of such properties, we should instead pass an additional
+    // argument to ask the parser to set this flag when constructing |this|.
+    allows_negative_percentage_reference_ = true;
+  }
+
   bool IsZero() const;
 
   bool IsComputationallyIndependent() const;

@@ -27,15 +27,17 @@ class CONTENT_EXPORT PermissionControllerImpl : public PermissionController {
       BrowserContext* browser_context);
 
   using PermissionOverrides = DevToolsPermissionOverrides::PermissionOverrides;
+  enum class OverrideStatus { kOverrideNotSet, kOverrideSet };
 
   // For the given |origin|, grant permissions in |overrides| and reject all
   // others.
-  void GrantOverridesForDevTools(
+  OverrideStatus GrantOverridesForDevTools(
       const GURL& origin,
       const std::vector<PermissionType>& permissions);
-  void SetOverrideForDevTools(const GURL& origin,
-                              const PermissionType& permission,
-                              const blink::mojom::PermissionStatus& status);
+  OverrideStatus SetOverrideForDevTools(
+      const GURL& origin,
+      const PermissionType& permission,
+      const blink::mojom::PermissionStatus& status);
   void ResetOverridesForDevTools();
 
   // PermissionController implementation.

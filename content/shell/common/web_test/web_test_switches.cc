@@ -16,9 +16,6 @@ const char kCrashOnFailure[] = "crash-on-failure";
 // Run devtools tests in debug mode (not bundled and minified)
 const char kDebugDevTools[] = "debug-devtools";
 
-// Specify a custom path to devtools for devtools tests
-const char kCustomDevToolsFrontend[] = "custom-devtools-frontend";
-
 // Enable accelerated 2D canvas.
 const char kEnableAccelerated2DCanvas[] = "enable-accelerated-2d-canvas";
 

@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/device/serial/buffer.h"
 #include "services/device/serial/serial_io_handler.h"
@@ -48,8 +48,7 @@ SerialPortImpl::SerialPortImpl(
 
 SerialPortImpl::~SerialPortImpl() {
   // Cancel I/O operations so that |io_handler_| drops its self-reference.
-  io_handler_->CancelRead(mojom::SerialReceiveError::DISCONNECTED);
-  io_handler_->CancelWrite(mojom::SerialSendError::DISCONNECTED);
+  io_handler_->Close(base::DoNothing());
 }
 
 void SerialPortImpl::Open(mojom::SerialConnectionOptionsPtr options,

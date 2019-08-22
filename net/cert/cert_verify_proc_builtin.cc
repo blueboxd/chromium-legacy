@@ -510,6 +510,9 @@ int AssignVerifyResult(X509Certificate* input_cert,
                        bool checked_revocation_for_some_path,
                        SystemTrustStore* ssl_trust_store,
                        CertVerifyResult* verify_result) {
+  // Clone debug data from the CertPathBuilder::Result into CertVerifyResult.
+  verify_result->CloneDataFrom(result);
+
   const CertPathBuilderResultPath* best_path_possibly_invalid =
       result.GetBestPathPossiblyInvalid();
 

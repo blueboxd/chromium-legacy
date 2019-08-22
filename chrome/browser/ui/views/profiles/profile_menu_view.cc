@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "build/build_config.h"
@@ -137,7 +138,6 @@ ProfileMenuView::ProfileMenuView(views::Button* anchor_button,
           browser->profile())) {
   GetViewAccessibility().OverrideName(GetAccessibleWindowTitle());
   chrome::RecordDialogCreation(chrome::DialogIdentifier::PROFILE_CHOOSER);
-  base::RecordAction(base::UserMetricsAction("ProfileChooser_Show"));
   set_close_on_deactivate(close_on_deactivate_for_testing_);
 }
 
@@ -180,6 +180,8 @@ base::string16 ProfileMenuView::GetAccessibleWindowTitle() const {
 }
 
 void ProfileMenuView::OnManageGoogleAccountButtonClicked() {
+  RecordClick(ActionableItem::kManageGoogleAccountButton);
+  // TODO(crbug.com/995757): Remove user action.
   base::RecordAction(
       base::UserMetricsAction("ProfileChooser_ManageGoogleAccountClicked"));
   DCHECK(!dice_accounts_.empty());
@@ -187,6 +189,8 @@ void ProfileMenuView::OnManageGoogleAccountButtonClicked() {
 }
 
 void ProfileMenuView::OnPasswordsButtonClicked() {
+  RecordClick(ActionableItem::kPasswordsButton);
+  // TODO(crbug.com/995757): Remove user action.
   base::RecordAction(
       base::UserMetricsAction("ProfileChooser_PasswordsClicked"));
   NavigateToManagePasswordsPage(
@@ -194,17 +198,23 @@ void ProfileMenuView::OnPasswordsButtonClicked() {
 }
 
 void ProfileMenuView::OnCreditCardsButtonClicked() {
+  RecordClick(ActionableItem::kCreditCardsButton);
+  // TODO(crbug.com/995757): Remove user action.
   base::RecordAction(base::UserMetricsAction("ProfileChooser_PaymentsClicked"));
   chrome::ShowSettingsSubPage(browser(), chrome::kPaymentsSubPage);
 }
 
 void ProfileMenuView::OnAddressesButtonClicked() {
+  RecordClick(ActionableItem::kAddressesButton);
+  // TODO(crbug.com/995757): Remove user action.
   base::RecordAction(
       base::UserMetricsAction("ProfileChooser_AddressesClicked"));
   chrome::ShowSettingsSubPage(browser(), chrome::kAddressesSubPage);
 }
 
 void ProfileMenuView::OnGuestProfileButtonClicked() {
+  RecordClick(ActionableItem::kGuestProfileButton);
+  // TODO(crbug.com/995757): Remove user action.
   base::RecordAction(base::UserMetricsAction("ProfileChooser_GuestClicked"));
   PrefService* service = g_browser_process->local_state();
   DCHECK(service);
@@ -213,6 +223,8 @@ void ProfileMenuView::OnGuestProfileButtonClicked() {
 }
 
 void ProfileMenuView::OnManageProfilesButtonClicked() {
+  RecordClick(ActionableItem::kManageProfilesButton);
+  // TODO(crbug.com/995757): Remove user action.
   base::RecordAction(base::UserMetricsAction("ProfileChooser_ManageClicked"));
   UserManager::Show(base::FilePath(),
                     profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
@@ -220,17 +232,23 @@ void ProfileMenuView::OnManageProfilesButtonClicked() {
 }
 
 void ProfileMenuView::OnLockButtonClicked() {
+  RecordClick(ActionableItem::kLockButton);
   profiles::LockProfile(browser()->profile());
+  // TODO(crbug.com/995757): Remove.
   PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_LOCK);
 }
 
 void ProfileMenuView::OnExitProfileButtonClicked() {
+  RecordClick(ActionableItem::kExitProfileButton);
+  // TODO(crbug.com/995757): Remove user action.
   base::RecordAction(base::UserMetricsAction("ProfileChooser_CloseAllClicked"));
   profiles::CloseProfileWindows(browser()->profile());
 }
 
 void ProfileMenuView::OnSyncErrorButtonClicked(
     sync_ui_util::AvatarSyncErrorType error) {
+  RecordClick(ActionableItem::kSyncErrorButton);
+  // TODO(crbug.com/995757): Remove user action.
   base::RecordAction(
       base::UserMetricsAction("ProfileChooser_SignInAgainClicked"));
   switch (error) {
@@ -274,6 +292,7 @@ void ProfileMenuView::OnSyncErrorButtonClicked(
 }
 
 void ProfileMenuView::OnCurrentProfileCardClicked() {
+  RecordClick(ActionableItem::kCurrentProfileCard);
   if (dice_enabled_ &&
       IdentityManagerFactory::GetForProfile(browser()->profile())
           ->HasPrimaryAccount()) {
@@ -288,18 +307,22 @@ void ProfileMenuView::OnCurrentProfileCardClicked() {
 }
 
 void ProfileMenuView::OnSigninButtonClicked() {
+  RecordClick(ActionableItem::kSigninButton);
   Hide();
   browser()->signin_view_controller()->ShowSignin(
       profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN, browser(), access_point_);
 }
 
 void ProfileMenuView::OnSigninAccountButtonClicked(AccountInfo account) {
+  RecordClick(ActionableItem::kSigninAccountButton);
   Hide();
   signin_ui_util::EnableSyncFromPromo(browser(), account, access_point_,
                                       true /* is_default_promo_account */);
 }
 
 void ProfileMenuView::OnSignoutButtonClicked() {
+  RecordClick(ActionableItem::kSignoutButton);
+  // TODO(crbug.com/995757): Remove user action.
   base::RecordAction(base::UserMetricsAction("Signin_Signout_FromUserMenu"));
   Hide();
   // Sign out from all accounts.
@@ -310,6 +333,8 @@ void ProfileMenuView::OnSignoutButtonClicked() {
 }
 
 void ProfileMenuView::OnOtherProfileButtonClicked(int profile_index) {
+  RecordClick(ActionableItem::kOtherProfileButton);
+  // TODO(crbug.com/995757): Remove user action.
   base::RecordAction(base::UserMetricsAction("ProfileChooser_ProfileClicked"));
   avatar_menu_->SwitchToProfile(profile_index, /*always_create=*/false,
                                 ProfileMetrics::SWITCH_PROFILE_ICON);
@@ -317,11 +342,17 @@ void ProfileMenuView::OnOtherProfileButtonClicked(int profile_index) {
 }
 
 void ProfileMenuView::OnCookiesClearedOnExitLinkClicked() {
+  RecordClick(ActionableItem::kCookiesClearedOnExitLink);
+  // TODO(crbug.com/995757): Remove user action.
   base::RecordAction(
       base::UserMetricsAction("ProfileChooser_CookieSettingsClicked"));
   chrome::ShowSettingsSubPage(browser(), chrome::kContentSettingsSubPage +
                                              std::string("/") +
                                              chrome::kCookieSettingsSubPage);
+}
+
+void ProfileMenuView::RecordClick(ActionableItem item) {
+  base::UmaHistogramEnumeration("Profile.Menu.ClickedActionableItem", item);
 }
 
 void ProfileMenuView::AddProfileMenuView(AvatarMenu* avatar_menu) {

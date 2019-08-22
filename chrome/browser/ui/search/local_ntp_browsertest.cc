@@ -798,8 +798,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, ToggleShortcutsVisibility) {
   ASSERT_TRUE(result);
   result = false;
   ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
-      iframe, "!document.body.classList.contains('hide')", &result));
-  ASSERT_TRUE(result);
+      active_tab, "document.getElementById('most-visited').hidden", &result));
+  ASSERT_FALSE(result);
 
   // Hide the shortcuts.
   local_ntp_test_utils::ExecuteScriptOnNTPAndWaitUntilLoaded(
@@ -815,7 +815,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, ToggleShortcutsVisibility) {
   EXPECT_TRUE(result);
   result = false;
   ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
-      iframe, "document.body.classList.contains('hide')", &result));
+      active_tab, "document.getElementById('most-visited').hidden", &result));
   EXPECT_TRUE(result);
 
   // Show the shortcuts.
@@ -832,8 +832,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, ToggleShortcutsVisibility) {
   EXPECT_TRUE(result);
   result = false;
   ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
-      iframe, "!document.body.classList.contains('hide')", &result));
-  EXPECT_TRUE(result);
+      active_tab, "document.getElementById('most-visited').hidden", &result));
+  EXPECT_FALSE(result);
 }
 
 IN_PROC_BROWSER_TEST_F(LocalNTPTest, ToggleShortcutVisibilityAndType) {
@@ -863,8 +863,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, ToggleShortcutVisibilityAndType) {
   ASSERT_TRUE(result);
   result = false;
   ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
-      iframe, "!document.body.classList.contains('hide')", &result));
-  ASSERT_TRUE(result);
+      active_tab, "document.getElementById('most-visited').hidden", &result));
+  ASSERT_FALSE(result);
 
   // Hide the shortcuts and immediately enable Most Visited sites. The
   // successive calls should not interfere with each other, and only a single
@@ -896,7 +896,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, ToggleShortcutVisibilityAndType) {
   EXPECT_TRUE(result);
   result = false;
   ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
-      iframe, "document.body.classList.contains('hide')", &result));
+      active_tab, "document.getElementById('most-visited').hidden", &result));
   EXPECT_TRUE(result);
 
   // Show the shortcuts and immediately enable custom links.
@@ -927,8 +927,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, ToggleShortcutVisibilityAndType) {
   EXPECT_TRUE(result);
   result = false;
   ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
-      iframe, "!document.body.classList.contains('hide')", &result));
-  EXPECT_TRUE(result);
+      active_tab, "document.getElementById('most-visited').hidden", &result));
+  EXPECT_FALSE(result);
 }
 
 class LocalNTPRTLTest : public LocalNTPTest {

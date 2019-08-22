@@ -104,6 +104,8 @@ class PermissionManager : public KeyedService,
       content::PermissionType permission,
       content::RenderFrameHost* render_frame_host,
       const GURL& requesting_origin) override;
+  bool IsPermissionOverridableByDevTools(content::PermissionType permission,
+                                         const GURL& origin) override;
   int SubscribePermissionStatusChange(
       content::PermissionType permission,
       content::RenderFrameHost* render_frame_host,

@@ -74,7 +74,6 @@ source_set("browser_tests") {
 
   sources = [
     "bookmark_app_registrar_browsertest.cc",
-    "install_manager_bookmark_app_browsertest.cc",
     "system_web_app_manager_browsertest.cc",
     "system_web_app_manager_browsertest.h",
     "web_app_audio_focus_browsertest.cc",

@@ -14,6 +14,18 @@ namespace stats {
 // scheduling system.
 void LogUserAction(const UserActionData& user_action_data);
 
+// Logs the initialization result for impression database.
+void LogImpressionDbInit(bool success, int entry_count);
+
+// Logs impression db operations result except the initialization.
+void LogImpressionDbOperation(bool success);
+
+// Logs the initialization result for notification database.
+void LogNotificationDbInit(bool success, int entry_count);
+
+// Logs notification db operations result except the initialization.
+void LogNotificationDbOperation(bool success);
+
 }  // namespace stats
 }  // namespace notifications
 

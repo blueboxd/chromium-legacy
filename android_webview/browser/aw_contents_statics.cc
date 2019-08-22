@@ -5,7 +5,7 @@
 #include "android_webview/browser/aw_browser_process.h"
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/aw_contents.h"
-#include "android_webview/browser/aw_contents_io_thread_client.h"
+#include "android_webview/browser/aw_contents_network_client.h"
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_whitelist_manager.h"
 #include "android_webview/native_jni/AwContentsStatics_jni.h"
 #include "base/android/jni_array.h"
@@ -112,12 +112,12 @@ void JNI_AwContentsStatics_SetSafeBrowsingWhitelist(
 }
 
 // static
-void JNI_AwContentsStatics_SetServiceWorkerIoThreadClient(
+void JNI_AwContentsStatics_SetServiceWorkerNetworkClient(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& io_thread_client,
+    const base::android::JavaParamRef<jobject>& network_client,
     const base::android::JavaParamRef<jobject>& browser_context) {
-  AwContentsIoThreadClient::SetServiceWorkerIoThreadClient(io_thread_client,
-                                                           browser_context);
+  AwContentsNetworkClient::SetServiceWorkerNetworkClient(network_client,
+                                                         browser_context);
 }
 
 // static

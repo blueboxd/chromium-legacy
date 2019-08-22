@@ -79,8 +79,6 @@ class LayerTreeHostDamageTestSetNeedsRedraw
     return draw_result;
   }
 
-  void AfterTest() override {}
-
   int draw_count_;
   FakeContentLayerClient client_;
 };
@@ -142,8 +140,6 @@ class LayerTreeHostDamageTestSetViewportSizeAndScale
     ++draw_count_;
     return draw_result;
   }
-
-  void AfterTest() override {}
 
   int draw_count_;
   FakeContentLayerClient client_;
@@ -322,8 +318,6 @@ class LayerTreeHostDamageTestForcedFullDamage : public LayerTreeHostDamageTest {
       child_damage_rect_ = gfx::Rect();
     }
   }
-
-  void AfterTest() override {}
 
   FakeContentLayerClient client_;
   scoped_refptr<FakePictureLayer> root_;

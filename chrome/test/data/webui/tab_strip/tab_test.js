@@ -3,7 +3,10 @@
 // found in the LICENSE file.
 
 import 'chrome://tab-strip/tab.js';
+
+import {getFavicon, getFaviconForPageURL} from 'chrome://resources/js/icon.m.js';
 import {TabsApiProxy} from 'chrome://tab-strip/tabs_api_proxy.js';
+
 import {TestTabsApiProxy} from './test_tabs_api_proxy.js';
 
 suite('Tab', function() {
@@ -55,5 +58,22 @@ suite('Tab', function() {
     return testTabsApiProxy.whenCalled('closeTab').then(tabId => {
       assertEquals(tabId, tab.id);
     });
+  });
+
+  test('sets the favicon to the favicon URL', () => {
+    const expectedFaviconUrl = 'http://google.com/favicon.ico';
+    tabElement.tab = Object.assign({}, tab, {favIconUrl: expectedFaviconUrl});
+    const faviconElement = tabElement.shadowRoot.querySelector('#favicon');
+    assertEquals(
+        faviconElement.style.backgroundImage, getFavicon(expectedFaviconUrl));
+  });
+
+  test('sets the favicon to the page URL if favicon URL does not exist', () => {
+    const expectedPageUrl = 'http://google.com';
+    tabElement.tab = Object.assign({}, tab, {url: expectedPageUrl});
+    const faviconElement = tabElement.shadowRoot.querySelector('#favicon');
+    assertEquals(
+        faviconElement.style.backgroundImage,
+        getFaviconForPageURL(expectedPageUrl, false));
   });
 });

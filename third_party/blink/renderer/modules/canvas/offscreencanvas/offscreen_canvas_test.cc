@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
 
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/viz/public/mojom/hit_test/hit_test_region_list.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -126,11 +127,11 @@ TEST_P(OffscreenCanvasTest, CompositorFrameOpacity) {
   // by OffscreenCanvas's CanvasResourceDispatcher, we have to override the Mojo
   // EmbeddedFrameSinkProvider interface impl and its CompositorFrameSinkClient.
   MockEmbeddedFrameSinkProvider mock_embedded_frame_sink_provider;
-  mojo::Binding<mojom::blink::EmbeddedFrameSinkProvider>
-      embedded_frame_sink_provider_binding(&mock_embedded_frame_sink_provider);
+  mojo::Receiver<mojom::blink::EmbeddedFrameSinkProvider>
+      embedded_frame_sink_provider_receiver(&mock_embedded_frame_sink_provider);
   auto override =
       mock_embedded_frame_sink_provider.CreateScopedOverrideMojoInterface(
-          &embedded_frame_sink_provider_binding);
+          &embedded_frame_sink_provider_receiver);
 
   // Call here DidDraw() to simulate having drawn something before PushFrame()/
   // Commit(); DidDraw() will in turn cause a CanvasResourceDispatcher to be

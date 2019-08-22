@@ -744,6 +744,12 @@
     "expiry_milestone": 88
   },
   {
+    // See: https://crbug.com/993569.
+    "name": "dynamic-tcmalloc-tuning",
+    "owners": [ "bgeffon", "sonnyrao" ],
+    "expiry_milestone": 89
+  },
+  {
     "name": "enable-accessibility-image-descriptions",
     "owners": [ "//ui/accessibility/OWNERS" ],
     "expiry_milestone": 77
@@ -1116,6 +1122,11 @@
     "expiry_milestone": 78
   },
   {
+    "name": "enable-experimental-accessibility-chromevox-sub-node-language-switching",
+    "owners": [ "akihiroota", "dmazzoni", "dtseng", "//ui/accessibility/OWNERS"],
+    "expiry_milestone": 82
+  },
+  {
     "name": "enable-experimental-accessibility-features",
     "owners": [ "//ui/accessibility/OWNERS" ],
     "expiry_milestone": 76
@@ -1273,7 +1284,7 @@
   {
     "name": "enable-inline-update-flow",
     "owners": [ "nyquist", "dtrainor" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 80
   },
   {
     "name": "enable-intent-picker",
@@ -2584,6 +2595,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "omnibox-tab-switch-suggestions-dedicated-row",
+    "owners": [ "krb", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "omnibox-ui-cues-for-search-history-matches",
     "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 78
@@ -3273,6 +3289,11 @@
     "name": "webxr-anchors",
     "owners": [ "//third_party/blink/renderer/modules/xr/OWNERS", "xr-dev@chromium.org" ],
     "expiry_milestone": 79
+  },
+  {
+    "name": "webxr-ar-module",
+    "owners": [ "//third_party/blink/renderer/modules/xr/OWNERS", "xr-dev@chromium.org" ],
+    "expiry_milestone": 80
   },
   {
     "name": "webxr-hit-test",

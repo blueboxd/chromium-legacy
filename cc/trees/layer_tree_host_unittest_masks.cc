@@ -57,9 +57,7 @@ class LayerTreeTestMaskLayerForSurfaceWithContentRectNotAtOrigin
     LayerTreeTest::SetupTree();
     scoped_refptr<Layer> outer_viewport_scroll_layer = Layer::Create();
     outer_viewport_scroll_layer->SetBounds(layer_size);
-    CreateVirtualViewportLayers(root.get(), outer_viewport_scroll_layer,
-                                gfx::Size(50, 50), gfx::Size(50, 50),
-                                layer_tree_host());
+    SetupViewport(outer_viewport_scroll_layer, gfx::Size(50, 50));
     layer_tree_host()->outer_viewport_container_layer()->SetMasksToBounds(true);
     outer_viewport_scroll_layer->AddChild(content_layer);
 
@@ -95,8 +93,6 @@ class LayerTreeTestMaskLayerForSurfaceWithContentRectNotAtOrigin
     EndTest();
     return draw_result;
   }
-
-  void AfterTest() override {}
 
   int mask_layer_id_;
   FakeContentLayerClient client_;
@@ -201,8 +197,6 @@ class LayerTreeTestMaskLayerForSurfaceWithClippedLayer : public LayerTreeTest {
     EndTest();
     return draw_result;
   }
-
-  void AfterTest() override {}
 
   int mask_layer_id_;
   FakeContentLayerClient client_;
@@ -323,8 +317,6 @@ class LayerTreeTestMaskLayerForSurfaceWithDifferentScale
     return draw_result;
   }
 
-  void AfterTest() override {}
-
   int mask_layer_id_;
   FakeContentLayerClient client_;
 };
@@ -437,8 +429,6 @@ class LayerTreeTestMaskLayerWithScaling : public LayerTreeTest {
     }
   }
 
-  void AfterTest() override {}
-
   FakeContentLayerClient client_;
 };
 
@@ -513,8 +503,6 @@ class LayerTreeTestMaskWithNonExactTextureSize : public LayerTreeTest {
     EndTest();
     return draw_result;
   }
-
-  void AfterTest() override {}
 
   int mask_layer_id_;
   FakeContentLayerClient client_;

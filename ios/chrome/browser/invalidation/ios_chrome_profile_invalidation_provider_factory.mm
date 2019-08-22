@@ -13,6 +13,7 @@
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/gcm_driver/instance_id/instance_id_profile_service.h"
 #include "components/invalidation/impl/fcm_invalidation_service.h"
+#include "components/invalidation/impl/fcm_network_handler.h"
 #include "components/invalidation/impl/invalidator_storage.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
@@ -77,8 +78,14 @@ IOSChromeProfileInvalidationProviderFactory::BuildServiceInstanceFor(
   std::unique_ptr<invalidation::FCMInvalidationService> service =
       std::make_unique<invalidation::FCMInvalidationService>(
           identity_provider.get(),
-          IOSChromeGCMProfileServiceFactory::GetForBrowserState(browser_state)
-              ->driver(),
+          base::BindRepeating(
+              &syncer::FCMNetworkHandler::Create,
+              IOSChromeGCMProfileServiceFactory::GetForBrowserState(
+                  browser_state)
+                  ->driver(),
+              IOSChromeInstanceIDProfileServiceFactory::GetForBrowserState(
+                  browser_state)
+                  ->driver()),
           IOSChromeInstanceIDProfileServiceFactory::GetForBrowserState(
               browser_state)
               ->driver(),

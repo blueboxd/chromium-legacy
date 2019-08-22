@@ -138,21 +138,21 @@ class SelfDeleteInstaller
     scoped_refptr<PaymentAppContextImpl> payment_app_context =
         partition->GetPaymentAppContext();
 
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&SelfDeleteInstaller::SetPaymentAppInfoOnIO, this,
-                       payment_app_context, registration_id_, scope_.spec(),
-                       app_name_, app_icon_, method_));
+    RunOrPostTaskOnThread(
+        FROM_HERE, ServiceWorkerContextWrapper::GetCoreThreadId(),
+        base::BindOnce(&SelfDeleteInstaller::SetPaymentAppInfoOnCoreThread,
+                       this, payment_app_context, registration_id_,
+                       scope_.spec(), app_name_, app_icon_, method_));
   }
 
-  void SetPaymentAppInfoOnIO(
+  void SetPaymentAppInfoOnCoreThread(
       scoped_refptr<PaymentAppContextImpl> payment_app_context,
       int64_t registration_id,
       const std::string& instrument_key,
       const std::string& name,
       const std::string& app_icon,
       const std::string& method) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
 
     payment_app_context->payment_app_database()
         ->SetPaymentAppInfoForRegisteredServiceWorker(
@@ -161,10 +161,10 @@ class SelfDeleteInstaller
   }
 
   void OnSetPaymentAppInfo(payments::mojom::PaymentHandlerStatus status) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
 
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    RunOrPostTaskOnThread(
+        FROM_HERE, BrowserThread::UI,
         base::BindOnce(&SelfDeleteInstaller::FinishInstallation, this,
                        status == payments::mojom::PaymentHandlerStatus::SUCCESS
                            ? true

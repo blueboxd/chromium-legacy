@@ -189,10 +189,15 @@ void DocumentTimeline::ScheduleNextService() {
 
   base::Optional<AnimationTimeDelta> time_to_next_effect;
   for (const auto& animation : animations_needing_update_) {
-    time_to_next_effect =
-        time_to_next_effect
-            ? std::min(time_to_next_effect, animation->TimeToEffectChange())
-            : animation->TimeToEffectChange();
+    base::Optional<AnimationTimeDelta> time_to_effect_change =
+        animation->TimeToEffectChange();
+    if (!time_to_effect_change)
+      continue;
+
+    time_to_next_effect = time_to_next_effect
+                              ? std::min(time_to_next_effect.value(),
+                                         time_to_effect_change.value())
+                              : time_to_effect_change.value();
   }
 
   if (!time_to_next_effect)

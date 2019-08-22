@@ -25,11 +25,13 @@ class ServiceWorkerContextWrapper;
 
 // One instance of this exists per StoragePartition, and services multiple child
 // processes/origins. Most logic is delegated to the owned PaymentAppDatabase
-// instance, which is only accessed on the IO thread.
+// instance, which is only accessed on the thread identified by
+// ServiceWorkerContextWrapper::GetCoreThreadId() (the service worker "core"
+// thread).
 //
 // This class is created/destructed by StoragePartitionImpl on UI thread.
 // However, the PaymentAppDatabase that this class has internally should work on
-// IO thread. So, this class has Init() and Shutdown() methods in addition to
+// core thread. So, this class has Init() and Shutdown() methods in addition to
 // constructor and destructor. They should be called explicitly when creating
 // and destroying StoragePartitionImpl.
 //
@@ -39,8 +41,8 @@ class ServiceWorkerContextWrapper;
 //   3) Can now call other public methods in this class in any order.
 //     - Can call CreatePaymentManager() on UI thread.
 //     - Can call GetAllPaymentApps() on UI thread.
-//     - Can call PaymentManagerHadConnectionError() on IO thread.
-//     - Can call payment_app_database() on IO thread.
+//     - Can call PaymentManagerHadConnectionError() on core thread.
+//     - Can call payment_app_database() on the core thread.
 //   4) Shutdown()
 //   5) Destructor
 class CONTENT_EXPORT PaymentAppContextImpl
@@ -62,10 +64,10 @@ class CONTENT_EXPORT PaymentAppContextImpl
   void CreatePaymentManager(payments::mojom::PaymentManagerRequest request);
 
   // Called by PaymentManager objects so that they can
-  // be deleted. Call on the IO thread.
+  // be deleted. Call on the core thread.
   void PaymentManagerHadConnectionError(PaymentManager* service);
 
-  // Should be accessed only on the IO thread.
+  // Should be accessed only on the core thread.
   PaymentAppDatabase* payment_app_database() const;
 
  private:
@@ -75,26 +77,26 @@ class CONTENT_EXPORT PaymentAppContextImpl
   friend class base::DeleteHelper<PaymentAppContextImpl>;
   ~PaymentAppContextImpl();
 
-  void CreatePaymentAppDatabaseOnIO(
+  void CreatePaymentAppDatabaseOnCoreThread(
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
 
-  void CreatePaymentManagerOnIO(
+  void CreatePaymentManagerOnCoreThread(
       mojo::InterfaceRequest<payments::mojom::PaymentManager> request);
 
-  void ShutdownOnIO();
+  void ShutdownOnCoreThread();
 
-  // Only accessed on the IO thread.
+  // Only accessed on the core thread.
   std::unique_ptr<PaymentAppDatabase> payment_app_database_;
 
   // The PaymentManagers are owned by this. They're either deleted during
-  // ShutdownOnIO or when the channel is closed via
-  // PaymentManagerHadConnectionError. Only accessed on the IO thread.
+  // ShutdownOnCoreThread or when the channel is closed via
+  // PaymentManagerHadConnectionError. Only accessed on the core thread.
   std::map<PaymentManager*, std::unique_ptr<PaymentManager>> payment_managers_;
 
 #if DCHECK_IS_ON()
-  // Set after ShutdownOnIO() has run on the IO thread. |this| shouldn't be
-  // deleted before this is set.
-  base::AtomicFlag did_shutdown_on_io_;
+  // Set after ShutdownOnCoreThread() has run on the core thread. |this|
+  // shouldn't be deleted before this is set.
+  base::AtomicFlag did_shutdown_on_core_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(PaymentAppContextImpl);

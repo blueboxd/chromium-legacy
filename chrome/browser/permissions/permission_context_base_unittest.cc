@@ -168,6 +168,21 @@ class TestKillSwitchPermissionContext : public TestPermissionContext {
   DISALLOW_COPY_AND_ASSIGN(TestKillSwitchPermissionContext);
 };
 
+class TestSecureOriginRestrictedPermissionContext
+    : public TestPermissionContext {
+ public:
+  TestSecureOriginRestrictedPermissionContext(
+      Profile* profile,
+      const ContentSettingsType content_settings_type)
+      : TestPermissionContext(profile, content_settings_type) {}
+
+ protected:
+  bool IsRestrictedToSecureOrigins() const override { return true; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestSecureOriginRestrictedPermissionContext);
+};
+
 class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
  protected:
   PermissionContextBaseTests() {}
@@ -567,6 +582,32 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     EXPECT_TRUE(permission_context.IsPermissionKillSwitchOn());
   }
 
+  void TestSecureOriginRestrictedPermissionContextCheck(
+      const std::string& requesting_url_spec,
+      const std::string& embedding_url_spec,
+      bool expect_allowed) {
+    GURL requesting_origin(requesting_url_spec);
+    GURL embedding_origin(embedding_url_spec);
+    TestSecureOriginRestrictedPermissionContext permission_context(
+        profile(), CONTENT_SETTINGS_TYPE_GEOLOCATION);
+    bool result = permission_context.IsPermissionAvailableToOrigins(
+        requesting_origin, embedding_origin);
+    EXPECT_EQ(expect_allowed, result)
+        << "test case (requesting, embedding): (" << requesting_url_spec << ", "
+        << embedding_url_spec << ") with secure-origin requirement"
+        << " on";
+
+    // With no secure-origin limitation, this check should always return pass.
+    TestPermissionContext new_context(profile(),
+                                      CONTENT_SETTINGS_TYPE_GEOLOCATION);
+    result = new_context.IsPermissionAvailableToOrigins(requesting_origin,
+                                                        embedding_origin);
+    EXPECT_EQ(true, result)
+        << "test case (requesting, embedding): (" << requesting_url_spec << ", "
+        << embedding_url_spec << ") with secure-origin requirement"
+        << " off";
+  }
+
   // Don't call this more than once in the same test, as it persists data to
   // HostContentSettingsMap.
   void TestParallelRequests(ContentSetting response) {
@@ -724,6 +765,65 @@ TEST_F(PermissionContextBaseTests, TestGlobalKillSwitch) {
 #endif
   TestGlobalPermissionsKillSwitch(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
   TestGlobalPermissionsKillSwitch(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
+}
+
+// Tests that secure origins are examined if switch is on, or ignored if off.
+TEST_F(PermissionContextBaseTests,
+       TestSecureOriginRestrictedPermissionContextSwitch) {
+  struct {
+    std::string requesting_url_spec;
+    std::string embedding_url_spec;
+    bool expect_permission_allowed;
+  } kTestCases[] = {
+      // Secure-origins that should be allowed.
+      {"https://google.com", "https://foo.com",
+       /*expect_allowed=*/true},
+      {"https://www.bar.com", "https://foo.com",
+       /*expect_allowed=*/true},
+      {"https://localhost", "http://localhost",
+       /*expect_allowed=*/true},
+
+      {"http://localhost", "https://google.com",
+       /*expect_allowed=*/true},
+      {"https://google.com", "http://localhost",
+       /*expect_allowed=*/true},
+      {"https://foo.com", "file://some-file",
+       /*expect_allowed=*/true},
+      {"file://some-file", "https://foo.com",
+       /*expect_allowed=*/true},
+      {"https://foo.com", "about:blank",
+       /*expect_allowed=*/true},
+      {"about:blank", "https://foo.com",
+       /*expect_allowed=*/true},
+
+      // Extensions are exempt from checking the embedder chain.
+      {"chrome-extension://some-extension", "http://not-secure.com",
+       /*expect_allowed=*/true},
+
+      // Insecure-origins that should be blocked.
+      {"http://foo.com", "file://some-file",
+       /*expect_allowed=*/false},
+      {"fake://foo.com", "about:blank",
+       /*expect_allowed=*/false},
+      {"http://localhost", "http://foo.com",
+       /*expect_allowed=*/false},
+      {"http://localhost", "foo.com",
+       /*expect_allowed=*/false},
+      {"http://bar.com", "https://foo.com",
+       /*expect_permission_allowed=*/false},
+      {"https://foo.com", "http://bar.com",
+       /*expect_permission_allowed=*/false},
+      {"http://localhost", "http://foo.com",
+       /*expect_permission_allowed=*/false},
+      {"http://foo.com", "http://localhost",
+       /*expect_permission_allowed=*/false},
+      {"bar.com", "https://foo.com", /*expect_permission_allowed=*/false},
+      {"https://foo.com", "bar.com", /*expect_permission_allowed=*/false}};
+  for (const auto& test_case : kTestCases) {
+    TestSecureOriginRestrictedPermissionContextCheck(
+        test_case.requesting_url_spec, test_case.embedding_url_spec,
+        test_case.expect_permission_allowed);
+  }
 }
 
 TEST_F(PermissionContextBaseTests, TestParallelRequestsAllowed) {

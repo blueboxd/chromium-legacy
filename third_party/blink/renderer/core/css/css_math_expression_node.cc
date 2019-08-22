@@ -262,6 +262,12 @@ void CSSMathExpressionNumericLiteral::Trace(blink::Visitor* visitor) {
   CSSMathExpressionNode::Trace(visitor);
 }
 
+#if DCHECK_IS_ON()
+bool CSSMathExpressionNumericLiteral::InvolvesPercentageComparisons() const {
+  return false;
+}
+#endif
+
 // ------ End of CSSMathExpressionNumericLiteral member functions
 
 static const CalculationCategory kAddSubtractResult[kCalcOther][kCalcOther] = {
@@ -696,6 +702,13 @@ double CSSMathExpressionBinaryOperation::EvaluateOperator(double left_value,
   return 0;
 }
 
+#if DCHECK_IS_ON()
+bool CSSMathExpressionBinaryOperation::InvolvesPercentageComparisons() const {
+  return left_side_->InvolvesPercentageComparisons() ||
+         right_side_->InvolvesPercentageComparisons();
+}
+#endif
+
 // ------ End of CSSMathExpressionBinaryOperation member functions ------
 
 // ------ Start of CSSMathExpressionVariadicOperation member functions ------
@@ -765,14 +778,6 @@ CSSMathExpressionVariadicOperation::ComputeValueInCanonicalUnit() const {
   if (!first_value)
     return base::nullopt;
 
-  if (operands_.size() == 1u)
-    return first_value;
-
-  // We can't compare two percentages without actually evaluating them, since
-  // they may reference either positive or negative values.
-  if (Category() == kCalcPercent)
-    return base::nullopt;
-
   double result = *first_value;
   for (const auto& operand : SecondToLastOperands()) {
     base::Optional<double> maybe_value = operand->ComputeValueInCanonicalUnit();
@@ -784,15 +789,7 @@ CSSMathExpressionVariadicOperation::ComputeValueInCanonicalUnit() const {
 }
 
 double CSSMathExpressionVariadicOperation::DoubleValue() const {
-#if DCHECK_IS_ON()
   DCHECK(HasDoubleValue(ResolvedUnitType()));
-  if (operands_.size() > 1u) {
-    // We can't compare two percentages without actually evaluating them, since
-    // they may reference either positive or negative values.
-    DCHECK_NE(kCalcPercent, Category());
-  }
-#endif
-
   double result = operands_.front()->DoubleValue();
   for (const auto& operand : SecondToLastOperands())
     result = EvaluateBinary(result, operand->DoubleValue());
@@ -882,6 +879,18 @@ CSSMathExpressionVariadicOperation::ResolvedUnitType() const {
   }
   return result;
 }
+
+#if DCHECK_IS_ON()
+bool CSSMathExpressionVariadicOperation::InvolvesPercentageComparisons() const {
+  if (Category() == kCalcPercent && operands_.size() > 1u)
+    return true;
+  for (const auto& operand : operands_) {
+    if (operand->InvolvesPercentageComparisons())
+      return true;
+  }
+  return false;
+}
+#endif
 
 // ------ End of CSSMathExpressionVariadicOperation member functions
 

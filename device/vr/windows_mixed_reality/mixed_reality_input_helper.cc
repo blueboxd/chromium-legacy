@@ -402,8 +402,7 @@ MixedRealityInputHelper::MixedRealityInputHelper(
     const base::WeakPtr<MixedRealityRenderLoop>& weak_render_loop)
     : hwnd_(hwnd),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      weak_render_loop_(weak_render_loop),
-      weak_ptr_factory_(this) {}
+      weak_render_loop_(weak_render_loop) {}
 
 MixedRealityInputHelper::~MixedRealityInputHelper() {
   // Dispose must be called before destruction, which ensures that we're

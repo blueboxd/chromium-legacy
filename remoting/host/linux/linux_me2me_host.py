@@ -77,9 +77,13 @@ XORG_DUMMY_VIDEO_RAM = 1048576 # KiB
 # defaults can be overridden in ~/.profile.
 DEFAULT_SIZES = "1600x1200,3840x2560"
 
-# If RANDR is not available, use a smaller default size. Only a single
-# resolution is supported in this case.
-DEFAULT_SIZE_NO_RANDR = "1600x1200"
+# Xorg's dummy driver only supports switching between preconfigured sizes. To
+# make resize-to-fit somewhat useful, include several common resolutions by
+# default.
+DEFAULT_SIZES_XORG = ("1600x1200,1600x900,1440x900,1366x768,1360x768,1280x1024,"
+                      "1280x800,1280x768,1280x720,1152x864,1024x768,1024x600,"
+                      "800x600,1680x1050,1920x1080,1920x1200,2560x1440,"
+                      "2560x1600,3840x2160,3840x2560")
 
 SCRIPT_PATH = os.path.abspath(sys.argv[0])
 SCRIPT_DIR = os.path.dirname(SCRIPT_PATH)
@@ -244,21 +248,6 @@ def is_supported_platform():
   # The host has been tested only on Ubuntu.
   distribution = platform.linux_distribution()
   return (distribution[0]).lower() == 'ubuntu'
-
-
-def locate_xvfb_randr():
-  """Returns a path to our RANDR-supporting Xvfb server, if it is found on the
-  system. Otherwise returns None."""
-
-  xvfb = "/usr/bin/Xvfb-randr"
-  if os.path.exists(xvfb):
-    return xvfb
-
-  xvfb = os.path.join(SCRIPT_DIR, "Xvfb-randr")
-  if os.path.exists(xvfb):
-    return xvfb
-
-  return None
 
 
 class Config:
@@ -541,14 +530,10 @@ class Desktop:
     max_width = max([width for width, height in self.sizes])
     max_height = max([height for width, height in self.sizes])
 
-    xvfb = locate_xvfb_randr()
-    if not xvfb:
-      xvfb = "Xvfb"
-
-    logging.info("Starting %s on display :%d" % (xvfb, display))
+    logging.info("Starting Xvfb on display :%d" % display)
     screen_option = "%dx%dx24" % (max_width, max_height)
     self.x_proc = subprocess.Popen(
-        [xvfb, ":%d" % display,
+        ["Xvfb", ":%d" % display,
          "-auth", x_auth_file,
          "-nolisten", "tcp",
          "-noreset",
@@ -1553,12 +1538,10 @@ Web Store: https://chrome.google.com/remotedesktop"""
   # Start logging to user-session messaging pipe if it exists.
   ParentProcessLogger.try_start_logging(USER_SESSION_MESSAGE_FD)
 
-  # If a RANDR-supporting Xvfb is not available, limit the default size to
-  # something more sensible.
-  if USE_XORG_ENV_VAR not in os.environ and locate_xvfb_randr():
-    default_sizes = DEFAULT_SIZES
+  if USE_XORG_ENV_VAR in os.environ:
+    default_sizes = DEFAULT_SIZES_XORG
   else:
-    default_sizes = DEFAULT_SIZE_NO_RANDR
+    default_sizes = DEFAULT_SIZES
 
   # Collate the list of sizes that XRANDR should support.
   if not options.size:

@@ -137,10 +137,10 @@ bool StructTraits<display::mojom::DisplaySnapshotDataView,
       data.display_id(), origin, physical_size, type,
       data.is_aspect_preserving_scaling(), data.has_overscan(),
       data.has_color_correction_matrix(),
-      data.color_correction_in_linear_space(), color_space, display_name,
-      file_path, std::move(modes), panel_orientation, std::move(edid),
-      current_mode, native_mode, data.product_code(),
-      data.year_of_manufacture(), maximum_cursor_size);
+      data.color_correction_in_linear_space(), color_space,
+      data.bits_per_channel(), display_name, file_path, std::move(modes),
+      panel_orientation, std::move(edid), current_mode, native_mode,
+      data.product_code(), data.year_of_manufacture(), maximum_cursor_size);
   return true;
 }
 

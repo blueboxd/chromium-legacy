@@ -122,7 +122,7 @@ class SyncEngineTest : public testing::Test,
   }
 
  private:
-  content::BrowserTaskEnvironment browser_threads_;
+  content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir profile_dir_;
   std::unique_ptr<drive_backend::SyncEngine> sync_engine_;
 

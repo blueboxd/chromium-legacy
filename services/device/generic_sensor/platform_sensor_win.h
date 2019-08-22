@@ -52,7 +52,7 @@ class PlatformSensorWin final : public PlatformSensor,
  private:
   scoped_refptr<base::SingleThreadTaskRunner> sensor_thread_runner_;
   PlatformSensorReaderWinBase* const sensor_reader_;
-  base::WeakPtrFactory<PlatformSensorWin> weak_factory_;
+  base::WeakPtrFactory<PlatformSensorWin> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PlatformSensorWin);
 };

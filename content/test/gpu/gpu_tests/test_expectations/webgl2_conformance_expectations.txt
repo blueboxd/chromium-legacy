@@ -129,11 +129,11 @@ crbug.com/884210 [ opengl win passthrough intel ] conformance/ogles/GL/gl_FragCo
 
 crbug.com/602688 [ opengl win passthrough intel intel_lt_25.20.100.6577 ] conformance/glsl/constructors/glsl-construct-mat2.html [ Failure ]
 crbug.com/602688 [ opengl win passthrough intel intel_lt_25.20.100.6577 ] conformance2/textures/misc/texture-npot.html [ Failure ]
-crbug.com/854100 [ opengl win passthrough intel intel_lt_25.20.100.6577 ] conformance/glsl/variables/gl-pointcoord.html [ Failure ]
-crbug.com/957631 [ opengl win passthrough intel intel_lt_25.20.100.6577 ] conformance2/rendering/element-index-uint.html [ Failure ]
-# TODO(crbug.com/994852) : Add back driver version tag intel_lt_25.20.100.6577
+# TODO(crbug.com/994852) : Add back driver version tag intel_lt_25.20.100.6577 to these 3 tests
 # once it is working again.
-crbug.com/angleproject/2880 [ opengl win passthrough intel ] deqp/functional/gles3/shaderbuiltinvar.html [ Skip ]
+crbug.com/854100 [ opengl win passthrough intel ] conformance/glsl/variables/gl-pointcoord.html [ Failure ]
+crbug.com/957631 [ opengl win passthrough intel ] conformance2/rendering/element-index-uint.html [ Failure ]
+crbug.com/angleproject/2880 [ opengl win passthrough intel ] deqp/functional/gles3/shaderbuiltinvar.html [ Failure ]
 
 # This is an OpenGL driver bug on Intel platform and it is fixed in
 # Intel Driver 25.20.100.6444.
@@ -320,12 +320,15 @@ crbug.com/641209 [ mac nvidia-0xfe9 ] deqp/functional/gles3/fbomultisample* [ Fa
 crbug.com/483282 [ mac nvidia-0xfe9 ] deqp/functional/gles3/framebufferblit/default_framebuffer_04.html [ Failure ]
 crbug.com/483282 [ mac nvidia-0xfe9 ] conformance/attribs/gl-disabled-vertex-attrib.html [ Failure ]
 crbug.com/483282 [ mac nvidia-0xfe9 ] conformance/extensions/webgl-compressed-texture-size-limit.html [ RetryOnFailure ]
+crbug.com/996344 [ mac nvidia-0xfe9 ] conformance/glsl/bugs/vector-scalar-arithmetic-inside-loop.html [ Failure ]
 crbug.com/923080 [ mac nvidia-0xfe9 ] conformance/ogles/GL/exp2/exp2_001_to_008.html [ RetryOnFailure ]
 crbug.com/483282 [ mac nvidia-0xfe9 ] conformance/programs/gl-bind-attrib-location-long-names-test.html [ Failure ]
 crbug.com/483282 [ mac nvidia-0xfe9 ] conformance/programs/gl-bind-attrib-location-test.html [ Failure ]
 crbug.com/483282 [ mac nvidia-0xfe9 ] conformance2/glsl3/loops-with-side-effects.html [ Failure ]
 crbug.com/981122 [ mac nvidia-0xfe9 ] conformance2/rendering/framebuffer-completeness-draw-framebuffer.html [ RetryOnFailure ]
+crbug.com/996344 [ mac nvidia-0xfe9 ] conformance2/textures/misc/tex-base-level-bug.html [ Failure ]
 crbug.com/483282 [ no-angle mac nvidia-0xfe9 ] conformance2/textures/misc/tex-input-validation.html [ Failure ]
+crbug.com/996344 [ mac nvidia-0xfe9 ] conformance2/textures/misc/tex-mipmap-levels.html [ Failure ]
 crbug.com/682834 [ mac nvidia-0xfe9 ] conformance2/textures/image_bitmap_from_video/tex-2d-rgba16f-rgba-half_float.html [ RetryOnFailure ]
 crbug.com/922517 [ mac nvidia-0xfe9 ] conformance2/textures/canvas/tex-3d-rg16f-rg-float.html [ RetryOnFailure ]
 crbug.com/784817 [ mac nvidia-0xfe9 ] conformance/glsl/bugs/init-array-with-loop.html [ Failure ]
@@ -416,6 +419,8 @@ crbug.com/907599 [ mac nvidia debug ] conformance/textures/video/tex-2d-rgb-rgb-
 # rather than flaky.
 crbug.com/870856 [ mac amd ] conformance2/textures/misc/tex-base-level-bug.html [ Failure ]
 crbug.com/870856 [ mac amd ] conformance2/textures/misc/tex-mipmap-levels.html [ Failure ]
+
+crbug.com/angleproject/3701 [ mac amd ] conformance2/textures/canvas/tex-2d-rg8-rg-unsigned_byte.html [ RetryOnFailure ]
 
 crbug.com/483282 [ sierra amd ] deqp/functional/gles3/transformfeedback/array_interleaved_lines.html [ Failure ]
 crbug.com/483282 [ sierra amd ] deqp/functional/gles3/transformfeedback/array_interleaved_points.html [ Failure ]

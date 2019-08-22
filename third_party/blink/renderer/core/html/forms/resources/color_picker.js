@@ -158,8 +158,7 @@ class Color {
           Color.hexToRGB(this.hexValue_);
     } else if (this.hValue_ !== undefined) {
       [this.rValue_, this.gValue_, this.bValue_] =
-          Color.hslToRGB(this.hValue_, this.sValue_, this.lValue_)
-          .map(Math.round);
+          Color.hslToRGB(this.hValue_, this.sValue_, this.lValue_);
     }
   }
 
@@ -200,11 +199,10 @@ class Color {
       // Already computed.
     } else if (this.rValue_ !== undefined) {
       [this.hValue_, this.sValue_, this.lValue_] =
-          Color.rgbToHSL(this.rValue_, this.gValue_, this.bValue_)
-          .map(Math.round);
+          Color.rgbToHSL(this.rValue_, this.gValue_, this.bValue_);
     } else if (this.hexValue_ !== undefined) {
       [this.hValue_, this.sValue_, this.lValue_] =
-          Color.hexToHSL(this.hexValue_).map(Math.round);
+          Color.hexToHSL(this.hexValue_);
     }
   }
 
@@ -288,9 +286,9 @@ class Color {
         bValue = x;
       }
     }
-    rValue = (rValue + match) * 255;
-    gValue = (gValue + match) * 255;
-    bValue = (bValue + match) * 255;
+    rValue = Math.round((rValue + match) * 255);
+    gValue = Math.round((gValue + match) * 255);
+    bValue = Math.round((bValue + match) * 255);
     return [rValue, gValue, bValue];
   }
 
@@ -317,13 +315,13 @@ class Color {
         // max === bValue
         hValue = ((rValue - gValue) / diff) + 4;
       }
-      hValue *= 60;
+      hValue = Math.round(hValue * 60);
       if (hValue < 0) {
         hValue += 360;
       }
-      sValue = (diff / (1 - Math.abs(2 * lValue - 1))) * 100;
+      sValue = Math.round((diff / (1 - Math.abs(2 * lValue - 1))) * 100);
     }
-    lValue *= 100;
+    lValue = Math.round(lValue * 100);
     return [hValue, sValue, lValue];
   }
 
@@ -332,7 +330,7 @@ class Color {
    * @returns {string}
    */
   static hslToHex(...hslValues) {
-    return Color.rgbToHex(...Color.hslToRGB(...hslValues).map(Math.round));
+    return Color.rgbToHex(...Color.hslToRGB(...hslValues));
   }
 
   /**
@@ -341,6 +339,61 @@ class Color {
    */
   static hexToHSL(hexValue) {
     return Color.rgbToHSL(...Color.hexToRGB(hexValue));
+  }
+
+  /**
+   * @param {number[]} colorTripleA RGB or HSL values
+   * @param {number[]} colorTripleB RGB or HSL values
+   * Both color triples must be of the same color format.
+   */
+  static distance(colorTripleA, colorTripleB) {
+    return Math.sqrt(Math.pow(colorTripleA[0] - colorTripleB[0], 2)
+        + Math.pow(colorTripleA[1] - colorTripleB[1], 2)
+        + Math.pow(colorTripleA[2] - colorTripleB[2], 2));
+  }
+}
+
+/**
+ * Point: Helper class to get/set coordinates for two dimensional points.
+ */
+class Point {
+  /**
+   * @param {number} x
+   * @param {number} y
+   */
+  constructor(x, y) {
+    this.set(x, y);
+  }
+
+  /**
+   * @param {number} x
+   * @param {number} y
+   */
+  set(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+
+  get x() {
+    return this.x_;
+  }
+
+  /**
+   * @param {number} x
+   */
+  set x(x) {
+    this.x_ = x;
+  }
+
+  get y() {
+    return this.y_;
+  }
+
+  /**
+   * @param {number} y
+   */
+  set y(y) {
+    this.y_ = y;
   }
 }
 
@@ -369,8 +422,15 @@ class ColorPicker extends HTMLElement {
                 this.manualColorPicker_,
                 this.submissionControls_);
 
+    this.visualColorPicker_.addEventListener('visual-color-picker-initialized',
+        this.initializeListeners_);
+  }
+
+  initializeListeners_ = () => {
     this.manualColorPicker_
         .addEventListener('manual-color-change', this.onManualColorChange_);
+
+    this.addEventListener('visual-color-change', this.onVisualColorChange_);
   }
 
   get selectedColor() {
@@ -391,7 +451,36 @@ class ColorPicker extends HTMLElement {
     const newColor = event.detail.color;
     if (!this.selectedColor.equals(newColor)) {
       this.selectedColor = newColor;
-      this.visualColorPicker_.setSelectedColor(newColor);
+
+      // There may not be an exact match for newColor in the HueSlider or
+      // ColorWell, in which case we will display the closest match. When this
+      // happens though, we want the manually chosen values to remain the
+      // selected values (as they were explicitly specified by the user).
+      // Therefore, we need to prevent them from getting overwritten when
+      // onVisualColorChange_ runs. We do this by setting the
+      // processingManualColorChange_ flag here and checking for it inside
+      // onVisualColorChange_. If the flag is set, the manual color values
+      // will not be updated with the color shown in the visual color picker.
+      this.processingManualColorChange_ = true;
+      this.visualColorPicker_.color = newColor;
+      this.processingManualColorChange_ = false;
+    }
+  }
+
+  /**
+   * @param {!Event} event
+   */
+  onVisualColorChange_ = (event) => {
+    const newColor = event.detail.color;
+    if (!this.selectedColor.equals(newColor)) {
+      if (!this.processingManualColorChange_) {
+        this.selectedColor = newColor;
+        this.manualColorPicker_.color = newColor;
+      } else {
+        // We are making a visual color change in response to a manual color
+        // change. So we do not overwrite the manually specified values and do
+        // not change the selected color.
+      }
     }
   }
 
@@ -411,8 +500,6 @@ window.customElements.define('color-picker', ColorPicker);
 /**
  * VisualColorPicker: Provides functionality to see the selected color and
  *                    select a different color visually.
- * TODO(crbug.com/983311): Allow colors to be selected from within the visual
- *                         color picker.
  */
 class VisualColorPicker extends HTMLElement {
   /**
@@ -421,17 +508,673 @@ class VisualColorPicker extends HTMLElement {
   constructor(initialColor) {
     super();
 
-    this.setSelectedColor(initialColor);
+    let visualColorPickerStrip = document.createElement('span');
+    visualColorPickerStrip.setAttribute('id', 'visual-color-picker-strip');
+    this.eyeDropper_ = new EyeDropper();
+    this.colorViewer_ = new ColorViewer(initialColor);
+    this.hueSlider_ = new HueSlider(initialColor);
+    visualColorPickerStrip.append(this.eyeDropper_,
+                                  this.colorViewer_,
+                                  this.hueSlider_);
+    this.append(visualColorPickerStrip);
+
+    this.colorWell_ = new ColorWell(initialColor);
+    this.prepend(this.colorWell_);
+
+    this.colorWell_.addEventListener('color-well-initialized', () => {
+      this.initializeListeners_();
+    });
+
+    this.hueSlider_.addEventListener('hue-slider-initialized', () => {
+      this.initializeListeners_();
+    });
+  }
+
+  initializeListeners_ = () => {
+    if (this.colorWell_.initialized && this.hueSlider_.initialized) {
+      this.addEventListener('hue-slider-update', this.onHueSliderUpdate_);
+      this.addEventListener('visual-color-change', this.onVisualColorChange_);
+      this.colorWell_
+          .addEventListener('mousedown', this.onColorWellMouseDown_);
+      this.hueSlider_
+          .addEventListener('mousedown', this.onHueSliderMouseDown_);
+      this.colorWell_
+          .addEventListener('mousedown', (event) => event.preventDefault());
+      this.hueSlider_
+          .addEventListener('mousedown', (event) => event.preventDefault());
+      document.documentElement
+          .addEventListener('mousemove', this.onMouseMove_);
+      document.documentElement.addEventListener('mouseup', this.onMouseUp_);
+
+      this.dispatchEvent(new CustomEvent('visual-color-picker-initialized'));
+    }
+  }
+
+  onHueSliderUpdate_ = () => {
+    this.colorWell_.fillColor = this.hueSlider_.color;
+  }
+
+  /**
+   * @param {!Event} event
+   */
+  onVisualColorChange_ = (event) => {
+    this.colorViewer_.color = event.detail.color;
+  }
+
+  /**
+   * @param {!Event} event
+   */
+  onColorWellMouseDown_ = (event) => {
+    this.colorWell_.mouseDown(new Point(event.clientX, event.clientY));
+  }
+
+  /**
+   * @param {!Event} event
+   */
+  onMouseMove_ = (event) => {
+    var point = new Point(event.clientX, event.clientY);
+    this.colorWell_.mouseMove(point);
+    this.hueSlider_.mouseMove(point);
+  }
+
+  onMouseUp_ = () => {
+    this.colorWell_.mouseUp();
+    this.hueSlider_.mouseUp();
+  }
+
+  /**
+   * @param {!Event} event
+   */
+  onHueSliderMouseDown_ = (event) => {
+    this.hueSlider_.mouseDown(new Point(event.clientX, event.clientY));
   }
 
   /**
    * @param {!Color} newColor
    */
-  setSelectedColor(newColor) {
-    this.style.backgroundColor = newColor.asHex();
+  set color(newColor) {
+    this.hueSlider_.color = newColor;
+    this.colorWell_.selectedColor = newColor;
   }
 }
 window.customElements.define('visual-color-picker', VisualColorPicker);
+
+/**
+ * EyeDropper: Allows color selection from content outside the color picker.
+ *             (This is currently just a placeholder for a future
+ *             implementation.)
+ * TODO(http://crbug.com/992297): Implement eye dropper
+ */
+class EyeDropper extends HTMLElement { }
+window.customElements.define('eye-dropper', EyeDropper);
+
+/**
+ * ColorViewer: Provides a view of the selected color.
+ */
+class ColorViewer extends HTMLElement {
+  /**
+   * @param {!Color} initialColor
+   */
+  constructor(initialColor) {
+    super();
+
+    this.color = initialColor;
+  }
+
+  get color() {
+    return this.color_;
+  }
+
+  /**
+   * @param {!Color} color
+   */
+  set color(color) {
+    if (this.color_ === undefined || !this.color_.equals(color)) {
+      this.color_ = color;
+      this.style.backgroundColor = color.asRGB();
+    }
+  }
+}
+window.customElements.define('color-viewer', ColorViewer);
+
+/**
+ * ColorSelectionArea: Base class for ColorWell and HueSlider that encapsulates
+ *                     a ColorPalette and a ColorSelectionRing.
+ */
+class ColorSelectionArea extends HTMLElement {
+  constructor() {
+    super();
+
+    this.colorPalette_ = new ColorPalette();
+    this.colorSelectionRing_ = new ColorSelectionRing(this.colorPalette_);
+    this.append(this.colorPalette_, this.colorSelectionRing_);
+    this.initialized_ = false;
+  }
+
+  get initialized() {
+    return this.initialized_;
+  }
+
+  /**
+   * @param {!Point} point
+   */
+  mouseDown(point) {
+    this.colorSelectionRing_.drag = true;
+    this.moveColorSelectionRingTo_(point);
+  }
+
+  /**
+   * @param {!Point} point
+   */
+  mouseMove(point) {
+    if (this.colorSelectionRing_.drag) {
+      this.moveColorSelectionRingTo_(point);
+    }
+  }
+
+  mouseUp() {
+    this.colorSelectionRing_.drag = false;
+  }
+}
+window.customElements.define('color-selection-area', ColorSelectionArea);
+
+/**
+ * ColorPalette: Displays a range of colors.
+ */
+class ColorPalette extends HTMLCanvasElement {
+  constructor() {
+    super();
+
+    this.gradients_ = [];
+  }
+
+  /**
+   * @param {...CanvasGradient} gradients
+   */
+  initialize(...gradients) {
+    this.width = this.offsetWidth;
+    this.height = this.offsetHeight;
+    this.renderingContext.rect(0, 0, this.width, this.height);
+    this.gradients_.push(...gradients);
+    this.fillColor = new Color('hsl(0, 100%, 50%)');
+  }
+
+  get hslImageData() {
+    if (this.pendingColorChange_) {
+      const rgbaImageData = this.renderingContext
+          .getImageData(0, 0, this.width, this.height).data;
+      this.hslImageData_ = rgbaImageData
+          .reduce((hslArray, {}, currentIndex, rgbaArray) => {
+            if ((currentIndex % 4) === 0) {
+              hslArray.push(...Color.rgbToHSL(rgbaArray[currentIndex],
+                                              rgbaArray[currentIndex + 1],
+                                              rgbaArray[currentIndex + 2]));
+            }
+            return hslArray;
+          }, []);
+      this.pendingColorChange_ = false;
+    }
+    if (this.pendingHueChange_) {
+      const hValueToSet = this.fillColor.hValue;
+      this.hslImageData_.forEach(({}, currentIndex, hslArray) => {
+        if ((currentIndex % 3) === 0) {
+          hslArray[currentIndex] = hValueToSet;
+        }
+      });
+
+      this.pendingHueChange_ = false;
+    }
+    return this.hslImageData_;
+  }
+
+  /**
+   * @param {!Point} point
+   */
+  colorAtPoint(point) {
+    const hslImageDataAtPoint =
+        this.hslImageDataAtPoint_(point.x - this.left, point.y - this.top);
+    return new Color(ColorFormat.HSL, hslImageDataAtPoint[0],
+        hslImageDataAtPoint[1], hslImageDataAtPoint[2]);
+  }
+
+  /**
+   * @param {number} x
+   * @param {number} y
+   */
+  hslImageDataAtPoint_(x, y) {
+    const offset = Math.round(y * this.width + x) * 3;
+    return this.hslImageData.slice(offset, offset + 3);
+  }
+
+  get renderingContext() {
+    return this.getContext('2d');
+  }
+
+  get fillColor() {
+    return this.fillColor_;
+  }
+
+  /**
+   * @param {!Color} color
+   */
+  set fillColor(color) {
+    this.fillColor_ = color;
+    this.fillColorAndGradients_();
+    this.pendingColorChange_ = true;
+  }
+
+  /**
+   * @param {!Color} color
+   */
+  fillHue(color) {
+    this.fillColor_ = new Color(ColorFormat.HSL, color.hValue,
+        this.fillColor_.sValue, this.fillColor_.lValue);
+    this.fillColorAndGradients_();
+    this.pendingHueChange_ = true;
+  }
+
+  fillColorAndGradients_() {
+    this.fillWithStyle_(this.fillColor_.asRGB());
+    this.gradients_.forEach((gradient) => this.fillWithStyle_(gradient));
+  }
+
+  /**
+   * @param {string|!CanvasGradient} fillStyle
+   */
+  fillWithStyle_(fillStyle) {
+    let colorPaletteCtx = this.renderingContext;
+    colorPaletteCtx.fillStyle = fillStyle;
+    colorPaletteCtx.fill();
+  }
+
+  /**
+   * @param {!Point} point
+   */
+  nearestPointOnColorPalette(point) {
+    if (!this.isXCoordinateOnColorPalette_(point)) {
+      if (point.x >= this.right) {
+        point.x = this.right - 1;
+      } else if (point.x < this.left) {
+        point.x = this.left;
+      }
+    }
+    if (!this.isYCoordinateOnColorPalette_(point)) {
+      if (point.y >= this.bottom) {
+        point.y = this.bottom - 1;
+      } else if (point.y < this.top) {
+        point.y = this.top;
+      }
+    }
+    return point;
+  }
+
+  /**
+   * @param {!Point} point
+   */
+  isXCoordinateOnColorPalette_(point) {
+    return (point.x >= this.left) && (point.x < this.right);
+  }
+
+  /**
+   * @param {!Point} point
+   */
+  isYCoordinateOnColorPalette_(point) {
+    return (point.y >= this.top) && (point.y < this.bottom);
+  }
+
+  get left() {
+    return this.getBoundingClientRect().left;
+  }
+
+  get right() {
+    return this.getBoundingClientRect().right;
+  }
+
+  get top() {
+    return this.getBoundingClientRect().top;
+  }
+
+  get bottom() {
+    return this.getBoundingClientRect().bottom;
+  }
+}
+window.customElements.define('color-palette',
+                             ColorPalette,
+                             { extends: 'canvas' });
+
+/**
+ * ColorSelectionRing: Provides movement and color selection functionality to
+ *                     pick colors from a given ColorPalette.
+ */
+class ColorSelectionRing extends HTMLElement {
+  /**
+   * @param {!ColorPalette} backingColorPalette
+   */
+  constructor(backingColorPalette) {
+    super();
+
+    this.backingColorPalette_ = backingColorPalette;
+    this.position_ = new Point(0, 0);
+    this.drag_ = false;
+  }
+
+  initialize() {
+    this.set(this.backingColorPalette_.left, this.backingColorPalette_.top);
+  }
+
+  /**
+   * @param {!Point} newPosition
+   */
+  moveTo(newPosition) {
+    this.set(newPosition.x, newPosition.y);
+  }
+
+  /**
+   * @param {number} x
+   * @param {number} y
+   */
+  set(x, y) {
+    if ((x !== this.position_.x) || (y !== this.position_.y)) {
+      this.position_.x = x;
+      this.position_.y = y;
+      this.onPositionChange_();
+    }
+  }
+
+  /**
+   * @param {number} x
+   */
+  setX(x) {
+    if (x !== this.position_.x) {
+      this.position_.x = x;
+      this.onPositionChange_();
+    }
+  }
+
+  /**
+   * @param {number} shiftFactor
+   */
+  shiftX(shiftFactor) {
+    this.setX(this.position_.x + shiftFactor);
+  }
+
+  onPositionChange_() {
+    this.setElementPosition_();
+    this.updateColor();
+  }
+
+  setElementPosition_() {
+    if (this.height > this.backingColorPalette_.height) {
+      this.style.top = this.top
+          - (this.height - this.backingColorPalette_.height) / 2
+          - this.backingColorPalette_.top + 'px';
+    } else {
+      this.style.top = this.top - this.radius
+          - this.backingColorPalette_.top + 'px';
+    }
+    if (this.width > this.backingColorPalette_.width) {
+      this.style.left = this.left
+          - (this.width - this.backingColorPalette_.width) / 2
+          - this.backingColorPalette_.left + 'px';
+    } else {
+      this.style.left = this.left - this.radius
+          - this.backingColorPalette_.left + 'px';
+    }
+  }
+
+  updateColor() {
+    this.color = this.backingColorPalette_.colorAtPoint(this.position_);
+    this.dispatchEvent(new CustomEvent('color-selection-ring-update'));
+  }
+
+  get color() {
+    return this.color_;
+  }
+
+  /**
+   * @param {!Color} color
+   */
+  set color(color) {
+    if (this.color_ === undefined || !this.color_.equals(color)) {
+      this.color_ = color;
+      this.style.backgroundColor = color.asRGB();
+    }
+  }
+
+  get drag() {
+    return this.drag_;
+  }
+
+  /**
+   * @param {boolean} drag
+   */
+  set drag(drag) {
+    this.drag_ = drag;
+  }
+
+  get radius() {
+    return this.width / 2;
+  }
+
+  get width() {
+    return this.getBoundingClientRect().width;
+  }
+
+  get height() {
+    return this.getBoundingClientRect().height;
+  }
+
+  get left() {
+    return this.position_.x;
+  }
+
+  get top() {
+    return this.position_.y;
+  }
+}
+window.customElements.define('color-selection-ring', ColorSelectionRing);
+
+/**
+ * ColorWell: Allows selection from a range of colors, between black and white,
+ *            that have the same hue value.
+ */
+class ColorWell extends ColorSelectionArea {
+  /**
+   * @param {!Color} initialColor
+   */
+  constructor(initialColor) {
+    super();
+
+    this.fillColor_ = new Color(ColorFormat.HSL, initialColor.hValue, 100, 50);
+    this.selectedColor_ = initialColor;
+
+    this.resizeObserver_ = new ResizeObserver(() => {
+      let whiteGradient = this.colorPalette_.renderingContext
+          .createLinearGradient(0, 0, this.colorPalette_.offsetWidth, 0);
+      whiteGradient.addColorStop(0.01, 'hsla(0, 0%, 100%, 1)');
+      whiteGradient.addColorStop(0.99, 'hsla(0, 0%, 100%, 0)');
+      let blackGradient = this.colorPalette_.renderingContext
+          .createLinearGradient(0, this.colorPalette_.offsetHeight, 0, 0);
+      blackGradient.addColorStop(0.01, 'hsla(0, 0%, 0%, 1)');
+      blackGradient.addColorStop(0.99, 'hsla(0, 0%, 0%, 0)');
+      this.colorPalette_.initialize(whiteGradient, blackGradient);
+      this.colorPalette_.fillHue(this.fillColor_);
+      this.colorSelectionRing_.initialize();
+
+      this.colorSelectionRing_.addEventListener('color-selection-ring-update',
+          this.onColorSelectionRingUpdate_);
+
+      this.moveColorSelectionRingTo_(this.selectedColor_);
+
+      this.resizeObserver_.disconnect();
+      this.resizeObserver_ = null;
+
+      this.initialized_ = true;
+      this.dispatchEvent(new CustomEvent('color-well-initialized'));
+    });
+    this.resizeObserver_.observe(this);
+  }
+
+  /**
+   * @param {!Point|!Color} newPositionOrColor
+   */
+  moveColorSelectionRingTo_(newPositionOrColor) {
+    if (newPositionOrColor instanceof Point) {
+      const point =
+          this.colorPalette_.nearestPointOnColorPalette(newPositionOrColor);
+      this.colorSelectionRing_.moveTo(point);
+    } else {
+      const closestHSLValueIndex = this.colorPalette_.hslImageData
+          .reduce((closestSoFar, {}, index, array) => {
+            if ((index % 3) === 0) {
+              const currentHSLValueDistance = Color.distance([array[index],
+                  array[index + 1], array[index + 2]],
+                    newPositionOrColor.hslValues());
+              const closestHSLValueDistance =
+                  Color.distance([array[closestSoFar], array[closestSoFar + 1],
+                    array[closestSoFar + 2]], newPositionOrColor.hslValues());
+              if (currentHSLValueDistance < closestHSLValueDistance) {
+                return index;
+              }
+            }
+            return closestSoFar;
+          }, 0);
+      const offsetX = (closestHSLValueIndex / 3) % this.colorPalette_.width;
+      const offsetY =
+          Math.floor((closestHSLValueIndex / 3) / this.colorPalette_.width);
+      this.colorSelectionRing_.set(this.colorPalette_.left + offsetX,
+                                  this.colorPalette_.top + offsetY);
+    }
+  }
+
+  get selectedColor() {
+    return this.selectedColor_;
+  }
+
+  /**
+   * @param {!Color} newColor
+   */
+  set selectedColor(newColor) {
+    if (!this.selectedColor_.equals(newColor)) {
+      this.selectedColor_ = newColor;
+      this.moveColorSelectionRingTo_(newColor);
+    }
+  }
+
+  get fillColor() {
+    return this.fillColor_;
+  }
+
+  /**
+   * @param {!Color} color
+   */
+  set fillColor(color) {
+    if (!this.fillColor_.equals(color)) {
+      this.fillColor_ = color;
+      this.colorPalette_.fillHue(color);
+      this.colorSelectionRing_.updateColor();
+    }
+  }
+
+  onColorSelectionRingUpdate_ = () => {
+    this.selectedColor_ = this.colorSelectionRing_.color;
+    this.dispatchEvent(new CustomEvent('visual-color-change', {
+      bubbles: true,
+      detail: {
+        color: this.selectedColor
+      }
+    }));
+  }
+}
+window.customElements.define('color-well', ColorWell);
+
+/**
+ * HueSlider: Allows selection from a range of colors with distinct hue values.
+ */
+class HueSlider extends ColorSelectionArea {
+  /**
+   * @param {!Color} initialColor
+   */
+  constructor(initialColor) {
+    super();
+
+    this.color_ = new Color(ColorFormat.HSL, initialColor.hValue, 100, 50);
+
+    this.resizeObserver_ = new ResizeObserver(() => {
+      let hueSliderPaletteGradient = this.colorPalette_.renderingContext
+          .createLinearGradient(0, 0, this.colorPalette_.offsetWidth, 0);
+      hueSliderPaletteGradient.addColorStop(0.01, 'hsl(0, 100%, 50%)');
+      hueSliderPaletteGradient.addColorStop(0.17, 'hsl(300, 100%, 50%)');
+      hueSliderPaletteGradient.addColorStop(0.33, 'hsl(240, 100%, 50%)');
+      hueSliderPaletteGradient.addColorStop(0.5, 'hsl(180, 100%, 50%)');
+      hueSliderPaletteGradient.addColorStop(0.67, 'hsl(120, 100%, 50%)');
+      hueSliderPaletteGradient.addColorStop(0.83, 'hsl(60, 100%, 50%)');
+      hueSliderPaletteGradient.addColorStop(0.99, 'hsl(0, 100%, 50%)');
+      this.colorPalette_.initialize(hueSliderPaletteGradient);
+      this.colorSelectionRing_.initialize();
+
+      this.colorSelectionRing_.addEventListener('color-selection-ring-update',
+          this.onColorSelectionRingUpdate_);
+
+      this.moveColorSelectionRingTo_(this.color_);
+
+      this.resizeObserver_.disconnect();
+      this.resizeObserver_ = null;
+
+      this.initialized_ = true;
+      this.dispatchEvent(new CustomEvent('hue-slider-initialized'));
+    });
+    this.resizeObserver_.observe(this);
+  }
+
+  /**
+   * @param {!Point|!Color} newPositionOrColor
+   */
+  moveColorSelectionRingTo_(newPositionOrColor) {
+    if (newPositionOrColor instanceof Point) {
+      const point =
+          this.colorPalette_.nearestPointOnColorPalette(newPositionOrColor);
+      this.colorSelectionRing_.shiftX(point.x - this.colorSelectionRing_.left);
+    } else {
+      const targetHValue = newPositionOrColor.hValue;
+      if (targetHValue !== this.colorSelectionRing_.color.hValue) {
+        const closestHValueIndex = this.colorPalette_.hslImageData
+            .reduce((closestHValueIndexSoFar, currentHValue, index, array) => {
+              if ((index % 3 === 0) &&
+                  (Math.abs(currentHValue - targetHValue) <
+                    Math.abs(array[closestHValueIndexSoFar] - targetHValue))) {
+                return index;
+              }
+              return closestHValueIndexSoFar;
+        }, 0);
+        const offsetX = (closestHValueIndex / 3) % this.colorPalette_.width;
+        this.colorSelectionRing_.setX(this.colorPalette_.left + offsetX);
+      }
+    }
+  }
+
+  get color() {
+    return this.color_;
+  }
+
+  /**
+   * @param {!Color} newColor
+   */
+  set color(newColor) {
+    if (this.color_.hValue !== newColor.hValue) {
+      this.color_ = new Color(ColorFormat.HSL, newColor.hValue, 100, 50);
+      this.moveColorSelectionRingTo_(this.color_);
+    }
+  }
+
+  onColorSelectionRingUpdate_ = () => {
+    this.color_ = this.colorSelectionRing_.color;
+    this.dispatchEvent(new CustomEvent('hue-slider-update', {
+      bubbles: true
+    }));
+  }
+}
+window.customElements.define('hue-slider', HueSlider);
 
 /**
  * ManualColorPicker: Provides functionality to change the selected color by
@@ -488,7 +1231,13 @@ class ManualColorPicker extends HTMLElement {
    * @param {!Event} event
    */
   onManualColorChange_ = (event) => {
-    const newColor = event.detail.color;
+    this.color = event.detail.color;
+  }
+
+  /**
+   * @param {!Color} newColor
+   */
+  set color(newColor) {
     this.colorValueContainers_.forEach((colorValueContainer) =>
         colorValueContainer.color = newColor);
   }
@@ -594,19 +1343,33 @@ class ChannelValueContainer extends HTMLInputElement {
     this.colorChannel_ = colorChannel;
     switch(colorChannel) {
       case ColorChannel.HEX:
+        this.setAttribute('id', 'hexValueContainer');
         this.setAttribute('maxlength', '7');
         break;
       case ColorChannel.R:
+        this.setAttribute('id', 'rValueContainer');
+        this.setAttribute('maxlength', '3');
+        break;
       case ColorChannel.G:
+        this.setAttribute('id', 'gValueContainer');
+        this.setAttribute('maxlength', '3');
+        break;
       case ColorChannel.B:
+        this.setAttribute('id', 'bValueContainer');
         this.setAttribute('maxlength', '3');
         break;
       case ColorChannel.H:
+        this.setAttribute('id', 'hValueContainer');
         this.setAttribute('maxlength', '3');
         break;
       case ColorChannel.S:
+        // up to 3 digits plus '%'
+        this.setAttribute('id', 'sValueContainer');
+        this.setAttribute('maxlength', '4');
+        break;
       case ColorChannel.L:
         // up to 3 digits plus '%'
+        this.setAttribute('id', 'lValueContainer');
         this.setAttribute('maxlength', '4');
         break;
     }
@@ -692,10 +1455,10 @@ class ChannelValueContainer extends HTMLInputElement {
           }
           break;
         case ColorChannel.H:
-            if (value.match(/^\d+$/) && (0 <= value) && (value < 360)) {
-              this.channelValue_ = Number(value);
-            }
-            break;
+          if (value.match(/^\d+$/) && (0 <= value) && (value < 360)) {
+            this.channelValue_ = Number(value);
+          }
+          break;
         case ColorChannel.S:
         case ColorChannel.L:
           if (value.endsWith('%')) {

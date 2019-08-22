@@ -189,7 +189,8 @@ void DedicatedWorkerHost::StartScriptLoad(
 void DedicatedWorkerHost::RegisterMojoInterfaces() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   registry_.AddInterface(base::BindRepeating(
-      &DedicatedWorkerHost::CreateWebSocketConnector, base::Unretained(this)));
+      &DedicatedWorkerHost::CreateWebSocketConnectorForRequest,
+      base::Unretained(this)));
   registry_.AddInterface(base::BindRepeating(
       &DedicatedWorkerHost::CreateWebUsbService, base::Unretained(this)));
   registry_.AddInterface(
@@ -318,8 +319,15 @@ void DedicatedWorkerHost::CreateWebUsbService(
                                                      std::move(request));
 }
 
-void DedicatedWorkerHost::CreateWebSocketConnector(
+void DedicatedWorkerHost::CreateWebSocketConnectorForRequest(
     blink::mojom::WebSocketConnectorRequest request) {
+  // Implicit conversion from CreateWebSocketConnectorRequest to
+  // mojo::PendingReceiver<blink::mojom::WebSocketConnector>.
+  CreateWebSocketConnector(std::move(request));
+}
+
+void DedicatedWorkerHost::CreateWebSocketConnector(
+    mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RenderFrameHostImpl* ancestor_render_frame_host =
@@ -327,14 +335,14 @@ void DedicatedWorkerHost::CreateWebSocketConnector(
   if (!ancestor_render_frame_host) {
     // In some cases |ancestor_render_frame_host| can be null. In such cases
     // the worker will soon be terminated too, so let's abort the connection.
-    request.ResetWithReason(network::mojom::WebSocket::kInsufficientResources,
-                            "The parent frame has already been gone.");
+    receiver.ResetWithReason(network::mojom::WebSocket::kInsufficientResources,
+                             "The parent frame has already been gone.");
     return;
   }
-  mojo::MakeStrongBinding(
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<WebSocketConnectorImpl>(
           worker_process_id_, ancestor_render_frame_id_, origin_),
-      blink::mojom::WebSocketConnectorRequest(std::move(request)));
+      std::move(receiver));
 }
 
 void DedicatedWorkerHost::CreateNestedDedicatedWorker(

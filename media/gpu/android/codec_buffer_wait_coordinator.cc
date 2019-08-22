@@ -36,7 +36,9 @@ CodecBufferWaitCoordinator::CodecBufferWaitCoordinator(
       &FrameAvailableEvent::Signal, frame_available_event_));
 }
 
-CodecBufferWaitCoordinator::~CodecBufferWaitCoordinator() = default;
+CodecBufferWaitCoordinator::~CodecBufferWaitCoordinator() {
+  DCHECK(texture_owner_);
+}
 
 void CodecBufferWaitCoordinator::SetReleaseTimeToNow() {
   release_time_ = base::TimeTicks::Now();

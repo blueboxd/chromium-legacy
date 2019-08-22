@@ -86,6 +86,11 @@
     "dependencies": ["manifest:automation"],
     "contexts": ["blessed_extension"]
   },
+  "automation.languageAnnotationForStringAttribute": {
+    "command_line_switch": "enable-experimental-accessibility-chromevox-sub-node-language-switching",
+    "channel": "dev",
+    "contexts": ["blessed_extension"]
+  },
   "bluetooth": [{
     "dependencies": ["manifest:bluetooth"],
     "contexts": ["blessed_extension"]
@@ -228,7 +233,7 @@
         "chrome://assistant-optin/*",
         "chrome://cast/*",
         "chrome://discards/*",
-        "chrome://extensions-frame/*",
+        "chrome://extensions-frame/*",  // TODO(dbeam): still needed?
         "chrome://extensions/*",
         "chrome://home/*",
         "chrome://chrome-signin/*",
@@ -272,8 +277,7 @@
     "contexts": ["webui"],
     "matches": [
       "chrome://extensions/*",
-      "chrome://extensions-frame/*",
-      "chrome://chrome/extensions/*",
+      "chrome://extensions-frame/*",  // TODO(dbeam): still needed?
       // TODO(maybelle): Audit and remove chrome://settings or
       // chrome://os-settings as appropriate
       "chrome://os-settings/*",
@@ -609,8 +613,7 @@
     "contexts": ["webui"],
     "matches": [
       "chrome://extensions/*",
-      "chrome://extensions-frame/*",
-      "chrome://chrome/extensions/*"
+      "chrome://extensions-frame/*"  // TODO(dbeam): still needed?
     ]
   }],
   "types": {

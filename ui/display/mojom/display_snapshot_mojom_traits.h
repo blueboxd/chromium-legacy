@@ -69,6 +69,11 @@ struct StructTraits<display::mojom::DisplaySnapshotDataView,
     return snapshot->color_space();
   }
 
+  static uint32_t bits_per_channel(
+      const std::unique_ptr<display::DisplaySnapshot>& snapshot) {
+    return snapshot->bits_per_channel();
+  }
+
   static std::string display_name(
       const std::unique_ptr<display::DisplaySnapshot>& snapshot) {
     return snapshot->display_name();

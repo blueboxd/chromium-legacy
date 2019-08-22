@@ -1076,7 +1076,7 @@ void OverviewItem::HandlePressEvent(const gfx::PointF& location_in_screen,
 
   StartDrag();
   overview_session_->InitiateDrag(this, location_in_screen,
-                                  /*allow_drag_to_close=*/from_touch_gesture);
+                                  /*is_touch_dragging=*/from_touch_gesture);
 }
 
 void OverviewItem::HandleReleaseEvent(const gfx::PointF& location_in_screen) {

@@ -6,29 +6,26 @@
 
 #include <memory>
 
-#include "ash/public/cpp/app_types.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
+#include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_throttle_observer.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
-#include "components/arc/session/arc_stop_reason.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/test/fake_arc_session.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/core/keyed_service_factory.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/client/aura_constants.h"
-#include "ui/aura/test/test_windows.h"
-#include "ui/wm/public/activation_change_observer.h"
 
 namespace arc {
-namespace {
 
 class ArcInstanceThrottleTest : public testing::Test {
  public:
@@ -49,16 +46,21 @@ class ArcInstanceThrottleTest : public testing::Test {
                                 -> std::unique_ptr<KeyedService> {
           return std::unique_ptr<KeyedService>();
         }));
+
     arc_instance_throttle_ =
         ArcInstanceThrottle::GetForBrowserContextForTesting(
             testing_profile_.get());
-    arc_instance_throttle_->SetDelegateForTesting(
+    arc_instance_throttle_->set_delegate_for_testing(
         std::make_unique<TestDelegateImpl>(this));
   }
   ~ArcInstanceThrottleTest() override { arc_instance_throttle_->Shutdown(); }
 
  protected:
-  ArcInstanceThrottle* arc_instance_throttle() const {
+  sync_preferences::TestingPrefServiceSyncable* GetPrefs() {
+    return testing_profile_->GetTestingPrefService();
+  }
+
+  ArcInstanceThrottle* arc_instance_throttle() {
     return arc_instance_throttle_;
   }
 
@@ -70,9 +72,8 @@ class ArcInstanceThrottleTest : public testing::Test {
     return enable_cpu_restriction_counter_;
   }
 
-  sync_preferences::TestingPrefServiceSyncable* GetPrefs() const {
-    return testing_profile_->GetTestingPrefService();
-  }
+  ArcThrottleObserver* critical_observer() { return &critical_observer_; }
+  ArcThrottleObserver* low_observer() { return &low_observer_; }
 
  private:
   class TestDelegateImpl : public ArcInstanceThrottle::Delegate {
@@ -97,97 +98,44 @@ class ArcInstanceThrottleTest : public testing::Test {
   ArcInstanceThrottle* arc_instance_throttle_;
   size_t disable_cpu_restriction_counter_;
   size_t enable_cpu_restriction_counter_;
+  ArcThrottleObserver critical_observer_{
+      ArcThrottleObserver::PriorityLevel::CRITICAL, "CriticalObserver"};
+  ArcThrottleObserver low_observer_{ArcThrottleObserver::PriorityLevel::LOW,
+                                    "LowObserver"};
 
   DISALLOW_COPY_AND_ASSIGN(ArcInstanceThrottleTest);
 };
 
-// Tests that ArcInstanceThrottle starts/stop observing windows when it receives
-// notification that the container has started/stopped.
-TEST_F(ArcInstanceThrottleTest, TestOnBootCompleted) {
-  arc_instance_throttle()->OnArcStarted();
-  EXPECT_FALSE(arc_instance_throttle()->observing_window_activations());
-  arc_instance_throttle()->OnArcInitialStart();
-  EXPECT_TRUE(arc_instance_throttle()->observing_window_activations());
-  arc_instance_throttle()->OnArcSessionStopped(ArcStopReason::SHUTDOWN);
-  EXPECT_FALSE(arc_instance_throttle()->observing_window_activations());
-  arc_instance_throttle()->OnBootCompleted();
-  EXPECT_TRUE(arc_instance_throttle()->observing_window_activations());
-  arc_instance_throttle()->OnArcSessionRestarting();
-  EXPECT_FALSE(arc_instance_throttle()->observing_window_activations());
-}
+// Tests that ArcInstanceThrottle can be constructed and destructed.
 
-// Tests that container is unthrottled on OnArcStarted,
-// OnArcPlayStoreEnabledChanged, OnArcSessionStopped, and OnArcSessionRestarting
-TEST_F(ArcInstanceThrottleTest, TestOnArcStarted) {
-  EXPECT_EQ(0U, disable_cpu_restriction_counter());
-  arc_instance_throttle()->OnArcStarted();
-  EXPECT_EQ(1U, disable_cpu_restriction_counter());
+TEST_F(ArcInstanceThrottleTest, TestConstructDestruct) {}
 
-  arc_instance_throttle()->OnArcPlayStoreEnabledChanged(true);
-  EXPECT_EQ(2U, disable_cpu_restriction_counter());
-
-  arc_instance_throttle()->OnArcInitialStart();
-  arc_instance_throttle()->OnArcSessionStopped(ArcStopReason::SHUTDOWN);
-  EXPECT_EQ(3U, disable_cpu_restriction_counter());
-
-  arc_instance_throttle()->OnBootCompleted();
-  arc_instance_throttle()->OnArcSessionRestarting();
-  EXPECT_EQ(4U, disable_cpu_restriction_counter());
-}
-
-// Tests that CPU restriction is disabled when tab restoration is done.
-TEST_F(ArcInstanceThrottleTest, TestOnSessionRestoreFinishedLoadingTabs) {
-  EXPECT_EQ(0U, disable_cpu_restriction_counter());
-  arc_instance_throttle()->OnSessionRestoreFinishedLoadingTabs();
-  EXPECT_EQ(1U, disable_cpu_restriction_counter());
-}
-
-// Tests that nothing happens if tab restoration is done after ARC boot.
-TEST_F(ArcInstanceThrottleTest,
-       TestOnSessionRestoreFinishedLoadingTabs_BootFirst) {
-  // OnSessionRestoreFinishedLoadingTabs() should be no-op when the
-  // instance has already fully started.
-  arc_instance_throttle()->OnBootCompleted();
-  EXPECT_EQ(0U, disable_cpu_restriction_counter());
-  arc_instance_throttle()->OnSessionRestoreFinishedLoadingTabs();
-  EXPECT_EQ(0U, disable_cpu_restriction_counter());
-}
-
-// Tests that OnExtensionsReady() disables throttling iff instance boot is not
-// completed yet.
-TEST_F(ArcInstanceThrottleTest, TestOnExtensionsReady) {
-  arc_instance_throttle()->OnExtensionsReadyForTesting();
-  EXPECT_EQ(1U, disable_cpu_restriction_counter());
-  arc_instance_throttle()->OnBootCompleted();
-  arc_instance_throttle()->OnExtensionsReadyForTesting();
-  EXPECT_EQ(1U, disable_cpu_restriction_counter());
-}
-
-// Tests that CPU restriction is disabled when ARC window is in focus,
-// and enabled when ARC window is unfocused.
-TEST_F(ArcInstanceThrottleTest, TestOnWindowActivated) {
-  aura::test::TestWindowDelegate dummy_delegate;
-  aura::Window* arc_window = aura::test::CreateTestWindowWithDelegate(
-      &dummy_delegate, 1, gfx::Rect(), nullptr);
-  aura::Window* chrome_window = aura::test::CreateTestWindowWithDelegate(
-      &dummy_delegate, 2, gfx::Rect(), nullptr);
-  arc_window->SetProperty(aura::client::kAppType,
-                          static_cast<int>(ash::AppType::ARC_APP));
-  chrome_window->SetProperty(aura::client::kAppType,
-                             static_cast<int>(ash::AppType::BROWSER));
-
+// Tests that ArcInstanceThrottle adjusts throttling when it is notified of
+// a change in observers, but skips adjusting throttle if the new level is same
+// as before.
+TEST_F(ArcInstanceThrottleTest, TestOnObserverStateChanged) {
+  std::vector<ArcThrottleObserver*> observers = {critical_observer(),
+                                                 low_observer()};
+  arc_instance_throttle()->SetObserversForTesting(observers);
   EXPECT_EQ(0U, disable_cpu_restriction_counter());
   EXPECT_EQ(0U, enable_cpu_restriction_counter());
-  arc_instance_throttle()->OnWindowActivated(
-      ArcInstanceThrottle::ActivationReason::INPUT_EVENT, arc_window,
-      chrome_window);
-  EXPECT_EQ(1U, disable_cpu_restriction_counter());
-  arc_instance_throttle()->OnWindowActivated(
-      ArcInstanceThrottle::ActivationReason::INPUT_EVENT, chrome_window,
-      arc_window);
-  EXPECT_EQ(1U, disable_cpu_restriction_counter());
+
+  arc_instance_throttle()->NotifyObserverStateChangedForTesting();
   EXPECT_EQ(1U, enable_cpu_restriction_counter());
+  EXPECT_EQ(0U, disable_cpu_restriction_counter());
+
+  // ArcInstanceThrottle level is already LOW, expect no change
+  low_observer()->SetActive(true);
+  EXPECT_EQ(1U, enable_cpu_restriction_counter());
+  EXPECT_EQ(0U, disable_cpu_restriction_counter());
+
+  critical_observer()->SetActive(true);
+  EXPECT_EQ(1U, enable_cpu_restriction_counter());
+  EXPECT_EQ(1U, disable_cpu_restriction_counter());
+
+  critical_observer()->SetActive(false);
+  EXPECT_EQ(2U, enable_cpu_restriction_counter());
+  EXPECT_EQ(1U, disable_cpu_restriction_counter());
 }
 
-}  // namespace
 }  // namespace arc

@@ -111,6 +111,7 @@ source_set("headers") {
     "service_worker/service_worker_type_converters.h",
     "service_worker/service_worker_types.h",
     "service_worker/service_worker_utils.h",
+    "sms/sms_receiver_outcome.h",
     "user_agent/user_agent_metadata.h",
     "web_package/http_structured_header.h",
     "web_package/signed_exchange_consts.h",

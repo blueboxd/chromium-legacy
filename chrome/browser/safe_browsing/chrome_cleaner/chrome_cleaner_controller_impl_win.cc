@@ -532,8 +532,7 @@ bool ChromeCleanerControllerImpl::IsReportingManagedByPolicy(Profile* profile) {
 
 ChromeCleanerControllerImpl::ChromeCleanerControllerImpl()
     : real_delegate_(std::make_unique<ChromeCleanerControllerDelegate>()),
-      delegate_(real_delegate_.get()),
-      weak_factory_(this) {
+      delegate_(real_delegate_.get()) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 

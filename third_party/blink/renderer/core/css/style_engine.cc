@@ -1033,7 +1033,7 @@ void StyleEngine::ScheduleInvalidationsForInsertedSibling(
     Element& inserted_element) {
   unsigned affected_siblings =
       inserted_element.parentNode()->ChildrenAffectedByIndirectAdjacentRules()
-          ? UINT_MAX
+          ? SiblingInvalidationSet::kDirectAdjacentMax
           : MaxDirectAdjacentSelectors();
 
   ContainerNode* scheduling_parent =
@@ -1058,7 +1058,7 @@ void StyleEngine::ScheduleInvalidationsForRemovedSibling(
     Element& after_element) {
   unsigned affected_siblings =
       after_element.parentNode()->ChildrenAffectedByIndirectAdjacentRules()
-          ? UINT_MAX
+          ? SiblingInvalidationSet::kDirectAdjacentMax
           : MaxDirectAdjacentSelectors();
 
   ContainerNode* scheduling_parent = after_element.ParentElementOrShadowRoot();

@@ -399,6 +399,12 @@ Tests DOMSnapshot.getSnapshot exports layout tree nodes associated with pseudo e
             10
           ],
           [
+            8,
+            110,
+            200,
+            10
+          ],
+          [
             18,
             110,
             70,
@@ -424,12 +430,6 @@ Tests DOMSnapshot.getSnapshot exports layout tree nodes associated with pseudo e
           ],
           [
             8,
-            110,
-            200,
-            10
-          ],
-          [
-            8,
             120,
             190,
             30
@@ -440,14 +440,15 @@ Tests DOMSnapshot.getSnapshot exports layout tree nodes associated with pseudo e
           -1,
           -1,
           -1,
-          23,
           -1,
+          23,
           26,
           -1,
+          -1,
           23,
           -1,
-          -1,
           29,
+          -1,
           -1,
           33,
           -1,
@@ -455,7 +456,6 @@ Tests DOMSnapshot.getSnapshot exports layout tree nodes associated with pseudo e
           36,
           -1,
           37,
-          -1,
           39
         ],
         "stackingContexts": {
@@ -467,17 +467,17 @@ Tests DOMSnapshot.getSnapshot exports layout tree nodes associated with pseudo e
       },
       "textBoxes": {
         "layoutIndex": [
-          4,
+          5,
           6,
           6,
-          8,
+          9,
           11,
           11,
           11,
-          13,
-          15,
+          14,
           16,
-          18,
+          17,
+          19,
           20,
           20,
           20

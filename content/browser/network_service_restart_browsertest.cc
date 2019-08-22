@@ -5,8 +5,12 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_command_line.h"
+#include "base/test/scoped_environment_variable_override.h"
 #include "base/test/test_timeouts.h"
 #include "base/thread_annotations.h"
 #include "base/threading/thread_restrictions.h"
@@ -973,6 +977,52 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
   network_usages = GetTotalNetworkUsages();
   EXPECT_TRUE(CheckContainsProcessID(network_usages, process_id1));
   EXPECT_FALSE(CheckContainsProcessID(network_usages, process_id2));
+}
+
+// Make sure that kSSLKeyLogFileHistogram is correctly recorded when the
+// network service instance is started and the SSLKEYLOGFILE env var is set or
+// the "--ssl-key-log-file" arg is set.
+IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, SSLKeyLogFileMetrics) {
+  if (IsInProcessNetworkService())
+    return;
+  // Actions on temporary files are blocking.
+  base::ScopedAllowBlockingForTesting scoped_allow_blocking;
+  base::FilePath log_file_path;
+  base::CreateTemporaryFile(&log_file_path);
+
+#if defined(OS_WIN)
+  // On Windows, FilePath::value() returns base::string16, so convert.
+  std::string log_file_path_str = base::UTF16ToUTF8(log_file_path.value());
+#else
+  std::string log_file_path_str = log_file_path.value();
+#endif
+
+  // Test that env var causes the histogram to be recorded.
+  {
+    base::test::ScopedEnvironmentVariableOverride scoped_env("SSLKEYLOGFILE",
+                                                             log_file_path_str);
+    base::HistogramTester histograms;
+    // Restart network service to cause SSLKeyLogger to be re-initialized.
+    SimulateNetworkServiceCrash();
+    histograms.ExpectBucketCount(kSSLKeyLogFileHistogram,
+                                 SSLKeyLogFileAction::kLogFileEnabled, 1);
+    histograms.ExpectBucketCount(kSSLKeyLogFileHistogram,
+                                 SSLKeyLogFileAction::kEnvVarFound, 1);
+  }
+
+  // Test that the command-line switch causes the histogram to be recorded.
+  {
+    base::test::ScopedCommandLine scoped_command_line;
+    scoped_command_line.GetProcessCommandLine()->AppendSwitchPath(
+        "ssl-key-log-file", log_file_path);
+    base::HistogramTester histograms;
+    // Restart network service to cause SSLKeyLogger to be re-initialized.
+    SimulateNetworkServiceCrash();
+    histograms.ExpectBucketCount(kSSLKeyLogFileHistogram,
+                                 SSLKeyLogFileAction::kLogFileEnabled, 1);
+    histograms.ExpectBucketCount(kSSLKeyLogFileHistogram,
+                                 SSLKeyLogFileAction::kSwitchFound, 1);
+  }
 }
 
 // Make sure |NetworkService::GetTotalNetworkUsages()| continues to work after

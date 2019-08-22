@@ -383,11 +383,11 @@ class QuicTestPacketMaker {
   std::string MaybePrependErrorCode(const std::string& quic_error_details,
                                     quic::QuicErrorCode quic_error_code) const;
 
-  quic::QuicStreamFrame GenerateNextStreamFrame(quic::QuicStreamId stream_id,
-                                                bool fin,
-                                                quic::QuicStringPiece data);
+  quic::QuicFrame GenerateNextStreamFrame(quic::QuicStreamId stream_id,
+                                          bool fin,
+                                          quic::QuicStringPiece data);
 
-  std::vector<quic::QuicStreamFrame> GenerateNextStreamFrames(
+  std::vector<quic::QuicFrame> GenerateNextStreamFrames(
       quic::QuicStreamId stream_id,
       bool fin,
       const std::vector<std::string>& data);

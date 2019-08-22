@@ -136,7 +136,7 @@ class CookieManager {
                                 base::OnceClosure complete);
   void GetCookieListCompleted(base::OnceClosure complete,
                               net::CookieList* result,
-                              const net::CookieList& value,
+                              const net::CookieStatusList& value,
                               const net::CookieStatusList& excluded_cookies);
 
   void RemoveSessionCookiesHelper(base::OnceCallback<void(bool)> callback);
@@ -156,11 +156,7 @@ class CookieManager {
   void HasCookiesAsyncHelper(bool* result, base::OnceClosure complete);
   void HasCookiesCompleted(base::OnceClosure complete,
                            bool* result,
-                           const net::CookieList& cookies,
-                           const net::CookieStatusList& excluded_cookies);
-  void HasCookiesCompleted2(base::OnceClosure complete,
-                            bool* result,
-                            const net::CookieList& cookies);
+                           const net::CookieList& cookies);
 
   // |result| indicates whether or not this call was successful, indicating
   // whether we may update |accept_file_scheme_cookies_|.

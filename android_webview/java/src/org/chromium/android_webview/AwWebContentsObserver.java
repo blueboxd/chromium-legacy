@@ -78,7 +78,7 @@ public class AwWebContentsObserver extends WebContentsObserver {
                 unreachableWebDataUrl != null && unreachableWebDataUrl.equals(failingUrl);
         if (isMainFrame && !isErrorUrl && errorCode == NetError.ERR_ABORTED) {
             // Need to call onPageFinished for backwards compatibility with the classic webview.
-            // See also AwContents.IoThreadClientImpl.onReceivedError.
+            // See also AwContents.NetworkClientImpl.onReceivedError.
             client.getCallbackHelper().postOnPageFinished(failingUrl);
         }
     }

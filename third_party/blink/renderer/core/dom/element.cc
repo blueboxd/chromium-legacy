@@ -448,10 +448,17 @@ bool Element::IsFocusableStyle() const {
                EVisibility::kVisible;
   }
 
-  // Update style if we're in a display-locked subtree, because it isn't
-  // included in the normal style updates.
-  if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*this))
-    GetDocument().UpdateStyleAndLayoutTreeForNode(this);
+  // Get the style from |StyleResolver::StyleForElement()| if we're in a
+  // display-locked subtree, because it isn't included in the normal style
+  // updates. This will calculate the style without causing other side effects,
+  // unlike triggering a forced style.layout recalc..
+  if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*this)) {
+    scoped_refptr<ComputedStyle> style =
+        GetDocument().EnsureStyleResolver().StyleForElement(
+            const_cast<Element*>(this));
+    return style->Display() != EDisplay::kNone &&
+           style->Visibility() == EVisibility::kVisible;
+  }
 
   if (IsInsideInvisibleSubtree()) {
     const ComputedStyle* style =

@@ -376,7 +376,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // to accidentally call virtual functions. All RenderViewImpl creation is
   // fronted by the Create() method which ensures Initialize() is always called
   // before any other code can interact with instances of this call.
-  void Initialize(std::unique_ptr<RenderWidget> render_widget,
+  void Initialize(CompositorDependencies* compositor_deps,
                   mojom::CreateViewParamsPtr params,
                   RenderWidget::ShowCallback show_callback,
                   scoped_refptr<base::SingleThreadTaskRunner> task_runner);

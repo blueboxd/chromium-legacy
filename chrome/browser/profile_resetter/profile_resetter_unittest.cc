@@ -604,15 +604,17 @@ TEST_F(ProfileResetterTest, ResetExtensionsAndDefaultApps) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
+  ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile());
+  content::WindowedNotificationObserver theme_change_observer(
+      chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
+      content::Source<ThemeService>(theme_service));
+
   scoped_refptr<Extension> ext1 = CreateExtension(
       base::ASCIIToUTF16("example1"), temp_dir.GetPath(), Manifest::UNPACKED,
       extensions::Manifest::TYPE_THEME, false);
   service_->FinishInstallationForTest(ext1.get());
-  // Let ThemeService finish creating the theme pack.
-  base::RunLoop().RunUntilIdle();
+  theme_change_observer.Wait();
 
-  ThemeService* theme_service =
-      ThemeServiceFactory::GetForProfile(profile());
   EXPECT_FALSE(theme_service->UsingDefaultTheme());
 
   scoped_refptr<Extension> ext2 = CreateExtension(

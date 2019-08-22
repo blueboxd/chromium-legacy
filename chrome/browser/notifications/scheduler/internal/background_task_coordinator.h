@@ -39,15 +39,13 @@ class BackgroundTaskCoordinator {
   static std::unique_ptr<BackgroundTaskCoordinator> Create(
       std::unique_ptr<NotificationBackgroundTaskScheduler> background_task,
       const SchedulerConfig* config,
-      TimeRandomizer time_randomizer,
       base::Clock* clock);
 
   virtual ~BackgroundTaskCoordinator();
 
   // Schedule background task based on current notification in the storage.
   virtual void ScheduleBackgroundTask(Notifications notifications,
-                                      ClientStates client_states,
-                                      SchedulerTaskTime task_start_time) = 0;
+                                      ClientStates client_states) = 0;
 };
 
 }  // namespace notifications

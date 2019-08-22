@@ -4,6 +4,7 @@
 
 #include "chrome/app/chrome_content_renderer_overlay_manifest.h"
 
+#include "base/allocator/buildflags.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
@@ -20,6 +21,10 @@
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
 #include "third_party/blink/public/mojom/loader/previews_resource_loading_hints.mojom.h"
 #include "third_party/blink/public/mojom/page/display_cutout.mojom.h"
+
+#if BUILDFLAG(USE_TCMALLOC)
+#include "chrome/common/performance_manager/mojom/tcmalloc.mojom.h"  // nogncheck
+#endif  // BUILDFLAG(USE_TCMALLOC)
 
 #if defined(OS_ANDROID)
 #include "chrome/common/sandbox_status_extension_android.mojom.h"
@@ -72,6 +77,11 @@ const service_manager::Manifest& GetChromeContentRendererOverlayManifest() {
 #if defined(OS_MACOSX)
                 spellcheck::mojom::SpellCheckPanel,
 #endif
+#if defined(OS_LINUX)
+#if BUILDFLAG(USE_TCMALLOC)
+                tcmalloc::mojom::TcmallocTunables,
+#endif  // BUILDFLAG(USE_TCMALLOC)
+#endif  // defined(OS_LINUX)
                 subresource_filter::mojom::SubresourceFilterAgent>())
 #if defined(OS_CHROMEOS)
         .RequireInterfaceFilterCapability_Deprecated(

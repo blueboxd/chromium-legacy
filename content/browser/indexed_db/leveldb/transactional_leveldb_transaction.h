@@ -139,7 +139,7 @@ class CONTENT_EXPORT TransactionalLevelDBTransaction
   std::set<TransactionalLevelDBIterator*> evicted_iterators_;
   bool is_evicting_all_loaded_iterators_ = false;
 
-  base::WeakPtrFactory<TransactionalLevelDBTransaction> weak_factory_;
+  base::WeakPtrFactory<TransactionalLevelDBTransaction> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TransactionalLevelDBTransaction);
 };

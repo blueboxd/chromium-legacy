@@ -103,10 +103,11 @@ class HttpServerPropertiesTest : public TestWithTaskEnvironment {
         test_clock_.Now() + base::TimeDelta::FromDays(1);
     if (alternative_service.protocol == kProtoQUIC) {
       impl_.SetQuicAlternativeService(
-          origin, alternative_service, expiration,
+          origin, NetworkIsolationKey(), alternative_service, expiration,
           HttpNetworkSession::Params().quic_params.supported_versions);
     } else {
-      impl_.SetHttp2AlternativeService(origin, alternative_service, expiration);
+      impl_.SetHttp2AlternativeService(origin, NetworkIsolationKey(),
+                                       alternative_service, expiration);
     }
   }
 
@@ -544,8 +545,8 @@ TEST_F(AlternateProtocolServerPropertiesTest, Set) {
   const base::Time now = test_clock_.Now();
   base::Time expiration1 = now + base::TimeDelta::FromDays(1);
   // 1st entry in the memory.
-  impl_.SetHttp2AlternativeService(test_server1, alternative_service1,
-                                   expiration1);
+  impl_.SetHttp2AlternativeService(test_server1, NetworkIsolationKey(),
+                                   alternative_service1, expiration1);
 
   // |test_server2| has an alternative service, which will be
   // overwritten by OnServerInfoLoadedForTesting(), because
@@ -1309,6 +1310,96 @@ TEST_F(AlternateProtocolServerPropertiesTest, ClearCanonical) {
   EXPECT_FALSE(HasAlternativeService(test_server, NetworkIsolationKey()));
 }
 
+TEST_F(AlternateProtocolServerPropertiesTest,
+       CanonicalWithNetworkIsolationKey) {
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
+  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPartitionHttpServerPropertiesByNetworkIsolationKey);
+  // Since HttpServerProperties caches the feature value, have to create a new
+  // one.
+  HttpServerProperties properties(nullptr /* pref_delegate */,
+                                  nullptr /* net_log */, test_tick_clock_,
+                                  &test_clock_);
+
+  url::SchemeHostPort test_server("https", "foo.c.youtube.com", 443);
+  EXPECT_FALSE(HasAlternativeService(test_server, kNetworkIsolationKey1));
+
+  url::SchemeHostPort canonical_server1("https", "bar.c.youtube.com", 443);
+  EXPECT_FALSE(HasAlternativeService(canonical_server1, kNetworkIsolationKey1));
+
+  AlternativeServiceInfoVector alternative_service_info_vector;
+  const AlternativeService canonical_alternative_service1(
+      kProtoQUIC, "bar.c.youtube.com", 1234);
+  base::Time expiration = test_clock_.Now() + base::TimeDelta::FromDays(1);
+  alternative_service_info_vector.push_back(
+      AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
+          canonical_alternative_service1, expiration,
+          HttpNetworkSession::Params().quic_params.supported_versions));
+  const AlternativeService canonical_alternative_service2(kProtoHTTP2, "", 443);
+  alternative_service_info_vector.push_back(
+      AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
+          canonical_alternative_service2, expiration));
+  properties.SetAlternativeServices(canonical_server1, kNetworkIsolationKey1,
+                                    alternative_service_info_vector);
+
+  // Since |test_server| does not have an alternative service itself,
+  // GetAlternativeServiceInfos should return those of |canonical_server|.
+  AlternativeServiceInfoVector alternative_service_info_vector2 =
+      properties.GetAlternativeServiceInfos(test_server, kNetworkIsolationKey1);
+  ASSERT_EQ(2u, alternative_service_info_vector2.size());
+  EXPECT_EQ(canonical_alternative_service1,
+            alternative_service_info_vector2[0].alternative_service());
+
+  // Canonical information should not be visible for other NetworkIsolationKeys.
+  EXPECT_TRUE(
+      properties.GetAlternativeServiceInfos(test_server, kNetworkIsolationKey2)
+          .empty());
+  EXPECT_TRUE(
+      properties.GetAlternativeServiceInfos(test_server, NetworkIsolationKey())
+          .empty());
+
+  // Now add an alternative service entry for kNetworkIsolationKey2 for a
+  // different server and different NetworkIsolationKey, but with the same
+  // canonical suffix.
+  url::SchemeHostPort canonical_server2("https", "shrimp.c.youtube.com", 443);
+  properties.SetAlternativeServices(canonical_server2, kNetworkIsolationKey2,
+                                    {alternative_service_info_vector[0]});
+
+  // The canonical server information should reachable, and different, for both
+  // NetworkIsolationKeys.
+  EXPECT_EQ(
+      1u,
+      properties.GetAlternativeServiceInfos(test_server, kNetworkIsolationKey2)
+          .size());
+  EXPECT_EQ(
+      2u,
+      properties.GetAlternativeServiceInfos(test_server, kNetworkIsolationKey1)
+          .size());
+  EXPECT_TRUE(
+      properties.GetAlternativeServiceInfos(test_server, NetworkIsolationKey())
+          .empty());
+
+  // Clearing the alternate service state of kNetworkIsolationKey1's canonical
+  // server should only affect kNetworkIsolationKey1.
+  properties.SetAlternativeServices(canonical_server1, kNetworkIsolationKey1,
+                                    {});
+  EXPECT_EQ(
+      1u,
+      properties.GetAlternativeServiceInfos(test_server, kNetworkIsolationKey2)
+          .size());
+  EXPECT_TRUE(
+      properties.GetAlternativeServiceInfos(test_server, kNetworkIsolationKey1)
+          .empty());
+  EXPECT_TRUE(
+      properties.GetAlternativeServiceInfos(test_server, NetworkIsolationKey())
+          .empty());
+}
+
 TEST_F(AlternateProtocolServerPropertiesTest, CanonicalBroken) {
   url::SchemeHostPort test_server("https", "foo.c.youtube.com", 443);
   url::SchemeHostPort canonical_server("https", "bar.c.youtube.com", 443);
@@ -1610,7 +1701,8 @@ TEST_F(HttpServerPropertiesTest, LoadServerNetworkStats) {
   std::unique_ptr<HttpServerProperties::ServerInfoMap> load_server_info_map =
       std::make_unique<HttpServerProperties::ServerInfoMap>();
   impl_.OnServerInfoLoadedForTesting(std::move(load_server_info_map));
-  const ServerNetworkStats* stats = impl_.GetServerNetworkStats(google_server);
+  const ServerNetworkStats* stats =
+      impl_.GetServerNetworkStats(google_server, NetworkIsolationKey());
   EXPECT_EQ(nullptr, stats);
 
   // Check by initializing with www.google.com:443.
@@ -1625,7 +1717,8 @@ TEST_F(HttpServerPropertiesTest, LoadServerNetworkStats) {
 
   // Verify data for www.google.com:443.
   ASSERT_EQ(1u, impl_.server_info_map_for_testing().size());
-  EXPECT_EQ(stats_google, *(impl_.GetServerNetworkStats(google_server)));
+  EXPECT_EQ(stats_google, *(impl_.GetServerNetworkStats(
+                              google_server, NetworkIsolationKey())));
 
   // Test recency order and overwriting of data.
   //
@@ -1637,7 +1730,7 @@ TEST_F(HttpServerPropertiesTest, LoadServerNetworkStats) {
   stats_docs.srtt = base::TimeDelta::FromMicroseconds(20);
   stats_docs.bandwidth_estimate = quic::QuicBandwidth::FromBitsPerSecond(200);
   // Recency order will be |docs_server| and |google_server|.
-  impl_.SetServerNetworkStats(docs_server, stats_docs);
+  impl_.SetServerNetworkStats(docs_server, NetworkIsolationKey(), stats_docs);
 
   // Prepare |server_info_map| to be loaded by OnServerInfoLoadedForTesting().
   std::unique_ptr<HttpServerProperties::ServerInfoMap> server_info_map =
@@ -1685,24 +1778,29 @@ TEST_F(HttpServerPropertiesTest, LoadServerNetworkStats) {
 TEST_F(HttpServerPropertiesTest, SetServerNetworkStats) {
   url::SchemeHostPort foo_http_server("http", "foo", 443);
   url::SchemeHostPort foo_https_server("https", "foo", 443);
-  EXPECT_EQ(nullptr, impl_.GetServerNetworkStats(foo_http_server));
-  EXPECT_EQ(nullptr, impl_.GetServerNetworkStats(foo_https_server));
+  EXPECT_EQ(nullptr, impl_.GetServerNetworkStats(foo_http_server,
+                                                 NetworkIsolationKey()));
+  EXPECT_EQ(nullptr, impl_.GetServerNetworkStats(foo_https_server,
+                                                 NetworkIsolationKey()));
 
   ServerNetworkStats stats1;
   stats1.srtt = base::TimeDelta::FromMicroseconds(10);
   stats1.bandwidth_estimate = quic::QuicBandwidth::FromBitsPerSecond(100);
-  impl_.SetServerNetworkStats(foo_http_server, stats1);
+  impl_.SetServerNetworkStats(foo_http_server, NetworkIsolationKey(), stats1);
 
   const ServerNetworkStats* stats2 =
-      impl_.GetServerNetworkStats(foo_http_server);
+      impl_.GetServerNetworkStats(foo_http_server, NetworkIsolationKey());
   EXPECT_EQ(10, stats2->srtt.ToInternalValue());
   EXPECT_EQ(100, stats2->bandwidth_estimate.ToBitsPerSecond());
   // Https server should have nothing set for server network stats.
-  EXPECT_EQ(nullptr, impl_.GetServerNetworkStats(foo_https_server));
+  EXPECT_EQ(nullptr, impl_.GetServerNetworkStats(foo_https_server,
+                                                 NetworkIsolationKey()));
 
   impl_.Clear(base::OnceClosure());
-  EXPECT_EQ(nullptr, impl_.GetServerNetworkStats(foo_http_server));
-  EXPECT_EQ(nullptr, impl_.GetServerNetworkStats(foo_https_server));
+  EXPECT_EQ(nullptr, impl_.GetServerNetworkStats(foo_http_server,
+                                                 NetworkIsolationKey()));
+  EXPECT_EQ(nullptr, impl_.GetServerNetworkStats(foo_https_server,
+                                                 NetworkIsolationKey()));
 }
 
 TEST_F(HttpServerPropertiesTest, ClearServerNetworkStats) {
@@ -1710,10 +1808,11 @@ TEST_F(HttpServerPropertiesTest, ClearServerNetworkStats) {
   stats.srtt = base::TimeDelta::FromMicroseconds(10);
   stats.bandwidth_estimate = quic::QuicBandwidth::FromBitsPerSecond(100);
   url::SchemeHostPort foo_https_server("https", "foo", 443);
-  impl_.SetServerNetworkStats(foo_https_server, stats);
+  impl_.SetServerNetworkStats(foo_https_server, NetworkIsolationKey(), stats);
 
-  impl_.ClearServerNetworkStats(foo_https_server);
-  EXPECT_EQ(nullptr, impl_.GetServerNetworkStats(foo_https_server));
+  impl_.ClearServerNetworkStats(foo_https_server, NetworkIsolationKey());
+  EXPECT_EQ(nullptr, impl_.GetServerNetworkStats(foo_https_server,
+                                                 NetworkIsolationKey()));
 }
 
 typedef HttpServerPropertiesTest QuicServerInfoServerPropertiesTest;

@@ -62,12 +62,10 @@ void StereoPannerHandler::Process(uint32_t frames_to_process) {
   if (pan_->HasSampleAccurateValues()) {
     // Apply sample-accurate panning specified by AudioParam automation.
     DCHECK_LE(frames_to_process, sample_accurate_pan_values_.size());
-    if (frames_to_process <= sample_accurate_pan_values_.size()) {
-      float* pan_values = sample_accurate_pan_values_.Data();
-      pan_->CalculateSampleAccurateValues(pan_values, frames_to_process);
-      stereo_panner_->PanWithSampleAccurateValues(
-          input_bus, output_bus, pan_values, frames_to_process);
-    }
+    float* pan_values = sample_accurate_pan_values_.Data();
+    pan_->CalculateSampleAccurateValues(pan_values, frames_to_process);
+    stereo_panner_->PanWithSampleAccurateValues(input_bus, output_bus,
+                                                pan_values, frames_to_process);
   } else {
     stereo_panner_->PanToTargetValue(input_bus, output_bus, pan_->Value(),
                                      frames_to_process);

@@ -582,7 +582,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   VideoColorSpace current_color_space_;
 
   // WeakPtrFactory for posting tasks back to |this|.
-  base::WeakPtrFactory<DXVAVideoDecodeAccelerator> weak_this_factory_;
+  base::WeakPtrFactory<DXVAVideoDecodeAccelerator> weak_this_factory_{this};
 
   // Function pointer for the MFCreateDXGIDeviceManager API.
   static CreateDXGIDeviceManager create_dxgi_device_manager_;

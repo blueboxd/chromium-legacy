@@ -85,6 +85,10 @@ class PermissionContextBase : public KeyedService {
       const GURL& requesting_origin,
       const GURL& embedding_origin) const;
 
+  // Returns whether the permission is usable by requesting/embedding origins.
+  bool IsPermissionAvailableToOrigins(const GURL& requesting_origin,
+                                      const GURL& embedding_origin) const;
+
   // Update |result| with any modifications based on the device state. For
   // example, if |result| is ALLOW but Chrome does not have the relevant
   // permission at the device level, but will prompt the user, return ASK.

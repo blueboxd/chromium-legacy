@@ -15,6 +15,7 @@ import android.support.annotation.Nullable;
 import android.view.View;
 
 import org.chromium.base.ObserverList;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.feed.FeedSurfaceCoordinator;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -78,6 +79,7 @@ class StartSurfaceMediator
                         @Override
                         public void onHomeButtonClicked() {
                             setExploreSurfaceVisibility(false);
+                            RecordUserAction.record("StartSurface.TwoPanes.BottomBar.TapHome");
                         }
 
                         @Override
@@ -85,6 +87,8 @@ class StartSurfaceMediator
                             // TODO(crbug.com/982018): Hide the Tab switcher toolbar when showing
                             // explore surface.
                             setExploreSurfaceVisibility(true);
+                            RecordUserAction.record(
+                                    "StartSurface.TwoPanes.BottomBar.TapExploreSurface");
                         }
                     });
 
@@ -133,7 +137,19 @@ class StartSurfaceMediator
     public void showOverview(boolean animate) {
         // TODO(crbug.com/982018): Animate the bottom bar together with the Tab Grid view.
         if (mPropertyModel != null) {
-            if (mOnlyShowExploreSurface) mPropertyModel.set(IS_EXPLORE_SURFACE_VISIBLE, true);
+            // There are only two modes (single pane, when mOnlyShowExploreSurface == true, and two
+            // panes) available when mPropertyModel != null.
+            if (mOnlyShowExploreSurface) {
+                RecordUserAction.record("StartSurface.SinglePane");
+                mPropertyModel.set(IS_EXPLORE_SURFACE_VISIBLE, true);
+            } else {
+                RecordUserAction.record("StartSurface.TwoPanes");
+                String defaultOnUserActionString = mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE)
+                        ? "ExploreSurface"
+                        : "HomeSurface";
+                RecordUserAction.record(
+                        "StartSurface.TwoPanes.DefaultOn" + defaultOnUserActionString);
+            }
 
             // Make sure FeedSurfaceCoordinator is built before the explore surface is showing by
             // default.
@@ -215,6 +231,7 @@ class StartSurfaceMediator
 
         setExploreSurfaceVisibility(false);
         mSecondaryTasksSurfaceController.showOverview(false);
+        RecordUserAction.record("StartSurface.SinglePane.MoreTabs");
     }
 
     /** This interface builds the feed surface coordinator when showing if needed. */

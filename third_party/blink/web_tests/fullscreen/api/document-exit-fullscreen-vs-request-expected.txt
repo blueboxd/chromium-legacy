@@ -1,7 +1,0 @@
-CONSOLE WARNING: line 45: Failed to execute 'requestFullscreen' on 'Element': API can only be initiated by a user gesture.
-CONSOLE ERROR: line 45: Uncaught (in promise) TypeError: fullscreen error
-This is a testharness.js-based test.
-Harness Error. harness_status.status = 1 , harness_status.message = fullscreen error
-FAIL Document#exitFullscreen() vs. Element#requestFullscreen() assert_unreached: fullscreenerror event Reached unreachable code
-Harness: the test ran to completion.
-

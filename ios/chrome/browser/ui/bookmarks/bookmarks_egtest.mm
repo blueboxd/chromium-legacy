@@ -29,6 +29,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
+#import "ios/chrome/browser/ui/table_view/feature_flags.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
@@ -406,12 +407,12 @@ id<GREYMatcher> SearchIconButton() {
       performAction:grey_tap()];
 
   // Back twice using swipe left gesture.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(@"bookmarksTableView")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkHomeTableViewIdentifier)]
       performAction:grey_swipeFastInDirectionWithStartPoint(kGREYDirectionRight,
                                                             0.01, 0.5)];
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(@"bookmarksTableView")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkHomeTableViewIdentifier)]
       performAction:grey_swipeFastInDirectionWithStartPoint(kGREYDirectionRight,
                                                             0.01, 0.5)];
 
@@ -931,6 +932,33 @@ id<GREYMatcher> SearchIconButton() {
   // Verify that the resulting page is an error page.
   std::string errorMessage = net::ErrorToShortString(net::ERR_INVALID_URL);
   [ChromeEarlGrey waitForWebStateContainingText:errorMessage];
+}
+
+- (void)testSwipeDownToDismiss {
+  if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
+    EARL_GREY_TEST_SKIPPED(@"Test disabled on iOS 12 and lower.");
+  }
+  if (!IsCollectionsCardPresentationStyleEnabled()) {
+    EARL_GREY_TEST_SKIPPED(@"Test disabled on when feature flag is off.");
+  }
+
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+
+  // Check that the TableView is presented.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkHomeTableViewIdentifier)]
+      assertWithMatcher:grey_notNil()];
+
+  // Swipe TableView down.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkHomeTableViewIdentifier)]
+      performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
+
+  // Check that the TableView has been dismissed.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkHomeTableViewIdentifier)]
+      assertWithMatcher:grey_nil()];
 }
 
 #pragma mark - Helpers
@@ -1507,8 +1535,8 @@ id<GREYMatcher> SearchIconButton() {
         return YES;
       };
 
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(@"bookmarksTableView")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkHomeTableViewIdentifier)]
       performAction:[GREYActionBlock actionWithName:@"Scroll to top"
                                        performBlock:scrollToTopBlock]];
 }
@@ -1517,8 +1545,8 @@ id<GREYMatcher> SearchIconButton() {
 + (void)scrollToBottom {
   // Provide a start points since it prevents some tests timing out under
   // certain configurations.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(@"bookmarksTableView")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkHomeTableViewIdentifier)]
       performAction:grey_scrollToContentEdgeWithStartPoint(
                         kGREYContentEdgeBottom, 0.5, 0.5)];
 }
@@ -2714,6 +2742,69 @@ id<GREYMatcher> SearchIconButton() {
                                                     newFolderEnabled:YES];
 }
 
+- (void)testSwipeDownToDismissFromPushedVC {
+  if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
+    EARL_GREY_TEST_SKIPPED(@"Test disabled on iOS 12 and lower.");
+  }
+  if (!IsCollectionsCardPresentationStyleEnabled()) {
+    EARL_GREY_TEST_SKIPPED(@"Test disabled on when feature flag is off.");
+  }
+
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Open Edit Bookmark through long press.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"First URL")]
+      performAction:grey_longPress()];
+
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT)]
+      performAction:grey_tap()];
+
+  // Tap on Folder to open folder picker.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Change Folder")]
+      performAction:grey_tap()];
+
+  // Check that Change Folder is presented.
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(kBookmarkFolderPickerViewContainerIdentifier)]
+      assertWithMatcher:grey_notNil()];
+
+  // Swipe TableView down.
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(kBookmarkFolderPickerViewContainerIdentifier)]
+      performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
+
+  // Check that the TableView has been dismissed.
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(kBookmarkFolderPickerViewContainerIdentifier)]
+      assertWithMatcher:grey_nil()];
+
+  // Open EditBookmark again to verify it was cleaned up successsfully.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"First URL")]
+      performAction:grey_longPress()];
+
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT)]
+      performAction:grey_tap()];
+
+  // Swipe EditBookmark down.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkEditViewContainerIdentifier)]
+      performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
+
+  // Check that the EditBookmark has been dismissed.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkEditViewContainerIdentifier)]
+      assertWithMatcher:grey_nil()];
+}
+
 @end
 
 // Bookmark promo integration tests for Chrome.
@@ -3354,6 +3445,46 @@ id<GREYMatcher> SearchIconButton() {
                                                     newFolderEnabled:YES];
 }
 
+- (void)testSwipeDownToDismissFromEditFolder {
+  if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
+    EARL_GREY_TEST_SKIPPED(@"Test disabled on iOS 12 and lower.");
+  }
+  if (!IsCollectionsCardPresentationStyleEnabled()) {
+    EARL_GREY_TEST_SKIPPED(@"Test disabled on when feature flag is off.");
+  }
+
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Invoke Move through long press.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1.1")]
+      performAction:grey_longPress()];
+
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
+      performAction:grey_tap()];
+
+  // Check that the TableView is presented.
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(kBookmarkFolderPickerViewContainerIdentifier)]
+      assertWithMatcher:grey_notNil()];
+
+  // Swipe TableView down.
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(kBookmarkFolderPickerViewContainerIdentifier)]
+      performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
+
+  // Check that the TableView has been dismissed.
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(kBookmarkFolderPickerViewContainerIdentifier)]
+      assertWithMatcher:grey_nil()];
+}
+
 // Test when current navigating folder is deleted in background, empty
 // background should be shown with context bar buttons disabled.
 - (void)testWhenCurrentFolderDeletedInBackground {
@@ -3438,8 +3569,8 @@ id<GREYMatcher> SearchIconButton() {
         selectElementWithMatcher:ButtonWithAccessibilityLabelId(IDS_CANCEL)]
         performAction:grey_tap()];
   } else {
-    [[EarlGrey
-        selectElementWithMatcher:grey_accessibilityID(@"bookmarksTableView")]
+    [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                            kBookmarkHomeTableViewIdentifier)]
         performAction:grey_tap()];
   }
 

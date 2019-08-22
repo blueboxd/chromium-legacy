@@ -417,6 +417,12 @@ void InputHandlerProxy::InjectScrollbarGestureScroll(
           position_in_widget, scroll_delta,
           pointer_result.scroll_units);
 
+  // This will avoid hit testing and directly scroll the scroller with the
+  // provided element_id.
+  if (type == WebInputEvent::Type::kGestureScrollBegin)
+    synthetic_gesture_event->data.scroll_begin.scrollable_area_element_id =
+        pointer_result.target_scroller.GetInternalValue();
+
   WebScopedInputEvent web_scoped_gesture_event(
       synthetic_gesture_event.release());
 
@@ -761,6 +767,12 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
 #endif
   cc::ScrollState scroll_state = CreateScrollStateForGesture(gesture_event);
   cc::InputHandler::ScrollStatus scroll_status;
+  cc::ElementIdType element_id_type =
+      gesture_event.data.scroll_begin.scrollable_area_element_id;
+  if (element_id_type) {
+    scroll_state.data()->set_current_native_scrolling_element(
+        cc::ElementId(element_id_type));
+  }
   if (gesture_event.data.scroll_begin.delta_hint_units ==
       ui::input_types::ScrollGranularity::kScrollByPage) {
     scroll_status.thread = cc::InputHandler::SCROLL_ON_MAIN_THREAD;

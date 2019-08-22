@@ -66,7 +66,6 @@ class TestingPlatformSupport : public Platform {
   std::unique_ptr<CodeCacheLoader> CreateCodeCacheLoader() override {
     return std::make_unique<CodeCacheLoaderMock>();
   }
-  WebData GetDataResource(const char* name) override;
   WebData GetDataResource(int resource_id,
                           ui::ScaleFactor scale_factor) override;
   WebData UncompressDataResource(int resource_id) override;

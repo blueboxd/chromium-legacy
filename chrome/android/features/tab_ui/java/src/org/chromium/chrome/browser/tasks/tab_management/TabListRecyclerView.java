@@ -111,6 +111,7 @@ class TabListRecyclerView extends RecyclerView {
     private int mShadowTopMargin;
     private TabListOnScrollListener mScrollListener;
     private View mRecyclerViewFooter;
+    private Rect mOriginalPadding;
 
     /**
      * Basic constructor to use during inflation from xml.
@@ -493,6 +494,8 @@ class TabListRecyclerView extends RecyclerView {
     /**
      * This method setup the footer of {@code recyclerView}.
      * @param footer  The {@link View} of the footer.
+     * TODO(yuezhanggg): Refactor the footer as a item in the recyclerView instead of a separate
+     * view. (crbug: 987043)
      */
     void setupRecyclerViewFooter(View footer) {
         if (mRecyclerViewFooter != null) return;
@@ -500,7 +503,10 @@ class TabListRecyclerView extends RecyclerView {
         setScrollBarStyle(SCROLLBARS_OUTSIDE_OVERLAY);
         final int height = (int) getResources().getDimension(R.dimen.tab_grid_iph_card_height);
         final int padding = (int) getResources().getDimension(R.dimen.tab_grid_iph_card_margin);
-        setPadding(0, 0, 0, height + padding);
+        mOriginalPadding =
+                new Rect(getPaddingLeft(), getPaddingTop(), getPaddingRight(), getPaddingBottom());
+        setPadding(mOriginalPadding.left, mOriginalPadding.top, mOriginalPadding.right,
+                mOriginalPadding.bottom + height + padding);
         mRecyclerViewFooter.setVisibility(INVISIBLE);
     }
 
@@ -512,7 +518,9 @@ class TabListRecyclerView extends RecyclerView {
         ((ViewGroup) mRecyclerViewFooter.getParent()).removeView(mRecyclerViewFooter);
         mRecyclerViewFooter = null;
         // Restore the recyclerView to its original state.
-        setPadding(0, 0, 0, 0);
+        assert mOriginalPadding != null;
+        setPadding(mOriginalPadding.left, mOriginalPadding.top, mOriginalPadding.right,
+                mOriginalPadding.bottom);
         setScrollBarStyle(SCROLLBARS_INSIDE_OVERLAY);
     }
 }

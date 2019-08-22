@@ -725,6 +725,7 @@ TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXT) {
   query = query_manager->GetQuery(kNewClientId);
   ASSERT_TRUE(query != nullptr);
   EXPECT_FALSE(query->IsPending());
+  EXPECT_TRUE(query->IsActive());
 
   // Test trying begin again fails
   EXPECT_EQ(error::kNoError, ExecuteCmd(begin_cmd));
@@ -735,7 +736,7 @@ TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXT) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(end_cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 
-  // Test end succeeds
+  // Test end succeeds.
   EXPECT_CALL(*gl_, EndQuery(GL_ANY_SAMPLES_PASSED_EXT))
       .Times(1)
       .RetiresOnSaturation();
@@ -743,6 +744,7 @@ TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXT) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(end_cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
   EXPECT_TRUE(query->IsPending());
+  EXPECT_FALSE(query->IsActive());
 
   // Begin should fail if using a different target
   begin_cmd.Init(GL_ANY_SAMPLES_PASSED_CONSERVATIVE_EXT, kNewClientId,
@@ -779,6 +781,7 @@ struct QueryType {
 
 const QueryType kQueryTypes[] = {
     {GL_COMMANDS_ISSUED_CHROMIUM, false},
+    {GL_COMMANDS_ISSUED_TIMESTAMP_CHROMIUM, true},
     {GL_LATENCY_QUERY_CHROMIUM, false},
     {GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM, false},
     {GL_GET_ERROR_QUERY_CHROMIUM, false},
@@ -1032,13 +1035,32 @@ TEST_P(GLES2DecoderTest, BeginEndQueryEXTCommandsIssuedCHROMIUM) {
   QueryManager::Query* query = query_manager->GetQuery(kNewClientId);
   ASSERT_TRUE(query != nullptr);
   EXPECT_FALSE(query->IsPending());
+  EXPECT_TRUE(query->IsActive());
 
-  // Test end succeeds
+  // Test end succeeds.
   EndQueryEXT end_cmd;
   end_cmd.Init(GL_COMMANDS_ISSUED_CHROMIUM, 1);
   EXPECT_EQ(error::kNoError, ExecuteCmd(end_cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
   EXPECT_FALSE(query->IsPending());
+  EXPECT_FALSE(query->IsActive());
+}
+
+TEST_P(GLES2DecoderTest, QueryCounterEXTCommandsIssuedTimestampCHROMIUM) {
+  GenHelper<GenQueriesEXTImmediate>(kNewClientId);
+
+  QueryCounterEXT query_counter_cmd;
+  query_counter_cmd.Init(kNewClientId, GL_COMMANDS_ISSUED_TIMESTAMP_CHROMIUM,
+                         shared_memory_id_, kSharedMemoryOffset, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(query_counter_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  QueryManager* query_manager = decoder_->GetQueryManager();
+  ASSERT_TRUE(query_manager != nullptr);
+  QueryManager::Query* query = query_manager->GetQuery(kNewClientId);
+  ASSERT_TRUE(query != nullptr);
+  EXPECT_FALSE(query->IsPending());
+  EXPECT_FALSE(query->IsActive());
 }
 
 TEST_P(GLES2DecoderTest, BeginEndQueryEXTGetErrorQueryCHROMIUM) {
@@ -1057,8 +1079,9 @@ TEST_P(GLES2DecoderTest, BeginEndQueryEXTGetErrorQueryCHROMIUM) {
   QueryManager::Query* query = query_manager->GetQuery(kNewClientId);
   ASSERT_TRUE(query != nullptr);
   EXPECT_FALSE(query->IsPending());
+  EXPECT_TRUE(query->IsActive());
 
-  // Test end succeeds
+  // Test end succeeds.
   QuerySync* sync = static_cast<QuerySync*>(shared_memory_address_);
 
   EXPECT_CALL(*gl_, GetError())
@@ -1070,6 +1093,7 @@ TEST_P(GLES2DecoderTest, BeginEndQueryEXTGetErrorQueryCHROMIUM) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(end_cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
   EXPECT_FALSE(query->IsPending());
+  EXPECT_FALSE(query->IsActive());
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE),
             static_cast<GLenum>(sync->result));
 }
@@ -1115,6 +1139,7 @@ TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXTCommandsCompletedCHROMIUM) {
   QueryManager::Query* query = query_manager->GetQuery(kNewClientId);
   ASSERT_TRUE(query != nullptr);
   EXPECT_FALSE(query->IsPending());
+  EXPECT_TRUE(query->IsActive());
 
   EXPECT_CALL(*gl_, Flush()).RetiresOnSaturation();
   EXPECT_CALL(*gl_, FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0))
@@ -1131,6 +1156,7 @@ TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXTCommandsCompletedCHROMIUM) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(end_cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
   EXPECT_TRUE(query->IsPending());
+  EXPECT_FALSE(query->IsActive());
 
 #if DCHECK_IS_ON()
   EXPECT_CALL(*gl_, IsSync(kGlSync))
@@ -1234,6 +1260,7 @@ TEST_P(GLES2DecoderManualInitTest, QueryCounterEXTTimeStamp) {
   QueryManager::Query* query = query_manager->GetQuery(kNewClientId);
   ASSERT_TRUE(query != nullptr);
   EXPECT_TRUE(query->IsPending());
+  EXPECT_FALSE(query->IsActive());
 }
 
 TEST_P(GLES2DecoderManualInitTest, InvalidTargetQueryCounterFails) {

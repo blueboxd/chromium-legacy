@@ -18,6 +18,9 @@ namespace internal {
 // Documents/frames
 void PopulateFrameBinders(RenderFrameHostImpl* host,
                           service_manager::BinderMap* map) {
+  map->Add<blink::mojom::AppCacheBackend>(base::BindRepeating(
+      &RenderFrameHostImpl::CreateAppCacheBackend, base::Unretained(host)));
+
   map->Add<blink::mojom::AudioContextManager>(base::BindRepeating(
       &RenderFrameHostImpl::GetAudioContextManager, base::Unretained(host)));
 

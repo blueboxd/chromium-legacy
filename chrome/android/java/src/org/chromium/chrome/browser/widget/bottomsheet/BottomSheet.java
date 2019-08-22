@@ -1037,9 +1037,7 @@ public class BottomSheet
             }
         });
 
-        if (targetState != SheetState.HIDDEN) {
-            setInternalCurrentState(SheetState.SCROLLING, reason);
-        }
+        setInternalCurrentState(SheetState.SCROLLING, reason);
         mSettleAnimator.start();
     }
 

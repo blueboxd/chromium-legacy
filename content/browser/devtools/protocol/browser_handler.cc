@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/browser/devtools/devtools_manager.h"
@@ -316,7 +317,14 @@ Response BrowserHandler::SetPermission(
   PermissionControllerImpl* permission_controller =
       PermissionControllerImpl::FromBrowserContext(browser_context);
   GURL url = GURL(origin).GetOrigin();
-  permission_controller->SetOverrideForDevTools(url, type, permission_status);
+
+  PermissionControllerImpl::OverrideStatus status =
+      permission_controller->SetOverrideForDevTools(url, type,
+                                                    permission_status);
+  if (status != PermissionControllerImpl::OverrideStatus::kOverrideSet) {
+    return Response::InvalidParams(
+        "Permission can't be granted in current context.");
+  }
   contexts_with_overridden_permissions_.insert(
       browser_context_id.fromMaybe(std::string()));
   return Response::OK();
@@ -345,7 +353,13 @@ Response BrowserHandler::GrantPermissions(
   PermissionControllerImpl* permission_controller =
       PermissionControllerImpl::FromBrowserContext(browser_context);
   GURL url = GURL(origin).GetOrigin();
-  permission_controller->GrantOverridesForDevTools(url, internal_permissions);
+  PermissionControllerImpl::OverrideStatus status =
+      permission_controller->GrantOverridesForDevTools(url,
+                                                       internal_permissions);
+  if (status != PermissionControllerImpl::OverrideStatus::kOverrideSet) {
+    return Response::InvalidParams(
+        "Permissions can't be granted in current context.");
+  }
   contexts_with_overridden_permissions_.insert(
       browser_context_id.fromMaybe(""));
   return Response::OK();

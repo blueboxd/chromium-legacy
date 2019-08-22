@@ -54,7 +54,7 @@ void ProcessNodeImpl::SetProcessExitStatus(int32_t exit_status) {
   exit_status_ = exit_status;
 
   // Close the process handle to kill the zombie.
-  process_.Close();
+  process_.SetAndNotify(this, base::Process());
 
   // No more message should be received from this process.
   binding_.Close();
@@ -67,7 +67,7 @@ void ProcessNodeImpl::SetProcess(base::Process process,
   // Either this is the initial process associated with this process node,
   // or it's a subsequent process. In the latter case, there must have been
   // an exit status associated with the previous process.
-  DCHECK(!process_.IsValid() || exit_status_.has_value());
+  DCHECK(!process_.value().IsValid() || exit_status_.has_value());
 
   base::ProcessId pid = process.Pid();
   SetProcessImpl(std::move(process), pid, launch_time);
@@ -120,10 +120,6 @@ void ProcessNodeImpl::SetProcessImpl(base::Process process,
 
   graph()->BeforeProcessPidChange(this, new_pid);
 
-  process_ = std::move(process);
-  process_id_ = new_pid;
-  launch_time_ = launch_time;
-
   // Clear the exit status for the previous process (if any).
   exit_status_.reset();
 
@@ -131,6 +127,12 @@ void ProcessNodeImpl::SetProcessImpl(base::Process process,
   // process.
   private_footprint_kb_ = 0;
   cumulative_cpu_usage_ = base::TimeDelta();
+
+  process_id_ = new_pid;
+  launch_time_ = launch_time;
+
+  // Set the process variable last, as it will fire the notification.
+  process_.SetAndNotify(this, std::move(process));
 }
 
 base::ProcessId ProcessNodeImpl::GetProcessId() const {

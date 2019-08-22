@@ -63,7 +63,7 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
         app_list::kInternalAppIdSettings};
   }
   if (SystemWebAppManager::IsAppEnabled(SystemAppType::TERMINAL)) {
-    constexpr char kChromeTerminalPWAURL[] = "chrome://terminal/pwa.html";
+    constexpr char kChromeTerminalPWAURL[] = "chrome://terminal/html/pwa.html";
     infos[SystemAppType::TERMINAL].install_url = GURL(kChromeTerminalPWAURL);
   }
 #endif  // OS_CHROMEOS

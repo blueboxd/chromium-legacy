@@ -39,9 +39,7 @@ class DistillabilityDriver
   friend class content::WebContentsUserData<DistillabilityDriver>;
   friend class DistillabilityServiceImpl;
 
-  void OnDistillability(bool distillable,
-                        bool is_last,
-                        bool is_mobile_friendly);
+  void OnDistillability(const DistillabilityResult& result);
 
   DistillabilityDelegate m_delegate_;
 

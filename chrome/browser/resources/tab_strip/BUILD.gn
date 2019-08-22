@@ -25,6 +25,9 @@ js_library("tabs_api_proxy") {
 }
 
 js_library("tab") {
+  deps = [
+    "//ui/webui/resources/js:icon.m",
+  ]
   externs_list = [ "$externs_path/chrome.js" ]
 }
 

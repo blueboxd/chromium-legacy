@@ -514,28 +514,6 @@ bool IsCookiesWithoutSameSiteMustBeSecureEnabled() {
              features::kCookiesWithoutSameSiteMustBeSecure);
 }
 
-base::OnceCallback<void(const CookieList&, const CookieStatusList&)>
-IgnoreCookieStatusList(base::OnceCallback<void(const CookieList&)> callback) {
-  return base::BindOnce(
-      [](base::OnceCallback<void(const CookieList&)> callback,
-         const CookieList& cookies, const CookieStatusList& excluded_list) {
-        std::move(callback).Run(cookies);
-      },
-      std::move(callback));
-}
-
-base::OnceCallback<void(const CookieList&)> AddCookieStatusList(
-    base::OnceCallback<void(const CookieList&, const CookieStatusList&)>
-        callback) {
-  return base::BindOnce(
-      [](base::OnceCallback<void(const CookieList&, const CookieStatusList&)>
-             inner_callback,
-         const CookieList& cookies) {
-        std::move(inner_callback).Run(cookies, net::CookieStatusList());
-      },
-      std::move(callback));
-}
-
 base::OnceCallback<void(net::CanonicalCookie::CookieInclusionStatus)>
 AdaptCookieInclusionStatusToBool(base::OnceCallback<void(bool)> callback) {
   return base::BindOnce(
@@ -546,6 +524,14 @@ AdaptCookieInclusionStatusToBool(base::OnceCallback<void(bool)> callback) {
         std::move(inner_callback).Run(success);
       },
       std::move(callback));
+}
+
+CookieList StripStatuses(const CookieStatusList& cookie_status_list) {
+  CookieList cookies;
+  for (const CookieWithStatus& cookie_with_status : cookie_status_list) {
+    cookies.push_back(cookie_with_status.cookie);
+  }
+  return cookies;
 }
 
 }  // namespace cookie_util

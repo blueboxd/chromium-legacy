@@ -55,7 +55,7 @@ class BrowserSwitcherServiceWin : public BrowserSwitcherService {
 
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
 
-  base::WeakPtrFactory<BrowserSwitcherServiceWin> weak_ptr_factory_;
+  base::WeakPtrFactory<BrowserSwitcherServiceWin> weak_ptr_factory_{this};
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(BrowserSwitcherServiceWin);
 };

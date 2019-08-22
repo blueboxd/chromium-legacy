@@ -864,7 +864,7 @@ TEST_F(ProfileSyncServiceTest, ClearDataOnSignOut) {
                   metrics::UserDemographicsProto_Gender_GENDER_FEMALE);
 
   // Set the birth year offset pref that would be normally set when calling
-  // SyncPrefs::GetUserDemographics.
+  // SyncPrefs::GetUserNoisedBirthYearAndGender().
   prefs()->SetInteger(prefs::kSyncDemographicsBirthYearOffset, 2);
 
   // Verify that the demographics prefs exist (i.e., that the test is set up).
@@ -904,7 +904,7 @@ TEST_F(ProfileSyncServiceTest, ClearDemographicsOnInitializeWhenSignedOut) {
                   metrics::UserDemographicsProto_Gender_GENDER_FEMALE);
 
   // Set the birth year offset pref that would be normally set when calling
-  // SyncPrefs::GetUserDemographics.
+  // SyncPrefs::GetUserNoisedBirthYearAndGender().
   prefs()->SetInteger(prefs::kSyncDemographicsBirthYearOffset, 2);
 
   // Verify that the demographics prefs exist (i.e., that the test is set up).
@@ -1265,7 +1265,7 @@ TEST_F(ProfileSyncServiceTest, ConfigureDataTypeManagerReason) {
 }
 
 // Test whether sync service provides user demographics when sync is enabled.
-TEST_F(ProfileSyncServiceTest, GetUserDemographics_SyncEnabled) {
+TEST_F(ProfileSyncServiceTest, GetUserNoisedBirthYearAndGender_SyncEnabled) {
   // Initialize service with sync enabled.
   SignIn();
   CreateService(ProfileSyncService::AUTO_START);
@@ -1283,12 +1283,12 @@ TEST_F(ProfileSyncServiceTest, GetUserDemographics_SyncEnabled) {
   SetDemographics(user_demographics_birth_year, user_demographics_gender);
 
   // Directly set birth year offset in demographic prefs to avoid it being set
-  // with a random value when calling GetUserDemographics().
+  // with a random value when calling GetUserNoisedBirthYearAndGender().
   prefs()->SetInteger(prefs::kSyncDemographicsBirthYearOffset,
                       birth_year_offset);
 
   UserDemographicsResult user_demographics_result =
-      service()->GetUserDemographics(GetNowTime());
+      service()->GetUserNoisedBirthYearAndGender(GetNowTime());
   ASSERT_TRUE(user_demographics_result.IsSuccess());
   EXPECT_EQ(user_demographics_birth_year + birth_year_offset,
             user_demographics_result.value().birth_year);
@@ -1297,7 +1297,7 @@ TEST_F(ProfileSyncServiceTest, GetUserDemographics_SyncEnabled) {
 
 // Test whether sync service does not provide user demographics when sync is
 // turned off.
-TEST_F(ProfileSyncServiceTest, GetUserDemographics_SyncTurnedOff) {
+TEST_F(ProfileSyncServiceTest, GetUserNoisedBirthYearAndGender_SyncTurnedOff) {
   // Initialize service with sync disabled because no sign-in.
   CreateService(ProfileSyncService::AUTO_START);
   InitializeForNthSync();
@@ -1316,12 +1316,14 @@ TEST_F(ProfileSyncServiceTest, GetUserDemographics_SyncTurnedOff) {
   ASSERT_TRUE(HasGenderDemographic(prefs()));
 
   // Verify that we don't get demographics when sync is off.
-  EXPECT_FALSE(service()->GetUserDemographics(GetNowTime()).IsSuccess());
+  EXPECT_FALSE(
+      service()->GetUserNoisedBirthYearAndGender(GetNowTime()).IsSuccess());
 }
 
 // Test whether sync service does not provide user demographics and does not
 // clear demographic prefs when sync is temporarily disabled.
-TEST_F(ProfileSyncServiceTest, GetUserDemographics_SyncTemporarilyDisabled) {
+TEST_F(ProfileSyncServiceTest,
+       GetUserNoisedBirthYearAndGender_SyncTemporarilyDisabled) {
   // Initialize service with sync enabled at start.
   SignIn();
   CreateService(ProfileSyncService::AUTO_START);
@@ -1339,7 +1341,7 @@ TEST_F(ProfileSyncServiceTest, GetUserDemographics_SyncTemporarilyDisabled) {
   SetDemographics(user_demographics_birth_year, user_demographics_gender);
 
   // Set birth year noise offset that is usually set when calling
-  // SyncPrefs::GetUserDemographics.
+  // SyncPrefs::GetUserNoisedBirthYearAndGender().
   prefs()->SetInteger(prefs::kSyncDemographicsBirthYearOffset,
                       static_cast<int>(birth_year_offset));
 
@@ -1357,7 +1359,7 @@ TEST_F(ProfileSyncServiceTest, GetUserDemographics_SyncTemporarilyDisabled) {
   // Verify that sync service does not provide demographics when it is
   // temporarily disabled.
   UserDemographicsResult user_demographics_result =
-      service()->GetUserDemographics(GetNowTime());
+      service()->GetUserNoisedBirthYearAndGender(GetNowTime());
   EXPECT_FALSE(user_demographics_result.IsSuccess());
 
   // Verify that demographic prefs are not cleared.
@@ -1370,7 +1372,7 @@ TEST_F(ProfileSyncServiceTest, GetUserDemographics_SyncTemporarilyDisabled) {
 // clear demographic prefs when sync is paused and enabled, which represents the
 // case where the kStopSyncInPausedState feature is disabled.
 TEST_F(ProfileSyncServiceTest,
-       GetUserDemographics_SyncPausedAndFeatureDisabled) {
+       GetUserNoisedBirthYearAndGender_SyncPausedAndFeatureDisabled) {
   base::test::ScopedFeatureList feature;
   // Disable the feature that stops the sync engine (disables sync) when sync is
   // paused.
@@ -1388,7 +1390,7 @@ TEST_F(ProfileSyncServiceTest,
                   metrics::UserDemographicsProto_Gender_GENDER_FEMALE);
 
   // Set birth year noise offset that is usually set when calling
-  // SyncPrefs::GetUserDemographics.
+  // SyncPrefs::GetUserNoisedBirthYearAndGender().
   prefs()->SetInteger(prefs::kSyncDemographicsBirthYearOffset, 2);
 
   // Verify that demographic prefs exist (i.e., the test is set up).
@@ -1404,7 +1406,7 @@ TEST_F(ProfileSyncServiceTest,
 
   // Verify that sync service does not provide demographics when sync is paused.
   UserDemographicsResult user_demographics_result =
-      service()->GetUserDemographics(GetNowTime());
+      service()->GetUserNoisedBirthYearAndGender(GetNowTime());
   EXPECT_FALSE(user_demographics_result.IsSuccess());
 
   // Verify that demographic prefs are not cleared.
@@ -1417,7 +1419,7 @@ TEST_F(ProfileSyncServiceTest,
 // clear demographic prefs when sync is paused and disabled, which represents
 // the case where the kStopSyncInPausedState feature is enabled.
 TEST_F(ProfileSyncServiceTest,
-       GetUserDemographics_SyncPausedAndFeatureEnabled) {
+       GetUserNoisedBirthYearAndGender_SyncPausedAndFeatureEnabled) {
   base::test::ScopedFeatureList feature;
   // Enable the feature that stops the sync engine (disables sync) when sync is
   // paused.
@@ -1435,7 +1437,7 @@ TEST_F(ProfileSyncServiceTest,
                   metrics::UserDemographicsProto_Gender_GENDER_FEMALE);
 
   // Set birth year noise offset that is usually set when calling
-  // SyncPrefs::GetUserDemographics.
+  // SyncPrefs::GetUserNoisedBirthYearAndGender().
   prefs()->SetInteger(prefs::kSyncDemographicsBirthYearOffset, 2);
 
   // Verify that demographic prefs exist (i.e., the test is set up).
@@ -1451,7 +1453,7 @@ TEST_F(ProfileSyncServiceTest,
 
   // Verify that sync service does not provide demographics when sync is paused.
   UserDemographicsResult user_demographics_result =
-      service()->GetUserDemographics(GetNowTime());
+      service()->GetUserNoisedBirthYearAndGender(GetNowTime());
   EXPECT_FALSE(user_demographics_result.IsSuccess());
 
   // Verify that demographic prefs are not cleared.

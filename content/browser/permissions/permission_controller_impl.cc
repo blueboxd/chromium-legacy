@@ -183,10 +183,17 @@ void PermissionControllerImpl::NotifyChangedSubscriptions(
     callback.Run();
 }
 
-void PermissionControllerImpl::SetOverrideForDevTools(
+PermissionControllerImpl::OverrideStatus
+PermissionControllerImpl::SetOverrideForDevTools(
     const GURL& origin,
     const PermissionType& permission,
     const blink::mojom::PermissionStatus& status) {
+  PermissionControllerDelegate* delegate =
+      browser_context_->GetPermissionControllerDelegate();
+  if (delegate &&
+      !delegate->IsPermissionOverridableByDevTools(permission, origin)) {
+    return OverrideStatus::kOverrideNotSet;
+  }
   const auto old_statuses = GetSubscriptionsStatuses(origin);
 
   devtools_permission_overrides_.Set(url::Origin::Create(origin), permission,
@@ -194,11 +201,20 @@ void PermissionControllerImpl::SetOverrideForDevTools(
   NotifyChangedSubscriptions(old_statuses);
 
   UpdateDelegateOverridesForDevTools(origin);
+  return OverrideStatus::kOverrideSet;
 }
 
-void PermissionControllerImpl::GrantOverridesForDevTools(
+PermissionControllerImpl::OverrideStatus
+PermissionControllerImpl::GrantOverridesForDevTools(
     const GURL& origin,
     const std::vector<PermissionType>& permissions) {
+  PermissionControllerDelegate* delegate =
+      browser_context_->GetPermissionControllerDelegate();
+  if (delegate)
+    for (const auto permission : permissions)
+      if (!delegate->IsPermissionOverridableByDevTools(permission, origin))
+        return OverrideStatus::kOverrideNotSet;
+
   const auto old_statuses = GetSubscriptionsStatuses(origin);
   devtools_permission_overrides_.GrantPermissions(url::Origin::Create(origin),
                                                   permissions);
@@ -208,6 +224,7 @@ void PermissionControllerImpl::GrantOverridesForDevTools(
   NotifyChangedSubscriptions(old_statuses);
 
   UpdateDelegateOverridesForDevTools(origin);
+  return OverrideStatus::kOverrideSet;
 }
 
 void PermissionControllerImpl::ResetOverridesForDevTools() {

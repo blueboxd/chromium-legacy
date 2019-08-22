@@ -53,7 +53,7 @@ class TimeLimitNotifierTest : public testing::Test {
   }
 
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
-  content::BrowserTaskEnvironment bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   NotificationDisplayServiceTester notification_tester_;
   TimeLimitNotifier notifier_;

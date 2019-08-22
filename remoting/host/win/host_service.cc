@@ -140,8 +140,7 @@ HostService::HostService()
     : run_routine_(&HostService::RunAsService),
       service_status_handle_(0),
       stopped_event_(base::WaitableEvent::ResetPolicy::MANUAL,
-                     base::WaitableEvent::InitialState::NOT_SIGNALED),
-      weak_factory_(this) {}
+                     base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
 HostService::~HostService() {
 }

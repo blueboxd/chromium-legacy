@@ -16,7 +16,9 @@ test(t => {
   animation.finish();
   assert_equals(animation.startTime, null);
   assert_equals(animation.currentTime, 1000);
-  assert_equals(animation.playState, 'finished');
+  // The paused state wins out over the finished state in the absence of an
+  // active timeline. This holds true even if finsih is explicitly called.
+  assert_equals(animation.playState, 'paused');
 }, 'Animation finished with a null timeline');
 
 // crbug.com/967507
@@ -33,6 +35,8 @@ test(t => {
   animation1.effect = effect;
   assert_false(!!animation1.effect.target);
   assert_false(!!animation2.effect);
-  assert_equals(animation2.playState, 'idle');
+  // Setting an effect does not cancel the animation previously associated with
+  // the effect.
+  assert_equals(animation2.playState, 'paused');
 }, 'Set effect with a null timeline');
 </script>

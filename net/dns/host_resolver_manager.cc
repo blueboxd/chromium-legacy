@@ -1515,8 +1515,10 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
         proc_task_runner_(std::move(proc_task_runner)),
         had_non_speculative_request_(false),
         num_occupied_job_slots_(0),
+        dispatcher_(nullptr),
         dns_task_error_(OK),
         tick_clock_(tick_clock),
+        start_time_(base::TimeTicks()),
         net_log_(
             NetLogWithSource::Make(source_net_log.net_log(),
                                    NetLogSourceType::HOST_RESOLVER_IMPL_JOB)) {
@@ -1558,10 +1560,11 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
   void Schedule(bool at_head) {
     DCHECK(!is_queued());
     PrioritizedDispatcher::Handle handle;
+    DCHECK(dispatcher_);
     if (!at_head) {
-      handle = resolver_->dispatcher_->Add(this, priority());
+      handle = dispatcher_->Add(this, priority());
     } else {
-      handle = resolver_->dispatcher_->AddAtHead(this, priority());
+      handle = dispatcher_->AddAtHead(this, priority());
     }
     // The dispatcher could have started |this| in the above call to Add, which
     // could have called Schedule again. In that case |handle| will be null,
@@ -1679,31 +1682,25 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
   }
 
   // Called by HostResolverManager when this job is evicted due to queue
-  // overflow. Completes all requests and destroys the job.
-  void OnEvicted(bool complete_asynchronously) {
+  // overflow. Completes all requests and destroys the job. The job could have
+  // waiting requests that will receive completion callbacks, so cleanup
+  // asynchronously to avoid reentrancy.
+  void OnEvicted() {
     DCHECK(!is_running());
     DCHECK(is_queued());
     handle_.Reset();
 
     net_log_.AddEvent(NetLogEventType::HOST_RESOLVER_IMPL_JOB_EVICTED);
 
-    // This signals to CompleteRequests that this job never ran.
-    if (complete_asynchronously) {
-      // Job must be saved in |resolver_| to be completed asynchronously.
-      // Otherwise the job will be destroyed with requests silently cancelled
-      // before completion runs.
-      DCHECK(self_iterator_);
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(&Job::CompleteRequestsWithError,
-                                    weak_ptr_factory_.GetWeakPtr(),
-                                    ERR_HOST_RESOLVER_QUEUE_TOO_LARGE));
-    } else {
-      // Should not complete synchronously with eviction if requests are
-      // attached to the job because those requests will invoke callbacks that
-      // could result in reentrancy.
-      DCHECK_EQ(0u, num_active_requests());
-      CompleteRequestsWithError(ERR_HOST_RESOLVER_QUEUE_TOO_LARGE);
-    }
+    // This signals to CompleteRequests that parts of this job never ran.
+    // Job must be saved in |resolver_| to be completed asynchronously.
+    // Otherwise the job will be destroyed with requests silently cancelled
+    // before completion runs.
+    DCHECK(self_iterator_);
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&Job::CompleteRequestsWithError,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  ERR_HOST_RESOLVER_QUEUE_TOO_LARGE));
   }
 
   // Attempts to serve the job from HOSTS. Returns true if succeeded and
@@ -1734,46 +1731,6 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
     self_iterator_ = base::nullopt;
   }
 
-  bool is_queued() const { return !handle_.is_null(); }
-
-  bool is_running() const { return job_running_; }
-
- private:
-  HostCache::Key GenerateCacheKey(bool secure) const {
-    HostCache::Key cache_key(hostname_, query_type_, host_resolver_flags_,
-                             requested_source_);
-    cache_key.secure = secure;
-    return cache_key;
-  }
-
-  void KillDnsTask() {
-    if (dns_task_) {
-      ReduceToOneJobSlot();
-      dns_task_.reset();
-    }
-  }
-
-  // Reduce the number of job slots occupied and queued in the dispatcher
-  // to one. If the second Job slot is queued in the dispatcher, cancels the
-  // queued job. Otherwise, the second Job has been started by the
-  // PrioritizedDispatcher, so signals it is complete.
-  void ReduceToOneJobSlot() {
-    DCHECK_GE(num_occupied_job_slots_, 1u);
-    if (is_queued()) {
-      resolver_->dispatcher_->Cancel(handle_);
-      handle_.Reset();
-    } else if (num_occupied_job_slots_ > 1) {
-      resolver_->dispatcher_->OnJobFinished();
-      --num_occupied_job_slots_;
-    }
-    DCHECK_EQ(1u, num_occupied_job_slots_);
-  }
-
-  void UpdatePriority() {
-    if (is_queued())
-      handle_ = resolver_->dispatcher_->ChangePriority(handle_, priority());
-  }
-
   void RunNextTask() {
     // If there are no tasks left to try, cache any stored results and complete
     // the request with the last stored result. All stored results should be
@@ -1800,7 +1757,32 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
     }
 
     TaskType next_task = tasks_.front();
+
+    // Schedule insecure DnsTasks and ProcTasks with the dispatcher.
+    if (!dispatcher_ &&
+        (next_task == TaskType::DNS || next_task == TaskType::PROC ||
+         next_task == TaskType::MDNS)) {
+      dispatcher_ = resolver_->dispatcher_.get();
+      job_running_ = false;
+      Schedule(false);
+      DCHECK(is_running() || is_queued());
+
+      // Check for queue overflow.
+      if (dispatcher_->num_queued_jobs() > resolver_->max_queued_jobs_) {
+        Job* evicted = static_cast<Job*>(dispatcher_->EvictOldestLowest());
+        DCHECK(evicted);
+        evicted->OnEvicted();
+      }
+      return;
+    }
+
+    if (start_time_ == base::TimeTicks()) {
+      net_log_.AddEvent(NetLogEventType::HOST_RESOLVER_IMPL_JOB_STARTED);
+      start_time_ = tick_clock_->NowTicks();
+    }
     tasks_.pop_front();
+    job_running_ = true;
+
     switch (next_task) {
       case TaskType::PROC:
         StartProcTask();
@@ -1826,6 +1808,48 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
     }
   }
 
+  bool is_queued() const { return !handle_.is_null(); }
+
+  bool is_running() const { return job_running_; }
+
+ private:
+  HostCache::Key GenerateCacheKey(bool secure) const {
+    HostCache::Key cache_key(hostname_, query_type_, host_resolver_flags_,
+                             requested_source_);
+    cache_key.secure = secure;
+    return cache_key;
+  }
+
+  void KillDnsTask() {
+    if (dns_task_) {
+      if (dispatcher_)
+        ReduceToOneJobSlot();
+      dns_task_.reset();
+    }
+  }
+
+  // Reduce the number of job slots occupied and queued in the dispatcher
+  // to one. If the second Job slot is queued in the dispatcher, cancels the
+  // queued job. Otherwise, the second Job has been started by the
+  // PrioritizedDispatcher, so signals it is complete.
+  void ReduceToOneJobSlot() {
+    DCHECK_GE(num_occupied_job_slots_, 1u);
+    DCHECK(dispatcher_);
+    if (is_queued()) {
+      dispatcher_->Cancel(handle_);
+      handle_.Reset();
+    } else if (num_occupied_job_slots_ > 1) {
+      dispatcher_->OnJobFinished();
+      --num_occupied_job_slots_;
+    }
+    DCHECK_EQ(1u, num_occupied_job_slots_);
+  }
+
+  void UpdatePriority() {
+    if (is_queued() && dispatcher_)
+      handle_ = dispatcher_->ChangePriority(handle_, priority());
+  }
+
   // PriorityDispatch::Job:
   void Start() override {
     DCHECK_LE(num_occupied_job_slots_, 1u);
@@ -1839,10 +1863,6 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
     }
 
     DCHECK(!is_running());
-    job_running_ = true;
-
-    net_log_.AddEvent(NetLogEventType::HOST_RESOLVER_IMPL_JOB_STARTED);
-    start_time_ = tick_clock_->NowTicks();
     DCHECK(!tasks_.empty());
     RunNextTask();
     // Caution: Job::Start must not complete synchronously.
@@ -1853,6 +1873,8 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
   // ThreadPool threads low, we will need to use an "inner"
   // PrioritizedDispatcher with tighter limits.
   void StartProcTask() {
+    DCHECK(dispatcher_);
+    DCHECK_EQ(1u, num_occupied_job_slots_);
     DCHECK(IsAddressType(query_type_));
 
     proc_task_ = std::make_unique<ProcTask>(
@@ -1920,7 +1942,8 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
   }
 
   void StartDnsTask(bool secure) {
-    DCHECK_EQ(1u, num_occupied_job_slots_);
+    DCHECK_EQ(secure, !dispatcher_);
+    DCHECK_EQ(dispatcher_ ? 1u : 0, num_occupied_job_slots_);
     DCHECK(resolver_->HaveDnsConfig());
     DCHECK(!resolver_->HaveTestProcOverride());
     // Need to create the task even if we're going to post a failure instead of
@@ -1929,12 +1952,19 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
                                 query_type_, request_context_, secure, this,
                                 net_log_, tick_clock_));
     dns_task_->StartFirstTransaction();
-    // Schedule a second transaction, if needed.
-    if (dns_task_->needs_two_transactions())
-      Schedule(true);
+    // Schedule a second transaction, if needed. DoH queries can bypass the
+    // dispatcher and start immediately.
+    if (dns_task_->needs_two_transactions()) {
+      if (secure)
+        dns_task_->StartSecondTransaction();
+      else
+        Schedule(true);
+    }
   }
 
   void StartSecondDnsTransaction() {
+    DCHECK_EQ(dns_task_->secure(), !dispatcher_);
+    DCHECK(!dispatcher_ || num_occupied_job_slots_ >= 1);
     DCHECK(dns_task_);
     DCHECK(dns_task_->needs_two_transactions());
     dns_task_->StartSecondTransaction();
@@ -2014,7 +2044,8 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
     DCHECK(dns_task_->needs_two_transactions());
     DCHECK_EQ(dns_task_->needs_another_transaction(), is_queued());
     // No longer need to occupy two dispatcher slots.
-    ReduceToOneJobSlot();
+    if (dispatcher_)
+      ReduceToOneJobSlot();
 
     // We already have a job slot at the dispatcher, so if the second
     // transaction hasn't started, reuse it now instead of waiting in the queue
@@ -2149,7 +2180,8 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
               static_cast<int>(RESOLVE_MAX));  // Be sure it was set.
     UMA_HISTOGRAM_ENUMERATION("Net.DNS.ResolveCategory", category, RESOLVE_MAX);
 
-    if (category == RESOLVE_FAIL || category == RESOLVE_ABORT) {
+    if (category == RESOLVE_FAIL ||
+        (start_time_ != base::TimeTicks() && category == RESOLVE_ABORT)) {
       if (duration < base::TimeDelta::FromMilliseconds(10))
         base::UmaHistogramSparse("Net.DNS.ResolveError.Fast", std::abs(error));
       else
@@ -2191,11 +2223,14 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
       KillDnsTask();
       mdns_task_ = nullptr;
 
-      // Signal dispatcher that a slot has opened.
-      DCHECK_EQ(1u, num_occupied_job_slots_);
-      resolver_->dispatcher_->OnJobFinished();
+      if (dispatcher_) {
+        // Signal dispatcher that a slot has opened.
+        DCHECK_EQ(1u, num_occupied_job_slots_);
+        dispatcher_->OnJobFinished();
+      }
     } else if (is_queued()) {
-      resolver_->dispatcher_->Cancel(handle_);
+      DCHECK(dispatcher_);
+      dispatcher_->Cancel(handle_);
       handle_.Reset();
     }
 
@@ -2312,8 +2347,13 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
 
   bool had_non_speculative_request_;
 
-  // Number of slots occupied by this Job in resolver's PrioritizedDispatcher.
+  // Number of slots occupied by this Job in |dispatcher_|. Should be 0 when
+  // the job is not registered with any dispatcher.
   unsigned num_occupied_job_slots_;
+
+  // The dispatcher with which this Job is currently registered. Is nullptr if
+  // not registered with any dispatcher.
+  PrioritizedDispatcher* dispatcher_;
 
   // Result of DnsTask.
   int dns_task_error_;
@@ -2335,7 +2375,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
   // All Requests waiting for the result of this Job. Some can be canceled.
   base::LinkedList<RequestImpl> requests_;
 
-  // A handle used in |HostResolverManager::dispatcher_|.
+  // A handle used for |dispatcher_|.
   PrioritizedDispatcher::Handle handle_;
 
   // Iterator to |this| in the JobMap. |nullopt| if not owned by the JobMap.
@@ -2619,13 +2659,9 @@ int HostResolverManager::Resolve(RequestImpl* request) {
     return results.error();
   }
 
-  int rv =
-      CreateAndStartJob(effective_query_type, effective_host_resolver_flags,
-                        effective_secure_dns_mode, std::move(tasks), request);
-  // At this point, expect only async or errors.
-  DCHECK_NE(OK, rv);
-
-  return rv;
+  CreateAndStartJob(effective_query_type, effective_host_resolver_flags,
+                    effective_secure_dns_mode, std::move(tasks), request);
+  return ERR_IO_PENDING;
 }
 
 HostCache::Entry HostResolverManager::ResolveLocally(
@@ -2740,7 +2776,7 @@ HostCache::Entry HostResolverManager::ResolveLocally(
   return HostCache::Entry(ERR_DNS_CACHE_MISS, HostCache::Entry::SOURCE_UNKNOWN);
 }
 
-int HostResolverManager::CreateAndStartJob(
+void HostResolverManager::CreateAndStartJob(
     DnsQueryType effective_query_type,
     HostResolverFlags effective_host_resolver_flags,
     DnsConfig::SecureDnsMode effective_secure_dns_mode,
@@ -2762,36 +2798,15 @@ int HostResolverManager::CreateAndStartJob(
         request->priority(), proc_task_runner_, request->source_net_log(),
         tick_clock_);
     job = new_job.get();
-    new_job->Schedule(false);
-    DCHECK(new_job->is_running() || new_job->is_queued());
-
-    // Check for queue overflow.
-    if (dispatcher_->num_queued_jobs() > max_queued_jobs_) {
-      Job* evicted = static_cast<Job*>(dispatcher_->EvictOldestLowest());
-      DCHECK(evicted);
-      if (evicted == new_job.get()) {
-        evicted->OnEvicted(false /* complete_asynchronously */);
-        LogFinishRequest(request->source_net_log(),
-                         ERR_HOST_RESOLVER_QUEUE_TOO_LARGE);
-        return ERR_HOST_RESOLVER_QUEUE_TOO_LARGE;
-      } else {
-        // |evicted| could have waiting requests that will receive completion
-        // callbacks, so cleanup asynchronously to avoid reentrancy.
-        evicted->OnEvicted(true /* complete_asynchronously */);
-      }
-    }
-
-    DCHECK(new_job->is_running() || new_job->is_queued());
     auto insert_result = jobs_.emplace(std::move(key), std::move(new_job));
     DCHECK(insert_result.second);
     job->OnAddedToJobMap(insert_result.first);
+    job->AddRequest(request);
+    job->RunNextTask();
   } else {
     job = jobit->second.get();
+    job->AddRequest(request);
   }
-
-  // Can't complete synchronously. Attach request and job to each other.
-  job->AddRequest(request);
-  return ERR_IO_PENDING;
 }
 
 base::Optional<HostCache::Entry> HostResolverManager::ResolveAsIP(

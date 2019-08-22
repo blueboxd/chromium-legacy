@@ -27,8 +27,7 @@ BluetoothRemoteGattCharacteristicWin::BluetoothRemoteGattCharacteristicWin(
       characteristic_added_notified_(false),
       characteristic_value_read_or_write_in_progress_(false),
       gatt_event_handle_(nullptr),
-      discovery_pending_count_(0),
-      weak_ptr_factory_(this) {
+      discovery_pending_count_(0) {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(parent_service_);
   DCHECK(characteristic_info_);

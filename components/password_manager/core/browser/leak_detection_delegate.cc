@@ -30,9 +30,14 @@ void LeakDetectionDelegate::StartLeakCheck(const autofill::PasswordForm& form) {
     return;
 
   if (!client_->GetPrefs()->GetBoolean(
-          password_manager::prefs::kPasswordLeakDetectionEnabled))
+          password_manager::prefs::kPasswordLeakDetectionEnabled)) {
+    return;
+  }
+
+  if (form.username_value.empty())
     return;
 
+  DCHECK(!form.password_value.empty());
   leak_check_ = leak_factory_->TryCreateLeakCheck(
       this, client_->GetIdentityManager(), client_->GetURLLoaderFactory());
   if (leak_check_) {

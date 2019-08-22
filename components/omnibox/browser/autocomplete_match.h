@@ -121,6 +121,7 @@ struct AutocompleteMatch {
   // a power of 2 so that the counter wraps.
   enum {
     PEDAL_FAMILY_ID = 1,
+    TAB_SWITCH_FAMILY_ID = 2,
     FAMILY_SIZE = 1 << 2,
   };
   static constexpr size_t FAMILY_SIZE_MASK = ~(FAMILY_SIZE - 1);
@@ -438,10 +439,13 @@ struct AutocompleteMatch {
   // has a matching tab and will use a switch-to-tab button. It returns false,
   // for example, when the switch button is not shown because a keyword match
   // is taking precedence.
-  bool ShouldShowTabMatch() const;
+  bool ShouldShowTabMatchButton() const;
 
   // Returns true if the suggestion should show a tab match button or pedal.
   bool ShouldShowButton() const;
+
+  // Returns whether the suggestion is by itself a tab switch suggestion.
+  bool IsTabSwitchSuggestion() const;
 
   // Upgrades this match by absorbing the best properties from
   // |duplicate_match|. For instance: if |duplicate_match| has a higher

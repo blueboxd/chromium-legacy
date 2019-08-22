@@ -162,7 +162,9 @@ class UI_ANDROID_EXPORT ViewAndroid {
                             float top_content_offset);
   void OnBottomControlsChanged(float bottom_controls_offset,
                                float bottom_content_offset);
-  int GetSystemWindowInsetBottom();
+
+  // Gets the Visual Viewport inset to apply.
+  int GetViewportInsetBottom();
 
   ScopedAnchorView AcquireAnchorView();
   void SetAnchorRect(const base::android::JavaRef<jobject>& anchor,

@@ -57,7 +57,8 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventMetadataSource
       base::RepeatingCallback<std::unique_ptr<base::DictionaryValue>()>;
 
   using MetadataGeneratorFunction = base::RepeatingCallback<void(
-      perfetto::protos::pbzero::ChromeMetadataPacket*)>;
+      perfetto::protos::pbzero::ChromeMetadataPacket*,
+      bool /* privacy_filtering_enabled */)>;
 
   // Any callbacks passed here will be called when tracing starts.
   void AddGeneratorFunction(JsonMetadataGeneratorFunction generator);

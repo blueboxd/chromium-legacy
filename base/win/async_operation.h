@@ -102,7 +102,7 @@ class AsyncOperation
   using Handler = ABI::Windows::Foundation::IAsyncOperationCompletedHandler<T>;
   using ResultCallback = base::OnceCallback<void(StorageT)>;
 
-  AsyncOperation() : weak_factory_(this) {
+  AsyncOperation() {
     // Note: This can't be done in the constructor initializer list. This is
     // because it relies on weak_factory_ to be initialized, which needs to be
     // the last class member. Also applies below.
@@ -150,7 +150,7 @@ class AsyncOperation
   OptionalStorageT results_;
 
   THREAD_CHECKER(thread_checker_);
-  base::WeakPtrFactory<AsyncOperation> weak_factory_;
+  base::WeakPtrFactory<AsyncOperation> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AsyncOperation);
 };

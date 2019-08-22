@@ -182,7 +182,7 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
   Microsoft::WRL::ComPtr<IDCompositionDevice2> dcomp_device_;
 
   base::WeakPtr<DirectCompositionSurfaceWin> weak_ptr_;
-  base::WeakPtrFactory<DirectCompositionSurfaceWin> weak_factory_;
+  base::WeakPtrFactory<DirectCompositionSurfaceWin> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DirectCompositionSurfaceWin);
 };

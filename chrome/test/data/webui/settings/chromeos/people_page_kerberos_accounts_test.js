@@ -226,17 +226,20 @@ cr.define('settings_people_page_kerberos_accounts', function() {
       params.append('kerberos_reauth', principal_name);
       settings.navigateTo(settings.routes.KERBEROS_ACCOUNTS, params);
 
-      // The setTimeout is necessary since the kerberos_reauth param would
+      // The flushTasks is necessary since the kerberos_reauth param would
       // otherwise be handled AFTER the callback below is executed.
-      browserProxy.whenCalled('getAccounts').then(() => {
-        setTimeout(() => {
-          Polymer.dom.flush();
-          const addDialog = kerberosAccounts.$$('kerberos-add-account-dialog');
-          assertTrue(!!addDialog);
-          assertEquals(principal_name, addDialog.$.username.value);
-          done();
-        });
-      });
+      browserProxy.whenCalled('getAccounts')
+          .then(() => {
+            return test_util.flushTasks();
+          })
+          .then(() => {
+            Polymer.dom.flush();
+            const addDialog =
+                kerberosAccounts.$$('kerberos-add-account-dialog');
+            assertTrue(!!addDialog);
+            assertEquals(principal_name, addDialog.$.username.value);
+            done();
+          });
     });
 
     test('RefreshNow', function() {
@@ -253,6 +256,37 @@ cr.define('settings_people_page_kerberos_accounts', function() {
       });
     });
 
+    test('RefreshAccountShowsToast', function(done) {
+      const toast = kerberosAccounts.$$('#account-toast');
+      assertTrue(!!toast);
+      assertFalse(toast.open);
+
+      browserProxy.whenCalled('getAccounts')
+          .then(() => {
+            Polymer.dom.flush();
+            clickMoreActions(Account.FIRST, MoreActions.REFRESH_NOW);
+            Polymer.dom.flush();
+
+            const addDialog =
+                kerberosAccounts.$$('kerberos-add-account-dialog');
+            assertTrue(!!addDialog);
+            addDialog.$$('.action-button').click();
+            Polymer.dom.flush();
+
+            return browserProxy.whenCalled('addAccount');
+          })
+          .then(() => {
+            return test_util.flushTasks();
+          })
+          .then(() => {
+            Polymer.dom.flush();
+            assertTrue(toast.open);
+            assertTrue(kerberosAccounts.$$('#account-toast-label')
+                           .innerHTML.includes('refreshed'));
+            done();
+          });
+    });
+
     test('RemoveAccount', function() {
       return browserProxy.whenCalled('getAccounts').then(() => {
         Polymer.dom.flush();
@@ -265,20 +299,24 @@ cr.define('settings_people_page_kerberos_accounts', function() {
     });
 
     test('RemoveAccountShowsToast', function(done) {
-      const toast = kerberosAccounts.$$('#account-removed-toast');
+      const toast = kerberosAccounts.$$('#account-toast');
       assertTrue(!!toast);
       assertFalse(toast.open);
 
       browserProxy.whenCalled('getAccounts').then(() => {
         Polymer.dom.flush();
         clickMoreActions(Account.FIRST, MoreActions.REMOVE_ACCOUNT);
-        browserProxy.whenCalled('removeAccount').then(() => {
-          setTimeout(() => {
-            Polymer.dom.flush();
-            assertTrue(toast.open);
-            done();
-          });
-        });
+        browserProxy.whenCalled('removeAccount')
+            .then(() => {
+              return test_util.flushTasks();
+            })
+            .then(() => {
+              Polymer.dom.flush();
+              assertTrue(toast.open);
+              assertTrue(kerberosAccounts.$$('#account-toast-label')
+                             .innerHTML.includes('removed'));
+              done();
+            });
       });
     });
 
@@ -696,33 +734,35 @@ cr.define('settings_people_page_kerberos_accounts', function() {
       // Clicking the action button (aka 'Save') validates the config.
       advancedConfigDialog.querySelector('.action-button').click();
 
-      browserProxy.whenCalled('validateConfig').then(() => {
-        // Wait for dialog to process the 'validateConfig' result (sets error
-        // message etc.).
-        setTimeout(() => {
-          // Is some error text set?
-          const configError =
-              advancedConfigDialog.querySelector('#config-error-message');
-          assertTrue(!!configError);
-          assertNotEquals(0, configError.innerText.length);
+      browserProxy.whenCalled('validateConfig')
+          .then(() => {
+            // Wait for dialog to process the 'validateConfig' result (sets
+            // error message etc.).
+            return test_util.flushTasks();
+          })
+          .then(() => {
+            // Is some error text set?
+            const configError =
+                advancedConfigDialog.querySelector('#config-error-message');
+            assertTrue(!!configError);
+            assertNotEquals(0, configError.innerText.length);
 
-          // Is something selected?
-          const configElement = advancedConfigDialog.querySelector('#config');
-          const textArea = configElement.$.input;
-          assertEquals(0, textArea.selectionStart);
-          assertNotEquals(0, textArea.selectionEnd);
+            // Is something selected?
+            const configElement = advancedConfigDialog.querySelector('#config');
+            const textArea = configElement.$.input;
+            assertEquals(0, textArea.selectionStart);
+            assertNotEquals(0, textArea.selectionEnd);
 
-          // Is the config dialog is still open?
-          assertTrue(advancedConfigDialog.open);
-          assertTrue(addDialog.hidden);
+            // Is the config dialog is still open?
+            assertTrue(advancedConfigDialog.open);
+            assertTrue(addDialog.hidden);
 
-          // Was the config not accepted?
-          advancedConfigDialog.querySelector('.cancel-button').click();
-          Polymer.dom.flush();
-          assertConfig(loadTimeData.getString('defaultKerberosConfig'));
-          done();
-        });
-      });
+            // Was the config not accepted?
+            advancedConfigDialog.querySelector('.cancel-button').click();
+            Polymer.dom.flush();
+            assertConfig(loadTimeData.getString('defaultKerberosConfig'));
+            done();
+          });
     });
 
     // addAccount: KerberosErrorType.kNetworkProblem spawns a general error.

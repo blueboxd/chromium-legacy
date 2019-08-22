@@ -1876,6 +1876,9 @@ Bug(none) virtual/layout_ng_experimental/fragmentation/scrolling-contents-scroll
 # Flexbox in NG
 #
 
+# Fails in [NG block + legacy flex]
+crbug.com/591099 external/wpt/css/css-flexbox/flexbox_align-items-stretch-3.html [ Failure ]
+
 ### virtual/layout_ng_experimental/css3/flexbox/
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/auto-height-column-with-border-and-padding.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/box-sizing-min-max-sizes.html [ Failure ]
@@ -1911,7 +1914,6 @@ crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/multiline.html [ Fa
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/negative-overflow.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/order-painting.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/overflow-auto-resizes-correctly.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/overflow-keep-scrollpos.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/percentage-height-replaced-element.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/position-absolute-child.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/relayout-align-items.html [ Failure ]
@@ -1956,6 +1958,7 @@ crbug.com/249112 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/fle
 crbug.com/467127 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-006.xht [ Failure ]
 crbug.com/249112 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-007.xht [ Failure ]
 crbug.com/467127 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-008.xht [ Failure ]
+crbug.com/996474 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-009.html [ Pass Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-015.html [ Failure ]
 crbug.com/249112 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-width-flex-items-005.xht [ Failure ]
 crbug.com/249112 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-width-flex-items-007.xht [ Failure ]
@@ -3079,7 +3082,6 @@ crbug.com/849859 external/wpt/css/css-animations/CSSAnimation-pausing.tentative.
 crbug.com/849859 virtual/threaded/external/wpt/css/css-animations/CSSAnimation-pausing.tentative.html [ Failure ]
 crbug.com/849859 external/wpt/css/css-animations/Element-getAnimations-dynamic-changes.tentative.html [ Failure ]
 crbug.com/849859 virtual/threaded/external/wpt/css/css-animations/Element-getAnimations-dynamic-changes.tentative.html [ Failure ]
-crbug.com/849859 external/wpt/web-animations/timing-model/animations/pausing-an-animation.html [ Failure ]
 
 crbug.com/332189 external/wpt/css/css-transitions/no-transition-from-ua-to-blocking-stylesheet.html [ Pass Failure ]
 
@@ -3093,21 +3095,26 @@ crbug.com/921242 [ Mac ] paint/invalidation/scroll/fixed-with-border-under-compo
 # Failures on Mac scrollbars for compositor threaded scrollbar scrolling.
 crbug.com/953847 [ Mac ] fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
 crbug.com/953847 [ Mac ] fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar.html [ Failure ]
+crbug.com/953847 [ Mac ] fast/scrolling/scrollbars/scroll-chaining-for-gesture-based-scrolling.html [ Failure ]
 crbug.com/953847 [ Mac ] fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure ]
 crbug.com/953847 [ Mac ] fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Failure Timeout ]
 crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar.html [ Failure ]
+crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scroll-chaining-for-gesture-based-scrolling.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Failure Timeout ]
 crbug.com/953847 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar.html [ Failure ]
+crbug.com/953847 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbars/scroll-chaining-for-gesture-based-scrolling.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Failure Timeout ]
 crbug.com/953847 [ Mac ] virtual/threaded/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/threaded/fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar.html [ Failure ]
+crbug.com/953847 [ Mac ] virtual/threaded/fast/scrolling/scrollbars/scroll-chaining-for-gesture-based-scrolling.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/threaded/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/threaded/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Failure Timeout ]
 crbug.com/953847 [ Mac ] virtual/main_thread_scrollbar_gestures/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/main_thread_scrollbar_gestures/fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar.html [ Failure ]
+crbug.com/953847 [ Mac ] virtual/main_thread_scrollbar_gestures/fast/scrolling/scrollbars/scroll-chaining-for-gesture-based-scrolling.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/main_thread_scrollbar_gestures/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/main_thread_scrollbar_gestures/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Failure Timeout ]
 
@@ -3225,6 +3232,12 @@ crbug.com/991295 external/wpt/web-animations/timing-model/timelines/document-tim
 crbug.com/994214 external/wpt/html/cross-origin-opener-policy/coop-navigated-popup.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.10 ] external/wpt/webxr/exclusive_requestFrame_nolayer.https.html [ Failure Timeout ]
+crbug.com/626703 [ Mac10.10 ] wpt_internal/webxr/xrSession_dataProviderDisconnect_inline.https.html [ Failure Timeout ]
+crbug.com/626703 [ Mac10.10 ] wpt_internal/webxr/render_state_vertical_fov_inline.https.html [ Failure Timeout ]
+crbug.com/626703 [ Linux ] external/wpt/webvtt/rendering/cues-with-video/processing-model/snap-to-line.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/webvtt/rendering/cues-with-video/processing-model/snap-to-line.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/webvtt/rendering/cues-with-video/processing-model/snap-to-line.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/shadow-dom/directionality-002.tentative.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/shadow-dom/directionality-002.tentative.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/shadow-dom/directionality-002.tentative.html [ Failure ]
@@ -4936,7 +4949,6 @@ crbug.com/831509 virtual/navigation-mojo-response/external/wpt/service-workers/s
 crbug.com/852645 external/wpt/fullscreen/api/element-request-fullscreen-twice-manual.html [ Failure ]
 crbug.com/852645 external/wpt/fullscreen/api/element-request-fullscreen-two-elements-manual.html [ Failure ]
 crbug.com/852645 external/wpt/fullscreen/api/element-request-fullscreen-two-iframes-manual.html [ Failure Timeout ]
-crbug.com/852645 virtual/android/fullscreen/api/document-exit-fullscreen-vs-request.html [ Failure ]
 
 # snav tests fail because of a DCHECK
 crbug.com/985520 virtual/focusless-spat-nav/fast/spatial-navigation/focusless/snav-focusless-enter-from-interest-a11y.html [ Crash ]
@@ -5351,7 +5363,6 @@ crbug.com/831720 [ Win ] media/controls/tap-to-hide-controls.html [ Pass Failure
 crbug.com/831720 [ Linux ] media/controls/tap-to-hide-controls.html [ Pass Failure ]
 crbug.com/831720 [ Win ] virtual/audio-service/media/controls/doubletap-to-jump-forwards-too-short.html [ Pass Failure ]
 crbug.com/831720 [ Linux ] virtual/audio-service/media/controls/doubletap-to-jump-forwards-too-short.html [ Pass Failure ]
-crbug.com/831720 [ Linux ] virtual/audio-service/media/controls/doubletap-to-jump-backwards-at-start.html [ Pass Failure ]
 crbug.com/831720 [ Mac ] virtual/audio-service/media/controls/tap-to-hide-controls.html [ Pass Failure ]
 crbug.com/831720 [ Win ] virtual/audio-service/media/controls/tap-to-hide-controls.html [ Pass Failure ]
 crbug.com/831720 [ Linux ] virtual/audio-service/media/controls/tap-to-hide-controls.html [ Pass Failure ]
@@ -5999,10 +6010,6 @@ crbug.com/936083 external/wpt/import-maps/builtin-import-scheme.tentative.html [
 crbug.com/936165 media/autoplay-muted.html [ Timeout Pass ]
 crbug.com/936165 virtual/audio-service/media/autoplay-muted.html [ Timeout Pass ]
 
-# Sheriff 2019-02-27
-crbug.com/936279 external/wpt/import-maps/fallback-disallowed.sub.tentative.html [ Failure Pass Timeout ]
-
-
 # Sheriff 2019-02-28
 crbug.com/936827 external/wpt/fullscreen/api/element-request-fullscreen-and-remove-manual.html [ Failure Pass ]
 
@@ -6179,9 +6186,6 @@ crbug.com/959002 crbug.com/959042 http/tests/devtools/elements/styles-3/style-au
 crbug.com/959002 crbug.com/959042 http/tests/devtools/elements/styles-3/styles-variables.js [ Pass Timeout ]
 crbug.com/959002 crbug.com/959042 http/tests/devtools/elements/styles-4/styles-keyframes.js [ Pass Timeout ]
 crbug.com/959002 crbug.com/959042 http/tests/devtools/elements/styles-4/undo-add-new-rule.js [ Pass Timeout ]
-
-# Sheriff 2019-05-06
-crbug.com/959372 [ Win ] external/wpt/import-maps/fallback.sub.tentative.html [ Pass Timeout ]
 
 # Sheriff 2019-05-07
 crbug.com/960443 [ Mac10.10 Mac10.11 ] external/wpt/animation-worklet/worklet-animation-with-scroll-timeline.https.html [ Failure Pass ]
@@ -6443,7 +6447,6 @@ crbug.com/991243 [ Linux ] virtual/omt-worker-fetch/external/wpt/workers/semanti
 crbug.com/979017 wpt_internal/scheduler/task_order.html [ Failure ]
 
 # Sheriff 2019-08-09
-crbug.com/992615 [ Linux ] external/wpt/import-maps/data.sub.tentative.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] external/wpt/generic-sensor/idlharness.https.window.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] external/wpt/secure-contexts/idlharness.any.html [ Pass Timeout ]
 
@@ -6487,3 +6490,5 @@ crbug.com/914134 [ Mac ] vr/requestPresent_resolve.html [ Failure ]
 crbug.com/914134 [ Mac ] vr/requestPresent_resolve_repeatwithgesture.html [ Failure ]
 crbug.com/914134 [ Mac ] vr/requestPresent_resolve_repeatwithoutgesture.html [ Failure ]
 crbug.com/914134 [ Mac ] vr/requestPresent_resolve_then_reject.html [ Failure ]
+
+crbug.com/996219 [ Win ] fast/text/emoji-vertical-origin-visual.html [ Failure ]

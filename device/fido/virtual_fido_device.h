@@ -181,8 +181,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     bool InjectResidentKey(base::span<const uint8_t> credential_id,
                            const std::string& relying_party_id,
                            base::span<const uint8_t> user_id,
-                           const std::string& user_name,
-                           const std::string& user_display_name);
+                           base::Optional<std::string> user_name,
+                           base::Optional<std::string> user_display_name);
 
    private:
     friend class base::RefCounted<State>;

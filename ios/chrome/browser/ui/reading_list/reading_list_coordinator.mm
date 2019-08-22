@@ -28,6 +28,7 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_list_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_mediator.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_table_view_controller.h"
+#import "ios/chrome/browser/ui/table_view/feature_flags.h"
 #import "ios/chrome/browser/ui/table_view/table_view_animator.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
@@ -130,8 +131,26 @@
   self.navigationController = [[TableViewNavigationController alloc]
       initWithTable:self.tableViewController];
   self.navigationController.toolbarHidden = NO;
-  self.navigationController.transitioningDelegate = self;
-  self.navigationController.modalPresentationStyle = UIModalPresentationCustom;
+
+  BOOL useCustomPresentation = YES;
+  if (IsCollectionsCardPresentationStyleEnabled()) {
+    if (@available(iOS 13, *)) {
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+      [self.navigationController
+          setModalPresentationStyle:UIModalPresentationFormSheet];
+      self.navigationController.presentationController.delegate =
+          self.tableViewController;
+      useCustomPresentation = NO;
+#endif
+    }
+  }
+
+  if (useCustomPresentation) {
+    self.navigationController.transitioningDelegate = self;
+    self.navigationController.modalPresentationStyle =
+        UIModalPresentationCustom;
+  }
+
   [self.baseViewController presentViewController:self.navigationController
                                         animated:YES
                                       completion:nil];

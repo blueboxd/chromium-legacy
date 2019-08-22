@@ -809,6 +809,7 @@ class SSLClientSocketTest : public PlatformTest, public WithTaskEnvironment {
             ct_policy_enforcer_.get(),
             ssl_client_session_cache_.get())) {
     cert_verifier_->set_default_result(OK);
+    cert_verifier_->set_async(true);
 
     EXPECT_CALL(*ct_policy_enforcer_, CheckCompliance(_, _, _))
         .WillRepeatedly(
@@ -1520,10 +1521,10 @@ TEST_F(SSLClientSocketTest, Connect) {
   EXPECT_FALSE(sock->IsConnected());
 }
 
-TEST_F(SSLClientSocketTest, ConnectAsyncVerify) {
+TEST_F(SSLClientSocketTest, ConnectSyncVerify) {
   ASSERT_TRUE(StartTestServer(SpawnedTestServer::SSLOptions()));
 
-  cert_verifier_->set_async(true);
+  cert_verifier_->set_async(false);
   int rv;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
   EXPECT_THAT(rv, IsError(OK));
@@ -1548,13 +1549,13 @@ TEST_F(SSLClientSocketTest, ConnectExpired) {
   EXPECT_TRUE(LogContainsEndEvent(entries, -1, NetLogEventType::SSL_CONNECT));
 }
 
-TEST_F(SSLClientSocketTest, ConnectExpiredAsyncVerify) {
+TEST_F(SSLClientSocketTest, ConnectExpiredSyncVerify) {
   SpawnedTestServer::SSLOptions ssl_options(
       SpawnedTestServer::SSLOptions::CERT_EXPIRED);
   ASSERT_TRUE(StartTestServer(ssl_options));
 
   cert_verifier_->set_default_result(ERR_CERT_DATE_INVALID);
-  cert_verifier_->set_async(true);
+  cert_verifier_->set_async(false);
 
   int rv;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));

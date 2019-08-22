@@ -593,6 +593,7 @@ var OSSettingsPeoplePageKerberosAccountsTest =
   get extraLibraries() {
     return super.extraLibraries.concat([
       BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
+      BROWSER_SETTINGS_PATH + '../test_util.js',
       'people_page_kerberos_accounts_test.js',
     ]);
   }

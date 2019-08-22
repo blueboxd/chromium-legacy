@@ -2120,6 +2120,7 @@ bool GLES2DecoderPassthroughImpl::IsEmulatedQueryTarget(GLenum target) const {
     case GL_COMMANDS_COMPLETED_CHROMIUM:
     case GL_READBACK_SHADOW_COPIES_UPDATED_CHROMIUM:
     case GL_COMMANDS_ISSUED_CHROMIUM:
+    case GL_COMMANDS_ISSUED_TIMESTAMP_CHROMIUM:
     case GL_LATENCY_QUERY_CHROMIUM:
     case GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM:
     case GL_GET_ERROR_QUERY_CHROMIUM:
@@ -2159,6 +2160,14 @@ error::Error GLES2DecoderPassthroughImpl::ProcessQueries(bool did_finish) {
       case GL_COMMANDS_ISSUED_CHROMIUM:
         result_available = GL_TRUE;
         result = query.commands_issued_time.InMicroseconds();
+        break;
+
+      case GL_COMMANDS_ISSUED_TIMESTAMP_CHROMIUM:
+        result_available = GL_TRUE;
+        DCHECK_GT(
+            query.commands_issued_timestamp.since_origin().InMicroseconds(), 0);
+        result =
+            query.commands_issued_timestamp.since_origin().InMicroseconds();
         break;
 
       case GL_LATENCY_QUERY_CHROMIUM:

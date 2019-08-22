@@ -184,10 +184,11 @@ class TrayPopupUtils {
   static bool CanOpenWebUISettings();
 
   // Initializes a row in the system menu as checkable and update the check mark
-  // status of this row.
+  // status of this row. If |enterprise_managed| is true, adds an enterprise
+  // managed icon to the row.
   static void InitializeAsCheckableRow(HoverHighlightView* container,
-                                       bool checked);
-
+                                       bool checked,
+                                       bool enterprise_managed);
   // Updates the visibility and a11y state of the checkable row |container|.
   static void UpdateCheckMarkVisibility(HoverHighlightView* container,
                                         bool visible);

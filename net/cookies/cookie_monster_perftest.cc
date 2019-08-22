@@ -17,6 +17,7 @@
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_monster_store_test.h"
+#include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -90,9 +91,9 @@ class GetCookieListCallback : public CookieTestCallback {
   }
 
  private:
-  void Run(const CookieList& cookie_list,
+  void Run(const CookieStatusList& cookie_list,
            const CookieStatusList& excluded_cookies) {
-    cookie_list_ = cookie_list;
+    cookie_list_ = cookie_util::StripStatuses(cookie_list);
     CookieTestCallback::Run();
   }
   CookieList cookie_list_;
@@ -109,8 +110,7 @@ class GetAllCookiesCallback : public CookieTestCallback {
   }
 
  private:
-  void Run(const CookieList& cookies,
-           const CookieStatusList& excluded_cookies) {
+  void Run(const CookieList& cookies) {
     cookies_ = cookies;
     CookieTestCallback::Run();
   }

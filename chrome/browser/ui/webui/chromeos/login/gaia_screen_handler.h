@@ -20,16 +20,13 @@
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "components/user_manager/user_type.h"
 #include "net/base/net_errors.h"
+#include "net/cookies/canonical_cookie.h"
 
 class AccountId;
 
 namespace base {
 class DictionaryValue;
 }  // namespace base
-
-namespace net {
-class CanonicalCookie;
-}
 
 namespace network {
 class NSSTempCertsCacheChromeOS;
@@ -203,7 +200,7 @@ class GaiaScreenHandler : public BaseScreenHandler,
       bool using_saml,
       const ::login::StringList& services,
       const SamlPasswordAttributes& password_attributes,
-      const std::vector<net::CanonicalCookie>& cookies,
+      const net::CookieStatusList& cookies,
       const net::CookieStatusList& excluded_cookies);
   void HandleCompleteLogin(const std::string& gaia_id,
                            const std::string& typed_email,

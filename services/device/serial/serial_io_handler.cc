@@ -163,6 +163,8 @@ bool SerialIoHandler::PostOpen() {
 
 void SerialIoHandler::Close(base::OnceClosure callback) {
   if (file_.IsValid()) {
+    CancelRead(mojom::SerialReceiveError::DISCONNECTED);
+    CancelWrite(mojom::SerialSendError::DISCONNECTED);
     base::PostTaskAndReply(
         FROM_HERE,
         {base::ThreadPool(), base::MayBlock(),

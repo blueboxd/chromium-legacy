@@ -27,9 +27,7 @@ ContactsProviderAndroid::ContactsProviderAndroid(
 
   WebContents* web_contents =
       WebContents::FromRenderFrameHost(render_frame_host);
-  if (!web_contents)
-    return;
-  if (!web_contents->GetTopLevelNativeWindow())
+  if (!web_contents || !web_contents->GetTopLevelNativeWindow())
     return;
 
   formatted_origin_ = url_formatter::FormatUrlForSecurityDisplay(
@@ -47,14 +45,13 @@ ContactsProviderAndroid::~ContactsProviderAndroid() {
   Java_ContactsDialogHost_destroy(env, dialog_);
 }
 
-void ContactsProviderAndroid::Select(
-    bool multiple,
-    bool include_names,
-    bool include_emails,
-    bool include_tel,
-    blink::mojom::ContactsManager::SelectCallback callback) {
+void ContactsProviderAndroid::Select(bool multiple,
+                                     bool include_names,
+                                     bool include_emails,
+                                     bool include_tel,
+                                     ContactsSelectedCallback callback) {
   if (!dialog_) {
-    std::move(callback).Run(base::nullopt);
+    std::move(callback).Run(base::nullopt, /*percentage_shared=*/-1);
     return;
   }
 
@@ -103,14 +100,15 @@ void ContactsProviderAndroid::AddContact(
   contacts_.push_back(std::move(contact));
 }
 
-void ContactsProviderAndroid::EndContactsList(JNIEnv* env) {
+void ContactsProviderAndroid::EndContactsList(JNIEnv* env,
+                                              jint percentage_shared) {
   DCHECK(callback_);
-  std::move(callback_).Run(std::move(contacts_));
+  std::move(callback_).Run(std::move(contacts_), percentage_shared);
 }
 
 void ContactsProviderAndroid::EndWithPermissionDenied(JNIEnv* env) {
   DCHECK(callback_);
-  std::move(callback_).Run(base::nullopt);
+  std::move(callback_).Run(base::nullopt, /*percentage_shared=*/-1);
 }
 
 }  // namespace content

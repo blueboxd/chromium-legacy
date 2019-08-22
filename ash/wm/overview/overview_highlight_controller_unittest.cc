@@ -286,7 +286,7 @@ TEST_F(OverviewHighlightControllerTest, HighlightLocationWhileDragging) {
   const gfx::PointF start_point = item->target_bounds().CenterPoint();
   const gfx::PointF end_point(20.f, 20.f);
   GetOverviewSession()->InitiateDrag(item, start_point,
-                                     /*allow_drag_to_close=*/true);
+                                     /*is_touch_dragging=*/true);
   GetOverviewSession()->Drag(item, end_point);
   SendKeyUntilOverviewItemIsHighlighted(ui::VKEY_TAB);
   EXPECT_EQ(window3.get(), GetOverviewHighlightedWindow());

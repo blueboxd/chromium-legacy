@@ -28,15 +28,10 @@
 #include "components/invalidation/impl/fake_invalidation_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/identity/public/mojom/constants.mojom.h"
 #include "services/identity/public/mojom/identity_accessor.mojom-test-utils.h"
+#include "services/identity/public/mojom/identity_service.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/test/test_network_connection_tracker.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace drivefs {
@@ -95,10 +90,9 @@ class MockDriveFs : public mojom::DriveFsInterceptorForTesting,
 class TestingDriveFsHostDelegate : public DriveFsHost::Delegate,
                                    public DriveFsHost::MountObserver {
  public:
-  TestingDriveFsHostDelegate(
-      std::unique_ptr<service_manager::Connector> connector,
-      const AccountId& account_id)
-      : connector_(std::move(connector)),
+  TestingDriveFsHostDelegate(identity::mojom::IdentityService* identity_service,
+                             const AccountId& account_id)
+      : identity_service_(identity_service),
         account_id_(account_id),
         drive_notification_manager_(&invalidation_service_) {}
 
@@ -126,8 +120,10 @@ class TestingDriveFsHostDelegate : public DriveFsHost::Delegate,
       override {
     return nullptr;
   }
-  service_manager::Connector* GetConnector() override {
-    return connector_.get();
+  void BindIdentityAccessor(
+      mojo::PendingReceiver<identity::mojom::IdentityAccessor> receiver)
+      override {
+    identity_service_->BindIdentityAccessor(std::move(receiver));
   }
   const AccountId& GetAccountId() override { return account_id_; }
   std::string GetObfuscatedAccountId() override {
@@ -149,7 +145,7 @@ class TestingDriveFsHostDelegate : public DriveFsHost::Delegate,
     return base::FilePath("/MyFiles");
   }
 
-  const std::unique_ptr<service_manager::Connector> connector_;
+  identity::mojom::IdentityService* const identity_service_;
   const AccountId account_id_;
   mojom::DriveFsBootstrapPtrInfo pending_bootstrap_;
   invalidation::FakeInvalidationService invalidation_service_;
@@ -199,29 +195,20 @@ class MockIdentityAccessor {
 
 class FakeIdentityService
     : public identity::mojom::IdentityAccessorInterceptorForTesting,
-      public service_manager::Service {
+      public identity::mojom::IdentityService {
  public:
-  FakeIdentityService(MockIdentityAccessor* mock,
-                      service_manager::mojom::ServiceRequest request)
-      : service_binding_(this, std::move(request)), mock_(mock) {
-    binder_registry_.AddInterface(
-        base::BindRepeating(&FakeIdentityService::BindIdentityAccessorRequest,
-                            base::Unretained(this)));
+  explicit FakeIdentityService(MockIdentityAccessor* mock) : mock_(mock) {
     mock_->bindings_ = &bindings_;
   }
 
   ~FakeIdentityService() override { mock_->bindings_ = nullptr; }
 
  private:
-  void OnBindInterface(const service_manager::BindSourceInfo& source,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override {
-    binder_registry_.BindInterface(interface_name, std::move(interface_pipe));
-  }
-
-  void BindIdentityAccessorRequest(
-      identity::mojom::IdentityAccessorRequest request) {
-    bindings_.AddBinding(this, std::move(request));
+  // identity::mojom::IdentityService:
+  void BindIdentityAccessor(
+      mojo::PendingReceiver<identity::mojom::IdentityAccessor> receiver)
+      override {
+    bindings_.AddBinding(this, std::move(receiver));
   }
 
   // identity::mojom::IdentityAccessorInterceptorForTesting overrides:
@@ -246,9 +233,7 @@ class FakeIdentityService
     return nullptr;
   }
 
-  service_manager::ServiceBinding service_binding_;
   MockIdentityAccessor* const mock_;
-  service_manager::BinderRegistry binder_registry_;
   mojo::BindingSet<identity::mojom::IdentityAccessor> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeIdentityService);
@@ -285,11 +270,10 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
     account_id_ = AccountId::FromUserEmailGaiaId("test@example.com", "ID");
 
     disk_manager_ = std::make_unique<chromeos::disks::MockDiskMountManager>();
-    identity_service_ = std::make_unique<FakeIdentityService>(
-        &mock_identity_accessor_,
-        connector_factory_.RegisterInstance(identity::mojom::kServiceName));
+    identity_service_ =
+        std::make_unique<FakeIdentityService>(&mock_identity_accessor_);
     host_delegate_ = std::make_unique<TestingDriveFsHostDelegate>(
-        connector_factory_.CreateConnector(), account_id_);
+        identity_service_.get(), account_id_);
     auto timer = std::make_unique<base::MockOneShotTimer>();
     timer_ = timer.get();
     host_ = std::make_unique<DriveFsHost>(
@@ -425,7 +409,6 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
       network_connection_tracker_;
   base::SimpleTestClock clock_;
   MockIdentityAccessor mock_identity_accessor_;
-  service_manager::TestConnectorFactory connector_factory_;
   std::unique_ptr<FakeIdentityService> identity_service_;
   std::unique_ptr<TestingDriveFsHostDelegate> host_delegate_;
   std::unique_ptr<DriveFsHost> host_;
@@ -531,7 +514,7 @@ TEST_F(DriveFsHostTest, UnsupportedAccountTypes) {
   };
   for (auto& account : unsupported_accounts) {
     host_delegate_ = std::make_unique<TestingDriveFsHostDelegate>(
-        connector_factory_.CreateConnector(), account);
+        identity_service_.get(), account);
     host_ = std::make_unique<DriveFsHost>(
         profile_path_, host_delegate_.get(), host_delegate_.get(),
         network_connection_tracker_.get(), &clock_, disk_manager_.get(),

@@ -126,14 +126,6 @@ void EmbeddedWorkerInstanceClientImpl::ResumeAfterDownload() {
   service_worker_context_client_->worker().ResumeAfterDownload();
 }
 
-void EmbeddedWorkerInstanceClientImpl::AddMessageToConsole(
-    blink::mojom::ConsoleMessageLevel level,
-    const std::string& message) {
-  DCHECK(initiator_thread_task_runner_->BelongsToCurrentThread());
-  service_worker_context_client_->worker().AddMessageToConsole(
-      blink::WebConsoleMessage(level, blink::WebString::FromUTF8(message)));
-}
-
 EmbeddedWorkerInstanceClientImpl::EmbeddedWorkerInstanceClientImpl(
     mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient> receiver,
     scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner)

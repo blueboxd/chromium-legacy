@@ -101,7 +101,7 @@ class AuthenticatedLeakCheck : public LeakDetectionCheck {
   // Encryption key used during the request.
   std::string encryption_key_;
   // Weak pointers for different callbacks.
-  base::WeakPtrFactory<AuthenticatedLeakCheck> weak_ptr_factory_;
+  base::WeakPtrFactory<AuthenticatedLeakCheck> weak_ptr_factory_{this};
 };
 
 }  // namespace password_manager

@@ -99,8 +99,7 @@ class ScopedChildrenLock;
 // View::ViewHierarchyChanged.
 // TODO(pbos): Move to a separate view_hierarchy_changed_details.h header.
 struct VIEWS_EXPORT ViewHierarchyChangedDetails {
-  ViewHierarchyChangedDetails()
-      : ViewHierarchyChangedDetails(false, nullptr, nullptr, nullptr) {}
+  ViewHierarchyChangedDetails() = default;
 
   ViewHierarchyChangedDetails(bool is_add,
                               View* parent,
@@ -108,20 +107,20 @@ struct VIEWS_EXPORT ViewHierarchyChangedDetails {
                               View* move_view)
       : is_add(is_add), parent(parent), child(child), move_view(move_view) {}
 
-  bool is_add;
+  bool is_add = false;
   // New parent if |is_add| is true, old parent if |is_add| is false.
-  View* parent;
+  View* parent = nullptr;
   // The view being added or removed.
-  View* child;
+  View* child = nullptr;
   // If this is a move (reparent), meaning AddChildViewAt() is invoked with an
   // existing parent, then a notification for the remove is sent first,
   // followed by one for the add.  This case can be distinguished by a
-  // non-NULL |move_view|.
+  // non-null |move_view|.
   // For the remove part of move, |move_view| is the new parent of the View
   // being removed.
   // For the add part of move, |move_view| is the old parent of the View being
   // added.
-  View* move_view;
+  View* move_view = nullptr;
 };
 
 // Used to identify the CallbackList<> within the PropertyChangedVectors map.
@@ -1668,7 +1667,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // the next and previous focusable views of views pointing to this view are
   // updated.  If |update_tool_tip| is true, the tooltip is updated.  If
   // |delete_removed_view| is true, the view is also deleted (if it is parent
-  // owned).  If |new_parent| is not NULL, the remove is the result of
+  // owned).  If |new_parent| is not null, the remove is the result of
   // AddChildView() to a new parent.  For this case, |new_parent| is the View
   // that |view| is going to be added to after the remove completes.
   void DoRemoveChildView(View* view,
@@ -1679,7 +1678,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Call ViewHierarchyChanged() for all child views and all parents.
   // |old_parent| is the original parent of the View that was removed.
-  // If |new_parent| is not NULL, the View that was removed will be reparented
+  // If |new_parent| is not null, the View that was removed will be reparented
   // to |new_parent| after the remove operation.
   // If is_removed_from_widget is true, calls RemovedFromWidget for all
   // children.

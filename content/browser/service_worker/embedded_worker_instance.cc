@@ -1195,15 +1195,6 @@ void EmbeddedWorkerInstance::OnSetupFailed(
   }
 }
 
-void EmbeddedWorkerInstance::AddMessageToConsole(
-    blink::mojom::ConsoleMessageLevel level,
-    const std::string& message) {
-  if (process_id() == ChildProcessHost::kInvalidUniqueID)
-    return;
-  DCHECK(client_.is_bound());
-  client_->AddMessageToConsole(level, message);
-}
-
 // static
 std::string EmbeddedWorkerInstance::StatusToString(
     EmbeddedWorkerStatus status) {

@@ -92,7 +92,7 @@ const char* const kModelIdsBlacklistedForMediaFoundation[] = {
     // also https://crbug.com/924528
     "04ca:7047", "04ca:7048",
     // HP Elitebook 840 G1
-    "04f2:b3ed", "04f2:b3ca", "05c8:035d",
+    "04f2:b3ed", "04f2:b3ca", "05c8:035d", "05c8:0369",
     // RBG/IR camera for Windows Hello Face Auth. See https://crbug.com/984864.
     "13d3:5257"};
 
@@ -360,8 +360,7 @@ bool VideoCaptureDeviceFactoryWin::PlatformSupportsMediaFoundation() {
 VideoCaptureDeviceFactoryWin::VideoCaptureDeviceFactoryWin()
     : use_media_foundation_(
           base::FeatureList::IsEnabled(media::kMediaFoundationVideoCapture)),
-      com_thread_("Windows Video Capture COM Thread"),
-      weak_ptr_factory_(this) {
+      com_thread_("Windows Video Capture COM Thread") {
   mf_enum_device_sources_func_ =
       PlatformSupportsMediaFoundation() ? MFEnumDeviceSources : nullptr;
   direct_show_enum_devices_func_ =

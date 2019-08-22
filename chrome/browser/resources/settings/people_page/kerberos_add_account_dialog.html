@@ -28,15 +28,21 @@
         margin-inline-start: 1em;
       }
 
+      #credentials {
+        margin-top: 16px;
+      }
+
       #credentials > *:not(:last-child) {
         margin-bottom: var(--cr-form-field-bottom-spacing);
       }
 
       #general-error-container {
+        display: flex;
         height: 56px;
       }
 
       #config-error-container {
+        display: flex;
         height: 40px;
         margin-top: 16px;
       }
@@ -44,10 +50,6 @@
       #general-error-message,
       #config-error-message {
         color: var(--settings-error-color);
-      }
-
-      .inner-error-container {
-        display: flex;
       }
 
       iron-icon[icon='cr:error'] {
@@ -74,13 +76,12 @@
           $i18n{addKerberosAccountDescription}
         </h2>
 
-        <div id="general-error-container">
-          <div class="inner-error-container"
-              hidden="[[!showError_(generalErrorText_)]]">
-            <iron-icon id="error-icon" icon="cr:error"></iron-icon>
-            <div id="general-error-message">[[generalErrorText_]]</div>
-          </div>
+        <div id="general-error-container"
+            hidden="[[!showError_(generalErrorText_)]]">
+          <iron-icon id="error-icon" icon="cr:error"></iron-icon>
+          <div id="general-error-message">[[generalErrorText_]]</div>
         </div>
+
         <div id="credentials">
           <cr-input id="username" label="$i18n{kerberosUsername}"
               value="{{username_}}" invalid="[[showError_(usernameErrorText_)]]"
@@ -143,12 +144,10 @@
               spellcheck="false" disabled="[[isManaged_]]">
           </settings-textarea>
 
-          <div id="config-error-container">
-            <div class="inner-error-container"
-                hidden="[[!showError_(configErrorText_)]]">
-              <iron-icon id="error-icon" icon="cr:error"></iron-icon>
-              <div id="config-error-message">[[configErrorText_]]</div>
-            </div>
+          <div id="config-error-container"
+              hidden="[[!showError_(configErrorText_)]]">
+            <iron-icon id="error-icon" icon="cr:error"></iron-icon>
+            <div id="config-error-message">[[configErrorText_]]</div>
           </div>
         </div>
 

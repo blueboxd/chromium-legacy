@@ -54,7 +54,8 @@ class MockSyncService : public SyncService {
   MOCK_METHOD1(TriggerRefresh, void(const ModelTypeSet& types));
   MOCK_METHOD1(DataTypePreconditionChanged, void(syncer::ModelType type));
   MOCK_METHOD1(SetInvalidationsForSessionsEnabled, void(bool enabled));
-  MOCK_METHOD1(GetUserDemographics, UserDemographicsResult(base::Time now));
+  MOCK_METHOD1(GetUserNoisedBirthYearAndGender,
+               UserDemographicsResult(base::Time now));
 
   MOCK_METHOD1(AddObserver, void(SyncServiceObserver* observer));
   MOCK_METHOD1(RemoveObserver, void(SyncServiceObserver* observer));

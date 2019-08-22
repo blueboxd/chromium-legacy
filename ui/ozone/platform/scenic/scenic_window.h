@@ -9,6 +9,7 @@
 #include <fuchsia/ui/input/cpp/fidl.h>
 #include <lib/ui/scenic/cpp/resources.h>
 #include <lib/ui/scenic/cpp/session.h>
+#include <lib/ui/scenic/cpp/view_ref_pair.h>
 #include <string>
 #include <vector>
 
@@ -33,9 +34,12 @@ class COMPONENT_EXPORT(OZONE) ScenicWindow
  public:
   // Both |window_manager| and |delegate| must outlive the ScenicWindow.
   // |view_token| is passed to Scenic to attach the view to the view tree.
+  // |view_ref_pair| will be associated with this window's View, and used to
+  // identify it when calling out to other services (e.g. the SemanticsManager).
   ScenicWindow(ScenicWindowManager* window_manager,
                PlatformWindowDelegate* delegate,
-               fuchsia::ui::views::ViewToken view_token);
+               fuchsia::ui::views::ViewToken view_token,
+               scenic::ViewRefPair view_ref_pair);
   ~ScenicWindow() override;
 
   scenic::Session* scenic_session() { return &scenic_session_; }

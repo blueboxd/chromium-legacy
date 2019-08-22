@@ -580,4 +580,64 @@ void ExponentialWeightsEnsemble::FromProto(
   }
 }
 
+FrequencyPredictor::FrequencyPredictor(const std::string& model_identifier)
+    : RecurrencePredictor(model_identifier) {}
+
+FrequencyPredictor::FrequencyPredictor(const FrequencyPredictorConfig& config,
+                                       const std::string& model_identifier)
+    : RecurrencePredictor(model_identifier) {}
+
+FrequencyPredictor::~FrequencyPredictor() = default;
+
+const char FrequencyPredictor::kPredictorName[] = "FrequencyPredictor";
+const char* FrequencyPredictor::GetPredictorName() const {
+  return kPredictorName;
+}
+
+void FrequencyPredictor::Train(unsigned int target, unsigned int condition) {
+  counts_[target] += 1.0f;
+}
+
+std::map<unsigned int, float> FrequencyPredictor::Rank(unsigned int condition) {
+  float total = 0.0f;
+  for (const auto& pair : counts_)
+    total += pair.second;
+
+  std::map<unsigned int, float> result;
+  for (const auto& pair : counts_)
+    result[pair.first] = pair.second / total;
+  return result;
+}
+
+void FrequencyPredictor::Cleanup(
+    const std::vector<unsigned int>& valid_targets) {
+  std::map<unsigned int, int> new_counts;
+
+  for (unsigned int id : valid_targets) {
+    const auto& it = counts_.find(id);
+    if (it != counts_.end())
+      new_counts[id] = it->second;
+  }
+
+  counts_.swap(new_counts);
+}
+
+void FrequencyPredictor::ToProto(RecurrencePredictorProto* proto) const {
+  auto* counts = proto->mutable_frequency_predictor()->mutable_counts();
+  for (auto& pair : counts_)
+    (*counts)[pair.first] = pair.second;
+}
+
+void FrequencyPredictor::FromProto(const RecurrencePredictorProto& proto) {
+  if (!proto.has_frequency_predictor()) {
+    LogSerializationStatus(
+        model_identifier_,
+        SerializationStatus::kFrequencyPredictorLoadingError);
+    return;
+  }
+
+  for (const auto& pair : proto.frequency_predictor().counts())
+    counts_[pair.first] = pair.second;
+}
+
 }  // namespace app_list

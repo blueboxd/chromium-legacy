@@ -20,7 +20,7 @@ PASS After -> Active
 PASS Calculating the interval start and end time with negative start delay.
 FAIL Calculating the interval start and end time with negative end delay. assert_true: Timed out waiting for transitioncancel, transitionrun, transitionstart expected true got false
 PASS Call Animation.cancel after canceling transition.
-FAIL Restart transition after canceling transition immediately assert_true: Timed out waiting for transitioncancel, transitionrun expected true got false
+PASS Restart transition after canceling transition immediately
 PASS Call Animation.cancel after restarting transition immediately
 FAIL Set timeline and play transition after clear the timeline promise_test: Unhandled rejection with value: object "TypeError: Cannot assign to read only property 'timeline' of object '#<CSSTransition>'"
 PASS Set null target effect after canceling the transition

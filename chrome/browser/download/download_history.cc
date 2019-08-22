@@ -39,6 +39,7 @@
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_crx_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/download/public/common/download_features.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_utils.h"
@@ -361,11 +362,15 @@ void DownloadHistory::MaybeAddToHistory(download::DownloadItem* item) {
   bool removing = removing_ids_.find(download_id) != removing_ids_.end();
 
   // TODO(benjhayden): Remove IsTemporary().
-  if (download_crx_util::IsExtensionDownload(*item) ||
+  if ((notifier_.GetManager() &&
+       download_crx_util::IsTrustedExtensionDownload(
+           Profile::FromBrowserContext(
+               notifier_.GetManager()->GetBrowserContext()),
+           *item)) ||
       item->IsTemporary() ||
-      (data->state() != DownloadHistoryData::NOT_PERSISTED) ||
-      removing)
+      (data->state() != DownloadHistoryData::NOT_PERSISTED) || removing) {
     return;
+  }
 
   data->SetState(DownloadHistoryData::PERSISTING);
   // Keep the info for in-progress download, so we can check whether history DB

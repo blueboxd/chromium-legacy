@@ -17,22 +17,23 @@
   OP(GetError)                                   /* 258 */ \
   OP(GenQueriesEXTImmediate)                     /* 259 */ \
   OP(DeleteQueriesEXTImmediate)                  /* 260 */ \
-  OP(BeginQueryEXT)                              /* 261 */ \
-  OP(EndQueryEXT)                                /* 262 */ \
-  OP(LoseContextCHROMIUM)                        /* 263 */ \
-  OP(BeginRasterCHROMIUMImmediate)               /* 264 */ \
-  OP(RasterCHROMIUM)                             /* 265 */ \
-  OP(EndRasterCHROMIUM)                          /* 266 */ \
-  OP(CreateTransferCacheEntryINTERNAL)           /* 267 */ \
-  OP(DeleteTransferCacheEntryINTERNAL)           /* 268 */ \
-  OP(UnlockTransferCacheEntryINTERNAL)           /* 269 */ \
-  OP(DeletePaintCacheTextBlobsINTERNALImmediate) /* 270 */ \
-  OP(DeletePaintCachePathsINTERNALImmediate)     /* 271 */ \
-  OP(ClearPaintCacheINTERNAL)                    /* 272 */ \
-  OP(CopySubTextureINTERNALImmediate)            /* 273 */ \
-  OP(TraceBeginCHROMIUM)                         /* 274 */ \
-  OP(TraceEndCHROMIUM)                           /* 275 */ \
-  OP(SetActiveURLCHROMIUM)                       /* 276 */
+  OP(QueryCounterEXT)                            /* 261 */ \
+  OP(BeginQueryEXT)                              /* 262 */ \
+  OP(EndQueryEXT)                                /* 263 */ \
+  OP(LoseContextCHROMIUM)                        /* 264 */ \
+  OP(BeginRasterCHROMIUMImmediate)               /* 265 */ \
+  OP(RasterCHROMIUM)                             /* 266 */ \
+  OP(EndRasterCHROMIUM)                          /* 267 */ \
+  OP(CreateTransferCacheEntryINTERNAL)           /* 268 */ \
+  OP(DeleteTransferCacheEntryINTERNAL)           /* 269 */ \
+  OP(UnlockTransferCacheEntryINTERNAL)           /* 270 */ \
+  OP(DeletePaintCacheTextBlobsINTERNALImmediate) /* 271 */ \
+  OP(DeletePaintCachePathsINTERNALImmediate)     /* 272 */ \
+  OP(ClearPaintCacheINTERNAL)                    /* 273 */ \
+  OP(CopySubTextureINTERNALImmediate)            /* 274 */ \
+  OP(TraceBeginCHROMIUM)                         /* 275 */ \
+  OP(TraceEndCHROMIUM)                           /* 276 */ \
+  OP(SetActiveURLCHROMIUM)                       /* 277 */
 
 enum CommandId {
   kOneBeforeStartPoint =

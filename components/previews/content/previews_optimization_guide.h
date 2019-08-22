@@ -28,6 +28,9 @@ class PrefService;
 namespace base {
 class FilePath;
 }  // namespace base
+namespace content {
+class NavigationHandle;
+}  // namespace content
 namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
@@ -65,19 +68,21 @@ class PreviewsOptimizationGuide
 
   ~PreviewsOptimizationGuide() override;
 
-  // Returns whether |type| is whitelisted for |url|. If so |out_ect_threshold|
-  // provides the maximum effective connection type to trigger the preview for.
-  // |previews_data| can be modified (for further details provided by hints).
-  // Virtual so it can be mocked in tests.
+  // Returns whether |type| is whitelisted for the URL associated with
+  // |navigation_handle|. If so |out_ect_threshold| provides the maximum
+  // effective connection type to trigger the preview for. |previews_data| can
+  // be modified (for further details provided by hints). Virtual so it can be
+  // mocked in tests.
   virtual bool IsWhitelisted(
       PreviewsUserData* previews_data,
-      const GURL& url,
+      content::NavigationHandle* navigation_handle,
       PreviewsType type,
       net::EffectiveConnectionType* out_ect_threshold) const;
 
-  // Returns whether |type| is blacklisted for |url|.
-  // Virtual so it can be mocked in tests.
-  virtual bool IsBlacklisted(const GURL& url, PreviewsType type) const;
+  // Returns whether |type| is blacklisted for the URL associated with
+  // |navigation_handle|. Virtual so it can be mocked in tests.
+  virtual bool IsBlacklisted(content::NavigationHandle* navigation_handle,
+                             PreviewsType type) const;
 
   // Returns whether |request| may have associated optimization hints
   // (specifically, PageHints). If so, but the hints are not available

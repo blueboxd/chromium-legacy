@@ -260,7 +260,7 @@ class MTPDeviceDelegateImplWin : public MTPDeviceAsyncDelegate {
   bool task_in_progress_;
 
   // For callbacks that may run after destruction.
-  base::WeakPtrFactory<MTPDeviceDelegateImplWin> weak_ptr_factory_;
+  base::WeakPtrFactory<MTPDeviceDelegateImplWin> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MTPDeviceDelegateImplWin);
 };

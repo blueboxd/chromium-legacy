@@ -713,6 +713,7 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
 
     std::unique_ptr<gl::GLFence> commands_completed_fence;
     base::TimeDelta commands_issued_time;
+    base::TimeTicks commands_issued_timestamp;
 
     std::vector<base::OnceClosure> callbacks;
     std::unique_ptr<gl::GLFence> buffer_shadow_update_fence = nullptr;

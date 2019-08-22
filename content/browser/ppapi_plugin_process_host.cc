@@ -144,6 +144,10 @@ class PpapiPluginSandboxedProcessLauncherDelegate
     return service_manager::SANDBOX_TYPE_PPAPI;
   }
 
+#if defined(OS_MACOSX)
+  bool DisclaimResponsibility() override { return true; }
+#endif
+
  private:
 #if BUILDFLAG(USE_ZYGOTE_HANDLE) || defined(OS_WIN)
   const bool is_broker_;

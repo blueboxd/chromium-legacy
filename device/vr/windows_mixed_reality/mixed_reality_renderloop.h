@@ -123,7 +123,7 @@ class MixedRealityRenderLoop : public XRCompositorCommon {
   bool bounds_updated_ = false;
 
   // This must be the last member
-  base::WeakPtrFactory<MixedRealityRenderLoop> weak_ptr_factory_;
+  base::WeakPtrFactory<MixedRealityRenderLoop> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MixedRealityRenderLoop);
 };

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/websockets/websocket_handle_impl.h"
 
 #include "base/single_thread_task_runner.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/modules/websockets/websocket_channel_impl.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
@@ -40,12 +41,13 @@ WebSocketHandleImpl::~WebSocketHandleImpl() {
     websocket_->StartClosingHandshake(kAbnormalShutdownOpCode, g_empty_string);
 }
 
-void WebSocketHandleImpl::Connect(mojom::blink::WebSocketConnectorPtr connector,
-                                  const KURL& url,
-                                  const Vector<String>& protocols,
-                                  const KURL& site_for_cookies,
-                                  const String& user_agent_override,
-                                  WebSocketChannelImpl* channel) {
+void WebSocketHandleImpl::Connect(
+    mojo::Remote<mojom::blink::WebSocketConnector> connector,
+    const KURL& url,
+    const Vector<String>& protocols,
+    const KURL& site_for_cookies,
+    const String& user_agent_override,
+    WebSocketChannelImpl* channel) {
   NETWORK_DVLOG(1) << this << " connect(" << url.GetString() << ")";
 
   DCHECK(!channel_);

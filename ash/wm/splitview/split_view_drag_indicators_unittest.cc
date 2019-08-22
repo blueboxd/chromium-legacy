@@ -236,7 +236,7 @@ TEST_F(SplitViewDragIndicatorsTest, PreviewAreaVisibility) {
   // Drag horizontally to avoid activating drag to close.
   const float y = start_location.y();
   overview_session_->InitiateDrag(item, start_location,
-                                  /*allow_drag_to_close=*/false);
+                                  /*is_touch_dragging=*/false);
   EXPECT_FALSE(IsPreviewAreaShowing());
   overview_session_->Drag(item, gfx::PointF(edge_inset + 1, y));
   EXPECT_FALSE(IsPreviewAreaShowing());
@@ -267,7 +267,7 @@ TEST_F(SplitViewDragIndicatorsTest, PreviewAreaVisibilityUnsnappableWindow) {
   OverviewItem* item = GetOverviewItemForWindow(window.get());
   const gfx::PointF start_location(item->target_bounds().CenterPoint());
   overview_session_->InitiateDrag(item, start_location,
-                                  /*allow_drag_to_close=*/false);
+                                  /*is_touch_dragging=*/false);
   EXPECT_FALSE(IsPreviewAreaShowing());
   overview_session_->Drag(item, gfx::PointF(0.f, 1.f));
   EXPECT_FALSE(IsPreviewAreaShowing());
@@ -290,10 +290,10 @@ TEST_F(SplitViewDragIndicatorsTest, SplitViewDragIndicatorsState) {
   // Verify that when are no snapped windows, the indicator is visible once
   // there is a long press or after the drag has started.
   OverviewItem* item =
-      GetOverviewItemForWindow(window1.get(), /*allow_drag_to_close=*/false);
+      GetOverviewItemForWindow(window1.get(), /*is_touch_dragging=*/false);
   gfx::PointF start_location(item->target_bounds().CenterPoint());
   overview_session_->InitiateDrag(item, start_location,
-                                  /*allow_drag_to_close=*/false);
+                                  /*is_touch_dragging=*/false);
   EXPECT_EQ(IndicatorState::kNone, indicator_state());
   overview_session_->StartNormalDragMode(start_location);
   EXPECT_EQ(IndicatorState::kDragArea, indicator_state());
@@ -306,7 +306,7 @@ TEST_F(SplitViewDragIndicatorsTest, SplitViewDragIndicatorsState) {
   // avoid activating drag to close.
   const float y_position = start_location.y();
   overview_session_->InitiateDrag(item, start_location,
-                                  /*allow_drag_to_close=*/false);
+                                  /*is_touch_dragging=*/false);
   EXPECT_EQ(IndicatorState::kNone, indicator_state());
   overview_session_->Drag(item, gfx::PointF(edge_inset + 1, y_position));
   EXPECT_EQ(IndicatorState::kDragArea, indicator_state());
@@ -323,7 +323,7 @@ TEST_F(SplitViewDragIndicatorsTest, SplitViewDragIndicatorsState) {
   item = GetOverviewItemForWindow(window2.get());
   start_location = item->target_bounds().CenterPoint();
   overview_session_->InitiateDrag(item, start_location,
-                                  /*allow_drag_to_close=*/false);
+                                  /*is_touch_dragging=*/false);
   EXPECT_EQ(IndicatorState::kNone, indicator_state());
   overview_session_->Drag(item, gfx::PointF(screen_width - 1, y_position));
   EXPECT_EQ(IndicatorState::kPreviewAreaRight, indicator_state());
@@ -340,7 +340,7 @@ TEST_F(SplitViewDragIndicatorsTest,
   OverviewItem* item = GetOverviewItemForWindow(unsnappable_window.get());
   gfx::PointF start_location(item->target_bounds().CenterPoint());
   overview_session_->InitiateDrag(item, start_location,
-                                  /*allow_drag_to_close=*/false);
+                                  /*is_touch_dragging=*/false);
   overview_session_->StartNormalDragMode(start_location);
   EXPECT_EQ(IndicatorState::kCannotSnap, indicator_state());
   const gfx::PointF end_location1(0.f, 0.f);
@@ -419,7 +419,7 @@ TEST_F(SplitViewDragIndicatorsTest, SplitViewDragIndicatorsWidgetReparenting) {
   OverviewItem* item = GetOverviewItemForWindow(primary_screen_window.get());
   gfx::PointF start_location(item->target_bounds().CenterPoint());
   overview_session_->InitiateDrag(item, start_location,
-                                  /*allow_drag_to_close=*/false);
+                                  /*is_touch_dragging=*/false);
   overview_session_->Drag(item, gfx::PointF(100.f, start_location.y()));
   EXPECT_EQ(IndicatorState::kDragArea, indicator_state());
   EXPECT_EQ(root_windows[0], overview_session_->split_view_drag_indicators()
@@ -439,7 +439,7 @@ TEST_F(SplitViewDragIndicatorsTest, SplitViewDragIndicatorsWidgetReparenting) {
   item = GetOverviewItemForWindow(secondary_screen_window.get(), 1);
   start_location = item->target_bounds().CenterPoint();
   overview_session_->InitiateDrag(item, start_location,
-                                  /*allow_drag_to_close=*/false);
+                                  /*is_touch_dragging=*/false);
   overview_session_->Drag(item, gfx::PointF(800.f, start_location.y()));
   EXPECT_EQ(IndicatorState::kDragArea, indicator_state());
   EXPECT_EQ(root_windows[1], overview_session_->split_view_drag_indicators()

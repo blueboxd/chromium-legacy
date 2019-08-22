@@ -1,6 +1,7 @@
 include_rules = [
   "-chrome/android/features/keyboard_accessory/internal",
 
+  "+chrome/browser/android/thin_webview/java",
   "+chrome/browser/ui/android/widget",
   "+chrome/lib/lifecycle/public",
   "+chrome/lib/image_fetcher/public",

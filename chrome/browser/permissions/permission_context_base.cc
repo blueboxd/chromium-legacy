@@ -208,22 +208,9 @@ PermissionResult PermissionContextBase::GetPermissionStatus(
                             PermissionStatusSource::KILL_SWITCH);
   }
 
-  if (IsRestrictedToSecureOrigins()) {
-    if (!content::IsOriginSecure(requesting_origin)) {
-      return PermissionResult(CONTENT_SETTING_BLOCK,
-                              PermissionStatusSource::INSECURE_ORIGIN);
-    }
-
-    // TODO(raymes): We should check the entire chain of embedders here whenever
-    // possible as this corresponds to the requirements of the secure contexts
-    // spec and matches what is implemented in blink. Right now we just check
-    // the top level and requesting origins. Note: chrome-extension:// origins
-    // are currently exempt from checking the embedder chain. crbug.com/530507.
-    if (!requesting_origin.SchemeIs(extensions::kExtensionScheme) &&
-        !content::IsOriginSecure(embedding_origin)) {
-      return PermissionResult(CONTENT_SETTING_BLOCK,
-                              PermissionStatusSource::INSECURE_ORIGIN);
-    }
+  if (!IsPermissionAvailableToOrigins(requesting_origin, embedding_origin)) {
+    return PermissionResult(CONTENT_SETTING_BLOCK,
+                            PermissionStatusSource::INSECURE_ORIGIN);
   }
 
   // Check whether the feature is enabled for the frame by feature policy. We
@@ -271,6 +258,25 @@ PermissionResult PermissionContextBase::GetPermissionStatus(
   }
 
   return PermissionResult(content_setting, PermissionStatusSource::UNSPECIFIED);
+}
+
+bool PermissionContextBase::IsPermissionAvailableToOrigins(
+    const GURL& requesting_origin,
+    const GURL& embedding_origin) const {
+  if (IsRestrictedToSecureOrigins()) {
+    if (!content::IsOriginSecure(requesting_origin))
+      return false;
+
+    // TODO(raymes): We should check the entire chain of embedders here whenever
+    // possible as this corresponds to the requirements of the secure contexts
+    // spec and matches what is implemented in blink. Right now we just check
+    // the top level and requesting origins. Note: chrome-extension:// origins
+    // are currently exempt from checking the embedder chain. crbug.com/530507.
+    if (!requesting_origin.SchemeIs(extensions::kExtensionScheme) &&
+        !content::IsOriginSecure(embedding_origin))
+      return false;
+  }
+  return true;
 }
 
 PermissionResult PermissionContextBase::UpdatePermissionStatusWithDeviceStatus(

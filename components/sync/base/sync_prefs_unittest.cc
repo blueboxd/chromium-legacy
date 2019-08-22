@@ -165,7 +165,7 @@ TEST_F(SyncPrefsTest, ReadDemographicsWithRandomOffset) {
   int provided_birth_year;
   {
     UserDemographicsResult demographics_result =
-        sync_prefs_->GetUserDemographics(GetNowTime());
+        sync_prefs_->GetUserNoisedBirthYearAndGender(GetNowTime());
     ASSERT_TRUE(demographics_result.IsSuccess());
     EXPECT_EQ(user_demographics_gender, demographics_result.value().gender);
     // Verify that the provided birth year is within the range.
@@ -181,7 +181,7 @@ TEST_F(SyncPrefsTest, ReadDemographicsWithRandomOffset) {
     ASSERT_TRUE(
         pref_service_.HasPrefPath(prefs::kSyncDemographicsBirthYearOffset));
     UserDemographicsResult demographics_result =
-        sync_prefs_->GetUserDemographics(GetNowTime());
+        sync_prefs_->GetUserNoisedBirthYearAndGender(GetNowTime());
     ASSERT_TRUE(demographics_result.IsSuccess());
     EXPECT_EQ(provided_birth_year, demographics_result.value().birth_year);
   }
@@ -189,7 +189,8 @@ TEST_F(SyncPrefsTest, ReadDemographicsWithRandomOffset) {
 
 TEST_F(SyncPrefsTest, ReadAndClearUserDemographicPreferences) {
   // Verify demographic prefs are not available when there is nothing set.
-  ASSERT_FALSE(sync_prefs_->GetUserDemographics(GetNowTime()).IsSuccess());
+  ASSERT_FALSE(
+      sync_prefs_->GetUserNoisedBirthYearAndGender(GetNowTime()).IsSuccess());
 
   // Set demographic prefs directly from the pref service interface because
   // demographic prefs will only be set on the server-side. The SyncPrefs
@@ -202,7 +203,7 @@ TEST_F(SyncPrefsTest, ReadAndClearUserDemographicPreferences) {
   // Verify that demographics are provided.
   {
     UserDemographicsResult demographics_result =
-        sync_prefs_->GetUserDemographics(GetNowTime());
+        sync_prefs_->GetUserNoisedBirthYearAndGender(GetNowTime());
     ASSERT_TRUE(demographics_result.IsSuccess());
   }
 
@@ -213,7 +214,8 @@ TEST_F(SyncPrefsTest, ReadAndClearUserDemographicPreferences) {
   // syncing, causing these prefs to be recreated, we don't want them to start
   // reporting a different randomized birth year as this could narrow down or
   // even reveal their true birth year.
-  EXPECT_FALSE(sync_prefs_->GetUserDemographics(GetNowTime()).IsSuccess());
+  EXPECT_FALSE(
+      sync_prefs_->GetUserNoisedBirthYearAndGender(GetNowTime()).IsSuccess());
   EXPECT_FALSE(pref_service_.HasPrefPath(prefs::kSyncDemographics));
   EXPECT_TRUE(
       pref_service_.HasPrefPath(prefs::kSyncDemographicsBirthYearOffset));
@@ -508,7 +510,7 @@ TEST_P(SyncPrefsDemographicsTest, ReadDemographics_OffsetIsNotRandom) {
 
   // Verify provided demographics for the different parameterized test cases.
   UserDemographicsResult demographics_result =
-      sync_prefs_->GetUserDemographics(GetNowTime());
+      sync_prefs_->GetUserNoisedBirthYearAndGender(GetNowTime());
   if (param.status == UserDemographicsStatus::kSuccess) {
     ASSERT_TRUE(demographics_result.IsSuccess());
     EXPECT_EQ(param.birth_year + param.birth_year_offset,
@@ -555,7 +557,7 @@ INSTANTIATE_TEST_SUITE_P(
         DemographicsTestParam{
             /*birth_year=*/1986,
             /*birth_year_offset=*/0,
-            /*gender=*/metrics::UserDemographicsProto::GENDER_UNKNOWN_OR_OTHER,
+            /*gender=*/metrics::UserDemographicsProto::GENDER_CUSTOM_OR_OTHER,
             /*status=*/UserDemographicsStatus::kIneligibleDemographicsData},
         // Test where birth year can be provided because |birth_year| + 2 ==
         // 1998.

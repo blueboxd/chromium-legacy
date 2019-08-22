@@ -69,6 +69,12 @@ TimeView::~TimeView() {
 }
 
 void TimeView::UpdateClockLayout(ClockLayout clock_layout) {
+  // Do nothing if the layout hasn't changed.
+  if (((clock_layout == ClockLayout::HORIZONTAL_CLOCK) ? horizontal_label_
+                                                       : vertical_label_hours_)
+          ->parent() == this)
+    return;
+
   SetBorder(views::NullBorder());
   if (clock_layout == ClockLayout::HORIZONTAL_CLOCK) {
     RemoveChildView(vertical_label_hours_.get());

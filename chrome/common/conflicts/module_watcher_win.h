@@ -141,7 +141,7 @@ class ModuleWatcher {
   // Used by the DllNotification mechanism.
   void* dll_notification_cookie_ = nullptr;
 
-  base::WeakPtrFactory<ModuleWatcher> weak_ptr_factory_;
+  base::WeakPtrFactory<ModuleWatcher> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ModuleWatcher);
 };

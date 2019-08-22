@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEBSOCKET_HANDLE_H_
 
 #include <stdint.h>
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/websocket.mojom-blink.h"
 #include "third_party/blink/public/mojom/websockets/websocket_connector.mojom-blink.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -60,7 +61,7 @@ class WebSocketHandle {
 
   virtual ~WebSocketHandle() = default;
 
-  virtual void Connect(mojom::blink::WebSocketConnectorPtr,
+  virtual void Connect(mojo::Remote<mojom::blink::WebSocketConnector>,
                        const KURL&,
                        const Vector<String>& protocols,
                        const KURL& site_for_cookies,

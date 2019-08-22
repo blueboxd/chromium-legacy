@@ -113,7 +113,8 @@ class BoxPainterBase {
                   const FillLayer&,
                   BackgroundBleedAvoidance,
                   bool include_left_edge,
-                  bool include_right_edge);
+                  bool include_right_edge,
+                  bool is_inline);
 
     // FillLayerInfo is a temporary, stack-allocated container which cannot
     // outlive the StyleImage.  This would normally be a raw pointer, if not for

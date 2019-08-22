@@ -11,9 +11,9 @@
 \bhuyen\b	h.
 \bhcmc\b	hcm
 \bquan\b	q.
-\bph\\.\b	p
-\btp\\.\b	tp
-\btt\\.\b	tt
-\btx\\.\b	tx
-\bp\\.\b	p
+\bph\.\b	p
+\btp\.\b	tp
+\btt\.\b	tt
+\btx\.\b	tx
+\bp\.\b	p
 \bxa\b	x.

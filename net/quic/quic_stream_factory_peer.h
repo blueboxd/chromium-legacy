@@ -12,6 +12,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/time/tick_clock.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/privacy_mode.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quic/core/quic_server_id.h"
@@ -39,8 +40,10 @@ class QuicStreamFactoryPeer {
   static quic::QuicCryptoClientConfig* GetCryptoConfig(
       QuicStreamFactory* factory);
 
-  static bool HasActiveSession(QuicStreamFactory* factory,
-                               const quic::QuicServerId& server_id);
+  static bool HasActiveSession(
+      QuicStreamFactory* factory,
+      const quic::QuicServerId& server_id,
+      const NetworkIsolationKey& network_isolation_key = NetworkIsolationKey());
 
   static bool HasActiveJob(QuicStreamFactory* factory,
                            const quic::QuicServerId& server_id);
@@ -55,7 +58,8 @@ class QuicStreamFactoryPeer {
 
   static QuicChromiumClientSession* GetActiveSession(
       QuicStreamFactory* factory,
-      const quic::QuicServerId& server_id);
+      const quic::QuicServerId& server_id,
+      const NetworkIsolationKey& network_isolation_key = NetworkIsolationKey());
 
   static bool HasLiveSession(QuicStreamFactory* factory,
                              const HostPortPair& destination,

@@ -129,7 +129,7 @@ class DisconnectWindowWin : public HostWindow {
 
   webrtc::DesktopVector mouse_position_;
 
-  base::WeakPtrFactory<DisconnectWindowWin> weak_factory_;
+  base::WeakPtrFactory<DisconnectWindowWin> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DisconnectWindowWin);
 };
@@ -164,8 +164,7 @@ bool GetControlTextWidth(HWND control,
 
 DisconnectWindowWin::DisconnectWindowWin()
     : border_pen_(
-          CreatePen(PS_SOLID, 5, RGB(0.13 * 255, 0.69 * 255, 0.11 * 255))),
-      weak_factory_(this) {}
+          CreatePen(PS_SOLID, 5, RGB(0.13 * 255, 0.69 * 255, 0.11 * 255))) {}
 
 DisconnectWindowWin::~DisconnectWindowWin() {
   EndDialog();

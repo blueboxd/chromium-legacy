@@ -26,7 +26,7 @@ namespace {
 // callback.
 void CookieListCallbackWithMetricsLogging(
     CookieMonster::GetCookieListCallback callback,
-    const CookieList& cookies,
+    const CookieStatusList& cookies,
     const CookieStatusList& excluded_cookies) {
   net::ReportGetCookiesForURLResult(SystemCookieStoreType::kCookieMonster,
                                     !cookies.empty());
@@ -82,7 +82,7 @@ void CookieStoreIOSPersistent::GetCookieListWithOptionsAsync(
 }
 
 void CookieStoreIOSPersistent::GetAllCookiesAsync(
-    GetCookieListCallback callback) {
+    GetAllCookiesCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   cookie_monster()->GetAllCookiesAsync(std::move(callback));
 }

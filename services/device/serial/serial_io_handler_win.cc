@@ -360,8 +360,7 @@ SerialIoHandlerWin::SerialIoHandlerWin(
     : SerialIoHandler(port, std::move(ui_thread_task_runner)),
       event_mask_(0),
       is_comm_pending_(false),
-      helper_(nullptr),
-      weak_factory_(this) {}
+      helper_(nullptr) {}
 
 SerialIoHandlerWin::~SerialIoHandlerWin() {
   ui_thread_task_runner()->DeleteSoon(FROM_HERE, helper_);

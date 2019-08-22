@@ -291,8 +291,16 @@ bool SharedContextState::IsCurrent(gl::GLSurface* surface) {
 bool SharedContextState::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
-  if (gr_context_)
+  if (!gr_context_)
+    return true;
+
+  if (args.level_of_detail ==
+      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND) {
+    raster::DumpBackgroundGrMemoryStatistics(gr_context_, pmd);
+  } else {
     raster::DumpGrMemoryStatistics(gr_context_, pmd, base::nullopt);
+  }
+
   return true;
 }
 

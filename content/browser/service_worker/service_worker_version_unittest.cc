@@ -1491,5 +1491,62 @@ TEST_F(ServiceWorkerVersionNoFetchHandlerTest,
             service_worker->fetch_handler_existence());
 }
 
+class StoreMessageServiceWorker : public FakeServiceWorker {
+ public:
+  explicit StoreMessageServiceWorker(EmbeddedWorkerTestHelper* helper)
+      : FakeServiceWorker(helper) {}
+  ~StoreMessageServiceWorker() override = default;
+
+  // Returns messages from AddMessageToConsole.
+  const std::vector<std::pair<blink::mojom::ConsoleMessageLevel, std::string>>&
+  console_messages() {
+    return console_messages_;
+  }
+
+  void SetAddMessageToConsoleReceivedCallback(
+      const base::RepeatingClosure& closure) {
+    add_message_to_console_callback_ = closure;
+  }
+
+ private:
+  void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
+                           const std::string& message) override {
+    console_messages_.emplace_back(level, message);
+    if (add_message_to_console_callback_)
+      add_message_to_console_callback_.Run();
+  }
+
+  std::vector<std::pair<blink::mojom::ConsoleMessageLevel, std::string>>
+      console_messages_;
+  base::RepeatingClosure add_message_to_console_callback_;
+};
+
+TEST_F(ServiceWorkerVersionTest, AddMessageToConsole) {
+  auto* service_worker =
+      helper_->AddNewPendingServiceWorker<StoreMessageServiceWorker>(
+          helper_.get());
+
+  // Attempt to start the worker and immediate AddMessageToConsole should not
+  // cause a crash.
+  std::pair<blink::mojom::ConsoleMessageLevel, std::string> test_message =
+      std::make_pair(blink::mojom::ConsoleMessageLevel::kVerbose, "");
+  StartWorker(version_.get(), ServiceWorkerMetrics::EventType::UNKNOWN);
+  version_->AddMessageToConsole(test_message.first, test_message.second);
+  service_worker->RunUntilInitializeGlobalScope();
+  EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
+
+  // Messages sent before sending StartWorker message won't be dispatched.
+  ASSERT_EQ(0UL, service_worker->console_messages().size());
+
+  // Messages sent after sending StartWorker message should be reached to
+  // the renderer.
+  base::RunLoop loop;
+  service_worker->SetAddMessageToConsoleReceivedCallback(loop.QuitClosure());
+  version_->AddMessageToConsole(test_message.first, test_message.second);
+  loop.Run();
+  ASSERT_EQ(1UL, service_worker->console_messages().size());
+  EXPECT_EQ(test_message, service_worker->console_messages()[0]);
+}
+
 }  // namespace service_worker_version_unittest
 }  // namespace content

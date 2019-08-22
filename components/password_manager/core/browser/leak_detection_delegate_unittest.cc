@@ -110,6 +110,16 @@ TEST_F(LeakDetectionDelegateTest, PrefIsFalse) {
   EXPECT_FALSE(delegate().leak_check());
 }
 
+TEST_F(LeakDetectionDelegateTest, UsernameIsEmpty) {
+  autofill::PasswordForm form = CreateTestForm();
+  form.username_value.clear();
+
+  EXPECT_CALL(factory(), TryCreateLeakCheck).Times(0);
+  delegate().StartLeakCheck(form);
+
+  EXPECT_FALSE(delegate().leak_check());
+}
+
 TEST_F(LeakDetectionDelegateTest, StartCheck) {
   const autofill::PasswordForm form = CreateTestForm();
   EXPECT_CALL(client(), IsIncognito).WillOnce(Return(false));

@@ -72,17 +72,15 @@ void ConstantSourceHandler::Process(uint32_t frames_to_process) {
 
   if (offset_->HasSampleAccurateValues()) {
     DCHECK_LE(frames_to_process, sample_accurate_values_.size());
-    if (frames_to_process <= sample_accurate_values_.size()) {
-      float* offsets = sample_accurate_values_.Data();
-      offset_->CalculateSampleAccurateValues(offsets, frames_to_process);
-      if (non_silent_frames_to_process > 0) {
-        memcpy(output_bus->Channel(0)->MutableData() + quantum_frame_offset,
-               offsets + quantum_frame_offset,
-               non_silent_frames_to_process * sizeof(*offsets));
-        output_bus->ClearSilentFlag();
-      } else {
-        output_bus->Zero();
-      }
+    float* offsets = sample_accurate_values_.Data();
+    offset_->CalculateSampleAccurateValues(offsets, frames_to_process);
+    if (non_silent_frames_to_process > 0) {
+      memcpy(output_bus->Channel(0)->MutableData() + quantum_frame_offset,
+             offsets + quantum_frame_offset,
+             non_silent_frames_to_process * sizeof(*offsets));
+      output_bus->ClearSilentFlag();
+    } else {
+      output_bus->Zero();
     }
   } else {
     float value = offset_->Value();

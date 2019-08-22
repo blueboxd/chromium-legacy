@@ -140,6 +140,7 @@
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
+#include "net/cookies/cookie_util.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -4863,9 +4864,9 @@ class ExtensionCookieCallback {
     result_ = (result == net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
   }
 
-  void GetAllCookiesCallback(const net::CookieList& list,
+  void GetAllCookiesCallback(const net::CookieStatusList& list,
                              const net::CookieStatusList& excluded_list) {
-    list_ = list;
+    list_ = net::cookie_util::StripStatuses(list);
   }
   net::CookieList list_;
   bool result_;
@@ -4999,9 +5000,9 @@ void SetCookieSaveData(bool* result_out,
 
 void GetCookiesSaveData(std::vector<net::CanonicalCookie>* result_out,
                         base::OnceClosure callback,
-                        const std::vector<net::CanonicalCookie>& result,
+                        const net::CookieStatusList& result,
                         const net::CookieStatusList& excluded_cookies) {
-  *result_out = result;
+  *result_out = net::cookie_util::StripStatuses(result);
   std::move(callback).Run();
 }
 

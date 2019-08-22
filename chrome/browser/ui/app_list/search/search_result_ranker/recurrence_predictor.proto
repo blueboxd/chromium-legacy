@@ -74,6 +74,11 @@ message ExponentialWeightsEnsembleProto {
   repeated float weights = 2;
 }
 
+message FrequencyPredictorProto {
+  // Maps target IDs to frequencies.
+  map<uint32, int32> counts = 1;
+}
+
 // Represents the serialisation of one particular predictor.
 message RecurrencePredictorProto {
   oneof predictor {
@@ -83,5 +88,6 @@ message RecurrencePredictorProto {
     ConditionalFrequencyPredictorProto conditional_frequency_predictor = 4;
     MarkovPredictorProto markov_predictor = 5;
     ExponentialWeightsEnsembleProto exponential_weights_ensemble = 6;
+    FrequencyPredictorProto frequency_predictor = 7;
   }
 }

@@ -262,7 +262,8 @@ bool ExtensionsToolbarContainer::ShownInsideMenu() const {
 
 void ExtensionsToolbarContainer::OnToolbarActionViewDragDone() {}
 
-views::LabelButton* ExtensionsToolbarContainer::GetOverflowReferenceView() {
+views::LabelButton* ExtensionsToolbarContainer::GetOverflowReferenceView()
+    const {
   return extensions_button_;
 }
 

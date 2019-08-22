@@ -195,11 +195,10 @@ void BiquadDSPKernel::GetFrequencyResponse(BiquadDSPKernel& kernel,
   // updating |kernel| while we're computing the response.
   DCHECK(IsMainThread());
 
-  bool is_good =
-      n_frequencies > 0 && frequency_hz && mag_response && phase_response;
-  DCHECK(is_good);
-  if (!is_good)
-    return;
+  DCHECK_GT(n_frequencies, 0);
+  DCHECK(frequency_hz);
+  DCHECK(mag_response);
+  DCHECK(phase_response);
 
   Vector<float> frequency(n_frequencies);
   double nyquist = kernel.Nyquist();

@@ -29,6 +29,7 @@
 #include "net/base/port_util.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/url_util.h"
+#include "net/cookies/cookie_util.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_query.h"
 #include "net/dns/dns_response.h"
@@ -1765,9 +1766,9 @@ class CookieCallback {
     loop_to_quit_->Quit();
   }
 
-  void GetAllCookiesCallback(const net::CookieList& list,
+  void GetCookieListCallback(const net::CookieStatusList& list,
                              const net::CookieStatusList& excluded_cookies) {
-    list_ = list;
+    list_ = cookie_util::StripStatuses(list);
     loop_to_quit_->Quit();
   }
 
@@ -1806,7 +1807,7 @@ TEST_F(DnsTransactionTest, HttpsPostTestNoCookies) {
       GURL(GetURLFromTemplateWithoutParameters(
           config_.dns_over_https_servers[0].server_template)),
       CookieOptions::MakeAllInclusive(),
-      base::Bind(&CookieCallback::GetAllCookiesCallback,
+      base::Bind(&CookieCallback::GetCookieListCallback,
                  base::Unretained(&callback)));
   callback.WaitUntilDone();
   EXPECT_EQ(0u, callback.cookie_list_size());

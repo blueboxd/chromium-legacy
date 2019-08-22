@@ -248,6 +248,8 @@ network::mojom::NetworkService* GetNetworkService() {
 
       base::FilePath ssl_key_log_path;
       if (command_line->HasSwitch(network::switches::kSSLKeyLogFile)) {
+        UMA_HISTOGRAM_ENUMERATION(kSSLKeyLogFileHistogram,
+                                  SSLKeyLogFileAction::kSwitchFound);
         ssl_key_log_path =
             command_line->GetSwitchValuePath(network::switches::kSSLKeyLogFile);
         LOG_IF(WARNING, ssl_key_log_path.empty())
@@ -256,6 +258,8 @@ network::mojom::NetworkService* GetNetworkService() {
         std::unique_ptr<base::Environment> env(base::Environment::Create());
         std::string env_str;
         if (env->GetVar("SSLKEYLOGFILE", &env_str)) {
+          UMA_HISTOGRAM_ENUMERATION(kSSLKeyLogFileHistogram,
+                                    SSLKeyLogFileAction::kEnvVarFound);
 #if defined(OS_WIN)
           // base::Environment returns environment variables in UTF-8 on
           // Windows.
@@ -273,6 +277,8 @@ network::mojom::NetworkService* GetNetworkService() {
           LOG(ERROR) << "Failed opening SSL key log file: "
                      << ssl_key_log_path.value();
         } else {
+          UMA_HISTOGRAM_ENUMERATION(kSSLKeyLogFileHistogram,
+                                    SSLKeyLogFileAction::kLogFileEnabled);
           (*g_network_service_ptr)->SetSSLKeyLogFile(std::move(file));
         }
       }

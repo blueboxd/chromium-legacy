@@ -207,7 +207,7 @@ TEST_F(NotificationSchedulerTest, Schedule) {
 
   auto param = std::unique_ptr<NotificationParams>();
   EXPECT_CALL(*notification_manager(), ScheduleNotification(_));
-  EXPECT_CALL(*task_coordinator(), ScheduleBackgroundTask(_, _, _));
+  EXPECT_CALL(*task_coordinator(), ScheduleBackgroundTask(_, _));
   scheduler()->Schedule(std::move(param));
 }
 
@@ -217,7 +217,7 @@ TEST_F(NotificationSchedulerTest, DeleteAllNotifications) {
 
   // Currently we don't reschedule background task even if all the notifications
   // are deleted.
-  EXPECT_CALL(*task_coordinator(), ScheduleBackgroundTask(_, _, _)).Times(0);
+  EXPECT_CALL(*task_coordinator(), ScheduleBackgroundTask(_, _)).Times(0);
   EXPECT_CALL(*notification_manager(),
               DeleteNotifications(SchedulerClientType::kTest1));
   scheduler()->DeleteAllNotifications(SchedulerClientType::kTest1);
@@ -260,7 +260,7 @@ TEST_F(NotificationSchedulerTest, BackgroundTaskStartShowNothing) {
 
   EXPECT_CALL(*display_agent(), ShowNotification(_, _)).Times(0);
   EXPECT_CALL(*notification_manager(), DisplayNotification(_)).Times(0);
-  EXPECT_CALL(*task_coordinator(), ScheduleBackgroundTask(_, _, _));
+  EXPECT_CALL(*task_coordinator(), ScheduleBackgroundTask(_, _));
 
   scheduler()->OnStartTask(SchedulerTaskTime::kMorning, base::DoNothing());
 }
@@ -308,7 +308,7 @@ TEST_F(NotificationSchedulerTest, BackgroundTaskStartShowNotification) {
         notification_manager_delegate()->DisplayNotification(std::move(entry));
       }));
 
-  EXPECT_CALL(*task_coordinator(), ScheduleBackgroundTask(_, _, _));
+  EXPECT_CALL(*task_coordinator(), ScheduleBackgroundTask(_, _));
   scheduler()->OnStartTask(SchedulerTaskTime::kMorning, base::DoNothing());
 
   loop.Run();
@@ -317,7 +317,7 @@ TEST_F(NotificationSchedulerTest, BackgroundTaskStartShowNotification) {
 // Test to simulate a background task stopped by the OS.
 TEST_F(NotificationSchedulerTest, BackgroundTaskStop) {
   Init();
-  EXPECT_CALL(*task_coordinator(), ScheduleBackgroundTask(_, _, _));
+  EXPECT_CALL(*task_coordinator(), ScheduleBackgroundTask(_, _));
   scheduler()->OnStopTask(SchedulerTaskTime::kMorning);
 }
 

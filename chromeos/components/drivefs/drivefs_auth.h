@@ -15,6 +15,7 @@
 #include "base/time/clock.h"
 #include "base/timer/timer.h"
 #include "chromeos/components/drivefs/mojom/drivefs.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/identity/public/mojom/identity_accessor.mojom.h"
 
 class AccountId;
@@ -22,10 +23,6 @@ class AccountId;
 namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
 
 namespace drivefs {
 
@@ -38,7 +35,8 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsAuth {
 
     virtual scoped_refptr<network::SharedURLLoaderFactory>
     GetURLLoaderFactory() = 0;
-    virtual service_manager::Connector* GetConnector() = 0;
+    virtual void BindIdentityAccessor(
+        mojo::PendingReceiver<identity::mojom::IdentityAccessor> receiver) = 0;
     virtual const AccountId& GetAccountId() = 0;
     virtual std::string GetObfuscatedAccountId() = 0;
     virtual bool IsMetricsCollectionEnabled() = 0;

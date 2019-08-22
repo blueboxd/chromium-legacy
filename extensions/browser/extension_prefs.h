@@ -398,6 +398,14 @@ class ExtensionPrefs : public KeyedService {
   void SetActivePermissions(const std::string& extension_id,
                             const PermissionSet& permissions);
 
+  // Sets/Gets the value indicating if an extension should be granted all the
+  // requested host permissions without requiring explicit runtime-granted
+  // permissions from the user.
+  void SetShouldWithholdPermissions(const ExtensionId& extension_id,
+                                    bool should_withhold);
+  base::Optional<bool> GetShouldWithholdPermissions(
+      const ExtensionId& extension_id) const;
+
   // Returns the set of runtime-granted permissions. These are permissions that
   // the user explicitly approved at runtime, rather than install time (such
   // as those granted through the permissions API or the runtime host

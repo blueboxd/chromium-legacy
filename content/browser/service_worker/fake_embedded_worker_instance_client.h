@@ -48,8 +48,6 @@ class FakeEmbeddedWorkerInstanceClient
   void StartWorker(blink::mojom::EmbeddedWorkerStartParamsPtr params) override;
   void StopWorker() override;
   void ResumeAfterDownload() override;
-  void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
-                           const std::string& message) override {}
 
   virtual void EvaluateScript();
 

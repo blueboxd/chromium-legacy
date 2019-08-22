@@ -158,7 +158,7 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
 
   void InitiateDrag(OverviewItem* item,
                     const gfx::PointF& location_in_screen,
-                    bool allow_drag_to_close);
+                    bool is_touch_dragging);
   void Drag(OverviewItem* item, const gfx::PointF& location_in_screen);
   void CompleteDrag(OverviewItem* item, const gfx::PointF& location_in_screen);
   void StartNormalDragMode(const gfx::PointF& location_in_screen);

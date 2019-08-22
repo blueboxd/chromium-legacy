@@ -33,6 +33,7 @@ const char* const kDumpProviderWhitelist[] = {
     "DownloadService",
     "gpu::BufferManager",
     "gpu::RenderbufferManager",
+    "gpu::SharedImageStub",
     "gpu::TextureManager",
     "GrShaderCache",
     "FontCaches",
@@ -51,6 +52,7 @@ const char* const kDumpProviderWhitelist[] = {
     "MojoMessages",
     "PartitionAlloc",
     "ProcessMemoryMetrics",
+    "SharedContextState",
     "SharedMemoryTracker",
     "Skia",
     "Sql",
@@ -58,6 +60,7 @@ const char* const kDumpProviderWhitelist[] = {
     "V8Isolate",
     "SyncDirectory",
     "TabRestoreServiceHelper",
+    "VizProcessContextProvider",
     nullptr  // End of list marker.
 };
 
@@ -100,6 +103,7 @@ const char* const kAllocatorDumpNameWhitelist[] = {
     "gpu/gl/renderbuffers/context_group_0x?",
     "gpu/gl/textures/context_group_0x?",
     "gpu/gr_shader_cache/cache_0x?",
+    "gpu/shared_images/client_0x?",
     "history/delta_file_service/leveldb_0x?",
     "history/usage_reports_buffer/leveldb_0x?",
     "java_heap",
@@ -260,6 +264,7 @@ const char* const kAllocatorDumpNameWhitelist[] = {
     "partition_alloc/partitions/buffer",
     "partition_alloc/partitions/fast_malloc",
     "partition_alloc/partitions/layout",
+    "skia/gpu_resources/context_0x?",
     "skia/sk_glyph_cache",
     "skia/sk_resource_cache",
     "sqlite",

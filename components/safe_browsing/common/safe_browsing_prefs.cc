@@ -110,6 +110,8 @@ const char kPasswordProtectedAllowed[] =
     "safebrowsing.password_protected_allowed";
 const char kSafeBrowsingRealTimeLookupEnabled[] =
     "safebrowsing.real_time_lookup_enabled";
+const char kSafeBrowsingSendFilesForMalwareCheck[] =
+    "safebrowsing.send_files_for_malware_check";
 }  // namespace prefs
 
 namespace safe_browsing {
@@ -174,6 +176,8 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kPasswordProtectedAllowed, true);
   registry->RegisterBooleanPref(prefs::kSafeBrowsingRealTimeLookupEnabled,
                                 false);
+  registry->RegisterIntegerPref(prefs::kSafeBrowsingSendFilesForMalwareCheck,
+                                0);
 }
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {

@@ -72,6 +72,7 @@
 #elif defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #include "net/cert/cert_verify_proc_mac.h"
+#include "net/cert/internal/trust_store_mac.h"
 #elif defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "net/cert/cert_verify_proc_win.h"
@@ -1977,6 +1978,17 @@ TEST_P(CertVerifyProcInternalTest, TestKnownRoot) {
                              << "that date, please disable and file a bug "
                              << "against rsleevi.";
   EXPECT_TRUE(verify_result.is_issued_by_known_root);
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  if (verify_proc_type() == CERT_VERIFY_PROC_BUILTIN) {
+    auto* mac_trust_debug_info =
+        net::TrustStoreMac::ResultDebugData::Get(&verify_result);
+    ASSERT_TRUE(mac_trust_debug_info);
+    // Since this test queries the real trust store, can't know exactly
+    // what bits should be set in the trust debug info, but it should at
+    // least have something set.
+    EXPECT_NE(0, mac_trust_debug_info->combined_trust_debug_info());
+  }
+#endif
 }
 
 // This tests that on successful certificate verification,

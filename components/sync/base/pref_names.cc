@@ -115,9 +115,9 @@ const char kEnableLocalSyncBackend[] = "sync.enable_local_sync_backend";
 // flag is present.
 const char kLocalSyncBackendDir[] = "sync.local_sync_backend_dir";
 
-// Root dictionary pref to store user demographics provided by the sync server.
-// This is a read-only syncable priority pref, sent from the sync server to the
-// client.
+// Root dictionary pref to store the user's birth year and gender that are
+// provided by the sync server. This is a read-only syncable priority pref, sent
+// from the sync server to the client.
 const char kSyncDemographics[] = "sync.demographics";
 
 // This pref value is subordinate to the kSyncDemographics dictionary pref and

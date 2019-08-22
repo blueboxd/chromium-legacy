@@ -6,6 +6,7 @@
 #define UI_VIEWS_TEST_VIEWS_TEST_BASE_H_
 
 #include <memory>
+#include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -45,10 +46,10 @@ class ViewsTestBase : public PlatformTest {
   // TaskEnvironment. MainThreadType always defaults to UI and must not be
   // specified.
   template <typename... TaskEnvironmentTraits>
-  NOINLINE explicit ViewsTestBase(TaskEnvironmentTraits... traits)
+  NOINLINE explicit ViewsTestBase(TaskEnvironmentTraits&&... traits)
       : task_environment_(base::in_place,
                           base::test::TaskEnvironment::MainThreadType::UI,
-                          traits...) {
+                          std::forward<TaskEnvironmentTraits>(traits)...) {
     // MaterialDesignController is initialized here instead of in SetUp because
     // a subclass might construct a MaterialDesignControllerTestAPI as a member
     // to override the value, and this must happen first.

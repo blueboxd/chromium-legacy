@@ -1513,7 +1513,7 @@ void QuicChromiumClientSession::OnCryptoHandshakeEvent(
     CryptoHandshakeEvent event) {
   if (!callback_.is_null() &&
       (!require_confirmation_ || event == HANDSHAKE_CONFIRMED ||
-       event == ENCRYPTION_REESTABLISHED)) {
+       event == ENCRYPTION_ESTABLISHED)) {
     // TODO(rtenneti): Currently for all CryptoHandshakeEvent events, callback_
     // could be called because there are no error events in CryptoHandshakeEvent
     // enum. If error events are added to CryptoHandshakeEvent, then the
@@ -1740,9 +1740,10 @@ void QuicChromiumClientSession::OnSuccessfulVersionNegotiation(
   quic::QuicSpdySession::OnSuccessfulVersionNegotiation(version);
 }
 
-void QuicChromiumClientSession::OnConnectivityProbeReceived(
+void QuicChromiumClientSession::OnPacketReceived(
     const quic::QuicSocketAddress& self_address,
-    const quic::QuicSocketAddress& peer_address) {
+    const quic::QuicSocketAddress& peer_address,
+    bool is_connectivity_probe) {
   DVLOG(1) << "Speculative probing response from ip:port: "
            << peer_address.ToString()
            << " to ip:port: " << self_address.ToString() << " is received";

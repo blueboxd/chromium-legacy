@@ -170,7 +170,7 @@ void InlineLoginHandler::HandleCompleteLoginMessage(
 
 void InlineLoginHandler::HandleCompleteLoginMessageWithCookies(
     const base::ListValue& args,
-    const std::vector<net::CanonicalCookie>& cookies,
+    const net::CookieStatusList& cookies,
     const net::CookieStatusList& excluded_cookies) {
   const base::DictionaryValue* dict = nullptr;
   args.GetDictionary(0, &dict);
@@ -180,9 +180,9 @@ void InlineLoginHandler::HandleCompleteLoginMessageWithCookies(
   const std::string& gaia_id = dict->FindKey("gaiaId")->GetString();
 
   std::string auth_code;
-  for (const auto& cookie : cookies) {
-    if (cookie.Name() == "oauth_code")
-      auth_code = cookie.Value();
+  for (const auto& cookie_with_status : cookies) {
+    if (cookie_with_status.cookie.Name() == "oauth_code")
+      auth_code = cookie_with_status.cookie.Value();
   }
 
   bool skip_for_now = false;

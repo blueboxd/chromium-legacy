@@ -4532,6 +4532,22 @@ TEST_F(HostResolverManagerDnsTest, DeleteWithActiveTransactions) {
   }
 }
 
+TEST_F(HostResolverManagerDnsTest, DeleteWithSecureTransactions) {
+  ChangeDnsConfig(CreateValidDnsConfig());
+  DnsConfigOverrides overrides;
+  overrides.secure_dns_mode = DnsConfig::SecureDnsMode::SECURE;
+  resolver_->SetDnsConfigOverrides(overrides);
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("secure", 80), NetLogWithSource(), base::nullopt,
+      request_context_.get(), host_cache_.get()));
+
+  DestroyResolver();
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(response.complete());
+}
+
 TEST_F(HostResolverManagerDnsTest, DeleteWithCompletedRequests) {
   ChangeDnsConfig(CreateValidDnsConfig());
 
@@ -4653,12 +4669,12 @@ TEST_F(HostResolverManagerDnsTest, CancelWithAutomaticModeTransactionPending) {
       HostPortPair("secure_6slow_6nx_insecure_6slow_ok", 80),
       NetLogWithSource(), base::nullopt, request_context_.get(),
       host_cache_.get()));
-  EXPECT_EQ(2u, num_running_dispatcher_jobs());
+  EXPECT_EQ(0u, num_running_dispatcher_jobs());
 
   // The secure IPv4 request should complete, the secure IPv6 request is still
   // pending.
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1u, num_running_dispatcher_jobs());
+  EXPECT_EQ(0u, num_running_dispatcher_jobs());
 
   response0.CancelRequest();
   base::RunLoop().RunUntilIdle();
@@ -4669,12 +4685,12 @@ TEST_F(HostResolverManagerDnsTest, CancelWithAutomaticModeTransactionPending) {
       HostPortPair("secure_6slow_6nx_insecure_6slow_ok", 80),
       NetLogWithSource(), base::nullopt, request_context_.get(),
       host_cache_.get()));
-  EXPECT_EQ(2u, num_running_dispatcher_jobs());
+  EXPECT_EQ(0u, num_running_dispatcher_jobs());
 
   // The secure IPv4 request should complete, the secure IPv6 request is still
   // pending.
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1u, num_running_dispatcher_jobs());
+  EXPECT_EQ(0u, num_running_dispatcher_jobs());
 
   // Let the secure IPv6 request complete and start the insecure requests.
   dns_client_->CompleteDelayedTransactions();
@@ -5236,33 +5252,6 @@ TEST_F(HostResolverManagerDnsTest, SerialResolver) {
   EXPECT_THAT(response.request()->GetAddressResults().value().endpoints(),
               testing::UnorderedElementsAre(CreateExpected("127.0.0.1", 80),
                                             CreateExpected("::1", 80)));
-}
-
-TEST_F(HostResolverManagerDnsTest, SerialResolver_AutomaticMode) {
-  CreateSerialResolver();
-  ChangeDnsConfig(CreateValidDnsConfig());
-  DnsConfigOverrides overrides;
-  overrides.secure_dns_mode = DnsConfig::SecureDnsMode::AUTOMATIC;
-  resolver_->SetDnsConfigOverrides(overrides);
-
-  ResolveHostResponseHelper response(resolver_->CreateRequest(
-      HostPortPair("insecure_automatic", 80), NetLogWithSource(), base::nullopt,
-      request_context_.get(), host_cache_.get()));
-  EXPECT_FALSE(response.complete());
-  EXPECT_EQ(1u, num_running_dispatcher_jobs());
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(response.complete());
-  EXPECT_THAT(response.result_error(), IsOk());
-  EXPECT_THAT(response.request()->GetAddressResults().value().endpoints(),
-              testing::UnorderedElementsAre(CreateExpected("127.0.0.1", 80),
-                                            CreateExpected("::1", 80)));
-  HostCache::Key insecure_key =
-      HostCache::Key("insecure_automatic", DnsQueryType::UNSPECIFIED,
-                     0 /* host_resolver_flags */, HostResolverSource::ANY);
-  const std::pair<const HostCache::Key, HostCache::Entry>* cache_result =
-      GetCacheHit(insecure_key);
-  EXPECT_TRUE(!!cache_result);
 }
 
 // Test the case where subsequent transactions are handled on transaction

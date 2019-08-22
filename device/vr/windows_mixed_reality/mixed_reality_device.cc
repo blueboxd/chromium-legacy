@@ -64,8 +64,7 @@ MixedRealityDevice::MixedRealityDevice()
     : VRDeviceBase(device::mojom::XRDeviceId::WINDOWS_MIXED_REALITY_ID),
       gamepad_provider_factory_binding_(this),
       compositor_host_binding_(this),
-      exclusive_controller_binding_(this),
-      weak_ptr_factory_(this) {
+      exclusive_controller_binding_(this) {
   SetVRDisplayInfo(CreateFakeVRDisplayInfo(GetId()));
 }
 

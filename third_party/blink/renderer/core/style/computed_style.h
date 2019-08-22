@@ -1279,6 +1279,20 @@ class ComputedStyle : public ComputedStyleBase,
   bool ReflectionDataEquivalent(const ComputedStyle& other) const {
     return DataEquivalent(BoxReflect(), other.BoxReflect());
   }
+  float ResolvedFlexGrow(const ComputedStyle& box_style) const {
+    if (box_style.Display() == EDisplay::kWebkitBox ||
+        box_style.Display() == EDisplay::kWebkitInlineBox) {
+      return BoxFlex() > 0 ? BoxFlex() : 0.0f;
+    }
+    return FlexGrow();
+  }
+  float ResolvedFlexShrink(const ComputedStyle& box_style) const {
+    if (box_style.Display() == EDisplay::kWebkitBox ||
+        box_style.Display() == EDisplay::kWebkitInlineBox) {
+      return BoxFlex() > 0 ? BoxFlex() : 0.0f;
+    }
+    return FlexShrink();
+  }
 
   // Mask utility functions.
   bool HasMask() const {

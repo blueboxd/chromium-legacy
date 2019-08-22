@@ -66,6 +66,13 @@ class FCMNetworkHandler : public gcm::GCMAppHandler,
 
   ~FCMNetworkHandler() override;
 
+  // Just calls std::make_unique. For ease of base::Bind'ing.
+  static std::unique_ptr<syncer::FCMNetworkHandler> Create(
+      gcm::GCMDriver* gcm_driver,
+      instance_id::InstanceIDDriver* instance_id_driver,
+      const std::string& sender_id,
+      const std::string& app_id);
+
   bool IsListening() const;
   void UpdateChannelState(FcmChannelState state);
 

@@ -504,9 +504,9 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
                           quic::ConnectionCloseSource source) override;
   void OnSuccessfulVersionNegotiation(
       const quic::ParsedQuicVersion& version) override;
-  void OnConnectivityProbeReceived(
-      const quic::QuicSocketAddress& self_address,
-      const quic::QuicSocketAddress& peer_address) override;
+  void OnPacketReceived(const quic::QuicSocketAddress& self_address,
+                        const quic::QuicSocketAddress& peer_address,
+                        bool is_connectivity_probe) override;
   void OnPathDegrading() override;
   bool ShouldKeepConnectionAlive() const override;
 

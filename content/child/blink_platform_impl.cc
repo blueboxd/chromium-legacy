@@ -360,17 +360,6 @@ struct DataResource {
   bool is_gzipped;
 };
 
-const DataResource kDataResources[] = {
-    {"generatePassword", IDR_PASSWORD_GENERATION_ICON, ui::SCALE_FACTOR_100P,
-     false},
-    {"generatePasswordHover", IDR_PASSWORD_GENERATION_ICON_HOVER,
-     ui::SCALE_FACTOR_100P, false},
-    {"DocumentXMLTreeViewer.css", IDR_DOCUMENTXMLTREEVIEWER_CSS,
-     ui::SCALE_FACTOR_NONE, true},
-    {"DocumentXMLTreeViewer.js", IDR_DOCUMENTXMLTREEVIEWER_JS,
-     ui::SCALE_FACTOR_NONE, true},
-};
-
 class NestedMessageLoopRunnerImpl
     : public blink::Platform::NestedMessageLoopRunner {
  public:
@@ -423,32 +412,6 @@ BlinkPlatformImpl::~BlinkPlatformImpl() {}
 void BlinkPlatformImpl::RecordAction(const blink::UserMetricsAction& name) {
   if (ChildThread* child_thread = ChildThread::Get())
     child_thread->RecordComputedAction(name.Action());
-}
-
-WebData BlinkPlatformImpl::GetDataResource(const char* name) {
-  // Some clients will call into this method with an empty |name| when they have
-  // optional resources.  For example, the PopupMenuChromium code can have icons
-  // for some Autofill items but not for others.
-  if (!strlen(name))
-    return WebData();
-
-  // TODO(flackr): We should use a better than linear search here, a trie would
-  // be ideal.
-  for (size_t i = 0; i < base::size(kDataResources); ++i) {
-    if (!strcmp(name, kDataResources[i].name)) {
-      base::StringPiece resource = GetContentClient()->GetDataResource(
-          kDataResources[i].id, kDataResources[i].scale_factor);
-      if (!resource.empty() && kDataResources[i].is_gzipped) {
-        std::string uncompressed;
-        CHECK(compression::GzipUncompress(resource.as_string(), &uncompressed));
-        return WebData(uncompressed.data(), uncompressed.size());
-      }
-      return WebData(resource.data(), resource.size());
-    }
-  }
-
-  NOTREACHED() << "Unknown image resource " << name;
-  return WebData();
 }
 
 WebData BlinkPlatformImpl::GetDataResource(int resource_id,

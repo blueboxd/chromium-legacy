@@ -124,7 +124,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWin
   // descriptors.
   int discovery_pending_count_;
 
-  base::WeakPtrFactory<BluetoothRemoteGattCharacteristicWin> weak_ptr_factory_;
+  base::WeakPtrFactory<BluetoothRemoteGattCharacteristicWin> weak_ptr_factory_{
+      this};
   DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattCharacteristicWin);
 };
 

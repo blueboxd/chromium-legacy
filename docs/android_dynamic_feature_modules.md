@@ -51,9 +51,9 @@ First, create the file
     <dist:module
         dist:onDemand="true"
         dist:title="@string/foo_module_title">
-        <!-- This will prevent the module to become part of the Android K
-             build in case we ever want to use bundles on Android K. -->
-        <dist:fusing dist:include="false" />
+        <!-- This will fuse the module into the base APK if a system image
+             APK is built from this bundle. -->
+        <dist:fusing dist:include="true" />
     </dist:module>
 
     <!-- Remove android:hasCode="false" when adding Java code. -->
@@ -680,13 +680,12 @@ public static void installModuleWithUi(
                     R.string.foo_module_title,
                     new ModuleInstallUi.FailureUiListener() {
                         @Override
-                        public void onRetry() {
-                            installModuleWithUi(tab, onFinishedListener);
-                        }
-
-                        @Override
-                        public void onCancel() {
-                            onFinishedListener.onFinished(false);
+                        public void onFailureUiResponse(retry) {
+                            if (retry) {
+                                installModuleWithUi(tab, onFinishedListener);
+                            } else {
+                                onFinishedListener.onFinished(false);
+                            }
                         }
                     });
     // At the time of writing, shows toast informing user about install start.
@@ -759,7 +758,7 @@ like this:
     <dist:module
       dist:instant="false"
       dist:title="@string/foo_module_title">
-      <dist:fusing dist:include="false" />
+      <dist:fusing dist:include="true" />
       <dist:delivery>
         <dist:install-time>
           <dist:conditions>

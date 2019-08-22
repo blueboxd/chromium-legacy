@@ -67,4 +67,9 @@ public abstract class MediaSession {
      * Request audio focus from the system.
      */
     public abstract void requestSystemAudioFocus();
+
+    /**
+     * Returns whether the media session can be resumed/suspended.
+     */
+    public abstract boolean isControllable();
 }

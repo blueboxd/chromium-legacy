@@ -148,10 +148,6 @@ void TestImageTransportFactory::DisableGpuCompositing() {
   NOTIMPLEMENTED();
 }
 
-bool TestImageTransportFactory::IsGpuCompositingDisabled() {
-  return false;
-}
-
 ui::ContextFactory* TestImageTransportFactory::GetContextFactory() {
   return this;
 }

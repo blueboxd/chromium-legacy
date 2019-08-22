@@ -102,7 +102,8 @@ class OnScreenKeyboardDetector {
 
   // Should be the last member in the class. Helps ensure that tasks spawned
   // by this class instance are canceled when it is destroyed.
-  base::WeakPtrFactory<OnScreenKeyboardDetector> keyboard_detector_factory_;
+  base::WeakPtrFactory<OnScreenKeyboardDetector> keyboard_detector_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(OnScreenKeyboardDetector);
 };
@@ -110,7 +111,7 @@ class OnScreenKeyboardDetector {
 // OnScreenKeyboardDetector member definitions.
 OnScreenKeyboardDetector::OnScreenKeyboardDetector(
     OnScreenKeyboardDisplayManagerTabTip* display_manager)
-    : display_manager_(display_manager), keyboard_detector_factory_(this) {}
+    : display_manager_(display_manager) {}
 
 OnScreenKeyboardDetector::~OnScreenKeyboardDetector() {}
 

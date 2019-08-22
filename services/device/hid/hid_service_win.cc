@@ -35,8 +35,7 @@ HidServiceWin::HidServiceWin()
     : task_runner_(base::SequencedTaskRunnerHandle::Get()),
       blocking_task_runner_(
           base::CreateSequencedTaskRunner(kBlockingTaskTraits)),
-      device_observer_(this),
-      weak_factory_(this) {
+      device_observer_(this) {
   DeviceMonitorWin* device_monitor =
       DeviceMonitorWin::GetForDeviceInterface(GUID_DEVINTERFACE_HID);
   if (device_monitor)

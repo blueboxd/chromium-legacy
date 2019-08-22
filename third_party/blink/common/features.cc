@@ -73,8 +73,16 @@ const base::Feature kDisplayLocking{"DisplayLocking",
 
 // Enable applying rounded corner masks via a GL shader rather than
 // a mask layer.
-const base::Feature kFastBorderRadius{"FastBorderRadius",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kFastBorderRadius {
+  "FastBorderRadius",
+#if defined(OS_MACOSX)
+      // A FastBorderRadiusMac experiment is rolling out separately for that
+      // platform, due to complications with CALayer overlay optimizations.
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // Enable LayoutNG.
 const base::Feature kLayoutNG{"LayoutNG", base::FEATURE_ENABLED_BY_DEFAULT};

@@ -13,9 +13,11 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "build/build_config.h"
+#include "net/base/features.h"
 #include "net/base/load_flags.h"
 #include "net/base/mock_network_change_notifier.h"
 #include "net/base/network_isolation_key.h"
@@ -56,6 +58,7 @@
 #include "net/third_party/quiche/src/quic/core/crypto/quic_decrypter.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_encrypter.h"
 #include "net/third_party/quiche/src/quic/core/http/quic_client_promised_info.h"
+#include "net/third_party/quiche/src/quic/core/quic_constants.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
@@ -116,7 +119,7 @@ struct TestParams {
 std::vector<TestParams> GetTestParams() {
   std::vector<TestParams> params;
   quic::ParsedQuicVersionVector all_supported_versions =
-      quic::AllSupportedVersions();
+      quic::AllVersionsExcept99();
   for (const auto& version : all_supported_versions) {
     // TODO(rch): crbug.com/978745 - Make this work with TLS
     if (version.handshake_protocol != quic::PROTOCOL_TLS1_3) {
@@ -159,7 +162,7 @@ struct PoolingTestParams {
 std::vector<PoolingTestParams> GetPoolingTestParams() {
   std::vector<PoolingTestParams> params;
   quic::ParsedQuicVersionVector all_supported_versions =
-      quic::AllSupportedVersions();
+      quic::AllVersionsExcept99();
   for (const quic::ParsedQuicVersion version : all_supported_versions) {
     // TODO(rch): crbug.com/978745 - Make this work with TLS
     if (version.handshake_protocol != quic::PROTOCOL_TLS1_3) {
@@ -232,6 +235,7 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
             kDefaultServerHostName,
             quic::Perspective::IS_SERVER,
             false),
+        http_server_properties_(std::make_unique<HttpServerProperties>()),
         cert_verifier_(std::make_unique<MockCertVerifier>()),
         cert_transparency_verifier_(std::make_unique<DoNothingCTVerifier>()),
         scoped_mock_network_change_notifier_(nullptr),
@@ -253,14 +257,14 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
 
   void Initialize() {
     DCHECK(!factory_);
-    factory_.reset(new QuicStreamFactory(
+    factory_ = std::make_unique<QuicStreamFactory>(
         net_log_.net_log(), host_resolver_.get(), ssl_config_service_.get(),
-        socket_factory_.get(), &http_server_properties_, cert_verifier_.get(),
-        &ct_policy_enforcer_, &transport_security_state_,
+        socket_factory_.get(), http_server_properties_.get(),
+        cert_verifier_.get(), &ct_policy_enforcer_, &transport_security_state_,
         cert_transparency_verifier_.get(),
         /*SocketPerformanceWatcherFactory*/ nullptr,
         &crypto_client_stream_factory_, &random_generator_, &clock_,
-        test_params_.quic_params));
+        test_params_.quic_params);
   }
 
   void InitializeConnectionMigrationV2Test(
@@ -286,10 +290,13 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
     return std::make_unique<QuicHttpStream>(std::move(session));
   }
 
-  bool HasActiveSession(const HostPortPair& host_port_pair) {
+  bool HasActiveSession(const HostPortPair& host_port_pair,
+                        const NetworkIsolationKey& network_isolation_key =
+                            NetworkIsolationKey()) {
     quic::QuicServerId server_id(host_port_pair.host(), host_port_pair.port(),
                                  false);
-    return QuicStreamFactoryPeer::HasActiveSession(factory_.get(), server_id);
+    return QuicStreamFactoryPeer::HasActiveSession(factory_.get(), server_id,
+                                                   network_isolation_key);
   }
 
   bool HasLiveSession(const HostPortPair& host_port_pair) {
@@ -321,10 +328,13 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
   }
 
   QuicChromiumClientSession* GetActiveSession(
-      const HostPortPair& host_port_pair) {
+      const HostPortPair& host_port_pair,
+      const NetworkIsolationKey& network_isolation_key =
+          NetworkIsolationKey()) {
     quic::QuicServerId server_id(host_port_pair.host(), host_port_pair.port(),
                                  false);
-    return QuicStreamFactoryPeer::GetActiveSession(factory_.get(), server_id);
+    return QuicStreamFactoryPeer::GetActiveSession(factory_.get(), server_id,
+                                                   network_isolation_key);
   }
 
   int GetSourcePortForNewSession(const HostPortPair& destination) {
@@ -563,7 +573,7 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
     alternative_service_info_vector.push_back(
         AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
             alternative_service1, expiration, {version_}));
-    http_server_properties_.SetAlternativeServices(
+    http_server_properties_->SetAlternativeServices(
         url::SchemeHostPort(url_), NetworkIsolationKey(),
         alternative_service_info_vector);
 
@@ -576,20 +586,21 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
         AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
             alternative_service2, expiration, {version_}));
 
-    http_server_properties_.SetAlternativeServices(
+    http_server_properties_->SetAlternativeServices(
         server2, NetworkIsolationKey(), alternative_service_info_vector2);
     // Verify that the properties of both QUIC servers are stored in the
     // HTTP properties map.
-    EXPECT_EQ(2U, http_server_properties_.server_info_map_for_testing().size());
+    EXPECT_EQ(2U,
+              http_server_properties_->server_info_map_for_testing().size());
 
-    http_server_properties_.SetMaxServerConfigsStoredInProperties(
+    http_server_properties_->SetMaxServerConfigsStoredInProperties(
         kDefaultMaxQuicServerEntries);
 
     quic::QuicServerId quic_server_id(kDefaultServerHostName, 443,
                                       PRIVACY_MODE_DISABLED);
     std::unique_ptr<QuicServerInfo> quic_server_info =
         std::make_unique<PropertiesBasedQuicServerInfo>(
-            quic_server_id, &http_server_properties_);
+            quic_server_id, http_server_properties_.get());
 
     // Update quic_server_info's server_config and persist it.
     QuicServerInfo::State* state = quic_server_info->mutable_state();
@@ -629,7 +640,7 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
                                        PRIVACY_MODE_DISABLED);
     std::unique_ptr<QuicServerInfo> quic_server_info2 =
         std::make_unique<PropertiesBasedQuicServerInfo>(
-            quic_server_id2, &http_server_properties_);
+            quic_server_id2, http_server_properties_.get());
     // Update quic_server_info2's server_config and persist it.
     QuicServerInfo::State* state2 = quic_server_info2->mutable_state();
 
@@ -668,7 +679,7 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
 
     // Verify the MRU order is maintained.
     const QuicServerInfoMap& quic_server_info_map =
-        http_server_properties_.quic_server_info_map();
+        http_server_properties_->quic_server_info_map();
     EXPECT_EQ(2u, quic_server_info_map.size());
     auto quic_server_info_map_it = quic_server_info_map.begin();
     EXPECT_EQ(quic_server_info_map_it->first, quic_server_id2);
@@ -828,7 +839,7 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
   const quic::ParsedQuicVersion version_;
   QuicTestPacketMaker client_maker_;
   QuicTestPacketMaker server_maker_;
-  HttpServerProperties http_server_properties_;
+  std::unique_ptr<HttpServerProperties> http_server_properties_;
   std::unique_ptr<CertVerifier> cert_verifier_;
   TransportSecurityState transport_security_state_;
   std::unique_ptr<CTVerifier> cert_transparency_verifier_;
@@ -1025,12 +1036,12 @@ TEST_P(QuicStreamFactoryTest, RequireConfirmation) {
                 failed_on_default_network_callback_, callback_.callback()));
 
   IPAddress last_address;
-  EXPECT_FALSE(http_server_properties_.GetSupportsQuic(&last_address));
+  EXPECT_FALSE(http_server_properties_->GetSupportsQuic(&last_address));
 
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
       quic::QuicSession::HANDSHAKE_CONFIRMED);
 
-  EXPECT_TRUE(http_server_properties_.GetSupportsQuic(&last_address));
+  EXPECT_TRUE(http_server_properties_->GetSupportsQuic(&last_address));
 
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
@@ -1048,7 +1059,7 @@ TEST_P(QuicStreamFactoryTest, DontRequireConfirmationFromSameIP) {
                                             "192.168.0.1", "");
   Initialize();
   factory_->set_require_confirmation(true);
-  http_server_properties_.SetSupportsQuic(true, IPAddress(192, 0, 2, 33));
+  http_server_properties_->SetSupportsQuic(true, IPAddress(192, 0, 2, 33));
 
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
@@ -1067,7 +1078,7 @@ TEST_P(QuicStreamFactoryTest, DontRequireConfirmationFromSameIP) {
               IsOk());
 
   IPAddress last_address;
-  EXPECT_FALSE(http_server_properties_.GetSupportsQuic(&last_address));
+  EXPECT_FALSE(http_server_properties_->GetSupportsQuic(&last_address));
 
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
@@ -1078,14 +1089,14 @@ TEST_P(QuicStreamFactoryTest, DontRequireConfirmationFromSameIP) {
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
       quic::QuicSession::HANDSHAKE_CONFIRMED);
 
-  EXPECT_TRUE(http_server_properties_.GetSupportsQuic(&last_address));
+  EXPECT_TRUE(http_server_properties_->GetSupportsQuic(&last_address));
 }
 
 TEST_P(QuicStreamFactoryTest, CachedInitialRtt) {
   ServerNetworkStats stats;
   stats.srtt = base::TimeDelta::FromMilliseconds(10);
-  http_server_properties_.SetServerNetworkStats(url::SchemeHostPort(url_),
-                                                stats);
+  http_server_properties_->SetServerNetworkStats(url::SchemeHostPort(url_),
+                                                 NetworkIsolationKey(), stats);
   test_params_.quic_params.estimate_initial_rtt = true;
 
   Initialize();
@@ -1113,6 +1124,78 @@ TEST_P(QuicStreamFactoryTest, CachedInitialRtt) {
   EXPECT_EQ(10000u, session->connection()->GetStats().srtt_us);
   ASSERT_TRUE(session->config()->HasInitialRoundTripTimeUsToSend());
   EXPECT_EQ(10000u, session->config()->GetInitialRoundTripTimeUsToSend());
+}
+
+// Test that QUIC sessions use the cached RTT from HttpServerProperties for the
+// correct NetworkIsolationKey.
+TEST_P(QuicStreamFactoryTest, CachedInitialRttWithNetworkIsolationKey) {
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
+  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
+  const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      // enabled_features
+      {features::kPartitionHttpServerPropertiesByNetworkIsolationKey,
+       // Need to partition connections by NetworkIsolationKey for
+       // QuicSessionAliasKey to include NetworkIsolationKeys.
+       features::kPartitionConnectionsByNetworkIsolationKey},
+      // disabled_features
+      {});
+  // Since HttpServerProperties caches the feature value, have to create a new
+  // one.
+  http_server_properties_ = std::make_unique<HttpServerProperties>();
+
+  ServerNetworkStats stats;
+  stats.srtt = base::TimeDelta::FromMilliseconds(10);
+  http_server_properties_->SetServerNetworkStats(url::SchemeHostPort(url_),
+                                                 kNetworkIsolationKey1, stats);
+  test_params_.quic_params.estimate_initial_rtt = true;
+  Initialize();
+
+  for (const auto& network_isolation_key :
+       {kNetworkIsolationKey1, kNetworkIsolationKey2, NetworkIsolationKey()}) {
+    SCOPED_TRACE(network_isolation_key.ToString());
+
+    ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+    crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+    QuicTestPacketMaker packet_maker(
+        version_, quic::QuicUtils::CreateRandomConnectionId(&random_generator_),
+        &clock_, kDefaultServerHostName, quic::Perspective::IS_CLIENT,
+        test_params_.quic_params.headers_include_h2_stream_dependency);
+
+    MockQuicData socket_data(version_);
+    socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+    socket_data.AddWrite(SYNCHRONOUS,
+                         packet_maker.MakeInitialSettingsPacket(1));
+    socket_data.AddSocketDataToFactory(socket_factory_.get());
+
+    QuicStreamRequest request(factory_.get());
+    EXPECT_EQ(ERR_IO_PENDING,
+              request.Request(
+                  host_port_pair_, version_, privacy_mode_, DEFAULT_PRIORITY,
+                  SocketTag(), network_isolation_key,
+                  /*cert_verify_flags=*/0, url_, net_log_, &net_error_details_,
+                  failed_on_default_network_callback_, callback_.callback()));
+
+    EXPECT_THAT(callback_.WaitForResult(), IsOk());
+    std::unique_ptr<HttpStream> stream = CreateStream(&request);
+    EXPECT_TRUE(stream.get());
+
+    QuicChromiumClientSession* session =
+        GetActiveSession(host_port_pair_, network_isolation_key);
+    if (network_isolation_key == kNetworkIsolationKey1) {
+      EXPECT_EQ(10000, session->connection()->GetStats().srtt_us);
+      ASSERT_TRUE(session->config()->HasInitialRoundTripTimeUsToSend());
+      EXPECT_EQ(10000u, session->config()->GetInitialRoundTripTimeUsToSend());
+    } else {
+      EXPECT_EQ(quic::kInitialRttMs * 1000,
+                session->connection()->GetStats().srtt_us);
+      EXPECT_FALSE(session->config()->HasInitialRoundTripTimeUsToSend());
+    }
+  }
 }
 
 TEST_P(QuicStreamFactoryTest, 2gInitialRtt) {
@@ -1252,6 +1335,129 @@ TEST_P(QuicStreamFactoryTest, GoAwayForConnectionMigrationWithPortOnly) {
 
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+}
+
+// Makes sure that setting and clearing ServerNetworkStats respects the
+// NetworkIsolationKey.
+TEST_P(QuicStreamFactoryTest, ServerNetworkStatsWithNetworkIsolationKey) {
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
+  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
+  const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+
+  const NetworkIsolationKey kNetworkIsolationKeys[] = {
+      kNetworkIsolationKey1, kNetworkIsolationKey2, NetworkIsolationKey()};
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      // enabled_features
+      {features::kPartitionHttpServerPropertiesByNetworkIsolationKey,
+       // Need to partition connections by NetworkIsolationKey for
+       // QuicSessionAliasKey to include NetworkIsolationKeys.
+       features::kPartitionConnectionsByNetworkIsolationKey},
+      // disabled_features
+      {});
+  // Since HttpServerProperties caches the feature value, have to create a new
+  // one.
+  http_server_properties_ = std::make_unique<HttpServerProperties>();
+  Initialize();
+
+  // For each server, set up and tear down a QUIC session cleanly, and check
+  // that stats have been added to HttpServerProperties using the correct
+  // NetworkIsolationKey.
+  for (size_t i = 0; i < base::size(kNetworkIsolationKeys); ++i) {
+    SCOPED_TRACE(i);
+
+    ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+    crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+    QuicTestPacketMaker packet_maker(
+        version_, quic::QuicUtils::CreateRandomConnectionId(&random_generator_),
+        &clock_, kDefaultServerHostName, quic::Perspective::IS_CLIENT,
+        test_params_.quic_params.headers_include_h2_stream_dependency);
+
+    MockQuicData socket_data(version_);
+    socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+    socket_data.AddWrite(SYNCHRONOUS,
+                         packet_maker.MakeInitialSettingsPacket(1));
+    socket_data.AddSocketDataToFactory(socket_factory_.get());
+
+    QuicStreamRequest request(factory_.get());
+    EXPECT_EQ(ERR_IO_PENDING,
+              request.Request(
+                  host_port_pair_, version_, privacy_mode_, DEFAULT_PRIORITY,
+                  SocketTag(), kNetworkIsolationKeys[i],
+                  /*cert_verify_flags=*/0, url_, net_log_, &net_error_details_,
+                  failed_on_default_network_callback_, callback_.callback()));
+
+    EXPECT_THAT(callback_.WaitForResult(), IsOk());
+    std::unique_ptr<HttpStream> stream = CreateStream(&request);
+    EXPECT_TRUE(stream.get());
+
+    QuicChromiumClientSession* session =
+        GetActiveSession(host_port_pair_, kNetworkIsolationKeys[i]);
+
+    session->OnGoAway(quic::QuicGoAwayFrame());
+
+    EXPECT_FALSE(HasActiveSession(host_port_pair_, kNetworkIsolationKeys[i]));
+
+    EXPECT_TRUE(socket_data.AllReadDataConsumed());
+    EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+
+    for (size_t j = 0; j < base::size(kNetworkIsolationKeys); ++j) {
+      // Stats up to kNetworkIsolationKeys[j] should have been populated, all
+      // others should remain empty.
+      if (j <= i) {
+        EXPECT_TRUE(http_server_properties_->GetServerNetworkStats(
+            url::SchemeHostPort(url_), kNetworkIsolationKeys[j]));
+      } else {
+        EXPECT_FALSE(http_server_properties_->GetServerNetworkStats(
+            url::SchemeHostPort(url_), kNetworkIsolationKeys[j]));
+      }
+    }
+  }
+
+  // Use unmocked crypto stream to do crypto connect, since crypto errors result
+  // in deleting network stats..
+  crypto_client_stream_factory_.set_handshake_mode(
+      MockCryptoClientStream::COLD_START_WITH_CHLO_SENT);
+
+  // For each server, simulate an error during session creation, and check that
+  // stats have been deleted from HttpServerProperties using the correct
+  // NetworkIsolationKey.
+  for (size_t i = 0; i < base::size(kNetworkIsolationKeys); ++i) {
+    SCOPED_TRACE(i);
+
+    MockQuicData socket_data(version_);
+    socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+    // Trigger PACKET_WRITE_ERROR when sending packets in crypto connect.
+    socket_data.AddWrite(SYNCHRONOUS, ERR_ADDRESS_UNREACHABLE);
+    socket_data.AddSocketDataToFactory(socket_factory_.get());
+
+    QuicStreamRequest request(factory_.get());
+    EXPECT_EQ(ERR_IO_PENDING,
+              request.Request(
+                  host_port_pair_, version_, privacy_mode_, DEFAULT_PRIORITY,
+                  SocketTag(), kNetworkIsolationKeys[i],
+                  /*cert_verify_flags=*/0, url_, net_log_, &net_error_details_,
+                  failed_on_default_network_callback_, callback_.callback()));
+
+    EXPECT_THAT(callback_.WaitForResult(), IsError(ERR_QUIC_HANDSHAKE_FAILED));
+
+    EXPECT_FALSE(HasActiveSession(host_port_pair_, kNetworkIsolationKeys[i]));
+
+    for (size_t j = 0; j < base::size(kNetworkIsolationKeys); ++j) {
+      // Stats up to kNetworkIsolationKeys[j] should have been deleted, all
+      // others should still be populated.
+      if (j <= i) {
+        EXPECT_FALSE(http_server_properties_->GetServerNetworkStats(
+            url::SchemeHostPort(url_), kNetworkIsolationKeys[j]));
+      } else {
+        EXPECT_TRUE(http_server_properties_->GetServerNetworkStats(
+            url::SchemeHostPort(url_), kNetworkIsolationKeys[j]));
+      }
+    }
+  }
 }
 
 TEST_P(QuicStreamFactoryTest, Pooling) {
@@ -2052,14 +2258,14 @@ TEST_P(QuicStreamFactoryTest, CloseSessionsOnIPAddressChanged) {
   EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
 
   IPAddress last_address;
-  EXPECT_TRUE(http_server_properties_.GetSupportsQuic(&last_address));
+  EXPECT_TRUE(http_server_properties_->GetSupportsQuic(&last_address));
   // Change the IP address and verify that stream saw the error and the active
   // session is closed.
   NotifyIPAddressChanged();
   EXPECT_EQ(ERR_NETWORK_CHANGED,
             stream->ReadResponseHeaders(callback_.callback()));
   EXPECT_TRUE(factory_->require_confirmation());
-  EXPECT_FALSE(http_server_properties_.GetSupportsQuic(&last_address));
+  EXPECT_FALSE(http_server_properties_->GetSupportsQuic(&last_address));
   // Check no active session exists for the destination.
   EXPECT_FALSE(HasActiveSession(host_port_pair_));
 
@@ -2222,12 +2428,12 @@ TEST_P(QuicStreamFactoryTest, OnIPAddressChangedWithConnectionMigration) {
                                          net_log_, CompletionOnceCallback()));
 
   IPAddress last_address;
-  EXPECT_TRUE(http_server_properties_.GetSupportsQuic(&last_address));
+  EXPECT_TRUE(http_server_properties_->GetSupportsQuic(&last_address));
 
   // Change the IP address and verify that the connection is unaffected.
   NotifyIPAddressChanged();
   EXPECT_FALSE(factory_->require_confirmation());
-  EXPECT_TRUE(http_server_properties_.GetSupportsQuic(&last_address));
+  EXPECT_TRUE(http_server_properties_->GetSupportsQuic(&last_address));
 
   // Attempting a new request to the same origin uses the same connection.
   QuicStreamRequest request2(factory_.get());

@@ -90,7 +90,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_WIN) InputMethodWinBase
   base::i18n::TextDirection pending_requested_direction_;
 
   // Used for making callbacks.
-  base::WeakPtrFactory<InputMethodWinBase> weak_ptr_factory_;
+  base::WeakPtrFactory<InputMethodWinBase> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodWinBase);
 };

@@ -799,12 +799,12 @@ void EnrollmentScreenHandler::HandleCompleteLogin(const std::string& user) {
 
 void EnrollmentScreenHandler::OnGetCookiesForCompleteLogin(
     const std::string& user,
-    const std::vector<net::CanonicalCookie>& cookies,
+    const net::CookieStatusList& cookies,
     const net::CookieStatusList& excluded_cookies) {
   std::string auth_code;
-  for (const auto& cookie : cookies) {
-    if (cookie.Name() == "oauth_code") {
-      auth_code = cookie.Value();
+  for (const auto& cookie_with_status : cookies) {
+    if (cookie_with_status.cookie.Name() == "oauth_code") {
+      auth_code = cookie_with_status.cookie.Value();
       break;
     }
   }

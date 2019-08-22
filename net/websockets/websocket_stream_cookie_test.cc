@@ -15,6 +15,7 @@
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/canonical_cookie_test_helpers.h"
 #include "net/cookies/cookie_store.h"
+#include "net/cookies/cookie_util.h"
 #include "net/http/http_request_headers.h"
 #include "net/socket/socket_test_util.h"
 #include "net/websockets/websocket_stream_create_test_base.h"
@@ -119,10 +120,10 @@ class WebSocketStreamServerSetCookieTest
       base::OnceClosure task,
       base::WeakPtr<bool> weak_is_called,
       base::WeakPtr<CookieList> weak_result,
-      const CookieList& cookie_list,
+      const CookieStatusList& cookie_list,
       const CookieStatusList& excluded_cookies) {
     *weak_is_called = true;
-    *weak_result = cookie_list;
+    *weak_result = cookie_util::StripStatuses(cookie_list);
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(task));
   }
 };

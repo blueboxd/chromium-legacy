@@ -78,6 +78,7 @@ void PrintCertStatus(int cert_status) {
 }
 
 void PrintCertVerifyResult(const net::CertVerifyResult& result) {
+  PrintDebugData(&result);
   PrintCertStatus(result.cert_status);
   if (result.has_md2)
     std::cout << "has_md2\n";

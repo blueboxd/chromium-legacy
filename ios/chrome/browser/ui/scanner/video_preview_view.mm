@@ -39,7 +39,7 @@
 }
 
 - (CGRect)viewportRectOfInterest {
-  DCHECK(CGPointEqualToPoint(self.frame.origin, CGPointZero));
+  // DCHECK(CGPointEqualToPoint(self.frame.origin, CGPointZero));
   CGRect viewportRect =
       CGRectMakeCenteredRectInFrame(self.frame.size, _viewportSize);
   AVCaptureVideoPreviewLayer* layer = [self previewLayer];

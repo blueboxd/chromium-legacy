@@ -51,8 +51,7 @@ NetworkingPrivateServiceClient::ServiceCallbacks::~ServiceCallbacks() {
 NetworkingPrivateServiceClient::NetworkingPrivateServiceClient(
     std::unique_ptr<WiFiService> wifi_service)
     : wifi_service_(std::move(wifi_service)),
-      task_runner_(g_sequenced_task_runner.Get()),
-      weak_factory_(this) {
+      task_runner_(g_sequenced_task_runner.Get()) {
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WiFiService::Initialize,

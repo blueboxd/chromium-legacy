@@ -129,7 +129,7 @@ class ChromePromptChannelMojo : public ChromePromptChannel {
 
   std::unique_ptr<internal::ChromePromptImpl> chrome_prompt_impl_;
 
-  base::WeakPtrFactory<ChromePromptChannelMojo> weak_factory_;
+  base::WeakPtrFactory<ChromePromptChannelMojo> weak_factory_{this};
 };
 
 // Handles IPC to the Chrome Cleaner process by serializing protobufs over
@@ -246,7 +246,7 @@ class ChromePromptChannelProtobuf : public ChromePromptChannel {
   base::win::ScopedHandle response_read_handle_;
   base::win::ScopedHandle response_write_handle_;
 
-  base::WeakPtrFactory<ChromePromptChannelProtobuf> weak_factory_;
+  base::WeakPtrFactory<ChromePromptChannelProtobuf> weak_factory_{this};
 };
 
 }  // namespace safe_browsing

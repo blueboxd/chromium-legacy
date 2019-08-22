@@ -111,16 +111,15 @@ void VideoFrameFactoryImpl::SetSurfaceBundle(
     // Clear everything, just so we're not holding a reference.
     codec_buffer_wait_coordinator_ = nullptr;
   } else {
-    // If |surface_bundle| is using a TextureOwner, then get it.  Note that the
-    // only reason we need this is for legacy mailbox support; we send it to
-    // the SharedImageVideoProvider so that (eventually) it can get the service
-    // id from the owner for the legacy mailbox texture.  Otherwise, this would
-    // be a lot simpler.
+    // If |surface_bundle| is using a CodecBufferWaitCoordinator, then get it.
+    // Note that the only reason we need this is for legacy mailbox support; we
+    // send it to the SharedImageVideoProvider so that (eventually) it can get
+    // the service id from the owner for the legacy mailbox texture.  Otherwise,
+    // this would be a lot simpler.
     codec_buffer_wait_coordinator_ =
         surface_bundle->overlay()
             ? nullptr
-            : base::MakeRefCounted<CodecBufferWaitCoordinator>(
-                  surface_bundle->texture_owner());
+            : surface_bundle->codec_buffer_wait_coordinator();
 
     // TODO(liberato): When we enable pooling, do we need to clear the pool
     // here because the CodecImageGroup has changed?  It's unclear, since the

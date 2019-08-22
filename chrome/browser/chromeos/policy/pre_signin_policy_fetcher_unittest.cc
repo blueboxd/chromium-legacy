@@ -163,7 +163,7 @@ class PreSigninPolicyFetcherTestBase : public testing::Test {
     task_environment_.RunUntilIdle();
   }
 
-  base::test::TaskEnvironment task_environment_ = {
+  base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::MainThreadType::UI};
   std::unique_ptr<chromeos::FakeCryptohomeClient> cryptohome_client_;
   chromeos::FakeSessionManagerClient session_manager_client_;

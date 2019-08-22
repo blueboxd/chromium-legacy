@@ -1016,7 +1016,8 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
                                /*unpack_premultiply_alpha=*/false,
                                /*unpack_unmultiply_alpha=*/false);
       mask_image = WrapTexture(dest_id, GL_TEXTURE_2D, quad->mask_texture_size,
-                               use_gr_context->context(), false,
+                               use_gr_context->context(),
+                               /*flip_texture=*/!FlippedFramebuffer(),
                                GlFormatToSkFormat(internalformat),
                                /*adopt_texture=*/true);
     } else {

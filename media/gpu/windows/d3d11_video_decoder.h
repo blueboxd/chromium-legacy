@@ -259,7 +259,7 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
 
   SupportedConfigs supported_configs_;
 
-  base::WeakPtrFactory<D3D11VideoDecoder> weak_factory_;
+  base::WeakPtrFactory<D3D11VideoDecoder> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(D3D11VideoDecoder);
 };

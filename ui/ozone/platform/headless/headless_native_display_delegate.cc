@@ -40,8 +40,8 @@ void HeadlessNativeDisplayDelegate::Initialize() {
   current_snapshot_ = std::make_unique<display::DisplaySnapshot>(
       next_display_id(), gfx::Point(0, 0), kDefaultWindowSize,
       display::DisplayConnectionType::DISPLAY_CONNECTION_TYPE_NONE, false,
-      false, false, false, gfx::ColorSpace(), "", base::FilePath(),
-      std::move(modes), display::PanelOrientation::kNormal,
+      false, false, false, gfx::ColorSpace(), 8u /* bits_per_channel*/, "",
+      base::FilePath(), std::move(modes), display::PanelOrientation::kNormal,
       std::vector<uint8_t>(), mode, mode, 0, 0, gfx::Size());
 
   for (display::NativeDisplayObserver& observer : observers_)

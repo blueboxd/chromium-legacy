@@ -269,6 +269,9 @@ class BrowserThemePack : public CustomThemeSupplier {
 
   // All structs written to disk need to be packed; no alignment tricks here,
   // please.
+  // NOTE: This structs can only contain primary data types to be reliably
+  // seralized and de-seralized. Not even nested structs will work across
+  // different machines, see crbug.com/988055.
 #pragma pack(push,1)
   // Header that is written to disk.
   struct BrowserThemePackHeader {

@@ -311,6 +311,18 @@ Polymer({
   // </if>
 
   /**
+   * @return {string}
+   * @private
+   */
+  getSyncAndGoogleServicesSubtext_: function() {
+    if (this.syncStatus && this.syncStatus.hasError &&
+        this.syncStatus.statusText) {
+      return this.syncStatus.statusText;
+    }
+    return '';
+  },
+
+  /**
    * Handler for when the profile's icon and name is updated.
    * @private
    * @param {!settings.ProfileInfo} info
@@ -643,7 +655,7 @@ Polymer({
           'sync-error';
     }
 
-    return '';
+    return 'no-error';
   },
 
   /**

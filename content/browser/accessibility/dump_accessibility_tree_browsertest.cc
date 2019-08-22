@@ -74,6 +74,9 @@ class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
     // Enable accessibility object model, used in other tests.
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kEnableBlinkFeatures, "AccessibilityObjectModel");
+    // Enable display locking, used in some tests.
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kEnableBlinkFeatures, "DisplayLocking");
   }
 
   void RunAriaTest(const base::FilePath::CharType* file_path) {
@@ -118,6 +121,18 @@ class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
     base::FilePath html_file = test_path.Append(base::FilePath(file_path));
 
     RunTest(html_file, "accessibility/html");
+  }
+
+  void RunDisplayLockingTest(const base::FilePath::CharType* file_path) {
+    base::FilePath test_path =
+        GetTestFilePath("accessibility", "display-locking");
+    {
+      base::ScopedAllowBlockingForTesting allow_blocking;
+      ASSERT_TRUE(base::PathExists(test_path)) << test_path.LossyDisplayName();
+    }
+    base::FilePath html_file = test_path.Append(base::FilePath(file_path));
+
+    RunTest(html_file, "accessibility/display-locking");
   }
 
   void RunRegressionTest(const base::FilePath::CharType* file_path) {
@@ -2059,6 +2074,28 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, DeleteSelectionCrash) {
   RunHtmlTest(FILE_PATH_LITERAL("delete-selection-crash.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, DisplayLockingActivatable) {
+  RunDisplayLockingTest(FILE_PATH_LITERAL("activatable.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       DisplayLockingActivatableActivated) {
+  RunDisplayLockingTest(FILE_PATH_LITERAL("activatable-activated.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       DisplayLockingNonActivatable) {
+  RunDisplayLockingTest(FILE_PATH_LITERAL("non-activatable.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, DisplayLockingAll) {
+  RunDisplayLockingTest(FILE_PATH_LITERAL("all.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, DisplayLockingAllCommitted) {
+  RunDisplayLockingTest(FILE_PATH_LITERAL("all-committed.html"));
 }
 
 //

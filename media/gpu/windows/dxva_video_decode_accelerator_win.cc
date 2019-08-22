@@ -519,8 +519,7 @@ DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
       using_angle_device_(false),
       enable_accelerated_vpx_decode_(
           !workarounds.disable_accelerated_vpx_decode),
-      processing_config_changed_(false),
-      weak_this_factory_(this) {
+      processing_config_changed_(false) {
   weak_ptr_ = weak_this_factory_.GetWeakPtr();
   memset(&input_stream_info_, 0, sizeof(input_stream_info_));
   memset(&output_stream_info_, 0, sizeof(output_stream_info_));

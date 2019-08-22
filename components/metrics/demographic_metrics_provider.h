@@ -18,9 +18,13 @@ struct Feature;
 
 namespace metrics {
 
-// Provider of user demographics. Aggregate, non-individually-identifying
-// demographics are used to measure usage of Chrome features by age and gender.
-// Users can avoid aggregation of usage data by demographics by either a)
+// Provider of the synced user’s noised birth year and gender to the UMA metrics
+// server. The synced user's birth year and gender were provided to Google when
+// the user created their Google account, to use in accordance with Google's
+// privacy policy. The provided birth year and gender are used in aggregate and
+// anonymized form to measure usage of Chrome features by age groups and gender
+// - helping Chrome ensure features are useful to a wide range of users. Users
+// can avoid aggregation of usage data by birth year and gender by either a)
 // turning off sending usage statistics to Google or b) turning off sync.
 class DemographicMetricsProvider : public MetricsProvider {
  public:
@@ -48,7 +52,7 @@ class DemographicMetricsProvider : public MetricsProvider {
   void ProvideCurrentSessionData(
       ChromeUserMetricsExtension* uma_proto) override;
 
-  // Feature switch to report user demographic data.
+  // Feature switch to report user's noised birth year and gender.
   static const base::Feature kDemographicMetricsReporting;
 
  private:

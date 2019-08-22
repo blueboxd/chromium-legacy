@@ -27,7 +27,8 @@ enum class RankingItemType {
   kOmniboxHistory,
   kOmniboxNavSuggest,
   kOmniboxSearch,
-  kZeroStateFile
+  kZeroStateFile,
+  kDriveQuickAccess
 };
 
 // Convert a |ChromeSearchResult| into its |RankingItemType|.

@@ -17,8 +17,7 @@ BluetoothRemoteGattDescriptorWin::BluetoothRemoteGattDescriptorWin(
     scoped_refptr<base::SequencedTaskRunner>& ui_task_runner)
     : parent_characteristic_(parent_characteristic),
       descriptor_info_(descriptor_info),
-      ui_task_runner_(ui_task_runner),
-      weak_ptr_factory_(this) {
+      ui_task_runner_(ui_task_runner) {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(parent_characteristic_);
   DCHECK(descriptor_info_.get());

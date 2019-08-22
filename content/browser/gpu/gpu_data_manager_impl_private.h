@@ -74,6 +74,10 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   gpu::GpuFeatureInfo GetGpuFeatureInfoForHardwareGpu() const;
   gpu::GpuExtraInfo GetGpuExtraInfo() const;
 
+  bool IsGpuCompositingDisabled() const;
+
+  void SetGpuCompositingDisabled();
+
   void AppendGpuCommandLine(base::CommandLine* command_line,
                             GpuProcessKind kind) const;
 
@@ -107,9 +111,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   gpu::GpuMode GetGpuMode() const;
   void FallBackToNextGpuMode();
-
-  // Notify all observers whenever there is a GPU info update.
-  void NotifyGpuInfoUpdate();
 
   bool IsGpuProcessUsingHardwareGpu() const;
 
@@ -179,6 +180,9 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   //   2) all other platforms, this returns false.
   bool NeedsCompleteGpuInfoCollection() const;
 
+  // Notify all observers whenever there is a GPU info update.
+  void NotifyGpuInfoUpdate();
+
   GpuDataManagerImpl* const owner_;
 
   bool complete_gpu_info_already_requested_ = false;
@@ -213,6 +217,8 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   bool domain_blocking_enabled_ = true;
 
   bool application_is_visible_ = true;
+
+  bool disable_gpu_compositing_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(GpuDataManagerImplPrivate);
 };

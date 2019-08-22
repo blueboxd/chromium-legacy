@@ -2555,6 +2555,7 @@ jumbo_source_set("browser") {
       "//chromeos/dbus/power",
       "//chromeos/dbus/power:power_manager_proto",
       "//chromeos/network",
+      "//chromeos/system",
       "//components/session_manager/core",
     ]
   } else {

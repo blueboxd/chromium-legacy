@@ -82,6 +82,8 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
         return gfx::kGoogleGrey200;
       case NativeTheme::kColorId_FocusedMenuItemBackgroundColor:
         return SkColorSetA(SK_ColorWHITE, 0x29);
+      case NativeTheme::kColorId_MenuBorderColor:
+        return gfx::kGoogleGrey800;
       case NativeTheme::kColorId_MenuSeparatorColor:
         return SkColorSetA(gfx::kGoogleGrey800, 0xCC);
       case NativeTheme::kColorId_MenuBackgroundColor:
@@ -245,7 +247,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     case NativeTheme::kColorId_EnabledMenuItemForegroundColor:
       return SK_ColorBLACK;
     case NativeTheme::kColorId_MenuBorderColor:
-      return SkColorSetRGB(0xBA, 0xBA, 0xBA);
+      return gfx::kGoogleGrey300;
     case NativeTheme::kColorId_MenuSeparatorColor:
       return gfx::kGoogleGrey200;
     case NativeTheme::kColorId_MenuBackgroundColor:

@@ -4235,7 +4235,8 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
                  base::Unretained(this)));
 
   registry_->AddInterface(base::BindRepeating(
-      &RenderFrameHostImpl::CreateWebSocketConnector, base::Unretained(this)));
+      &RenderFrameHostImpl::CreateWebSocketConnectorForRequest,
+      base::Unretained(this)));
 
   registry_->AddInterface(base::BindRepeating(
       &RenderFrameHostImpl::CreateDedicatedWorkerHostFactory,
@@ -6133,12 +6134,19 @@ void RenderFrameHostImpl::BindMediaInterfaceFactoryRequest(
                  base::Unretained(this))));
 }
 
-void RenderFrameHostImpl::CreateWebSocketConnector(
+void RenderFrameHostImpl::CreateWebSocketConnectorForRequest(
     blink::mojom::WebSocketConnectorRequest request) {
-  mojo::MakeStrongBinding(
+  // Implicit conversion from WebSocketConnectorRequest to
+  // mojo::PendingReceiver<blink::mojom::WebSocketConnector>.
+  CreateWebSocketConnector(std::move(request));
+}
+
+void RenderFrameHostImpl::CreateWebSocketConnector(
+    mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver) {
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<WebSocketConnectorImpl>(
           GetProcess()->GetID(), routing_id_, last_committed_origin_),
-      std::move(request));
+      std::move(receiver));
 }
 
 void RenderFrameHostImpl::CreateDedicatedWorkerHostFactory(
@@ -6259,6 +6267,15 @@ void RenderFrameHostImpl::GetFrameHostTestInterface(
                               std::move(receiver));
 }
 
+void RenderFrameHostImpl::CreateAppCacheBackend(
+    mojo::PendingReceiver<blink::mojom::AppCacheBackend> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto* storage_partition_impl =
+      static_cast<StoragePartitionImpl*>(GetProcess()->GetStoragePartition());
+  storage_partition_impl->GetAppCacheService()->CreateBackend(
+      GetProcess()->GetID(), routing_id_, std::move(receiver));
+}
+
 void RenderFrameHostImpl::GetAudioContextManager(
     mojo::PendingReceiver<blink::mojom::AudioContextManager> receiver) {
   AudioContextManagerImpl::Create(this, std::move(receiver));
@@ -6319,18 +6336,6 @@ void RenderFrameHostImpl::GetVirtualAuthenticatorManager(
     }
   }
 #endif  // !defined(OS_ANDROID)
-}
-
-void RenderFrameHostImpl::RegisterAppCacheHost(
-    mojo::PendingReceiver<blink::mojom::AppCacheHost> host_receiver,
-    mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend_remote,
-    const base::UnguessableToken& host_id) {
-  auto* appcache_service_impl = static_cast<AppCacheServiceImpl*>(
-      GetProcess()->GetStoragePartition()->GetAppCacheService());
-
-  appcache_service_impl->RegisterHost(
-      std::move(host_receiver), std::move(frontend_remote), host_id,
-      routing_id_, GetProcess()->GetID(), mojo::GetBadMessageCallback());
 }
 
 std::unique_ptr<NavigationRequest>

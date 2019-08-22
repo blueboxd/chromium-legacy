@@ -58,6 +58,7 @@ class CONTENT_EXPORT ChromeAppCacheService
 
   void CreateBackend(
       int process_id,
+      int routing_id,
       mojo::PendingReceiver<blink::mojom::AppCacheBackend> receiver);
 
   void Shutdown();

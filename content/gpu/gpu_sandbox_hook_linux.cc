@@ -105,11 +105,20 @@ void AddV4L2GpuWhitelist(
     static const base::FilePath::CharType kDevicePath[] =
         FILE_PATH_LITERAL("/dev/");
     static const base::FilePath::CharType kVideoDecPattern[] = "video-dec[0-9]";
-    base::FileEnumerator enumerator(base::FilePath(kDevicePath), false,
-                                    base::FileEnumerator::FILES,
-                                    base::FilePath(kVideoDecPattern).value());
-    for (base::FilePath name = enumerator.Next(); !name.empty();
-         name = enumerator.Next())
+    base::FileEnumerator video_enumerator(
+        base::FilePath(kDevicePath), false, base::FileEnumerator::FILES,
+        base::FilePath(kVideoDecPattern).value());
+    for (base::FilePath name = video_enumerator.Next(); !name.empty();
+         name = video_enumerator.Next())
+      permissions->push_back(BrokerFilePermission::ReadWrite(name.value()));
+
+    // Device nodes for V4L2 media devices (for request API and camera)
+    static const base::FilePath::CharType kMediaDecPattern[] = "media-dec[0-9]";
+    base::FileEnumerator media_enumerator(
+        base::FilePath(kDevicePath), false, base::FileEnumerator::FILES,
+        base::FilePath(kMediaDecPattern).value());
+    for (base::FilePath name = media_enumerator.Next(); !name.empty();
+         name = media_enumerator.Next())
       permissions->push_back(BrokerFilePermission::ReadWrite(name.value()));
   }
 

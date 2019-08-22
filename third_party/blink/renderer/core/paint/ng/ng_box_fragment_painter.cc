@@ -1107,7 +1107,8 @@ BoxPainterBase::FillLayerInfo NGBoxFragmentPainter::GetFillLayerInfo(
   return BoxPainterBase::FillLayerInfo(
       fragment.GetLayoutObject()->GetDocument(), fragment.Style(),
       fragment.HasOverflowClip(), color, bg_layer, bleed_avoidance,
-      border_edges.line_left, border_edges.line_right);
+      border_edges.line_left, border_edges.line_right,
+      fragment.GetLayoutObject()->IsInline());
 }
 
 bool NGBoxFragmentPainter::IsInSelfHitTestingPhase(HitTestAction action) const {

@@ -448,8 +448,7 @@ BluetoothRemoteGattCharacteristicWinrt::BluetoothRemoteGattCharacteristicWinrt(
       identifier_(base::StringPrintf("%s/%s_%04x",
                                      service_->GetIdentifier().c_str(),
                                      uuid_.value().c_str(),
-                                     attribute_handle_)),
-      weak_ptr_factory_(this) {}
+                                     attribute_handle_)) {}
 
 void BluetoothRemoteGattCharacteristicWinrt::WriteCccDescriptor(
     GattClientCharacteristicConfigurationDescriptorValue value,

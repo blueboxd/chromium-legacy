@@ -40,6 +40,9 @@ specific_include_rules = {
   "cras_unified_unittest.cc": [
     "+chromeos/dbus"
   ],
+  "fuchsia_video_decoder_unittest.cc": [
+    "+components/viz/test/test_context_support.h",
+  ],
   "gpu_memory_buffer_video_frame_pool_unittest.cc": [
     "+components/viz/test/test_context_provider.h",
   ],

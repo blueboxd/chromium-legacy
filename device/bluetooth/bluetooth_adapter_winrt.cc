@@ -603,7 +603,7 @@ IDeviceWatcher* BluetoothAdapterWinrt::GetPoweredRadioWatcherForTesting() {
   return powered_radio_watcher_.Get();
 }
 
-BluetoothAdapterWinrt::BluetoothAdapterWinrt() : weak_ptr_factory_(this) {
+BluetoothAdapterWinrt::BluetoothAdapterWinrt() {
   ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 }
 

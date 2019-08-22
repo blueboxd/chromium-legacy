@@ -526,14 +526,11 @@ void RenderWidgetHostViewAndroid::ShowContextMenuAtTouchHandle(
   }
 }
 
-void RenderWidgetHostViewAndroid::InsetViewportBottom(
+void RenderWidgetHostViewAndroid::OnViewportInsetBottomChanged(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
-    jint bottom_adjust_px) {
-  int pinned_bottom_adjust_dps =
-      std::max(0, (int)(bottom_adjust_px / view_.GetDipScale()));
-  gfx::Insets insets(0, 0, pinned_bottom_adjust_dps, 0);
-  SetInsets(insets);
+    const base::android::JavaParamRef<jobject>& obj) {
+  SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
+                              base::nullopt);
 }
 
 void RenderWidgetHostViewAndroid::WriteContentBitmapToDiskAsync(
@@ -640,16 +637,12 @@ gfx::Rect RenderWidgetHostViewAndroid::GetViewBounds() {
 
 gfx::Size RenderWidgetHostViewAndroid::GetVisibleViewportSize() {
   gfx::Rect requested_rect(GetRequestedRendererSize());
-  requested_rect.Inset(insets_);
+  requested_rect.Inset(gfx::Insets(0, 0, view_.GetViewportInsetBottom(), 0));
   return requested_rect.size();
 }
 
 void RenderWidgetHostViewAndroid::SetInsets(const gfx::Insets& insets) {
-  if (insets != insets_) {
-    insets_ = insets;
-    SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
-                                base::nullopt);
-  }
+  NOTREACHED();
 }
 
 gfx::Size RenderWidgetHostViewAndroid::GetCompositorViewportPixelSize() {

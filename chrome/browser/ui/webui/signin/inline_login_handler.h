@@ -16,10 +16,6 @@ namespace base {
 class DictionaryValue;
 }
 
-namespace net {
-class CanonicalCookie;
-}
-
 namespace signin_metrics {
 enum class AccessPoint;
 }
@@ -65,7 +61,7 @@ class InlineLoginHandler : public content::WebUIMessageHandler {
   // from the CookieManager.
   void HandleCompleteLoginMessageWithCookies(
       const base::ListValue& args,
-      const std::vector<net::CanonicalCookie>& cookies,
+      const net::CookieStatusList& cookies,
       const net::CookieStatusList& excluded_cookies);
 
   // JS callback to switch the UI from a constrainted dialog to a full tab.

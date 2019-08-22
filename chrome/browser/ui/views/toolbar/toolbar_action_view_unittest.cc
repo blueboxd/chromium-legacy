@@ -33,7 +33,7 @@ class TestToolbarActionViewDelegate : public ToolbarActionView::Delegate {
   }
   bool ShownInsideMenu() const override { return shown_in_menu_; }
   void OnToolbarActionViewDragDone() override {}
-  views::MenuButton* GetOverflowReferenceView() override {
+  views::MenuButton* GetOverflowReferenceView() const override {
     return overflow_reference_view_;
   }
   gfx::Size GetToolbarActionSize() override { return gfx::Size(32, 32); }

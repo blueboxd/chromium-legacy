@@ -968,8 +968,9 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_BOOKMARKS_MENU, !guest_session);
   command_updater_.UpdateCommandEnabled(
       IDC_RECENT_TABS_MENU, !guest_session && !profile()->IsOffTheRecord());
-  command_updater_.UpdateCommandEnabled(IDC_CLEAR_BROWSING_DATA,
-                                        !guest_session);
+  command_updater_.UpdateCommandEnabled(
+      IDC_CLEAR_BROWSING_DATA,
+      !guest_session && !profile()->IsIncognitoProfile());
 #if defined(OS_CHROMEOS)
   command_updater_.UpdateCommandEnabled(IDC_TAKE_SCREENSHOT, true);
   // Chrome OS uses the system tray menu to handle multi-profiles. Avatar menu

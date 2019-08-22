@@ -40,8 +40,7 @@ std::string GetChromePath() {
 
 }  // namespace
 
-ReportGenerator::ReportGenerator()
-    : maximum_report_size_(kMaximumReportSize), weak_ptr_factory_(this) {}
+ReportGenerator::ReportGenerator() : maximum_report_size_(kMaximumReportSize) {}
 
 ReportGenerator::~ReportGenerator() = default;
 

@@ -20,7 +20,7 @@ function clickThreeDotMenu(printerEntry) {
  */
 function clickAddAutomaticButton(printerEntry) {
   // Click on add button on an item entry.
-  const addButton = printerEntry.$$('.icon-add-circle');
+  const addButton = printerEntry.$$('#savePrinterButton');
   assertTrue(!!addButton);
   addButton.click();
   Polymer.dom.flush();
@@ -530,10 +530,10 @@ suite('CupsNearbyPrintersTests', function() {
           Polymer.dom.flush();
 
           // Requery and assert that the newly detected printer automatic
-          // printer has the correct icon button.
+          // printer has the correct button.
           nearbyPrinterEntries = getPrinterEntries(nearbyPrintersElement);
           assertEquals(1, nearbyPrinterEntries.length);
-          assertTrue(!!nearbyPrinterEntries[0].$$('.icon-add-circle'));
+          assertTrue(!!nearbyPrinterEntries[0].$$('#savePrinterButton'));
 
           // Add an automatic printer and assert that that the toast
           // notification is shown.

@@ -97,8 +97,6 @@ KeyedService* CreateNotificationScheduleService(
 
   auto background_task_coordinator = BackgroundTaskCoordinator::Create(
       std::move(background_task_scheduler), config.get(),
-      base::BindRepeating(&BackgroundTaskCoordinator::DefaultTimeRandomizer,
-                          config->background_task_random_time_window),
       base::DefaultClock::GetInstance());
 
   auto display_decider = DisplayDecider::Create(

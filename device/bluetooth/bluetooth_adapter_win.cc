@@ -68,8 +68,7 @@ BluetoothAdapterWin::BluetoothAdapterWin(InitCallback init_callback)
       initialized_(false),
       powered_(false),
       discovery_status_(NOT_DISCOVERING),
-      force_update_device_for_test_(false),
-      weak_ptr_factory_(this) {}
+      force_update_device_for_test_(false) {}
 
 BluetoothAdapterWin::~BluetoothAdapterWin() {
   if (task_manager_.get())

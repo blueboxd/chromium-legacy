@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
+#include "chrome/browser/ui/views/extensions/extension_context_menu_controller.h"
 #include "chrome/browser/ui/views/frame/app_menu_button_observer.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_controller_interactive_uitest.h"
@@ -114,7 +115,9 @@ void TestOverflowedToolbarAction(Browser* browser,
 // Tests the context menu of an overflowed action.
 void TestWhileContextMenuOpen(Browser* browser,
                               ToolbarActionView* context_menu_action) {
-  views::MenuItemView* menu_root = context_menu_action->menu_for_testing();
+  views::MenuItemView* menu_root =
+      context_menu_action->context_menu_controller_for_testing()
+          ->menu_for_testing();
   ASSERT_TRUE(menu_root);
   ASSERT_TRUE(menu_root->GetSubmenu());
   EXPECT_TRUE(menu_root->GetSubmenu()->IsShowing());

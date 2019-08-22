@@ -123,7 +123,7 @@ PrintingContext::Result PrintingContextNoSystemDialog::DocumentDone() {
     return CANCEL;
   DCHECK(in_print_job_);
 
-  DeleteSettings();
+  ResetSettings();
   return OK;
 }
 

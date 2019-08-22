@@ -94,6 +94,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "net/test/embedded_test_server/request_handler_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -2515,6 +2516,63 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, ServiceWorkerFallback) {
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
                        ServiceWorkerNoFetchHandler) {
   RunServiceWorkerFetchTest("empty.js");
+}
+
+// An extension should be able to modify the request header for service worker
+// script by using WebRequest API.
+//
+// Disabled due to https://crbug.com/995763.
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+                       DISABLED_ServiceWorkerScript) {
+  // The extension to be used in this test adds foo=bar request header.
+  const char kScriptPath[] = "/echoheader_service_worker.js";
+  int served_service_worker_count = 0;
+  std::string foo_header_value;
+
+  // Capture the value of a request header foo, which should be added if
+  // extension modifies the request header.
+  embedded_test_server()->RegisterRequestHandler(base::BindLambdaForTesting(
+      [&](const net::test_server::HttpRequest& request)
+          -> std::unique_ptr<net::test_server::HttpResponse> {
+        if (request.relative_url != kScriptPath)
+          return nullptr;
+
+        ++served_service_worker_count;
+        foo_header_value.clear();
+        if (request.headers.find("foo") != request.headers.end())
+          foo_header_value = request.headers.at("foo");
+
+        auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+        response->set_code(net::HTTP_OK);
+        response->set_content_type("text/javascript");
+        response->AddCustomHeader("Cache-Control", "no-cache");
+        response->set_content("// empty");
+        return response;
+      }));
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  InstallRequestHeaderModifyingExtension();
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  GURL url = embedded_test_server()->GetURL(
+      "/service_worker/create_service_worker.html");
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+
+  // Register a service worker. The worker script should have "foo: bar" request
+  // header added by the extension.
+  std::string script =
+      content::JsReplace("register($1, './in-scope');", kScriptPath);
+  EXPECT_EQ("DONE", EvalJs(web_contents, script));
+  EXPECT_EQ(1, served_service_worker_count);
+  EXPECT_EQ("bar", foo_header_value);
+
+  // Update the worker. The worker should have "foo: bar" request header in the
+  // request for update checking.
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+  EXPECT_EQ("DONE", EvalJs(web_contents, "update('./in-scope');"));
+  EXPECT_EQ(2, served_service_worker_count);
+  EXPECT_EQ("bar", foo_header_value);
 }
 
 // Ensure that extensions can intercept service worker navigation preload

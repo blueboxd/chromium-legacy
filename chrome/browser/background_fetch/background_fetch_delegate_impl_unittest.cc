@@ -51,7 +51,7 @@ class BackgroundFetchDelegateImplTest : public testing::Test {
  protected:
   // This is used to specify the main thread type of the tests as the UI
   // thread.
-  content::BrowserTaskEnvironment threads_;
+  content::BrowserTaskEnvironment task_environment_;
 
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> recorder_;
   BackgroundFetchDelegateImpl* delegate_;

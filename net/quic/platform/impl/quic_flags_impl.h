@@ -48,6 +48,12 @@ inline std::string GetQuicFlagImpl(const std::string& flag) {
 
 #define SetQuicFlagImpl(flag, value) ((flag) = (value))
 
+// Sets the flag named |flag_name| to the value of |value| after converting
+// it from a string to the appropriate type. If |value| is invalid or out of
+// range, the flag will be unchanged.
+QUIC_EXPORT_PRIVATE void SetQuicFlagByName(const std::string& flag_name,
+                                           const std::string& value);
+
 namespace quic {
 
 // ------------------------------------------------------------------------

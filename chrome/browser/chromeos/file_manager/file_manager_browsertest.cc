@@ -512,11 +512,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(TestCase("toolbarDeleteWithMenuItemNoEntrySelected"),
                       TestCase("toolbarDeleteEntry").InGuestMode(),
                       TestCase("toolbarDeleteEntry"),
-                      // TODO(lucmult): Figure out why this Arc test is failing
-                      // with MyFiles.
-                      TestCase("toolbarRefreshButtonWithSelection")
-                          .EnableArc()
-                          .DisableMyFilesVolume(),
+                      TestCase("toolbarRefreshButtonWithSelection").EnableArc(),
                       TestCase("toolbarRefreshButtonHiddenInRecents")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
@@ -606,14 +602,10 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("dirContextMenuPlayFiles"),
         TestCase("dirContextMenuUsbs"),
         TestCase("dirContextMenuFsp"),
-        // TODO(lucmult): Fix ARC tests with MyFilesVolume.
-        TestCase("dirContextMenuDocumentsProvider")
-            .EnableDocumentsProvider()
-            .DisableMyFilesVolume(),
+        TestCase("dirContextMenuDocumentsProvider").EnableDocumentsProvider(),
         TestCase("dirContextMenuUsbDcim"),
         TestCase("dirContextMenuMtp"),
-        // TODO(lucmult): Fix ARC tests with MyFilesVolume.
-        TestCase("dirContextMenuMediaView").EnableArc().DisableMyFilesVolume(),
+        TestCase("dirContextMenuMediaView").EnableArc(),
         TestCase("dirContextMenuMyDrive"),
         TestCase("dirContextMenuSharedDrive"),
         TestCase("dirContextMenuSharedWithMe"),
@@ -967,7 +959,6 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     MyFiles, /* my_files.js */
     FilesAppBrowserTest,
     ::testing::Values(
-        // search should only be disabled if MyFiles isn't a volume.
         TestCase("directoryTreeRefresh").EnableMyFilesVolume(),
         TestCase("showMyFiles").EnableMyFilesVolume(),
         TestCase("myFilesDisplaysAndOpensEntries").EnableMyFilesVolume(),

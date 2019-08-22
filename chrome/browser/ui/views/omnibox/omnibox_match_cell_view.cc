@@ -248,7 +248,7 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
   is_search_type_ = AutocompleteMatch::IsSearchType(match.type);
 
   // Decide layout style once before Layout, while match data is available.
-  if (is_rich_suggestion_ || match.ShouldShowTabMatch() || match.pedal) {
+  if (is_rich_suggestion_ || match.ShouldShowTabMatchButton() || match.pedal) {
     layout_style_ = LayoutStyle::TWO_LINE_SUGGESTION;
   } else if (!!match.answer) {
     layout_style_ = LayoutStyle::OLD_ANSWER;

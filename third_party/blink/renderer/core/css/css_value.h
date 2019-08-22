@@ -273,6 +273,7 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
       : numeric_literal_unit_type_(0),
         value_list_separator_(kSpaceSeparator),
         is_non_negative_math_function_(false),
+        allows_negative_percentage_reference_(false),
         class_type_(class_type) {}
 
   // NOTE: This class is non-virtual for memory and performance reasons.
@@ -289,6 +290,7 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
 
   // CSSMathFunctionValue
   unsigned is_non_negative_math_function_ : 1;
+  unsigned allows_negative_percentage_reference_ : 1;
 
  private:
   unsigned class_type_ : kClassTypeBits;  // ClassType

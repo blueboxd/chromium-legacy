@@ -51,7 +51,7 @@ void MigratePrefs(PrefService* prefs, const std::string& sender_id) {
 
 FCMInvalidationService::FCMInvalidationService(
     IdentityProvider* identity_provider,
-    gcm::GCMDriver* gcm_driver,
+    FCMNetworkHandlerCallback fcm_network_handler_callback,
     instance_id::InstanceIDDriver* instance_id_driver,
     PrefService* pref_service,
     const syncer::ParseJSONCallback& parse_json,
@@ -61,7 +61,7 @@ FCMInvalidationService::FCMInvalidationService(
       invalidator_registrar_(pref_service,
                              sender_id_,
                              sender_id_ == kInvalidationGCMSenderId),
-      gcm_driver_(gcm_driver),
+      fcm_network_handler_callback_(std::move(fcm_network_handler_callback)),
       instance_id_driver_(instance_id_driver),
       identity_provider_(identity_provider),
       pref_service_(pref_service),
@@ -261,14 +261,14 @@ void FCMInvalidationService::StartInvalidator() {
   DCHECK(!invalidation_listener_);
   DCHECK(IsReadyToStart());
   diagnostic_info_.service_was_started = base::Time::Now();
-  auto network = std::make_unique<syncer::FCMNetworkHandler>(
-      gcm_driver_, instance_id_driver_, sender_id_, GetApplicationName());
+  auto network =
+      fcm_network_handler_callback_.Run(sender_id_, GetApplicationName());
   // The order of calls is important. Do not change.
   // We should start listening before requesting the id, because
   // valid id is only generated, once there is an app handler
   // for the app. StartListening registers the app handler.
   // We should create InvalidationListener first, because it registers the
-  // handler for the incoming messages, which is crutial on Android, because on
+  // handler for the incoming messages, which is crucial on Android, because on
   // the startup cached messages might exists.
   invalidation_listener_ =
       std::make_unique<syncer::FCMInvalidationListener>(std::move(network));
@@ -326,7 +326,7 @@ void FCMInvalidationService::OnInstanceIdRecieved(const std::string& id) {
 
 void FCMInvalidationService::OnDeleteIDCompleted(
     instance_id::InstanceID::Result) {
-  // TODO(meandory): report metric in case of unsucesfull deletion.
+  // TODO(melandory): report metric in case of unsuccessful deletion.
 }
 
 void FCMInvalidationService::DoUpdateRegisteredIdsIfNeeded() {

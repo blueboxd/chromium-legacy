@@ -496,9 +496,7 @@ PortableDeviceWatcherWin::DeviceDetails::~DeviceDetails() {
 }
 
 PortableDeviceWatcherWin::PortableDeviceWatcherWin()
-    : notifications_(nullptr),
-      storage_notifications_(nullptr),
-      weak_ptr_factory_(this) {}
+    : notifications_(nullptr), storage_notifications_(nullptr) {}
 
 PortableDeviceWatcherWin::~PortableDeviceWatcherWin() {
   UnregisterDeviceNotification(notifications_);

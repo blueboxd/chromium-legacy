@@ -93,7 +93,7 @@ class MultipartUploadRequest {
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
   net::NetworkTrafficAnnotationTag traffic_annotation_;
 
-  base::WeakPtrFactory<MultipartUploadRequest> weak_factory_;
+  base::WeakPtrFactory<MultipartUploadRequest> weak_factory_{this};
 };
 
 }  // namespace safe_browsing

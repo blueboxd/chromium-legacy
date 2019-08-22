@@ -488,8 +488,7 @@ UsbDeviceHandleWin::UsbDeviceHandleWin(scoped_refptr<UsbDeviceWin> device,
                                        bool composite)
     : device_(std::move(device)),
       task_runner_(base::SequencedTaskRunnerHandle::Get()),
-      blocking_task_runner_(UsbService::CreateBlockingTaskRunner()),
-      weak_factory_(this) {
+      blocking_task_runner_(UsbService::CreateBlockingTaskRunner()) {
   DCHECK(!composite);
   // Windows only supports configuration 1, which therefore must be active.
   DCHECK(device_->active_configuration());
@@ -513,8 +512,7 @@ UsbDeviceHandleWin::UsbDeviceHandleWin(scoped_refptr<UsbDeviceWin> device,
     : device_(std::move(device)),
       hub_handle_(std::move(handle)),
       task_runner_(base::SequencedTaskRunnerHandle::Get()),
-      blocking_task_runner_(UsbService::CreateBlockingTaskRunner()),
-      weak_factory_(this) {}
+      blocking_task_runner_(UsbService::CreateBlockingTaskRunner()) {}
 
 UsbDeviceHandleWin::~UsbDeviceHandleWin() {}
 

@@ -20,6 +20,15 @@ Polymer({
      */
     presetAccount: Object,
 
+    /**
+     * Whether an existing |presetAccount| was successfully authenticated.
+     * Always false if |presetAccount| is null (new accounts).
+     */
+    accountWasRefreshed: {
+      type: Boolean,
+      value: false,
+    },
+
     /** @private */
     username_: {
       type: String,
@@ -170,7 +179,11 @@ Polymer({
   onAdd_: function() {
     assert(!this.inProgress_);
     this.inProgress_ = true;
-    this.updateErrorMessages_(settings.KerberosErrorType.kNone);
+
+    // Keep the general error, wiping it might cause the error to disappear and
+    // immediately reappear, causing 2 resizings of the dialog.
+    this.usernameErrorText_ = '';
+    this.passwordErrorText_ = '';
 
     // An empty password triggers the Kerberos daemon to use the remembered one.
     const passwordToSubmit = this.useRememberedPassword_ ? '' : this.password_;
@@ -187,6 +200,7 @@ Polymer({
 
           // Success case. Close dialog.
           if (error == settings.KerberosErrorType.kNone) {
+            this.accountWasRefreshed = this.presetAccount != null;
             this.$.addDialog.close();
             return;
           }
@@ -331,8 +345,8 @@ Polymer({
 
   /**
    * @param {!settings.KerberosConfigErrorCode} code Error code
-   * @param {!string} errorLine Line where the error occurred
-   * @return {!string} Localized error string that corresponds to code
+   * @param {string} errorLine Line where the error occurred
+   * @return {string} Localized error string that corresponds to code
    * @private
    */
   getConfigErrorString_: function(code, errorLine) {
@@ -363,8 +377,8 @@ Polymer({
   /**
    * Selects a line in a text area and scrolls to it.
    * @param {!Element} textArea A textarea element
-   * @param {!number} lineIndex 0-based index of the line to select
-   * @return {!string} The line at lineIndex.
+   * @param {number} lineIndex 0-based index of the line to select
+   * @return {string} The line at lineIndex.
    * @private
    */
   selectAndScrollTo_: function(textArea, lineIndex) {

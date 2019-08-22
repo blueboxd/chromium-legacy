@@ -153,6 +153,9 @@ enum FeaturePolicyFeature {
   kClientHintViewportWidth = 63,
   kClientHintWidth = 64,
 
+  // Whether all cross document access to this window object is treated as cross origin.
+  kDocumentAccess = 65,
+
   // Don't change assigned numbers of any item, and don't reuse removed slots.
   // Add new features at the end of the enum.
   // Also, run update_feature_policy_enum.py in

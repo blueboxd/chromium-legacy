@@ -62,7 +62,7 @@ class DelayedCookieMonster : public CookieStore {
                                      const CookieOptions& options,
                                      GetCookieListCallback callback) override;
 
-  void GetAllCookiesAsync(GetCookieListCallback callback) override;
+  void GetAllCookiesAsync(GetAllCookiesCallback callback) override;
 
   void DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
                                   DeleteCallback callback) override;
@@ -91,7 +91,7 @@ class DelayedCookieMonster : public CookieStore {
 
   void GetCookiesWithOptionsInternalCallback(const std::string& cookie);
   void GetCookieListWithOptionsInternalCallback(
-      const CookieList& cookie,
+      const CookieStatusList& cookie,
       const CookieStatusList& excluded_cookies);
 
   // Invoke the original callbacks.
@@ -110,6 +110,7 @@ class DelayedCookieMonster : public CookieStore {
   CanonicalCookie::CookieInclusionStatus result_;
   std::string cookie_;
   std::string cookie_line_;
+  CookieStatusList cookie_status_list_;
   CookieList cookie_list_;
 
   DISALLOW_COPY_AND_ASSIGN(DelayedCookieMonster);

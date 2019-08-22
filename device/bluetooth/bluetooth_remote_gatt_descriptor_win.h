@@ -61,7 +61,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptorWin
   std::string descriptor_identifier_;
   std::vector<uint8_t> descriptor_value_;
 
-  base::WeakPtrFactory<BluetoothRemoteGattDescriptorWin> weak_ptr_factory_;
+  base::WeakPtrFactory<BluetoothRemoteGattDescriptorWin> weak_ptr_factory_{
+      this};
   DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattDescriptorWin);
 };
 

@@ -40,7 +40,7 @@ const char kUnregisteredAppID[] = "app_id unregistered";
 class ListChangesTaskTest : public testing::Test {
  public:
   ListChangesTaskTest()
-      : browser_threads_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
   ~ListChangesTaskTest() override {}
 
   void SetUp() override {
@@ -199,7 +199,7 @@ class ListChangesTaskTest : public testing::Test {
   std::string app_root_folder_id_;
   std::string unregistered_app_root_folder_id_;
 
-  content::BrowserTaskEnvironment browser_threads_;
+  content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir database_dir_;
 
   std::unique_ptr<SyncEngineContext> context_;

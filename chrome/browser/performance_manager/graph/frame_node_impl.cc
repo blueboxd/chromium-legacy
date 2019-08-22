@@ -11,8 +11,11 @@
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/graph/worker_node_impl.h"
 #include "chrome/browser/performance_manager/performance_manager_clock.h"
+#include "chrome/browser/performance_manager/public/frame_priority/frame_priority.h"
 
 namespace performance_manager {
+
+using PriorityAndReason = frame_priority::PriorityAndReason;
 
 FrameNodeImpl::FrameNodeImpl(GraphImpl* graph,
                              ProcessNodeImpl* process_node,
@@ -98,7 +101,8 @@ void FrameNodeImpl::SetInterventionPolicy(
 }
 
 void FrameNodeImpl::SetIsAdFrame() {
-  is_ad_frame_ = true;
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  is_ad_frame_.SetAndMaybeNotify(this, true);
 }
 
 void FrameNodeImpl::OnNonPersistentNotificationCreated() {
@@ -197,13 +201,18 @@ bool FrameNodeImpl::network_almost_idle() const {
 }
 
 bool FrameNodeImpl::is_ad_frame() const {
-  return is_ad_frame_;
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return is_ad_frame_.value();
 }
 
 const base::flat_set<WorkerNodeImpl*>& FrameNodeImpl::child_worker_nodes()
     const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return child_worker_nodes_;
+}
+
+const PriorityAndReason& FrameNodeImpl::priority_and_reason() const {
+  return priority_and_reason_.value();
 }
 
 void FrameNodeImpl::SetIsCurrent(bool is_current) {
@@ -278,6 +287,12 @@ void FrameNodeImpl::RemoveChildWorker(WorkerNodeImpl* worker_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   size_t removed = child_worker_nodes_.erase(worker_node);
   DCHECK_EQ(1u, removed);
+}
+
+void FrameNodeImpl::SetPriorityAndReason(
+    const PriorityAndReason& priority_and_reason) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  priority_and_reason_.SetAndMaybeNotify(this, priority_and_reason);
 }
 
 void FrameNodeImpl::SetAllInterventionPoliciesForTesting(
@@ -374,6 +389,11 @@ const base::flat_set<const WorkerNode*> FrameNodeImpl::GetChildWorkerNodes()
     children.insert(static_cast<const WorkerNode*>(child));
   DCHECK_EQ(children.size(), child_worker_nodes().size());
   return children;
+}
+
+const PriorityAndReason& FrameNodeImpl::GetPriorityAndReason() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return priority_and_reason();
 }
 
 void FrameNodeImpl::AddChildFrame(FrameNodeImpl* child_frame_node) {

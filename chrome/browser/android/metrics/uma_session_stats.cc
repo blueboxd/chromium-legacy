@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -36,31 +37,42 @@ using base::android::JavaParamRef;
 using base::UserMetricsAction;
 
 namespace {
-UmaSessionStats* g_uma_session_stats = NULL;
-
 // Used to keep the state of whether we should consider metric consent enabled.
 // This is used/read only within the ChromeMetricsServiceAccessor methods.
 bool g_metrics_consent_for_testing = false;
 }  // namespace
 
-UmaSessionStats::UmaSessionStats()
-    : active_session_count_(0) {
-}
+UmaSessionStats::UmaSessionStats() = default;
+UmaSessionStats::~UmaSessionStats() = default;
 
-UmaSessionStats::~UmaSessionStats() {
+// static
+UmaSessionStats* UmaSessionStats::GetInstance() {
+  static base::NoDestructor<UmaSessionStats> instance;
+  return instance.get();
 }
 
 void UmaSessionStats::UmaResumeSession(JNIEnv* env,
                                        const JavaParamRef<jobject>& obj) {
   DCHECK(g_browser_process);
-
-  if (active_session_count_ == 0) {
-    session_start_time_ = base::TimeTicks::Now();
+  if (++active_session_count_ == 1) {
+    const bool had_background_session =
+        session_time_tracker_.BeginForegroundSession();
 
     // Tell the metrics services that the application resumes.
     metrics::MetricsService* metrics = g_browser_process->metrics_service();
-    if (metrics)
-      metrics->OnAppEnterForeground();
+    if (metrics) {
+      // Forcing a new log allows foreground and background metrics can be
+      // separated in analysis.
+      const bool force_new_log = base::FeatureList::IsEnabled(
+                                     chrome::android::kUmaBackgroundSessions) &&
+                                 had_background_session;
+
+      metrics->OnAppEnterForeground(force_new_log);
+    }
+    // Report background session time if it wasn't already reported by
+    // OnAppEnterForeground() -> ProvideCurrentSessionData().
+    session_time_tracker_.ReportBackgroundSessionTime();
+
     ukm::UkmService* ukm_service =
         g_browser_process->GetMetricsServicesManager()->GetUkmService();
     if (ukm_service)
@@ -68,10 +80,11 @@ void UmaSessionStats::UmaResumeSession(JNIEnv* env,
 
     AndroidProfileSessionDurationsService* psd_service =
         AndroidProfileSessionDurationsServiceFactory::GetForActiveUserProfile();
-    if (psd_service)
-      psd_service->OnAppEnterForeground(session_start_time_);
+    if (psd_service) {
+      psd_service->OnAppEnterForeground(
+          session_time_tracker_.session_start_time());
+    }
   }
-  ++active_session_count_;
 }
 
 void UmaSessionStats::UmaEndSession(JNIEnv* env,
@@ -80,14 +93,8 @@ void UmaSessionStats::UmaEndSession(JNIEnv* env,
   DCHECK_GE(active_session_count_, 0);
 
   if (active_session_count_ == 0) {
-    base::TimeDelta duration = base::TimeTicks::Now() - session_start_time_;
-
-    // Note: This metric is recorded separately on desktop in
-    // DesktopSessionDurationTracker::EndSession.
-    UMA_HISTOGRAM_LONG_TIMES("Session.TotalDuration", duration);
-    UMA_HISTOGRAM_CUSTOM_TIMES("Session.TotalDurationMax1Day", duration,
-                               base::TimeDelta::FromMilliseconds(1),
-                               base::TimeDelta::FromHours(24), 50);
+    const base::TimeDelta duration =
+        session_time_tracker_.EndForegroundSession();
 
     DCHECK(g_browser_process);
     // Tell the metrics services they were cleanly shutdown.
@@ -106,7 +113,71 @@ void UmaSessionStats::UmaEndSession(JNIEnv* env,
         AndroidProfileSessionDurationsServiceFactory::GetForActiveUserProfile();
     if (psd_service)
       psd_service->OnAppEnterBackground(duration);
+
+    // Note: Keep the line below after |metrics->OnAppEnterBackground()|.
+    // Otherwise, |ProvideCurrentSessionData()| may report a small timeslice of
+    // background session time toward the previous log.
+    session_time_tracker_.BeginBackgroundSession();
   }
+}
+
+// Called on startup. If there is an activity, do nothing because a foreground
+// session will be created naturally. Otherwise, begin recording a background
+// session.
+void UmaSessionStats::OnStartup() {
+  if (!Java_UmaSessionStats_hasVisibleActivity(
+          base::android::AttachCurrentThread())) {
+    GetInstance()->session_time_tracker_.BeginBackgroundSession();
+  }
+}
+
+bool UmaSessionStats::SessionTimeTracker::BeginForegroundSession() {
+  AccumulateBackgroundSessionTime();
+  background_session_start_time_ = {};
+  session_start_time_ = base::TimeTicks::Now();
+  return !background_session_accumulated_time_.is_zero();
+}
+
+void UmaSessionStats::SessionTimeTracker::AccumulateBackgroundSessionTime() {
+  // No time spent in background since the last call to
+  // |AccumulateBackgroundSessionTime()|.
+  if (background_session_start_time_.is_null())
+    return;
+
+  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeDelta duration = now - background_session_start_time_;
+  background_session_accumulated_time_ += duration;
+
+  background_session_start_time_ = now;
+}
+
+void UmaSessionStats::SessionTimeTracker::ReportBackgroundSessionTime() {
+  if (background_session_accumulated_time_.is_zero())
+    return;
+
+  // This histogram is used in analysis to determine if an uploaded log
+  // represents background activity. For this reason, this histogram may be
+  // recorded more than once per 'background session'.
+  UMA_HISTOGRAM_CUSTOM_TIMES(
+      "Session.Background.TotalDuration", background_session_accumulated_time_,
+      base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(24), 50);
+  background_session_accumulated_time_ = base::TimeDelta();
+}
+
+base::TimeDelta UmaSessionStats::SessionTimeTracker::EndForegroundSession() {
+  base::TimeDelta duration = base::TimeTicks::Now() - session_start_time_;
+
+  // Note: This metric is recorded separately on desktop in
+  // DesktopSessionDurationTracker::EndSession.
+  UMA_HISTOGRAM_LONG_TIMES("Session.TotalDuration", duration);
+  UMA_HISTOGRAM_CUSTOM_TIMES("Session.TotalDurationMax1Day", duration,
+                             base::TimeDelta::FromMilliseconds(1),
+                             base::TimeDelta::FromHours(24), 50);
+  return duration;
+}
+
+void UmaSessionStats::SessionTimeTracker::BeginBackgroundSession() {
+  background_session_start_time_ = base::TimeTicks::Now();
 }
 
 // static
@@ -123,6 +194,13 @@ void UmaSessionStats::RegisterSyntheticMultiGroupFieldTrial(
     const std::vector<uint32_t>& group_name_hashes) {
   ChromeMetricsServiceAccessor::RegisterSyntheticMultiGroupFieldTrial(
       trial_name, group_name_hashes);
+}
+
+void UmaSessionStats::ProvideCurrentSessionData() {
+  // We record Session.Background.TotalDuration here to ensure each UMA log
+  // containing a background session contains this histogram.
+  session_time_tracker_.AccumulateBackgroundSessionTime();
+  session_time_tracker_.ReportBackgroundSessionTime();
 }
 
 // Updates metrics reporting state managed by native code. This should only be
@@ -268,7 +346,5 @@ static void JNI_UmaSessionStats_RecordPageLoadedWithKeyboard(JNIEnv*) {
 
 static jlong JNI_UmaSessionStats_Init(JNIEnv* env) {
   // We should have only one UmaSessionStats instance.
-  DCHECK(!g_uma_session_stats);
-  g_uma_session_stats = new UmaSessionStats();
-  return reinterpret_cast<intptr_t>(g_uma_session_stats);
+  return reinterpret_cast<intptr_t>(UmaSessionStats::GetInstance());
 }

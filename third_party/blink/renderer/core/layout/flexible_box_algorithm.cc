@@ -262,18 +262,21 @@ void FlexItem::ComputeStretchedSize() {
 }
 
 void FlexLine::FreezeViolations(ViolationsVector& violations) {
+  const ComputedStyle& flex_box_style = algorithm->StyleRef();
   for (size_t i = 0; i < violations.size(); ++i) {
     DCHECK(!violations[i]->frozen) << i;
     LayoutBox* child = violations[i]->box;
     LayoutUnit child_size = violations[i]->flexed_content_size;
     remaining_free_space -= child_size - violations[i]->flex_base_content_size;
-    total_flex_grow -= child->StyleRef().FlexGrow();
-    total_flex_shrink -= child->StyleRef().FlexShrink();
+    total_flex_grow -= child->StyleRef().ResolvedFlexGrow(flex_box_style);
+    const float flex_shrink =
+        child->StyleRef().ResolvedFlexShrink(flex_box_style);
+    total_flex_shrink -= flex_shrink;
     total_weighted_flex_shrink -=
-        child->StyleRef().FlexShrink() * violations[i]->flex_base_content_size;
-    // totalWeightedFlexShrink can be negative when we exceed the precision of
-    // a double when we initially calcuate totalWeightedFlexShrink. We then
-    // subtract each child's weighted flex shrink with full precision, now
+        flex_shrink * violations[i]->flex_base_content_size;
+    // total_weighted_flex_shrink can be negative when we exceed the precision
+    // of a double when we initially calculate total_weighted_flex_shrink. We
+    // then subtract each child's weighted flex shrink with full precision, now
     // leading to a negative result. See
     // css3/flexbox/large-flex-shrink-assert.html
     total_weighted_flex_shrink = std::max(total_weighted_flex_shrink, 0.0);
@@ -289,14 +292,16 @@ void FlexLine::FreezeInflexibleItems() {
   remaining_free_space = container_main_inner_size - sum_flex_base_size;
 
   ViolationsVector new_inflexible_items;
+  const ComputedStyle& flex_box_style = algorithm->StyleRef();
   for (size_t i = 0; i < line_items.size(); ++i) {
     FlexItem& flex_item = line_items[i];
     LayoutBox* child = flex_item.box;
     DCHECK(!flex_item.box->IsOutOfFlowPositioned());
     DCHECK(!flex_item.frozen) << i;
-    float flex_factor = (flex_sign == kPositiveFlexibility)
-                            ? child->StyleRef().FlexGrow()
-                            : child->StyleRef().FlexShrink();
+    float flex_factor =
+        (flex_sign == kPositiveFlexibility)
+            ? child->StyleRef().ResolvedFlexGrow(flex_box_style)
+            : child->StyleRef().ResolvedFlexShrink(flex_box_style);
     if (flex_factor == 0 ||
         (flex_sign == kPositiveFlexibility &&
          flex_item.flex_base_content_size >
@@ -327,6 +332,7 @@ bool FlexLine::ResolveFlexibleLengths() {
       remaining_free_space = fractional;
   }
 
+  const ComputedStyle& flex_box_style = algorithm->StyleRef();
   for (size_t i = 0; i < line_items.size(); ++i) {
     FlexItem& flex_item = line_items[i];
     LayoutBox* child = flex_item.box;
@@ -339,13 +345,15 @@ bool FlexLine::ResolveFlexibleLengths() {
     double extra_space = 0;
     if (remaining_free_space > 0 && total_flex_grow > 0 &&
         flex_sign == kPositiveFlexibility && std::isfinite(total_flex_grow)) {
-      extra_space =
-          remaining_free_space * child->StyleRef().FlexGrow() / total_flex_grow;
+      extra_space = remaining_free_space *
+                    child->StyleRef().ResolvedFlexGrow(flex_box_style) /
+                    total_flex_grow;
     } else if (remaining_free_space < 0 && total_weighted_flex_shrink > 0 &&
                flex_sign == kNegativeFlexibility &&
                std::isfinite(total_weighted_flex_shrink) &&
-               child->StyleRef().FlexShrink()) {
-      extra_space = remaining_free_space * child->StyleRef().FlexShrink() *
+               child->StyleRef().ResolvedFlexShrink(flex_box_style)) {
+      extra_space = remaining_free_space *
+                    child->StyleRef().ResolvedFlexShrink(flex_box_style) *
                     flex_item.flex_base_content_size /
                     total_weighted_flex_shrink;
     }
@@ -518,10 +526,12 @@ FlexLine* FlexLayoutAlgorithm::ComputeNextFlexLine(
     }
     line_has_in_flow_item = true;
     sum_flex_base_size += flex_item.FlexBaseMarginBoxSize();
-    total_flex_grow += flex_item.box->StyleRef().FlexGrow();
-    total_flex_shrink += flex_item.box->StyleRef().FlexShrink();
-    total_weighted_flex_shrink += flex_item.box->StyleRef().FlexShrink() *
-                                  flex_item.flex_base_content_size;
+    total_flex_grow += flex_item.box->StyleRef().ResolvedFlexGrow(StyleRef());
+    const float flex_shrink =
+        flex_item.box->StyleRef().ResolvedFlexShrink(StyleRef());
+    total_flex_shrink += flex_shrink;
+    total_weighted_flex_shrink +=
+        flex_shrink * flex_item.flex_base_content_size;
     sum_hypothetical_main_size += flex_item.HypotheticalMainAxisMarginBoxSize();
     flex_item.line_number = flex_lines_.size();
   }

@@ -172,7 +172,7 @@ class CookieStoreTest : public testing::Test {
 
   CookieList GetAllCookies(CookieStore* cs) {
     DCHECK(cs);
-    GetCookieListCallback callback;
+    GetAllCookiesCallback callback;
     cs->GetAllCookiesAsync(callback.MakeCallback());
     callback.WaitUntilDone();
     return callback.cookies();

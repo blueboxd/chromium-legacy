@@ -13,6 +13,7 @@ include_rules = [
   "+components/embedder_support/android/java",
   "+components/heap_profiling",
   "+components/google/core",
+  "+components/gwp_asan",
   "+components/network_session_configurator/common",
   "+components/metrics",
   "+components/prefs",

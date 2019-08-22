@@ -337,16 +337,19 @@ HoverHighlightView* TrayDetailedView::AddScrollListItem(
 HoverHighlightView* TrayDetailedView::AddScrollListCheckableItem(
     const gfx::VectorIcon& icon,
     const base::string16& text,
-    bool checked) {
+    bool checked,
+    bool enterprise_managed) {
   HoverHighlightView* item = AddScrollListItem(icon, text);
-  TrayPopupUtils::InitializeAsCheckableRow(item, checked);
+  TrayPopupUtils::InitializeAsCheckableRow(item, checked, enterprise_managed);
   return item;
 }
 
 HoverHighlightView* TrayDetailedView::AddScrollListCheckableItem(
     const base::string16& text,
-    bool checked) {
-  return AddScrollListCheckableItem(gfx::kNoneIcon, text, checked);
+    bool checked,
+    bool enterprise_managed) {
+  return AddScrollListCheckableItem(gfx::kNoneIcon, text, checked,
+                                    enterprise_managed);
 }
 
 void TrayDetailedView::SetupConnectedScrollListItem(HoverHighlightView* view) {

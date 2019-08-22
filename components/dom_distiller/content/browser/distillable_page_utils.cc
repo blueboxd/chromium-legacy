@@ -50,6 +50,13 @@ void IsDistillablePageForDetector(content::WebContents* web_contents,
       base::BindOnce(OnExtractFeaturesJsResult, detector, callback));
 }
 
+std::ostream& operator<<(std::ostream& os, const DistillabilityResult& result) {
+  os << "DistillabilityResult: { is_distillable: " << result.is_distillable
+     << ", is_last: " << result.is_last
+     << ", is_mobile_friendly: " << result.is_mobile_friendly << " }";
+  return os;
+}
+
 void SetDelegate(content::WebContents* web_contents,
                  DistillabilityDelegate delegate) {
   CHECK(web_contents);

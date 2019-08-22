@@ -97,11 +97,12 @@ struct IssuerEntryComparator {
 // which may be issuers of |cert|.
 class CertIssuersIter {
  public:
-  // Constructs the CertIssuersIter. |*cert_issuer_sources| and |*trust_store|
-  // must be valid for the lifetime of the CertIssuersIter.
+  // Constructs the CertIssuersIter. |*cert_issuer_sources|, |*trust_store|,
+  // and |*debug_data| must be valid for the lifetime of the CertIssuersIter.
   CertIssuersIter(scoped_refptr<ParsedCertificate> cert,
                   CertIssuerSources* cert_issuer_sources,
-                  const TrustStore* trust_store);
+                  const TrustStore* trust_store,
+                  base::SupportsUserData* debug_data);
 
   // Gets the next candidate issuer, or clears |*out| when all issuers have been
   // exhausted.
@@ -156,15 +157,19 @@ class CertIssuersIter {
   std::vector<std::unique_ptr<CertIssuerSource::Request>>
       pending_async_requests_;
 
+  base::SupportsUserData* debug_data_;
+
   DISALLOW_COPY_AND_ASSIGN(CertIssuersIter);
 };
 
 CertIssuersIter::CertIssuersIter(scoped_refptr<ParsedCertificate> in_cert,
                                  CertIssuerSources* cert_issuer_sources,
-                                 const TrustStore* trust_store)
+                                 const TrustStore* trust_store,
+                                 base::SupportsUserData* debug_data)
     : cert_(in_cert),
       cert_issuer_sources_(cert_issuer_sources),
-      trust_store_(trust_store) {
+      trust_store_(trust_store),
+      debug_data_(debug_data) {
   DVLOG(2) << "CertIssuersIter created for " << CertDebugString(cert());
 }
 
@@ -229,7 +234,7 @@ void CertIssuersIter::AddIssuers(ParsedCertificateList new_issuers) {
     // Look up the trust for this issuer.
     IssuerEntry entry;
     entry.cert = std::move(issuer);
-    trust_store_->GetTrust(entry.cert, &entry.trust);
+    trust_store_->GetTrust(entry.cert, &entry.trust, debug_data_);
 
     issuers_.push_back(std::move(entry));
     issuers_needs_sort_ = true;
@@ -365,7 +370,8 @@ const ParsedCertificate* CertPathBuilderResultPath::GetTrustedCert() const {
 class CertPathIter {
  public:
   CertPathIter(scoped_refptr<ParsedCertificate> cert,
-               const TrustStore* trust_store);
+               const TrustStore* trust_store,
+               base::SupportsUserData* debug_data);
 
   // Adds a CertIssuerSource to provide intermediates for use in path building.
   // The |*cert_issuer_source| must remain valid for the lifetime of the
@@ -395,15 +401,18 @@ class CertPathIter {
   // The TrustStore for checking if a path ends in a trust anchor.
   const TrustStore* trust_store_;
 
+  base::SupportsUserData* debug_data_;
+
   DISALLOW_COPY_AND_ASSIGN(CertPathIter);
 };
 
 CertPathIter::CertPathIter(scoped_refptr<ParsedCertificate> cert,
-                           const TrustStore* trust_store)
-    : trust_store_(trust_store) {
+                           const TrustStore* trust_store,
+                           base::SupportsUserData* debug_data)
+    : trust_store_(trust_store), debug_data_(debug_data) {
   // Initialize |next_issuer_| to the target certificate.
   next_issuer_.cert = std::move(cert);
-  trust_store_->GetTrust(next_issuer_.cert, &next_issuer_.trust);
+  trust_store_->GetTrust(next_issuer_.cert, &next_issuer_.trust, debug_data_);
 }
 
 void CertPathIter::AddCertIssuerSource(CertIssuerSource* cert_issuer_source) {
@@ -489,7 +498,8 @@ bool CertPathIter::GetNextPath(ParsedCertificateList* out_certs,
         }
 
         cur_path_.Append(std::make_unique<CertIssuersIter>(
-            std::move(next_issuer_.cert), &cert_issuer_sources_, trust_store_));
+            std::move(next_issuer_.cert), &cert_issuer_sources_, trust_store_,
+            debug_data_));
         next_issuer_ = IssuerEntry();
         DVLOG(1) << "CertPathIter cur_path_ =\n" << cur_path_.PathDebugString();
         // Continue descending the tree.
@@ -546,7 +556,9 @@ CertPathBuilder::CertPathBuilder(
     const std::set<der::Input>& user_initial_policy_set,
     InitialPolicyMappingInhibit initial_policy_mapping_inhibit,
     InitialAnyPolicyInhibit initial_any_policy_inhibit)
-    : cert_path_iter_(new CertPathIter(std::move(cert), trust_store)),
+    : cert_path_iter_(new CertPathIter(std::move(cert),
+                                       trust_store,
+                                       /*debug_data=*/&out_result_)),
       delegate_(delegate),
       time_(time),
       key_purpose_(key_purpose),
@@ -575,7 +587,6 @@ void CertPathBuilder::SetDeadline(base::TimeTicks deadline) {
 }
 
 CertPathBuilder::Result CertPathBuilder::Run() {
-  Result result;
   uint32_t iteration_count = 0;
 
   while (true) {
@@ -587,13 +598,13 @@ CertPathBuilder::Result CertPathBuilder::Run() {
                                       &iteration_count, max_iteration_count_)) {
       // No more paths to check.
       if (max_iteration_count_ > 0 && iteration_count > max_iteration_count_) {
-        result.exceeded_iteration_limit = true;
+        out_result_.exceeded_iteration_limit = true;
       }
       if (!deadline_.is_null() && base::TimeTicks::Now() > deadline_) {
-        result.exceeded_deadline = true;
+        out_result_.exceeded_deadline = true;
       }
       RecordIterationCountHistogram(iteration_count);
-      return result;
+      return std::move(out_result_);
     }
 
     // Verify the entire certificate chain.
@@ -611,26 +622,25 @@ CertPathBuilder::Result CertPathBuilder::Run() {
 
     bool path_is_good = result_path->IsValid();
 
-    AddResultPath(std::move(result_path), &result);
+    AddResultPath(std::move(result_path));
 
     if (path_is_good) {
       RecordIterationCountHistogram(iteration_count);
       // Found a valid path, return immediately.
       // TODO(mattm): add debug/test mode that tries all possible paths.
-      return result;
+      return std::move(out_result_);
     }
     // Path did not verify. Try more paths.
   }
 }
 
 void CertPathBuilder::AddResultPath(
-    std::unique_ptr<CertPathBuilderResultPath> result_path,
-    Result* out_result) {
+    std::unique_ptr<CertPathBuilderResultPath> result_path) {
   // TODO(mattm): set best_result_index based on number or severity of errors.
   if (result_path->IsValid())
-    out_result->best_result_index = out_result->paths.size();
+    out_result_.best_result_index = out_result_.paths.size();
   // TODO(mattm): add flag to only return a single path or all attempted paths?
-  out_result->paths.push_back(std::move(result_path));
+  out_result_.paths.push_back(std::move(result_path));
 }
 
 }  // namespace net

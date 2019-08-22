@@ -156,9 +156,7 @@ dev_list="\
   devscripts
   fakeroot
   flex
-  g++
   git-core
-  git-svn
   gperf
   libappindicator3-dev
   libasound2-dev
@@ -297,6 +295,8 @@ backwards_compatible_list="\
   fonts-stix
   fonts-thai-tlwg
   fonts-tlwg-garuda
+  g++
+  git-svn
   language-pack-da
   language-pack-fr
   language-pack-he

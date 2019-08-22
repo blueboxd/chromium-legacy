@@ -19,6 +19,7 @@
 #include "chrome/browser/notifications/scheduler/internal/notification_entry.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduler_config.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduler_utils.h"
+#include "chrome/browser/notifications/scheduler/internal/stats.h"
 #include "chrome/browser/notifications/scheduler/public/notification_params.h"
 #include "chrome/browser/notifications/scheduler/public/notification_scheduler_constant.h"
 #include "chrome/grit/generated_resources.h"
@@ -194,6 +195,8 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
       InitCallback callback,
       bool success,
       CollectionStore<NotificationEntry>::Entries entries) {
+    stats::LogNotificationDbInit(success, entries.size());
+
     if (!success) {
       std::move(callback).Run(false);
       return;
@@ -228,6 +231,7 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
   void OnNotificationAdded(SchedulerClientType type,
                            std::string guid,
                            bool success) {
+    stats::LogNotificationDbOperation(success);
     auto* entry = FindNotificationEntry(type, guid);
     if (!entry)
       return;
@@ -247,7 +251,9 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
     NOTIMPLEMENTED();
   }
 
-  void OnNotificationDeleted(bool success) { NOTIMPLEMENTED(); }
+  void OnNotificationDeleted(bool success) {
+    stats::LogNotificationDbOperation(success);
+  }
 
   void OnIconDeleted(bool success) { NOTIMPLEMENTED(); }
 

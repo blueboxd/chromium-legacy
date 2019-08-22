@@ -7,7 +7,6 @@
 
 #include "content/browser/browser_interface_broker_impl.h"
 #include "content/public/browser/render_process_host.h"
-
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -110,8 +109,14 @@ class DedicatedWorkerHost final
 
   void CreateWebUsbService(blink::mojom::WebUsbServiceRequest request);
 
-  void CreateWebSocketConnector(
+  // TODO(https://crbug.com/955171): Remove these methods and use
+  // CreateWebSocketConnector directly once |this| uses
+  // service_manager::BinderMap instead of |registry_|.
+  void CreateWebSocketConnectorForRequest(
       blink::mojom::WebSocketConnectorRequest request);
+
+  void CreateWebSocketConnector(
+      mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver);
 
   void CreateNestedDedicatedWorker(
       blink::mojom::DedicatedWorkerHostFactoryRequest request);

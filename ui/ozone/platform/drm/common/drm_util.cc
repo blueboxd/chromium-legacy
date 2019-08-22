@@ -455,6 +455,7 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
   int32_t year_of_manufacture = display::kInvalidYearOfManufacture;
   bool has_overscan = false;
   gfx::ColorSpace display_color_space;
+  uint32_t bits_per_channel = 8u;
   // Active pixels size from the first detailed timing descriptor in the EDID.
   gfx::Size active_pixel_size;
 
@@ -476,6 +477,7 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
     has_overscan =
         edid_parser.has_overscan_flag() && edid_parser.overscan_flag();
     display_color_space = GetColorSpaceFromEdid(edid_parser);
+    bits_per_channel = std::max(edid_parser.bits_per_channel(), 0);
   } else {
     VLOG(1) << "Failed to get EDID blob for connector "
             << info->connector()->connector_id;
@@ -489,9 +491,10 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
   return std::make_unique<display::DisplaySnapshot>(
       display_id, origin, physical_size, type, is_aspect_preserving_scaling,
       has_overscan, has_color_correction_matrix,
-      color_correction_in_linear_space, display_color_space, display_name,
-      sys_path, std::move(modes), panel_orientation, edid, current_mode,
-      native_mode, product_code, year_of_manufacture, maximum_cursor_size);
+      color_correction_in_linear_space, display_color_space, bits_per_channel,
+      display_name, sys_path, std::move(modes), panel_orientation, edid,
+      current_mode, native_mode, product_code, year_of_manufacture,
+      maximum_cursor_size);
 }
 
 // TODO(rjkroege): Remove in a subsequent CL once Mojo IPC is used everywhere.
@@ -510,6 +513,7 @@ std::vector<DisplaySnapshot_Params> CreateDisplaySnapshotParams(
     p.has_color_correction_matrix = d->has_color_correction_matrix();
     p.color_correction_in_linear_space = d->color_correction_in_linear_space();
     p.color_space = d->color_space();
+    p.bits_per_channel = d->bits_per_channel();
     p.display_name = d->display_name();
     p.sys_path = d->sys_path();
 
@@ -556,9 +560,9 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
       params.is_aspect_preserving_scaling, params.has_overscan,
       params.has_color_correction_matrix,
       params.color_correction_in_linear_space, params.color_space,
-      params.display_name, params.sys_path, std::move(modes),
-      params.panel_orientation, params.edid, current_mode, native_mode,
-      params.product_code, params.year_of_manufacture,
+      params.bits_per_channel, params.display_name, params.sys_path,
+      std::move(modes), params.panel_orientation, params.edid, current_mode,
+      native_mode, params.product_code, params.year_of_manufacture,
       params.maximum_cursor_size);
 }
 

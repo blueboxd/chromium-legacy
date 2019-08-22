@@ -11,6 +11,10 @@ import static org.chromium.chrome.browser.browserservices.TrustedWebActivityTest
 import android.content.Intent;
 import android.support.test.filters.MediumTest;
 
+import androidx.browser.trusted.TrustedWebActivityIntentBuilder;
+import androidx.browser.trusted.sharing.ShareData;
+import androidx.browser.trusted.sharing.ShareTarget;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -22,12 +26,14 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.JniMocker;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.webapps.WebApkPostShareTargetNavigator;
 import org.chromium.chrome.browser.webapps.WebApkPostShareTargetNavigatorJni;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -37,14 +43,10 @@ import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import androidx.browser.trusted.TrustedWebActivityIntentBuilder;
-import androidx.browser.trusted.sharing.ShareData;
-import androidx.browser.trusted.sharing.ShareTarget;
-
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@Restriction({ChromeRestriction.RESTRICTION_TYPE_REQUIRES_TOUCH})
 public class TrustedWebActivityShareTargetTest {
-
     // We are not actually navigating to POST target, so ok not to use test pages here.
     private static final ShareTarget POST_SHARE_TARGET =
             new ShareTarget("https://pwa.rocks/share.html", "POST", null,

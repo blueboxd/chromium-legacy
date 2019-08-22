@@ -48,7 +48,7 @@ class TestBrowserThread;
 //
 // ... until there are no undelayed tasks in the shared message loop, in
 // ThreadPool (excluding tasks not posted from the shared message loop's thread
-// or ThreadPool): browser_task_environment.RunUntilIdle();
+// or ThreadPool): task_environment.RunUntilIdle();
 //
 // ... until a condition is met:
 //    base::RunLoop run_loop;
@@ -89,7 +89,7 @@ class TestBrowserThread;
 //     // instead of private visibility will allow controlling the task
 //     // environment (e.g. clock --see base::test::TaskEnvironment for
 //     // details).
-//     content::BrowserTaskEnvironment browser_task_environment_;
+//     content::BrowserTaskEnvironment task_environment_;
 //
 //     // Other members go here (or further below in private section.)
 //   };
@@ -101,8 +101,10 @@ class TestBrowserThread;
 //     // Constructs a FooBase with |traits| being forwarded to its
 //     // TaskEnvironment.
 //     template <typename... TaskEnvironmentTraits>
-//     explicit FooBase(TaskEnvironmentTraits... traits)
-//         : task_environment_(base::in_place, traits...) {}
+//     explicit FooBase(TaskEnvironmentTraits&&... traits)
+//         : task_environment_(
+//               base::in_place,
+//               std::forward<TaskEnvironmentTraits>(traits)...) {}
 //
 //     // Alternatively a subclass may pass this tag to ask this FooBase not to
 //     // instantiate a TaskEnvironment. The subclass is then responsible
@@ -118,14 +120,15 @@ class TestBrowserThread;
 //
 //   class ChromeFooBase : public FooBase {
 //    public:
-//     explicit ChromeFooBase(TaskEnvironmentTraits... traits)
+//     explicit ChromeFooBase(TaskEnvironmentTraits&&... traits)
 //         : FooBase(FooBase::SubclassManagesTaskEnvironment()),
-//           browser_task_environment_(traits...) {}
+//           task_environment_(
+//               std::forward<TaskEnvironmentTraits>(traits)...) {}
 //
 //    protected:
 //     // Use this protected member directly to drive tasks posted within a
 //     // ChromeFooBase-based test.
-//     content::BrowserTaskEnvironment browser_task_environment_;
+//     content::BrowserTaskEnvironment task_environment_;
 //   };
 // See views::ViewsTestBase / ChromeViewsTestBase for a real-world example.
 class BrowserTaskEnvironment : public base::test::TaskEnvironment {
@@ -148,19 +151,20 @@ class BrowserTaskEnvironment : public base::test::TaskEnvironment {
   // TaskEnvironment the default MainThreadType for
   // BrowserTaskEnvironment is MainThreadType::UI.
   template <
-      class... ArgTypes,
+      typename... TaskEnvironmentTraits,
       class CheckArgumentsAreValid = std::enable_if_t<
-          base::trait_helpers::AreValidTraits<ValidTraits, ArgTypes...>::value>>
-  NOINLINE BrowserTaskEnvironment(const ArgTypes... args)
+          base::trait_helpers::AreValidTraits<ValidTraits,
+                                              TaskEnvironmentTraits...>::value>>
+  NOINLINE explicit BrowserTaskEnvironment(TaskEnvironmentTraits... traits)
       : BrowserTaskEnvironment(
             base::test::TaskEnvironment(
                 SubclassCreatesDefaultTaskRunner{},
                 base::trait_helpers::GetEnum<MainThreadType,
-                                             MainThreadType::UI>(args...),
+                                             MainThreadType::UI>(traits...),
                 base::trait_helpers::Exclude<MainThreadType, Options>::Filter(
-                    args)...),
+                    traits)...),
             UseRealIOThread(
-                base::trait_helpers::GetOptionalEnum<Options>(args...))) {}
+                base::trait_helpers::GetOptionalEnum<Options>(traits...))) {}
 
   // Flush the IO thread. Replacement for RunLoop::RunUntilIdle() for tests that
   // have a REAL_IO_THREAD. As with TaskEnvironment::RunUntilIdle() prefer using

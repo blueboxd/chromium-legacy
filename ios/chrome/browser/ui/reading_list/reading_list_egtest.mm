@@ -24,6 +24,7 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_toolbar_button_identifiers.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_cell_favicon_badge_view.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
+#import "ios/chrome/browser/ui/table_view/feature_flags.h"
 #import "ios/chrome/browser/ui/table_view/table_view_empty_view.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
@@ -964,6 +965,36 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
   // Verify the background string is displayed.
   [[EarlGrey selectElementWithMatcher:EmptyBackground()]
       assertWithMatcher:grey_notNil()];
+}
+
+// Tests that the VC can be dismissed by swiping down.
+- (void)testSwipeDownDismiss {
+  if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
+    EARL_GREY_TEST_SKIPPED(@"Test disabled on iOS 12 and lower.");
+  }
+  if (!IsCollectionsCardPresentationStyleEnabled()) {
+    EARL_GREY_TEST_SKIPPED(@"Test disabled on when feature flag is off.");
+  }
+
+  OpenReadingList();
+
+  // Check that the TableView is presented.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          [[ReadingListTableViewController
+                                              class] accessibilityIdentifier])]
+      assertWithMatcher:grey_notNil()];
+
+  // Swipe TableView down.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          [[ReadingListTableViewController
+                                              class] accessibilityIdentifier])]
+      performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
+
+  // Check that the TableView has been dismissed.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          [[ReadingListTableViewController
+                                              class] accessibilityIdentifier])]
+      assertWithMatcher:grey_nil()];
 }
 
 @end

@@ -65,11 +65,12 @@ const char kBrokenCountKey[] = "broken_count";
 // has already been saved, and if so, returns an empty list.
 AlternativeServiceInfoVector GetAlternativeServiceToPersist(
     const base::Optional<AlternativeServiceInfoVector>& alternative_services,
-    const url::SchemeHostPort& server,
+    const HttpServerProperties::ServerInfoMapKey& server_info_key,
     base::Time now,
     const HttpServerPropertiesManager::GetCannonicalSuffix&
         get_canonical_suffix,
-    std::set<std::string>* persisted_canonical_suffix_map) {
+    std::set<std::pair<std::string, NetworkIsolationKey>>*
+        persisted_canonical_suffix_set) {
   if (!alternative_services)
     return AlternativeServiceInfoVector();
   // Separate out valid, non-expired AlternativeServiceInfo entries.
@@ -85,17 +86,19 @@ AlternativeServiceInfoVector GetAlternativeServiceToPersist(
   }
   if (notbroken_alternative_service_info_vector.empty())
     return notbroken_alternative_service_info_vector;
-  const std::string* canonical_suffix = get_canonical_suffix.Run(server.host());
-
-  // Don't save if have already saved information associated with the same
-  // canonical suffix.
-  if (canonical_suffix != nullptr &&
-      persisted_canonical_suffix_map->find(*canonical_suffix) !=
-          persisted_canonical_suffix_map->end()) {
-    return AlternativeServiceInfoVector();
+  const std::string* canonical_suffix =
+      get_canonical_suffix.Run(server_info_key.server.host());
+  if (canonical_suffix) {
+    // Don't save if have already saved information associated with the same
+    // canonical suffix.
+    std::pair<std::string, NetworkIsolationKey> index(
+        *canonical_suffix, server_info_key.network_isolation_key);
+    if (persisted_canonical_suffix_set->find(index) !=
+        persisted_canonical_suffix_set->end()) {
+      return AlternativeServiceInfoVector();
+    }
+    persisted_canonical_suffix_set->emplace(std::move(index));
   }
-  if (canonical_suffix)
-    persisted_canonical_suffix_map->emplace(*canonical_suffix);
   return notbroken_alternative_service_info_vector;
 }
 
@@ -638,7 +641,8 @@ void HttpServerPropertiesManager::WriteToPrefs(
   // existing prefs.
   on_prefs_loaded_callback_.Reset();
 
-  std::set<std::string> persisted_canonical_suffix_map;
+  std::set<std::pair<std::string, NetworkIsolationKey>>
+      persisted_canonical_suffix_set;
   const base::Time now = base::Time::Now();
   base::DictionaryValue http_server_properties_dict;
 
@@ -663,9 +667,9 @@ void HttpServerPropertiesManager::WriteToPrefs(
       server_dict.SetBoolKey(kSupportsSpdyKey, supports_spdy);
 
     AlternativeServiceInfoVector alternative_services =
-        GetAlternativeServiceToPersist(server_info.alternative_services,
-                                       key.server, now, get_canonical_suffix,
-                                       &persisted_canonical_suffix_map);
+        GetAlternativeServiceToPersist(server_info.alternative_services, key,
+                                       now, get_canonical_suffix,
+                                       &persisted_canonical_suffix_set);
     if (!alternative_services.empty())
       SaveAlternativeServiceToServerPrefs(alternative_services, &server_dict);
 

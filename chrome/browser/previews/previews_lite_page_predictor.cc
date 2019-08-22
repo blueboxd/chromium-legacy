@@ -4,6 +4,8 @@
 
 #include "chrome/browser/previews/previews_lite_page_predictor.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/feature_list.h"
@@ -86,14 +88,21 @@ bool PreviewsLitePagePredictor::ECTIsSlow() const {
   }
 }
 
-bool PreviewsLitePagePredictor::PageIsBlacklisted(const GURL& url) const {
+bool PreviewsLitePagePredictor::PageIsBlacklisted(
+    content::NavigationHandle* navigation_handle) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Assume that if this is called without a navigation handle, that the URL
+  // associated with the navigation handle has already been checked before and
+  // had already passed this check.
+  if (!navigation_handle)
+    return false;
+
   // Assume the page is blacklisted if there is no optimization guide available.
   // This matches the behavior of the preview triggering itself.
   if (!opt_guide_)
     return true;
 
-  return opt_guide_->IsBlacklisted(url,
+  return opt_guide_->IsBlacklisted(navigation_handle,
                                    previews::PreviewsType::LITE_PAGE_REDIRECT);
 }
 
@@ -102,7 +111,8 @@ bool PreviewsLitePagePredictor::IsVisible() const {
   return web_contents()->GetVisibility() == content::Visibility::VISIBLE;
 }
 
-base::Optional<GURL> PreviewsLitePagePredictor::ShouldPreresolveOnPage() const {
+base::Optional<GURL> PreviewsLitePagePredictor::ShouldPreresolveOnPage(
+    content::NavigationHandle* navigation_handle) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!previews::params::LitePageRedirectPreviewShouldPresolve())
@@ -129,8 +139,10 @@ base::Optional<GURL> PreviewsLitePagePredictor::ShouldPreresolveOnPage() const {
     return base::nullopt;
 
   // Only check if the url is blacklisted if it is not a preview page.
-  if (!previews::IsLitePageRedirectPreviewDomain(url) && PageIsBlacklisted(url))
+  if (!previews::IsLitePageRedirectPreviewDomain(url) &&
+      PageIsBlacklisted(navigation_handle)) {
     return base::nullopt;
+  }
 
   if (!IsVisible())
     return base::nullopt;
@@ -144,13 +156,14 @@ base::Optional<GURL> PreviewsLitePagePredictor::ShouldPreresolveOnPage() const {
   return PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(url);
 }
 
-void PreviewsLitePagePredictor::MaybeTogglePreresolveTimer() {
+void PreviewsLitePagePredictor::MaybeTogglePreresolveTimer(
+    content::NavigationHandle* navigation_handle) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // If the timer is not null, it should be running.
   DCHECK(!timer_ || timer_->IsRunning());
 
-  url_ = ShouldPreresolveOnPage();
+  url_ = ShouldPreresolveOnPage(navigation_handle);
   if (url_.has_value() == bool(timer_))
     return;
 
@@ -197,7 +210,7 @@ void PreviewsLitePagePredictor::DidStartNavigation(
 
   if (!handle->IsInMainFrame())
     return;
-  MaybeTogglePreresolveTimer();
+  MaybeTogglePreresolveTimer(handle);
 }
 
 void PreviewsLitePagePredictor::DidFinishNavigation(
@@ -206,19 +219,19 @@ void PreviewsLitePagePredictor::DidFinishNavigation(
 
   if (!handle->IsInMainFrame())
     return;
-  MaybeTogglePreresolveTimer();
+  MaybeTogglePreresolveTimer(handle);
 }
 
 void PreviewsLitePagePredictor::OnVisibilityChanged(
     content::Visibility visibility) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  MaybeTogglePreresolveTimer();
+  MaybeTogglePreresolveTimer(/*navigation_handle=*/nullptr);
 }
 
 void PreviewsLitePagePredictor::OnEffectiveConnectionTypeChanged(
     net::EffectiveConnectionType ect) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  MaybeTogglePreresolveTimer();
+  MaybeTogglePreresolveTimer(/*navigation_handle=*/nullptr);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(PreviewsLitePagePredictor)

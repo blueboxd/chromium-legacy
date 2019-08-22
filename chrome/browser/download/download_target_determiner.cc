@@ -1015,9 +1015,9 @@ DownloadConfirmationReason DownloadTargetDeterminer::NeedsConfirmation(
     return DownloadConfirmationReason::SAVE_AS;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  // Don't prompt for extension downloads.
-  if (download_crx_util::IsExtensionDownload(*download_) ||
-      filename.MatchesExtension(extensions::kExtensionFileExtension))
+  // Don't prompt for extension downloads if the installation site is white
+  // listed.
+  if (download_crx_util::IsTrustedExtensionDownload(GetProfile(), *download_))
     return DownloadConfirmationReason::NONE;
 #endif
 
@@ -1051,15 +1051,10 @@ DownloadFileType::DangerLevel DownloadTargetDeterminer::GetDangerLevel(
       !download_->GetForcedFilePath().empty())
     return DownloadFileType::NOT_DANGEROUS;
 
-  const bool is_extension_download =
-      download_crx_util::IsExtensionDownload(*download_);
-
   // User-initiated extension downloads from pref-whitelisted sources are not
   // considered dangerous.
   if (download_->HasUserGesture() &&
-      is_extension_download &&
-      download_crx_util::OffStoreInstallAllowedByPrefs(
-          GetProfile(), *download_)) {
+      download_crx_util::IsTrustedExtensionDownload(GetProfile(), *download_)) {
     return DownloadFileType::NOT_DANGEROUS;
   }
 

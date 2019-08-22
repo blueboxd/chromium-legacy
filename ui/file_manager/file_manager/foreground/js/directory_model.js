@@ -1014,7 +1014,7 @@ class DirectoryModel extends cr.EventTarget {
     // available because it returns UI-only entries too, like Linux files and
     // Play files.
     const locationInfo = this.volumeManager_.getLocationInfo(dirEntry);
-    if (util.isMyFilesVolumeEnabled() && locationInfo && this.myFilesEntry_ &&
+    if (locationInfo && this.myFilesEntry_ &&
         locationInfo.rootType === VolumeManagerCommon.RootType.DOWNLOADS &&
         locationInfo.isRootEntry) {
       dirEntry = this.myFilesEntry_;

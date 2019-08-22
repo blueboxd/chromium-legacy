@@ -478,9 +478,9 @@ void CookieManager::GetCookieListAsyncHelper(const GURL& host,
 void CookieManager::GetCookieListCompleted(
     base::OnceClosure complete,
     net::CookieList* result,
-    const net::CookieList& value,
+    const net::CookieStatusList& value,
     const net::CookieStatusList& excluded_cookies) {
-  *result = value;
+  *result = net::cookie_util::StripStatuses(value);
   std::move(complete).Run();
 }
 
@@ -596,7 +596,7 @@ void CookieManager::HasCookiesAsyncHelper(bool* result,
                                           base::OnceClosure complete) {
   if (GetMojoCookieManager()) {
     GetMojoCookieManager()->GetAllCookies(
-        base::BindOnce(&CookieManager::HasCookiesCompleted2,
+        base::BindOnce(&CookieManager::HasCookiesCompleted,
                        base::Unretained(this), std::move(complete), result));
   } else {
     GetCookieStore()->GetAllCookiesAsync(
@@ -605,18 +605,9 @@ void CookieManager::HasCookiesAsyncHelper(bool* result,
   }
 }
 
-void CookieManager::HasCookiesCompleted(
-    base::OnceClosure complete,
-    bool* result,
-    const CookieList& cookies,
-    const net::CookieStatusList& excluded_cookies) {
-  *result = cookies.size() != 0;
-  std::move(complete).Run();
-}
-
-void CookieManager::HasCookiesCompleted2(base::OnceClosure complete,
-                                         bool* result,
-                                         const CookieList& cookies) {
+void CookieManager::HasCookiesCompleted(base::OnceClosure complete,
+                                        bool* result,
+                                        const CookieList& cookies) {
   *result = cookies.size() != 0;
   std::move(complete).Run();
 }

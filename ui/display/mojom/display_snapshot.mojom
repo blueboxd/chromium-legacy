@@ -21,6 +21,7 @@ struct DisplaySnapshot {
   bool has_color_correction_matrix;
   bool color_correction_in_linear_space;
   gfx.mojom.ColorSpace color_space;
+  uint32 bits_per_channel;
   string display_name;
   mojo_base.mojom.FilePath sys_path;
   array<display.mojom.DisplayMode> modes;

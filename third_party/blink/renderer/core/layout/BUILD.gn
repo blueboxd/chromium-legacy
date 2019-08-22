@@ -283,6 +283,7 @@ blink_core_sources("layout") {
     "ng/custom/custom_layout_child.h",
     "ng/custom/custom_layout_constraints.cc",
     "ng/custom/custom_layout_constraints.h",
+    "ng/custom/custom_layout_edges.h",
     "ng/custom/custom_layout_fragment.cc",
     "ng/custom/custom_layout_fragment.h",
     "ng/custom/custom_layout_scope.cc",

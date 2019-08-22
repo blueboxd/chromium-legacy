@@ -12,6 +12,7 @@ import("//build/config/locales.gni")
 import("//chrome/android/chrome_common_shared_library.gni")
 import("//chrome/android/chrome_public_apk_tmpl.gni")
 import("//chrome/android/trichrome.gni")
+import("//components/gwp_asan/buildflags/buildflags.gni")
 import("//components/spellcheck/spellcheck_build_features.gni")
 import("//tools/grit/repack.gni")
 import("//tools/resources/generate_resource_whitelist.gni")
@@ -46,8 +47,8 @@ generate_jni("native_jni") {
     "java/src/org/chromium/android_webview/AwContents.java",
     "java/src/org/chromium/android_webview/AwContentsBackgroundThreadClient.java",
     "java/src/org/chromium/android_webview/AwContentsClientBridge.java",
-    "java/src/org/chromium/android_webview/AwContentsIoThreadClient.java",
     "java/src/org/chromium/android_webview/AwContentsLifecycleNotifier.java",
+    "java/src/org/chromium/android_webview/AwContentsNetworkClient.java",
     "java/src/org/chromium/android_webview/AwContentsStatics.java",
     "java/src/org/chromium/android_webview/AwCookieManager.java",
     "java/src/org/chromium/android_webview/AwDebug.java",
@@ -508,10 +509,10 @@ source_set("common") {
     "browser/aw_contents.h",
     "browser/aw_contents_client_bridge.cc",
     "browser/aw_contents_client_bridge.h",
-    "browser/aw_contents_io_thread_client.cc",
-    "browser/aw_contents_io_thread_client.h",
     "browser/aw_contents_lifecycle_notifier.cc",
     "browser/aw_contents_lifecycle_notifier.h",
+    "browser/aw_contents_network_client.cc",
+    "browser/aw_contents_network_client.h",
     "browser/aw_contents_statics.cc",
     "browser/aw_cookie_access_policy.cc",
     "browser/aw_cookie_access_policy.h",
@@ -713,6 +714,7 @@ source_set("common") {
     "//components/download/public/common:public",
     "//components/embedder_support/android:web_contents_delegate",
     "//components/google/core/common",
+    "//components/gwp_asan/buildflags",
     "//components/heap_profiling",
     "//components/keyed_service/content",
     "//components/metrics",
@@ -787,6 +789,10 @@ source_set("common") {
     ]
   }
 
+  if (enable_gwp_asan) {
+    deps += [ "//components/gwp_asan/client" ]
+  }
+
   configs += [
     "//tools/v8_context_snapshot:use_v8_context_snapshot",
     "//v8:external_startup_data",
@@ -810,7 +816,7 @@ android_library("android_webview_java") {
     "java/src/org/chromium/android_webview/AwContentsClient.java",
     "java/src/org/chromium/android_webview/AwContentsClientBridge.java",
     "java/src/org/chromium/android_webview/AwContentsClientCallbackHelper.java",
-    "java/src/org/chromium/android_webview/AwContentsIoThreadClient.java",
+    "java/src/org/chromium/android_webview/AwContentsNetworkClient.java",
     "java/src/org/chromium/android_webview/AwContentsLifecycleNotifier.java",
     "java/src/org/chromium/android_webview/AwContentsStatics.java",
     "java/src/org/chromium/android_webview/AwCookieManager.java",
@@ -881,6 +887,7 @@ android_library("android_webview_java") {
     "java/src/org/chromium/android_webview/permission/AwGeolocationCallback.java",
     "java/src/org/chromium/android_webview/permission/AwPermissionRequest.java",
     "java/src/org/chromium/android_webview/policy/AwPolicyProvider.java",
+    "java/src/org/chromium/android_webview/ui/CrashesListActivity.java",
     "java/src/org/chromium/android_webview/ui/util/CrashInfoLoader.java",
     "java/src/org/chromium/android_webview/ui/util/UnuploadedFilesStateLoader.java",
     "java/src/org/chromium/android_webview/ui/util/UploadedCrashesInfoLoader.java",

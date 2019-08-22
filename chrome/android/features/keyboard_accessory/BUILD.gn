@@ -97,8 +97,12 @@ junit_binary("keyboard_accessory_junit_tests") {
     "//base:base_junit_test_support",
     "//chrome/android:chrome_junit_test_support",
     "//chrome/android:chrome_test_util_java",
-    "//components/module_installer/android:module_installer_stub_java",
+    "//components/module_installer/android:module_installer_java",
     "//third_party/junit",
     "//third_party/mockito:mockito_java",
+  ]
+
+  srcjar_deps = [
+    "//components/module_installer/android:module_installer_apk_build_config",
   ]
 }

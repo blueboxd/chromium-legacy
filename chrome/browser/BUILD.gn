@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//base/allocator/allocator.gni")
 import("//build/config/chrome_build.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
@@ -3882,6 +3883,15 @@ jumbo_split_static_library("browser") {
       deps += [ "//ui/gfx/x" ]
     }
     deps += [ "//services/service_manager/zygote" ]
+
+    if (use_allocator == "tcmalloc") {
+      deps += [ "//chrome/common/performance_manager/mojom" ]
+
+      sources += [
+        "performance_manager/graph/policies/dynamic_tcmalloc_policy_linux.cc",
+        "performance_manager/graph/policies/dynamic_tcmalloc_policy_linux.h",
+      ]
+    }
   }
 
   if (is_desktop_linux) {

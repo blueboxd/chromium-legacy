@@ -754,13 +754,10 @@ class LocalTestVolume : public TestVolume {
 // DownloadsTestVolume: local test volume for the "Downloads" directory.
 class DownloadsTestVolume : public LocalTestVolume {
  public:
-  DownloadsTestVolume() : LocalTestVolume("Downloads") {}
+  DownloadsTestVolume() : LocalTestVolume("MyFiles") {}
   ~DownloadsTestVolume() override = default;
 
   void EnsureDownloadsFolderExists() {
-    if (!base::FeatureList::IsEnabled(chromeos::features::kMyFilesVolume))
-      return;
-
     // When MyFiles is the volume create the Downloads folder under it.
     auto downloads_folder = root_path().Append("Downloads");
     auto downloads_entry = AddEntriesMessage::TestEntryInfo(
@@ -776,12 +773,7 @@ class DownloadsTestVolume : public LocalTestVolume {
   // the Volume, so tests are compatible with volume being MyFiles or Downloads.
   // TODO(lucmult): Remove this special case once MyFiles volume has been
   // rolled out.
-  base::FilePath base_path() const {
-    if (base::FeatureList::IsEnabled(chromeos::features::kMyFilesVolume))
-      return root_path().Append("Downloads");
-
-    return root_path();
-  }
+  base::FilePath base_path() const { return root_path().Append("Downloads"); }
 
   bool Mount(Profile* profile) override {
     if (!CreateRootDirectory(profile))

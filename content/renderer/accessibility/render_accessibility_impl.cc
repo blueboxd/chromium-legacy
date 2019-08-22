@@ -191,7 +191,6 @@ void RenderAccessibilityImpl::DidCreateNewDocument() {
 void RenderAccessibilityImpl::DidCommitProvisionalLoad(
     bool is_same_document_navigation,
     ui::PageTransition transition) {
-  is_initial_load_processed_ = false;
   has_injected_stylesheet_ = false;
   // Remove the image annotator if the page is loading and it was added for
   // the one-shot image annotation (i.e. AXMode for image annotation is not
@@ -643,8 +642,6 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
     // ids to locations.
     for (size_t j = 0; j < update.nodes.size(); ++j) {
       ui::AXNodeData& src = update.nodes[j];
-      // TODO(accessibility) What if location hasn't been set yet?
-      // Get cached location for this node or create a new entry if none exists.
       ui::AXRelativeBounds& dst = locations_[update.nodes[j].id];
       dst = src.relative_bounds;
     }
@@ -664,13 +661,11 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
                                             ack_token_));
   reset_token_ = 0;
 
-  if (had_layout_complete_messages && is_initial_load_processed_)
+  if (had_layout_complete_messages)
     SendLocationChanges();
 
-  if (had_load_complete_messages) {
+  if (had_load_complete_messages)
     has_injected_stylesheet_ = false;
-    is_initial_load_processed_ = true;
-  }
 
   if (image_annotation_debugging_)
     AddImageAnnotationDebuggingAttributes(bundle.updates);

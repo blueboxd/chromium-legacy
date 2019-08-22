@@ -36,7 +36,7 @@
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/vibration_manager.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -89,8 +89,16 @@ class RendererInterfaceBinders {
  private:
   void InitializeParameterizedBinderRegistry();
 
-  static void CreateWebSocketConnector(
+  // TODO(https://crbug.com/955171): Remove this method and use
+  // CreateWebSocketConnector directly once |this| uses
+  // service_manager::BinderMap instead of |parameterized_binder_registry_|.
+  static void CreateWebSocketConnectorForRequest(
       blink::mojom::WebSocketConnectorRequest request,
+      RenderProcessHost* host,
+      const url::Origin& origin);
+
+  static void CreateWebSocketConnector(
+      mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver,
       RenderProcessHost* host,
       const url::Origin& origin);
 
@@ -178,7 +186,7 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
   // TODO(nhiroki): Consider moving this into SharedWorkerHost and
   // ServiceWorkerProviderHost.
   parameterized_binder_registry_.AddInterface(
-      base::BindRepeating(CreateWebSocketConnector));
+      base::BindRepeating(CreateWebSocketConnectorForRequest));
 
   parameterized_binder_registry_.AddInterface(
       base::Bind([](payments::mojom::PaymentManagerRequest request,
@@ -271,15 +279,24 @@ RendererInterfaceBinders& GetRendererInterfaceBinders() {
   return *binders;
 }
 
-void RendererInterfaceBinders::CreateWebSocketConnector(
+void RendererInterfaceBinders::CreateWebSocketConnectorForRequest(
     blink::mojom::WebSocketConnectorRequest request,
+    RenderProcessHost* host,
+    const url::Origin& origin) {
+  // Implicit conversion from WebSocketConnectorRequest to
+  // mojo::PendingReceiver<blink::mojom::WebSocketConnector>.
+  CreateWebSocketConnector(std::move(request), host, origin);
+}
+
+void RendererInterfaceBinders::CreateWebSocketConnector(
+    mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver,
     RenderProcessHost* host,
     const url::Origin& origin) {
   // TODO(jam): is it ok to not send extraHeaders for sockets created from
   // shared and service workers?
-  mojo::MakeStrongBinding(std::make_unique<WebSocketConnectorImpl>(
-                              host->GetID(), MSG_ROUTING_NONE, origin),
-                          std::move(request));
+  mojo::MakeSelfOwnedReceiver(std::make_unique<WebSocketConnectorImpl>(
+                                  host->GetID(), MSG_ROUTING_NONE, origin),
+                              std::move(receiver));
 }
 
 }  // namespace

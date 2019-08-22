@@ -841,7 +841,7 @@ class BidirectionalStreamQuicImplTest
 // TODO(nharper): Make these tests work with TLS.
 quic::ParsedQuicVersionVector AllSupportedVersionsWithQuicCrypto() {
   quic::ParsedQuicVersionVector versions;
-  for (const auto& version : quic::AllSupportedVersions()) {
+  for (const auto& version : quic::AllVersionsExcept99()) {
     if (version.handshake_protocol == quic::PROTOCOL_QUIC_CRYPTO) {
       versions.push_back(version);
     }

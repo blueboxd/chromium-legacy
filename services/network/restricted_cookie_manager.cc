@@ -224,7 +224,7 @@ void RestrictedCookieManager::CookieListToGetAllForUrlCallback(
     const net::CookieOptions& net_options,
     mojom::CookieManagerGetOptionsPtr options,
     GetAllForUrlCallback callback,
-    const net::CookieList& cookie_list,
+    const net::CookieStatusList& cookie_list,
     const net::CookieStatusList& excluded_cookies) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -251,8 +251,9 @@ void RestrictedCookieManager::CookieListToGetAllForUrlCallback(
     result.reserve(cookie_list.size());
   mojom::CookieMatchType match_type = options->match_type;
   const std::string& match_name = options->name;
+  // TODO(https://crbug.com/993843): Use the statuses passed in |cookie_list|.
   for (size_t i = 0; i < cookie_list.size(); ++i) {
-    const net::CanonicalCookie& cookie = cookie_list[i];
+    const net::CanonicalCookie& cookie = cookie_list[i].cookie;
     const std::string& cookie_name = cookie.Name();
 
     if (match_type == mojom::CookieMatchType::EQUALS) {
@@ -272,6 +273,8 @@ void RestrictedCookieManager::CookieListToGetAllForUrlCallback(
           {cookie, CookieInclusionStatus::EXCLUDE_USER_PREFERENCES});
     } else {
       result.push_back(cookie);
+      // TODO(https://crbug.com/993843): Use the actual status passed in. (For
+      // now it should always be INCLUDE so it doesn't matter.)
       result_with_status.push_back({cookie, CookieInclusionStatus::INCLUDE});
 
       // Warn about upcoming deprecations.

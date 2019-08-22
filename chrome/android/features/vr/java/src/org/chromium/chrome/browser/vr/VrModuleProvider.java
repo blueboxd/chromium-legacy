@@ -128,15 +128,11 @@ public class VrModuleProvider implements ModuleInstallUi.FailureUiListener {
     }
 
     @Override
-    public void onRetry() {
-        if (mNativeVrModuleProvider != 0) {
+    public void onFailureUiResponse(boolean retry) {
+        if (mNativeVrModuleProvider == 0) return;
+        if (retry) {
             installModule(mTab);
-        }
-    }
-
-    @Override
-    public void onCancel() {
-        if (mNativeVrModuleProvider != 0) {
+        } else {
             nativeOnInstalledModule(mNativeVrModuleProvider, false);
         }
     }

@@ -19,7 +19,7 @@
 namespace content {
 
 PaymentManager::~PaymentManager() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
 }
 
 PaymentManager::PaymentManager(
@@ -27,7 +27,7 @@ PaymentManager::PaymentManager(
     mojo::InterfaceRequest<payments::mojom::PaymentManager> request)
     : payment_app_context_(payment_app_context),
       binding_(this, std::move(request)) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
   DCHECK(payment_app_context);
 
   binding_.set_connection_error_handler(base::BindOnce(
@@ -35,7 +35,7 @@ PaymentManager::PaymentManager(
 }
 
 void PaymentManager::Init(const GURL& context_url, const std::string& scope) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
 
   should_set_payment_app_info_ = true;
   context_url_ = context_url;
@@ -59,7 +59,7 @@ void PaymentManager::Init(const GURL& context_url, const std::string& scope) {
 void PaymentManager::DeletePaymentInstrument(
     const std::string& instrument_key,
     PaymentManager::DeletePaymentInstrumentCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
 
   payment_app_context_->payment_app_database()->DeletePaymentInstrument(
       scope_, instrument_key, std::move(callback));
@@ -68,7 +68,7 @@ void PaymentManager::DeletePaymentInstrument(
 void PaymentManager::GetPaymentInstrument(
     const std::string& instrument_key,
     PaymentManager::GetPaymentInstrumentCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
 
   payment_app_context_->payment_app_database()->ReadPaymentInstrument(
       scope_, instrument_key, std::move(callback));
@@ -76,7 +76,7 @@ void PaymentManager::GetPaymentInstrument(
 
 void PaymentManager::KeysOfPaymentInstruments(
     PaymentManager::KeysOfPaymentInstrumentsCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
 
   payment_app_context_->payment_app_database()->KeysOfPaymentInstruments(
       scope_, std::move(callback));
@@ -85,7 +85,7 @@ void PaymentManager::KeysOfPaymentInstruments(
 void PaymentManager::HasPaymentInstrument(
     const std::string& instrument_key,
     PaymentManager::HasPaymentInstrumentCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
 
   payment_app_context_->payment_app_database()->HasPaymentInstrument(
       scope_, instrument_key, std::move(callback));
@@ -95,7 +95,7 @@ void PaymentManager::SetPaymentInstrument(
     const std::string& instrument_key,
     payments::mojom::PaymentInstrumentPtr details,
     PaymentManager::SetPaymentInstrumentCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
 
   if (should_set_payment_app_info_) {
     payment_app_context_->payment_app_database()->WritePaymentInstrument(
@@ -112,7 +112,7 @@ void PaymentManager::SetPaymentInstrument(
 void PaymentManager::SetPaymentInstrumentIntermediateCallback(
     PaymentManager::SetPaymentInstrumentCallback callback,
     payments::mojom::PaymentHandlerStatus status) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
 
   if (status != payments::mojom::PaymentHandlerStatus::SUCCESS ||
       !should_set_payment_app_info_) {
@@ -127,7 +127,7 @@ void PaymentManager::SetPaymentInstrumentIntermediateCallback(
 
 void PaymentManager::ClearPaymentInstruments(
     ClearPaymentInstrumentsCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
 
   payment_app_context_->payment_app_database()->ClearPaymentInstruments(
       scope_, std::move(callback));
@@ -139,7 +139,7 @@ void PaymentManager::SetUserHint(const std::string& user_hint) {
 }
 
 void PaymentManager::OnConnectionError() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContextWrapper::GetCoreThreadId());
   payment_app_context_->PaymentManagerHadConnectionError(this);
 }
 

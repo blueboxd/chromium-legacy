@@ -11,7 +11,7 @@ option java_package = "org.chromium.components.metrics";
 
 package metrics;
 
-// Demographics information about the user.
+// Limited demographics information about the user.
 //
 // This data is drawn from the signed-in user's GAIA id and is provided to
 // Chrome via syncable priority pref.
@@ -26,21 +26,29 @@ message UserDemographicsProto {
   // The supported gender identifiers. These values correspond to those offered
   // in the "Gender" section of the Google Account settings. Note that these
   // values deliberately do not address the rich spectrum of possible gender
-  // identies with high granalurity because we do not want these values to be
+  // identities with high granularity because we do not want these values to be
   // highly identifying.
+  //
+  // Values from this enum are both sent to Chrome via Chrome Sync, and
+  // selectively forwarded from Chrome to UMA logs.
   enum Gender {
-    // The default value for clients that do not have any gender information as
-    // well as for those users who prefer not to disclose a gender and those who
-    // provide a custom gender.
-    GENDER_UNKNOWN_OR_OTHER = 0;
+    // The default value for clients that do not have any gender information.
+    GENDER_UNKNOWN = 0;
     // The user specified that they prefer to be referred to as male.
     GENDER_MALE = 1;
     // The user specified that they prefer to be referred to as female.
     GENDER_FEMALE = 2;
+    // The user specified that they prefer not to disclose a gender or the user
+    // provided a custom gender identifier. This value may be synced to Chrome,
+    // but it is not transmitted to UMA because the population size is
+    // relatively small vs MALE/FEMALE and thus may be highly identifying.
+    // Instead, these users will not submit any demographics, blending them into
+    // the GENDER_UNKNOWN group (which is large).
+    GENDER_CUSTOM_OR_OTHER = 3;
   }
 
   // The gender specified by the user. If the user's gender is unknown or non-
   // binary, this field will be omitted, corresponding to a default
-  // value of GENDER_UNKNOWN_OR_OTHER.
+  // value of GENDER_UNKNOWN.
   optional Gender gender = 2;
 }

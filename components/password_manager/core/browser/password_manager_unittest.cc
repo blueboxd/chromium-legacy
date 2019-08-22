@@ -1364,11 +1364,12 @@ TEST_F(PasswordManagerTest, HashSavedOnGaiaFormWithSkipSavePassword) {
       base::test::ScopedFeatureList scoped_feature_list;
       if (only_new_parser) {
         TurnOnOnlyNewParser(&scoped_feature_list);
-        EXPECT_CALL(*store_, GetLogins(_, _))
-            .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
       } else {
         TurnOnNewParsingForFilling(&scoped_feature_list, true);
       }
+      EXPECT_CALL(*store_, GetLogins(_, _))
+          .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+      EXPECT_CALL(driver_, FillPasswordForm(_)).Times(0);
       std::vector<PasswordForm> observed;
       PasswordForm form(MakeSimpleGAIAForm());
       // Simulate that this is Gaia form that should be ignored for
@@ -1413,12 +1414,13 @@ TEST_F(PasswordManagerTest,
     base::test::ScopedFeatureList scoped_feature_list;
     if (only_new_parser) {
       TurnOnOnlyNewParser(&scoped_feature_list);
-      EXPECT_CALL(*store_, GetLogins(_, _))
-          .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
     } else {
       TurnOnNewParsingForFilling(&scoped_feature_list, true);
     }
 
+    EXPECT_CALL(*store_, GetLogins(_, _))
+        .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+    EXPECT_CALL(driver_, FillPasswordForm(_)).Times(0);
     PasswordForm form(MakeSimpleGAIAForm());
     // Simulate that this is Gaia form that should be ignored for
     // saving/filling.

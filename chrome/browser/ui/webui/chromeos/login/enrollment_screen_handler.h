@@ -17,10 +17,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "net/base/net_errors.h"
-
-namespace net {
-class CanonicalCookie;
-}
+#include "net/cookies/canonical_cookie.h"
 
 namespace chromeos {
 
@@ -107,7 +104,7 @@ class EnrollmentScreenHandler
   void HandleCompleteLogin(const std::string& user);
   void OnGetCookiesForCompleteLogin(
       const std::string& user,
-      const std::vector<net::CanonicalCookie>& cookies,
+      const net::CookieStatusList& cookies,
       const net::CookieStatusList& excluded_cookies);
   void HandleAdCompleteLogin(const std::string& machine_name,
                              const std::string& distinguished_name,

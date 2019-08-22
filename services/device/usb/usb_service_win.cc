@@ -293,8 +293,7 @@ UsbServiceWin::UsbServiceWin()
     : UsbService(),
       blocking_task_runner_(CreateBlockingTaskRunner()),
       helper_(nullptr, base::OnTaskRunnerDeleter(blocking_task_runner_)),
-      device_observer_(this),
-      weak_factory_(this) {
+      device_observer_(this) {
   DeviceMonitorWin* device_monitor =
       DeviceMonitorWin::GetForDeviceInterface(GUID_DEVINTERFACE_USB_DEVICE);
   if (device_monitor)

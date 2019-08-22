@@ -7,6 +7,7 @@
 
 #include "content/browser/contacts/contacts_provider.h"
 #include "content/common/content_export.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/mojom/contacts/contacts_manager.mojom.h"
 
 namespace content {
@@ -32,10 +33,13 @@ class CONTENT_EXPORT ContactsManagerImpl
               bool include_names,
               bool include_emails,
               bool include_tel,
-              SelectCallback callback) override;
+              SelectCallback mojom_callback) override;
 
  private:
   std::unique_ptr<ContactsProvider> contacts_provider_;
+
+  // The source id to use when reporting back UKM statistics.
+  ukm::SourceId source_id_ = ukm::kInvalidSourceId;
 
   DISALLOW_COPY_AND_ASSIGN(ContactsManagerImpl);
 };

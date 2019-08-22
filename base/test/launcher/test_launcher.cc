@@ -42,6 +42,7 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "base/test/gtest_util.h"
+#include "base/test/gtest_xml_util.h"
 #include "base/test/launcher/test_launcher_tracer.h"
 #include "base/test/launcher/test_results_tracker.h"
 #include "base/test/test_switches.h"
@@ -888,16 +889,116 @@ void TestLauncher::LaunchChildGTestProcess(
                process_results.was_timeout));
 }
 
+// Determines which result status will be assigned for missing test results.
+TestResult::Status MissingResultStatus(size_t tests_to_run_count,
+                                       bool was_timeout,
+                                       bool exit_code) {
+  // There is more than one test, cannot assess status.
+  if (tests_to_run_count > 1u)
+    return TestResult::TEST_SKIPPED;
+
+  // There is only one test and no results.
+  // Try to determine status by timeout or exit code.
+  if (was_timeout)
+    return TestResult::TEST_TIMEOUT;
+  if (exit_code != 0)
+    return TestResult::TEST_FAILURE;
+
+  // It's strange case when test executed successfully,
+  // but we failed to read machine-readable report for it.
+  return TestResult::TEST_UNKNOWN;
+}
+
+// Returns interpreted test results.
 void TestLauncher::ProcessTestResults(
     const std::vector<std::string>& test_names,
-    const base::FilePath& result_file,
+    const FilePath& result_file,
     const std::string& output,
-    const base::TimeDelta& elapsed_time,
+    TimeDelta elapsed_time,
     int exit_code,
     bool was_timeout) {
-  std::vector<TestResult> test_results = launcher_delegate_->ProcessTestResults(
-      test_names, result_file, output, elapsed_time, exit_code, was_timeout);
-  for (const auto& result : test_results)
+  std::vector<TestResult> test_results;
+  bool crashed = false;
+  bool have_test_results =
+      ProcessGTestOutput(result_file, &test_results, &crashed);
+
+  if (!have_test_results) {
+    // We do not have reliable details about test results (parsing test
+    // stdout is known to be unreliable).
+    LOG(ERROR) << "Failed to get out-of-band test success data, "
+                  "dumping full stdio below:\n"
+               << output << "\n";
+    // This is odd, but sometimes ProcessGtestOutput returns
+    // false, but TestResults is not empty.
+    test_results.clear();
+  }
+
+  TestResult::Status missing_result_status =
+      MissingResultStatus(test_names.size(), was_timeout, exit_code);
+
+  // TODO(phajdan.jr): Check for duplicates and mismatches between
+  // the results we got from XML file and tests we intended to run.
+  std::map<std::string, TestResult> results_map;
+  for (const auto& i : test_results)
+    results_map[i.full_name] = i;
+
+  // Results to be reported back to the test launcher.
+  std::vector<TestResult> final_results;
+
+  for (const auto& i : test_names) {
+    if (Contains(results_map, i)) {
+      TestResult test_result = results_map[i];
+      // Fix up the test status: we forcibly kill the child process
+      // after the timeout, so from XML results it looks just like
+      // a crash.
+      if ((was_timeout && test_result.status == TestResult::TEST_CRASH) ||
+          // If we run multiple tests in a batch with a timeout applied
+          // to the entire batch. It is possible that with other tests
+          // running quickly some tests take longer than the per-test timeout.
+          // For consistent handling of tests independent of order and other
+          // factors, mark them as timing out.
+          test_result.elapsed_time > launcher_delegate_->GetTimeout()) {
+        test_result.status = TestResult::TEST_TIMEOUT;
+      }
+      final_results.push_back(test_result);
+    } else {
+      // TODO(phajdan.jr): Explicitly pass the info that the test didn't
+      // run for a mysterious reason.
+      LOG(ERROR) << "no test result for " << i;
+      TestResult test_result;
+      test_result.full_name = i;
+      test_result.status = missing_result_status;
+      final_results.push_back(test_result);
+    }
+  }
+  // TODO(phajdan.jr): Handle the case where processing XML output
+  // indicates a crash but none of the test results is marked as crashing.
+
+  bool has_non_success_test = false;
+  for (const auto& i : final_results) {
+    if (i.status != TestResult::TEST_SUCCESS) {
+      has_non_success_test = true;
+      break;
+    }
+  }
+
+  if (!has_non_success_test && exit_code != 0) {
+    // This is a bit surprising case: all tests are marked as successful,
+    // but the exit code was not zero. This can happen e.g. under memory
+    // tools that report leaks this way. Mark all tests as a failure on exit,
+    // and for more precise info they'd need to be retried serially.
+    for (auto& i : final_results)
+      i.status = TestResult::TEST_FAILURE_ON_EXIT;
+  }
+
+  for (auto& i : final_results) {
+    // Fix the output snippet after possible changes to the test result.
+    i.output_snippet = GetTestOutputSnippet(i, output);
+  }
+
+  launcher_delegate_->ProcessTestResults(final_results, elapsed_time);
+
+  for (const auto& result : final_results)
     OnTestFinished(result);
 }
 

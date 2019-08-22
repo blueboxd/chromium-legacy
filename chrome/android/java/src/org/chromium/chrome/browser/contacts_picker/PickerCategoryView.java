@@ -267,12 +267,12 @@ public class PickerCategoryView extends RelativeLayout
             mSelectionDelegate.setSelectedItems(
                     new HashSet<ContactDetails>(mPickerAdapter.getAllContacts()));
             mListener.onContactsPickerUserAction(
-                    ContactsPickerListener.ContactsPickerAction.SELECT_ALL, null);
+                    ContactsPickerListener.ContactsPickerAction.SELECT_ALL, null, 0);
         } else {
             mSelectionDelegate.setSelectedItems(new HashSet<ContactDetails>());
             mPreviousSelection = null;
             mListener.onContactsPickerUserAction(
-                    ContactsPickerListener.ContactsPickerAction.UNDO_SELECT_ALL, null);
+                    ContactsPickerListener.ContactsPickerAction.UNDO_SELECT_ALL, null, 0);
         }
     }
 
@@ -369,24 +369,28 @@ public class PickerCategoryView extends RelativeLayout
      */
     private void executeAction(@ContactsPickerListener.ContactsPickerAction int action,
             List<ContactsPickerListener.Contact> contacts, int umaId) {
-        mListener.onContactsPickerUserAction(action, contacts);
+        int selectCount = contacts != null ? contacts.size() : 0;
+        int contactCount = mPickerAdapter.getAllContacts().size();
+        int percentageShared = (100 * selectCount) / contactCount;
+        mListener.onContactsPickerUserAction(action, contacts, percentageShared);
         mDialog.dismiss();
         UiUtils.onContactsPickerDismissed();
-        recordFinalUmaStats(umaId, contacts != null ? contacts.size() : 0);
+        recordFinalUmaStats(umaId, contactCount, selectCount, percentageShared);
     }
 
     /**
      * Record UMA statistics (what action was taken in the dialog and other performance stats).
      * @param action The action the user took in the dialog.
+     * @param contactCount The number of contacts in the contact list.
      * @param selectCount The number of contacts selected.
+     * @param percentageShared The percentage shared (of the whole contact list).
      */
-    private void recordFinalUmaStats(int action, int selectCount) {
+    private void recordFinalUmaStats(
+            int action, int contactCount, int selectCount, int percentageShared) {
         RecordHistogram.recordEnumeratedHistogram(
                 "Android.ContactsPicker.DialogAction", action, ACTION_BOUNDARY);
-        int contactCount = mPickerAdapter.getAllContacts().size();
         RecordHistogram.recordCountHistogram("Android.ContactsPicker.ContactCount", contactCount);
         RecordHistogram.recordCountHistogram("Android.ContactsPicker.SelectCount", selectCount);
-        int percentageShared = 100 * selectCount / contactCount;
         RecordHistogram.recordPercentageHistogram(
                 "Android.ContactsPicker.SelectPercentage", percentageShared);
     }

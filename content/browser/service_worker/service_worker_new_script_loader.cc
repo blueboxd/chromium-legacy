@@ -552,8 +552,8 @@ void ServiceWorkerNewScriptLoader::CommitCompleted(
     // because the worker stops soon after receiving the error response.
     // TODO(nhiroki): Consider replacing this hacky way with the new error code
     // handling mechanism in URLLoader.
-    version_->embedded_worker()->AddMessageToConsole(
-        blink::mojom::ConsoleMessageLevel::kError, status_message);
+    version_->AddMessageToConsole(blink::mojom::ConsoleMessageLevel::kError,
+                                  status_message);
   }
   version_->script_cache_map()->NotifyFinishedCaching(
       request_url_, bytes_written, error_code, status_message);

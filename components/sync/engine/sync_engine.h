@@ -65,8 +65,6 @@ class SyncEngine : public ModelTypeConfigurer {
     CoreAccountId authenticated_account_id;
     std::string invalidator_client_id;
     std::unique_ptr<SyncManagerFactory> sync_manager_factory;
-    // TODO(crbug.com/955989): Remove since it's unused.
-    bool delete_sync_data_folder = false;
     bool enable_local_sync_backend = false;
     base::FilePath local_sync_backend_folder;
     std::string restored_key_for_bootstrapping;

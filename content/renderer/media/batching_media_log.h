@@ -92,7 +92,7 @@ class CONTENT_EXPORT BatchingMediaLog : public media::MediaLog {
   std::unique_ptr<media::MediaLogEvent> last_pipeline_error_;
 
   base::WeakPtr<BatchingMediaLog> weak_this_;
-  base::WeakPtrFactory<BatchingMediaLog> weak_factory_;
+  base::WeakPtrFactory<BatchingMediaLog> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BatchingMediaLog);
 };

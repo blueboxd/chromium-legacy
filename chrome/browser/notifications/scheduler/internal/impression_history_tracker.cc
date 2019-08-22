@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/numerics/ranges.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduler_utils.h"
+#include "chrome/browser/notifications/scheduler/internal/stats.h"
 
 namespace notifications {
 namespace {
@@ -139,6 +140,8 @@ void ImpressionHistoryTrackerImpl::OnStoreInitialized(
     InitCallback callback,
     bool success,
     CollectionStore<ClientState>::Entries entries) {
+  stats::LogImpressionDbInit(success, entries.size());
+
   if (!success) {
     std::move(callback).Run(false);
     return;
@@ -179,7 +182,8 @@ void ImpressionHistoryTrackerImpl::SyncRegisteredClients() {
         std::find(registered_clients_.begin(), registered_clients_.end(),
                   client_type) == registered_clients_.end();
     if (deprecated) {
-      store_->Delete(ToDatabaseKey(client_type), base::DoNothing());
+      store_->Delete(ToDatabaseKey(client_type),
+                     base::BindOnce(&stats::LogImpressionDbOperation));
       client_states_.erase(it++);
       continue;
     } else {
@@ -194,7 +198,7 @@ void ImpressionHistoryTrackerImpl::SyncRegisteredClients() {
 
       DCHECK(new_client_data);
       store_->Add(ToDatabaseKey(type), *new_client_data.get(),
-                  base::DoNothing());
+                  base::BindOnce(&stats::LogImpressionDbOperation));
       client_states_.emplace(type, std::move(new_client_data));
     }
   }
@@ -398,7 +402,8 @@ bool ImpressionHistoryTrackerImpl::MaybeUpdateDb(SchedulerClientType type) {
 
   bool db_updated = false;
   if (NeedsUpdate(type)) {
-    store_->Update(ToDatabaseKey(type), *(it->second.get()), base::DoNothing());
+    store_->Update(ToDatabaseKey(type), *(it->second.get()),
+                   base::BindOnce(&stats::LogImpressionDbOperation));
     db_updated = true;
   }
   SetNeedsUpdate(type, false);

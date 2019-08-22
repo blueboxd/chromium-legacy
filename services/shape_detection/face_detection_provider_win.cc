@@ -114,7 +114,7 @@ void FaceDetectionProviderWin::CreateFaceDetection(
   binding_->PauseIncomingMethodCallProcessing();
 }
 
-FaceDetectionProviderWin::FaceDetectionProviderWin() : weak_factory_(this) {}
+FaceDetectionProviderWin::FaceDetectionProviderWin() {}
 
 FaceDetectionProviderWin::~FaceDetectionProviderWin() = default;
 

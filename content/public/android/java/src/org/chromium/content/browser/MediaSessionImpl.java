@@ -32,6 +32,8 @@ public class MediaSessionImpl extends MediaSession {
     private ObserverList<MediaSessionObserver> mObservers;
     private ObserverList.RewindableIterator<MediaSessionObserver> mObserversIterator;
 
+    private boolean mIsControllable;
+
     public static MediaSessionImpl fromWebContents(WebContents webContents) {
         return nativeGetMediaSessionFromWebContents(webContents);
     }
@@ -86,6 +88,11 @@ public class MediaSessionImpl extends MediaSession {
         nativeRequestSystemAudioFocus(mNativeMediaSessionAndroid);
     }
 
+    @Override
+    public boolean isControllable() {
+        return mIsControllable;
+    }
+
     @CalledByNative
     private boolean hasObservers() {
         return !mObservers.isEmpty();
@@ -105,6 +112,8 @@ public class MediaSessionImpl extends MediaSession {
 
     @CalledByNative
     private void mediaSessionStateChanged(boolean isControllable, boolean isSuspended) {
+        mIsControllable = isControllable;
+
         for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
             mObserversIterator.next().mediaSessionStateChanged(isControllable, isSuspended);
         }

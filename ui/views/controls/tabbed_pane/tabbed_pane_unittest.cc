@@ -139,6 +139,7 @@ TEST_F(TabbedPaneTest, SizeAndLayout) {
   EXPECT_GT(tabbed_pane_->GetPreferredSize().height(), 10);
 
   // The child views should resize to fit in larger tabbed panes.
+  widget_->SetBounds(gfx::Rect(0, 0, 100, 200));
   tabbed_pane_->SetBounds(0, 0, 100, 200);
   RunPendingMessages();
   // |tabbed_pane_| has no border. Therefore the children should be as wide as
@@ -236,13 +237,6 @@ TEST_F(TabbedPaneTest, ArrowKeyBindings) {
 // Use TabbedPane::HandleAccessibleAction() to select tabs and make sure their
 // a11y information is correct.
 TEST_F(TabbedPaneTest, SelectTabWithAccessibleAction) {
-  // Testing accessibility information requires the View to have a Widget.
-  Widget* widget = new Widget;
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
-  widget->Init(std::move(params));
-  widget->GetContentsView()->AddChildView(tabbed_pane_.get());
-  widget->Show();
-
   constexpr size_t kNumTabs = 3;
   for (size_t i = 0; i < kNumTabs; ++i) {
     tabbed_pane_->AddTab(DefaultTabTitle(), std::make_unique<View>());
@@ -275,8 +269,6 @@ TEST_F(TabbedPaneTest, SelectTabWithAccessibleAction) {
   // Select the second tab again.
   GetTabAt(1)->HandleAccessibleAction(action);
   EXPECT_EQ(1u, tabbed_pane_->GetSelectedTabIndex());
-
-  widget->CloseNow();
 }
 
 TEST_F(TabbedPaneTest, AccessiblePaneTitleTracksActiveTabTitle) {

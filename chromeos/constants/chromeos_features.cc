@@ -19,7 +19,7 @@ const base::Feature kInstantTetheringBackgroundAdvertisementSupport{
 // Controls whether to enable Chrome OS Account Manager.
 // Rollout controlled by Finch.
 const base::Feature kAccountManager{"ChromeOSAccountManager",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether to enable Ambient mode feature.
 const base::Feature kAmbientModeFeature{"ChromeOSAmbientMode",
@@ -50,7 +50,7 @@ const base::Feature kCameraSystemWebApp{"CameraSystemWebApp",
 
 // Enables or disables Crostini Backup.
 const base::Feature kCrostiniBackup{"CrostiniBackup",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables Crostini GPU support.
 const base::Feature kCrostiniGpuSupport{"CrostiniGpuSupport",

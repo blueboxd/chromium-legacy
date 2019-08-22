@@ -20,6 +20,7 @@
 #include "components/gcm_driver/instance_id/instance_id.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
 #include "components/invalidation/impl/fcm_invalidation_listener.h"
+#include "components/invalidation/impl/fcm_network_handler.h"
 #include "components/invalidation/impl/fcm_sync_network_channel.h"
 #include "components/invalidation/impl/gcm_invalidation_bridge.h"
 #include "components/invalidation/impl/invalidation_prefs.h"
@@ -174,7 +175,9 @@ class FCMInvalidationServiceTestDelegate {
         .WillRepeatedly(testing::Return(mock_instance_id_.get()));
 
     invalidation_service_ = std::make_unique<FCMInvalidationService>(
-        identity_provider_.get(), gcm_driver_.get(),
+        identity_provider_.get(),
+        base::BindRepeating(&syncer::FCMNetworkHandler::Create,
+                            gcm_driver_.get(), mock_instance_id_driver_.get()),
         mock_instance_id_driver_.get(), &pref_service_,
         base::BindRepeating(&data_decoder::SafeJsonParser::Parse, nullptr),
         &url_loader_factory_);

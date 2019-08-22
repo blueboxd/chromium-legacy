@@ -17391,6 +17391,8 @@ error::Error GLES2DecoderImpl::HandleQueryCounterEXT(
   uint32_t submit_count = static_cast<GLuint>(c.submit_count);
 
   switch (target) {
+    case GL_COMMANDS_ISSUED_TIMESTAMP_CHROMIUM:
+      break;
     case GL_TIMESTAMP:
       if (!query_manager_->GPUTimingAvailable()) {
         LOCAL_SET_GL_ERROR(

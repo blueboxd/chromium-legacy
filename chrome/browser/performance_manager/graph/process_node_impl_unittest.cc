@@ -118,6 +118,7 @@ class LenientMockObserver : public ProcessNodeImpl::Observer {
   ~LenientMockObserver() override {}
 
   MOCK_METHOD1(OnProcessNodeAdded, void(const ProcessNode*));
+  MOCK_METHOD1(OnProcessLifetimeChange, void(const ProcessNode*));
   MOCK_METHOD1(OnBeforeProcessNodeRemoved, void(const ProcessNode*));
   MOCK_METHOD1(OnExpectedTaskQueueingDurationSample, void(const ProcessNode*));
   MOCK_METHOD1(OnMainThreadTaskLoadIsLow, void(const ProcessNode*));
@@ -154,6 +155,12 @@ TEST_F(ProcessNodeImplTest, ObserverWorks) {
   auto process_node = CreateNode<ProcessNodeImpl>();
   const ProcessNode* raw_process_node = process_node.get();
   EXPECT_EQ(raw_process_node, obs.TakeNotifiedProcessNode());
+
+  // Test process creation and exit events.
+  EXPECT_CALL(obs, OnProcessLifetimeChange(_));
+  process_node->SetProcess(base::Process::Current(), base::Time::Now());
+  EXPECT_CALL(obs, OnProcessLifetimeChange(_));
+  process_node->SetProcessExitStatus(10);
 
   EXPECT_CALL(obs, OnExpectedTaskQueueingDurationSample(_))
       .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedProcessNode));

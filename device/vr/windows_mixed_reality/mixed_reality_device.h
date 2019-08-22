@@ -65,7 +65,7 @@ class DEVICE_VR_EXPORT MixedRealityDevice
 
   mojo::Binding<mojom::XRSessionController> exclusive_controller_binding_;
 
-  base::WeakPtrFactory<MixedRealityDevice> weak_ptr_factory_;
+  base::WeakPtrFactory<MixedRealityDevice> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MixedRealityDevice);
 };

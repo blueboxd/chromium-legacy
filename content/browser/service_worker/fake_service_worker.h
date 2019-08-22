@@ -118,6 +118,8 @@ class FakeServiceWorker : public blink::mojom::ServiceWorker {
       DispatchContentDeleteEventCallback callback) override;
   void Ping(PingCallback callback) override;
   void SetIdleTimerDelayToZero() override;
+  void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
+                           const std::string& message) override;
 
   virtual void OnConnectionError();
 

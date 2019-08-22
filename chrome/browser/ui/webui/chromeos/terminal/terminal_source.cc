@@ -26,7 +26,8 @@ constexpr char kDefaultMime[] = "text/html";
 void ReadFile(const base::FilePath& path,
               const content::URLDataSource::GotDataCallback& callback) {
   std::string content;
-  CHECK(base::ReadFileToString(path, &content)) << path;
+  bool result = base::ReadFileToString(path, &content);
+  DCHECK(result) << path;
   scoped_refptr<base::RefCountedString> response =
       base::RefCountedString::TakeString(&content);
   callback.Run(response.get());
@@ -41,12 +42,12 @@ void TerminalSource::StartDataRequest(
     const std::string& path,
     const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
-  base::FilePath file_path(kTerminalRoot);
-  if (path.empty()) {
-    file_path = file_path.Append(kDefaultFile);
-  } else {
-    file_path = file_path.Append(path);
-  }
+  // Reparse path to strip any query or fragment, skip first '/' in path.
+  std::string reparsed =
+      GURL(chrome::kChromeUITerminalURL + path).path().substr(1);
+  if (reparsed.empty())
+    reparsed = kDefaultFile;
+  base::FilePath file_path = base::FilePath(kTerminalRoot).Append(reparsed);
   base::PostTask(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},

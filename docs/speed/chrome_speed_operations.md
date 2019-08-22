@@ -1,31 +1,24 @@
 # Chrome Speed Operations
 
-Chrome Speed Operations exists to prevent Chrome from regressing on
-responsiveness, smoothness, memory, power or other key performance metrics.
-We seek to integrate a world-class benchmarking framework and performance
-monitoring tools into Chrome's release process.
+Chrome Speed Operations provides tools, framework, and infrastructure
+to track Chrome's performance and guide optimizations to Chrome.
 
-TPM: benhenry@chromium.org, ushesh@chromium.org
- 
+TPM: ushesh@chromium.org
+
 Speed Operations consists of 3 teams, working in tandem:
 
-## Benchmarking and Telemetry
-The benchmarks team provides:
-  * A set of [releasing-oriented benchmarks](https://docs.google.com/document/d/1BM_6lBrPzpMNMtcyi2NFKGIzmzIQ1oH3OlNG27kDGNU/edit)
-    that measure key user-visible performance metrics in important scenarios.
-    We work closely with Chrome Speed Metrics team on the metrics and with
-    Releasing team on the scenarios.
+## Benchmarking
+The Benchmarking team provides:
   * A set of [opinionated benchmarking frameworks](https://docs.google.com/document/d/1ni2MIeVnlH4bTj4yvEDMVNxgL73PqK_O9_NUm3NW3BA/edit)
-    that make it easy for Chromium developers to add lower-level benchmarks for
+    that make it easy for Chromium developers to add benchmarks for
     the areas of Chrome performance important to them.
-  * Automation to run these benchmarks on our continuous build on several dozen
-    real device types, on Windows, Mac, Linux, and Android, with hardware power
-    monitoring.
+  * A [perf waterfall](perf_waterfall.md) to run these benchmarks on our continuous build on a dozen
+    real device types, on Windows, Mac, Linux, and Android.
 
 TL: crouleau@chromium.org
 
 ## Speed Tooling
-The [tooling](chrome_speed_services.md) team provides:
+The [Speed Tooling](chrome_speed_tooling.md) team provides:
   * The [Chrome performance dashboard](https://chromeperf.appspot.com), which
     stores performance timeseries and related debugging data. The dashboard
     automatically detects regressions in these timeseries and has integration
@@ -36,7 +29,7 @@ The [tooling](chrome_speed_services.md) team provides:
     developers to run benchmarks on unsubmitted CLs using the same hardware
     we use in the continuous build.
 
-TL: simonhatch@chromium.org<br>
+TL: dberris@chromium.org
 
 ## Releasing and System Health
 The releasing team provides:

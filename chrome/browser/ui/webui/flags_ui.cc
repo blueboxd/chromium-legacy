@@ -177,7 +177,7 @@ base::RefCountedMemory* FlagsUI::GetFaviconResourceBytes(
 }
 
 FlagsEnterpriseUI::FlagsEnterpriseUI(content::WebUI* web_ui)
-    : WebUIController(web_ui), weak_factory_(this) {
+    : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   auto* handler = InitializeHandler(web_ui, profile, weak_factory_);
   DCHECK(handler);

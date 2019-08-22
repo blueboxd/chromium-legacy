@@ -59,7 +59,8 @@ class COMPONENT_EXPORT(UI_BASE_IME_WIN)
   const scoped_refptr<base::SingleThreadTaskRunner> background_task_runner_;
   scoped_refptr<VirtualKeyboardInputPane> virtual_keyboard_input_pane_;
   bool is_keyboard_visible_;
-  base::WeakPtrFactory<OnScreenKeyboardDisplayManagerInputPane> weak_factory_;
+  base::WeakPtrFactory<OnScreenKeyboardDisplayManagerInputPane> weak_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(OnScreenKeyboardDisplayManagerInputPane);
 };

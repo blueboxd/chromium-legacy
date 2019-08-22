@@ -63,7 +63,7 @@ class ASH_EXPORT OverviewWindowDragController {
 
   OverviewWindowDragController(OverviewSession* overview_session,
                                OverviewItem* item,
-                               bool allow_drag_to_close);
+                               bool is_touch_dragging);
   ~OverviewWindowDragController();
 
   void InitiateDrag(const gfx::PointF& location_in_screen);
@@ -154,9 +154,9 @@ class ASH_EXPORT OverviewWindowDragController {
 
   const size_t display_count_;
 
-  // True if the drag-to-close mode is allowed (generally when the item is
-  // dragged by touch gestures).
-  const bool should_allow_drag_to_close_;
+  // Indicates touch dragging, as opposed to mouse dragging. The drag-to-close
+  // mode is only allowed when |is_touch_dragging_| is true.
+  const bool is_touch_dragging_;
 
   // True if SplitView is enabled.
   const bool should_allow_split_view_;

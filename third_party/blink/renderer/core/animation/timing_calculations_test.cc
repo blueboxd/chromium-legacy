@@ -137,11 +137,11 @@ TEST(AnimationTimingCalculationsTest, IterationTime) {
 
 TEST(AnimationTimingCalculationsTest, OverallProgress) {
   // If the active time is null.
-  EXPECT_TRUE(IsNull(CalculateOverallProgress(Timing::kPhaseAfter,
-                                              /*active_time=*/NullValue(),
-                                              /*iteration_duration=*/1.0,
-                                              /*iteration_count=*/1.0,
-                                              /*iteration_start=*/1.0)));
+  EXPECT_FALSE(CalculateOverallProgress(Timing::kPhaseAfter,
+                                        /*active_time=*/NullValue(),
+                                        /*iteration_duration=*/1.0,
+                                        /*iteration_count=*/1.0,
+                                        /*iteration_start=*/1.0));
 
   // If iteration duration is zero, calculate progress based on iteration count.
   EXPECT_EQ(3, CalculateOverallProgress(Timing::kPhaseActive,
@@ -173,13 +173,13 @@ TEST(AnimationTimingCalculationsTest, OverallProgress) {
 
 TEST(AnimationTimingCalculationsTest, CalculateSimpleIterationProgress) {
   // If the overall progress is null.
-  EXPECT_TRUE(
-      IsNull(CalculateSimpleIterationProgress(Timing::kPhaseAfter,
-                                              /*overall_progress=*/NullValue(),
-                                              /*iteration_start=*/1.0,
-                                              /*active_time=*/NullValue(),
-                                              /*active_duration=*/1.0,
-                                              /*iteration_count=*/1.0)));
+  EXPECT_TRUE(IsNull(
+      CalculateSimpleIterationProgress(Timing::kPhaseAfter,
+                                       /*overall_progress=*/base::nullopt,
+                                       /*iteration_start=*/1.0,
+                                       /*active_time=*/NullValue(),
+                                       /*active_duration=*/1.0,
+                                       /*iteration_count=*/1.0)));
 
   // If the overall progress is infinite.
   const double inf = std::numeric_limits<double>::infinity();
@@ -213,7 +213,7 @@ TEST(AnimationTimingCalculationsTest, CurrentIteration) {
       IsNull(CalculateCurrentIteration(Timing::kPhaseAfter,
                                        /*active_time=*/NullValue(),
                                        /*iteration_count=*/1.0,
-                                       /*overall_progress=*/NullValue(),
+                                       /*overall_progress=*/base::nullopt,
                                        /*simple_iteration_progress=*/0)));
 
   // If the iteration count is infinite.
@@ -275,8 +275,8 @@ TEST(AnimationTimingCalculationsTest, CalculateDirectedProgress) {
   //                           direction);
 
   // if the simple iteration progress is null
-  EXPECT_TRUE(IsNull(CalculateDirectedProgress(
-      NullValue(), NullValue(), Timing::PlaybackDirection::NORMAL)));
+  EXPECT_FALSE(CalculateDirectedProgress(NullValue(), NullValue(),
+                                         Timing::PlaybackDirection::NORMAL));
 
   // forwards
   EXPECT_EQ(0,
@@ -324,8 +324,8 @@ TEST(AnimationTimingCalculationsTest, TransformedProgress) {
       StepsTimingFunction::Create(4, StepsTimingFunction::StepPosition::END);
 
   // directed_progress is null.
-  EXPECT_TRUE(IsNull(CalculateTransformedProgress(
-      Timing::kPhaseActive, NullValue(), 1, true, timing_function)));
+  EXPECT_FALSE(CalculateTransformedProgress(Timing::kPhaseActive, base::nullopt,
+                                            1, true, timing_function));
 
   // At step boundaries.
   // Forward direction.

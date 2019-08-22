@@ -590,6 +590,31 @@ void PDFiumPage::CalculateLinks() {
   FPDFLink_CloseWebLinks(links);
 }
 
+void PDFiumPage::CalculateImages() {
+  if (calculated_images_)
+    return;
+
+  calculated_images_ = true;
+  FPDF_PAGE page = GetPage();
+  int page_object_count = FPDFPage_CountObjects(page);
+  for (int i = 0; i < page_object_count; ++i) {
+    FPDF_PAGEOBJECT page_object = FPDFPage_GetObject(page, i);
+    if (FPDFPageObj_GetType(page_object) != FPDF_PAGEOBJ_IMAGE)
+      continue;
+    float left;
+    float top;
+    float right;
+    float bottom;
+    FPDF_BOOL ret =
+        FPDFPageObj_GetBounds(page_object, &left, &bottom, &right, &top);
+    DCHECK(ret);
+    Image image;
+    image.bounding_rect = PageToScreen(pp::Point(), 1.0, left, top, right,
+                                       bottom, PageOrientation::kOriginal);
+    images_.push_back(image);
+  }
+}
+
 bool PDFiumPage::GetUnderlyingTextRangeForRect(const pp::FloatRect& rect,
                                                int* start_index,
                                                uint32_t* char_len) {
@@ -725,6 +750,12 @@ PDFiumPage::Link::Link() = default;
 PDFiumPage::Link::Link(const Link& that) = default;
 
 PDFiumPage::Link::~Link() = default;
+
+PDFiumPage::Image::Image() = default;
+
+PDFiumPage::Image::Image(const Image& that) = default;
+
+PDFiumPage::Image::~Image() = default;
 
 int ToPDFiumRotation(PageOrientation orientation) {
   // Could static_cast<int>(orientation), but using an exhaustive switch will

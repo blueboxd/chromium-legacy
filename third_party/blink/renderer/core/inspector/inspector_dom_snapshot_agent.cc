@@ -569,17 +569,6 @@ int InspectorDOMSnapshotAgent::BuildLayoutTreeNode(LayoutObject* layout_object,
   if (!layout_object)
     return -1;
 
-  if (node->GetPseudoId()) {
-    // For pseudo elements, visit the children of the layout object.
-    // Combinding ::before { content: 'hello' } and ::first-letter would produce
-    // two boxes for the ::before node, one for 'hello' and one for 'ello'.
-    for (LayoutObject* child = layout_object->SlowFirstChild(); child;
-         child = child->NextSibling()) {
-      if (child->IsAnonymous())
-        BuildLayoutTreeNode(child, node, node_index);
-    }
-  }
-
   auto* layout_tree_snapshot = document_->getLayout();
   auto* text_box_snapshot = document_->getTextBoxes();
 
@@ -635,6 +624,17 @@ int InspectorDOMSnapshotAgent::BuildLayoutTreeNode(LayoutObject* layout_object,
   String text = layout_object->IsText() ? ToLayoutText(layout_object)->GetText()
                                         : String();
   layout_tree_snapshot->getText()->emplace_back(AddString(text));
+
+  if (node->GetPseudoId()) {
+    // For pseudo elements, visit the children of the layout object.
+    // Combinding ::before { content: 'hello' } and ::first-letter would produce
+    // two boxes for the ::before node, one for 'hello' and one for 'ello'.
+    for (LayoutObject* child = layout_object->SlowFirstChild(); child;
+         child = child->NextSibling()) {
+      if (child->IsAnonymous())
+        BuildLayoutTreeNode(child, node, node_index);
+    }
+  }
 
   if (!layout_object->IsText())
     return layout_index;

@@ -234,7 +234,7 @@ class MainController : public ComponentManagerDelegate,
 
   // The connection error handlers gets a weak pointer for the main controller,
   // so that it doesn't try to access the object once it's destroyed.
-  base::WeakPtrFactory<MainController> weak_factory_;
+  base::WeakPtrFactory<MainController> weak_factory_{this};
 };
 
 }  // namespace chrome_cleaner

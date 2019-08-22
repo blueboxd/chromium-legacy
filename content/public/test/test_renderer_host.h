@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -163,12 +164,12 @@ class RenderViewHostTestEnabler {
 // RenderViewHostTestHarness ---------------------------------------------------
 class RenderViewHostTestHarness : public testing::Test {
  public:
-  // Constructs a RenderViewHostTestHarness which uses |args| to initialize its
-  // BrowserTaskEnvironment.
-  template <typename... Args>
-  RenderViewHostTestHarness(Args... args)
-      : RenderViewHostTestHarness(
-            std::make_unique<BrowserTaskEnvironment>(args...)) {}
+  // Constructs a RenderViewHostTestHarness which uses |traits| to initialize
+  // its BrowserTaskEnvironment.
+  template <typename... TaskEnvironmentTraits>
+  explicit RenderViewHostTestHarness(TaskEnvironmentTraits&&... traits)
+      : RenderViewHostTestHarness(std::make_unique<BrowserTaskEnvironment>(
+            std::forward<TaskEnvironmentTraits>(traits)...)) {}
 
   ~RenderViewHostTestHarness() override;
 

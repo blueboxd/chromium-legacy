@@ -727,8 +727,6 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
       AdvanceTestCase();
   }
 
-  void AfterTest() override {}
-
  private:
   base::ThreadChecker main_thread_;
   int callback_count_ = 0;
@@ -833,8 +831,6 @@ class TextureLayerMailboxIsActivatedDuringCommit : public LayerTreeTest {
     // should happen before the main thread is done).
     EXPECT_EQ(activate_count_, host_impl->sync_tree()->source_frame_number());
   }
-
-  void AfterTest() override {}
 
   base::Lock activate_count_lock_;
   int activate_count_ = 0;
@@ -1076,8 +1072,6 @@ class TextureLayerNoExtraCommitForMailboxTest
     }
   }
 
-  void AfterTest() override {}
-
  private:
   scoped_refptr<TextureLayer> texture_layer_;
 };
@@ -1196,8 +1190,6 @@ class TextureLayerChangeInvisibleMailboxTest
         break;
     }
   }
-
-  void AfterTest() override {}
 
  private:
   scoped_refptr<SolidColorLayer> solid_layer_;

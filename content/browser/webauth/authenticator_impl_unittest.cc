@@ -3726,17 +3726,38 @@ TEST_F(ResidentKeyAuthenticatorImplTest, StorageFull) {
             test_client_.failure_reason);
 }
 
-TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionSingle) {
+TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionSingleNoPII) {
   ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectResidentKey(
       /*credential_id=*/{{4, 3, 2, 1}}, kTestRelyingPartyId,
-      /*user_id=*/{{1, 2, 3, 4}}, "test@example.com", "Test User"));
+      /*user_id=*/{{1, 2, 3, 4}}, base::nullopt, base::nullopt));
 
   TestServiceManagerContext smc;
   mojo::Remote<blink::mojom::Authenticator> authenticator =
       ConnectToAuthenticator();
   TestGetAssertionCallback callback_receiver;
-  // |SelectAccount| should not be called when there's only a single response.
+  // |SelectAccount| should not be called when there's only a single response
+  // with no identifying user info because the UI is bad in that case: we can
+  // only display the single choice of "Unknown user".
   test_client_.expected_accounts = "<invalid>";
+  authenticator->GetAssertion(get_credential_options(),
+                              callback_receiver.callback());
+  callback_receiver.WaitForCallback();
+  EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+  EXPECT_TRUE(HasUV(callback_receiver));
+}
+
+TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionSingleWithPII) {
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectResidentKey(
+      /*credential_id=*/{{4, 3, 2, 1}}, kTestRelyingPartyId,
+      /*user_id=*/{{1, 2, 3, 4}}, base::nullopt, "Test User"));
+
+  TestServiceManagerContext smc;
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+  TestGetAssertionCallback callback_receiver;
+  // |SelectAccount| should be called when PII is available.
+  test_client_.expected_accounts = "01020304::Test User";
+  test_client_.selected_user_id = {1, 2, 3, 4};
   authenticator->GetAssertion(get_credential_options(),
                               callback_receiver.callback());
   callback_receiver.WaitForCallback();
@@ -3777,13 +3798,14 @@ TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionUVDiscouraged) {
 
   ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectResidentKey(
       /*credential_id=*/{{4, 3, 2, 1}}, kTestRelyingPartyId,
-      /*user_id=*/{{1, 2, 3, 4}}, "test@example.com", "Test User"));
+      /*user_id=*/{{1, 2, 3, 4}}, base::nullopt, base::nullopt));
 
   TestServiceManagerContext smc;
   mojo::Remote<blink::mojom::Authenticator> authenticator =
       ConnectToAuthenticator();
   TestGetAssertionCallback callback_receiver;
-  // |SelectAccount| should not be called when there's only a single response.
+  // |SelectAccount| should not be called when there's only a single response
+  // without identifying information.
   test_client_.expected_accounts = "<invalid>";
   PublicKeyCredentialRequestOptionsPtr options(get_credential_options());
   options->user_verification =
@@ -3993,13 +4015,14 @@ TEST_F(ResidentKeyAuthenticatorImplTest, WithAppIDExtension) {
   virtual_device_factory_->SetCtap2Config(config);
   ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectResidentKey(
       /*credential_id=*/{{4, 3, 2, 1}}, kTestRelyingPartyId,
-      /*user_id=*/{{1, 2, 3, 4}}, "test@example.com", "Test User"));
+      /*user_id=*/{{1, 2, 3, 4}}, base::nullopt, base::nullopt));
 
   TestServiceManagerContext smc;
   mojo::Remote<blink::mojom::Authenticator> authenticator =
       ConnectToAuthenticator();
   TestGetAssertionCallback callback_receiver;
-  // |SelectAccount| should not be called when there's only a single response.
+  // |SelectAccount| should not be called when there's only a single response
+  // without identifying information.
   test_client_.expected_accounts = "<invalid>";
 
   PublicKeyCredentialRequestOptionsPtr options = get_credential_options();

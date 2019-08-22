@@ -136,6 +136,9 @@ class PDFiumPage {
 
  private:
   friend class PDFiumPageLinkTest;
+  friend class PDFiumTestBase;
+
+  FRIEND_TEST_ALL_PREFIXES(PDFiumPageImageTest, TestCalculateImages);
   FRIEND_TEST_ALL_PREFIXES(PDFiumPageLinkTest, TestLinkGeneration);
 
   // Returns a link index if the given character index is over a link, or -1
@@ -143,6 +146,8 @@ class PDFiumPage {
   int GetLink(int char_index, LinkTarget* target);
   // Calculate the locations of any links on the page.
   void CalculateLinks();
+  // Calculate the locations of images on the page.
+  void CalculateImages();
   // Returns link type and fills target associated with a link. Returns
   // NONSELECTABLE_AREA if link detection failed.
   Area GetLinkTarget(FPDF_LINK link, LinkTarget* target);
@@ -178,6 +183,15 @@ class PDFiumPage {
     std::string url;
   };
 
+  // Represents an Image inside the page.
+  struct Image {
+    Image();
+    Image(const Image& other);
+    ~Image();
+
+    pp::Rect bounding_rect;
+  };
+
   PDFiumEngine* engine_;
   ScopedFPDFPage page_;
   ScopedFPDFTextPage text_page_;
@@ -186,6 +200,8 @@ class PDFiumPage {
   pp::Rect rect_;
   bool calculated_links_ = false;
   std::vector<Link> links_;
+  bool calculated_images_ = false;
+  std::vector<Image> images_;
   bool available_;
   PDFEngine::PageFeatures page_features_;
 

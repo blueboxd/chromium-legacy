@@ -15,10 +15,6 @@
 #include "sandbox/win/src/sharedmem_ipc_client.h"
 #include "sandbox/win/src/target_services.h"
 
-#if defined(ADDRESS_SANITIZER)
-extern "C" void* __asan_shadow_memory_dynamic_address;
-#endif
-
 namespace sandbox {
 
 NTSTATUS WINAPI
@@ -31,12 +27,6 @@ TargetNtCreateSection(NtCreateSectionFunction orig_CreateSection,
                       ULONG allocation_attributes,
                       HANDLE file_handle) {
   do {
-    // If the shadow memory is not fully initialized then the call below to
-    // create a std::unique_ptr will fail, so just abort early in this case.
-#if defined(ADDRESS_SANITIZER)
-    if (!__asan_shadow_memory_dynamic_address)
-      break;
-#endif
     // The section only needs to have SECTION_MAP_EXECUTE, but the permissions
     // vary depending on the OS. Windows 1903 and higher requests (SECTION_QUERY
     // | SECTION_MAP_READ | SECTION_MAP_EXECUTE) while previous OS versions also

@@ -40,6 +40,11 @@
         margin-inline-start: 20px;
       }
 
+      .sync-row {
+        align-items: center;
+        flex: auto;
+      }
+
       #profile-icon {
         background: center / cover no-repeat;
         border-radius: 20px;
@@ -48,29 +53,29 @@
         width: 40px;
       }
 
-      iron-icon[icon='cr:sync'] {
-        --iron-icon-fill-color: var(--google-green-refresh-700);
+      #sync-status.no-error {
+        --icon-color: var(--google-green-refresh-700);
       }
 
       @media (prefers-color-scheme: dark) {
-        iron-icon[icon='cr:sync'] {
-          --iron-icon-fill-color: var(--google-green-refresh-300);
+        #sync-status.no-error {
+          --icon-color: var(--google-green-refresh-300);
         }
       }
 
-      #sync-status[actionable] iron-icon[icon='settings:sync-problem'] {
-        --iron-icon-fill-color: var(--settings-error-color);
+      #sync-setup {
+        --cr-secondary-text: {
+          color: var(--settings-error-color);
+        }
       }
 
-      #sync-status[actionable].auth-error
-          iron-icon[icon='settings:sync-disabled'] {
-        --iron-icon-fill-color: var(--google-blue-500);
+      #sync-status[actionable].auth-error {
+        --icon-color: var(--google-blue-500);
       }
 
       @media (prefers-color-scheme: dark) {
-        #sync-status[actionable].auth-error
-            iron-icon[icon='settings:sync-disabled'] {
-          --iron-icon-fill-color: var(--google-blue-refresh-300);
+        #sync-status[actionable].auth-error {
+          --icon-color: var(--google-blue-refresh-300);
         }
       }
 
@@ -83,8 +88,11 @@
         border-top: var(--cr-separator-line);
       }
 
-      .settings-box[actionable].sync-error #syncSecondary {
-        color: var(--settings-error-color);
+      #sync-status[actionable].sync-error {
+        --icon-color: var(--settings-error-color);
+        --cr-secondary-text: {
+          color: var(--settings-error-color);
+        }
       }
 
       .icon-container {
@@ -138,29 +146,21 @@
         <template is="dom-if"
             if="[[isPreUnifiedConsentAdvancedSyncSettingsVisible_(
                 syncStatus, unifiedConsentEnabled_)]]">
-          <div class$="settings-box two-line
-                  [[getSyncStatusClass_(syncStatus)]]"
-              on-click="onSyncTap_" id="sync-status"
+          <cr-link-row id="sync-status"
+              class$="[[getSyncStatusClass_(syncStatus)]]"
+              label="$i18n{syncAndNonPersonalizedServices}"
+              sub-label="[[getSyncAndGoogleServicesSubtext_(syncStatus)]]"
+              on-click="onSyncTap_" start-icon="[[getSyncIcon_(syncStatus)]]"
               actionable$="[[isSyncStatusActionable_(syncStatus)]]">
-            <div class="icon-container">
-              <iron-icon id="sync-icon" icon$="[[getSyncIcon_(syncStatus)]]">
-              </iron-icon>
-            </div>
-            <div class="middle settings-box-text">
-              $i18n{sync}
-              <div class="secondary" id="syncSecondary">
-                [[syncStatus.statusText]]
-              </div>
-            </div>
-            <cr-icon-button class="subpage-arrow" aria-label="$i18n{sync}"
-                aria-describedby="syncSecondary"></cr-icon-button>
-          </div>
+          </cr-link-row>
         </template>
 
         <template is="dom-if" if="[[unifiedConsentEnabled_]]">
           <cr-link-row id="sync-setup"
               label="$i18n{syncAndNonPersonalizedServices}"
-              on-click="onSyncTap_"></cr-link-row>
+              sub-label="[[getSyncAndGoogleServicesSubtext_(syncStatus)]]"
+              on-click="onSyncTap_">
+          </cr-link-row>
         </template>
 
         <cr-link-row id="lock-screen-subpage-trigger" class="hr"

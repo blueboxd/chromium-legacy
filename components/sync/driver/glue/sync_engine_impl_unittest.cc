@@ -228,7 +228,6 @@ class SyncEngineImplTest : public testing::Test {
     params.http_factory_getter = std::move(http_post_provider_factory_getter);
     params.authenticated_account_id = "user@example.com";
     params.sync_manager_factory = std::move(fake_manager_factory_);
-    params.delete_sync_data_folder = true;
     params.unrecoverable_error_handler =
         MakeWeakHandle(test_unrecoverable_error_handler_.GetWeakPtr()),
     sync_prefs_->GetInvalidationVersions(&params.invalidation_versions);
@@ -686,21 +685,6 @@ TEST_F(SyncEngineImplTest, DownloadControlTypesRestart) {
   InitializeBackend(true);
   EXPECT_EQ(CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE,
             fake_manager_->GetAndResetConfigureReason());
-}
-
-// It is SyncEngineBackend's responsibility to cleanup Sync Data folder if sync
-// setup hasn't been completed. This test ensures that cleanup happens.
-TEST_F(SyncEngineImplTest, TestStartupWithOldSyncData) {
-  const char* nonsense = "slon";
-  base::FilePath temp_directory =
-      temp_dir_.GetPath().Append(base::FilePath(kTestSyncDir));
-  base::FilePath sync_file = temp_directory.AppendASCII("SyncData.sqlite3");
-  ASSERT_TRUE(base::CreateDirectory(temp_directory));
-  ASSERT_NE(-1, base::WriteFile(sync_file, nonsense, strlen(nonsense)));
-
-  InitializeBackend(true);
-
-  EXPECT_FALSE(base::PathExists(sync_file));
 }
 
 // If bookmarks encounter an error that results in disabling without purging

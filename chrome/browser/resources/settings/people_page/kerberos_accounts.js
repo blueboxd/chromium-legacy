@@ -46,6 +46,12 @@ Polymer({
         return loadTimeData.getBoolean('kerberosAddAccountsAllowed');
       },
     },
+
+    /** @private */
+    accountToastText_: {
+      type: String,
+      value: '',
+    },
   },
 
   /** @private {?settings.KerberosAccountsBrowserProxy} */
@@ -106,7 +112,12 @@ Polymer({
 
   /** @private */
   onAddAccountDialogClosed_: function() {
+    if (this.$$('kerberos-add-account-dialog').accountWasRefreshed) {
+      this.showToast_('kerberosAccountsAccountRefreshedTip');
+    }
+
     this.showAddAccountDialog_ = false;
+
     // In case it was opened by the 'Refresh now' action menu.
     this.closeActionMenu_();
   },
@@ -152,7 +163,7 @@ Polymer({
             /** @type {!settings.KerberosAccount} */ (this.selectedAccount_))
         .then(error => {
           if (error == settings.KerberosErrorType.kNone) {
-            this.$$('#account-removed-toast').show();
+            this.showToast_('kerberosAccountsAccountRemovedTip');
           } else {
             console.error('Unexpected error removing account: ' + error);
           }
@@ -176,5 +187,15 @@ Polymer({
    */
   onRefreshNowClick_: function() {
     this.showAddAccountDialog_ = true;
+  },
+
+  /**
+   * Pops up a toast with localized text |label|.
+   * @param {string} label Name of the localized label string.
+   * @private
+   */
+  showToast_: function(label) {
+    this.accountToastText_ = this.i18n(label);
+    this.$$('#account-toast').show();
   }
 });

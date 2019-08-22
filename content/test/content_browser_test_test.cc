@@ -176,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, RunMockTests) {
       temp_dir.GetPath().AppendASCII("SaveSummaryResult.json");
   command_line.AppendSwitchPath("test-launcher-summary-output", path);
   command_line.AppendSwitch("gtest_also_run_disabled_tests");
-  command_line.AppendSwitch("--test-launcher-retry-limit=0");
+  command_line.AppendSwitchASCII("test-launcher-retry-limit", "0");
 
   std::string output;
   base::GetAppOutputAndError(command_line, &output);

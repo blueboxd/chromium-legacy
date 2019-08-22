@@ -141,18 +141,21 @@ int GetBirthYearOffset(PrefService* pref_service) {
   return offset;
 }
 
-// Determines whether the user birth year is eligible for being provided.
+// Determines whether the synced user has provided a birth year to Google which
+// is eligible, once aggregated and anonymized, to measure usage of Chrome
+// features by age groups. See doc of metrics::DemographicMetricsProvider in
+// components/metrics/demographic_metrics_provider.h for more details.
 bool HasEligibleBirthYear(base::Time now, int user_birth_year, int offset) {
   // Compute user age.
   base::Time::Exploded exploded_now_time;
   now.LocalExplode(&exploded_now_time);
   int user_age = exploded_now_time.year - (user_birth_year + offset);
 
-  // Verify if the user's age has a population size in the age distribution of
-  // the society that is big enough to not rise entropy of the user. At a
-  // certain point, as the age increase, the size of the population starts
-  // declining sharply as you can see in this approximate representation of the
-  // age distribution:
+  // Verify if the synced user's age has a population size in the age
+  // distribution of the society that is big enough to not raise the entropy of
+  // the demographics too much. At a certain point, as the age increase, the
+  // size of the population starts declining sharply as you can see in this
+  // approximate representation of the age distribution:
   // |       ________         max age
   // |______/        \_________ |
   // |                          |\
@@ -162,19 +165,22 @@ bool HasEligibleBirthYear(base::Time now, int user_birth_year, int offset) {
   if (user_age > kUserDemographicsMaxAgeInYears)
     return false;
 
-  // Verify if user is old enough. Use > rather than >= because we want to be
-  // sure that the user is at least |kUserDemographicsMinAgeInYears| without
-  // disclosing their birth date, which requires to add an extra year margin to
-  // minimal age to be safe. For example, if we are in 2019-07-10 (now) and the
-  // user was born in 1999-08-10, the user is not yet 20 years old (minimal age)
-  // but we cannot know that because we only have access to the year of the
-  // dates (2019 and 1999 respectively). If we make sure that the minimal age is
-  // at least 21, we are 100% sure that the user will be at least 20 years old
-  // when providing demographics.
+  // Verify if the synced user is old enough. Use > rather than >= because we
+  // want to be sure that the user is at least |kUserDemographicsMinAgeInYears|
+  // without disclosing their birth date, which requires to add an extra year
+  // margin to the minimal age to be safe. For example, if we are in 2019-07-10
+  // (now) and the user was born in 1999-08-10, the user is not yet 20 years old
+  // (minimal age) but we cannot know that because we only have access to the
+  // year of the dates (2019 and 1999 respectively). If we make sure that the
+  // minimal age (computed at year granularity) is at least 21, we are 100% sure
+  // that the user will be at least 20 years old when providing the user’s birth
+  // year and gender.
   return user_age > kUserDemographicsMinAgeInYears;
 }
 
-// Gets user's birth year from prefs.
+// Gets the synced user's birth year from synced prefs, see doc of
+// metrics::DemographicMetricsProvider in
+// components/metrics/demographic_metrics_provider.h for more details.
 base::Optional<int> GetUserBirthYear(
     const base::DictionaryValue* demographics) {
   const base::Value* value =
@@ -190,7 +196,9 @@ base::Optional<int> GetUserBirthYear(
   return birth_year;
 }
 
-// Gets user's gender from prefs.
+// Gets the synced user's gender from synced prefs, see doc of
+// metrics::DemographicMetricsProvider in
+// components/metrics/demographic_metrics_provider.h for more details.
 base::Optional<metrics::UserDemographicsProto_Gender> GetUserGender(
     const base::DictionaryValue* demographics) {
   const base::Value* value =
@@ -199,19 +207,19 @@ base::Optional<metrics::UserDemographicsProto_Gender> GetUserGender(
                        ? value->GetInt()
                        : kUserDemographicsGenderDefaultValue;
 
-  // Verify that gender is not default.
+  // Verify that the gender is not default.
   if (gender_int == kUserDemographicsGenderDefaultValue)
     return base::nullopt;
 
-  // Verify the gender number is a valid UserDemographicsProto_Gender encoding.
+  // Verify that the gender number is a valid UserDemographicsProto_Gender
+  // encoding.
   if (!metrics::UserDemographicsProto_Gender_IsValid(gender_int))
     return base::nullopt;
 
   auto gender = metrics::UserDemographicsProto_Gender(gender_int);
 
-  // Verify that the gender is in the set of genders that have large populations
-  // of a similar size (i.e., male and female) to preserve anonymity of genders
-  // with smaller populations.
+  // Verify that the gender is in a large enough population set to preserve
+  // anonymity.
   if (gender != metrics::UserDemographicsProto::GENDER_FEMALE &&
       gender != metrics::UserDemographicsProto::GENDER_MALE) {
     return base::nullopt;
@@ -320,7 +328,7 @@ void SyncPrefs::RemoveSyncPrefObserver(SyncPrefObserver* sync_pref_observer) {
 void SyncPrefs::ClearPreferences() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // Clear user demographics.
+  // Clear user's birth year and gender.
   // Note that we retain kSyncDemographicsBirthYearOffset. If the user resumes
   // syncing, causing these prefs to be recreated, we don't want them to start
   // reporting a different randomized birth year as this could narrow down or
@@ -604,7 +612,8 @@ bool SyncPrefs::IsLocalSyncEnabled() const {
   return local_sync_enabled_;
 }
 
-UserDemographicsResult SyncPrefs::GetUserDemographics(base::Time now) {
+UserDemographicsResult SyncPrefs::GetUserNoisedBirthYearAndGender(
+    base::Time now) {
   // Verify that the now time is available. There are situations where the now
   // time cannot be provided.
   if (now.is_null()) {
@@ -612,12 +621,12 @@ UserDemographicsResult SyncPrefs::GetUserDemographics(base::Time now) {
         UserDemographicsStatus::kCannotGetTime);
   }
 
-  // Get user demographics. Only one error status code should be used to
-  // represent the case where demographics are ineligible, see doc of
-  // UserDemographicsStatus in components/sync/base/user_demographics.h for more
-  // details.
+  // Get the synced user’s noised birth year and gender from synced prefs. Only
+  // one error status code should be used to represent the case where
+  // demographics are ineligible, see doc of UserDemographicsStatus in
+  // components/sync/base/user_demographics.h for more details.
 
-  // Get the pref that contains the demographic info.
+  // Get the pref that contains the user's birth year and gender.
   const base::DictionaryValue* demographics =
       pref_service_->GetDictionary(prefs::kSyncDemographics);
   DCHECK(demographics != nullptr);
@@ -637,14 +646,14 @@ UserDemographicsResult SyncPrefs::GetUserDemographics(base::Time now) {
         UserDemographicsStatus::kIneligibleDemographicsData);
   }
 
-  // Get the offset and do one last check that demographics are eligible.
+  // Get the offset and do one last check that the birth year is eligible.
   int offset = GetBirthYearOffset(pref_service_);
   if (!HasEligibleBirthYear(now, *birth_year, offset)) {
     return UserDemographicsResult::ForStatus(
         UserDemographicsStatus::kIneligibleDemographicsData);
   }
 
-  // Set gender and offset birth year in demographics.
+  // Set gender and noised birth year in demographics.
   UserDemographics user_demographics;
   user_demographics.gender = *gender;
   user_demographics.birth_year = *birth_year + offset;

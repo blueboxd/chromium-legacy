@@ -142,6 +142,12 @@ NewPasswordFormManager::NewPasswordFormManager(
   driver_ = driver;
   observed_form_ = observed_form;
   metrics_recorder_->RecordFormSignature(CalculateFormSignature(observed_form));
+  // Do not fetch saved credentials for Chrome sync form, since nor filling nor
+  // saving are supported.
+  if (owned_form_fetcher_ &&
+      !observed_form_.is_gaia_with_skip_save_password_form) {
+    owned_form_fetcher_->Fetch();
+  }
   form_fetcher_->AddConsumer(this);
   votes_uploader_.StoreInitialFieldValues(observed_form);
 }
@@ -157,6 +163,8 @@ NewPasswordFormManager::NewPasswordFormManager(
                              nullptr /* metrics_recorder */,
                              observed_http_auth_digest) {
   observed_not_web_form_digest_ = std::move(observed_http_auth_digest);
+  if (owned_form_fetcher_)
+    owned_form_fetcher_->Fetch();
   form_fetcher_->AddConsumer(this);
 }
 
@@ -817,9 +825,6 @@ NewPasswordFormManager::NewPasswordFormManager(
     metrics_recorder_ = base::MakeRefCounted<PasswordFormMetricsRecorder>(
         client_->IsMainFrameSecure(), client_->GetUkmSourceId());
   }
-
-  if (owned_form_fetcher_)
-    owned_form_fetcher_->Fetch();
 }
 
 void NewPasswordFormManager::RecordMetricOnCompareParsingResult(

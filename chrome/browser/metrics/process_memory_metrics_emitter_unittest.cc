@@ -145,7 +145,7 @@ void PopulateBrowserMetrics(GlobalMemoryDumpPtr& global_dump,
   // have a UKM value set for them, so don't appear in metrics_mb.
   SetAllocatorDumpMetric(pmd, "gpu/gl", "effective_size",
                          kGpuCommandBufferMB * 1024 * 1024);
-  SetAllocatorDumpMetric(pmd, "gpu/shared-images", "effective_size",
+  SetAllocatorDumpMetric(pmd, "gpu/shared_images", "effective_size",
                          kGpuSharedImagesSizeMB * 1024 * 1024);
   SetAllocatorDumpMetric(pmd, "skia/gpu_resources", "effective_size",
                          kGpuSkiaGpuResourcesMB * 1024 * 1024);
@@ -396,7 +396,7 @@ void PopulateGpuMetrics(GlobalMemoryDumpPtr& global_dump,
                          metrics_mb["CommandBuffer"] * 1024 * 1024);
   // These two categories are required for total gpu memory, but do not
   // have a UKM value set for them, so don't appear in metrics_mb.
-  SetAllocatorDumpMetric(pmd, "gpu/shared-images", "effective_size",
+  SetAllocatorDumpMetric(pmd, "gpu/shared_images", "effective_size",
                          kGpuSharedImagesSizeMB * 1024 * 1024);
   SetAllocatorDumpMetric(pmd, "skia/gpu_resources", "effective_size",
                          kGpuSkiaGpuResourcesMB * 1024 * 1024);

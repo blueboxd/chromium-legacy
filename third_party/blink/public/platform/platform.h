@@ -408,12 +408,6 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Resources -----------------------------------------------------------
 
-  // Returns a blob of data corresponding to the named resource.
-  // This is deprecated.  Use GetDataResource(int, ...) or
-  // UncompressDataResource(int).
-  // TODO(crbug.com/983396): Remove this.
-  virtual WebData GetDataResource(const char* name) { return WebData(); }
-
   // Returns a blob of data corresponding to |resource_id|. This should not be
   // used for resources which have compress="gzip" in *.grd.
   virtual WebData GetDataResource(

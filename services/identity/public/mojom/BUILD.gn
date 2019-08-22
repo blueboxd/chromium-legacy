@@ -10,18 +10,12 @@ mojom("mojom") {
     "core_account_id.mojom",
     "google_service_auth_error.mojom",
     "identity_accessor.mojom",
+    "identity_service.mojom",
     "scope_set.mojom",
   ]
 
   public_deps = [
-    ":constants",
     "//mojo/public/mojom/base",
     "//url/mojom:url_mojom_gurl",
-  ]
-}
-
-mojom("constants") {
-  sources = [
-    "constants.mojom",
   ]
 }

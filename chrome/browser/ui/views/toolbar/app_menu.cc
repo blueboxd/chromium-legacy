@@ -1085,14 +1085,8 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
 
     switch (model->GetCommandIdAt(i)) {
       case IDC_EXTENSIONS_OVERFLOW_MENU: {
-        auto extension_toolbar =
-            std::make_unique<ExtensionToolbarMenuView>(browser_, item);
-        for (View* action_view : extension_toolbar->contents()->children()) {
-          action_view->SetBackground(std::make_unique<InMenuButtonBackground>(
-              InMenuButtonBackground::ROUNDED_BUTTON));
-        }
-        extension_toolbar_ = extension_toolbar.get();
-        item->AddChildView(extension_toolbar.release());
+        extension_toolbar_ = item->AddChildView(
+            std::make_unique<ExtensionToolbarMenuView>(browser_, item));
         break;
       }
 
@@ -1102,7 +1096,8 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
         DCHECK_EQ(IDC_COPY, submodel->GetCommandIdAt(1));
         DCHECK_EQ(IDC_PASTE, submodel->GetCommandIdAt(2));
         item->SetTitle(l10n_util::GetStringUTF16(IDS_EDIT2));
-        item->AddChildView(new CutCopyPasteView(this, submodel, 0, 1, 2));
+        item->AddChildView(
+            std::make_unique<CutCopyPasteView>(this, submodel, 0, 1, 2));
         break;
       }
 
@@ -1112,7 +1107,7 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
         DCHECK_EQ(IDC_ZOOM_PLUS, submodel->GetCommandIdAt(1));
         DCHECK_EQ(IDC_FULLSCREEN, submodel->GetCommandIdAt(2));
         item->SetTitle(l10n_util::GetStringUTF16(IDS_ZOOM_MENU2));
-        item->AddChildView(new ZoomView(this, submodel, 0, 1, 2));
+        item->AddChildView(std::make_unique<ZoomView>(this, submodel, 0, 1, 2));
         break;
       }
 

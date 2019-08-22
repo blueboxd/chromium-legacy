@@ -257,6 +257,17 @@ void SMILTimeContainer::SetElapsed(double elapsed) {
   UpdateAnimationsAndScheduleFrameIfNeeded(elapsed, true);
 }
 
+void SMILTimeContainer::ResetReferenceTime() {
+  DCHECK(IsStarted());
+  if (!GetDocument().IsActive())
+    return;
+
+  if (!HandleAnimationPolicy(kRestartOnceTimerIfNotPaused))
+    return;
+
+  SynchronizeToDocumentTimeline();
+}
+
 void SMILTimeContainer::ScheduleAnimationFrame(double delay_time) {
   DCHECK(std::isfinite(delay_time));
   DCHECK(IsTimelineRunning());

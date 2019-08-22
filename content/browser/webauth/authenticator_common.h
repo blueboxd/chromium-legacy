@@ -197,6 +197,9 @@ class CONTENT_EXPORT AuthenticatorCommon {
       get_assertion_response_callback_;
   std::string client_data_json_;
   bool attestation_requested_;
+  // empty_allow_list_ is true iff a GetAssertion is currently pending and the
+  // request did not list any credential IDs in the allow list.
+  bool empty_allow_list_ = false;
   url::Origin caller_origin_;
   std::string relying_party_id_;
   std::unique_ptr<base::OneShotTimer> timer_;

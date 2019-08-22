@@ -41,7 +41,6 @@
 #include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom-blink.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
-#include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
@@ -55,10 +54,7 @@ class CORE_EXPORT ApplicationCacheHost
     : public GarbageCollectedFinalized<ApplicationCacheHost>,
       public mojom::blink::AppCacheFrontend {
  public:
-  // |interface_broker| can be null for Shared Worker.
-  // |interface_broker_proxy| can be null for Frame.
   ApplicationCacheHost(
-      mojom::blink::DocumentInterfaceBroker* interface_broker,
       const BrowserInterfaceBrokerProxy* interface_broker_proxy,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~ApplicationCacheHost() override;
@@ -138,7 +134,6 @@ class CORE_EXPORT ApplicationCacheHost
   mojom::blink::AppCacheInfo cache_info_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  mojom::blink::DocumentInterfaceBroker* interface_broker_;
   const BrowserInterfaceBrokerProxy* interface_broker_proxy_;
 
   // Invoked when CacheSelected() is called.

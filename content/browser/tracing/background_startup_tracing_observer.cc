@@ -95,13 +95,22 @@ BackgroundStartupTracingObserver::IncludeStartupConfigIfNeeded(
       preferences_->GetBackgroundStartupTracingEnabled();
 
   const BackgroundTracingRule* startup_rule = nullptr;
-  if (config)
+  if (config) {
     startup_rule = FindStartupRuleInConfig(*config);
+  }
+
   // Reset the flag if startup tracing was enabled again in current session.
   if (startup_rule) {
     preferences_->SetBackgroundStartupTracingEnabled(true);
   } else {
     preferences_->SetBackgroundStartupTracingEnabled(false);
+  }
+
+  // If we're preemptive tracing then OnScenarioActivated() would just
+  // immediately finalize tracing, rather than starting it.
+  if (config &&
+      (config->tracing_mode() == BackgroundTracingConfigImpl::PREEMPTIVE)) {
+    return config;
   }
 
   // If enabled in current session and startup rule already exists, then do not

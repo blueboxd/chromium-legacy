@@ -1379,6 +1379,9 @@ int EventSender::ModifiersForPointer(int pointer_id) {
 
 void EventSender::DoDragDrop(const WebDragData& drag_data,
                              WebDragOperationsMask mask) {
+  if (!mainFrameWidget())
+    return;
+
   WebMouseEvent raw_event(WebInputEvent::kMouseDown,
                           ModifiersForPointer(kRawMousePointerId),
                           GetCurrentEventTime());
@@ -2926,6 +2929,8 @@ blink::WebFrameWidget* EventSender::mainFrameWidget() {
   DCHECK(view()->MainFrame()->IsWebLocalFrame())
       << "Event Sender doesn't support being run in a remote frame for this "
          "operation.";
+  if (!view() || !view()->MainFrame())
+    return nullptr;
   return view()->MainFrame()->ToWebLocalFrame()->FrameWidget();
 }
 

@@ -365,7 +365,7 @@ void OmniboxPopupContentsView::OnGestureEvent(ui::GestureEvent* event) {
     case ui::ET_GESTURE_TAP:
     case ui::ET_GESTURE_SCROLL_END:
       if (!(OmniboxFieldTrial::IsTabSwitchLogicReversed() &&
-            model_->result().match_at(index).ShouldShowTabMatch())) {
+            model_->result().match_at(index).ShouldShowTabMatchButton())) {
         OpenMatch(index, WindowOpenDisposition::CURRENT_TAB,
                   event->time_stamp());
       } else {

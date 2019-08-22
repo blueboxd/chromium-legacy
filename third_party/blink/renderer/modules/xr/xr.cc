@@ -76,14 +76,6 @@ XRSession::SessionMode stringToSessionMode(const String& mode_string) {
   return XRSession::kModeInline;
 }
 
-// When updating this list, also update XRRuntimeManager's
-// AreArFeaturesEnabled() until https://crbug.com/966647 is fixed.
-// TODO(https://crbug.com/966647) remove the above comment when fixed.
-bool AreArRuntimeFeaturesEnabled(const FeatureContext* context) {
-  return RuntimeEnabledFeatures::WebXRHitTestEnabled(context) ||
-         RuntimeEnabledFeatures::WebXRPlaneDetectionEnabled(context);
-}
-
 // Map device::mojom::blink::RequestSessionError to a DOMException.
 blink::DOMException* MapToDOMException(
     device::mojom::blink::RequestSessionError error) {
@@ -312,7 +304,7 @@ ScriptPromise XR::supportsSession(ScriptState* script_state,
       MakeGarbageCollected<PendingSupportsSessionQuery>(resolver, session_mode);
 
   if (session_mode == XRSession::kModeImmersiveAR &&
-      !AreArRuntimeFeaturesEnabled(doc)) {
+      !RuntimeEnabledFeatures::WebXRARModuleEnabled(doc)) {
     query->Reject(V8ThrowException::CreateTypeError(
         script_state->GetIsolate(),
         String::Format(kImmersiveArModeNotValid, __func__)));
@@ -423,7 +415,7 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
           std::move(optional_features));
 
   if (session_mode == XRSession::kModeImmersiveAR &&
-      !AreArRuntimeFeaturesEnabled(doc)) {
+      !RuntimeEnabledFeatures::WebXRARModuleEnabled(doc)) {
     query->Reject(V8ThrowException::CreateTypeError(
         script_state->GetIsolate(),
         String::Format(kImmersiveArModeNotValid, __func__)));

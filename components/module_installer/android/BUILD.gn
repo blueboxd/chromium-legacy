@@ -4,52 +4,39 @@
 
 import("//build/config/android/rules.gni")
 
-# Contains code necessary to compile the rest of Chrome. Doesn't contain actual
-# implementations. To get implementations either depend on
-# |module_installer_impl_java| or |module_installer_stub_java| depending on your
-# build.
 android_library("module_installer_java") {
   java_files = [
-    "java/src-stub/org/chromium/components/module_installer/ModuleInstallerImpl.java",
-    "java/src-common/org/chromium/components/module_installer/ModuleInstaller.java",
-    "java/src-common/org/chromium/components/module_installer/OnModuleInstallFinishedListener.java",
-    "java/src-common/org/chromium/components/module_installer/Module.java",
-    "java/src-common/org/chromium/components/module_installer/observers/ModuleActivityObserver.java",
-    "java/src-common/org/chromium/components/module_installer/observers/ObserverStrategy.java",
-    "java/src-common/org/chromium/components/module_installer/observers/ObserverStrategyImpl.java",
+    "java/src/org/chromium/components/module_installer/ModuleInstallerImpl.java",
+    "java/src/org/chromium/components/module_installer/ModuleInstallerBackend.java",
+    "java/src/org/chromium/components/module_installer/FakeModuleInstallerBackend.java",
+    "java/src/org/chromium/components/module_installer/PlayCoreModuleInstallerBackend.java",
+    "java/src/org/chromium/components/module_installer/ApkModuleInstaller.java",
+    "java/src/org/chromium/components/module_installer/ModuleInstaller.java",
+    "java/src/org/chromium/components/module_installer/OnModuleInstallFinishedListener.java",
+    "java/src/org/chromium/components/module_installer/Module.java",
+    "java/src/org/chromium/components/module_installer/observers/ModuleActivityObserver.java",
+    "java/src/org/chromium/components/module_installer/observers/ObserverStrategy.java",
+    "java/src/org/chromium/components/module_installer/observers/ObserverStrategyImpl.java",
   ]
-  jar_excluded_patterns = [ "*/ModuleInstallerImpl.class" ]
-  deps = [
-    "//base:base_java",
-  ]
-  jacoco_never_instrument = true
-}
 
-# Contains stub implementation to be used for builds not supporting modules
-# (e.g. APKs).
-android_library("module_installer_stub_java") {
-  java_files = [ "java/src-stub/org/chromium/components/module_installer/ModuleInstallerImpl.java" ]
   deps = [
-    ":module_installer_java",
-    "//base:base_java",
-  ]
-  jacoco_never_instrument = true
-}
-
-# Contains real implementation to be used for builds supporting modules (e.g.
-# bundles).
-android_library("module_installer_impl_java") {
-  java_files = [
-    "java/src-impl/org/chromium/components/module_installer/ModuleInstallerImpl.java",
-    "java/src-impl/org/chromium/components/module_installer/ModuleInstallerBackend.java",
-    "java/src-impl/org/chromium/components/module_installer/FakeModuleInstallerBackend.java",
-    "java/src-impl/org/chromium/components/module_installer/PlayCoreModuleInstallerBackend.java",
-  ]
-  deps = [
-    ":module_installer_java",
     "//base:base_java",
     "//components/crash/android:java",
     "//third_party/google_android_play_core:com_google_android_play_core_java",
+  ]
+
+  srcjar_deps = [ ":module_installer_apk_build_config" ]
+
+  jar_excluded_patterns = [ "*/ModuleInstallerConfig.class" ]
+
+  jacoco_never_instrument = true
+}
+
+# Temporary java_group so that /clank (downstream) doesn't break
+# Will be removed as soon as the downstream CL lands
+java_group("module_installer_stub_java") {
+  deps = [
+    ":module_installer_java",
   ]
 }
 
@@ -67,7 +54,7 @@ android_library("module_installer_test_java") {
 junit_binary("module_installer_junit_tests") {
   java_files = [ "junit/src/org/chromium/components/module_installer/observers/ModuleActivityObserverTest.java" ]
   deps = [
-    ":module_installer_impl_java",
+    ":module_installer_java",
     "//base:base_java",
     "//base:base_junit_test_support",
   ]
@@ -75,11 +62,13 @@ junit_binary("module_installer_junit_tests") {
 
 java_library("module_interface_java") {
   supports_android = true
-  java_files = [ "java/src-common/org/chromium/components/module_installer/ModuleInterface.java" ]
+  java_files = [
+    "java/src/org/chromium/components/module_installer/ModuleInterface.java",
+  ]
 }
 
 java_annotation_processor("module_interface_processor") {
-  java_files = [ "java/src-common/org/chromium/components/module_installer/ModuleInterfaceProcessor.java" ]
+  java_files = [ "java/src/org/chromium/components/module_installer/ModuleInterfaceProcessor.java" ]
   main_class =
       "org.chromium.components.module_installer.ModuleInterfaceProcessor"
   annotation_processor_deps = [ "//third_party/auto:auto_service_processor" ]
@@ -89,4 +78,19 @@ java_annotation_processor("module_interface_processor") {
     "//third_party/auto:auto_service_java",
   ]
   jacoco_never_instrument = true
+}
+
+java_cpp_template("module_installer_bundle_build_config") {
+  package_path = "org/chromium/components/module_installer"
+  sources = [
+    "build/ModuleInstallerConfig.template",
+  ]
+  defines = [ "IS_BUNDLE_ENABLED" ]
+}
+
+java_cpp_template("module_installer_apk_build_config") {
+  package_path = "org/chromium/components/module_installer"
+  sources = [
+    "build/ModuleInstallerConfig.template",
+  ]
 }

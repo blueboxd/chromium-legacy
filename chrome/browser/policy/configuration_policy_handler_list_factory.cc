@@ -328,6 +328,10 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kSafeBrowsingRealTimeLookupEnabled,
     base::Value::Type::BOOLEAN
   },
+  { key::kSendFilesForMalwareCheck,
+    prefs::kSafeBrowsingSendFilesForMalwareCheck,
+    base::Value::Type::INTEGER
+  },
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   { key::kAuthNegotiateDelegateByKdcPolicy,
     prefs::kAuthNegotiateDelegateByKdcPolicy,

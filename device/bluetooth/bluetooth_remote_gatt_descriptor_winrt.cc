@@ -243,8 +243,7 @@ BluetoothRemoteGattDescriptorWinrt::BluetoothRemoteGattDescriptorWinrt(
       identifier_(base::StringPrintf("%s/%s_%04x",
                                      characteristic_->GetIdentifier().c_str(),
                                      uuid_.value().c_str(),
-                                     attribute_handle)),
-      weak_ptr_factory_(this) {}
+                                     attribute_handle)) {}
 
 void BluetoothRemoteGattDescriptorWinrt::OnReadValue(
     ComPtr<IGattReadResult> read_result) {

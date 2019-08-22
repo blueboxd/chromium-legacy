@@ -41,7 +41,7 @@ class FlagsEnterpriseUI : public content::WebUIController {
   static bool IsEnterpriseUrl(const GURL& url);
 
  private:
-  base::WeakPtrFactory<FlagsEnterpriseUI> weak_factory_;
+  base::WeakPtrFactory<FlagsEnterpriseUI> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FlagsEnterpriseUI);
 };

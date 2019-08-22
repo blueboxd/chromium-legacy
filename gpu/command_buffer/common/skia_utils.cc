@@ -4,6 +4,9 @@
 
 #include "gpu/command_buffer/common/skia_utils.h"
 
+#include <inttypes.h>
+
+#include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
@@ -172,6 +175,22 @@ void DumpGrMemoryStatistics(const GrContext* context,
                             base::Optional<uint64_t> tracing_guid) {
   SkiaGpuTraceMemoryDump trace_memory_dump(pmd, tracing_guid);
   context->dumpMemoryStatistics(&trace_memory_dump);
+}
+
+void DumpBackgroundGrMemoryStatistics(
+    const GrContext* context,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  using base::trace_event::MemoryAllocatorDump;
+
+  size_t skia_gr_cache_size;
+  context->getResourceCacheUsage(nullptr /* resourceCount */,
+                                 &skia_gr_cache_size);
+  std::string dump_name =
+      base::StringPrintf("skia/gpu_resources/context_0x%" PRIXPTR,
+                         reinterpret_cast<uintptr_t>(context));
+  MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
+  dump->AddScalar(MemoryAllocatorDump::kNameSize,
+                  MemoryAllocatorDump::kUnitsBytes, skia_gr_cache_size);
 }
 
 }  // namespace raster

@@ -41,7 +41,6 @@
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
-#include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -354,6 +353,11 @@ bool IsLoggedIn() {
 
 ProfileManager::ProfileManager(const base::FilePath& user_data_dir)
     : user_data_dir_(user_data_dir) {
+  registrar_.Add(this, chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSE_CANCELLED,
+                 content::NotificationService::AllSources());
+
   if (ProfileShortcutManager::IsFeatureEnabled() && !user_data_dir_.empty())
     profile_shortcut_manager_ = ProfileShortcutManager::Create(this);
 }
@@ -1066,6 +1070,36 @@ void ProfileManager::RegisterTestingProfile(std::unique_ptr<Profile> profile,
   }
 }
 
+void ProfileManager::Observe(int type,
+                             const content::NotificationSource& source,
+                             const content::NotificationDetails& details) {
+  bool save_active_profiles = false;
+  switch (type) {
+    case chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST: {
+      // Ignore any browsers closing from now on.
+      closing_all_browsers_ = true;
+      save_active_profiles = true;
+      break;
+    }
+    case chrome::NOTIFICATION_BROWSER_CLOSE_CANCELLED: {
+      // This will cancel the shutdown process, so the active profiles are
+      // tracked again. Also, as the active profiles may have changed (i.e. if
+      // some windows were closed) we save the current list of active profiles
+      // again.
+      closing_all_browsers_ = false;
+      save_active_profiles = true;
+      break;
+    }
+    default: {
+      NOTREACHED();
+      break;
+    }
+  }
+
+  if (save_active_profiles)
+    SaveActiveProfiles();
+}
+
 void ProfileManager::OnProfileCreated(Profile* profile,
                                       bool success,
                                       bool is_new_profile) {
@@ -1669,6 +1703,11 @@ void ProfileManager::OnBrowserOpened(Browser* browser) {
     active_profiles_.push_back(profile);
     SaveActiveProfiles();
   }
+  // If browsers are opening, we can't be closing all the browsers. This
+  // can happen if the application was exited, but background mode or
+  // packaged apps prevented the process from shutting down, and then
+  // a new browser window was opened.
+  closing_all_browsers_ = false;
 }
 
 void ProfileManager::OnBrowserClosed(Browser* browser) {
@@ -1677,7 +1716,7 @@ void ProfileManager::OnBrowserClosed(Browser* browser) {
   if (!profile->IsOffTheRecord() && --browser_counts_[profile] == 0) {
     active_profiles_.erase(
         std::find(active_profiles_.begin(), active_profiles_.end(), profile));
-    if (!browser_shutdown::IsTryingToQuit())
+    if (!closing_all_browsers_)
       SaveActiveProfiles();
   }
 
@@ -1742,7 +1781,7 @@ void ProfileManager::BrowserListObserver::OnBrowserSetLastActive(
   // shutting down), this event will be fired after each browser is
   // closed. This does not represent a user intention to change the active
   // browser so is not handled here.
-  if (browser_shutdown::IsTryingToQuit())
+  if (profile_manager_->closing_all_browsers_)
     return;
 
   Profile* last_active = browser->profile();

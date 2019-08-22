@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/metrics/user_metrics.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -72,6 +73,8 @@ void ProfileMenuViewBase::ShowBubble(
     bool is_source_keyboard) {
   if (IsShowing())
     return;
+
+  base::RecordAction(base::UserMetricsAction("ProfileMenu_Opened"));
 
   ProfileMenuViewBase* bubble;
   if (view_mode == profiles::BUBBLE_VIEW_MODE_INCOGNITO) {
@@ -173,17 +176,22 @@ void ProfileMenuViewBase::WindowClosing() {
   g_profile_bubble_ = nullptr;
 }
 
-void ProfileMenuViewBase::ButtonPressed(views::Button* sender,
+void ProfileMenuViewBase::ButtonPressed(views::Button* button,
                                         const ui::Event& event) {
-  DCHECK(!click_actions_[sender].is_null());
-  click_actions_[sender].Run();
+  OnClick(button);
 }
 
-void ProfileMenuViewBase::StyledLabelLinkClicked(views::StyledLabel* label,
+void ProfileMenuViewBase::StyledLabelLinkClicked(views::StyledLabel* link,
                                                  const gfx::Range& range,
                                                  int event_flags) {
-  DCHECK(!click_actions_[label].is_null());
-  click_actions_[label].Run();
+  OnClick(link);
+}
+
+void ProfileMenuViewBase::OnClick(views::View* clickable_view) {
+  DCHECK(!click_actions_[clickable_view].is_null());
+  base::RecordAction(
+      base::UserMetricsAction("ProfileMenu_ActionableItemClicked"));
+  click_actions_[clickable_view].Run();
 }
 
 int ProfileMenuViewBase::GetMaxHeight() const {

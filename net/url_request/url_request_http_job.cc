@@ -639,10 +639,15 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
 
 void URLRequestHttpJob::SetCookieHeaderAndStart(
     const CookieOptions& options,
-    const CookieList& cookie_list,
+    const CookieStatusList& cookies_with_status_list,
     const CookieStatusList& excluded_list) {
   DCHECK(request_->maybe_sent_cookies().empty());
   CookieStatusList maybe_sent_cookies = excluded_list;
+
+  // TODO(crbug.com/993843): Pass in meaningful statuses, then actually use the
+  // statuses passed in.
+  CookieList cookie_list =
+      net::cookie_util::StripStatuses(cookies_with_status_list);
 
   net::CanonicalCookie::CookieInclusionStatus status_for_cookie_list =
       CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES;

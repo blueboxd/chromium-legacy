@@ -104,7 +104,7 @@ class MixedRealityInputHelper {
   // created on (and should correspond to the render loop thread)
   base::WeakPtr<MixedRealityRenderLoop> weak_render_loop_;
 
-  base::WeakPtrFactory<MixedRealityInputHelper> weak_ptr_factory_;
+  base::WeakPtrFactory<MixedRealityInputHelper> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MixedRealityInputHelper);
 };

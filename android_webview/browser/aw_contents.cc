@@ -12,8 +12,8 @@
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_browser_main_parts.h"
 #include "android_webview/browser/aw_contents_client_bridge.h"
-#include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/aw_contents_lifecycle_notifier.h"
+#include "android_webview/browser/aw_contents_network_client.h"
 #include "android_webview/browser/aw_pdf_exporter.h"
 #include "android_webview/browser/aw_render_process.h"
 #include "android_webview/browser/aw_renderer_priority.h"
@@ -263,7 +263,7 @@ void AwContents::SetJavaPeers(
     const JavaParamRef<jobject>& aw_contents,
     const JavaParamRef<jobject>& web_contents_delegate,
     const JavaParamRef<jobject>& contents_client_bridge,
-    const JavaParamRef<jobject>& io_thread_client,
+    const JavaParamRef<jobject>& network_client,
     const JavaParamRef<jobject>& intercept_navigation_delegate,
     const JavaParamRef<jobject>& autofill_provider) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -280,7 +280,7 @@ void AwContents::SetJavaPeers(
   AwContentsClientBridge::Associate(web_contents_.get(),
                                     contents_client_bridge_.get());
 
-  AwContentsIoThreadClient::Associate(web_contents_.get(), io_thread_client);
+  AwContentsNetworkClient::Associate(web_contents_.get(), network_client);
 
   InterceptNavigationDelegate::Associate(
       web_contents_.get(), std::make_unique<InterceptNavigationDelegate>(

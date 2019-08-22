@@ -305,6 +305,13 @@ using bookmarks::BookmarkNode;
   // Do nothing.
 }
 
+#pragma mark - UIAdaptivePresentationControllerDelegate
+
+- (void)presentationControllerDidDismiss:
+    (UIPresentationController*)presentationController {
+  [self.delegate folderPickerDidDismiss:self];
+}
+
 #pragma mark - BookmarkModelBridgeObserver
 
 - (void)bookmarkModelLoaded {

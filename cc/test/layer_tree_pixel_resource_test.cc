@@ -128,11 +128,8 @@ void LayerTreeHostPixelResourceTest::RunPixelResourceTest(
 }
 
 void LayerTreeHostPixelResourceTest::RunPixelResourceTestWithLayerList(
-    scoped_refptr<Layer> root_layer,
-    base::FilePath file_name,
-    PropertyTrees* property_trees) {
-  RunPixelTestWithLayerList(renderer_type(), root_layer, file_name,
-                            property_trees);
+    base::FilePath file_name) {
+  RunPixelTestWithLayerList(renderer_type(), file_name);
 }
 
 ParameterizedPixelResourceTest::ParameterizedPixelResourceTest()

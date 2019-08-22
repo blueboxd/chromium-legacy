@@ -156,7 +156,7 @@ ModuleWatcher::~ModuleWatcher() {
   g_module_watcher_instance = nullptr;
 }
 
-ModuleWatcher::ModuleWatcher() : weak_ptr_factory_(this) {}
+ModuleWatcher::ModuleWatcher() {}
 
 // Initializes the ModuleWatcher instance.
 void ModuleWatcher::Initialize(OnModuleEventCallback callback) {

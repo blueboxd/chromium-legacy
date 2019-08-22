@@ -42,6 +42,7 @@
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_features.h"
+#include "content/public/test/mock_navigation_handle.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -575,7 +576,10 @@ bool PreviewsOptimizationGuideTest::
     }
   }
 
-  return guide()->IsWhitelisted(previews_data, url, type, out_ect_threshold);
+  content::MockNavigationHandle navigation_handle;
+  navigation_handle.set_url(url);
+  return guide()->IsWhitelisted(previews_data, &navigation_handle, type,
+                                out_ect_threshold);
 }
 
 void PreviewsOptimizationGuideTest::OnLoadOptimizationHints() {
@@ -1817,23 +1821,27 @@ TEST_F(PreviewsOptimizationGuideTest, IsBlacklisted) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(features::kLitePageServerPreviews);
 
-  EXPECT_TRUE(
-      guide()->IsBlacklisted(GURL("https://m.blacklisteddomain.com/path"),
-                             PreviewsType::LITE_PAGE_REDIRECT));
+  content::MockNavigationHandle navigation_handle;
+  navigation_handle.set_url(GURL("https://m.blacklisteddomain.com/path"));
+  EXPECT_TRUE(guide()->IsBlacklisted(&navigation_handle,
+                                     PreviewsType::LITE_PAGE_REDIRECT));
 
   InitializeWithLitePageRedirectBlacklist();
 
-  EXPECT_TRUE(
-      guide()->IsBlacklisted(GURL("https://m.blacklisteddomain.com/path"),
-                             PreviewsType::LITE_PAGE_REDIRECT));
-  EXPECT_DCHECK_DEATH(guide()->IsBlacklisted(
-      GURL("https://m.blacklisteddomain.com/path"), PreviewsType::NOSCRIPT));
+  EXPECT_TRUE(guide()->IsBlacklisted(&navigation_handle,
+                                     PreviewsType::LITE_PAGE_REDIRECT));
+  EXPECT_DCHECK_DEATH(
+      guide()->IsBlacklisted(&navigation_handle, PreviewsType::NOSCRIPT));
 
-  EXPECT_TRUE(guide()->IsBlacklisted(
-      GURL("https://blacklistedsubdomain.maindomain.co.in"),
-      PreviewsType::LITE_PAGE_REDIRECT));
+  content::MockNavigationHandle blacklisted_subdomain_navigation_handle;
+  blacklisted_subdomain_navigation_handle.set_url(
+      GURL("https://blacklistedsubdomain.maindomain.co.in"));
+  EXPECT_TRUE(guide()->IsBlacklisted(&blacklisted_subdomain_navigation_handle,
+                                     PreviewsType::LITE_PAGE_REDIRECT));
 
-  EXPECT_FALSE(guide()->IsBlacklisted(GURL("https://maindomain.co.in"),
+  content::MockNavigationHandle main_domain_navigation_handle;
+  main_domain_navigation_handle.set_url(GURL("https://maindomain.co.in"));
+  EXPECT_FALSE(guide()->IsBlacklisted(&main_domain_navigation_handle,
                                       PreviewsType::LITE_PAGE_REDIRECT));
 }
 
@@ -1844,9 +1852,10 @@ TEST_F(PreviewsOptimizationGuideTest,
 
   InitializeWithLitePageRedirectBlacklist();
 
-  EXPECT_TRUE(
-      guide()->IsBlacklisted(GURL("https://m.blacklisteddomain.com/path"),
-                             PreviewsType::LITE_PAGE_REDIRECT));
+  content::MockNavigationHandle navigation_handle;
+  navigation_handle.set_url(GURL("https://m.blacklisteddomain.com/path"));
+  EXPECT_TRUE(guide()->IsBlacklisted(&navigation_handle,
+                                     PreviewsType::LITE_PAGE_REDIRECT));
 }
 
 TEST_F(PreviewsOptimizationGuideTest, RemoveObserverCalledAtDestruction) {

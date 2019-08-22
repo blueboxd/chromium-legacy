@@ -590,7 +590,7 @@ public class WebViewBrowserActivity extends AppCompatActivity {
     private void initializeSettings(WebSettings settings) {
         File appcache = null;
         File geolocation = null;
-        try (StrictModeContext ctx = StrictModeContext.allowDiskWrites()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
             appcache = getDir("appcache", 0);
             geolocation = getDir("geolocation", 0);
         }

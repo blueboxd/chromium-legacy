@@ -365,13 +365,9 @@ QuicTestPacketMaker::MakeRstAndRequestHeadersPacket(
         http_encoder_.SerializeSettingsFrame(settings, &buffer1);
     std::string settings_data = std::string(buffer1.get(), frame_length1);
 
-    quic::QuicStreamFrame type_frame;
-    quic::QuicStreamFrame settings_frame;
     if (stream_offsets_[2] == 0) {
-      type_frame = GenerateNextStreamFrame(2, false, type);
-      frames.push_back(quic::QuicFrame(type_frame));
-      settings_frame = GenerateNextStreamFrame(2, false, settings_data);
-      frames.push_back(quic::QuicFrame(settings_frame));
+      frames.push_back(GenerateNextStreamFrame(2, false, type));
+      frames.push_back(GenerateNextStreamFrame(2, false, settings_data));
     }
 
     quic::PriorityFrame frame;
@@ -385,19 +381,13 @@ QuicTestPacketMaker::MakeRstAndRequestHeadersPacket(
         http_encoder_.SerializePriorityFrame(frame, &buffer);
     std::string priority_data = std::string(buffer.get(), frame_length);
 
-    quic::QuicStreamFrame priority_frame =
-        GenerateNextStreamFrame(2, false, priority_data);
-
-    frames.push_back(quic::QuicFrame(priority_frame));
+    frames.push_back(GenerateNextStreamFrame(2, false, priority_data));
 
     // STREAM frames for HEADERS.
     std::vector<std::string> data = QpackEncodeHeaders(
         stream_id, std::move(headers), spdy_headers_frame_length);
-    std::vector<quic::QuicStreamFrame> stream_frames =
-        GenerateNextStreamFrames(stream_id, fin, data);
-
-    for (const auto& frame : stream_frames)
-      frames.push_back(quic::QuicFrame(frame));
+    for (const auto& frame : GenerateNextStreamFrames(stream_id, fin, data))
+      frames.push_back(frame);
 
     InitializeHeader(num, include_version);
     return MakeMultipleFramesPacket(header_, frames, nullptr);
@@ -408,10 +398,9 @@ QuicTestPacketMaker::MakeRstAndRequestHeadersPacket(
   if (spdy_headers_frame_length) {
     *spdy_headers_frame_length = spdy_frame.size();
   }
-  quic::QuicStreamFrame headers_frame = GenerateNextStreamFrame(
+  frames.push_back(GenerateNextStreamFrame(
       GetHeadersStreamId(), false,
-      quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
-  frames.push_back(quic::QuicFrame(headers_frame));
+      quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size())));
 
   InitializeHeader(num, include_version);
   return MakeMultipleFramesPacket(header_, frames, nullptr);
@@ -694,8 +683,7 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeDataPacket(
     bool fin,
     quic::QuicStringPiece data) {
   InitializeHeader(packet_number, should_include_version);
-  quic::QuicStreamFrame frame = GenerateNextStreamFrame(stream_id, fin, data);
-  return MakePacket(header_, quic::QuicFrame(frame));
+  return MakePacket(header_, GenerateNextStreamFrame(stream_id, fin, data));
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>
@@ -709,9 +697,8 @@ QuicTestPacketMaker::MakeMultipleDataFramesPacket(
   quic::QuicFrames data_frames;
   for (size_t i = 0; i < data_writes.size(); ++i) {
     bool is_fin = fin && (i == data_writes.size() - 1);
-    quic::QuicFrame quic_frame(
+    data_frames.push_back(
         GenerateNextStreamFrame(stream_id, is_fin, data_writes[i]));
-    data_frames.push_back(quic_frame);
   }
   return MakeMultipleFramesPacket(header_, data_frames, nullptr);
 }
@@ -741,8 +728,7 @@ QuicTestPacketMaker::MakeAckAndDataPacket(uint64_t packet_number,
   frames.push_back(quic::QuicFrame(&ack));
   DVLOG(1) << "Adding frame: " << frames.back();
 
-  frames.push_back(
-      quic::QuicFrame(GenerateNextStreamFrame(stream_id, fin, data)));
+  frames.push_back(GenerateNextStreamFrame(stream_id, fin, data));
 
   return MakeMultipleFramesPacket(header_, frames, nullptr);
 }
@@ -775,9 +761,8 @@ QuicTestPacketMaker::MakeAckAndMultipleDataFramesPacket(
 
   for (size_t i = 0; i < data_writes.size(); ++i) {
     bool is_fin = fin && (i == data_writes.size() - 1);
-    quic::QuicFrame quic_frame(GenerateNextStreamFrame(
+    frames.push_back(GenerateNextStreamFrame(
         stream_id, is_fin, quic::QuicStringPiece(data_writes[i])));
-    frames.push_back(quic_frame);
   }
   return MakeMultipleFramesPacket(header_, frames, nullptr);
 }
@@ -802,19 +787,17 @@ QuicTestPacketMaker::MakeRequestHeadersAndMultipleDataFramesPacket(
     quic::SettingsFrame settings;
     settings.values[quic::SETTINGS_MAX_HEADER_LIST_SIZE] =
         kQuicMaxHeaderListSize;
+    settings.values[quic::SETTINGS_QPACK_MAX_TABLE_CAPACITY] =
+        quic::kDefaultQpackMaxDynamicTableCapacity;
     std::unique_ptr<char[]> buffer1;
     quic::QuicByteCount frame_length1 =
         http_encoder_.SerializeSettingsFrame(settings, &buffer1);
     std::string settings_data = std::string(buffer1.get(), frame_length1);
 
-    quic::QuicStreamFrame type_frame;
-    quic::QuicStreamFrame settings_frame;
     quic::QuicFrames frames;
     if (stream_offsets_[2] == 0) {
-      type_frame = GenerateNextStreamFrame(2, false, type);
-      frames.push_back(quic::QuicFrame(type_frame));
-      settings_frame = GenerateNextStreamFrame(2, false, settings_data);
-      frames.push_back(quic::QuicFrame(settings_frame));
+      frames.push_back(GenerateNextStreamFrame(2, false, type));
+      frames.push_back(GenerateNextStreamFrame(2, false, settings_data));
     }
 
     quic::PriorityFrame frame;
@@ -828,26 +811,21 @@ QuicTestPacketMaker::MakeRequestHeadersAndMultipleDataFramesPacket(
         http_encoder_.SerializePriorityFrame(frame, &buffer);
     std::string priority_data = std::string(buffer.get(), frame_length);
 
-    quic::QuicStreamFrame priority_frame =
-        GenerateNextStreamFrame(2, false, priority_data);
+    frames.push_back(GenerateNextStreamFrame(2, false, priority_data));
 
     // STREAM frames for HEADERS.
     std::vector<std::string> data = QpackEncodeHeaders(
         stream_id, std::move(headers), spdy_headers_frame_length);
-    std::vector<quic::QuicStreamFrame> stream_frames =
-        GenerateNextStreamFrames(stream_id, false, data);
+
+    for (const auto& frame : GenerateNextStreamFrames(stream_id, false, data))
+      frames.push_back(frame);
 
     // STREAM frames for DATA.
     for (size_t i = 0; i < data_writes.size(); ++i) {
       bool is_fin = fin && (i == data_writes.size() - 1);
-      stream_frames.push_back(GenerateNextStreamFrame(
+      frames.push_back(GenerateNextStreamFrame(
           stream_id, is_fin, quic::QuicStringPiece(data_writes[i])));
     }
-
-    frames.push_back(quic::QuicFrame(priority_frame));
-
-    for (const auto& frame : stream_frames)
-      frames.push_back(quic::QuicFrame(frame));
 
     return MakeMultipleFramesPacket(header_, frames, nullptr);
   }
@@ -859,20 +837,18 @@ QuicTestPacketMaker::MakeRequestHeadersAndMultipleDataFramesPacket(
   if (spdy_headers_frame_length) {
     *spdy_headers_frame_length = spdy_frame.size();
   }
-  quic::QuicStreamFrame frame = GenerateNextStreamFrame(
-      GetHeadersStreamId(), false,
-      quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
   quic::QuicFrames frames;
-  frames.push_back(quic::QuicFrame(frame));
+  frames.push_back(GenerateNextStreamFrame(
+      GetHeadersStreamId(), false,
+      quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size())));
 
   // quic::QuicFrame takes a raw pointer. Use a std::vector here so we keep
   // StreamFrames alive until MakeMultipleFramesPacket is done.
   std::vector<std::unique_ptr<quic::QuicStreamFrame>> stream_frames;
   for (size_t i = 0; i < data_writes.size(); ++i) {
     bool is_fin = fin && (i == data_writes.size() - 1);
-    quic::QuicFrame quic_frame(GenerateNextStreamFrame(
+    frames.push_back(GenerateNextStreamFrame(
         stream_id, is_fin, quic::QuicStringPiece(data_writes[i])));
-    frames.push_back(quic_frame);
   }
   return MakeMultipleFramesPacket(header_, frames, nullptr);
 }
@@ -897,19 +873,17 @@ QuicTestPacketMaker::MakeRequestHeadersPacket(
     quic::SettingsFrame settings;
     settings.values[quic::SETTINGS_MAX_HEADER_LIST_SIZE] =
         kQuicMaxHeaderListSize;
+    settings.values[quic::SETTINGS_QPACK_MAX_TABLE_CAPACITY] =
+        quic::kDefaultQpackMaxDynamicTableCapacity;
     std::unique_ptr<char[]> buffer1;
     quic::QuicByteCount frame_length1 =
         http_encoder_.SerializeSettingsFrame(settings, &buffer1);
     std::string settings_data = std::string(buffer1.get(), frame_length1);
 
-    quic::QuicStreamFrame type_frame;
-    quic::QuicStreamFrame settings_frame;
     quic::QuicFrames frames;
     if (stream_offsets_[2] == 0) {
-      type_frame = GenerateNextStreamFrame(2, false, type);
-      frames.push_back(quic::QuicFrame(type_frame));
-      settings_frame = GenerateNextStreamFrame(2, false, settings_data);
-      frames.push_back(quic::QuicFrame(settings_frame));
+      frames.push_back(GenerateNextStreamFrame(2, false, type));
+      frames.push_back(GenerateNextStreamFrame(2, false, settings_data));
     }
 
     quic::PriorityFrame frame;
@@ -923,18 +897,13 @@ QuicTestPacketMaker::MakeRequestHeadersPacket(
         http_encoder_.SerializePriorityFrame(frame, &buffer);
     std::string priority_data = std::string(buffer.get(), frame_length);
 
-    quic::QuicStreamFrame priority_frame =
-        GenerateNextStreamFrame(2, false, priority_data);
+    frames.push_back(GenerateNextStreamFrame(2, false, priority_data));
 
     std::vector<std::string> data = QpackEncodeHeaders(
         stream_id, std::move(headers), spdy_headers_frame_length);
-    std::vector<quic::QuicStreamFrame> stream_frames =
-        GenerateNextStreamFrames(stream_id, fin, data);
 
-    frames.push_back(quic::QuicFrame(priority_frame));
-
-    for (const auto& frame : stream_frames)
-      frames.push_back(quic::QuicFrame(frame));
+    for (const auto& frame : GenerateNextStreamFrames(stream_id, fin, data))
+      frames.push_back(frame);
     return MakeMultipleFramesPacket(header_, frames, nullptr);
   }
 
@@ -944,10 +913,10 @@ QuicTestPacketMaker::MakeRequestHeadersPacket(
   if (spdy_headers_frame_length)
     *spdy_headers_frame_length = spdy_frame.size();
 
-  quic::QuicStreamFrame frame = GenerateNextStreamFrame(
-      GetHeadersStreamId(), false,
-      quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
-  return MakePacket(header_, quic::QuicFrame(frame));
+  return MakePacket(header_, GenerateNextStreamFrame(
+                                 GetHeadersStreamId(), false,
+                                 quic::QuicStringPiece(spdy_frame.data(),
+                                                       spdy_frame.size())));
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>
@@ -969,19 +938,17 @@ QuicTestPacketMaker::MakeRequestHeadersAndRstPacket(
     quic::SettingsFrame settings;
     settings.values[quic::SETTINGS_MAX_HEADER_LIST_SIZE] =
         kQuicMaxHeaderListSize;
+    settings.values[quic::SETTINGS_QPACK_MAX_TABLE_CAPACITY] =
+        quic::kDefaultQpackMaxDynamicTableCapacity;
     std::unique_ptr<char[]> buffer1;
     quic::QuicByteCount frame_length1 =
         http_encoder_.SerializeSettingsFrame(settings, &buffer1);
     std::string settings_data = std::string(buffer1.get(), frame_length1);
 
-    quic::QuicStreamFrame type_frame;
-    quic::QuicStreamFrame settings_frame;
     quic::QuicFrames frames;
     if (stream_offsets_[2] == 0) {
-      type_frame = GenerateNextStreamFrame(2, false, type);
-      frames.push_back(quic::QuicFrame(type_frame));
-      settings_frame = GenerateNextStreamFrame(2, false, settings_data);
-      frames.push_back(quic::QuicFrame(settings_frame));
+      frames.push_back(GenerateNextStreamFrame(2, false, type));
+      frames.push_back(GenerateNextStreamFrame(2, false, settings_data));
     }
 
     quic::PriorityFrame frame;
@@ -995,18 +962,13 @@ QuicTestPacketMaker::MakeRequestHeadersAndRstPacket(
         http_encoder_.SerializePriorityFrame(frame, &buffer);
     std::string priority_data = std::string(buffer.get(), frame_length);
 
-    quic::QuicStreamFrame priority_frame =
-        GenerateNextStreamFrame(2, false, priority_data);
+    frames.push_back(GenerateNextStreamFrame(2, false, priority_data));
 
     std::vector<std::string> data = QpackEncodeHeaders(
         stream_id, std::move(headers), spdy_headers_frame_length);
-    std::vector<quic::QuicStreamFrame> stream_frames =
-        GenerateNextStreamFrames(stream_id, fin, data);
 
-    frames.push_back(quic::QuicFrame(priority_frame));
-
-    for (const auto& frame : stream_frames)
-      frames.push_back(quic::QuicFrame(frame));
+    for (const auto& frame : GenerateNextStreamFrames(stream_id, fin, data))
+      frames.push_back(frame);
 
     quic::QuicRstStreamFrame rst_frame(1, stream_id, error_code,
                                        stream_offsets_[stream_id]);
@@ -1025,16 +987,15 @@ QuicTestPacketMaker::MakeRequestHeadersAndRstPacket(
   if (spdy_headers_frame_length) {
     *spdy_headers_frame_length = spdy_frame.size();
   }
-  quic::QuicStreamFrame headers_frame = GenerateNextStreamFrame(
+  quic::QuicFrames frames;
+  frames.push_back(GenerateNextStreamFrame(
       GetHeadersStreamId(), false,
-      quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
+      quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size())));
+  DVLOG(1) << "Adding frame: " << frames.back();
 
   quic::QuicRstStreamFrame rst_frame(1, stream_id, error_code,
                                      stream_offsets_[stream_id]);
 
-  quic::QuicFrames frames;
-  frames.push_back(quic::QuicFrame(headers_frame));
-  DVLOG(1) << "Adding frame: " << frames.back();
   frames.push_back(quic::QuicFrame(&rst_frame));
   DVLOG(1) << "Adding frame: " << frames.back();
 
@@ -1092,12 +1053,10 @@ QuicTestPacketMaker::MakePushPromisePacket(
     quic::QuicByteCount frame_length =
         http_encoder_.SerializePushPromiseFrameWithOnlyPushId(frame, &buffer);
     std::string push_promise_data(buffer.get(), frame_length);
-    quic::QuicStreamFrame promise_frame =
-        GenerateNextStreamFrame(stream_id, false, push_promise_data);
-    frames.push_back(quic::QuicFrame(promise_frame));
-    quic::QuicStreamFrame headers =
-        GenerateNextStreamFrame(stream_id, false, encoded_headers);
-    frames.push_back(quic::QuicFrame(headers));
+    frames.push_back(
+        GenerateNextStreamFrame(stream_id, false, push_promise_data));
+    frames.push_back(
+        GenerateNextStreamFrame(stream_id, false, encoded_headers));
     InitializeHeader(packet_number, should_include_version);
     return MakeMultipleFramesPacket(header_, frames, nullptr);
   }
@@ -1110,10 +1069,10 @@ QuicTestPacketMaker::MakePushPromisePacket(
   if (spdy_headers_frame_length) {
     *spdy_headers_frame_length = spdy_frame.size();
   }
-  quic::QuicStreamFrame frame = GenerateNextStreamFrame(
-      GetHeadersStreamId(), false,
-      quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
-  return MakePacket(header_, quic::QuicFrame(frame));
+  return MakePacket(header_, GenerateNextStreamFrame(
+                                 GetHeadersStreamId(), false,
+                                 quic::QuicStringPiece(spdy_frame.data(),
+                                                       spdy_frame.size())));
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>
@@ -1151,12 +1110,10 @@ QuicTestPacketMaker::MakeResponseHeadersPacket(
     // STREAM frames for HEADERS.
     std::vector<std::string> data = QpackEncodeHeaders(
         stream_id, std::move(headers), spdy_headers_frame_length);
-    std::vector<quic::QuicStreamFrame> stream_frames =
-        GenerateNextStreamFrames(stream_id, fin, data);
 
     quic::QuicFrames frames;
-    for (const auto& frame : stream_frames)
-      frames.push_back(quic::QuicFrame(frame));
+    for (const auto& frame : GenerateNextStreamFrames(stream_id, fin, data))
+      frames.push_back(frame);
     return MakeMultipleFramesPacket(header_, frames, nullptr);
   }
 
@@ -1168,10 +1125,10 @@ QuicTestPacketMaker::MakeResponseHeadersPacket(
   if (spdy_headers_frame_length) {
     *spdy_headers_frame_length = spdy_frame.size();
   }
-  quic::QuicStreamFrame frame = GenerateNextStreamFrame(
-      GetHeadersStreamId(), false,
-      quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
-  return MakePacket(header_, quic::QuicFrame(frame));
+  return MakePacket(header_, GenerateNextStreamFrame(
+                                 GetHeadersStreamId(), false,
+                                 quic::QuicStringPiece(spdy_frame.data(),
+                                                       spdy_frame.size())));
 }
 
 spdy::SpdyHeaderBlock QuicTestPacketMaker::GetRequestHeaders(
@@ -1303,10 +1260,10 @@ QuicTestPacketMaker::MakeSettingsPacket(uint64_t packet_number,
     spdy::SpdySerializedFrame spdy_frame(
         spdy_request_framer_.SerializeFrame(settings_frame));
     InitializeHeader(packet_number, should_include_version);
-    quic::QuicStreamFrame quic_frame = GenerateNextStreamFrame(
-        GetHeadersStreamId(), false,
-        quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
-    return MakePacket(header_, quic::QuicFrame(quic_frame));
+    return MakePacket(header_, GenerateNextStreamFrame(
+                                   GetHeadersStreamId(), false,
+                                   quic::QuicStringPiece(spdy_frame.data(),
+                                                         spdy_frame.size())));
   }
   quic::QuicFrames frames;
   // A stream frame containing stream type will be written on the control stream
@@ -1314,6 +1271,8 @@ QuicTestPacketMaker::MakeSettingsPacket(uint64_t packet_number,
   std::string type(1, 0x00);
   quic::SettingsFrame settings;
   settings.values[quic::SETTINGS_MAX_HEADER_LIST_SIZE] = kQuicMaxHeaderListSize;
+  settings.values[quic::SETTINGS_QPACK_MAX_TABLE_CAPACITY] =
+      quic::kDefaultQpackMaxDynamicTableCapacity;
   std::unique_ptr<char[]> buffer;
   quic::QuicByteCount frame_length =
       http_encoder_.SerializeSettingsFrame(settings, &buffer);
@@ -1330,10 +1289,8 @@ QuicTestPacketMaker::MakeSettingsPacket(uint64_t packet_number,
       quic::QuicUtils::GetFirstUnidirectionalStreamId(
           version_.transport_version, perspective_);
 
-  std::vector<quic::QuicStreamFrame> stream_frames =
-      GenerateNextStreamFrames(stream_id, false, data);
-  for (const auto& frame : stream_frames)
-    frames.push_back(quic::QuicFrame(frame));
+  for (const auto& frame : GenerateNextStreamFrames(stream_id, false, data))
+    frames.push_back(frame);
 
   InitializeHeader(packet_number, /*should_include_version*/ true);
   return MakeMultipleFramesPacket(header_, frames, nullptr);
@@ -1348,10 +1305,10 @@ QuicTestPacketMaker::MakeInitialSettingsPacket(uint64_t packet_number) {
     spdy::SpdySerializedFrame spdy_frame(
         spdy_request_framer_.SerializeFrame(settings_frame));
     InitializeHeader(packet_number, /*should_include_version*/ true);
-    quic::QuicStreamFrame quic_frame = GenerateNextStreamFrame(
-        GetHeadersStreamId(), false,
-        quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
-    return MakePacket(header_, quic::QuicFrame(quic_frame));
+    return MakePacket(header_, GenerateNextStreamFrame(
+                                   GetHeadersStreamId(), false,
+                                   quic::QuicStringPiece(spdy_frame.data(),
+                                                         spdy_frame.size())));
   }
   quic::QuicFrames frames;
   // A stream frame containing stream type will be written on the control stream
@@ -1359,6 +1316,8 @@ QuicTestPacketMaker::MakeInitialSettingsPacket(uint64_t packet_number) {
   std::string type(1, 0x00);
   quic::SettingsFrame settings;
   settings.values[quic::SETTINGS_MAX_HEADER_LIST_SIZE] = kQuicMaxHeaderListSize;
+  settings.values[quic::SETTINGS_QPACK_MAX_TABLE_CAPACITY] =
+      quic::kDefaultQpackMaxDynamicTableCapacity;
   std::unique_ptr<char[]> buffer;
   quic::QuicByteCount frame_length =
       http_encoder_.SerializeSettingsFrame(settings, &buffer);
@@ -1375,10 +1334,11 @@ QuicTestPacketMaker::MakeInitialSettingsPacket(uint64_t packet_number) {
       quic::QuicUtils::GetFirstUnidirectionalStreamId(
           version_.transport_version, perspective_);
 
-  std::vector<quic::QuicStreamFrame> stream_frames =
-      GenerateNextStreamFrames(stream_id, false, data);
-  for (const auto& frame : stream_frames)
-    frames.push_back(quic::QuicFrame(frame));
+  for (const auto& frame : GenerateNextStreamFrames(stream_id, false, data))
+    frames.push_back(frame);
+
+  frames.push_back(GenerateNextStreamFrame(10, false, "\x02"));
+  frames.push_back(GenerateNextStreamFrame(6, false, "\x03"));
 
   InitializeHeader(packet_number, /*should_include_version*/ true);
   return MakeMultipleFramesPacket(header_, frames, nullptr);
@@ -1404,11 +1364,11 @@ QuicTestPacketMaker::MakePriorityPacket(uint64_t packet_number,
     spdy::SpdySerializedFrame spdy_frame(
         spdy_request_framer_.SerializeFrame(priority_frame));
 
-    quic::QuicStreamFrame quic_frame = GenerateNextStreamFrame(
-        GetHeadersStreamId(), false,
-        quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
     InitializeHeader(packet_number, should_include_version);
-    return MakePacket(header_, quic::QuicFrame(quic_frame));
+    return MakePacket(header_, GenerateNextStreamFrame(
+                                   GetHeadersStreamId(), false,
+                                   quic::QuicStringPiece(spdy_frame.data(),
+                                                         spdy_frame.size())));
   }
   quic::PriorityFrame frame;
   frame.weight = weight;
@@ -1425,10 +1385,8 @@ QuicTestPacketMaker::MakePriorityPacket(uint64_t packet_number,
       http_encoder_.SerializePriorityFrame(frame, &buffer);
   std::string priority_data = std::string(buffer.get(), frame_length);
 
-  quic::QuicStreamFrame quic_frame =
-      GenerateNextStreamFrame(2, false, priority_data);
   InitializeHeader(packet_number, should_include_version);
-  return MakePacket(header_, quic::QuicFrame(quic_frame));
+  return MakePacket(header_, GenerateNextStreamFrame(2, false, priority_data));
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>
@@ -1465,13 +1423,11 @@ QuicTestPacketMaker::MakeAckAndMultiplePriorityFramesPacket(
         spdy_request_framer_.SerializeFrame(priority_frame)));
 
     spdy::SpdySerializedFrame* spdy_frame = spdy_frames.back().get();
-    quic::QuicStreamFrame stream_frame = GenerateNextStreamFrame(
+    frames.push_back(GenerateNextStreamFrame(
         quic::VersionUsesQpack(version_.transport_version)
             ? GetFirstBidirectionalStreamId()
             : GetHeadersStreamId(),
-        false, quic::QuicStringPiece(spdy_frame->data(), spdy_frame->size()));
-
-    frames.push_back(quic::QuicFrame(stream_frame));
+        false, quic::QuicStringPiece(spdy_frame->data(), spdy_frame->size())));
   }
 
   InitializeHeader(packet_number, should_include_version);
@@ -1541,7 +1497,7 @@ std::string QuicTestPacketMaker::MaybePrependErrorCode(
       {base::NumberToString(quic_error_code), ":", quic_error_details});
 }
 
-quic::QuicStreamFrame QuicTestPacketMaker::GenerateNextStreamFrame(
+quic::QuicFrame QuicTestPacketMaker::GenerateNextStreamFrame(
     quic::QuicStreamId stream_id,
     bool fin,
     quic::QuicStringPiece data) {
@@ -1552,7 +1508,7 @@ quic::QuicStreamFrame QuicTestPacketMaker::GenerateNextStreamFrame(
   quic::QuicStreamFrame frame(stream_id, fin, stream_offsets_[stream_id], data);
   stream_offsets_[stream_id] += data.length();
   DVLOG(1) << "Adding frame: " << frame;
-  return frame;
+  return quic::QuicFrame(frame);
 }
 
 std::vector<std::string> QuicTestPacketMaker::QpackEncodeHeaders(
@@ -1601,17 +1557,14 @@ std::vector<std::string> QuicTestPacketMaker::QpackEncodeHeaders(
   return data;
 }
 
-std::vector<quic::QuicStreamFrame>
-QuicTestPacketMaker::GenerateNextStreamFrames(
+std::vector<quic::QuicFrame> QuicTestPacketMaker::GenerateNextStreamFrames(
     quic::QuicStreamId stream_id,
     bool fin,
     const std::vector<std::string>& data) {
-  std::vector<quic::QuicStreamFrame> frames;
+  std::vector<quic::QuicFrame> frames;
   for (size_t i = 0; i < data.size(); ++i) {
     const bool frame_fin = i == data.size() - 1 && fin;
-    quic::QuicStreamFrame frame =
-        GenerateNextStreamFrame(stream_id, frame_fin, data[i]);
-    frames.push_back(frame);
+    frames.push_back(GenerateNextStreamFrame(stream_id, frame_fin, data[i]));
   }
   return frames;
 }

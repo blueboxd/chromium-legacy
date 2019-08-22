@@ -27,6 +27,9 @@ namespace dom_distiller {
 namespace {
 
 using ::testing::_;
+using ::testing::AllOf;
+using ::testing::Field;
+using ::testing::Not;
 
 // This is essentially an "enum" with human-readable strings (e.g. "adaboost",
 // "none") as values.
@@ -41,25 +44,15 @@ const char kNonArticlePath[] = "/dom_distiller/non_og_article.html";
 const char* kAllPaths[] = {kSimpleArticlePath, kSimpleArticleIFramePath,
                            kArticlePath, kNonArticlePath};
 
-const bool kIsDistillable = true;
-const bool kIsNotDistillable = false;
-
-const bool kIsLast = true;
-const bool kIsNotLast = false;
-
-const bool kIsNotMobileFriendly = false;
-
 class Holder {
  public:
   virtual ~Holder() {}
-  virtual void OnResult(bool is_distillable,
-                        bool is_last,
-                        bool is_mobile_friendly) = 0;
+  virtual void OnResult(const DistillabilityResult& result) = 0;
 };
 
 class MockDelegate : public Holder {
  public:
-  MOCK_METHOD3(OnResult, void(bool, bool, bool));
+  MOCK_METHOD1(OnResult, void(const DistillabilityResult&));
 
   DistillabilityDelegate GetDelegate() {
     return base::BindRepeating(&MockDelegate::OnResult, base::Unretained(this));
@@ -129,6 +122,21 @@ class DistillablePageUtilsBrowserTestOption : public InProcessBrowserTest {
   content::WebContents* web_contents_ = nullptr;
 };
 
+MATCHER(IsDistillable,
+        "Result " + std::string(negation ? "isn't" : "is") + " distillable") {
+  return Matches(Field(&DistillabilityResult::is_distillable, true))(arg);
+}
+
+MATCHER(IsLast, "Result " + std::string(negation ? "isn't" : "is") + " last") {
+  return Matches(Field(&DistillabilityResult::is_last, true))(arg);
+}
+
+MATCHER(IsMobileFriendly,
+        "Result " + std::string(negation ? "isn't" : "is") +
+            " mobile friendly") {
+  return Matches(Field(&DistillabilityResult::is_mobile_friendly, true))(arg);
+}
+
 using DistillablePageUtilsBrowserTestAlways =
     DistillablePageUtilsBrowserTestOption<kAlwaysTrue>;
 
@@ -136,8 +144,7 @@ IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAlways,
                        AllRealPathsCallDelegateOnceWithIsDistillable) {
   for (unsigned i = 0; i < sizeof(kAllPaths) / sizeof(kAllPaths[0]); ++i) {
     testing::InSequence dummy;
-    EXPECT_CALL(holder_,
-                OnResult(kIsDistillable, kIsLast, /* is_mobile_friendly = */ _))
+    EXPECT_CALL(holder_, OnResult(AllOf(IsDistillable(), IsLast())))
         .WillOnce(testing::InvokeWithoutArgs(
             this, &DistillablePageUtilsBrowserTestOption::QuitSoon));
     NavigateAndWait(kAllPaths[i], base::TimeDelta());
@@ -146,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAlways,
 
 IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAlways,
                        LocalUrlsDoNotCallDelegate) {
-  EXPECT_CALL(holder_, OnResult(_, _, _)).Times(0);
+  EXPECT_CALL(holder_, OnResult(_)).Times(0);
   NavigateAndWait("about:blank", kWaitNoExpectedCall);
 }
 
@@ -154,7 +161,7 @@ using DistillablePageUtilsBrowserTestNone =
     DistillablePageUtilsBrowserTestOption<kNone>;
 
 IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestNone, NeverCallDelegate) {
-  EXPECT_CALL(holder_, OnResult(_, _, _)).Times(0);
+  EXPECT_CALL(holder_, OnResult(_)).Times(0);
   NavigateAndWait(kSimpleArticlePath, kWaitNoExpectedCall);
 }
 
@@ -163,7 +170,7 @@ using DistillablePageUtilsBrowserTestOGArticle =
 
 IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestOGArticle,
                        ArticlesCallDelegateOnceWithIsDistillable) {
-  EXPECT_CALL(holder_, OnResult(kIsDistillable, kIsLast, _))
+  EXPECT_CALL(holder_, OnResult(AllOf(IsDistillable(), IsLast())))
       .WillOnce(testing::InvokeWithoutArgs(
           this, &DistillablePageUtilsBrowserTestOption::QuitSoon));
   NavigateAndWait(kArticlePath, base::TimeDelta());
@@ -171,7 +178,7 @@ IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestOGArticle,
 
 IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestOGArticle,
                        NonArticleCallsDelegateOnceWithIsNotDistillable) {
-  EXPECT_CALL(holder_, OnResult(kIsNotDistillable, kIsLast, _))
+  EXPECT_CALL(holder_, OnResult(AllOf(Not(IsDistillable()), IsLast())))
       .WillOnce(testing::InvokeWithoutArgs(
           this, &DistillablePageUtilsBrowserTestOption::QuitSoon));
   NavigateAndWait(kNonArticlePath, base::TimeDelta());
@@ -185,11 +192,11 @@ IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAdaboost,
   const char* paths[] = {kSimpleArticlePath, kSimpleArticleIFramePath};
   for (unsigned i = 0; i < sizeof(paths) / sizeof(paths[0]); ++i) {
     testing::InSequence dummy;
-    EXPECT_CALL(holder_,
-                OnResult(kIsDistillable, kIsNotLast, kIsNotMobileFriendly))
+    EXPECT_CALL(holder_, OnResult(AllOf(IsDistillable(), Not(IsLast()),
+                                        Not(IsMobileFriendly()))))
         .Times(1);
-    EXPECT_CALL(holder_,
-                OnResult(kIsDistillable, kIsLast, kIsNotMobileFriendly))
+    EXPECT_CALL(holder_, OnResult(AllOf(IsDistillable(), IsLast(),
+                                        Not(IsMobileFriendly()))))
         .WillOnce(testing::InvokeWithoutArgs(
             this, &DistillablePageUtilsBrowserTestOption::QuitSoon));
     NavigateAndWait(paths[i], base::TimeDelta());
@@ -199,11 +206,11 @@ IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAdaboost,
 IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAdaboost,
                        NonArticleCallsDelegateTwiceWithIsNotDistillable) {
   testing::InSequence dummy;
-  EXPECT_CALL(holder_,
-              OnResult(kIsNotDistillable, kIsNotLast, kIsNotMobileFriendly))
+  EXPECT_CALL(holder_, OnResult(AllOf(Not(IsDistillable()), Not(IsLast()),
+                                      Not(IsMobileFriendly()))))
       .Times(1);
-  EXPECT_CALL(holder_,
-              OnResult(kIsNotDistillable, kIsLast, kIsNotMobileFriendly))
+  EXPECT_CALL(holder_, OnResult(AllOf(Not(IsDistillable()), IsLast(),
+                                      Not(IsMobileFriendly()))))
       .WillOnce(testing::InvokeWithoutArgs(
           this, &DistillablePageUtilsBrowserTestOption::QuitSoon));
   NavigateAndWait(kNonArticlePath, base::TimeDelta());
@@ -217,11 +224,11 @@ IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAllArticles,
   const char* paths[] = {kSimpleArticlePath, kSimpleArticleIFramePath};
   for (unsigned i = 0; i < sizeof(paths) / sizeof(paths[0]); ++i) {
     testing::InSequence dummy;
-    EXPECT_CALL(holder_,
-                OnResult(kIsDistillable, kIsNotLast, kIsNotMobileFriendly))
+    EXPECT_CALL(holder_, OnResult(AllOf(IsDistillable(), Not(IsLast()),
+                                        Not(IsMobileFriendly()))))
         .Times(1);
-    EXPECT_CALL(holder_,
-                OnResult(kIsDistillable, kIsLast, kIsNotMobileFriendly))
+    EXPECT_CALL(holder_, OnResult(AllOf(IsDistillable(), IsLast(),
+                                        Not(IsMobileFriendly()))))
         .WillOnce(testing::InvokeWithoutArgs(
             this, &DistillablePageUtilsBrowserTestOption::QuitSoon));
     NavigateAndWait(paths[i], base::TimeDelta());
@@ -231,11 +238,11 @@ IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAllArticles,
 IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAllArticles,
                        NonArticlesCallDelegateTwiceWithIsNotDistillable) {
   testing::InSequence dummy;
-  EXPECT_CALL(holder_,
-              OnResult(kIsNotDistillable, kIsNotLast, kIsNotMobileFriendly))
+  EXPECT_CALL(holder_, OnResult(AllOf(Not(IsDistillable()), Not(IsLast()),
+                                      Not(IsMobileFriendly()))))
       .Times(1);
-  EXPECT_CALL(holder_,
-              OnResult(kIsNotDistillable, kIsLast, kIsNotMobileFriendly))
+  EXPECT_CALL(holder_, OnResult(AllOf(Not(IsDistillable()), IsLast(),
+                                      Not(IsMobileFriendly()))))
       .WillOnce(testing::InvokeWithoutArgs(
           this, &DistillablePageUtilsBrowserTestOption::QuitSoon));
   NavigateAndWait(kNonArticlePath, base::TimeDelta());

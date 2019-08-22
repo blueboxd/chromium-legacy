@@ -38,8 +38,7 @@ class ReportingServiceImpl : public ReportingService {
       : context_(std::move(context)),
         shut_down_(false),
         started_loading_from_store_(false),
-        initialized_(false),
-        weak_factory_(this) {
+        initialized_(false) {
     if (!context_->IsClientDataPersisted())
       initialized_ = true;
   }
@@ -226,7 +225,7 @@ class ReportingServiceImpl : public ReportingService {
   bool started_loading_from_store_;
   bool initialized_;
   std::vector<base::OnceClosure> task_backlog_;
-  base::WeakPtrFactory<ReportingServiceImpl> weak_factory_;
+  base::WeakPtrFactory<ReportingServiceImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ReportingServiceImpl);
 };

@@ -242,9 +242,6 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   // for debugging.
   bool image_annotation_debugging_ = false;
 
-  // Has all data related to the initial page load been processed.
-  bool is_initial_load_processed_ = false;
-
   // So we can queue up tasks to be executed later.
   base::WeakPtrFactory<RenderAccessibilityImpl> weak_factory_{this};
 

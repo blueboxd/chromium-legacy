@@ -6,6 +6,7 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/strings/stringprintf.h"
@@ -75,8 +76,6 @@ class DisplayDeciderTest : public testing::Test {
 
   void SetUp() override {
     // Setup configuration used by this test.
-    config_.morning_task_hour = 7;
-    config_.evening_task_hour = 18;
     config_.max_daily_shown_all_type = 3;
   }
 

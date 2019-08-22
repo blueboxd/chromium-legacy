@@ -1508,8 +1508,9 @@ sk_sp<SkColorFilter> SkiaRenderer::GetColorFilter(const gfx::ColorSpace& src,
                                                   const gfx::ColorSpace& dst,
                                                   float resource_offset,
                                                   float resource_multiplier) {
-  sk_sp<SkColorFilter>& color_filter = color_filter_cache_[dst][src];
-  if (!color_filter) {
+  std::unique_ptr<SkRuntimeColorFilterFactory>& factory =
+      color_filter_cache_[dst][src];
+  if (!factory) {
     std::unique_ptr<gfx::ColorTransform> transform =
         gfx::ColorTransform::NewColorTransform(
             src, dst, gfx::ColorTransform::Intent::INTENT_PERCEPTUAL);
@@ -1517,11 +1518,6 @@ sk_sp<SkColorFilter> SkiaRenderer::GetColorFilter(const gfx::ColorSpace& src,
     // COLOR_CONVERSION_MODE_LUT).
     if (!transform->CanGetShaderSource())
       return nullptr;
-
-    YUVInput input;
-    input.offset = resource_offset;
-    input.multiplier = resource_multiplier;
-    sk_sp<SkData> data = SkData::MakeWithCopy(&input, sizeof(input));
 
     const char* hdr = R"(
 layout(ctype=float) in uniform half offset;
@@ -1543,11 +1539,16 @@ void main(inout half4 color) {
 
     std::string shader = hdr + transform->GetSkShaderSource() + ftr;
 
-    color_filter =
-        SkRuntimeColorFilterFactory(SkString(shader.c_str(), shader.size()))
-            .make(data);
+    factory.reset(new SkRuntimeColorFilterFactory(
+        SkString(shader.c_str(), shader.size())));
   }
-  return color_filter;
+
+  YUVInput input;
+  input.offset = resource_offset;
+  input.multiplier = resource_multiplier;
+  sk_sp<SkData> data = SkData::MakeWithCopy(&input, sizeof(input));
+
+  return factory->make(std::move(data));
 }
 
 SkiaRenderer::DrawRPDQParams SkiaRenderer::CalculateRPDQParams(

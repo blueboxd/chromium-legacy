@@ -167,7 +167,8 @@ bool DOMWindow::IsCurrentlyDisplayedInFrame() const {
 //
 // http://crbug.com/17325
 String DOMWindow::SanitizedCrossDomainAccessErrorMessage(
-    const LocalDOMWindow* accessing_window) const {
+    const LocalDOMWindow* accessing_window,
+    CrossDocumentAccessFeaturePolicy cross_document_access) const {
   if (!accessing_window || !accessing_window->document() || !GetFrame())
     return String();
 
@@ -177,9 +178,14 @@ String DOMWindow::SanitizedCrossDomainAccessErrorMessage(
 
   const SecurityOrigin* active_origin =
       accessing_window->document()->GetSecurityOrigin();
-  String message = "Blocked a frame with origin \"" +
-                   active_origin->ToString() +
-                   "\" from accessing a cross-origin frame.";
+  String message;
+  if (cross_document_access == CrossDocumentAccessFeaturePolicy::kDisallowed) {
+    message = "Blocked a restricted frame with origin \"" +
+              active_origin->ToString() + "\" from accessing another frame.";
+  } else {
+    message = "Blocked a frame with origin \"" + active_origin->ToString() +
+              "\" from accessing a cross-origin frame.";
+  }
 
   // FIXME: Evaluate which details from 'crossDomainAccessErrorMessage' may
   // safely be reported to JavaScript.
@@ -188,7 +194,8 @@ String DOMWindow::SanitizedCrossDomainAccessErrorMessage(
 }
 
 String DOMWindow::CrossDomainAccessErrorMessage(
-    const LocalDOMWindow* accessing_window) const {
+    const LocalDOMWindow* accessing_window,
+    CrossDocumentAccessFeaturePolicy cross_document_access) const {
   if (!accessing_window || !accessing_window->document() || !GetFrame())
     return String();
 
@@ -202,11 +209,14 @@ String DOMWindow::CrossDomainAccessErrorMessage(
       accessing_window->document()->GetSecurityOrigin();
   const SecurityOrigin* target_origin =
       GetFrame()->GetSecurityContext()->GetSecurityOrigin();
+  auto* local_dom_window = DynamicTo<LocalDOMWindow>(this);
   // It's possible for a remote frame to be same origin with respect to a
   // local frame, but it must still be treated as a disallowed cross-domain
   // access. See https://crbug.com/601629.
   DCHECK(GetFrame()->IsRemoteFrame() ||
-         !active_origin->CanAccess(target_origin));
+         !active_origin->CanAccess(target_origin) ||
+         (local_dom_window && accessing_window->document()->GetAgent() !=
+                                  local_dom_window->document()->GetAgent()));
 
   String message = "Blocked a frame with origin \"" +
                    active_origin->ToString() +
@@ -220,7 +230,6 @@ String DOMWindow::CrossDomainAccessErrorMessage(
   // aren't replicated.  For now, construct the URL using the replicated
   // origin for RemoteFrames. If the target frame is remote and sandboxed,
   // there isn't anything else to show other than "null" for its origin.
-  auto* local_dom_window = DynamicTo<LocalDOMWindow>(this);
   KURL target_url = local_dom_window
                         ? local_dom_window->document()->Url()
                         : KURL(NullURL(), target_origin->ToString());
@@ -273,6 +282,8 @@ String DOMWindow::CrossDomainAccessErrorMessage(
            target_origin->Domain() +
            "\", but the frame requesting access did not. Both must set "
            "\"document.domain\" to the same value to allow access.";
+  if (cross_document_access == CrossDocumentAccessFeaturePolicy::kDisallowed)
+    return message + "The document-access policy denied access.";
 
   // Default.
   return message + "Protocols, domains, and ports must match.";

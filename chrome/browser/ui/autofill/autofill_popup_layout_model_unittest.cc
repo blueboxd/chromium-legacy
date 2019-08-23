@@ -71,9 +71,9 @@ class AutofillPopupLayoutModelTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    delegate_.reset(new TestAutofillPopupViewDelegate(web_contents()));
-    layout_model_.reset(new AutofillPopupLayoutModel(
-        delegate_.get(), false /* is_credit_card_field */));
+    delegate_ = std::make_unique<TestAutofillPopupViewDelegate>(web_contents());
+    layout_model_ = std::make_unique<AutofillPopupLayoutModel>(
+        delegate_.get(), false /* is_credit_card_field */);
   }
 
   AutofillPopupLayoutModel* layout_model() { return layout_model_.get(); }

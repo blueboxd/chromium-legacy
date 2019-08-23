@@ -44,5 +44,6 @@ BluetoothInternalsUI::~BluetoothInternalsUI() {}
 
 void BluetoothInternalsUI::BindBluetoothInternalsHandler(
     mojom::BluetoothInternalsHandlerRequest request) {
-  page_handler_.reset(new BluetoothInternalsHandler(std::move(request)));
+  page_handler_ =
+      std::make_unique<BluetoothInternalsHandler>(std::move(request));
 }

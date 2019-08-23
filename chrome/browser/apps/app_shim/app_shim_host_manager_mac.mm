@@ -29,7 +29,7 @@ void AppShimHostManager::Init() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!extension_app_shim_handler_);
   extension_app_shim_handler_.reset(new apps::ExtensionAppShimHandler());
-  apps::AppShimHandler::SetDefaultHandler(extension_app_shim_handler_.get());
+  apps::AppShimHandler::Set(extension_app_shim_handler_.get());
 
   // If running the shim triggers Chrome startup, the user must wait for the
   // socket to be set up before the shim will be usable. This also requires
@@ -50,7 +50,7 @@ AppShimHostManager::~AppShimHostManager() {
   if (!extension_app_shim_handler_)
     return;
 
-  apps::AppShimHandler::SetDefaultHandler(NULL);
+  apps::AppShimHandler::Set(nullptr);
 
   base::FilePath user_data_dir;
   if (base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {

@@ -81,7 +81,10 @@ blink::WebFrameWidget* TextInputClientObserver::GetWebFrameWidget() const {
   // case there is actually a WebFrameWidget to be used. In the future we should
   // separate these states and then this can return null if frozen *and there is
   // no provisional main frame attached to the RenderWidget*.
-  if (!widget->IsWebFrameWidget())
+  // TODO(https://crbug.com/995981): The lifetime of the WebFrameWidget should
+  // eventually be tied to the lifetime of the RenderWidget so we should not
+  // need a null !widget check.
+  if (!widget || !widget->IsWebFrameWidget())
     return nullptr;
   return static_cast<blink::WebFrameWidget*>(widget);
 }

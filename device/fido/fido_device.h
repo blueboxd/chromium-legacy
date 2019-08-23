@@ -125,6 +125,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
   State state_ = State::kInit;
   ProtocolVersion supported_protocol_ = ProtocolVersion::kUnknown;
   base::Optional<AuthenticatorGetInfoResponse> device_info_;
+  // If `true`, the device needs to be sent a specific wink command to flash
+  // when user presence is required.
+  bool needs_explicit_wink_ = false;
   // next_cancel_token_ is the value of the next |CancelToken| returned by this
   // device. It starts at one so that zero can be used as an invalid value where
   // needed.

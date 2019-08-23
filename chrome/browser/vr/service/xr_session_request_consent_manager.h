@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_VR_SERVICE_XR_SESSION_REQUEST_CONSENT_MANAGER_H_
 
 #include "base/callback.h"
+#include "chrome/browser/vr/service/xr_consent_prompt_level.h"
 #include "chrome/browser/vr/vr_export.h"
 
 namespace content {
@@ -46,7 +47,9 @@ class VR_EXPORT XRSessionRequestConsentManager {
   // either closes the dialog by any means or clicks on 'cancel' button.
   virtual TabModalConfirmDialog* ShowDialogAndGetConsent(
       content::WebContents* web_contents,
-      base::OnceCallback<void(bool)> response_callback) = 0;
+      XrConsentPromptLevel consent_level,
+      base::OnceCallback<void(XrConsentPromptLevel, bool)>
+          response_callback) = 0;
 };
 
 }  // namespace vr

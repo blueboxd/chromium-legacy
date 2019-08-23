@@ -92,6 +92,19 @@ class FakeNetworkConfig {
   }
 
   /**
+   * @param {string} guid
+   * @return {!Promise<{result:
+   *     !chromeos.networkConfig.mojom.ManagedProperties>>}
+   */
+  getManagedProperties(guid) {
+    return new Promise(resolve => {
+      this.extensionApi_.getManagedProperties(guid, network => {
+        resolve({result: this.managedPropertiesToMojo_(network)});
+      });
+    });
+  }
+
+  /**
    * @param {!chromeos.networkConfig.mojom.NetworkType} type
    * @param {boolean} enabled
    * @return {!Promise<{success: boolean}>}
@@ -141,6 +154,39 @@ class FakeNetworkConfig {
       if (network.VPN.ThirdPartyVPN) {
         mojoNetwork.vpn.providerId = network.VPN.ThirdPartyVPN.ExtensionID;
         mojoNetwork.vpn.providerName = network.VPN.ThirdPartyVPN.ProviderName;
+      }
+    }
+    return mojoNetwork;
+  }
+
+  /**
+   * @param {!chrome.networkingPrivate.ManagedProperties} network
+   * @return {!chromeos.networkConfig.mojom.ManagedProperties}
+   * @private
+   */
+  managedPropertiesToMojo_(network) {
+    const mojoNetwork = OncMojo.getDefaultManagedProperties(
+        OncMojo.getNetworkTypeFromString(network.Type), network.GUID,
+        CrOnc.getActiveValue(network.Name));
+    mojoNetwork.source = network.Source ?
+        OncMojo.getOncSourceFromString(network.Source) :
+        chromeos.networkConfig.mojom.OncSource.kNone;
+    if (network.ConnectionState) {
+      mojoNetwork.connectionState =
+          OncMojo.getConnectionStateTypeFromString(network.ConnectionState);
+    }
+    if (network.WiFi) {
+      mojoNetwork.wifi = {
+        frequency: network.WiFi.Frequency,
+        ssid: OncMojo.createManagedString(
+            CrOnc.getActiveValue(network.WiFi.SSID)),
+        security: OncMojo.getSecurityTypeFromString(
+            CrOnc.getActiveValue(network.WiFi.Security)),
+        signalStrength: network.WiFi.SignalStrength,
+      };
+      if (network.WiFi.AutoConnect) {
+        mojoNetwork.wifi.autoConnect = OncMojo.createManagedBool(
+            CrOnc.getActiveValue(network.WiFi.AutoConnect));
       }
     }
     return mojoNetwork;

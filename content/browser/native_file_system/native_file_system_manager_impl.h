@@ -74,7 +74,8 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
   NativeFileSystemManagerImpl(
       scoped_refptr<storage::FileSystemContext> context,
       scoped_refptr<ChromeBlobStorageContext> blob_context,
-      NativeFileSystemPermissionContext* permission_context);
+      NativeFileSystemPermissionContext* permission_context,
+      bool off_the_record);
 
   void BindRequest(const BindingContext& binding_context,
                    blink::mojom::NativeFileSystemManagerRequest request);
@@ -155,6 +156,8 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
   }
   storage::FileSystemOperationRunner* operation_runner();
 
+  bool is_off_the_record() const { return off_the_record_; }
+
   void SetPermissionContextForTesting(
       NativeFileSystemPermissionContext* permission_context) {
     permission_context_ = permission_context;
@@ -230,6 +233,8 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
       directory_bindings_;
   mojo::StrongBindingSet<blink::mojom::NativeFileSystemFileWriter>
       writer_bindings_;
+
+  bool off_the_record_;
 
   // Transfer token bindings are stored in what is effectively a
   // StrongBindingMap. The Binding instances own the implementation, and tokens

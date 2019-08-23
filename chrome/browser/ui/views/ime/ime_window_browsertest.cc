@@ -35,7 +35,7 @@ class ImeWindowBrowserTest : public InProcessBrowserTest,
   }
 
   void WaitForWindowClosing() {
-    message_loop_runner_.reset(new base::RunLoop);
+    message_loop_runner_ = std::make_unique<base::RunLoop>();
     message_loop_runner_->Run();
   }
 

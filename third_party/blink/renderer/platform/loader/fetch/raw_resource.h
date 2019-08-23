@@ -83,7 +83,7 @@ class PLATFORM_EXPORT RawResource final : public Resource {
   bool WillFollowRedirect(const ResourceRequest&,
                           const ResourceResponse&) override;
 
-  void SetSerializedCachedMetadata(const uint8_t*, size_t) override;
+  void SetSerializedCachedMetadata(mojo_base::BigBuffer data) override;
 
   // Used for code caching of fetched code resources. Returns a cache handler
   // which can only store a single cache metadata entry. This is valid only if

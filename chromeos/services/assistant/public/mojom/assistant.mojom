@@ -137,14 +137,25 @@ interface Assistant {
   CreateTimer(mojo_base.mojom.TimeDelta duration);
 };
 
+// Describes an Assistant interaction.
+struct AssistantInteractionMetadata {
+  AssistantInteractionType type;
+  string query;
+};
+
+// Enumeration of possible Assistant interaction types.
+enum AssistantInteractionType {
+  kText,
+  kVoice,
+};
+
 // Subscribes to Assistant's interaction event. These events are server driven
 // in response to the user's direct interaction with the assistant. Responses
 // from the assistant may contain untrusted third-party content. Subscriber
 // implementations must be sure to handle the response data appropriately.
 interface AssistantInteractionSubscriber {
-  // Assistant interaction has started. In the event of a voice interaction,
-  // |is_voice_interaction| will be true. This implies that the mic is open.
-  OnInteractionStarted(bool is_voice_interaction);
+  // Assistant interaction has started.
+  OnInteractionStarted(AssistantInteractionMetadata metadata);
 
   // Assistant interaction has ended with the specified |resolution|.
   OnInteractionFinished(AssistantInteractionResolution resolution);

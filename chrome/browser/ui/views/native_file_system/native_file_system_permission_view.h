@@ -63,7 +63,6 @@ class NativeFileSystemPermissionView : public views::DialogDelegateView {
       base::OnceCallback<void(PermissionAction result)> callback);
 
   const base::FilePath path_;
-  const bool is_directory_;
   base::OnceCallback<void(PermissionAction result)> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeFileSystemPermissionView);

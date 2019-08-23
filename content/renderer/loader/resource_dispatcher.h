@@ -222,7 +222,7 @@ class CONTENT_EXPORT ResourceDispatcher {
   // Message response handlers, called by the message handler for this process.
   void OnUploadProgress(int request_id, int64_t position, int64_t size);
   void OnReceivedResponse(int request_id, const network::ResourceResponseHead&);
-  void OnReceivedCachedMetadata(int request_id, base::span<const uint8_t> data);
+  void OnReceivedCachedMetadata(int request_id, mojo_base::BigBuffer data);
   void OnReceivedRedirect(
       int request_id,
       const net::RedirectInfo& redirect_info,

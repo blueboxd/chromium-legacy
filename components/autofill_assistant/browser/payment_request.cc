@@ -6,8 +6,15 @@
 
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/common/password_form.h"
 
 namespace autofill_assistant {
+
+LoginChoice::LoginChoice(const std::string& id,
+                         const std::string& text,
+                         int priority)
+    : identifier(id), label(text), preselect_priority(priority) {}
+LoginChoice::~LoginChoice() = default;
 
 PaymentInformation::PaymentInformation() = default;
 PaymentInformation::~PaymentInformation() = default;

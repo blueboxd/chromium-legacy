@@ -129,14 +129,6 @@ void SerialPortImpl::GetPortInfo(GetPortInfoCallback callback) {
   std::move(callback).Run(io_handler_->GetPortInfo());
 }
 
-void SerialPortImpl::SetBreak(SetBreakCallback callback) {
-  std::move(callback).Run(io_handler_->SetBreak());
-}
-
-void SerialPortImpl::ClearBreak(ClearBreakCallback callback) {
-  std::move(callback).Run(io_handler_->ClearBreak());
-}
-
 void SerialPortImpl::Close(CloseCallback callback) {
   io_handler_->Close(std::move(callback));
 }

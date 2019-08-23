@@ -80,11 +80,12 @@ class NET_EXPORT_PRIVATE QuicConnectivityProbingManager
   void CancelProbing(NetworkChangeNotifier::NetworkHandle network,
                      const quic::QuicSocketAddress& peer_address);
 
-  // Called when a connectivity probing packet has been received from
-  // |peer_address| on a socket with |self_address|.
-  void OnConnectivityProbingReceived(
-      const quic::QuicSocketAddress& self_address,
-      const quic::QuicSocketAddress& peer_address);
+  // Called when a new packet has been received from |peer_address| on a socket
+  // with |self_address|. |is_connectivity_probe| is true if the received
+  // packet is a connectivity probe.
+  void OnPacketReceived(const quic::QuicSocketAddress& self_address,
+                        const quic::QuicSocketAddress& peer_address,
+                        bool is_connectivity_probe);
 
   // Returns true if the manager is currently probing |peer_address| on
   // |network|.

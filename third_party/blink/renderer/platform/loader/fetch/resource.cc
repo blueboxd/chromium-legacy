@@ -532,9 +532,11 @@ void Resource::ResponseReceived(const ResourceResponse& response) {
     SetEncoding(encoding);
 }
 
-void Resource::SetSerializedCachedMetadata(const uint8_t* data, size_t size) {
+void Resource::SetSerializedCachedMetadata(mojo_base::BigBuffer data) {
   DCHECK(!is_revalidating_);
   DCHECK(!GetResponse().IsNull());
+  // Actual metadata transferred here will be lost.
+  DCHECK(!data.size());
 }
 
 String Resource::ReasonNotDeletable() const {

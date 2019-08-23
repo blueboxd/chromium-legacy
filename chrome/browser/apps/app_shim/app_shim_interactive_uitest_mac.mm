@@ -83,7 +83,8 @@ class WindowedAppShimLaunchObserver : public apps::AppShimHandler {
 
   void StartObserving() {
     observed_ = false;
-    apps::AppShimHandler::RegisterHandler(app_mode_id_, this);
+    default_app_shim_handler_ = apps::AppShimHandler::Get();
+    apps::AppShimHandler::Set(this);
   }
 
   void Wait() {
@@ -100,19 +101,17 @@ class WindowedAppShimLaunchObserver : public apps::AppShimHandler {
       bool recreate_shims,
       apps::ShimLaunchedCallback launch_callback,
       apps::ShimTerminatedCallback terminated_callback) override {
-    apps::AppShimHandler::RemoveHandler(app_mode_id_);
-    apps::AppShimHandler::GetForAppMode(app_mode_id_)
-        ->OnShimLaunchRequested(host, recreate_shims,
-                                std::move(launch_callback),
-                                std::move(terminated_callback));
-    apps::AppShimHandler::RegisterHandler(app_mode_id_, this);
+    apps::AppShimHandler::Set(default_app_shim_handler_);
+    apps::AppShimHandler::Get()->OnShimLaunchRequested(
+        host, recreate_shims, std::move(launch_callback),
+        std::move(terminated_callback));
+    apps::AppShimHandler::Set(this);
   }
   void OnShimProcessConnected(
       std::unique_ptr<AppShimHostBootstrap> bootstrap) override {
     // Remove self and pass through to the default handler.
-    apps::AppShimHandler::RemoveHandler(app_mode_id_);
-    apps::AppShimHandler::GetForAppMode(app_mode_id_)
-        ->OnShimProcessConnected(std::move(bootstrap));
+    apps::AppShimHandler::Set(default_app_shim_handler_);
+    apps::AppShimHandler::Get()->OnShimProcessConnected(std::move(bootstrap));
     observed_ = true;
     if (run_loop_.get())
       run_loop_->Quit();
@@ -124,8 +123,8 @@ class WindowedAppShimLaunchObserver : public apps::AppShimHandler {
   void OnShimSetHidden(AppShimHost* host, bool hidden) override {}
   void OnShimQuit(AppShimHost* host) override {
     // Remove self and pass through to the default handler.
-    apps::AppShimHandler::RemoveHandler(app_mode_id_);
-    apps::AppShimHandler::GetForAppMode(app_mode_id_)->OnShimQuit(host);
+    apps::AppShimHandler::Set(default_app_shim_handler_);
+    apps::AppShimHandler::Get()->OnShimQuit(host);
     observed_ = true;
     if (run_loop_.get())
       run_loop_->Quit();
@@ -135,6 +134,7 @@ class WindowedAppShimLaunchObserver : public apps::AppShimHandler {
   std::string app_mode_id_;
   bool observed_;
   std::unique_ptr<base::RunLoop> run_loop_;
+  apps::AppShimHandler* default_app_shim_handler_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(WindowedAppShimLaunchObserver);
 };

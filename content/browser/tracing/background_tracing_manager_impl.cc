@@ -133,9 +133,12 @@ bool BackgroundTracingManagerImpl::SetActiveScenario(
     data_filtering = DataFiltering::ANONYMIZE_DATA;
     RecordMetric(Metrics::STARTUP_SCENARIO_TRIGGERED);
   } else {
-    // If startup config was not set and tracing was enabled, then do not set
-    // any scenario.
-    if (base::trace_event::TraceLog::GetInstance()->IsEnabled()) {
+    // If startup config was not set and we're not a SYSTEM scenario (system
+    // might already have started a trace in the background) but tracing was
+    // enabled, then do not set any scenario.
+    if (base::trace_event::TraceLog::GetInstance()->IsEnabled() &&
+        config_impl &&
+        config_impl->tracing_mode() != BackgroundTracingConfigImpl::SYSTEM) {
       return false;
     }
   }

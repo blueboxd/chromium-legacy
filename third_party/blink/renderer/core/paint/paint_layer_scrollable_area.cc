@@ -1188,6 +1188,10 @@ void PaintLayerScrollableArea::UpdateAfterStyleChange(
   ComputeScrollbarExistence(needs_horizontal_scrollbar,
                             needs_vertical_scrollbar, kForbidAddingAutoBars);
 
+  if (!RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled())
+    UpdateResizerAreaSet();
+  UpdateResizerStyle(old_style);
+
   // Avoid some unnecessary computation if there were and will be no scrollbars.
   if (!HasScrollbar() && !needs_horizontal_scrollbar &&
       !needs_vertical_scrollbar)
@@ -1228,9 +1232,6 @@ void PaintLayerScrollableArea::UpdateAfterStyleChange(
     VerticalScrollbar()->StyleChanged();
 
   UpdateScrollCornerStyle();
-  if (!RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled())
-    UpdateResizerAreaSet();
-  UpdateResizerStyle(old_style);
 }
 
 void PaintLayerScrollableArea::UpdateAfterOverflowRecalc() {
@@ -1647,7 +1648,7 @@ void PaintLayerScrollableArea::SnapAfterScrollbarScrolling(
 }
 
 void PaintLayerScrollableArea::PositionOverflowControls() {
-  if (!HasScrollbar() && !GetLayoutBox()->CanResize())
+  if (!HasOverflowControls() && !GetLayoutBox()->CanResize())
     return;
 
   const IntRect border_box =

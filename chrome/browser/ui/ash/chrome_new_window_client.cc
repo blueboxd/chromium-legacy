@@ -309,7 +309,8 @@ void ChromeNewWindowClient::RestoreTab() {
   if (service->IsLoaded()) {
     RestoreTabUsingProfile(profile);
   } else {
-    tab_restore_helper_.reset(new TabRestoreHelper(this, profile, service));
+    tab_restore_helper_ =
+        std::make_unique<TabRestoreHelper>(this, profile, service);
     service->LoadTabsFromLastSession();
   }
 }

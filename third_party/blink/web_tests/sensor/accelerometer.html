@@ -13,20 +13,27 @@
 if (!window.testRunner)
     debug('This test cannot be run without the TestRunner');
 
-const kDefaultReading = [1.12345, 2.12345, 3.12345];
-const kMappedReading = [-2.12345, 1.12345, 3.12345];
+const kReadings = {
+    readings: [
+        [1.12345, 2.12345, 3.12345]
+    ],
+    expectedReadings: [
+        [1.12345, 2.12345, 3.12345]
+    ],
+    expectedRemappedReadings: [
+        [-2.12345, 1.12345, 3.12345]
+    ]
+}
 
 runGenericSensorTests(
     Accelerometer,
-    kDefaultReading,
-    verifyXyzSensorReading.bind(null, kDefaultReading),
-    verifyXyzSensorReading.bind(null, kMappedReading),
+    kReadings,
+    verifyXyzSensorReading,
     ['accelerometer']);
 
 runGenericSensorTests(
     LinearAccelerationSensor,
-    kDefaultReading,
-    verifyXyzSensorReading.bind(null, kDefaultReading),
-    verifyXyzSensorReading.bind(null, kMappedReading),
+    kReadings,
+    verifyXyzSensorReading,
     ['accelerometer']);
 </script>

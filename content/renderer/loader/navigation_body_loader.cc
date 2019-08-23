@@ -196,10 +196,10 @@ void NavigationBodyLoader::StartLoadingBody(
 }
 
 void NavigationBodyLoader::CodeCacheReceived(base::Time response_time,
-                                             base::span<const uint8_t> data) {
+                                             mojo_base::BigBuffer data) {
   if (response_head_.response_time == response_time && client_) {
     base::WeakPtr<NavigationBodyLoader> weak_self = weak_factory_.GetWeakPtr();
-    client_->BodyCodeCacheReceived(data);
+    client_->BodyCodeCacheReceived(std::move(data));
     if (!weak_self)
       return;
   }

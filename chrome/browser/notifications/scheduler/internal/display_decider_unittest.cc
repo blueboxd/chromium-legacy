@@ -15,15 +15,12 @@
 #include "chrome/browser/notifications/scheduler/internal/notification_entry.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduler_config.h"
 #include "chrome/browser/notifications/scheduler/public/notification_scheduler_types.h"
+#include "chrome/browser/notifications/scheduler/test/fake_clock.h"
 #include "chrome/browser/notifications/scheduler/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace notifications {
 namespace {
-
-// Default suppression info used in this test.
-const SuppressionInfo kSuppressionInfo =
-    SuppressionInfo(base::Time::Now(), base::TimeDelta::FromDays(56));
 
 // Initial state for test cases with a single registered client.
 const std::vector<test::ImpressionTestData> kSingleClientImpressionTestData = {
@@ -42,9 +39,9 @@ const std::vector<test::ImpressionTestData> kClientsImpressionTestData = {
      {},
      base::nullopt /* suppression_info */},
     {SchedulerClientType::kTest3,
-     0 /* current_max_daily_show */,
+     1 /* current_max_daily_show */,
      {},
-     kSuppressionInfo}};
+     base::nullopt /* suppression_info */}};
 
 struct TestData {
   // Impression data as the input.
@@ -52,9 +49,6 @@ struct TestData {
 
   // Notification entries as the input.
   std::vector<NotificationEntry> notification_entries;
-
-  // The type of current background task.
-  SchedulerTaskTime task_start_time = SchedulerTaskTime::kUnknown;
 
   // Expected output data.
   DisplayDecider::Results expected;
@@ -68,7 +62,6 @@ std::string DebugString(const DisplayDecider::Results& results) {
   return debug_string;
 }
 
-// TODO(xingliu): Add more test cases.
 class DisplayDeciderTest : public testing::Test {
  public:
   DisplayDeciderTest() = default;
@@ -77,6 +70,11 @@ class DisplayDeciderTest : public testing::Test {
   void SetUp() override {
     // Setup configuration used by this test.
     config_.max_daily_shown_all_type = 3;
+
+    // Fake Now() timestamp.
+    base::Time fake_now;
+    ASSERT_TRUE(base::Time::FromString("04/25/20 01:00:00 AM", &fake_now));
+    clock_.SetNow(fake_now);
   }
 
  protected:
@@ -99,11 +97,9 @@ class DisplayDeciderTest : public testing::Test {
     }
 
     // Copy test inputs into |decider_|.
-    decider_ =
-        DisplayDecider::Create(&config_, clients, DistributionPolicy::Create());
-    decider_->FindNotificationsToShow(
-        test_data_.task_start_time, std::move(notifications),
-        std::move(client_states), &results_);
+    decider_ = DisplayDecider::Create(&config_, clients, &clock_);
+    decider_->FindNotificationsToShow(std::move(notifications),
+                                      std::move(client_states), &results_);
 
     // Verify output.
     EXPECT_EQ(results_, test_data_.expected)
@@ -112,11 +108,41 @@ class DisplayDeciderTest : public testing::Test {
         << DebugString(test_data_.expected);
   }
 
+  // Creates a notification entry. Now() timestamp falls into its deliver time
+  // window.
+  NotificationEntry CreateNotification(SchedulerClientType type,
+                                       const std::string& guid) {
+    return CreateNotification(type, guid, base::TimeDelta(),
+                              base::TimeDelta::FromHours(1));
+  }
+
+  // Creates a notification entry with specific deliver time window.
+  NotificationEntry CreateNotification(
+      SchedulerClientType type,
+      const std::string& guid,
+      base::Optional<base::TimeDelta> deliver_time_start_delta,
+      base::Optional<base::TimeDelta> deliver_time_end_delta) {
+    NotificationEntry entry(type, guid);
+    if (deliver_time_start_delta.has_value())
+      entry.schedule_params.deliver_time_start =
+          Now() + deliver_time_start_delta.value();
+    if (deliver_time_end_delta.has_value())
+      entry.schedule_params.deliver_time_end =
+          Now() + deliver_time_end_delta.value();
+
+    return entry;
+  }
+
+  SchedulerConfig* config() { return &config_; }
+
+  base::Time Now() { return clock_.Now(); }
+
  private:
   base::test::TaskEnvironment task_environment_;
 
   TestData test_data_;
   SchedulerConfig config_;
+  test::FakeClock clock_;
 
   std::map<SchedulerClientType, std::unique_ptr<ClientState>> client_states_;
 
@@ -130,19 +156,103 @@ class DisplayDeciderTest : public testing::Test {
 TEST_F(DisplayDeciderTest, NoNotification) {
   TestData data{kClientsImpressionTestData,
                 {},
-                SchedulerTaskTime::kEvening,
                 DisplayDecider::Results()};
   RunTestCase(data);
 }
 
 // Simple test case to verify new notifcaiton can be selected to show.
-TEST_F(DisplayDeciderTest, PickNewMorning) {
-  NotificationEntry entry(SchedulerClientType::kTest1, "guid123");
+TEST_F(DisplayDeciderTest, PickOneNotification) {
+  auto entry = CreateNotification(SchedulerClientType::kTest1, "guid123");
   DisplayDecider::Results expected = {"guid123"};
+
+  TestData data{kSingleClientImpressionTestData, {entry}, std::move(expected)};
+  RunTestCase(data);
+}
+
+// Notification falls out of the target deliver time window will not be picked.
+TEST_F(DisplayDeciderTest, OutOfDeliverTimeWindow) {
+  auto entry0 = CreateNotification(SchedulerClientType::kTest2, "guid0",
+                                   base::TimeDelta::FromDays(1),
+                                   base::TimeDelta::FromDays(2));
+  auto entry1 =
+      CreateNotification(SchedulerClientType::kTest2, "guid1",
+                         base::TimeDelta() - base::TimeDelta::FromDays(2),
+                         base::TimeDelta() - base::TimeDelta::FromDays(1));
+  auto entry2 = CreateNotification(SchedulerClientType::kTest2, "guid2",
+                                   base::nullopt, base::nullopt);
+
   TestData data{kSingleClientImpressionTestData,
-                {entry},
-                SchedulerTaskTime::kMorning,
-                std::move(expected)};
+                {entry0, entry1, entry2},
+                DisplayDecider::Results()};
+  RunTestCase(data);
+}
+
+// Picks a notification for the next client if possible.
+// Rotation client type sequence:  kTest3 => kTest2 => kTest1
+// The last shown type is kTest1. Expected to show for client kTest3.
+TEST_F(DisplayDeciderTest, ClientRotation) {
+  config()->max_daily_shown_all_type = 2;
+  auto impression_test_data = kClientsImpressionTestData;
+
+  auto entry1 = CreateNotification(SchedulerClientType::kTest1, "guid1");
+
+  // Create an impression shown today.
+  Impression impression(SchedulerClientType::kTest1, "shown_guid1",
+                        Now() - base::TimeDelta::FromHours(1));
+  impression_test_data.front().impressions.emplace_back(impression);
+
+  auto entry2 = CreateNotification(SchedulerClientType::kTest2, "guid2");
+  auto entry3 = CreateNotification(SchedulerClientType::kTest3, "guid3");
+
+  TestData data{impression_test_data, {entry1, entry2, entry3}, {"guid3"}};
+  RunTestCase(data);
+}
+
+// After reaching maximum daily shown throttle, no notifications will be picked.
+TEST_F(DisplayDeciderTest, ThrottleMaxDailyShowAllTypes) {
+  auto impression_test_data = kClientsImpressionTestData;
+
+  auto entry1 = CreateNotification(SchedulerClientType::kTest1, "guid1");
+
+  // Create an impression shown today, but only allow to show one per day for
+  // all clients.
+  Impression impression(SchedulerClientType::kTest1, "shown_guid1",
+                        Now() - base::TimeDelta::FromHours(1));
+  impression_test_data.front().impressions.emplace_back(impression);
+  config()->max_daily_shown_all_type = 1;
+
+  TestData data{impression_test_data, {entry1}, DisplayDecider::Results()};
+  RunTestCase(data);
+}
+
+// After reaching client's maximum daily shown throttle, notifications scheduled
+// for this client will not be show.
+TEST_F(DisplayDeciderTest, ThrottlePerClient) {
+  config()->max_daily_shown_all_type = 10;
+  auto impression_test_data = kClientsImpressionTestData;
+
+  // Have 2 notifications, but only one can be shown due to per client throttle.
+  impression_test_data.front().current_max_daily_show = 2;
+  auto entry1 = CreateNotification(SchedulerClientType::kTest1, "guid1");
+  auto entry2 = CreateNotification(SchedulerClientType::kTest1, "guid2");
+
+  // Create an impression shown today.
+  Impression impression(SchedulerClientType::kTest1, "shown_guid1",
+                        Now() - base::TimeDelta::FromHours(1));
+  impression_test_data.front().impressions.emplace_back(impression);
+
+  TestData data{impression_test_data, {entry1, entry2}, {"guid2"}};
+  RunTestCase(data);
+}
+
+// Client with suppression will not have notification shown.
+TEST_F(DisplayDeciderTest, ThrottleSuppressedClient) {
+  auto impression_test_data = kClientsImpressionTestData;
+  impression_test_data.front().suppression_info =
+      SuppressionInfo(Now(), base::TimeDelta::FromDays(10));
+  auto entry1 = CreateNotification(SchedulerClientType::kTest1, "guid1");
+
+  TestData data{impression_test_data, {entry1}, DisplayDecider::Results()};
   RunTestCase(data);
 }
 

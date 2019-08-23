@@ -265,8 +265,8 @@ void DataReductionProxyService::SetProxyPrefs(bool enabled, bool at_startup) {
 
   // If Data Saver is disabled, reset data reduction proxy state.
   if (!enabled) {
-    if (proxy_config_client_)
-      proxy_config_client_->ClearBadProxiesCache();
+    for (auto& client : proxy_config_clients_)
+      client->ClearBadProxiesCache();
   }
 }
 
@@ -319,9 +319,9 @@ void DataReductionProxyService::SetIgnoreLongTermBlackListRules(
   settings_->SetIgnoreLongTermBlackListRules(ignore_long_term_black_list_rules);
 }
 
-void DataReductionProxyService::SetCustomProxyConfigClient(
-    network::mojom::CustomProxyConfigClientPtrInfo config_client_info) {
-  proxy_config_client_.Bind(std::move(config_client_info));
+void DataReductionProxyService::AddCustomProxyConfigClient(
+    mojo::Remote<network::mojom::CustomProxyConfigClient> config_client) {
+  proxy_config_clients_.Add(std::move(config_client));
   UpdateCustomProxyConfig();
 }
 
@@ -430,8 +430,8 @@ void DataReductionProxyService::MarkProxiesAsBad(
     }
   }
 
-  proxy_config_client_->MarkProxiesAsBad(bypass_duration, bad_proxies,
-                                         std::move(callback));
+  for (auto& client : proxy_config_clients_)
+    client->MarkProxiesAsBad(bypass_duration, bad_proxies, std::move(callback));
 }
 
 void DataReductionProxyService::AddThrottleConfigObserver(
@@ -446,13 +446,12 @@ void DataReductionProxyService::Clone(
 }
 
 void DataReductionProxyService::UpdateCustomProxyConfig() {
-  if (!proxy_config_client_)
-    return;
-
-  proxy_config_client_->OnCustomProxyConfigUpdated(CreateCustomProxyConfig(
+  network::mojom::CustomProxyConfigPtr config = CreateCustomProxyConfig(
       !base::FeatureList::IsEnabled(
           features::kDataReductionProxyDisableProxyFailedWarmup),
-      config_->GetProxiesForHttp()));
+      config_->GetProxiesForHttp());
+  for (auto& client : proxy_config_clients_)
+    client->OnCustomProxyConfigUpdated(config->Clone());
 }
 
 void DataReductionProxyService::UpdateThrottleConfig() {

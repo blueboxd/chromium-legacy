@@ -508,9 +508,9 @@ PageInfoBubbleView::PageInfoBubbleView(
   // before PageInfo updates trigger child layouts.
   SetSize(GetPreferredSize());
 
-  presenter_.reset(new PageInfo(
+  presenter_ = std::make_unique<PageInfo>(
       this, profile, TabSpecificContentSettings::FromWebContents(web_contents),
-      web_contents, url, security_level, visible_security_state));
+      web_contents, url, security_level, visible_security_state);
 }
 
 void PageInfoBubbleView::WebContentsDestroyed() {

@@ -263,6 +263,10 @@ bool ContentBrowserClient::ForceSniffingFileUrlsForHtml() {
   return false;
 }
 
+std::string ContentBrowserClient::GetApplicationClientGUIDForQuarantineCheck() {
+  return std::string();
+}
+
 std::string ContentBrowserClient::GetApplicationLocale() {
   return "en-US";
 }

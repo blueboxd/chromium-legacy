@@ -30,11 +30,11 @@ function clickAddAutomaticButton(printerEntry) {
  * @param {!HTMLElement} printerEntry
  * @private
  */
-function clickConfigureButton(printerEntry) {
-  // Click on configure button on an item entry.
-  const configureButton = printerEntry.$$('.action-button');
-  assertTrue(!!configureButton);
-  configureButton.click();
+function clickSetupButton(printerEntry) {
+  // Click on setup button on an item entry.
+  const setupButton = printerEntry.$$('#setupPrinterButton');
+  assertTrue(!!setupButton);
+  setupButton.click();
   Polymer.dom.flush();
 }
 
@@ -576,11 +576,11 @@ suite('CupsNearbyPrintersTests', function() {
           // the correct icon button.
           nearbyPrinterEntries = getPrinterEntries(nearbyPrintersElement);
           assertEquals(1, nearbyPrinterEntries.length);
-          assertTrue(!!nearbyPrinterEntries[0].$$('.action-button'));
+          assertTrue(!!nearbyPrinterEntries[0].$$('#setupPrinterButton'));
 
-          // Assert that clicking on the configure button shows the advanced
+          // Assert that clicking on the setup button shows the advanced
           // configuration dialog.
-          clickConfigureButton(nearbyPrinterEntries[0]);
+          clickSetupButton(nearbyPrinterEntries[0]);
 
           Polymer.dom.flush();
 

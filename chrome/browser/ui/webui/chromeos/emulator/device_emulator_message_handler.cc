@@ -552,9 +552,9 @@ void DeviceEmulatorMessageHandler::RegisterMessages() {
 }
 
 void DeviceEmulatorMessageHandler::OnJavascriptAllowed() {
-  bluetooth_observer_.reset(new BluetoothObserver(this));
-  cras_audio_observer_.reset(new CrasAudioObserver(this));
-  power_observer_.reset(new PowerObserver(this));
+  bluetooth_observer_ = std::make_unique<BluetoothObserver>(this);
+  cras_audio_observer_ = std::make_unique<CrasAudioObserver>(this);
+  power_observer_ = std::make_unique<PowerObserver>(this);
 
   system::InputDeviceSettings::Get()->TouchpadExists(
       base::BindOnce(&DeviceEmulatorMessageHandler::TouchpadExists,

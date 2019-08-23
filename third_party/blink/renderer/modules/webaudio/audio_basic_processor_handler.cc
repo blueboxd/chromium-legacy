@@ -111,12 +111,7 @@ void AudioBasicProcessorHandler::CheckNumberOfChannelsForInput(
   Context()->AssertGraphOwner();
 
   DCHECK_EQ(input, &this->Input(0));
-  if (input != &this->Input(0))
-    return;
-
   DCHECK(Processor());
-  if (!Processor())
-    return;
 
   unsigned number_of_channels = input->NumberOfChannels();
 

@@ -43,9 +43,9 @@ class PreviewsDecider {
                                    PreviewsType type) const = 0;
 
   // Requests that any applicable detailed page hints be loaded. Returns
-  // whether client knows that it has hints for the host of |url| (that may
-  // need to be loaded from persistent storage).
-  virtual bool LoadPageHints(const GURL& url) = 0;
+  // whether client knows that it has hints for the host of the URL for
+  // |navigation_handle| (that may need to be loaded from persistent storage).
+  virtual bool LoadPageHints(content::NavigationHandle* navigation_handle) = 0;
 
   // Whether |url| has loaded resource loading hints and, if it does, populates
   // |out_resource_patterns_to_block| with the resource patterns to block.

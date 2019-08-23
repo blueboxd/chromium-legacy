@@ -214,9 +214,9 @@ ui::MenuModel* ExtensionActionViewController::GetContextMenu() {
   }
 
   // Reconstruct the menu every time because the menu's contents are dynamic.
-  context_menu_model_.reset(new extensions::ExtensionContextMenuModel(
+  context_menu_model_ = std::make_unique<extensions::ExtensionContextMenuModel>(
       extension(), browser_, visibility, this,
-      view_delegate_->CanShowIconInToolbar()));
+      view_delegate_->CanShowIconInToolbar());
   return context_menu_model_.get();
 }
 
@@ -434,10 +434,9 @@ ExtensionActionViewController::GetIconImageSource(
   std::unique_ptr<IconWithBadgeImageSource::Badge> badge;
   std::string badge_text = extension_action_->GetDisplayBadgeText(tab_id);
   if (!badge_text.empty()) {
-    badge.reset(new IconWithBadgeImageSource::Badge(
-            badge_text,
-            extension_action_->GetBadgeTextColor(tab_id),
-            extension_action_->GetBadgeBackgroundColor(tab_id)));
+    badge = std::make_unique<IconWithBadgeImageSource::Badge>(
+        badge_text, extension_action_->GetBadgeTextColor(tab_id),
+        extension_action_->GetBadgeBackgroundColor(tab_id));
   }
   image_source->SetBadge(std::move(badge));
 

@@ -280,6 +280,10 @@ ScriptPromise SerialPort::setSignals(ScriptState* script_state,
     mojo_signals->has_rts = true;
     mojo_signals->rts = signals->rts();
   }
+  if (signals->hasBrk()) {
+    mojo_signals->has_brk = true;
+    mojo_signals->brk = signals->brk();
+  }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   signal_resolvers_.insert(resolver);

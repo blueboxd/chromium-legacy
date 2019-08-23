@@ -34,8 +34,9 @@
 #include "content/public/common/network_service_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
-#include "net/cert/test_root_certs.h"
+#include "content/public/test/content_mock_cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/cert_test_util.h"
 #include "net/test/quic_simple_test_server.h"
 #include "net/test/test_data_directory.h"
 #include "services/network/public/cpp/features.h"
@@ -90,15 +91,37 @@ class QuicTestBase : public InProcessBrowserTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kOriginToForceQuicOn, "*");
+    mock_cert_verifier_.SetUpCommandLine(command_line);
   }
 
   void SetUpOnMainThread() override {
-    net::TestRootCerts* root_certs = net::TestRootCerts::GetInstance();
-    root_certs->AddFromFile(
-        net::GetTestCertsDirectory().AppendASCII("quic-root.pem"));
+    ConfigureMockCertVerifier();
     net::QuicSimpleTestServer::Start();
     host_resolver()->AddRule("*", "127.0.0.1");
   }
+
+ protected:
+  void ConfigureMockCertVerifier() {
+    auto test_cert =
+        net::ImportCertFromFile(net::GetTestCertsDirectory(), "quic-chain.pem");
+    net::CertVerifyResult verify_result;
+    verify_result.verified_cert = test_cert;
+    verify_result.is_issued_by_known_root = true;
+    mock_cert_verifier_.mock_cert_verifier()->AddResultForCert(
+        test_cert, verify_result, net::OK);
+    mock_cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    mock_cert_verifier_.SetUpInProcessBrowserTestFixture();
+  }
+
+  void TearDownInProcessBrowserTestFixture() override {
+    mock_cert_verifier_.TearDownInProcessBrowserTestFixture();
+  }
+
+ private:
+  content::ContentMockCertVerifier mock_cert_verifier_;
 };
 
 // The tests are based on the assumption that command line flag kEnableQuic
@@ -110,6 +133,7 @@ class QuicAllowedPolicyTestBase : public QuicTestBase {
 
  protected:
   void SetUpInProcessBrowserTestFixture() override {
+    QuicTestBase::SetUpInProcessBrowserTestFixture();
     base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnableQuic);
     EXPECT_CALL(provider_, IsInitializationComplete(testing::_))
         .WillRepeatedly(testing::Return(true));
@@ -132,6 +156,7 @@ class QuicAllowedPolicyTestBase : public QuicTestBase {
       net::QuicSimpleTestServer::Shutdown();
     }
     SimulateNetworkServiceCrash();
+    ConfigureMockCertVerifier();
     ASSERT_TRUE(net::QuicSimpleTestServer::Start());
   }
 

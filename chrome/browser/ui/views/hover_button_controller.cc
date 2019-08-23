@@ -65,7 +65,11 @@ void HoverButtonController::OnMouseReleased(const ui::MouseEvent& event) {
 }
 
 void HoverButtonController::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() == ui::ET_GESTURE_TAP && listener_) {
-    listener_->ButtonPressed(button(), *event);
+  if (event->type() == ui::ET_GESTURE_TAP) {
+    if (listener_)
+      listener_->ButtonPressed(button(), *event);
+    button()->SetState(views::Button::STATE_NORMAL);
+  } else {
+    ButtonController::OnGestureEvent(event);
   }
 }

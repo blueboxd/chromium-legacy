@@ -53,9 +53,9 @@ void SnippetsInternalsUI::CreatePageHandler(
     CreatePageHandlerCallback callback) {
   DCHECK(page);
   snippets_internals::mojom::PageHandlerPtr handler;
-  page_handler_.reset(new SnippetsInternalsPageHandler(
+  page_handler_ = std::make_unique<SnippetsInternalsPageHandler>(
       mojo::MakeRequest(&handler), std::move(page),
-      content_suggestions_service_, pref_service_));
+      content_suggestions_service_, pref_service_);
 
   std::move(callback).Run(std::move(handler));
 }

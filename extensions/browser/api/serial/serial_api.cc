@@ -473,7 +473,7 @@ void SerialSetControlSignalsFunction::AsyncWorkStart() {
   }
 
   connection->SetControlSignals(
-      params_->signals,
+      device::mojom::SerialHostControlSignals::From(params_->signals),
       base::BindOnce(&SerialSetControlSignalsFunction::OnSetControlSignals,
                      this));
 }
@@ -503,7 +503,11 @@ void SerialSetBreakFunction::AsyncWorkStart() {
     AsyncWorkCompleted();
     return;
   }
-  connection->SetBreak(
+  auto signals = device::mojom::SerialHostControlSignals::New();
+  signals->has_brk = true;
+  signals->brk = true;
+  connection->SetControlSignals(
+      std::move(signals),
       base::BindOnce(&SerialSetBreakFunction::OnSetBreak, this));
 }
 
@@ -532,7 +536,11 @@ void SerialClearBreakFunction::AsyncWorkStart() {
     AsyncWorkCompleted();
     return;
   }
-  connection->ClearBreak(
+  auto signals = device::mojom::SerialHostControlSignals::New();
+  signals->has_brk = true;
+  signals->brk = false;
+  connection->SetControlSignals(
+      std::move(signals),
       base::BindOnce(&SerialClearBreakFunction::OnClearBreak, this));
 }
 

@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "chrome/browser/notifications/scheduler/internal/distribution_policy.h"
+#include "base/time/clock.h"
 #include "chrome/browser/notifications/scheduler/internal/impression_types.h"
 #include "chrome/browser/notifications/scheduler/internal/notification_entry.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduler_config.h"
@@ -25,17 +25,14 @@ class DecisionHelper {
  public:
   DecisionHelper(const SchedulerConfig* config,
                  const std::vector<SchedulerClientType>& clients,
-                 DistributionPolicy* distribution_policy,
-                 SchedulerTaskTime task_start_time,
+                 base::Clock* clock,
                  Notifications notifications,
                  ClientStates client_states)
       : notifications_(std::move(notifications)),
-        current_task_start_time_(task_start_time),
         client_states_(std::move(client_states)),
         config_(config),
         clients_(clients),
-        policy_(distribution_policy),
-        daily_max_to_show_all_types_(0),
+        clock_(clock),
         last_shown_type_(SchedulerClientType::kUnknown),
         shown_(0) {}
 
@@ -43,36 +40,56 @@ class DecisionHelper {
 
   // Figures out a list of notifications to show.
   void DecideNotificationToShow(Results* results) {
-    ComputeDailyQuotaAllTypes();
-    CountNotificationsShownToday();
+    NotificationsShownToday(client_states_, &shown_per_type_, &shown_,
+                            &last_shown_type_, clock_);
+    FilterNotifications();
     PickNotificationToShow(results);
   }
 
  private:
-  void ComputeDailyQuotaAllTypes() {
-    // Only background task launch needs to comply to |policy_|.
-    if (current_task_start_time_ == SchedulerTaskTime::kUnknown) {
-      daily_max_to_show_all_types_ = config_->max_daily_shown_all_type;
-      return;
+  // Filter notifications based on scheduling parameters.
+  void FilterNotifications() {
+    Notifications filtered_notifications;
+    for (const auto& pair : notifications_) {
+      // Client under suppression will not have notification to show.
+      auto it = client_states_.find(pair.first);
+      if (it != client_states_.end() &&
+          it->second->suppression_info.has_value()) {
+        continue;
+      }
+
+      for (const auto* notification : pair.second) {
+        DCHECK(notification);
+        if (!ShouldFilterOut(notification))
+          filtered_notifications[notification->type].emplace_back(notification);
+        // TODO(xingliu): Filter with priority. Consider to delete notification
+        // with expired scheduling time stamp.
+      }
     }
 
-    int quota = std::max(config_->max_daily_shown_all_type - shown_, 0);
-    DCHECK(policy_);
-    daily_max_to_show_all_types_ =
-        std::min(config_->max_daily_shown_all_type,
-                 policy_->MaxToShow(current_task_start_time_, quota));
+    notifications_.swap(filtered_notifications);
   }
 
-  void CountNotificationsShownToday() {
-    for (const auto& pair : client_states_) {
-      auto type = pair.first;
-      // TODO(xingliu): Ensure deprecated clients will not have data in storage.
-      DCHECK(std::find(clients_.begin(), clients_.end(), type) !=
-             clients_.end());
+  bool ShouldFilterOut(const NotificationEntry* entry) {
+    base::Time now = clock_->Now();
+    // Filter with time window. Must have |deliver_time_start|.
+    // TODO(xingliu): Delete notifications when scheduling params is invalid.
+    // See https://crbug.com/996016.
+    if (!entry->schedule_params.deliver_time_start.has_value())
+      return true;
+    bool meet_deliver_time_start =
+        now >= entry->schedule_params.deliver_time_start.value();
+
+    DCHECK(entry->schedule_params.deliver_time_end.has_value());
+    bool meet_deliver_time_end =
+        entry->schedule_params.deliver_time_end.has_value()
+            ? now <= entry->schedule_params.deliver_time_end.value()
+            : false;
+    if (meet_deliver_time_start && meet_deliver_time_end) {
+      return false;
     }
 
-    NotificationsShownToday(client_states_, &shown_per_type_, &shown_,
-                            &last_shown_type_);
+    return true;
   }
 
   // Picks a list of notifications to show.
@@ -136,18 +153,16 @@ class DecisionHelper {
   }
 
   bool ReachDailyQuota() const {
-    return shown_ >= daily_max_to_show_all_types_;
+    return shown_ >= config_->max_daily_shown_all_type;
   }
 
   // Scheduled notifications as candidates to display to the user.
   Notifications notifications_;
 
-  const SchedulerTaskTime current_task_start_time_;
   const ClientStates client_states_;
   const SchedulerConfig* config_;
   const std::vector<SchedulerClientType> clients_;
-  DistributionPolicy* policy_;
-  int daily_max_to_show_all_types_;
+  base::Clock* clock_;
 
   SchedulerClientType last_shown_type_;
   std::map<SchedulerClientType, int> shown_per_type_;
@@ -160,28 +175,25 @@ class DisplayDeciderImpl : public DisplayDecider {
  public:
   DisplayDeciderImpl(const SchedulerConfig* config,
                      std::vector<SchedulerClientType> clients,
-                     std::unique_ptr<DistributionPolicy> distribution_policy)
-      : config_(config),
-        clients_(std::move(clients)),
-        distribution_policy_(std::move(distribution_policy)) {}
+                     base::Clock* clock)
+      : config_(config), clients_(std::move(clients)), clock_(clock) {}
   ~DisplayDeciderImpl() override = default;
 
  private:
   // DisplayDecider implementation.
   void FindNotificationsToShow(
-      SchedulerTaskTime task_start_time,
       Notifications notifications,
       ClientStates client_states,
       Results* results) override {
-    auto helper = std::make_unique<DecisionHelper>(
-        config_, clients_, distribution_policy_.get(), task_start_time,
-        std::move(notifications), std::move(client_states));
+    auto helper = std::make_unique<DecisionHelper>(config_, clients_, clock_,
+                                                   std::move(notifications),
+                                                   std::move(client_states));
     helper->DecideNotificationToShow(results);
   }
 
   const SchedulerConfig* config_;
   const std::vector<SchedulerClientType> clients_;
-  std::unique_ptr<DistributionPolicy> distribution_policy_;
+  base::Clock* clock_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayDeciderImpl);
 };
@@ -192,9 +204,9 @@ class DisplayDeciderImpl : public DisplayDecider {
 std::unique_ptr<DisplayDecider> DisplayDecider::Create(
     const SchedulerConfig* config,
     std::vector<SchedulerClientType> clients,
-    std::unique_ptr<DistributionPolicy> distribution_policy) {
+    base::Clock* clock) {
   return std::make_unique<DisplayDeciderImpl>(config, std::move(clients),
-                                              std::move(distribution_policy));
+                                              clock);
 }
 
 }  // namespace notifications

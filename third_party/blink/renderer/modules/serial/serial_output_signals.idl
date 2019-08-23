@@ -9,4 +9,6 @@ dictionary SerialOutputSignals {
   boolean dtr;
   // RTS (Request to Send)
   boolean rts;
+  // BRK (Break)
+  boolean brk;
 };

@@ -4,18 +4,20 @@
 
 #include "device/gamepad/gamepad_device_mac.h"
 
+#import <Foundation/Foundation.h>
+
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/stl_util.h"
+#include "base/strings/sys_string_conversions.h"
 #include "device/gamepad/dualshock4_controller.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
 #include "device/gamepad/hid_haptic_gamepad.h"
 #include "device/gamepad/hid_writer_mac.h"
 
-#import <Foundation/Foundation.h>
+namespace device {
 
 namespace {
-
 // http://www.usb.org/developers/hidpage
 const uint16_t kGenericDesktopUsagePage = 0x01;
 const uint16_t kGameControlsUsagePage = 0x05;
@@ -67,9 +69,22 @@ float NormalizeUInt32Axis(uint32_t value, uint32_t min, uint32_t max) {
   return (2.f * (value - min) / static_cast<float>(max - min)) - 1.f;
 }
 
-}  // namespace
+GamepadBusType QueryBusType(IOHIDDeviceRef device) {
+  CFStringRef transport_cf = base::mac::CFCast<CFStringRef>(
+      IOHIDDeviceGetProperty(device, CFSTR(kIOHIDTransportKey)));
+  if (transport_cf) {
+    std::string transport = base::SysCFStringRefToUTF8(transport_cf);
+    if (transport == kIOHIDTransportUSBValue)
+      return GAMEPAD_BUS_USB;
+    if (transport == kIOHIDTransportBluetoothValue ||
+        transport == kIOHIDTransportBluetoothLowEnergyValue) {
+      return GAMEPAD_BUS_BLUETOOTH;
+    }
+  }
+  return GAMEPAD_BUS_UNKNOWN;
+}
 
-namespace device {
+}  // namespace
 
 GamepadDeviceMac::GamepadDeviceMac(int location_id,
                                    IOHIDDeviceRef device_ref,
@@ -77,11 +92,12 @@ GamepadDeviceMac::GamepadDeviceMac(int location_id,
                                    int product_id)
     : location_id_(location_id),
       device_ref_(device_ref),
+      bus_type_(QueryBusType(device_ref_)),
       ff_device_ref_(nullptr),
       ff_effect_ref_(nullptr) {
   if (Dualshock4Controller::IsDualshock4(vendor_id, product_id)) {
     dualshock4_ = std::make_unique<Dualshock4Controller>(
-        std::make_unique<HidWriterMac>(device_ref));
+        bus_type_, std::make_unique<HidWriterMac>(device_ref));
   } else if (HidHapticGamepad::IsHidHaptic(vendor_id, product_id)) {
     hid_haptics_ = HidHapticGamepad::Create(
         vendor_id, product_id, std::make_unique<HidWriterMac>(device_ref));
@@ -118,7 +134,7 @@ void GamepadDeviceMac::DoShutdown() {
 bool GamepadDeviceMac::CheckCollection(IOHIDElementRef element) {
   // Check that a parent collection of this element matches one of the usage
   // numbers that we are looking for.
-  while ((element = IOHIDElementGetParent(element)) != NULL) {
+  while ((element = IOHIDElementGetParent(element)) != nullptr) {
     uint32_t usage_page = IOHIDElementGetUsagePage(element);
     uint32_t usage = IOHIDElementGetUsage(element);
     if (usage_page == kGenericDesktopUsagePage) {
@@ -300,7 +316,7 @@ bool GamepadDeviceMac::AddAxes(Gamepad* gamepad) {
   // Fetch the logical range and report size for each axis.
   for (size_t axis_index = 0; axis_index < axis_count; ++axis_index) {
     IOHIDElementRef element = axis_elements_[axis_index];
-    if (element != NULL) {
+    if (element != nullptr) {
       CFIndex axis_min = IOHIDElementGetLogicalMin(element);
       CFIndex axis_max = IOHIDElementGetLogicalMax(element);
 
@@ -326,11 +342,19 @@ void GamepadDeviceMac::UpdateGamepadForValue(IOHIDValueRef value,
   DCHECK(gamepad);
   IOHIDElementRef element = IOHIDValueGetElement(value);
   uint32_t value_length = IOHIDValueGetLength(value);
-  if (value_length > 4) {
-    // Workaround for bizarre issue with PS3 controllers that try to return
-    // massive (30+ byte) values and crash IOHIDValueGetIntegerValue
-    return;
+
+  if (dualshock4_) {
+    // Handle Dualshock4 input reports that do not specify HID gamepad usages
+    // in the report descriptor.
+    uint32_t report_id = IOHIDElementGetReportID(element);
+    auto report = base::make_span(IOHIDValueGetBytePtr(value), value_length);
+    if (dualshock4_->ProcessInputReport(report_id, report, gamepad))
+      return;
   }
+
+  // Values larger than 4 bytes cannot be handled by IOHIDValueGetIntegerValue.
+  if (value_length > 4)
+    return;
 
   // Find and fill in the associated button event, if any.
   for (size_t i = 0; i < gamepad->buttons_length; ++i) {

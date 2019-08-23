@@ -172,16 +172,14 @@ void ResourceDispatcher::OnReceivedResponse(
       response_head_copy, request_info->previews_state);
 }
 
-void ResourceDispatcher::OnReceivedCachedMetadata(
-    int request_id,
-    base::span<const uint8_t> data) {
+void ResourceDispatcher::OnReceivedCachedMetadata(int request_id,
+                                                  mojo_base::BigBuffer data) {
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
     return;
 
   if (data.size()) {
-    request_info->peer->OnReceivedCachedMetadata(
-        reinterpret_cast<const char*>(data.data()), data.size());
+    request_info->peer->OnReceivedCachedMetadata(std::move(data));
   }
 }
 

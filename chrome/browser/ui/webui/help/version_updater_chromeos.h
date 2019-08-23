@@ -59,7 +59,8 @@ class VersionUpdaterCros : public VersionUpdater,
 
   // Callback from UpdateEngineClient::GetEolStatus().
   void OnGetEolStatus(EolStatusCallback cb,
-                      update_engine::EndOfLifeStatus status);
+                      update_engine::EndOfLifeStatus status,
+                      base::Optional<int32_t> number_of_milestones);
 
   // BrowserContext in which the class was instantiated.
   content::BrowserContext* context_;

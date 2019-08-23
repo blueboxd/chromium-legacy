@@ -600,7 +600,7 @@ TEST_P(ThreadGroupTest, ScheduleJobTaskSource) {
       job_task->GetJobTaskSource(FROM_HERE, {ThreadPool()});
 
   auto registered_task_source =
-      task_tracker_.WillQueueTaskSource(std::move(task_source));
+      task_tracker_.RegisterTaskSource(std::move(task_source));
   EXPECT_TRUE(registered_task_source);
   thread_group_->PushTaskSourceAndWakeUpWorkers(
       TransactionWithRegisteredTaskSource::FromTaskSource(
@@ -628,7 +628,7 @@ TEST_P(ThreadGroupTest, ScheduleEmptyJobTaskSource) {
       job_task->GetJobTaskSource(FROM_HERE, {ThreadPool()});
 
   auto registered_task_source =
-      task_tracker_.WillQueueTaskSource(std::move(task_source));
+      task_tracker_.RegisterTaskSource(std::move(task_source));
   EXPECT_TRUE(registered_task_source);
   thread_group_->PushTaskSourceAndWakeUpWorkers(
       TransactionWithRegisteredTaskSource::FromTaskSource(
@@ -676,7 +676,7 @@ TEST_P(ThreadGroupTest, JobTaskSourceUpdatePriority) {
   scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
       FROM_HERE, {ThreadPool(), TaskPriority::BEST_EFFORT});
 
-  auto registered_task_source = task_tracker_.WillQueueTaskSource(task_source);
+  auto registered_task_source = task_tracker_.RegisterTaskSource(task_source);
   EXPECT_TRUE(registered_task_source);
   thread_group_->PushTaskSourceAndWakeUpWorkers(
       TransactionWithRegisteredTaskSource::FromTaskSource(
@@ -692,8 +692,7 @@ TEST_P(ThreadGroupTest, JobTaskSourceUpdatePriority) {
   // Update the priority to USER_BLOCKING.
   auto transaction = task_source->BeginTransaction();
   transaction.UpdatePriority(TaskPriority::USER_BLOCKING);
-  thread_group_->UpdateSortKey(
-      {std::move(task_source), std::move(transaction)});
+  thread_group_->UpdateSortKey(std::move(transaction));
 
   // Wait until all posted tasks start running. This should not block forever,
   // even in a thread group that enforces a maximum number of concurrent

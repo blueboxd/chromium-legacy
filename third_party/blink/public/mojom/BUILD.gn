@@ -124,7 +124,6 @@ mojom("mojom_platform") {
     "speech/speech_recognition_result.mojom",
     "speech/speech_recognizer.mojom",
     "ukm/ukm.mojom",
-    "use_counter/css_property_id.mojom",
     "user_agent/user_agent_metadata.mojom",
     "v8_cache_options.mojom",
     "wake_lock/wake_lock.mojom",
@@ -427,6 +426,7 @@ mojom("mojom_mhtml_load_result") {
 # dependencies.
 mojom_component("web_feature_mojo_bindings") {
   sources = [
+    "use_counter/css_property_id.mojom",
     "web_feature/web_feature.mojom",
   ]
 

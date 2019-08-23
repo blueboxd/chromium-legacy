@@ -284,10 +284,10 @@ void SearchEnginesHandler::HandleSearchEngineEditStarted(
     return;
   }
 
-  edit_controller_.reset(new EditSearchEngineController(
+  edit_controller_ = std::make_unique<EditSearchEngineController>(
       index == kNewSearchEngineIndex ? nullptr
                                      : list_controller_.GetTemplateURL(index),
-      this, Profile::FromWebUI(web_ui())));
+      this, Profile::FromWebUI(web_ui()));
 }
 
 void SearchEnginesHandler::OnEditedKeyword(TemplateURL* template_url,

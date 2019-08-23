@@ -23,10 +23,12 @@ class PanelInterface {
   setFocusRing(id, enable) {}
 
   /**
-   * Sets which buttons are enabled/disabled, based on |actions|.
+   * Sets the actions in the menu panel to the actions in |actions| from
+   * the menu with the given |menuId|.
    * @param {!Array<string>} actions
+   * @param {!SAConstants.MenuId} menuId
    */
-  setActions(actions) {}
+  setActions(actions, menuId) {}
 
   /**
    * Clears the current menu from the panel.

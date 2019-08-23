@@ -319,19 +319,22 @@ bool BookmarkCodec::DecodeNode(const base::DictionaryValue& value,
 
   base::string16 title;
   value.GetString(kNameKey, &title);
+
   std::string guid;
-  // GUIDs can be empty for bookmarks that were created before GUIDs were
-  // required. When encountering one such bookmark we thus assign to it a new
-  // GUID. The same applies if the stored GUID is invalid or a duplicate.
-  if (!value.GetString(kGuidKey, &guid) || guid.empty() ||
-      !base::IsValidGUID(guid)
-      // GUID can only already be present in the set if bookmark is of type
-      // BookmarkPermanentNode.
-      || (guids_.count(guid) != 0 && !node)) {
-    guid = base::GenerateGUID();
-    guids_reassigned_ = true;
+  // |node| is only passed in for bookmarks of type BookmarkPermanentNode, in
+  // which case we do not need to check for GUID validity as their GUIDs are
+  // hard-coded and not read from the persisted file.
+  if (!node) {
+    // GUIDs can be empty for bookmarks that were created before GUIDs were
+    // required. When encountering one such bookmark we thus assign to it a new
+    // GUID. The same applies if the stored GUID is invalid or a duplicate.
+    if (!value.GetString(kGuidKey, &guid) || guid.empty() ||
+        !base::IsValidGUID(guid) || guids_.count(guid) != 0) {
+      guid = base::GenerateGUID();
+      guids_reassigned_ = true;
+    }
+    guids_.insert(guid);
   }
-  guids_.insert(guid);
 
   std::string date_added_string;
   if (!value.GetString(kDateAddedKey, &date_added_string))

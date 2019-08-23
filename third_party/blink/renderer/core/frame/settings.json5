@@ -919,13 +919,13 @@
     },
     {
       name: "darkModeTextBrightnessThreshold",
-      initial: "256",
+      initial: "150",
       type: "int",
       invalidate: "Paint",
     },
     {
       name: "darkModeBackgroundBrightnessThreshold",
-      initial: "0",
+      initial: "205",
       type: "int",
       invalidate: "Paint",
     },

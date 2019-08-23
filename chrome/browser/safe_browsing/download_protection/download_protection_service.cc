@@ -19,6 +19,7 @@
 #include "chrome/browser/safe_browsing/download_protection/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_url_sb_client.h"
 #include "chrome/browser/safe_browsing/download_protection/ppapi_download_request.h"
+#include "chrome/browser/safe_browsing/services_delegate.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 #include "chrome/common/url_constants.h"
@@ -463,6 +464,14 @@ bool DownloadProtectionService::MaybeBeginFeedbackForDownload(
     return true;
   }
   return false;
+}
+
+void DownloadProtectionService::UploadForDeepScanning(
+    Profile* profile,
+    std::unique_ptr<BinaryUploadService::Request> request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  sb_service_->GetBinaryUploadService(profile)->UploadForDeepScanning(
+      std::move(request));
 }
 
 }  // namespace safe_browsing

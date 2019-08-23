@@ -13,10 +13,6 @@
 #include "ppapi/c/private/ppb_pdf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_CHROMEOS)
-#include "base/system/sys_info.h"
-#endif
-
 namespace chrome_pdf {
 
 namespace {
@@ -71,10 +67,7 @@ TEST_F(PDFiumPageLinkTest, TestLinkGeneration) {
   ASSERT_TRUE(engine);
   ASSERT_EQ(1, engine->GetNumberOfPages());
 
-  bool is_chromeos = false;
-#if defined(OS_CHROMEOS)
-  is_chromeos = base::SysInfo::IsRunningOnChromeOS();
-#endif
+  bool is_chromeos = IsRunningOnChromeOS();
 
   const std::vector<PDFiumPage::Link>& links = GetLinks(engine.get(), 0);
   ASSERT_EQ(2u, links.size());

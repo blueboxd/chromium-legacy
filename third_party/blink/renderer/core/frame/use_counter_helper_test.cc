@@ -44,8 +44,7 @@ class UseCounterHelperTest : public testing::Test {
   }
 
   int ToSampleId(CSSPropertyID property) const {
-    return UseCounterHelper::MapCSSPropertyIdToCSSSampleIdForHistogram(
-        property);
+    return static_cast<int>(GetCSSSampleId(property));
   }
 
   bool IsInternal(CSSPropertyID property) const {

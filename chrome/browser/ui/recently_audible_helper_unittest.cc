@@ -23,7 +23,8 @@ class RecentlyAudibleHelperTest : public testing::Test {
   ~RecentlyAudibleHelperTest() override {}
 
   void SetUp() override {
-    test_web_contents_factory_.reset(new content::TestWebContentsFactory);
+    test_web_contents_factory_ =
+        std::make_unique<content::TestWebContentsFactory>();
     contents_ =
         test_web_contents_factory_->CreateWebContents(&testing_profile_);
 

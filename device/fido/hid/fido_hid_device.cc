@@ -116,10 +116,12 @@ void FidoHidDevice::Transition(base::Optional<State> next_state) {
     case State::kReady: {
       DCHECK(!pending_transactions_.empty());
 
-      // Only try to wink if device claims support.
+      // Some devices fail when sent a wink command immediately followed by a
+      // CBOR command. Only try to wink if device claims support and it is
+      // required to signal user presence.
       if (pending_transactions_.front().command_type ==
               FidoHidDeviceCommand::kWink &&
-          !(capabilities_ & kWinkCapability)) {
+          !(capabilities_ & kWinkCapability && needs_explicit_wink_)) {
         DeviceCallback pending_cb =
             std::move(pending_transactions_.front().callback);
         pending_transactions_.pop_front();

@@ -34,6 +34,7 @@
 #include <memory>
 #include "base/callback.h"
 #include "base/time/time.h"
+#include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/cpp/cors/preflight_timing_info.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
@@ -94,7 +95,7 @@ class BLINK_PLATFORM_EXPORT WebURLLoaderClient {
 
   // Called when a chunk of renderer-generated metadata is received from the
   // cache.
-  virtual void DidReceiveCachedMetadata(const char* data, int data_length) {}
+  virtual void DidReceiveCachedMetadata(mojo_base::BigBuffer data) {}
 
   // Called when the load completes successfully.
   // |total_encoded_data_length| may be equal to kUnknownEncodedDataLength.

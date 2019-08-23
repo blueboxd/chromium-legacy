@@ -45,9 +45,8 @@ ExploreSitesInternalsUI::~ExploreSitesInternalsUI() {}
 
 void ExploreSitesInternalsUI::BindExploreSitesInternalsPageHandler(
     explore_sites_internals::mojom::PageHandlerRequest request) {
-  page_handler_.reset(new ExploreSitesInternalsPageHandler(
-      std::move(request), explore_sites_service_,
-      Profile::FromWebUI(web_ui())));
+  page_handler_ = std::make_unique<ExploreSitesInternalsPageHandler>(
+      std::move(request), explore_sites_service_, Profile::FromWebUI(web_ui()));
 }
 
 }  // namespace explore_sites

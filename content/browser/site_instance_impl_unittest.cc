@@ -1441,4 +1441,73 @@ TEST_F(SiteInstanceTest, CreateForURL) {
   EXPECT_FALSE(instance5->HasSite());
 }
 
+TEST_F(SiteInstanceTest, DoesSiteRequireDedicatedProcess) {
+  class CustomBrowserClient : public EffectiveURLContentBrowserClient {
+   public:
+    CustomBrowserClient(const GURL& url_to_modify,
+                        const GURL& url_to_return,
+                        bool requires_dedicated_process,
+                        const std::string& additional_webui_scheme)
+        : EffectiveURLContentBrowserClient(url_to_modify,
+                                           url_to_return,
+                                           requires_dedicated_process),
+          additional_webui_scheme_(additional_webui_scheme) {
+      DCHECK(!additional_webui_scheme.empty());
+    }
+
+   private:
+    void GetAdditionalWebUISchemes(
+        std::vector<std::string>* additional_schemes) override {
+      additional_schemes->push_back(additional_webui_scheme_);
+    }
+
+    const std::string additional_webui_scheme_;
+  };
+
+  const std::vector<std::string> kUrlsThatDoNotRequireADedicatedProcess = {
+      "about:blank",
+      "http://foo.com",
+      "data:text/html,Hello World!",
+      "file:///tmp/test.txt",
+  };
+
+  const char* kExplicitlyIsolatedURL = "http://isolated.com";
+  const char* kCustomWebUIScheme = "my-webui";
+  const char* kCustomWebUIUrl = "my-webui://show-stats";
+  const char* kCustomUrl = "http://custom.foo.com";
+  const char* kCustomAppUrl = "custom-scheme://custom";
+  const std::vector<std::string> kUrlsThatAlwaysRequireADedicatedProcess = {
+      kExplicitlyIsolatedURL,
+      kUnreachableWebDataURL,
+      GetWebUIURLString("network-error"),
+      kCustomUrl,
+      kCustomAppUrl,
+      kCustomWebUIUrl,
+  };
+
+  CustomBrowserClient modified_client(GURL(kCustomUrl), GURL(kCustomAppUrl),
+                                      /* requires_dedicated_process */ true,
+                                      kCustomWebUIScheme);
+  ContentBrowserClient* regular_client =
+      SetBrowserClientForTesting(&modified_client);
+
+  IsolationContext isolation_context(context());
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  policy->AddIsolatedOrigins(
+      {url::Origin::Create(GURL(kExplicitlyIsolatedURL))},
+      IsolatedOriginSource::TEST);
+
+  for (const auto& url : kUrlsThatAlwaysRequireADedicatedProcess) {
+    EXPECT_TRUE(SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
+        isolation_context, GURL(url)));
+  }
+
+  for (const auto& url : kUrlsThatDoNotRequireADedicatedProcess) {
+    EXPECT_EQ(AreAllSitesIsolatedForTesting(),
+              SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
+                  isolation_context, GURL(url)));
+  }
+  SetBrowserClientForTesting(regular_client);
+}
+
 }  // namespace content

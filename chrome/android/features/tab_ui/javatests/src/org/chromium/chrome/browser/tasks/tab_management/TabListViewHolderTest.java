@@ -57,6 +57,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     private PropertyModel mSelectableModel;
     private PropertyModelChangeProcessor mSelectableMCP;
     private SelectionDelegate<Integer> mSelectionDelegate;
+    private int mSelectedTabBackgroundDrawableId = R.drawable.selected_tab_background;
 
     private TabListMediator.ThumbnailFetcher mMockThumbnailProvider =
             new TabListMediator.ThumbnailFetcher(new TabListMediator.ThumbnailProvider() {
@@ -117,6 +118,8 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
         mGridModel = new PropertyModel.Builder(TabProperties.ALL_KEYS_TAB_GRID)
                              .with(TabProperties.TAB_SELECTED_LISTENER, mMockSelectedListener)
                              .with(TabProperties.TAB_CLOSED_LISTENER, mMockCloseListener)
+                             .with(TabProperties.SELECTED_TAB_BACKGROUND_DRAWABLE_ID,
+                                     mSelectedTabBackgroundDrawableId)
                              .build();
         mStripModel = new PropertyModel.Builder(TabProperties.ALL_KEYS_TAB_STRIP)
                               .with(TabProperties.TAB_SELECTED_LISTENER, mMockSelectedListener)
@@ -126,6 +129,8 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
                 new PropertyModel.Builder(TabProperties.ALL_KEYS_TAB_GRID)
                         .with(TabProperties.SELECTABLE_TAB_CLICKED_LISTENER, mMockSelectedListener)
                         .with(TabProperties.TAB_SELECTION_DELEGATE, mSelectionDelegate)
+                        .with(TabProperties.SELECTED_TAB_BACKGROUND_DRAWABLE_ID,
+                                mSelectedTabBackgroundDrawableId)
                         .build();
 
         mGridMCP = PropertyModelChangeProcessor.create(mGridModel, mTabGridViewHolder,

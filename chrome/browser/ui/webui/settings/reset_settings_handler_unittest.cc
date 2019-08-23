@@ -73,7 +73,8 @@ class ResetSettingsHandlerTest : public testing::Test {
  public:
   ResetSettingsHandlerTest() {
     google_brand::BrandForTesting brand_for_testing("");
-    handler_.reset(new TestingResetSettingsHandler(&profile_, &web_ui_));
+    handler_ =
+        std::make_unique<TestingResetSettingsHandler>(&profile_, &web_ui_);
   }
 
   TestingResetSettingsHandler* handler() { return handler_.get(); }

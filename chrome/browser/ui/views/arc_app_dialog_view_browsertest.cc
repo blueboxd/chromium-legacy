@@ -53,7 +53,7 @@ class ArcAppUninstallDialogViewBrowserTest : public InProcessBrowserTest {
     arc_app_list_pref_->SetDefaultAppsReadyCallback(run_loop.QuitClosure());
     run_loop.Run();
 
-    app_instance_.reset(new arc::FakeAppInstance(arc_app_list_pref_));
+    app_instance_ = std::make_unique<arc::FakeAppInstance>(arc_app_list_pref_);
     arc_app_list_pref_->app_connection_holder()->SetInstance(
         app_instance_.get());
     WaitForInstanceReady(arc_app_list_pref_->app_connection_holder());

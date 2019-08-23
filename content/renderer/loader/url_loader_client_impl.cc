@@ -103,7 +103,7 @@ class URLLoaderClientImpl::DeferredOnReceiveCachedMetadata final
       : data_(std::move(data)) {}
 
   void HandleMessage(ResourceDispatcher* dispatcher, int request_id) override {
-    dispatcher->OnReceivedCachedMetadata(request_id, data_);
+    dispatcher->OnReceivedCachedMetadata(request_id, std::move(data_));
   }
   bool IsCompletionMessage() const override { return false; }
 
@@ -285,7 +285,8 @@ void URLLoaderClientImpl::OnReceiveCachedMetadata(mojo_base::BigBuffer data) {
     StoreAndDispatch(
         std::make_unique<DeferredOnReceiveCachedMetadata>(std::move(data)));
   } else {
-    resource_dispatcher_->OnReceivedCachedMetadata(request_id_, data);
+    resource_dispatcher_->OnReceivedCachedMetadata(request_id_,
+                                                   std::move(data));
   }
 }
 

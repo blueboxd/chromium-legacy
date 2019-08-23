@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_NATIVE_FILE_SYSTEM_NATIVE_FILE_SYSTEM_FILE_WRITER_IMPL_H_
 
 #include "base/memory/weak_ptr.h"
+#include "components/download/quarantine/quarantine.h"
 #include "components/services/filesystem/public/mojom/types.mojom.h"
 #include "content/browser/native_file_system/native_file_system_file_handle_impl.h"
 #include "content/browser/native_file_system/native_file_system_handle_base.h"
@@ -54,6 +55,10 @@ class CONTENT_EXPORT NativeFileSystemFileWriterImpl
   void Truncate(uint64_t length, TruncateCallback callback) override;
   void Close(CloseCallback callback) override;
 
+  void set_skip_quarantine_service_for_testing() {
+    skip_quarantine_service_for_testing_ = true;
+  }
+
  private:
   // State that is kept for the duration of a write operation, to keep track of
   // progress until the write completes.
@@ -75,6 +80,14 @@ class CONTENT_EXPORT NativeFileSystemFileWriterImpl
   void TruncateImpl(uint64_t length, TruncateCallback callback);
   void CloseImpl(CloseCallback callback);
   void DidSwapFileBeforeClose(CloseCallback callback, base::File::Error result);
+  void DidAnnotateFile(CloseCallback callback,
+                       quarantine::mojom::QuarantineFileResult result);
+
+  // Quarantine checks only apply to native local paths.
+  bool can_skip_quarantine_check() {
+    return skip_quarantine_service_for_testing_ ||
+           url().type() != storage::kFileSystemTypeNativeLocal;
+  }
 
   enum class State {
     // The writer accepts write operations.
@@ -83,9 +96,10 @@ class CONTENT_EXPORT NativeFileSystemFileWriterImpl
     // closing.
     kClosePending,
     // The writer does not accept write operations and has entered an error
-    // state.
+    // state. A swap file may need to be purged.
     kCloseError,
-    // The writer does not accept write operations and has closed successfully.
+    // The writer does not accept write operations. There should be no more swap
+    // file.
     kClosed,
   };
   bool is_closed() const { return state_ != State::kOpen; }
@@ -101,6 +115,8 @@ class CONTENT_EXPORT NativeFileSystemFileWriterImpl
   // most filesystems, this move operation is atomic.
   storage::FileSystemURL swap_url_;
   State state_ = State::kOpen;
+
+  bool skip_quarantine_service_for_testing_ = false;
 
   base::WeakPtr<NativeFileSystemHandleBase> AsWeakPtr() override;
 

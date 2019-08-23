@@ -68,7 +68,7 @@ class BookmarkContextMenuTest : public testing::Test {
   BookmarkContextMenuTest() : model_(nullptr) {}
 
   void SetUp() override {
-    profile_.reset(new TestingProfile());
+    profile_ = std::make_unique<TestingProfile>();
     profile_->CreateBookmarkModel(true);
 
     model_ = BookmarkModelFactory::GetForBrowserContext(profile_.get());
@@ -350,9 +350,9 @@ TEST_F(BookmarkContextMenuTest, CutCopyPasteNode) {
   // Copy the URL.
   controller->ExecuteCommand(IDC_COPY, 0);
 
-  controller.reset(new BookmarkContextMenu(
+  controller = std::make_unique<BookmarkContextMenu>(
       nullptr, nullptr, profile_.get(), nullptr, BOOKMARK_LAUNCH_LOCATION_NONE,
-      nodes[0]->parent(), nodes, false));
+      nodes[0]->parent(), nodes, false);
   size_t old_count = bb_node->children().size();
   controller->ExecuteCommand(IDC_PASTE, 0);
 
@@ -360,9 +360,9 @@ TEST_F(BookmarkContextMenuTest, CutCopyPasteNode) {
   ASSERT_EQ(old_count + 1, bb_node->children().size());
   ASSERT_EQ(bb_node->children()[0]->url(), bb_node->children()[1]->url());
 
-  controller.reset(new BookmarkContextMenu(
+  controller = std::make_unique<BookmarkContextMenu>(
       nullptr, nullptr, profile_.get(), nullptr, BOOKMARK_LAUNCH_LOCATION_NONE,
-      nodes[0]->parent(), nodes, false));
+      nodes[0]->parent(), nodes, false);
   // Cut the URL.
   controller->ExecuteCommand(IDC_CUT, 0);
   ASSERT_TRUE(bb_node->children()[0]->is_url());
@@ -409,9 +409,9 @@ TEST_F(BookmarkContextMenuTest, ShowManagedBookmarks) {
   EXPECT_FALSE(managed->managed_node()->children().empty());
 
   // New context menus now show the "Show managed bookmarks" option.
-  controller.reset(new BookmarkContextMenu(
+  controller = std::make_unique<BookmarkContextMenu>(
       nullptr, nullptr, profile_.get(), nullptr, BOOKMARK_LAUNCH_LOCATION_NONE,
-      nodes[0]->parent(), nodes, false));
+      nodes[0]->parent(), nodes, false);
   EXPECT_TRUE(controller->IsCommandVisible(IDC_BOOKMARK_BAR_NEW_FOLDER));
   EXPECT_TRUE(
       controller->IsCommandVisible(IDC_BOOKMARK_BAR_SHOW_MANAGED_BOOKMARKS));

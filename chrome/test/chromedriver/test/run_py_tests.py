@@ -225,6 +225,7 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'ChromeDriverSecureContextTest.testRemoveVirtualAuthenticator',
         'ChromeDriverSecureContextTest.testAddCredential',
         'ChromeDriverSecureContextTest.testGetCredentials',
+        'ChromeDriverSecureContextTest.testRemoveCredential',
         'ChromeDriverSecureContextTest.testRemoveAllCredentials',
         'ChromeDriverSecureContextTest.testSetUserVerified',
         # Covered by Desktop tests; can't create 2 browsers in Android
@@ -2053,7 +2054,8 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTest):
   @staticmethod
   def UrlSafeBase64Decode(string):
     string = string.encode("utf-8")
-    string += "=" * (4 - len(string) % 4)
+    if len(string) % 4 != 0:
+      string += "=" * (4 - len(string) % 4)
     return base64.urlsafe_b64decode(string)
 
   def setUp(self):
@@ -2196,6 +2198,39 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTest):
                       self.UrlSafeBase64Decode(credentials[0]['userHandle']))
     self.assertEquals(1, credentials[0]['signCount'])
     self.assertTrue(credentials[0]['privateKey'])
+
+  def testRemoveCredential(self):
+    script = """
+      let done = arguments[0];
+      registerCredential().then(done);
+    """
+    self._driver.Load(self.GetHttpsUrlForFile(
+        '/chromedriver/webauthn_test.html', 'chromedriver.test'))
+    authenticatorId = self._driver.AddVirtualAuthenticator(
+        protocol = 'ctap2',
+        transport = 'usb',
+        hasResidentKey = True,
+        hasUserVerification = True,
+    )['authenticatorId']
+
+    # Register two credentials.
+    result = self._driver.ExecuteAsyncScript(script)
+    self.assertEquals('OK', result['status'])
+    credential1Id = result['credential']['id']
+
+    result = self._driver.ExecuteAsyncScript(script)
+    self.assertEquals('OK', result['status'])
+    credential2Id = result['credential']['id']
+
+    # GetCredentials should return both credentials.
+    credentials = self._driver.GetCredentials(authenticatorId)['credentials']
+    self.assertEquals(2, len(credentials))
+
+    # Removing the first credential should leave only the first one.
+    self._driver.RemoveCredential(authenticatorId, credential1Id)
+    credentials = self._driver.GetCredentials(authenticatorId)['credentials']
+    self.assertEquals(1, len(credentials))
+    self.assertEquals(credential2Id, credentials[0]['credentialId'])
 
   def testRemoveAllCredentials(self):
     register_credential_script = """

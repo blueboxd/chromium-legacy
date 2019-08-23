@@ -449,6 +449,10 @@ void LoginScreenController::ShowAccountAccessHelpApp() {
   client_->ShowAccountAccessHelpApp();
 }
 
+void LoginScreenController::ShowParentAccessHelpApp() {
+  client_->ShowParentAccessHelpApp();
+}
+
 void LoginScreenController::ShowLockScreenNotificationSettings() {
   client_->ShowLockScreenNotificationSettings();
 }

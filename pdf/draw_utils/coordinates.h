@@ -75,11 +75,9 @@ PageInsetSizes GetPageInsetsForTwoUpView(
     int horizontal_separator);
 
 // Given |rect_size| and |document_size| create a horizontally centered
-// pp::Rect placed at the bottom of the current document, and then inset it with
-// |page_insets|.
+// pp::Rect placed at the bottom of the current document.
 pp::Rect GetRectForSingleView(const pp::Size& rect_size,
-                              const pp::Size& document_size,
-                              const PageInsetSizes& page_insets);
+                              const pp::Size& document_size);
 
 // Given |rect| in document coordinates, a |position| in screen coordinates,
 // and a |zoom| factor, returns the rectangle in screen coordinates (i.e.
@@ -125,20 +123,15 @@ pp::Rect GetBottomFillRect(const pp::Rect& page_rect,
                            int bottom_separator);
 
 // Given |rect_size|, create a pp::Rect where the top-right corner lies at
-// |position|, and then inset it with the corresponding values of |page_insets|,
-// i.e. inset on left side with |page_insets.left|.
-// The width of |rect_size| must be less than or equal to the x value for
-// |position|.
+// |position|. The width of |rect_size| must be less than or equal to the x
+// value for |position|.
 pp::Rect GetLeftRectForTwoUpView(const pp::Size& rect_size,
-                                 const pp::Point& position,
-                                 const PageInsetSizes& page_insets);
+                                 const pp::Point& position);
 
 // Given |rect_size|, create a pp::Rect where the top-left corner lies at
-// |position|, and then inset it with the corresponding values of |page_insets|,
-// i.e. inset on left side with |page_insets.left|.
+// |position|.
 pp::Rect GetRightRectForTwoUpView(const pp::Size& rect_size,
-                                  const pp::Point& position,
-                                  const PageInsetSizes& page_insets);
+                                  const pp::Point& position);
 
 }  // namespace draw_utils
 }  // namespace chrome_pdf

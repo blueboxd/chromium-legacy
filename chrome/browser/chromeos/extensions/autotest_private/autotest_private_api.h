@@ -498,10 +498,12 @@ class AutotestPrivateSendAssistantTextQueryFunction
   ~AutotestPrivateSendAssistantTextQueryFunction() override;
   ResponseAction Run() override;
 
-  using AssistantSuggestionPtr =
-      chromeos::assistant::mojom::AssistantSuggestionPtr;
+  using AssistantInteractionMetadataPtr =
+      chromeos::assistant::mojom::AssistantInteractionMetadataPtr;
   using AssistantInteractionResolution =
       chromeos::assistant::mojom::AssistantInteractionResolution;
+  using AssistantSuggestionPtr =
+      chromeos::assistant::mojom::AssistantSuggestionPtr;
 
   // chromeos::assistant::mojom::AssistantInteractionSubscriber:
   void OnHtmlResponse(const std::string& response,
@@ -509,7 +511,8 @@ class AutotestPrivateSendAssistantTextQueryFunction
   void OnTextResponse(const std::string& response) override;
   void OnInteractionFinished(
       AssistantInteractionResolution resolution) override;
-  void OnInteractionStarted(bool is_voice_interaction) override {}
+  void OnInteractionStarted(AssistantInteractionMetadataPtr metadata) override {
+  }
   void OnSuggestionsResponse(
       std::vector<AssistantSuggestionPtr> response) override {}
   void OnOpenUrlResponse(const GURL& url, bool in_background) override {}
@@ -737,6 +740,17 @@ class AutotestPrivateGetArcAppWindowInfoFunction : public ExtensionFunction {
 
  private:
   ~AutotestPrivateGetArcAppWindowInfoFunction() override;
+  ResponseAction Run() override;
+};
+
+class AutotestPrivateSwapWindowsInSplitViewFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateSwapWindowsInSplitViewFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.swapWindowsInSplitView",
+                             AUTOTESTPRIVATE_SWAPWINDOWSINSPLITVIEW)
+
+ private:
+  ~AutotestPrivateSwapWindowsInSplitViewFunction() override;
   ResponseAction Run() override;
 };
 

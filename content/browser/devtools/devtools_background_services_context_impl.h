@@ -35,6 +35,9 @@ class ServiceWorkerContextWrapper;
 // This class is also responsible for reading back the data to the DevTools
 // client, as the protocol handler will have access to an instance of the
 // context.
+//
+// TODO(crbug.com/824858): This class should be single-threaded after
+// the service worker core thread moves to the UI thread.
 class CONTENT_EXPORT DevToolsBackgroundServicesContextImpl
     : public DevToolsBackgroundServicesContext,
       public base::RefCountedThreadSafe<DevToolsBackgroundServicesContextImpl> {
@@ -71,7 +74,7 @@ class CONTENT_EXPORT DevToolsBackgroundServicesContextImpl
 
   // Helper functions for public overriden APIs. Can be used directly.
   bool IsRecording(devtools::proto::BackgroundService service);
-  void LogBackgroundServiceEventOnIO(
+  void LogBackgroundServiceEventOnCoreThread(
       uint64_t service_worker_registration_id,
       const url::Origin& origin,
       DevToolsBackgroundService service,
@@ -107,7 +110,7 @@ class CONTENT_EXPORT DevToolsBackgroundServicesContextImpl
   // Whether |service| has an expiration time and it was exceeded.
   bool IsRecordingExpired(devtools::proto::BackgroundService service);
 
-  void GetLoggedBackgroundServiceEventsOnIO(
+  void GetLoggedBackgroundServiceEventsOnCoreThread(
       devtools::proto::BackgroundService service,
       GetLoggedBackgroundServiceEventsCallback callback);
 
@@ -116,7 +119,7 @@ class CONTENT_EXPORT DevToolsBackgroundServicesContextImpl
       const std::vector<std::pair<int64_t, std::string>>& user_data,
       blink::ServiceWorkerStatusCode status);
 
-  void ClearLoggedBackgroundServiceEventsOnIO(
+  void ClearLoggedBackgroundServiceEventsOnCoreThread(
       devtools::proto::BackgroundService service);
 
   void NotifyEventObservers(
@@ -130,7 +133,7 @@ class CONTENT_EXPORT DevToolsBackgroundServicesContextImpl
   // Maps from the background service to the time up until the events can be
   // recorded. The BackgroundService enum is used as the index.
   // This should only be updated on the UI thread, but is also
-  // accessed from the IO thread.
+  // accessed from the service worker core thread.
   std::array<base::Time, devtools::proto::BackgroundService::COUNT>
       expiration_times_;
 
@@ -139,7 +142,7 @@ class CONTENT_EXPORT DevToolsBackgroundServicesContextImpl
   base::WeakPtrFactory<DevToolsBackgroundServicesContextImpl>
       weak_ptr_factory_ui_{this};
   base::WeakPtrFactory<DevToolsBackgroundServicesContextImpl>
-      weak_ptr_factory_io_{this};
+      weak_ptr_factory_core_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsBackgroundServicesContextImpl);
 };

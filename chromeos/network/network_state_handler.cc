@@ -1188,6 +1188,13 @@ void NetworkStateHandler::SetErrorForTest(const std::string& service_path,
   network_state->last_error_ = error;
 }
 
+void NetworkStateHandler::SetDeviceStateUpdatedForTest(
+    const std::string& device_path) {
+  DeviceState* device = GetModifiableDeviceState(device_path);
+  DCHECK(device);
+  device->set_update_received();
+}
+
 //------------------------------------------------------------------------------
 // ShillPropertyHandler::Delegate overrides
 

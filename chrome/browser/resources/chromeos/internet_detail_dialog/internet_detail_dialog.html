@@ -21,8 +21,8 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_page_host_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
-<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_behavior.html">
-<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_indicator.html">
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_behavior_mojo.html">
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_indicator_mojo.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/load_time_data.html">
@@ -39,7 +39,7 @@
   <template>
     <style include="cr-page-host-style cr-shared-style network-shared
         iron-flex">
-      cr-policy-network-indicator {
+      cr-policy-network-indicator-mojo {
         margin-inline-end: 10px;
       }
 
@@ -79,35 +79,35 @@
       <div class="start layout horizontal center">
         <cr-network-icon
             show-technology-badge="[[showTechnologyBadge_]]"
-            network-state="[[getNetworkState_(networkProperties)]]">
+            network-state="[[getNetworkState_(managedProperties_)]]">
         </cr-network-icon>
         <div id="networkName" class="title">
-          [[getNameText_(networkProperties)]]
+          [[getNameText_(managedProperties_)]]
         </div>
         <div id="networkState" class="title"
-            connected$="[[isConnectedState_(networkProperties)]]">
-          [[getStateText_(networkProperties)]]
+            connected$="[[isConnectedState_(managedProperties_)]]">
+          [[getStateText_(managedProperties_)]]
         </div>
       </div>
       <cr-button class="action-button" on-click="onConnectDisconnectClick_"
-          hidden$="[[!showConnectDisconnect_(networkProperties)]]"
-          disabled="[[!enableConnectDisconnect_(networkProperties)]]">
-        [[getConnectDisconnectText_(networkProperties)]]
+          hidden$="[[!showConnectDisconnect_(managedProperties_)]]"
+          disabled="[[!enableConnectDisconnect_(managedProperties_)]]">
+        [[getConnectDisconnectText_(managedProperties_)]]
       </cr-button>
     </div>
 
     <!-- SIM Info (Cellular only). -->
-    <template is="dom-if" if="[[showCellularSim_(networkProperties)]]"
+    <template is="dom-if" if="[[showCellularSim_(managedProperties_)]]"
         restamp>
       <div class="section single-column">
-        <network-siminfo on-siminfo-change="onNetworkPropertyChange_">
+        <network-siminfo>
         </network-siminfo>
-      </div>
+      <div>
     </template>
 
     <!-- Choose Mobile Network (Cellular only) -->
     <template is="dom-if"
-        if="[[showCellularChooseNetwork_(networkProperties)]]">
+        if="[[showCellularChooseNetwork_(managedProperties_)]]">
       <div class="section single-column">
         <network-choose-mobile networking-private="[[networkingPrivate]]"
             network-properties="[[networkProperties]]">
@@ -116,7 +116,7 @@
     </template>
 
     <!-- APN (Cellular only) -->
-    <template is="dom-if" if="[[isCellular_(networkProperties)]]">
+    <template is="dom-if" if="[[isCellular_(managedProperties_)]]">
       <div class="section single-column">
         <network-apnlist editable on-apn-change="onNetworkPropertyChange_"
             network-properties="[[networkProperties]]">
@@ -127,11 +127,11 @@
     <!-- Proxy -->
     <div class="section single-column">
       <template is="dom-if"
-          if="[[shouldShowProxyPolicyIndicator_(networkProperties)]]">
+          if="[[shouldShowProxyPolicyIndicator_(managedProperties_)]]">
         <div class="property-box">
-          <cr-policy-network-indicator
-              property="[[networkProperties.ProxySettings.Type]]">
-          </cr-policy-network-indicator>
+          <cr-policy-network-indicator-mojo
+              property="[[managedProperties_.proxySettings.type]]">
+          </cr-policy-network-indicator-mojo>
           <div>$i18n{networkProxyEnforcedPolicy}</div>
         </div>
       </template>
@@ -141,8 +141,7 @@
       </network-proxy>
     </div>
 
-    <template is="dom-if"
-        if="[[isRememberedOrConnected_(networkProperties)]]">
+    <template is="dom-if" if="[[isRememberedOrConnected_(managedProperties_)]]">
       <!-- IP Config -->
       <div class="section single-column">
         <network-ip-config editable on-ip-change="onIPConfigChange_"

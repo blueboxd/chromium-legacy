@@ -163,7 +163,7 @@ CertificateSelector::CertificateSelector(net::ClientCertIdentityList identities,
   identities_ = std::move(identities);
 #endif
 
-  model_.reset(new CertificateTableModel(identities_, provider_names));
+  model_ = std::make_unique<CertificateTableModel>(identities_, provider_names);
 }
 
 CertificateSelector::~CertificateSelector() {

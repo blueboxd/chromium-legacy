@@ -182,6 +182,9 @@ class XR final : public EventTargetWithInlineData,
       bool uses_input_eventing,
       XRSessionFeatureSet enabled_features,
       bool sensorless_session = false);
+
+  bool CanCreateSensorlessInlineSession(
+      const PendingRequestSessionQuery* query) const;
   XRSession* CreateSensorlessInlineSession();
 
   void Dispose();

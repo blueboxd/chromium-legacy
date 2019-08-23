@@ -567,9 +567,8 @@ void ClipboardWin::WriteObjects(ClipboardBuffer buffer,
 
   ::EmptyClipboard();
 
-  for (const auto& object : objects) {
-    DispatchObject(static_cast<ObjectType>(object.first), object.second);
-  }
+  for (const auto& object : objects)
+    DispatchObject(object.first, object.second);
 }
 
 void ClipboardWin::WriteText(const char* text_data, size_t text_len) {

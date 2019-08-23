@@ -305,7 +305,7 @@ void DownloadItemView::OnDownloadUpdated() {
                 model_->GetFileNameToReportUser().LossyDisplayName()),
             true);
         StopDownloadProgress();
-        complete_animation_.reset(new gfx::SlideAnimation(this));
+        complete_animation_ = std::make_unique<gfx::SlideAnimation>(this);
         complete_animation_->SetSlideDuration(kInterruptedAnimationDurationMs);
         complete_animation_->SetTweenType(gfx::Tween::LINEAR);
         complete_animation_->Show();
@@ -322,7 +322,7 @@ void DownloadItemView::OnDownloadUpdated() {
           return;
         }
         StopDownloadProgress();
-        complete_animation_.reset(new gfx::SlideAnimation(this));
+        complete_animation_ = std::make_unique<gfx::SlideAnimation>(this);
         complete_animation_->SetSlideDuration(kCompleteAnimationDurationMs);
         complete_animation_->SetTweenType(gfx::Tween::LINEAR);
         complete_animation_->Show();
@@ -776,7 +776,7 @@ void DownloadItemView::ShowContextMenuImpl(const gfx::Rect& rect,
   AnimateInkDrop(views::InkDropState::HIDDEN, nullptr);
 
   if (!context_menu_.get())
-    context_menu_.reset(new DownloadShelfContextMenuView(this));
+    context_menu_ = std::make_unique<DownloadShelfContextMenuView>(this);
   context_menu_->Run(GetWidget()->GetTopLevelWidget(), rect, source_type,
                      base::Bind(&DownloadItemView::ReleaseDropdown,
                                 weak_ptr_factory_.GetWeakPtr()));

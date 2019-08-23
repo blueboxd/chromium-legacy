@@ -434,7 +434,7 @@ void ClipboardAndroid::WriteObjects(ClipboardBuffer buffer,
   g_map.Get().Clear();
 
   for (const auto& object : objects)
-    DispatchObject(static_cast<ObjectType>(object.first), object.second);
+    DispatchObject(object.first, object.second);
 
   g_map.Get().CommitToAndroidClipboard();
 }

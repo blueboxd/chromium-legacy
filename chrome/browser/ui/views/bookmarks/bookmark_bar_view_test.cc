@@ -280,9 +280,9 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
   ~BookmarkBarViewEventTestBase() override = default;
 
   void SetUp() override {
-    content_client_.reset(new ChromeContentClient);
+    content_client_ = std::make_unique<ChromeContentClient>();
     content::SetContentClient(content_client_.get());
-    browser_content_client_.reset(new ChromeContentBrowserClient());
+    browser_content_client_ = std::make_unique<ChromeContentBrowserClient>();
     content::SetBrowserClientForTesting(browser_content_client_.get());
 
     views::MenuController::TurnOffMenuSelectionHoldForTest();
@@ -291,7 +291,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
 
     local_state_.reset(
         new ScopedTestingLocalState(TestingBrowserProcess::GetGlobal()));
-    profile_.reset(new TestingProfile());
+    profile_ = std::make_unique<TestingProfile>();
     profile_->CreateBookmarkModel(true);
     model_ = BookmarkModelFactory::GetForBrowserContext(profile_.get());
     bookmarks::test::WaitForBookmarkModelToLoad(model_);
@@ -302,7 +302,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
 
     model_->ClearStore();
 
-    bb_view_.reset(new BookmarkBarView(browser_.get(), NULL));
+    bb_view_ = std::make_unique<BookmarkBarView>(browser_.get(), nullptr);
     bb_view_->set_owned_by_client();
     // Real bookmark bars get a BookmarkBarViewBackground. Set an opaque
     // background here just to avoid triggering subpixel rendering issues.

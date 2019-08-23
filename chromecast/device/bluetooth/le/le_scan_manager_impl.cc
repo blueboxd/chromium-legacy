@@ -114,6 +114,28 @@ void LeScanManagerImpl::ClearScanResults() {
   addr_to_scan_results_.clear();
 }
 
+void LeScanManagerImpl::PauseScan() {
+  MAKE_SURE_IO_THREAD(PauseScan);
+  if (scan_handle_ids_.empty()) {
+    return;
+  }
+
+  if (!le_scanner_->StopScan()) {
+    LOG(ERROR) << "Failed to pause scanning";
+  }
+}
+
+void LeScanManagerImpl::RestartScan() {
+  MAKE_SURE_IO_THREAD(RestartScan);
+  if (scan_handle_ids_.empty()) {
+    return;
+  }
+
+  if (!le_scanner_->StartScan()) {
+    LOG(ERROR) << "Failed to restart scanning";
+  }
+}
+
 void LeScanManagerImpl::OnScanResult(
     const bluetooth_v2_shlib::LeScanner::ScanResult& scan_result_shlib) {
   LeScanResult scan_result;

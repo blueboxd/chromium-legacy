@@ -439,47 +439,47 @@
   {
     "prefix": "dark-mode",
     "base": "paint/dark-mode/grayscale-images",
-    "args": ["--blink-settings=darkMode=3,darkModeImagePolicy=0,darkModeImageStyle=1"]
+    "args": ["--blink-settings=darkMode=3,darkModeImagePolicy=0,darkModeImageStyle=1,darkModeTextBrightnessThreshold=256,darkModeBackgroundBrightnessThreshold=0"]
   },
   {
     "prefix": "dark-mode",
     "base": "paint/dark-mode/image-filter-all",
-    "args": ["--blink-settings=darkMode=3,darkModeImagePolicy=0"]
+    "args": ["--blink-settings=darkMode=3,darkModeImagePolicy=0,darkModeTextBrightnessThreshold=256,darkModeBackgroundBrightnessThreshold=0"]
   },
   {
     "prefix": "dark-mode",
     "base": "paint/dark-mode/image-filter-none",
-    "args": ["--blink-settings=darkMode=3,darkModeImagePolicy=1"]
+    "args": ["--blink-settings=darkMode=3,darkModeImagePolicy=1,darkModeTextBrightnessThreshold=256,darkModeBackgroundBrightnessThreshold=0"]
   },
   {
     "prefix": "dark-mode",
     "base": "paint/dark-mode/image-filter-smart",
-    "args": ["--blink-settings=darkMode=3,darkModeImagePolicy=2"]
+    "args": ["--blink-settings=darkMode=3,darkModeImagePolicy=2,darkModeTextBrightnessThreshold=256,darkModeBackgroundBrightnessThreshold=0"]
   },
   {
     "prefix": "dark-mode",
     "base": "paint/dark-mode/native-theme-off",
-    "args": ["--blink-settings=darkMode=3"]
+    "args": ["--blink-settings=darkMode=3,darkModeTextBrightnessThreshold=256,darkModeBackgroundBrightnessThreshold=0"]
   },
   {
     "prefix": "dark-mode",
     "base": "paint/dark-mode/native-theme-on",
-    "args": ["--blink-settings=darkMode=3"]
+    "args": ["--blink-settings=darkMode=3,darkModeTextBrightnessThreshold=256,darkModeBackgroundBrightnessThreshold=0"]
   },
   {
     "prefix": "dark-mode",
     "base": "paint/dark-mode/page-policy-all",
-    "args": ["--blink-settings=darkMode=3,darkModePagePolicy=0"]
+    "args": ["--blink-settings=darkMode=3,darkModePagePolicy=0,darkModeTextBrightnessThreshold=256,darkModeBackgroundBrightnessThreshold=0"]
   },
   {
     "prefix": "dark-mode",
     "base": "paint/dark-mode/page-policy-background",
-    "args": ["--blink-settings=darkMode=3,darkModePagePolicy=1"]
+    "args": ["--blink-settings=darkMode=3,darkModePagePolicy=1,darkModeTextBrightnessThreshold=256,darkModeBackgroundBrightnessThreshold=0"]
   },
   {
     "prefix": "dark-mode",
     "base": "paint/dark-mode/svg-invert-all",
-    "args": ["--blink-settings=darkMode=3,darkModeImagePolicy=0"]
+    "args": ["--blink-settings=darkMode=3,darkModeImagePolicy=0,darkModeTextBrightnessThreshold=256,darkModeBackgroundBrightnessThreshold=0"]
   },
   {
     "prefix": "presentation",

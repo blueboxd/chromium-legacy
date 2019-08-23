@@ -70,6 +70,10 @@ class SafeBrowsingUIHandler : public content::WebUIMessageHandler {
   // currently open chrome://safe-browsing tab was opened.
   void GetPGEvents(const base::ListValue* args);
 
+  // Get the Security events that have been collected since the oldest
+  // currently open chrome://safe-browsing tab was opened.
+  void GetSecurityEvents(const base::ListValue* args);
+
   // Get the PhishGuard pings that have been sent since the oldest currently
   // open chrome://safe-browsing tab was opened.
   void GetPGPings(const base::ListValue* args);
@@ -111,6 +115,10 @@ class SafeBrowsingUIHandler : public content::WebUIMessageHandler {
   // Called when any new PhishGuard events are sent while one or more WebUI tabs
   // are open.
   void NotifyPGEventJsListener(const sync_pb::UserEventSpecifics& event);
+
+  // Called when any new Security events are sent while one or more WebUI tabs
+  // are open.
+  void NotifySecurityEventJsListener(const sync_pb::GaiaPasswordReuse& event);
 
   // Called when any new PhishGuard pings are sent while one or more WebUI tabs
   // are open.
@@ -189,6 +197,13 @@ class WebUIInfoSingleton {
   // Clear the list of sent PhishGuard events.
   void ClearPGEvents();
 
+  // Add the new message in |security_event_log_| and send it to all the open
+  // chrome://safe-browsing tabs.
+  void AddToSecurityEvents(const sync_pb::GaiaPasswordReuse& event);
+
+  // Clear the list of sent Security events.
+  void ClearSecurityEvents();
+
   // Add the new ping to |pg_pings_| and send it to all the open
   // chrome://safe-browsing tabs. Returns a token that can be used in
   // |AddToPGReponses| to correlate a ping and response.
@@ -250,6 +265,12 @@ class WebUIInfoSingleton {
   // chrome://safe-browsing tab was opened.
   const std::vector<sync_pb::UserEventSpecifics>& pg_event_log() const {
     return pg_event_log_;
+  }
+
+  // Get the list of Security events since the oldest currently open
+  // chrome://safe-browsing tab was opened.
+  const std::vector<sync_pb::GaiaPasswordReuse>& security_event_log() const {
+    return security_event_log_;
   }
 
   // Get the list of PhishGuard pings since the oldest currently open
@@ -315,6 +336,10 @@ class WebUIInfoSingleton {
   // List of PhishGuard events sent since the oldest currently open
   // chrome://safe-browsing tab was opened.
   std::vector<sync_pb::UserEventSpecifics> pg_event_log_;
+
+  // List of Security events sent since the oldest currently open
+  // chrome://safe-browsing tab was opened.
+  std::vector<sync_pb::GaiaPasswordReuse> security_event_log_;
 
   // List of PhishGuard pings sent since the oldest currently open
   // chrome://safe-browsing tab was opened.

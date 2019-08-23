@@ -4,7 +4,8 @@
 
 import unittest
 
-import httplib2
+# TODO(crbug.com/996778): Figure out how to get httplib2 hermetically.
+import httplib2  # pylint: disable=import-error
 import mock
 
 from core.services import dashboard_service

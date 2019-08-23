@@ -223,10 +223,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, OpenDirectory_DenyAccess) {
           ->GetNativeFileSystemEntryFactory())
       ->SetPermissionContextForTesting(&permission_context);
 
-  EXPECT_CALL(permission_context,
-              ConfirmSensitiveDirectoryAccess_(
-                  testing::_, testing::_, testing::_, testing::_, testing::_))
-      .WillOnce(RunOnceCallback<4>(SensitiveDirectoryResult::kAllowed));
+  EXPECT_CALL(permission_context, ConfirmSensitiveDirectoryAccess_(
+                                      testing::_, testing::_, testing::_,
+                                      testing::_, testing::_, testing::_))
+      .WillOnce(RunOnceCallback<5>(SensitiveDirectoryResult::kAllowed));
 
   EXPECT_CALL(
       permission_context,

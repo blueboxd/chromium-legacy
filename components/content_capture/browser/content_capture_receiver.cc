@@ -14,14 +14,26 @@
 
 namespace content_capture {
 
+namespace {
+
+ContentCaptureReceiverManager* GetContentCaptureReceiverManager(
+    content::RenderFrameHost* rfh) {
+  if (auto* web_contents = content::WebContents::FromRenderFrameHost(rfh))
+    return ContentCaptureReceiverManager::FromWebContents(web_contents);
+  return nullptr;
+}
+
+}  // namespace
+
 ContentCaptureReceiver::ContentCaptureReceiver(content::RenderFrameHost* rfh)
     : rfh_(rfh), id_(GetIdFrom(rfh)) {}
 
 ContentCaptureReceiver::~ContentCaptureReceiver() {
-  auto* manager = ContentCaptureReceiverManager::FromWebContents(
-      content::WebContents::FromRenderFrameHost(rfh_));
-  DCHECK(manager);
-  manager->DidRemoveSession(this);
+  // TODO(crbug.com/995952): Find a way to notify of session being removed if
+  // rfh isn't available.
+  if (auto* manager = GetContentCaptureReceiverManager(rfh_)) {
+    manager->DidRemoveSession(this);
+  }
 }
 
 int64_t ContentCaptureReceiver::GetIdFrom(content::RenderFrameHost* rfh) {
@@ -37,8 +49,9 @@ void ContentCaptureReceiver::BindPendingReceiver(
 
 void ContentCaptureReceiver::DidCaptureContent(const ContentCaptureData& data,
                                                bool first_data) {
-  auto* manager = ContentCaptureReceiverManager::FromWebContents(
-      content::WebContents::FromRenderFrameHost(rfh_));
+  auto* manager = GetContentCaptureReceiverManager(rfh_);
+  if (!manager)
+    return;
 
   if (first_data) {
     // The session id of this frame isn't changed for new document navigation,
@@ -66,8 +79,10 @@ void ContentCaptureReceiver::DidCaptureContent(const ContentCaptureData& data,
 }
 
 void ContentCaptureReceiver::DidUpdateContent(const ContentCaptureData& data) {
-  auto* manager = ContentCaptureReceiverManager::FromWebContents(
-      content::WebContents::FromRenderFrameHost(rfh_));
+  auto* manager = GetContentCaptureReceiverManager(rfh_);
+  if (!manager)
+    return;
+
   // We can't avoid copy the data here, because id need to be overridden.
   ContentCaptureData content(data);
   content.id = id_;
@@ -77,8 +92,9 @@ void ContentCaptureReceiver::DidUpdateContent(const ContentCaptureData& data) {
 
 void ContentCaptureReceiver::DidRemoveContent(
     const std::vector<int64_t>& data) {
-  auto* manager = ContentCaptureReceiverManager::FromWebContents(
-      content::WebContents::FromRenderFrameHost(rfh_));
+  auto* manager = GetContentCaptureReceiverManager(rfh_);
+  if (!manager)
+    return;
   manager->DidRemoveContent(this, data);
 }
 
@@ -117,8 +133,8 @@ const ContentCaptureData& ContentCaptureReceiver::GetFrameContentCaptureData() {
     return frame_content_capture_data_;
 
   if (frame_content_capture_data_.id != 0) {
-    auto* manager = ContentCaptureReceiverManager::FromWebContents(
-        content::WebContents::FromRenderFrameHost(rfh_));
+    auto* manager = GetContentCaptureReceiverManager(rfh_);
+    DCHECK(manager);
     manager->DidRemoveSession(this);
   }
 

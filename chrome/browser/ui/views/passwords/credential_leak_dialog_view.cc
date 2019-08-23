@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/passwords/credential_leak_dialog_view.h"
 
 #include "build/build_config.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/passwords/credential_leak_dialog_controller.h"
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -12,6 +13,7 @@
 #include "components/constrained_window/constrained_window_views.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/layout/box_layout.h"
@@ -20,13 +22,24 @@ using views::BoxLayout;
 
 namespace {
 
+// Fixed height of the illustration shown on the top of the dialog.
+constexpr int kIllustrationHeight = 120;
+
+// Fixed background color of the illustration shown on the top of the dialog.
+constexpr SkColor kPictureBackgroundColor = SkColorSetARGB(0x0A, 0, 0, 0);
+
 // Creates the illustration which is rendered on top of the dialog.
 std::unique_ptr<views::View> CreateIllustration() {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  const gfx::Size illustration_size(
+      ChromeLayoutProvider::Get()->GetDistanceMetric(
+          DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH),
+      kIllustrationHeight);
   auto image_view = std::make_unique<NonAccessibleImageView>();
-  // TODO(crbug.com/986317): Replace with a proper image.
-  image_view->SetImage(
-      *rb.GetNativeImageNamed(IDR_PROFILES_DICE_TURN_ON_SYNC).ToImageSkia());
+  image_view->SetImage(gfx::CreateVectorIcon(kPasswordCheckWarningIcon,
+                                             kPictureBackgroundColor));
+  image_view->SetPreferredSize(illustration_size);
+  image_view->SetSize(illustration_size);
+  image_view->SetVerticalAlignment(views::ImageView::Alignment::kLeading);
   return image_view;
 }
 

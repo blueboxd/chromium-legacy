@@ -31,7 +31,7 @@ class BookmarkEditorViewTest : public testing::Test {
   BookmarkEditorViewTest() : model_(nullptr) {}
 
   void SetUp() override {
-    profile_.reset(new TestingProfile());
+    profile_ = std::make_unique<TestingProfile>();
     profile_->CreateBookmarkModel(true);
 
     model_ = BookmarkModelFactory::GetForBrowserContext(profile_.get());
@@ -59,8 +59,8 @@ class BookmarkEditorViewTest : public testing::Test {
                     const BookmarkNode* parent,
                     const BookmarkEditor::EditDetails& details,
                     BookmarkEditor::Configuration configuration) {
-    editor_.reset(new BookmarkEditorView(profile, parent, details,
-                                         configuration));
+    editor_ = std::make_unique<BookmarkEditorView>(profile, parent, details,
+                                                   configuration);
   }
 
   void SetTitleText(const base::string16& title) {

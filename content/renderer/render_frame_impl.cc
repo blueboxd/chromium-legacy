@@ -1099,7 +1099,7 @@ class RenderFrameImpl::MHTMLBodyLoaderClient
 
   ~MHTMLBodyLoaderClient() override {}
 
-  void BodyCodeCacheReceived(base::span<const uint8_t>) override {}
+  void BodyCodeCacheReceived(mojo_base::BigBuffer data) override {}
 
   void BodyDataReceived(base::span<const char> data) override {
     data_.Append(data.data(), data.size());
@@ -1470,8 +1470,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   auto* web_frame_widget = blink::WebFrameWidget::CreateForMainFrame(
       render_view->GetWidget(), web_frame);
 
-  render_widget->Init(std::move(show_callback),
-                      render_view->webview()->MainFrameWidget());
+  render_widget->Init(std::move(show_callback), web_frame_widget);
 
   render_view->AttachWebFrameWidget(web_frame_widget);
   // TODO(crbug.com/419087): This was added in 6ccadf770766e89c3 to prevent an
@@ -5648,8 +5647,9 @@ void RenderFrameImpl::DidObserveNewFeatureUsage(
     observer.DidObserveNewFeatureUsage(feature);
 }
 
-void RenderFrameImpl::DidObserveNewCssPropertyUsage(int css_property,
-                                                    bool is_animated) {
+void RenderFrameImpl::DidObserveNewCssPropertyUsage(
+    blink::mojom::CSSSampleId css_property,
+    bool is_animated) {
   for (auto& observer : observers_)
     observer.DidObserveNewCssPropertyUsage(css_property, is_animated);
 }

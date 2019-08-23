@@ -142,8 +142,7 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
                            ThreadBlockUnblockPremature);
 
   // ThreadGroup:
-  void UpdateSortKey(
-      TransactionWithOwnedTaskSource transaction_with_task_source) override;
+  void UpdateSortKey(TaskSource::Transaction transaction) override;
   void PushTaskSourceAndWakeUpWorkers(
       TransactionWithRegisteredTaskSource transaction_with_task_source)
       override;

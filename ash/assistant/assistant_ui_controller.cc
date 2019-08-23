@@ -145,6 +145,25 @@ void AssistantUiController::OnMicStateChanged(MicState mic_state) {
     UpdateUiMode();
 }
 
+void AssistantUiController::OnProactiveSuggestionsChanged(
+    const ProactiveSuggestions* proactive_suggestions) {
+  // When proactive suggestions are present, we show the associated view if it
+  // isn't showing already. If it's already showing, no action need be taken.
+  if (proactive_suggestions) {
+    if (!proactive_suggestions_view_) {
+      CreateProactiveSuggestionsView();
+      proactive_suggestions_view_->GetWidget()->ShowInactive();
+    }
+    return;
+  }
+  // When proactive suggestions are absent, we need to ensure that the
+  // associated view is absent if it isn't already.
+  if (proactive_suggestions_view_) {
+    ResetProactiveSuggestionsView();
+    DCHECK(!proactive_suggestions_view_);
+  }
+}
+
 void AssistantUiController::OnScreenContextRequestStateChanged(
     ScreenContextRequestState request_state) {
   if (model_.visibility() != AssistantVisibility::kVisible)
@@ -231,11 +250,13 @@ void AssistantUiController::OnHighlighterEnabledChanged(
 void AssistantUiController::OnAssistantControllerConstructed() {
   assistant_controller_->interaction_controller()->AddModelObserver(this);
   assistant_controller_->screen_context_controller()->AddModelObserver(this);
+  assistant_controller_->suggestions_controller()->AddModelObserver(this);
   assistant_controller_->view_delegate()->AddObserver(this);
 }
 
 void AssistantUiController::OnAssistantControllerDestroying() {
   assistant_controller_->view_delegate()->RemoveObserver(this);
+  assistant_controller_->suggestions_controller()->RemoveModelObserver(this);
   assistant_controller_->screen_context_controller()->RemoveModelObserver(this);
   assistant_controller_->interaction_controller()->RemoveModelObserver(this);
 

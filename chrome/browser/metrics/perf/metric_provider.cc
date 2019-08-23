@@ -131,18 +131,6 @@ void MetricProvider::OnProfileDone(
                                 std::move(sampled_profile)));
 }
 
-void MetricProvider::OnJankStarted() {
-  collector_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&MetricCollector::OnJankStarted,
-                                base::Unretained(metric_collector_.get())));
-}
-
-void MetricProvider::OnJankStopped() {
-  collector_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&MetricCollector::OnJankStopped,
-                                base::Unretained(metric_collector_.get())));
-}
-
 void MetricProvider::AddProfileToCache(
     std::unique_ptr<SampledProfile> sampled_profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

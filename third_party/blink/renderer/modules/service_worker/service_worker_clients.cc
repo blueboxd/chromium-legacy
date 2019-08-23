@@ -39,6 +39,18 @@ mojom::ServiceWorkerClientType GetClientType(const String& type) {
   return mojom::ServiceWorkerClientType::kWindow;
 }
 
+mojom::ServiceWorkerClientLifecycleStateQuery GetLifecycleStateQueryType(
+    const String& type) {
+  if (type == "active")
+    return mojom::ServiceWorkerClientLifecycleStateQuery::kActive;
+  if (type == "frozen")
+    return mojom::ServiceWorkerClientLifecycleStateQuery::kFrozen;
+  if (type == "all")
+    return mojom::ServiceWorkerClientLifecycleStateQuery::kAll;
+  NOTREACHED();
+  return mojom::ServiceWorkerClientLifecycleStateQuery::kActive;
+}
+
 void DidGetClient(ScriptPromiseResolver* resolver,
                   mojom::blink::ServiceWorkerClientInfoPtr info) {
   if (!resolver->GetExecutionContext() ||
@@ -137,7 +149,8 @@ ScriptPromise ServiceWorkerClients::matchAll(
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   global_scope->GetServiceWorkerHost()->GetClients(
       mojom::blink::ServiceWorkerClientQueryOptions::New(
-          options->includeUncontrolled(), GetClientType(options->type())),
+          options->includeUncontrolled(), GetClientType(options->type()),
+          GetLifecycleStateQueryType(options->lifecycleState())),
       WTF::Bind(&DidGetClients, WrapPersistent(resolver)));
   return resolver->Promise();
 }

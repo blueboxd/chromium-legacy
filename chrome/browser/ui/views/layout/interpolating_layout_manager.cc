@@ -17,17 +17,16 @@ InterpolatingLayoutManager& InterpolatingLayoutManager::SetOrientation(
     views::LayoutOrientation orientation) {
   if (orientation_ != orientation) {
     orientation_ = orientation;
-    InvalidateLayout();
+    InvalidateHost(true);
   }
   return *this;
 }
 
 void InterpolatingLayoutManager::AddLayoutInternal(
-    std::unique_ptr<LayoutManagerBase> engine,
+    LayoutManagerBase* engine,
     const views::Span& interpolation_range) {
   DCHECK(engine);
 
-  SyncStateTo(engine.get());
   auto result = embedded_layouts_.emplace(
       std::make_pair(interpolation_range, std::move(engine)));
   DCHECK(result.second) << "Cannot replace existing layout manager for "
@@ -67,7 +66,7 @@ InterpolatingLayoutManager::GetInterpolation(
       << "No layout set for primary dimension size "
       << (dimension ? *dimension : -1) << "; first layout starts at "
       << match->first.ToString();
-  result.first = (--match)->second.get();
+  result.first = (--match)->second;
 
   // If the target size falls in an interpolation range, get the other layout.
   const views::Span& first_span = match->first;
@@ -76,7 +75,7 @@ InterpolatingLayoutManager::GetInterpolation(
         << "Primary dimension size " << (dimension ? *dimension : -1)
         << " falls into interpolation range " << match->first.ToString()
         << " but there is no smaller layout to interpolate with.";
-    result.second = (--match)->second.get();
+    result.second = (--match)->second;
     result.percent_second =
         float{first_span.end() - *dimension} / float{first_span.length()};
   }
@@ -111,12 +110,11 @@ void InterpolatingLayoutManager::SetDefaultLayout(
 
   // Make sure we already own the layout.
   DCHECK(embedded_layouts_.end() !=
-         std::find_if(embedded_layouts_.begin(), embedded_layouts_.end(),
-                      [=](const auto& pair) {
-                        return pair.second.get() == default_layout;
-                      }));
+         std::find_if(
+             embedded_layouts_.begin(), embedded_layouts_.end(),
+             [=](const auto& pair) { return pair.second == default_layout; }));
   default_layout_ = default_layout;
-  InvalidateLayout();
+  InvalidateHost(true);
 }
 
 gfx::Size InterpolatingLayoutManager::GetPreferredSize(
@@ -162,20 +160,6 @@ int InterpolatingLayoutManager::GetPreferredHeightForWidth(
                                            second);
 }
 
-void InterpolatingLayoutManager::InvalidateLayout() {
-  LayoutManagerBase::InvalidateLayout();
-  for (auto& embedded : embedded_layouts_)
-    embedded.second->InvalidateLayout();
-}
-
-void InterpolatingLayoutManager::SetChildViewIgnoredByLayout(
-    views::View* child_view,
-    bool ignored) {
-  LayoutManagerBase::SetChildViewIgnoredByLayout(child_view, ignored);
-  for (auto& embedded : embedded_layouts_)
-    embedded.second->SetChildViewIgnoredByLayout(child_view, ignored);
-}
-
 // static
 views::LayoutManagerBase::ProposedLayout
 InterpolatingLayoutManager::Interpolate(double value,
@@ -213,43 +197,14 @@ InterpolatingLayoutManager::Interpolate(double value,
   return layout;
 }
 
-void InterpolatingLayoutManager::Installed(views::View* host_view) {
-  LayoutManagerBase::Installed(host_view);
-  for (auto& embedded : embedded_layouts_)
-    embedded.second->Installed(host_view);
-}
-
-void InterpolatingLayoutManager::ViewAdded(views::View* host_view,
-                                           views::View* child_view) {
-  LayoutManagerBase::ViewAdded(host_view, child_view);
-  for (auto& embedded : embedded_layouts_)
-    embedded.second->ViewAdded(host_view, child_view);
-}
-
-void InterpolatingLayoutManager::ViewRemoved(views::View* host_view,
-                                             views::View* child_view) {
-  LayoutManagerBase::ViewRemoved(host_view, child_view);
-  for (auto& embedded : embedded_layouts_)
-    embedded.second->ViewRemoved(host_view, child_view);
-}
-
-void InterpolatingLayoutManager::ViewVisibilitySet(views::View* host,
-                                                   views::View* view,
-                                                   bool visible) {
-  LayoutManagerBase::ViewVisibilitySet(host, view, visible);
-  for (auto& embedded : embedded_layouts_)
-    embedded.second->ViewVisibilitySet(host, view, visible);
-}
-
 const views::LayoutManagerBase* InterpolatingLayoutManager::GetDefaultLayout()
     const {
   DCHECK(!embedded_layouts_.empty());
-  return default_layout_ ? default_layout_
-                         : embedded_layouts_.rbegin()->second.get();
+  return default_layout_ ? default_layout_ : embedded_layouts_.rbegin()->second;
 }
 
 const views::LayoutManagerBase* InterpolatingLayoutManager::GetSmallestLayout()
     const {
   DCHECK(!embedded_layouts_.empty());
-  return embedded_layouts_.begin()->second.get();
+  return embedded_layouts_.begin()->second;
 }

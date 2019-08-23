@@ -79,7 +79,7 @@ class AutomationEventWaiter : public ui::AXEventBundleSink {
 
     node_id_to_wait_for_ = node_id;
     run_loop_->Run();
-    run_loop_.reset(new base::RunLoop);
+    run_loop_ = std::make_unique<base::RunLoop>();
   }
 
   bool WasNodeIdFocused(int node_id) {

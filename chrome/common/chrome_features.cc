@@ -575,6 +575,12 @@ const base::Feature kNewPrintPreviewLayout{"NewPrintPreviewLayout",
 const base::Feature kPushMessagingBackgroundMode{
     "PushMessagingBackgroundMode", base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if defined(OS_ANDROID)
+// Enables using quiet prompts for notification permission requests.
+const base::Feature kQuietNotificationPrompts{
+    "QuietNotificationPrompts", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(OS_ANDROID)
+
 #if defined(OS_CHROMEOS)
 // Enables permanent removal of Legacy Supervised Users on startup.
 const base::Feature kRemoveSupervisedUsersOnStartup{

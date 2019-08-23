@@ -85,6 +85,10 @@ extern const base::Feature kUseAPDownloadProtection;
 // Controls whether Chrome on Android uses locally cached blacklists.
 extern const base::Feature kUseLocalBlacklistsV2;
 
+// Controls whether we are uploading files to Safe Browsing for malware
+// scanning.
+extern const base::Feature kUploadForMalwareCheck;
+
 base::ListValue GetFeatureStatusList();
 
 // Returns whether or not to stop filling in the SyncAccountType and

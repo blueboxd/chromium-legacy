@@ -60,7 +60,7 @@ class SendTabToSelfBubbleViewImplTest : public ChromeViewsTestBase {
     anchor_widget_ = std::make_unique<views::Widget>();
     anchor_widget_->Init(std::move(params));
 
-    profile_.reset(new TestingProfile);
+    profile_ = std::make_unique<TestingProfile>();
     controller_ = std::make_unique<SendTabToSelfBubbleControllerMock>();
     bubble_ = std::make_unique<SendTabToSelfBubbleViewImplMock>(
         anchor_widget_->GetContentsView(), nullptr, controller_.get());

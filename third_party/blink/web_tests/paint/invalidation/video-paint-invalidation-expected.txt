@@ -24,18 +24,16 @@
       "drawsContent": false
     },
     {
+      "name": "Squashing Containment Layer",
+      "drawsContent": false
+    },
+    {
       "name": "LayoutFlexibleBox (relative positioned) DIV class='sizing-small test-mode phase-ready state-scrubbing'",
       "position": [8, 8],
       "bounds": [320, 240]
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV",
-      "position": [8, 8],
-      "bounds": [320, 240],
-      "drawsContent": false
-    },
-    {
-      "name": "LayoutFlexibleBox DIV",
+      "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV)",
       "position": [8, 8],
       "bounds": [320, 240]
     }

@@ -2,7 +2,7 @@
   "comments": [
     "Runs tests on FYI on the latest simulators."
   ],
-  "xcode build version": "11m382q",
+  "xcode build version": "11m392q",
   "gn_args": [
     "goma_dir=\"$(goma_dir)\"",
     "is_component_build=false",
@@ -20,7 +20,7 @@
         "--enable-features=SlimNavigationManager"
       ],
       "device type": "iPhone 6s",
-      "os": "12.1",
+      "os": "12.2",
       "host os": "Mac-10.14.4",
       "pool":"Chrome"
     },
@@ -30,7 +30,7 @@
         "--enable-features=CredentialManager"
       ],
       "device type": "iPhone 6s",
-      "os": "12.1",
+      "os": "12.2",
       "xctest": true,
       "host os": "Mac-10.14.4",
       "pool":"Chrome"
@@ -41,7 +41,7 @@
         "--enable-features=CredentialManager"
       ],
       "device type": "iPad Air 2",
-      "os": "12.1",
+      "os": "12.2",
       "xctest": true,
       "host os": "Mac-10.14.4",
       "pool":"Chrome"
@@ -52,7 +52,7 @@
         "--enable-features=SlimNavigationManager"
       ],
       "device type": "iPhone 6s",
-      "os": "12.1",
+      "os": "12.2",
       "xctest": true,
       "host os": "Mac-10.14.4",
       "pool":"Chrome"
@@ -63,7 +63,7 @@
         "--enable-features=SlimNavigationManager"
       ],
       "device type": "iPhone 6s",
-      "os": "12.1",
+      "os": "12.2",
       "xctest": true,
       "host os": "Mac-10.14.4",
       "pool":"Chrome"
@@ -74,7 +74,7 @@
         "--enable-features=SlimNavigationManager"
       ],
       "device type": "iPhone 6s",
-      "os": "12.1",
+      "os": "12.2",
       "xctest": true,
       "host os": "Mac-10.14.4",
       "pool":"Chrome"
@@ -85,7 +85,7 @@
         "--enable-features=SlimNavigationManager"
       ],
       "device type": "iPhone 6s",
-      "os": "12.1",
+      "os": "12.2",
       "xctest": true,
       "host os": "Mac-10.14.4",
       "pool":"Chrome"
@@ -96,7 +96,7 @@
         "--enable-features=SlimNavigationManager"
       ],
       "device type": "iPhone 6s",
-      "os": "12.1",
+      "os": "12.2",
       "xctest": true,
       "host os": "Mac-10.14.4",
       "pool":"Chrome"

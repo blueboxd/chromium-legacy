@@ -186,8 +186,8 @@ ChromeAppDelegate::ChromeAppDelegate(bool keep_alive)
       for_lock_screen_app_(false),
       new_window_contents_delegate_(new NewWindowContentsDelegate()) {
   if (keep_alive) {
-    keep_alive_.reset(new ScopedKeepAlive(KeepAliveOrigin::CHROME_APP_DELEGATE,
-                                          KeepAliveRestartOption::DISABLED));
+    keep_alive_ = std::make_unique<ScopedKeepAlive>(
+        KeepAliveOrigin::CHROME_APP_DELEGATE, KeepAliveRestartOption::DISABLED);
   }
   registrar_.Add(this,
                  chrome::NOTIFICATION_APP_TERMINATING,
@@ -358,8 +358,8 @@ void ChromeAppDelegate::OnHide() {
 void ChromeAppDelegate::OnShow() {
   has_been_shown_ = true;
   is_hidden_ = false;
-  keep_alive_.reset(new ScopedKeepAlive(KeepAliveOrigin::CHROME_APP_DELEGATE,
-                                        KeepAliveRestartOption::DISABLED));
+  keep_alive_ = std::make_unique<ScopedKeepAlive>(
+      KeepAliveOrigin::CHROME_APP_DELEGATE, KeepAliveRestartOption::DISABLED);
 }
 
 bool ChromeAppDelegate::TakeFocus(content::WebContents* web_contents,

@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
-#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -670,18 +669,13 @@ void SVGImage::AdvanceAnimationForTesting() {
     root_element->TimeContainer()->AdvanceFrameForTesting();
 
     // The following triggers animation updates which can issue a new draw
-    // and temporarily change the animation timeline. It's necessary to call
-    // reset before changing to a time value as animation clock does not
-    // expect to go backwards.
-    base::TimeTicks current_animation_time =
-        page_->Animator().Clock().CurrentTime();
-    page_->Animator().Clock().ResetTimeForTesting();
+    // but will not permanently change the animation timeline.
+    // TODO(pdr): Actually advance the document timeline so CSS animations
+    // can be properly tested.
     page_->Animator().ServiceScriptedAnimations(
-        root_element->GetDocument().Timeline().ZeroTime() +
+        base::TimeTicks() +
         base::TimeDelta::FromSecondsD(root_element->getCurrentTime()));
     GetImageObserver()->Changed(this);
-    page_->Animator().Clock().ResetTimeForTesting();
-    page_->Animator().Clock().UpdateTime(current_animation_time);
   }
 }
 

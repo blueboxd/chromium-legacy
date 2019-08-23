@@ -59,7 +59,7 @@ class HistoryMenuBridgeTest : public CocoaProfileTest {
     ASSERT_TRUE(profile()->CreateHistoryService(/*delete_file=*/true,
                                                 /*no_db=*/false));
     profile()->CreateFaviconService();
-    bridge_.reset(new MockBridge(profile()));
+    bridge_ = std::make_unique<MockBridge>(profile());
   }
 
   // We are a friend of HistoryMenuBridge (and have access to

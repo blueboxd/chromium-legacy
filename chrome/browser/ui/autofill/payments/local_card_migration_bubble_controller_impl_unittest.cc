@@ -69,7 +69,8 @@ class LocalCardMigrationBubbleTestBrowserWindow : public TestBrowserWindow {
       content::WebContents* contents,
       LocalCardMigrationBubbleController* controller,
       bool user_gesture) override {
-    test_local_card_migration_bubble_.reset(new TestLocalCardMigrationBubble());
+    test_local_card_migration_bubble_ =
+        std::make_unique<TestLocalCardMigrationBubble>();
     return test_local_card_migration_bubble_.get();
   }
 

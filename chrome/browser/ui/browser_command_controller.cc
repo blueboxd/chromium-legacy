@@ -502,13 +502,13 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_SAVE_PAGE:
       SavePage(browser_);
       break;
-    case IDC_BOOKMARK_PAGE:
+    case IDC_BOOKMARK_THIS_TAB:
 #if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
       feature_engagement::BookmarkTrackerFactory::GetInstance()
           ->GetForProfile(profile())
           ->OnBookmarkAdded();
 #endif
-      BookmarkCurrentPageAllowingExtensionOverrides(browser_);
+      BookmarkCurrentTabAllowingExtensionOverrides(browser_);
       break;
     case IDC_BOOKMARK_ALL_TABS:
 #if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
@@ -1184,8 +1184,8 @@ void BrowserCommandController::UpdateCommandsForBookmarkEditing() {
   if (is_locked_fullscreen_)
     return;
 
-  command_updater_.UpdateCommandEnabled(IDC_BOOKMARK_PAGE,
-                                        CanBookmarkCurrentPage(browser_));
+  command_updater_.UpdateCommandEnabled(IDC_BOOKMARK_THIS_TAB,
+                                        CanBookmarkCurrentTab(browser_));
   command_updater_.UpdateCommandEnabled(IDC_BOOKMARK_ALL_TABS,
                                         CanBookmarkAllTabs(browser_));
 #if defined(OS_WIN)
@@ -1403,9 +1403,8 @@ void BrowserCommandController::UpdateTabRestoreCommandState() {
   // The command is updated once the load completes.
   command_updater_.UpdateCommandEnabled(
       IDC_RESTORE_TAB,
-      tab_restore_service &&
-          (!tab_restore_service->IsLoaded() ||
-           GetRestoreTabType(browser_) != TabStripModelDelegate::RESTORE_NONE));
+      tab_restore_service && (!tab_restore_service->IsLoaded() ||
+                              !tab_restore_service->entries().empty()));
 }
 
 void BrowserCommandController::UpdateCommandsForFind() {

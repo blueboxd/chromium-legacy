@@ -130,6 +130,10 @@ const char LockScreenMediaControlsView::kMediaControlsHideHistogramName[] =
 const char LockScreenMediaControlsView::kMediaControlsShownHistogramName[] =
     "Media.LockScreenControls.Shown";
 
+const char
+    LockScreenMediaControlsView::kMediaControlsUserActionHistogramName[] =
+        "Media.LockScreenControls.UserAction";
+
 LockScreenMediaControlsView::Callbacks::Callbacks() = default;
 
 LockScreenMediaControlsView::Callbacks::~Callbacks() = default;
@@ -527,9 +531,11 @@ void LockScreenMediaControlsView::ButtonPressed(views::Button* sender,
     return;
   }
 
-  media_session::PerformMediaSessionAction(
-      media_message_center::GetActionFromButtonTag(*sender),
-      media_controller_remote_);
+  auto action = media_message_center::GetActionFromButtonTag(*sender);
+
+  base::UmaHistogramEnumeration(kMediaControlsUserActionHistogramName, action);
+
+  media_session::PerformMediaSessionAction(action, media_controller_remote_);
 }
 
 void LockScreenMediaControlsView::OnGestureEvent(ui::GestureEvent* event) {
@@ -625,6 +631,9 @@ void LockScreenMediaControlsView::SeekTo(double seek_progress) {
   DCHECK(position_.has_value());
 
   media_controller_remote_->SeekTo(seek_progress * position_->duration());
+
+  base::UmaHistogramEnumeration(kMediaControlsUserActionHistogramName,
+                                MediaSessionAction::kSeekTo);
 }
 
 void LockScreenMediaControlsView::Hide(HideReason reason) {
@@ -649,6 +658,10 @@ void LockScreenMediaControlsView::SetShown(Shown shown) {
 
 void LockScreenMediaControlsView::Dismiss() {
   media_controller_remote_->Stop();
+
+  base::UmaHistogramEnumeration(kMediaControlsUserActionHistogramName,
+                                MediaSessionAction::kStop);
+
   Hide(HideReason::kDismissedByUser);
 }
 

@@ -255,8 +255,8 @@ TEST_F(NotificationSchedulerTest, BackgroundTaskStartShowNothing) {
 
   // No notification picked to show.
   DisplayDecider::Results result;
-  EXPECT_CALL(*display_decider(), FindNotificationsToShow(_, _, _, _))
-      .WillOnce(SetArgPointee<3>(result));
+  EXPECT_CALL(*display_decider(), FindNotificationsToShow(_, _, _))
+      .WillOnce(SetArgPointee<2>(result));
 
   EXPECT_CALL(*display_agent(), ShowNotification(_, _)).Times(0);
   EXPECT_CALL(*notification_manager(), DisplayNotification(_)).Times(0);
@@ -289,8 +289,8 @@ TEST_F(NotificationSchedulerTest, BackgroundTaskStartShowNotification) {
       ShowNotification(NotifcationDataEq(kTitle),
                        SystemDataEq(SchedulerClientType::kTest1, kGuid)));
   DisplayDecider::Results result({kGuid});
-  EXPECT_CALL(*display_decider(), FindNotificationsToShow(_, _, _, _))
-      .WillOnce(SetArgPointee<3>(result));
+  EXPECT_CALL(*display_decider(), FindNotificationsToShow(_, _, _))
+      .WillOnce(SetArgPointee<2>(result));
   EXPECT_CALL(*impression_tracker(), AddImpression(_, _, _, _));
 
   EXPECT_CALL(*client(), BeforeShowNotification(_, _))

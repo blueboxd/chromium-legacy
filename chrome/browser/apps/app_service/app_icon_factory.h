@@ -35,6 +35,13 @@ enum IconEffects : uint32_t {
   kRoundCorners = 0x08,  // Bookmark apps get round corners.
 };
 
+// Modifies |image_skia| to apply icon post-processing effects like badging and
+// desaturation to gray.
+void ApplyIconEffects(IconEffects icon_effects,
+                      int size_hint_in_dip,
+                      gfx::ImageSkia* image_skia);
+
+// Loads an icon from an extension.
 void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
                            int size_hint_in_dip,
                            content::BrowserContext* context,
@@ -42,6 +49,8 @@ void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
                            IconEffects icon_effects,
                            apps::mojom::Publisher::LoadIconCallback callback);
 
+// Loads an icon from a FilePath. If that fails, it calls the fallback.
+//
 // The file named by |path| might be empty, not found or otherwise unreadable.
 // If so, "fallback(callback)" is run. If the file is non-empty and readable,
 // just "callback" is run, even if that file doesn't contain a valid image.
@@ -54,6 +63,8 @@ void LoadIconFromFileWithFallback(
     base::OnceCallback<void(apps::mojom::Publisher::LoadIconCallback)>
         fallback);
 
+// Loads an icon from a compiled-into-the-binary resource, with a resource_id
+// named IDR_XXX, for some value of XXX.
 void LoadIconFromResource(apps::mojom::IconCompression icon_compression,
                           int size_hint_in_dip,
                           int resource_id,

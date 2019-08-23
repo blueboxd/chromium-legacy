@@ -255,6 +255,10 @@ class NavigationBrowserTest : public NavigationBaseBrowserTest {
   }
 };
 
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         NavigationBrowserTest,
+                         ::testing::Bool());
+
 class NetworkIsolationNavigationBrowserTest
     : public ContentBrowserTest,
       public ::testing::WithParamInterface<bool> {
@@ -2021,7 +2025,9 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, BlockedSrcDocBrowserInitiated) {
 }
 
 // Test NavigationRequest::CheckAboutSrcDoc().
-IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, BlockedSrcDocRendererInitiated) {
+// TODO(https://crbug.com/996725): Re-enable this test.
+IN_PROC_BROWSER_TEST_P(NavigationBrowserTest,
+                       DISABLED_BlockedSrcDocRendererInitiated) {
   EXPECT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
   FrameTreeNode* main_frame =

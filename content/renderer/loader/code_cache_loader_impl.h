@@ -28,10 +28,9 @@ class CodeCacheLoaderImpl : public blink::CodeCacheLoader {
   // Fetches code cache corresponding to |url| and returns response in
   // |response_time_out| and |data_out|.  |response_time_out| and |data_out|
   // cannot be nullptrs. This only fetches from the Javascript cache.
-  void FetchFromCodeCacheSynchronously(
-      const GURL& url,
-      base::Time* response_time_out,
-      blink::WebVector<uint8_t>* data_out) override;
+  void FetchFromCodeCacheSynchronously(const GURL& url,
+                                       base::Time* response_time_out,
+                                       mojo_base::BigBuffer* data_out) override;
 
   void FetchFromCodeCache(blink::mojom::CodeCacheType cache_type,
                           const GURL& url,
@@ -46,14 +45,14 @@ class CodeCacheLoaderImpl : public blink::CodeCacheLoader {
   void OnReceiveCachedCode(FetchCodeCacheCallback callback,
                            base::WaitableEvent* event,
                            base::Time response_time,
-                           base::span<const uint8_t> data);
+                           mojo_base::BigBuffer data);
   void ReceiveDataForSynchronousFetch(base::Time response_time,
-                                      base::span<const uint8_t> data);
+                                      mojo_base::BigBuffer data);
   void OnTerminate(base::WaitableEvent* fetch_event,
                    base::WaitableEvent* terminate_event);
 
   base::Time response_time_for_sync_load_;
-  std::vector<uint8_t> data_for_sync_load_;
+  mojo_base::BigBuffer data_for_sync_load_;
   bool terminated_ = false;
   base::WaitableEventWatcher terminate_watcher_;
   base::WaitableEvent* terminate_sync_load_event_ = nullptr;

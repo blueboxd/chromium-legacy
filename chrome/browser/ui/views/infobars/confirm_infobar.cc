@@ -42,9 +42,9 @@ ConfirmInfoBar::ConfirmInfoBar(std::unique_ptr<ConfirmInfoBarDelegate> delegate)
     ok_button_ = CreateButton(ConfirmInfoBarDelegate::BUTTON_OK);
     ok_button_->SetProminent(true);
     if (delegate_ptr->OKButtonTriggersUACPrompt()) {
-      elevation_icon_setter_.reset(new ElevationIconSetter(
+      elevation_icon_setter_ = std::make_unique<ElevationIconSetter>(
           ok_button_,
-          base::BindOnce(&ConfirmInfoBar::Layout, base::Unretained(this))));
+          base::BindOnce(&ConfirmInfoBar::Layout, base::Unretained(this)));
     }
   }
 

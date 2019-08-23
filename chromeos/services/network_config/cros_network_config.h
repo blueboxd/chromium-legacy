@@ -90,9 +90,6 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
   void DevicePropertiesUpdated(const DeviceState* device) override;
   void OnShuttingDown() override;
 
-  mojom::NetworkStatePropertiesPtr GetMojoNetworkState(
-      const NetworkState* network);
-
   NetworkStateHandler* network_state_handler_;    // Unowned
   NetworkDeviceHandler* network_device_handler_;  // Unowned
   ManagedNetworkConfigurationHandler*

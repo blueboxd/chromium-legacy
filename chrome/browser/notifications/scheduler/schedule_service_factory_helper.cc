@@ -12,7 +12,6 @@
 #include "base/time/default_clock.h"
 #include "chrome/browser/notifications/scheduler/internal/background_task_coordinator.h"
 #include "chrome/browser/notifications/scheduler/internal/display_decider.h"
-#include "chrome/browser/notifications/scheduler/internal/distribution_policy.h"
 #include "chrome/browser/notifications/scheduler/internal/icon_converter_impl.h"
 #include "chrome/browser/notifications/scheduler/internal/icon_store.h"
 #include "chrome/browser/notifications/scheduler/internal/impression_history_tracker.h"
@@ -100,7 +99,7 @@ KeyedService* CreateNotificationScheduleService(
       base::DefaultClock::GetInstance());
 
   auto display_decider = DisplayDecider::Create(
-      config.get(), registered_clients, DistributionPolicy::Create());
+      config.get(), registered_clients, base::DefaultClock::GetInstance());
   auto context = std::make_unique<NotificationSchedulerContext>(
       std::move(client_registrar), std::move(background_task_coordinator),
       std::move(impression_tracker), std::move(notification_manager),

@@ -619,6 +619,8 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
 
   // View ----------------------------------------------------------------------
 
+  // This class owns this member, and is responsible for calling
+  // WebView::Close().
   blink::WebView* webview_ = nullptr;
 
   // Cache the preferred size of the page in order to prevent sending the IPC

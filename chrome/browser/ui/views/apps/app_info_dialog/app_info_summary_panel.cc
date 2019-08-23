@@ -203,7 +203,8 @@ void AppInfoSummaryPanel::AddLaunchOptionControl(views::View* vertical_stack) {
   if (!CanSetLaunchType())
     return;
 
-  launch_options_combobox_model_.reset(new LaunchOptionsComboboxModel());
+  launch_options_combobox_model_ =
+      std::make_unique<LaunchOptionsComboboxModel>();
   auto launch_options_combobox =
       std::make_unique<views::Combobox>(launch_options_combobox_model_.get());
   launch_options_combobox->SetAccessibleName(

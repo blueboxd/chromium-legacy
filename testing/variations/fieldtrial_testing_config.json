@@ -182,21 +182,6 @@
             ]
         }
     ],
-    "AndroidIdentityDisc": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "IdentityDisc"
-                    ]
-                }
-            ]
-        }
-    ],
     "AndroidInProductHelpContextualSearchPromotePanelOpen": [
         {
             "platforms": [
@@ -1598,6 +1583,21 @@
                     },
                     "enable_features": [
                         "ContentCapture"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ContextMenuSearchWithGoogleLens": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "ContextMenuSearchWithGoogleLensActivate",
+                    "enable_features": [
+                        "ContextMenuSearchWithGoogleLens"
                     ]
                 }
             ]
@@ -4234,6 +4234,48 @@
             ]
         }
     ],
+    "PerProcessReclaim": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledGroupA_08222019",
+                    "params": {
+                        "GraphWalkBackoffTimeSec": "60",
+                        "NodeInvisibleTimeSec": "360",
+                        "NodeTrimBackoffTimeSec": "1200"
+                    },
+                    "enable_features": [
+                        "TrimOnMemoryPressure"
+                    ]
+                },
+                {
+                    "name": "EnabledGroupB_08222019",
+                    "params": {
+                        "GraphWalkBackoffTimeSec": "180",
+                        "NodeInvisibleTimeSec": "900",
+                        "NodeTrimBackoffTimeSec": "1800"
+                    },
+                    "enable_features": [
+                        "TrimOnMemoryPressure"
+                    ]
+                },
+                {
+                    "name": "EnabledGroupC_08222019",
+                    "params": {
+                        "GraphWalkBackoffTimeSec": "180",
+                        "NodeInvisibleTimeSec": "3600",
+                        "NodeTrimBackoffTimeSec": "7200"
+                    },
+                    "enable_features": [
+                        "TrimOnMemoryPressure"
+                    ]
+                }
+            ]
+        }
+    ],
     "PermissionPromptUIAndroid": [
         {
             "platforms": [
@@ -6412,21 +6454,6 @@
                     "name": "Enabled_V2",
                     "enable_features": [
                         "ViewsCastDialog"
-                    ]
-                }
-            ]
-        }
-    ],
-    "VizDisplayCompositor": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "VizDisplayCompositor",
-                    "enable_features": [
-                        "VizDisplayCompositor"
                     ]
                 }
             ]

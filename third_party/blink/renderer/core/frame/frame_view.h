@@ -49,16 +49,16 @@ class CORE_EXPORT FrameView : public EmbeddedContentView {
   // lifecycle updates in the child frame will skip rendering work.
   bool IsHiddenForThrottling() const { return hidden_for_throttling_; }
   bool IsSubtreeThrottled() const { return subtree_throttled_; }
-  void UpdateRenderThrottlingStatus(bool hidden_for_throttling,
-                                    bool subtree_throttled,
-                                    bool recurse = false);
+  virtual void UpdateRenderThrottlingStatus(bool hidden_for_throttling,
+                                            bool subtree_throttled,
+                                            bool recurse = false);
 
   bool RectInParentIsStable(const base::TimeTicks& timestamp) const;
 
  protected:
   virtual void SetViewportIntersection(const IntRect& viewport_intersection,
                                        FrameOcclusionState occlusion_state) = 0;
-  virtual void RenderThrottlingStatusChanged() = 0;
+  virtual void VisibilityForThrottlingChanged() = 0;
   virtual bool LifecycleUpdatesThrottled() const { return false; }
   void UpdateViewportIntersection(unsigned, bool);
   // FrameVisibility is tracked by the browser process, which may suppress

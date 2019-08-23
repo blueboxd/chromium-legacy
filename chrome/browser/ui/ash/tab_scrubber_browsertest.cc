@@ -152,7 +152,7 @@ class TabScrubberTest : public InProcessBrowserTest,
                  GetStartX(browser, active_index, direction);
     ui::ScrollEvent scroll_event(ui::ET_SCROLL, gfx::Point(0, 0),
                                  ui::EventTimeForNow(), 0, offset, 0, offset, 0,
-                                 3);
+                                 4);
     event_generator->Dispatch(&scroll_event);
   }
 
@@ -242,8 +242,8 @@ class TabScrubberTest : public InProcessBrowserTest,
   // forces the TabScrubber to complete any pending activation.
   class ScrollGenerator {
    public:
-    // TabScrubber reacts to three-finger scrolls.
-    static const int kNumFingers = 3;
+    // TabScrubber reacts to four-finger scrolls.
+    static const int kNumFingers = 4;
 
     explicit ScrollGenerator(ui::test::EventGenerator* event_generator)
         : event_generator_(event_generator) {

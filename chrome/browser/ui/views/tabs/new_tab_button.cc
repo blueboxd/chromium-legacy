@@ -231,10 +231,9 @@ void NewTabButton::PaintFill(gfx::Canvas* canvas) const {
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
 
-  bool has_custom_image;
-  const int bg_id = tab_strip_->GetBackgroundResourceId(&has_custom_image);
   const float scale = canvas->image_scale();
-  if (has_custom_image && !new_tab_promo_observer_.IsObservingSources()) {
+  const base::Optional<int> bg_id = tab_strip_->GetCustomBackgroundId();
+  if (bg_id.has_value() && !new_tab_promo_observer_.IsObservingSources()) {
     float x_scale = scale;
     const gfx::Rect& contents_bounds = GetContentsBounds();
     int x = GetMirroredX() + contents_bounds.x() +
@@ -249,8 +248,9 @@ void NewTabButton::PaintFill(gfx::Canvas* canvas) const {
     }
 
     canvas->InitPaintFlagsForTiling(
-        *GetThemeProvider()->GetImageSkiaNamed(bg_id), x, contents_bounds.y(),
-        x_scale, scale, 0, 0, SkTileMode::kRepeat, SkTileMode::kRepeat, &flags);
+        *GetThemeProvider()->GetImageSkiaNamed(bg_id.value()), x,
+        contents_bounds.y(), x_scale, scale, 0, 0, SkTileMode::kRepeat,
+        SkTileMode::kRepeat, &flags);
   } else {
     flags.setColor(GetButtonFillColor());
   }

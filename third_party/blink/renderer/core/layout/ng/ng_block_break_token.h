@@ -92,7 +92,7 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
   // this child).
   //
   // A child which we haven't visited yet doesn't have a break token here.
-  const base::span<NGBreakToken* const> ChildBreakTokens() const {
+  const base::span<const NGBreakToken* const> ChildBreakTokens() const {
     return base::make_span(child_break_tokens_, num_children_);
   }
 
@@ -119,7 +119,7 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
 
   wtf_size_t num_children_;
   // This must be the last member, because it is a flexible array.
-  NGBreakToken* child_break_tokens_[];
+  const NGBreakToken* child_break_tokens_[];
 };
 
 template <>

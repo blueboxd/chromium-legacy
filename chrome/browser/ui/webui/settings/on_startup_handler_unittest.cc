@@ -58,7 +58,7 @@ class OnStartupHandlerTest : public testing::Test {
     profile_ = profile_manager_.CreateTestingProfile("Profile 1");
 #endif
 
-    handler_.reset(new TestOnStartupHandler(profile_));
+    handler_ = std::make_unique<TestOnStartupHandler>(profile_);
     handler_->set_web_ui(&web_ui_);
   }
 

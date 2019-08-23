@@ -66,10 +66,6 @@ class FakeSerialPort : public mojom::SerialPort {
 
   void GetPortInfo(GetPortInfoCallback callback) override { NOTREACHED(); }
 
-  void SetBreak(SetBreakCallback callback) override { NOTREACHED(); }
-
-  void ClearBreak(ClearBreakCallback callback) override { NOTREACHED(); }
-
   void Close(CloseCallback callback) override { std::move(callback).Run(); }
 
  private:

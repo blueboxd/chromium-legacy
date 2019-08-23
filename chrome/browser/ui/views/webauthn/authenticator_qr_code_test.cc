@@ -15,11 +15,12 @@ TEST(AuthenticatorQRCode, Generate) {
   AuthenticatorQRCode qr;
   uint8_t input[AuthenticatorQRCode::kInputBytes];
   memset(input, 'a', sizeof(input));
-  const uint8_t* qr_data = qr.Generate(input);
+  auto qr_data = qr.Generate(input);
 
+  int index = 0;
   for (int y = 0; y < AuthenticatorQRCode::kSize; y++) {
     for (int x = 0; x < AuthenticatorQRCode::kSize; x++) {
-      ASSERT_EQ(0, *(qr_data++) & 0b11111100);
+      ASSERT_EQ(0, qr_data[index++] & 0b11111100);
     }
   }
 }

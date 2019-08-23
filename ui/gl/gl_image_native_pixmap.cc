@@ -63,8 +63,6 @@ unsigned GetInternalFormatFromFormat(gfx::BufferFormat format) {
       return GL_RGB_YCBCR_420V_CHROMIUM;
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::RGBA_F16:
-    case gfx::BufferFormat::UYVY_422:
-      return GL_NONE;
     case gfx::BufferFormat::P010:
       return GL_RGB_YCBCR_P010_CHROMIUM;
   }
@@ -103,8 +101,6 @@ EGLint FourCC(gfx::BufferFormat format) {
       return DRM_FORMAT_P010;
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::RGBA_F16:
-    case gfx::BufferFormat::UYVY_422:
-      NOTREACHED();
       return 0;
   }
 

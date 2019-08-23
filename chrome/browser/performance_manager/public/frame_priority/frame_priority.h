@@ -127,6 +127,9 @@ class Vote final {
   base::TaskPriority priority() const { return priority_; }
   const char* reason() const { return reason_; }
 
+  bool operator==(const Vote& vote) const;
+  bool operator!=(const Vote& vote) const;
+
   bool IsValid() const;
 
  private:
@@ -144,7 +147,7 @@ class AcceptedVote;
 class VoteReceipt final {
  public:
   VoteReceipt();
-  VoteReceipt(VoteReceipt& rhs) = delete;
+  VoteReceipt(const VoteReceipt& rhs) = delete;
   VoteReceipt(VoteReceipt&& rhs);
 
   VoteReceipt& operator=(const VoteReceipt& rhs) = delete;
@@ -214,7 +217,7 @@ class AcceptedVote final {
  public:
   AcceptedVote();
   AcceptedVote(VoteConsumer* consumer, VoterId voter_id, const Vote& vote);
-  AcceptedVote(AcceptedVote& rhs) = delete;
+  AcceptedVote(const AcceptedVote& rhs) = delete;
   AcceptedVote(AcceptedVote&& rhs);
 
   AcceptedVote& operator=(const AcceptedVote& rhs) = delete;

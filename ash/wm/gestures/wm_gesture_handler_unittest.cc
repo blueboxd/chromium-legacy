@@ -68,7 +68,7 @@ TEST_F(WmGestureHandlerTest, VerticalScrolls) {
   EXPECT_FALSE(InOverviewSession());
 }
 
-// Tests three finger horizontal scroll gesture to move selection left or right.
+// Tests four finger horizontal scroll gesture to move selection left or right.
 TEST_F(WmGestureHandlerTest, HorizontalScrollInOverview) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1 = CreateTestWindow(bounds);
@@ -88,7 +88,7 @@ TEST_F(WmGestureHandlerTest, HorizontalScrollInOverview) {
   auto scroll_until_window_highlighted = [this](float x_offset,
                                                 float y_offset) {
     do {
-      Scroll(x_offset, y_offset, /*num_fingers=*/3);
+      Scroll(x_offset, y_offset, /*num_fingers=*/4);
     } while (!GetHighlightedWindow());
   };
 
@@ -99,15 +99,16 @@ TEST_F(WmGestureHandlerTest, HorizontalScrollInOverview) {
   scroll_until_window_highlighted(horizontal_scroll * 3, 0);
   EXPECT_TRUE(InOverviewSession());
 
-  // Short scroll left (3 fingers) moves selection to the third window.
+  // Short scroll left (4 fingers) moves selection to the third window.
   scroll_until_window_highlighted(-horizontal_scroll, 0);
   EXPECT_TRUE(InOverviewSession());
 
-  // Short scroll left (3 fingers) moves selection to the second window.
+  // Short scroll left (4 fingers) moves selection to the second window.
   scroll_until_window_highlighted(-horizontal_scroll, 0);
   EXPECT_TRUE(InOverviewSession());
 
-  // Swiping down exits and selects the currently-highlighted window.
+  // Swiping down (3 fingers) exits and selects the currently-highlighted
+  // window.
   Scroll(0, vertical_scroll, 3);
   EXPECT_FALSE(InOverviewSession());
 
@@ -166,7 +167,7 @@ class DesksGestureHandlerTest : public WmGestureHandlerTest {
     DeskSwitchAnimationWaiter waiter;
     const float x_offset =
         (scroll_left ? -1 : 1) * WmGestureHandler::kHorizontalThresholdDp;
-    Scroll(x_offset, 0, 4);
+    Scroll(x_offset, 0, 3);
     waiter.Wait();
   }
 
@@ -176,7 +177,7 @@ class DesksGestureHandlerTest : public WmGestureHandlerTest {
   DISALLOW_COPY_AND_ASSIGN(DesksGestureHandlerTest);
 };
 
-// Tests that a four-finger scroll will switch desks as expected.
+// Tests that a three-finger horizontal scroll will switch desks as expected.
 TEST_F(DesksGestureHandlerTest, HorizontalScrolls) {
   auto* desk_controller = DesksController::Get();
   desk_controller->NewDesk(DesksCreationRemovalSource::kButton);
@@ -194,7 +195,7 @@ TEST_F(DesksGestureHandlerTest, HorizontalScrolls) {
   // Tests that since there is no previous desk, we remain on the same desk when
   // scrolling right.
   const float long_scroll = WmGestureHandler::kHorizontalThresholdDp;
-  Scroll(long_scroll, 0.f, 4);
+  Scroll(long_scroll, 0.f, 3);
   EXPECT_EQ(desk_controller->desks()[0].get(), desk_controller->active_desk());
 }
 
@@ -209,16 +210,16 @@ TEST_F(DesksGestureHandlerTest, NoDeskChanges) {
   const float short_scroll = WmGestureHandler::kHorizontalThresholdDp - 10.f;
   const float long_scroll = WmGestureHandler::kHorizontalThresholdDp;
   // Tests that a short horizontal scroll does not switch desks.
-  Scroll(short_scroll, 0.f, 4);
+  Scroll(short_scroll, 0.f, 3);
   EXPECT_EQ(desk_controller->desks()[0].get(), desk_controller->active_desk());
 
   // Tests that a scroll that meets the horizontal requirements, but is mostly
   // vertical does not switch desks.
-  Scroll(long_scroll, long_scroll + 10.f, 4);
+  Scroll(long_scroll, long_scroll + 10.f, 3);
   EXPECT_EQ(desk_controller->desks()[0].get(), desk_controller->active_desk());
 
   // Tests that a vertical scroll does not switch desks.
-  Scroll(0.f, WmGestureHandler::kVerticalThresholdDp, 4);
+  Scroll(0.f, WmGestureHandler::kVerticalThresholdDp, 3);
   EXPECT_EQ(desk_controller->desks()[0].get(), desk_controller->active_desk());
 }
 
@@ -233,7 +234,7 @@ TEST_F(DesksGestureHandlerTest, NoDoubleDeskChange) {
 
   const float long_scroll = WmGestureHandler::kHorizontalThresholdDp * 3;
   DeskSwitchAnimationWaiter waiter;
-  Scroll(-long_scroll, 0, 4);
+  Scroll(-long_scroll, 0, 3);
   waiter.Wait();
   EXPECT_EQ(desk_controller->desks()[1].get(), desk_controller->active_desk());
 }

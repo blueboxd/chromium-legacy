@@ -1232,8 +1232,6 @@ void LayerTreeHost::SetViewportVisibleRect(const gfx::Rect& visible_rect) {
     return;
 
   viewport_visible_rect_ = visible_rect;
-  SetPropertyTreesNeedRebuild();
-  SetNeedsCommit();
 }
 
 void LayerTreeHost::SetBrowserControlsHeight(float top_height,
@@ -1598,7 +1596,6 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
   tree_impl->set_painted_device_scale_factor(painted_device_scale_factor_);
   tree_impl->SetDeviceScaleFactor(device_scale_factor_);
   tree_impl->SetDeviceViewportSize(device_viewport_size_);
-  tree_impl->SetViewportVisibleRect(viewport_visible_rect_);
 
   if (TakeNewLocalSurfaceIdRequest())
     tree_impl->RequestNewLocalSurfaceId();

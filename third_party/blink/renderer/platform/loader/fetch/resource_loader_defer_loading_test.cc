@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader.h"
 
 #include "base/bind.h"
+#include "mojo/public/cpp/base/big_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
@@ -66,9 +67,10 @@ class ResourceLoaderDefersLoadingTest::TestCodeCacheLoader
   ~TestCodeCacheLoader() override = default;
 
   // CodeCacheLoader methods:
-  void FetchFromCodeCacheSynchronously(const GURL& url,
-                                       base::Time* response_time_out,
-                                       WebVector<uint8_t>* data_out) override {}
+  void FetchFromCodeCacheSynchronously(
+      const GURL& url,
+      base::Time* response_time_out,
+      mojo_base::BigBuffer* buffer_out) override {}
   void FetchFromCodeCache(
       blink::mojom::CodeCacheType cache_type,
       const GURL& url,

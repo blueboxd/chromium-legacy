@@ -43,9 +43,9 @@ class BubbleSyncPromoViewTest : public ChromeViewsTestBase,
 
 TEST_F(BubbleSyncPromoViewTest, SignInLink) {
   std::unique_ptr<BubbleSyncPromoView> sync_promo;
-  sync_promo.reset(new BubbleSyncPromoView(
+  sync_promo = std::make_unique<BubbleSyncPromoView>(
       this, signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE,
-      IDS_BOOKMARK_SYNC_PROMO_LINK, IDS_BOOKMARK_SYNC_PROMO_MESSAGE));
+      IDS_BOOKMARK_SYNC_PROMO_LINK, IDS_BOOKMARK_SYNC_PROMO_MESSAGE);
 
   // Simulate clicking the "Sign in" link.
   views::StyledLabel styled_label(base::ASCIIToUTF16("test"), nullptr);

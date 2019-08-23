@@ -868,12 +868,9 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-    auto* host_content_settings_map =
-        HostContentSettingsMapFactory::GetForProfile(profile_);
     if (FlashDeprecationInfoBarDelegate::ShouldDisplayFlashDeprecation(
-            host_content_settings_map)) {
-      FlashDeprecationInfoBarDelegate::Create(infobar_service,
-                                              host_content_settings_map);
+            profile_)) {
+      FlashDeprecationInfoBarDelegate::Create(infobar_service, profile_);
     }
 #endif
   }

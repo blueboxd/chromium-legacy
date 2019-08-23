@@ -101,7 +101,7 @@ void SlowHandler::RegisterMessages() {
       kJsApiLoadComplete,
       base::BindRepeating(&SlowHandler::LoadComplete, base::Unretained(this)));
 
-  user_pref_registrar_.reset(new PrefChangeRegistrar);
+  user_pref_registrar_ = std::make_unique<PrefChangeRegistrar>();
   user_pref_registrar_->Init(profile_->GetPrefs());
   user_pref_registrar_->Add(prefs::kPerformanceTracingEnabled,
                             base::Bind(&SlowHandler::UpdatePage,

@@ -152,7 +152,7 @@ TEST_F(BrowserCommandsTest, ViewSource) {
   EXPECT_FALSE(controller.GetPendingEntry());
 }
 
-TEST_F(BrowserCommandsTest, BookmarkCurrentPage) {
+TEST_F(BrowserCommandsTest, BookmarkCurrentTab) {
   // We use profile() here, since it's a TestingProfile.
   profile()->CreateBookmarkModel(true);
 
@@ -166,7 +166,7 @@ TEST_F(BrowserCommandsTest, BookmarkCurrentPage) {
                                    WindowOpenDisposition::CURRENT_TAB,
                                    ui::PAGE_TRANSITION_TYPED, false));
 
-  chrome::BookmarkCurrentPageAllowingExtensionOverrides(browser());
+  chrome::BookmarkCurrentTabAllowingExtensionOverrides(browser());
 
   // It should now be bookmarked in the bookmark model.
   EXPECT_EQ(profile(), browser()->profile());

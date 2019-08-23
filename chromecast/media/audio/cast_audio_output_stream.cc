@@ -366,7 +366,10 @@ void CastAudioOutputStream::CmaWrapper::PushBuffer() {
       source_callback_->OnMoreData(delay, delay_timestamp, 0, audio_bus_.get());
   DVLOG(3) << "frames_filled=" << frame_count << " with latency=" << delay;
 
-  DCHECK_EQ(frame_count, audio_bus_->frames());
+  if (frame_count == 0) {
+    OnPushBufferComplete(CmaBackend::BufferStatus::kBufferFailed);
+    return;
+  }
   auto decoder_buffer =
       base::MakeRefCounted<DecoderBufferAdapter>(new ::media::DecoderBuffer(
           audio_params_.GetBytesPerBuffer(::media::kSampleFormatS16)));

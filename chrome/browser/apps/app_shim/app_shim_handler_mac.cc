@@ -14,7 +14,6 @@
 #include "base/memory/singleton.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/apps/app_shim/apps_page_shim_handler.h"
 #include "chrome/browser/apps/platform_apps/app_window_registry_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -43,26 +42,9 @@ class AppShimHandlerRegistry : public content::NotificationObserver {
         base::LeakySingletonTraits<AppShimHandlerRegistry>>::get();
   }
 
-  AppShimHandler* GetForAppMode(const std::string& app_mode_id) const {
-    HandlerMap::const_iterator it = handlers_.find(app_mode_id);
-    if (it != handlers_.end())
-      return it->second;
+  AppShimHandler* GetHandler() const { return default_handler_; }
 
-    return default_handler_;
-  }
-
-  bool SetForAppMode(const std::string& app_mode_id, AppShimHandler* handler) {
-    bool inserted_or_removed = handler ?
-        handlers_.insert(HandlerMap::value_type(app_mode_id, handler)).second :
-        handlers_.erase(app_mode_id) == 1;
-    DCHECK(inserted_or_removed);
-    return inserted_or_removed;
-  }
-
-  void SetDefaultHandler(AppShimHandler* handler) {
-    DCHECK_NE(default_handler_ == NULL, handler == NULL);
-    default_handler_ = handler;
-  }
+  void SetHandler(AppShimHandler* handler) { default_handler_ = handler; }
 
   void MaybeTerminate() {
     if (!browser_session_running_) {
@@ -81,9 +63,7 @@ class AppShimHandlerRegistry : public content::NotificationObserver {
   friend struct base::DefaultSingletonTraits<AppShimHandlerRegistry>;
   typedef std::map<std::string, AppShimHandler*> HandlerMap;
 
-  AppShimHandlerRegistry()
-      : default_handler_(NULL),
-        browser_session_running_(false) {
+  AppShimHandlerRegistry() {
     registrar_.Add(
         this, chrome::NOTIFICATION_BROWSER_OPENED,
         content::NotificationService::AllBrowserContextsAndSources());
@@ -93,7 +73,6 @@ class AppShimHandlerRegistry : public content::NotificationObserver {
     registrar_.Add(
         this, chrome::NOTIFICATION_BROWSER_CLOSE_CANCELLED,
         content::NotificationService::AllBrowserContextsAndSources());
-    SetForAppMode(app_mode::kAppListModeId, &apps_page_shim_handler_);
   }
 
   ~AppShimHandlerRegistry() override {}
@@ -115,11 +94,9 @@ class AppShimHandlerRegistry : public content::NotificationObserver {
     }
   }
 
-  HandlerMap handlers_;
-  AppShimHandler* default_handler_;
-  AppsPageShimHandler apps_page_shim_handler_;
+  AppShimHandler* default_handler_ = nullptr;
   content::NotificationRegistrar registrar_;
-  bool browser_session_running_;
+  bool browser_session_running_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AppShimHandlerRegistry);
 };
@@ -127,25 +104,13 @@ class AppShimHandlerRegistry : public content::NotificationObserver {
 }  // namespace
 
 // static
-void AppShimHandler::RegisterHandler(const std::string& app_mode_id,
-                                     AppShimHandler* handler) {
-  DCHECK(handler);
-  AppShimHandlerRegistry::GetInstance()->SetForAppMode(app_mode_id, handler);
+AppShimHandler* AppShimHandler::Get() {
+  return AppShimHandlerRegistry::GetInstance()->GetHandler();
 }
 
 // static
-void AppShimHandler::RemoveHandler(const std::string& app_mode_id) {
-  AppShimHandlerRegistry::GetInstance()->SetForAppMode(app_mode_id, NULL);
-}
-
-// static
-AppShimHandler* AppShimHandler::GetForAppMode(const std::string& app_mode_id) {
-  return AppShimHandlerRegistry::GetInstance()->GetForAppMode(app_mode_id);
-}
-
-// static
-void AppShimHandler::SetDefaultHandler(AppShimHandler* handler) {
-  AppShimHandlerRegistry::GetInstance()->SetDefaultHandler(handler);
+void AppShimHandler::Set(AppShimHandler* handler) {
+  AppShimHandlerRegistry::GetInstance()->SetHandler(handler);
 }
 
 // static

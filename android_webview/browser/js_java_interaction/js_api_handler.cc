@@ -55,8 +55,8 @@ void JsApiHandler::PostMessage(
       env, base::android::ConvertUTF16ToJavaString(env, message),
       base::android::ConvertUTF8ToJavaString(env, source_origin.Serialize()),
       web_contents->GetMainFrame() == render_frame_host_,
-      reply_proxy_->GetJavaPeer(),
-      base::android::ToJavaIntArray(env, int_ports.data(), int_ports.size()));
+      base::android::ToJavaIntArray(env, int_ports.data(), int_ports.size()),
+      reply_proxy_->GetJavaPeer());
 }
 
 void JsApiHandler::SetJavaToJsMessaging(

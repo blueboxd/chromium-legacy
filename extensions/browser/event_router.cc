@@ -670,8 +670,8 @@ void EventRouter::DispatchEventToProcess(
   }
 
   if (!event->will_dispatch_callback.is_null() &&
-      !event->will_dispatch_callback.Run(listener_context, extension, event,
-                                         listener_filter)) {
+      !event->will_dispatch_callback.Run(listener_context, target_context,
+                                         extension, event, listener_filter)) {
     return;
   }
 

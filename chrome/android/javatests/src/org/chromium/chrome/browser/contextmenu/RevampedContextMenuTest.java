@@ -51,6 +51,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         ChromeSwitches.GOOGLE_BASE_URL + "=http://example.com/"})
 @Features.EnableFeatures(ChromeFeatureList.REVAMPED_CONTEXT_MENU)
+@Features.DisableFeatures({ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS})
 public class RevampedContextMenuTest implements DownloadTestRule.CustomMainActivityStart {
     // clang-format on
     @Rule

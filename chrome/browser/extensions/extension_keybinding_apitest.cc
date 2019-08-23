@@ -433,7 +433,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, RemoveBookmarkShortcut) {
   ASSERT_TRUE(RunExtensionTest("keybinding/remove_bookmark_shortcut"))
       << message_;
 
-  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_BOOKMARK_PAGE));
+  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_BOOKMARK_THIS_TAB));
 }
 
 // This test validates that an extension cannot remove the Chrome bookmark
@@ -447,7 +447,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest,
   EXPECT_TRUE(RunExtensionTestIgnoreManifestWarnings(
       "keybinding/remove_bookmark_shortcut"));
 
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_BOOKMARK_PAGE));
+  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_BOOKMARK_THIS_TAB));
 }
 
 // This test validates that an extension that removes the Chrome bookmark
@@ -477,7 +477,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest,
   // Force the command enable state to be recalculated.
   browser()->command_controller()->ExtensionStateChanged();
 
-  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_BOOKMARK_PAGE));
+  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_BOOKMARK_THIS_TAB));
 }
 
 // This test validates that an extension can override the Chrome bookmark
@@ -516,7 +516,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest,
 
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_BOOKMARK_PAGE));
+  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_BOOKMARK_THIS_TAB));
 
   ASSERT_TRUE(RunExtensionTest("keybinding/overwrite_bookmark_shortcut"))
       << message_;
@@ -537,7 +537,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest,
   // Force the command enable state to be recalculated.
   browser()->command_controller()->ExtensionStateChanged();
 
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_BOOKMARK_PAGE));
+  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_BOOKMARK_THIS_TAB));
 }
 
 // This test validates that an extension override of the Chrome bookmark

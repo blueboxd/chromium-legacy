@@ -15,7 +15,7 @@ serial_test(async (t, fake) => {
   const { port, fakePort } = await getFakeSerialPort(fake);
   await port.open({ baudrate: 9600 });
 
-  let expectedSignals = { dtr: true, rts: false };
+  let expectedSignals = { dtr: true, rts: false, brk: false };
   assert_object_equals(fakePort.outputSignals, expectedSignals, "initial");
 
   await port.setSignals({});
@@ -29,9 +29,14 @@ serial_test(async (t, fake) => {
   expectedSignals.rts = true;
   assert_object_equals(fakePort.outputSignals, expectedSignals, "set RTS");
 
-  await port.setSignals({ dtr: true, rts: false });
+  await port.setSignals({ brk: true });
+  expectedSignals.brk = true;
+  assert_object_equals(fakePort.outputSignals, expectedSignals, "set BRK");
+
+  await port.setSignals({ dtr: true, rts: false, brk: false });
   expectedSignals.dtr = true;
   expectedSignals.rts = false;
+  expectedSignals.brk = false;
   assert_object_equals(fakePort.outputSignals, expectedSignals, "invert");
 }, 'setSignals() modifies the state of the port');
 </script>

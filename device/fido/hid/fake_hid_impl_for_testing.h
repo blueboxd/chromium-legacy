@@ -30,7 +30,7 @@ class MockFidoHidConnection : public device::mojom::HidConnection {
  public:
   explicit MockFidoHidConnection(device::mojom::HidDeviceInfoPtr device,
                                  device::mojom::HidConnectionRequest request,
-                                 std::vector<uint8_t> connection_channel_id);
+                                 std::array<uint8_t, 4> connection_channel_id);
 
   ~MockFidoHidConnection() override;
   MOCK_METHOD1(ReadPtr, void(ReadCallback* callback));
@@ -55,7 +55,7 @@ class MockFidoHidConnection : public device::mojom::HidConnection {
   void ExpectWriteHidInit();
   void ExpectHidWriteWithCommand(FidoHidDeviceCommand cmd);
 
-  const std::vector<uint8_t>& connection_channel_id() const {
+  const std::array<uint8_t, 4>& connection_channel_id() const {
     return connection_channel_id_;
   }
   const std::vector<uint8_t>& nonce() const { return nonce_; }
@@ -64,7 +64,7 @@ class MockFidoHidConnection : public device::mojom::HidConnection {
   mojo::Binding<device::mojom::HidConnection> binding_;
   device::mojom::HidDeviceInfoPtr device_;
   std::vector<uint8_t> nonce_;
-  std::vector<uint8_t> connection_channel_id_;
+  std::array<uint8_t, 4> connection_channel_id_;
 
   DISALLOW_COPY_AND_ASSIGN(MockFidoHidConnection);
 };

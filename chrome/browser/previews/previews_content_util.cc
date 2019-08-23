@@ -304,7 +304,7 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
   bool has_page_hints = false;
   if (should_load_page_hints) {
     // Initiate load of any applicable page hint details.
-    has_page_hints = previews_decider->LoadPageHints(url);
+    has_page_hints = previews_decider->LoadPageHints(navigation_handle);
   }
 
   if ((!has_page_hints || params::LitePagePreviewsOverridePageHints()) &&

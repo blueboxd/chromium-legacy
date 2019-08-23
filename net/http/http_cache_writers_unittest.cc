@@ -385,7 +385,7 @@ class WritersTest : public TestWithTaskEnvironment {
       std::vector<TestCompletionCallback> callbacks(results->size());
 
       // Fail the request.
-      cache_.disk_cache()->set_soft_failures(true);
+      cache_.disk_cache()->set_soft_failures_mask(MockDiskEntry::FAIL_ALL);
 
       // We have to open the entry again to propagate the failure flag.
       disk_cache::Entry* en;

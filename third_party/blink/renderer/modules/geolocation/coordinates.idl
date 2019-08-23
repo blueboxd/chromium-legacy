@@ -24,6 +24,7 @@
  */
 
 [
+    Exposed=Window,
     NoInterfaceObject
 ] interface Coordinates {
     readonly attribute double latitude;

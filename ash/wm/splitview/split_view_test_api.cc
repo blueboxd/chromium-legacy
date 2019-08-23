@@ -31,4 +31,8 @@ void SplitViewTestApi::SnapWindow(
   Shell::Get()->split_view_controller()->SnapWindow(window, position);
 }
 
+void SplitViewTestApi::SwapWindows() {
+  Shell::Get()->split_view_controller()->SwapWindows();
+}
+
 }  // namespace ash

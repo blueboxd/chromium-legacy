@@ -82,8 +82,9 @@ class TestCustomProxyConfigClient
     : public network::mojom::CustomProxyConfigClient {
  public:
   TestCustomProxyConfigClient(
-      network::mojom::CustomProxyConfigClientRequest request)
-      : binding_(this, std::move(request)) {}
+      mojo::PendingReceiver<network::mojom::CustomProxyConfigClient>
+          pending_receiver)
+      : receiver_(this, std::move(pending_receiver)) {}
 
   // network::mojom::CustomProxyConfigClient implementation:
   void OnCustomProxyConfigUpdated(
@@ -101,7 +102,7 @@ class TestCustomProxyConfigClient
   int num_clear_cache_calls = 0;
 
  private:
-  mojo::Binding<network::mojom::CustomProxyConfigClient> binding_;
+  mojo::Receiver<network::mojom::CustomProxyConfigClient> receiver_;
 };
 
 TEST_F(DataReductionProxyServiceTest, TestResetBadProxyListOnDisableDataSaver) {
@@ -113,10 +114,11 @@ TEST_F(DataReductionProxyServiceTest, TestResetBadProxyListOnDisableDataSaver) {
   drp_test_context->SetDataReductionProxyEnabled(true);
   drp_test_context->InitSettings();
 
-  network::mojom::CustomProxyConfigClientPtrInfo client_ptr_info;
-  TestCustomProxyConfigClient client(mojo::MakeRequest(&client_ptr_info));
-  drp_test_context->data_reduction_proxy_service()->SetCustomProxyConfigClient(
-      std::move(client_ptr_info));
+  mojo::Remote<network::mojom::CustomProxyConfigClient> client_remote;
+  TestCustomProxyConfigClient client(
+      client_remote.BindNewPipeAndPassReceiver());
+  drp_test_context->data_reduction_proxy_service()->AddCustomProxyConfigClient(
+      std::move(client_remote));
   base::RunLoop().RunUntilIdle();
 
   // Turn Data Saver off.
@@ -158,9 +160,10 @@ TEST_F(DataReductionProxyServiceTest, TestCustomProxyConfigClient) {
   service->config_client()->ApplySerializedConfig(
       CreateEncodedConfig({DataReductionProxyServer(proxy_server)}));
 
-  network::mojom::CustomProxyConfigClientPtrInfo client_ptr_info;
-  TestCustomProxyConfigClient client(mojo::MakeRequest(&client_ptr_info));
-  service->SetCustomProxyConfigClient(std::move(client_ptr_info));
+  mojo::Remote<network::mojom::CustomProxyConfigClient> client_remote;
+  TestCustomProxyConfigClient client(
+      client_remote.BindNewPipeAndPassReceiver());
+  service->AddCustomProxyConfigClient(std::move(client_remote));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(client.config->rules.proxies_for_http.Get(), proxy_server);
@@ -178,10 +181,11 @@ TEST_F(DataReductionProxyServiceTest, TestCustomProxyConfigUpdatedOnECTChange) {
       ->ReportEffectiveConnectionTypeForTesting(
           net::EFFECTIVE_CONNECTION_TYPE_4G);
 
-  network::mojom::CustomProxyConfigClientPtrInfo client_ptr_info;
-  TestCustomProxyConfigClient client(mojo::MakeRequest(&client_ptr_info));
-  drp_test_context->data_reduction_proxy_service()->SetCustomProxyConfigClient(
-      std::move(client_ptr_info));
+  mojo::Remote<network::mojom::CustomProxyConfigClient> client_remote;
+  TestCustomProxyConfigClient client(
+      client_remote.BindNewPipeAndPassReceiver());
+  drp_test_context->data_reduction_proxy_service()->AddCustomProxyConfigClient(
+      std::move(client_remote));
   base::RunLoop().RunUntilIdle();
 
   std::string value;
@@ -206,9 +210,10 @@ TEST_F(DataReductionProxyServiceTest,
   DataReductionProxyService* service =
       drp_test_context->data_reduction_proxy_service();
 
-  network::mojom::CustomProxyConfigClientPtrInfo client_ptr_info;
-  TestCustomProxyConfigClient client(mojo::MakeRequest(&client_ptr_info));
-  service->SetCustomProxyConfigClient(std::move(client_ptr_info));
+  mojo::Remote<network::mojom::CustomProxyConfigClient> client_remote;
+  TestCustomProxyConfigClient client(
+      client_remote.BindNewPipeAndPassReceiver());
+  service->AddCustomProxyConfigClient(std::move(client_remote));
   base::RunLoop().RunUntilIdle();
 
   std::string value;
@@ -241,9 +246,10 @@ TEST_F(DataReductionProxyServiceTest,
   service->config_client()->ApplySerializedConfig(
       CreateEncodedConfig({DataReductionProxyServer(proxy_server1)}));
 
-  network::mojom::CustomProxyConfigClientPtrInfo client_ptr_info;
-  TestCustomProxyConfigClient client(mojo::MakeRequest(&client_ptr_info));
-  service->SetCustomProxyConfigClient(std::move(client_ptr_info));
+  mojo::Remote<network::mojom::CustomProxyConfigClient> client_remote;
+  TestCustomProxyConfigClient client(
+      client_remote.BindNewPipeAndPassReceiver());
+  service->AddCustomProxyConfigClient(std::move(client_remote));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(client.config->rules.proxies_for_http.Get(), proxy_server1);
@@ -276,9 +282,10 @@ TEST_F(DataReductionProxyServiceTest,
       CreateEncodedConfig({DataReductionProxyServer(core_proxy_server),
                            DataReductionProxyServer(second_proxy_server)}));
 
-  network::mojom::CustomProxyConfigClientPtrInfo client_ptr_info;
-  TestCustomProxyConfigClient client(mojo::MakeRequest(&client_ptr_info));
-  service->SetCustomProxyConfigClient(std::move(client_ptr_info));
+  mojo::Remote<network::mojom::CustomProxyConfigClient> client_remote;
+  TestCustomProxyConfigClient client(
+      client_remote.BindNewPipeAndPassReceiver());
+  service->AddCustomProxyConfigClient(std::move(client_remote));
   base::RunLoop().RunUntilIdle();
 
   net::ProxyConfig::ProxyRules expected_rules;
@@ -302,9 +309,10 @@ TEST_F(DataReductionProxyServiceTest, TestCustomProxyConfigProperties) {
       &network_properties_manager);
   service->config()->UpdateConfigForTesting(true, true, true);
 
-  network::mojom::CustomProxyConfigClientPtrInfo client_ptr_info;
-  TestCustomProxyConfigClient client(mojo::MakeRequest(&client_ptr_info));
-  service->SetCustomProxyConfigClient(std::move(client_ptr_info));
+  mojo::Remote<network::mojom::CustomProxyConfigClient> client_remote;
+  TestCustomProxyConfigClient client(
+      client_remote.BindNewPipeAndPassReceiver());
+  service->AddCustomProxyConfigClient(std::move(client_remote));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(client.config->assume_https_proxies_support_quic);

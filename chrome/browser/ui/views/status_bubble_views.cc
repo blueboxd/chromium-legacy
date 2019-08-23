@@ -353,7 +353,7 @@ void StatusBubbleViews::StatusView::ResetTimer() {
 void StatusBubbleViews::StatusView::StartFade(float start,
                                               float end,
                                               base::TimeDelta duration) {
-  animation_.reset(new StatusViewAnimation(this, start, end));
+  animation_ = std::make_unique<StatusViewAnimation>(this, start, end);
 
   // This will also reset the currently-occurring animation.
   animation_->SetDuration(duration);

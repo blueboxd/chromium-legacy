@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
@@ -23,39 +22,8 @@ import org.chromium.webapk.lib.common.splash.SplashLayout;
 public class WebappInfo {
     private static final String TAG = "WebappInfo";
 
-    /**
-     * Parameter for {@link WebappInfo#create} method which allows either a Bitmap or a PNG
-     * encoded string to be passed as a parameter.
-     */
-    public static class Icon {
-        private String mEncoded;
-        private Bitmap mDecoded;
-
-        public Icon(String encoded) {
-            mEncoded = encoded;
-        }
-
-        public Icon(Bitmap decoded) {
-            mDecoded = decoded;
-        }
-
-        public String encoded() {
-            if (mEncoded == null) {
-                mEncoded = ShortcutHelper.encodeBitmapAsString(mDecoded);
-            }
-            return mEncoded;
-        }
-
-        public Bitmap decoded() {
-            if (mDecoded == null) {
-                mDecoded = ShortcutHelper.decodeBitmapFromString(mEncoded);
-            }
-            return mDecoded;
-        }
-    }
-
     private String mId;
-    private Icon mIcon;
+    private WebappIcon mIcon;
     private String mUrl;
     private String mScopeUrl;
     private String mName;
@@ -143,7 +111,7 @@ public class WebappInfo {
 
         int defaultBackgroundColor =
                 SplashLayout.getDefaultBackgroundColor(ContextUtils.getApplicationContext());
-        return new WebappInfo(id, url, scope, new Icon(icon), name, shortName, displayMode,
+        return new WebappInfo(id, url, scope, new WebappIcon(icon), name, shortName, displayMode,
                 orientation, source, themeColor, backgroundColor, defaultBackgroundColor,
                 isIconGenerated, isIconAdaptive, forceNavigation);
     }
@@ -166,7 +134,7 @@ public class WebappInfo {
      * @param forceNavigation Whether the webapp should navigate to {@link url} if the
      *                        webapp is already open.
      */
-    protected WebappInfo(String id, String url, String scope, Icon icon, String name,
+    protected WebappInfo(String id, String url, String scope, WebappIcon icon, String name,
             String shortName, @WebDisplayMode int displayMode, int orientation, int source,
             long themeColor, long backgroundColor, int defaultBackgroundColor,
             boolean isIconGenerated, boolean isIconAdaptive, boolean forceNavigation) {
@@ -174,7 +142,7 @@ public class WebappInfo {
             scope = ShortcutHelper.getScopeFromUrl(url);
         }
 
-        mIcon = icon;
+        mIcon = (icon != null) ? icon : new WebappIcon();
         mId = id;
         mName = name;
         mShortName = shortName;
@@ -287,17 +255,11 @@ public class WebappInfo {
         return hasValidBackgroundColor() ? (int) mBackgroundColor : mDefaultBackgroundColor;
     }
 
-    // This is needed for clients that want to send the icon through an intent.
-    public String encodedIcon() {
-        return (mIcon == null) ? null : mIcon.encoded();
-    }
-
     /**
-     * Returns the icon in Bitmap form.
+     * Returns the icon.
      */
-    public Bitmap icon() {
-        // TODO(yusufo) : Add a way to plumb this through for Trusted Web Activity.
-        return (mIcon == null) ? null : mIcon.decoded();
+    public WebappIcon icon() {
+        return mIcon;
     }
 
     /**
@@ -331,7 +293,7 @@ public class WebappInfo {
         intent.putExtra(ShortcutHelper.EXTRA_URL, url());
         intent.putExtra(ShortcutHelper.EXTRA_FORCE_NAVIGATION, shouldForceNavigation());
         intent.putExtra(ShortcutHelper.EXTRA_SCOPE, scopeUrl());
-        intent.putExtra(ShortcutHelper.EXTRA_ICON, encodedIcon());
+        intent.putExtra(ShortcutHelper.EXTRA_ICON, icon().encoded());
         intent.putExtra(ShortcutHelper.EXTRA_VERSION, ShortcutHelper.WEBAPP_SHORTCUT_VERSION);
         intent.putExtra(ShortcutHelper.EXTRA_NAME, name());
         intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName());

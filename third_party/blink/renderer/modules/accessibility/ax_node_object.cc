@@ -488,8 +488,10 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
     return ax::mojom::Role::kUnknown;
 
   // |HTMLAnchorElement| sets isLink only when it has kHrefAttr.
-  if (GetNode()->IsLink())
-    return ax::mojom::Role::kLink;
+  if (GetNode()->IsLink()) {
+    return IsHTMLImageElement(GetNode()) ? ax::mojom::Role::kImageMap
+                                         : ax::mojom::Role::kLink;
+  }
 
   if (IsA<HTMLAnchorElement>(*GetNode())) {
     // We assume that an anchor element is LinkRole if it has event listners
@@ -562,6 +564,10 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
       return ax::mojom::Role::kColorWell;
     if (type == input_type_names::kTime)
       return ax::mojom::Role::kInputTime;
+    if (type == input_type_names::kButton || type == input_type_names::kImage ||
+        type == input_type_names::kReset || type == input_type_names::kSubmit) {
+      return ax::mojom::Role::kButton;
+    }
     return ax::mojom::Role::kTextField;
   }
 

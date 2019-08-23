@@ -27,6 +27,7 @@
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/features/feature.h"
 
 using base::DictionaryValue;
 using base::ListValue;
@@ -41,7 +42,8 @@ namespace {
 bool WillDispatchTabUpdatedEvent(
     WebContents* contents,
     const std::set<std::string> changed_property_names,
-    content::BrowserContext* context,
+    content::BrowserContext* browser_context,
+    Feature::Context target_context,
     const Extension* extension,
     Event* event,
     const base::DictionaryValue* listener_filter) {
@@ -68,7 +70,8 @@ bool WillDispatchTabUpdatedEvent(
 
 bool WillDispatchTabCreatedEvent(WebContents* contents,
                                  bool active,
-                                 content::BrowserContext* context,
+                                 content::BrowserContext* browser_context,
+                                 Feature::Context target_context,
                                  const Extension* extension,
                                  Event* event,
                                  const base::DictionaryValue* listener_filter) {

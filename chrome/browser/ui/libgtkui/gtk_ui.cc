@@ -782,7 +782,7 @@ bool GtkUi::MatchEvent(const ui::Event& event,
                        std::vector<ui::TextEditCommandAuraLinux>* commands) {
   // Ensure that we have a keyboard handler.
   if (!key_bindings_handler_)
-    key_bindings_handler_.reset(new GtkKeyBindingsHandler);
+    key_bindings_handler_ = std::make_unique<GtkKeyBindingsHandler>();
 
   return key_bindings_handler_->MatchEvent(event, commands);
 }

@@ -18,8 +18,10 @@
 
 ## Core Teams and Work
 
-  * **[Speed tracks](speed_tracks.md)**: Most of the speed
-    work on Chrome is organized into these tracks.
+  * **[Speed domain area experts](speed_domains.md)**: These mailing lists and
+    bug triage rotations provide expertise into specific domain areas of Speed:
+    memory, power, loading, responsiveness, binary size, data usage, and browser
+    UI.
   * **[Chrome Speed Operations](chrome_speed_operations.md)**: provides the
     benchmarks, infrastructure, and releasing oversight to track regressions.
     <!--- TODO: General discussion: chrome-speed-operations mailing list link -->

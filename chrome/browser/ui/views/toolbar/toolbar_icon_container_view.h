@@ -6,12 +6,14 @@
 #define CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_ICON_CONTAINER_VIEW_H_
 
 #include "base/macros.h"
+#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/button_observer.h"
 #include "ui/views/view.h"
 
 // A general view container for any type of toolbar icons.
 class ToolbarIconContainerView : public views::View,
+                                 public gfx::AnimationDelegate,
                                  public views::ButtonObserver,
                                  public views::ViewObserver {
  public:
@@ -48,8 +50,16 @@ class ToolbarIconContainerView : public views::View,
       const views::ViewHierarchyChangedDetails& details) override;
   gfx::Insets GetInsets() const override;
 
+  // gfx::AnimationDelegate:
+  void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationEnded(const gfx::Animation* animation) override;
+
   bool ShouldDisplayHighlight();
   void UpdateHighlight();
+  void SetHighlightBorder();
+
+  // Determine whether the container shows its highlight border.
+  const bool uses_highlight_;
 
   // The main view is nominally always present and is last child in the view
   // hierarchy.
@@ -58,8 +68,8 @@ class ToolbarIconContainerView : public views::View,
   // Points to the child view that is currently highlighted.
   views::Button* highlighted_button_ = nullptr;
 
-  // Determine whether the container shows its highlight background.
-  const bool uses_highlight_;
+  // Fade-in/out animation for the highlight border.
+  gfx::SlideAnimation highlight_animation_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarIconContainerView);
 };

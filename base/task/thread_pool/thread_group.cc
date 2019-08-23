@@ -149,16 +149,16 @@ void ThreadGroup::ReEnqueueTaskSourceLockRequired(
     ScopedReenqueueExecutor* reenqueue_executor,
     TransactionWithRegisteredTaskSource transaction_with_task_source) {
   // Decide in which thread group the TaskSource should be reenqueued.
-  ThreadGroup* destination_thread_group =
-      delegate_->GetThreadGroupForTraits(transaction_with_task_source.traits());
+  ThreadGroup* destination_thread_group = delegate_->GetThreadGroupForTraits(
+      transaction_with_task_source.transaction.traits());
 
   if (destination_thread_group == this) {
     // Another worker that was running a task from this task source may have
     // reenqueued it already, in which case its heap_handle will be valid. It
     // shouldn't be queued twice so the task source registration is released.
-    if (transaction_with_task_source.task_source()->heap_handle().IsValid()) {
+    if (transaction_with_task_source.task_source->heap_handle().IsValid()) {
       workers_executor->ScheduleReleaseTaskSource(
-          transaction_with_task_source.take_task_source());
+          std::move(transaction_with_task_source.task_source));
       return;
     }
     // If the TaskSource should be reenqueued in the current thread group,
@@ -172,42 +172,40 @@ void ThreadGroup::ReEnqueueTaskSourceLockRequired(
   }
 }
 
-RunIntentWithRegisteredTaskSource
-ThreadGroup::TakeRunIntentWithRegisteredTaskSource(
+RegisteredTaskSource ThreadGroup::TakeRegisteredTaskSource(
     BaseScopedWorkersExecutor* executor) {
   DCHECK(!priority_queue_.IsEmpty());
 
-  auto run_intent = priority_queue_.PeekTaskSource()->WillRunTask();
+  auto run_status = priority_queue_.PeekTaskSource().WillRunTask();
 
-  if (!run_intent) {
+  if (run_status == TaskSource::RunStatus::kDisallowed) {
     executor->ScheduleReleaseTaskSource(priority_queue_.PopTaskSource());
     return nullptr;
   }
 
-  if (run_intent.IsSaturated())
-    return {priority_queue_.PopTaskSource(), std::move(run_intent)};
+  if (run_status == TaskSource::RunStatus::kAllowedSaturated)
+    return priority_queue_.PopTaskSource();
 
   // If the TaskSource isn't saturated, check whether TaskTracker allows it to
   // remain in the PriorityQueue.
   // The canonical way of doing this is to pop the task source to return, call
   // WillQueueTaskSource() to get an additional RegisteredTaskSource, and
   // reenqueue that task source if valid. Instead, it is cheaper and equivalent
-  // to peek the task source, call WillQueueTaskSource() to get an additional
-  // RegisteredTaskSource to return if valid, and only pop |priority_queue_|
+  // to peek the task source, call RegisterTaskSource() to get an additional
+  // RegisteredTaskSource to replace if valid, and only pop |priority_queue_|
   // otherwise.
   RegisteredTaskSource task_source =
-      task_tracker_->WillQueueTaskSource(priority_queue_.PeekTaskSource());
+      task_tracker_->RegisterTaskSource(priority_queue_.PeekTaskSource().get());
   if (!task_source)
-    return {priority_queue_.PopTaskSource(), std::move(run_intent)};
-
-  return {std::move(task_source), std::move(run_intent)};
+    return priority_queue_.PopTaskSource();
+  return std::exchange(priority_queue_.PeekTaskSource(),
+                       std::move(task_source));
 }
 
-void ThreadGroup::UpdateSortKeyImpl(
-    BaseScopedWorkersExecutor* executor,
-    TransactionWithOwnedTaskSource transaction_with_task_source) {
+void ThreadGroup::UpdateSortKeyImpl(BaseScopedWorkersExecutor* executor,
+                                    TaskSource::Transaction transaction) {
   CheckedAutoLock auto_lock(lock_);
-  priority_queue_.UpdateSortKey(std::move(transaction_with_task_source));
+  priority_queue_.UpdateSortKey(std::move(transaction));
   EnsureEnoughWorkersLockRequired(executor);
 }
 
@@ -216,14 +214,14 @@ void ThreadGroup::PushTaskSourceAndWakeUpWorkersImpl(
     TransactionWithRegisteredTaskSource transaction_with_task_source) {
   CheckedAutoLock auto_lock(lock_);
   DCHECK(!replacement_thread_group_);
-  DCHECK_EQ(
-      delegate_->GetThreadGroupForTraits(transaction_with_task_source.traits()),
-      this);
-  if (transaction_with_task_source.task_source()->heap_handle().IsValid()) {
+  DCHECK_EQ(delegate_->GetThreadGroupForTraits(
+                transaction_with_task_source.transaction.traits()),
+            this);
+  if (transaction_with_task_source.task_source->heap_handle().IsValid()) {
     // If the task source changed group, it is possible that multiple concurrent
     // workers try to enqueue it. Only the first enqueue should succeed.
     executor->ScheduleReleaseTaskSource(
-        transaction_with_task_source.take_task_source());
+        std::move(transaction_with_task_source.task_source));
     return;
   }
   priority_queue_.Push(std::move(transaction_with_task_source));

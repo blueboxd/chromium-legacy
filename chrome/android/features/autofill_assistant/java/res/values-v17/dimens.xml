@@ -24,6 +24,7 @@
     <dimen name="autofill_assistant_choicelist_edit_button_size">20dp</dimen>
     <dimen name="autofill_assistant_minimum_touch_target_size">48dp</dimen>
 
+    <dimen name="autofill_assistant_payment_request_choice_top_bottom_padding">8dp</dimen>
     <!-- This is less than autofill_assistant_bottombar_horizontal_spacing to allow for larger
          touch targets at the right side of the PR, while keeping alignment with bottom bar. -->
     <dimen name="autofill_assistant_payment_request_choice_list_padding_end">12dp</dimen>
@@ -33,4 +34,5 @@
     <dimen name="autofill_assistant_payment_request_title_padding">2dp</dimen>
     <!-- Payment method needs slightly more padding to because of vendor logo. in summary/expanded part. -->
     <dimen name="autofill_assistant_payment_request_payment_method_title_padding">4dp</dimen>
+    <dimen name="autofill_assistant_payment_request_column_spacing">8dp</dimen>
 </resources>

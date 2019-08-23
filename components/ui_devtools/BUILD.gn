@@ -19,6 +19,8 @@ _protocol_generated = [
   "Page.h",
   "Protocol.cpp",
   "Protocol.h",
+  "Tracing.h",
+  "Tracing.cpp",
 ]
 
 action("protocol_compatibility") {
@@ -63,6 +65,7 @@ component("ui_devtools") {
   sources += [
     "agent_util.cc",
     "agent_util.h",
+    "connector_delegate.h",
     "css_agent.cc",
     "css_agent.h",
     "devtools_base_agent.h",
@@ -81,6 +84,8 @@ component("ui_devtools") {
     "root_element.h",
     "switches.cc",
     "switches.h",
+    "tracing_agent.cc",
+    "tracing_agent.h",
     "ui_element.cc",
     "ui_element.h",
     "ui_element_delegate.h",
@@ -97,13 +102,19 @@ component("ui_devtools") {
     ":devtools_protocol_encoding",
     ":protocol_generated_sources",
     "//base",
+    "//mojo/public/cpp/bindings",
+    "//mojo/public/cpp/system",
     "//net",
+    "//services/tracing/public/cpp",
+    "//services/tracing/public/mojom",
     "//ui/gfx",
   ]
 
   public_deps = [
     "//services/network/public/cpp",
     "//services/network/public/mojom",
+    "//services/service_manager/public/cpp",
+    "//third_party/perfetto/gn:default_deps",
   ]
 }
 

@@ -150,6 +150,9 @@ class ASH_PUBLIC_EXPORT LoginScreenClient {
   // Show the help app for when users have trouble signing in to their account.
   virtual void ShowAccountAccessHelpApp() = 0;
 
+  // Shows help app for users that have trouble using parent access code.
+  virtual void ShowParentAccessHelpApp() = 0;
+
   // Show the lockscreen notification settings page.
   virtual void ShowLockScreenNotificationSettings() = 0;
 

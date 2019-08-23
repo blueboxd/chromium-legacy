@@ -780,6 +780,14 @@ HttpHandler::HttpHandler(
       CommandMapping(
           kDelete,
           "session/:sessionId/webauthn/authenticator/:authenticatorId/"
+          "credentials/:credentialId",
+          WrapToCommand("RemoveCredential",
+                        base::BindRepeating(
+                            &ExecuteWebAuthnCommand,
+                            base::BindRepeating(&ExecuteRemoveCredential)))),
+      CommandMapping(
+          kDelete,
+          "session/:sessionId/webauthn/authenticator/:authenticatorId/"
           "credentials",
           WrapToCommand(
               "RemoveAllCredentials",

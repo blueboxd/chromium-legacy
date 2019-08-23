@@ -83,6 +83,13 @@ function getSessionType(session) {
   }
 }
 
+function sessionTypeWouldTriggerConsent(sessionType) {
+  if (typeof navigator.xr.startedSessionTypes === 'undefined') {
+    return true;
+  }
+  return !(sessionType in navigator.xr.startedSessionTypes);
+}
+
 function onRequestSession() {
   switch (sessionTypeToRequest) {
     case sessionTypes.IMMERSIVE:
@@ -115,6 +122,14 @@ function onRequestSession() {
 }
 
 function onSessionStarted(session) {
+  // Record that we've started this session type so that we know not to expect
+  // the consent dialog for it in the future.
+  let sessionType = getSessionType(session);
+  if (typeof navigator.xr.startedSessionTypes === 'undefined') {
+    navigator.xr.startedSessionTypes = {};
+  }
+  navigator.xr.startedSessionTypes[sessionType] = undefined;
+
   session.addEventListener('end', onSessionEnded);
   // Initialize the WebGL context for use with XR if it hasn't been already
   if (!gl) {
@@ -131,8 +146,6 @@ function onSessionStarted(session) {
   if (onSessionStartedCallback) {
     onSessionStartedCallback(session);
   }
-
-  let sessionType = getSessionType(session);
 
   session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
   session.requestReferenceSpace(referenceSpaceMap[sessionType])

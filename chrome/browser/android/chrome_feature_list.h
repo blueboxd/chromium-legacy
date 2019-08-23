@@ -48,6 +48,7 @@ extern const base::Feature kChromeSmartSelection;
 extern const base::Feature kClickToCallOpenDialerDirectly;
 extern const base::Feature kCommandLineOnNonRooted;
 extern const base::Feature kContactsPickerSelectAll;
+extern const base::Feature kContextMenuSearchWithGoogleLens;
 extern const base::Feature kContentSuggestionsScrollToLoad;
 extern const base::Feature kContextualSearchDefinitions;
 extern const base::Feature kContextualSearchLongpressResolve;

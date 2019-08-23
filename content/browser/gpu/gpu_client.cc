@@ -21,7 +21,9 @@ std::unique_ptr<viz::GpuClient, base::OnTaskRunnerDeleter> CreateGpuClient(
                          client_id, client_tracing_id, task_runner),
       base::OnTaskRunnerDeleter(task_runner));
   gpu_client->SetConnectionErrorHandler(std::move(connection_error_handler));
-  gpu_client->Add(std::move(request));
+  task_runner->PostTask(
+      FROM_HERE, base::BindOnce(&viz::GpuClient::Add, gpu_client->GetWeakPtr(),
+                                std::move(request)));
   return gpu_client;
 }
 

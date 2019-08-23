@@ -138,12 +138,6 @@ class FakeSerialPort : public device::mojom::SerialPort {
     info->cts_flow_control = options_.cts_flow_control;
     std::move(callback).Run(std::move(info));
   }
-  void SetBreak(SetBreakCallback callback) override {
-    std::move(callback).Run(true);
-  }
-  void ClearBreak(ClearBreakCallback callback) override {
-    std::move(callback).Run(true);
-  }
 
   void Close(CloseCallback callback) override {
     in_stream_watcher_.Cancel();

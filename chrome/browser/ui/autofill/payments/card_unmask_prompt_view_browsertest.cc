@@ -151,8 +151,9 @@ class CardUnmaskPromptViewBrowserTest : public DialogBrowserTest {
   void SetUpOnMainThread() override {
     runner_ = new content::MessageLoopRunner;
     contents_ = browser()->tab_strip_model()->GetActiveWebContents();
-    controller_.reset(new TestCardUnmaskPromptController(contents_, runner_));
-    delegate_.reset(new TestCardUnmaskDelegate());
+    controller_ =
+        std::make_unique<TestCardUnmaskPromptController>(contents_, runner_);
+    delegate_ = std::make_unique<TestCardUnmaskDelegate>();
   }
 
   void ShowUi(const std::string& name) override {

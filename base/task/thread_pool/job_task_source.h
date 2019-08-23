@@ -38,7 +38,6 @@ class BASE_EXPORT JobTaskSource : public TaskSource {
   void NotifyConcurrencyIncrease();
 
   // TaskSource:
-  RunIntent WillRunTask() override;
   ExecutionEnvironment GetExecutionEnvironment() override;
   size_t GetRemainingConcurrency() const override;
 
@@ -54,9 +53,10 @@ class BASE_EXPORT JobTaskSource : public TaskSource {
   size_t GetMaxConcurrency() const;
 
   // TaskSource:
-  Optional<Task> TakeTask() override;
-  Optional<Task> Clear() override;
-  bool DidProcessTask() override;
+  RunStatus WillRunTask() override;
+  Optional<Task> TakeTask(TaskSource::Transaction* transaction) override;
+  Optional<Task> Clear(TaskSource::Transaction* transaction) override;
+  bool DidProcessTask(TaskSource::Transaction* transaction) override;
   SequenceSortKey GetSortKey() const override;
 
   // The current number of workers concurrently running tasks from this

@@ -3,7 +3,7 @@
     "Runs tests on 64-bit iOS 11 and 12 tests on iPad, iPhone,",
     "@3x, and @2x on main waterfall ios-simulator-full-configs."
   ],
-  "xcode build version": "11m382q",
+  "xcode build version": "11m392q",
   "gn_args": [
     "goma_dir=\"$(goma_dir)\"",
     "is_component_build=false",
@@ -21,7 +21,7 @@
     {
       "include": "eg_tests.json",
       "device type": "iPad Air 2",
-      "os": "12.1",
+      "os": "12.2",
       "host os": "Mac-10.14.4",
       "pool":"Chrome",
       "priority": 30
@@ -29,7 +29,7 @@
     {
       "include": "eg_tests.json",
       "device type": "iPhone X",
-      "os": "12.1",
+      "os": "12.2",
       "host os": "Mac-10.14.4",
       "pool":"Chrome",
       "priority": 30
@@ -37,7 +37,7 @@
     {
       "include": "eg_cq_tests.json",
       "device type": "iPad Air 2",
-      "os": "12.1",
+      "os": "12.2",
       "host os": "Mac-10.14.4",
       "pool":"Chrome",
       "priority": 30

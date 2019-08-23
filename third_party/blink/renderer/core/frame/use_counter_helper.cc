@@ -55,11 +55,6 @@ UseCounterMuteScope::~UseCounterMuteScope() {
     loader_->GetUseCounterHelper().UnmuteForInspector();
 }
 
-int UseCounterHelper::MapCSSPropertyIdToCSSSampleIdForHistogram(
-    CSSPropertyID unresolved_property) {
-  return static_cast<int>(GetCSSSampleId(unresolved_property));
-}
-
 UseCounterHelper::UseCounterHelper(Context context, CommitState commit_state)
     : mute_count_(0), context_(context), commit_state_(commit_state) {}
 
@@ -163,13 +158,12 @@ bool UseCounterHelper::IsCounted(CSSPropertyID unresolved_property,
   if (unresolved_property == CSSPropertyID::kInvalid) {
     return false;
   }
+  int sample_id = static_cast<int>(GetCSSSampleId(unresolved_property));
   switch (type) {
     case CSSPropertyType::kDefault:
-      return css_recorded_[MapCSSPropertyIdToCSSSampleIdForHistogram(
-          unresolved_property)];
+      return css_recorded_[sample_id];
     case CSSPropertyType::kAnimation:
-      return animated_css_recorded_[MapCSSPropertyIdToCSSSampleIdForHistogram(
-          unresolved_property)];
+      return animated_css_recorded_[sample_id];
   }
 }
 
@@ -188,8 +182,10 @@ void UseCounterHelper::ReportAndTraceMeasurementByCSSSampleId(
     const char* name = is_animated ? "AnimatedCSSFirstUsed" : "CSSFirstUsed";
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.feature_usage"), name,
                  "feature", sample_id);
-    if (frame && frame->Client())
-      frame->Client()->DidObserveNewCssPropertyUsage(sample_id, is_animated);
+    if (frame && frame->Client()) {
+      frame->Client()->DidObserveNewCssPropertyUsage(
+          static_cast<mojom::CSSSampleId>(sample_id), is_animated);
+    }
   }
 }
 
@@ -202,7 +198,7 @@ void UseCounterHelper::Count(CSSPropertyID property,
   if (mute_count_)
     return;
 
-  const int sample_id = MapCSSPropertyIdToCSSSampleIdForHistogram(property);
+  int sample_id = static_cast<int>(GetCSSSampleId(property));
   switch (type) {
     case CSSPropertyType::kDefault:
       if (css_recorded_[sample_id])

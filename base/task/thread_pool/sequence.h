@@ -85,7 +85,6 @@ class BASE_EXPORT Sequence : public TaskSource {
 
   // TaskSource:
   ExecutionEnvironment GetExecutionEnvironment() override;
-  RunIntent WillRunTask() override;
   size_t GetRemainingConcurrency() const override;
 
   // Returns a token that uniquely identifies this Sequence.
@@ -99,9 +98,10 @@ class BASE_EXPORT Sequence : public TaskSource {
   ~Sequence() override;
 
   // TaskSource:
-  Optional<Task> TakeTask() override WARN_UNUSED_RESULT;
-  Optional<Task> Clear() override WARN_UNUSED_RESULT;
-  bool DidProcessTask() override;
+  RunStatus WillRunTask() override;
+  Optional<Task> TakeTask(TaskSource::Transaction* transaction) override;
+  Optional<Task> Clear(TaskSource::Transaction* transaction) override;
+  bool DidProcessTask(TaskSource::Transaction* transaction) override;
   SequenceSortKey GetSortKey() const override;
 
   // Releases reference to TaskRunner. This might cause this object to be

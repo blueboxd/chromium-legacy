@@ -29,6 +29,13 @@ TEST_F(ProcessNodeImplTest, SafeDowncast) {
   EXPECT_EQ(static_cast<Node*>(node), base->ToNode());
 }
 
+using ProcessNodeImplDeathTest = ProcessNodeImplTest;
+
+TEST_F(ProcessNodeImplDeathTest, SafeDowncast) {
+  auto process = CreateNode<ProcessNodeImpl>();
+  ASSERT_DEATH(FrameNodeImpl::FromNodeBase(process.get()), "Check failed: .*");
+}
+
 TEST_F(ProcessNodeImplTest, MeasureCPUUsage) {
   auto process_node = CreateNode<ProcessNodeImpl>();
   process_node->SetCPUUsage(1.0);

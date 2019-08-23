@@ -532,8 +532,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
                     std::unique_ptr<NavigationUIData> navigation_ui_data,
                     mojom::NavigationClientAssociatedPtrInfo navigation_client,
                     blink::mojom::NavigationInitiatorPtr navigation_initiator,
-                    std::unique_ptr<RenderFrameHostImpl>
-                        rfh_restored_from_back_forward_cache);
+                    bool is_served_from_back_forward_cache);
 
   // NavigationURLLoaderDelegate implementation.
   void OnRequestRedirected(
@@ -614,8 +613,6 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   net::Error CheckContentSecurityPolicy(bool has_followed_redirect,
                                         bool url_upgraded_after_redirect,
                                         bool is_response_check);
-
-  RenderFrameHostImpl* GetFrameHostForNavigation();
 
   // Builds the parameters used to commit a navigation to a page that was
   // restored from the back-forward cache.
@@ -751,6 +748,9 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   bool IsSelfReferentialURL();
 
   // RenderProcessHostObserver implementation.
+  void RenderProcessReady(RenderProcessHost* host) override;
+  void RenderProcessExited(RenderProcessHost* host,
+                           const ChildProcessTerminationInfo& info) override;
   void RenderProcessHostDestroyed(RenderProcessHost* host) override;
 
   void RecordNavigationMetrics() const;
@@ -1069,13 +1069,6 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // Allows to override response_headers_ in tests.
   // TODO(clamy): Clean this up once the architecture of unit tests is better.
   scoped_refptr<net::HttpResponseHeaders> response_headers_for_testing_;
-
-  // The RenderFrameHost that was restored from the back-forward cache. This
-  // will be null except for navigations that are restoring a page from the
-  // back-forward cache. In this case, it represents the main RenderFrameHost to
-  // be restored. It will be moved to become the current document in
-  // CommitNavigation(), after which this variable becomes null.
-  std::unique_ptr<RenderFrameHostImpl> rfh_restored_from_back_forward_cache_;
 
   // Whether this navigation is being served from the back-forward cache.
   bool is_served_from_back_forward_cache_;

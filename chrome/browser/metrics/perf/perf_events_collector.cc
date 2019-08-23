@@ -18,6 +18,7 @@
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/metrics/perf/cpu_identity.h"
+#include "chrome/browser/metrics/perf/perf_output.h"
 #include "chrome/browser/metrics/perf/process_type_collector.h"
 #include "chrome/browser/metrics/perf/windowed_incognito_observer.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -397,14 +398,6 @@ internal::MetricCollector::PerfProtoType PerfCollector::GetPerfProtoType(
   return PerfProtoType::PERF_TYPE_UNSUPPORTED;
 }
 
-std::unique_ptr<PerfOutputCall> PerfCollector::CreatePerfOutputCall(
-    base::TimeDelta duration,
-    const std::vector<std::string>& perf_args,
-    PerfOutputCall::DoneCallback callback) {
-  return std::make_unique<PerfOutputCall>(duration, perf_args,
-                                          std::move(callback));
-}
-
 void PerfCollector::OnPerfOutputComplete(
     std::unique_ptr<WindowedIncognitoObserver> incognito_observer,
     std::unique_ptr<SampledProfile> sampled_profile,
@@ -413,7 +406,6 @@ void PerfCollector::OnPerfOutputComplete(
     std::string perf_stdout) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  current_trigger_ = SampledProfile::UNKNOWN_TRIGGER_EVENT;
   // We are done using |perf_output_call| and may destroy it.
   perf_output_call_ = nullptr;
 
@@ -510,10 +502,7 @@ void PerfCollector::CollectProfile(
   PerfProtoType type = GetPerfProtoType(command);
   bool has_cycles = internal::CommandSamplesCPUCycles(command);
 
-  DCHECK(sampled_profile->has_trigger_event());
-  current_trigger_ = sampled_profile->trigger_event();
-
-  perf_output_call_ = CreatePerfOutputCall(
+  perf_output_call_ = std::make_unique<PerfOutputCall>(
       collection_params().collection_duration, command,
       base::BindOnce(&PerfCollector::OnPerfOutputComplete,
                      weak_factory_.GetWeakPtr(), std::move(incognito_observer),
@@ -566,18 +555,6 @@ void PerfCollector::SaveCPUFrequencies(
     const std::vector<uint32_t>& frequencies) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   max_frequencies_mhz_ = frequencies;
-}
-
-void PerfCollector::StopCollection() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // StopCollection() can be called when a jank lasts for longer than the max
-  // collection duration, and a new collection is requested by another trigger.
-  // In this case, ignore the request to stop the collection.
-  if (current_trigger_ != SampledProfile::JANKY_TASK)
-    return;
-
-  if (perf_output_call_)
-    perf_output_call_->Stop();
 }
 
 }  // namespace metrics

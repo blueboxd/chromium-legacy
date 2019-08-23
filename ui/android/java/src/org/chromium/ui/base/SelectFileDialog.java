@@ -22,6 +22,7 @@ import android.webkit.MimeTypeMap;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -544,8 +545,13 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback, PhotoPick
         }
 
         if (ContentResolver.SCHEME_FILE.equals(results.getData().getScheme())) {
-            onFileSelected(mNativeSelectFileDialog, results.getData().getSchemeSpecificPart(), "");
-            return;
+            String filePath = results.getData().getPath();
+            // Don't allow files under private data dir to be uploaded.
+            if (!TextUtils.isEmpty(filePath)
+                    && !filePath.startsWith(PathUtils.getDataDirectory())) {
+                onFileSelected(mNativeSelectFileDialog, filePath, "");
+                return;
+            }
         }
 
         if (ContentResolver.SCHEME_CONTENT.equals(results.getScheme())) {

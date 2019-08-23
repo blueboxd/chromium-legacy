@@ -1046,8 +1046,8 @@ void BrowserView::UpdateExclusiveAccessExitBubbleContent(
     return;
   }
 
-  exclusive_access_bubble_.reset(new ExclusiveAccessBubbleViews(
-      this, url, bubble_type, std::move(bubble_first_hide_callback)));
+  exclusive_access_bubble_ = std::make_unique<ExclusiveAccessBubbleViews>(
+      this, url, bubble_type, std::move(bubble_first_hide_callback));
 }
 
 void BrowserView::OnExclusiveAccessUserInput() {
@@ -1535,7 +1535,7 @@ bool BrowserView::IsDownloadShelfVisible() const {
 DownloadShelf* BrowserView::GetDownloadShelf() {
   DCHECK(browser_->SupportsWindowFeature(Browser::FEATURE_DOWNLOADSHELF));
   if (!download_shelf_.get()) {
-    download_shelf_.reset(new DownloadShelfView(browser_.get(), this));
+    download_shelf_ = std::make_unique<DownloadShelfView>(browser_.get(), this);
     download_shelf_->set_owned_by_client();
     GetBrowserViewLayout()->set_download_shelf(download_shelf_.get());
   }
@@ -2261,9 +2261,10 @@ void BrowserView::OnWidgetActivationChanged(views::Widget* widget,
 
   if (!extension_keybinding_registry_ &&
       GetFocusManager()) {  // focus manager can be null in tests.
-    extension_keybinding_registry_.reset(new ExtensionKeybindingRegistryViews(
-        browser_->profile(), GetFocusManager(),
-        extensions::ExtensionKeybindingRegistry::ALL_EXTENSIONS, this));
+    extension_keybinding_registry_ =
+        std::make_unique<ExtensionKeybindingRegistryViews>(
+            browser_->profile(), GetFocusManager(),
+            extensions::ExtensionKeybindingRegistry::ALL_EXTENSIONS, this);
   }
 
   extensions::ExtensionCommandsGlobalRegistry* registry =
@@ -2662,7 +2663,7 @@ void BrowserView::InitViews() {
   // Create a custom JumpList and add it to an observer of TabRestoreService
   // so we can update the custom JumpList when a tab is added or removed.
   if (JumpList::Enabled()) {
-    load_complete_listener_.reset(new LoadCompleteListener(this));
+    load_complete_listener_ = std::make_unique<LoadCompleteListener>(this);
   }
 #endif
 
@@ -2714,7 +2715,8 @@ bool BrowserView::MaybeShowBookmarkBar(WebContents* contents) {
   if (!show_bookmark_bar && !bookmark_bar_view_.get())
     return false;
   if (!bookmark_bar_view_.get()) {
-    bookmark_bar_view_.reset(new BookmarkBarView(browser_.get(), this));
+    bookmark_bar_view_ =
+        std::make_unique<BookmarkBarView>(browser_.get(), this);
     bookmark_bar_view_->set_owned_by_client();
     bookmark_bar_view_->SetBackground(
         std::make_unique<BookmarkBarViewBackground>(this,
@@ -2964,7 +2966,7 @@ void BrowserView::UpdateAcceleratorMetrics(const ui::Accelerator& accelerator,
   if (command_id == IDC_HELP_PAGE_VIA_KEYBOARD && key_code == ui::VKEY_F1)
     base::RecordAction(UserMetricsAction("ShowHelpTabViaF1"));
 
-  if (command_id == IDC_BOOKMARK_PAGE)
+  if (command_id == IDC_BOOKMARK_THIS_TAB)
     UMA_HISTOGRAM_ENUMERATION("Bookmarks.EntryPoint",
                               BOOKMARK_ENTRY_POINT_ACCELERATOR,
                               BOOKMARK_ENTRY_POINT_LIMIT);

@@ -138,7 +138,8 @@ class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
 
     root_view_.reset(CreateFixedSizeView(gfx::Size(800, 600)));
 
-    immersive_mode_controller_.reset(new MockImmersiveModeController);
+    immersive_mode_controller_ =
+        std::make_unique<MockImmersiveModeController>();
 
     top_container_ = CreateFixedSizeView(gfx::Size(800, 60));
     views::View* tab_strip_region_view = new TabStripRegionView();

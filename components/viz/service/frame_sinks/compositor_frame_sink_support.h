@@ -213,10 +213,10 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   SurfaceReference MakeTopLevelRootReference(const SurfaceId& surface_id);
 
   void DidReceiveCompositorFrameAck();
-  void DidPresentCompositorFrame(uint32_t presentation_token,
+  void DidPresentCompositorFrame(uint32_t frame_token,
                                  const gfx::PresentationFeedback& feedback);
   void DidRejectCompositorFrame(
-      uint32_t presentation_token,
+      uint32_t frame_token,
       std::vector<TransferableResource> frame_resource_list);
 
   // Update the display root reference with |surface|.
@@ -326,13 +326,11 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   bool callback_received_receive_ack_ = true;
   uint32_t trace_sequence_ = 0;
 
-  // Map between frame_token and the timestamp when Viz received the
-  // submitted CompositorFrame
-  base::flat_map<uint32_t, base::TimeTicks> received_compositor_frame_times_;
-
-  // Map between frame_token and the timestamp when Viz began DrawAndSwap
-  base::flat_map<uint32_t, base::TimeTicks> draw_start_times_;
-
+  // Contains FrameTimingDetails for in-flight frames that have not yet been
+  // presented or aborted. After presentation the details are moved into
+  // |frame_timing_details_| which is sent to the client and cleared with each
+  // OnBeginFrame()
+  FrameTimingDetailsMap pending_frame_timing_details_;
   FrameTimingDetailsMap frame_timing_details_;
   LocalSurfaceId last_evicted_local_surface_id_;
 

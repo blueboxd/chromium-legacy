@@ -190,11 +190,10 @@ TEST_F(PriorityQueueWithSequencesTest, UpdateSortKey) {
   {
     // Downgrade |sequence_b| from USER_BLOCKING to BEST_EFFORT. |sequence_c|
     // (USER_BLOCKING priority) becomes the sequence with the highest priority.
-    auto sequence_b_and_transaction =
-        TransactionWithOwnedTaskSource::FromTaskSource(sequence_b);
-    sequence_b_and_transaction.UpdatePriority(TaskPriority::BEST_EFFORT);
+    auto sequence_b_transaction = sequence_b->BeginTransaction();
+    sequence_b_transaction.UpdatePriority(TaskPriority::BEST_EFFORT);
 
-    pq.UpdateSortKey(std::move(sequence_b_and_transaction));
+    pq.UpdateSortKey(std::move(sequence_b_transaction));
     EXPECT_EQ(sort_key_c, pq.PeekSortKey());
     ExpectNumSequences(2U, 1U, 1U);
   }
@@ -203,11 +202,10 @@ TEST_F(PriorityQueueWithSequencesTest, UpdateSortKey) {
     // Update |sequence_c|'s sort key to one with the same priority.
     // |sequence_c| (USER_BLOCKING priority) is still the sequence with the
     // highest priority.
-    auto sequence_c_and_transaction =
-        TransactionWithOwnedTaskSource::FromTaskSource(sequence_c);
-    sequence_c_and_transaction.UpdatePriority(TaskPriority::USER_BLOCKING);
+    auto sequence_c_transaction = sequence_c->BeginTransaction();
+    sequence_c_transaction.UpdatePriority(TaskPriority::USER_BLOCKING);
 
-    pq.UpdateSortKey(std::move(sequence_c_and_transaction));
+    pq.UpdateSortKey(std::move(sequence_c_transaction));
     ExpectNumSequences(2U, 1U, 1U);
 
     // Note: |sequence_c| is popped for comparison as |sort_key_c| becomes
@@ -221,8 +219,7 @@ TEST_F(PriorityQueueWithSequencesTest, UpdateSortKey) {
   {
     // Upgrade |sequence_d| from BEST_EFFORT to USER_BLOCKING. |sequence_d|
     // becomes the sequence with the highest priority.
-    auto sequence_d_and_transaction =
-        TransactionWithOwnedTaskSource::FromTaskSource(sequence_d);
+    auto sequence_d_and_transaction = sequence_d->BeginTransaction();
     sequence_d_and_transaction.UpdatePriority(TaskPriority::USER_BLOCKING);
 
     pq.UpdateSortKey(std::move(sequence_d_and_transaction));
@@ -238,8 +235,7 @@ TEST_F(PriorityQueueWithSequencesTest, UpdateSortKey) {
   }
 
   {
-    pq.UpdateSortKey(
-        TransactionWithOwnedTaskSource::FromTaskSource(sequence_d));
+    pq.UpdateSortKey(sequence_d->BeginTransaction());
     ExpectNumSequences(1U, 1U, 0U);
     EXPECT_EQ(sequence_a, pq.PopTaskSource().Unregister());
     ExpectNumSequences(1U, 0U, 0U);
@@ -249,8 +245,7 @@ TEST_F(PriorityQueueWithSequencesTest, UpdateSortKey) {
 
   {
     // No-op if UpdateSortKey() is called on an empty PriorityQueue.
-    pq.UpdateSortKey(
-        TransactionWithOwnedTaskSource::FromTaskSource(sequence_b));
+    pq.UpdateSortKey(sequence_b->BeginTransaction());
     EXPECT_TRUE(pq.IsEmpty());
     ExpectNumSequences(0U, 0U, 0U);
   }

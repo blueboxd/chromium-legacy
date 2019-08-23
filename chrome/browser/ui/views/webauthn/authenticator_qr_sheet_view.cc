@@ -85,9 +85,8 @@ class QRView : public views::View {
   // kDinoY is the y-coordinate of the dino image.
   static constexpr int kDinoY = kMid - (kDinoHeight * kDinoTilePixels) / 2;
 
-  explicit QRView(const uint8_t qr_data[QRCode::kInputBytes]) {
-    qr_tiles_ = qr_.Generate(qr_data);
-  }
+  explicit QRView(const uint8_t qr_data[QRCode::kInputBytes])
+      : qr_tiles_(qr_.Generate(qr_data)) {}
   ~QRView() override {}
 
   void RefreshQRCode(const uint8_t new_qr_data[QRCode::kInputBytes]) {
@@ -151,9 +150,10 @@ class QRView : public views::View {
         off);
 
     // Paint the QR code.
+    int index = 0;
     for (int y = 0; y < QRCode::kSize; y++) {
       for (int x = 0; x < QRCode::kSize; x++) {
-        SkColor tile_color = (*qr_tiles_++) & 1 ? on : off;
+        SkColor tile_color = qr_tiles_[index++] & 1 ? on : off;
         canvas->FillRect(gfx::Rect((x + 2) * kTilePixels, (y + 2) * kTilePixels,
                                    kTilePixels, kTilePixels),
                          tile_color);
@@ -197,7 +197,7 @@ class QRView : public views::View {
   }
 
   QRCode qr_;
-  const uint8_t* qr_tiles_ = nullptr;
+  base::span<const uint8_t, QRCode::kTotalSize> qr_tiles_;
   unsigned state_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(QRView);

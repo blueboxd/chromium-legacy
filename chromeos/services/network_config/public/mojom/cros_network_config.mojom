@@ -493,11 +493,6 @@ struct ManagedOpenVPNProperties {
   ManagedVerifyX509Properties? verify_x509;
 };
 
-struct ManagedThirdPartyVPNProperties {
-  ManagedString extension_id;
-  string? provider_name;
-};
-
 // Managed NetworkType specific dictionaries.
 
 struct ManagedCellularProperties {
@@ -540,7 +535,8 @@ struct ManagedVPNProperties {
   ManagedIPSecProperties? ip_sec;
   ManagedL2TPProperties? l2tp;
   ManagedOpenVPNProperties? open_vpn;
-  ManagedThirdPartyVPNProperties? third_party_vpn;
+  ManagedString? provider_id;
+  string provider_name;
   VPNType type;
 };
 

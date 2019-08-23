@@ -107,6 +107,8 @@ public class TabGroupUiMediatorUnitTest {
     ArgumentCaptor<ThemeColorProvider.ThemeColorObserver> mThemeColorObserverArgumentCaptor;
     @Captor
     ArgumentCaptor<ThemeColorProvider.TintObserver> mTintObserverArgumentCaptor;
+    @Captor
+    ArgumentCaptor<TabGroupModelFilter.Observer> mTabGroupModelFilterObserverArgumentCaptor;
 
     private Tab mTab1;
     private Tab mTab2;
@@ -234,6 +236,11 @@ public class TabGroupUiMediatorUnitTest {
                 .addTabModelFilterObserver(mTabModelObserverArgumentCaptor.capture());
 
         doReturn(mTabGroupModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
+        doReturn(mTabGroupModelFilter).when(mTabModelFilterProvider).getTabModelFilter(true);
+        doReturn(mTabGroupModelFilter).when(mTabModelFilterProvider).getTabModelFilter(false);
+        doNothing()
+                .when(mTabGroupModelFilter)
+                .addTabGroupObserver(mTabGroupModelFilterObserverArgumentCaptor.capture());
 
         // Set up OverviewModeBehavior
         doNothing()
@@ -575,5 +582,16 @@ public class TabGroupUiMediatorUnitTest {
                 .removeThemeColorObserver(mThemeColorObserverArgumentCaptor.capture());
         verify(mThemeColorProvider).removeTintObserver(mTintObserverArgumentCaptor.capture());
         verify(mTabModelSelector).removeObserver(mTabModelSelectorObserverArgumentCaptor.capture());
+    }
+
+    @Test
+    public void uiNotVisibleAfterDragCurrentTabOutOfGroup() {
+        initAndAssertProperties(mTab3);
+
+        List<Tab> tabs = new ArrayList<>(Arrays.asList(mTab3));
+        doReturn(tabs).when(mTabGroupModelFilter).getRelatedTabList(TAB3_ID);
+        mTabGroupModelFilterObserverArgumentCaptor.getValue().didMoveTabOutOfGroup(mTab3, 1);
+
+        verifyResetStrip(false, null);
     }
 }

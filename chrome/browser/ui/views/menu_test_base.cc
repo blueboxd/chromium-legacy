@@ -43,7 +43,8 @@ void MenuTestBase::SetUp() {
   button_ = new views::MenuButton(base::ASCIIToUTF16("Menu Test"), this);
   menu_ = new views::MenuItemView(this);
   BuildMenu(menu_);
-  menu_runner_.reset(new views::MenuRunner(menu_, GetMenuRunnerFlags()));
+  menu_runner_ =
+      std::make_unique<views::MenuRunner>(menu_, GetMenuRunnerFlags());
 
   ViewEventTestBase::SetUp();
 }

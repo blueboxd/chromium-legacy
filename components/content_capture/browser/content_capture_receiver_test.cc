@@ -132,6 +132,11 @@ class ContentCaptureReceiverManagerHelper
 
   void Reset() { removed_sessions_.clear(); }
 
+  ContentCaptureReceiver* GetContentCaptureReceiver(
+      content::RenderFrameHost* rfh) const {
+    return ContentCaptureReceiverForFrame(rfh);
+  }
+
  private:
   ContentCaptureSession parent_session_;
   ContentCaptureSession updated_parent_session_;
@@ -142,6 +147,8 @@ class ContentCaptureReceiverManagerHelper
   std::vector<ContentCaptureSession> removed_sessions_;
   SessionRemovedTestHelper* session_removed_test_helper_;
 };
+
+}  // namespace
 
 class ContentCaptureReceiverTest : public content::RenderViewHostTestHarness {
  public:
@@ -470,6 +477,21 @@ TEST_F(ContentCaptureReceiverTest, ChildFrameDidCaptureContent) {
             content_capture_receiver_manager_helper()->captured_data());
 }
 
+// This test is for issue crbug.com/995121 .
+TEST_F(ContentCaptureReceiverTest, RenderFrameHostGone) {
+  auto* receiver =
+      content_capture_receiver_manager_helper()->GetContentCaptureReceiver(
+          web_contents()->GetMainFrame());
+  // No good way to simulate crbug.com/995121, just set rfh_ to nullptr in
+  // ContentCaptureReceiver, so content::WebContents::FromRenderFrameHost()
+  // won't return WebContents.
+  receiver->rfh_ = nullptr;
+  // Ensure no crash.
+  DidCaptureContent(test_data(), true /* first_data */);
+  DidUpdateContent(test_data());
+  DidRemoveContent(expected_removed_ids());
+}
+
 TEST_F(ContentCaptureReceiverTest, ChildFrameCaptureContentFirst) {
   // Simulate add child frame.
   SetupChildFrame();
@@ -619,5 +641,5 @@ TEST_F(ContentCaptureReceiverMultipleFrameTest,
       2u,
       content_capture_receiver_manager_helper()->GetFrameMapSizeForTesting());
 }
-}  // namespace
+
 }  // namespace content_capture

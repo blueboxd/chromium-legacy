@@ -63,8 +63,8 @@ class InterpolatingLayoutManager : public views::LayoutManagerBase {
   template <class T>
   T* AddLayout(std::unique_ptr<T> layout_manager,
                const views::Span& interpolation_range = views::Span()) {
-    T* const temp = layout_manager.get();
-    AddLayoutInternal(std::move(layout_manager), interpolation_range);
+    T* const temp = AddOwnedLayout(std::move(layout_manager));
+    AddLayoutInternal(temp, interpolation_range);
     return temp;
   }
 
@@ -78,9 +78,6 @@ class InterpolatingLayoutManager : public views::LayoutManagerBase {
   gfx::Size GetMinimumSize(const views::View* host) const override;
   int GetPreferredHeightForWidth(const views::View* host,
                                  int width) const override;
-  void InvalidateLayout() override;
-  void SetChildViewIgnoredByLayout(views::View* child_view,
-                                   bool ignored) override;
 
   // Returns a layout that's linearly interpolated between |start| and |target|
   // by |value|, which should be between 0 and 1. See
@@ -90,13 +87,6 @@ class InterpolatingLayoutManager : public views::LayoutManagerBase {
                                     const ProposedLayout& target);
 
  protected:
-  // LayoutManagerBase:
-  void Installed(views::View* host_view) override;
-  void ViewAdded(views::View* host_view, views::View* child_view) override;
-  void ViewRemoved(views::View* host_view, views::View* child_view) override;
-  void ViewVisibilitySet(views::View* host,
-                         views::View* view,
-                         bool visible) override;
   ProposedLayout CalculateProposedLayout(
       const views::SizeBounds& size_bounds) const override;
 
@@ -113,7 +103,7 @@ class InterpolatingLayoutManager : public views::LayoutManagerBase {
     float percent_second = 0.0f;
   };
 
-  void AddLayoutInternal(std::unique_ptr<LayoutManagerBase> layout,
+  void AddLayoutInternal(LayoutManagerBase* layout,
                          const views::Span& interpolation_range);
 
   // Given a set of size bounds and the current layout's orientation, returns
@@ -131,7 +121,7 @@ class InterpolatingLayoutManager : public views::LayoutManagerBase {
   views::LayoutOrientation orientation_ = views::LayoutOrientation::kHorizontal;
 
   // Maps from interpolation range to embedded layout.
-  std::map<views::Span, std::unique_ptr<LayoutManagerBase>> embedded_layouts_;
+  std::map<views::Span, LayoutManagerBase*> embedded_layouts_;
   LayoutManagerBase* default_layout_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(InterpolatingLayoutManager);

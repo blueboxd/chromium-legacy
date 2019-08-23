@@ -6,6 +6,7 @@ module page_load_metrics.mojom;
 
 import "mojo/public/mojom/base/time.mojom";
 import "third_party/blink/public/mojom/web_feature/web_feature.mojom";
+import "third_party/blink/public/mojom/use_counter/css_property_id.mojom";
 import "url/mojom/origin.mojom";
 
 // TimeDeltas below relative to navigation start.
@@ -161,10 +162,9 @@ struct PageLoadMetadata {
 struct PageLoadFeatures {
   // These features are defined as blink::mojom::WebFeature enums.
   array<blink.mojom.WebFeature> features;
-  // These ints represent CSSSampleID for histogram converted from CSSPropertyId
-  // by blink::UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram.
-  array<int32> css_properties;
-  array<int32> animated_css_properties;
+  // CSS properties are defined as blink::mojom::CSSSampleId enums.
+  array<blink.mojom.CSSSampleId> css_properties;
+  array<blink.mojom.CSSSampleId> animated_css_properties;
 };
 
 // Enumeration of distinct cache types.

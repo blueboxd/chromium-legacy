@@ -1744,11 +1744,9 @@ void QuicChromiumClientSession::OnPacketReceived(
     const quic::QuicSocketAddress& self_address,
     const quic::QuicSocketAddress& peer_address,
     bool is_connectivity_probe) {
-  DVLOG(1) << "Speculative probing response from ip:port: "
-           << peer_address.ToString()
-           << " to ip:port: " << self_address.ToString() << " is received";
-  // Notify the probing manager that a connectivity probing packet is received.
-  probing_manager_.OnConnectivityProbingReceived(self_address, peer_address);
+  // Notify the probing manager that a new packet is received.
+  probing_manager_.OnPacketReceived(self_address, peer_address,
+                                    is_connectivity_probe);
 }
 
 int QuicChromiumClientSession::HandleWriteError(

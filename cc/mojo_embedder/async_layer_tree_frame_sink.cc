@@ -87,7 +87,6 @@ AsyncLayerTreeFrameSink::AsyncLayerTreeFrameSink(
           std::move(params->synthetic_begin_frame_source)),
       pipes_(std::move(params->pipes)),
       client_binding_(this),
-      enable_surface_synchronization_(params->enable_surface_synchronization),
       wants_animate_only_begin_frames_(params->wants_animate_only_begin_frames),
       receive_begin_frame_histogram_(
           GetHistogramNamed("GraphicsPipeline.%s.ReceivedBeginFrame",
@@ -158,7 +157,6 @@ void AsyncLayerTreeFrameSink::SetLocalSurfaceId(
     const viz::LocalSurfaceId& local_surface_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(local_surface_id.is_valid());
-  DCHECK(enable_surface_synchronization_);
   local_surface_id_ = local_surface_id;
 }
 
@@ -281,10 +279,6 @@ void AsyncLayerTreeFrameSink::DidDeleteSharedBitmap(
     const viz::SharedBitmapId& id) {
   DCHECK(compositor_frame_sink_ptr_);
   compositor_frame_sink_ptr_->DidDeleteSharedBitmap(id);
-}
-
-void AsyncLayerTreeFrameSink::ForceAllocateNewId() {
-  DCHECK(!enable_surface_synchronization_);
 }
 
 void AsyncLayerTreeFrameSink::DidReceiveCompositorFrameAck(

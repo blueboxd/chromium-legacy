@@ -79,12 +79,11 @@ void ThreadGroupNative::JoinForTesting() {
 }
 
 void ThreadGroupNative::RunNextTaskSourceImpl() {
-  RunIntentWithRegisteredTaskSource run_intent_with_task_source = GetWork();
+  RegisteredTaskSource task_source = GetWork();
 
-  if (run_intent_with_task_source) {
+  if (task_source) {
     BindToCurrentThread();
-    RegisteredTaskSource task_source = task_tracker_->RunAndPopNextTask(
-        std::move(run_intent_with_task_source));
+    task_source = task_tracker_->RunAndPopNextTask(std::move(task_source));
     UnbindFromCurrentThread();
 
     if (task_source) {
@@ -109,13 +108,13 @@ void ThreadGroupNative::UpdateMinAllowedPriorityLockRequired() {
                               std::memory_order_relaxed);
 }
 
-RunIntentWithRegisteredTaskSource ThreadGroupNative::GetWork() {
+RegisteredTaskSource ThreadGroupNative::GetWork() {
   ScopedWorkersExecutor workers_executor(this);
   CheckedAutoLock auto_lock(lock_);
   DCHECK_GT(num_pending_threadpool_work_, 0U);
   --num_pending_threadpool_work_;
 
-  RunIntentWithRegisteredTaskSource task_source;
+  RegisteredTaskSource task_source;
   TaskPriority priority;
   while (!task_source && !priority_queue_.IsEmpty()) {
     priority = priority_queue_.PeekSortKey().priority();
@@ -123,16 +122,15 @@ RunIntentWithRegisteredTaskSource ThreadGroupNative::GetWork() {
     if (!task_tracker_->CanRunPriority(priority))
       return nullptr;
 
-    task_source = TakeRunIntentWithRegisteredTaskSource(&workers_executor);
+    task_source = TakeRegisteredTaskSource(&workers_executor);
   }
   UpdateMinAllowedPriorityLockRequired();
   return task_source;
 }
 
-void ThreadGroupNative::UpdateSortKey(
-    TransactionWithOwnedTaskSource transaction_with_task_source) {
+void ThreadGroupNative::UpdateSortKey(TaskSource::Transaction transaction) {
   ScopedWorkersExecutor executor(this);
-  UpdateSortKeyImpl(&executor, std::move(transaction_with_task_source));
+  UpdateSortKeyImpl(&executor, std::move(transaction));
 }
 
 void ThreadGroupNative::PushTaskSourceAndWakeUpWorkers(

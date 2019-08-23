@@ -8,6 +8,7 @@
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
 #include "chromeos/dbus/shill/shill_clients.h"
+#include "chromeos/network/device_state.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_utils.h"
@@ -93,6 +94,14 @@ void NetworkStateTestHelper::ClearDevices() {
 void NetworkStateTestHelper::ClearServices() {
   service_test_->ClearServices();
   base::RunLoop().RunUntilIdle();
+}
+
+void NetworkStateTestHelper::AddDevice(const std::string& device_path,
+                                       const std::string& type,
+                                       const std::string& name) {
+  device_test()->AddDevice(device_path, type, name);
+  base::RunLoop().RunUntilIdle();
+  network_state_handler()->SetDeviceStateUpdatedForTest(device_path);
 }
 
 std::string NetworkStateTestHelper::ConfigureService(

@@ -516,7 +516,7 @@ void OverlayWindowViews::UpdateControlsBounds() {
     return;
   }
 
-  update_controls_bounds_timer_.reset(new base::OneShotTimer());
+  update_controls_bounds_timer_ = std::make_unique<base::OneShotTimer>();
   update_controls_bounds_timer_->Start(
       FROM_HERE,
       base::TimeDelta::FromMilliseconds(kUpdateControlsBoundsDelayMs),

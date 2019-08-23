@@ -65,6 +65,9 @@ const char* kBypassBlacklistWildcardForSchemes[] = {
   "chrome-search",
 };
 
+const char kDevToolsLegacyScheme[] = "chrome-devtools";
+const char kDevToolsScheme[] = "devtools";
+
 // Maximum filters per policy. Filters over this index are ignored.
 const size_t kMaxFiltersPerPolicy = 1000;
 
@@ -259,8 +262,18 @@ bool URLBlacklist::FilterToComponents(const std::string& filter,
   DCHECK(path);
   DCHECK(query);
   url::Parsed parsed;
-  const std::string lc_filter = base::ToLowerASCII(filter);
+  std::string lc_filter = base::ToLowerASCII(filter);
   const std::string url_scheme = url_formatter::SegmentURL(filter, &parsed);
+
+  // This is for backward compatibility between 'chrome-devtools' and 'devtools'
+  // schemes. url_formatter::SegmentURL will return 'devtools' if the filter's
+  // scheme is the deprecated 'chrome-devtools'. To comply with that
+  // transformation, since both schemes are equivalent, if the filter's scheme
+  // was 'chrome-devtools', it should be replaced by 'devtools'.
+  if (url_scheme == kDevToolsScheme &&
+      lc_filter.find(kDevToolsLegacyScheme) == 0) {
+    lc_filter.replace(0, 15, kDevToolsScheme);
+  }
 
   // Check if it's a scheme wildcard pattern. We support both versions
   // (scheme:* and scheme://*) the later being consistent with old filter

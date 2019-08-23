@@ -43,6 +43,7 @@
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "media/base/audio_capturer_source.h"
 #include "media/base/audio_renderer_sink.h"
+#include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -337,7 +338,7 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // A request to fetch contents associated with this URL from metadata cache.
   using FetchCachedCodeCallback =
-      base::OnceCallback<void(base::Time, base::span<const uint8_t>)>;
+      base::OnceCallback<void(base::Time, mojo_base::BigBuffer)>;
   virtual void FetchCachedCode(blink::mojom::CodeCacheType cache_type,
                                const GURL&,
                                FetchCachedCodeCallback) {}

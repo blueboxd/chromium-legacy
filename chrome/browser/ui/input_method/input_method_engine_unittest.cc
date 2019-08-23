@@ -152,7 +152,8 @@ class InputMethodEngineTest : public testing::Test {
  public:
   InputMethodEngineTest() : observer_(nullptr) {
     ui::IMEBridge::Initialize();
-    mock_ime_input_context_handler_.reset(new ui::MockIMEInputContextHandler());
+    mock_ime_input_context_handler_ =
+        std::make_unique<ui::MockIMEInputContextHandler>();
     ui::IMEBridge::Get()->SetInputContextHandler(
         mock_ime_input_context_handler_.get());
     CreateEngine(kTestExtensionId);
@@ -164,7 +165,7 @@ class InputMethodEngineTest : public testing::Test {
 
  protected:
   void CreateEngine(const char* extension_id) {
-    engine_.reset(new InputMethodEngine());
+    engine_ = std::make_unique<InputMethodEngine>();
     observer_ = new TestObserver();
     std::unique_ptr<InputMethodEngineBase::Observer> observer_ptr(observer_);
     engine_->Initialize(std::move(observer_ptr), extension_id, profile_.get());

@@ -375,8 +375,7 @@ public class JsJavaInteractionTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "JsJavaInterfaction"})
-    public void testRemoveWebMessageListenerCouldPreventInjectionForNextPageLoad()
-            throws Throwable {
+    public void testUnsetWebMessageListenerCouldPreventInjectionForNextPageLoad() throws Throwable {
         setWebMessageListenerOnUiThread(mAwContents, mListener, new String[] {"*"});
 
         // Load the the page.
@@ -388,7 +387,7 @@ public class JsJavaInteractionTest {
         Assert.assertTrue(mListener.hasNoMoreOnPostMessage());
 
         // Remove WebMessageListener will disable injection for next page load.
-        TestThreadUtils.runOnUiThreadBlocking(() -> mAwContents.removeWebMessageListener());
+        TestThreadUtils.runOnUiThreadBlocking(() -> mAwContents.unsetWebMessageListener());
 
         loadUrlFromPath(POST_MESSAGE_SIMPLE_HTML);
 
@@ -686,9 +685,10 @@ public class JsJavaInteractionTest {
 
     private static void setWebMessageListenerOnUiThread(final AwContents awContents,
             final WebMessageListener listener, final String[] allowedOriginRules) {
-        TestThreadUtils.runOnUiThreadBlocking(()
-                                                      -> awContents.setWebMessageListener(listener,
-                                                              JS_OBJECT_NAME, allowedOriginRules));
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> awContents.setWebMessageListener(
+                                JS_OBJECT_NAME, allowedOriginRules, listener));
     }
 
     private static boolean hasJavaScriptObject(final String jsObjectName,

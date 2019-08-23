@@ -60,6 +60,10 @@ class CONTENT_EXPORT VirtualAuthenticator
   // Removes all the credentials.
   void ClearRegistrations();
 
+  // Remove a credential identified by |key_handle|. Returns true if the
+  // credential was found and removed, false otherwise.
+  bool RemoveRegistration(const std::vector<uint8_t>& key_handle);
+
   // Sets whether tests of user presence succeed or not for new requests sent to
   // this authenticator. The default is true.
   void SetUserPresence(bool is_user_present);

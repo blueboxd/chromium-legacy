@@ -5,6 +5,9 @@
 #include "components/ui_devtools/devtools_protocol_encoding.h"
 
 #include <memory>
+#include <string>
+#include <vector>
+
 #include "base/strings/string_number_conversions.h"
 
 namespace ui_devtools {
@@ -35,4 +38,15 @@ IPEStatus ConvertCBORToJSON(span<uint8_t> cbor, std::string* json) {
   return ::inspector_protocol_encoding::json::ConvertCBORToJSON(platform, cbor,
                                                                 json);
 }
+
+IPEStatus ConvertJSONToCBOR(span<uint8_t> json, std::string* cbor) {
+  Platform platform;
+  return ConvertJSONToCBOR(platform, json, cbor);
+}
+
+IPEStatus ConvertJSONToCBOR(span<uint8_t> json, std::vector<uint8_t>* cbor) {
+  Platform platform;
+  return ConvertJSONToCBOR(platform, json, cbor);
+}
+
 }  // namespace ui_devtools

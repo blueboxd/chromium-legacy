@@ -107,15 +107,7 @@ base::flat_set<std::string> GetStringListPolicyItems(
 
 }  // namespace
 
-PolicyServiceImpl::PolicyServiceImpl(Providers providers)
-    : PolicyServiceImpl(providers,
-                        /*enterprise_users_default_delegate=*/nullptr) {}
-
-PolicyServiceImpl::PolicyServiceImpl(
-    Providers providers,
-    PolicyService::EnterpriseUsersDefaultDelegate*
-        enterprise_users_default_delegate)
-    : enterprise_users_default_delegate_(enterprise_users_default_delegate) {
+PolicyServiceImpl::PolicyServiceImpl(Providers providers) {
   providers_ = std::move(providers);
   for (int domain = 0; domain < POLICY_DOMAIN_SIZE; ++domain)
     initialization_complete_[domain] = true;
@@ -242,11 +234,6 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
                                key::kPolicyDictionaryMultipleSourceMergeList);
 
   auto& chrome_policies = bundle.Get(chrome_namespace);
-
-  if (enterprise_users_default_delegate_ &&
-      enterprise_users_default_delegate_->ShouldApplyEnterpriseUsersDefault()) {
-    chrome_policies.ApplyEnterpriseUsersDefaults(GetEnterpriseUsersDefaults());
-  }
 
   // This has to be done after setting enterprise default values since it is
   // enabled by default for enterprise users.

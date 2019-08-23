@@ -38,7 +38,7 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
   // A start marker of a line box.
   struct Line {
     NGLineHeightMetrics metrics;
-    scoped_refptr<NGInlineBreakToken> inline_break_token;
+    scoped_refptr<const NGInlineBreakToken> inline_break_token;
     wtf_size_t children_count;
   };
   // Represents a box fragment appeared in a line. This includes inline boxes

@@ -19,11 +19,16 @@ namespace base {
 class RefCountedMemory;
 }
 
+namespace content {
+class WebUIDataSource;
+}
+
 class FlagsUI : public content::WebUIController {
  public:
   explicit FlagsUI(content::WebUI* web_ui);
   ~FlagsUI() override;
 
+  static void AddFlagsStrings(content::WebUIDataSource* source);
   static base::RefCountedMemory* GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor);
 
@@ -38,6 +43,7 @@ class FlagsEnterpriseUI : public content::WebUIController {
   explicit FlagsEnterpriseUI(content::WebUI* web_ui);
   ~FlagsEnterpriseUI() override;
 
+  static void AddEnterpriseStrings(content::WebUIDataSource* source);
   static bool IsEnterpriseUrl(const GURL& url);
 
  private:

@@ -66,6 +66,7 @@ VoteReceipt OverrideVoteAggregator::ChangeVote(VoteReceipt receipt,
                                                AcceptedVote* old_vote,
                                                const Vote& new_vote) {
   DCHECK(receipt.HasVote(old_vote));
+  DCHECK(old_vote->IsValid());
   VoteData& vote_data = GetVoteData(old_vote)->second;
 
   // Update the vote in place.
@@ -84,6 +85,7 @@ VoteReceipt OverrideVoteAggregator::ChangeVote(VoteReceipt receipt,
 }
 
 void OverrideVoteAggregator::VoteInvalidated(AcceptedVote* vote) {
+  DCHECK(!vote->IsValid());
   auto it = GetVoteData(vote);
   VoteData& vote_data = it->second;
 

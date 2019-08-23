@@ -236,8 +236,8 @@ void RemoteFrameView::ParentVisibleChanged() {
     UpdateFrameVisibility(!last_viewport_intersection_.IsEmpty());
 }
 
-void RemoteFrameView::RenderThrottlingStatusChanged() {
-  TRACE_EVENT0("blink", "RemoteFrameView::RenderThrottlingStatusChanged");
+void RemoteFrameView::VisibilityForThrottlingChanged() {
+  TRACE_EVENT0("blink", "RemoteFrameView::VisibilityForThrottlingChanged");
   if (!remote_frame_->Client())
     return;
   remote_frame_->Client()->UpdateRenderThrottlingStatus(IsHiddenForThrottling(),

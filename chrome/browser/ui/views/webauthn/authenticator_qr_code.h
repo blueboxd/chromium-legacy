@@ -8,6 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/containers/span.h"
+
 // AuthenticatorQRCode generates version three, class Q QR codes that carry 32
 // bytes of raw data. References in the following comments refer to ISO 18004
 // (3rd edition).
@@ -17,6 +19,9 @@ class AuthenticatorQRCode {
   // table 1. (The colored squares in in QR codes are called tiles in the
   // spec.)
   static constexpr int kSize = 29;
+  // kTotalSize is the total number of tiles for a v3 QR code, in both
+  // directions.
+  static constexpr int kTotalSize = kSize * kSize;
   // These values are taken from table 9 (page 38) for a version three, class Q
   // QR code.
   static constexpr size_t kTotalBytes = 70;
@@ -30,9 +35,9 @@ class AuthenticatorQRCode {
   static constexpr size_t kInputBytes = kDataBytes - 2;
 
   // Generate generates a QR code containing the given data and returns a
-  // pointer to an array of kSize×kSize bytes where the least-significant bit of
+  // pointer to an array of kTotalSize bytes where the least-significant bit of
   // each byte is set if that tile should be "black".
-  const uint8_t* Generate(const uint8_t in[kInputBytes]);
+  base::span<const uint8_t, kTotalSize> Generate(const uint8_t in[kInputBytes]);
 
  private:
   // MaskFunction3 implements one of the data-masking functions. See figure 21.

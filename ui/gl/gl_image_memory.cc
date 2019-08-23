@@ -46,7 +46,6 @@ GLenum TextureFormat(gfx::BufferFormat format) {
       return GL_RGB10_A2_EXT;
     case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
-    case gfx::BufferFormat::UYVY_422:
     case gfx::BufferFormat::P010:
       NOTREACHED() << gfx::BufferFormatToString(format);
       return 0;
@@ -75,7 +74,6 @@ GLenum DataFormat(gfx::BufferFormat format) {
       return TextureFormat(format);
     case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
-    case gfx::BufferFormat::UYVY_422:
     case gfx::BufferFormat::P010:
       NOTREACHED() << gfx::BufferFormatToString(format);
       return 0;
@@ -107,7 +105,6 @@ GLenum DataType(gfx::BufferFormat format) {
       return GL_UNSIGNED_INT_2_10_10_10_REV;
     case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
-    case gfx::BufferFormat::UYVY_422:
     case gfx::BufferFormat::P010:
       NOTREACHED() << gfx::BufferFormatToString(format);
       return 0;
@@ -137,7 +134,6 @@ GLint DataRowLength(size_t stride, gfx::BufferFormat format) {
       return base::checked_cast<GLint>(stride);
     case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
-    case gfx::BufferFormat::UYVY_422:
     case gfx::BufferFormat::P010:
       NOTREACHED() << gfx::BufferFormatToString(format);
       return 0;
@@ -265,7 +261,6 @@ std::unique_ptr<uint8_t[]> GLES2Data(const gfx::Size& size,
     }
     case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
-    case gfx::BufferFormat::UYVY_422:
     case gfx::BufferFormat::P010:
       NOTREACHED() << gfx::BufferFormatToString(format);
       return nullptr;
@@ -431,7 +426,6 @@ bool GLImageMemory::ValidFormat(gfx::BufferFormat format) {
       return true;
     case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
-    case gfx::BufferFormat::UYVY_422:
     case gfx::BufferFormat::P010:
       return false;
   }

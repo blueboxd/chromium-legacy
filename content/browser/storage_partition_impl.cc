@@ -1291,7 +1291,8 @@ void StoragePartitionImpl::Initialize() {
   native_file_system_manager_ =
       base::MakeRefCounted<NativeFileSystemManagerImpl>(
           filesystem_context_, blob_context,
-          browser_context_->GetNativeFileSystemPermissionContext());
+          browser_context_->GetNativeFileSystemPermissionContext(),
+          browser_context_->IsOffTheRecord());
 
   GeneratedCodeCacheSettings settings =
       GetContentClient()->browser()->GetGeneratedCodeCacheSettings(

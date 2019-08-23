@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "components/content_capture/common/content_capture.mojom.h"
 #include "components/content_capture/common/content_capture_data.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
@@ -50,6 +51,8 @@ class ContentCaptureReceiver : public mojom::ContentCaptureReceiver {
   }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ContentCaptureReceiverTest, RenderFrameHostGone);
+
   const mojo::AssociatedRemote<mojom::ContentCaptureSender>&
   GetContentCaptureSender();
 

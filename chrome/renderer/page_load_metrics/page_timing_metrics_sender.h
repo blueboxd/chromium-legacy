@@ -14,7 +14,7 @@
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "chrome/renderer/page_load_metrics/page_resource_data_use.h"
 #include "content/public/common/previews_state.h"
-#include "third_party/blink/public/mojom/use_counter/css_property_id.mojom.h"
+#include "third_party/blink/public/mojom/use_counter/css_property_id.mojom-shared.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-shared.h"
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
@@ -47,7 +47,8 @@ class PageTimingMetricsSender {
 
   void DidObserveLoadingBehavior(blink::WebLoadingBehaviorFlag behavior);
   void DidObserveNewFeatureUsage(blink::mojom::WebFeature feature);
-  void DidObserveNewCssPropertyUsage(int css_property, bool is_animated);
+  void DidObserveNewCssPropertyUsage(blink::mojom::CSSSampleId css_property,
+                                     bool is_animated);
   void DidObserveLayoutShift(double score, bool after_input_or_scroll);
   void DidObserveLazyLoadBehavior(
       blink::WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior);

@@ -457,10 +457,10 @@ cr.define('print_preview', function() {
      * @private
      */
     onTextBlur_: function(e) {
+      const control =
+          /** @type {!PrintPreviewMarginControlElement} */ (e.target);
+      control.setTextboxValue(control.getPositionInPts());
       if (e.detail /* detail is true if the control is in an invalid state */) {
-        const control =
-            /** @type {!PrintPreviewMarginControlElement} */ (e.target);
-        control.setTextboxValue(control.getPositionInPts());
         control.invalid = false;
       }
       this.textboxFocused_ = false;

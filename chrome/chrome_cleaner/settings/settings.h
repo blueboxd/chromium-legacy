@@ -73,13 +73,32 @@ class Settings {
   // Returns true if Safe Browsing extended reporting is enabled for the user.
   virtual bool sber_enabled() const;
 
+  // Returns an empty string if prompt_using_mojo() is false.
   virtual const std::string& chrome_mojo_pipe_token() const;
 
+  // Returns false if prompt_using_mojo() is false.
   virtual bool has_parent_pipe_handle() const;
 
   virtual bool prompt_using_mojo() const;
 
+  // Returns the handle value passed on the command line, even if the handle
+  // has been closed. Returns INVALID_HANDLE_VALUE if prompt_using_mojo() is
+  // true.
+  virtual HANDLE prompt_response_read_handle() const;
+
+  // Returns the handle value passed on the command line, even if the handle
+  // has been closed. Returns INVALID_HANDLE_VALUE if prompt_using_mojo() is
+  // true.
+  virtual HANDLE prompt_request_write_handle() const;
+
+  // Returns true if the command-line switches specify a valid IPC setup.
+  // Since IPC is only used in scanning mode, all combinations of switches in
+  // other modes are considered valid.
   virtual bool switches_valid_for_ipc() const;
+
+  // Returns true if any IPC related switch is included on the command-line.
+  // switches_valid_for_ipc() may return false even if this returns true.
+  virtual bool has_any_ipc_switch() const;
 
   // Returns the execution mode sent by Chrome if valid, or kNone if
   // kExecutionModeSwitch is not present or the corresponding value is invalid.

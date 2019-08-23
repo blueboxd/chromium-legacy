@@ -161,12 +161,13 @@ function PDFViewer(browserApi) {
   // to be displayed in the window. It is sized according to the document size
   // of the pdf and zoom level.
   this.sizer_ = $('sizer');
+
   if (this.isPrintPreview_) {
     this.pageIndicator_ = $('page-indicator');
   }
   this.passwordScreen_ = $('password-screen');
   this.passwordScreen_.addEventListener(
-      'password-submitted', this.onPasswordSubmitted_.bind(this));
+      'password-submitted', e => this.onPasswordSubmitted_(e));
   this.errorScreen_ = $('error-screen');
   // Can only reload if we are in a normal tab.
   if (chrome.tabs && this.browserApi_.getStreamInfo().tabId != -1) {
@@ -183,15 +184,16 @@ function PDFViewer(browserApi) {
       this.browserApi_.getZoomBehavior() == BrowserApi.ZoomBehavior.MANAGE ?
       this.browserApi_.getDefaultZoom() :
       1.0;
-  this.viewport_ = new ViewportImpl(
-      window, this.sizer_, this.viewportChanged_.bind(this),
-      () => this.currentController_.beforeZoom(),
-      () => {
-        this.currentController_.afterZoom();
-        this.zoomManager_.onPdfZoomChange();
-      },
-      this.setUserInitiated_.bind(this), getScrollbarWidth(), defaultZoom,
-      topToolbarHeight);
+  this.viewport_ = new Viewport(
+      window, this.sizer_, getScrollbarWidth(), defaultZoom, topToolbarHeight);
+  this.viewport_.setViewportChangedCallback(() => this.viewportChanged_());
+  this.viewport_.setBeforeZoomCallback(
+      () => this.currentController_.beforeZoom());
+  this.viewport_.setAfterZoomCallback(
+      () => this.currentController_.afterZoom());
+  this.viewport_.setUserInitiatedCallback(
+      userInitiated => this.setUserInitiated_(userInitiated));
+  window.addEventListener('beforeunload', () => this.viewport_.resetTracker());
 
   // Create the plugin object dynamically so we can set its src. The plugin
   // element is sized to fill the entire window and is set to be fixed
@@ -208,7 +210,7 @@ function PDFViewer(browserApi) {
   // with it. We also send a message indicating that extension has loaded and
   // is ready to receive messages.
   window.addEventListener(
-      'message', this.handleScriptingMessage.bind(this), false);
+      'message', message => this.handleScriptingMessage(message), false);
 
   this.plugin_.setAttribute('src', this.originalUrl_);
   this.plugin_.setAttribute(
@@ -242,20 +244,18 @@ function PDFViewer(browserApi) {
   this.zoomToolbar_ = $('zoom-toolbar');
   this.zoomToolbar_.setIsPrintPreview(this.isPrintPreview_);
   this.zoomToolbar_.addEventListener(
-      'fit-to-changed', this.fitToChanged_.bind(this));
+      'fit-to-changed', e => this.fitToChanged_(e));
+  this.zoomToolbar_.addEventListener('zoom-in', () => this.viewport_.zoomIn());
   this.zoomToolbar_.addEventListener(
-      'zoom-in', this.viewport_.zoomIn.bind(this.viewport_));
-  this.zoomToolbar_.addEventListener(
-      'zoom-out', this.viewport_.zoomOut.bind(this.viewport_));
+      'zoom-out', () => this.viewport_.zoomOut());
 
   this.gestureDetector_ = new GestureDetector($('content'));
   this.gestureDetector_.addEventListener(
-      'pinchstart', this.onPinchStart_.bind(this));
+      'pinchstart', e => this.onPinchStart_(e));
   this.sentPinchEvent_ = false;
   this.gestureDetector_.addEventListener(
-      'pinchupdate', this.onPinchUpdate_.bind(this));
-  this.gestureDetector_.addEventListener(
-      'pinchend', this.onPinchEnd_.bind(this));
+      'pinchupdate', e => this.onPinchUpdate_(e));
+  this.gestureDetector_.addEventListener('pinchend', e => this.onPinchEnd_(e));
 
   if (toolbarEnabled) {
     this.toolbar_ = $('toolbar');
@@ -309,19 +309,19 @@ function PDFViewer(browserApi) {
 
   // Set up the ZoomManager.
   this.zoomManager_ = ZoomManager.create(
-      this.browserApi_.getZoomBehavior(), this.viewport_,
-      this.browserApi_.setZoom.bind(this.browserApi_),
+      this.browserApi_.getZoomBehavior(), () => this.viewport_.getZoom(),
+      zoom => this.browserApi_.setZoom(zoom),
       this.browserApi_.getInitialZoom());
-  this.viewport_.zoomManager = this.zoomManager_;
+  this.viewport_.setZoomManager(this.zoomManager_);
   this.browserApi_.addZoomEventListener(
-      this.zoomManager_.onBrowserZoomChange.bind(this.zoomManager_));
+      zoom => this.zoomManager_.onBrowserZoomChange(zoom));
 
   // Setup the keyboard event listener.
-  document.addEventListener('keydown', this.handleKeyEvent_.bind(this));
-  document.addEventListener('mousemove', this.handleMouseEvent_.bind(this));
-  document.addEventListener('mouseout', this.handleMouseEvent_.bind(this));
+  document.addEventListener('keydown', e => this.handleKeyEvent_(e));
+  document.addEventListener('mousemove', e => this.handleMouseEvent_(e));
+  document.addEventListener('mouseout', e => this.handleMouseEvent_(e));
   document.addEventListener(
-      'contextmenu', this.handleContextMenuEvent_.bind(this));
+      'contextmenu', e => this.handleContextMenuEvent_(e));
 
   const tabId = this.browserApi_.getStreamInfo().tabId;
   this.navigator_ = new Navigator(
@@ -331,11 +331,12 @@ function PDFViewer(browserApi) {
       new ViewportScroller(this.viewport_, this.plugin_, window);
 
   // Request translated strings.
-  chrome.resourcesPrivate.getStrings('pdf', this.handleStrings_.bind(this));
+  chrome.resourcesPrivate.getStrings(
+      'pdf', strings => this.handleStrings_(strings));
 
   // Listen for save commands from the browser.
   if (chrome.mimeHandlerPrivate && chrome.mimeHandlerPrivate.onSave) {
-    chrome.mimeHandlerPrivate.onSave.addListener(this.onSave.bind(this));
+    chrome.mimeHandlerPrivate.onSave.addListener(url => this.onSave(url));
   }
 }
 
@@ -558,7 +559,7 @@ PDFViewer.prototype = {
       const result = await this.inkController_.save(true);
       await this.pluginController_.load(result.fileName, result.dataToSave);
       // Ensure the plugin gets the initial viewport.
-      this.viewport_.setZoom(this.viewport_.zoom);
+      this.pluginController_.afterZoom();
     }
   },
 
@@ -641,7 +642,8 @@ PDFViewer.prototype = {
       this.isUserInitiatedEvent_ = false;
       this.zoomToolbar_.forceFit(params.view);
       if (params.viewPosition) {
-        const zoomedPositionShift = params.viewPosition * this.viewport_.zoom;
+        const zoomedPositionShift =
+            params.viewPosition * this.viewport_.getZoom();
         const currentViewportPosition = this.viewport_.position;
         if (params.view == FittingType.FIT_TO_WIDTH) {
           currentViewportPosition.y += zoomedPositionShift;
@@ -730,7 +732,7 @@ PDFViewer.prototype = {
         this.viewport_.position = this.lastViewportPosition_;
       }
       this.paramsParser_.getViewportFromUrlParams(
-          this.originalUrl_, this.handleURLParams_.bind(this));
+          this.originalUrl_, params => this.handleURLParams_(params));
       this.setLoadState_(LoadState.SUCCESS);
       this.sendDocumentLoadedMessage_();
       while (this.delayedScriptingMessages_.length > 0) {
@@ -1306,7 +1308,7 @@ PDFViewer.prototype = {
   setAnnotationUndoState(state) {
     this.toolbar_.canUndoAnnotation = state.canUndo;
     this.toolbar_.canRedoAnnotation = state.canRedo;
-  }
+  },
 };
 
 /** @abstract */
@@ -1483,7 +1485,7 @@ class PluginController extends ContentController {
 
     if (this.viewport_.pinchPhase == Viewport.PinchPhase.PINCH_START) {
       const position = this.viewport_.position;
-      const zoom = this.viewport_.zoom;
+      const zoom = this.viewport_.getZoom();
       const pinchPhase = this.viewport_.pinchPhase;
       this.postMessage({
         type: 'viewport',
@@ -1503,7 +1505,7 @@ class PluginController extends ContentController {
    */
   afterZoom() {
     const position = this.viewport_.position;
-    const zoom = this.viewport_.zoom;
+    const zoom = this.viewport_.getZoom();
     const pinchVector = this.viewport_.pinchPanVector || {x: 0, y: 0};
     const pinchCenter = this.viewport_.pinchCenter || {x: 0, y: 0};
     const pinchPhase = this.viewport_.pinchPhase;

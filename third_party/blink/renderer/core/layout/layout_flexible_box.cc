@@ -497,6 +497,12 @@ LayoutUnit LayoutFlexibleBox::ChildUnstretchedLogicalHeight(
   // This should only be called if the logical height is the cross size
   DCHECK(MainAxisIsInlineAxis(child));
   if (NeedToStretchChildLogicalHeight(child)) {
+    LayoutUnit old_override_height = LayoutUnit(-1);
+    if (child.HasOverrideLogicalHeight()) {
+      old_override_height = child.OverrideLogicalHeight();
+      const_cast<LayoutBox&>(child).ClearOverrideLogicalHeight();
+    }
+
     LayoutUnit child_intrinsic_content_logical_height;
     if (!child.ShouldApplySizeContainment()) {
       if (child.DisplayLockInducesSizeContainment()) {
@@ -514,6 +520,10 @@ LayoutUnit LayoutFlexibleBox::ChildUnstretchedLogicalHeight(
     LogicalExtentComputedValues values;
     child.ComputeLogicalHeight(child_intrinsic_logical_height, LayoutUnit(),
                                values);
+    if (old_override_height != LayoutUnit(-1)) {
+      const_cast<LayoutBox&>(child).SetOverrideLogicalHeight(
+          old_override_height);
+    }
     return values.extent_;
   }
   return child.LogicalHeight();
@@ -524,14 +534,23 @@ LayoutUnit LayoutFlexibleBox::ChildUnstretchedLogicalWidth(
     const LayoutBox& child) const {
   // This should only be called if the logical width is the cross size
   DCHECK(!MainAxisIsInlineAxis(child));
-  DCHECK(!child.HasOverrideLogicalWidth());
+
   // We compute the width as if we were unstretched. Only the main axis
   // override size is set at this point.
   // However, if our cross axis length is definite we don't need to recompute
   // and can just return the already-set logical width.
   if (!CrossAxisLengthIsDefinite(child, child.StyleRef().LogicalWidth())) {
+    LayoutUnit old_override_width = LayoutUnit(-1);
+    if (child.HasOverrideLogicalWidth()) {
+      old_override_width = child.OverrideLogicalWidth();
+      const_cast<LayoutBox&>(child).ClearOverrideLogicalWidth();
+    }
+
     LogicalExtentComputedValues values;
     child.ComputeLogicalWidth(values);
+
+    if (old_override_width != LayoutUnit(-1))
+      const_cast<LayoutBox&>(child).SetOverrideLogicalWidth(old_override_width);
     return values.extent_;
   }
 
@@ -1142,8 +1161,6 @@ void LayoutFlexibleBox::ConstructAndAppendFlexItem(
     FlexLayoutAlgorithm* algorithm,
     LayoutBox& child,
     ChildLayoutType layout_type) {
-  if (layout_type != kNeverLayout)
-    child.ClearOverrideSize();
   if (layout_type != kNeverLayout &&
       ChildHasIntrinsicMainAxisSize(*algorithm, child)) {
     // If this condition is true, then ComputeMainAxisExtentForChild will call
@@ -1158,6 +1175,7 @@ void LayoutFlexibleBox::ConstructAndAppendFlexItem(
     UpdateBlockChildDirtyBitsBeforeLayout(layout_type == kForceLayout, child);
     if (child.NeedsLayout() || layout_type == kForceLayout ||
         !intrinsic_size_along_main_axis_.Contains(&child)) {
+      child.ClearOverrideSize();
       child.ForceLayout();
       CacheChildMainSize(child);
     }
@@ -1425,8 +1443,19 @@ void LayoutFlexibleBox::LayoutLineItems(FlexLine* current_line,
     UpdateBlockChildDirtyBitsBeforeLayout(force_child_relayout, *child);
     if (!child->NeedsLayout())
       MarkChildForPaginationRelayoutIfNeeded(*child, layout_scope);
-    if (child->NeedsLayout())
+    if (child->NeedsLayout()) {
       relaid_out_children_.insert(child);
+      // It is very important that we only clear the cross axis override size
+      // if we are in fact going to lay out the child. Otherwise, the cross
+      // axis size and the actual laid out size get out of sync, which will
+      // cause problems if we later lay out the child in simplified layout,
+      // which does not go through regular flex layout and therefore would
+      // not reset the cross axis size.
+      if (MainAxisIsInlineAxis(*child))
+        child->ClearOverrideLogicalHeight();
+      else
+        child->ClearOverrideLogicalWidth();
+    }
     child->LayoutIfNeeded();
 
     // This shouldn't be necessary, because we set the override size to be

@@ -23,6 +23,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy.mojom.h"
 #include "components/data_use_measurement/core/data_use_measurement.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "net/nqe/effective_connection_type.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
@@ -157,10 +158,10 @@ class DataReductionProxyService
   // Sends the given |headers| to |DataReductionProxySettings|.
   void UpdateProxyRequestHeaders(const net::HttpRequestHeaders& headers);
 
-  // Sets a config client that can be used to update Data Reduction Proxy
-  // settings when the network service is enabled.
-  void SetCustomProxyConfigClient(
-      network::mojom::CustomProxyConfigClientPtrInfo config_client_info);
+  // Adds a config client that can be used to update Data Reduction Proxy
+  // settings.
+  void AddCustomProxyConfigClient(
+      mojo::Remote<network::mojom::CustomProxyConfigClient> config_client);
 
   // mojom::DataReductionProxy implementation:
   void MarkProxiesAsBad(base::TimeDelta bypass_duration,
@@ -321,7 +322,9 @@ class DataReductionProxyService
   // is unavailable, then the destruction will happen on the UI thread.
   std::unique_ptr<NetworkPropertiesManager> network_properties_manager_;
 
-  network::mojom::CustomProxyConfigClientPtr proxy_config_client_;
+  // The set of clients that will get updates about changes to the proxy config.
+  mojo::RemoteSet<network::mojom::CustomProxyConfigClient>
+      proxy_config_clients_;
 
   mojo::BindingSet<mojom::DataReductionProxy> drp_bindings_;
 

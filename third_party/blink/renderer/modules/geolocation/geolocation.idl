@@ -26,6 +26,7 @@
 // https://www.w3.org/TR/geolocation-API/#geolocation_interface
 [
     ActiveScriptWrappable,
+    Exposed=Window,
     NoInterfaceObject
 ] interface Geolocation {
     [

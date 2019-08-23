@@ -99,6 +99,9 @@ class WebView {
                                       bool compositing_enabled,
                                       WebView* opener);
 
+  // Destroys the WebView.
+  virtual void Close() = 0;
+
   // Called to inform WebViewImpl that a local main frame has been attached.
   // After this call MainFrameImpl() will return a valid frame until it is
   // detached.

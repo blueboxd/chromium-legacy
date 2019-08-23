@@ -88,6 +88,7 @@ class CheckClientDownloadRequest : public download::DownloadItem::Observer {
                      DownloadCheckResultReason reason);
   bool CertificateChainIsWhitelisted(
       const ClientDownloadRequest_CertificateChain& chain);
+  bool ShouldUploadBinary(DownloadCheckResult result);
 
   // The DownloadItem we are checking. Will be NULL if the request has been
   // canceled. Must be accessed only on UI thread.

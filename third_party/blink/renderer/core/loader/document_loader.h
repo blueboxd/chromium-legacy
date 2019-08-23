@@ -34,6 +34,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
+#include "mojo/public/cpp/base/big_buffer.h"
 #include "third_party/blink/public/mojom/loader/mhtml_load_result.mojom-blink.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
@@ -379,7 +380,7 @@ class CORE_EXPORT DocumentLoader
   void ReportPreviewsIntervention() const;
 
   // WebNavigationBodyLoader::Client
-  void BodyCodeCacheReceived(base::span<const uint8_t>) override;
+  void BodyCodeCacheReceived(mojo_base::BigBuffer data) override;
   void BodyDataReceived(base::span<const char> data) override;
   void BodyLoadingFinished(base::TimeTicks completion_time,
                            int64_t total_encoded_data_length,

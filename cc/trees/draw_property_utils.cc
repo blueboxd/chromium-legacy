@@ -610,11 +610,7 @@ static gfx::Rect LayerVisibleRect(PropertyTrees* property_trees,
   bool non_root_copy_request_or_cache_render_surface =
       lower_effect_closest_ancestor > EffectTree::kContentsRootNodeId;
   gfx::Rect layer_content_rect = gfx::Rect(layer->bounds());
-  if (layer->layer_tree_impl()->IsRootLayer(layer) &&
-      !layer->layer_tree_impl()->viewport_visible_rect().IsEmpty()) {
-    layer_content_rect.Intersect(
-        layer->layer_tree_impl()->viewport_visible_rect());
-  }
+
   gfx::RectF accumulated_clip_in_root_space;
   if (non_root_copy_request_or_cache_render_surface) {
     bool include_expanding_clips = true;

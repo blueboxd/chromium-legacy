@@ -7,12 +7,15 @@
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/assistant/assistant_client.h"
+#include "chrome/browser/ui/ash/assistant/proactive_suggestions_loader.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 ProactiveSuggestionsClientImpl::ProactiveSuggestionsClientImpl(
-    AssistantClient* client) {
+    AssistantClient* client,
+    Profile* profile)
+    : profile_(profile) {
   // Initialize the Assistant state proxy.
   mojo::PendingRemote<ash::mojom::VoiceInteractionController> controller;
   client->RequestVoiceInteractionController(
@@ -116,7 +119,32 @@ void ProactiveSuggestionsClientImpl::SetActiveUrl(const GURL& url) {
 
   active_url_ = url;
 
-  // TODO(dmblack): Retrieve proactive suggestions and notify observers.
+  // The previous set of proactive suggestions is no longer valid.
+  SetActiveProactiveSuggestions(nullptr);
+
+  if (active_url_.is_empty()) {
+    loader_.reset();
+    return;
+  }
+
+  // Start loading new proactive suggestions associated with the active url.
+  loader_ = std::make_unique<ProactiveSuggestionsLoader>(profile_, active_url_);
+  loader_->Start(base::BindOnce(
+      &ProactiveSuggestionsClientImpl::SetActiveProactiveSuggestions,
+      base::Unretained(this)));
+}
+
+void ProactiveSuggestionsClientImpl::SetActiveProactiveSuggestions(
+    std::unique_ptr<ash::ProactiveSuggestions> proactive_suggestions) {
+  size_t proactive_suggestions_hash =
+      ash::ProactiveSuggestions::ToHash(proactive_suggestions.get());
+  if (proactive_suggestions_hash == active_proactive_suggestions_hash_)
+    return;
+
+  active_proactive_suggestions_hash_ = proactive_suggestions_hash;
+
+  if (delegate_)
+    delegate_->OnProactiveSuggestionsChanged(std::move(proactive_suggestions));
 }
 
 void ProactiveSuggestionsClientImpl::UpdateActiveState() {

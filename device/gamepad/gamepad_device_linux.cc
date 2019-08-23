@@ -552,7 +552,7 @@ void GamepadDeviceLinux::InitializeHidraw(base::ScopedFD fd) {
 
   if (is_dualshock4 && !dualshock4_) {
     dualshock4_ = std::make_unique<Dualshock4Controller>(
-        std::make_unique<HidWriterLinux>(hidraw_fd_));
+        bus_type_, std::make_unique<HidWriterLinux>(hidraw_fd_));
   }
 
   if (is_hid_haptic && !hid_haptics_) {

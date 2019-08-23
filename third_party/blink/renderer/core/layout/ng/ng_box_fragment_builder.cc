@@ -79,12 +79,6 @@ void GatherInlineContainerFragmentsFromLinebox(
 
 }  // namespace
 
-void NGBoxFragmentBuilder::RemoveChildren() {
-  child_break_tokens_.resize(0);
-  inline_break_tokens_.resize(0);
-  children_.resize(0);
-}
-
 void NGBoxFragmentBuilder::AddBreakBeforeChild(NGLayoutInputNode child,
                                                bool is_forced_break) {
   DCHECK(has_block_fragmentation_);

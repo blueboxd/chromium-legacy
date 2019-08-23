@@ -356,30 +356,14 @@ QuicTestPacketMaker::MakeRstAndRequestHeadersPacket(
     // A stream frame containing stream type will be written on the control
     // stream first.
     std::string type(1, 0x00);
-
-    quic::SettingsFrame settings;
-    settings.values[quic::SETTINGS_MAX_HEADER_LIST_SIZE] =
-        kQuicMaxHeaderListSize;
-    std::unique_ptr<char[]> buffer1;
-    quic::QuicByteCount frame_length1 =
-        http_encoder_.SerializeSettingsFrame(settings, &buffer1);
-    std::string settings_data = std::string(buffer1.get(), frame_length1);
+    std::string settings_data = GenerateHttp3SettingsData();
 
     if (stream_offsets_[2] == 0) {
       frames.push_back(GenerateNextStreamFrame(2, false, type));
       frames.push_back(GenerateNextStreamFrame(2, false, settings_data));
     }
 
-    quic::PriorityFrame frame;
-    frame.weight = priority;
-    frame.dependency_type = quic::ROOT_OF_TREE;
-    frame.prioritized_type = quic::REQUEST_STREAM;
-    frame.prioritized_element_id = stream_id;
-
-    std::unique_ptr<char[]> buffer;
-    quic::QuicByteCount frame_length =
-        http_encoder_.SerializePriorityFrame(frame, &buffer);
-    std::string priority_data = std::string(buffer.get(), frame_length);
+    std::string priority_data = GenerateHttp3PriorityData(priority, stream_id);
 
     frames.push_back(GenerateNextStreamFrame(2, false, priority_data));
 
@@ -784,15 +768,7 @@ QuicTestPacketMaker::MakeRequestHeadersAndMultipleDataFramesPacket(
     // stream first.
     std::string type(1, 0x00);
 
-    quic::SettingsFrame settings;
-    settings.values[quic::SETTINGS_MAX_HEADER_LIST_SIZE] =
-        kQuicMaxHeaderListSize;
-    settings.values[quic::SETTINGS_QPACK_MAX_TABLE_CAPACITY] =
-        quic::kDefaultQpackMaxDynamicTableCapacity;
-    std::unique_ptr<char[]> buffer1;
-    quic::QuicByteCount frame_length1 =
-        http_encoder_.SerializeSettingsFrame(settings, &buffer1);
-    std::string settings_data = std::string(buffer1.get(), frame_length1);
+    std::string settings_data = GenerateHttp3SettingsData();
 
     quic::QuicFrames frames;
     if (stream_offsets_[2] == 0) {
@@ -800,16 +776,7 @@ QuicTestPacketMaker::MakeRequestHeadersAndMultipleDataFramesPacket(
       frames.push_back(GenerateNextStreamFrame(2, false, settings_data));
     }
 
-    quic::PriorityFrame frame;
-    frame.weight = priority;
-    frame.dependency_type = quic::ROOT_OF_TREE;
-    frame.prioritized_type = quic::REQUEST_STREAM;
-    frame.prioritized_element_id = stream_id;
-
-    std::unique_ptr<char[]> buffer;
-    quic::QuicByteCount frame_length =
-        http_encoder_.SerializePriorityFrame(frame, &buffer);
-    std::string priority_data = std::string(buffer.get(), frame_length);
+    std::string priority_data = GenerateHttp3PriorityData(priority, stream_id);
 
     frames.push_back(GenerateNextStreamFrame(2, false, priority_data));
 
@@ -870,15 +837,7 @@ QuicTestPacketMaker::MakeRequestHeadersPacket(
     // stream first.
     std::string type(1, 0x00);
 
-    quic::SettingsFrame settings;
-    settings.values[quic::SETTINGS_MAX_HEADER_LIST_SIZE] =
-        kQuicMaxHeaderListSize;
-    settings.values[quic::SETTINGS_QPACK_MAX_TABLE_CAPACITY] =
-        quic::kDefaultQpackMaxDynamicTableCapacity;
-    std::unique_ptr<char[]> buffer1;
-    quic::QuicByteCount frame_length1 =
-        http_encoder_.SerializeSettingsFrame(settings, &buffer1);
-    std::string settings_data = std::string(buffer1.get(), frame_length1);
+    std::string settings_data = GenerateHttp3SettingsData();
 
     quic::QuicFrames frames;
     if (stream_offsets_[2] == 0) {
@@ -886,16 +845,7 @@ QuicTestPacketMaker::MakeRequestHeadersPacket(
       frames.push_back(GenerateNextStreamFrame(2, false, settings_data));
     }
 
-    quic::PriorityFrame frame;
-    frame.weight = priority;
-    frame.dependency_type = quic::ROOT_OF_TREE;
-    frame.prioritized_type = quic::REQUEST_STREAM;
-    frame.prioritized_element_id = stream_id;
-
-    std::unique_ptr<char[]> buffer;
-    quic::QuicByteCount frame_length =
-        http_encoder_.SerializePriorityFrame(frame, &buffer);
-    std::string priority_data = std::string(buffer.get(), frame_length);
+    std::string priority_data = GenerateHttp3PriorityData(priority, stream_id);
 
     frames.push_back(GenerateNextStreamFrame(2, false, priority_data));
 
@@ -935,15 +885,7 @@ QuicTestPacketMaker::MakeRequestHeadersAndRstPacket(
     // stream first.
     std::string type(1, 0x00);
 
-    quic::SettingsFrame settings;
-    settings.values[quic::SETTINGS_MAX_HEADER_LIST_SIZE] =
-        kQuicMaxHeaderListSize;
-    settings.values[quic::SETTINGS_QPACK_MAX_TABLE_CAPACITY] =
-        quic::kDefaultQpackMaxDynamicTableCapacity;
-    std::unique_ptr<char[]> buffer1;
-    quic::QuicByteCount frame_length1 =
-        http_encoder_.SerializeSettingsFrame(settings, &buffer1);
-    std::string settings_data = std::string(buffer1.get(), frame_length1);
+    std::string settings_data = GenerateHttp3SettingsData();
 
     quic::QuicFrames frames;
     if (stream_offsets_[2] == 0) {
@@ -951,16 +893,7 @@ QuicTestPacketMaker::MakeRequestHeadersAndRstPacket(
       frames.push_back(GenerateNextStreamFrame(2, false, settings_data));
     }
 
-    quic::PriorityFrame frame;
-    frame.weight = priority;
-    frame.dependency_type = quic::ROOT_OF_TREE;
-    frame.prioritized_type = quic::REQUEST_STREAM;
-    frame.prioritized_element_id = stream_id;
-
-    std::unique_ptr<char[]> buffer;
-    quic::QuicByteCount frame_length =
-        http_encoder_.SerializePriorityFrame(frame, &buffer);
-    std::string priority_data = std::string(buffer.get(), frame_length);
+    std::string priority_data = GenerateHttp3PriorityData(priority, stream_id);
 
     frames.push_back(GenerateNextStreamFrame(2, false, priority_data));
 
@@ -1044,7 +977,7 @@ QuicTestPacketMaker::MakePushPromisePacket(
     size_t* spdy_headers_frame_length) {
   if (quic::VersionUsesQpack(version_.transport_version)) {
     std::string encoded_headers =
-        qpack_encoder_.EncodeHeaderList(stream_id, &headers);
+        qpack_encoder_.EncodeHeaderList(stream_id, headers);
     quic::QuicFrames frames;
     quic::PushPromiseFrame frame;
     frame.push_id = promised_stream_id;
@@ -1269,14 +1202,7 @@ QuicTestPacketMaker::MakeSettingsPacket(uint64_t packet_number,
   // A stream frame containing stream type will be written on the control stream
   // first.
   std::string type(1, 0x00);
-  quic::SettingsFrame settings;
-  settings.values[quic::SETTINGS_MAX_HEADER_LIST_SIZE] = kQuicMaxHeaderListSize;
-  settings.values[quic::SETTINGS_QPACK_MAX_TABLE_CAPACITY] =
-      quic::kDefaultQpackMaxDynamicTableCapacity;
-  std::unique_ptr<char[]> buffer;
-  quic::QuicByteCount frame_length =
-      http_encoder_.SerializeSettingsFrame(settings, &buffer);
-  std::string settings_data = std::string(buffer.get(), frame_length);
+  std::string settings_data = GenerateHttp3SettingsData();
 
   std::vector<std::string> data;
   if (coalesce_http_frames_) {
@@ -1314,14 +1240,7 @@ QuicTestPacketMaker::MakeInitialSettingsPacket(uint64_t packet_number) {
   // A stream frame containing stream type will be written on the control stream
   // first.
   std::string type(1, 0x00);
-  quic::SettingsFrame settings;
-  settings.values[quic::SETTINGS_MAX_HEADER_LIST_SIZE] = kQuicMaxHeaderListSize;
-  settings.values[quic::SETTINGS_QPACK_MAX_TABLE_CAPACITY] =
-      quic::kDefaultQpackMaxDynamicTableCapacity;
-  std::unique_ptr<char[]> buffer;
-  quic::QuicByteCount frame_length =
-      http_encoder_.SerializeSettingsFrame(settings, &buffer);
-  std::string settings_data = std::string(buffer.get(), frame_length);
+  std::string settings_data = GenerateHttp3SettingsData();
 
   std::vector<std::string> data;
   if (coalesce_http_frames_) {
@@ -1519,7 +1438,7 @@ std::vector<std::string> QuicTestPacketMaker::QpackEncodeHeaders(
   std::vector<std::string> data;
 
   std::string encoded_headers =
-      qpack_encoder_.EncodeHeaderList(stream_id, &headers);
+      qpack_encoder_.EncodeHeaderList(stream_id, headers);
 
   // Generate HEADERS frame header.
   std::unique_ptr<char[]> headers_frame_header;
@@ -1624,6 +1543,32 @@ quic::QuicStreamId QuicTestPacketMaker::GetFirstBidirectionalStreamId() const {
 
 quic::QuicStreamId QuicTestPacketMaker::GetHeadersStreamId() const {
   return quic::QuicUtils::GetHeadersStreamId(version_.transport_version);
+}
+
+std::string QuicTestPacketMaker::GenerateHttp3SettingsData() {
+  quic::SettingsFrame settings;
+  settings.values[quic::SETTINGS_MAX_HEADER_LIST_SIZE] = kQuicMaxHeaderListSize;
+  settings.values[quic::SETTINGS_QPACK_MAX_TABLE_CAPACITY] =
+      quic::kDefaultQpackMaxDynamicTableCapacity;
+  std::unique_ptr<char[]> buffer;
+  quic::QuicByteCount frame_length =
+      http_encoder_.SerializeSettingsFrame(settings, &buffer);
+  return std::string(buffer.get(), frame_length);
+}
+
+std::string QuicTestPacketMaker::GenerateHttp3PriorityData(
+    spdy::SpdyPriority priority,
+    quic::QuicStreamId stream_id) {
+  quic::PriorityFrame frame;
+  frame.weight = priority;
+  frame.dependency_type = quic::ROOT_OF_TREE;
+  frame.prioritized_type = quic::REQUEST_STREAM;
+  frame.prioritized_element_id = stream_id;
+
+  std::unique_ptr<char[]> buffer;
+  quic::QuicByteCount frame_length =
+      http_encoder_.SerializePriorityFrame(frame, &buffer);
+  return std::string(buffer.get(), frame_length);
 }
 
 }  // namespace test

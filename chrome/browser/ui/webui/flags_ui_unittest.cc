@@ -4,12 +4,19 @@
 
 #include "chrome/browser/ui/webui/flags_ui.h"
 
+#include "base/values.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_web_ui_data_source.h"
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 class FlagsUITest : public testing::Test {
  public:
   FlagsUITest() = default;
+
+ private:
+  content::TestBrowserThreadBundle bundle_;
 };
 
 TEST_F(FlagsUITest, IsEnterpriseUrl) {
@@ -29,4 +36,16 @@ TEST_F(FlagsUITest, IsEnterpriseUrl) {
     EXPECT_EQ(expectation.is_enterprise,
               FlagsEnterpriseUI::IsEnterpriseUrl(GURL(expectation.url)));
   }
+}
+
+TEST_F(FlagsUITest, FlagsAndEnterpriseSources) {
+  std::unique_ptr<content::TestWebUIDataSource> flags_strings =
+      content::TestWebUIDataSource::Create("A");
+  std::unique_ptr<content::TestWebUIDataSource> enterprise_strings =
+      content::TestWebUIDataSource::Create("B");
+  FlagsUI::AddFlagsStrings(flags_strings->GetWebUIDataSource());
+  FlagsEnterpriseUI::AddEnterpriseStrings(
+      enterprise_strings->GetWebUIDataSource());
+  EXPECT_EQ(flags_strings->GetLocalizedStrings()->size(),
+            enterprise_strings->GetLocalizedStrings()->size());
 }

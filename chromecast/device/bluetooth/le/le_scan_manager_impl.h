@@ -43,6 +43,9 @@ class LeScanManagerImpl : public LeScanManager,
       base::Optional<ScanFilter> service_uuid = base::nullopt) override;
   void ClearScanResults() override;
 
+  void PauseScan();
+  void RestartScan();
+
  private:
   class ScanHandleImpl;
 

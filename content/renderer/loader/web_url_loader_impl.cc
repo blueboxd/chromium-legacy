@@ -398,7 +398,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   void OnReceivedResponse(const network::ResourceResponseInfo& info);
   void OnStartLoadingResponseBody(mojo::ScopedDataPipeConsumerHandle body);
   void OnTransferSizeUpdated(int transfer_size_diff);
-  void OnReceivedCachedMetadata(const char* data, int len);
+  void OnReceivedCachedMetadata(mojo_base::BigBuffer data);
   void OnCompletedRequest(const network::URLLoaderCompletionStatus& status);
 
  private:
@@ -469,7 +469,7 @@ class WebURLLoaderImpl::RequestPeerImpl : public RequestPeer {
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
   void OnTransferSizeUpdated(int transfer_size_diff) override;
-  void OnReceivedCachedMetadata(const char* data, int len) override;
+  void OnReceivedCachedMetadata(mojo_base::BigBuffer data) override;
   void OnCompletedRequest(
       const network::URLLoaderCompletionStatus& status) override;
   scoped_refptr<base::TaskRunner> GetTaskRunner() override {
@@ -509,7 +509,7 @@ class WebURLLoaderImpl::SinkPeer : public RequestPeer {
                             base::Unretained(this)));
   }
   void OnTransferSizeUpdated(int transfer_size_diff) override {}
-  void OnReceivedCachedMetadata(const char* data, int len) override {}
+  void OnReceivedCachedMetadata(mojo_base::BigBuffer) override {}
   void OnCompletedRequest(
       const network::URLLoaderCompletionStatus& status) override {
     body_handle_.reset();
@@ -910,13 +910,14 @@ void WebURLLoaderImpl::Context::OnTransferSizeUpdated(int transfer_size_diff) {
 }
 
 void WebURLLoaderImpl::Context::OnReceivedCachedMetadata(
-    const char* data, int len) {
+    mojo_base::BigBuffer data) {
   if (!client_)
     return;
   TRACE_EVENT_WITH_FLOW1(
       "loading", "WebURLLoaderImpl::Context::OnReceivedCachedMetadata", this,
-      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "length", len);
-  client_->DidReceiveCachedMetadata(data, len);
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "length",
+      data.size());
+  client_->DidReceiveCachedMetadata(std::move(data));
 }
 
 void WebURLLoaderImpl::Context::OnCompletedRequest(
@@ -992,11 +993,10 @@ void WebURLLoaderImpl::RequestPeerImpl::OnTransferSizeUpdated(
 }
 
 void WebURLLoaderImpl::RequestPeerImpl::OnReceivedCachedMetadata(
-    const char* data,
-    int len) {
+    mojo_base::BigBuffer data) {
   if (discard_body_)
     return;
-  context_->OnReceivedCachedMetadata(data, len);
+  context_->OnReceivedCachedMetadata(std::move(data));
 }
 
 void WebURLLoaderImpl::RequestPeerImpl::OnCompletedRequest(

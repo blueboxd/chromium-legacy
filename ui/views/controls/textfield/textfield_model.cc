@@ -553,12 +553,18 @@ bool TextfieldModel::Paste() {
   if (text.empty())
     return false;
 
-  base::string16 actual_text = base::CollapseWhitespace(text, false);
-  // If the clipboard contains all whitespaces then paste a single space.
-  if (actual_text.empty())
-    actual_text = base::ASCIIToUTF16(" ");
+  // Leading/trailing whitespace is often selected accidentally, and is rarely
+  // critical to include (e.g. when pasting into a find bar).  Trim it.  By
+  // contrast, whitespace in the middle of the string may need exact
+  // preservation to avoid changing the effect (e.g. converting a full-width
+  // space to a regular space), so don't call a more aggressive function like
+  // CollapseWhitespace().
+  base::TrimWhitespace(text, base::TRIM_ALL, &text);
+  // If the clipboard contains all whitespace then paste a single space.
+  if (text.empty())
+    text = base::ASCIIToUTF16(" ");
 
-  InsertTextInternal(actual_text, false);
+  InsertTextInternal(text, false);
   return true;
 }
 

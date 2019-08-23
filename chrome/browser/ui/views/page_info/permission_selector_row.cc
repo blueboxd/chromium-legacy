@@ -176,10 +176,10 @@ PermissionSelectorRow::PermissionSelectorRow(
       PageInfoUI::GetPermissionIcon(permission, label->GetEnabledColor()));
   label_ = layout->AddView(std::move(label));
   // Create the menu model.
-  menu_model_.reset(new PermissionMenuModel(
+  menu_model_ = std::make_unique<PermissionMenuModel>(
       profile, url, permission,
       base::Bind(&PermissionSelectorRow::PermissionChanged,
-                 base::Unretained(this))));
+                 base::Unretained(this)));
 
   // Create the permission combobox.
   InitializeComboboxView(layout, permission);

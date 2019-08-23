@@ -206,6 +206,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void AdjustUtilityServiceProcessCommandLine(
       const service_manager::Identity& identity,
       base::CommandLine* command_line) override;
+  std::string GetApplicationClientGUIDForQuarantineCheck() override;
   std::string GetApplicationLocale() override;
   std::string GetAcceptLangs(content::BrowserContext* context) override;
   gfx::ImageSkia GetDefaultFavicon() override;

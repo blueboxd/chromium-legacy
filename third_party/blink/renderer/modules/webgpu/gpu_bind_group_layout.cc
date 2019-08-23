@@ -12,12 +12,14 @@ namespace blink {
 
 DawnBindGroupLayoutBinding AsDawnType(
     const GPUBindGroupLayoutBinding* webgpu_binding) {
-  DawnBindGroupLayoutBinding dawn_binding;
+  DawnBindGroupLayoutBinding dawn_binding = {};
 
   dawn_binding.binding = webgpu_binding->binding();
   dawn_binding.type = AsDawnEnum<DawnBindingType>(webgpu_binding->type());
   dawn_binding.visibility =
       AsDawnEnum<DawnShaderStageBit>(webgpu_binding->visibility());
+  dawn_binding.textureComponentType = AsDawnEnum<DawnTextureComponentType>(
+      webgpu_binding->textureComponentType());
   dawn_binding.multisampled = webgpu_binding->multisampled();
   dawn_binding.dynamic = webgpu_binding->dynamic();
 

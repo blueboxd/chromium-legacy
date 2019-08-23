@@ -1892,22 +1892,23 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
       self.webStateImpl, failingURL, error, context->IsPost(),
       self.webStateImpl->GetBrowserState()->IsOffTheRecord(),
       base::BindOnce(^(NSString* errorHTML) {
-        WKNavigation* navigation =
-            [webView loadHTMLString:errorHTML
-                            baseURL:net::NSURLWithGURL(failingURL)];
+        if (errorHTML) {
+          WKNavigation* navigation =
+              [webView loadHTMLString:errorHTML
+                              baseURL:net::NSURLWithGURL(failingURL)];
+          auto loadHTMLContext =
+              web::NavigationContextImpl::CreateNavigationContext(
+                  self.webStateImpl, failingURL,
+                  /*has_user_gesture=*/false, ui::PAGE_TRANSITION_FIRST,
+                  /*is_renderer_initiated=*/false);
+          loadHTMLContext->SetLoadingErrorPage(true);
+          loadHTMLContext->SetNavigationItemUniqueID(item->GetUniqueID());
 
-        auto loadHTMLContext =
-            web::NavigationContextImpl::CreateNavigationContext(
-                self.webStateImpl, failingURL,
-                /*has_user_gesture=*/false, ui::PAGE_TRANSITION_FIRST,
-                /*is_renderer_initiated=*/false);
-        loadHTMLContext->SetLoadingErrorPage(true);
-        loadHTMLContext->SetNavigationItemUniqueID(item->GetUniqueID());
-
-        [self.navigationStates setContext:std::move(loadHTMLContext)
+          [self.navigationStates setContext:std::move(loadHTMLContext)
+                              forNavigation:navigation];
+          [self.navigationStates setState:web::WKNavigationState::REQUESTED
                             forNavigation:navigation];
-        [self.navigationStates setState:web::WKNavigationState::REQUESTED
-                          forNavigation:navigation];
+        }
 
         // TODO(crbug.com/803503): only call these for placeholder navigation
         // because they should have already been triggered during navigation

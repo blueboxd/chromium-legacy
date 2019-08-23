@@ -326,10 +326,10 @@ base::scoped_nsobject<NSMenuItem> BuildBookmarksMenu(
           .tag(IDC_BOOKMARKS_MENU)
           .submenu({
               Item(IDS_BOOKMARK_MANAGER).command_id(IDC_SHOW_BOOKMARK_MANAGER),
-              Item().tag(IDC_BOOKMARK_PAGE).is_separator(),
-              Item(IDS_BOOKMARK_THIS_PAGE).command_id(IDC_BOOKMARK_PAGE),
-              Item(IDS_BOOKMARK_ALL_TABS_MAC).command_id(IDC_BOOKMARK_ALL_TABS),
-              Item().tag(IDC_BOOKMARK_PAGE).is_separator(),
+              Item().tag(IDC_BOOKMARK_THIS_TAB).is_separator(),
+              Item(IDS_BOOKMARK_THIS_TAB).command_id(IDC_BOOKMARK_THIS_TAB),
+              Item(IDS_BOOKMARK_ALL_TABS).command_id(IDC_BOOKMARK_ALL_TABS),
+              Item().tag(IDC_BOOKMARK_THIS_TAB).is_separator(),
           })
           .Build();
   return item;

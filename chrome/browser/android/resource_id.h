@@ -61,6 +61,8 @@ DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_TIP,
                     R.drawable.ic_lightbulb_outline_googblue_24dp)
 DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_TRANSLATE, R.drawable.infobar_translate)
 DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_WARNING, R.drawable.infobar_warning)
+DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_PHONE_ICON,
+                    R.drawable.smartphone_black_24dp)
 LINK_RESOURCE_ID(IDR_AUTOFILL_GOOGLE_PAY_WITH_DIVIDER,
                  R.drawable.google_pay_with_divider)
 

@@ -16,9 +16,9 @@
 #include "fuchsia/runners/cast/cast_component.h"
 #include "url/gurl.h"
 
-CastRunner::CastRunner(base::fuchsia::ServiceDirectory* service_directory,
+CastRunner::CastRunner(sys::OutgoingDirectory* outgoing_directory,
                        fuchsia::web::ContextPtr context)
-    : WebContentRunner(service_directory, std::move(context)) {}
+    : WebContentRunner(outgoing_directory, std::move(context)) {}
 
 CastRunner::~CastRunner() = default;
 

@@ -67,13 +67,12 @@ class BASE_EXPORT ThreadGroup {
   // is running a task from it.
   RegisteredTaskSource RemoveTaskSource(scoped_refptr<TaskSource> task_source);
 
-  // Updates the position of the TaskSource in |transaction_with_task_source| in
-  // this ThreadGroup's PriorityQueue based on the TaskSource's current traits.
+  // Updates the position of the TaskSource in |transaction| in this
+  // ThreadGroup's PriorityQueue based on the TaskSource's current traits.
   //
   // Implementations should instantiate a concrete ScopedWorkersExecutor and
   // invoke UpdateSortKeyImpl().
-  virtual void UpdateSortKey(
-      TransactionWithOwnedTaskSource transaction_with_task_source) = 0;
+  virtual void UpdateSortKey(TaskSource::Transaction transaction) = 0;
 
   // Pushes the TaskSource in |transaction_with_task_source| into this
   // ThreadGroup's PriorityQueue and wakes up workers as appropriate.
@@ -209,13 +208,12 @@ class BASE_EXPORT ThreadGroup {
   // pops |priority_queue_| if the task source returned no longer needs to be
   // queued (reached its maximum concurrency). Otherwise returns nullptr and
   // pops |priority_queue_| so this can be called again.
-  RunIntentWithRegisteredTaskSource TakeRunIntentWithRegisteredTaskSource(
+  RegisteredTaskSource TakeRegisteredTaskSource(
       BaseScopedWorkersExecutor* executor) EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Must be invoked by implementations of the corresponding non-Impl() methods.
-  void UpdateSortKeyImpl(
-      BaseScopedWorkersExecutor* executor,
-      TransactionWithOwnedTaskSource transaction_with_task_source);
+  void UpdateSortKeyImpl(BaseScopedWorkersExecutor* executor,
+                         TaskSource::Transaction transaction);
   void PushTaskSourceAndWakeUpWorkersImpl(
       BaseScopedWorkersExecutor* executor,
       TransactionWithRegisteredTaskSource transaction_with_task_source);

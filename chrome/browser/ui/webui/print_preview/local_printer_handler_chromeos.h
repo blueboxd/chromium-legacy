@@ -77,7 +77,6 @@ class LocalPrinterHandlerChromeos : public PrinterHandler {
   Profile* const profile_;
   content::WebContents* const preview_web_contents_;
   chromeos::CupsPrintersManager* printers_manager_;
-  scoped_refptr<chromeos::PpdProvider> ppd_provider_;
   std::unique_ptr<chromeos::PrinterConfigurer> printer_configurer_;
   base::WeakPtrFactory<LocalPrinterHandlerChromeos> weak_factory_{this};
 

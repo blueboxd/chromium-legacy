@@ -452,8 +452,8 @@ Browser::Browser(const CreateParams& params)
 
   tab_strip_model_->AddObserver(this);
 
-  location_bar_model_.reset(new LocationBarModelImpl(
-      location_bar_model_delegate_.get(), content::kMaxURLDisplayChars));
+  location_bar_model_ = std::make_unique<LocationBarModelImpl>(
+      location_bar_model_delegate_.get(), content::kMaxURLDisplayChars);
 
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(
@@ -471,7 +471,7 @@ Browser::Browser(const CreateParams& params)
                           BOOKMARK_BAR_STATE_CHANGE_PREF_CHANGE));
 
   if (search::IsInstantExtendedAPIEnabled() && is_type_normal())
-    instant_controller_.reset(new BrowserInstantController(this));
+    instant_controller_ = std::make_unique<BrowserInstantController>(this);
 
   UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_INIT);
 
@@ -625,7 +625,8 @@ Browser::~Browser() {
 
 ChromeBubbleManager* Browser::GetBubbleManager() {
   if (!bubble_manager_)
-    bubble_manager_.reset(new ChromeBubbleManager(tab_strip_model_.get()));
+    bubble_manager_ =
+        std::make_unique<ChromeBubbleManager>(tab_strip_model_.get());
   return bubble_manager_.get();
 }
 
@@ -1002,8 +1003,8 @@ void Browser::UpdateUIForNavigationInTab(WebContents* contents,
 }
 
 void Browser::RegisterKeepAlive() {
-  keep_alive_.reset(new ScopedKeepAlive(KeepAliveOrigin::BROWSER,
-                                        KeepAliveRestartOption::DISABLED));
+  keep_alive_ = std::make_unique<ScopedKeepAlive>(
+      KeepAliveOrigin::BROWSER, KeepAliveRestartOption::DISABLED);
 }
 void Browser::UnregisterKeepAlive() {
   keep_alive_.reset();

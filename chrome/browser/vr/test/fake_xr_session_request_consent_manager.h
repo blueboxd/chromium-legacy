@@ -28,7 +28,9 @@ class FakeXRSessionRequestConsentManager
 
   TabModalConfirmDialog* ShowDialogAndGetConsent(
       content::WebContents* web_contents,
-      base::OnceCallback<void(bool)> response_callback) override;
+      XrConsentPromptLevel conesent_level,
+      base::OnceCallback<void(XrConsentPromptLevel, bool)> response_callback)
+      override;
 
  private:
   XRSessionRequestConsentManager* consent_manager_;

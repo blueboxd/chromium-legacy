@@ -402,6 +402,9 @@ customize.clearAttribution = function() {
 };
 
 customize.unselectTile = function() {
+  if (configData.richerPicker) {
+    return;
+  }
   $(customize.IDS.DONE).disabled = true;
   customize.selectedOptions.background = null;
   $(customize.IDS.DONE).tabIndex = -1;
@@ -969,8 +972,7 @@ customize.richerPicker_selectBackgroundTile = function(tile) {
     return;
   }
 
-  if (customize.selectedOptions.background &&
-      customize.selectedOptions.background.id == tile.id) {
+  if (tile.parentElement.classList.contains(customize.CLASSES.SELECTED)) {
     // If the clicked tile is already selected do nothing.
     return;
   } else if (customize.selectedOptions.background) {
@@ -2019,10 +2021,7 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
     customize.richerPicker_selectShortcutType(clOption);
   };
   clOption.onkeydown = function(event) {
-    if (event.keyCode === customize.KEYCODES.ENTER ||
-        event.keyCode === customize.KEYCODES.SPACE) {
-      clOption.click();
-    } else if (customize.arrowKeys.includes(event.keyCode)) {
+    if (customize.arrowKeys.includes(event.keyCode)) {
       // Handle arrow key navigation.
       event.preventDefault();
       event.stopPropagation();
@@ -2031,6 +2030,12 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
       } else if (event.keyCode === customize.KEYCODES.DOWN) {
         hideToggle.focus();
       }
+    }
+  };
+  clOption.onkeyup = function(event) {
+    if (event.keyCode === customize.KEYCODES.ENTER ||
+        event.keyCode === customize.KEYCODES.SPACE) {
+      clOption.click();
     }
   };
 
@@ -2042,10 +2047,7 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
     customize.richerPicker_selectShortcutType(mvOption);
   };
   mvOption.onkeydown = function(event) {
-    if (event.keyCode === customize.KEYCODES.ENTER ||
-        event.keyCode === customize.KEYCODES.SPACE) {
-      mvOption.click();
-    } else if (customize.arrowKeys.includes(event.keyCode)) {
+    if (customize.arrowKeys.includes(event.keyCode)) {
       // Handle arrow key navigation.
       event.preventDefault();
       event.stopPropagation();
@@ -2058,6 +2060,12 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
       }
     }
   };
+  mvOption.onkeyup = function(event) {
+    if (event.keyCode === customize.KEYCODES.ENTER ||
+        event.keyCode === customize.KEYCODES.SPACE) {
+      mvOption.click();
+    }
+  };
 
   hideToggle.onchange = function(event) {
     customize.richerPicker_toggleShortcutHide(hideToggle.checked);
@@ -2065,10 +2073,7 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
         customize.LOG_TYPE.NTP_CUSTOMIZE_SHORTCUT_VISIBILITY_TOGGLE_CLICKED);
   };
   hideToggle.onkeydown = function(event) {
-    if (event.keyCode === customize.KEYCODES.ENTER ||
-        event.keyCode === customize.KEYCODES.SPACE) {
-      hideToggle.onchange(event);
-    } else if (customize.arrowKeys.includes(event.keyCode)) {
+    if (customize.arrowKeys.includes(event.keyCode)) {
       // Handle arrow key navigation.
       event.preventDefault();
       event.stopPropagation();
@@ -2076,6 +2081,12 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
           event.keyCode === customize.KEYCODES.UP) {
         mvOption.focus();
       }
+    }
+  };
+  hideToggle.onkeyup = function(event) {
+    // Handle enter since, unlike space, it does not trigger a click event.
+    if (event.keyCode === customize.KEYCODES.ENTER) {
+      hideToggle.click();
     }
   };
   hideToggle.onclick = function(event) {
@@ -2090,10 +2101,10 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
         customize.LOG_TYPE.NTP_BACKGROUND_REFRESH_TOGGLE_CLICKED);
     customize.richerPicker_toggleRefreshDaily(refreshToggle.checked);
   };
-  refreshToggle.onkeydown = function(event) {
-    if (event.keyCode === customize.KEYCODES.ENTER ||
-        event.keyCode === customize.KEYCODES.SPACE) {
-      refreshToggle.onchange(event);
+  refreshToggle.onkeyup = function(event) {
+    // Handle enter since, unlike space, it does not trigger a click event.
+    if (event.keyCode === customize.KEYCODES.ENTER) {
+      refreshToggle.click();
     }
   };
   refreshToggle.onclick = function(event) {

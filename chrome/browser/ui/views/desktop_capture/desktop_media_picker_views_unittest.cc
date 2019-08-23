@@ -73,7 +73,7 @@ class DesktopMediaPickerViewsTest : public testing::Test {
 
     base::string16 app_name = base::ASCIIToUTF16("foo");
 
-    picker_views_.reset(new DesktopMediaPickerViews());
+    picker_views_ = std::make_unique<DesktopMediaPickerViews>();
     test_api_.set_picker(picker_views_.get());
     DesktopMediaPicker::Params picker_params;
     picker_params.context = test_helper_.GetContext();

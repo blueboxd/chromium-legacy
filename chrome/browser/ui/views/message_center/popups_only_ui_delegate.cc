@@ -16,7 +16,8 @@ PopupsOnlyUiController::CreateDelegate() {
 }
 
 PopupsOnlyUiDelegate::PopupsOnlyUiDelegate() {
-  alignment_delegate_.reset(new message_center::DesktopPopupAlignmentDelegate);
+  alignment_delegate_ =
+      std::make_unique<message_center::DesktopPopupAlignmentDelegate>();
   popup_collection_.reset(
       new message_center::MessagePopupCollection(alignment_delegate_.get()));
 }

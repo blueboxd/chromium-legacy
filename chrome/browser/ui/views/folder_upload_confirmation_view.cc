@@ -67,7 +67,8 @@ base::string16 FolderUploadConfirmationView::GetDialogButtonLabel(
 }
 
 views::View* FolderUploadConfirmationView::GetInitiallyFocusedView() {
-  return GetDialogClientView()->cancel_button();
+  const views::DialogClientView* dcv = GetDialogClientView();
+  return dcv ? dcv->cancel_button() : nullptr;
 }
 
 bool FolderUploadConfirmationView::ShouldShowCloseButton() const {

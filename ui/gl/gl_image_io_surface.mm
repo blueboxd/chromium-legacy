@@ -69,7 +69,6 @@ GLenum TextureFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::RGBA_F16:
       return GL_RGBA;
-    case gfx::BufferFormat::UYVY_422:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
       return GL_RGB_YCBCR_420V_CHROMIUM;
     case gfx::BufferFormat::BGRX_1010102:
@@ -106,8 +105,6 @@ GLenum DataFormat(gfx::BufferFormat format) {
       return GL_BGRA;
     case gfx::BufferFormat::RGBA_F16:
       return GL_RGBA;
-    case gfx::BufferFormat::UYVY_422:
-      return GL_YCBCR_422_APPLE;
     case gfx::BufferFormat::BGR_565:
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::RGBX_8888:
@@ -138,8 +135,6 @@ GLenum DataType(gfx::BufferFormat format) {
       return GL_UNSIGNED_INT_2_10_10_10_REV;
     case gfx::BufferFormat::RGBA_F16:
       return GL_HALF_APPLE;
-    case gfx::BufferFormat::UYVY_422:
-      return GL_UNSIGNED_SHORT_8_8_APPLE;
     case gfx::BufferFormat::BGR_565:
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::RGBX_8888:
@@ -175,7 +170,9 @@ GLImageIOSurface* GLImageIOSurface::Create(const gfx::Size& size,
     case kGLImplementationEGLGLES2:
     case kGLImplementationEGLANGLE:
     case kGLImplementationSwiftShaderGL:
-      return new GLImageIOSurfaceEGL(size, internalformat);
+      return new GLImageIOSurfaceEGL(
+          size, internalformat,
+          GetGLImplementation() == kGLImplementationSwiftShaderGL);
     default:
       break;
   }
@@ -497,7 +494,6 @@ bool GLImageIOSurface::ValidFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::RGBA_F16:
     case gfx::BufferFormat::BGRX_1010102:
-    case gfx::BufferFormat::UYVY_422:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
       return true;
     case gfx::BufferFormat::R_16:

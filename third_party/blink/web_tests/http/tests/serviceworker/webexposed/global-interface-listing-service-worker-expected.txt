@@ -124,6 +124,7 @@ interface Client
     attribute @@toStringTag
     getter frameType
     getter id
+    getter lifecycleState
     getter type
     getter url
     method constructor

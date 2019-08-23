@@ -28,7 +28,6 @@ GURL GetSubresourceURLForURL(const GURL& original_url) {
       base32::Base32EncodePolicy::OMIT_PADDING));
   GURL subresource_host = GetLitePageSubresourceDomainURL();
 
-  // TODO(harrisonsean): Add experiment (x=) param.
   GURL compressed_url(
       subresource_host.scheme() + "://" + origin_hash + "." +
       subresource_host.host() +

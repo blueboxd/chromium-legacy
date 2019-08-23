@@ -75,10 +75,7 @@ class VR_EXPORT XRRuntimeManager : public base::RefCounted<XRRuntimeManager> {
   bool HasRuntime(device::mojom::XRDeviceId id);
   BrowserXRRuntime* GetRuntimeForOptions(
       device::mojom::XRSessionOptions* options);
-  base::Optional<device::mojom::XRDeviceId> GetRuntimeIdForOptions(
-      device::mojom::XRSessionOptions* options);
   BrowserXRRuntime* GetImmersiveRuntime();
-  base::Optional<device::mojom::XRDeviceId> GetImmersiveRuntimeId();
   device::mojom::VRDisplayInfoPtr GetCurrentVRDisplayInfo(
       VRServiceImpl* service);
 

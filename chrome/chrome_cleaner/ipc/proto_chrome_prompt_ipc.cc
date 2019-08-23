@@ -138,7 +138,9 @@ void ProtoChromePromptIPC::RunPromptUserTask(
   *chrome_prompt_request.mutable_prompt_user() = prompt_user_message;
 
   std::string request_content;
-  DCHECK(chrome_prompt_request.SerializeToString(&request_content));
+  bool serialize_result =
+      chrome_prompt_request.SerializeToString(&request_content);
+  DCHECK(serialize_result);
 
   SendBuffer(request_content);
 
@@ -161,7 +163,8 @@ void ProtoChromePromptIPC::RunPromptUserTask(
   *chrome_prompt_request.mutable_close_connection() = close_connection_request;
 
   std::string response_content;
-  DCHECK(chrome_prompt_request.SerializeToString(&response_content));
+  serialize_result = chrome_prompt_request.SerializeToString(&response_content);
+  DCHECK(serialize_result);
 
   SendBuffer(response_content);
 

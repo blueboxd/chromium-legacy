@@ -165,6 +165,23 @@ Status ExecuteGetCredentials(WebView* web_view,
   return status;
 }
 
+Status ExecuteRemoveCredential(WebView* web_view,
+                               const base::Value& params,
+                               std::unique_ptr<base::Value>* value) {
+  base::DictionaryValue mapped_params = MapParams(
+      {
+          {"authenticatorId", "authenticatorId"},
+          {"credentialId", "credentialId"},
+      },
+      params);
+  Status status = ConvertBase64UrlToBase64(&mapped_params, {"credentialId"});
+  if (status.IsError())
+    return status;
+
+  return web_view->SendCommandAndGetResult("WebAuthn.removeCredential",
+                                           std::move(mapped_params), value);
+}
+
 Status ExecuteRemoveAllCredentials(WebView* web_view,
                                    const base::Value& params,
                                    std::unique_ptr<base::Value>* value) {

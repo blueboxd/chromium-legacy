@@ -1456,11 +1456,8 @@ int HttpNetworkTransaction::HandleHttp11Required(int error) {
   DCHECK(error == ERR_HTTP_1_1_REQUIRED ||
          error == ERR_PROXY_HTTP_1_1_REQUIRED);
 
-  if (error == ERR_HTTP_1_1_REQUIRED) {
-    HttpServerProperties::ForceHTTP11(&server_ssl_config_);
-  } else {
-    HttpServerProperties::ForceHTTP11(&proxy_ssl_config_);
-  }
+  // HttpServerProperties should have been updated, so when the request is sent
+  // again, it will automatically use HTTP/1.1.
   ResetConnectionAndRequestForResend();
   return OK;
 }

@@ -255,6 +255,19 @@ Response WebAuthnHandler::GetCredentials(
   return Response::OK();
 }
 
+Response WebAuthnHandler::RemoveCredential(const String& authenticator_id,
+                                           const Binary& credential_id) {
+  VirtualAuthenticator* authenticator;
+  Response response = FindAuthenticator(authenticator_id, &authenticator);
+  if (!response.isSuccess())
+    return response;
+
+  if (!authenticator->RemoveRegistration(CopyBinaryToVector(credential_id)))
+    return Response::InvalidParams(kCredentialNotFound);
+
+  return Response::OK();
+}
+
 Response WebAuthnHandler::ClearCredentials(const String& authenticator_id) {
   VirtualAuthenticator* authenticator;
   Response response = FindAuthenticator(authenticator_id, &authenticator);

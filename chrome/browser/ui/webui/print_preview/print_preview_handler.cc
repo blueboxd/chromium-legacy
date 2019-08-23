@@ -79,9 +79,11 @@
 #include "third_party/icu/source/i18n/unicode/ulocdata.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/account_manager/account_manager_util.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/signin/inline_login_handler_dialog_chromeos.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "services/identity/public/cpp/scope_set.h"
 #endif
@@ -830,7 +832,25 @@ void PrintPreviewHandler::HandleSignin(const base::ListValue* args) {
   bool add_account = false;
   CHECK(args->GetBoolean(0, &add_account));
 
-  chrome::ScopedTabbedBrowserDisplayer displayer(Profile::FromWebUI(web_ui()));
+  Profile* profile = Profile::FromWebUI(web_ui());
+  DCHECK(profile);
+
+#if defined(OS_CHROMEOS)
+  if (chromeos::IsAccountManagerAvailable(profile)) {
+    // Chrome OS Account Manager is enabled on this Profile and hence, all
+    // account management flows will go through native UIs and not through a
+    // tabbed browser window.
+    if (add_account) {
+      chromeos::InlineLoginHandlerDialogChromeOS::Show();
+    } else {
+      chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+          profile, chrome::kAccountManagerSubPage);
+    }
+    return;
+  }
+#endif
+
+  chrome::ScopedTabbedBrowserDisplayer displayer(profile);
   print_dialog_cloud::CreateCloudPrintSigninTab(
       displayer.browser(), add_account,
       base::BindOnce(&PrintPreviewHandler::OnSignInTabClosed,

@@ -7,10 +7,9 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
-import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.View;
-import android.view.WindowManager;
+import android.view.ViewGroup;
 import android.widget.PopupWindow;
 
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
@@ -30,12 +29,8 @@ class TabSelectionEditorLayout extends SelectableListLayout<Integer> {
     // TabSelectionEditorCoordinator.
     public TabSelectionEditorLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
-
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        ((WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE))
-                .getDefaultDisplay()
-                .getMetrics(displayMetrics);
-        mWindow = new PopupWindow(this, displayMetrics.widthPixels, displayMetrics.heightPixels);
+        mWindow = new PopupWindow(
+                this, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
     }
 
     /**

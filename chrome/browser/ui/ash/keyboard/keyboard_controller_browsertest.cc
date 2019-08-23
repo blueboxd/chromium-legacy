@@ -139,7 +139,8 @@ class KeyboardControllerWebContentTest : public InProcessBrowserTest {
 
  protected:
   void FocusEditableNodeAndShowKeyboard(const gfx::Rect& init_bounds) {
-    client.reset(new ui::DummyTextInputClient(ui::TEXT_INPUT_TYPE_TEXT));
+    client =
+        std::make_unique<ui::DummyTextInputClient>(ui::TEXT_INPUT_TYPE_TEXT);
     ui::InputMethod* input_method = GetInputMethod();
     ASSERT_TRUE(input_method);
     input_method->SetFocusedTextInputClient(client.get());
@@ -151,7 +152,8 @@ class KeyboardControllerWebContentTest : public InProcessBrowserTest {
   }
 
   void FocusNonEditableNode() {
-    client.reset(new ui::DummyTextInputClient(ui::TEXT_INPUT_TYPE_NONE));
+    client =
+        std::make_unique<ui::DummyTextInputClient>(ui::TEXT_INPUT_TYPE_NONE);
     GetInputMethod()->SetFocusedTextInputClient(client.get());
   }
 

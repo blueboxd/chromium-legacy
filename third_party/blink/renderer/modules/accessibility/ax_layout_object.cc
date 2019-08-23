@@ -177,6 +177,15 @@ static bool IsImageOrAltText(LayoutBoxModelObject* box, Node* node) {
 }
 
 ax::mojom::Role AXLayoutObject::NativeRoleIgnoringAria() const {
+  // DOM role takes precedence over layout role.
+  // For example, <h4 style="display:table"> is a heading, not a table.
+  ax::mojom::Role dom_role = AXNodeObject::NativeRoleIgnoringAria();
+  if (dom_role != ax::mojom::Role::kGenericContainer &&
+      dom_role != ax::mojom::Role::kUnknown)
+    return dom_role;
+
+  // Markup did not provide a specific role, so attempt to determine one
+  // from the computed style.
   Node* node = layout_object_->GetNode();
   LayoutBoxModelObject* css_box = GetLayoutBoxModelObject();
 
@@ -231,7 +240,7 @@ ax::mojom::Role AXLayoutObject::NativeRoleIgnoringAria() const {
   if (layout_object_->IsHR())
     return ax::mojom::Role::kSplitter;
 
-  return AXNodeObject::NativeRoleIgnoringAria();
+  return dom_role;
 }
 
 ax::mojom::Role AXLayoutObject::DetermineAccessibilityRole() {

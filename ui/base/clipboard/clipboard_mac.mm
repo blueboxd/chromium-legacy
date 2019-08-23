@@ -283,7 +283,7 @@ void ClipboardMac::WriteObjects(ClipboardBuffer buffer,
 
   for (ObjectMap::const_iterator iter = objects.begin(); iter != objects.end();
        ++iter) {
-    DispatchObject(static_cast<ObjectType>(iter->first), iter->second);
+    DispatchObject(iter->first, iter->second);
   }
 }
 

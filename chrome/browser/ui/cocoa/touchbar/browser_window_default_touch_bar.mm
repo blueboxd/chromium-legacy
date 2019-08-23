@@ -119,7 +119,7 @@ ui::TouchBarAction TouchBarActionFromCommand(int command) {
       return ui::TouchBarAction::HOME;
     case IDC_FOCUS_LOCATION:
       return ui::TouchBarAction::SEARCH;
-    case IDC_BOOKMARK_PAGE:
+    case IDC_BOOKMARK_THIS_TAB:
       return ui::TouchBarAction::STAR;
     case IDC_NEW_TAB:
       return ui::TouchBarAction::NEW_TAB;
@@ -471,8 +471,8 @@ class API_AVAILABLE(macos(10.12.2)) TouchBarNotificationBridge
       isStarred_ ? kTouchBarStarActiveColor : kTouchBarDefaultIconColor;
   int tooltipId = isStarred_ ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR;
   if (!starredButton_) {
-    starredButton_.reset([CreateTouchBarButton(icon, self, IDC_BOOKMARK_PAGE,
-                                               tooltipId, iconColor) retain]);
+    starredButton_.reset([CreateTouchBarButton(
+        icon, self, IDC_BOOKMARK_THIS_TAB, tooltipId, iconColor) retain]);
     return;
   }
 

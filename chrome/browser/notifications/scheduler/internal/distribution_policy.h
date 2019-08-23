@@ -14,6 +14,7 @@ namespace notifications {
 
 // Defines how to distribute notifications to show in different background tasks
 // in a day.
+// TODO(xingliu): Delete this.
 class DistributionPolicy {
  public:
   // Creates the default distribution policy.

@@ -66,6 +66,9 @@ class PermissionPrompt {
   // Returns a reference to this prompt's native window.
   // TODO(hcarmona): Remove this as part of the bubble API work.
   virtual gfx::NativeWindow GetNativeWindow() = 0;
+
+  // Whether the prompt should be destroyed on tab switching
+  virtual bool ShouldDestroyOnTabSwitching() = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_PERMISSION_BUBBLE_PERMISSION_PROMPT_H_

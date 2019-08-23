@@ -26,6 +26,7 @@
 // https://www.w3.org/TR/geolocation-API/#position_interface
 
 [
+    Exposed=Window,
     NoInterfaceObject,
     ImplementedAs=Geoposition
 ] interface Position {

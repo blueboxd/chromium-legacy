@@ -461,8 +461,8 @@ bool AudioContext::IsAllowedToStart() const {
       NOTREACHED();
       break;
     case AutoplayPolicy::Type::kUserGestureRequired:
-      DCHECK(document->GetFrame() &&
-             document->GetFrame()->IsCrossOriginSubframe());
+      DCHECK(document->GetFrame());
+      DCHECK(document->GetFrame()->IsCrossOriginSubframe());
       document->AddConsoleMessage(ConsoleMessage::Create(
           mojom::ConsoleMessageSource::kOther,
           mojom::ConsoleMessageLevel::kWarning,

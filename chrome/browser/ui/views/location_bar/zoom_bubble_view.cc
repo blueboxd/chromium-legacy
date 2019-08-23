@@ -542,9 +542,9 @@ void ZoomBubbleView::SetExtensionInfo(const extensions::Extension* extension) {
   bool has_default_sized_icon =
       !icons.Get(gfx::kFaviconSize, ExtensionIconSet::MATCH_EXACTLY).empty();
   if (has_default_sized_icon) {
-    extension_info_.icon_image.reset(new extensions::IconImage(
+    extension_info_.icon_image = std::make_unique<extensions::IconImage>(
         web_contents()->GetBrowserContext(), extension, icons, icon_size,
-        default_extension_icon_image, this));
+        default_extension_icon_image, this);
     return;
   }
 

@@ -158,11 +158,9 @@ class TabController {
   virtual SkColor GetTabForegroundColor(TabState tab_state,
                                         SkColor background_color) const = 0;
 
-  // Returns the resource ID for the image to use as the tab background.
-  // |custom_image| is an outparam set to true if either the tab or the frame
-  // background images have been customized; see implementation comments.
-  virtual int GetBackgroundResourceId(
-      bool* has_custom_image,
+  // Returns the background tab image resource ID if the image has been
+  // customized, directly or indirectly, by the theme.
+  virtual base::Optional<int> GetCustomBackgroundId(
       BrowserNonClientFrameView::ActiveState active_state =
           BrowserNonClientFrameView::kUseCurrent) const = 0;
 

@@ -233,6 +233,12 @@ void LoginScreenClient::ShowAccountAccessHelpApp() {
       ->ShowHelpTopic(chromeos::HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
 }
 
+void LoginScreenClient::ShowParentAccessHelpApp() {
+  scoped_refptr<chromeos::HelpAppLauncher>(
+      new chromeos::HelpAppLauncher(nullptr))
+      ->ShowHelpTopic(chromeos::HelpAppLauncher::HELP_PARENT_ACCESS_CODE);
+}
+
 void LoginScreenClient::ShowLockScreenNotificationSettings() {
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
       ProfileManager::GetActiveUserProfile(), chrome::kLockScreenSubPage);

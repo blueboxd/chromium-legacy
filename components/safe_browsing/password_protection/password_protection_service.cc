@@ -92,13 +92,6 @@ bool PasswordProtectionService::ShouldShowModalWarning(
     return false;
   }
 
-  // Accounts are not signed in only in tests.
-  if (!IsPrimaryAccountSignedIn() &&
-      (password_type.account_type() == ReusedPasswordAccountType::GMAIL ||
-       password_type.account_type() == ReusedPasswordAccountType::GSUITE)) {
-    return false;
-  }
-
   return (verdict_type == LoginReputationClientResponse::PHISHING ||
           verdict_type == LoginReputationClientResponse::LOW_REPUTATION) &&
          IsWarningEnabled(password_type);

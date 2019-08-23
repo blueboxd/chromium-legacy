@@ -66,9 +66,9 @@ class VIZ_COMMON_EXPORT SharedQuadState {
   float opacity = 1.f;
   SkBlendMode blend_mode = SkBlendMode::kSrcOver;
   int sorting_context_id = 0;
-  // An internal flag used only by the SurfaceAggregator to decide whether to
-  // merge quads for a surface into their target render pass. It is a
-  // performance optimization by avoiding render passes as much as possible.
+  // Used by SurfaceAggregator to decide whether to merge quads for a surface
+  // into their target render pass. It is a performance optimization by avoiding
+  // render passes as much as possible.
   bool is_fast_rounded_corner = false;
   // This is for underlay optimization and used only in the SurfaceAggregator
   // and the OverlayProcessor. This damage rect contains union of damage from

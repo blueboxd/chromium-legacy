@@ -1111,68 +1111,6 @@ TEST_F(TabStripModelTest, CommandCloseTab) {
 }
 
 // Tests IsContextMenuCommandEnabled and ExecuteContextMenuCommand with
-// CommandCloseTabs.
-TEST_F(TabStripModelTest, CommandCloseOtherTabs) {
-  TestTabStripModelDelegate delegate;
-  TabStripModel tabstrip(&delegate, profile());
-  EXPECT_TRUE(tabstrip.empty());
-
-  // Create three tabs, select two tabs, CommandCloseOtherTabs should be enabled
-  // and close two tabs.
-  ASSERT_NO_FATAL_FAILURE(
-      PrepareTabstripForSelectionTest(&tabstrip, 3, 0, "0 1"));
-  EXPECT_TRUE(tabstrip.IsContextMenuCommandEnabled(
-      0, TabStripModel::CommandCloseOtherTabs));
-  tabstrip.ExecuteContextMenuCommand(0, TabStripModel::CommandCloseOtherTabs);
-  EXPECT_EQ("0 1", GetTabStripStateString(tabstrip));
-  tabstrip.CloseAllTabs();
-  EXPECT_TRUE(tabstrip.empty());
-
-  // Select two tabs, CommandCloseOtherTabs should be enabled and invoking it
-  // with a non-selected index should close the two other tabs.
-  ASSERT_NO_FATAL_FAILURE(
-      PrepareTabstripForSelectionTest(&tabstrip, 3, 0, "0 1"));
-  EXPECT_TRUE(tabstrip.IsContextMenuCommandEnabled(
-      2, TabStripModel::CommandCloseOtherTabs));
-  tabstrip.ExecuteContextMenuCommand(0, TabStripModel::CommandCloseOtherTabs);
-  EXPECT_EQ("0 1", GetTabStripStateString(tabstrip));
-  tabstrip.CloseAllTabs();
-  EXPECT_TRUE(tabstrip.empty());
-
-  // Select all, CommandCloseOtherTabs should not be enabled.
-  ASSERT_NO_FATAL_FAILURE(
-      PrepareTabstripForSelectionTest(&tabstrip, 3, 0, "0 1 2"));
-  EXPECT_FALSE(tabstrip.IsContextMenuCommandEnabled(
-      2, TabStripModel::CommandCloseOtherTabs));
-  tabstrip.CloseAllTabs();
-  EXPECT_TRUE(tabstrip.empty());
-
-  // Three tabs, pin one, select the two non-pinned.
-  ASSERT_NO_FATAL_FAILURE(
-      PrepareTabstripForSelectionTest(&tabstrip, 3, 1, "1 2"));
-  EXPECT_FALSE(tabstrip.IsContextMenuCommandEnabled(
-      1, TabStripModel::CommandCloseOtherTabs));
-  // If we don't pass in the pinned index, the command should be enabled.
-  EXPECT_TRUE(tabstrip.IsContextMenuCommandEnabled(
-      0, TabStripModel::CommandCloseOtherTabs));
-  tabstrip.CloseAllTabs();
-  EXPECT_TRUE(tabstrip.empty());
-
-  // 3 tabs, one pinned.
-  ASSERT_NO_FATAL_FAILURE(
-      PrepareTabstripForSelectionTest(&tabstrip, 3, 1, "1"));
-  EXPECT_TRUE(tabstrip.IsContextMenuCommandEnabled(
-      1, TabStripModel::CommandCloseOtherTabs));
-  EXPECT_TRUE(tabstrip.IsContextMenuCommandEnabled(
-      0, TabStripModel::CommandCloseOtherTabs));
-  tabstrip.ExecuteContextMenuCommand(1, TabStripModel::CommandCloseOtherTabs);
-  // The pinned tab shouldn't be closed.
-  EXPECT_EQ("0p 1", GetTabStripStateString(tabstrip));
-  tabstrip.CloseAllTabs();
-  EXPECT_TRUE(tabstrip.empty());
-}
-
-// Tests IsContextMenuCommandEnabled and ExecuteContextMenuCommand with
 // CommandCloseTabsToRight.
 TEST_F(TabStripModelTest, CommandCloseTabsToRight) {
   TestTabStripModelDelegate delegate;
@@ -1228,7 +1166,6 @@ TEST_F(TabStripModelTest, CommandTogglePinned) {
 
 // Tests the following context menu commands:
 //  - Close Tab
-//  - Close Other Tabs
 //  - Close Tabs To Right
 TEST_F(TabStripModelTest, TestContextMenuCloseCommands) {
   TestTabStripModelDelegate delegate;
@@ -1253,26 +1190,6 @@ TEST_F(TabStripModelTest, TestContextMenuCloseCommands) {
   tabstrip.ExecuteContextMenuCommand(0, TabStripModel::CommandCloseTabsToRight);
   EXPECT_EQ(1, tabstrip.count());
   EXPECT_EQ(raw_opener, tabstrip.GetActiveWebContents());
-
-  std::unique_ptr<WebContents> dummy = CreateWebContents();
-  WebContents* raw_dummy = dummy.get();
-  tabstrip.AppendWebContents(std::move(dummy), false);
-
-  contents1 = CreateWebContents();
-  contents2 = CreateWebContents();
-  contents3 = CreateWebContents();
-  InsertWebContentses(&tabstrip, std::move(contents1), std::move(contents2),
-                      std::move(contents3));
-  EXPECT_EQ(5, tabstrip.count());
-
-  int dummy_index = tabstrip.count() - 1;
-  tabstrip.ActivateTabAt(dummy_index, {TabStripModel::GestureType::kOther});
-  EXPECT_EQ(raw_dummy, tabstrip.GetActiveWebContents());
-
-  tabstrip.ExecuteContextMenuCommand(dummy_index,
-                                     TabStripModel::CommandCloseOtherTabs);
-  EXPECT_EQ(1, tabstrip.count());
-  EXPECT_EQ(raw_dummy, tabstrip.GetActiveWebContents());
 
   tabstrip.CloseAllTabs();
   EXPECT_TRUE(tabstrip.empty());
@@ -1304,11 +1221,6 @@ TEST_F(TabStripModelTest, GetIndicesClosedByCommand) {
   EXPECT_EQ("4 3 2",
             indicesClosedAsString(1, TabStripModel::CommandCloseTabsToRight));
 
-  EXPECT_EQ("4 3 2 1",
-            indicesClosedAsString(0, TabStripModel::CommandCloseOtherTabs));
-  EXPECT_EQ("4 3 2 0",
-            indicesClosedAsString(1, TabStripModel::CommandCloseOtherTabs));
-
   // Pin the first two tabs. Pinned tabs shouldn't be closed by the close other
   // commands.
   tabstrip.SetTabPinned(0, true);
@@ -1318,11 +1230,6 @@ TEST_F(TabStripModelTest, GetIndicesClosedByCommand) {
             indicesClosedAsString(0, TabStripModel::CommandCloseTabsToRight));
   EXPECT_EQ("4 3",
             indicesClosedAsString(2, TabStripModel::CommandCloseTabsToRight));
-
-  EXPECT_EQ("4 3 2",
-            indicesClosedAsString(0, TabStripModel::CommandCloseOtherTabs));
-  EXPECT_EQ("4 3",
-            indicesClosedAsString(2, TabStripModel::CommandCloseOtherTabs));
 
   tabstrip.CloseAllTabs();
   EXPECT_TRUE(tabstrip.empty());

@@ -59,7 +59,8 @@ class ChromeNativeFileSystemPermissionContextTest : public testing::Test {
     base::RunLoop loop;
     SensitiveDirectoryResult out_result;
     permission_context_->ConfirmSensitiveDirectoryAccess(
-        kTestOrigin, paths, /*process_id=*/0, /*frame_id=*/0,
+        kTestOrigin, paths, /*is_directory=*/false, /*process_id=*/0,
+        /*frame_id=*/0,
         base::BindLambdaForTesting([&](SensitiveDirectoryResult result) {
           out_result = result;
           loop.Quit();

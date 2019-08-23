@@ -84,12 +84,13 @@ class PreviewsOptimizationGuide
   virtual bool IsBlacklisted(content::NavigationHandle* navigation_handle,
                              PreviewsType type) const;
 
-  // Returns whether |request| may have associated optimization hints
+  // Returns whether |navigation_handle| may have associated optimization hints
   // (specifically, PageHints). If so, but the hints are not available
   // synchronously, this method will request that they be loaded (from disk or
   // network). The callback is run after the hint is loaded and can be used as
   // a signal during tests.
-  bool MaybeLoadOptimizationHints(const GURL& url, base::OnceClosure callback);
+  bool MaybeLoadOptimizationHints(content::NavigationHandle* navigation_handle,
+                                  base::OnceClosure callback);
 
   // Whether |url| has loaded resource loading hints and, if it does, populates
   // |out_resource_patterns_to_block| with the resource patterns to block.

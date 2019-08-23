@@ -201,6 +201,6 @@ void DownloadsUI::CreatePageHandler(
   Profile* profile = Profile::FromWebUI(web_ui());
   DownloadManager* dlm = BrowserContext::GetDownloadManager(profile);
 
-  page_handler_.reset(new DownloadsDOMHandler(std::move(request),
-                                              std::move(page), dlm, web_ui()));
+  page_handler_ = std::make_unique<DownloadsDOMHandler>(
+      std::move(request), std::move(page), dlm, web_ui());
 }

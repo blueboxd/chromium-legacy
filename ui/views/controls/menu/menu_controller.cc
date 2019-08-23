@@ -2246,6 +2246,7 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
       menu_bounds.set_x(left_of_parent);
     }
   } else {
+    using MenuPosition = MenuItemView::MenuPosition;
     // First item, align top left corner of menu with bottom left corner of
     // anchor bounds.
     menu_bounds.set_x(anchor_bounds.x());
@@ -2268,7 +2269,7 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
         menu_bounds.set_y(anchor_bounds.y() + kTouchYPadding);
     }
 
-    if (item->actual_menu_position() == MenuItemView::POSITION_ABOVE_BOUNDS) {
+    if (item->actual_menu_position() == MenuPosition::kAboveBounds) {
       // Menu has already been drawn above, put it above the anchor bounds.
       menu_bounds.set_y(above_anchor);
     }
@@ -2282,8 +2283,8 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
     //   1.) Below the anchor bounds
     //   2.) Above the anchor bounds
     //   3.) At the bottom of the monitor and off the side of the anchor bounds
-    if (item->actual_menu_position() == MenuItemView::POSITION_BELOW_BOUNDS ||
-        item->actual_menu_position() == MenuItemView::POSITION_ABOVE_BOUNDS) {
+    if (item->actual_menu_position() == MenuPosition::kBelowBounds ||
+        item->actual_menu_position() == MenuPosition::kAboveBounds) {
       // Menu has been drawn below/above the anchor bounds, make sure it fits
       // on the screen in its current location.
       const int drawn_width = menu_bounds.width();
@@ -2296,11 +2297,11 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
       menu_bounds.set_width(drawn_width);
     } else if (menu_bounds.bottom() <= monitor_bounds.bottom()) {
       // Menu fits below anchor bounds.
-      item->set_actual_menu_position(MenuItemView::POSITION_BELOW_BOUNDS);
+      item->set_actual_menu_position(MenuPosition::kBelowBounds);
     } else if (above_anchor >= monitor_bounds.y()) {
       // Menu fits above anchor bounds.
       menu_bounds.set_y(above_anchor);
-      item->set_actual_menu_position(MenuItemView::POSITION_ABOVE_BOUNDS);
+      item->set_actual_menu_position(MenuPosition::kAboveBounds);
     } else if (item->GetDelegate()->ShouldTryPositioningBesideAnchor()) {
       const int left_of_anchor = anchor_bounds.x() - menu_bounds.width();
       const int right_of_anchor = anchor_bounds.right();

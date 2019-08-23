@@ -93,7 +93,7 @@ void MetricsRenderFrameObserver::DidObserveNewFeatureUsage(
 }
 
 void MetricsRenderFrameObserver::DidObserveNewCssPropertyUsage(
-    int css_property,
+    blink::mojom::CSSSampleId css_property,
     bool is_animated) {
   if (page_timing_metrics_sender_) {
     page_timing_metrics_sender_->DidObserveNewCssPropertyUsage(css_property,

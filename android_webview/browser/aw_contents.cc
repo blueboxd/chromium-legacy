@@ -1309,14 +1309,14 @@ void AwContents::OnPostMessage(
     const base::android::JavaRef<jstring>& message,
     const base::android::JavaRef<jstring>& origin,
     jboolean is_main_frame,
-    const base::android::JavaRef<jobject>& reply_proxy,
-    const base::android::JavaRef<jintArray>& ports) {
+    const base::android::JavaRef<jintArray>& ports,
+    const base::android::JavaRef<jobject>& reply_proxy) {
   const ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return;
 
-  Java_AwContents_onPostMessage(env, obj, message, origin, is_main_frame,
-                                reply_proxy, ports);
+  Java_AwContents_onPostMessage(env, obj, message, origin, is_main_frame, ports,
+                                reply_proxy);
 }
 
 void AwContents::ClearView(JNIEnv* env, const JavaParamRef<jobject>& obj) {

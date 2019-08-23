@@ -374,11 +374,12 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
 
         WebApkUpdateManagerJni.get().storeWebApkUpdateRequestToFile(updateRequestPath,
                 info.manifestStartUrl(), info.scopeUrl(), info.name(), info.shortName(),
-                primaryIconUrl, info.icon(), info.isIconAdaptive(), badgeIconUrl, info.badgeIcon(),
-                iconUrls, iconHashes, info.displayMode(), info.orientation(), info.themeColor(),
-                info.backgroundColor(), info.shareTarget().getAction(),
-                info.shareTarget().getParamTitle(), info.shareTarget().getParamText(),
-                info.shareTarget().getParamUrl(), info.shareTarget().isShareMethodPost(),
+                primaryIconUrl, info.icon().bitmap(), info.isIconAdaptive(), badgeIconUrl,
+                info.badgeIcon().bitmap(), iconUrls, iconHashes, info.displayMode(),
+                info.orientation(), info.themeColor(), info.backgroundColor(),
+                info.shareTarget().getAction(), info.shareTarget().getParamTitle(),
+                info.shareTarget().getParamText(), info.shareTarget().getParamUrl(),
+                info.shareTarget().isShareMethodPost(),
                 info.shareTarget().isShareEncTypeMultipart(), info.shareTarget().getFileNames(),
                 info.shareTarget().getFileAccepts(), info.manifestUrl(), info.webApkPackageName(),
                 versionCode, isManifestStale, updateReason, callback);

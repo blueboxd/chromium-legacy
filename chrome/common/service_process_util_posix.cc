@@ -5,6 +5,7 @@
 #include "chrome/common/service_process_util_posix.h"
 
 #include <fcntl.h>
+
 #include <string>
 #include <utility>
 
@@ -14,6 +15,7 @@
 #include "base/message_loop/message_loop_current.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/synchronization/waitable_event.h"
+#include "build/branding_buildflags.h"
 #include "chrome/common/multi_process_lock.h"
 
 #if defined(OS_ANDROID)
@@ -35,7 +37,7 @@ bool FilePathForMemoryName(const std::string& mem_name, base::FilePath* path) {
   if (!GetShmemTempDir(false, &temp_dir))
     return false;
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   static const char kShmem[] = "com.google.Chrome.shmem.";
 #else
   static const char kShmem[] = "org.chromium.Chromium.shmem.";

@@ -9,6 +9,9 @@ suite('InternetDetailPage', function() {
   /** @type {NetworkingPrivate} */
   let api_;
 
+  /** @type {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
+  let mojoApi_;
+
   /** @type {Object} */
   let prefs_ = {
     'vpn_config_allowed': {
@@ -58,6 +61,8 @@ suite('InternetDetailPage', function() {
     };
 
     api_ = new chrome.FakeNetworkingPrivate();
+    mojoApi_ = new FakeNetworkConfig(api_);
+    network_config.MojoInterfaceProviderImpl.getInstance().remote_ = mojoApi_;
 
     // Disable animations so sub-pages open within one event loop.
     testing.Test.disableAnimationsAndTransitions();
@@ -260,28 +265,31 @@ suite('InternetDetailPage', function() {
             {
               GUID: 'wifi1_guid',
               Name: 'wifi1',
-              Type: 'WiFi',
               Source: CrOnc.Source.USER,
-              WiFi: {AutoConnect: true}
+              Type: 'WiFi',
+              WiFi: {AutoConnect: true, Security: 'None', SSID: 'wifi1'}
             },
             {
               GUID: 'wifi2_guid',
               Name: 'wifi1',
-              Type: 'WiFi',
               Source: CrOnc.Source.USER,
-              WiFi: {AutoConnect: false}
+              Type: 'WiFi',
+              WiFi: {AutoConnect: false, Security: 'None', SSID: 'wifi2'}
             }
           ]);
           internetDetailPage.init('wifi1_guid', 'WiFi', 'wifi_user');
           return flushAsync()
               .then(() => {
-                assertTrue(internetDetailPage.$$('#autoConnectToggle').checked);
+                const toggle = internetDetailPage.$$('#autoConnectToggle');
+                assertTrue(!!toggle);
+                assertTrue(toggle.checked);
                 internetDetailPage.init('wifi2_guid', 'WiFi', 'wifi_user');
                 return flushAsync();
               })
               .then(() => {
-                assertFalse(
-                    internetDetailPage.$$('#autoConnectToggle').checked);
+                const toggle = internetDetailPage.$$('#autoConnectToggle');
+                assertTrue(!!toggle);
+                assertFalse(toggle.checked);
               });
         });
   });

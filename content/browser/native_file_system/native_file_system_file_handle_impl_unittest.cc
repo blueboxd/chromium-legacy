@@ -59,7 +59,8 @@ class NativeFileSystemFileHandleImplTest : public testing::Test {
 
     manager_ = base::MakeRefCounted<NativeFileSystemManagerImpl>(
         file_system_context_, chrome_blob_context_,
-        /*permission_context=*/nullptr);
+        /*permission_context=*/nullptr,
+        /*off_the_record=*/false);
 
     handle_ = std::make_unique<NativeFileSystemFileHandleImpl>(
         manager_.get(),

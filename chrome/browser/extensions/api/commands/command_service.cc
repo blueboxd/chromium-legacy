@@ -143,12 +143,12 @@ bool CommandService::RemovesBookmarkShortcut(const Extension* extension) {
 }
 
 // static
-bool CommandService::RemovesBookmarkOpenPagesShortcut(
+bool CommandService::RemovesBookmarkAllTabsShortcut(
     const Extension* extension) {
-  return UIOverrides::RemovesBookmarkOpenPagesShortcut(extension) &&
-      (extension->permissions_data()->HasAPIPermission(
-          APIPermission::kBookmarkManagerPrivate) ||
-       FeatureSwitch::enable_override_bookmarks_ui()->IsEnabled());
+  return UIOverrides::RemovesBookmarkAllTabsShortcut(extension) &&
+         (extension->permissions_data()->HasAPIPermission(
+              APIPermission::kBookmarkManagerPrivate) ||
+          FeatureSwitch::enable_override_bookmarks_ui()->IsEnabled());
 }
 
 bool CommandService::GetBrowserActionCommand(const std::string& extension_id,
@@ -426,7 +426,7 @@ bool CommandService::RequestsBookmarkShortcutOverride(
   return RemovesBookmarkShortcut(extension) &&
          GetSuggestedExtensionCommand(
              extension->id(),
-             chrome::GetPrimaryChromeAcceleratorForBookmarkPage(), nullptr);
+             chrome::GetPrimaryChromeAcceleratorForBookmarkTab(), nullptr);
 }
 
 void CommandService::AddObserver(Observer* observer) {
@@ -579,7 +579,7 @@ bool CommandService::CanAutoAssign(const Command &command,
     // Not a global command, check if Chrome shortcut and whether
     // we can override it.
     if (command.accelerator() ==
-            chrome::GetPrimaryChromeAcceleratorForBookmarkPage() &&
+            chrome::GetPrimaryChromeAcceleratorForBookmarkTab() &&
         CommandService::RemovesBookmarkShortcut(extension)) {
       // If this check fails it either means we have an API to override a
       // key that isn't a ChromeAccelerator (and the API can therefore be

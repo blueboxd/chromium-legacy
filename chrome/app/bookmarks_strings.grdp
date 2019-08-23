@@ -444,30 +444,30 @@
     &amp;Bookmarks
   </message>
   <if expr="not use_titlecase">
-    <message name="IDS_BOOKMARK_THIS_PAGE" desc="Title of the menu item that bookmarks the current page.">
-      Bookmark this page...
+    <message name="IDS_BOOKMARK_THIS_TAB" desc="Title of the menu item that bookmarks the current tab.">
+      Bookmark this tab...
     </message>
   </if>
   <if expr="use_titlecase">
-    <message name="IDS_BOOKMARK_THIS_PAGE" desc="In Title Case: Title of the menu item that bookmarks the current page.">
-      Bookmark This Page...
+    <message name="IDS_BOOKMARK_THIS_TAB" desc="In Title Case: Title of the menu item that bookmarks the current tab.">
+      Bookmark This Tab...
     </message>
   </if>
   <if expr="not use_titlecase">
-    <message name="IDS_BOOKMARK_OPEN_PAGES" desc="Title of the menu item that bookmarks all the pages opened in this window.">
-      Bookmark open pages...
+    <message name="IDS_BOOKMARK_ALL_TABS" desc="Title of the menu item that bookmarks all the tabs opened in this window.">
+      Bookmark all tabs...
     </message>
   </if>
   <if expr="use_titlecase">
-    <message name="IDS_BOOKMARK_OPEN_PAGES" desc="In Title Case: Title of the menu item that bookmarks all the pages opened in this window.">
-      Bookmark Open Pages...
+    <message name="IDS_BOOKMARK_ALL_TABS" desc="In Title Case: Title of the menu item that bookmarks all the tabs opened in this window.">
+      Bookmark All Tabs...
     </message>
   </if>
   <!-- End of Bookmarks Menu (in the Main Menu) strings. -->
 
   <!-- Begin of Bookmark Star button strings. -->
-  <message name="IDS_TOOLTIP_STARRED" desc="The tooltip shown when you hover the star button in the right side of the location bar and the current page is bookmarked.">
-    Edit bookmark for this page
+  <message name="IDS_TOOLTIP_STARRED" desc="The tooltip shown when you hover the star button in the right side of the location bar and the current tab is bookmarked.">
+    Edit bookmark for this tab
   </message>
   <!-- End of Bookmark Star button strings. -->
 

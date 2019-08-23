@@ -22,9 +22,10 @@ XRSessionRequestConsentManagerImpl::~XRSessionRequestConsentManagerImpl() =
 TabModalConfirmDialog*
 XRSessionRequestConsentManagerImpl::ShowDialogAndGetConsent(
     content::WebContents* web_contents,
-    base::OnceCallback<void(bool)> response_callback) {
+    XrConsentPromptLevel consent_level,
+    base::OnceCallback<void(XrConsentPromptLevel, bool)> response_callback) {
   auto delegate = std::make_unique<XrSessionRequestConsentDialogDelegate>(
-      web_contents, std::move(response_callback));
+      web_contents, consent_level, std::move(response_callback));
   delegate->OnShowDialog();
   return TabModalConfirmDialog::Create(std::move(delegate), web_contents);
 }

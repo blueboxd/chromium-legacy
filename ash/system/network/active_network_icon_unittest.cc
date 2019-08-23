@@ -77,13 +77,15 @@ class ActiveNetworkIconTest : public AshTestBase {
     if (cellular_path_.empty()) {
       network_state_helper().manager_test()->AddTechnology(shill::kTypeCellular,
                                                            true /* enabled */);
-      network_state_helper().device_test()->AddDevice(
-          kShillManagerClientStubCellularDevice, shill::kTypeCellular,
-          "stub_cellular_device");
+      network_state_helper().AddDevice(kShillManagerClientStubCellularDevice,
+                                       shill::kTypeCellular,
+                                       "stub_cellular_device");
       cellular_path_ = ConfigureService(base::StringPrintf(
           R"({"GUID": "%s", "Type": "cellular", "Technology": "LTE",
             "State": "idle"})",
           kCellularNetworkGuid));
+      SetServiceProperty(cellular_path_, shill::kDeviceProperty,
+                         base::Value(kShillManagerClientStubCellularDevice));
     }
     SetServiceProperty(cellular_path_, shill::kStateProperty,
                        base::Value(state));

@@ -367,6 +367,10 @@ class PreviewsOptimizationGuideTest
   // server blacklist.
   void InitializeWithLitePageRedirectBlacklist();
 
+  // This is a wrapper around MaybeLoadOptimizationHints that wraps |url| in a
+  // navigation handle to call the method.
+  bool CallMaybeLoadOptimizationHints(const GURL& url);
+
   // This function guarantees that all of the asynchronous processing required
   // to load the specified hint has occurred prior to calling IsWhitelisted.
   // It accomplishes this by calling MaybeLoadOptimizationHints() and waiting
@@ -556,28 +560,38 @@ void PreviewsOptimizationGuideTest::InitializeWithLitePageRedirectBlacklist() {
   ProcessHints(config, "2.0.0");
 }
 
+bool PreviewsOptimizationGuideTest::CallMaybeLoadOptimizationHints(
+    const GURL& url) {
+  content::MockNavigationHandle navigation_handle;
+  navigation_handle.set_url(url);
+  return guide()->MaybeLoadOptimizationHints(&navigation_handle,
+                                             base::DoNothing());
+}
+
 bool PreviewsOptimizationGuideTest::
     MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
         PreviewsUserData* previews_data,
         const GURL& url,
         PreviewsType type,
         net::EffectiveConnectionType* out_ect_threshold) {
+  content::MockNavigationHandle navigation_handle;
+  navigation_handle.set_url(url);
+
   // Ensure that all asynchronous MaybeLoadOptimizationHints processing
   // finishes prior to calling IsWhitelisted. This is accomplished by waiting
   // for the OnLoadOptimizationHints callback to set |requested_hints_loaded_|
   // to true.
   requested_hints_loaded_ = false;
   if (guide()->MaybeLoadOptimizationHints(
-          url, base::BindOnce(
-                   &PreviewsOptimizationGuideTest::OnLoadOptimizationHints,
-                   base::Unretained(this)))) {
+          &navigation_handle,
+          base::BindOnce(
+              &PreviewsOptimizationGuideTest::OnLoadOptimizationHints,
+              base::Unretained(this)))) {
     while (!requested_hints_loaded_) {
       RunUntilIdle();
     }
   }
 
-  content::MockNavigationHandle navigation_handle;
-  navigation_handle.set_url(url);
   return guide()->IsWhitelisted(previews_data, &navigation_handle, type,
                                 out_ect_threshold);
 }
@@ -736,8 +750,8 @@ TEST_F(PreviewsOptimizationGuideTest,
 
   InitializeFixedCountResourceLoadingHints();
 
-  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://www.somedomain.org/news/football"), base::DoNothing()));
+  EXPECT_TRUE(CallMaybeLoadOptimizationHints(
+      GURL("https://www.somedomain.org/news/football")));
 
   optimization_guide::proto::Configuration config;
   optimization_guide::proto::Hint* hint = config.add_hints();
@@ -767,8 +781,8 @@ TEST_F(PreviewsOptimizationGuideTest,
       PreviewsType::NOSCRIPT, &ect_threshold));
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G, ect_threshold);
 
-  EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://www.somedomain.org/news/football"), base::DoNothing()));
+  EXPECT_FALSE(CallMaybeLoadOptimizationHints(
+      GURL("https://www.somedomain.org/news/football")));
 }
 
 TEST_F(PreviewsOptimizationGuideTest,
@@ -786,43 +800,38 @@ TEST_F(PreviewsOptimizationGuideTest,
       optimization_guide::switches::kPurgeHintCacheStore);
   CreateServiceAndGuide();
 
-  EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://somedomain.org/"), base::DoNothing()));
-  EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://www.somedomain.org/news/football"), base::DoNothing()));
+  EXPECT_FALSE(CallMaybeLoadOptimizationHints(GURL("https://somedomain.org/")));
+  EXPECT_FALSE(CallMaybeLoadOptimizationHints(
+      GURL("https://www.somedomain.org/news/football")));
 
   InitializeFixedCountResourceLoadingHints();
 
-  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://somedomain.org/"), base::DoNothing()));
-  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://www.somedomain.org/news/football"), base::DoNothing()));
+  EXPECT_TRUE(CallMaybeLoadOptimizationHints(GURL("https://somedomain.org/")));
+  EXPECT_TRUE(CallMaybeLoadOptimizationHints(
+      GURL("https://www.somedomain.org/news/football")));
 }
 
 TEST_F(PreviewsOptimizationGuideTest,
        ProcessHintsWithPurgeHintCacheStoreCommandLineAndPreexistingData) {
   InitializeFixedCountResourceLoadingHints();
 
-  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://somedomain.org/"), base::DoNothing()));
-  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://www.somedomain.org/news/football"), base::DoNothing()));
+  EXPECT_TRUE(CallMaybeLoadOptimizationHints(GURL("https://somedomain.org/")));
+  EXPECT_TRUE(CallMaybeLoadOptimizationHints(
+      GURL("https://www.somedomain.org/news/football")));
 
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       optimization_guide::switches::kPurgeHintCacheStore);
   CreateServiceAndGuide();
 
-  EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://somedomain.org/"), base::DoNothing()));
-  EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://www.somedomain.org/news/football"), base::DoNothing()));
+  EXPECT_FALSE(CallMaybeLoadOptimizationHints(GURL("https://somedomain.org/")));
+  EXPECT_FALSE(CallMaybeLoadOptimizationHints(
+      GURL("https://www.somedomain.org/news/football")));
 
   InitializeFixedCountResourceLoadingHints();
 
-  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://somedomain.org/"), base::DoNothing()));
-  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://www.somedomain.org/news/football"), base::DoNothing()));
+  EXPECT_TRUE(CallMaybeLoadOptimizationHints(GURL("https://somedomain.org/")));
+  EXPECT_TRUE(CallMaybeLoadOptimizationHints(
+      GURL("https://www.somedomain.org/news/football")));
 }
 
 // Test when resource loading hints are enabled.
@@ -1532,12 +1541,10 @@ TEST_F(PreviewsOptimizationGuideTest, MaybeLoadOptimizationHints) {
 
   InitializeFixedCountResourceLoadingHints();
 
-  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://somedomain.org/"), base::DoNothing()));
-  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://www.somedomain.org/news/football"), base::DoNothing()));
-  EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://www.unknown.com"), base::DoNothing()));
+  EXPECT_TRUE(CallMaybeLoadOptimizationHints(GURL("https://somedomain.org/")));
+  EXPECT_TRUE(CallMaybeLoadOptimizationHints(
+      GURL("https://www.somedomain.org/news/football")));
+  EXPECT_FALSE(CallMaybeLoadOptimizationHints(GURL("https://www.unknown.com")));
 
   RunUntilIdle();
 
@@ -1564,12 +1571,10 @@ TEST_F(PreviewsOptimizationGuideTest,
 
   InitializeFixedCountResourceLoadingHintsWithTwoExperiments();
 
-  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://somedomain.org/"), base::DoNothing()));
-  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://www.somedomain.org/news/football"), base::DoNothing()));
-  EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://www.unknown.com"), base::DoNothing()));
+  EXPECT_TRUE(CallMaybeLoadOptimizationHints(GURL("https://somedomain.org/")));
+  EXPECT_TRUE(CallMaybeLoadOptimizationHints(
+      GURL("https://www.somedomain.org/news/football")));
+  EXPECT_FALSE(CallMaybeLoadOptimizationHints(GURL("https://www.unknown.com")));
 
   RunUntilIdle();
 
@@ -1601,12 +1606,10 @@ TEST_F(PreviewsOptimizationGuideTest,
 
   InitializeFixedCountResourceLoadingHintsWithTwoExperiments();
 
-  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://somedomain.org/"), base::DoNothing()));
-  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://www.somedomain.org/news/football"), base::DoNothing()));
-  EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://www.unknown.com"), base::DoNothing()));
+  EXPECT_TRUE(CallMaybeLoadOptimizationHints(GURL("https://somedomain.org/")));
+  EXPECT_TRUE(CallMaybeLoadOptimizationHints(
+      GURL("https://www.somedomain.org/news/football")));
+  EXPECT_FALSE(CallMaybeLoadOptimizationHints(GURL("https://www.unknown.com")));
 
   RunUntilIdle();
 
@@ -1638,12 +1641,10 @@ TEST_F(PreviewsOptimizationGuideTest,
 
   InitializeFixedCountResourceLoadingHintsWithTwoExperiments();
 
-  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://somedomain.org/"), base::DoNothing()));
-  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://www.somedomain.org/news/football"), base::DoNothing()));
-  EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://www.unknown.com"), base::DoNothing()));
+  EXPECT_TRUE(CallMaybeLoadOptimizationHints(GURL("https://somedomain.org/")));
+  EXPECT_TRUE(CallMaybeLoadOptimizationHints(
+      GURL("https://www.somedomain.org/news/football")));
+  EXPECT_FALSE(CallMaybeLoadOptimizationHints(GURL("https://www.unknown.com")));
 
   RunUntilIdle();
 
@@ -1676,12 +1677,10 @@ TEST_F(PreviewsOptimizationGuideTest,
 
   InitializeFixedCountResourceLoadingHintsWithTwoExperiments();
 
-  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://somedomain.org/"), base::DoNothing()));
-  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://www.somedomain.org/news/football"), base::DoNothing()));
-  EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://www.unknown.com"), base::DoNothing()));
+  EXPECT_TRUE(CallMaybeLoadOptimizationHints(GURL("https://somedomain.org/")));
+  EXPECT_TRUE(CallMaybeLoadOptimizationHints(
+      GURL("https://www.somedomain.org/news/football")));
+  EXPECT_FALSE(CallMaybeLoadOptimizationHints(GURL("https://www.unknown.com")));
 
   RunUntilIdle();
 
@@ -1716,22 +1715,19 @@ TEST_F(PreviewsOptimizationGuideTest,
 
   InitializeMultipleResourceLoadingHints(key_count, page_patterns_per_key);
 
-  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://somedomain0.org/"), base::DoNothing()));
-  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://somedomain0.org/"), base::DoNothing()));
-  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://somedomain0.org/news0/football"), base::DoNothing()));
-  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://somedomain49.org/"), base::DoNothing()));
-  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://somedomain49.org/news0/football"), base::DoNothing()));
-  EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://somedomain50.org/"), base::DoNothing()));
-  EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://somedomain50.org/news0/football"), base::DoNothing()));
-  EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://www.unknown.com"), base::DoNothing()));
+  EXPECT_TRUE(CallMaybeLoadOptimizationHints(GURL("https://somedomain0.org/")));
+  EXPECT_TRUE(CallMaybeLoadOptimizationHints(GURL("https://somedomain0.org/")));
+  EXPECT_TRUE(CallMaybeLoadOptimizationHints(
+      GURL("https://somedomain0.org/news0/football")));
+  EXPECT_TRUE(
+      CallMaybeLoadOptimizationHints(GURL("https://somedomain49.org/")));
+  EXPECT_TRUE(CallMaybeLoadOptimizationHints(
+      GURL("https://somedomain49.org/news0/football")));
+  EXPECT_FALSE(
+      CallMaybeLoadOptimizationHints(GURL("https://somedomain50.org/")));
+  EXPECT_FALSE(CallMaybeLoadOptimizationHints(
+      GURL("https://somedomain50.org/news0/football")));
+  EXPECT_FALSE(CallMaybeLoadOptimizationHints(GURL("https://www.unknown.com")));
 
   EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
       &user_data, GURL("https://www.somedomain0.org/news0/football"),
@@ -1775,8 +1771,8 @@ TEST_F(PreviewsOptimizationGuideTest,
 
   InitializeFixedCountResourceLoadingHints();
 
-  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://www.somedomain.org"), base::DoNothing()));
+  EXPECT_TRUE(
+      CallMaybeLoadOptimizationHints(GURL("https://www.somedomain.org")));
 
   RunUntilIdle();
 
@@ -1794,12 +1790,10 @@ TEST_F(PreviewsOptimizationGuideTest, PreviewsUserDataPopulatedCorrectly) {
 
   InitializeFixedCountResourceLoadingHints();
 
-  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://somedomain.org/"), base::DoNothing()));
-  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://www.somedomain.org/news/football"), base::DoNothing()));
-  EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
-      GURL("https://www.unknown.com"), base::DoNothing()));
+  EXPECT_TRUE(CallMaybeLoadOptimizationHints(GURL("https://somedomain.org/")));
+  EXPECT_TRUE(CallMaybeLoadOptimizationHints(
+      GURL("https://www.somedomain.org/news/football")));
+  EXPECT_FALSE(CallMaybeLoadOptimizationHints(GURL("https://www.unknown.com")));
 
   RunUntilIdle();
 

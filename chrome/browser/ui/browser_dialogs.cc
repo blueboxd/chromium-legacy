@@ -41,6 +41,7 @@ void ShowNativeFileSystemPermissionDialog(
 void ShowNativeFileSystemRestrictedDirectoryDialog(
     const url::Origin& origin,
     const base::FilePath& path,
+    bool is_directory,
     base::OnceCallback<void(
         content::NativeFileSystemPermissionContext::SensitiveDirectoryResult)>
         callback,

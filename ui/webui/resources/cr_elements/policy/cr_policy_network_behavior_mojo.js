@@ -13,6 +13,7 @@ const CrPolicyNetworkBehaviorMojo = {
    * @return {boolean} True if the property is controlled by network policy.
    */
   isNetworkPolicyControlled: function(property) {
+    assert(property);
     const mojom = chromeos.networkConfig.mojom;
     return property.policySource != mojom.PolicySource.kNone &&
         property.policySource != mojom.PolicySource.kActiveExtension;
@@ -23,6 +24,7 @@ const CrPolicyNetworkBehaviorMojo = {
    * @return {boolean} True if the property is controlled by an extension.
    */
   isExtensionControlled: function(property) {
+    assert(property);
     return property.policySource ==
         chromeos.networkConfig.mojom.PolicySource.kActiveExtension;
   },
@@ -33,6 +35,7 @@ const CrPolicyNetworkBehaviorMojo = {
    *     policy or an extension.
    */
   isControlled: function(property) {
+    assert(property);
     return property.policySource !=
         chromeos.networkConfig.mojom.PolicySource.kNone;
   },
@@ -42,6 +45,7 @@ const CrPolicyNetworkBehaviorMojo = {
    * @return {boolean} True if the network property is editable.
    */
   isEditable: function(property) {
+    assert(property);
     const mojom = chromeos.networkConfig.mojom;
     return property.policySource != mojom.PolicySource.kUserPolicyEnforced &&
         property.policySource != mojom.PolicySource.kDevicePolicyEnforced &&
@@ -53,6 +57,9 @@ const CrPolicyNetworkBehaviorMojo = {
    * @return {boolean} True if the network property is enforced by a policy.
    */
   isNetworkPolicyEnforced: function(property) {
+    if (!property) {
+      return false;
+    }
     const mojom = chromeos.networkConfig.mojom;
     return property.policySource == mojom.PolicySource.kUserPolicyEnforced ||
         property.policySource == mojom.PolicySource.kDevicePolicyEnforced;
@@ -63,6 +70,9 @@ const CrPolicyNetworkBehaviorMojo = {
    * @return {boolean} True if the network property is recommended by a policy.
    */
   isNetworkPolicyRecommended: function(property) {
+    if (!property) {
+      return false;
+    }
     const mojom = chromeos.networkConfig.mojom;
     return property.policySource == mojom.PolicySource.kUserPolicyRecommended ||
         property.policySource == mojom.PolicySource.kDevicePolicyRecommended;
@@ -99,6 +109,9 @@ const CrPolicyNetworkBehaviorMojo = {
    * @return {CrPolicyIndicatorType}
    */
   getPolicyIndicatorType: function(property) {
+    if (!property) {
+      return CrPolicyIndicatorType.NONE;
+    }
     const mojom = chromeos.networkConfig.mojom;
     if (property.policySource == mojom.PolicySource.kUserPolicyEnforced ||
         property.policySource == mojom.PolicySource.kUserPolicyRecommended) {

@@ -101,7 +101,7 @@ class CORE_EXPORT ScriptResource final : public TextResource {
   void OnMemoryDump(WebMemoryDumpLevelOfDetail,
                     WebProcessMemoryDump*) const override;
 
-  void SetSerializedCachedMetadata(const uint8_t*, size_t) override;
+  void SetSerializedCachedMetadata(mojo_base::BigBuffer data) override;
 
   void StartStreaming(
       scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner);

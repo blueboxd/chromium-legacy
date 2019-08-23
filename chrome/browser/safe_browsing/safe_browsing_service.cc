@@ -30,6 +30,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
+#include "chrome/browser/safe_browsing/services_delegate.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -246,6 +247,13 @@ VerdictCacheManager* SafeBrowsingService::GetVerdictCacheManager(
   return nullptr;
 }
 
+BinaryUploadService* SafeBrowsingService::GetBinaryUploadService(
+    Profile* profile) const {
+  if (profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled))
+    return services_delegate_->GetBinaryUploadService(profile);
+  return nullptr;
+}
+
 std::string SafeBrowsingService::GetProtocolConfigClientName() const {
   std::string client_name;
   // On Windows, get the safe browsing client name from the browser
@@ -335,6 +343,7 @@ void SafeBrowsingService::Observe(int type,
       services_delegate_->CreateTelemetryService(profile);
       if (!profile->IsOffTheRecord())
         AddPrefService(profile->GetPrefs());
+      services_delegate_->CreateBinaryUploadService(profile);
       break;
     }
     case chrome::NOTIFICATION_PROFILE_DESTROYED: {
@@ -345,6 +354,7 @@ void SafeBrowsingService::Observe(int type,
       services_delegate_->RemoveTelemetryService();
       if (!profile->IsOffTheRecord())
         RemovePrefService(profile->GetPrefs());
+      services_delegate_->RemoveBinaryUploadService(profile);
       break;
     }
     default:

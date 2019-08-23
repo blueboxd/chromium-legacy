@@ -34,26 +34,42 @@
 #include <limits>
 
 #include "base/macros.h"
+#include "base/time/default_tick_clock.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
-// Maintains a stationary clock time during script execution. Tracks the glass
-// time of the beginning of the current animation frame (i.e. the moment photons
-// left the screen for the previous frame).
+// Maintains a stationary clock time during script execution.  Tries to track
+// the glass time (the moment photons leave the screen) of the current animation
+// frame.
 class CORE_EXPORT AnimationClock {
   DISALLOW_NEW();
 
  public:
-  AnimationClock() : time_() {}
+  using TimeTicksFunction = base::TimeTicks (*)();
+  explicit AnimationClock(
+      const base::TickClock* clock = base::DefaultTickClock::GetInstance())
+      : clock_(clock),
+        time_(),
+        task_for_which_time_was_calculated_(
+            std::numeric_limits<unsigned>::max()) {}
 
   void UpdateTime(base::TimeTicks time);
-  base::TimeTicks CurrentTime() const;
-  void ResetTimeForTesting();
+  double CurrentTime();
+  void ResetTimeForTesting(base::TimeTicks time = base::TimeTicks());
+  // The caller owns the |clock| which must outlive the AnimationClock.
+  void SetClockForTesting(const base::TickClock* clock) { clock_ = clock; }
+
+  // notifyTaskStart should be called right before the main message loop starts
+  // to run the next task from the message queue.
+  static void NotifyTaskStart() { ++currently_running_task_; }
 
  private:
+  const base::TickClock* clock_;
   base::TimeTicks time_;
+  unsigned task_for_which_time_was_calculated_;
+  static unsigned currently_running_task_;
   DISALLOW_COPY_AND_ASSIGN(AnimationClock);
 };
 

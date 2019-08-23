@@ -238,11 +238,10 @@ class Observer : public BrowserListObserver, public AvatarMenuObserver {
 }
 
 - (void)initializeMenu {
-  observer_.reset(new ProfileMenuControllerInternal::Observer(self));
-  avatarMenu_.reset(new AvatarMenu(
+  observer_ = std::make_unique<ProfileMenuControllerInternal::Observer>(self);
+  avatarMenu_ = std::make_unique<AvatarMenu>(
       &g_browser_process->profile_manager()->GetProfileAttributesStorage(),
-      observer_.get(),
-      NULL));
+      observer_.get(), nullptr);
   avatarMenu_->RebuildMenu();
 
   [[self menu] addItem:[NSMenuItem separatorItem]];

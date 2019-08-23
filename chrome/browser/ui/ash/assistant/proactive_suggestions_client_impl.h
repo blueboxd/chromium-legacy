@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_ASH_ASSISTANT_PROACTIVE_SUGGESTIONS_CLIENT_IMPL_H_
 #define CHROME_BROWSER_UI_ASH_ASSISTANT_PROACTIVE_SUGGESTIONS_CLIENT_IMPL_H_
 
+#include <memory>
+
 #include "ash/public/cpp/assistant/assistant_state_proxy.h"
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
 #include "ash/public/cpp/assistant/proactive_suggestions_client.h"
@@ -14,6 +16,8 @@
 #include "content/public/browser/web_contents_observer.h"
 
 class AssistantClient;
+class ProactiveSuggestionsLoader;
+class Profile;
 
 // A browser client which observes changes to the singleton BrowserList on
 // behalf of Assistant to provide it with information necessary to retrieve
@@ -25,7 +29,7 @@ class ProactiveSuggestionsClientImpl
       public content::WebContentsObserver,
       public ash::DefaultVoiceInteractionObserver {
  public:
-  explicit ProactiveSuggestionsClientImpl(AssistantClient* client);
+  ProactiveSuggestionsClientImpl(AssistantClient* client, Profile* profile);
   ~ProactiveSuggestionsClientImpl() override;
 
   // BrowserListObserver:
@@ -51,14 +55,20 @@ class ProactiveSuggestionsClientImpl
   void SetActiveBrowser(Browser* browser);
   void SetActiveContents(content::WebContents* contents);
   void SetActiveUrl(const GURL& url);
+  void SetActiveProactiveSuggestions(
+      std::unique_ptr<ash::ProactiveSuggestions> proactive_suggestions);
 
   void UpdateActiveState();
 
+  Profile* const profile_;
   ash::AssistantStateProxy assistant_state_;
 
   Browser* active_browser_ = nullptr;
   content::WebContents* active_contents_ = nullptr;
   GURL active_url_;
+  size_t active_proactive_suggestions_hash_;
+
+  std::unique_ptr<ProactiveSuggestionsLoader> loader_;
 
   DISALLOW_COPY_AND_ASSIGN(ProactiveSuggestionsClientImpl);
 };

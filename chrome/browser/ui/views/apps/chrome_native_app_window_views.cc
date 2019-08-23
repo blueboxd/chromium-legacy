@@ -349,11 +349,11 @@ void ChromeNativeAppWindowViews::InitializeWindow(
   active_frame_color_ = create_params.active_frame_color;
   inactive_frame_color_ = create_params.inactive_frame_color;
   InitializeDefaultWindow(create_params);
-  extension_keybinding_registry_.reset(new ExtensionKeybindingRegistryViews(
-      Profile::FromBrowserContext(app_window->browser_context()),
-      widget()->GetFocusManager(),
-      extensions::ExtensionKeybindingRegistry::PLATFORM_APPS_ONLY,
-      NULL));
+  extension_keybinding_registry_ =
+      std::make_unique<ExtensionKeybindingRegistryViews>(
+          Profile::FromBrowserContext(app_window->browser_context()),
+          widget()->GetFocusManager(),
+          extensions::ExtensionKeybindingRegistry::PLATFORM_APPS_ONLY, nullptr);
 }
 
 void ChromeNativeAppWindowViews::EnsureAppIconCreated() {

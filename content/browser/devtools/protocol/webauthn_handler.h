@@ -45,6 +45,8 @@ class WebAuthnHandler : public DevToolsDomainHandler, public WebAuthn::Backend {
       const String& authenticator_id,
       std::unique_ptr<protocol::Array<protocol::WebAuthn::Credential>>*
           out_credentials) override;
+  Response RemoveCredential(const String& in_authenticator_id,
+                            const Binary& credential_id) override;
   Response ClearCredentials(const String& in_authenticator_id) override;
   Response SetUserVerified(const String& authenticator_id,
                            bool is_user_verified) override;

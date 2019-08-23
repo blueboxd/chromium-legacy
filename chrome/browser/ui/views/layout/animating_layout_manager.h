@@ -82,12 +82,15 @@ class AnimatingLayoutManager : public views::LayoutManagerBase {
   bool is_animating() const { return is_animating_; }
 
   // Sets the owned (non-animating) layout manager which defines the target
-  // layout that will be animated to when it changes.
+  // layout that will be animated to when it changes. This layout manager can
+  // only be set once.
   template <class T>
   T* SetTargetLayoutManager(std::unique_ptr<T> layout_manager) {
-    T* const temp = layout_manager.get();
-    SetTargetLayoutManagerImpl(std::move(layout_manager));
-    return temp;
+    DCHECK_EQ(0U, num_owned_layouts());
+    T* const result = AddOwnedLayout(std::move(layout_manager));
+    ResetLayout();
+    InvalidateHost(false);
+    return result;
   }
 
   // Clears any previous layout, stops any animation, and re-loads the proposed
@@ -99,15 +102,11 @@ class AnimatingLayoutManager : public views::LayoutManagerBase {
   bool HasObserver(Observer* observer) const;
 
   // LayoutManagerBase:
-  void SetChildViewIgnoredByLayout(views::View* child_view,
-                                   bool ignored) override;
   gfx::Size GetPreferredSize(const views::View* host) const override;
   gfx::Size GetMinimumSize(const views::View* host) const override;
   int GetPreferredHeightForWidth(const views::View* host,
                                  int width) const override;
   void Layout(views::View* host) override;
-  void InvalidateLayout() override;
-  void Installed(views::View* host) override;
 
   // Returns the animation container being used by the layout manager, creating
   // one if one has not yet been created. Implicitly enables animation on this
@@ -123,21 +122,19 @@ class AnimatingLayoutManager : public views::LayoutManagerBase {
   // LayoutManagerBase:
   ProposedLayout CalculateProposedLayout(
       const views::SizeBounds& size_bounds) const override;
-  void ViewAdded(views::View* host, views::View* view) override;
-  void ViewRemoved(views::View* host, views::View* view) override;
-  void ViewVisibilitySet(views::View* host,
-                         views::View* view,
-                         bool visible) override;
+  void OnInstalled(views::View* host) override;
+  void OnLayoutChanged() override;
 
  private:
   class AnimationDelegate;
   friend class AnimationDelegate;
 
-  void SetTargetLayoutManagerImpl(
-      std::unique_ptr<LayoutManagerBase> target_layout_manager);
-
-  // Invalidates the host view without recalculating the target layout.
-  void InvalidateHost();
+  LayoutManagerBase* target_layout_manager() {
+    return num_owned_layouts() ? owned_layout(0) : nullptr;
+  }
+  const LayoutManagerBase* target_layout_manager() const {
+    return num_owned_layouts() ? owned_layout(0) : nullptr;
+  }
 
   // Calculates the new target layout and returns true if it has changed.
   bool RecalculateTarget();
@@ -161,10 +158,6 @@ class AnimatingLayoutManager : public views::LayoutManagerBase {
   // The motion curve of the animation to perform.
   gfx::Tween::Type tween_type_ = gfx::Tween::EASE_IN_OUT;
 
-  // Used to suspend re-evaluation of the target layout during certain internal
-  // operations.
-  bool suspend_recalculation_ = false;
-
   // Used to determine when to fire animation events.
   bool is_animating_ = false;
 
@@ -185,7 +178,6 @@ class AnimatingLayoutManager : public views::LayoutManagerBase {
   // |current_layout_| will match |target_layout_|.
   ProposedLayout target_layout_;
 
-  std::unique_ptr<LayoutManagerBase> target_layout_manager_;
   std::unique_ptr<AnimationDelegate> animation_delegate_;
   base::ObserverList<Observer, true> observers_;
 

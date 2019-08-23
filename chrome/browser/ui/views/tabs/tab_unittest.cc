@@ -23,7 +23,6 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/tabs/tab_style_views.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/grit/theme_resources.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/list_selection_model.h"
@@ -104,11 +103,9 @@ class FakeTabController : public TabController {
     return tab_state == TAB_ACTIVE ? tab_fg_color_active_
                                    : tab_fg_color_inactive_;
   }
-  int GetBackgroundResourceId(
-      bool* has_custom_image,
+  base::Optional<int> GetCustomBackgroundId(
       BrowserNonClientFrameView::ActiveState active_state) const override {
-    *has_custom_image = false;
-    return IDR_THEME_TAB_BACKGROUND;
+    return base::nullopt;
   }
   gfx::Rect GetTabAnimationTargetBounds(const Tab* tab) override {
     return tab->bounds();
@@ -359,7 +356,7 @@ class AlertIndicatorTest : public ChromeViewsTestBase {
     parent_.AddChildView(tab_strip_);
     parent_.set_owned_by_client();
 
-    widget_.reset(new views::Widget);
+    widget_ = std::make_unique<views::Widget>();
     views::Widget::InitParams init_params =
         CreateParams(views::Widget::InitParams::TYPE_POPUP);
     init_params.ownership =

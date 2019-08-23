@@ -311,11 +311,11 @@ void MediaGalleriesDialogViews::ShowContextMenuForViewImpl(
 void MediaGalleriesDialogViews::ShowContextMenu(const gfx::Point& point,
                                                 ui::MenuSourceType source_type,
                                                 MediaGalleryPrefId id) {
-  context_menu_runner_.reset(new views::MenuRunner(
+  context_menu_runner_ = std::make_unique<views::MenuRunner>(
       controller_->GetContextMenu(id),
       views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU,
       base::BindRepeating(&MediaGalleriesDialogViews::OnMenuClosed,
-                          base::Unretained(this))));
+                          base::Unretained(this)));
 
   context_menu_runner_->RunMenuAt(
       GetWidget(), nullptr,

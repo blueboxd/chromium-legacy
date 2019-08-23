@@ -5,8 +5,6 @@
 #include "fuchsia/base/agent_impl.h"
 
 #include "base/fuchsia/fuchsia_logging.h"
-#include "base/fuchsia/service_directory.h"
-#include "base/fuchsia/service_directory_client.h"
 #include "base/fuchsia/testfidl/cpp/fidl.h"
 #include "base/logging.h"
 #include "base/test/scoped_task_environment.h"
@@ -50,7 +48,7 @@ class AccumulatorComponentState : public AgentImpl::ComponentStateBase {
  public:
   AccumulatorComponentState(base::StringPiece component)
       : ComponentStateBase(component),
-        service_binding_(service_directory(), &service_) {}
+        service_binding_(outgoing_directory(), &service_) {}
 
  protected:
   AccumulatingTestInterfaceImpl service_;
@@ -70,8 +68,10 @@ class AgentImplTest : public ::testing::Test {
  public:
   AgentImplTest() {
     fidl::InterfaceHandle<::fuchsia::io::Directory> directory;
-    services_ = std::make_unique<base::fuchsia::ServiceDirectory>(
-        directory.NewRequest());
+    services_.GetOrCreateDirectory("svc")->Serve(
+        fuchsia::io::OPEN_RIGHT_READABLE | fuchsia::io::OPEN_RIGHT_WRITABLE,
+        directory.NewRequest().TakeChannel());
+
     services_client_ = std::make_unique<base::fuchsia::ServiceDirectoryClient>(
         std::move(directory));
   }
@@ -79,8 +79,8 @@ class AgentImplTest : public ::testing::Test {
   fuchsia::modular::AgentPtr CreateAgentAndConnect() {
     DCHECK(!agent_impl_);
     agent_impl_ = std::make_unique<AgentImpl>(
-        services_.get(), base::BindRepeating(&AgentImplTest::OnComponentConnect,
-                                             base::Unretained(this)));
+        &services_, base::BindRepeating(&AgentImplTest::OnComponentConnect,
+                                        base::Unretained(this)));
     fuchsia::modular::AgentPtr agent;
     services_client_->ConnectToService(agent.NewRequest());
     return agent;
@@ -103,7 +103,7 @@ class AgentImplTest : public ::testing::Test {
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
       base::test::TaskEnvironment::MainThreadType::IO};
-  std::unique_ptr<base::fuchsia::ServiceDirectory> services_;
+  sys::OutgoingDirectory services_;
   std::unique_ptr<base::fuchsia::ServiceDirectoryClient> services_client_;
 
   std::unique_ptr<AgentImpl> agent_impl_;

@@ -686,7 +686,7 @@ void ClipboardX11::WriteObjects(ClipboardBuffer buffer,
 
   x11_details_->CreateNewClipboardData();
   for (const auto& object : objects)
-    DispatchObject(static_cast<ObjectType>(object.first), object.second);
+    DispatchObject(object.first, object.second);
   x11_details_->TakeOwnershipOfSelection(buffer);
 
   if (buffer == ClipboardBuffer::kCopyPaste) {

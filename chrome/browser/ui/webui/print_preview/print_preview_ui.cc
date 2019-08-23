@@ -412,7 +412,6 @@ void SetupPrintPreviewPlugin(content::WebUIDataSource* source) {
     {"pdf/pdf_scripting_api.js", IDR_PDF_PDF_SCRIPTING_API_JS},
     {"pdf/pdf_viewer.js", IDR_PDF_PDF_VIEWER_JS},
     {"pdf/toolbar_manager.js", IDR_PDF_TOOLBAR_MANAGER_JS},
-    {"pdf/viewport_interface.js", IDR_PDF_VIEWPORT_INTERFACE_JS},
     {"pdf/viewport.js", IDR_PDF_VIEWPORT_JS},
     {"pdf/viewport_scroller.js", IDR_PDF_VIEWPORT_SCROLLER_JS},
     {"pdf/zoom_manager.js", IDR_PDF_ZOOM_MANAGER_JS},

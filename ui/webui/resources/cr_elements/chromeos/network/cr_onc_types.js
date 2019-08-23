@@ -64,9 +64,6 @@ CrOnc.NetworkPropertyType;
  */
 CrOnc.ManagedProperty;
 
-/** @typedef {chrome.networkingPrivate.SIMLockStatus} */
-CrOnc.SIMLockStatus;
-
 /** @typedef {chrome.networkingPrivate.APNProperties} */
 CrOnc.APNProperties;
 

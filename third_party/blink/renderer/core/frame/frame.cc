@@ -130,6 +130,7 @@ bool Frame::IsMainFrame() const {
 }
 
 bool Frame::IsCrossOriginSubframe() const {
+  DCHECK(GetSecurityContext());
   const SecurityOrigin* security_origin =
       GetSecurityContext()->GetSecurityOrigin();
   return !security_origin->CanAccess(

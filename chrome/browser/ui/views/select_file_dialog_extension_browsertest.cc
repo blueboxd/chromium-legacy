@@ -142,7 +142,7 @@ class SelectFileDialogExtensionBrowserTest
 
   void SetUp() override {
     // Create the dialog wrapper and listener objects.
-    listener_.reset(new MockSelectFileDialogListener());
+    listener_ = std::make_unique<MockSelectFileDialogListener>();
     dialog_ = new SelectFileDialogExtension(listener_.get(), NULL);
 
     // One mount point will be needed. Files app looks for the "Downloads"
@@ -285,7 +285,7 @@ class SelectFileDialogExtensionBrowserTest
   }
 
   void TryOpeningSecondDialog(const gfx::NativeWindow& owning_window) {
-    second_listener_.reset(new MockSelectFileDialogListener());
+    second_listener_ = std::make_unique<MockSelectFileDialogListener>();
     second_dialog_ = new SelectFileDialogExtension(second_listener_.get(),
                                                    NULL);
 

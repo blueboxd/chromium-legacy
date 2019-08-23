@@ -336,8 +336,9 @@ TEST(SourceKeyedCachedMetadataHandlerTest,
         MakeGarbageCollected<SourceKeyedCachedMetadataHandler>(
             WTF::TextEncoding(),
             std::make_unique<MockCachedMetadataSender>(url));
-    handler->SetSerializedCachedMetadata(last_cache_metadata.data.data(),
-                                         last_cache_metadata.data.size());
+    auto data = base::make_span(last_cache_metadata.data.data(),
+                                last_cache_metadata.data.size());
+    handler->SetSerializedCachedMetadata(mojo_base::BigBuffer(data));
 
     SingleCachedMetadataHandler* source1_handler =
         handler->HandlerForSource(source1);
@@ -389,8 +390,9 @@ TEST(SourceKeyedCachedMetadataHandlerTest,
         MakeGarbageCollected<SourceKeyedCachedMetadataHandler>(
             WTF::TextEncoding(),
             std::make_unique<MockCachedMetadataSender>(url));
-    handler->SetSerializedCachedMetadata(last_cache_metadata.data.data(),
-                                         last_cache_metadata.data.size());
+    auto data = base::make_span(last_cache_metadata.data.data(),
+                                last_cache_metadata.data.size());
+    handler->SetSerializedCachedMetadata(mojo_base::BigBuffer(data));
 
     SingleCachedMetadataHandler* source1_handler =
         handler->HandlerForSource(source1);

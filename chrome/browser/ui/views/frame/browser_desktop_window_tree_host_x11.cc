@@ -58,7 +58,8 @@ void BrowserDesktopWindowTreeHostX11::Init(
 
   // We have now created our backing X11 window. We now need to (possibly)
   // alert Unity that there's a menu bar attached to it.
-  global_menu_bar_x11_.reset(new GlobalMenuBarX11(browser_view_, this));
+  global_menu_bar_x11_ =
+      std::make_unique<GlobalMenuBarX11>(browser_view_, this);
 }
 
 void BrowserDesktopWindowTreeHostX11::CloseNow() {

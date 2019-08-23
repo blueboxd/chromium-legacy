@@ -5434,10 +5434,13 @@ the Bookmarks menu.">
         Bookmark this page to easily find it later
       </message>
       <message name="IDS_BOOKMARK_PROMO_1" desc="Text shown on promotional UI appearing next to the Bookmarks button, which encourages users to use it.">
-        You can click the star to bookmark a page
+        You can click the star to bookmark a tab
       </message>
       <message name="IDS_BOOKMARK_PROMO_2" desc="Text shown on promotional UI appearing next to the Bookmarks button, which encourages users to use it.">
-        Get back here fast by bookmarking this page
+        Get back here fast by bookmarking this tab
+      </message>
+      <message name="IDS_GLOBAL_MEDIA_CONTROLS_PROMO" desc="Text shown on promotional UI appearing next to the global media controls toolbar button.">
+        New! Control your music, videos, and more.
       </message>
       <message name="IDS_INCOGNITOWINDOW_PROMO_0" desc="Variations option 1. Text shown on promotional UI appearing next to the App Menu button, which encourages users to use it.">
         You can browse privately using an incognito window
@@ -6046,20 +6049,14 @@ the Bookmarks menu.">
 
       <!-- Tab Context Menu -->
       <if expr="not use_titlecase">
-        <message name="IDS_TAB_CXMENU_NEWTAB" desc="The label of the 'New Tab' Tab context menu item.">
-          New tab
-        </message>
         <message name="IDS_TAB_CXMENU_RELOAD" desc="The label of the 'Reload' Tab context menu item.">
           Reload
         </message>
         <message name="IDS_TAB_CXMENU_DUPLICATE" desc="The label of the 'Duplicate' Tab context menu item.">
           Duplicate
         </message>
-        <message name="IDS_TAB_CXMENU_CLOSETAB" desc="The label of the 'Close Tab' Tab context menu item. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
-          {NUM_TABS, plural, =1 {Close tab} other {Close tabs}}
-        </message>
-        <message name="IDS_TAB_CXMENU_CLOSEOTHERTABS" desc="The label of the 'Close Other Tabs' Tab context menu item.">
-          Close other tabs
+        <message name="IDS_TAB_CXMENU_CLOSETAB" desc="The label of the 'Close Tab' Tab context menu item. NOTE: If having no explicit # or direct object makes the phrasing awkward, feel free to add these as necessary. [ICU Syntax]">
+          {NUM_TABS, plural, other {Close}}
         </message>
         <message name="IDS_TAB_CXMENU_CLOSETABSTORIGHT" desc="The label of the 'Close Tabs to the Right' Tab context menu item.">
           Close tabs to the right
@@ -6067,26 +6064,17 @@ the Bookmarks menu.">
         <message name="IDS_TAB_CXMENU_FOCUS_THIS_TAB" desc="The label of the 'Focus this tab' Tab context menu item.">
           Focus this tab
         </message>
-        <message name="IDS_TAB_CXMENU_PIN_TAB" desc="The label of the tab context menu item for pinning one or more tabs. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
-          {NUM_TABS, plural, =1 {Pin tab} other {Pin tabs}}
+        <message name="IDS_TAB_CXMENU_PIN_TAB" desc="The label of the tab context menu item for pinning one or more tabs. NOTE: If having no explicit # or direct object makes the phrasing awkward, feel free to add these as necessary. [ICU Syntax]">
+          {NUM_TABS, plural, other {Pin}}
         </message>
-        <message name="IDS_TAB_CXMENU_UNPIN_TAB" desc="The label of the tab context menu item for unpinning one or more tabs. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
-          {NUM_TABS, plural, =1 {Unpin tab} other {Unpin tabs}}
-        </message>
-        <message name="IDS_TAB_CXMENU_AUDIO_MUTE_TAB" desc="The label of the tab context menu item for muting one or more tabs. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
-          {NUM_TABS, plural, =1 {Mute tab} other {Mute tabs}}
-        </message>
-        <message name="IDS_TAB_CXMENU_AUDIO_UNMUTE_TAB" desc="The label of the tab context menu item for unmuting one or more tabs. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
-          {NUM_TABS, plural, =1 {Unmute tab} other {Unmute tabs}}
+        <message name="IDS_TAB_CXMENU_UNPIN_TAB" desc="The label of the tab context menu item for unpinning one or more tabs. NOTE: If having no explicit # or direct object makes the phrasing awkward, feel free to add these as necessary. [ICU Syntax]">
+          {NUM_TABS, plural, other {Unpin}}
         </message>
         <message name="IDS_TAB_CXMENU_SOUND_MUTE_SITE" desc="The label of the tab context menu item for muting one or more sites. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
           {NUM_TABS, plural, =1 {Mute site} other {Mute sites}}
         </message>
         <message name="IDS_TAB_CXMENU_SOUND_UNMUTE_SITE" desc="The label of the tab context menu item for unmuting one or more sites. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
           {NUM_TABS, plural, =1 {Unmute site} other {Unmute sites}}
-        </message>
-        <message name="IDS_TAB_CXMENU_BOOKMARK_ALL_TABS" desc="The label of the tab context menu item for creating a bookmark folder containing an entry for each open tab.">
-          Bookmark all tabs...
         </message>
         <message name="IDS_TAB_CXMENU_ADD_TAB_TO_NEW_GROUP" desc="The label of the tab context menu item for creating a new tab group and adding one or more tabs to it.">
           Add to new group
@@ -6099,20 +6087,14 @@ the Bookmarks menu.">
         </message>
       </if>
       <if expr="use_titlecase">
-        <message name="IDS_TAB_CXMENU_NEWTAB" desc="In Title Case: The label of the 'New Tab' Tab context menu item.">
-          New Tab
-        </message>
         <message name="IDS_TAB_CXMENU_RELOAD" desc="In Title Case: The label of the 'Reload' Tab context menu item.">
           Reload
         </message>
         <message name="IDS_TAB_CXMENU_DUPLICATE" desc="In Title Case: The label of the 'Duplicate' Tab context menu item.">
           Duplicate
         </message>
-        <message name="IDS_TAB_CXMENU_CLOSETAB" desc="In Title Case: The label of the 'Close Tab' Tab context menu item. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
-          {NUM_TABS, plural, =1 {Close Tab} other {Close Tabs}}
-        </message>
-        <message name="IDS_TAB_CXMENU_CLOSEOTHERTABS" desc="In Title Case: The label of the 'Close Other Tabs' Tab context menu item.">
-          Close Other Tabs
+        <message name="IDS_TAB_CXMENU_CLOSETAB" desc="In Title Case: The label of the 'Close Tab' Tab context menu item. NOTE: If having no explicit # or direct object makes the phrasing awkward, feel free to add these as necessary. [ICU Syntax]">
+          {NUM_TABS, plural, other {Close}}
         </message>
         <message name="IDS_TAB_CXMENU_CLOSETABSTORIGHT" desc="In Title Case: The label of the 'Close Tabs to the Right' Tab context menu item.">
           Close Tabs to the Right
@@ -6120,26 +6102,17 @@ the Bookmarks menu.">
         <message name="IDS_TAB_CXMENU_FOCUS_THIS_TAB" desc="In Title Case: The label of the 'Focus This Tab' Tab context menu item.">
           Focus This Tab
         </message>
-        <message name="IDS_TAB_CXMENU_PIN_TAB" desc="In Title Case: The label of the tab context menu item for pinning one or more tabs. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
-          {NUM_TABS, plural, =1 {Pin Tab} other {Pin Tabs}}
+        <message name="IDS_TAB_CXMENU_PIN_TAB" desc="In Title Case: The label of the tab context menu item for pinning one or more tabs. NOTE: If having no explicit # or direct object makes the phrasing awkward, feel free to add these as necessary. [ICU Syntax]">
+          {NUM_TABS, plural, other {Pin}}
         </message>
-        <message name="IDS_TAB_CXMENU_UNPIN_TAB" desc="In Title Case: The label of the tab context menu item for unpinning one or more tabs. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
-          {NUM_TABS, plural, =1 {Unpin Tab} other {Unpin Tabs}}
-        </message>
-        <message name="IDS_TAB_CXMENU_AUDIO_MUTE_TAB" desc="In Title Case: The label of the tab context menu item for muting one or more tabs. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
-          {NUM_TABS, plural, =1 {Mute Tab} other {Mute Tabs}}
-        </message>
-        <message name="IDS_TAB_CXMENU_AUDIO_UNMUTE_TAB" desc="In Title Case: The label of the tab context menu item for unmuting one or more tabs. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
-          {NUM_TABS, plural, =1 {Unmute Tab} other {Unmute Tabs}}
+        <message name="IDS_TAB_CXMENU_UNPIN_TAB" desc="In Title Case: The label of the tab context menu item for unpinning one or more tabs. NOTE: If having no explicit # or direct object makes the phrasing awkward, feel free to add these as necessary. [ICU Syntax]">
+          {NUM_TABS, plural, other {Unpin}}
         </message>
         <message name="IDS_TAB_CXMENU_SOUND_MUTE_SITE" desc="In Title Case: The label of the tab context menu item for muting one or more sites. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
           {NUM_TABS, plural, =1 {Mute Site} other {Mute Sites}}
         </message>
         <message name="IDS_TAB_CXMENU_SOUND_UNMUTE_SITE" desc="In Title Case: The label of the tab context menu item for unmuting one or more sites. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
           {NUM_TABS, plural, =1 {Unmute Site} other {Unmute Sites}}
-        </message>
-        <message name="IDS_TAB_CXMENU_BOOKMARK_ALL_TABS" desc="In Title Case: The label of the tab context menu item for creating a bookmark folder containing an entry for each open tab.">
-          Bookmark All Tabs...
         </message>
         <message name="IDS_TAB_CXMENU_ADD_TAB_TO_NEW_GROUP" desc="In Title Case: The label of the tab context menu item for creating a new tab group and adding one or more tabs to it.">
           Add to New Group
@@ -7751,6 +7724,14 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_NOTIFICATION_REPLY_PLACEHOLDER" desc="Placeholder text shown in the text box before any text is entered when replying directly to a notification.">
         Send message
       </message>
+      <if expr="is_android">
+        <message name="IDS_NOTIFICATION_QUIET_PERMISSION_PROMPT_TITLE" desc="Text used as notification title when requesting permission for Web Notifications via a notification.">
+          Show notifications for <ph name="ORIGIN">$1<ex>example.com</ex></ph>?
+        </message>
+        <message name="IDS_NOTIFICATION_QUIET_PERMISSION_PROMPT_MESSAGE" desc="Text used as notification message when requesting permission for Web Notifications via a notification.">
+          Notifications are currently blocked for all sites except for sites you individually allow.
+        </message>
+      </if>
 
       <!-- Mac AppleScript -->
       <if expr="is_macosx">
@@ -8033,10 +8014,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
         </message>
         <message name="IDS_HISTORY_CLOSED_RESTORE_WINDOW_MAC" desc="The Mac menu item for restoring all the tabs of a recently closed window.">
           Restore All Tabs
-        </message>
-        <!-- Bookmarks menu -->
-        <message name="IDS_BOOKMARK_ALL_TABS_MAC" desc="The Mac menu item for bookmarking all tabs in the current window.">
-          Bookmark All Tabs...
         </message>
         <!-- Window menu -->
         <message name="IDS_MINIMIZE_WINDOW_MAC"
@@ -9582,52 +9559,49 @@ Please help our engineers fix this problem. Tell us what happened right before y
     </message>
 
     <!-- Native File System permission dialog -->
-    <message name="IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_FILE_TITLE" desc="Title of dialog for confirming write access to a file using the Native File System API">
-      Save changes to <ph name="FILENAME">$1<ex>README.md</ex></ph>?
-    </message>
-    <message name="IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_DIRECTORY_TITLE" desc="Title of dialog for confirming write access to a directory and the files it contains using the Native File System API">
-      Save changes to files?
+    <message name="IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_TITLE" desc="Title of dialog for confirming write access to a file, or a directory and the files it contains, using the Native File System API">
+      Save changes to <ph name="FILE_OR_FOLDER_NAME">$1<ex>README.md</ex></ph>?
     </message>
     <message name="IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_FILE_TEXT" desc="Text of the dialog for confirming write access to files using the Native File System API">
-      <ph name="ORIGIN">$1<ex>example.com</ex></ph> will be able to save your changes directly to <ph name="FILENAME">$2<ex>README.md</ex></ph>. The site can save changes until you close this tab.
+      <ph name="ORIGIN">$1<ex>example.com</ex></ph> will be able to edit <ph name="FILENAME">$2<ex>README.md</ex></ph> until you close this tab
     </message>
     <message name="IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_DIRECTORY_TEXT" desc="Text of the dialog for confirming write access to a directory using the Native File System API">
-      <ph name="ORIGIN">$1<ex>example.com</ex></ph> will be able to save your changes directly to the files in <ph name="FOLDERNAME">$2<ex>My Project</ex></ph>. The site can save changes until you close this tab.
+      <ph name="ORIGIN">$1<ex>example.com</ex></ph> will be able to edit files in <ph name="FOLDERNAME">$2<ex>My Project</ex></ph> until you close this tab
     </message>
     <message name="IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_ALLOW_TEXT" desc="Text of the 'allow' button in the dialog for confirming write access to files or directories using the Native File System API">
       Save changes
     </message>
 
     <!-- Native File System usage indicator -->
-    <message name="IDS_NATIVE_FILE_SYSTEM_WRITE_USAGE_TOOLTIP" desc="Tooltip for native file system omnibox usage indicator.">
-      This page is allowed to save to files.
+    <message name="IDS_NATIVE_FILE_SYSTEM_WRITE_USAGE_TOOLTIP" desc="Tooltip for the omnibox Native File System API file write access usage indicator.">
+      This page is allowed to edit files
     </message>
-    <message name="IDS_NATIVE_FILE_SYSTEM_DIRECTORY_USAGE_TOOLTIP" desc="Tooltip for native file system omnibox usage indicator.">
-      This page is allowed to view all the files in a folder on your device.
+    <message name="IDS_NATIVE_FILE_SYSTEM_DIRECTORY_USAGE_TOOLTIP" desc="Tooltip for the omnibox Native File System API directory read access usage indicator.">
+      This page is allowed to view files
     </message>
     <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_SINGLE_WRITABLE_FILE_TEXT" desc="Text of the bubble showing what file an origin can currently write to">
-      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can save your changes directly to <ph name="FILENAME">$2<ex>README.md</ex></ph>
+      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can edit <ph name="FILENAME">$2<ex>README.md</ex></ph>
     </message>
     <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_WRITABLE_FILES_TEXT" desc="Text of the bubble showing what files an origin can currently write to">
-      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can save your changes directly to the following files
+      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can edit the following files
     </message>
     <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_SINGLE_WRITABLE_DIRECTORY_TEXT" desc="Text of the bubble showing what file an origin can currently write to">
-      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can save your changes directly to the files in <ph name="FOLDERNAME">$2<ex>My Project</ex></ph>
+      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can edit files in <ph name="FOLDERNAME">$2<ex>My Project</ex></ph>
     </message>
     <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_WRITABLE_DIRECTORIES_TEXT" desc="Text of the bubble showing what files an origin can currently write to">
-      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can save your changes directly to the following folders
+      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can edit files in the following folders
     </message>
     <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_WRITABLE_FILES_AND_DIRECTORIES_TEXT" desc="Text of the bubble showing what files and directories an origin can currently write to">
-      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can save your changes directly to the following files and folders
+      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can edit the following files and folders
     </message>
     <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_SINGLE_READABLE_DIRECTORY_TEXT" desc="Text of the bubble showing what files and directories an origin can currently access">
-      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can view all the files in <ph name="FOLDERNAME">$2<ex>My Project</ex></ph>
+      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can view files in <ph name="FOLDERNAME">$2<ex>My Project</ex></ph>
     </message>
     <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_READABLE_DIRECTORIES_TEXT" desc="Text of the bubble showing what files and directories an origin can currently access">
-      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can view all the files in the following folders
+      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can view files in the following folders
     </message>
     <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_READ_AND_WRITE" desc="Text of the bubble showing what files and directories an origin can currently read and write to">
-      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can view and save your changes directly to the following files and folders
+      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can view and edit the following files and folders
     </message>
     <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_SAVE_CHANGES" desc="Sub-heading for the files and directories with write access in the bubble showing what files and directories an origin can currently read and write to">
       Save changes
@@ -9652,16 +9626,24 @@ Please help our engineers fix this problem. Tell us what happened right before y
       Remove access
     </message>
 
-
-    <!-- Native File System restricted directory dialog. -->
+    <!-- Native File System restricted directory and file dialogs. -->
     <message name="IDS_NATIVE_FILE_SYSTEM_RESTRICTED_DIRECTORY_TITLE" desc="Title of dialog explaining that the user selected a directory that chrome doesn't want to expose to the web">
-      Can't save to this folder
+      Can't open this folder
     </message>
     <message name="IDS_NATIVE_FILE_SYSTEM_RESTRICTED_DIRECTORY_TEXT" desc="Text of dialog explaining that the user selected a directory that chrome doesn't want to expose to the web">
-      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can't save your changes to this folder because it contains system files.
+      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can’t open this folder because it contains system files
     </message>
     <message name="IDS_NATIVE_FILE_SYSTEM_RESTRICTED_DIRECTORY_BUTTON" desc="Text of the button in dialog explaining that the user selected a directory that chrome doesn't want to expose to the web">
       Choose a different folder
+    </message>
+    <message name="IDS_NATIVE_FILE_SYSTEM_RESTRICTED_FILE_TITLE" desc="Title of dialog explaining that the user selected a file in a directory that chrome doesn't want to expose to the web">
+      Can't open this file
+    </message>
+    <message name="IDS_NATIVE_FILE_SYSTEM_RESTRICTED_FILE_TEXT" desc="Text of dialog explaining that the user selected a file in a directory that chrome doesn't want to expose to the web">
+      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can’t open files in this folder because it contains system files
+    </message>
+    <message name="IDS_NATIVE_FILE_SYSTEM_RESTRICTED_FILE_BUTTON" desc="Text of the button in dialog explaining that the user selected a file in a directory that chrome doesn't want to expose to the web">
+      Choose a different file
     </message>
 
     <!-- Native File System directory access confirmation dialog. -->
@@ -9669,7 +9651,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
       Let site view files?
     </message>
     <message name="IDS_NATIVE_FILE_SYSTEM_DIRECTORY_ACCESS_CONFIRMATION_TEXT" desc="Text of dialog asking user if they intended to share a particular directory">
-      <ph name="ORIGIN">$1<ex>example.com</ex></ph> will be able to view all files in <ph name="FOLDERNAME">$2<ex>My Project</ex></ph>. The site can see any changes to the folder until you close this tab.
+      <ph name="ORIGIN">$1<ex>example.com</ex></ph> will be able to view files in <ph name="FOLDERNAME">$2<ex>My Project</ex></ph> until you close this tab
     </message>
     <message name="IDS_NATIVE_FILE_SYSTEM_DIRECTORY_ACCESS_ALLOW_BUTTON" desc="'allow' button in the dialog asking user if they intended to share a particular directory">
       View files
@@ -9970,7 +9952,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <!-- User happiness tracking survey UI -->
     <if expr="not is_android">
       <message name="IDS_HATS_BUBBLE_OK_LABEL" translateable="false" desc="Button label on Happiness Tracking Survey's invitation banner, clicking the button gives the user's consent on taking the survey.">
-        Take Survey
+        Take survey
       </message>
       <message name="IDS_HATS_BUBBLE_TEXT" translateable="false" desc="The text in Happiness Tracking Survey's invitation banner, it explains why users should take our survey.">
         Your feedback is important to us.

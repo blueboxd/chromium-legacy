@@ -31,6 +31,7 @@
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/service/context_state.h"
+#include "gpu/command_buffer/service/gles2_cmd_decoder_passthrough.h"
 #include "gpu/command_buffer/service/gr_shader_cache.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/scheduler.h"
@@ -260,36 +261,62 @@ class ScopedSurfaceToTexture {
  public:
   ScopedSurfaceToTexture(scoped_refptr<DirectContextProvider> context_provider,
                          SkSurface* surface)
-      : context_provider_(context_provider) {
+      : context_provider_(context_provider),
+        client_id_(context_provider->GenClientTextureId()) {
     GrBackendTexture skia_texture =
         surface->getBackendTexture(SkSurface::kFlushRead_BackendHandleAccess);
     GrGLTextureInfo gl_texture_info;
     skia_texture.getGLTextureInfo(&gl_texture_info);
-    GLuint client_id = context_provider_->GenClientTextureId();
-    auto* texture_manager = context_provider_->texture_manager();
-    texture_ref_ =
-        texture_manager->CreateTexture(client_id, gl_texture_info.fID);
-    texture_manager->SetTarget(texture_ref_.get(), gl_texture_info.fTarget);
-    texture_manager->SetLevelInfo(
-        texture_ref_.get(), gl_texture_info.fTarget,
-        /*level=*/0,
-        /*internal_format=*/GL_RGBA, surface->width(), surface->height(),
-        /*depth=*/1, /*border=*/0,
-        /*format=*/GL_RGBA, /*type=*/GL_UNSIGNED_BYTE,
-        /*cleared_rect=*/gfx::Rect(surface->width(), surface->height()));
+
+    auto* group = context_provider->decoder()->GetContextGroup();
+    if (group->use_passthrough_cmd_decoder()) {
+      group->passthrough_resources()->texture_id_map.SetIDMapping(
+          client_id_, gl_texture_info.fID);
+
+      auto texture = base::MakeRefCounted<gpu::gles2::TexturePassthrough>(
+          gl_texture_info.fID, gl_texture_info.fTarget, GL_RGBA,
+          surface->width(), surface->height(),
+          /*depth=*/1, /*border=*/0,
+          /*format=*/GL_RGBA, /*type=*/GL_UNSIGNED_BYTE);
+
+      group->passthrough_resources()->texture_object_map.SetIDMapping(
+          client_id_, texture);
+    } else {
+      auto* texture_manager = context_provider_->texture_manager();
+      texture_ref_ =
+          texture_manager->CreateTexture(client_id_, gl_texture_info.fID);
+      texture_manager->SetTarget(texture_ref_.get(), gl_texture_info.fTarget);
+      texture_manager->SetLevelInfo(
+          texture_ref_.get(), gl_texture_info.fTarget,
+          /*level=*/0,
+          /*internal_format=*/GL_RGBA, surface->width(), surface->height(),
+          /*depth=*/1, /*border=*/0,
+          /*format=*/GL_RGBA, /*type=*/GL_UNSIGNED_BYTE,
+          /*cleared_rect=*/gfx::Rect(surface->width(), surface->height()));
+    }
   }
 
   ~ScopedSurfaceToTexture() {
-    context_provider_->DeleteClientTextureId(client_id());
+    auto* group = context_provider_->decoder()->GetContextGroup();
 
     // Skia owns the texture. It will delete it when it is done.
-    texture_ref_->ForceContextLost();
+    if (group->use_passthrough_cmd_decoder()) {
+      group->passthrough_resources()
+          ->texture_object_map.GetServiceIDOrInvalid(client_id_)
+          ->MarkContextLost();
+    } else {
+      texture_ref_->ForceContextLost();
+    }
+
+    context_provider_->DeleteClientTextureId(client_id());
   }
 
-  GLuint client_id() { return texture_ref_->client_id(); }
+  GLuint client_id() { return client_id_; }
 
  private:
   scoped_refptr<DirectContextProvider> context_provider_;
+  const GLuint client_id_;
+  // This is only used with validating gles cmd decoder
   scoped_refptr<gpu::gles2::TextureRef> texture_ref_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedSurfaceToTexture);

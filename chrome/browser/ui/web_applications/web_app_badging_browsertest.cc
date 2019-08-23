@@ -126,7 +126,7 @@ class WebAppBadgingBrowserTest : public WebAppControllerBrowserTest {
     was_flagged_ = false;
     change_failed_ = false;
     last_badge_content_ = base::nullopt;
-    awaiter_.reset(new base::RunLoop());
+    awaiter_ = std::make_unique<base::RunLoop>();
 
     ASSERT_TRUE(content::ExecuteScript(on, script));
 

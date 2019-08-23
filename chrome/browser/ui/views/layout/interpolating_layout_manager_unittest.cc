@@ -177,7 +177,7 @@ TEST_F(InterpolatingLayoutManagerTest, InvalidateLayout) {
   host_view()->Layout();
   EXPECT_EQ(1, first_layout->num_layouts_generated());
   EXPECT_EQ(1, second_layout->num_layouts_generated());
-  layout_manager()->InvalidateLayout();
+  host_view()->InvalidateLayout();
   host_view()->Layout();
   EXPECT_EQ(2, first_layout->num_layouts_generated());
   EXPECT_EQ(2, second_layout->num_layouts_generated());

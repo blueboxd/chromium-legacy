@@ -44,6 +44,12 @@ class NetworkStateTestHelper {
   // Clears any fake services.
   void ClearServices();
 
+  // Calls ShillDeviceClient::TestInterface::AddDevice and sets update_received
+  // on the DeviceState.
+  void AddDevice(const std::string& device_path,
+                 const std::string& type,
+                 const std::string& name);
+
   // Configures a new service using Shill properties from |shill_json_string|
   // which must include a GUID and Type. Returns the service path, or "" if the
   // service could not be configured. Note: the 'GUID' key is also used as the

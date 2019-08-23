@@ -40,9 +40,10 @@ struct MESSAGE_CENTER_PUBLIC_EXPORT NotificationItem {
 };
 
 enum class SettingsButtonHandler {
-  NONE = 0,     // No button. This is the default.
-  INLINE = 1,   // Button shown, settings inline.
-  DELEGATE = 2  // Button shown, notification's delegate handles action.
+  NONE = 0,      // No button. This is the default. Does not affect native
+                 // settings button (like on Android).
+  INLINE = 1,    // Button shown, settings inline.
+  DELEGATE = 2,  // Button shown, notification's delegate handles action.
 };
 
 enum class SystemNotificationWarningLevel { NORMAL, WARNING, CRITICAL_WARNING };

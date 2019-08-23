@@ -222,7 +222,7 @@ class ThreadGroupImpl::WorkerThreadDelegateImpl : public WorkerThread::Delegate,
   // WorkerThread::Delegate:
   WorkerThread::ThreadLabel GetThreadLabel() const override;
   void OnMainEntry(const WorkerThread* worker) override;
-  RunIntentWithRegisteredTaskSource GetWork(WorkerThread* worker) override;
+  RegisteredTaskSource GetWork(WorkerThread* worker) override;
   void DidProcessTask(RegisteredTaskSource task_source) override;
   TimeDelta GetSleepTimeout() override;
   void OnMainExit(WorkerThread* worker) override;
@@ -431,10 +431,9 @@ ThreadGroupImpl::~ThreadGroupImpl() {
   DCHECK(workers_.empty());
 }
 
-void ThreadGroupImpl::UpdateSortKey(
-    TransactionWithOwnedTaskSource transaction_with_task_source) {
+void ThreadGroupImpl::UpdateSortKey(TaskSource::Transaction transaction) {
   ScopedWorkersExecutor executor(this);
-  UpdateSortKeyImpl(&executor, std::move(transaction_with_task_source));
+  UpdateSortKeyImpl(&executor, std::move(transaction));
 }
 
 void ThreadGroupImpl::PushTaskSourceAndWakeUpWorkers(
@@ -578,8 +577,8 @@ void ThreadGroupImpl::WorkerThreadDelegateImpl::OnMainEntry(
   SetBlockingObserverForCurrentThread(this);
 }
 
-RunIntentWithRegisteredTaskSource
-ThreadGroupImpl::WorkerThreadDelegateImpl::GetWork(WorkerThread* worker) {
+RegisteredTaskSource ThreadGroupImpl::WorkerThreadDelegateImpl::GetWork(
+    WorkerThread* worker) {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   DCHECK(!worker_only().is_running_task);
 
@@ -597,7 +596,7 @@ ThreadGroupImpl::WorkerThreadDelegateImpl::GetWork(WorkerThread* worker) {
   if (!CanGetWorkLockRequired(worker))
     return nullptr;
 
-  RunIntentWithRegisteredTaskSource task_source;
+  RegisteredTaskSource task_source;
   TaskPriority priority;
   while (!task_source && !outer_->priority_queue_.IsEmpty()) {
     // Enforce the CanRunPolicy and that no more than |max_best_effort_tasks_|
@@ -610,7 +609,7 @@ ThreadGroupImpl::WorkerThreadDelegateImpl::GetWork(WorkerThread* worker) {
       break;
     }
 
-    task_source = outer_->TakeRunIntentWithRegisteredTaskSource(&executor);
+    task_source = outer_->TakeRegisteredTaskSource(&executor);
   }
   if (!task_source) {
     OnWorkerBecomesIdleLockRequired(worker);

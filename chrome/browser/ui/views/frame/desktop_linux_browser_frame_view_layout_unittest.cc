@@ -126,7 +126,7 @@ class DesktopLinuxBrowserFrameViewLayoutTest : public ChromeViewsTestBase {
   void SetUp() override {
     ChromeViewsTestBase::SetUp();
 
-    delegate_.reset(new TestLayoutDelegate);
+    delegate_ = std::make_unique<TestLayoutDelegate>();
     nav_button_provider_ = std::make_unique<::TestNavButtonProvider>();
     auto layout = std::make_unique<DesktopLinuxBrowserFrameViewLayout>(
         nav_button_provider_.get());

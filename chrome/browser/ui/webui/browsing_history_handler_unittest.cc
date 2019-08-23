@@ -80,7 +80,7 @@ class BrowsingHistoryHandlerTest : public ChromeRenderViewHostTestHarness {
         WebHistoryServiceFactory::GetForProfile(profile()));
     ASSERT_TRUE(web_history_service_);
 
-    web_ui_.reset(new content::TestWebUI);
+    web_ui_ = std::make_unique<content::TestWebUI>();
     web_ui_->set_web_contents(web_contents());
   }
 

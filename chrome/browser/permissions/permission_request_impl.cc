@@ -4,6 +4,7 @@
 
 #include "chrome/browser/permissions/permission_request_impl.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/grit/generated_resources.h"
@@ -162,6 +163,28 @@ base::string16 PermissionRequestImpl::GetMessageText() const {
       message_id,
       url_formatter::FormatUrlForSecurityDisplay(
           GetOrigin(), url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
+}
+
+base::string16 PermissionRequestImpl::GetQuietTitleText() const {
+  if (content_settings_type_ == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+    return l10n_util::GetStringFUTF16(
+        IDS_NOTIFICATION_QUIET_PERMISSION_PROMPT_TITLE,
+        url_formatter::FormatUrlForSecurityDisplay(
+            GetOrigin(), url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
+  }
+
+  NOTREACHED();
+  return GetTitleText();
+}
+
+base::string16 PermissionRequestImpl::GetQuietMessageText() const {
+  if (content_settings_type_ == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+    return l10n_util::GetStringUTF16(
+        IDS_NOTIFICATION_QUIET_PERMISSION_PROMPT_MESSAGE);
+  }
+
+  NOTREACHED();
+  return GetMessageText();
 }
 #endif
 

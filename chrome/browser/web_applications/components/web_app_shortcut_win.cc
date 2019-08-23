@@ -232,13 +232,10 @@ bool CreateShortcutsInPaths(const base::FilePath& web_app_path,
         continue;
     }
     if (shortcut_paths[i] != web_app_path) {
-      int unique_number = base::GetUniquePathNumber(shortcut_file);
-      if (unique_number == -1) {
+      shortcut_file = base::GetUniquePath(shortcut_file);
+      if (shortcut_file.empty()) {
         success = false;
         continue;
-      } else if (unique_number > 0) {
-        shortcut_file = shortcut_file.InsertBeforeExtensionASCII(
-            base::StringPrintf(" (%d)", unique_number));
       }
     }
     base::win::ShortcutProperties shortcut_properties;

@@ -87,9 +87,8 @@ class SerialIoHandler : public base::RefCountedThreadSafe<SerialIoHandler> {
   // successfully read.
   virtual mojom::SerialPortControlSignalsPtr GetControlSignals() const = 0;
 
-  // Sets one or more control signals (DTR and/or RTS). Returns |true| iff
-  // the signals were successfully set. Unininitialized flags in the
-  // HostControlSignals structure are left unchanged.
+  // Sets one or more control signals. Returns |true| iff the signals were
+  // successfully set. Flags not present in |control_signals| are unchanged.
   virtual bool SetControlSignals(
       const mojom::SerialHostControlSignals& control_signals) = 0;
 
@@ -101,14 +100,6 @@ class SerialIoHandler : public base::RefCountedThreadSafe<SerialIoHandler> {
   // existing ConnectionInfo. Returns |true| iff port configuration was
   // successfully retrieved.
   virtual mojom::SerialConnectionInfoPtr GetPortInfo() const = 0;
-
-  // Initiates a BREAK signal. Places the transmission line in a break state
-  // until the |ClearBreak| is called.
-  virtual bool SetBreak() = 0;
-
-  // Terminates the BREAK signal. Places the transmission line in a nonbreak
-  // state.
-  virtual bool ClearBreak() = 0;
 
   // Initiates an asynchronous close of the port.
   void Close(base::OnceClosure callback);

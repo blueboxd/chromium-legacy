@@ -102,6 +102,8 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final {
   bool CanStartTracing(PerfettoProducer* producer,
                        base::OnceCallback<void()> start_tracing);
 
+  void ActivateSystemTriggers(const std::vector<std::string>& triggers);
+
   // Be careful when using ResetTaskRunnerForTesting. There is a PostTask in the
   // constructor of PerfettoTracedProcess, so before this class is constructed
   // is the only safe time to call this.

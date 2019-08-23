@@ -13,6 +13,7 @@
 namespace notifications {
 
 // Enum to describe the time to process scheduled notification data.
+// TODO(xingliu): Remove this.
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: (
 //   org.chromium.chrome.browser.notifications.scheduler)

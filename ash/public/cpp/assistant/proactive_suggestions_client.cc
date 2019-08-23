@@ -4,6 +4,8 @@
 
 #include "ash/public/cpp/assistant/proactive_suggestions_client.h"
 
+#include "base/logging.h"
+
 namespace ash {
 
 namespace {
@@ -13,7 +15,7 @@ ProactiveSuggestionsClient* g_instance = nullptr;
 }  // namespace
 
 // static
-ProactiveSuggestionsClient* ProactiveSuggestionsClient::GetInstance() {
+ProactiveSuggestionsClient* ProactiveSuggestionsClient::Get() {
   return g_instance;
 }
 
@@ -23,21 +25,11 @@ ProactiveSuggestionsClient::ProactiveSuggestionsClient() {
 }
 
 ProactiveSuggestionsClient::~ProactiveSuggestionsClient() {
-  for (auto& observer : observers_)
-    observer.OnProactiveSuggestionsClientDestroying();
+  if (delegate_)
+    delegate_->OnProactiveSuggestionsClientDestroying();
 
   DCHECK_EQ(g_instance, this);
   g_instance = nullptr;
-}
-
-void ProactiveSuggestionsClient::AddObserver(
-    ProactiveSuggestionsClientObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void ProactiveSuggestionsClient::RemoveObserver(
-    ProactiveSuggestionsClientObserver* observer) {
-  observers_.RemoveObserver(observer);
 }
 
 }  // namespace ash

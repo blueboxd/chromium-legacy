@@ -186,6 +186,7 @@
 #include "chrome/common/secure_origin_whitelist.h"
 #include "chrome/common/stack_sampling_configuration.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -1486,6 +1487,12 @@ bool ChromeContentBrowserClient::ShouldUseProcessPerSite(
   // reduce process count associated with NTP tabs.
   if (effective_url == GURL(chrome::kChromeUINewTabURL))
     return true;
+
+  // The web footer experiment should share its renderer to not effectively
+  // instantiate one per window. See https://crbug.com/993502.
+  if (effective_url == GURL(chrome::kChromeUIWebFooterExperimentURL))
+    return true;
+
 #if !defined(OS_ANDROID)
   if (search::ShouldUseProcessPerSiteForInstantURL(effective_url, profile))
     return true;
@@ -2272,6 +2279,11 @@ void ChromeContentBrowserClient::AdjustUtilityServiceProcessCommandLine(
 #endif
 }
 
+std::string
+ChromeContentBrowserClient::GetApplicationClientGUIDForQuarantineCheck() {
+  return std::string(chrome::kApplicationClientIDStringForAVScanning);
+}
+
 std::string ChromeContentBrowserClient::GetApplicationLocale() {
   if (BrowserThread::CurrentlyOn(BrowserThread::IO))
     return GetIOThreadApplicationLocale();
@@ -2330,7 +2342,7 @@ bool ChromeContentBrowserClient::AllowServiceWorkerOnIO(
   // to the TabSpecificContentSettings, since the service worker is blocked
   // because of the extension, rather than because of the user's content
   // settings.
-  if (!ChromeContentBrowserClientExtensionsPart::AllowServiceWorker(
+  if (!ChromeContentBrowserClientExtensionsPart::AllowServiceWorkerOnIO(
           scope, first_party_url, script_url, context)) {
     return false;
   }
@@ -2372,9 +2384,16 @@ bool ChromeContentBrowserClient::AllowServiceWorkerOnUI(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  // TODO(crbug.com/824858): Implement the extensions service worker check on
-  // the UI thread.
-  return false;
+  // Check if this is an extension-related service worker, and, if so, if it's
+  // allowed (this can return false if, e.g., the extension is disabled).
+  // If it's not allowed, return immediately. We deliberately do *not* report
+  // to the TabSpecificContentSettings, since the service worker is blocked
+  // because of the extension, rather than because of the user's content
+  // settings.
+  if (!ChromeContentBrowserClientExtensionsPart::AllowServiceWorkerOnUI(
+          scope, first_party_url, script_url, context)) {
+    return false;
+  }
 #endif
 
   Profile* profile = Profile::FromBrowserContext(context);
@@ -5316,7 +5335,7 @@ ChromeContentBrowserClient::DetermineAllowedPreviewsWithoutHoldback(
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           previews::switches::kForceEnablePreviews)) {
-    previews_decider_impl->LoadPageHints(current_navigation_url);
+    previews_decider_impl->LoadPageHints(navigation_handle);
     return content::ALL_SUPPORTED_PREVIEWS;
   }
 

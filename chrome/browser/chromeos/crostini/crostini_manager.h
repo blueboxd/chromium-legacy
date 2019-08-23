@@ -481,6 +481,12 @@ class CrostiniManager : public KeyedService,
   void SetContainerSshfsMounted(std::string vm_name,
                                 std::string container_name,
                                 bool is_mounted);
+  void SetContainerOsRelease(std::string vm_name,
+                             std::string container_name,
+                             const vm_tools::cicerone::OsRelease& os_release);
+  const vm_tools::cicerone::OsRelease* GetContainerOsRelease(
+      std::string vm_name,
+      std::string container_name);
   // Returns null if VM or container is not running.
   base::Optional<ContainerInfo> GetContainerInfo(std::string vm_name,
                                                  std::string container_name);
@@ -730,6 +736,10 @@ class CrostiniManager : public KeyedService,
 
   // Running containers as keyed by vm name.
   std::multimap<std::string, ContainerInfo> running_containers_;
+
+  // OsRelease protos keyed by ContainerId. We populate this map even if a
+  // container fails to start normally.
+  std::map<ContainerId, vm_tools::cicerone::OsRelease> container_os_releases_;
 
   std::vector<RemoveCrostiniCallback> remove_crostini_callbacks_;
 

@@ -120,6 +120,7 @@ class MockLoginScreenClient : public LoginScreenClient {
   MOCK_METHOD(void, ShowFeedback, (), (override));
   MOCK_METHOD(void, ShowResetScreen, (), (override));
   MOCK_METHOD(void, ShowAccountAccessHelpApp, (), (override));
+  MOCK_METHOD(void, ShowParentAccessHelpApp, (), (override));
   MOCK_METHOD(void, ShowLockScreenNotificationSettings, (), (override));
   MOCK_METHOD(void, FocusOobeDialog, (), (override));
   MOCK_METHOD(void, OnFocusLeavingSystemTray, (bool reverse), (override));

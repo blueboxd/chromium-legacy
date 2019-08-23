@@ -169,7 +169,7 @@ void PreviewsOptimizationGuide::OnLoadedHint(
 }
 
 bool PreviewsOptimizationGuide::MaybeLoadOptimizationHints(
-    const GURL& url,
+    content::NavigationHandle* navigation_handle,
     base::OnceClosure callback) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
@@ -177,6 +177,7 @@ bool PreviewsOptimizationGuide::MaybeLoadOptimizationHints(
     return false;
   }
 
+  const GURL& url = navigation_handle->GetURL();
   return hints_->MaybeLoadOptimizationHints(
       url, base::BindOnce(&PreviewsOptimizationGuide::OnLoadedHint,
                           ui_weak_ptr_factory_.GetWeakPtr(),

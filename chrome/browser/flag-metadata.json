@@ -434,39 +434,44 @@
     "expiry_milestone": 80
   },
   {
+    "name": "context-menu-search-with-google-lens",
+    "owners": [ "benwgold", "lens-chrome" ],
+    "expiry_milestone": 88
+  },
+  {
     "name": "contextual-search-definitions",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
-    "expiry_milestone": 77
+    "expiry_milestone": 80
   },
   {
     "name": "contextual-search-longpress-resolve",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 82
   },
   {
     "name": "contextual-search-ml-tap-suppression",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 82
   },
   {
     "name": "contextual-search-ranker-query",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 82
   },
   {
     "name": "contextual-search-second-tap",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 82
   },
   {
     "name": "contextual-search-simplified-server",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 81
   },
   {
     "name": "contextual-search-translation-model",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
-    "expiry_milestone": 77
+    "expiry_milestone": 79
   },
   {
     "name": "contextual-search-unity-integration",
@@ -1621,7 +1626,9 @@
   {
     "name": "enable-site-isolation-for-password-sites",
     "owners": [ "site-isolation-dev", "alexmos", "lukasza" ],
-    "expiry_milestone": 79
+    // Note: consider keeping this flag even after password-triggered site
+    // isolation launches to allow users of low-memory devices to opt in.
+    "expiry_milestone": 80
   },
   {
     "name": "enable-site-per-process",
@@ -2245,7 +2252,10 @@
   {
     "name": "isolate-origins",
     "owners": [ "site-isolation-dev", "alexmos", "creis", "lukasza" ],
-    "expiry_milestone": 79
+    // This is useful for isolating additional origins beyond the normal site
+    // isolation policy, as well as for diagnosing problems when site isolation
+    // only applies to some sites.
+    "expiry_milestone": 90
   },
   {
     "name": "kids-management-url-classification",
@@ -2797,6 +2807,11 @@
     "expiry_milestone": 83
   },
   {
+    "name": "quiet-notification-prompts",
+    "owners": [ "engedy", "mkwst", "andypaicu", "hkamila" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "reader-mode-heuristics",
     "owners": [ "mdjones" ],
     "expiry_milestone": 78
@@ -2954,7 +2969,7 @@
     "_comment2": "in https://crbug.com/849815.",
     "name": "site-isolation-trial-opt-out",
     "owners": [ "site-isolation-dev", "alexmos", "creis", "lukasza" ],
-    "expiry_milestone": 77
+    "expiry_milestone": 85
   },
   {
     "name": "site-settings",
@@ -2994,7 +3009,12 @@
   {
     "name": "strict-origin-isolation",
     "owners": ["wjmaclean", "alexmos", "creis"],
-    "expiry_milestone": 80
+    // This can be used to opt in to origin isolation which isolates full
+    // origins rather than sites.  Note that this breaks document.domain and is
+    // therefore unlikely to ship anytime soon, but this allows experimenting
+    // with a stronger isolation policy for users who may not care about
+    // breaking compatibility with document.domain.
+    "expiry_milestone": 90
   },
   {
     "name": "SupervisedUserCommittedInterstitials",
@@ -3319,5 +3339,10 @@
     "name": "xr-sandbox",
     "owners": [ "//chrome/services/isolated_xr_device/OWNERS", "xr-dev@chromium.org" ],
     "expiry_milestone": 79
+  },
+  {
+    "name": "zero-state-files",
+    "owners": [ "tby", "jiameng" ],
+    "expiry_milestone": 82
   }
 ]

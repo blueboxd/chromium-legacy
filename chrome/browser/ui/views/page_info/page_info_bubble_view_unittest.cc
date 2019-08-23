@@ -191,9 +191,9 @@ class PageInfoBubbleViewTest : public testing::Test {
 
     content::WebContents* web_contents = web_contents_helper_.web_contents();
     TabSpecificContentSettings::CreateForWebContents(web_contents);
-    api_.reset(new test::PageInfoBubbleViewTestApi(
+    api_ = std::make_unique<test::PageInfoBubbleViewTestApi>(
         parent_window_->GetNativeView(), web_contents_helper_.profile(),
-        web_contents));
+        web_contents);
   }
 
   void TearDown() override { parent_window_->CloseNow(); }

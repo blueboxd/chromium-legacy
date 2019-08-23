@@ -168,19 +168,15 @@ void AudioListener::UpdateValuesIfNeeded(uint32_t frames_to_process) {
     // Time has changed. Update all of the automation values now.
     last_update_time_ = current_time;
 
-    bool sizes_are_good = frames_to_process <= position_x_values_.size() &&
-                          frames_to_process <= position_y_values_.size() &&
-                          frames_to_process <= position_z_values_.size() &&
-                          frames_to_process <= forward_x_values_.size() &&
-                          frames_to_process <= forward_y_values_.size() &&
-                          frames_to_process <= forward_z_values_.size() &&
-                          frames_to_process <= up_x_values_.size() &&
-                          frames_to_process <= up_y_values_.size() &&
-                          frames_to_process <= up_z_values_.size();
-
-    DCHECK(sizes_are_good);
-    if (!sizes_are_good)
-      return;
+    DCHECK_LE(frames_to_process, position_x_values_.size());
+    DCHECK_LE(frames_to_process, position_y_values_.size());
+    DCHECK_LE(frames_to_process, position_z_values_.size());
+    DCHECK_LE(frames_to_process, forward_x_values_.size());
+    DCHECK_LE(frames_to_process, forward_y_values_.size());
+    DCHECK_LE(frames_to_process, forward_z_values_.size());
+    DCHECK_LE(frames_to_process, up_x_values_.size());
+    DCHECK_LE(frames_to_process, up_y_values_.size());
+    DCHECK_LE(frames_to_process, up_z_values_.size());
 
     positionX()->Handler().CalculateSampleAccurateValues(
         position_x_values_.Data(), frames_to_process);

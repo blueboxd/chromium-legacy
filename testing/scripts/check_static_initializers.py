@@ -16,7 +16,7 @@ import common
 # in static initializers.
 _LINUX_SI_FILE_WHITELIST = {
     'chrome': [
-        'InstrProfilingRuntime.cc',  # Only in coverage builds, not production.
+        'InstrProfilingRuntime.cpp',  # Only in coverage builds, not production.
         'atomicops_internals_x86.cc',  # TODO(crbug.com/973551): Remove.
         'debugallocation_shim.cc',  # TODO(crbug.com/973552): Remove.
         'iostream.cpp',  # TODO(crbug.com/973554): Remove.

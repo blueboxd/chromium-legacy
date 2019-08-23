@@ -156,9 +156,9 @@ void GlobalErrorBubbleView::UpdateButton(views::LabelButton* button,
     BubbleDialogDelegateView::UpdateButton(button, type);
     if (type == ui::DIALOG_BUTTON_OK &&
         error_->ShouldAddElevationIconToAcceptButton()) {
-      elevation_icon_setter_.reset(new ElevationIconSetter(
+      elevation_icon_setter_ = std::make_unique<ElevationIconSetter>(
           button, base::BindOnce(&GlobalErrorBubbleView::SizeToContents,
-                                 base::Unretained(this))));
+                                 base::Unretained(this)));
     }
   }
 }

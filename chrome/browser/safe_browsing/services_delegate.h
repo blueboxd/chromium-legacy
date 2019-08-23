@@ -29,7 +29,7 @@ class TrackedPreferenceValidationDelegate;
 
 namespace safe_browsing {
 
-class VerdictCacheManager;
+class BinaryUploadService;
 class ClientSideDetectionService;
 class DownloadProtectionService;
 class IncidentReportingService;
@@ -40,6 +40,7 @@ class SafeBrowsingService;
 class SafeBrowsingDatabaseManager;
 class TelemetryService;
 struct V4ProtocolConfig;
+class VerdictCacheManager;
 
 // Abstraction to help organize code for mobile vs full safe browsing modes.
 // This helper class should be owned by a SafeBrowsingService, and it handles
@@ -128,6 +129,11 @@ class ServicesDelegate {
   virtual void CreateVerdictCacheManager(Profile* profile) = 0;
   virtual void RemoveVerdictCacheManager(Profile* profile) = 0;
   virtual VerdictCacheManager* GetVerdictCacheManager(
+      Profile* profile) const = 0;
+
+  virtual void CreateBinaryUploadService(Profile* profile) = 0;
+  virtual void RemoveBinaryUploadService(Profile* profile) = 0;
+  virtual BinaryUploadService* GetBinaryUploadService(
       Profile* profile) const = 0;
 
   virtual std::string GetSafetyNetId() const = 0;

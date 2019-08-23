@@ -39,6 +39,7 @@
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom-blink.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom-blink.h"
+#include "third_party/blink/public/mojom/use_counter/css_property_id.mojom-blink.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/web_content_security_policy_struct.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
@@ -240,8 +241,9 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   // Will be called when a new UseCounter CSS property or animated CSS property
   // has been observed in a frame. This propogates feature usage to the browser
   // process for histograms.
-  virtual void DidObserveNewCssPropertyUsage(int /*css_property*/,
-                                             bool /*is_animated*/) {}
+  virtual void DidObserveNewCssPropertyUsage(
+      mojom::CSSSampleId /*css_property*/,
+      bool /*is_animated*/) {}
 
   // Reports that visible elements in the frame shifted (bit.ly/lsm-explainer).
   virtual void DidObserveLayoutShift(double score, bool after_input_or_scroll) {

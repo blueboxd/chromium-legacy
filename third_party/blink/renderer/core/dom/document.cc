@@ -4472,6 +4472,11 @@ void Document::SetURL(const KURL& url) {
   // URL must only be recorded from the main frame.
   if (ukm_recorder_ && IsInMainFrame())
     ukm_recorder_->UpdateSourceURL(ukm_source_id_, url_);
+
+  if (frame_) {
+    if (FrameScheduler* frame_scheduler = frame_->GetFrameScheduler())
+      frame_scheduler->TraceUrlChange(url_.GetString());
+  }
 }
 
 KURL Document::ValidBaseElementURL() const {
@@ -5898,7 +5903,10 @@ void Document::setDomain(const String& raw_domain,
                           : WebFeature::kDocumentDomainSetWithNonDefaultPort);
     bool was_cross_domain = frame_->IsCrossOriginSubframe();
     GetMutableSecurityOrigin()->SetDomainFromDOM(new_domain);
-    if (View() && (was_cross_domain != frame_->IsCrossOriginSubframe()))
+    bool is_cross_domain = frame_->IsCrossOriginSubframe();
+    if (FrameScheduler* frame_scheduler = frame_->GetFrameScheduler())
+      frame_scheduler->SetCrossOrigin(is_cross_domain);
+    if (View() && (was_cross_domain != is_cross_domain))
       View()->CrossOriginStatusChanged();
 
     frame_->GetScriptController().UpdateSecurityOrigin(GetSecurityOrigin());
@@ -7600,11 +7608,6 @@ Locale& Document::GetCachedLocale(const AtomicString& locale) {
 }
 
 AnimationClock& Document::GetAnimationClock() {
-  DCHECK(GetPage());
-  return GetPage()->Animator().Clock();
-}
-
-const AnimationClock& Document::GetAnimationClock() const {
   DCHECK(GetPage());
   return GetPage()->Animator().Clock();
 }

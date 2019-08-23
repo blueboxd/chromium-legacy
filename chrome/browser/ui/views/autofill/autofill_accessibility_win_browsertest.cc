@@ -118,7 +118,7 @@ IN_PROC_BROWSER_TEST_F(AutofillAccessibilityWinBrowserTest,
       FindAccessibilityNode(GetWebContents(), find_criteria),
       {"checkbox", "Autofill"});
 
-  control_waiter.reset(new UiaAccessibilityEventWaiter(info));
+  control_waiter = std::make_unique<UiaAccessibilityEventWaiter>(info);
   // Hide popup and wait for UIA_ControllerForPropertyId event.
   SendKeyToPage(GetWebContents(), ui::DomKey::TAB);
   control_waiter->Wait();

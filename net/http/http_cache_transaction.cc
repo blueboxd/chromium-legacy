@@ -1573,6 +1573,12 @@ int HttpCache::Transaction::DoCacheToggleUnusedSincePrefetchComplete(
 
 int HttpCache::Transaction::DoCacheDispatchValidation() {
   TRACE_EVENT0("io", "HttpCacheTransaction::DoCacheDispatchValidation");
+  if (!entry_) {
+    // Entry got destroyed when twiddling unused-since-prefetch bit.
+    TransitionToState(STATE_HEADERS_PHASE_CANNOT_PROCEED);
+    return OK;
+  }
+
   // We now have access to the cache entry.
   //
   //  o if we are a reader for the transaction, then we can start reading the
@@ -3031,6 +3037,13 @@ void HttpCache::Transaction::FixHeadersForHead() {
 int HttpCache::Transaction::DoSetupEntryForRead() {
   if (network_trans_)
     ResetNetworkTransaction();
+
+  if (!entry_) {
+    // Entry got destroyed when twiddling SWR bits.
+    TransitionToState(STATE_HEADERS_PHASE_CANNOT_PROCEED);
+    return OK;
+  }
+
   if (partial_) {
     if (truncated_ || is_sparse_ || !invalid_range_) {
       // We are going to return the saved response headers to the caller, so

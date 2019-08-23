@@ -259,12 +259,21 @@
     "channel": "trunk",
     "extension_types": ["extension"]
   },
-  "enterprise.deviceAttributes": {
+  "enterprise.deviceAttributes": [{
     "channel": "stable",
     "platforms": ["chromeos"],
     "extension_types": ["extension", "platform_app"],
     "location": "policy"
-  },
+  }, {
+    "channel": "dev",
+    "extension_types": ["login_screen_extension"],
+    "location": "policy",
+    "platforms": ["chromeos"],
+    "whitelist": [
+      "E219EE36A3B40612FD2A8CD6937B03EF0C97D3FE",  // Imprivata (login screen)
+      "4DBFC1C52D6660DD90791976DF7FEF7B3D360509"   // Imprivata (login screen) DEV
+    ]
+  }],
   "enterprise.hardwarePlatform": {
     "channel": "stable",
     "extension_types": ["extension"],

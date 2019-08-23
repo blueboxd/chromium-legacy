@@ -10,8 +10,6 @@
 #include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/scoped_service_binding.h"
-#include "base/fuchsia/service_directory.h"
-#include "base/fuchsia/service_directory_client.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
@@ -50,8 +48,7 @@ void ComponentErrorHandler(zx_status_t status) {
 class FakeAdditionalHeadersProvider
     : public fuchsia::web::AdditionalHeadersProvider {
  public:
-  explicit FakeAdditionalHeadersProvider(
-      base::fuchsia::ServiceDirectory* directory)
+  explicit FakeAdditionalHeadersProvider(sys::OutgoingDirectory* directory)
       : binding_(directory, this) {}
   ~FakeAdditionalHeadersProvider() override = default;
 
@@ -106,18 +103,18 @@ class FakeComponentState : public cr_fuchsia::AgentImpl::ComponentStateBase {
       chromium::cast::ApiBindings* bindings_manager,
       bool provide_controller_receiver)
       : ComponentStateBase(component_url),
-        app_config_binding_(service_directory(), app_config_manager),
+        app_config_binding_(outgoing_directory(), app_config_manager),
         additional_headers_provider_(
             std::make_unique<FakeAdditionalHeadersProvider>(
-                service_directory())) {
+                outgoing_directory())) {
     if (bindings_manager) {
       bindings_manager_binding_ = std::make_unique<
           base::fuchsia::ScopedServiceBinding<chromium::cast::ApiBindings>>(
-          service_directory(), bindings_manager);
+          outgoing_directory(), bindings_manager);
     }
 
     if (provide_controller_receiver) {
-      controller_receiver_binding_.emplace(service_directory(),
+      controller_receiver_binding_.emplace(outgoing_directory(),
                                            &controller_receiver_);
     }
   }
@@ -159,21 +156,18 @@ class CastRunnerIntegrationTest : public testing::Test {
       : run_timeout_(
             TestTimeouts::action_timeout(),
             base::MakeExpectedNotRunClosure(FROM_HERE, "Run() timed out.")) {
-    // Create a new test ServiceDirectory, and ServiceDirectoryClient connected
-    // to it, for tests to use to drive the CastRunner.
-    fidl::InterfaceHandle<fuchsia::io::Directory> directory;
-    public_services_ = std::make_unique<base::fuchsia::ServiceDirectory>(
-        directory.NewRequest());
 
     // Create the CastRunner, published into |test_services_|.
     cast_runner_ = std::make_unique<CastRunner>(
-        public_services_.get(), WebContentRunner::CreateIncognitoWebContext());
+        &outgoing_directory_, WebContentRunner::CreateIncognitoWebContext());
 
     // Connect to the CastRunner's fuchsia.sys.Runner interface.
-    base::fuchsia::ServiceDirectoryClient public_directory_client(
-        std::move(directory));
-    cast_runner_ptr_ =
-        public_directory_client.ConnectToService<fuchsia::sys::Runner>();
+    fidl::InterfaceHandle<fuchsia::io::Directory> directory;
+    outgoing_directory_.GetOrCreateDirectory("svc")->Serve(
+        fuchsia::io::OPEN_RIGHT_READABLE | fuchsia::io::OPEN_RIGHT_WRITABLE,
+        directory.NewRequest().TakeChannel());
+    sys::ServiceDirectory public_directory_client(std::move(directory));
+    cast_runner_ptr_ = public_directory_client.Connect<fuchsia::sys::Runner>();
     cast_runner_ptr_.set_error_handler([](zx_status_t status) {
       ZX_LOG(ERROR, status) << "CastRunner closed channel.";
       ADD_FAILURE();
@@ -196,17 +190,18 @@ class CastRunnerIntegrationTest : public testing::Test {
       base::StringPiece component_url) {
     DCHECK(!component_state_);
 
-    // Create a ServiceDirectory and publish the ComponentContext into it.
-    fidl::InterfaceHandle<fuchsia::io::Directory> directory;
-    component_services_ = std::make_unique<base::fuchsia::ServiceDirectory>(
-        directory.NewRequest());
+    // Create an OutgoingDirectory and publish the ComponentContext into it.
     component_context_ = std::make_unique<cr_fuchsia::FakeComponentContext>(
         base::BindRepeating(&CastRunnerIntegrationTest::OnComponentConnect,
                             base::Unretained(this)),
-        component_services_.get(), component_url);
+        &component_services_, component_url);
 
     // Configure the Runner, including a service directory channel to publish
     // services to.
+    fidl::InterfaceHandle<fuchsia::io::Directory> directory;
+    component_services_.GetOrCreateDirectory("svc")->Serve(
+        fuchsia::io::OPEN_RIGHT_READABLE | fuchsia::io::OPEN_RIGHT_WRITABLE,
+        directory.NewRequest().TakeChannel());
     fuchsia::sys::StartupInfo startup_info;
     startup_info.launch_info.url = component_url.as_string();
 
@@ -273,14 +268,14 @@ class CastRunnerIntegrationTest : public testing::Test {
   bool provide_api_bindings_ = true;
 
   // Incoming service directory, ComponentContext and per-component state.
-  std::unique_ptr<base::fuchsia::ServiceDirectory> component_services_;
+  sys::OutgoingDirectory component_services_;
   std::unique_ptr<cr_fuchsia::FakeComponentContext> component_context_;
   std::unique_ptr<base::fuchsia::ServiceDirectoryClient>
       component_services_client_;
   FakeComponentState* component_state_ = nullptr;
 
   // ServiceDirectory into which the CastRunner will publish itself.
-  std::unique_ptr<base::fuchsia::ServiceDirectory> public_services_;
+  sys::OutgoingDirectory outgoing_directory_;
 
   std::unique_ptr<CastRunner> cast_runner_;
   fuchsia::sys::RunnerPtr cast_runner_ptr_;

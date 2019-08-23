@@ -26,6 +26,9 @@ class ASH_EXPORT SplitViewTestApi {
   // Snaps the window to left/right in the split view.
   void SnapWindow(aura::Window* window, SnapPosition snap_position);
 
+  // Swaps left and right windows in the split view.
+  void SwapWindows();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SplitViewTestApi);
 };

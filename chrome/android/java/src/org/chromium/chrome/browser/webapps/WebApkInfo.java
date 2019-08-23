@@ -11,8 +11,6 @@ import android.content.pm.PackageManager;
 import android.content.pm.ProviderInfo;
 import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -48,7 +46,7 @@ import java.util.Map;
  * Stores info for WebAPK.
  */
 public class WebApkInfo extends WebappInfo {
-    // A class that stores share information from share intent.
+    /** A class that stores share information from share intent. */
     public static class ShareData {
         public String subject;
         public String text;
@@ -149,8 +147,8 @@ public class WebApkInfo extends WebappInfo {
 
     private static final String TAG = "WebApkInfo";
 
-    private Icon mBadgeIcon;
-    private Icon mSplashIcon;
+    private WebappIcon mBadgeIcon;
+    private WebappIcon mSplashIcon;
     private String mApkPackageName;
     private int mShellApkVersion;
     private String mManifestUrl;
@@ -340,16 +338,11 @@ public class WebApkInfo extends WebappInfo {
         int distributor = getDistributor(bundle, webApkPackageName);
 
         int primaryIconId = IntentUtils.safeGetInt(bundle, WebApkMetaDataKeys.ICON_ID, 0);
-        Bitmap primaryIcon = decodeBitmapFromDrawable(res, primaryIconId);
-
         boolean isPrimaryIconMaskable =
                 IntentUtils.safeGetBoolean(bundle, WebApkMetaDataKeys.IS_ICON_MASKABLE, false);
 
         int badgeIconId = IntentUtils.safeGetInt(bundle, WebApkMetaDataKeys.BADGE_ICON_ID, 0);
-        Bitmap badgeIcon = decodeBitmapFromDrawable(res, badgeIconId);
-
         int splashIconId = IntentUtils.safeGetInt(bundle, WebApkMetaDataKeys.SPLASH_ID, 0);
-        Bitmap splashIcon = decodeBitmapFromDrawable(res, splashIconId);
 
         Pair<String, ShareTarget> shareTargetActivityNameAndData =
                 extractFirstShareTarget(webApkPackageName);
@@ -360,10 +353,12 @@ public class WebApkInfo extends WebappInfo {
                 (canUseSplashFromContentProvider && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
                         && hasContentProviderForSplash(webApkPackageName));
 
-        return create(url, scope, new Icon(primaryIcon), new Icon(badgeIcon), new Icon(splashIcon),
-                name, shortName, displayMode, orientation, source, themeColor, backgroundColor,
-                defaultBackgroundColor, isPrimaryIconMaskable, webApkPackageName, shellApkVersion,
-                manifestUrl, manifestStartUrl, distributor, iconUrlToMurmur2HashMap, shareTarget,
+        return create(url, scope, new WebappIcon(webApkPackageName, primaryIconId),
+                new WebappIcon(webApkPackageName, badgeIconId),
+                new WebappIcon(webApkPackageName, splashIconId), name, shortName, displayMode,
+                orientation, source, themeColor, backgroundColor, defaultBackgroundColor,
+                isPrimaryIconMaskable, webApkPackageName, shellApkVersion, manifestUrl,
+                manifestStartUrl, distributor, iconUrlToMurmur2HashMap, shareTarget,
                 shareTargetActivityName, forceNavigation, isSplashProvidedByWebApk, shareData,
                 apkVersion);
     }
@@ -405,13 +400,14 @@ public class WebApkInfo extends WebappInfo {
      * @param shareData                Shared information from the share intent.
      * @param webApkVersionCode        WebAPK's version code.
      */
-    public static WebApkInfo create(String url, String scope, Icon primaryIcon, Icon badgeIcon,
-            Icon splashIcon, String name, String shortName, @WebDisplayMode int displayMode,
-            int orientation, int source, long themeColor, long backgroundColor,
-            int defaultBackgroundColor, boolean isPrimaryIconMaskable, String webApkPackageName,
-            int shellApkVersion, String manifestUrl, String manifestStartUrl,
-            @WebApkDistributor int distributor, Map<String, String> iconUrlToMurmur2HashMap,
-            ShareTarget shareTarget, String shareTargetActivityName, boolean forceNavigation,
+    public static WebApkInfo create(String url, String scope, WebappIcon primaryIcon,
+            WebappIcon badgeIcon, WebappIcon splashIcon, String name, String shortName,
+            @WebDisplayMode int displayMode, int orientation, int source, long themeColor,
+            long backgroundColor, int defaultBackgroundColor, boolean isPrimaryIconMaskable,
+            String webApkPackageName, int shellApkVersion, String manifestUrl,
+            String manifestStartUrl, @WebApkDistributor int distributor,
+            Map<String, String> iconUrlToMurmur2HashMap, ShareTarget shareTarget,
+            String shareTargetActivityName, boolean forceNavigation,
             boolean isSplashProvidedByWebApk, ShareData shareData, int webApkVersionCode) {
         if (url == null || manifestStartUrl == null || webApkPackageName == null) {
             Log.e(TAG,
@@ -435,8 +431,8 @@ public class WebApkInfo extends WebappInfo {
                 webApkVersionCode);
     }
 
-    protected WebApkInfo(String url, String scope, Icon primaryIcon, Icon badgeIcon,
-            Icon splashIcon, String name, String shortName, @WebDisplayMode int displayMode,
+    protected WebApkInfo(String url, String scope, WebappIcon primaryIcon, WebappIcon badgeIcon,
+            WebappIcon splashIcon, String name, String shortName, @WebDisplayMode int displayMode,
             int orientation, int source, long themeColor, long backgroundColor,
             int defaultBackgroundColor, boolean isPrimaryIconMaskable, String webApkPackageName,
             int shellApkVersion, String manifestUrl, String manifestStartUrl,
@@ -447,8 +443,8 @@ public class WebApkInfo extends WebappInfo {
                 shortName, displayMode, orientation, source, themeColor, backgroundColor,
                 defaultBackgroundColor, false /* isIconGenerated */,
                 isPrimaryIconMaskable /* isIconAdaptive */, forceNavigation);
-        mBadgeIcon = badgeIcon;
-        mSplashIcon = splashIcon;
+        mBadgeIcon = (badgeIcon != null) ? badgeIcon : new WebappIcon();
+        mSplashIcon = (splashIcon != null) ? splashIcon : new WebappIcon();
         mApkPackageName = webApkPackageName;
         mShellApkVersion = shellApkVersion;
         mManifestUrl = manifestUrl;
@@ -470,15 +466,15 @@ public class WebApkInfo extends WebappInfo {
     /**
      * Returns the badge icon in Bitmap form.
      */
-    public Bitmap badgeIcon() {
-        return (mBadgeIcon == null) ? null : mBadgeIcon.decoded();
+    public WebappIcon badgeIcon() {
+        return mBadgeIcon;
     }
 
     /**
      * Returns the splash icon in Bitmap form.
      */
-    public Bitmap splashIcon() {
-        return (mSplashIcon == null) ? null : mSplashIcon.decoded();
+    public WebappIcon splashIcon() {
+        return mSplashIcon;
     }
 
     /** Returns data about the WebAPK's share intent handlers. */
@@ -563,22 +559,6 @@ public class WebApkInfo extends WebappInfo {
                     webApkPackageName, PackageManager.GET_META_DATA);
             return appInfo.metaData;
         } catch (PackageManager.NameNotFoundException e) {
-            return null;
-        }
-    }
-
-    /**
-     * Decodes bitmap drawable from WebAPK's resources. This should also be used for XML aliases.
-     */
-    private static Bitmap decodeBitmapFromDrawable(Resources webApkResources, int resourceId) {
-        if (resourceId == 0) {
-            return null;
-        }
-        try {
-            BitmapDrawable bitmapDrawable =
-                    (BitmapDrawable) ApiCompatibilityUtils.getDrawable(webApkResources, resourceId);
-            return bitmapDrawable != null ? bitmapDrawable.getBitmap() : null;
-        } catch (Resources.NotFoundException e) {
             return null;
         }
     }

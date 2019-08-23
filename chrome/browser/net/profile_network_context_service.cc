@@ -559,10 +559,10 @@ ProfileNetworkContextService::CreateNetworkContextParams(
     auto* drp_settings =
         DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile_);
     if (drp_settings) {
-      network::mojom::CustomProxyConfigClientPtrInfo config_client_info;
+      mojo::Remote<network::mojom::CustomProxyConfigClient> config_client;
       network_context_params->custom_proxy_config_client_request =
-          mojo::MakeRequest(&config_client_info);
-      drp_settings->SetCustomProxyConfigClient(std::move(config_client_info));
+          config_client.BindNewPipeAndPassReceiver();
+      drp_settings->AddCustomProxyConfigClient(std::move(config_client));
     }
   }
 

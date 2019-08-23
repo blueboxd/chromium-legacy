@@ -2403,7 +2403,7 @@ void PDFiumEngine::LoadPagesInCurrentLayout(std::vector<pp::Size> page_sizes,
 // TODO(kmoon): This should be the only method that sets |PDFiumPage::rect_|.
 void PDFiumEngine::ApplyCurrentLayoutToPages(bool reload) {
   for (size_t i = 0; i < layout_.page_count(); ++i) {
-    const pp::Rect& page_rect = layout_.page_rect(i);
+    const pp::Rect& page_rect = layout_.page_bounds_rect(i);
     if (!reload) {
       // The page is marked as not being available even if |doc_complete| is
       // true because FPDFAvail_IsPageAvail() still has to be called for this

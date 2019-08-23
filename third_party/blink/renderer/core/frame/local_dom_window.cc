@@ -273,6 +273,10 @@ Document* LocalDOMWindow::InstallNewDocument(const String& mime_type,
 
   GetFrame()->GetScriptController().UpdateDocument();
   document_->GetViewportData().UpdateViewportDescription();
+  if (FrameScheduler* frame_scheduler = GetFrame()->GetFrameScheduler()) {
+    frame_scheduler->TraceUrlChange(document_->Url().GetString());
+    frame_scheduler->SetCrossOrigin(GetFrame()->IsCrossOriginSubframe());
+  }
 
   if (GetFrame()->GetPage() && GetFrame()->View()) {
     GetFrame()->GetPage()->GetChromeClient().InstallSupplements(*GetFrame());

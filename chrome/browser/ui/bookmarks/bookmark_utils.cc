@@ -188,12 +188,12 @@ bool ShouldShowAppsShortcutInBookmarkBar(Profile* profile) {
              bookmarks::prefs::kShowAppsShortcutInBookmarkBar);
 }
 
-bool ShouldRemoveBookmarkThisPageUI(Profile* profile) {
+bool ShouldRemoveBookmarkThisTabUI(Profile* profile) {
   return GetBookmarkShortcutDisposition(profile) ==
          BOOKMARK_SHORTCUT_DISPOSITION_REMOVED;
 }
 
-bool ShouldRemoveBookmarkOpenPagesUI(Profile* profile) {
+bool ShouldRemoveBookmarkAllTabsUI(Profile* profile) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(profile);
@@ -206,7 +206,7 @@ bool ShouldRemoveBookmarkOpenPagesUI(Profile* profile) {
   for (extensions::ExtensionSet::const_iterator i = extension_set.begin();
        i != extension_set.end();
        ++i) {
-    if (extensions::CommandService::RemovesBookmarkOpenPagesShortcut(i->get()))
+    if (extensions::CommandService::RemovesBookmarkAllTabsShortcut(i->get()))
       return true;
   }
 #endif

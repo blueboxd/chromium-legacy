@@ -2550,6 +2550,121 @@ TEST_F(ImplicitRootScrollerSimTest, PromotionChangesLayoutSize) {
       << "Once loaded, the iframe should be promoted.";
 }
 
+// Tests that bottom-fixed objects inside of an iframe root scroller and frame
+// are marked as being affected by top controls movement. Those inside a
+// non-rootScroller iframe should not be marked as such.
+TEST_F(ImplicitRootScrollerSimTest, BottomFixedAffectedByTopControls) {
+  WebView().ResizeWithBrowserControls(IntSize(800, 650), 50, 0, false);
+  SimRequest main_request("https://example.com/test.html", "text/html");
+  SimRequest child_request1("https://example.com/child1.html", "text/html");
+  SimRequest child_request2("https://example.com/child2.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  main_request.Complete(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            ::-webkit-scrollbar {
+              width: 0px;
+              height: 0px;
+            }
+            body, html {
+              width: 100%;
+              height: 100%;
+              margin: 0px;
+            }
+            #container1 {
+              width: 100%;
+              height: 100%;
+              border: 0;
+            }
+            #container2 {
+              position: absolute;
+              width: 10px;
+              height: 10px;
+              left: 100px;
+              top: 100px;
+              border: 0;
+            }
+            #fixed {
+              position: fixed;
+              bottom: 10px;
+              left: 10px;
+              width: 10px;
+              height: 10px;
+              background-color: red;
+            }
+          </style>
+          <iframe id="container1" src="child1.html">
+          </iframe>
+          <iframe id="container2" src="child2.html">
+          </iframe>
+          <div id="fixed"></div>
+      )HTML");
+  child_request1.Complete(R"HTML(
+        <!DOCTYPE html>
+        <style>
+          body {
+            height: 1000px;
+          }
+          #fixed {
+            width: 50px;
+            height: 50px;
+            position: fixed;
+            bottom: 0px;
+            left: 0px;
+          }
+        </style>
+        <div id="fixed"></div>
+  )HTML");
+  child_request2.Complete(R"HTML(
+        <!DOCTYPE html>
+        <style>
+          body {
+            height: 1000px;
+          }
+          #fixed {
+            width: 50px;
+            height: 50px;
+            position: fixed;
+            bottom: 0px;
+            left: 0px;
+          }
+        </style>
+        <div id="fixed"></div>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  Element* container1 = GetDocument().getElementById("container1");
+  Element* container2 = GetDocument().getElementById("container2");
+  ASSERT_EQ(container1,
+            GetDocument().GetRootScrollerController().EffectiveRootScroller())
+      << "The #container1 iframe must be promoted.";
+
+  Document* child1_document =
+      To<HTMLFrameOwnerElement>(container1)->contentDocument();
+  Document* child2_document =
+      To<HTMLFrameOwnerElement>(container2)->contentDocument();
+  LayoutObject* fixed =
+      GetDocument().getElementById("fixed")->GetLayoutObject();
+  LayoutObject* fixed1 =
+      child1_document->getElementById("fixed")->GetLayoutObject();
+  LayoutObject* fixed2 =
+      child2_document->getElementById("fixed")->GetLayoutObject();
+
+  EXPECT_TRUE(fixed->FirstFragment()
+                  .ContentsProperties()
+                  .Transform()
+                  .IsAffectedByOuterViewportBoundsDelta());
+  EXPECT_TRUE(fixed1->FirstFragment()
+                  .ContentsProperties()
+                  .Transform()
+                  .IsAffectedByOuterViewportBoundsDelta());
+  EXPECT_FALSE(fixed2->FirstFragment()
+                   .ContentsProperties()
+                   .Transform()
+                   .IsAffectedByOuterViewportBoundsDelta());
+}
+
 // Ensure that we're using the content box for an iframe. Promotion will cause
 // the content to use the layout size of the parent frame so having padding or
 // a border would cause us to relayout.

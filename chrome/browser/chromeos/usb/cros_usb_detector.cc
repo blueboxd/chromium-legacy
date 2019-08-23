@@ -38,17 +38,23 @@ static CrosUsbDetector* g_cros_usb_detector = nullptr;
 
 const char kNotifierUsb[] = "crosusb.connected";
 
-// ARCVM (Android VM) is considered as the "default" VM here in the sense that
-// the Android runtime is enabled by default on Chrome OS and is always running.
-// Android also has its own mechanisms/permissions ultimately relying on Chrome
-// OS for granting access to the USB devices attached in ARCVM/ARC++.
-// This means that unclaimed devices get auto-attached to ARCVM on connect until
-// the user decides otherwise by e.g. disconnecting them or explicitly sharing
-// them with another VM such as Crostini.
+// ARCVM (Android VM) is considered as the "default" VM here, when it's enabled,
+// in the sense that the Android runtime is enabled by default on Chrome OS and
+// is always running. Android also has its own mechanisms/permissions ultimately
+// relying on Chrome OS for granting access to the USB devices attached in
+// ARCVM/ARC++. This means that unclaimed devices get auto-attached to ARCVM on
+// connect until the user decides otherwise by e.g. disconnecting them or
+// explicitly sharing them with another VM such as Crostini.
 // Note that attaching a device to a VM makes it visible by the guest kernel in
 // that VM but doesn't actually claim/open the device by itself, i.e. a device
 // attached in a VM (and not open there) can still be opened outside that VM.
 const char* const kDefaultVmName = arc::kArcVmName;
+
+// Returns whether the default VM is enabled. See declaration of
+// |kDefaultVmName|.
+bool IsDefaultVmEnabled() {
+  return arc::IsArcVmEnabled();
+}
 
 // Helper free function used with BindOnce() below for convenience.
 void IgnoreBool(base::OnceClosure closure, bool) {
@@ -353,11 +359,13 @@ void CrosUsbDetector::OnDeviceChecked(
   available_device_info_.emplace(device_info->guid, device_info.Clone());
   SignalUsbDeviceObservers();
 
-  if (has_supported_interface || !has_blocked_interface) {
-    // USB devices not claimed by Chrome OS get automatically attached to the
-    // default VM. Note that this relies on the underlying VM (ARCVM) having its
-    // own permission model to restrict access to the device.
-    AttachUsbDeviceToVm(kDefaultVmName, new_device.guid, base::DoNothing());
+  if (IsDefaultVmEnabled()) {
+    if (has_supported_interface || !has_blocked_interface) {
+      // USB devices not claimed by Chrome OS get automatically attached to the
+      // default VM. Note that this relies on the underlying VM (ARCVM) having
+      // its own permission model to restrict access to the device.
+      AttachUsbDeviceToVm(kDefaultVmName, new_device.guid, base::DoNothing());
+    }
   }
 
   // Some devices should not trigger the notification.
@@ -447,8 +455,8 @@ void CrosUsbDetector::AttachUsbDeviceToVm(
       break;
     }
   }
-  if (vm_name == kDefaultVmName) {
-    AttachUsbDeviceToVmInternal(kDefaultVmName, guid, std::move(callback));
+  if (!IsDefaultVmEnabled() || vm_name == kDefaultVmName) {
+    AttachUsbDeviceToVmInternal(vm_name, guid, std::move(callback));
     return;
   }
   auto attach_internal = base::BindOnce(
@@ -483,7 +491,7 @@ void CrosUsbDetector::DetachUsbDeviceFromVm(
     const std::string& vm_name,
     const std::string& guid,
     base::OnceCallback<void(bool success)> callback) {
-  if (vm_name == kDefaultVmName) {
+  if (!IsDefaultVmEnabled() || vm_name == kDefaultVmName) {
     DetachUsbDeviceFromVmInternal(vm_name, guid, std::move(callback));
     return;
   }

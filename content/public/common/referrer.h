@@ -35,6 +35,18 @@ struct CONTENT_EXPORT Referrer {
       const GURL& request,
       const blink::mojom::Referrer& referrer);
 
+  // Returns |initiator| origin sanitized by |policy| so that it can be used
+  // when requesting |request| URL.
+  //
+  // Note that the URL-based sanitization (e.g. SanitizeForRequest above) cannot
+  // be used for cases where the referrer URL is missing (e.g. about:blank) but
+  // the initiator origin still needs to be used (e.g. when calculating the
+  // value of the `Origin` header to use in a POST request).
+  static url::Origin SanitizeOriginForRequest(
+      const GURL& request,
+      const url::Origin& initiator,
+      network::mojom::ReferrerPolicy policy);
+
   static void SetReferrerForRequest(net::URLRequest* request,
                                     const Referrer& referrer);
 

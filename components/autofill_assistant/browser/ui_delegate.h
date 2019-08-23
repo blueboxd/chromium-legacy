@@ -119,6 +119,10 @@ class UiDelegate {
   virtual void SetTermsAndConditions(
       TermsAndConditionsState terms_and_conditions) = 0;
 
+  // Sets the chosen login option, pertaining to the current payment request
+  // options.
+  virtual void SetLoginOption(std::string identifier) = 0;
+
   // Called when the user clicks a link on the terms & conditions message.
   virtual void OnTermsAndConditionsLinkClicked(int link) = 0;
 

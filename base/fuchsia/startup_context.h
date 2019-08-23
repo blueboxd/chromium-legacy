@@ -50,6 +50,10 @@ class BASE_EXPORT StartupContext {
   // immediately after the first call to this API.
   ServiceDirectory* public_services();
 
+  bool has_outgoing_directory_request() {
+    return outgoing_directory_request_.is_valid();
+  }
+
  private:
   // TODO(https://crbug.com/933834): Remove these when we migrate to the new
   // component manager APIs.

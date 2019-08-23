@@ -176,8 +176,8 @@ using content::WebContents;
 namespace chrome {
 namespace {
 
-bool CanBookmarkCurrentPageInternal(const Browser* browser,
-                                    bool check_remove_bookmark_ui) {
+bool CanBookmarkCurrentTabInternal(const Browser* browser,
+                                   bool check_remove_bookmark_ui) {
   BookmarkModel* model =
       BookmarkModelFactory::GetForBrowserContext(browser->profile());
   return browser_defaults::bookmarks_enabled &&
@@ -185,7 +185,7 @@ bool CanBookmarkCurrentPageInternal(const Browser* browser,
              bookmarks::prefs::kEditBookmarksEnabled) &&
          model && model->loaded() && browser->is_type_normal() &&
          (!check_remove_bookmark_ui ||
-          !chrome::ShouldRemoveBookmarkThisPageUI(browser->profile()));
+          !chrome::ShouldRemoveBookmarkThisTabUI(browser->profile()));
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -202,9 +202,9 @@ bool GetBookmarkOverrideCommand(Profile* profile,
   DCHECK(extension);
   DCHECK(command);
 
-  ui::Accelerator bookmark_page_accelerator =
-      chrome::GetPrimaryChromeAcceleratorForBookmarkPage();
-  if (bookmark_page_accelerator.key_code() == ui::VKEY_UNKNOWN)
+  ui::Accelerator bookmark_tab_accelerator =
+      chrome::GetPrimaryChromeAcceleratorForBookmarkTab();
+  if (bookmark_tab_accelerator.key_code() == ui::VKEY_UNKNOWN)
     return false;
 
   extensions::CommandService* command_service =
@@ -215,7 +215,7 @@ bool GetBookmarkOverrideCommand(Profile* profile,
        i != extension_set.end(); ++i) {
     extensions::Command prospective_command;
     if (command_service->GetSuggestedExtensionCommand(
-            (*i)->id(), bookmark_page_accelerator, &prospective_command)) {
+            (*i)->id(), bookmark_tab_accelerator, &prospective_command)) {
       *extension = i->get();
       *command = prospective_command;
       return true;
@@ -670,17 +670,6 @@ bool CanResetZoom(content::WebContents* contents) {
          !zoom_controller->PageScaleFactorIsOne();
 }
 
-TabStripModelDelegate::RestoreTabType GetRestoreTabType(
-    const Browser* browser) {
-  sessions::TabRestoreService* service =
-      TabRestoreServiceFactory::GetForProfile(browser->profile());
-  if (!service || service->entries().empty())
-    return TabStripModelDelegate::RESTORE_NONE;
-  if (service->entries().front()->type == sessions::TabRestoreService::WINDOW)
-    return TabStripModelDelegate::RESTORE_WINDOW;
-  return TabStripModelDelegate::RESTORE_TAB;
-}
-
 void SelectNextTab(Browser* browser,
                    TabStripModel::UserGestureDetails gesture_detail) {
   base::RecordAction(UserMetricsAction("SelectNextTab"));
@@ -816,7 +805,7 @@ void Exit() {
   chrome::AttemptUserExit();
 }
 
-void BookmarkCurrentPageIgnoringExtensionOverrides(Browser* browser) {
+void BookmarkCurrentTabIgnoringExtensionOverrides(Browser* browser) {
   base::RecordAction(UserMetricsAction("Star"));
 
   BookmarkModel* model =
@@ -853,8 +842,8 @@ void BookmarkCurrentPageIgnoringExtensionOverrides(Browser* browser) {
   }
 }
 
-void BookmarkCurrentPageAllowingExtensionOverrides(Browser* browser) {
-  DCHECK(!chrome::ShouldRemoveBookmarkThisPageUI(browser->profile()));
+void BookmarkCurrentTabAllowingExtensionOverrides(Browser* browser) {
+  DCHECK(!chrome::ShouldRemoveBookmarkThisTabUI(browser->profile()));
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   const extensions::Extension* extension = NULL;
@@ -866,7 +855,7 @@ void BookmarkCurrentPageAllowingExtensionOverrides(Browser* browser) {
         break;
       case extensions::Command::Type::kBrowserAction:
       case extensions::Command::Type::kPageAction:
-        // BookmarkCurrentPage is called through a user gesture, so it is safe
+        // BookmarkCurrentTab is called through a user gesture, so it is safe
         // to grant the active tab permission.
         extensions::ExtensionActionAPI::Get(browser->profile())
             ->ShowExtensionActionPopup(extension, browser, true);
@@ -875,11 +864,11 @@ void BookmarkCurrentPageAllowingExtensionOverrides(Browser* browser) {
     return;
   }
 #endif
-  BookmarkCurrentPageIgnoringExtensionOverrides(browser);
+  BookmarkCurrentTabIgnoringExtensionOverrides(browser);
 }
 
-bool CanBookmarkCurrentPage(const Browser* browser) {
-  return CanBookmarkCurrentPageInternal(browser, true);
+bool CanBookmarkCurrentTab(const Browser* browser) {
+  return CanBookmarkCurrentTabInternal(browser, true);
 }
 
 void BookmarkAllTabs(Browser* browser) {
@@ -889,8 +878,8 @@ void BookmarkAllTabs(Browser* browser) {
 
 bool CanBookmarkAllTabs(const Browser* browser) {
   return browser->tab_strip_model()->count() > 1 &&
-         !chrome::ShouldRemoveBookmarkOpenPagesUI(browser->profile()) &&
-         CanBookmarkCurrentPageInternal(browser, false);
+         !chrome::ShouldRemoveBookmarkAllTabsUI(browser->profile()) &&
+         CanBookmarkCurrentTabInternal(browser, false);
 }
 
 void SaveCreditCard(Browser* browser) {

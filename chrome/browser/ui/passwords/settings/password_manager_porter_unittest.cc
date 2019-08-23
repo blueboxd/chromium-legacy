@@ -188,7 +188,7 @@ class PasswordManagerPorterTest : public ChromeRenderViewHostTestHarness {
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-    password_manager_porter_.reset(new TestPasswordManagerPorter());
+    password_manager_porter_ = std::make_unique<TestPasswordManagerPorter>();
     // SelectFileDialog::SetFactory is responsible for freeing the memory
     // associated with a new factory.
     selected_file_ = base::FilePath(kNullFileName);

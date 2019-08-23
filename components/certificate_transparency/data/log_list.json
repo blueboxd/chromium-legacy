@@ -14,8 +14,8 @@
           "dns": "argon2019.ct.googleapis.com",
           "mmd": 86400,
           "state": {
-            "qualified": {
-              "timestamp": "2018-02-27T00:00:00Z"
+            "usable": {
+              "timestamp": "2018-06-15T02:30:13Z"
             }
           },
           "temporal_interval": {
@@ -31,8 +31,8 @@
           "dns": "argon2020.ct.googleapis.com",
           "mmd": 86400,
           "state": {
-            "qualified": {
-              "timestamp": "2018-02-27T00:00:00Z"
+            "usable": {
+              "timestamp": "2018-06-15T02:30:13Z"
             }
           },
           "temporal_interval": {
@@ -48,13 +48,47 @@
           "dns": "argon2021.ct.googleapis.com",
           "mmd": 86400,
           "state": {
-            "qualified": {
-              "timestamp": "2018-02-27T00:00:00Z"
+            "usable": {
+              "timestamp": "2018-06-15T02:30:13Z"
             }
           },
           "temporal_interval": {
             "start_inclusive": "2021-01-01T00:00:00Z",
             "end_exclusive": "2022-01-01T00:00:00Z"
+          }
+        },
+        {
+          "description": "Google 'Argon2022' log",
+          "log_id": "KXm+8J45OSHwVnOfY6V35b5XfZxgCvj5TV0mXCVdx4Q=",
+          "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEeIPc6fGmuBg6AJkv/z7NFckmHvf/OqmjchZJ6wm2qN200keRDg352dWpi7CHnSV51BpQYAj1CQY5JuRAwrrDwg==",
+          "url": "https://ct.googleapis.com/logs/argon2022/",
+          "dns": "argon2022.ct.googleapis.com",
+          "mmd": 86400,
+          "state": {
+            "qualified": {
+              "timestamp": "2019-08-19T00:00:00Z"
+            }
+          },
+          "temporal_interval": {
+            "start_inclusive": "2022-01-01T00:00:00Z",
+            "end_exclusive": "2023-01-01T00:00:00Z"
+          }
+        },
+        {
+          "description": "Google 'Argon2023' log",
+          "log_id": "6D7Q2j71BjUy51covIlryQPTy9ERa+zraeF3fW0GvW4=",
+          "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE0JCPZFJOQqyEti5M8j13ALN3CAVHqkVM4yyOcKWCu2yye5yYeqDpEXYoALIgtM3TmHtNlifmt+4iatGwLpF3eA==",
+          "url": "https://ct.googleapis.com/logs/argon2023/",
+          "dns": "argon2023.ct.googleapis.com",
+          "mmd": 86400,
+          "state": {
+            "qualified": {
+              "timestamp": "2019-08-19T00:00:00Z"
+            }
+          },
+          "temporal_interval": {
+            "start_inclusive": "2023-01-01T00:00:00Z",
+            "end_exclusive": "2024-01-01T00:00:00Z"
           }
         },
         {
@@ -65,8 +99,8 @@
           "dns": "xenon2019.ct.googleapis.com",
           "mmd": 86400,
           "state": {
-            "qualified": {
-              "timestamp": "2019-02-21T00:00:00Z"
+            "usable": {
+              "timestamp": "2019-06-17T21:23:01Z"
             }
           },
           "temporal_interval": {
@@ -82,8 +116,8 @@
           "dns": "xenon2020.ct.googleapis.com",
           "mmd": 86400,
           "state": {
-            "qualified": {
-              "timestamp": "2019-02-21T00:00:00Z"
+            "usable": {
+              "timestamp": "2019-06-17T21:23:01Z"
             }
           },
           "temporal_interval": {
@@ -99,8 +133,8 @@
           "dns": "xenon2021.ct.googleapis.com",
           "mmd": 86400,
           "state": {
-            "qualified": {
-              "timestamp": "2019-02-21T00:00:00Z"
+            "usable": {
+              "timestamp": "2019-06-17T21:23:01Z"
             }
           },
           "temporal_interval": {
@@ -116,13 +150,30 @@
           "dns": "xenon2022.ct.googleapis.com",
           "mmd": 86400,
           "state": {
-            "qualified": {
-              "timestamp": "2019-02-21T00:00:00Z"
+            "usable": {
+              "timestamp": "2019-06-17T21:23:01Z"
             }
           },
           "temporal_interval": {
             "start_inclusive": "2022-01-01T00:00:00Z",
             "end_exclusive": "2023-01-01T00:00:00Z"
+          }
+        },
+        {
+          "description": "Google 'Xenon2023' log",
+          "log_id": "rfe++nz/EMiLnT2cHj4YarRnKV3PsQwkyoWGNOvcgoo=",
+          "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEchY+C+/vzj5g3ZXLY3q5qY1Kb2zcYYCmRV4vg6yU84WI0KV00HuO/8XuQqLwLZPjwtCymeLhQunSxgAnaXSuzg==",
+          "url": "https://ct.googleapis.com/logs/xenon2023/",
+          "dns": "xenon2023.ct.googleapis.com",
+          "mmd": 86400,
+          "state": {
+            "qualified": {
+              "timestamp": "2019-08-19T00:00:00Z"
+            }
+          },
+          "temporal_interval": {
+            "start_inclusive": "2023-01-01T00:00:00Z",
+            "end_exclusive": "2024-01-01T00:00:00Z"
           }
         },
         {
@@ -150,8 +201,8 @@
           "dns": "icarus.ct.googleapis.com",
           "mmd": 86400,
           "state": {
-            "qualified": {
-              "timestamp": "2016-11-03T12:09:00Z"
+            "usable": {
+              "timestamp": "2017-03-06T19:35:01Z"
             }
           }
         },
@@ -163,8 +214,8 @@
           "dns": "pilot.ct.googleapis.com",
           "mmd": 86400,
           "state": {
-            "qualified": {
-              "timestamp": "2014-06-27T18:22:00Z"
+            "usable": {
+              "timestamp": "2014-09-02T20:41:44Z"
             }
           }
         },
@@ -176,8 +227,8 @@
           "dns": "rocketeer.ct.googleapis.com",
           "mmd": 86400,
           "state": {
-            "qualified": {
-              "timestamp": "2015-03-26T12:12:00Z"
+            "usable": {
+              "timestamp": "2015-08-04T19:00:05Z"
             }
           }
         },
@@ -189,8 +240,8 @@
           "dns": "skydiver.ct.googleapis.com",
           "mmd": 86400,
           "state": {
-            "qualified": {
-              "timestamp": "2016-11-03T12:09:00Z"
+            "usable": {
+              "timestamp": "2017-03-06T19:35:01Z"
             }
           }
         }
@@ -215,8 +266,8 @@
           "dns": "cloudflare-nimbus2019.ct.googleapis.com",
           "mmd": 86400,
           "state": {
-            "qualified": {
-              "timestamp": "2018-02-12T00:00:00Z"
+            "usable": {
+              "timestamp": "2018-06-15T02:30:13Z"
             }
           },
           "temporal_interval": {
@@ -232,8 +283,8 @@
           "dns": "cloudflare-nimbus2020.ct.googleapis.com",
           "mmd": 86400,
           "state": {
-            "qualified": {
-              "timestamp": "2018-02-12T00:00:00Z"
+            "usable": {
+              "timestamp": "2018-06-15T02:30:13Z"
             }
           },
           "temporal_interval": {
@@ -249,8 +300,8 @@
           "dns": "cloudflare-nimbus2021.ct.googleapis.com",
           "mmd": 86400,
           "state": {
-            "qualified": {
-              "timestamp": "2018-02-12T00:00:00Z"
+            "usable": {
+              "timestamp": "2018-06-15T02:30:13Z"
             }
           },
           "temporal_interval": {
@@ -308,8 +359,8 @@
           "dns": "digicert.ct.googleapis.com",
           "mmd": 86400,
           "state": {
-            "qualified": {
-              "timestamp": "2015-01-01T01:41:00Z"
+            "usable": {
+              "timestamp": "2015-05-20T16:40:09Z"
             }
           }
         },
@@ -321,8 +372,8 @@
           "dns": "digicert2.ct.googleapis.com",
           "mmd": 86400,
           "state": {
-            "qualified": {
-              "timestamp": "2017-06-04T00:00:00Z"
+            "usable": {
+              "timestamp": "2017-10-10T00:38:10Z"
             }
           }
         },
@@ -334,8 +385,8 @@
           "dns": "digicert-yeti2019.ct.googleapis.com",
           "mmd": 86400,
           "state": {
-            "qualified": {
-              "timestamp": "2018-04-06T00:00:00Z"
+            "usable": {
+              "timestamp": "2018-08-24T00:53:07Z"
             }
           },
           "temporal_interval": {
@@ -351,8 +402,8 @@
           "dns": "digicert-yeti2020.ct.googleapis.com",
           "mmd": 86400,
           "state": {
-            "qualified": {
-              "timestamp": "2018-04-06T00:00:00Z"
+            "usable": {
+              "timestamp": "2018-08-24T00:53:07Z"
             }
           },
           "temporal_interval": {
@@ -368,8 +419,8 @@
           "dns": "digicert-yeti2021.ct.googleapis.com",
           "mmd": 86400,
           "state": {
-            "qualified": {
-              "timestamp": "2018-04-06T00:00:00Z"
+            "usable": {
+              "timestamp": "2018-08-24T00:53:07Z"
             }
           },
           "temporal_interval": {
@@ -385,8 +436,8 @@
           "dns": "digicert-yeti2022.ct.googleapis.com",
           "mmd": 86400,
           "state": {
-            "qualified": {
-              "timestamp": "2018-04-06T00:00:00Z"
+            "usable": {
+              "timestamp": "2018-08-24T00:53:07Z"
             }
           },
           "temporal_interval": {
@@ -419,8 +470,8 @@
           "dns": "digicert-nessie2019.ct.googleapis.com",
           "mmd": 86400,
           "state": {
-            "qualified": {
-              "timestamp": "2018-11-06T03:47:10Z"
+            "usable": {
+              "timestamp": "2019-05-09T22:11:02Z"
             }
           },
           "temporal_interval": {
@@ -436,8 +487,8 @@
           "dns": "digicert-nessie2020.ct.googleapis.com",
           "mmd": 86400,
           "state": {
-            "qualified": {
-              "timestamp": "2018-11-06T03:47:10Z"
+            "usable": {
+              "timestamp": "2019-05-09T22:11:02Z"
             }
           },
           "temporal_interval": {
@@ -453,8 +504,8 @@
           "dns": "digicert-nessie2021.ct.googleapis.com",
           "mmd": 86400,
           "state": {
-            "qualified": {
-              "timestamp": "2018-11-06T03:47:10Z"
+            "usable": {
+              "timestamp": "2019-05-09T22:11:02Z"
             }
           },
           "temporal_interval": {
@@ -470,8 +521,8 @@
           "dns": "digicert-nessie2022.ct.googleapis.com",
           "mmd": 86400,
           "state": {
-            "qualified": {
-              "timestamp": "2018-11-06T03:47:10Z"
+            "usable": {
+              "timestamp": "2019-05-09T22:11:02Z"
             }
           },
           "temporal_interval": {
@@ -688,8 +739,8 @@
           "dns": "comodo-sabre.ct.googleapis.com",
           "mmd": 86400,
           "state": {
-            "qualified": {
-              "timestamp": "2017-06-20T00:00:00Z"
+            "usable": {
+              "timestamp": "2017-10-10T00:38:10Z"
             }
           }
         },
@@ -701,8 +752,8 @@
           "dns": "comodo-mammoth.ct.googleapis.com",
           "mmd": 86400,
           "state": {
-            "qualified": {
-              "timestamp": "2017-06-20T00:00:00Z"
+            "usable": {
+              "timestamp": "2017-10-10T00:38:10Z"
             }
           }
         }

@@ -3,9 +3,14 @@
 // found in the LICENSE file.
 
 #include "content/browser/native_file_system/native_file_system_file_writer_impl.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/task/post_task.h"
+#include "components/services/quarantine/quarantine.h"
 #include "content/browser/native_file_system/native_file_system_error.h"
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_client.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/fileapi/file_system_operation_runner.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
@@ -14,6 +19,21 @@
 using blink::mojom::NativeFileSystemStatus;
 using storage::BlobDataHandle;
 using storage::FileSystemOperation;
+
+namespace {
+
+quarantine::mojom::QuarantineFileResult AnnotateFileSync(
+    const std::string& client_id,
+    const base::FilePath& path,
+    const GURL& referrer_url) {
+  // TODO(https://crbug/990997): Integrate with async Quarantine Service mojo
+  // API when it's ready.
+  quarantine::mojom::QuarantineFileResult result = quarantine::QuarantineFile(
+      path, /*source_url=*/GURL(), referrer_url, client_id);
+  return result;
+}
+
+}  // namespace
 
 namespace content {
 
@@ -251,11 +271,47 @@ void NativeFileSystemFileWriterImpl::DidSwapFileBeforeClose(
     DLOG(ERROR) << "Swap file move operation failed source: "
                 << swap_url().path() << " dest: " << url().path()
                 << " error: " << base::File::ErrorToString(result);
-  } else {
-    state_ = State::kClosed;
+    std::move(callback).Run(native_file_system_error::FromFileError(result));
+    return;
   }
 
-  std::move(callback).Run(native_file_system_error::FromFileError(result));
+  if (can_skip_quarantine_check()) {
+    state_ = State::kClosed;
+    std::move(callback).Run(native_file_system_error::Ok());
+    return;
+  }
+
+  GURL referrer_url = manager()->is_off_the_record() ? GURL() : context().url;
+
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+      base::BindOnce(&AnnotateFileSync,
+                     GetContentClient()
+                         ->browser()
+                         ->GetApplicationClientGUIDForQuarantineCheck(),
+                     url().path(), referrer_url),
+      base::BindOnce(&NativeFileSystemFileWriterImpl::DidAnnotateFile,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void NativeFileSystemFileWriterImpl::DidAnnotateFile(
+    CloseCallback callback,
+    quarantine::mojom::QuarantineFileResult result) {
+  state_ = State::kClosed;
+
+  if (result != quarantine::mojom::QuarantineFileResult::OK &&
+      result != quarantine::mojom::QuarantineFileResult::ANNOTATION_FAILED) {
+    // If malware was detected, or the file referrer was blocked by policy, the
+    // file will be deleted at this point by AttachmentServices on Windows.
+    // There is nothing to do except to return the error message to the
+    // application.
+    std::move(callback).Run(native_file_system_error::FromStatus(
+        NativeFileSystemStatus::kOperationAborted,
+        "Write operation aborted due to security policy."));
+    return;
+  }
+
+  std::move(callback).Run(native_file_system_error::Ok());
 }
 
 base::WeakPtr<NativeFileSystemHandleBase>

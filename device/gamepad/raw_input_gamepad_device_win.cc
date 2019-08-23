@@ -72,8 +72,13 @@ RawInputGamepadDeviceWin::RawInputGamepadDeviceWin(
 
   if (is_valid_) {
     if (Dualshock4Controller::IsDualshock4(vendor_id_, product_id_)) {
+      // Dualshock4 has different behavior over USB and Bluetooth, but the
+      // RawInput API does not indicate which transport is in use. Detect the
+      // transport type by inspecting the version number reported by the device.
+      GamepadBusType bus_type =
+          Dualshock4Controller::BusTypeFromVersionNumber(version_number_);
       dualshock4_ = std::make_unique<Dualshock4Controller>(
-          std::make_unique<HidWriterWin>(handle_));
+          bus_type, std::make_unique<HidWriterWin>(handle_));
     } else if (HidHapticGamepad::IsHidHaptic(vendor_id_, product_id_)) {
       hid_haptics_ = HidHapticGamepad::Create(
           vendor_id_, product_id_, std::make_unique<HidWriterWin>(handle_));
@@ -101,6 +106,23 @@ void RawInputGamepadDeviceWin::DoShutdown() {
 void RawInputGamepadDeviceWin::UpdateGamepad(RAWINPUT* input) {
   DCHECK(hid_functions_->IsValid());
   NTSTATUS status;
+
+  if (dualshock4_) {
+    // Handle Dualshock4 input reports that do not specify HID gamepad usages in
+    // the report descriptor.
+    uint8_t report_id = input->data.hid.bRawData[0];
+    auto report = base::make_span(input->data.hid.bRawData + 1,
+                                  input->data.hid.dwSizeHid);
+    Gamepad pad;
+    if (dualshock4_->ProcessInputReport(report_id, report, &pad)) {
+      for (size_t i = 0; i < Gamepad::kAxesLengthCap; ++i)
+        axes_[i].value = pad.axes[i];
+      for (size_t i = 0; i < Gamepad::kButtonsLengthCap; ++i)
+        buttons_[i] = pad.buttons[i].pressed;
+      last_update_timestamp_ = GamepadDataFetcher::CurrentTimeInMicroseconds();
+      return;
+    }
+  }
 
   // Query button state.
   if (buttons_length_ > 0) {

@@ -30,8 +30,6 @@ class SerialIoHandlerWin : public SerialIoHandler,
   bool SetControlSignals(
       const mojom::SerialHostControlSignals& control_signals) override;
   mojom::SerialConnectionInfoPtr GetPortInfo() const override;
-  bool SetBreak() override;
-  bool ClearBreak() override;
   bool PostOpen() override;
 
  private:

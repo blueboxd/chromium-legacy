@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
+import org.chromium.chrome.browser.tasks.tab_groups.EmptyTabGroupModelFilterObserver;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 
 import java.util.List;
@@ -143,33 +144,26 @@ public class TabCountProvider {
         mTabModelSelector.getTabModelFilterProvider().addTabModelFilterObserver(
                 mTabModelFilterObserver);
 
-        mTabGroupModelFilterObserver = new TabGroupModelFilter.Observer() {
-            @Override
-            public void didMergeTabToGroup(Tab movedTab, int selectedTabIdInGroup) {
-                updateTabCount();
-            }
-
-            @Override
-            public void didMoveTabGroup(Tab movedTab, int tabModelOldIndex, int tabModelNewIndex) {}
-
-            @Override
-            public void didMoveWithinGroup(
-                    Tab movedTab, int tabModelOldIndex, int tabModelNewIndex) {}
-
-            @Override
-            public void didMoveTabOutOfGroup(Tab moveTab, int oldFilterIndex) {
-                updateTabCount();
-            }
-
-            @Override
-            public void didCreateGroup(
-                    List<Tab> tabs, List<Integer> tabOriginalIndex, boolean isSameGroup) {
-                updateTabCount();
-            }
-        };
-
         if (mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter()
                         instanceof TabGroupModelFilter) {
+            mTabGroupModelFilterObserver = new EmptyTabGroupModelFilterObserver() {
+                @Override
+                public void didMergeTabToGroup(Tab movedTab, int selectedTabIdInGroup) {
+                    updateTabCount();
+                }
+
+                @Override
+                public void didMoveTabOutOfGroup(Tab moveTab, int oldFilterIndex) {
+                    updateTabCount();
+                }
+
+                @Override
+                public void didCreateGroup(
+                        List<Tab> tabs, List<Integer> tabOriginalIndex, boolean isSameGroup) {
+                    updateTabCount();
+                }
+            };
+
             ((TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider()
                             .getCurrentTabModelFilter())
                     .addTabGroupObserver(mTabGroupModelFilterObserver);
@@ -187,9 +181,7 @@ public class TabCountProvider {
                     mTabModelFilterObserver);
         }
 
-        if (mTabGroupModelFilterObserver != null
-                && mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter()
-                                instanceof TabGroupModelFilter) {
+        if (mTabGroupModelFilterObserver != null) {
             ((TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider()
                             .getCurrentTabModelFilter())
                     .removeTabGroupObserver(mTabGroupModelFilterObserver);

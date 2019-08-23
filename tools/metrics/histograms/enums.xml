@@ -7680,11 +7680,6 @@ histogram as enum -->
   <int value="3" label="Reading"/>
 </enum>
 
-<enum name="ChromeOSJankinessTriggerStatus">
-  <int value="0" label="CollectionAttempted"/>
-  <int value="1" label="Throttled"/>
-</enum>
-
 <enum name="ChromeOSMachineIdReason">
   <int value="0" label="Unknown"/>
   <int value="1" label="Network"/>
@@ -9985,6 +9980,15 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="Timeout"/>
 </enum>
 
+<enum name="ContextMenuLensSupportStatus">
+  <summary>Whether lens is supported and if not the reason why.</summary>
+  <int value="0" label="Lens Supported"/>
+  <int value="1" label="Not Google Search Engine"/>
+  <int value="2" label="Activity Not Accessible"/>
+  <int value="3" label="Out of Date"/>
+  <int value="4" label="Search by Image Unavailable"/>
+</enum>
+
 <enum name="ContextMenuOption">
   <obsolete>
     Removed from code as of 5/2019.
@@ -10063,6 +10067,7 @@ Called by update_net_error_codes.py.-->
   <int value="25" label="Preview image (Ephemeral tab)"/>
   <int value="26" label="Share Link (DirectShare)"/>
   <int value="27" label="Share Image (DirectShare)"/>
+  <int value="28" label="Search with Google Lens"/>
 </enum>
 
 <enum name="ContextMenuOptionDesktop">
@@ -10859,6 +10864,27 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="Register"/>
   <int value="2" label="Authenticate"/>
   <int value="3" label="Version"/>
+</enum>
+
+<enum name="CrasClientType">
+  <summary>
+    List of the client type of CRAS. The list can be found in
+    https://chromium.googlesource.com/chromiumos/third_party/adhd/+/master/cras/src/common/cras_types.h
+    (enum CRAS_CLIENT_TYPE).
+  </summary>
+  <int value="0" label="CRAS_CLIENT_TYPE_UNKNOWN">Unknown client.</int>
+  <int value="1" label="CRAS_CLIENT_TYPE_LEGACY">
+    A client using an old CRAS lib. (CRAS_PROTO_VER = 3)
+  </int>
+  <int value="2" label="CRAS_CLIENT_TYPE_TEST">
+    A client created by cras_test_client.
+  </int>
+  <int value="3" label="CRAS_CLIENT_TYPE_PCM">
+    A client using CRAS via pcm, like aplay.
+  </int>
+  <int value="4" label="CRAS_CLIENT_TYPE_CHROME"/>
+  <int value="5" label="CRAS_CLIENT_TYPE_ARC"/>
+  <int value="6" label="CRAS_CLIENT_TYPE_CROSVM"/>
 </enum>
 
 <enum name="CrashExitCodes">
@@ -17808,6 +17834,7 @@ Called by update_net_error_codes.py.-->
   <int value="589" label="CheckContentCompliance"/>
   <int value="590" label="DomainsToCheckComplianceOfDownloadedContent"/>
   <int value="591" label="DomainsToNotCheckComplianceOfUploadedContent"/>
+  <int value="592" label="DictationEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -20339,6 +20366,7 @@ Called by update_net_error_codes.py.-->
   <int value="1374" label="AUTOTESTPRIVATE_GETARCAPPWINDOWSTATE"/>
   <int value="1375" label="AUTOTESTPRIVATE_GETARCAPPWINDOWINFO"/>
   <int value="1376" label="AUTOTESTPRIVATE_GETALLINSTALLEDAPPS"/>
+  <int value="1377" label="AUTOTESTPRIVATE_SWAPWINDOWSINSPLITVIEW"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -24372,6 +24400,8 @@ Called by update_net_error_codes.py.-->
   <int value="3007" label="ThirdPartyServiceWorker"/>
   <int value="3008" label="JSSelfProfiling"/>
   <int value="3009" label="HTMLFrameSetElement"/>
+  <int value="3010" label="MediaCapabilitiesFramerateRatio"/>
+  <int value="3011" label="MediaCapabilitiesFramerateNumber"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -34504,6 +34534,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1832221649" label="disable-out-of-process-pac"/>
   <int value="-1826649921" label="ContextualSuggestionsButton:disabled"/>
   <int value="-1826309726" label="ArcCustomTabsExperiment:disabled"/>
+  <int value="-1823193038" label="QuietNotificationPrompts:disabled"/>
   <int value="-1821058653" label="enable-delay-agnostic-aec"/>
   <int value="-1818947212" label="OutOfBlinkCors:disabled"/>
   <int value="-1817209284" label="PayWithGoogleV1:enabled"/>
@@ -35094,6 +35125,7 @@ from previous Chrome versions.
   <int value="-1045882995" label="UseNewDoodleApi:enabled"/>
   <int value="-1042579955" label="ChromeOSParentalControlsSettings:enabled"/>
   <int value="-1041650038" label="enable-forced-migration-to-tabbed-mode"/>
+  <int value="-1040000888" label="ContextMenuSearchWithGoogleLens:disabled"/>
   <int value="-1039889738" label="NativeNotifications:enabled"/>
   <int value="-1039555838" label="GamepadExtensions:enabled"/>
   <int value="-1037128156" label="HomeLauncherGestures:disabled"/>
@@ -35533,6 +35565,7 @@ from previous Chrome versions.
   <int value="-418868128" label="enable-experimental-web-platform-features"/>
   <int value="-416660617" label="EnforceTLS13Downgrade:disabled"/>
   <int value="-415186532" label="AndroidSiteSettingsUIRefresh:enabled"/>
+  <int value="-412736561" label="EnableZeroStateMixedTypesRanker:enabled"/>
   <int value="-412645531" label="AutofillTokenPrefixMatching:enabled"/>
   <int value="-410852857" label="ImprovedA2HS:disabled"/>
   <int value="-408769228" label="ArcGraphicBuffersVisualizationTool:disabled"/>
@@ -35545,6 +35578,7 @@ from previous Chrome versions.
       label="OmniboxUIExperimentHideSuggestionUrlPath:disabled"/>
   <int value="-400584764" label="ChromeHomeNtpRedesign:enabled"/>
   <int value="-400572959" label="UseDownloadOfflineContentProvider:enabled"/>
+  <int value="-400098787" label="QuietNotificationPrompts:enabled"/>
   <int value="-398623652" label="CCTTargetTranslateLanguage:enabled"/>
   <int value="-396994784" label="enable-vr-shell"/>
   <int value="-396496344" label="ViewsTaskManager:enabled"/>
@@ -36096,6 +36130,7 @@ from previous Chrome versions.
   <int value="372460068" label="QuickUnlockFingerprint:disabled"/>
   <int value="373177941" label="DockedMagnifier:enabled"/>
   <int value="373193557" label="LongPressBackNewDesign:enabled"/>
+  <int value="375485858" label="EnableZeroStateMixedTypesRanker:disabled"/>
   <int value="375785554" label="UserActivationV2:disabled"/>
   <int value="377093001" label="WebRtcHWH264Encoding:disabled"/>
   <int value="378994579" label="Previews:enabled"/>
@@ -36988,6 +37023,7 @@ from previous Chrome versions.
   <int value="1634732103" label="PassiveDocumentWheelEventListeners:enabled"/>
   <int value="1634897915" label="password-import-export:enabled"/>
   <int value="1634980726" label="VrShellExperimentalRendering:disabled"/>
+  <int value="1635986352" label="ContextMenuSearchWithGoogleLens:enabled"/>
   <int value="1636721063"
       label="AutofillLocalCardMigrationShowFeedback:enabled"/>
   <int value="1636962093" label="disable-material-design-ntp"/>
@@ -39384,6 +39420,7 @@ Called by update_use_counter_css.py.-->
   <int value="5" label="Seek Forward"/>
   <int value="6" label="Skip Ad"/>
   <int value="7" label="Stop"/>
+  <int value="8" label="Seek To"/>
 </enum>
 
 <enum name="MediaSessionActionSource">
@@ -43220,7 +43257,11 @@ Called by update_net_trust_anchors.py.-->
 <enum name="NewTabType">
   <int value="0" label="New tab button"/>
   <int value="1" label="Regular menu option"/>
-  <int value="2" label="Tab strip menu option"/>
+  <int value="2" label="Tab strip menu option">
+    <obsolete>
+      Deprecated as of 08/2019.
+    </obsolete>
+  </int>
 </enum>
 
 <enum name="NewTabURLState">
@@ -49007,6 +49048,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="Failed"/>
   <int value="6" label="Previews Server Timeout"/>
   <int value="7" label="Authentication Failure"/>
+  <int value="8" label="No response headers"/>
+  <int value="9" label="Connection closed before response"/>
+  <int value="10" label="Connection Failure"/>
 </enum>
 
 <enum name="PreviewsStalePreviewTimestamp">

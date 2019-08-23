@@ -31,8 +31,8 @@
   //  2) As page/browser popup actions, see
   //     ExtensionActionPlatformDelegateViews. This always has high priority.
   //  3) As a bookmark override. This always has regular priority, and is
-  //     actually handled as a special case of the IDC_BOOKMARK_PAGE browser
-  //     command. See BookmarkCurrentPageAllowingExtensionOverrides.
+  //     actually handled as a special case of the IDC_BOOKMARK_THIS_TAB browser
+  //     command. See BookmarkCurrentTabAllowingExtensionOverrides.
   //
   // The only reasonable way to access the registered accelerators for (1) and
   // (2) is to use the FocusManager. That is what we do here. But that will also

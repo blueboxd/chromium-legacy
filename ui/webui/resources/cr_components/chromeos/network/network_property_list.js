@@ -129,6 +129,9 @@ Polymer({
    * @private
    */
   isPropertyEditable_: function(key, propertyDict) {
+    if (!propertyDict) {
+      return false;
+    }
     const property = /** @type {!CrOnc.ManagedProperty|undefined} */ (
         this.get(key, propertyDict));
     if (property === undefined) {
@@ -160,7 +163,7 @@ Polymer({
    * @private
    */
   isEditable_: function(key, propertyDict, editFieldTypes) {
-    return this.isEditType_(key, editFieldTypes) &&
+    return propertyDict && this.isEditType_(key, editFieldTypes) &&
         this.isPropertyEditable_(key, propertyDict);
   },
 
@@ -193,7 +196,7 @@ Polymer({
    */
   getProperty_: function(key, propertyDict) {
     const property = this.get(key, propertyDict);
-    if (property === undefined && propertyDict.Source) {
+    if (property === undefined && propertyDict && propertyDict.Source) {
       // Provide an empty property object with the network policy source.
       // See https://crbug.com/819837 for more info.
       return {Effective: propertyDict.Source};

@@ -30,9 +30,6 @@ public class WebXrVrTestFramework extends WebXrTestFramework {
     public static final int CONSENT_DIALOG_ACTION_ALLOW = 1;
     public static final int CONSENT_DIALOG_ACTION_DENY = 2;
 
-    // If set, a consent dialog is expected on all enterSessionWithUserGesture* methods.
-    protected boolean mShouldExpectConsentDialog = true;
-
     @ConsentDialogAction
     protected int mConsentDialogAction = CONSENT_DIALOG_ACTION_ALLOW;
 
@@ -69,7 +66,7 @@ public class WebXrVrTestFramework extends WebXrTestFramework {
         }
         super.enterSessionWithUserGesture(webContents);
 
-        if (!mShouldExpectConsentDialog) return;
+        if (!shouldExpectConsentDialog()) return;
         PermissionUtils.waitForConsentPrompt(getRule().getActivity());
         if (mConsentDialogAction == CONSENT_DIALOG_ACTION_ALLOW)
             PermissionUtils.acceptConsentPrompt(getRule().getActivity());
@@ -103,5 +100,17 @@ public class WebXrVrTestFramework extends WebXrTestFramework {
     public void endSession(WebContents webContents) {
         runJavaScriptOrFail("sessionInfos[sessionTypes.IMMERSIVE].currentSession.end()",
                 POLL_TIMEOUT_SHORT_MS, webContents);
+    }
+
+    /**
+     * Checks whether an immersive VR session would trigger the consent dialog.
+     *
+     * @param webContents The WebContents to check in.
+     * @return True if an immersive VR session request would trigger the consent dialog, otherwise
+     *     false.
+     */
+    @Override
+    public boolean shouldExpectConsentDialog(WebContents webContents) {
+        return shouldExpectConsentDialog("sessionTypes.IMMERSIVE", webContents);
     }
 }

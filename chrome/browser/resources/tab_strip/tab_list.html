@@ -1,22 +1,16 @@
 <style>
   :host {
-    display: block;
+    display: flex;
     padding: 16px;
     width: fit-content;
   }
 
   #tabsContainer {
-    display: flex;
-    width: fit-content;
-  }
-
-  tabstrip-tab {
-    flex-shrink: 0;
-    margin-inline-end: 16px;
-  }
-
-  tabstrip-tab:last-child {
-    margin-inline-end: 0;
+    display: grid;
+    grid-auto-columns: 280px;
+    grid-auto-flow: column;
+    grid-gap: 16px;
+    grid-template-rows: 230px;
   }
 </style>
 

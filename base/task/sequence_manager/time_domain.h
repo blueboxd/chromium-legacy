@@ -142,6 +142,8 @@ class BASE_EXPORT TimeDomain {
       DCHECK(queue->heap_handle().IsValid());
       queue->set_heap_handle(base::internal::HeapHandle());
     }
+
+    HeapHandle GetHeapHandle() const { return queue->heap_handle(); }
   };
 
   internal::SequenceManagerImpl* sequence_manager_;  // Not owned.

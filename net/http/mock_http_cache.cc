@@ -85,7 +85,7 @@ MockDiskEntry::MockDiskEntry(const std::string& key)
       max_file_size_(std::numeric_limits<int>::max()),
       doomed_(false),
       sparse_(false),
-      fail_requests_(false),
+      fail_requests_(0),
       fail_sparse_requests_(false),
       busy_(false),
       delayed_(false),
@@ -128,7 +128,7 @@ int MockDiskEntry::ReadData(int index,
   DCHECK(index >= 0 && index < kNumCacheEntryDataIndices);
   DCHECK(!callback.is_null());
 
-  if (fail_requests_)
+  if (fail_requests_ & FAIL_READ)
     return ERR_CACHE_READ_FAILURE;
 
   if (offset < 0 || offset > static_cast<int>(data_[index].size()))
@@ -170,7 +170,7 @@ int MockDiskEntry::WriteData(int index,
   DCHECK(!callback.is_null());
   DCHECK(truncate);
 
-  if (fail_requests_) {
+  if (fail_requests_ & FAIL_WRITE) {
     CallbackLater(std::move(callback), ERR_CACHE_READ_FAILURE);
     return ERR_IO_PENDING;
   }
@@ -212,7 +212,7 @@ int MockDiskEntry::ReadSparseData(int64_t offset,
   if (offset < 0)
     return ERR_FAILED;
 
-  if (fail_requests_)
+  if (fail_requests_ & FAIL_READ_SPARSE)
     return ERR_CACHE_READ_FAILURE;
 
   DCHECK(offset < std::numeric_limits<int32_t>::max());
@@ -252,7 +252,7 @@ int MockDiskEntry::WriteSparseData(int64_t offset,
   if (!buf_len)
     return 0;
 
-  if (fail_requests_)
+  if (fail_requests_ & FAIL_WRITE_SPARSE)
     return ERR_CACHE_READ_FAILURE;
 
   DCHECK(offset < std::numeric_limits<int32_t>::max());
@@ -281,7 +281,7 @@ int MockDiskEntry::GetAvailableRange(int64_t offset,
   if (offset < 0)
     return ERR_FAILED;
 
-  if (fail_requests_)
+  if (fail_requests_ & FAIL_GET_AVAILABLE_RANGE)
     return ERR_CACHE_READ_FAILURE;
 
   *start = offset;
@@ -418,8 +418,8 @@ MockDiskCache::MockDiskCache()
       doomed_count_(0),
       max_file_size_(std::numeric_limits<int>::max()),
       fail_requests_(false),
-      soft_failures_(false),
-      soft_failures_one_instance_(false),
+      soft_failures_(0),
+      soft_failures_one_instance_(0),
       double_create_check_(true),
       fail_sparse_requests_(false),
       support_in_memory_entry_data_(true),
@@ -498,8 +498,8 @@ disk_cache::EntryResult MockDiskCache::OpenEntry(
   entry->AddRef();
 
   if (soft_failures_ || soft_failures_one_instance_) {
-    entry->set_fail_requests();
-    soft_failures_one_instance_ = false;
+    entry->set_fail_requests(soft_failures_ | soft_failures_one_instance_);
+    soft_failures_one_instance_ = 0;
   }
 
   entry->set_max_file_size(max_file_size_);
@@ -548,8 +548,8 @@ disk_cache::EntryResult MockDiskCache::CreateEntry(
   new_entry->AddRef();
 
   if (soft_failures_ || soft_failures_one_instance_) {
-    new_entry->set_fail_requests();
-    soft_failures_one_instance_ = false;
+    new_entry->set_fail_requests(soft_failures_ | soft_failures_one_instance_);
+    soft_failures_one_instance_ = 0;
   }
 
   if (fail_sparse_requests_)

@@ -58,9 +58,6 @@ content::WebUIDataSource* CreateFlagsUIHTMLSource() {
       content::WebUIDataSource::Create(chrome::kChromeUIFlagsHost);
   source->OverrideContentSecurityPolicyScriptSrc(
       "script-src chrome://resources 'self' 'unsafe-eval';");
-
-  source->AddLocalizedString(flags_ui::kFlagsRestartNotice,
-                             IDS_FLAGS_UI_RELAUNCH_NOTICE);
   source->AddString(flags_ui::kVersion, version_info::GetVersionNumber());
 
 #if defined(OS_CHROMEOS)
@@ -69,11 +66,11 @@ content::WebUIDataSource* CreateFlagsUIHTMLSource() {
     // Set the string to show which user can actually change the flags.
     std::string owner;
     chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
-    source->AddString(flags_ui::kOwnerEmail, base::UTF8ToUTF16(owner));
+    source->AddString("owner-warning",
+                      l10n_util::GetStringFUTF16(IDS_FLAGS_UI_OWNER_WARNING,
+                                                 base::UTF8ToUTF16(owner)));
   } else {
-    // The warning will be only shown on ChromeOS, when the current user is not
-    // the owner.
-    source->AddString(flags_ui::kOwnerEmail, base::string16());
+    source->AddString("owner-warning", base::string16());
   }
 #endif
 
@@ -123,6 +120,64 @@ void FinishInitialization(base::WeakPtr<T> flags_ui,
 
 }  // namespace
 
+// static
+void FlagsUI::AddFlagsStrings(content::WebUIDataSource* source) {
+  // Strings added here are all marked a non-translatable, so they are not
+  // actually localized.
+  source->AddLocalizedString(flags_ui::kFlagsRestartNotice,
+                             IDS_FLAGS_UI_RELAUNCH_NOTICE);
+  source->AddLocalizedString("available", IDS_FLAGS_UI_AVAILABLE_FEATURE);
+  source->AddLocalizedString("clear-search", IDS_FLAGS_UI_CLEAR_SEARCH);
+  source->AddLocalizedString("disabled", IDS_FLAGS_UI_DISABLED_FEATURE);
+  source->AddLocalizedString("enabled", IDS_FLAGS_UI_ENABLED_FEATURE);
+  source->AddLocalizedString("experiment-enabled",
+                             IDS_FLAGS_UI_EXPERIMENT_ENABLED);
+  source->AddLocalizedString("no-results", IDS_FLAGS_UI_NO_RESULTS);
+  source->AddLocalizedString("not-available-platform",
+                             IDS_FLAGS_UI_NOT_AVAILABLE_ON_PLATFORM);
+  source->AddLocalizedString("page-warning", IDS_FLAGS_UI_PAGE_WARNING);
+  source->AddLocalizedString("page-warning-explanation",
+                             IDS_FLAGS_UI_PAGE_WARNING_EXPLANATION);
+  source->AddLocalizedString("relaunch", IDS_FLAGS_UI_RELAUNCH);
+  source->AddLocalizedString("reset", IDS_FLAGS_UI_PAGE_RESET);
+  source->AddLocalizedString("reset-complete", IDS_FLAGS_UI_RESET_COMPLETE);
+  source->AddLocalizedString("search-placeholder",
+                             IDS_FLAGS_UI_SEARCH_PLACEHOLDER);
+  source->AddLocalizedString("title", IDS_FLAGS_UI_TITLE);
+  source->AddLocalizedString("unavailable", IDS_FLAGS_UI_UNAVAILABLE_FEATURE);
+}
+
+// static
+void FlagsEnterpriseUI::AddEnterpriseStrings(content::WebUIDataSource* source) {
+  source->AddLocalizedString(flags_ui::kFlagsRestartNotice,
+                             IDS_ENTERPRISE_SETTINGS_RELAUNCH_NOTICE);
+  source->AddLocalizedString("available",
+                             IDS_ENTERPRISE_SETTINGS_AVAILABLE_FEATURE);
+  source->AddLocalizedString("clear-search", IDS_ENTERPRISE_UI_CLEAR_SEARCH);
+  source->AddLocalizedString("disabled",
+                             IDS_ENTERPRISE_SETTINGS_DISABLED_FEATURE);
+  source->AddLocalizedString("enabled",
+                             IDS_ENTERPRISE_SETTINGS_ENABLED_FEATURE);
+  source->AddLocalizedString("experiment-enabled",
+                             IDS_ENTERPRISE_UI_EXPERIMENT_ENABLED);
+  source->AddLocalizedString("no-results", IDS_ENTERPRISE_SETTINGS_NO_RESULTS);
+  source->AddLocalizedString("not-available-platform",
+                             IDS_ENTERPRISE_SETTINGS_NOT_AVAILABLE_ON_PLATFORM);
+  source->AddLocalizedString("page-warning",
+                             IDS_ENTERPRISE_SETTINGS_PAGE_WARNING);
+  source->AddLocalizedString("page-warning-explanation",
+                             IDS_ENTERPRISE_SETTINGS_PAGE_WARNING_EXPLANATION);
+  source->AddLocalizedString("relaunch", IDS_ENTERPRISE_SETTINGS_RELAUNCH);
+  source->AddLocalizedString("reset", IDS_ENTERPRISE_SETTINGS_PAGE_RESET);
+  source->AddLocalizedString("reset-complete",
+                             IDS_ENTERPRISE_UI_RESET_COMPLETE);
+  source->AddLocalizedString("search-placeholder",
+                             IDS_ENTERPRISE_SETTINGS_SEARCH_PLACEHOLDER);
+  source->AddLocalizedString("title", IDS_ENTERPRISE_SETTINGS_TITLE);
+  source->AddLocalizedString("unavailable",
+                             IDS_ENTERPRISE_SETTINGS_UNAVAILABLE_FEATURE);
+}
+
 template <class T>
 FlagsUIHandler* InitializeHandler(content::WebUI* web_ui,
                                   Profile* profile,
@@ -163,7 +218,9 @@ FlagsUI::FlagsUI(content::WebUI* web_ui)
   handler->set_enterprise_features_only(false);
 
   // Set up the about:flags source.
-  content::WebUIDataSource::Add(profile, CreateFlagsUIHTMLSource());
+  auto* source = CreateFlagsUIHTMLSource();
+  AddFlagsStrings(source);
+  content::WebUIDataSource::Add(profile, source);
 }
 
 FlagsUI::~FlagsUI() {
@@ -184,7 +241,9 @@ FlagsEnterpriseUI::FlagsEnterpriseUI(content::WebUI* web_ui)
   handler->set_enterprise_features_only(true);
 
   // Set up the about:enterprise-flags source.
-  content::WebUIDataSource::Add(profile, CreateFlagsUIHTMLSource());
+  auto* source = CreateFlagsUIHTMLSource();
+  AddEnterpriseStrings(source);
+  content::WebUIDataSource::Add(profile, source);
 }
 
 FlagsEnterpriseUI::~FlagsEnterpriseUI() {}

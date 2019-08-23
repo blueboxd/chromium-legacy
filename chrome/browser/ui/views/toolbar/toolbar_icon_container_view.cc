@@ -133,12 +133,32 @@ bool ToolbarIconContainerView::ShouldDisplayHighlight() {
 }
 
 void ToolbarIconContainerView::UpdateHighlight() {
-  SetBorder(ShouldDisplayHighlight()
-                ? views::CreateRoundedRectBorder(
-                      1,
-                      ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
-                          views::EMPHASIS_MAXIMUM, size()),
-                      SkColorSetA(GetToolbarInkDropBaseColor(this),
-                                  kToolbarButtonBackgroundAlpha))
-                : nullptr);
+  if (ShouldDisplayHighlight()) {
+    highlight_animation_.Show();
+  } else {
+    highlight_animation_.Hide();
+  }
+}
+
+void ToolbarIconContainerView::SetHighlightBorder() {
+  const float highlight_value = highlight_animation_.GetCurrentValue();
+  if (highlight_value > 0.0f) {
+    SetBorder(views::CreateRoundedRectBorder(
+        1,
+        ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
+            views::EMPHASIS_MAXIMUM, size()),
+        SkColorSetA(GetToolbarInkDropBaseColor(this),
+                    highlight_value * kToolbarButtonBackgroundAlpha)));
+  } else {
+    SetBorder(nullptr);
+  }
+}
+
+void ToolbarIconContainerView::AnimationProgressed(
+    const gfx::Animation* animation) {
+  SetHighlightBorder();
+}
+
+void ToolbarIconContainerView::AnimationEnded(const gfx::Animation* animation) {
+  SetHighlightBorder();
 }

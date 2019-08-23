@@ -82,7 +82,6 @@ bool CanZoomIn(content::WebContents* contents);
 bool CanZoomOut(content::WebContents* contents);
 bool CanResetZoom(content::WebContents* contents);
 void RestoreTab(Browser* browser);
-TabStripModelDelegate::RestoreTabType GetRestoreTabType(const Browser* browser);
 void SelectNextTab(
     Browser* browser,
     TabStripModel::UserGestureDetails gesture_detail =
@@ -110,9 +109,9 @@ void MuteSite(Browser* browser);
 void PinTab(Browser* browser);
 void ConvertPopupToTabbedBrowser(Browser* browser);
 void Exit();
-void BookmarkCurrentPageIgnoringExtensionOverrides(Browser* browser);
-void BookmarkCurrentPageAllowingExtensionOverrides(Browser* browser);
-bool CanBookmarkCurrentPage(const Browser* browser);
+void BookmarkCurrentTabIgnoringExtensionOverrides(Browser* browser);
+void BookmarkCurrentTabAllowingExtensionOverrides(Browser* browser);
+bool CanBookmarkCurrentTab(const Browser* browser);
 void BookmarkAllTabs(Browser* browser);
 bool CanBookmarkAllTabs(const Browser* browser);
 void SaveCreditCard(Browser* browser);

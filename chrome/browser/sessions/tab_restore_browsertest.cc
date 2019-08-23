@@ -306,8 +306,10 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, MAYBE_DontLoadRestoredTab) {
   ASSERT_EQ(browser()->tab_strip_model()->count(), starting_tab_count + 2);
 
   // Make sure that there's nothing else to restore.
-  ASSERT_EQ(chrome::GetRestoreTabType(browser()),
-            TabStripModelDelegate::RESTORE_NONE);
+  sessions::TabRestoreService* service =
+      TabRestoreServiceFactory::GetForProfile(browser()->profile());
+  ASSERT_TRUE(service);
+  EXPECT_TRUE(service->entries().empty());
 }
 
 // Open a window with multiple tabs, close a tab, then close the window.
@@ -852,8 +854,10 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, PRE_GetRestoreTabType) {
   waiter.Wait();
 
   // When we start, we should get nothing.
-  ASSERT_EQ(chrome::GetRestoreTabType(browser()),
-            TabStripModelDelegate::RESTORE_NONE);
+  sessions::TabRestoreService* service =
+      TabRestoreServiceFactory::GetForProfile(browser()->profile());
+  ASSERT_TRUE(service);
+  EXPECT_TRUE(service->entries().empty());
 
   // Add a tab and close it
   AddSomeTabs(browser(), 1);
@@ -866,8 +870,8 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, PRE_GetRestoreTabType) {
   destroyed_watcher.Wait();
 
   // We now should see a Tab as the restore type.
-  ASSERT_EQ(chrome::GetRestoreTabType(browser()),
-            TabStripModelDelegate::RESTORE_TAB);
+  ASSERT_EQ(1u, service->entries().size());
+  EXPECT_EQ(sessions::TabRestoreService::TAB, service->entries().front()->type);
 }
 
 IN_PROC_BROWSER_TEST_F(TabRestoreTest, GetRestoreTabType) {
@@ -879,8 +883,11 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, GetRestoreTabType) {
   waiter.Wait();
 
   // When we start this time we should get a Tab.
-  ASSERT_EQ(chrome::GetRestoreTabType(browser()),
-            TabStripModelDelegate::RESTORE_TAB);
+  sessions::TabRestoreService* service =
+      TabRestoreServiceFactory::GetForProfile(browser()->profile());
+  ASSERT_TRUE(service);
+  ASSERT_GE(service->entries().size(), 1u);
+  EXPECT_EQ(sessions::TabRestoreService::TAB, service->entries().front()->type);
 }
 
 IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreGroupedTab) {

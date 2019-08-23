@@ -56,7 +56,7 @@ void GtkStatusIcon::SetToolTip(const base::string16& tool_tip) {
 void GtkStatusIcon::UpdatePlatformContextMenu(ui::MenuModel* model) {
   menu_.reset();
   if (model)
-    menu_.reset(new AppIndicatorIconMenu(model));
+    menu_ = std::make_unique<AppIndicatorIconMenu>(model);
 }
 
 void GtkStatusIcon::RefreshPlatformContextMenu() {

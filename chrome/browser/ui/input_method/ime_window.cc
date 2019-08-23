@@ -43,9 +43,9 @@ ImeWindow::ImeWindow(Profile* profile,
     : mode_(mode), native_window_(nullptr) {
   if (extension) {  // Allow nullable |extension| for testability.
     title_ = extension->name();
-    icon_.reset(new extensions::IconImage(
+    icon_ = std::make_unique<extensions::IconImage>(
         profile, extension, extensions::IconsInfo::GetIcons(extension),
-        extension_misc::EXTENSION_ICON_BITTY, gfx::ImageSkia(), this));
+        extension_misc::EXTENSION_ICON_BITTY, gfx::ImageSkia(), this);
   }
 
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,

@@ -473,6 +473,14 @@ void SettingsUI::InitOSWebUIHandlers(Profile* profile,
     html_source->AddInteger(
         "fingerprintReaderLocation",
         static_cast<int32_t>(chromeos::quick_unlock::GetFingerprintLocation()));
+
+    // To use lottie, the worker-src CSP needs to be updated for the web ui that
+    // is using it. Since as of now there are only a couple of webuis using
+    // lottie animations, this update has to be performed manually. As the usage
+    // increases, set this as the default so manual override is no longer
+    // required.
+    html_source->OverrideContentSecurityPolicyWorkerSrc(
+        "worker-src blob: 'self';");
     html_source->AddResourcePath("finger_print.json",
                                  IDR_LOGIN_FINGER_PRINT_TABLET_ANIMATION);
   }

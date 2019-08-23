@@ -73,7 +73,8 @@ void PopulateHidDeviceInfo(hid::HidDeviceInfo* output,
 
 bool WillDispatchDeviceEvent(base::WeakPtr<HidDeviceManager> device_manager,
                              const device::mojom::HidDeviceInfo& device_info,
-                             content::BrowserContext* context,
+                             content::BrowserContext* browser_context,
+                             Feature::Context target_context,
                              const Extension* extension,
                              Event* event,
                              const base::DictionaryValue* listener_filter) {

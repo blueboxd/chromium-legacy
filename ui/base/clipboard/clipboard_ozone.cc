@@ -394,7 +394,7 @@ void ClipboardOzone::WriteObjects(ClipboardBuffer buffer,
     async_clipboard_ozone_->ClearOfferedData();
 
     for (const auto& object : objects)
-      DispatchObject(static_cast<ObjectType>(object.first), object.second);
+      DispatchObject(object.first, object.second);
 
     async_clipboard_ozone_->OfferData();
   }

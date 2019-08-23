@@ -47,7 +47,7 @@ class KeywordEditorControllerTest : public testing::Test,
     else
       util_.VerifyLoad();
 
-    controller_.reset(new KeywordEditorController(&profile_));
+    controller_ = std::make_unique<KeywordEditorController>(&profile_);
     controller_->table_model()->SetObserver(this);
   }
 

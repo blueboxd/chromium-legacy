@@ -17,6 +17,7 @@
 #include "content/common/content_export.h"
 #include "content/common/navigation_params.h"
 #include "content/public/common/resource_load_info.mojom.h"
+#include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
@@ -119,8 +120,7 @@ class CONTENT_EXPORT NavigationBodyLoader
       mojo::ScopedDataPipeConsumerHandle handle) override;
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
-  void CodeCacheReceived(base::Time response_time,
-                         base::span<const uint8_t> data);
+  void CodeCacheReceived(base::Time response_time, mojo_base::BigBuffer data);
   void BindURLLoaderAndContinue();
   void OnConnectionClosed();
   void OnReadable(MojoResult unused);

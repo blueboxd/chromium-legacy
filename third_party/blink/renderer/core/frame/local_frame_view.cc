@@ -3975,6 +3975,14 @@ void LocalFrameView::CrossOriginStatusChanged() {
                                true);
 }
 
+void LocalFrameView::VisibilityForThrottlingChanged() {
+  if (FrameScheduler* frame_scheduler = frame_->GetFrameScheduler()) {
+    // TODO(szager): Per crbug.com/994443, maybe this should be:
+    //   SetFrameVisible(IsHiddenForThrottling() || IsSubtreeThrottled());
+    frame_scheduler->SetFrameVisible(!IsHiddenForThrottling());
+  }
+}
+
 void LocalFrameView::RenderThrottlingStatusChanged() {
   TRACE_EVENT0("blink", "LocalFrameView::RenderThrottlingStatusChanged");
   DCHECK(!IsInPerformLayout());
@@ -3985,14 +3993,6 @@ void LocalFrameView::RenderThrottlingStatusChanged() {
 
   if (!CanThrottleRendering())
     InvalidateForThrottlingChange();
-
-  if (FrameScheduler* frame_scheduler = frame_->GetFrameScheduler()) {
-    // TODO(szager): Per crbug.com/994443, maybe this should be:
-    //   SetFrameVisible(IsHiddenForThrottling() || IsSubtreeThrottled());
-    frame_scheduler->SetFrameVisible(!IsHiddenForThrottling());
-    frame_scheduler->SetCrossOrigin(frame_->IsCrossOriginSubframe());
-    frame_scheduler->TraceUrlChange(frame_->GetDocument()->Url().GetString());
-  }
 
   // If we have become unthrottled, this is essentially a no-op since we're
   // going to paint anyway. If we have become throttled, then this will force
@@ -4126,6 +4126,16 @@ bool LocalFrameView::CanThrottleRendering() const {
   // so they should be able to tolerate some delay in receiving replies from a
   // throttled peer.
   return IsHiddenForThrottling() && frame_->IsCrossOriginSubframe();
+}
+
+void LocalFrameView::UpdateRenderThrottlingStatus(bool hidden_for_throttling,
+                                                  bool subtree_throttled,
+                                                  bool recurse) {
+  bool was_throttled = CanThrottleRendering();
+  FrameView::UpdateRenderThrottlingStatus(hidden_for_throttling,
+                                          subtree_throttled, recurse);
+  if (was_throttled != CanThrottleRendering())
+    RenderThrottlingStatusChanged();
 }
 
 void LocalFrameView::BeginLifecycleUpdates() {

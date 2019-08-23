@@ -54,8 +54,8 @@ TEST(ThreadPoolSequenceTest, PushTakeRemove) {
   EXPECT_TRUE(sequence_transaction.WillPushTask());
   sequence_transaction.PushTask(CreateTask(&mock_task_a));
 
-  // Push task B, C and D in the sequence. PushTask() should return false since
-  // there is already a task in a sequence.
+  // Push task B, C and D in the sequence. PushTask() should return false
+  // since there is already a task in a sequence.
   EXPECT_FALSE(sequence_transaction.WillPushTask());
   sequence_transaction.PushTask(CreateTask(&mock_task_b));
   EXPECT_FALSE(sequence_transaction.WillPushTask());
@@ -64,52 +64,54 @@ TEST(ThreadPoolSequenceTest, PushTakeRemove) {
   sequence_transaction.PushTask(CreateTask(&mock_task_d));
 
   // Take the task in front of the sequence. It should be task A.
-  auto run_intent = sequence->WillRunTask();
-  Optional<Task> task = sequence_transaction.TakeTask(&run_intent);
+  auto registered_task_source =
+      RegisteredTaskSource::CreateForTesting(sequence);
+  registered_task_source.WillRunTask();
+  Optional<Task> task = registered_task_source.TakeTask(&sequence_transaction);
   ExpectMockTask(&mock_task_a, &task.value());
   EXPECT_FALSE(task->queue_time.is_null());
 
   // Remove the empty slot. Task B should now be in front.
-  EXPECT_TRUE(sequence_transaction.DidProcessTask(std::move(run_intent)));
+  EXPECT_TRUE(registered_task_source.DidProcessTask(&sequence_transaction));
 
   EXPECT_FALSE(sequence_transaction.WillPushTask());
-  run_intent = sequence->WillRunTask();
-  task = sequence_transaction.TakeTask(&run_intent);
+  registered_task_source.WillRunTask();
+  task = registered_task_source.TakeTask(&sequence_transaction);
   ExpectMockTask(&mock_task_b, &task.value());
   EXPECT_FALSE(task->queue_time.is_null());
 
   // Remove the empty slot. Task C should now be in front.
-  EXPECT_TRUE(sequence_transaction.DidProcessTask(std::move(run_intent)));
+  EXPECT_TRUE(registered_task_source.DidProcessTask(&sequence_transaction));
 
   EXPECT_FALSE(sequence_transaction.WillPushTask());
-  run_intent = sequence->WillRunTask();
-  task = sequence_transaction.TakeTask(&run_intent);
+  registered_task_source.WillRunTask();
+  task = registered_task_source.TakeTask(&sequence_transaction);
   ExpectMockTask(&mock_task_c, &task.value());
   EXPECT_FALSE(task->queue_time.is_null());
 
   // Remove the empty slot.
-  EXPECT_TRUE(sequence_transaction.DidProcessTask(std::move(run_intent)));
+  EXPECT_TRUE(registered_task_source.DidProcessTask(&sequence_transaction));
 
   // Push task E in the sequence.
   EXPECT_FALSE(sequence_transaction.WillPushTask());
   sequence_transaction.PushTask(CreateTask(&mock_task_e));
 
   // Task D should be in front.
-  run_intent = sequence->WillRunTask();
-  task = sequence_transaction.TakeTask(&run_intent);
+  registered_task_source.WillRunTask();
+  task = registered_task_source.TakeTask(&sequence_transaction);
   ExpectMockTask(&mock_task_d, &task.value());
   EXPECT_FALSE(task->queue_time.is_null());
 
   // Remove the empty slot. Task E should now be in front.
-  EXPECT_TRUE(sequence_transaction.DidProcessTask(std::move(run_intent)));
+  EXPECT_TRUE(registered_task_source.DidProcessTask(&sequence_transaction));
   EXPECT_FALSE(sequence_transaction.WillPushTask());
-  run_intent = sequence->WillRunTask();
-  task = sequence_transaction.TakeTask(&run_intent);
+  registered_task_source.WillRunTask();
+  task = registered_task_source.TakeTask(&sequence_transaction);
   ExpectMockTask(&mock_task_e, &task.value());
   EXPECT_FALSE(task->queue_time.is_null());
 
   // Remove the empty slot. The sequence should now be empty.
-  EXPECT_FALSE(sequence_transaction.DidProcessTask(std::move(run_intent)));
+  EXPECT_FALSE(registered_task_source.DidProcessTask(&sequence_transaction));
   EXPECT_TRUE(sequence_transaction.WillPushTask());
 }
 
@@ -130,9 +132,11 @@ TEST(ThreadPoolSequenceTest, GetSortKeyBestEffort) {
 
   // Take the task from the sequence, so that its sequenced time is available
   // for the check below.
-  auto run_intent = best_effort_sequence->WillRunTask();
-  auto take_best_effort_task =
-      best_effort_sequence_transaction.TakeTask(&run_intent);
+  auto best_effort_registered_task_source =
+      RegisteredTaskSource::CreateForTesting(best_effort_sequence);
+  best_effort_registered_task_source.WillRunTask();
+  auto take_best_effort_task = best_effort_registered_task_source.TakeTask(
+      &best_effort_sequence_transaction);
 
   // Verify the sort key.
   EXPECT_EQ(TaskPriority::BEST_EFFORT, best_effort_sort_key.priority());
@@ -140,7 +144,8 @@ TEST(ThreadPoolSequenceTest, GetSortKeyBestEffort) {
             best_effort_sort_key.next_task_sequenced_time());
 
   // DidProcessTask for correctness.
-  best_effort_sequence_transaction.DidProcessTask(std::move(run_intent));
+  best_effort_registered_task_source.DidProcessTask(
+      &best_effort_sequence_transaction);
 }
 
 // Same as ThreadPoolSequenceTest.GetSortKeyBestEffort, but with a
@@ -161,9 +166,11 @@ TEST(ThreadPoolSequenceTest, GetSortKeyForeground) {
 
   // Take the task from the sequence, so that its sequenced time is available
   // for the check below.
-  auto run_intent = foreground_sequence->WillRunTask();
-  auto take_foreground_task =
-      foreground_sequence_transaction.TakeTask(&run_intent);
+  auto foreground_registered_task_source =
+      RegisteredTaskSource::CreateForTesting(foreground_sequence);
+  foreground_registered_task_source.WillRunTask();
+  auto take_foreground_task = foreground_registered_task_source.TakeTask(
+      &foreground_sequence_transaction);
 
   // Verify the sort key.
   EXPECT_EQ(TaskPriority::USER_VISIBLE, foreground_sort_key.priority());
@@ -171,7 +178,8 @@ TEST(ThreadPoolSequenceTest, GetSortKeyForeground) {
             foreground_sort_key.next_task_sequenced_time());
 
   // DidProcessTask for correctness.
-  foreground_sequence_transaction.DidProcessTask(std::move(run_intent));
+  foreground_registered_task_source.DidProcessTask(
+      &foreground_sequence_transaction);
 }
 
 // Verify that a DCHECK fires if DidProcessTask() is called on a sequence which
@@ -182,9 +190,11 @@ TEST(ThreadPoolSequenceTest, DidProcessTaskWithoutTakeTask) {
   Sequence::Transaction sequence_transaction(sequence->BeginTransaction());
   sequence_transaction.PushTask(Task(FROM_HERE, DoNothing(), TimeDelta()));
 
+  auto registered_task_source =
+      RegisteredTaskSource::CreateForTesting(sequence);
   EXPECT_DCHECK_DEATH({
-    auto run_intent = sequence->WillRunTask();
-    sequence_transaction.DidProcessTask(std::move(run_intent));
+    registered_task_source.WillRunTask();
+    registered_task_source.DidProcessTask(&sequence_transaction);
   });
 }
 
@@ -196,14 +206,16 @@ TEST(ThreadPoolSequenceTest, TakeEmptyFrontSlot) {
   Sequence::Transaction sequence_transaction(sequence->BeginTransaction());
   sequence_transaction.PushTask(Task(FROM_HERE, DoNothing(), TimeDelta()));
 
+  auto registered_task_source =
+      RegisteredTaskSource::CreateForTesting(sequence);
   {
-    auto run_intent = sequence->WillRunTask();
-    EXPECT_TRUE(sequence_transaction.TakeTask(&run_intent));
-    run_intent.ReleaseForTesting();
+    registered_task_source.WillRunTask();
+    EXPECT_TRUE(registered_task_source.TakeTask(&sequence_transaction));
+    registered_task_source.DidProcessTask(&sequence_transaction);
   }
   EXPECT_DCHECK_DEATH({
-    auto run_intent = sequence->WillRunTask();
-    auto task = sequence_transaction.TakeTask(&run_intent);
+    registered_task_source.WillRunTask();
+    auto task = registered_task_source.TakeTask(&sequence_transaction);
   });
 }
 
@@ -211,11 +223,12 @@ TEST(ThreadPoolSequenceTest, TakeEmptyFrontSlot) {
 TEST(ThreadPoolSequenceTest, TakeEmptySequence) {
   scoped_refptr<Sequence> sequence = MakeRefCounted<Sequence>(
       TaskTraits(ThreadPool()), nullptr, TaskSourceExecutionMode::kParallel);
-  Sequence::Transaction sequence_transaction(sequence->BeginTransaction());
-  auto run_intent = sequence->WillRunTask();
-  EXPECT_DCHECK_DEATH(
-      { auto task = sequence_transaction.TakeTask(&run_intent); });
-  run_intent.ReleaseForTesting();
+  auto registered_task_source =
+      RegisteredTaskSource::CreateForTesting(sequence);
+  EXPECT_DCHECK_DEATH({
+    registered_task_source.WillRunTask();
+    auto task = registered_task_source.TakeTask();
+  });
 }
 
 }  // namespace internal

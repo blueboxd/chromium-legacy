@@ -151,8 +151,6 @@ void MediaStreamAudioDestinationHandler::CheckNumberOfChannelsForInput(
   Context()->AssertGraphOwner();
 
   DCHECK_EQ(input, &this->Input(0));
-  if (input != &this->Input(0))
-    return;
 
   AudioHandler::CheckNumberOfChannelsForInput(input);
 

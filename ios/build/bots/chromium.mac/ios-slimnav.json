@@ -2,7 +2,7 @@
   "comments": [
     "Test the SlimNavigationManager feature."
   ],
-  "xcode build version": "11m382q",
+  "xcode build version": "11m392q",
   "gn_args": [
     "goma_dir=\"$(goma_dir)\"",
     "is_component_build=false",
@@ -20,7 +20,7 @@
         "--enable-features=SlimNavigationManager,OfflineVersionWithoutNativeContent"
       ],
       "device type": "iPhone 6s Plus",
-      "os": "12.1",
+      "os": "12.2",
       "host os": "Mac-10.14.4",
       "pool":"Chrome",
       "priority": 30
@@ -31,7 +31,7 @@
         "--enable-features=SlimNavigationManager,OfflineVersionWithoutNativeContent"
       ],
       "device type": "iPhone 6s",
-      "os": "12.1",
+      "os": "12.2",
       "host os": "Mac-10.14.4",
       "pool":"Chrome",
       "priority": 30
@@ -42,7 +42,7 @@
         "--enable-features=SlimNavigationManager,OfflineVersionWithoutNativeContent"
       ],
       "device type": "iPhone 6s",
-      "os": "12.1",
+      "os": "12.2",
       "host os": "Mac-10.14.4",
       "pool":"Chrome",
       "priority": 30
@@ -53,7 +53,7 @@
         "--enable-features=SlimNavigationManager,OfflineVersionWithoutNativeContent"
       ],
       "device type": "iPad Air 2",
-      "os": "12.1",
+      "os": "12.2",
       "host os": "Mac-10.14.4",
       "pool":"Chrome",
       "priority": 30
@@ -64,7 +64,7 @@
         "--enable-features=SlimNavigationManager,OfflineVersionWithoutNativeContent"
       ],
       "device type": "iPhone 6s",
-      "os": "12.1",
+      "os": "12.2",
       "host os": "Mac-10.14.4",
       "pool":"Chrome",
       "priority": 30
@@ -77,7 +77,7 @@
       "shards": 3,
       "xcode parallelization": true,
       "device type": "iPad Air 2",
-      "os": "12.1",
+      "os": "12.2",
       "xctest": true,
       "host os": "Mac-10.14.4",
       "pool":"Chrome",
@@ -89,7 +89,7 @@
         "--enable-features=SlimNavigationManager,OfflineVersionWithoutNativeContent"
       ],
       "device type": "iPad Air 2",
-      "os": "12.1",
+      "os": "12.2",
       "xctest": true,
       "host os": "Mac-10.14.4",
       "pool":"Chrome",
@@ -101,7 +101,7 @@
         "--enable-features=SlimNavigationManager,OfflineVersionWithoutNativeContent"
       ],
       "device type": "iPad Air 2",
-      "os": "12.1",
+      "os": "12.2",
       "xctest": true,
       "host os": "Mac-10.14.4",
       "pool":"Chrome",
@@ -113,7 +113,7 @@
         "--enable-features=SlimNavigationManager,OfflineVersionWithoutNativeContent"
       ],
       "device type": "iPad Air 2",
-      "os": "12.1",
+      "os": "12.2",
       "xctest": true,
       "host os": "Mac-10.14.4",
       "pool":"Chrome",
@@ -125,7 +125,7 @@
         "--enable-features=SlimNavigationManager,OfflineVersionWithoutNativeContent"
       ],
       "device type": "iPad Air 2",
-      "os": "12.1",
+      "os": "12.2",
       "xctest": true,
       "host os": "Mac-10.14.4",
       "pool":"Chrome",
@@ -137,7 +137,7 @@
         "--enable-features=SlimNavigationManager,OfflineVersionWithoutNativeContent"
       ],
       "device type": "iPad Air 2",
-      "os": "12.1",
+      "os": "12.2",
       "xctest": true,
       "host os": "Mac-10.14.4",
       "pool":"Chrome",
@@ -151,7 +151,7 @@
       "shards": 3,
       "xcode parallelization": true,
       "device type": "iPhone X",
-      "os": "12.1",
+      "os": "12.2",
       "xctest": true,
       "host os": "Mac-10.14.4",
       "pool":"Chrome",
@@ -163,7 +163,7 @@
         "--enable-features=SlimNavigationManager,OfflineVersionWithoutNativeContent"
       ],
       "device type": "iPhone X",
-      "os": "12.1",
+      "os": "12.2",
       "xctest": true,
       "host os": "Mac-10.14.4",
       "pool":"Chrome",
@@ -175,7 +175,7 @@
         "--enable-features=SlimNavigationManager,OfflineVersionWithoutNativeContent"
       ],
       "device type": "iPhone X",
-      "os": "12.1",
+      "os": "12.2",
       "xctest": true,
       "host os": "Mac-10.14.4",
       "pool":"Chrome",
@@ -187,7 +187,7 @@
         "--enable-features=SlimNavigationManager,OfflineVersionWithoutNativeContent"
       ],
       "device type": "iPhone X",
-      "os": "12.1",
+      "os": "12.2",
       "xctest": true,
       "host os": "Mac-10.14.4",
       "pool":"Chrome",
@@ -199,7 +199,7 @@
         "--enable-features=SlimNavigationManager,OfflineVersionWithoutNativeContent"
       ],
       "device type": "iPhone X",
-      "os": "12.1",
+      "os": "12.2",
       "xctest": true,
       "host os": "Mac-10.14.4",
       "pool":"Chrome",
@@ -211,7 +211,7 @@
         "--enable-features=SlimNavigationManager,OfflineVersionWithoutNativeContent"
       ],
       "device type": "iPhone X",
-      "os": "12.1",
+      "os": "12.2",
       "xctest": true,
       "host os": "Mac-10.14.4",
       "pool":"Chrome",
@@ -223,7 +223,7 @@
         "--enable-features=SlimNavigationManager,OfflineVersionWithoutNativeContent"
       ],
       "device type": "iPhone X",
-      "os": "12.1",
+      "os": "12.2",
       "host os": "Mac-10.14.4",
       "pool":"Chrome",
       "priority": 30

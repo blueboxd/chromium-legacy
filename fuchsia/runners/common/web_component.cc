@@ -8,8 +8,10 @@
 #include <fuchsia/ui/views/cpp/fidl.h>
 #include <lib/fidl/cpp/binding_set.h>
 #include <lib/fit/function.h>
+#include <lib/sys/cpp/component_context.h>
 #include <utility>
 
+#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/logging.h"
 #include "fuchsia/runners/common/web_content_runner.h"
@@ -51,16 +53,16 @@ WebComponent::WebComponent(
     DestroyComponent(0, fuchsia::sys::TerminationReason::EXITED);
   });
 
-  if (startup_context()->public_services()) {
-    // Publish services before returning control to the message-loop, to ensure
-    // that it is available before the ServiceDirectory starts processing
-    // requests.
+  if (startup_context()->has_outgoing_directory_request()) {
+    // Publish outgoing services and start serving component's outgoing
+    // directory.
     view_provider_binding_ = std::make_unique<
         base::fuchsia::ScopedServiceBinding<fuchsia::ui::app::ViewProvider>>(
-        startup_context()->public_services(), this);
+        startup_context()->component_context()->outgoing().get(), this);
     lifecycle_ = std::make_unique<cr_fuchsia::LifecycleImpl>(
-        startup_context_->public_services(),
+        startup_context()->component_context()->outgoing().get(),
         base::BindOnce(&WebComponent::Kill, base::Unretained(this)));
+    startup_context()->ServeOutgoingDirectory();
   }
 }
 

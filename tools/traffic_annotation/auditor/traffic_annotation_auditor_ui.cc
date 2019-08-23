@@ -411,6 +411,10 @@ int main(int argc, char* argv[]) {
     }
   }
 
+  // TODO(nicolaso): Remove this once it's no longer needed for debugging.
+  LOG(INFO) << "Extractor raw output: ";
+  LOG(INFO) << auditor.extractor_raw_output();
+
   // Process extractor output.
   if (!auditor.ParseClangToolRawOutput())
     return error_value;

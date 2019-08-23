@@ -65,3 +65,16 @@ class StoryExpectationValidatorTest(unittest.TestCase):
     # all story names are valid. That is why there is no assert here.
     story_expectation_validator.validate_story_names(
         benchmarks, test_expectations)
+
+  def testValidateExpectationsComponentTags(self):
+    raw_expectations = ('# tags: [ android mac ]\n'
+                        '# tags: [ android-webview ]\n'
+                        '# results: [ Skip ]\n'
+                        'crbug.com/123 [ mac android-webview ]'
+                        ' b1/s1 [ Skip ]\n')
+    test_expectations = typ_expectations_parser.TestExpectations()
+    ret, _ = test_expectations.parse_tagged_list(raw_expectations)
+    self.assertFalse(ret)
+    with self.assertRaises(AssertionError):
+      story_expectation_validator.validate_expectations_component_tags(
+          test_expectations)

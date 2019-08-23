@@ -26,7 +26,6 @@ enum class BufferFormat {
   RGBA_F16,
   YVU_420,
   YUV_420_BIPLANAR,
-  UYVY_422,
   P010,
 
   LAST = P010

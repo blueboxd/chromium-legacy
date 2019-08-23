@@ -1950,13 +1950,17 @@ void RenderWidget::CloseWebWidget() {
   // closing. Then we would not have to destroy this so carefully.
   screen_metrics_emulator_.reset();
 
-  // When delegate() is present, the RenderWidget is for a main frame,
-  // and the GetWebWidget() will be a WebFrameWidget, which is not the same as
-  // |webwidget_internal_|. The WebFrameWidget will be closed when the main
-  // frame is detached, so we do not close it here. But it does not close the
-  // |webwidget_internal_| since this class takes responsibility for that here
-  // in all cases.
-  webwidget_internal_->Close();
+  // TODO(https://crbug.com/995981): This logic is very confusing and should be
+  // fixed. When the RenderWidget is associated with a RenderView,
+  // webwidget_internal_ points to an instance of WebView. This is owned by the
+  // RenderView, which also owns the RenderWidget and is calling into this
+  // method. We do nothing here and let RenderView destroy the WebView.
+  //
+  // For all other RenderWidgets, webwidget_internal_ points at a 'real'
+  // instance of a WebWidget which is owned by the RenderWidget. In this case,
+  // we must close the webwidget.
+  if (!delegate())
+    webwidget_internal_->Close();
   webwidget_internal_ = nullptr;
 
   close_weak_ptr_factory_.InvalidateWeakPtrs();
@@ -3865,6 +3869,10 @@ RenderWidget::GetCleanupTaskRunner() {
 
 base::WeakPtr<RenderWidget> RenderWidget::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
+}
+
+void RenderWidget::SetWebWidgetInternal(blink::WebWidget* web_widget) {
+  webwidget_internal_ = web_widget;
 }
 
 }  // namespace content

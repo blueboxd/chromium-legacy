@@ -61,14 +61,6 @@ class FrameImpl : public fuchsia::web::Frame,
   FRIEND_TEST_ALL_PREFIXES(FrameImplTest, ReloadFrame);
   FRIEND_TEST_ALL_PREFIXES(FrameImplTest, Stop);
 
-  struct PendingPopup {
-    PendingPopup();
-    ~PendingPopup();
-
-    std::unique_ptr<content::WebContents> web_contents;
-    fuchsia::web::PopupFrameCreationInfo creation_info;
-  };
-
   class OriginScopedScript {
    public:
     OriginScopedScript();
@@ -188,8 +180,7 @@ class FrameImpl : public fuchsia::web::Frame,
 
   // Used for receiving and dispatching popup created by this Frame.
   fuchsia::web::PopupFrameCreationListenerPtr popup_listener_;
-  GURL last_popup_url_;
-  std::list<PendingPopup> pending_popups_;
+  std::list<std::unique_ptr<content::WebContents>> pending_popups_;
   bool popup_ack_outstanding_ = false;
 
   fidl::Binding<fuchsia::web::Frame> binding_;

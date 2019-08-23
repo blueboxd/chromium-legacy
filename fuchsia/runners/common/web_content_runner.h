@@ -13,7 +13,6 @@
 #include "base/callback.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/fuchsia/scoped_service_binding.h"
-#include "base/fuchsia/service_directory.h"
 #include "base/macros.h"
 
 class WebComponent;
@@ -31,13 +30,13 @@ class WebContentRunner : public fuchsia::sys::Runner {
   // process on error.
   static fuchsia::web::ContextPtr CreateIncognitoWebContext();
 
-  // |service_directory|: ServiceDirectory into which this Runner will be
+  // |outgoing_directory|: OutgoingDirectory into which this Runner will be
   //   published. |on_idle_closure| will be invoked when the final client of the
   //   published service disconnects, even if one or more Components are still
   //   active.
-  // |content|: Context (e.g. persisted profile storage) under which all web
+  // |context|: Context (e.g. persisted profile storage) under which all web
   //   content launched through this Runner instance will be run.
-  WebContentRunner(base::fuchsia::ServiceDirectory* service_directory,
+  WebContentRunner(sys::OutgoingDirectory* outgoing_directory,
                    fuchsia::web::ContextPtr context);
   ~WebContentRunner() override;
 

@@ -13,7 +13,8 @@ namespace media {
 CodecImageGroup::CodecImageGroup(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     scoped_refptr<CodecSurfaceBundle> surface_bundle)
-    : surface_bundle_(std::move(surface_bundle)) {
+    : surface_bundle_(std::move(surface_bundle)),
+      task_runner_(std::move(task_runner)) {
   // If the surface bundle has an overlay, then register for destruction
   // callbacks.  We thread-hop to the right thread, which means that we might
   // find out about destruction asynchronously.  Remember that the wp will be
@@ -26,7 +27,7 @@ CodecImageGroup::CodecImageGroup(
           task_runner->PostTask(FROM_HERE,
                                 base::BindOnce(std::move(cb), overlay));
         },
-        std::move(task_runner),
+        task_runner_,
         base::BindOnce(&CodecImageGroup::OnSurfaceDestroyed,
                        weak_this_factory_.GetWeakPtr())));
   }
@@ -36,9 +37,13 @@ CodecImageGroup::CodecImageGroup(
   // adding a new image.
 }
 
-CodecImageGroup::~CodecImageGroup() {}
+CodecImageGroup::~CodecImageGroup() {
+  CHECK(task_runner_->RunsTasksInCurrentSequence());
+}
 
 void CodecImageGroup::AddCodecImage(CodecImage* image) {
+  // Temporary: crbug.com/986783 .
+  CHECK(task_runner_->RunsTasksInCurrentSequence());
   // If somebody adds an image after the surface has been destroyed, fail the
   // image immediately.  This can happen due to thread hopping.
   if (!surface_bundle_) {
@@ -56,16 +61,22 @@ void CodecImageGroup::AddCodecImage(CodecImage* image) {
 }
 
 void CodecImageGroup::RemoveCodecImage(CodecImage* image) {
+  // Temporary: crbug.com/986783 .
+  CHECK(task_runner_->RunsTasksInCurrentSequence());
   images_.erase(image);
   // Clear the destruction CB, since it has a strong ref to us.
   image->SetDestructionCB(CodecImage::DestructionCB());
 }
 
 void CodecImageGroup::OnCodecImageDestroyed(CodecImage* image) {
+  // Temporary: crbug.com/986783 .
+  CHECK(task_runner_->RunsTasksInCurrentSequence());
   images_.erase(image);
 }
 
 void CodecImageGroup::OnSurfaceDestroyed(AndroidOverlay* overlay) {
+  // Temporary: crbug.com/986783 .
+  CHECK(task_runner_->RunsTasksInCurrentSequence());
   // Release any codec buffer, so that the image doesn't try to render to the
   // overlay.  If it already did, that's fine.
   for (CodecImage* image : images_)

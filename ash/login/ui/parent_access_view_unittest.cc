@@ -176,6 +176,18 @@ TEST_F(ParentAccessViewTest, SubmitButton) {
   EXPECT_EQ(1, successful_validation_);
 }
 
+// Tests that help button opens help app.
+TEST_F(ParentAccessViewTest, HelpButton) {
+  auto client = std::make_unique<MockLoginScreenClient>();
+  StartView();
+
+  ParentAccessView::TestApi test_api(view_);
+  EXPECT_TRUE(test_api.help_button()->GetEnabled());
+
+  EXPECT_CALL(*client, ShowParentAccessHelpApp()).Times(1);
+  SimulateButtonPress(test_api.help_button());
+}
+
 // Tests that access code can be entered with numpad.
 TEST_F(ParentAccessViewTest, Numpad) {
   StartView();

@@ -254,40 +254,6 @@ test.util.sync.collapseSelectedFolderInTree = contentWindow => {
 };
 
 /**
- * Fakes pressing the down arrow until the given |folderName| is selected in the
- * navigation tree.
- * TODO(sashab): Merge this functionality into selectTeamDrive and remove this
- * function.
- *
- * @param {Window} contentWindow Window to be tested.
- * @param {string} folderName Name of the folder to be selected.
- * @return {boolean} True if Team Drive folder got selected, false otherwise.
- */
-test.util.sync.selectTeamDrive = (contentWindow, teamDriveName) => {
-  // Select + expand Shared drives grand root.
-  const teamDrivesSelector = '#directory-tree .tree-item ' +
-      '[entry-label="Shared drives"]:not([hidden])';
-  if (!test.util.sync.fakeMouseClick(contentWindow, teamDrivesSelector)) {
-    return false;
-  }
-
-  // Expand the 'Shared drives' root.
-  if (!test.util.sync.expandSelectedFolderInTree(contentWindow)) {
-    return false;
-  }
-
-  // Select the team drive folder.
-  const teamDriveNameSelector = '#directory-tree .tree-item ' +
-      '[entry-label="' + teamDriveName + '"]:not([hidden])';
-  if (!test.util.sync.fakeMouseClick(contentWindow, teamDriveNameSelector)) {
-    return false;
-  }
-
-  return true;
-};
-
-
-/**
  * Obtains visible tree items.
  *
  * @param {Window} contentWindow Window to be tested.

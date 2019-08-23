@@ -179,6 +179,10 @@ class Command(object):
   GET_CREDENTIALS = (
       _Method.GET,
       '/session/:sessionId/webauthn/authenticator/:authenticatorId/credentials')
+  REMOVE_CREDENTIAL = (
+      _Method.DELETE,
+      '/session/:sessionId/webauthn/authenticator/:authenticatorId/credentials/'
+      ':credentialId')
   REMOVE_ALL_CREDENTIALS = (
       _Method.DELETE,
       '/session/:sessionId/webauthn/authenticator/:authenticatorId/credentials')

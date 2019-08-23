@@ -542,7 +542,6 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
   add_spacer(kTitleToDescriptionDistanceDp);
 
   // Main view description.
-  // TODO(crbug.com/970223): Add learn more link after description.
   description_label_ = new views::Label(GetDescription(request_reason_),
                                         views::style::CONTEXT_LABEL,
                                         views::style::STYLE_PRIMARY);
@@ -684,8 +683,7 @@ void ParentAccessView::ButtonPressed(views::Button* sender,
   if (sender == back_button_) {
     callbacks_.on_finished.Run(false);
   } else if (sender == help_button_) {
-    // TODO(agawronska): Implement help view.
-    NOTIMPLEMENTED();
+    Shell::Get()->login_screen_controller()->ShowParentAccessHelpApp();
   } else if (sender == submit_button_) {
     SubmitCode();
   }

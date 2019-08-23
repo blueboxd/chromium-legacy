@@ -955,14 +955,16 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     // cache we should remove offline pages as well.
     if ((remove_mask & content::BrowsingDataRemover::DATA_TYPE_CACHE) &&
         offline_pages::IsOfflinePagesEnabled()) {
-      offline_pages::OfflinePageModelFactory::GetForBrowserContext(profile_)
-          ->DeleteCachedPagesByURLPredicate(
-              filter,
-              base::AdaptCallbackForRepeating(
-                  IgnoreArgument<
-                      offline_pages::OfflinePageModel::DeletePageResult>(
-                      CreateTaskCompletionClosure(
-                          TracingDataType::kOfflinePages))));
+      auto* offline_page_model =
+          offline_pages::OfflinePageModelFactory::GetForBrowserContext(
+              profile_);
+      if (offline_page_model)
+        offline_page_model->DeleteCachedPagesByURLPredicate(
+            filter, base::AdaptCallbackForRepeating(
+                        IgnoreArgument<
+                            offline_pages::OfflinePageModel::DeletePageResult>(
+                            CreateTaskCompletionClosure(
+                                TracingDataType::kOfflinePages))));
     }
 #endif
 

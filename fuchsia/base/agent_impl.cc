@@ -4,7 +4,10 @@
 
 #include "fuchsia/base/agent_impl.h"
 
+#include <lib/sys/cpp/component_context.h>
+
 #include "base/bind.h"
+#include "base/fuchsia/default_context.h"
 
 namespace cr_fuchsia {
 
@@ -14,7 +17,9 @@ AgentImpl::ComponentStateBase::ComponentStateBase(
     base::StringPiece component_id)
     : component_id_(component_id) {
   fidl::InterfaceHandle<::fuchsia::io::Directory> directory;
-  service_directory_.Initialize(directory.NewRequest());
+  outgoing_directory_.GetOrCreateDirectory("svc")->Serve(
+      fuchsia::io::OPEN_RIGHT_READABLE | fuchsia::io::OPEN_RIGHT_WRITABLE,
+      directory.NewRequest().TakeChannel());
   service_provider_ = std::make_unique<base::fuchsia::ServiceProviderImpl>(
       std::move(directory));
 
@@ -41,12 +46,11 @@ void AgentImpl::ComponentStateBase::TeardownIfUnused() {
 }
 
 AgentImpl::AgentImpl(
-    base::fuchsia::ServiceDirectory* service_directory,
+    sys::OutgoingDirectory* outgoing_directory,
     CreateComponentStateCallback create_component_state_callback)
     : create_component_state_callback_(
           std::move(create_component_state_callback)),
-      agent_binding_(service_directory, this) {
-}
+      agent_binding_(outgoing_directory, this) {}
 
 AgentImpl::~AgentImpl() {
   DCHECK(active_components_.empty());

@@ -530,6 +530,50 @@ public class SavePasswordsPreferencesTest {
         });
     }
 
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @Features.EnableFeatures({SavePasswordsPreferences.PASSWORD_LEAK_DETECTION_FEATURE})
+    public void testLeakDetectionSwitchEnabled() throws Exception {
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { PrefServiceBridge.getInstance().setPasswordLeakDetectionEnabled(true); });
+
+        final Preferences preferences =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        SavePasswordsPreferences.class.getName());
+        SavePasswordsPreferences savedPasswordPrefs =
+                (SavePasswordsPreferences) preferences.getMainFragment();
+        ChromeSwitchPreference onOffSwitch =
+                (ChromeSwitchPreference) savedPasswordPrefs.findPreference(
+                        SavePasswordsPreferences.PREF_LEAK_DETECTION_SWITCH);
+        Assert.assertTrue(onOffSwitch.isChecked());
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            onOffSwitch.performClick();
+            Assert.assertFalse(PrefServiceBridge.getInstance().isPasswordLeakDetectionEnabled());
+            onOffSwitch.performClick();
+            Assert.assertTrue(PrefServiceBridge.getInstance().isPasswordLeakDetectionEnabled());
+        });
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @Features.EnableFeatures({SavePasswordsPreferences.PASSWORD_LEAK_DETECTION_FEATURE})
+    public void testLeakDetectionSwitchDisabled() throws Exception {
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { PrefServiceBridge.getInstance().setPasswordLeakDetectionEnabled(false); });
+        final Preferences preferences =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        SavePasswordsPreferences.class.getName());
+        SavePasswordsPreferences savedPasswordPrefs =
+                (SavePasswordsPreferences) preferences.getMainFragment();
+        ChromeSwitchPreference onOffSwitch =
+                (ChromeSwitchPreference) savedPasswordPrefs.findPreference(
+                        SavePasswordsPreferences.PREF_LEAK_DETECTION_SWITCH);
+        Assert.assertFalse(onOffSwitch.isChecked());
+    }
+
     /**
      *  Tests that the link pointing to managing passwords in the user's account is not displayed
      *  for non signed in users.

@@ -114,8 +114,6 @@ void AudioNodeInput::SumAllConnections(AudioBus* summing_bus,
   //        handler().internalChannelCountMode() != AudioHandler::Max);
 
   DCHECK(summing_bus);
-  if (!summing_bus)
-    return;
 
   summing_bus->Zero();
 

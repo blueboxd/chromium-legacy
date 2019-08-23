@@ -78,19 +78,14 @@ class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
   // Useful when a child view is meant to be displayed but has its size and
   // position managed elsewhere in code. By default, all child views are
   // included in the layout unless they are hidden.
-  virtual void SetChildViewIgnoredByLayout(View* child_view, bool ignored);
-  virtual bool IsChildViewIgnoredByLayout(const View* child_view) const;
+  void SetChildViewIgnoredByLayout(View* child_view, bool ignored);
+  bool IsChildViewIgnoredByLayout(const View* child_view) const;
 
   // LayoutManager:
   gfx::Size GetPreferredSize(const View* host) const override;
   gfx::Size GetMinimumSize(const View* host) const override;
   int GetPreferredHeightForWidth(const View* host, int width) const override;
   void Layout(View* host) override;
-  void InvalidateLayout() override;
-  void Installed(View* host) override;
-  void ViewAdded(View* host, View* view) override;
-  void ViewRemoved(View* host, View* view) override;
-  void ViewVisibilitySet(View* host, View* view, bool visible) override;
 
  protected:
   LayoutManagerBase();
@@ -140,10 +135,50 @@ class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
   // Applies |layout| to the children of the host view.
   void ApplyLayout(const ProposedLayout& layout);
 
-  // Can be used by derived classes to ensure that state is correctly
-  // transferred to child LayoutManagerBase instances in a composite layout
-  // (interpolating or animating layouts, etc.)
-  void SyncStateTo(LayoutManagerBase* other) const;
+  // Invalidates the host view (if present).
+  //
+  // If |mark_layouts_changed| is true, OnLayoutChanged() will also be called
+  // for each layout associated with the host, as if the host were invalidated
+  // by external code. If there is no host (yet), the behavior is simulated by
+  // invalidating the root layout manager - see GetRootLayoutManager() below.
+  void InvalidateHost(bool mark_layouts_changed);
+
+  // The following methods are called on this layout and any owned layouts when
+  // e.g. InvalidateLayout(), Installed(), etc. are called, in order to do any
+  // additional layout-specific work required. Returns whether the host view
+  // must be invalidated as a result of the update. All of these call
+  // OnLayoutChanged() by default (see below).
+  virtual bool OnChildViewIgnoredByLayout(View* child_view, bool ignored);
+  virtual bool OnViewAdded(View* host, View* view);
+  virtual bool OnViewRemoved(View* host, View* view);
+  virtual bool OnViewVisibilitySet(View* host, View* view, bool visible);
+
+  // Called when the layout is installed in a host view. Default is a no-op.
+  virtual void OnInstalled(View* host);
+
+  // Called whenever the layout manager is invalidated, or when the layout may
+  // have changed as the result of an operation. Default behavior is to clear
+  // all cached data.
+  virtual void OnLayoutChanged();
+
+  // Adds an owned layout. Owned layouts receive the same events (Installed(),
+  // ViewAdded(), InvalidateLayout(), etc.) as the primary layout. Subclasses of
+  // LayoutManagerBase that need to compose or transform the output of one or
+  // more embedded layouts should use the |owned_layouts| system.
+  template <class T>
+  T* AddOwnedLayout(std::unique_ptr<T> owned_layout) {
+    T* layout = owned_layout.get();
+    AddOwnedLayoutInternal(std::move(owned_layout));
+    return layout;
+  }
+
+  size_t num_owned_layouts() const { return owned_layouts_.size(); }
+  LayoutManagerBase* owned_layout(size_t index) {
+    return owned_layouts_[index].get();
+  }
+  const LayoutManagerBase* owned_layout(size_t index) const {
+    return owned_layouts_[index].get();
+  }
 
  private:
   // Holds bookkeeping data used to determine inclusion of children in the
@@ -153,8 +188,35 @@ class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
     bool ignored = false;
   };
 
+  // LayoutManager:
+  void InvalidateLayout() final;
+  void Installed(View* host) final;
+  void ViewAdded(View* host, View* view) final;
+  void ViewRemoved(View* host, View* view) final;
+  void ViewVisibilitySet(View* host, View* view, bool visible) final;
+
+  void AddOwnedLayoutInternal(std::unique_ptr<LayoutManagerBase> owned_layout);
+
+  // Gets the top layout in the ownership chain that includes this layout.
+  LayoutManagerBase* GetRootLayoutManager();
+
+  // Do the work of propagating events to owned layouts. Returns true if the
+  // host view must be invalidated.
+  bool PropagateChildViewIgnoredByLayout(View* child_view, bool ignored);
+  bool PropagateViewAdded(View* host, View* view);
+  bool PropagateViewRemoved(View* host, View* view);
+  bool PropagateViewVisibilitySet(View* host, View* view, bool visible);
+  void PropagateInstalled(View* host);
+  void PropagateInvalidateLayout();
+
   View* host_view_ = nullptr;
   std::map<const View*, ChildInfo> child_infos_;
+  std::vector<std::unique_ptr<LayoutManagerBase>> owned_layouts_;
+  LayoutManagerBase* parent_layout_ = nullptr;
+
+  // Used to suspend invalidation while processing signals from the host view,
+  // or while invalidating the host view without invalidating the layout.
+  bool suppress_invalidate_ = false;
 
   // Do some really simple caching because layout generation can cost as much
   // as 1ms or more for complex views.

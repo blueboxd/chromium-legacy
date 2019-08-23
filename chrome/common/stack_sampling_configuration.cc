@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/rand_util.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
@@ -30,14 +31,14 @@ base::LazyInstance<StackSamplingConfiguration>::Leaky g_configuration =
 // The profiler is currently only implemented for Windows x64 and Mac x64.
 bool IsProfilerSupported() {
 #if (defined(OS_WIN) && defined(ARCH_CPU_X86_64)) || defined(OS_MACOSX)
-  #if defined(GOOGLE_CHROME_BUILD)
-    // Only run on canary and dev.
-    const version_info::Channel channel = chrome::GetChannel();
-    return channel == version_info::Channel::CANARY ||
-           channel == version_info::Channel::DEV;
-  #else
-    return true;
-  #endif
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  // Only run on canary and dev.
+  const version_info::Channel channel = chrome::GetChannel();
+  return channel == version_info::Channel::CANARY ||
+         channel == version_info::Channel::DEV;
+#else
+  return true;
+#endif
 #else
   return false;
 #endif

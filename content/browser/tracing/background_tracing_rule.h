@@ -63,12 +63,18 @@ class CONTENT_EXPORT BackgroundTracingRule {
   }
   const base::DictionaryValue* args() const { return args_.get(); }
 
+  const std::string& rule_id() const { return rule_id_; }
+
+ protected:
+  virtual std::string GetDefaultRuleId() const;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(BackgroundTracingRule);
 
   double trigger_chance_;
   int trigger_delay_;
   bool stop_tracing_on_repeated_reactive_;
+  std::string rule_id_;
   BackgroundTracingConfigImpl::CategoryPreset category_preset_;
   std::unique_ptr<base::DictionaryValue> args_;
 };

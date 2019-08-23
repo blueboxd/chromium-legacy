@@ -715,7 +715,7 @@ public class WebappActivity extends SingleTabActivity {
 
         Bitmap icon = null;
         if (mWebappInfo.icon() != null) {
-            icon = mWebappInfo.icon();
+            icon = mWebappInfo.icon().bitmap();
         } else if (getActivityTab() != null) {
             icon = mLargestFavicon;
         }

@@ -344,7 +344,7 @@ void AppIndicatorIcon::SetImageFromFile(const SetImageFromFileParams& params) {
 }
 
 void AppIndicatorIcon::SetMenu() {
-  menu_.reset(new AppIndicatorIconMenu(menu_model_));
+  menu_ = std::make_unique<AppIndicatorIconMenu>(menu_model_);
   UpdateClickActionReplacementMenuItem();
   app_indicator_set_menu(icon_, menu_->GetGtkMenu());
 }

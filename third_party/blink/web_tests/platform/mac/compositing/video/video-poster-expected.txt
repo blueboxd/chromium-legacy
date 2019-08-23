@@ -76,15 +76,18 @@ Case: Displaying movie
       "drawsContent": false
     },
     {
+      "name": "Squashing Containment Layer",
+      "drawsContent": false
+    },
+    {
       "name": "LayoutFlexibleBox (relative positioned) DIV class='sizing-small phase-ready state-scrubbing'",
       "position": [8, 8],
       "bounds": [352, 288]
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV",
+      "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV)",
       "position": [8, 8],
-      "bounds": [352, 288],
-      "drawsContent": false
+      "bounds": [352, 288]
     }
   ]
 }

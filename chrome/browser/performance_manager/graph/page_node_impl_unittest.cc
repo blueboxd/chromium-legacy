@@ -50,6 +50,13 @@ TEST_F(PageNodeImplTest, SafeDowncast) {
   EXPECT_EQ(static_cast<Node*>(node), base->ToNode());
 }
 
+using PageNodeImplDeathTest = PageNodeImplTest;
+
+TEST_F(PageNodeImplDeathTest, SafeDowncast) {
+  auto page = CreateNode<PageNodeImpl>();
+  ASSERT_DEATH(FrameNodeImpl::FromNodeBase(page.get()), "Check failed: .*");
+}
+
 TEST_F(PageNodeImplTest, AddFrameBasic) {
   auto process_node = CreateNode<ProcessNodeImpl>();
   auto page_node = CreateNode<PageNodeImpl>();

@@ -21,8 +21,8 @@ class StatusTrayStateChangerWinTest : public testing::Test {
 
   void SetUp() override {
     testing::Test::SetUp();
-    com_.reset(new base::win::ScopedCOMInitializer());
-    status_tray_.reset(new StatusTrayWin());
+    com_ = std::make_unique<base::win::ScopedCOMInitializer>();
+    status_tray_ = std::make_unique<StatusTrayWin>();
     SkBitmap bitmap;
 
     // Put a real bitmap into "bitmap".  2x2 bitmap of green 32 bit pixels.

@@ -39,12 +39,10 @@ namespace {
 web::WebUIIOSDataSource* CreateFlagsUIHTMLSource() {
   web::WebUIIOSDataSource* source =
       web::WebUIIOSDataSource::Create(kChromeUIFlagsHost);
-
-  source->AddLocalizedString(flags_ui::kFlagsRestartNotice,
-                             IDS_FLAGS_UI_RELAUNCH_NOTICE);
   source->AddString(flags_ui::kVersion, version_info::GetVersionNumber());
 
   source->UseStringsJs();
+  FlagsUI::AddFlagsIOSStrings(source);
   source->AddResourcePath(flags_ui::kFlagsJS, IDR_FLAGS_UI_FLAGS_JS);
   source->AddResourcePath(flags_ui::kFlagsCSS, IDR_FLAGS_UI_FLAGS_CSS);
   source->SetDefaultResource(IDR_FLAGS_UI_FLAGS_HTML);
@@ -207,3 +205,30 @@ FlagsUI::FlagsUI(web::WebUIIOS* web_ui)
 }
 
 FlagsUI::~FlagsUI() {}
+
+// static
+void FlagsUI::AddFlagsIOSStrings(web::WebUIIOSDataSource* source) {
+  // Strings added here are all marked a non-translatable, so they are not
+  // actually localized.
+  source->AddLocalizedString(flags_ui::kFlagsRestartNotice,
+                             IDS_FLAGS_UI_RELAUNCH_NOTICE);
+  source->AddLocalizedString("available", IDS_FLAGS_UI_AVAILABLE_FEATURE);
+  source->AddLocalizedString("clear-search", IDS_FLAGS_UI_CLEAR_SEARCH);
+  source->AddLocalizedString("disabled", IDS_FLAGS_UI_DISABLED_FEATURE);
+  source->AddLocalizedString("enabled", IDS_FLAGS_UI_ENABLED_FEATURE);
+  source->AddLocalizedString("experiment-enabled",
+                             IDS_FLAGS_UI_EXPERIMENT_ENABLED);
+  source->AddLocalizedString("no-results", IDS_FLAGS_UI_NO_RESULTS);
+  source->AddLocalizedString("not-available-platform",
+                             IDS_FLAGS_UI_NOT_AVAILABLE_ON_PLATFORM);
+  source->AddLocalizedString("page-warning", IDS_FLAGS_UI_PAGE_WARNING);
+  source->AddLocalizedString("page-warning-explanation",
+                             IDS_FLAGS_UI_PAGE_WARNING_EXPLANATION);
+  source->AddLocalizedString("relaunch", IDS_FLAGS_UI_RELAUNCH);
+  source->AddLocalizedString("reset", IDS_FLAGS_UI_PAGE_RESET);
+  source->AddLocalizedString("reset-complete", IDS_FLAGS_UI_RESET_COMPLETE);
+  source->AddLocalizedString("search-placeholder",
+                             IDS_FLAGS_UI_SEARCH_PLACEHOLDER);
+  source->AddLocalizedString("title", IDS_FLAGS_UI_TITLE);
+  source->AddLocalizedString("unavailable", IDS_FLAGS_UI_UNAVAILABLE_FEATURE);
+}

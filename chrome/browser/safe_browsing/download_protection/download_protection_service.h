@@ -24,8 +24,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/supports_user_data.h"
 #include "chrome/browser/download/download_commands.h"
+#include "chrome/browser/safe_browsing/download_protection/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
+#include "chrome/browser/safe_browsing/services_delegate.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/sessions/core/session_id.h"
@@ -155,6 +157,14 @@ class DownloadProtectionService {
   void MaybeSendDangerousDownloadOpenedReport(
       const download::DownloadItem* item,
       bool show_download_in_folder);
+
+  // Uploads |request| to Safe Browsing for deep scanning, using the upload
+  // service attached to the given |profile|. This is non-blocking, and the
+  // result we be provided through the callback in |request|. This must be
+  // called on the UI thread.
+  void UploadForDeepScanning(
+      Profile* profile,
+      std::unique_ptr<BinaryUploadService::Request> request);
 
  private:
   friend class PPAPIDownloadRequest;

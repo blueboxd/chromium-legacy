@@ -94,7 +94,7 @@ void TabScrubber::OnScrollEvent(ui::ScrollEvent* event) {
     return;
   }
 
-  if (event->finger_count() != 3)
+  if (event->finger_count() != 4)
     return;
 
   Browser* browser = GetActiveBrowser();

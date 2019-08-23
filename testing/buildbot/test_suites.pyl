@@ -95,6 +95,10 @@
       },
     },
 
+    'android_smoke_tests': {
+      'chrome_public_smoke_test': {},
+    },
+
     'android_specific_chromium_gtests': {
       'android_browsertests': {
         'swarming': {
@@ -4404,8 +4408,8 @@
     'ozone_linux_gtests': {
       'services_unittests': {},
       'ozone_unittests': {},
+      'ozone_x11_unittests': {},
       'content_unittests': {
-        'experiment_percentage': 100,
         'args': [
           '--ozone-platform=headless',
         ],
@@ -4903,6 +4907,7 @@
     ],
 
     'chromium_android_gtests': [
+      'android_smoke_tests',
       'android_specific_chromium_gtests',  # Already includes gl_gtests.
       'chromium_gtests',
       'chromium_gtests_for_devices_with_graphical_output',

@@ -91,13 +91,15 @@ void ExtensionSettingsUIBrowserTest::AddManagedPolicyProvider() {
 }
 
 void ExtensionSettingsUIBrowserTest::SetAutoConfirmUninstall() {
-  uninstall_auto_confirm_.reset(new extensions::ScopedTestDialogAutoConfirm(
-      extensions::ScopedTestDialogAutoConfirm::ACCEPT));
+  uninstall_auto_confirm_ =
+      std::make_unique<extensions::ScopedTestDialogAutoConfirm>(
+          extensions::ScopedTestDialogAutoConfirm::ACCEPT);
 }
 
 void ExtensionSettingsUIBrowserTest::EnableErrorConsole() {
-  error_console_override_.reset(new extensions::FeatureSwitch::ScopedOverride(
-      extensions::FeatureSwitch::error_console(), true));
+  error_console_override_ =
+      std::make_unique<extensions::FeatureSwitch::ScopedOverride>(
+          extensions::FeatureSwitch::error_console(), true);
 }
 
 void ExtensionSettingsUIBrowserTest::SetDevModeEnabled(bool enabled) {

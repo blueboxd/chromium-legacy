@@ -463,7 +463,7 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
   ASSERT_FALSE(controller()->current_autosignin_prompt());
 
   // Successful login with a distinct form after block will not prompt:
-  blocked_form.reset(new autofill::PasswordForm(form));
+  blocked_form = std::make_unique<autofill::PasswordForm>(form);
   client()->NotifyUserCouldBeAutoSignedIn(std::move(blocked_form));
   form.username_value = base::ASCIIToUTF16("notpeter@pan.test");
   client()->NotifySuccessfulLoginWithExistingPassword(form);
@@ -473,7 +473,7 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
   // sign-in is off:
   browser()->profile()->GetPrefs()->SetBoolean(
       password_manager::prefs::kCredentialsEnableAutosignin, false);
-  blocked_form.reset(new autofill::PasswordForm(form));
+  blocked_form = std::make_unique<autofill::PasswordForm>(form);
   client()->NotifyUserCouldBeAutoSignedIn(std::move(blocked_form));
   client()->NotifySuccessfulLoginWithExistingPassword(form);
   ASSERT_FALSE(controller()->current_autosignin_prompt());
@@ -481,7 +481,7 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
       password_manager::prefs::kCredentialsEnableAutosignin, true);
 
   // Successful login with the same form after block will prompt:
-  blocked_form.reset(new autofill::PasswordForm(form));
+  blocked_form = std::make_unique<autofill::PasswordForm>(form);
   client()->NotifyUserCouldBeAutoSignedIn(std::move(blocked_form));
   client()->NotifySuccessfulLoginWithExistingPassword(form);
   ASSERT_TRUE(controller()->current_autosignin_prompt());

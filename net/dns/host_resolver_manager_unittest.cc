@@ -656,7 +656,7 @@ TEST_F(HostResolverManagerTest, JobsClearedOnCompletion_MultipleRequests) {
 
 TEST_F(HostResolverManagerTest, JobsClearedOnCompletion_Failure) {
   proc_->AddRuleForAllFamilies(std::string(),
-                               "0.0.0.0");  // Default to failures.
+                               "0.0.0.1");  // Default to failures.
   proc_->SignalMultiple(1u);
 
   ResolveHostResponseHelper response(resolver_->CreateRequest(
@@ -801,7 +801,7 @@ TEST_F(HostResolverManagerTest, EmptyListMeansNameNotResolved) {
 
 TEST_F(HostResolverManagerTest, FailedAsynchronousLookup) {
   proc_->AddRuleForAllFamilies(std::string(),
-                               "0.0.0.0");  // Default to failures.
+                               "0.0.0.1");  // Default to failures.
   proc_->SignalMultiple(1u);
 
   ResolveHostResponseHelper response(resolver_->CreateRequest(
@@ -5725,7 +5725,7 @@ TEST_F(HostResolverManagerDnsTest, NotFoundTTL) {
 
 TEST_F(HostResolverManagerDnsTest, CachedError) {
   proc_->AddRuleForAllFamilies(std::string(),
-                               "0.0.0.0");  // Default to failures.
+                               "0.0.0.1");  // Default to failures.
   proc_->SignalMultiple(1u);
 
   CreateResolver();

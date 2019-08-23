@@ -2385,6 +2385,8 @@ enum WebFeature {
   kThirdPartyServiceWorker = 3007,
   kJSSelfProfiling = 3008,
   kHTMLFrameSetElement = 3009,
+  kMediaCapabilitiesFramerateRatio = 3010,
+  kMediaCapabilitiesFramerateNumber = 3011,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

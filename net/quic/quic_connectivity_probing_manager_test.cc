@@ -185,8 +185,7 @@ TEST_F(QuicConnectivityProbingManagerTest, ReceiveProbingResponseOnSamePath) {
   // packet for this probing.
   EXPECT_CALL(session_, OnSendConnectivityProbingPacket(_, testPeerAddress))
       .Times(0);
-  probing_manager_.OnConnectivityProbingReceived(self_address_,
-                                                 testPeerAddress);
+  probing_manager_.OnPacketReceived(self_address_, testPeerAddress, true);
   EXPECT_TRUE(session_.is_successfully_probed());
   EXPECT_TRUE(session_.IsProbedPathMatching(testNetworkHandle, testPeerAddress,
                                             self_address_));
@@ -237,8 +236,8 @@ TEST_F(QuicConnectivityProbingManagerTest,
   // probing response and continue waiting.
   EXPECT_CALL(session_, OnSendConnectivityProbingPacket(_, testPeerAddress))
       .Times(0);
-  probing_manager_.OnConnectivityProbingReceived(quic::QuicSocketAddress(),
-                                                 testPeerAddress);
+  probing_manager_.OnPacketReceived(quic::QuicSocketAddress(), testPeerAddress,
+                                    true);
   EXPECT_FALSE(session_.is_successfully_probed());
   EXPECT_EQ(1u, test_task_runner_->GetPendingTaskCount());
 
@@ -253,8 +252,7 @@ TEST_F(QuicConnectivityProbingManagerTest,
   // Finally receive the probing response on the same path.
   EXPECT_CALL(session_, OnSendConnectivityProbingPacket(_, testPeerAddress))
       .Times(0);
-  probing_manager_.OnConnectivityProbingReceived(self_address_,
-                                                 testPeerAddress);
+  probing_manager_.OnPacketReceived(self_address_, testPeerAddress, true);
   EXPECT_TRUE(session_.is_successfully_probed());
   EXPECT_TRUE(session_.IsProbedPathMatching(testNetworkHandle, testPeerAddress,
                                             self_address_));
@@ -307,8 +305,8 @@ TEST_F(QuicConnectivityProbingManagerTest,
   uint16_t different_port = self_address_.port() + 1;
   quic::QuicSocketAddress different_self_address(self_address_.host(),
                                                  different_port);
-  probing_manager_.OnConnectivityProbingReceived(different_self_address,
-                                                 testPeerAddress);
+  probing_manager_.OnPacketReceived(different_self_address, testPeerAddress,
+                                    true);
   EXPECT_EQ(1u, test_task_runner_->GetPendingTaskCount());
   // Verify that session's probed network is still not valid.
   EXPECT_FALSE(session_.is_successfully_probed());
@@ -325,8 +323,7 @@ TEST_F(QuicConnectivityProbingManagerTest,
   // address.
   EXPECT_CALL(session_, OnSendConnectivityProbingPacket(_, testPeerAddress))
       .Times(0);
-  probing_manager_.OnConnectivityProbingReceived(self_address_,
-                                                 testPeerAddress);
+  probing_manager_.OnPacketReceived(self_address_, testPeerAddress, true);
   // Verify that session's probed network is not valid yet.
   EXPECT_TRUE(session_.is_successfully_probed());
   EXPECT_TRUE(session_.IsProbedPathMatching(
@@ -524,8 +521,7 @@ TEST_F(QuicConnectivityProbingManagerTest,
   // successful, notify delegate and will no longer send connectivity probes.
   EXPECT_CALL(session_, OnSendConnectivityProbingPacket(_, testPeerAddress))
       .Times(0);
-  probing_manager_.OnConnectivityProbingReceived(self_address_,
-                                                 testPeerAddress);
+  probing_manager_.OnPacketReceived(self_address_, testPeerAddress, true);
 
   // Verify that session marked <kInvalidNetworkHandle, testPeerAddress> as
   // successfully probed.

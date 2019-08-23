@@ -98,6 +98,6 @@ SiteEngagementUI::~SiteEngagementUI() {}
 
 void SiteEngagementUI::BindSiteEngagementDetailsProvider(
     mojom::SiteEngagementDetailsProviderRequest request) {
-  ui_handler_.reset(new SiteEngagementDetailsProviderImpl(
-      Profile::FromWebUI(web_ui()), std::move(request)));
+  ui_handler_ = std::make_unique<SiteEngagementDetailsProviderImpl>(
+      Profile::FromWebUI(web_ui()), std::move(request));
 }

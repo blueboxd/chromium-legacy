@@ -253,7 +253,7 @@ class PeopleHandlerTest : public ChromeRenderViewHostTestHarness {
                     &PeopleHandlerTest::OnSetupInProgressHandleDestroyed,
                     base::Unretained(this))))));
 
-    handler_.reset(new TestingPeopleHandler(&web_ui_, profile()));
+    handler_ = std::make_unique<TestingPeopleHandler>(&web_ui_, profile());
     handler_->AllowJavascript();
     web_ui_.set_web_contents(web_contents());
   }

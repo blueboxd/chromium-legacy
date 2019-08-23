@@ -61,13 +61,16 @@ const app_list::AssistantPageView* AssistantAshTestBase::page_view() const {
 
 void AssistantAshTestBase::MockAssistantInteractionWithResponse(
     const std::string& response_text) {
+  const std::string query = std::string("input text");
+
   // |controller_| will blackhole any server response if it hasn't sent
   // a request first, so we need to start by sending a request.
-  controller_->interaction_controller()->OnDialogPlateContentsCommitted(
-      "input text");
+  controller_->interaction_controller()->OnDialogPlateContentsCommitted(query);
   // Then the server can start an interaction and return the response.
   controller_->interaction_controller()->OnInteractionStarted(
-      /*is_voice_interaction=*/false);
+      chromeos::assistant::mojom::AssistantInteractionMetadata::New(
+          /*type=*/chromeos::assistant::mojom::AssistantInteractionType::kText,
+          /*query=*/query));
   controller_->interaction_controller()->OnTextResponse(response_text);
   controller_->interaction_controller()->OnInteractionFinished(
       AssistantInteractionController::AssistantInteractionResolution::kNormal);

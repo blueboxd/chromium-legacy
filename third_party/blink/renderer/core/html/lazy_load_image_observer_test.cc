@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -27,6 +28,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/network/http_header_map.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
+#include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
@@ -833,14 +835,18 @@ class LazyLoadAutomaticImagesTest : public SimTest {
             false) {}
 
   void SetUp() override {
+    GetNetworkStateNotifier().SetNetworkConnectionInfoOverride(
+        true /*on_line*/, kWebConnectionTypeWifi,
+        WebEffectiveConnectionType::kType4G, 1000 /*http_rtt_msec*/,
+        100 /*max_bandwidth_mbps*/);
     SimTest::SetUp();
     WebView().MainFrameWidget()->Resize(
         WebSize(kViewportWidth, kViewportHeight));
 
     Settings& settings = WebView().GetPage()->GetSettings();
-    settings.SetLazyImageLoadingDistanceThresholdPxUnknown(
+    settings.SetLazyImageLoadingDistanceThresholdPx4G(
         kLoadingDistanceThreshold);
-    settings.SetLazyFrameLoadingDistanceThresholdPxUnknown(
+    settings.SetLazyFrameLoadingDistanceThresholdPx4G(
         kLoadingDistanceThreshold);
     settings.SetLazyLoadEnabled(
         RuntimeEnabledFeatures::LazyImageLoadingEnabled());
@@ -957,6 +963,8 @@ class LazyLoadAutomaticImagesTest : public SimTest {
       scoped_restrict_automatic_lazy_image_loading_to_data_saver_for_test_;
   ScopedLazyImageLoadingMetadataFetchForTest
       scoped_lazy_image_loading_metadata_fetch_for_test_ = true;
+  ScopedLazyImageVisibleLoadTimeMetricsForTest
+      scoped_lazy_image_visible_load_time_metrics_for_test_ = true;
 };
 
 TEST_F(LazyLoadAutomaticImagesTest, AttributeChangedFromLazyToEager) {
@@ -1305,6 +1313,77 @@ TEST_F(LazyLoadAutomaticImagesTest, ImageInsideLazyLoadedFrame) {
   EXPECT_TRUE(ConsoleMessages().Contains("lazy onload"));
   EXPECT_TRUE(ConsoleMessages().Contains("auto onload"));
   EXPECT_TRUE(ConsoleMessages().Contains("unset onload"));
+}
+
+TEST_F(LazyLoadAutomaticImagesTest, LazyLoadDisabledOnReload) {
+  ScopedLazyImageLoadingMetadataFetchForTest
+      scoped_lazy_image_loading_metadata_fetch_for_test = false;
+  String main_resource_html = String::Format(
+      R"HTML(
+        <body onload='console.log("main body onload");'>
+        <div style='height: %dpx;'></div>
+        <img src='https://example.com/image.png'
+             width='50px' height='50px'
+             onload='console.log("auto image onload");' />
+        <img src='https://example.com/image_lazy.png' loading='lazy'
+             width='50px' height='50px'
+             onload='console.log("auto image onload");' />
+        </body>)HTML",
+      LazyLoadAutomaticImagesTest::kViewportHeight +
+          LazyLoadAutomaticImagesTest::kLoadingDistanceThreshold + 100);
+
+  {
+    HistogramTester histogram_tester;
+    SimRequest main_resource("https://example.com/", "text/html");
+    LoadURL("https://example.com/");
+
+    main_resource.Complete(main_resource_html);
+    Compositor().BeginFrame();
+    test::RunPendingTasks();
+
+    // Scrolling down should trigger the fetch both the images, and record
+    // visible load time metrics.
+    SimSubresourceRequest auto_image("https://example.com/image.png",
+                                     "image/png");
+    SimSubresourceRequest lazy_image("https://example.com/image_lazy.png",
+                                     "image/png");
+    GetDocument().View()->LayoutViewport()->SetScrollOffset(
+        ScrollOffset(0, LazyLoadAutomaticImagesTest::kLoadingDistanceThreshold +
+                            LazyLoadAutomaticImagesTest::kViewportHeight),
+        kProgrammaticScroll);
+    Compositor().BeginFrame();
+    auto_image.Complete(ReadTestImage());
+    lazy_image.Complete(ReadTestImage());
+    test::RunPendingTasks();
+    histogram_tester.ExpectTotalCount(
+        "Blink.VisibleLoadTime.LazyLoadImages.BelowTheFold.4G", 2);
+  }
+
+  // Reloading the page should load the image with loading=auto, but still defer
+  // the image with loading=lazy.
+  {
+    HistogramTester histogram_tester;
+    SimRequest main_resource("https://example.com/", "text/html");
+    SimSubresourceRequest auto_image("https://example.com/image.png",
+                                     "image/png");
+    MainFrame().StartReload(WebFrameLoadType::kReload);
+    main_resource.Complete(main_resource_html);
+    auto_image.Complete(ReadTestImage());
+
+    // Scrolling down should trigger the fetch deferred image, and record
+    // visible load time metrics for both images.
+    GetDocument().View()->LayoutViewport()->SetScrollOffset(
+        ScrollOffset(0, LazyLoadAutomaticImagesTest::kLoadingDistanceThreshold +
+                            LazyLoadAutomaticImagesTest::kViewportHeight),
+        kProgrammaticScroll);
+    SimSubresourceRequest lazy_image("https://example.com/image_lazy.png",
+                                     "image/png");
+    Compositor().BeginFrame();
+    lazy_image.Complete(ReadTestImage());
+    test::RunPendingTasks();
+    histogram_tester.ExpectTotalCount(
+        "Blink.VisibleLoadTime.LazyLoadImages.BelowTheFold.4G", 2);
+  }
 }
 
 }  // namespace

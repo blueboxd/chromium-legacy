@@ -5,11 +5,13 @@
 #include "components/ui_devtools/views/devtools_server_util.h"
 
 #include <memory>
+#include <utility>
 
 #include "components/ui_devtools/css_agent.h"
 #include "components/ui_devtools/devtools_server.h"
 #include "components/ui_devtools/page_agent.h"
 #include "components/ui_devtools/switches.h"
+#include "components/ui_devtools/tracing_agent.h"
 #include "components/ui_devtools/views/dom_agent_views.h"
 #include "components/ui_devtools/views/overlay_agent_views.h"
 #include "components/ui_devtools/views/page_agent_views.h"
@@ -17,7 +19,8 @@
 namespace ui_devtools {
 
 std::unique_ptr<UiDevToolsServer> CreateUiDevToolsServerForViews(
-    network::mojom::NetworkContext* network_context) {
+    network::mojom::NetworkContext* network_context,
+    std::unique_ptr<ConnectorDelegate> connector) {
   constexpr int kUiDevToolsDefaultPort = 9223;
   int port = UiDevToolsServer::GetUiDevToolsPort(switches::kEnableUiDevTools,
                                                  kUiDevToolsDefaultPort);
@@ -31,6 +34,7 @@ std::unique_ptr<UiDevToolsServer> CreateUiDevToolsServerForViews(
   client->AddAgent(std::move(dom_agent_views));
   client->AddAgent(std::make_unique<CSSAgent>(dom_agent_views_ptr));
   client->AddAgent(OverlayAgentViews::Create(dom_agent_views_ptr));
+  client->AddAgent(std::make_unique<TracingAgent>(std::move(connector)));
   server->AttachClient(std::move(client));
   return server;
 }

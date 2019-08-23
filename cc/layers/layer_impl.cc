@@ -330,6 +330,9 @@ const Region& LayerImpl::GetAllTouchActionRegions() const {
   if (!all_touch_action_regions_) {
     all_touch_action_regions_ =
         std::make_unique<Region>(touch_action_region_.GetAllRegions());
+  } else {
+    // Ensure the cached value of |all_touch_action_regions_| is up to date.
+    DCHECK_EQ(touch_action_region_.GetAllRegions(), *all_touch_action_regions_);
   }
   return *all_touch_action_regions_;
 }
@@ -364,6 +367,10 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->hit_testable_ = hit_testable_;
   layer->non_fast_scrollable_region_ = non_fast_scrollable_region_;
   layer->touch_action_region_ = touch_action_region_;
+  layer->all_touch_action_regions_ =
+      all_touch_action_regions_
+          ? std::make_unique<Region>(*all_touch_action_regions_)
+          : nullptr;
   layer->wheel_event_handler_region_ = wheel_event_handler_region_;
   layer->background_color_ = background_color_;
   layer->safe_opaque_background_color_ = safe_opaque_background_color_;

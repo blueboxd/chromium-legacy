@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/win/win_util.h"
@@ -130,17 +131,13 @@ std::string GetCleanerRunId(const base::CommandLine& command_line) {
 bool GetLocationsToScan(const base::CommandLine& command_line,
                         TargetBinary target_binary,
                         std::vector<UwS::TraceLocation>* result) {
-  // Do not scan Program Files in the reporter.
   std::vector<UwS::TraceLocation> valid_locations = GetValidTraceLocations();
-  if (target_binary == TargetBinary::kReporter) {
-    auto program_files_loc =
-        std::find(valid_locations.begin(), valid_locations.end(),
-                  UwS::FOUND_IN_PROGRAMFILES);
-    if (program_files_loc != valid_locations.end())
-      valid_locations.erase(program_files_loc);
-  }
-
   if (!command_line.HasSwitch(kScanLocationsSwitch)) {
+    // Do not scan Program Files or CLSID in the reporter since they are slow.
+    if (target_binary == TargetBinary::kReporter) {
+      base::Erase(valid_locations, UwS::FOUND_IN_CLSID);
+      base::Erase(valid_locations, UwS::FOUND_IN_PROGRAMFILES);
+    }
     result->swap(valid_locations);
     return true;
   }
@@ -292,6 +289,14 @@ bool Settings::prompt_using_mojo() const {
   return prompt_using_mojo_;
 }
 
+HANDLE Settings::prompt_response_read_handle() const {
+  return prompt_response_read_handle_;
+}
+
+HANDLE Settings::prompt_request_write_handle() const {
+  return prompt_request_write_handle_;
+}
+
 bool Settings::switches_valid_for_ipc() const {
   // IPC is only used in scanning mode. In other modes ignore the flags.
   if (execution_mode() != ExecutionMode::kScanning) {
@@ -324,6 +329,12 @@ bool Settings::switches_valid_for_ipc() const {
   }
 
   return true;
+}
+
+bool Settings::has_any_ipc_switch() const {
+  return !chrome_mojo_pipe_token_.empty() || has_parent_pipe_handle_ ||
+         prompt_response_read_handle_ != INVALID_HANDLE_VALUE ||
+         prompt_request_write_handle_ != INVALID_HANDLE_VALUE;
 }
 
 bool Settings::has_parent_pipe_handle() const {

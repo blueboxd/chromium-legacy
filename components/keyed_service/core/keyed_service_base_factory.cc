@@ -1,4 +1,3 @@
-
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -35,7 +34,9 @@ void KeyedServiceBaseFactory::DependsOn(KeyedServiceBaseFactory* rhs) {
 }
 
 void KeyedServiceBaseFactory::AssertContextWasntDestroyed(void* context) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // TODO(crbug.com/701326): We should DCHECK(CalledOnValidThread()) here, but
+  // currently some code doesn't do service getting on the main thread.
+  // This needs to be fixed and DCHECK should be restored here.
   dependency_manager_->AssertContextWasntDestroyed(context);
 }
 

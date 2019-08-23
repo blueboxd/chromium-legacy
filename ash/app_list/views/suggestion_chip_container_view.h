@@ -38,8 +38,6 @@ class SuggestionChipContainerView : public SearchResultContainerView {
   void OnTabletModeChanged(bool started);
 
  private:
-  // Returns true if update and layout should be ignored.
-  bool IgnoreUpdateAndLayout() const;
 
   ContentsView* contents_view_ = nullptr;  // Not owned
 

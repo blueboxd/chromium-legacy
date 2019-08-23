@@ -577,6 +577,18 @@ ScriptPromise MediaCapabilities::decodingInfo(
         ExecutionContext::From(script_state),
         WebFeature::kMediaCapabilitiesDecodingInfoWithKeySystemConfig);
   }
+  if (configuration->hasVideo()) {
+    DCHECK(configuration->video()->hasFramerate());
+    if (!std::isnan(ComputeFrameRate(configuration->video()->framerate()))) {
+      if (configuration->video()->framerate().find('/') != kNotFound) {
+        UseCounter::Count(ExecutionContext::From(script_state),
+                          WebFeature::kMediaCapabilitiesFramerateRatio);
+      } else {
+        UseCounter::Count(ExecutionContext::From(script_state),
+                          WebFeature::kMediaCapabilitiesFramerateNumber);
+      }
+    }
+  }
 
   String message;
   if (!IsValidMediaDecodingConfiguration(configuration, &message)) {

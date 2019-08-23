@@ -332,9 +332,6 @@ void CompositingInputsUpdater::UpdateAncestorInfo(PaintLayer* layer,
         info.needs_reparent_scroll_for_fixed = false;
   }
 
-  if (layer->GetLayoutObject().IsVideo())
-    info.is_under_video = true;
-
   if (layer->GetLayoutObject().IsStickyPositioned())
     info.is_under_position_sticky = true;
 }
@@ -428,7 +425,6 @@ void CompositingInputsUpdater::UpdateAncestorDependentCompositingInputs(
   if (info.needs_reparent_scroll && layout_object.StyleRef().IsStacked())
     properties.scroll_parent = info.scrolling_ancestor;
 
-  properties.is_under_video = info.is_under_video;
   properties.is_under_position_sticky = info.is_under_position_sticky;
 
   layer->UpdateAncestorDependentCompositingInputs(properties);

@@ -603,6 +603,9 @@ class CORE_EXPORT LocalFrameView final
   bool ShouldThrottleRendering() const;
 
   bool CanThrottleRendering() const override;
+  void UpdateRenderThrottlingStatus(bool hidden_for_throttling,
+                                    bool subtree_throttled,
+                                    bool recurse = false) override;
 
   void BeginLifecycleUpdates();
 
@@ -702,7 +705,7 @@ class CORE_EXPORT LocalFrameView final
   void NotifyFrameRectsChangedIfNeeded();
   void SetViewportIntersection(const IntRect& viewport_intersection,
                                FrameOcclusionState occlusion_state) override {}
-  void RenderThrottlingStatusChanged() override;
+  void VisibilityForThrottlingChanged() override;
   bool LifecycleUpdatesThrottled() const override {
     return lifecycle_updates_throttled_;
   }
@@ -774,6 +777,7 @@ class CORE_EXPORT LocalFrameView final
   DocumentLifecycle& Lifecycle() const;
 
   void RunIntersectionObserverSteps();
+  void RenderThrottlingStatusChanged();
 
   // Methods to do point conversion via layoutObjects, in order to take
   // transforms into account.

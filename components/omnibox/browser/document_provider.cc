@@ -276,6 +276,64 @@ int BoostOwned(const int score,
   return std::max(score + (owned ? promotion : -demotion), 0);
 }
 
+// Derived from google3/apps/share/util/docs_url_extractor.cc.
+std::string ExtractDocIdFromUrl(const std::string& url) {
+  static const RE2 docs_url_pattern_(
+      "\\b("  // The first groups matches the whole URL.
+      // Domain.
+      "(?:https?://)?(?:"
+      "spreadsheets|docs|drive|script|sites|jamboard"
+      ")[0-9]?.google.com"
+      "(?::[0-9]+)?\\/"  // Port.
+      "(?:\\S*)"         // Non-whitespace chars.
+      "(?:"
+      // Doc url prefix to match /d/{id}. (?:e/)? deviates from google3.
+      "(?:/d/(?:e/)?(?P<path_docid>[0-9a-zA-Z\\-\\_]+))"
+      "|"
+      // Docs id expr to match a valid id parameter.
+      "(?:(?:\\?|&|&amp;)"
+      "(?:id|docid|key|docID|DocId)=(?P<query_docid>[0-9a-zA-Z\\-\\_]+))"
+      "|"
+      // Folder url prefix to match /folders/{folder_id}.
+      "(?:/folders/(?P<folder_docid>[0-9a-zA-Z\\-\\_]+))"
+      "|"
+      // Sites url prefix.
+      "(?:/?s/)(?P<sites_docid>[0-9a-zA-Z\\-\\_]+)"
+      "(?:/p/[0-9a-zA-Z\\-\\_]+)?/edit"
+      "|"
+      // Jam url.
+      "(?:d/)(?P<jam_docid>[0-9a-zA-Z\\-\\_]+)/(?:edit|viewer)"
+      ")"
+      // Other valid chars.
+      "(?:[0-9a-zA-Z$\\-\\_\\.\\+\\!\\*\'\\,;:@&=/\\?]*)"
+      // Summarization details.
+      "(?:summarizationDetails=[0-9a-zA-Z$\\-\\_\\.\\+\\!\\*\'\\,;:@&=/"
+      "\\?(?:%5B)(?:%5D)]*)?"
+      // Pther valid chars.
+      "(?:[0-9a-zA-Z$\\-\\_\\.\\+\\!\\*\'\\,;:@&=/\\?]*)"
+      "(?:(#[0-9a-zA-Z$\\-\\_\\.\\+\\!\\*\'\\,;:@&=/\\?]+)?)"  // Fragment
+      ")");
+
+  std::vector<re2::StringPiece> matched_doc_ids(
+      docs_url_pattern_.NumberOfCapturingGroups() + 1);
+  // ANCHOR_START deviates from google3 which uses UNANCHORED. Using
+  // ANCHOR_START prevents incorrectly matching with non-drive URLs but which
+  // contain a drive URL; e.g.,
+  // url-parser.com/?url=https://docs.google.com/document/d/(id)/edit.
+  if (!docs_url_pattern_.Match(url, 0, url.size(), RE2::ANCHOR_START,
+                               matched_doc_ids.data(),
+                               matched_doc_ids.size())) {
+    return std::string();
+  }
+  for (const auto& doc_id_group : docs_url_pattern_.NamedCapturingGroups()) {
+    re2::StringPiece identified_doc_id = matched_doc_ids[doc_id_group.second];
+    if (!identified_doc_id.empty()) {
+      return std::string(identified_doc_id);
+    }
+  }
+  return std::string();
+}
+
 }  // namespace
 
 // static
@@ -724,43 +782,34 @@ ACMatchClassifications DocumentProvider::Classify(
 
 // static
 const GURL DocumentProvider::GetURLForDeduping(const GURL& url) {
+  // Early exit to avoid unnecessary and more involved checks.
+  if (!url.DomainIs("google.com"))
+    return GURL();
+
   // We aim to prevent duplicate Drive URLs to appear between the Drive document
   // search provider and history/bookmark entries.
-  // Drive URLs take on two core forms, and may have request parameters.
-  // Additionally, we may have redirector URLs which wrap a drive URL.
   // All URLs are canonicalized to a GURL form only used for deduplication and
   // not guaranteed to be usable for navigation.
-  // URLs of the following forms are handled:
-  // https://drive.google.com/[a/domain.tld]/open?id=(id)
-  // https://docs.google.com/[a/domain.tld/]document/d/(id)/[...]
-  // https://docs.google.com/[a/domain.tld/]spreadsheets/d/(id)/edit#gid=12345
-  // https://docs.google.com/[a/domain.tld/]presentation/d/(id)/edit#slide=id.g12345a_0_26
-  // https://www.google.com/url?[...]url=https://drive.google.com/a/domain.tld/open?id%3D(id)[%26D...][&...]
-  // where id is comprised of characters in [0-9A-Za-z\-_] = [\w\-]
-  std::string id;
 
-  if (url.host() == "drive.google.com") {
-    static re2::LazyRE2 path_regex = {"^/(?:a/[\\w\\.]+/)?open$"};
-    if (RE2::PartialMatch(url.path(), *path_regex))
-      net::GetValueForKeyInQuery(url, "id", &id);
-  } else if (url.host() == "docs.google.com") {
-    static re2::LazyRE2 doc_link_regex = {
-        "^/(?:a/[\\w\\.]+/)?(?:document|spreadsheets|presentation|forms)/d/"
-        "([\\w-]+)/"};
-    RE2::PartialMatch(url.path(), *doc_link_regex, &id);
-  } else if (url.host() == "www.google.com" && url.path() == "/url") {
-    // Redirect links wrapping a drive.google.com/open?id= link.
-    static re2::LazyRE2 redirect_link_regex = {
-        "^[^#]*url=https://drive\\.google\\.com/(?:a/[\\w\\.]+/"
-        ")?open\\?id%3D(.*?)(?:%26|#|&|$)"};
-    RE2::PartialMatch(url.query(), *redirect_link_regex, &id);
-  }
-
-  if (id.empty()) {
-    return GURL();
+  // Drive redirects are already handled by the regex in |ExtractDocIdFromUrl|.
+  // The below logic handles google.com redirects; e.g., google.com/url/q=<url>
+  std::string url_str;
+  if (url.host() == "www.google.com" && url.path() == "/url") {
+    if ((!net::GetValueForKeyInQuery(url, "q", &url_str) || url_str.empty()) &&
+        (!net::GetValueForKeyInQuery(url, "url", &url_str) || url_str.empty()))
+      return GURL();
   } else {
-    // Canonicalize to the /open form without any extra args.
-    // This is similar to what we expect from the server.
-    return GURL("https://drive.google.com/open?id=" + id);
+    url_str = url.spec();
   }
+
+  // Unescape |url_str|
+  url_str = net::UnescapeURLComponent(
+      url_str, net::UnescapeRule::PATH_SEPARATORS |
+                   net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
+
+  const std::string id = ExtractDocIdFromUrl(url_str);
+
+  // Canonicalize to the /open form without any extra args.
+  // This is similar to what we expect from the server.
+  return id.empty() ? GURL() : GURL("https://drive.google.com/open?id=" + id);
 }

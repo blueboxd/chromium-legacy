@@ -1702,6 +1702,7 @@ CrSettingsInternetDetailPageTest.prototype = {
     '//ui/webui/resources/js/assert.js',
     '//ui/webui/resources/js/util.js',
     '../fake_chrome_event.js',
+    '../chromeos/fake_network_config_mojom.js',
     '../chromeos/fake_networking_private.js',
     '../chromeos/cr_onc_strings.js',
     'chromeos/internet_detail_page_tests.js',

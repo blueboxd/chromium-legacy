@@ -900,6 +900,57 @@
                     "experimental": true
                 }
             ]
+        },
+        {
+            "domain": "Tracing",
+            "experimental": true,
+            "commands": [
+                {
+                    "name": "start",
+                    "description": "Start trace events collection.",
+                    "parameters": [
+                        { "name": "categories", "type": "string", "optional": true, "deprecated": true, "description": "Category/tag filter" },
+                        { "name": "options", "type": "string", "optional": true, "deprecated": true, "description": "Tracing options" },
+                        { "name": "bufferUsageReportingInterval", "type": "number", "optional": true, "description": "If set, the agent will issue bufferUsage events at this interval, specified in milliseconds" }
+                    ]
+                },
+                {
+                    "name": "end",
+                    "description": "Stop trace events collection."
+                },
+                {
+                    "name": "disable",
+                    "description": "Disables Tracing agent for the given page."
+                },
+                {
+                    "name": "enable",
+                    "description": "Enables Tracing agent for the given page."
+                }
+            ],
+            "events": [
+                {
+                    "name": "dataCollected",
+                    "parameters": [
+                        { "name": "value", "type": "array", "items": { "type": "object" } }
+                    ],
+                    "description": "Contains an bucket of collected trace events. When tracing is stopped collected events will be send as a sequence of dataCollected events followed by tracingComplete event."
+                },
+                {
+                    "name": "tracingComplete",
+                    "description": "Signals that tracing is stopped and there is no trace buffers pending flush, all data were delivered via dataCollected events.",
+                    "parameters": [
+                        { "name": "dataLossOccurred", "type": "boolean", "optional": true, "description": "A handle of the stream that holds resulting trace data." }
+                    ]
+                },
+                {
+                    "name": "bufferUsage",
+                    "parameters": [
+                        { "name": "percentFull", "type": "number", "optional": true, "description": "A number in range [0..1] that indicates the used size of event buffer as a fraction of its total size." },
+                        { "name": "eventCount", "type": "number", "optional": true, "description": "An approximate number of events in the trace log." },
+                        { "name": "value", "type": "number", "optional": true, "description": "A number in range [0..1] that indicates the used size of event buffer as a fraction of its total size." }
+                    ]
+                }
+            ]
         }
     ],
     "version": {

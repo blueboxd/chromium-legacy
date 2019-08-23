@@ -231,7 +231,7 @@ void NetInternalsTest::MessageHandler::DnsLookup(
 
 NetInternalsTest::NetInternalsTest()
     : test_server_started_(false) {
-  message_handler_.reset(new MessageHandler(this));
+  message_handler_ = std::make_unique<MessageHandler>(this);
 }
 
 NetInternalsTest::~NetInternalsTest() {

@@ -21,6 +21,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "url/gurl.h"
@@ -178,10 +179,11 @@ class DataReductionProxySettings {
   void RemoveDataReductionProxySettingsObserver(
       DataReductionProxySettingsObserver* observer);
 
-  // Sets a config client that can be used to update Data Reduction Proxy
-  // settings when the network service is enabled.
-  void SetCustomProxyConfigClient(
-      network::mojom::CustomProxyConfigClientPtrInfo proxy_config_client);
+  // Addds a config client that can be used to update Data Reduction Proxy
+  // settings.
+  void AddCustomProxyConfigClient(
+      mojo::Remote<network::mojom::CustomProxyConfigClient>
+          proxy_config_client);
 
   DataReductionProxyService* data_reduction_proxy_service() {
     return data_reduction_proxy_service_.get();
@@ -297,7 +299,10 @@ class DataReductionProxySettings {
   // The headers to use for requests to the proxy server.
   net::HttpRequestHeaders proxy_request_headers_;
 
-  network::mojom::CustomProxyConfigClientPtrInfo proxy_config_client_;
+  // A list of CustomProxyConfigClients that may have been added before
+  // the DataReductionProxyService was available.
+  std::vector<mojo::Remote<network::mojom::CustomProxyConfigClient>>
+      proxy_config_clients_;
 
   base::ThreadChecker thread_checker_;
 

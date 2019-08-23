@@ -54,9 +54,10 @@ void BluetoothPairingDialogTest::ShowDialog() {
 
   const bool kNotPaired = false;
   const bool kNotConnected = false;
-  mock_device_.reset(new testing::NiceMock<device::MockBluetoothDevice>(
-      nullptr, 0, "Bluetooth 2.0 Mouse", "28:CF:DA:00:00:00", kNotPaired,
-      kNotConnected));
+  mock_device_ =
+      std::make_unique<testing::NiceMock<device::MockBluetoothDevice>>(
+          nullptr, 0, "Bluetooth 2.0 Mouse", "28:CF:DA:00:00:00", kNotPaired,
+          kNotConnected);
 
   EXPECT_CALL(*mock_adapter_, GetDevice(testing::_))
       .WillRepeatedly(testing::Return(mock_device_.get()));

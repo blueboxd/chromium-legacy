@@ -138,6 +138,7 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
         {chromeos::features::kCrostiniUsbSupport,
          chromeos::features::kCrostiniUsbAllowUnsupported},
         {});
+    arc::EnableArcVmForTesting();
 
     TestingBrowserProcess::GetGlobal()->SetSystemNotificationHelper(
         std::make_unique<SystemNotificationHelper>());
@@ -155,6 +156,7 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
   }
 
   void TearDown() override {
+    arc::DisableArcVmForTesting();
     scoped_feature_list_.Reset();
     crostini_test_helper_.reset();
     BrowserWithTestWindowTest::TearDown();
@@ -817,4 +819,27 @@ TEST_F(CrosUsbDetectorTest, SharedDevicesGetAttachedOnStartup) {
   cros_usb_detector_->ConnectSharedDevicesOnVmStartup(arc::kArcVmName);
   EXPECT_EQ(2, usb_device_observer_.notify_count());
   EXPECT_TRUE(GetSingleDeviceInfo().vm_sharing_info[arc::kArcVmName].shared);
+}
+
+TEST_F(CrosUsbDetectorTest, DevicesDontGetAutoAttachedToArcVmWhenDisabled) {
+  arc::DisableArcVmForTesting();
+  ConnectToDeviceManager();
+  base::RunLoop().RunUntilIdle();
+
+  auto device_1 = base::MakeRefCounted<device::FakeUsbDeviceInfo>(
+      0, 1, kManufacturerName, kProductName_1, "002");
+  device_manager_.AddDevice(device_1);
+  base::RunLoop().RunUntilIdle();
+
+  auto device_info = GetSingleDeviceInfo();
+  EXPECT_TRUE(device_info.vm_sharing_info.empty());
+
+  AttachDeviceToVm(crostini::kCrostiniDefaultVmName, device_info.guid);
+  device_info = GetSingleDeviceInfo();
+  EXPECT_TRUE(
+      device_info.vm_sharing_info[crostini::kCrostiniDefaultVmName].shared);
+
+  // Detaching shouldn't auto-attach to ARCVM either when ARCVM is disabled.
+  DetachDeviceFromVm(crostini::kCrostiniDefaultVmName, device_info.guid);
+  EXPECT_TRUE(GetSingleDeviceInfo().vm_sharing_info.empty());
 }

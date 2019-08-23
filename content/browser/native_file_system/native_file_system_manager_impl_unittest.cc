@@ -43,7 +43,8 @@ class NativeFileSystemManagerImplTest : public testing::Test {
     chrome_blob_context_->InitializeOnIOThread(base::FilePath(), nullptr);
 
     manager_ = base::MakeRefCounted<NativeFileSystemManagerImpl>(
-        file_system_context_, chrome_blob_context_, &permission_context_);
+        file_system_context_, chrome_blob_context_, &permission_context_,
+        /*off_the_record=*/false);
 
     manager_->BindRequest(kBindingContext, mojo::MakeRequest(&manager_ptr_));
   }

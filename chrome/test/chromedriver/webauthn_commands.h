@@ -49,6 +49,11 @@ Status ExecuteGetCredentials(WebView* web_view,
                              const base::Value& params,
                              std::unique_ptr<base::Value>* value);
 
+// Remove a single credential stored in an authenticator.
+Status ExecuteRemoveCredential(WebView* web_view,
+                               const base::Value& params,
+                               std::unique_ptr<base::Value>* value);
+
 // Remove all the credentials stored in an authenticator.
 Status ExecuteRemoveAllCredentials(WebView* web_view,
                                    const base::Value& params,

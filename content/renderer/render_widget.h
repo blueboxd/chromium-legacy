@@ -708,6 +708,12 @@ class CONTENT_EXPORT RenderWidget
 
   base::WeakPtr<RenderWidget> AsWeakPtr();
 
+  // TODO(https://crbug.com/995981): Eventually, the lifetime of RenderWidget
+  // should be tied to the lifetime of the WebWidget. In the short term, for
+  // main frames, the RenderView has to explicitly set/unset the WebWidget on
+  // attach/detach.
+  void SetWebWidgetInternal(blink::WebWidget* web_widget);
+
  protected:
   // Notify subclasses that we initiated the paint operation.
   virtual void DidInitiatePaint() {}

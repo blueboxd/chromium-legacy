@@ -46,7 +46,7 @@ int GetBookmarkPromoStringSpecifier() {
 StarView::StarView(CommandUpdater* command_updater,
                    Browser* browser,
                    PageActionIconView::Delegate* delegate)
-    : PageActionIconView(command_updater, IDC_BOOKMARK_PAGE, delegate),
+    : PageActionIconView(command_updater, IDC_BOOKMARK_THIS_TAB, delegate),
       browser_(browser),
       bookmark_promo_observer_(this) {
   SetID(VIEW_ID_STAR_BUTTON);
@@ -93,7 +93,7 @@ void StarView::OnExecuting(PageActionIconView::ExecuteSource execute_source) {
 void StarView::ExecuteCommand(ExecuteSource source) {
   if (browser_) {
     OnExecuting(source);
-    chrome::BookmarkCurrentPageIgnoringExtensionOverrides(browser_);
+    chrome::BookmarkCurrentTabIgnoringExtensionOverrides(browser_);
   } else {
     PageActionIconView::ExecuteCommand(source);
   }

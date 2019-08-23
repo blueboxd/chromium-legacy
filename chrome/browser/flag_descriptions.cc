@@ -262,6 +262,12 @@ const char kCaptionSettingsName[] = "Caption Settings";
 const char kCaptionSettingsDescription[] =
     "Enable the ability to customize captions.";
 
+const char kContextMenuSearchWithGoogleLensName[] =
+    "Google Lens powered image search in the context menu.";
+const char kContextMenuSearchWithGoogleLensDescription[] =
+    "Replaces default image search with an intent to Google Lens when "
+    "supported.";
+
 const char kClickToOpenPDFName[] = "Click to open embedded PDFs";
 const char kClickToOpenPDFDescription[] =
     "When the PDF plugin is unavailable, show a click-to-open placeholder for "
@@ -2564,6 +2570,13 @@ const char kProgressBarThrottleName[] = "Android progress update throttling.";
 const char kProgressBarThrottleDescription[] =
     "Limit the maximum progress update to make progress appear smoother.";
 
+const char kQuietNotificationPromptsName[] =
+    "Quieter notification permission prompts";
+const char kQuietNotificationPromptsDescription[] =
+    "Enables quieter permission prompts for notification permission requests. "
+    "When a site wishes to show notifications, the usual modal dialog is "
+    "replaced with a quieter version.";
+
 const char kReaderModeHeuristicsName[] = "Reader Mode triggering";
 const char kReaderModeHeuristicsDescription[] =
     "Determines what pages the Reader Mode infobar is shown on.";
@@ -2846,8 +2859,8 @@ const char kOmniboxTabSwitchSuggestionsDescription[] =
 const char kOmniboxTabSwitchSuggestionsDedicatedRowName[] =
     "Omnibox dedicated row tab switch suggestions";
 const char kOmniboxTabSwitchSuggestionsDedicatedRowDescription[] =
-    "Put tab switch suggestions in separate suggestion, immediately following "
-    "the original suggestion.";
+    "Put each tab switch suggestion in a separate suggestion, immediately "
+    "following the original suggestion.";
 
 const char kOmniboxWrapPopupPositionName[] = "Omnibox wrap pop-up position";
 const char kOmniboxWrapPopupPositionDescription[] =
@@ -3524,6 +3537,11 @@ const char kVirtualKeyboardDescription[] = "Enable virtual keyboard support.";
 const char kWakeOnPacketsName[] = "Wake On Packets";
 const char kWakeOnPacketsDescription[] =
     "Enables waking the device based on the receipt of some network packets.";
+
+const char kZeroStateFilesName[] = "Enable Launcher Zero State Files";
+const char kZeroStateFilesDescription[] =
+    "Enables zero state file recommendations in the Launcher, which appear when"
+    "the search box is active and no query has been entered.";
 
 // Prefer keeping this section sorted to adding new definitions down here.
 

@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "ash/public/cpp/ash_pref_names.h"
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -23,6 +22,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
@@ -252,9 +252,8 @@ void ChromeOSMetricsProvider::ProvideSystemProfileMetrics(
 }
 
 void ChromeOSMetricsProvider::ProvideAccessibilityMetrics() {
-  PrefService* pref = g_browser_process->local_state();
   bool is_spoken_feedback_enabled =
-      pref->GetBoolean(ash::prefs::kAccessibilitySpokenFeedbackEnabled);
+      chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled();
   UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosSpokenFeedback.EveryReport",
                         is_spoken_feedback_enabled);
 }

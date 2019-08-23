@@ -59,7 +59,7 @@ void ExtensionMessageBubbleBrowserTest::TearDownOnMainThread() {
 void ExtensionMessageBubbleBrowserTest::AddSettingsOverrideExtension(
     const std::string& settings_override_value) {
   DCHECK(!custom_extension_dir_);
-  custom_extension_dir_.reset(new extensions::TestExtensionDir());
+  custom_extension_dir_ = std::make_unique<extensions::TestExtensionDir>();
   std::string manifest = base::StringPrintf(
     "{\n"
     "  'name': 'settings override',\n"

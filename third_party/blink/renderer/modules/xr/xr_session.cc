@@ -87,22 +87,23 @@ void UpdateViewFromEyeParameters(
 }
 
 // Returns the session feature corresponding to the given reference space type.
-XRSessionFeature MapReferenceSpaceTypeToFeature(XRReferenceSpace::Type type) {
+base::Optional<device::mojom::XRSessionFeature> MapReferenceSpaceTypeToFeature(
+    XRReferenceSpace::Type type) {
   switch (type) {
     case XRReferenceSpace::Type::kTypeViewer:
-      return XRSessionFeature::kViewer;
+      return device::mojom::XRSessionFeature::REF_SPACE_VIEWER;
     case XRReferenceSpace::Type::kTypeLocal:
-      return XRSessionFeature::kLocal;
+      return device::mojom::XRSessionFeature::REF_SPACE_LOCAL;
     case XRReferenceSpace::Type::kTypeLocalFloor:
-      return XRSessionFeature::kLocalFloor;
+      return device::mojom::XRSessionFeature::REF_SPACE_LOCAL_FLOOR;
     case XRReferenceSpace::Type::kTypeBoundedFloor:
-      return XRSessionFeature::kBoundedFloor;
+      return device::mojom::XRSessionFeature::REF_SPACE_BOUNDED_FLOOR;
     case XRReferenceSpace::Type::kTypeUnbounded:
-      return XRSessionFeature::kUnbounded;
+      return device::mojom::XRSessionFeature::REF_SPACE_UNBOUNDED;
   }
 
   NOTREACHED();
-  return XRSessionFeature::kUnbounded;
+  return base::nullopt;
 }
 
 }  // namespace
@@ -295,8 +296,9 @@ ScriptPromise XRSession::requestReferenceSpace(ScriptState* script_state,
 
   // If the session feature required by this reference space type is not
   // enabled, reject the session.
-  if (!enabled_features_.Contains(
-          MapReferenceSpaceTypeToFeature(requested_type))) {
+  auto type_as_feature = MapReferenceSpaceTypeToFeature(requested_type);
+  if (!type_as_feature ||
+      !enabled_features_.Contains(type_as_feature.value())) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,

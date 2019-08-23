@@ -41,30 +41,6 @@
 
 namespace {
 
-void ApplyIconEffects(apps::IconEffects icon_effects,
-                      int size_hint_in_dip,
-                      gfx::ImageSkia* image_skia) {
-  extensions::ChromeAppIcon::ResizeFunction resize_function;
-#if defined(OS_CHROMEOS)
-  if (icon_effects & apps::IconEffects::kResizeAndPad) {
-    // TODO(crbug.com/826982): khmel@ notes that MD post-processing is not
-    // always applied: "See legacy code:
-    // https://cs.chromium.org/search/?q=ChromeAppIconLoader&type=cs In one
-    // cases MD design is used in another not."
-    resize_function =
-        base::BindRepeating(&app_list::MaybeResizeAndPadIconForMd);
-  }
-#endif
-
-  bool apply_chrome_badge = icon_effects & apps::IconEffects::kBadge;
-  bool app_launchable = !(icon_effects & apps::IconEffects::kGray);
-  bool from_bookmark = icon_effects & apps::IconEffects::kRoundCorners;
-
-  extensions::ChromeAppIcon::ApplyEffects(size_hint_in_dip, resize_function,
-                                          apply_chrome_badge, app_launchable,
-                                          from_bookmark, image_skia);
-}
-
 std::vector<uint8_t> ReadFileAsCompressedData(const base::FilePath path) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
@@ -217,7 +193,7 @@ void RunCallbackWithImageSkia(int size_hint_in_dip,
     // an uncompressed icon, return the uncompressed result; otherwise, encode
     // the icon to a compressed icon, return the compressed result.
     if (icon_effects) {
-      ApplyIconEffects(icon_effects, size_hint_in_dip, &processed_image);
+      apps::ApplyIconEffects(icon_effects, size_hint_in_dip, &processed_image);
     }
 
     if (icon_compression == apps::mojom::IconCompression::kUncompressed) {
@@ -314,6 +290,30 @@ void RunCallbackWithFallback(
 }  // namespace
 
 namespace apps {
+
+void ApplyIconEffects(IconEffects icon_effects,
+                      int size_hint_in_dip,
+                      gfx::ImageSkia* image_skia) {
+  extensions::ChromeAppIcon::ResizeFunction resize_function;
+#if defined(OS_CHROMEOS)
+  if (icon_effects & IconEffects::kResizeAndPad) {
+    // TODO(crbug.com/826982): MD post-processing is not always applied: "See
+    // legacy code:
+    // https://cs.chromium.org/search/?q=ChromeAppIconLoader&type=cs In one
+    // cases MD design is used in another not."
+    resize_function =
+        base::BindRepeating(&app_list::MaybeResizeAndPadIconForMd);
+  }
+#endif
+
+  const bool apply_chrome_badge = icon_effects & IconEffects::kBadge;
+  const bool app_launchable = !(icon_effects & IconEffects::kGray);
+  const bool from_bookmark = icon_effects & IconEffects::kRoundCorners;
+
+  extensions::ChromeAppIcon::ApplyEffects(size_hint_in_dip, resize_function,
+                                          apply_chrome_badge, app_launchable,
+                                          from_bookmark, image_skia);
+}
 
 void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
                            int size_hint_in_dip,

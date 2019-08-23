@@ -58,6 +58,13 @@ TEST_F(SystemNodeImplTest, SafeDowncast) {
   EXPECT_EQ(static_cast<Node*>(node), base->ToNode());
 }
 
+using SystemNodeImplDeathTest = SystemNodeImplTest;
+
+TEST_F(SystemNodeImplDeathTest, SafeDowncast) {
+  auto system = CreateNode<SystemNodeImpl>();
+  ASSERT_DEATH(PageNodeImpl::FromNodeBase(system.get()), "Check failed: .*");
+}
+
 namespace {
 
 class LenientMockObserver : public SystemNodeImpl::Observer {

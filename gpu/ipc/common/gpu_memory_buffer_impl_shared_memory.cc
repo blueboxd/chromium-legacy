@@ -205,8 +205,6 @@ bool GpuMemoryBufferImplSharedMemory::IsSizeValidForFormat(
       }
       return true;
     }
-    case gfx::BufferFormat::UYVY_422:
-      return size.width() % 2 == 0;
   }
 
   NOTREACHED();

@@ -143,6 +143,7 @@ class ChromeNativeFileSystemPermissionContext
   void ConfirmSensitiveDirectoryAccess(
       const url::Origin& origin,
       const std::vector<base::FilePath>& paths,
+      bool is_directory,
       int process_id,
       int frame_id,
       base::OnceCallback<void(SensitiveDirectoryResult)> callback) override;
@@ -208,6 +209,7 @@ class ChromeNativeFileSystemPermissionContext
   void DidConfirmSensitiveDirectoryAccess(
       const url::Origin& origin,
       const std::vector<base::FilePath>& paths,
+      bool is_directory,
       int process_id,
       int frame_id,
       base::OnceCallback<void(SensitiveDirectoryResult)> callback,

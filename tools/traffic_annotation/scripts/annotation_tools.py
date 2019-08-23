@@ -140,9 +140,12 @@ class NetworkTrafficAnnotationTools():
       return_code: int Auditor's exit code.
     """
 
+    command_line = [self.auditor_path, "--build-path=" + self.build_path] + args
+    # TODO(nicolaso): Remove once it's no longer needed for debugging.
+    print("Running %s" % command_line)
+
     command = subprocess.Popen(
-        [self.auditor_path, "--build-path=" + self.build_path] + args,
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        command_line, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout_text, stderr_text = command.communicate()
     return_code = command.returncode
 

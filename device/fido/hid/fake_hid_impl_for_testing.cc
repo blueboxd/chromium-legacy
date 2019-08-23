@@ -26,7 +26,7 @@ MATCHER_P(IsCtapHidCommand, expected_command, "") {
 MockFidoHidConnection::MockFidoHidConnection(
     device::mojom::HidDeviceInfoPtr device,
     device::mojom::HidConnectionRequest request,
-    std::vector<uint8_t> connection_channel_id)
+    std::array<uint8_t, 4> connection_channel_id)
     : binding_(this, std::move(request)),
       device_(std::move(device)),
       connection_channel_id_(connection_channel_id) {}

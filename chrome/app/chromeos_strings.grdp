@@ -3169,7 +3169,7 @@
     Stopping supervision...
   </message>
   <message name="IDS_ADDING_SUPERVISION_TITLE" desc="Title of the supervision transition OOBE screen when adding supervision.">
-    Setting up supervision...
+    Setting up supervision
   </message>
   <message name="IDS_SUPERVISION_TRANSITION_MESSAGE" desc="Introduction message for the supervision transition OOBE screen.">
     Keep device turned on

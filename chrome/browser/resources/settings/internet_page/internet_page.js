@@ -335,7 +335,7 @@ Polymer({
     const params = new URLSearchParams;
     params.append('guid', networkState.guid);
     params.append('type', oncType);
-    params.append('name', OncMojo.getNetworkDisplayName(networkState));
+    params.append('name', OncMojo.getNetworkStateDisplayName(networkState));
     settings.navigateTo(settings.routes.NETWORK_DETAIL, params);
   },
 
@@ -624,7 +624,7 @@ Polymer({
   onNetworkConnect_: function(event) {
     const networkState = event.detail.networkState;
     const oncType = OncMojo.getNetworkTypeString(networkState.type);
-    const displayName = OncMojo.getNetworkDisplayName(networkState);
+    const displayName = OncMojo.getNetworkStateDisplayName(networkState);
 
     if (!event.detail.bypassConnectionDialog &&
         networkState.type == mojom.NetworkType.kTether &&

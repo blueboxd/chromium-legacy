@@ -5,6 +5,7 @@
 #include "content/renderer/loader/code_cache_loader_impl.h"
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "mojo/public/cpp/base/big_buffer.h"
 #include "third_party/blink/public/platform/platform.h"
 
 namespace content {
@@ -20,7 +21,7 @@ CodeCacheLoaderImpl::~CodeCacheLoaderImpl() = default;
 void CodeCacheLoaderImpl::FetchFromCodeCacheSynchronously(
     const GURL& url,
     base::Time* response_time_out,
-    blink::WebVector<uint8_t>* data_out) {
+    mojo_base::BigBuffer* data_out) {
   base::WaitableEvent fetch_code_cache_event(
       base::WaitableEvent::ResetPolicy::AUTOMATIC,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
@@ -84,21 +85,21 @@ void CodeCacheLoaderImpl::FetchFromCodeCacheImpl(
 void CodeCacheLoaderImpl::OnReceiveCachedCode(FetchCodeCacheCallback callback,
                                               base::WaitableEvent* fetch_event,
                                               base::Time response_time,
-                                              base::span<const uint8_t> data) {
+                                              mojo_base::BigBuffer data) {
   // The loader would be destroyed once the fetch has completed. On terminate
   // the fetch event would be signalled and the fetch should complete and hence
   // we should not see this callback anymore.
   DCHECK(!terminated_);
-  std::move(callback).Run(response_time, data);
+  std::move(callback).Run(response_time, std::move(data));
   if (fetch_event)
     fetch_event->Signal();
 }
 
 void CodeCacheLoaderImpl::ReceiveDataForSynchronousFetch(
     base::Time response_time,
-    base::span<const uint8_t> data) {
+    mojo_base::BigBuffer data) {
   response_time_for_sync_load_ = response_time;
-  data_for_sync_load_.assign(data.begin(), data.end());
+  data_for_sync_load_ = std::move(data);
 }
 
 void CodeCacheLoaderImpl::OnTerminate(base::WaitableEvent* fetch_event,

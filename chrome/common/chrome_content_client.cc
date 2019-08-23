@@ -26,6 +26,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/child_process_logging.h"
@@ -495,7 +496,7 @@ void ChromeContentClient::AddPepperPlugins(
   if (max_flash) {
     plugins->push_back(*max_flash);
   } else if (!disable_bundled_flash) {
-#if defined(GOOGLE_CHROME_BUILD) && defined(FLAPPER_AVAILABLE)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(FLAPPER_AVAILABLE)
     // Add a fake Flash plugin even though it doesn't actually exist - if a
     // web page requests it, it will be component-updated on-demand. There is
     // nothing that guarantees the component update will give us the
@@ -504,7 +505,7 @@ void ChromeContentClient::AddPepperPlugins(
     plugins->push_back(
         CreatePepperFlashInfo(base::FilePath(ChromeContentClient::kNotPresent),
                               FLAPPER_VERSION_STRING, false));
-#endif  // defined(GOOGLE_CHROME_BUILD) && defined(FLAPPER_AVAILABLE)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(FLAPPER_AVAILABLE)
   }
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 }

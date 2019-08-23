@@ -5,16 +5,19 @@
 #ifndef CHROME_BROWSER_PERMISSIONS_PERMISSION_PROMPT_ANDROID_H_
 #define CHROME_BROWSER_PERMISSIONS_PERMISSION_PROMPT_ANDROID_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/permissions/permission_request_notification_android.h"
 #include "chrome/browser/ui/permission_bubble/permission_prompt.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 
 namespace content {
 class WebContents;
 }
+class PermissionRequestNotificationAndroid;
 
 class PermissionPromptAndroid : public PermissionPrompt {
  public:
@@ -25,6 +28,7 @@ class PermissionPromptAndroid : public PermissionPrompt {
   // PermissionPrompt:
   void UpdateAnchorPosition() override;
   gfx::NativeWindow GetNativeWindow() override;
+  bool ShouldDestroyOnTabSwitching() override;
 
   void Closing();
   void Accept();
@@ -45,6 +49,11 @@ class PermissionPromptAndroid : public PermissionPrompt {
   content::WebContents* web_contents_;
   // |delegate_| is the PermissionRequestManager, which owns this object.
   Delegate* delegate_;
+
+  // The permission requestion notification used to display the permission
+  // request, if displayed in that format.
+  std::unique_ptr<PermissionRequestNotificationAndroid>
+      permission_request_notification_;
 
   base::WeakPtrFactory<PermissionPromptAndroid> weak_factory_{this};
 

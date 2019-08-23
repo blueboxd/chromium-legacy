@@ -94,6 +94,7 @@ class ProtoChromePromptIPC : public ChromePromptIPC {
       OnConnectionError();
       return;
     }
+
     if (bytes_written != size) {
       LOG(ERROR) << "Incorrect number of bytes written to the pipe. Should be: "
                  << size << " but is :" << bytes_written;

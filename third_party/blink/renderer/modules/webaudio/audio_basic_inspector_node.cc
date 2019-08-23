@@ -53,8 +53,6 @@ void AudioBasicInspectorHandler::CheckNumberOfChannelsForInput(
   Context()->AssertGraphOwner();
 
   DCHECK_EQ(input, &this->Input(0));
-  if (input != &this->Input(0))
-    return;
 
   unsigned number_of_channels = input->NumberOfChannels();
 

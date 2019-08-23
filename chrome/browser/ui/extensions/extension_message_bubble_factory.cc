@@ -126,10 +126,11 @@ ExtensionMessageBubbleFactory::GetController() {
     // browser was restarted, then we always do a session restore (rather than
     // showing normal startup pages).
     if (is_initial_check && !StartupBrowserCreator::WasRestarted()) {
-      controller.reset(new extensions::ExtensionMessageBubbleController(
+      controller =
+          std::make_unique<extensions::ExtensionMessageBubbleController>(
               new extensions::SettingsApiBubbleDelegate(
                   browser_->profile(), extensions::BUBBLE_TYPE_STARTUP_PAGES),
-                  browser_));
+              browser_);
       if (controller->ShouldShow())
         return controller;
     }

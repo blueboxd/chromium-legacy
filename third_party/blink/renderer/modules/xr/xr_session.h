@@ -46,14 +46,7 @@ class XRWorldInformation;
 class XRWorldTrackingState;
 class XRWorldTrackingStateInit;
 
-enum class XRSessionFeature {
-  kViewer,
-  kLocal,
-  kLocalFloor,
-  kBoundedFloor,
-  kUnbounded,
-};
-using XRSessionFeatureSet = WTF::HashSet<XRSessionFeature>;
+using XRSessionFeatureSet = WTF::HashSet<device::mojom::XRSessionFeature>;
 
 class XRSession final
     : public EventTargetWithInlineData,

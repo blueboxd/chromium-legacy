@@ -76,7 +76,7 @@ class NavigationBodyLoaderTest : public ::testing::Test,
     base::RunLoop().RunUntilIdle();
   }
 
-  void BodyCodeCacheReceived(base::span<const uint8_t>) override {}
+  void BodyCodeCacheReceived(mojo_base::BigBuffer data) override {}
 
   void BodyDataReceived(base::span<const char> data) override {
     ASSERT_TRUE(expecting_data_received_);

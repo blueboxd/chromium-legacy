@@ -620,7 +620,6 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   target_tree->set_painted_device_scale_factor(painted_device_scale_factor());
   target_tree->SetDeviceScaleFactor(device_scale_factor());
   target_tree->SetDeviceViewportSize(device_viewport_size_);
-  target_tree->SetViewportVisibleRect(viewport_visible_rect_);
 
   if (TakeNewLocalSurfaceIdRequest())
     target_tree->RequestNewLocalSurfaceId();
@@ -1230,17 +1229,6 @@ void LayerTreeImpl::SetDeviceViewportSize(
   UpdateViewportContainerSizes();
   host_impl_->OnCanDrawStateChangedForTree();
   host_impl_->SetViewportDamage(GetDeviceViewport());
-}
-
-void LayerTreeImpl::SetViewportVisibleRect(const gfx::Rect& visible_rect) {
-  if (visible_rect == viewport_visible_rect_)
-    return;
-
-  viewport_visible_rect_ = visible_rect;
-
-  set_needs_update_draw_properties();
-  if (IsActiveTree())
-    host_impl_->SetViewportDamage(GetDeviceViewport());
 }
 
 gfx::Rect LayerTreeImpl::GetDeviceViewport() const {

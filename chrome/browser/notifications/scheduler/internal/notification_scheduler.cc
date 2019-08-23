@@ -240,6 +240,7 @@ class NotificationSchedulerImpl : public NotificationScheduler,
     ScheduleBackgroundTask();
   }
 
+  // TODO(xingliu): Remove |task_start_time|.
   void FindNotificationToShow(SchedulerTaskTime task_start_time) {
     DisplayDecider::Results results;
     ScheduledNotificationManager::Notifications notifications;
@@ -252,8 +253,7 @@ class NotificationSchedulerImpl : public NotificationScheduler,
     context_->client_registrar()->GetRegisteredClients(&clients);
 
     context_->display_decider()->FindNotificationsToShow(
-        task_start_time, std::move(notifications), std::move(client_states),
-        &results);
+        std::move(notifications), std::move(client_states), &results);
 
     for (const auto& guid : results) {
       context_->notification_manager()->DisplayNotification(guid);

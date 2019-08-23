@@ -29,3 +29,6 @@ per-file render_widget*=jonross@chromium.org
 per-file child_frame_compositor*=jonross@chromium.org
 per-file child_frame_compositing_helper*=jonross@chromium.org
 per-file render_frame_metadata*=jonross@chromium.org
+
+# Dependency for storage APIs.
+per-file storage_util*=file://storage/OWNERS

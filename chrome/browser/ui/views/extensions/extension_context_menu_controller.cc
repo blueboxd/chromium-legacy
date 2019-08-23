@@ -48,9 +48,9 @@ void ExtensionContextMenuController::ShowContextMenuForViewImpl(
   // Unretained() is safe here as ToolbarActionView will always outlive the
   // menu. Any action that would lead to the deletion of |this| first triggers
   // the closing of the menu through lost capture.
-  menu_adapter_.reset(new views::MenuModelAdapter(
+  menu_adapter_ = std::make_unique<views::MenuModelAdapter>(
       model, base::BindRepeating(&ExtensionContextMenuController::OnMenuClosed,
-                                 base::Unretained(this))));
+                                 base::Unretained(this)));
 
   menu_ = menu_adapter_->CreateMenu();
 

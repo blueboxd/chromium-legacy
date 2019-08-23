@@ -13,15 +13,13 @@
 if (!window.testRunner)
     debug('This test cannot be run without the TestRunner');
 
-const kDefaultReading = [1, 0, 0, 0]; // 180 degrees around X axis.
+const kDefaultReading = [
+  [ 1, 0, 0, 0 ]  // 180 degrees around X axis.
+];
 const kRotationMatrix = [1,  0,  0,  0,
                          0, -1,  0,  0,
                          0,  0, -1,  0,
                          0,  0,  0,  1];
-
-// For 'orientation.angle == 270', which is set for tests at
-// at SensorProxy::GetScreenOrientationAngle().
-const kMappedReading = [-0.707107, 0.707107, 0, 0];
 
 async function checkPopulateMatrix(sensorProvider, sensorType) {
   let sensorObject = new sensorType();
@@ -74,11 +72,20 @@ async function checkPopulateMatrix(sensorProvider, sensorType) {
   return mockSensor.removeConfigurationCalled();
 }
 
+const kReadings = {
+  readings: kDefaultReading,
+  expectedReadings: kDefaultReading,
+  expectedRemappedReadings: [
+    // For 'orientation.angle == 270', which is set for tests at
+    // at SensorProxy::GetScreenOrientationAngle().
+    [-0.707107, 0.707107, 0, 0]
+  ]
+}
+
 runGenericSensorTests(
     AbsoluteOrientationSensor,
-    kDefaultReading,
-    verifyQuatSensorReading.bind(null, kDefaultReading),
-    verifyQuatSensorReading.bind(null, kMappedReading),
+    kReadings,
+    verifyQuatSensorReading,
     ['accelerometer', 'gyroscope', 'magnetometer']);
 
 sensor_test(sensorProvider => {
@@ -89,9 +96,8 @@ sensor_test(sensorProvider => {
 
 runGenericSensorTests(
     RelativeOrientationSensor,
-    kDefaultReading,
-    verifyQuatSensorReading.bind(null, kDefaultReading),
-    verifyQuatSensorReading.bind(null, kMappedReading),
+    kReadings,
+    verifyQuatSensorReading,
     ['accelerometer', 'gyroscope']);
 
 sensor_test(sensorProvider => {

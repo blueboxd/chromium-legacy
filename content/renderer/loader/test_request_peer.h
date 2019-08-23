@@ -41,7 +41,7 @@ class TestRequestPeer : public RequestPeer {
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
   void OnTransferSizeUpdated(int transfer_size_diff) override;
-  void OnReceivedCachedMetadata(const char* data, int len) override;
+  void OnReceivedCachedMetadata(mojo_base::BigBuffer data) override;
   void OnCompletedRequest(
       const network::URLLoaderCompletionStatus& status) override;
   scoped_refptr<base::TaskRunner> GetTaskRunner() override;
@@ -62,7 +62,7 @@ class TestRequestPeer : public RequestPeer {
     bool cancel_on_receive_data = false;
     bool received_response = false;
 
-    std::vector<char> cached_metadata;
+    mojo_base::BigBuffer cached_metadata;
     // Data received. If downloading to file, remains empty.
     std::string data;
 

@@ -369,7 +369,7 @@ IN_PROC_BROWSER_TEST_F(ViewSourceTest, HttpPostInMainframe) {
   EXPECT_THAT(source_text,
               HasSubstr("<h1>Request Body:</h1><pre>text=value</pre>"));
   EXPECT_THAT(source_text,
-              HasSubstr("<h1>Request Headers:</h1><pre>POST /echoall HTTP"));
+              HasSubstr("<pre id='request-headers'>POST /echoall HTTP"));
   EXPECT_THAT(source_text,
               ContainsRegex("Request Headers:.*Referer: " + form_url.spec()));
   EXPECT_THAT(
@@ -463,7 +463,7 @@ IN_PROC_BROWSER_TEST_F(ViewSourceTest, HttpPostInSubframe) {
   EXPECT_THAT(source_text,
               HasSubstr("<h1>Request Body:</h1><pre>text=value</pre>"));
   EXPECT_THAT(source_text,
-              HasSubstr("<h1>Request Headers:</h1><pre>POST /echoall HTTP"));
+              HasSubstr("<pre id='request-headers'>POST /echoall HTTP"));
   EXPECT_THAT(source_text,
               ContainsRegex("Request Headers:.*Referer: " + form_url.spec()));
   EXPECT_THAT(

@@ -538,6 +538,5 @@ public class WebXrVrTransitionTest {
                 "window.location.href = 'https://google.com'", POLL_TIMEOUT_SHORT_MS);
         PermissionUtils.waitForConsentPromptDismissal(
                 mWebXrVrTestFramework.getRule().getActivity());
-        mWebXrVrTestFramework.assertNoJavaScriptErrors();
     }
 }

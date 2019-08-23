@@ -411,7 +411,7 @@ bool TaskTracker::WillPostTaskNow(const Task& task, TaskPriority priority) {
   return true;
 }
 
-RegisteredTaskSource TaskTracker::WillQueueTaskSource(
+RegisteredTaskSource TaskTracker::RegisterTaskSource(
     scoped_refptr<TaskSource> task_source) {
   DCHECK(task_source);
 
@@ -438,9 +438,8 @@ bool TaskTracker::CanRunPriority(TaskPriority priority) const {
 }
 
 RegisteredTaskSource TaskTracker::RunAndPopNextTask(
-    RunIntentWithRegisteredTaskSource run_intent_with_task_source) {
-  DCHECK(run_intent_with_task_source);
-  auto task_source = run_intent_with_task_source.take_task_source();
+    RegisteredTaskSource task_source) {
+  DCHECK(task_source);
 
   const bool can_run_worker_task =
       BeforeRunTask(task_source->shutdown_behavior());
@@ -449,13 +448,10 @@ RegisteredTaskSource TaskTracker::RunAndPopNextTask(
   Optional<Task> task;
   TaskTraits traits{ThreadPool()};
   {
-    TaskSource::Transaction task_source_transaction(
-        task_source->BeginTransaction());
-    task = can_run_worker_task
-               ? task_source_transaction.TakeTask(&run_intent_with_task_source)
-               : task_source_transaction.Clear(
-                     std::move(run_intent_with_task_source));
-    traits = task_source_transaction.traits();
+    auto transaction = task_source->BeginTransaction();
+    task = can_run_worker_task ? task_source.TakeTask(&transaction)
+                               : task_source.Clear(&transaction);
+    traits = transaction.traits();
   }
 
   if (task) {
@@ -464,9 +460,7 @@ RegisteredTaskSource TaskTracker::RunAndPopNextTask(
   }
   if (can_run_worker_task) {
     AfterRunTask(task_source->shutdown_behavior());
-    const bool task_source_must_be_queued =
-        task_source->BeginTransaction().DidProcessTask(
-            std::move(run_intent_with_task_source));
+    const bool task_source_must_be_queued = task_source.DidProcessTask();
     // |task_source| should be reenqueued iff requested by DidProcessTask().
     if (task_source_must_be_queued)
       return task_source;

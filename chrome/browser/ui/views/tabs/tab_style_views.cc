@@ -81,7 +81,8 @@ class GM2TabStyle : public TabStyleViews {
   // treated as an active tab regardless of its true current state.
   int GetStrokeThickness(bool should_paint_as_active = false) const;
 
-  bool ShouldPaintTabBackgroundColor(TabState active_state, int fill_id) const;
+  bool ShouldPaintTabBackgroundColor(TabState active_state,
+                                     bool has_custom_background) const;
 
   SkColor GetTabBackgroundColor(TabState active_state) const;
 
@@ -90,13 +91,13 @@ class GM2TabStyle : public TabStyleViews {
                                   const SkPath& clip) const;
   void PaintTabBackground(gfx::Canvas* canvas,
                           TabState active_state,
-                          int fill_id,
+                          base::Optional<int> fill_id,
                           int y_inset,
                           const SkPath* clip) const;
   void PaintTabBackgroundFill(gfx::Canvas* canvas,
                               TabState active_state,
                               bool paint_hover_effect,
-                              int fill_id,
+                              base::Optional<int> fill_id,
                               int y_inset) const;
   void PaintBackgroundStroke(gfx::Canvas* canvas,
                              TabState active_state,
@@ -394,7 +395,7 @@ TabStyle::TabColors GM2TabStyle::CalculateColors() const {
 }
 
 void GM2TabStyle::PaintTab(gfx::Canvas* canvas, const SkPath& clip) const {
-  int active_tab_fill_id = 0;
+  base::Optional<int> active_tab_fill_id;
   int active_tab_y_inset = 0;
   if (tab_->GetThemeProvider()->HasCustomImage(IDR_THEME_TOOLBAR)) {
     active_tab_fill_id = IDR_THEME_TOOLBAR;
@@ -592,8 +593,9 @@ int GM2TabStyle::GetStrokeThickness(bool should_paint_as_active) const {
              : 0;
 }
 
-bool GM2TabStyle::ShouldPaintTabBackgroundColor(TabState active_state,
-                                                int fill_id) const {
+bool GM2TabStyle::ShouldPaintTabBackgroundColor(
+    TabState active_state,
+    bool has_custom_background) const {
   // In the active case, always paint the tab background. The fill image may be
   // transparent.
   if (active_state == TAB_ACTIVE)
@@ -601,7 +603,7 @@ bool GM2TabStyle::ShouldPaintTabBackgroundColor(TabState active_state,
 
   // In the inactive case, the fill image is guaranteed to be opaque, so it's
   // not necessary to paint the background when there is one.
-  if (fill_id)
+  if (has_custom_background)
     return false;
 
   return tab_->GetThemeProvider()->GetDisplayProperty(
@@ -630,22 +632,18 @@ SkColor GM2TabStyle::GetTabBackgroundColor(TabState active_state) const {
 
 void GM2TabStyle::PaintInactiveTabBackground(gfx::Canvas* canvas,
                                              const SkPath& clip) const {
-  bool has_custom_image;
-  int fill_id = tab_->controller()->GetBackgroundResourceId(&has_custom_image);
-  if (!has_custom_image)
-    fill_id = 0;
-
-  PaintTabBackground(canvas, TAB_INACTIVE, fill_id, 0,
+  PaintTabBackground(canvas, TAB_INACTIVE,
+                     tab_->controller()->GetCustomBackgroundId(), 0,
                      tab_->controller()->MaySetClip() ? &clip : nullptr);
 }
 
 void GM2TabStyle::PaintTabBackground(gfx::Canvas* canvas,
                                      TabState active_state,
-                                     int fill_id,
+                                     base::Optional<int> fill_id,
                                      int y_inset,
                                      const SkPath* clip) const {
   // |y_inset| is only set when |fill_id| is being used.
-  DCHECK(!y_inset || fill_id);
+  DCHECK(!y_inset || fill_id.has_value());
 
   const SkColor stroke_color =
       tab_->controller()->GetToolbarTopSeparatorColor();
@@ -668,7 +666,7 @@ void GM2TabStyle::PaintTabBackground(gfx::Canvas* canvas,
 void GM2TabStyle::PaintTabBackgroundFill(gfx::Canvas* canvas,
                                          TabState active_state,
                                          bool paint_hover_effect,
-                                         int fill_id,
+                                         base::Optional<int> fill_id,
                                          int y_inset) const {
   const SkPath fill_path = GetPath(PathType::kFill, canvas->image_scale(),
                                    active_state == TAB_ACTIVE);
@@ -677,7 +675,7 @@ void GM2TabStyle::PaintTabBackgroundFill(gfx::Canvas* canvas,
 
   canvas->ClipPath(fill_path, true);
 
-  if (ShouldPaintTabBackgroundColor(active_state, fill_id)) {
+  if (ShouldPaintTabBackgroundColor(active_state, fill_id.has_value())) {
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
     flags.setColor(GetTabBackgroundColor(active_state));
@@ -685,11 +683,11 @@ void GM2TabStyle::PaintTabBackgroundFill(gfx::Canvas* canvas,
                      flags);
   }
 
-  if (fill_id) {
+  if (fill_id.has_value()) {
     gfx::ScopedCanvas scale_scoper(canvas);
     canvas->sk_canvas()->scale(scale, scale);
     canvas->TileImageInt(
-        *tab_->GetThemeProvider()->GetImageSkiaNamed(fill_id),
+        *tab_->GetThemeProvider()->GetImageSkiaNamed(fill_id.value()),
         tab_->GetMirroredX() + tab_->controller()->GetBackgroundOffset(), 0, 0,
         y_inset, tab_->width(), tab_->height());
   }

@@ -29,6 +29,20 @@ enum TermsAndConditionsState {
   REQUIRES_REVIEW = 2,
 };
 
+// Represents a concrete login choice in the UI, e.g., 'Guest checkout' or
+// a particular Chrome PWM login account.
+struct LoginChoice {
+  LoginChoice(const std::string& id, const std::string& text, int priority);
+  ~LoginChoice();
+
+  // Uniquely identifies this login choice.
+  std::string identifier;
+  // The label to display to the user.
+  std::string label;
+  // The priority to pre-select this choice (-1 == not set/automatic).
+  int preselect_priority = -1;
+};
+
 // Struct for holding the payment information data.
 struct PaymentInformation {
   PaymentInformation();
@@ -38,6 +52,7 @@ struct PaymentInformation {
   std::unique_ptr<autofill::CreditCard> card;
   std::unique_ptr<autofill::AutofillProfile> shipping_address;
   std::unique_ptr<autofill::AutofillProfile> billing_address;
+  std::string login_choice_identifier;
   std::string payer_name;
   std::string payer_phone;
   std::string payer_email;
@@ -54,6 +69,7 @@ struct PaymentRequestOptions {
   bool request_payer_phone = false;
   bool request_shipping = false;
   bool request_payment_method = false;
+  bool request_login_choice = false;
 
   bool require_billing_postal_code = false;
   std::string billing_postal_code_missing_text;
@@ -63,7 +79,9 @@ struct PaymentRequestOptions {
   bool show_terms_as_checkbox = false;
 
   std::vector<std::string> supported_basic_card_networks;
+  std::vector<LoginChoice> login_choices;
   std::string default_email;
+  std::string login_section_title;
   UserActionProto confirm_action;
   std::vector<UserActionProto> additional_actions;
   TermsAndConditionsState initial_terms_and_conditions = NOT_SELECTED;

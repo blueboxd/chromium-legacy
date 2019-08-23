@@ -255,6 +255,10 @@ gfx::NativeWindow PermissionPromptImpl::GetNativeWindow() {
   return nullptr;
 }
 
+bool PermissionPromptImpl::ShouldDestroyOnTabSwitching() {
+  return true;
+}
+
 void PermissionPromptImpl::Closing() {
   if (bubble_delegate_)
     bubble_delegate_ = nullptr;

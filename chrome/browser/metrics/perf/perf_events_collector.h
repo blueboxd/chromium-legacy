@@ -11,9 +11,7 @@
 #include <vector>
 
 #include "chrome/browser/metrics/perf/metric_collector.h"
-#include "chrome/browser/metrics/perf/perf_output.h"
 #include "chrome/browser/metrics/perf/random_selector.h"
-#include "third_party/metrics_proto/sampled_profile.pb.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -22,6 +20,7 @@ class SequencedTaskRunner;
 namespace metrics {
 
 struct CPUIdentity;
+class PerfOutputCall;
 class WindowedIncognitoObserver;
 
 // Enables collection of perf events profile data. perf aka "perf events" is a
@@ -39,12 +38,6 @@ class PerfCollector : public internal::MetricCollector {
   // Returns the perf proto type associated with the given vector of perf
   // arguments, starting with "perf" itself in |args[0]|.
   static PerfProtoType GetPerfProtoType(const std::vector<std::string>& args);
-
-  // For testing to mock PerfOutputCall.
-  virtual std::unique_ptr<PerfOutputCall> CreatePerfOutputCall(
-      base::TimeDelta duration,
-      const std::vector<std::string>& perf_args,
-      PerfOutputCall::DoneCallback callback);
 
   void OnPerfOutputComplete(
       std::unique_ptr<WindowedIncognitoObserver> incognito_observer,
@@ -70,7 +63,6 @@ class PerfCollector : public internal::MetricCollector {
   base::WeakPtr<internal::MetricCollector> GetWeakPtr() override;
   bool ShouldCollect() const override;
   void CollectProfile(std::unique_ptr<SampledProfile> sampled_profile) override;
-  void StopCollection() override;
 
   const RandomSelector& command_selector() const { return command_selector_; }
 
@@ -97,9 +89,6 @@ class PerfCollector : public internal::MetricCollector {
     // Magic constant used by the histogram macros.
     kMaxValue = kAllZeroCPUFrequencies,
   };
-
-  SampledProfile::TriggerEvent current_trigger_ =
-      SampledProfile::UNKNOWN_TRIGGER_EVENT;
 
  private:
   // Change the values in |collection_params_| and the commands in

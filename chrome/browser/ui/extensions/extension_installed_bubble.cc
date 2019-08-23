@@ -164,7 +164,7 @@ std::unique_ptr<extensions::Command> GetCommand(
         extension_id, extensions::CommandService::ACTIVE, &command, nullptr);
   }
   if (has_command)
-    result.reset(new extensions::Command(command));
+    result = std::make_unique<extensions::Command>(command);
   return result;
 }
 

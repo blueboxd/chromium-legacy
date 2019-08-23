@@ -266,15 +266,15 @@ void TaskManagerView::ShowContextMenuForViewImpl(
     views::View* source,
     const gfx::Point& point,
     ui::MenuSourceType source_type) {
-  menu_model_.reset(new ui::SimpleMenuModel(this));
+  menu_model_ = std::make_unique<ui::SimpleMenuModel>(this);
 
   for (const auto& table_column : columns_) {
     menu_model_->AddCheckItem(table_column.id,
                               l10n_util::GetStringUTF16(table_column.id));
   }
 
-  menu_runner_.reset(new views::MenuRunner(menu_model_.get(),
-                                           views::MenuRunner::CONTEXT_MENU));
+  menu_runner_ = std::make_unique<views::MenuRunner>(
+      menu_model_.get(), views::MenuRunner::CONTEXT_MENU);
 
   menu_runner_->RunMenuAt(GetWidget(), nullptr, gfx::Rect(point, gfx::Size()),
                           views::MenuAnchorPosition::kTopLeft, source_type);
@@ -325,7 +325,7 @@ void TaskManagerView::Init() {
   auto tab_table = std::make_unique<views::TableView>(
       nullptr, columns_, views::ICON_AND_TEXT, false);
   tab_table_ = tab_table.get();
-  table_model_.reset(new TaskManagerTableModel(this));
+  table_model_ = std::make_unique<TaskManagerTableModel>(this);
   tab_table->SetModel(table_model_.get());
   tab_table->SetGrouper(this);
   tab_table->SetSortOnPaint(true);

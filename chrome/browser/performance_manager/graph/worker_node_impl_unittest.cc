@@ -26,7 +26,6 @@ class WorkerNodeImplTest : public GraphTestHarness {
 
 TEST_F(WorkerNodeImplTest, SafeDowncast) {
   auto process = CreateNode<ProcessNodeImpl>();
-  auto page = CreateNode<PageNodeImpl>();
   auto worker = CreateNode<WorkerNodeImpl>(WorkerNode::WorkerType::kDedicated,
                                            process.get());
   WorkerNode* node = worker.get();
@@ -34,6 +33,15 @@ TEST_F(WorkerNodeImplTest, SafeDowncast) {
   NodeBase* base = worker.get();
   EXPECT_EQ(base, NodeBase::FromNode(node));
   EXPECT_EQ(static_cast<Node*>(node), base->ToNode());
+}
+
+using WorkerNodeImplDeathTest = WorkerNodeImplTest;
+
+TEST_F(WorkerNodeImplDeathTest, SafeDowncast) {
+  auto process = CreateNode<ProcessNodeImpl>();
+  auto worker = CreateNode<WorkerNodeImpl>(WorkerNode::WorkerType::kDedicated,
+                                           process.get());
+  ASSERT_DEATH(FrameNodeImpl::FromNodeBase(worker.get()), "Check failed: .*");
 }
 
 // Create a worker of each type and register the frame as a client of each.

@@ -86,7 +86,7 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest,
     auto handler = std::make_unique<TestingSyncConfirmationHandler>(
         browser(), web_ui(), GetStringToGrdIdMap());
     handler_ = handler.get();
-    sync_confirmation_ui_.reset(new SyncConfirmationUI(web_ui()));
+    sync_confirmation_ui_ = std::make_unique<SyncConfirmationUI>(web_ui());
     web_ui()->AddMessageHandler(std::move(handler));
 
     identity_test_env_adaptor_ =

@@ -184,6 +184,13 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
     }
 
     /**
+     * Search for the image by intenting to the lens app with the image data attached.
+     */
+    public void searchWithGoogleLens() {
+        shareImageDirectly(null, /* shareWithGoogleLens = */ true);
+    }
+
+    /**
      * Trigger an image search for the current image that triggered the context menu.
      */
     public void searchForImage() {
@@ -197,28 +204,32 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
      * it will use the right activity set when the menu was displayed.
      */
     void shareImage() {
-        shareImageDirectly(null);
+        shareImageDirectly(null, /* shareWithGoogleLens = */ false);
     }
 
     /**
      * Share the image that triggered the current context menu with the last app used to share.
      */
     private void shareImageWithLastShareComponent() {
-        shareImageDirectly(ShareHelper.getLastShareComponentName(null));
+        shareImageDirectly(
+                ShareHelper.getLastShareComponentName(null), /* shareWithGoogleLens = */ false);
     }
 
     /**
      * Share image triggered with the current context menu directly with a specific app.
      * @param name The {@link ComponentName} of the app to share the image directly with.
+     * @param shareWithGoogleLens Whether to share with the Google Lens (overrides the
+     *      value specified in the ComponentName field).
      */
-    private void shareImageDirectly(@Nullable final ComponentName name) {
+    private void shareImageDirectly(
+            @Nullable final ComponentName name, boolean shareWithGoogleLens) {
         if (mNativeContextMenuHelper == 0) return;
         Callback<byte[]> callback = new Callback<byte[]>() {
             @Override
             public void onResult(byte[] result) {
                 if (mActivity == null) return;
 
-                ShareHelper.shareImage(mActivity, result, name);
+                ShareHelper.shareImage(mActivity, result, name, shareWithGoogleLens);
             }
         };
         nativeRetrieveImageForShare(

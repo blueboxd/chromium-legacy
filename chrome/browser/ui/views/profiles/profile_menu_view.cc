@@ -144,9 +144,9 @@ ProfileMenuView::ProfileMenuView(views::Button* anchor_button,
 ProfileMenuView::~ProfileMenuView() = default;
 
 void ProfileMenuView::BuildMenu() {
-  avatar_menu_.reset(new AvatarMenu(
+  avatar_menu_ = std::make_unique<AvatarMenu>(
       &g_browser_process->profile_manager()->GetProfileAttributesStorage(),
-      this, browser()));
+      this, browser());
   avatar_menu_->RebuildMenu();
 
   if (dice_enabled_) {

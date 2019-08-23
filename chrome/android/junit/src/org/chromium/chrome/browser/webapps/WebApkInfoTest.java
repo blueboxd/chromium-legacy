@@ -171,9 +171,9 @@ public class WebApkInfoTest {
         Assert.assertEquals(
                 (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M), info.isSplashProvidedByWebApk());
 
-        Assert.assertEquals(null, info.icon());
-        Assert.assertEquals(null, info.badgeIcon());
-        Assert.assertEquals(null, info.splashIcon());
+        Assert.assertEquals(null, info.icon().bitmap());
+        Assert.assertEquals(null, info.badgeIcon().bitmap());
+        Assert.assertEquals(null, info.splashIcon().bitmap());
 
         WebApkInfo.ShareTarget shareTarget = info.shareTarget();
         Assert.assertNotNull(shareTarget);

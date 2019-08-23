@@ -31,8 +31,7 @@ infobars::InfoBarDelegate::InfoBarIdentifier SmsInfoBarDelegate::GetIdentifier()
 }
 
 int SmsInfoBarDelegate::GetIconId() const {
-  // TODO(crbug.com/995434): Create and use a smartphone icon.
-  return IDR_ANDROID_INFOBAR_SAVE_PASSWORD;
+  return IDR_ANDROID_INFOBAR_PHONE_ICON;
 }
 
 base::string16 SmsInfoBarDelegate::GetMessageText() const {

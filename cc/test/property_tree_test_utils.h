@@ -7,6 +7,7 @@
 
 #include "cc/trees/clip_node.h"
 #include "cc/trees/effect_node.h"
+#include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/property_tree.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
@@ -47,6 +48,24 @@ ScrollNode& CreateScrollNode(Layer*,
                              int parent_id = ScrollTree::kInvalidNodeId);
 ScrollNode& CreateScrollNode(LayerImpl*,
                              int parent_id = ScrollTree::kInvalidNodeId);
+
+template <typename LayerType>
+TransformNode* GetTransformNode(LayerType* layer) {
+  return GetPropertyTrees(layer)->transform_tree.Node(
+      layer->transform_tree_index());
+}
+template <typename LayerType>
+ClipNode* GetClipNode(LayerType* layer) {
+  return GetPropertyTrees(layer)->clip_tree.Node(layer->clip_tree_index());
+}
+template <typename LayerType>
+EffectNode* GetEffectNode(LayerType* layer) {
+  return GetPropertyTrees(layer)->effect_tree.Node(layer->effect_tree_index());
+}
+template <typename LayerType>
+ScrollNode* GetScrollNode(LayerType* layer) {
+  return GetPropertyTrees(layer)->scroll_tree.Node(layer->scroll_tree_index());
+}
 
 // TODO(wangxianzhu): Add functions to create property nodes not based on
 // layers when needed.

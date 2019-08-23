@@ -441,7 +441,7 @@ void TranslateBubbleView::LinkClicked(views::Link* source, int event_flags) {
 void TranslateBubbleView::ShowOptionsMenu(views::Button* source) {
   // Recreate the menu model as translated languages can change while the menu
   // is not showing, which invalidates these text strings.
-  options_menu_model_.reset(new ui::SimpleMenuModel(this));
+  options_menu_model_ = std::make_unique<ui::SimpleMenuModel>(this);
 
   // Don't show "Always translate <language>" in incognito mode, because it
   // doesn't do anything anyways.
@@ -469,8 +469,8 @@ void TranslateBubbleView::ShowOptionsMenu(views::Button* source) {
       OptionsMenuItem::MORE_OPTIONS,
       IDS_TRANSLATE_BUBBLE_ADVANCED_MENU_BUTTON);
 
-  options_menu_runner_.reset(new views::MenuRunner(
-      options_menu_model_.get(), views::MenuRunner::COMBOBOX));
+  options_menu_runner_ = std::make_unique<views::MenuRunner>(
+      options_menu_model_.get(), views::MenuRunner::COMBOBOX);
   gfx::Rect screen_bounds = source->GetBoundsInScreen();
   options_menu_runner_->RunMenuAt(source->GetWidget(), nullptr, screen_bounds,
                                   views::MenuAnchorPosition::kTopRight,
@@ -481,7 +481,7 @@ void TranslateBubbleView::ShowOptionsMenu(views::Button* source) {
 void TranslateBubbleView::ShowOptionsMenuTab(views::Button* source) {
   // Recreate the menu model as translated languages can change while the menu
   // is not showing, which invalidates these text strings.
-  tab_options_menu_model_.reset(new ui::SimpleMenuModel(this));
+  tab_options_menu_model_ = std::make_unique<ui::SimpleMenuModel>(this);
 
   tab_options_menu_model_->AddItemWithStringId(
       OptionsMenuItem::CHANGE_TARGET_LANGUAGE,
@@ -515,8 +515,8 @@ void TranslateBubbleView::ShowOptionsMenuTab(views::Button* source) {
           IDS_TRANSLATE_BUBBLE_CHANGE_SOURCE_LANGUAGE,
           model_->GetLanguageNameAt(model_->GetOriginalLanguageIndex())));
 
-  options_menu_runner_.reset(new views::MenuRunner(
-      tab_options_menu_model_.get(), views::MenuRunner::COMBOBOX));
+  options_menu_runner_ = std::make_unique<views::MenuRunner>(
+      tab_options_menu_model_.get(), views::MenuRunner::COMBOBOX);
   gfx::Rect screen_bounds = source->GetAnchorBoundsInScreen();
   options_menu_runner_->RunMenuAt(source->GetWidget(), nullptr, screen_bounds,
                                   views::MenuAnchorPosition::kTopRight,
@@ -610,7 +610,8 @@ TranslateBubbleView::TranslateBubbleView(
       bubble_ui_model_(language::GetTranslateUiBubbleModel()) {
   translate_bubble_view_ = this;
   if (web_contents)  // web_contents can be null in unit_tests.
-    mouse_handler_.reset(new WebContentMouseHandler(this, web_contents));
+    mouse_handler_ =
+        std::make_unique<WebContentMouseHandler>(this, web_contents);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::TRANSLATE);
 }
 

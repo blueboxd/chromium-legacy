@@ -13,6 +13,7 @@
 #include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/model/assistant_screen_context_model_observer.h"
+#include "ash/assistant/model/assistant_suggestions_model_observer.h"
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
@@ -51,6 +52,7 @@ class ASH_EXPORT AssistantUiController
       public AssistantControllerObserver,
       public AssistantInteractionModelObserver,
       public AssistantScreenContextModelObserver,
+      public AssistantSuggestionsModelObserver,
       public AssistantUiModelObserver,
       public AssistantViewDelegateObserver,
       public CaptionBarDelegate,
@@ -81,6 +83,10 @@ class ASH_EXPORT AssistantUiController
   void OnInputModalityChanged(InputModality input_modality) override;
   void OnInteractionStateChanged(InteractionState interaction_state) override;
   void OnMicStateChanged(MicState mic_state) override;
+
+  // AssistantSuggestionsModelObserver:
+  void OnProactiveSuggestionsChanged(
+      const ProactiveSuggestions* proactive_suggestions) override;
 
   // AssistantScreenContextModelObserver:
   void OnScreenContextRequestStateChanged(

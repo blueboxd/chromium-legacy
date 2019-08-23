@@ -31,4 +31,7 @@ public interface AssistantPaymentRequestDelegate {
 
     /** Called when a link on the terms and conditions message is clicked. */
     void onTermsAndConditionsLinkClicked(int link);
+
+    /** The currently selected login choice has changed. */
+    void onLoginChoiceChanged(@Nullable AssistantPaymentRequestLoginChoice loginChoice);
 }

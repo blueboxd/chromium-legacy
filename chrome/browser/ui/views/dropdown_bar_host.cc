@@ -49,7 +49,7 @@ void DropdownBarHost::Init(views::View* host_view,
   clip_view->AddChildView(view_);
 
   // Initialize the host.
-  host_.reset(new ThemeCopyingWidget(browser_view_->GetWidget()));
+  host_ = std::make_unique<ThemeCopyingWidget>(browser_view_->GetWidget());
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
   params.delegate = this;
   params.name = "DropdownBarHost";
@@ -72,7 +72,7 @@ void DropdownBarHost::Init(views::View* host_view,
     NOTREACHED();
   }
 
-  animation_.reset(new gfx::SlideAnimation(this));
+  animation_ = std::make_unique<gfx::SlideAnimation>(this);
   if (!gfx::Animation::ShouldRenderRichAnimation())
     animation_->SetSlideDuration(0);
 
@@ -88,7 +88,8 @@ DropdownBarHost::~DropdownBarHost() {
 void DropdownBarHost::Show(bool animate) {
   // Stores the currently focused view, and tracks focus changes so that we can
   // restore focus when the dropdown widget is closed.
-  focus_tracker_.reset(new views::ExternalFocusTracker(view_, focus_manager_));
+  focus_tracker_ =
+      std::make_unique<views::ExternalFocusTracker>(view_, focus_manager_);
 
   SetDialogPosition(GetDialogPosition(gfx::Rect()));
 

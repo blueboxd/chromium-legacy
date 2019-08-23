@@ -1240,7 +1240,7 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
       <!-- User happiness tracking survey UI -->
       <if expr="not is_android">
         <message name="IDS_HATS_BUBBLE_TITLE" translateable="false" desc="The title of Happiness Tracking Survey's invitation banner, it invites users to take a survey">
-          Help us improve Chrome
+          Take a quick survey
         </message>
       </if>
     </messages>

@@ -557,7 +557,7 @@ void BackgroundFetchScheduler::LogBackgroundFetchEventForDevTools(
           base::NumberToString(request_info->request_body_size());
   }
 
-  devtools_context_->LogBackgroundServiceEventOnIO(
+  devtools_context_->LogBackgroundServiceEventOnCoreThread(
       registration_id.service_worker_registration_id(),
       registration_id.origin(), DevToolsBackgroundService::kBackgroundFetch,
       std::move(event_name),

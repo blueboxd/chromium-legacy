@@ -36,11 +36,13 @@ class AssistantInteractionController
       public AssistantViewDelegateObserver,
       public HighlighterController::Observer {
  public:
+  using AssistantInteractionMetadataPtr =
+      chromeos::assistant::mojom::AssistantInteractionMetadataPtr;
+  using AssistantInteractionResolution =
+      chromeos::assistant::mojom::AssistantInteractionResolution;
   using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
   using AssistantSuggestionPtr =
       chromeos::assistant::mojom::AssistantSuggestionPtr;
-  using AssistantInteractionResolution =
-      chromeos::assistant::mojom::AssistantInteractionResolution;
 
   explicit AssistantInteractionController(
       AssistantController* assistant_controller);
@@ -83,7 +85,7 @@ class AssistantInteractionController
   void OnHighlighterSelectionRecognized(const gfx::Rect& rect) override;
 
   // chromeos::assistant::mojom::AssistantInteractionSubscriber:
-  void OnInteractionStarted(bool is_voice_interaction) override;
+  void OnInteractionStarted(AssistantInteractionMetadataPtr metadata) override;
   void OnInteractionFinished(
       AssistantInteractionResolution resolution) override;
   void OnHtmlResponse(const std::string& response,

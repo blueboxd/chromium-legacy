@@ -203,42 +203,9 @@
    */
   async function checkContextMenu(
       appId, breadcrumbsPath, menuStates, rootsMenu, shortcutToPath) {
-    // Focus the directory tree.
-    chrome.test.assertTrue(
-        !!await remoteCall.callRemoteTestUtil(
-            'focus', appId, ['#directory-tree']),
-        'focus failed: #directory-tree');
-
-    const paths = breadcrumbsPath.split('/').filter(path => path);
-    const leaf = paths.pop();
-
-    // Expand all parents of the leaf entry.
-    let query = '#directory-tree';
-    for (const parentLabel of paths) {
-      query += ` [entry-label="${parentLabel}"]`;
-      // Wait for parent element to be displayed.
-      await remoteCall.waitForElement(appId, query);
-
-      // Only expand if element isn't expanded yet.
-      const elements = await remoteCall.callRemoteTestUtil(
-          'queryAllElements', appId, [query + '[expanded]']);
-      if (!elements.length) {
-        await remoteCall.waitForElement(appId, query + hasChildren);
-        await expandTreeItem(appId, query);
-      }
-    }
-
-    // Wait for the final entry to be displayed.
-    query += ` [entry-label="${leaf}"]`;
-    await remoteCall.waitForElement(appId, query);
-
-    // Navigate to the final entry.
-    chrome.test.assertTrue(
-        !!await remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [query]),
-        'fakeMouseClick failed');
-    // Wait to navigation to final entry to finish.
-    await remoteCall.waitUntilCurrentDirectoryIsChanged(
-        appId, (shortcutToPath || breadcrumbsPath));
+    // Navigate to the folder that will test the context menu.
+    const query =
+        await navigateWithDirectoryTree(appId, breadcrumbsPath, shortcutToPath);
 
     // Selector for a both context menu used on directory tree, only one should
     // be visible at the time.

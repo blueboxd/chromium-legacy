@@ -208,9 +208,14 @@ void ChromeWebClient::PrepareErrorPage(
     if (offline_page_tab_helper &&
         offline_page_tab_helper->HasDistilledVersionForOnlineUrl(url)) {
       // An offline version of the page will be displayed to replace this error
-      // page. Return an empty error page to avoid having the error page
-      // flash vefore the offline version is loaded.
-      std::move(callback).Run(@"");
+      // page. Loading an error page here can cause a race between the
+      // navigation to load the error page and the navigation to display the
+      // offline version of the page. If the latter navigation interrupts the
+      // former and causes it to fail, this can incorrectly appear to be a
+      // navigation back to the previous committed URL. To avoid this race,
+      // return a nil error page here to avoid an error page load. See
+      // crbug.com/980912.
+      std::move(callback).Run(nil);
       return;
     }
   }

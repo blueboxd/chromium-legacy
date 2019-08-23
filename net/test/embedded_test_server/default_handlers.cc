@@ -163,7 +163,7 @@ std::unique_ptr<HttpResponse> HandleEchoAll(const HttpRequest& request) {
 
   body +=
       "</pre>"
-      "<h1>Request Headers:</h1><pre>" +
+      "<h1>Request Headers:</h1><pre id='request-headers'>" +
       request.all_headers + "</pre>" +
       "<h1>Response nonce:</h1><pre id='response-nonce'>" +
       base::UnguessableToken::Create().ToString() + "</pre></body></html>";

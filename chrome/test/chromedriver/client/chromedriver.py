@@ -668,6 +668,11 @@ class ChromeDriver(object):
     params = {'authenticatorId': authenticatorId}
     return self.ExecuteCommand(Command.GET_CREDENTIALS, params)
 
+  def RemoveCredential(self, authenticatorId, credentialId):
+    params = {'authenticatorId': authenticatorId,
+              'credentialId': credentialId}
+    return self.ExecuteCommand(Command.REMOVE_CREDENTIAL, params)
+
   def RemoveAllCredentials(self, authenticatorId):
     params = {'authenticatorId': authenticatorId}
     return self.ExecuteCommand(Command.REMOVE_ALL_CREDENTIALS, params)

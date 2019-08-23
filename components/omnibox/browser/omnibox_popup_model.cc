@@ -340,7 +340,8 @@ bool OmniboxPopupModel::SelectedLineHasButton() {
 }
 
 bool OmniboxPopupModel::SelectedLineIsTabSwitchSuggestion() {
-  return result().match_at(selected_line_).IsTabSwitchSuggestion();
+  return selected_line_ != kNoMatch &&
+         result().match_at(selected_line_).IsTabSwitchSuggestion();
 }
 
 void OmniboxPopupModel::OnFaviconFetched(const GURL& page_url,

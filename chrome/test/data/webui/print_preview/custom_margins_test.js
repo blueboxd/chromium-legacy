@@ -444,15 +444,23 @@ cr.define('custom_margins_test', function() {
         const newMargin1 = Math.round(parseFloat(value1) * pointsPerInch);
         const value2 = '.6';
         const newMargin2 = Math.round(parseFloat(value2) * pointsPerInch);
-        const maximumTopMargin = container.pageSize.height - newMargin2 - 72;
+        const value3 = '2';  // 2 inches
+        const newMargin3 = Math.round(parseFloat(value3) * pointsPerInch);
+        const maxTopMargin = container.pageSize.height - newMargin3 -
+            72 /* MINIMUM_DISTANCE, see margin_control.js */;
         return testAllTextboxes(controls, defaultMarginPts, value1, false)
             .then(() => testAllTextboxes(controls, newMargin1, 'abc', true))
+            .then(() => testAllTextboxes(controls, newMargin1, '1.2abc', true))
             .then(() => testAllTextboxes(controls, newMargin1, value2, false))
+            .then(() => testAllTextboxes(controls, newMargin2, value3, false))
             .then(
                 () => testControlTextbox(
-                    controls[0], keys[0], newMargin2, '1,000', false,
-                    container.pageSize.height - newMargin2 -
-                        72 /* MINIMUM_DISTANCE, see margin_control.js */));
+                    controls[0], keys[0], newMargin3, '100', false,
+                    maxTopMargin))
+            .then(
+                () => testControlTextbox(
+                    controls[0], keys[0], maxTopMargin, '1,000', false,
+                    maxTopMargin));
       });
     });
 

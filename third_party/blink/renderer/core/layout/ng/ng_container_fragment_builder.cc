@@ -106,7 +106,7 @@ void NGContainerFragmentBuilder::AddChild(
   }
 
   // Collect any (block) break tokens.
-  NGBreakToken* child_break_token = child.BreakToken();
+  const NGBreakToken* child_break_token = child.BreakToken();
   if (child_break_token && has_block_fragmentation_) {
     switch (child.Type()) {
       case NGPhysicalFragment::kFragmentBox:

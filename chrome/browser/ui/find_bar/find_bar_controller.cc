@@ -382,7 +382,13 @@ void FindBarController::MaybeSetPrepopulateText() {
 
 base::string16 FindBarController::GetSelectedText() {
   auto* host_view = web_contents_->GetRenderWidgetHostView();
-  return host_view
-             ? base::CollapseWhitespace(host_view->GetSelectedText(), false)
-             : base::string16();
+  if (!host_view)
+    return base::string16();
+
+  base::string16 selected_text = host_view->GetSelectedText();
+  // This should be kept in sync with what TextfieldModel::Paste() does, since
+  // that's what would run if the user explicitly pasted this text into the find
+  // bar.
+  base::TrimWhitespace(selected_text, base::TRIM_ALL, &selected_text);
+  return selected_text;
 }

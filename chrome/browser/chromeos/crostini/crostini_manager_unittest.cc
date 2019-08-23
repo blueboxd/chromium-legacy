@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
+
 #include <memory>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
@@ -926,6 +928,30 @@ TEST_F(CrostiniManagerRestartTest, IsContainerRunningFalseIfVmNotStarted) {
   EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
   EXPECT_TRUE(crostini_manager()->IsVmRunning(kVmName));
   EXPECT_FALSE(crostini_manager()->GetContainerInfo(kVmName, kContainerName));
+}
+
+TEST_F(CrostiniManagerRestartTest, OsReleaseSetCorrectly) {
+  vm_tools::cicerone::OsRelease os_release;
+  vm_tools::cicerone::StartLxdContainerResponse response;
+  response.set_status(vm_tools::cicerone::StartLxdContainerResponse::STARTED);
+  response.mutable_os_release()->CopyFrom(os_release);
+  fake_cicerone_client_->set_start_lxd_container_response(response);
+
+  restart_id_ = crostini_manager()->RestartCrostini(
+      kVmName, kContainerName,
+      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
+                     base::Unretained(this), run_loop()->QuitClosure()),
+      this);
+  EXPECT_TRUE(crostini_manager()->IsRestartPending(restart_id_));
+  run_loop()->Run();
+
+  const auto* stored_os_release =
+      crostini_manager()->GetContainerOsRelease(kVmName, kContainerName);
+  EXPECT_NE(stored_os_release, nullptr);
+  // Sadly, we can't use MessageDifferencer here because we're using the LITE
+  // API in our protos.
+  EXPECT_EQ(os_release.SerializeAsString(),
+            stored_os_release->SerializeAsString());
 }
 
 TEST_F(CrostiniManagerRestartTest, RestartThenUninstall) {

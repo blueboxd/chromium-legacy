@@ -6090,6 +6090,34 @@ TEST_P(PaintPropertyTreeBuilderTest,
   EXPECT_EQ(PhysicalOffset(100, 85), paint_offset("float-right-rtl-vlr"));
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetForTextareaWithResizer) {
+  GetPage().GetSettings().SetTextAreasAreResizable(true);
+  SetBodyInnerHTML(R"HTML(
+    <!doctype HTML>
+    <style>
+      div {
+        width: 100%;
+        height: 100px;
+      }
+      textarea {
+        width: 200px;
+        height: 100px;
+      }
+      ::-webkit-resizer {
+        background-color: red;
+      }
+    </style>
+    <div></div>
+    <textarea id="target"></textarea>
+  )HTML");
+
+  const auto* box = ToLayoutBox(GetLayoutObjectByElementId("target"));
+  const auto& fragment = box->FirstFragment();
+  ASSERT_TRUE(fragment.PaintProperties());
+  EXPECT_NE(fragment.PaintProperties()->PaintOffsetTranslation(), nullptr);
+  EXPECT_EQ(PhysicalOffset(), fragment.PaintOffset());
+}
+
 TEST_P(PaintPropertyTreeBuilderTest, SubpixelPositionedScrollNode) {
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>

@@ -147,8 +147,6 @@ class CORE_EXPORT UseCounterHelper final {
   EnumerationHistogram& CssHistogram() const;
   EnumerationHistogram& AnimatedCSSHistogram() const;
 
-  static int MapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyID);
-
   // If non-zero, ignore all 'count' calls completely.
   unsigned mute_count_;
 
@@ -164,6 +162,12 @@ class CORE_EXPORT UseCounterHelper final {
   // Track what features/properties have been recorded.
   std::bitset<static_cast<size_t>(WebFeature::kNumberOfFeatures)>
       features_recorded_;
+
+  // TODO(majidvp): Use CSSSampleId::kMaxValue here. We insert CSSSampleId into
+  // this bitset so max value should reflect that. At the moment
+  // numCSSPropertyIDs (currently 995) is larger than CSSSampleId:kMaxValue
+  // (currently 645) so while inefficient it is safe to use but this can change
+  // in future.
   std::bitset<numCSSPropertyIDs> css_recorded_;
   std::bitset<numCSSPropertyIDs> animated_css_recorded_;
 

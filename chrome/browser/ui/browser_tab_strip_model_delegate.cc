@@ -133,23 +133,6 @@ bool BrowserTabStripModelDelegate::ShouldRunUnloadListenerBeforeClosing(
   return browser_->ShouldRunUnloadListenerBeforeClosing(contents);
 }
 
-bool BrowserTabStripModelDelegate::CanBookmarkAllTabs() const {
-  return chrome::CanBookmarkAllTabs(browser_);
-}
-
-void BrowserTabStripModelDelegate::BookmarkAllTabs() {
-  chrome::BookmarkAllTabs(browser_);
-}
-
-TabStripModelDelegate::RestoreTabType
-BrowserTabStripModelDelegate::GetRestoreTabType() {
-  return chrome::GetRestoreTabType(browser_);
-}
-
-void BrowserTabStripModelDelegate::RestoreTab() {
-  chrome::RestoreTab(browser_);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserTabStripModelDelegate, private:
 

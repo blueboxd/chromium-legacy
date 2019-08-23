@@ -1,10 +1,13 @@
 # This is reserved for people that are comfortably with buildbot recipes
 # and understand the implications of changing these files.
 
+crouleau@chromium.org
 dpranke@chromium.org
 kbr@chromium.org
 martiniss@chromium.org
-crouleau@chromium.org
+
+per-file check_static_initializers.py=thakis@chromium.org
+per-file check_static_initializers.py=thomasanderson@chromium.org
 
 # TEAM: infra-dev@chromium.org
 # COMPONENT: Infra>Client>Chrome

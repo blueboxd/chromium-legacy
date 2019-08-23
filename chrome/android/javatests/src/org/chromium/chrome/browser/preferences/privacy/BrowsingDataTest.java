@@ -138,6 +138,27 @@ public class BrowsingDataTest {
     }
 
     /**
+     * Test all data deletion for incognito profile. This only checks to see if an android specific
+     * code crashes or not. For details see, crbug.com/990624.
+     */
+    @Test
+    @SmallTest
+    public void testAllDataDeletedForIncognito() throws Exception {
+        // TODO(roagarwal) : Crashes on BrowsingDataType.SITE_SETTINGS, BrowsingDataType.BOOKMARKS
+        // data types.
+        CallbackHelper helper = new CallbackHelper();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            BrowsingDataBridge.getInstance().clearBrowsingDataIncognitoForTesting(
+                    helper::notifyCalled,
+                    new int[] {BrowsingDataType.HISTORY, BrowsingDataType.CACHE,
+                            BrowsingDataType.COOKIES, BrowsingDataType.PASSWORDS,
+                            BrowsingDataType.FORM_DATA},
+                    TimePeriod.LAST_HOUR);
+        });
+        helper.waitForCallback(0);
+    }
+
+    /**
      * Test history deletion.
      */
     @Test

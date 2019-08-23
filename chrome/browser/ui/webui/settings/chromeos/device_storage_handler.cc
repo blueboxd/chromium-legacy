@@ -301,7 +301,7 @@ void StorageHandler::UpdateBrowsingDataSize() {
   if (!site_data_size_collector_.get()) {
     content::StoragePartition* storage_partition =
         content::BrowserContext::GetDefaultStoragePartition(profile_);
-    site_data_size_collector_.reset(new SiteDataSizeCollector(
+    site_data_size_collector_ = std::make_unique<SiteDataSizeCollector>(
         storage_partition->GetPath(),
         new BrowsingDataCookieHelper(storage_partition),
         new BrowsingDataDatabaseHelper(profile_),
@@ -315,7 +315,7 @@ void StorageHandler::UpdateBrowsingDataSize() {
             storage_partition->GetServiceWorkerContext()),
         new BrowsingDataCacheStorageHelper(
             storage_partition->GetCacheStorageContext()),
-        BrowsingDataFlashLSOHelper::Create(profile_)));
+        BrowsingDataFlashLSOHelper::Create(profile_));
   }
   site_data_size_collector_->Fetch(
       base::Bind(&StorageHandler::OnGetBrowsingDataSize,

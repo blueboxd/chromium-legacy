@@ -391,6 +391,7 @@ component("vr_base") {
     "pose_util.h",
     "render_info.h",
     "scheduler_ui_interface.h",
+    "service/xr_consent_prompt_level.h",
     "speech_recognizer.cc",
     "speech_recognizer.h",
     "text_edit_action.cc",

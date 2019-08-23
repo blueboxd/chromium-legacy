@@ -116,7 +116,7 @@ MenuItemView::MenuItemView(MenuDelegate* delegate)
       bottom_margin_(-1),
       left_icon_margin_(0),
       right_icon_margin_(0),
-      requested_menu_position_(POSITION_BEST_FIT),
+      requested_menu_position_(MenuPosition::kBestFit),
       actual_menu_position_(requested_menu_position_),
       use_right_margin_(true) {
   // NOTE: don't check the delegate for NULL, UpdateMenuPartSizes() supplies a
@@ -782,7 +782,7 @@ MenuItemView::MenuItemView(MenuItemView* parent,
       bottom_margin_(-1),
       left_icon_margin_(0),
       right_icon_margin_(0),
-      requested_menu_position_(POSITION_BEST_FIT),
+      requested_menu_position_(MenuPosition::kBestFit),
       actual_menu_position_(requested_menu_position_),
       use_right_margin_(true) {
   Init(parent, command, type, nullptr);

@@ -32,7 +32,8 @@ ServiceWorkerClient::ServiceWorkerClient(
     : uuid_(info.client_uuid),
       url_(info.url.GetString()),
       type_(info.client_type),
-      frame_type_(info.frame_type) {}
+      frame_type_(info.frame_type),
+      lifecycle_state_(info.lifecycle_state) {}
 
 ServiceWorkerClient::~ServiceWorkerClient() = default;
 
@@ -65,6 +66,18 @@ String ServiceWorkerClient::frameType(ScriptState* script_state) const {
       return "none";
     case network::mojom::RequestContextFrameType::kTopLevel:
       return "top-level";
+  }
+
+  NOTREACHED();
+  return String();
+}
+
+String ServiceWorkerClient::lifecycleState() const {
+  switch (lifecycle_state_) {
+    case mojom::ServiceWorkerClientLifecycleState::kActive:
+      return "active";
+    case mojom::ServiceWorkerClientLifecycleState::kFrozen:
+      return "frozen";
   }
 
   NOTREACHED();

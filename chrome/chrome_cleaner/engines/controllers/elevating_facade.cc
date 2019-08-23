@@ -108,6 +108,8 @@ base::CommandLine GetElevatedCommandLine() {
   base::CommandLine::SwitchMap current_switches = current_cmd->GetSwitches();
   current_switches.erase(kExecutionModeSwitch);
   current_switches.erase(kChromeMojoPipeTokenSwitch);
+  current_switches.erase(kChromeReadHandleSwitch);
+  current_switches.erase(kChromeWriteHandleSwitch);
   // The flag that enables logs in scanning mode is not used in cleanup mode.
   current_switches.erase(kWithScanningModeLogsSwitch);
   current_switches.erase(mojo::PlatformChannel::kHandleSwitch);

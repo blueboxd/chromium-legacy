@@ -247,9 +247,6 @@ class NET_EXPORT HttpServerProperties
   // Require HTTP/1.1 on subsequent connections.  Not persisted.
   void SetHTTP11Required(const HostPortPair& server);
 
-  // Modify SSLConfig to force HTTP/1.1.
-  static void ForceHTTP11(SSLConfig* ssl_config);
-
   // Modify SSLConfig to force HTTP/1.1 if necessary.
   void MaybeForceHTTP11(const HostPortPair& server, SSLConfig* ssl_config);
 

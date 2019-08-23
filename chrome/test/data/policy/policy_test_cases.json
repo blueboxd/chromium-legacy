@@ -3171,6 +3171,18 @@
     ]
   },
 
+  "DictationEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "DictationEnabled": true },
+    "pref_mappings": [
+      { "pref": "settings.a11y.dictation",
+        "indicator_tests": [
+          { "policy": { "DictationEnabled": true } }
+        ]
+      }
+    ]
+  },
+
   "HighContrastEnabled": {
     "os": ["chromeos"],
     "test_policy": { "HighContrastEnabled": true },

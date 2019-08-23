@@ -531,5 +531,9 @@ namespace autotestPrivate {
     // |callback|: called when the operation has completed.
     static void getArcAppWindowInfo(DOMString packageName,
                                     GetArcAppWindowInfoCallback callback);
+
+    // Swap the windows in the split view.
+    // |callback|: Called when the operation has completed.
+    static void swapWindowsInSplitView(VoidCallback callback);
   };
 };

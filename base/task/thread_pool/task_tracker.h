@@ -108,7 +108,7 @@ class BASE_EXPORT TaskTracker {
   // Informs this TaskTracker that |task_source| is about to be queued. Returns
   // a RegisteredTaskSource that should be queued if-and-only-if it evaluates to
   // true.
-  RegisteredTaskSource WillQueueTaskSource(
+  RegisteredTaskSource RegisterTaskSource(
       scoped_refptr<TaskSource> task_source);
 
   // Returns true if a task with |priority| can run under to the current policy.
@@ -120,8 +120,7 @@ class BASE_EXPORT TaskTracker {
   // (which indicates that it should be reenqueued). WillPostTask() must have
   // allowed the task in front of |task_source| to be posted before this is
   // called.
-  RegisteredTaskSource RunAndPopNextTask(
-      RunIntentWithRegisteredTaskSource task_source);
+  RegisteredTaskSource RunAndPopNextTask(RegisteredTaskSource task_source);
 
   // Returns true once shutdown has started (StartShutdown() was called).
   // Note: sequential consistency with the thread calling StartShutdown() isn't

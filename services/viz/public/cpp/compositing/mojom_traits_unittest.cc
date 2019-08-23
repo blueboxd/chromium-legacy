@@ -420,11 +420,13 @@ TEST_F(StructTraitsTest, SharedQuadState) {
   const float opacity = 0.9f;
   const SkBlendMode blend_mode = SkBlendMode::kSrcOver;
   const int sorting_context_id = 1337;
+  bool is_fast_rounded_corner = true;
   SharedQuadState input_sqs;
   input_sqs.SetAll(quad_to_target_transform, layer_rect, visible_layer_rect,
                    rounded_corner_bounds, clip_rect, is_clipped,
                    are_contents_opaque, opacity, blend_mode,
                    sorting_context_id);
+  input_sqs.is_fast_rounded_corner = is_fast_rounded_corner;
   SharedQuadState output_sqs;
   mojo::test::SerializeAndDeserialize<mojom::SharedQuadState>(&input_sqs,
                                                               &output_sqs);
@@ -437,6 +439,7 @@ TEST_F(StructTraitsTest, SharedQuadState) {
   EXPECT_EQ(opacity, output_sqs.opacity);
   EXPECT_EQ(blend_mode, output_sqs.blend_mode);
   EXPECT_EQ(sorting_context_id, output_sqs.sorting_context_id);
+  EXPECT_EQ(is_fast_rounded_corner, output_sqs.is_fast_rounded_corner);
 }
 
 // Note that this is a fairly trivial test of CompositorFrame serialization as

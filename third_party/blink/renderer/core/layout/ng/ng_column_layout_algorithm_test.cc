@@ -81,14 +81,8 @@ TEST_F(NGColumnLayoutAlgorithmTest, EmptyMulticol) {
   EXPECT_FALSE(iterator.NextChild());
 
   // There should be nothing inside the multicol container.
-  // TODO(mstensho): Get rid of this column fragment. It shouldn't be here.
-  fragment = FragmentChildIterator(fragment).NextChild();
-  ASSERT_TRUE(fragment);
-  EXPECT_EQ(PhysicalSize(100, 0), fragment->Size());
-  EXPECT_EQ(0UL, fragment->Children().size());
+  ASSERT_FALSE(FragmentChildIterator(fragment).NextChild());
   EXPECT_FALSE(iterator.NextChild());
-
-  EXPECT_FALSE(FragmentChildIterator(fragment).NextChild());
 }
 
 TEST_F(NGColumnLayoutAlgorithmTest, EmptyBlock) {
@@ -336,7 +330,6 @@ TEST_F(NGColumnLayoutAlgorithmTest, ZeroHeight) {
   String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
   offset:unplaced size:1000x0
     offset:0,0 size:320x0
-      offset:0,0 size:100x0
 )DUMP";
   EXPECT_EQ(expectation, dump);
 }
@@ -2484,7 +2477,6 @@ TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingEmpty) {
   String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
   offset:unplaced size:1000x0
     offset:0,0 size:320x0
-      offset:0,0 size:100x0
 )DUMP";
   EXPECT_EQ(expectation, dump);
 }
@@ -3123,10 +3115,6 @@ TEST_F(NGColumnLayoutAlgorithmTest, NestedNoInnerContent) {
     </div>
   )HTML");
 
-  // TODO(mstensho): Note about the expectation here: There'll be one
-  // zero-height inner column for each outer column. We should probably not have
-  // created those.
-
   String dump = DumpFragmentTree(GetElementById("container"));
   String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
   offset:unplaced size:1000x50
@@ -3134,13 +3122,10 @@ TEST_F(NGColumnLayoutAlgorithmTest, NestedNoInnerContent) {
       offset:0,0 size:100x50
         offset:0,0 size:5x20
         offset:0,20 size:100x30
-          offset:1,1 size:44x0
       offset:110,0 size:100x50
         offset:0,0 size:100x50
-          offset:1,0 size:44x0
       offset:220,0 size:100x22
         offset:0,0 size:100x22
-          offset:1,0 size:44x0
 )DUMP";
   EXPECT_EQ(expectation, dump);
 }

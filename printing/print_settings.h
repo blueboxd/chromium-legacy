@@ -289,9 +289,6 @@ class PRINTING_EXPORT PrintSettings {
   // Username if it's required by the printer.
   std::string username_;
 
-  // Job title if it's required by the printer.
-  std::string job_title_;
-
   // PIN code entered by the user.
   std::string pin_value_;
 #endif

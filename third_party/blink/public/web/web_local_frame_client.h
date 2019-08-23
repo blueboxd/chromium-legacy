@@ -41,6 +41,7 @@
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-shared.h"
+#include "third_party/blink/public/mojom/use_counter/css_property_id.mojom-shared.h"
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
 #include "third_party/blink/public/platform/web_common.h"
@@ -672,8 +673,9 @@ class BLINK_EXPORT WebLocalFrameClient {
   // optimization, features already hit on other frames associated with the same
   // page in the renderer are not currently reported. This is used for reporting
   // UseCounter CSS histograms.
-  virtual void DidObserveNewCssPropertyUsage(int /*css_property*/,
-                                             bool /*is_animated*/) {}
+  virtual void DidObserveNewCssPropertyUsage(
+      mojom::CSSSampleId /*css_property*/,
+      bool /*is_animated*/) {}
 
   // Reports that visible elements in the frame shifted (bit.ly/lsm-explainer).
   virtual void DidObserveLayoutShift(double score, bool after_input_or_scroll) {

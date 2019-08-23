@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_dialog.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_descriptor.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/grit/component_extension_resources.h"
@@ -28,50 +29,45 @@
 #include "content/public/browser/system_connector.h"
 #include "extensions/grit/extensions_browser_resources.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/data_decoder/public/cpp/decode_image.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/size.h"
-
-// TODO(crbug.com/826982): investigate re-using the ArcAppIcon class directly.
-// This may or may not be difficult: see
-// (https://chromium-review.googlesource.com/c/chromium/src/+/1482350/7#message-b45fa253ea01b523e8389b30d74ce805b0e05f77)
-// and
-// (https://chromium-review.googlesource.com/c/chromium/src/+/1482350/7#message-52080b7d348d7806c818aa395392ff1385d1784e).
 
 // TODO(crbug.com/826982): consider that, per khmel@, "App icon can be
 // overwritten (setTaskDescription) or by assigning the icon for the app
 // window. In this case some consumers (Shelf for example) switch to
 // overwritten icon... IIRC this applies to shelf items and ArcAppWindow icon".
 
-// TODO(crbug.com/826982): consider that, per khmel@, "We may change the way
-// how we handle icons in ARC++ container. That means view of the icon can be
-// changed. We support invalidation of icon scales way, similar to the case
-// above... We have methods to notify about new icon arrival. IIRC ArcAppIcon
-// already handles this".
-
-// TODO(crbug.com/826982): consider that, per khmel@, "Functionality to detect
-// icons cannot be decoded correctly and issue request to refresh the icon
-// scale from ARC++ container... The logic here is wider. We request new copy
-// of icon in this case".
-
 namespace {
+
+void OnArcAppIconCompletelyLoaded(
+    int32_t size_hint_in_dip,
+    apps::IconEffects icon_effects,
+    apps::mojom::Publisher::LoadIconCallback callback,
+    ArcAppIcon* icon) {
+  if (!icon) {
+    std::move(callback).Run(apps::mojom::IconValue::New());
+    return;
+  }
+
+  apps::mojom::IconValuePtr iv = apps::mojom::IconValue::New();
+  iv->icon_compression = apps::mojom::IconCompression::kUncompressed;
+  iv->uncompressed = icon->image_skia();
+  iv->is_placeholder_icon = false;
+
+  if (icon_effects != apps::IconEffects::kNone) {
+    apps::ApplyIconEffects(icon_effects, size_hint_in_dip, &iv->uncompressed);
+  }
+
+  std::move(callback).Run(std::move(iv));
+}
 
 // ArcApps::LoadIcon (via ArcApps::LoadIconFromVM) runs a series of callbacks,
 // defined here in back-to-front order so that e.g. the compiler knows
-// LoadIcon2's signature when compiling LoadIcon1 (which binds LoadIcon2).
+// LoadIcon1's signature when compiling LoadIcon0 (which binds LoadIcon1).
 //
 //  - LoadIcon0 is called back when the AppConnectionHolder is connected.
 //  - LoadIcon1 is called back when the compressed (PNG) image is loaded.
-//  - LoadIcon2 is called back when the uncompressed image is loaded.
-
-void LoadIcon2(apps::mojom::Publisher::LoadIconCallback callback,
-               const SkBitmap& bitmap) {
-  apps::mojom::IconValuePtr iv = apps::mojom::IconValue::New();
-  iv->icon_compression = apps::mojom::IconCompression::kUncompressed;
-  iv->uncompressed = gfx::ImageSkia(gfx::ImageSkiaRep(bitmap, 0.0f));
-  std::move(callback).Run(std::move(iv));
-}
 
 void LoadIcon1(apps::mojom::IconCompression icon_compression,
                apps::mojom::Publisher::LoadIconCallback callback,
@@ -82,17 +78,15 @@ void LoadIcon1(apps::mojom::IconCompression icon_compression,
       break;
 
     case apps::mojom::IconCompression::kUncompressed:
-      data_decoder::DecodeImage(
-          content::GetSystemConnector(), icon_png_data,
-          data_decoder::mojom::ImageCodec::DEFAULT, false,
-          data_decoder::kDefaultMaxSizeInBytes, gfx::Size(),
-          base::BindOnce(&LoadIcon2, std::move(callback)));
+      LOG(ERROR) << "unexpected ArcApps icon_compression";
+      std::move(callback).Run(apps::mojom::IconValue::New());
       break;
 
     case apps::mojom::IconCompression::kCompressed:
       apps::mojom::IconValuePtr iv = apps::mojom::IconValue::New();
       iv->icon_compression = apps::mojom::IconCompression::kCompressed;
       iv->compressed = icon_png_data;
+      iv->is_placeholder_icon = false;
       std::move(callback).Run(std::move(iv));
       break;
   }
@@ -110,6 +104,10 @@ void LoadIcon0(apps::mojom::IconCompression icon_compression,
   // request to ARC++ container to extract the real data. This logic is
   // isolated inside ArcAppListPrefs and I don't think that anybody else should
   // call mojom RequestAppIcon".
+  //
+  // Note that this TODO will be obsolete when the LoadIcon0 code is deleted,
+  // which depends on ArcAppIcon being able to provide *compressed* icons
+  // (PNG-encoded bytes, not RGBA pixels).
   if (app_connection_holder) {
     if (icon_resource_id.empty()) {
       auto* app_instance =
@@ -170,7 +168,7 @@ ArcApps* ArcApps::CreateForTesting(Profile* profile,
 ArcApps::ArcApps(Profile* profile) : ArcApps(profile, nullptr) {}
 
 ArcApps::ArcApps(Profile* profile, apps::AppServiceProxy* proxy)
-    : binding_(this), profile_(profile) {
+    : binding_(this), profile_(profile), arc_icon_once_loader_(profile) {
   if (!arc::IsArcAllowedForProfile(profile_) ||
       (arc::ArcServiceManager::Get() == nullptr)) {
     return;
@@ -236,6 +234,7 @@ void ArcApps::Shutdown() {
       holder->RemoveObserver(this);
     }
     prefs->RemoveObserver(this);
+    arc_icon_once_loader_.StopObserving(prefs);
   }
 }
 
@@ -511,6 +510,21 @@ void ArcApps::LoadIconFromVM(const std::string app_id,
     LoadIconFromResource(icon_compression, size_hint_in_dip,
                          IDR_APP_DEFAULT_ICON, is_placeholder_icon,
                          icon_effects, std::move(callback));
+    return;
+  }
+
+  // TODO(crbug.com/826982): drop the "kUncompressed only" condition, and
+  // always use the arc_icon_once_loader_, once the ArcAppIcon class supports
+  // providing *compressed* icons (i.e. PNG-encoded bytes, not RGBA pixels).
+  //
+  // Once that happens, we can delete the rest of this function, the LoadIcon0
+  // code, the pending_load_icon_calls_ mechanism and any mention in this file
+  // (or its .h) of arc::ConnectionHolder or arc::ConnectionObserver.
+  if (icon_compression == apps::mojom::IconCompression::kUncompressed) {
+    arc_icon_once_loader_.LoadIcon(
+        app_id, size_hint_in_dip,
+        base::BindOnce(&OnArcAppIconCompletelyLoaded, size_hint_in_dip,
+                       icon_effects, std::move(callback)));
     return;
   }
 

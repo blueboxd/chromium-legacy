@@ -42,9 +42,15 @@ class CONTENT_EXPORT BackForwardCache {
   static void Freeze(RenderFrameHostImpl* main_rfh);
   static void Resume(RenderFrameHostImpl* main_rfh);
 
-  // Returns true if the BackForwardCache contains a document with the supplied
-  // |navigation_entry_id|.
-  bool ContainsDocument(int navigation_entry_id);
+  // Returns a pointer to a cached RenderFrameHost matching
+  // |navigation_entry_id| if it exists in the BackForwardCache. Returns nullptr
+  // if no matching document is found.
+  //
+  // Note: The returned pointer should be used temporarily only within the
+  // execution of a single task on the event loop. Beyond that, there is no
+  // guarantee the pointer will be valid, because the document may be
+  // removed/evicted from the cache.
+  RenderFrameHostImpl* GetDocument(int navigation_entry_id);
 
   // Remove a document from the BackForwardCache.
   void EvictDocument(RenderFrameHostImpl* render_frame_host);

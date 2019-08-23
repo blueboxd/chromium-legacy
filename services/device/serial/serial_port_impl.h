@@ -58,8 +58,6 @@ class SerialPortImpl : public mojom::SerialPort {
   void ConfigurePort(mojom::SerialConnectionOptionsPtr options,
                      ConfigurePortCallback callback) override;
   void GetPortInfo(GetPortInfoCallback callback) override;
-  void SetBreak(SetBreakCallback callback) override;
-  void ClearBreak(ClearBreakCallback callback) override;
   void Close(CloseCallback callback) override;
 
   void OnOpenCompleted(OpenCallback callback, bool success);

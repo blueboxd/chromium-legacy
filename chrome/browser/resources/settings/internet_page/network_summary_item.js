@@ -125,7 +125,7 @@ Polymer({
     }
     const connectionState = networkState.connectionState;
     const name =
-        networkState ? OncMojo.getNetworkDisplayName(networkState) : '';
+        networkState ? OncMojo.getNetworkStateDisplayName(networkState) : '';
     if (OncMojo.connectionStateIsConnected(connectionState)) {
       return name;
     }
@@ -321,9 +321,10 @@ Polymer({
       activeNetworkState, deviceState, networkStateList) {
     if (!this.shouldShowSubpage_(deviceState, networkStateList)) {
       if (activeNetworkState.guid) {
-        return OncMojo.getNetworkDisplayName(activeNetworkState);
-      } else if (networkStateList.length > 0) {
-        return OncMojo.getNetworkDisplayName(networkStateList[0]);
+        return OncMojo.getNetworkStateDisplayName(activeNetworkState);
+      }
+      if (networkStateList.length > 0) {
+        return OncMojo.getNetworkStateDisplayName(networkStateList[0]);
       }
     }
     return this.getNetworkTypeString_(deviceState.type);

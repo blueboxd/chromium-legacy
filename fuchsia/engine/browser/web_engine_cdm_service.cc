@@ -5,10 +5,11 @@
 #include "fuchsia/engine/browser/web_engine_cdm_service.h"
 
 #include <fuchsia/media/drm/cpp/fidl.h>
+#include <lib/sys/cpp/component_context.h>
 #include <string>
 
 #include "base/bind.h"
-#include "base/fuchsia/service_directory_client.h"
+#include "base/fuchsia/default_context.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/frame_service_base.h"
 #include "content/public/browser/provision_fetcher_factory.h"
@@ -88,16 +89,18 @@ class WidevineHandler : public media::FuchsiaCdmManager::KeySystemHandler {
   void CreateCdm(
       fidl::InterfaceRequest<fuchsia::media::drm::ContentDecryptionModule>
           request) override {
-    auto widevine = base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
-                        ->ConnectToService<fuchsia::media::drm::Widevine>();
+    auto widevine = base::fuchsia::ComponentContextForCurrentProcess()
+                        ->svc()
+                        ->Connect<fuchsia::media::drm::Widevine>();
     widevine->CreateContentDecryptionModule(std::move(request));
   }
 
   fuchsia::media::drm::ProvisionerPtr CreateProvisioner() override {
     fuchsia::media::drm::ProvisionerPtr provisioner;
 
-    auto widevine = base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
-                        ->ConnectToService<fuchsia::media::drm::Widevine>();
+    auto widevine = base::fuchsia::ComponentContextForCurrentProcess()
+                        ->svc()
+                        ->Connect<fuchsia::media::drm::Widevine>();
     widevine->CreateProvisioner(provisioner.NewRequest());
 
     return provisioner;

@@ -64,6 +64,15 @@ cr.define('safe_browsing', function() {
       addPGEvent(result);
     });
 
+    cr.sendWithPromise('getSecurityEvents', [])
+        .then((securityEvents) => {securityEvents.forEach(
+          function(securityEvent) {
+                addSecurityEvent(securityEvent);
+              })});
+    cr.addWebUIListener('sent-security-event', function(result) {
+      addSecurityEvent(result);
+    });
+
     cr.sendWithPromise('getPGPings', [])
         .then((pgPings) => { pgPings.forEach(function (pgPing) {
           addPGPing(pgPing);
@@ -187,6 +196,13 @@ cr.define('safe_browsing', function() {
     appendChildWithInnerText(logDiv, eventFormatted);
   }
 
+  function addSecurityEvent(result) {
+    var logDiv = $('security-event-log');
+    var eventFormatted = "[" + (new Date(result["time"])).toLocaleString() +
+        "] " + result['message'];
+    appendChildWithInnerText(logDiv, eventFormatted);
+  }
+
   function addPGPingRow(token) {
     var row = $('pg-ping-list').insertRow();
     row.className = 'content';
@@ -256,6 +272,7 @@ cr.define('safe_browsing', function() {
     addReceivedClientDownloadResponseInfo:
         addReceivedClientDownloadResponseInfo,
     addPGEvent: addPGEvent,
+    addSecurityEvent: addSecurityEvent,
     addPGPing: addPGPing,
     addPGResponse: addPGResponse,
     initialize: initialize,

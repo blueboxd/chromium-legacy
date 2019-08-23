@@ -35,11 +35,11 @@ import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.test.support.DisableHistogramsRule;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.ui.base.MenuSourceType;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -80,6 +80,12 @@ public class ChromeContextMenuPopulatorTest {
         when(mItemDelegate.supportsAddToContacts()).thenReturn(true);
 
         initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.NORMAL);
+
+        HashMap<String, Boolean> features = new HashMap<String, Boolean>();
+        features.put(ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS, false);
+        features.put(ChromeFeatureList.EPHEMERAL_TAB, false);
+
+        ChromeFeatureList.setTestFeatures(features);
     }
 
     private void initializePopulator(@ContextMenuMode int mode) {
@@ -116,7 +122,6 @@ public class ChromeContextMenuPopulatorTest {
     }
 
     @Test
-    @DisableFeatures({ChromeFeatureList.EPHEMERAL_TAB})
     public void testHttpLink() {
         FirstRunStatus.setFirstRunFlowComplete(false);
         ContextMenuParams contextMenuParams = new ContextMenuParams(0, PAGE_URL, LINK_URL,
@@ -154,7 +159,6 @@ public class ChromeContextMenuPopulatorTest {
     }
 
     @Test
-    @DisableFeatures({ChromeFeatureList.EPHEMERAL_TAB})
     public void testMailLink() {
         FirstRunStatus.setFirstRunFlowComplete(false);
         ContextMenuParams contextMenuParams =
@@ -193,7 +197,6 @@ public class ChromeContextMenuPopulatorTest {
     }
 
     @Test
-    @DisableFeatures({ChromeFeatureList.EPHEMERAL_TAB})
     public void testTelLink() {
         FirstRunStatus.setFirstRunFlowComplete(false);
         ContextMenuParams contextMenuParams =
@@ -233,7 +236,6 @@ public class ChromeContextMenuPopulatorTest {
     }
 
     @Test
-    @DisableFeatures({ChromeFeatureList.EPHEMERAL_TAB})
     public void testVideoLink() {
         FirstRunStatus.setFirstRunFlowComplete(false);
         ContextMenuParams contextMenuParams = new ContextMenuParams(WebContextMenuMediaType.VIDEO,
@@ -273,7 +275,6 @@ public class ChromeContextMenuPopulatorTest {
     }
 
     @Test
-    @DisableFeatures({ChromeFeatureList.EPHEMERAL_TAB})
     public void testImageHiFi() {
         FirstRunStatus.setFirstRunFlowComplete(false);
         ContextMenuParams contextMenuParams = new ContextMenuParams(WebContextMenuMediaType.IMAGE,
@@ -308,7 +309,6 @@ public class ChromeContextMenuPopulatorTest {
     }
 
     @Test
-    @DisableFeatures({ChromeFeatureList.EPHEMERAL_TAB})
     public void testHttpLinkWithImageHiFi() {
         FirstRunStatus.setFirstRunFlowComplete(false);
         ContextMenuParams contextMenuParams = new ContextMenuParams(WebContextMenuMediaType.IMAGE,

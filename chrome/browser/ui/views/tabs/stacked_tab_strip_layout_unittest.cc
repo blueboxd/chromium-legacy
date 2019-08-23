@@ -51,9 +51,9 @@ class StackedTabStripLayoutTest : public testing::Test {
       PrepareChildViewsFromString(data.start_bounds);
     else
       PrepareChildViewsFromString(data.expected_bounds);
-    layout_.reset(new StackedTabStripLayout(
-                     gfx::Size(data.tab_size, 10), data.tab_overlap,
-                     data.stacked_offset, 4, &view_model_));
+    layout_ = std::make_unique<StackedTabStripLayout>(
+        gfx::Size(data.tab_size, 10), data.tab_overlap, data.stacked_offset, 4,
+        &view_model_);
     if (data.start_bounds.empty()) {
       PrepareChildViewsFromString(data.expected_bounds);
       layout_->Reset(data.initial_x, data.width, data.pinned_tab_count,

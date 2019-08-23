@@ -1736,8 +1736,8 @@ TEST_F(TextfieldModelTest, UndoRedo_CompositionText) {
 
 // Tests that clipboard text with leading, trailing and interspersed tabs
 // spaces etc is pasted correctly. Leading and trailing tabs should be
-// stripped. Text separated by multiple tabs/spaces should be collapsed into
-// one space. Text with just tabs and spaces should be pasted as one space.
+// stripped. Text separated by multiple tabs/spaces should be left alone.
+// Text with just tabs and spaces should be pasted as one space.
 TEST_F(TextfieldModelTest, Clipboard_WhiteSpaceStringTest) {
   // Test 1
   // Clipboard text with a leading tab should be pasted with the tab stripped.
@@ -1776,7 +1776,7 @@ TEST_F(TextfieldModelTest, Clipboard_WhiteSpaceStringTest) {
 
   // Test 3
   // Clipboard text with multiple tabs separating the words should be pasted
-  // with one space replacing all tabs.
+  // as-is.
   ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
       .WriteText(base::ASCIIToUTF16("FOO \t\t BAR"));
 
@@ -1785,7 +1785,7 @@ TEST_F(TextfieldModelTest, Clipboard_WhiteSpaceStringTest) {
   model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, gfx::SELECTION_NONE);
   EXPECT_EQ(11U, model.GetCursorPosition());
   EXPECT_TRUE(model.Paste());
-  EXPECT_STR_EQ("HELLO WORLDFOO BAR", model.text());
+  EXPECT_STR_EQ("HELLO WORLDFOO \t\t BAR", model.text());
 
   model.SelectAll(false);
   model.DeleteSelection();
@@ -1793,13 +1793,12 @@ TEST_F(TextfieldModelTest, Clipboard_WhiteSpaceStringTest) {
 
   // Test 4
   // Clipboard text with multiple leading tabs and multiple tabs separating
-  // the words should be pasted with the leading tabs stripped and one space
-  // replacing the intermediate tabs.
+  // the words should be pasted with the leading tabs stripped.
   ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
       .WriteText(base::ASCIIToUTF16("\t\tFOO \t\t BAR"));
 
   EXPECT_TRUE(model.Paste());
-  EXPECT_STR_EQ("FOO BAR", model.text());
+  EXPECT_STR_EQ("FOO \t\t BAR", model.text());
 
   model.SelectAll(false);
   model.DeleteSelection();
@@ -1830,12 +1829,11 @@ TEST_F(TextfieldModelTest, Clipboard_WhiteSpaceStringTest) {
   EXPECT_STR_EQ("", model.text());
 
   // Test 7
-  // Clipboard text with lots of spaces between words should have all spaces
-  // replaced with a single space.
+  // Clipboard text with lots of spaces between words should be pasted as-is.
   ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
       .WriteText(base::ASCIIToUTF16("FOO      BAR"));
   EXPECT_TRUE(model.Paste());
-  EXPECT_STR_EQ("FOO BAR", model.text());
+  EXPECT_STR_EQ("FOO      BAR", model.text());
 }
 
 TEST_F(TextfieldModelTest, Transpose) {

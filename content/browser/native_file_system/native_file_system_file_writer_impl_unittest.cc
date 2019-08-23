@@ -68,7 +68,8 @@ class NativeFileSystemFileWriterImplTest : public testing::Test {
 
     manager_ = base::MakeRefCounted<NativeFileSystemManagerImpl>(
         file_system_context_, chrome_blob_context_,
-        /*permission_context=*/nullptr);
+        /*permission_context=*/nullptr,
+        /*off_the_record=*/false);
 
     handle_ = std::make_unique<NativeFileSystemFileWriterImpl>(
         manager_.get(),
@@ -78,6 +79,7 @@ class NativeFileSystemFileWriterImplTest : public testing::Test {
         test_file_url_, test_swap_url_,
         NativeFileSystemManagerImpl::SharedHandleState(
             permission_grant_, permission_grant_, /*file_system=*/{}));
+    handle_->set_skip_quarantine_service_for_testing();
   }
 
   blink::mojom::BlobPtr CreateBlob(const std::string& contents) {

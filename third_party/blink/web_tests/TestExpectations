@@ -6446,15 +6446,12 @@ crbug.com/988890 [ Win7 Release ] external/wpt/referrer-policy/strict-origin-whe
 crbug.com/988890 [ Win7 Release ] virtual/blink-cors/external/wpt/referrer-policy/strict-origin-when-cross-origin/attr-referrer/same-origin/http-http/img-tag/keep-origin-redirect/same-insecure.http.html [ Pass Timeout ]
 
 # Sheriff 2019-07-31
-crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-video-shadow.html [ Failure ]
 crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-canvas-with-shadow.html [ Failure ]
 crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-canvas-all.html [ Failure ]
 crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-canvas-padding.html [ Failure ]
 crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-canvas.html [ Failure ]
-crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-video-ratio.html [ Failure ]
 crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-canvas-with-mask.html [ Failure ]
 crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-canvas-border.html [ Failure ]
-crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-video.html [ Failure ]
 crbug.com/989365 [ Win7 ] virtual/blink-cors/http/tests/security/img-crossorigin-redirect-credentials.https.html [ Pass Timeout ]
 crbug.com/989365 [ Win7 ] http/tests/security/img-crossorigin-redirect-credentials.https.html [ Pass Timeout ]
 crbug.com/989014 [ Linux Debug ] external/wpt/cookie-store/serviceworker_cookieStore_subscriptions_eventhandler_attribute.tentative.https.html [ Pass Timeout ]
@@ -6533,6 +6530,12 @@ crbug.com/994034 [ Linux Win ] http/tests/devtools/elements/styles-3/styles-add-
 crbug.com/994027 [ Linux Win ] http/tests/devtools/elements/styles-2/force-pseudo-state.js [ Pass Failure ]
 crbug.com/995142 crbug.com/900706 [ Mac ] fast/canvas/canvas-large-pattern.html [ Pass Failure ]
 crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/canvas-large-pattern.html [ Pass Failure ]
+crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/pixelated-canvas.html [ Pass Failure ]
+crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/pixelated-resize.html [ Pass Failure ]
+crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/pixelated.html [ Pass Failure ]
+
+crbug.com/995669 [ Win ] http/tests/media/video-throttled-load-metadata.html [ Pass Failure ]
+crbug.com/995669 [ Win ] virtual/audio-service/http/tests/media/video-throttled-load-metadata.html [ Pass Failure ]
 
 # Pending enabling scroll to text feature
 crbug.com/919204 external/wpt/scroll-to-text-fragment/scroll-to-text-fragment.html [ Skip ]

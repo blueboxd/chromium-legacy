@@ -49,9 +49,6 @@ int32_t BytesPerElement(gfx::BufferFormat format, int plane) {
       return bytes_per_element[plane];
     case gfx::BufferFormat::R_16:
     case gfx::BufferFormat::RG_88:
-    case gfx::BufferFormat::UYVY_422:
-      DCHECK_EQ(plane, 0);
-      return 2;
     case gfx::BufferFormat::BGR_565:
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::RGBX_8888:
@@ -80,8 +77,6 @@ int32_t PixelFormat(gfx::BufferFormat format) {
       return 'RGhA';
     case gfx::BufferFormat::YUV_420_BIPLANAR:
       return '420v';
-    case gfx::BufferFormat::UYVY_422:
-      return '2vuy';
     case gfx::BufferFormat::R_16:
     case gfx::BufferFormat::RG_88:
     case gfx::BufferFormat::BGR_565:

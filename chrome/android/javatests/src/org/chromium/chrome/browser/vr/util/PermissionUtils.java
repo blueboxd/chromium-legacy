@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.vr.util;
 
+import android.os.SystemClock;
+
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.permissions.PermissionDialogController;
 import org.chromium.chrome.browser.vr.ArConsentDialog;
@@ -67,6 +69,9 @@ public class PermissionUtils {
                                             -> { return !isConsentDialogShown(activity); },
                 "Consent prompt did not get dismissed in allotted time",
                 CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL, DIALOG_POLLING_INTERVAL_MS);
+        // For some reason, the prompt can be dismissed, but we won't be able to show a new one for
+        // a short period of time (animations?), so wait a little longer to avoid that.
+        SystemClock.sleep(500);
     }
 
     /**

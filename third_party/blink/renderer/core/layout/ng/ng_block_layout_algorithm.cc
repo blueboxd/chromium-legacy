@@ -785,7 +785,7 @@ const NGInlineBreakToken* NGBlockLayoutAlgorithm::TryReuseFragmentsFromCache(
   const PhysicalSize outer_size = lineboxes->Size();
 
   LayoutUnit used_block_size = previous_inflow_position->logical_block_offset;
-  NGBreakToken* last_break_token = nullptr;
+  const NGBreakToken* last_break_token = nullptr;
   for (const NGPaintFragment* child : lineboxes->Children()) {
     if (child->IsDirty())
       break;
@@ -801,7 +801,7 @@ const NGInlineBreakToken* NGBlockLayoutAlgorithm::TryReuseFragmentsFromCache(
     // helps reducing the code to setup internal states after the reuse. Remove
     // the last fragment if it is the end of the fragmentation to do so, but we
     // should figure out how to setup the states without doing this.
-    NGBreakToken* break_token = line->BreakToken();
+    const NGBreakToken* break_token = line->BreakToken();
     DCHECK(break_token);
     if (break_token->IsFinished())
       break;

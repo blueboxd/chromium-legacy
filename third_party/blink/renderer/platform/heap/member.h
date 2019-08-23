@@ -242,6 +242,11 @@ class MemberBase {
         ->load(std::memory_order_relaxed);
   }
 
+  // Thread safe version of IsHashTableDeletedValue for use while tracing.
+  bool IsHashTableDeletedValueSafe() const {
+    return GetSafe() == reinterpret_cast<T*>(kHashTableDeletedRawValue);
+  }
+
   T* raw_;
 #if DCHECK_IS_ON()
   MemberPointerVerifier<T, tracenessConfiguration> pointer_verifier_;

@@ -97,7 +97,7 @@ BrowserActionsContainer::BrowserActionsContainer(
       resize_area_ = new views::ResizeArea(this);
       AddChildView(resize_area_);
     }
-    resize_animation_.reset(new gfx::SlideAnimation(this));
+    resize_animation_ = std::make_unique<gfx::SlideAnimation>(this);
 
     if (GetSeparatorAreaWidth() > 0) {
       separator_ = new views::Separator();

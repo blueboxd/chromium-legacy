@@ -106,20 +106,22 @@ class TabStripModel {
 
   // Enumerates different ways to open a new tab. Does not apply to opening
   // existing links or searches in a new tab, only to brand new empty tabs.
+  // KEEP IN SYNC WITH THE NewTabType ENUM IN enums.xml.
+  // NEW VALUES MUST BE APPENDED AND AVOID CHANGING ANY PRE-EXISTING VALUES.
   enum NewTab {
     // New tab was opened using the new tab button on the tab strip.
-    NEW_TAB_BUTTON,
+    NEW_TAB_BUTTON = 0,
 
     // New tab was opened using the menu command - either through the keyboard
     // shortcut, or by opening the menu and selecting the command. Applies to
     // both app menu and the menu bar's File menu (on platforms that have one).
-    NEW_TAB_COMMAND,
+    NEW_TAB_COMMAND = 1,
 
     // New tab was opened through the context menu on the tab strip.
-    NEW_TAB_CONTEXT_MENU,
+    // NEW_TAB_CONTEXT_MENU = 2,
 
     // Number of enum entries, used for UMA histogram reporting macros.
-    NEW_TAB_ENUM_COUNT,
+    NEW_TAB_ENUM_COUNT = 3,
   };
 
   static const int kNoTab = -1;
@@ -434,19 +436,15 @@ class TabStripModel {
   // for entries in the 'Add to existing group' submenu.
   enum ContextMenuCommand {
     CommandFirst,
-    CommandNewTab,
     CommandReload,
     CommandDuplicate,
     CommandCloseTab,
-    CommandCloseOtherTabs,
     CommandCloseTabsToRight,
-    CommandRestoreTab,
     CommandTogglePinned,
     CommandFocusMode,
     CommandToggleSiteMuted,
     CommandSendTabToSelf,
     CommandSendTabToSelfSingleTarget,
-    CommandBookmarkAllTabs,
     CommandAddToNewGroup,
     CommandAddToExistingGroup,
     CommandRemoveFromGroup,

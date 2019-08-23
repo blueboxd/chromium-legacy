@@ -6,6 +6,7 @@
 #define ASH_ASSISTANT_MODEL_ASSISTANT_SUGGESTIONS_MODEL_H_
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/component_export.h"
@@ -16,6 +17,7 @@
 namespace ash {
 
 class AssistantSuggestionsModelObserver;
+class ProactiveSuggestions;
 
 class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantSuggestionsModel {
  public:
@@ -40,10 +42,19 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantSuggestionsModel {
   // Returns all cached conversation starters, mapped to a unique id.
   std::map<int, const AssistantSuggestion*> GetConversationStarters() const;
 
+  // Sets the cache of proactive suggestions.
+  void SetProactiveSuggestions(
+      std::unique_ptr<ProactiveSuggestions> proactive_suggestions);
+
+  // Returns the cache of proactive suggestions.
+  const ProactiveSuggestions* GetProactiveSuggestions() const;
+
  private:
   void NotifyConversationStartersChanged();
+  void NotifyProactiveSuggestionsChanged();
 
   std::vector<AssistantSuggestionPtr> conversation_starters_;
+  std::unique_ptr<ProactiveSuggestions> proactive_suggestions_;
 
   base::ObserverList<AssistantSuggestionsModelObserver> observers_;
 

@@ -4,9 +4,12 @@
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
+#include "components/services/quarantine/test_support.h"
 #include "content/browser/native_file_system/file_system_chooser_test_helpers.h"
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -35,6 +38,7 @@ class NativeFileSystemFileWriterBrowserTest : public ContentBrowserTest {
         blink::features::kNativeFileSystemAPI);
 
     ASSERT_TRUE(embedded_test_server()->Start());
+    test_url_ = embedded_test_server()->GetURL("/title1.html");
 
     ContentBrowserTest::SetUp();
   }
@@ -62,8 +66,7 @@ class NativeFileSystemFileWriterBrowserTest : public ContentBrowserTest {
 
     ui::SelectFileDialog::SetFactory(
         new FakeSelectFileDialogFactory({test_file}));
-    EXPECT_TRUE(
-        NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
+    EXPECT_TRUE(NavigateToURL(shell(), test_url_));
     EXPECT_EQ(
         test_file.BaseName().AsUTF8Unsafe(),
         EvalJs(
@@ -79,9 +82,38 @@ class NativeFileSystemFileWriterBrowserTest : public ContentBrowserTest {
     return std::make_pair(test_file, swap_file);
   }
 
- private:
+  std::pair<base::FilePath, base::FilePath>
+  CreateQuarantineTestFilesAndEntry() {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    base::FilePath test_file =
+        temp_dir_.GetPath().AppendASCII("to_be_quarantined.exe");
+    std::string file_data = "hello world!";
+    int file_size = static_cast<int>(file_data.size());
+    EXPECT_EQ(file_size,
+              base::WriteFile(test_file, file_data.c_str(), file_size));
+
+    ui::SelectFileDialog::SetFactory(
+        new FakeSelectFileDialogFactory({test_file}));
+    EXPECT_TRUE(NavigateToURL(shell(), test_url_));
+    EXPECT_EQ(
+        test_file.BaseName().AsUTF8Unsafe(),
+        EvalJs(
+            shell(),
+            "(async () => {"
+            "  let e = await self.chooseFileSystemEntries({type: 'openFile'});"
+            "  self.entry = e;"
+            "  self.writers = [];"
+            "  return e.name; })()"));
+
+    const base::FilePath swap_file =
+        base::FilePath(test_file).AddExtensionASCII(".crswap");
+    return std::make_pair(test_file, swap_file);
+  }
+
+ protected:
   base::test::ScopedFeatureList scoped_feature_list_;
   base::ScopedTempDir temp_dir_;
+  GURL test_url_;
 };
 
 IN_PROC_BROWSER_TEST_F(NativeFileSystemFileWriterBrowserTest,
@@ -132,15 +164,12 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemFileWriterBrowserTest,
   base::FilePath test_file, swap_file;
   std::tie(test_file, swap_file) = CreateTestFilesAndEntry(initial_contents);
 
-  EXPECT_EQ(true, EvalJs(shell(),
-                         "(async () => {"
-                         "  try {"
-                         "    const w = await self.entry.createWriter({"
-                         "      keepExistingData: true });"
-                         "    self.writer = w;"
-                         "    return true;"
-                         "  } catch (e) { return false; }"
-                         "})()"));
+  EXPECT_EQ(nullptr, EvalJs(shell(),
+                            "(async () => {"
+                            "    const w = await self.entry.createWriter({"
+                            "      keepExistingData: true });"
+                            "    self.writer = w;"
+                            "})()"));
   {
     base::ScopedAllowBlockingForTesting allow_blocking;
     EXPECT_TRUE(base::PathExists(swap_file));
@@ -170,15 +199,12 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemFileWriterBrowserTest,
   base::FilePath test_file, swap_file;
   std::tie(test_file, swap_file) = CreateTestFilesAndEntry(initial_contents);
 
-  EXPECT_EQ(true, EvalJs(shell(),
-                         "(async () => {"
-                         "  try {"
-                         "    const w = await self.entry.createWriter({"
-                         "      keepExistingData: false });"
-                         "    self.writer = w;"
-                         "    return true;"
-                         "  } catch (e) { return false; }"
-                         "})()"));
+  EXPECT_EQ(nullptr, EvalJs(shell(),
+                            "(async () => {"
+                            "  const w = await self.entry.createWriter({"
+                            "    keepExistingData: false });"
+                            "  self.writer = w;"
+                            "})()"));
   {
     base::ScopedAllowBlockingForTesting allow_blocking;
     EXPECT_TRUE(base::PathExists(swap_file));
@@ -208,14 +234,11 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemFileWriterBrowserTest,
 
   int num_writers = 5;
   for (int index = 0; index < num_writers; index++) {
-    EXPECT_EQ(true, EvalJs(shell(),
-                           "(async () => {"
-                           "  try {"
-                           "    const w = await self.entry.createWriter();"
-                           "    self.writers.push(w);"
-                           "    return true;"
-                           "  } catch (e) { return false; }"
-                           "})()"));
+    EXPECT_EQ(nullptr, EvalJs(shell(),
+                              "(async () => {"
+                              "  const w = await self.entry.createWriter();"
+                              "  self.writers.push(w);"
+                              "})()"));
   }
 
   {
@@ -239,16 +262,13 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemFileWriterBrowserTest,
   int num_writers = 5;
   for (int index = 0; index < num_writers; index++) {
     EXPECT_EQ(
-        true,
+        nullptr,
         EvalJs(shell(),
                JsReplace("(async () => {"
-                         "  try {"
-                         "    for(let i = 0; i < $1; i++ ) {"
-                         "      self.writers.push(self.entry.createWriter());"
-                         "    }"
-                         "    await Promise.all(self.writers);"
-                         "    return true;"
-                         "  } catch (e) { return false; }"
+                         "  for(let i = 0; i < $1; i++ ) {"
+                         "    self.writers.push(self.entry.createWriter());"
+                         "  }"
+                         "  await Promise.all(self.writers);"
                          "})()",
                          num_writers)));
   }
@@ -263,6 +283,35 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemFileWriterBrowserTest,
       }
       EXPECT_TRUE(base::PathExists(swap_file));
     }
+  }
+}
+
+// TODO(https://crbug.com/992089): Files are only quarantined on windows in
+// browsertests unfortunately. Change this when more platforms are enabled.
+#if defined(OS_WIN)
+#define MAYBE_FileAnnotated FileAnnotated
+#else
+#define MAYBE_FileAnnotated DISABLED_FileAnnotated
+#endif  // defined(OS_WIN)
+IN_PROC_BROWSER_TEST_F(NativeFileSystemFileWriterBrowserTest,
+                       MAYBE_FileAnnotated) {
+  base::FilePath test_file, swap_file, lib_file;
+
+  std::tie(test_file, swap_file) = CreateQuarantineTestFilesAndEntry();
+
+  EXPECT_EQ(nullptr, EvalJs(shell(),
+                            "(async () => {"
+                            "  const w = await self.entry.createWriter("
+                            "    {keepExistingData: true},"
+                            "  );"
+                            "  self.writer = w;"
+                            "  await self.writer.close();"
+                            "})()"));
+
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    EXPECT_FALSE(base::PathExists(swap_file));
+    EXPECT_TRUE(quarantine::IsFileQuarantined(test_file, GURL(), test_url_));
   }
 }
 

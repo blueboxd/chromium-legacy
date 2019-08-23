@@ -155,9 +155,6 @@ bool g_app_shims_allow_update_and_launch_in_tests = false;
 
 namespace {
 
-// Launch Services Key to run as an agent app, which doesn't launch in the dock.
-NSString* const kLSUIElement = @"LSUIElement";
-
 // The maximum number to append to to an app name before giving up and using the
 // extension id.
 constexpr int kMaxConflictNumber = 999;
@@ -943,10 +940,6 @@ bool WebAppShortcutCreator::UpdatePlist(const base::FilePath& app_path) const {
             forKey:app_mode::kLSHasLocalizedDisplayNameKey];
   [plist setObject:[NSNumber numberWithBool:YES]
             forKey:app_mode::kNSHighResolutionCapableKey];
-  if (info_->extension_id == app_mode::kAppListModeId) {
-    // Prevent the app list from bouncing in the dock, and getting a run light.
-    [plist setObject:[NSNumber numberWithBool:YES] forKey:kLSUIElement];
-  }
 
   base::FilePath app_name = app_path.BaseName().RemoveFinalExtension();
   [plist setObject:base::mac::FilePathToNSString(app_name)

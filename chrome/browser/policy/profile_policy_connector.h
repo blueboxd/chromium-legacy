@@ -11,7 +11,6 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "components/policy/core/common/policy_service.h"
 
 namespace user_manager {
 class User;
@@ -21,6 +20,7 @@ namespace policy {
 
 class CloudPolicyStore;
 class ConfigurationPolicyProvider;
+class PolicyService;
 class SchemaRegistry;
 class ChromeBrowserPolicyConnector;
 
@@ -28,8 +28,7 @@ class ChromeBrowserPolicyConnector;
 // components. Since the ProfilePolicyConnector instance is accessed from
 // Profile, not from a KeyedServiceFactory anymore, the ProfilePolicyConnector
 // no longer needs to be a KeyedService.
-class ProfilePolicyConnector final
-    : public PolicyService::EnterpriseUsersDefaultDelegate {
+class ProfilePolicyConnector final {
  public:
   ProfilePolicyConnector();
   ~ProfilePolicyConnector();
@@ -48,9 +47,6 @@ class ProfilePolicyConnector final
 
   void InitForTesting(std::unique_ptr<PolicyService> service);
   void OverrideIsManagedForTesting(bool is_managed);
-
-  // PolicyService::EnterpriseUsersDefaultDelegate
-  bool ShouldApplyEnterpriseUsersDefault() override;
 
   void Shutdown();
 
@@ -105,10 +101,6 @@ class ProfilePolicyConnector final
 
   std::unique_ptr<PolicyService> policy_service_;
   std::unique_ptr<bool> is_managed_override_;
-
-  // User initialized by ProfilePolicyConnector::Init. This can be a nullptr
-  // even after initialization.
-  const user_manager::User* user_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ProfilePolicyConnector);
 };

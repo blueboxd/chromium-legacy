@@ -70,7 +70,7 @@ class NetworkStateNotifierTest : public BrowserWithTestWindowTest {
     SetupDefaultShillState();
     NetworkHandler::Initialize();
     base::RunLoop().RunUntilIdle();
-    network_connect_delegate_.reset(new NetworkConnectTestDelegate);
+    network_connect_delegate_ = std::make_unique<NetworkConnectTestDelegate>();
     NetworkConnect::Initialize(network_connect_delegate_.get());
   }
 

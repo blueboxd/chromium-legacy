@@ -27,6 +27,7 @@
 #include "extensions/browser/lazy_context_task_queue.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/event_filtering_info.h"
+#include "extensions/common/features/feature.h"
 #include "ipc/ipc_sender.h"
 #include "url/gurl.h"
 
@@ -405,6 +406,7 @@ struct Event {
   // given context and extension, and false otherwise.
   using WillDispatchCallback =
       base::RepeatingCallback<bool(content::BrowserContext*,
+                                   Feature::Context,
                                    const Extension*,
                                    Event*,
                                    const base::DictionaryValue*)>;

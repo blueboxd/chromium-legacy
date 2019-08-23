@@ -28,6 +28,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
 #include "base/win/scoped_com_initializer.h"
+#include "base/win/scoped_handle.h"
 #include "chrome/chrome_cleaner/buildflags.h"
 #include "chrome/chrome_cleaner/components/recovery_component.h"
 #include "chrome/chrome_cleaner/components/system_report_component.h"
@@ -50,6 +51,7 @@
 #include "chrome/chrome_cleaner/executables/shutdown_sequence.h"
 #include "chrome/chrome_cleaner/ipc/mojo_chrome_prompt_ipc.h"
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
+#include "chrome/chrome_cleaner/ipc/proto_chrome_prompt_ipc.h"
 #include "chrome/chrome_cleaner/ipc/sandbox.h"
 #include "chrome/chrome_cleaner/logging/logging_service_api.h"
 #include "chrome/chrome_cleaner/logging/pending_logs_service.h"
@@ -602,14 +604,14 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, wchar_t*, int) {
           settings->chrome_mojo_pipe_token(),
           shutdown_sequence.mojo_task_runner);
     } else {
-      // Proto prompt support is not complete yet so only mojo is supported.
-      return ReturnWithResultCode(
-          chrome_cleaner::RESULT_CODE_INVALID_IPC_SWITCHES, executable_path,
-          &registry_logger, rebooter.get());
+      // |chrome_prompt_ipc| takes ownership of the handles. The settings
+      // object will still return the handle values when queried but from this
+      // point on they may or may not be open.
+      chrome_prompt_ipc = new chrome_cleaner::ProtoChromePromptIPC(
+          base::win::ScopedHandle(settings->prompt_response_read_handle()),
+          base::win::ScopedHandle(settings->prompt_request_write_handle()));
     }
-
-  } else if (!settings->chrome_mojo_pipe_token().empty() ||
-             settings->has_parent_pipe_handle()) {
+  } else if (settings->has_any_ipc_switch()) {
     return ReturnWithResultCode(
         chrome_cleaner::RESULT_CODE_EXPECTED_SCANNING_EXECUTION_MODE,
         executable_path, &registry_logger, rebooter.get());

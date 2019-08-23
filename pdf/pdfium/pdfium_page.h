@@ -109,7 +109,7 @@ class PDFiumPage {
   // modifying the out parameters if no character lies inside the rectangle.
   bool GetUnderlyingTextRangeForRect(const pp::FloatRect& rect,
                                      int* start_index,
-                                     uint32_t* char_len);
+                                     int* char_len);
 
   // Converts from page coordinates to screen coordinates.
   pp::Rect PageToScreen(const pp::Point& offset,

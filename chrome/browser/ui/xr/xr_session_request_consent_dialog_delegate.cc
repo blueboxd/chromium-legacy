@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/vr/metrics/consent_flow_metrics_helper.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/url_formatter/elide_url.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_types.h"
@@ -17,10 +18,12 @@ namespace vr {
 
 XrSessionRequestConsentDialogDelegate::XrSessionRequestConsentDialogDelegate(
     content::WebContents* web_contents,
-    base::OnceCallback<void(bool)> response_callback)
+    XrConsentPromptLevel consent_level,
+    base::OnceCallback<void(XrConsentPromptLevel, bool)> response_callback)
     : TabModalConfirmDialogDelegate(web_contents),
       response_callback_(std::move(response_callback)),
-      url_(web_contents->GetLastCommittedURL().GetAsReferrer().spec()),
+      consent_level_(consent_level),
+      url_(web_contents->GetLastCommittedURL()),
       metrics_helper_(
           ConsentFlowMetricsHelper::InitFromWebContents(web_contents)) {}
 
@@ -28,11 +31,28 @@ XrSessionRequestConsentDialogDelegate::
     ~XrSessionRequestConsentDialogDelegate() = default;
 
 base::string16 XrSessionRequestConsentDialogDelegate::GetTitle() {
-  return l10n_util::GetStringUTF16(IDS_XR_CONSENT_DIALOG_TITLE);
+  return l10n_util::GetStringFUTF16(
+      IDS_XR_CONSENT_DIALOG_TITLE,
+      url_formatter::FormatUrlForSecurityDisplay(
+          url_, url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS));
 }
 
 base::string16 XrSessionRequestConsentDialogDelegate::GetDialogMessage() {
-  return l10n_util::GetStringUTF16(IDS_XR_CONSENT_DIALOG_DESCRIPTION);
+  switch (consent_level_) {
+    case XrConsentPromptLevel::kDefault:
+      return l10n_util::GetStringUTF16(
+          IDS_XR_CONSENT_DIALOG_DESCRIPTION_DEFAULT);
+    case XrConsentPromptLevel::kVRFeatures:
+      return l10n_util::GetStringUTF16(
+          IDS_XR_CONSENT_DIALOG_DESCRIPTION_PHYSICAL_FEATURES);
+    case XrConsentPromptLevel::kVRFloorPlan:
+      return l10n_util::GetStringUTF16(
+          IDS_XR_CONSENT_DIALOG_DESCRIPTION_FLOOR_PLAN);
+    case XrConsentPromptLevel::kNone:
+      NOTREACHED();
+      return l10n_util::GetStringUTF16(
+          IDS_XR_CONSENT_DIALOG_DESCRIPTION_DEFAULT);
+  }
 }
 
 base::string16 XrSessionRequestConsentDialogDelegate::GetAcceptButtonTitle() {
@@ -63,8 +83,9 @@ void XrSessionRequestConsentDialogDelegate::OnClosed() {
 }
 
 void XrSessionRequestConsentDialogDelegate::OnUserActionTaken(bool allow) {
-  std::move(response_callback_).Run(allow);
-  metrics_helper_->OnDialogClosedWithConsent(url_, allow);
+  std::move(response_callback_).Run(consent_level_, allow);
+  metrics_helper_->OnDialogClosedWithConsent(url_.GetAsReferrer().spec(),
+                                             allow);
 }
 
 void XrSessionRequestConsentDialogDelegate::OnShowDialog() {

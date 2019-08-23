@@ -41,6 +41,7 @@
 
 #if defined(OS_WIN)
 #include "base/enterprise_util.h"
+#include "chrome/browser/policy/browser_dm_token_storage.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
 #elif defined(OS_MACOSX)
@@ -400,8 +401,10 @@ bool UpgradeDetectorImpl::DetectOutdatedInstall() {
 
 #if defined(OS_WIN)
     // Don't show the update bubbles to enterprise users.
-    if (base::IsMachineExternallyManaged())
+    if (base::IsMachineExternallyManaged() ||
+        !policy::BrowserDMTokenStorage::Get()->RetrieveDMToken().empty()) {
       return false;
+    }
 #endif
   }
 

@@ -419,7 +419,7 @@ void OmniboxPageHandler::StartOmniboxQuery(const std::string& input_string,
 }
 
 void OmniboxPageHandler::ResetController() {
-  controller_.reset(new AutocompleteController(
+  controller_ = std::make_unique<AutocompleteController>(
       std::make_unique<ChromeAutocompleteProviderClient>(profile_), this,
-      AutocompleteClassifier::DefaultOmniboxProviders()));
+      AutocompleteClassifier::DefaultOmniboxProviders());
 }

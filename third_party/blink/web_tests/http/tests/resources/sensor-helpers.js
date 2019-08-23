@@ -3,6 +3,32 @@
 // Default sensor frequency in default configurations.
 const DEFAULT_FREQUENCY = 5;
 
+// A "sliding window" that iterates over |data| and returns one item at a
+// time, advancing and wrapping around as needed. |data| must be an array of
+// arrays.
+class RingBuffer {
+  constructor(data) {
+    this.bufferPosition_ = 0;
+    // Validate |data|'s format and deep-copy every element.
+    this.data_ = Array.from(data, element => {
+      if (!Array.isArray(element)) {
+        throw new TypeError('Every |data| element must be an array.');
+      }
+      return Array.from(element);
+    })
+  }
+
+  next() {
+    const value = this.data_[this.bufferPosition_];
+    this.bufferPosition_ = (this.bufferPosition_ + 1) % this.data_.length;
+    return { done: false, value: value };
+  }
+
+  [Symbol.iterator]() {
+    return this;
+  }
+}
+
 function sensorMocks() {
   // Class that mocks Sensor interface defined in sensor.mojom
   class MockSensor {
@@ -128,7 +154,7 @@ function sensorMocks() {
 
     // Sets fake data that is used to deliver sensor reading updates.
     async setSensorReading(readingData) {
-      this.readingData_ = readingData;
+      this.readingData_ = new RingBuffer(readingData);
       return this;
     }
 
@@ -172,7 +198,13 @@ function sensorMocks() {
         const timeout = (1 / maxFrequencyUsed) * 1000;
         this.sensorReadingTimerId_ = window.setInterval(() => {
           if (this.readingData_) {
-            this.buffer_.set(this.readingData_, 2);
+            // |buffer_| is a TypedArray, so we need to make sure we pass an
+            // array to set().
+            const reading = this.readingData_.next().value;
+            assert_true(Array.isArray(reading), "The readings passed to " +
+                "setSensorReading() must arrays.");
+            this.buffer_.set(reading, 2);
+
             // For all tests sensor reading should have monotonically
             // increasing timestamp in seconds.
             this.buffer_[1] = window.performance.now() * 0.001;
@@ -447,7 +479,7 @@ function sensor_test(func, name, properties) {
 
 async function setMockSensorDataForType(sensorProvider, sensorType, mockDataArray) {
   const createdSensor = await sensorProvider.getCreatedSensor(sensorType);
-  return createdSensor.setSensorReading(mockDataArray);
+  return createdSensor.setSensorReading([mockDataArray]);
 }
 
 // Returns a promise that will be resolved when an event equal to the given

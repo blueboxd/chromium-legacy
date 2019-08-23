@@ -88,7 +88,8 @@ BrowserActionTestUtilViews::BrowserActionTestUtilViews(Browser* browser,
                                                        bool is_real_window)
     : browser_(browser) {
   if (!is_real_window)
-    test_helper_.reset(new TestToolbarActionsBarHelperViews(browser, nullptr));
+    test_helper_ =
+        std::make_unique<TestToolbarActionsBarHelperViews>(browser, nullptr);
 }
 
 BrowserActionTestUtilViews::~BrowserActionTestUtilViews() {}

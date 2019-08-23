@@ -248,8 +248,9 @@ gfx::Size CastMirroringServiceHost::GetClampedResolution(
 
 void CastMirroringServiceHost::BindGpu(
     mojo::PendingReceiver<viz::mojom::Gpu> receiver) {
-  gpu_client_ = content::CreateGpuClient(std::move(receiver), base::DoNothing(),
-                                         base::ThreadTaskRunnerHandle::Get());
+  gpu_client_ = content::CreateGpuClient(
+      std::move(receiver), base::DoNothing(),
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
 }
 
 void CastMirroringServiceHost::GetVideoCaptureHost(

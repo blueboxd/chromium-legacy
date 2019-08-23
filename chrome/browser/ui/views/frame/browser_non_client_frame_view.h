@@ -110,14 +110,9 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // state of the window.
   SkColor GetToolbarTopSeparatorColor() const;
 
-  // For non-transparent windows, returns the resource ID to use behind
-  // background tabs.  |has_custom_image| will be set to true if this has been
-  // customized by the theme in some way.  Note that because of fallback during
-  // image generation, |has_custom_image| may be true even when the returned
-  // background resource ID has not been directly overridden (i.e.
-  // ThemeProvider::HasCustomImage() returns false).
-  int GetTabBackgroundResourceId(ActiveState active_state,
-                                 bool* has_custom_image) const;
+  // For non-transparent windows, returns the background tab image resource ID
+  // if the image has been customized, directly or indirectly, by the theme.
+  base::Optional<int> GetCustomBackgroundId(ActiveState active_state) const;
 
   // Updates the throbber.
   virtual void UpdateThrobber(bool running) = 0;

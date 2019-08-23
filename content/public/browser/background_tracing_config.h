@@ -25,6 +25,9 @@ class CONTENT_EXPORT BackgroundTracingConfig {
   enum TracingMode {
     PREEMPTIVE,
     REACTIVE,
+    // System means that we will inform the system service of triggered rules,
+    // but won't manage the trace ourselves.
+    SYSTEM,
   };
   TracingMode tracing_mode() const { return tracing_mode_; }
 

@@ -41,8 +41,8 @@ public class PasswordManagerDialogCoordinator {
         mMediator.showDialog();
     }
 
-    public void dismissDialog(@DialogDismissalCause int dismissalClause) {
-        mMediator.dismissDialog(dismissalClause);
+    public void dismissDialog(@DialogDismissalCause int dismissalCause) {
+        mMediator.dismissDialog(dismissalCause);
     }
 
     private static PropertyModel.Builder createDialogModelBuilder(View customView) {

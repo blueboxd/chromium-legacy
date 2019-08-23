@@ -74,7 +74,7 @@ void AppShimHostBootstrap::ChannelError(uint32_t custom_reason,
 }
 
 apps::AppShimHandler* AppShimHostBootstrap::GetHandler() {
-  return apps::AppShimHandler::GetForAppMode(app_id_);
+  return apps::AppShimHandler::Get();
 }
 
 chrome::mojom::AppShimHostRequest

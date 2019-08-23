@@ -21,8 +21,7 @@ AppContextMenu::AppContextMenu(AppContextMenuDelegate* delegate,
     : delegate_(delegate),
       profile_(profile),
       app_id_(app_id),
-      controller_(controller) {
-}
+      controller_(controller) {}
 
 AppContextMenu::~AppContextMenu() = default;
 
@@ -70,7 +69,7 @@ bool AppContextMenu::IsCommandIdEnabled(int command_id) const {
 
 void AppContextMenu::TogglePin(const std::string& shelf_app_id) {
   DCHECK_EQ(AppListControllerDelegate::PIN_EDITABLE,
-      controller_->GetPinnable(shelf_app_id));
+            controller_->GetPinnable(shelf_app_id));
   if (controller_->IsAppPinned(shelf_app_id))
     controller_->UnpinApp(shelf_app_id);
   else
@@ -141,6 +140,10 @@ const gfx::VectorIcon& AppContextMenu::GetMenuItemVectorIcon(
     case ash::NOTIFICATION_CONTAINER:
       NOTREACHED() << "NOTIFICATION_CONTAINER does not have an icon, and it is "
                       "added to the model by NotificationMenuController.";
+      return gfx::kNoneIcon;
+    case ash::STOP_APP:
+      if (string_id == IDS_CROSTINI_SHUT_DOWN_LINUX_MENU_ITEM)
+        return views::kLinuxShutdownIcon;
       return gfx::kNoneIcon;
     default:
       NOTREACHED();

@@ -91,18 +91,17 @@ bool BrowserNonClientFrameView::HasVisibleBackgroundTabShapes(
 
   TabStrip* const tab_strip = browser_view_->tabstrip();
 
-  bool has_custom_image;
-  const int fill_id =
-      tab_strip->GetBackgroundResourceId(&has_custom_image, active_state);
   const bool active = ShouldPaintAsActive(active_state);
-  if (has_custom_image) {
+  const base::Optional<int> bg_id =
+      tab_strip->GetCustomBackgroundId(active_state);
+  if (bg_id.has_value()) {
     // If the theme has a custom tab background image, assume tab shapes are
     // visible.  This is pessimistic; the theme may use the same image as the
     // frame, just shifted to align, or a solid-color image the same color as
     // the frame; but to detect this we'd need to do some kind of aligned
     // rendering comparison, which seems not worth it.
     const ui::ThemeProvider* tp = GetThemeProvider();
-    if (tp->HasCustomImage(fill_id))
+    if (tp->HasCustomImage(bg_id.value()))
       return true;
 
     // Inactive tab background images are copied from the active ones, so in the
@@ -181,9 +180,8 @@ SkColor BrowserNonClientFrameView::GetToolbarTopSeparatorColor() const {
                                              GetFrameColor());
 }
 
-int BrowserNonClientFrameView::GetTabBackgroundResourceId(
-    ActiveState active_state,
-    bool* has_custom_image) const {
+base::Optional<int> BrowserNonClientFrameView::GetCustomBackgroundId(
+    ActiveState active_state) const {
   const ui::ThemeProvider* tp = GetThemeProvider();
   const bool incognito = browser_view_->IsIncognito();
   const bool active = ShouldPaintAsActive(active_state);
@@ -200,11 +198,11 @@ int BrowserNonClientFrameView::GetTabBackgroundResourceId(
   // * Tab backgrounds are generated from frame backgrounds if present, and
   // * The incognito frame image is generated from the normal frame image, so
   //   in incognito mode we look at both.
-  *has_custom_image =
+  const bool has_custom_image =
       tp->HasCustomImage(id) || (!active && tp->HasCustomImage(active_id)) ||
       tp->HasCustomImage(IDR_THEME_FRAME) ||
       (incognito && tp->HasCustomImage(IDR_THEME_FRAME_INCOGNITO));
-  return id;
+  return has_custom_image ? base::make_optional(id) : base::nullopt;
 }
 
 void BrowserNonClientFrameView::UpdateMinimumSize() {}

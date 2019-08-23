@@ -29,8 +29,8 @@ const base::FilePath& AppShimHostManagerTestApi::directory_in_tmp() {
 
 void AppShimHostManagerTestApi::SetExtensionAppShimHandler(
     std::unique_ptr<apps::ExtensionAppShimHandler> handler) {
-  apps::AppShimHandler::SetDefaultHandler(nullptr);
-  apps::AppShimHandler::SetDefaultHandler(handler.get());
+  apps::AppShimHandler::Set(nullptr);
+  apps::AppShimHandler::Set(handler.get());
   host_manager_->extension_app_shim_handler_.swap(handler);
 
   // Remove old handler from all AppLifetimeMonitors. Usually this is done at

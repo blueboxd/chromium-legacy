@@ -132,7 +132,7 @@ class CollapsibleListView : public views::View, public views::ButtonListener {
           model->RowCount(), first_item, second_item);
     }
     auto* label = label_container->AddChildView(std::make_unique<views::Label>(
-        label_text, CONTEXT_BODY_TEXT_SMALL, STYLE_EMPHASIZED_SECONDARY));
+        label_text, CONTEXT_BODY_TEXT_SMALL, STYLE_SECONDARY));
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     label_layout->SetFlexForView(label, 1);
     auto button = views::CreateVectorToggleImageButton(this);
@@ -352,17 +352,19 @@ void NativeFileSystemUsageBubbleView::Init() {
 
   if (!embedded_path.empty()) {
     AddChildView(native_file_system_ui_helper::CreateOriginPathLabel(
-        heading_message_id, origin_, embedded_path, CONTEXT_BODY_TEXT_LARGE));
+        heading_message_id, origin_, embedded_path, CONTEXT_BODY_TEXT_LARGE,
+        /*show_emphasis=*/false));
   } else {
     AddChildView(native_file_system_ui_helper::CreateOriginLabel(
-        heading_message_id, origin_, CONTEXT_BODY_TEXT_LARGE));
+        heading_message_id, origin_, CONTEXT_BODY_TEXT_LARGE,
+        /*show_emphasis=*/false));
 
     if (writable_paths_model_.RowCount() > 0) {
       if (readable_paths_model_.RowCount() > 0) {
         auto label = std::make_unique<views::Label>(
             l10n_util::GetStringUTF16(
                 IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_SAVE_CHANGES),
-            CONTEXT_BODY_TEXT_LARGE, STYLE_EMPHASIZED_SECONDARY);
+            CONTEXT_BODY_TEXT_LARGE, STYLE_SECONDARY);
         label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
         AddChildView(std::move(label));
       }
@@ -375,7 +377,7 @@ void NativeFileSystemUsageBubbleView::Init() {
         auto label = std::make_unique<views::Label>(
             l10n_util::GetStringUTF16(
                 IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_VIEW_CHANGES),
-            CONTEXT_BODY_TEXT_LARGE, STYLE_EMPHASIZED_SECONDARY);
+            CONTEXT_BODY_TEXT_LARGE, STYLE_SECONDARY);
         label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
         AddChildView(std::move(label));
       }

@@ -30,7 +30,7 @@ void SetupRootPropertiesInternal(LayerType* root) {
 
   auto& root_clip_node = CreateClipNode(root, ClipTree::kRootNodeId);
   DCHECK_EQ(root_clip_node.id, ClipTree::kViewportNodeId);
-  root_clip_node.clip = gfx::RectF(gfx::SizeF(800, 600));
+  root_clip_node.clip = gfx::RectF(gfx::SizeF(root->bounds()));
 
   auto& root_effect_node = CreateEffectNode(root, EffectTree::kRootNodeId);
   DCHECK_EQ(root_effect_node.id, EffectTree::kContentsRootNodeId);
@@ -59,6 +59,7 @@ TransformNode& CreateTransformNodeInternal(LayerType* layer, int parent_id) {
   int id = transform_tree.Insert(
       TransformNode(), ParentId(parent_id, layer->transform_tree_index()));
   layer->SetTransformTreeIndex(id);
+  layer->SetHasTransformNode(true);
   auto* node = transform_tree.Node(id);
   node->source_node_id = node->parent_id;
   node->element_id = layer->element_id();
@@ -116,7 +117,11 @@ ScrollNode& CreateScrollNodeInternal(LayerType* layer, int parent_id) {
         node->id;
   }
   node->transform_id = layer->transform_tree_index();
-  node->container_bounds = layer->bounds();
+  node->container_bounds = layer->scroll_container_bounds();
+  node->bounds = layer->bounds();
+  node->scrollable = layer->scrollable();
+  node->user_scrollable_horizontal = true;
+  node->user_scrollable_vertical = true;
   scroll_tree.set_needs_update(true);
   return *node;
 }

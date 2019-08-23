@@ -64,11 +64,6 @@ class SerialConnection : public ApiResource,
   using SetControlSignalsCompleteCallback =
       device::mojom::SerialPort::SetControlSignalsCallback;
 
-  using SetBreakCompleteCallback = device::mojom::SerialPort::SetBreakCallback;
-
-  using ClearBreakCompleteCallback =
-      device::mojom::SerialPort::ClearBreakCallback;
-
   SerialConnection(const std::string& owner_extension_id,
                    device::mojom::SerialPortPtrInfo serial_port_info);
   ~SerialConnection() override;
@@ -129,19 +124,10 @@ class SerialConnection : public ApiResource,
   // Returns nullptr if we failed in getting values.
   void GetControlSignals(GetControlSignalsCompleteCallback callback) const;
 
-  // Sets one or more control signals (DTR and/or RTS). Returns result success
-  // or not via |callback|. Unininitialized flags in the HostControlSignals
-  // structure are left unchanged.
-  void SetControlSignals(const api::serial::HostControlSignals& control_signals,
+  // Sets one or more control signals (DTR, RTS, Break). Returns result success
+  // or not via |callback|.
+  void SetControlSignals(device::mojom::SerialHostControlSignalsPtr signals,
                          SetControlSignalsCompleteCallback callback);
-
-  // Suspend character transmission. Known as setting/sending 'Break' signal.
-  // Returns result success or not via |callback|.
-  void SetBreak(SetBreakCompleteCallback callback);
-
-  // Restore character transmission. Known as clear/stop sending 'Break' signal.
-  // Returns result success or not via |callback|.
-  void ClearBreak(ClearBreakCompleteCallback callback);
 
   // Initiates an asynchronous close of the device.
   void Close(base::OnceClosure callback);

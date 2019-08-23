@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import time
+
 from telemetry import story
 from telemetry.page import shared_page_state
 from telemetry.util import js_template
@@ -9,7 +11,8 @@ from telemetry.util import js_template
 from contrib.media_router_benchmarks.media_router_base_page import MediaRouterBasePage
 
 
-SESSION_TIME = 300  # 5 minutes
+SESSION_WAIT_TIME = 300  # 5 minutes
+WAIT_TIME_SEC = 10
 
 class SharedState(shared_page_state.SharedPageState):
   """Shared state that restarts the browser for every single story."""
@@ -38,7 +41,7 @@ class CastIdlePage(MediaRouterBasePage):
     action_runner.Wait(5)
     with action_runner.CreateInteraction('Idle'):
       action_runner.ExecuteJavaScript('collectPerfData();')
-      action_runner.Wait(SESSION_TIME)
+      action_runner.Wait(SESSION_WAIT_TIME)
 
 
 class CastFlingingPage(MediaRouterBasePage):
@@ -93,7 +96,7 @@ class CastFlingingPage(MediaRouterBasePage):
 
       action_runner.Wait(5)
       action_runner.ExecuteJavaScript('collectPerfData();')
-      action_runner.Wait(SESSION_TIME)
+      action_runner.Wait(SESSION_WAIT_TIME)
       # Stop session
       self.ExecuteAsyncJavaScript(
           action_runner,
@@ -136,7 +139,7 @@ class CastMirroringPage(MediaRouterBasePage):
       if action_runner.tab.GetCastIssue():
         raise RuntimeError(action_runner.tab.GetCastIssue())
       action_runner.ExecuteJavaScript('collectPerfData();')
-      action_runner.Wait(SESSION_TIME)
+      action_runner.Wait(SESSION_WAIT_TIME)
       action_runner.tab.StopCasting(sink_name)
 
 
@@ -147,7 +150,9 @@ class MediaRouterCPUMemoryPageSet(story.StorySet):
     super(MediaRouterCPUMemoryPageSet, self).__init__(
         cloud_storage_bucket=story.PARTNER_BUCKET)
     self.AddStory(CastIdlePage(self))
+    time.sleep(WAIT_TIME_SEC)
     self.AddStory(CastFlingingPage(self))
+    time.sleep(WAIT_TIME_SEC)
     self.AddStory(CastMirroringPage(self))
 
 

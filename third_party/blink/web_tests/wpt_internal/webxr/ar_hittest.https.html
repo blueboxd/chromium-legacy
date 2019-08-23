@@ -13,7 +13,8 @@ let testName = "Ensures hit-test returns expected mock results";
 
 let fakeDeviceInitParams = { supportsImmersive: true,
                              views: VALID_VIEWS,
-                             supportsEnvironmentIntegration: true };
+                             supportsEnvironmentIntegration: true,
+                             supportedFeatures: ALL_FEATURES };
 
 let expectedHitMatrix = [1, 0, 0, 1,
                          0, 1, 0, 2,

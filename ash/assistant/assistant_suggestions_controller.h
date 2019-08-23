@@ -5,10 +5,13 @@
 #ifndef ASH_ASSISTANT_ASSISTANT_SUGGESTIONS_CONTROLLER_H_
 #define ASH_ASSISTANT_ASSISTANT_SUGGESTIONS_CONTROLLER_H_
 
+#include <memory>
+
 #include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/model/assistant_suggestions_model.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
+#include "ash/public/cpp/assistant/proactive_suggestions_client.h"
 #include "ash/public/mojom/voice_interaction_controller.mojom.h"
 #include "base/macros.h"
 
@@ -17,9 +20,11 @@ namespace ash {
 class AssistantController;
 class AssistantSuggestionsModelObserver;
 
-class AssistantSuggestionsController : public AssistantControllerObserver,
-                                       public AssistantUiModelObserver,
-                                       public DefaultVoiceInteractionObserver {
+class AssistantSuggestionsController
+    : public AssistantControllerObserver,
+      public AssistantUiModelObserver,
+      public DefaultVoiceInteractionObserver,
+      public ProactiveSuggestionsClient::Delegate {
  public:
   explicit AssistantSuggestionsController(
       AssistantController* assistant_controller);
@@ -35,6 +40,7 @@ class AssistantSuggestionsController : public AssistantControllerObserver,
   // AssistantControllerObserver:
   void OnAssistantControllerConstructed() override;
   void OnAssistantControllerDestroying() override;
+  void OnAssistantReady() override;
 
   // AssistantUiModelObserver:
   void OnUiVisibilityChanged(
@@ -42,6 +48,11 @@ class AssistantSuggestionsController : public AssistantControllerObserver,
       AssistantVisibility old_visibility,
       base::Optional<AssistantEntryPoint> entry_point,
       base::Optional<AssistantExitPoint> exit_point) override;
+
+  // ProactiveSuggestionsClient::Delegate:
+  void OnProactiveSuggestionsClientDestroying() override;
+  void OnProactiveSuggestionsChanged(
+      std::unique_ptr<ProactiveSuggestions> proactive_suggestions) override;
 
  private:
   // DefaultVoiceInteractionObserver:

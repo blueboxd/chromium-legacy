@@ -457,6 +457,10 @@ const gpu::GpuFeatureInfo& ContextProviderCommandBuffer::GetGpuFeatureInfo()
 void ContextProviderCommandBuffer::OnLostContext() {
   CheckValidThreadOrLockAcquired();
 
+  // Ensure |this| isn't destroyed in the middle of OnLostContext() if observers
+  // drop all references to it.
+  scoped_refptr<ContextProviderCommandBuffer> ref(this);
+
   for (auto& observer : observers_)
     observer.OnContextLost();
   if (gr_context_)

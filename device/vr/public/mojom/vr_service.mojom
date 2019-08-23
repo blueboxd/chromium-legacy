@@ -44,9 +44,29 @@ enum XRTargetRayMode {
   TAPPING = 3
 };
 
+// These correspond with the features from the WebXR Spec:
+// https://immersive-web.github.io/webxr/#feature-descriptor
+enum XRSessionFeature {
+  REF_SPACE_VIEWER = 1,
+  REF_SPACE_LOCAL = 2,
+  REF_SPACE_LOCAL_FLOOR = 3,
+  REF_SPACE_BOUNDED_FLOOR = 4,
+  REF_SPACE_UNBOUNDED = 5,
+};
+
 struct XRSessionOptions {
   bool immersive;
   bool environment_integration;
+
+  // Represents the set of requested features that have been marked "required",
+  // if any of these features are missing, a session will not be created.
+  array<XRSessionFeature> required_features;
+
+  // Represents the set of requested features that have been marked "optional",
+  // if any of these features are missing, a session will still be created, but
+  // the feature will not be added to the enabled_features set on the XRSession
+  // struct that is returned.
+  array<XRSessionFeature> optional_features;
 
   // This flag ensures that render paths that are only supported in WebXR are
   // not used for WebVR 1.1. It is also used for metrics to distinguish between
@@ -73,6 +93,10 @@ struct XRSession {
   // info to more sensible places so that this doesn't need to be sent here.
   VRDisplayInfo display_info;
   XRPresentationConnection? submit_frame_sink;
+
+  // Represents the set of requested features that are both supported by the
+  // runtime, and have been consented to by the user.
+  array<XRSessionFeature> enabled_features;
 
   // Indicates whether the device backing this session sends input events solely
   // via eventing (as opposed to polling).

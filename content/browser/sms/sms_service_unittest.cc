@@ -443,47 +443,6 @@ TEST_F(SmsServiceTest, Cancel) {
   ASSERT_FALSE(service.provider()->HasObservers());
 }
 
-TEST_F(SmsServiceTest, SecondRequestTimesOutEarlierThanFirstRequest) {
-  NavigateAndCommit(GURL(kTestUrl));
-
-  Service service(web_contents());
-
-  base::RunLoop sms_loop1, sms_loop2;
-
-  service.CreateSmsPrompt(main_rfh(), true);
-
-  EXPECT_CALL(*service.provider(), Retrieve())
-      .WillOnce(Invoke([&service]() {
-        // Delivers the first SMS.
-        service.NotifyReceive(GURL(kTestUrl), "first");
-      }))
-      .WillOnce(Return());
-
-  service.MakeRequest(
-      TimeDelta::FromSeconds(10),
-      BindLambdaForTesting(
-          [&sms_loop1](SmsStatus status, const Optional<string>& sms) {
-            EXPECT_EQ(SmsStatus::kSuccess, status);
-            EXPECT_EQ("first", sms.value());
-            sms_loop1.Quit();
-          }));
-
-  service.MakeRequest(
-      TimeDelta::FromSeconds(0),
-      BindLambdaForTesting(
-          [&sms_loop2](SmsStatus status, const Optional<string>& sms) {
-            EXPECT_EQ(SmsStatus::kTimeout, status);
-            EXPECT_EQ(base::nullopt, sms);
-            sms_loop2.Quit();
-          }));
-
-  // The second request immediately times out because it uses TimeDelta of 0
-  // seconds.
-  sms_loop2.Run();
-
-  sms_loop1.Run();
-}
-
 TEST_F(SmsServiceTest, RecordTimeMetricsForContinueOnSuccess) {
   NavigateAndCommit(GURL(kTestUrl));
 

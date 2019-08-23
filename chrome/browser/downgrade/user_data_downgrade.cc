@@ -45,22 +45,12 @@ base::FilePath GetLastVersionFile(const base::FilePath& user_data_dir) {
   return user_data_dir.Append(kDowngradeLastVersionFile);
 }
 
-// Return the temporary path that |source_path| will be renamed to later.
+// Return the temporary path that |source_path| will be renamed to later, or an
+// empty path if none such can be found.
 base::FilePath GetTempDirNameForDelete(const base::FilePath& source_path) {
   if (source_path.empty())
     return base::FilePath();
-
-  base::FilePath target_path(source_path.AddExtension(kDowngradeDeleteSuffix));
-  int uniquifier =
-      base::GetUniquePathNumber(source_path, kDowngradeDeleteSuffix);
-  if (uniquifier < 0)
-    return base::FilePath();
-  if (uniquifier > 0) {
-    return target_path.InsertBeforeExtensionASCII(
-        base::StringPrintf(" (%d)", uniquifier));
-  }
-
-  return target_path;
+  return base::GetUniquePath(source_path.AddExtension(kDowngradeDeleteSuffix));
 }
 
 // Rename the |source| directory to |target|. Create |source| directory after

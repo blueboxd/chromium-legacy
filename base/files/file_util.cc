@@ -25,17 +25,6 @@
 namespace base {
 
 #if !defined(OS_NACL_NONSFI)
-namespace {
-
-// The maximum number of 'uniquified' files we will try to create.
-// This is used when the filename we're trying to download is already in use,
-// so we create a new unique filename by appending " (nnn)" before the
-// extension, where 1 <= nnn <= kMaxUniqueFiles.
-// Also used by code that cleans up said files.
-static const int kMaxUniqueFiles = 100;
-
-}  // namespace
-
 int64_t ComputeDirectorySize(const FilePath& root_path) {
   int64_t running_size = 0;
   FileEnumerator file_iter(root_path, true, FileEnumerator::FILES);
@@ -280,33 +269,15 @@ bool TruncateFile(FILE* file) {
   return true;
 }
 
-int GetUniquePathNumber(const FilePath& path,
-                        FilePath::StringPieceType suffix) {
-  // Storage for use by is_unique to reduce heap churn when looping.
-  FilePath::StringType path_with_suffix;
-
-  // A function that returns true if |candidate| is unique with and without an
-  // optional suffix.
-  const auto is_unique = [suffix,
-                          &path_with_suffix](const base::FilePath& candidate) {
-    if (!PathExists(candidate)) {
-      if (suffix.empty())
-        return true;
-      path_with_suffix = candidate.value();
-      suffix.AppendToString(&path_with_suffix);
-      if (!PathExists(FilePath(path_with_suffix)))
-        return true;
-    }
-    return false;
-  };
-
-  if (is_unique(path))
+int GetUniquePathNumber(const FilePath& path) {
+  DCHECK(!path.empty());
+  if (!PathExists(path))
     return 0;
 
   std::string number;
   for (int count = 1; count <= kMaxUniqueFiles; ++count) {
     StringAppendF(&number, " (%d)", count);
-    if (is_unique(path.InsertBeforeExtensionASCII(number)))
+    if (!PathExists(path.InsertBeforeExtensionASCII(number)))
       return count;
     number.clear();
   }
@@ -315,13 +286,11 @@ int GetUniquePathNumber(const FilePath& path,
 }
 
 FilePath GetUniquePath(const FilePath& path) {
-  FilePath unique_path = path;
-  int uniquifier = GetUniquePathNumber(path);
-  if (uniquifier > 0) {
-    unique_path = unique_path.InsertBeforeExtensionASCII(
-        StringPrintf(" (%d)", uniquifier));
-  }
-  return unique_path;
+  DCHECK(!path.empty());
+  const int uniquifier = GetUniquePathNumber(path);
+  if (uniquifier > 0)
+    return path.InsertBeforeExtensionASCII(StringPrintf(" (%d)", uniquifier));
+  return uniquifier == 0 ? path : base::FilePath();
 }
 #endif  // !defined(OS_NACL_NONSFI)
 

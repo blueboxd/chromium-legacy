@@ -525,23 +525,11 @@ void SerialConnection::GetControlSignals(
 }
 
 void SerialConnection::SetControlSignals(
-    const api::serial::HostControlSignals& control_signals,
+    device::mojom::SerialHostControlSignalsPtr signals,
     SetControlSignalsCompleteCallback callback) {
   DCHECK(serial_port_);
   serial_port_->SetControlSignals(
-      device::mojom::SerialHostControlSignals::From(control_signals),
-      mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback), false));
-}
-
-void SerialConnection::SetBreak(SetBreakCompleteCallback callback) {
-  DCHECK(serial_port_);
-  serial_port_->SetBreak(
-      mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback), false));
-}
-
-void SerialConnection::ClearBreak(ClearBreakCompleteCallback callback) {
-  DCHECK(serial_port_);
-  serial_port_->ClearBreak(
+      std::move(signals),
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback), false));
 }
 

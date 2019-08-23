@@ -174,7 +174,7 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
   }
 
   void ResetMockUI() {
-    mock_ui_.reset(new MockPageInfoUI());
+    mock_ui_ = std::make_unique<MockPageInfoUI>();
     // Use this rather than gmock's ON_CALL.WillByDefault(Invoke(... because
     // gmock doesn't handle move-only types well.
     mock_ui_->set_permission_info_callback_ =
@@ -214,9 +214,9 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
 
   PageInfo* page_info() {
     if (!page_info_.get()) {
-      page_info_.reset(new PageInfo(
+      page_info_ = std::make_unique<PageInfo>(
           mock_ui(), profile(), tab_specific_content_settings(), web_contents(),
-          url(), security_level(), visible_security_state()));
+          url(), security_level(), visible_security_state());
     }
     return page_info_.get();
   }

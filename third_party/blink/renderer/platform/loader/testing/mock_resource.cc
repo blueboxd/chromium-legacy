@@ -47,13 +47,13 @@ CachedMetadataHandler* MockResource::CreateCachedMetadataHandler(
   return MakeGarbageCollected<MockCacheHandler>(std::move(send_callback));
 }
 
-void MockResource::SetSerializedCachedMetadata(const uint8_t* data,
-                                               size_t size) {
-  Resource::SetSerializedCachedMetadata(data, size);
+void MockResource::SetSerializedCachedMetadata(mojo_base::BigBuffer data) {
+  // Resource ignores the cached metadata.
+  Resource::SetSerializedCachedMetadata(mojo_base::BigBuffer());
   MockCacheHandler* cache_handler =
       static_cast<MockCacheHandler*>(Resource::CacheHandler());
   if (cache_handler) {
-    cache_handler->Set(data, size);
+    cache_handler->Set(data.data(), data.size());
   }
 }
 

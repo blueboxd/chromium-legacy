@@ -10,6 +10,8 @@
 #include "chrome/renderer/page_load_metrics/fake_page_timing_sender.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using CSSSampleId = blink::mojom::CSSSampleId;
+
 namespace page_load_metrics {
 
 // Thin wrapper around PageTimingMetricsSender that provides access to the
@@ -239,8 +241,9 @@ TEST_F(PageTimingMetricsSenderTest, SendSingleCssProperty) {
   validator_.ExpectPageLoadTiming(timing);
   // Observe a single CSS property, update expected CSS properties sent across
   // IPC.
-  metrics_sender_->DidObserveNewCssPropertyUsage(3, false /*is_animated*/);
-  validator_.UpdateExpectPageLoadCssProperties(3);
+  metrics_sender_->DidObserveNewCssPropertyUsage(CSSSampleId::kDirection,
+                                                 false /*is_animated*/);
+  validator_.UpdateExpectPageLoadCssProperties(CSSSampleId::kDirection);
   // Fire the timer to trigger sending of features via an SendTiming call.
   metrics_sender_->mock_timer()->Fire();
   validator_.VerifyExpectedCssProperties();
@@ -253,14 +256,13 @@ TEST_F(PageTimingMetricsSenderTest, SendCssPropertiesInRange) {
   metrics_sender_->Send(timing.Clone());
   validator_.ExpectPageLoadTiming(timing);
   // Observe the smallest CSS property ID.
-  metrics_sender_->DidObserveNewCssPropertyUsage(2, false /*is_animated*/);
-  validator_.UpdateExpectPageLoadCssProperties(2);
+  metrics_sender_->DidObserveNewCssPropertyUsage(CSSSampleId::kColor,
+                                                 false /*is_animated*/);
+  validator_.UpdateExpectPageLoadCssProperties(CSSSampleId::kColor);
   // Observe the largest CSS property ID.
-  metrics_sender_->DidObserveNewCssPropertyUsage(
-      static_cast<int>(blink::mojom::CSSSampleId::kMaxValue),
-      false /*is_animated*/);
-  validator_.UpdateExpectPageLoadCssProperties(
-      static_cast<int>(blink::mojom::CSSSampleId::kMaxValue));
+  metrics_sender_->DidObserveNewCssPropertyUsage(CSSSampleId::kMaxValue,
+                                                 false /*is_animated*/);
+  validator_.UpdateExpectPageLoadCssProperties(CSSSampleId::kMaxValue);
   // Fire the timer to trigger sending of features via an SendTiming call.
   metrics_sender_->mock_timer()->Fire();
   validator_.VerifyExpectedCssProperties();
@@ -274,12 +276,14 @@ TEST_F(PageTimingMetricsSenderTest, SendMultipleCssProperties) {
   validator_.ExpectPageLoadTiming(timing);
   // Observe the first CSS property, update expected CSS properties sent across
   // IPC.
-  metrics_sender_->DidObserveNewCssPropertyUsage(3, false /*is_animated*/);
-  validator_.UpdateExpectPageLoadCssProperties(3);
+  metrics_sender_->DidObserveNewCssPropertyUsage(CSSSampleId::kDirection,
+                                                 false /*is_animated*/);
+  validator_.UpdateExpectPageLoadCssProperties(CSSSampleId::kDirection);
   // Observe the second CSS property, update expected CSS properties sent across
   // IPC.
-  metrics_sender_->DidObserveNewCssPropertyUsage(123, false /*is_animated*/);
-  validator_.UpdateExpectPageLoadCssProperties(123);
+  metrics_sender_->DidObserveNewCssPropertyUsage(CSSSampleId::kBorderLeftWidth,
+                                                 false /*is_animated*/);
+  validator_.UpdateExpectPageLoadCssProperties(CSSSampleId::kBorderLeftWidth);
   // Fire the timer to trigger sending of CSS properties via an SendTiming call.
   metrics_sender_->mock_timer()->Fire();
   validator_.VerifyExpectedCssProperties();
@@ -291,11 +295,13 @@ TEST_F(PageTimingMetricsSenderTest, SendDuplicatedCssProperties) {
 
   metrics_sender_->Send(timing.Clone());
   validator_.ExpectPageLoadTiming(timing);
-  metrics_sender_->DidObserveNewCssPropertyUsage(3, false /*is_animated*/);
-  validator_.UpdateExpectPageLoadCssProperties(3);
+  metrics_sender_->DidObserveNewCssPropertyUsage(CSSSampleId::kDirection,
+                                                 false /*is_animated*/);
+  validator_.UpdateExpectPageLoadCssProperties(CSSSampleId::kDirection);
   // Observe a duplicated CSS property usage, without updating expected CSS
   // properties sent across IPC.
-  metrics_sender_->DidObserveNewCssPropertyUsage(3, false /*is_animated*/);
+  metrics_sender_->DidObserveNewCssPropertyUsage(CSSSampleId::kDirection,
+                                                 false /*is_animated*/);
   // Fire the timer to trigger sending of CSS properties via an SendTiming call.
   metrics_sender_->mock_timer()->Fire();
   validator_.VerifyExpectedCssProperties();
@@ -309,15 +315,18 @@ TEST_F(PageTimingMetricsSenderTest, SendMultipleCssPropertiesTwice) {
   validator_.ExpectPageLoadTiming(timing);
   // Observe the first CSS property, update expected CSS properties sent across
   // IPC.
-  metrics_sender_->DidObserveNewCssPropertyUsage(2, false /*is_animated*/);
-  validator_.UpdateExpectPageLoadCssProperties(2);
+  metrics_sender_->DidObserveNewCssPropertyUsage(CSSSampleId::kColor,
+                                                 false /*is_animated*/);
+  validator_.UpdateExpectPageLoadCssProperties(CSSSampleId::kColor);
   // Observe the second CSS property, update expected CSS properties sent across
   // IPC.
-  metrics_sender_->DidObserveNewCssPropertyUsage(5, false /*is_animated*/);
-  validator_.UpdateExpectPageLoadCssProperties(5);
+  metrics_sender_->DidObserveNewCssPropertyUsage(CSSSampleId::kFont,
+                                                 false /*is_animated*/);
+  validator_.UpdateExpectPageLoadCssProperties(CSSSampleId::kFont);
   // Observe a duplicated usage, without updating expected CSS properties sent
   // across IPC.
-  metrics_sender_->DidObserveNewCssPropertyUsage(2, false /*is_animated*/);
+  metrics_sender_->DidObserveNewCssPropertyUsage(CSSSampleId::kColor,
+                                                 false /*is_animated*/);
   // Fire the timer to trigger sending of features via an SendTiming call.
   metrics_sender_->mock_timer()->Fire();
   validator_.VerifyExpectedFeatures();
@@ -330,11 +339,14 @@ TEST_F(PageTimingMetricsSenderTest, SendMultipleCssPropertiesTwice) {
   validator_.ExpectPageLoadTiming(timing);
   // Observe duplicated usage, without updating expected features sent across
   // IPC.
-  metrics_sender_->DidObserveNewCssPropertyUsage(3, false /*is_animated*/);
-  metrics_sender_->DidObserveNewCssPropertyUsage(2, false /*is_animated*/);
+  metrics_sender_->DidObserveNewCssPropertyUsage(CSSSampleId::kDirection,
+                                                 false /*is_animated*/);
+  metrics_sender_->DidObserveNewCssPropertyUsage(CSSSampleId::kColor,
+                                                 false /*is_animated*/);
   // Observe an additional usage, update expected features sent across IPC.
-  metrics_sender_->DidObserveNewCssPropertyUsage(3, false /*is_animated*/);
-  validator_.UpdateExpectPageLoadCssProperties(3);
+  metrics_sender_->DidObserveNewCssPropertyUsage(CSSSampleId::kDirection,
+                                                 false /*is_animated*/);
+  validator_.UpdateExpectPageLoadCssProperties(CSSSampleId::kDirection);
   // Fire the timer to trigger another sending of features via the second
   // SendTiming call.
   metrics_sender_->mock_timer()->Fire();

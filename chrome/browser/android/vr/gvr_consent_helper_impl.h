@@ -25,17 +25,18 @@ class GvrConsentHelperImpl : public GvrConsentHelper {
   // is dismissed.
   void PromptUserAndGetConsent(int render_process_id,
                                int render_frame_id,
+                               XrConsentPromptLevel consent_level,
                                OnUserConsentCallback) override;
   void OnUserConsentResult(JNIEnv* env,
                            jboolean is_granted);
 
  private:
-  void InitModule();
   void OnModuleInstalled(bool success);
 
   std::unique_ptr<VrModuleProvider> module_delegate_;
   int render_process_id_;
   int render_frame_id_;
+  XrConsentPromptLevel consent_level_;
 
   OnUserConsentCallback on_user_consent_callback_;
   base::android::ScopedJavaGlobalRef<jobject> jdelegate_;

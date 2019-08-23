@@ -132,7 +132,7 @@ const CGFloat kMenuBarLockPadding = 50;
 }
 
 - (void)mouseEntered:(NSEvent*)event {
-  menuBarLock_.reset(new ScopedMenuBarLock());
+  menuBarLock_ = std::make_unique<ScopedMenuBarLock>();
 }
 
 - (void)mouseExited:(NSEvent*)event {

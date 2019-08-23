@@ -159,8 +159,10 @@ T ReadVal(const uint8_t* data) {
 }  // namespace
 
 void SourceKeyedCachedMetadataHandler::SetSerializedCachedMetadata(
-    const uint8_t* data,
-    size_t size) {
+    mojo_base::BigBuffer data_buffer) {
+  const uint8_t* data = data_buffer.data();
+  size_t size = data_buffer.size();
+
   // We only expect to receive cached metadata from the platform once. If this
   // triggers, it indicates an efficiency problem which is most likely
   // unexpected in code designed to improve performance.

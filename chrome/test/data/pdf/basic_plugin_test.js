@@ -11,7 +11,7 @@ var tests = [
    */
   function testPageSize() {
     // Verify that the initial zoom is less than or equal to 100%.
-    chrome.test.assertTrue(viewer.viewport.zoom <= 1);
+    chrome.test.assertTrue(viewer.viewport.getZoom() <= 1);
 
     viewer.viewport.setZoom(1);
     var sizer = document.getElementById('sizer');

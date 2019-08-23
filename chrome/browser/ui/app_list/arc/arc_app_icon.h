@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_APP_LIST_ARC_ARC_APP_ICON_H_
 
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -14,6 +15,10 @@
 #include "ui/base/layout.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
+
+namespace apps {
+class ArcIconOnceLoader;
+}
 
 namespace base {
 class FilePath;
@@ -26,6 +31,11 @@ class BrowserContext;
 // A class that provides an ImageSkia for UI code to use. It handles ARC app
 // icon resource loading, screen scale factor change etc. UI code that uses
 // ARC app icon should host this class.
+//
+// Icon images are sometimes subject to post-processing effects, such as
+// desaturating (graying out) disabled apps. Applying those effects are the
+// responsibility of code that uses this ArcAppIcon class, not the
+// responsibility of ArcAppIcon itself.
 class ArcAppIcon {
  public:
   class Observer {
@@ -43,6 +53,10 @@ class ArcAppIcon {
              int resource_size_in_dip,
              Observer* observer);
   ~ArcAppIcon();
+
+  // Whether every supported scale factor was successfully loaded. "Supported"
+  // is in the same sense as ui::GetSupportedScaleFactors().
+  bool EverySupportedScaleFactorIsLoaded() const;
 
   const std::string& app_id() const { return app_id_; }
   const gfx::ImageSkia& image_skia() const { return image_skia_; }
@@ -62,7 +76,7 @@ class ArcAppIcon {
 
  private:
   friend class ArcAppIconLoader;
-  friend class ArcAppModelBuilder;
+  friend class apps::ArcIconOnceLoader;
 
   class Source;
   class DecodeRequest;
@@ -103,6 +117,7 @@ class ArcAppIcon {
   Observer* const observer_;
 
   gfx::ImageSkia image_skia_;
+  std::set<ui::ScaleFactor> incomplete_scale_factors_;
 
   // Contains pending image decode requests.
   std::vector<std::unique_ptr<DecodeRequest>> decode_requests_;

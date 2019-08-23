@@ -346,9 +346,10 @@ PreviewsEligibilityReason PreviewsDeciderImpl::DeterminePreviewEligibility(
   return PreviewsEligibilityReason::ALLOWED;
 }
 
-bool PreviewsDeciderImpl::LoadPageHints(const GURL& url) {
+bool PreviewsDeciderImpl::LoadPageHints(
+    content::NavigationHandle* navigation_handle) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return previews_opt_guide_->MaybeLoadOptimizationHints(url,
+  return previews_opt_guide_->MaybeLoadOptimizationHints(navigation_handle,
                                                          base::DoNothing());
 }
 

@@ -77,9 +77,11 @@ class ContentCaptureReceiverManager : public content::WebContentsObserver,
 
   virtual bool ShouldCapture(const GURL& url) = 0;
 
- private:
-  friend class ContentCaptureReceiverManagerHelper;
+  // Visible for testing.
+  ContentCaptureReceiver* ContentCaptureReceiverForFrame(
+      content::RenderFrameHost* render_frame_host) const;
 
+ private:
   // Builds ContentCaptureSession and returns in |session|, |ancestor_only|
   // specifies if only ancestor should be returned in |session|.
   void BuildContentCaptureSession(
@@ -93,9 +95,6 @@ class ContentCaptureReceiverManager : public content::WebContentsObserver,
   bool BuildContentCaptureSessionLastSeen(
       ContentCaptureReceiver* content_capture_receiver,
       ContentCaptureSession* session);
-
-  ContentCaptureReceiver* ContentCaptureReceiverForFrame(
-      content::RenderFrameHost* render_frame_host);
 
   std::map<content::RenderFrameHost*, std::unique_ptr<ContentCaptureReceiver>>
       frame_map_;

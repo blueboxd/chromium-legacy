@@ -98,9 +98,10 @@ class BookmarkBarViewTest : public BrowserWithTestWindowTest {
   // want to use CreateBookmarkModelAndBookmarkBarView(), but use this if
   // need to create the BookmarkBarView after the model has populated.
   void CreateBookmarkBarView() {
-    bookmark_bar_view_.reset(new BookmarkBarView(browser(), nullptr));
+    bookmark_bar_view_ = std::make_unique<BookmarkBarView>(browser(), nullptr);
     bookmark_bar_view_->set_owned_by_client();
-    test_helper_.reset(new BookmarkBarViewTestHelper(bookmark_bar_view_.get()));
+    test_helper_ =
+        std::make_unique<BookmarkBarViewTestHelper>(bookmark_bar_view_.get());
   }
 
   // Creates the model, blocking until it loads, then creates the

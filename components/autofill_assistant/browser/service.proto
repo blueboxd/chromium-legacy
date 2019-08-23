@@ -433,6 +433,8 @@ message PaymentDetails {
   // If set, this means that the user clicked on one of the terms and conditions
   // links.
   optional int32 terms_link = 5;
+  // The payload of the chosen login option.
+  optional bytes login_payload = 6;
 }
 
 message ProcessedActionProto {
@@ -1124,6 +1126,39 @@ message ContactDetailsProto {
   optional bool request_payer_phone = 4;
 }
 
+message LoginDetailsProto {
+  // A custom login option which will be handled by the backend, e.g.,
+  // 'Guest checkout' or 'Log in with Google'.
+  message LoginOptionCustomProto {
+    // The label to display to the user.
+    optional string label = 1;
+  }
+
+  // Offers all matching Chrome password manager logins for the current website.
+  message LoginOptionPasswordManagerProto {}
+
+  message LoginOptionProto {
+    // If the option was chosen, this payload will be returned to the server.
+    optional bytes payload = 1;
+
+    // Whether the UI should be hidden if this login option is the only
+    // available choice (i.e., this option will be implicitly selected).
+    optional bool hide_if_no_other_options = 2;
+
+    // Determines the priority with which to pre-select this login choice.
+    // The lower the value, the higher the priority.
+    optional int32 preselection_priority = 3;
+    oneof type {
+      LoginOptionCustomProto custom = 4;
+      LoginOptionPasswordManagerProto password_manager = 5;
+    }
+  }
+  // The title for the login selection (e.g., 'Login details for <domain>').
+  optional string section_title = 1;
+  // The list of available login options.
+  repeated LoginOptionProto login_options = 2;
+}
+
 // Asks to provide the data used by UseAddressAction and
 // UseCreditCardAction.
 message GetPaymentInformationProto {
@@ -1180,6 +1215,8 @@ message GetPaymentInformationProto {
   // The error message to display when the billing address is missing the
   // postal code. This field is mandatory if |require_postal_code| is true.
   optional string billing_postal_code_missing_text = 15;
+  // The login details that should be gathered.
+  optional LoginDetailsProto login_details = 16;
 }
 
 // Resets Autofill Assistant: clears any state and server payload.

@@ -332,7 +332,8 @@ struct MenuBoundsOptions {
   gfx::Rect monitor_bounds = gfx::Rect(0, 0, 1000, 1000);
   gfx::Size menu_size = gfx::Size(100, 100);
   MenuAnchorPosition menu_anchor = MenuAnchorPosition::kTopLeft;
-  MenuItemView::MenuPosition menu_position = MenuItemView::POSITION_BEST_FIT;
+  MenuItemView::MenuPosition menu_position =
+      MenuItemView::MenuPosition::kBestFit;
 };
 
 class MenuControllerTest : public ViewsTestBase {
@@ -1825,13 +1826,13 @@ TEST_F(MenuControllerTest, GrowingMenuMovesLaterallyNotVertically) {
   options.menu_size = gfx::Size(20, 20);
 
   // Ensure the menu is initially drawn below the bounds, and the MenuPosition
-  // is set to POSITION_BELOW_BOUNDS;
+  // is set to MenuPosition::kBelowBounds;
   const gfx::Rect first_drawn_expected(80, 80, 20, 20);
   EXPECT_EQ(first_drawn_expected, CalculateMenuBounds(options));
-  EXPECT_EQ(MenuItemView::MenuPosition::POSITION_BELOW_BOUNDS,
+  EXPECT_EQ(MenuItemView::MenuPosition::kBelowBounds,
             menu_item()->ActualMenuPosition());
 
-  options.menu_position = MenuItemView::MenuPosition::POSITION_BELOW_BOUNDS;
+  options.menu_position = MenuItemView::MenuPosition::kBelowBounds;
 
   // The menu bounds are larger than the remaining space on the monitor. This
   // simulates the case where the menu has been grown vertically and

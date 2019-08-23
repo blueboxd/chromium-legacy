@@ -100,14 +100,10 @@ class VIEWS_EXPORT MenuItemView : public View {
   };
 
   // Where the menu should be drawn, above or below the bounds (when
-  // the bounds is non-empty).  POSITION_BEST_FIT (default) positions
+  // the bounds is non-empty).  MenuPosition::kBestFit (default) positions
   // the menu below the bounds unless the menu does not fit on the
   // screen and the re is more space above.
-  enum MenuPosition {
-    POSITION_BEST_FIT,
-    POSITION_ABOVE_BOUNDS,
-    POSITION_BELOW_BOUNDS
-  };
+  enum class MenuPosition { kBestFit, kAboveBounds, kBelowBounds };
 
   // The data structure which is used for the menu size
   struct MenuItemDimensions {

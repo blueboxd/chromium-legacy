@@ -67,6 +67,9 @@ const base::Feature kUseAPDownloadProtection{"UseAPDownloadProtection",
 const base::Feature kUseLocalBlacklistsV2{"SafeBrowsingUseLocalBlacklistsV2",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kUploadForMalwareCheck{"SafeBrowsingUploadForMalwareCheck",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 constexpr base::FeatureParam<bool> kShouldFillOldPhishGuardProto{
     &kPasswordProtectionForSignedInUsers, "DeprecateOldProto", false};
 

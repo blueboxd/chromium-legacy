@@ -206,7 +206,7 @@ class AppShimHostTest : public testing::Test,
 }  // namespace
 
 TEST_F(AppShimHostTest, TestLaunchAppWithHandler) {
-  apps::AppShimHandler::RegisterHandler(kTestAppId, this);
+  apps::AppShimHandler::Set(this);
   LaunchApp(apps::APP_SHIM_LAUNCH_NORMAL);
   EXPECT_EQ(kTestAppId, host()->GetAppId());
   EXPECT_EQ(apps::APP_SHIM_LAUNCH_SUCCESS, GetLaunchResult());
@@ -228,11 +228,11 @@ TEST_F(AppShimHostTest, TestLaunchAppWithHandler) {
   RunUntilIdle();
   EXPECT_EQ(1, close_count_);
   EXPECT_EQ(nullptr, host());
-  apps::AppShimHandler::RemoveHandler(kTestAppId);
+  apps::AppShimHandler::Set(nullptr);
 }
 
 TEST_F(AppShimHostTest, TestNoLaunchNow) {
-  apps::AppShimHandler::RegisterHandler(kTestAppId, this);
+  apps::AppShimHandler::Set(this);
   LaunchApp(apps::APP_SHIM_LAUNCH_REGISTER_ONLY);
   EXPECT_EQ(kTestAppId, host()->GetAppId());
   EXPECT_EQ(apps::APP_SHIM_LAUNCH_SUCCESS, GetLaunchResult());
@@ -240,13 +240,13 @@ TEST_F(AppShimHostTest, TestNoLaunchNow) {
   EXPECT_EQ(0, launch_now_count_);
   EXPECT_EQ(0, focus_count_);
   EXPECT_EQ(0, close_count_);
-  apps::AppShimHandler::RemoveHandler(kTestAppId);
+  apps::AppShimHandler::Set(nullptr);
 }
 
 TEST_F(AppShimHostTest, TestFailLaunch) {
-  apps::AppShimHandler::RegisterHandler(kTestAppId, this);
+  apps::AppShimHandler::Set(this);
   launch_result_ = apps::APP_SHIM_LAUNCH_APP_NOT_FOUND;
   LaunchApp(apps::APP_SHIM_LAUNCH_NORMAL);
   EXPECT_EQ(apps::APP_SHIM_LAUNCH_APP_NOT_FOUND, GetLaunchResult());
-  apps::AppShimHandler::RemoveHandler(kTestAppId);
+  apps::AppShimHandler::Set(nullptr);
 }

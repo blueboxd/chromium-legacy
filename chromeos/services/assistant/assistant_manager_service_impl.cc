@@ -13,6 +13,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/unguessable_token.h"
@@ -404,6 +405,13 @@ void AssistantManagerServiceImpl::StartTextInteraction(const std::string& query,
         assistant_client::VoicelessOptions::Modality::TYPING_MODALITY;
   }
 
+  // Cache metadata about this interaction that can be resolved when the
+  // associated conversation turn starts in LibAssistant.
+  options.conversation_turn_id = base::NumberToString(next_interaction_id_++);
+  pending_interactions_[options.conversation_turn_id] =
+      mojom::AssistantInteractionMetadata::New(
+          /*type=*/mojom::AssistantInteractionType::kText, /*query=*/query);
+
   if (base::FeatureList::IsEnabled(
           assistant::features::kEnableTextQueriesWithClientDiscourseContext) &&
       assistant_extra_ && assistant_tree_) {
@@ -464,12 +472,13 @@ void AssistantManagerServiceImpl::DismissNotification(
       dismissed_interaction, "DismissNotification", options, [](auto) {});
 }
 
-void AssistantManagerServiceImpl::OnConversationTurnStarted(bool is_mic_open) {
+void AssistantManagerServiceImpl::OnConversationTurnStartedInternal(
+    const assistant_client::ConversationTurnMetadata& metadata) {
   service_->main_task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(
           &AssistantManagerServiceImpl::OnConversationTurnStartedOnMainThread,
-          weak_factory_.GetWeakPtr(), is_mic_open));
+          weak_factory_.GetWeakPtr(), metadata));
 }
 
 void AssistantManagerServiceImpl::OnConversationTurnFinished(
@@ -1198,13 +1207,27 @@ void AssistantManagerServiceImpl::MediaSessionMetadataChanged(
 }
 
 void AssistantManagerServiceImpl::OnConversationTurnStartedOnMainThread(
-    bool is_mic_open) {
+    const assistant_client::ConversationTurnMetadata& metadata) {
   platform_api_->GetAudioInputProvider()
       .GetAudioInput()
       .OnConversationTurnStarted();
 
-  interaction_subscribers_.ForAllPtrs([is_mic_open](auto* ptr) {
-    ptr->OnInteractionStarted(/*is_voice_interaction=*/is_mic_open);
+  // Retrieve the cached interaction metadata associated with this conversation
+  // turn or construct a new instance if there's no match in the cache.
+  mojom::AssistantInteractionMetadataPtr metadata_ptr;
+  auto it = pending_interactions_.find(metadata.id);
+  if (it != pending_interactions_.end()) {
+    metadata_ptr = std::move(it->second);
+    pending_interactions_.erase(it);
+  } else {
+    metadata_ptr = mojom::AssistantInteractionMetadata::New();
+    metadata_ptr->type = metadata.is_mic_open
+                             ? mojom::AssistantInteractionType::kVoice
+                             : mojom::AssistantInteractionType::kText;
+  }
+
+  interaction_subscribers_.ForAllPtrs([&metadata_ptr](auto* ptr) {
+    ptr->OnInteractionStarted(metadata_ptr->Clone());
   });
 }
 

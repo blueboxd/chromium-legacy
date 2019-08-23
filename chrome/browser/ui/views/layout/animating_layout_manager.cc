@@ -116,7 +116,7 @@ void AnimatingLayoutManager::AnimationDelegate::Reset() {
 void AnimatingLayoutManager::AnimationDelegate::MakeReadyForAnimation() {
   if (!ready_to_animate_) {
     target_layout_manager_->ResetLayout();
-    target_layout_manager_->InvalidateHost();
+    target_layout_manager_->InvalidateHost(false);
     ready_to_animate_ = true;
     if (scoped_observer_.IsObserving(target_layout_manager_->host_view()))
       scoped_observer_.Remove(target_layout_manager_->host_view());
@@ -152,7 +152,7 @@ AnimatingLayoutManager& AnimatingLayoutManager::SetShouldAnimateBounds(
   if (should_animate_bounds_ != should_animate_bounds) {
     should_animate_bounds_ = should_animate_bounds;
     ResetLayout();
-    InvalidateHost();
+    InvalidateHost(false);
   }
   return *this;
 }
@@ -178,14 +178,14 @@ void AnimatingLayoutManager::ResetLayout() {
   if (animation_delegate_)
     animation_delegate_->Reset();
 
-  if (!target_layout_manager_)
+  if (!target_layout_manager())
     return;
 
   const gfx::Size target_size =
       should_animate_bounds_
-          ? target_layout_manager_->GetPreferredSize(host_view())
+          ? target_layout_manager()->GetPreferredSize(host_view())
           : host_view()->size();
-  target_layout_ = target_layout_manager_->GetProposedLayout(target_size);
+  target_layout_ = target_layout_manager()->GetProposedLayout(target_size);
   current_layout_ = target_layout_;
   starting_layout_ = current_layout_;
   current_offset_ = 1.0;
@@ -206,40 +206,32 @@ bool AnimatingLayoutManager::HasObserver(Observer* observer) const {
   return observers_.HasObserver(observer);
 }
 
-void AnimatingLayoutManager::SetChildViewIgnoredByLayout(
-    views::View* child_view,
-    bool ignored) {
-  LayoutManagerBase::SetChildViewIgnoredByLayout(child_view, ignored);
-  if (target_layout_manager_)
-    target_layout_manager_->SetChildViewIgnoredByLayout(child_view, ignored);
-}
-
 gfx::Size AnimatingLayoutManager::GetPreferredSize(
     const views::View* host) const {
-  if (!target_layout_manager_)
+  if (!target_layout_manager())
     return gfx::Size();
   return should_animate_bounds_
              ? current_layout_.host_size
-             : target_layout_manager_->GetPreferredSize(host);
+             : target_layout_manager()->GetPreferredSize(host);
 }
 
 gfx::Size AnimatingLayoutManager::GetMinimumSize(
     const views::View* host) const {
-  if (!target_layout_manager_)
+  if (!target_layout_manager())
     return gfx::Size();
   // TODO(dfried): consider cases where the minimum size might not be just the
   // minimum size of the embedded layout.
-  return target_layout_manager_->GetMinimumSize(host);
+  return target_layout_manager()->GetMinimumSize(host);
 }
 
 int AnimatingLayoutManager::GetPreferredHeightForWidth(const views::View* host,
                                                        int width) const {
-  if (!target_layout_manager_)
+  if (!target_layout_manager())
     return 0;
   // TODO(dfried): revisit this computation.
   return should_animate_bounds_
              ? current_layout_.host_size.height()
-             : target_layout_manager_->GetPreferredHeightForWidth(host, width);
+             : target_layout_manager()->GetPreferredHeightForWidth(host, width);
 }
 
 void AnimatingLayoutManager::Layout(views::View* host) {
@@ -259,22 +251,6 @@ void AnimatingLayoutManager::Layout(views::View* host) {
     is_animating_ = false;
     NotifyIsAnimatingChanged();
   }
-}
-
-void AnimatingLayoutManager::InvalidateLayout() {
-  if (suspend_recalculation_)
-    return;
-  if (target_layout_manager_)
-    target_layout_manager_->InvalidateLayout();
-  RecalculateTarget();
-}
-
-void AnimatingLayoutManager::Installed(views::View* host) {
-  LayoutManagerBase::Installed(host);
-  DCHECK(!animation_delegate_);
-  animation_delegate_ = std::make_unique<AnimationDelegate>(this);
-  if (target_layout_manager_)
-    target_layout_manager_->Installed(host);
 }
 
 gfx::AnimationContainer*
@@ -300,60 +276,20 @@ AnimatingLayoutManager::CalculateProposedLayout(
   return ProposedLayout();
 }
 
-void AnimatingLayoutManager::ViewAdded(views::View* host, views::View* view) {
-  {
-    base::AutoReset<bool> setter(&suspend_recalculation_, true);
-    LayoutManagerBase::ViewAdded(host, view);
-    if (target_layout_manager_)
-      target_layout_manager_->ViewAdded(host, view);
-  }
-  if (RecalculateTarget())
-    InvalidateHost();
+void AnimatingLayoutManager::OnInstalled(views::View* host) {
+  DCHECK(!animation_delegate_);
+  animation_delegate_ = std::make_unique<AnimationDelegate>(this);
 }
 
-void AnimatingLayoutManager::ViewRemoved(views::View* host, views::View* view) {
-  {
-    base::AutoReset<bool> setter(&suspend_recalculation_, true);
-    LayoutManagerBase::ViewRemoved(host, view);
-    if (target_layout_manager_)
-      target_layout_manager_->ViewRemoved(host, view);
-  }
-  if (RecalculateTarget())
-    InvalidateHost();
-}
-
-void AnimatingLayoutManager::ViewVisibilitySet(views::View* host,
-                                               views::View* view,
-                                               bool visible) {
-  {
-    base::AutoReset<bool> setter(&suspend_recalculation_, true);
-    LayoutManagerBase::ViewVisibilitySet(host, view, visible);
-    if (target_layout_manager_)
-      target_layout_manager_->ViewVisibilitySet(host, view, visible);
-  }
-  if (RecalculateTarget())
-    InvalidateHost();
-}
-
-void AnimatingLayoutManager::SetTargetLayoutManagerImpl(
-    std::unique_ptr<LayoutManagerBase> target_layout_manager) {
-  DCHECK(!target_layout_manager_);
-  DCHECK(target_layout_manager);
-  target_layout_manager_ = std::move(target_layout_manager);
-  SyncStateTo(target_layout_manager_.get());
-  ResetLayout();
-  InvalidateHost();
-}
-
-void AnimatingLayoutManager::InvalidateHost() {
-  base::AutoReset<bool> setter(&suspend_recalculation_, true);
-  host_view()->InvalidateLayout();
+void AnimatingLayoutManager::OnLayoutChanged() {
+  // This replaces the normal behavior of clearing cached layouts.
+  RecalculateTarget();
 }
 
 bool AnimatingLayoutManager::RecalculateTarget() {
   constexpr double kResetAnimationThreshold = 0.8;
 
-  if (!target_layout_manager_)
+  if (!target_layout_manager())
     return false;
 
   if (!cached_layout_size() || !animation_delegate_ ||
@@ -364,7 +300,7 @@ bool AnimatingLayoutManager::RecalculateTarget() {
 
   const gfx::Size target_size =
       should_animate_bounds_
-          ? target_layout_manager_->GetPreferredSize(host_view())
+          ? target_layout_manager()->GetPreferredSize(host_view())
           : host_view()->size();
 
   // For layouts that are confined to available space, changing the available
@@ -382,7 +318,7 @@ bool AnimatingLayoutManager::RecalculateTarget() {
   // If there has been no appreciable change in layout, there's no reason to
   // start or update an animation.
   const ProposedLayout proposed_layout =
-      target_layout_manager_->GetProposedLayout(target_size);
+      target_layout_manager()->GetProposedLayout(target_size);
   if (target_layout_ == proposed_layout)
     return false;
 
@@ -418,7 +354,7 @@ void AnimatingLayoutManager::AnimateTo(double value) {
       (current_offset_ - starting_offset_) / (1.0 - starting_offset_);
   current_layout_ = InterpolatingLayoutManager::Interpolate(
       percent, starting_layout_, target_layout_);
-  InvalidateHost();
+  InvalidateHost(false);
 }
 
 void AnimatingLayoutManager::NotifyIsAnimatingChanged() {

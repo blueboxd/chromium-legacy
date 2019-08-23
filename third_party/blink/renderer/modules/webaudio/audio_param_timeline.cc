@@ -880,8 +880,6 @@ float AudioParamTimeline::ValuesForFrameRangeImpl(size_t start_frame,
                                                   double control_rate) {
   DCHECK(values);
   DCHECK_GE(number_of_values, 1u);
-  if (!values || !(number_of_values >= 1))
-    return default_value;
 
   // Return default value if there are no events matching the desired time
   // range.

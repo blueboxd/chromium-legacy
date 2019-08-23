@@ -19,7 +19,7 @@
 // sys::Runner which instantiates Cast activities specified via cast/casts URIs.
 class CastRunner : public WebContentRunner {
  public:
-  CastRunner(base::fuchsia::ServiceDirectory* service_directory,
+  CastRunner(sys::OutgoingDirectory* outgoing_directory,
              fuchsia::web::ContextPtr context);
 
   ~CastRunner() override;

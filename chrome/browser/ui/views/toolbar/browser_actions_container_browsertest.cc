@@ -501,7 +501,7 @@ void BrowserActionsContainerOverflowTest::SetUpOnMainThread() {
   BrowserActionsBarBrowserTest::SetUpOnMainThread();
   main_bar_ = BrowserView::GetBrowserViewForBrowser(browser())
                   ->toolbar()->browser_actions();
-  overflow_parent_.reset(new views::ResizeAwareParentView());
+  overflow_parent_ = std::make_unique<views::ResizeAwareParentView>();
   overflow_parent_->set_owned_by_client();
   overflow_bar_ = new BrowserActionsContainer(
       browser(), main_bar_,

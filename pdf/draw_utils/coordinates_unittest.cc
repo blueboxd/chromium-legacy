@@ -151,16 +151,16 @@ TEST(CoordinateTest, GetPageInsetsForTwoUpView) {
 
 TEST(CoordinateTest, GetRectForSingleView) {
   // Test portrait pages.
-  CompareRect({55, 503, 190, 390},
-              GetRectForSingleView({200, 400}, {300, 500}, kSingleViewInsets));
-  CompareRect({55, 603, 90, 330},
-              GetRectForSingleView({100, 340}, {200, 600}, kSingleViewInsets));
+  CompareRect({50, 500, 200, 400},
+              GetRectForSingleView({200, 400}, {300, 500}));
+  CompareRect({50, 600, 100, 340},
+              GetRectForSingleView({100, 340}, {200, 600}));
 
   // Test landscape pages.
-  CompareRect({5, 1003, 490, 440},
-              GetRectForSingleView({500, 450}, {500, 1000}, kSingleViewInsets));
-  CompareRect({30, 1503, 640, 190},
-              GetRectForSingleView({650, 200}, {700, 1500}, kSingleViewInsets));
+  CompareRect({0, 1000, 500, 450},
+              GetRectForSingleView({500, 450}, {500, 1000}));
+  CompareRect({25, 1500, 650, 200},
+              GetRectForSingleView({650, 200}, {700, 1500}));
 }
 
 TEST(CoordinateTest, GetScreenRect) {
@@ -275,33 +275,22 @@ TEST(CoordinateTest, GetBottomFillRect) {
 }
 
 TEST(CoordinateTest, GetLeftRectForTwoUpView) {
-  CompareRect({105, 103, 194, 390},
-              GetLeftRectForTwoUpView({200, 400}, {300, 100}, kLeftInsets));
-  CompareRect({5, 3, 294, 390},
-              GetLeftRectForTwoUpView({300, 400}, {300, 0}, kLeftInsets));
-
-  // Test rect smaller than shadow insets returns empty rect.
-  CompareRect({10, 3, 0, 0},
-              GetLeftRectForTwoUpView({5, 5}, {10, 0}, kLeftInsets));
+  CompareRect({100, 100, 200, 400},
+              GetLeftRectForTwoUpView({200, 400}, {300, 100}));
+  CompareRect({0, 0, 300, 400}, GetLeftRectForTwoUpView({300, 400}, {300, 0}));
 
   // Test empty rect gets positioned.
-  CompareRect({105, 3, 0, 0},
-              GetLeftRectForTwoUpView({0, 0}, {100, 0}, kLeftInsets));
+  CompareRect({100, 0, 0, 0}, GetLeftRectForTwoUpView({0, 0}, {100, 0}));
 }
 
 TEST(CoordinateTest, GetRightRectForTwoUpView) {
-  CompareRect({301, 103, 194, 390},
-              GetRightRectForTwoUpView({200, 400}, {300, 100}, kRightInsets));
-  CompareRect({301, 3, 294, 390},
-              GetRightRectForTwoUpView({300, 400}, {300, 0}, kRightInsets));
-
-  // Test rect smaller than shadow insets returns empty rect.
-  CompareRect({11, 3, 0, 0},
-              GetRightRectForTwoUpView({5, 5}, {10, 0}, kRightInsets));
+  CompareRect({300, 100, 200, 400},
+              GetRightRectForTwoUpView({200, 400}, {300, 100}));
+  CompareRect({300, 0, 300, 400},
+              GetRightRectForTwoUpView({300, 400}, {300, 0}));
 
   // Test empty rect gets positioned.
-  CompareRect({101, 3, 0, 0},
-              GetRightRectForTwoUpView({0, 0}, {100, 0}, kRightInsets));
+  CompareRect({100, 0, 0, 0}, GetRightRectForTwoUpView({0, 0}, {100, 0}));
 }
 
 }  // namespace draw_utils

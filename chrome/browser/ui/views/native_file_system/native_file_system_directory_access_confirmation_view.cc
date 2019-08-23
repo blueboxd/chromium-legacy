@@ -94,7 +94,8 @@ ui::ModalType NativeFileSystemDirectoryAccessConfirmationView::GetModalType()
 
 views::View*
 NativeFileSystemDirectoryAccessConfirmationView::GetInitiallyFocusedView() {
-  return GetDialogClientView()->cancel_button();
+  const views::DialogClientView* dcv = GetDialogClientView();
+  return dcv ? dcv->cancel_button() : nullptr;
 }
 
 NativeFileSystemDirectoryAccessConfirmationView::
@@ -111,7 +112,7 @@ NativeFileSystemDirectoryAccessConfirmationView::
 
   AddChildView(native_file_system_ui_helper::CreateOriginPathLabel(
       IDS_NATIVE_FILE_SYSTEM_DIRECTORY_ACCESS_CONFIRMATION_TEXT, origin, path,
-      CONTEXT_BODY_TEXT_SMALL));
+      CONTEXT_BODY_TEXT_SMALL, /*show_emphasis=*/true));
 }
 
 void ShowNativeFileSystemDirectoryAccessConfirmationDialog(

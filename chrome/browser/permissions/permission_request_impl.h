@@ -35,6 +35,8 @@ class PermissionRequestImpl : public PermissionRequest {
 #if defined(OS_ANDROID)
   base::string16 GetTitleText() const override;
   base::string16 GetMessageText() const override;
+  base::string16 GetQuietTitleText() const override;
+  base::string16 GetQuietMessageText() const override;
 #endif
   base::string16 GetMessageTextFragment() const override;
   GURL GetOrigin() const override;

@@ -800,7 +800,7 @@ void AppMenu::Init(ui::MenuModel* model) {
   if (run_types_ & views::MenuRunner::SHOULD_SHOW_MNEMONICS)
     types |= views::MenuRunner::SHOULD_SHOW_MNEMONICS;
 
-  menu_runner_.reset(new views::MenuRunner(root_, types));
+  menu_runner_ = std::make_unique<views::MenuRunner>(root_, types);
 }
 
 void AppMenu::RunMenu(views::MenuButtonController* host) {

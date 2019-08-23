@@ -19,8 +19,13 @@ namespace extensions {
 
 namespace {
 
-// Checks for the current browser context if the user is affiliated.
+// Checks for the current browser context if the user is affiliated or belongs
+// to the sign-in profile.
 bool IsPermittedToGetDeviceAttributes(content::BrowserContext* context) {
+  if (chromeos::ProfileHelper::IsSigninProfile(
+          Profile::FromBrowserContext(context))) {
+    return true;
+  }
   const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(
           Profile::FromBrowserContext(context));

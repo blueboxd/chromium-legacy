@@ -349,7 +349,7 @@ bool ThreadPoolImpl::PostTaskWithSequenceNow(Task task,
   const bool sequence_should_be_queued = transaction.WillPushTask();
   RegisteredTaskSource task_source;
   if (sequence_should_be_queued) {
-    task_source = task_tracker_->WillQueueTaskSource(sequence);
+    task_source = task_tracker_->RegisterTaskSource(sequence);
     // We shouldn't push |task| if we're not allowed to queue |task_source|.
     if (!task_source)
       return false;
@@ -399,7 +399,7 @@ bool ThreadPoolImpl::PostTaskWithSequence(Task task,
 bool ThreadPoolImpl::EnqueueJobTaskSource(
     scoped_refptr<JobTaskSource> task_source) {
   auto registered_task_source =
-      task_tracker_->WillQueueTaskSource(std::move(task_source));
+      task_tracker_->RegisterTaskSource(std::move(task_source));
   if (!registered_task_source)
     return false;
   auto transaction = registered_task_source->BeginTransaction();
@@ -436,8 +436,7 @@ void ThreadPoolImpl::UpdatePriority(scoped_refptr<TaskSource> task_source,
   if (new_thread_group == current_thread_group) {
     // |task_source|'s position needs to be updated within its current thread
     // group.
-    current_thread_group->UpdateSortKey(
-        {std::move(task_source), std::move(transaction)});
+    current_thread_group->UpdateSortKey(std::move(transaction));
   } else {
     // |task_source| is changing thread groups; remove it from its current
     // thread group and reenqueue it.

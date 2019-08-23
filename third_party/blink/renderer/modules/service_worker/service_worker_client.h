@@ -33,6 +33,7 @@ class MODULES_EXPORT ServiceWorkerClient : public ScriptWrappable {
   String type() const;
   String frameType(ScriptState*) const;
   String id() const { return uuid_; }
+  String lifecycleState() const;
   void postMessage(ScriptState*,
                    const ScriptValue& message,
                    Vector<ScriptValue>& transfer,
@@ -46,10 +47,11 @@ class MODULES_EXPORT ServiceWorkerClient : public ScriptWrappable {
   String Uuid() const { return uuid_; }
 
  private:
-  String uuid_;
-  String url_;
-  mojom::ServiceWorkerClientType type_;
-  network::mojom::RequestContextFrameType frame_type_;
+  const String uuid_;
+  const String url_;
+  const mojom::ServiceWorkerClientType type_;
+  const network::mojom::RequestContextFrameType frame_type_;
+  const mojom::ServiceWorkerClientLifecycleState lifecycle_state_;
 };
 
 }  // namespace blink

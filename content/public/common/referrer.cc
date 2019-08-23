@@ -107,6 +107,16 @@ blink::mojom::ReferrerPtr Referrer::SanitizeForRequest(
 }
 
 // static
+url::Origin Referrer::SanitizeOriginForRequest(
+    const GURL& request,
+    const url::Origin& initiator,
+    network::mojom::ReferrerPolicy policy) {
+  Referrer fake_referrer(initiator.GetURL(), policy);
+  Referrer sanitizied_referrer = SanitizeForRequest(request, fake_referrer);
+  return url::Origin::Create(sanitizied_referrer.url);
+}
+
+// static
 void Referrer::SetReferrerForRequest(net::URLRequest* request,
                                      const Referrer& referrer) {
   request->SetReferrer(network::ComputeReferrer(referrer.url));

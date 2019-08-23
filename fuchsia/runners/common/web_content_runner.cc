@@ -6,16 +6,16 @@
 
 #include <fuchsia/sys/cpp/fidl.h>
 #include <lib/fidl/cpp/binding_set.h>
+#include <lib/sys/cpp/component_context.h>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
+#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/scoped_service_binding.h"
-#include "base/fuchsia/service_directory.h"
-#include "base/fuchsia/service_directory_client.h"
 #include "base/fuchsia/startup_context.h"
 #include "base/logging.h"
 #include "fuchsia/runners/buildflags.h"
@@ -33,9 +33,9 @@ fidl::InterfaceHandle<fuchsia::io::Directory> OpenDirectoryOrFail(
 
 fuchsia::web::ContextPtr CreateWebContextWithDataDirectory(
     fidl::InterfaceHandle<fuchsia::io::Directory> data_directory) {
-  auto web_context_provider =
-      base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
-          ->ConnectToService<fuchsia::web::ContextProvider>();
+  auto web_context_provider = base::fuchsia::ComponentContextForCurrentProcess()
+                                  ->svc()
+                                  ->Connect<fuchsia::web::ContextProvider>();
 
   fuchsia::web::CreateContextParams create_params;
 
@@ -77,10 +77,9 @@ fuchsia::web::ContextPtr WebContentRunner::CreateIncognitoWebContext() {
       fidl::InterfaceHandle<fuchsia::io::Directory>());
 }
 
-WebContentRunner::WebContentRunner(
-    base::fuchsia::ServiceDirectory* service_directory,
-    fuchsia::web::ContextPtr context)
-    : context_(std::move(context)), service_binding_(service_directory, this) {
+WebContentRunner::WebContentRunner(sys::OutgoingDirectory* outgoing_directory,
+                                   fuchsia::web::ContextPtr context)
+    : context_(std::move(context)), service_binding_(outgoing_directory, this) {
   DCHECK(context_);
 }
 

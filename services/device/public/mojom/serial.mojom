@@ -72,10 +72,15 @@ struct SerialConnectionInfo {
 };
 
 struct SerialHostControlSignals {
+  // DTR (Data Terminal Ready)
   bool dtr;
   bool has_dtr = false;
+  // RTS (Request to Send)
   bool rts;
   bool has_rts = false;
+  // BRK (Break)
+  bool brk;
+  bool has_brk = false;
 };
 
 struct SerialPortControlSignals {
@@ -121,7 +126,7 @@ interface SerialPort {
   // Reads current control signals (DCD, CTS, etc.).
   GetControlSignals() => (SerialPortControlSignals signals);
 
-  // Sets one or more control signals (DTR and/or RTS) and returns result.
+  // Sets one or more control signals and returns result.
   SetControlSignals(SerialHostControlSignals signals) => (bool success);
 
   // Performs platform-specific port configuration and returns result.
@@ -129,14 +134,6 @@ interface SerialPort {
 
   // Performs a platform-specific port configuration query and returns got info.
   GetPortInfo() => (SerialConnectionInfo info);
-
-  // Initiates a BREAK signal. Places the transmission line in a break state
-  // until the |ClearBreak| is called.
-  SetBreak() => (bool success);
-
-  // Terminates the BREAK signal. Places the transmission line in a nonbreak
-  // state.
-  ClearBreak() => (bool success);
 
   // Closes the connection created by Open(). Once this returns no more data
   // will be sent or received on |in_stream| or |out_stream|.

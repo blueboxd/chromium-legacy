@@ -263,9 +263,6 @@ void GLImageTestSupport::SetBufferDataToColor(int width,
       }
       return;
     }
-    case gfx::BufferFormat::UYVY_422:
-      NOTREACHED() << gfx::BufferFormatToString(format);
-      return;
   }
   NOTREACHED();
 }

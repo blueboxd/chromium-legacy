@@ -116,7 +116,7 @@ STDMETHODIMP StatusTrayStateChangerWin::Notify(ULONG event,
     return S_OK;
   }
 
-  notify_item_.reset(new NOTIFYITEM(*notify_item));
+  notify_item_ = std::make_unique<NOTIFYITEM>(*notify_item);
   return S_OK;
 }
 

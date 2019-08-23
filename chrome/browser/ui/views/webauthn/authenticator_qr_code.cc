@@ -17,7 +17,8 @@ static_assert(AuthenticatorQRCode::kNumSegments != 0 &&
 // Generate generates a QR code containing the given data and returns a
 // pointer to an array of kSize×kSize bytes where the least-significant bit of
 // each byte is set if that tile should be "black".
-const uint8_t* AuthenticatorQRCode::Generate(const uint8_t in[kInputBytes]) {
+base::span<const uint8_t, AuthenticatorQRCode::kTotalSize>
+AuthenticatorQRCode::Generate(const uint8_t in[kInputBytes]) {
   memset(d_, 0, sizeof(d_));
   PutVerticalTiming(6);
   PutHorizontalTiming(6);

@@ -296,7 +296,7 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
 
       {// |categories|
        {ShortcutCategory::kPageAndBrowser},
-       IDS_KSV_DESCRIPTION_IDC_BOOKMARK_PAGE,
+       IDS_KSV_DESCRIPTION_IDC_BOOKMARK_THIS_TAB,
        IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
        // |accelerator_ids|
        {{ui::VKEY_D, ui::EF_CONTROL_DOWN}}},

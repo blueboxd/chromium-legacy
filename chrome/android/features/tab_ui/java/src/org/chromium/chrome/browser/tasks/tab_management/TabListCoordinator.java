@@ -169,11 +169,12 @@ public class TabListCoordinator implements Destroyable {
                 gridCardOnClickListenerProvider, dialogHandler, componentName);
 
         if (mMode == TabListMode.GRID) {
-            mRecyclerView.setLayoutManager(
-                    new GridLayoutManager(context, GRID_LAYOUT_SPAN_COUNT_PORTRAIT));
+            GridLayoutManager gridLayoutManager =
+                    new GridLayoutManager(context, GRID_LAYOUT_SPAN_COUNT_PORTRAIT);
+            mRecyclerView.setLayoutManager(gridLayoutManager);
+            mMediator.registerOrientationListener(gridLayoutManager);
             mMediator.updateSpanCountForOrientation(
-                    (GridLayoutManager) mRecyclerView.getLayoutManager(),
-                    context.getResources().getConfiguration().orientation);
+                    gridLayoutManager, context.getResources().getConfiguration().orientation);
         } else if (mMode == TabListMode.STRIP || mMode == TabListMode.CAROUSEL) {
             mRecyclerView.setLayoutManager(
                     new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
@@ -186,8 +187,6 @@ public class TabListCoordinator implements Destroyable {
                     context.getResources().getDimension(R.dimen.bottom_sheet_peek_height),
                     tabModelSelector.getCurrentModel().getProfile()));
             touchHelper.attachToRecyclerView(mRecyclerView);
-            mMediator.registerOrientationListener(
-                    (GridLayoutManager) mRecyclerView.getLayoutManager());
 
             // TODO(crbug.com/964406): unregister the listener when we don't need it.
             mRecyclerView.getViewTreeObserver().addOnGlobalLayoutListener(

@@ -382,7 +382,7 @@ void RendererBlinkPlatformImpl::FetchCachedCode(
       base::BindOnce(
           [](FetchCachedCodeCallback callback, base::Time time,
              mojo_base::BigBuffer data) {
-            std::move(callback).Run(time, data);
+            std::move(callback).Run(time, std::move(data));
           },
           std::move(callback)));
 }

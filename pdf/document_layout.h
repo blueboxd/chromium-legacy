@@ -74,12 +74,19 @@ class DocumentLayout final {
   // TODO(kmoon): Get rid of this method.
   void set_size(const pp::Size& size) { size_ = size; }
 
-  size_t page_count() const { return page_rects_.size(); }
+  size_t page_count() const { return page_layouts_.size(); }
 
   // Gets the layout rectangle for a page. Only valid after computing a layout.
   const pp::Rect& page_rect(size_t page_index) const {
     DCHECK_LT(page_index, page_count());
-    return page_rects_[page_index];
+    return page_layouts_[page_index].outer_rect;
+  }
+
+  // Gets the layout rectangle for a page's bounds (which excludes additional
+  // regions like page shadows). Only valid after computing a layout.
+  const pp::Rect& page_bounds_rect(size_t page_index) const {
+    DCHECK_LT(page_index, page_count());
+    return page_layouts_[page_index].inner_rect;
   }
 
   // Computes layout that represent |page_sizes| formatted for single view.
@@ -98,13 +105,21 @@ class DocumentLayout final {
   void EnlargeHeight(int height);
 
  private:
+  // Layout of a single page.
+  struct PageLayout {
+    // Bounding rectangle for the page with decorations.
+    pp::Rect outer_rect;
+
+    // Bounding rectangle for the page without decorations.
+    pp::Rect inner_rect;
+  };
+
   Options options_;
 
   // Layout's total size.
   pp::Size size_;
 
-  // Page layout rectangles.
-  std::vector<pp::Rect> page_rects_;
+  std::vector<PageLayout> page_layouts_;
 };
 
 }  // namespace chrome_pdf

@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
+import org.chromium.chrome.browser.tasks.tab_groups.EmptyTabGroupModelFilterObserver;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.tab_ui.R;
 
@@ -49,20 +50,7 @@ public class UndoGroupSnackbarController implements SnackbarManager.SnackbarCont
         mContext = context;
         mTabModelSelector = tabModelSelector;
         mSnackbarManageable = snackbarManageable;
-        mTabGroupModelFilterObserver = new TabGroupModelFilter.Observer() {
-            @Override
-            public void didMergeTabToGroup(Tab movedTab, int selectedTabIdInGroup) {}
-
-            @Override
-            public void didMoveTabGroup(Tab movedTab, int tabModelOldIndex, int tabModelNewIndex) {}
-
-            @Override
-            public void didMoveWithinGroup(
-                    Tab movedTab, int tabModelOldIndex, int tabModelNewIndex) {}
-
-            @Override
-            public void didMoveTabOutOfGroup(Tab movedTab, int prevFilterIndex) {}
-
+        mTabGroupModelFilterObserver = new EmptyTabGroupModelFilterObserver() {
             @Override
             public void didCreateGroup(
                     List<Tab> tabs, List<Integer> tabOriginalIndex, boolean isSameGroup) {

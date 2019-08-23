@@ -59,18 +59,3 @@ bool TestTabStripModelDelegate::RunUnloadListenerBeforeClosing(
     content::WebContents* contents) {
   return false;
 }
-
-TabStripModelDelegate::RestoreTabType
-TestTabStripModelDelegate::GetRestoreTabType() {
-  return TabStripModelDelegate::RESTORE_NONE;
-}
-
-void TestTabStripModelDelegate::RestoreTab() {
-}
-
-bool TestTabStripModelDelegate::CanBookmarkAllTabs() const {
-  return true;
-}
-
-void TestTabStripModelDelegate::BookmarkAllTabs() {
-}

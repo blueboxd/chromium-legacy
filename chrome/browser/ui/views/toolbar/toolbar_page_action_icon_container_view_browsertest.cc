@@ -60,13 +60,20 @@ class ToolbarPageActionIconContainerViewBrowserTest
     container->save_card_icon_view()->SetVisible(true);
 
     EXPECT_EQ(container->uses_highlight(), expect_highlight);
-    EXPECT_EQ(container->border(), nullptr);
+    EXPECT_FALSE(IsHighlighted(container));
 
     container->save_card_icon_view()->SetHighlighted(true);
-    EXPECT_EQ(container->border() != nullptr, expect_highlight);
+    EXPECT_EQ(IsHighlighted(container), expect_highlight);
 
     container->save_card_icon_view()->SetHighlighted(false);
-    EXPECT_EQ(container->border(), nullptr);
+    EXPECT_FALSE(IsHighlighted(container));
+  }
+
+  bool IsHighlighted(ToolbarPageActionIconContainerView* container) {
+    if (container->highlight_animation_.IsClosing())
+      return false;
+    return container->highlight_animation_.IsShowing() ||
+           container->highlight_animation_.GetCurrentValue() == 1.0f;
   }
 
  private:

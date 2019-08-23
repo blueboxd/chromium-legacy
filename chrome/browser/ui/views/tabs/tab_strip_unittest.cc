@@ -141,7 +141,7 @@ class TabStripTest : public ChromeViewsTestBase,
     auto* parent = new views::View;
     parent->AddChildView(tab_strip_);
 
-    widget_.reset(new views::Widget);
+    widget_ = std::make_unique<views::Widget>();
     views::Widget::InitParams init_params =
         CreateParams(views::Widget::InitParams::TYPE_POPUP);
     init_params.ownership =

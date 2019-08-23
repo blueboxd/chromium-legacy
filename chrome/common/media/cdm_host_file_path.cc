@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_version.h"
 
@@ -17,7 +18,7 @@
 #include "chrome/common/chrome_constants.h"
 #endif
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 namespace {
 
@@ -104,7 +105,7 @@ void AddCdmHostFilePaths(
 #endif  // defined(OS_WIN)
 }
 
-#else  // defined(GOOGLE_CHROME_BUILD)
+#else  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 void AddCdmHostFilePaths(
     std::vector<media::CdmHostFilePath>* cdm_host_file_paths) {
@@ -112,5 +113,4 @@ void AddCdmHostFilePaths(
                       "verify the host.";
 }
 
-#endif  // defined(GOOGLE_CHROME_BUILD)
-
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)

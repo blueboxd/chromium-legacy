@@ -7,6 +7,7 @@
 import logging
 import os
 
+
 from core import benchmark_utils
 from core import benchmark_finders
 from core import path_util
@@ -23,6 +24,17 @@ CLUSTER_TELEMETRY_BENCHMARKS = [
     ct_benchmark.Name() for ct_benchmark in
     benchmark_finders.GetBenchmarksInSubDirectory(CLUSTER_TELEMETRY_DIR)
 ]
+MOBILE_PREFIXES = {'android', 'mobile'}
+DESKTOP_PREFIXES = {'chromeos', 'desktop', 'linux', 'mac', 'win'}
+
+
+def is_desktop_tag(tag):
+    return any(tag.lower().startswith(t) for t in DESKTOP_PREFIXES)
+
+
+def is_mobile_tag(tag):
+    return any(tag.lower().startswith(t) for t in MOBILE_PREFIXES)
+
 
 def validate_story_names(benchmarks, test_expectations):
   stories = []
@@ -39,6 +51,21 @@ def validate_story_names(benchmarks, test_expectations):
   assert not unused_patterns, unused_patterns
 
 
+def validate_expectations_component_tags(test_expectations):
+  expectations = []
+  for exps in test_expectations.individual_exps.values():
+    expectations.extend(exps)
+  for exps in test_expectations.glob_exps.values():
+    expectations.extend(exps)
+  for e in expectations:
+    if len(e.tags) > 1:
+      has_mobile_tags = any(is_mobile_tag(t) for t in e.tags)
+      has_desktop_tags = any(is_desktop_tag(t) for t in e.tags)
+      assert not (has_mobile_tags and has_desktop_tags), (
+              ("Expectation on %d is mixing "
+               "mobile and desktop condition tags") % e.lineno)
+
+
 def main():
   benchmarks = benchmark_finders.GetAllBenchmarks()
   with open(path_util.GetExpectationsPath()) as fp:
@@ -49,4 +76,5 @@ def main():
     logging.error(msg)
     return ret
   validate_story_names(benchmarks, test_expectations)
+  validate_expectations_component_tags(test_expectations)
   return 0

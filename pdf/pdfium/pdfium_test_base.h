@@ -22,6 +22,9 @@ class PDFiumTestBase : public testing::Test {
   PDFiumTestBase();
   ~PDFiumTestBase() override;
 
+  // Returns true when actually running in a Chrome OS environment.
+  static bool IsRunningOnChromeOS();
+
  protected:
   // testing::Test:
   void SetUp() override;

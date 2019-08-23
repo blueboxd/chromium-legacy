@@ -18,6 +18,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 
 #if !defined(OS_MACOSX)
@@ -141,7 +142,7 @@ TEST_F(ServiceProcessStateTest, AutoRun) {
   autorun_command_line.reset(
       new base::CommandLine(base::CommandLine::FromString(value)));
 #elif defined(OS_POSIX) && !defined(OS_MACOSX)
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   std::string base_desktop_name = "google-chrome-service.desktop";
 #else  // BUILDFLAG(CHROMIUM_BRANDING)
   std::string base_desktop_name = "chromium-service.desktop";

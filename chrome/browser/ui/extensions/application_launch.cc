@@ -80,7 +80,8 @@ class EnableViaDialogFlow : public ExtensionEnableFlowDelegate {
 
   void Run() {
     DCHECK(!service_->IsExtensionEnabled(extension_id_));
-    flow_.reset(new ExtensionEnableFlow(profile_, extension_id_, this));
+    flow_ =
+        std::make_unique<ExtensionEnableFlow>(profile_, extension_id_, this);
     flow_->Start();
   }
 

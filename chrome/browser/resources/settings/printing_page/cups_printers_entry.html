@@ -28,15 +28,14 @@
       </template>
       <template is="dom-if"
           if="[[isDiscoveredPrinter_(printerEntry.printerType)]]">
-        <cr-button class="action-button"
+        <cr-button id="setupPrinterButton"
             on-click="onOpenManufacturerModelDialogTap_">
           $i18n{setupPrinter}
         </cr-button>
       </template>
       <template is="dom-if"
           if="[[isAutomaticPrinter_(printerEntry.printerType)]]">
-        <cr-button id="savePrinterButton" class="action-button"
-          on-click="onAddAutomaticPrinterTap_">
+        <cr-button id="savePrinterButton" on-click="onAddAutomaticPrinterTap_">
           $i18n{savePrinter}
         </cr-button>
       </template>

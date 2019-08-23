@@ -41,17 +41,35 @@ struct BASE_EXPORT ExecutionEnvironment {
 // A TaskSource is a virtual class that provides a series of Tasks that must be
 // executed.
 //
-// In order to execute a task from this TaskSource, a worker should first make
-// sure that a task can run with WillRunTask() which returns a RunIntent.
-// TakeTask() can then be called to access the next Task, and DidProcessTask()
-// must be called after the task was processed. Many overlapping chains of
-// WillRunTask(), TakeTask(), run and DidProcessTask() can run concurrently, as
-// permitted by WillRunTask(). This ensure that the number of workers
-// concurrently running tasks never go over the intended concurrency.
+// A task source is registered when it's ready to be queued. A task source is
+// ready to be queued when either:
+// 1- It has new tasks that can run concurrently as a result of external
+//    operations, e.g. posting a new task to an empty Sequence or increasing
+//    max concurrency of a JobTaskSource;
+// 2- A worker finished running a task from it and DidProcessTask() returned
+//    true; or
+// 3- A worker is about to run a task from it and WillRunTask() returned
+//    kAllowedNotSaturated.
 //
-// In comments below, an "empty TaskSource" is a TaskSource with no Task.
+// A worker may perform the following sequence of operations on a
+// RegisteredTaskSource after obtaining it from the queue:
+// 1- Check whether a task can run with WillRunTask() (and register/enqueue the
+//    task source again if not saturated).
+// 2- Iff (1) determined that a task can run, access the next task with
+//    TakeTask().
+// 3- Execute the task.
+// 4- Inform the task source that a task was processed with DidProcessTask(),
+//    and re-enqueue the task source iff requested.
+// When a task source is registered multiple times, many overlapping chains of
+// operations may run concurrently, as permitted by WillRunTask(). This allows
+// tasks from the same task source to run in parallel.
+// However, the following invariants are kept:
+// - The number of workers concurrently running tasks never goes over the
+//   intended concurrency.
+// - If the task source has more tasks that can run concurrently, it must be
+//   queued.
 //
-// Note: there is a known refcounted-ownership cycle in the Scheduler
+// Note: there is a known refcounted-ownership cycle in the ThreadPool
 // architecture: TaskSource -> TaskRunner -> TaskSource -> ... This is okay so
 // long as the other owners of TaskSource (PriorityQueue and WorkerThread in
 // alternation and ThreadGroupImpl::WorkerThreadDelegateImpl::GetWork()
@@ -62,62 +80,18 @@ struct BASE_EXPORT ExecutionEnvironment {
 //
 // This class is thread-safe.
 class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
- protected:
-  // Indicates whether a TaskSource has reached its maximum intended concurrency
-  // and may not run any additional tasks.
-  enum class Saturated {
-    kYes,
-    kNo,
-  };
-
  public:
-  // Result of WillRunTask(). A single task associated with a RunIntent may be
-  // accessed with TakeTask() and run, or the task source may be cleared with
-  // Clear() iff this evaluates to true.
-  class BASE_EXPORT RunIntent {
-   public:
-    RunIntent() = default;
-    RunIntent(RunIntent&&) noexcept;
-    ~RunIntent();
-
-    RunIntent& operator=(RunIntent&&);
-
-    operator bool() const { return !!task_source_; }
-
-    // Returns true iff the TaskSource from which this RunIntent was obtained
-    // may not run any additional tasks beyond this RunIntent as it has reached
-    // its maximum concurrency. This indicates that the TaskSource no longer
-    // needs to be queued.
-    bool IsSaturated() const { return is_saturated_ == Saturated::kYes; }
-
-    const TaskSource* task_source() const { return task_source_; }
-
-    void ReleaseForTesting() {
-      DCHECK(task_source_);
-      task_source_ = nullptr;
-    }
-
-   private:
-    friend class TaskSource;
-
-    // Indicates the step of a run intent chain.
-    enum class State {
-      kInitial,       // After WillRunTask().
-      kTaskAcquired,  // After TakeTask().
-      kCompleted,     // After DidProcessTask().
-    };
-
-    RunIntent(const TaskSource* task_source, Saturated is_saturated);
-
-    void Release() {
-      DCHECK_EQ(run_step_, State::kCompleted);
-      DCHECK(task_source_);
-      task_source_ = nullptr;
-    }
-
-    const TaskSource* task_source_ = nullptr;
-    State run_step_ = State::kInitial;
-    Saturated is_saturated_ = Saturated::kYes;
+  // Indicates whether WillRunTask() allows TakeTask() to be called on a
+  // RegisteredTaskSource.
+  enum class RunStatus {
+    // TakeTask() cannot be called.
+    kDisallowed,
+    // TakeTask() must be called, and the TaskSource has not reached its maximum
+    // concurrency (i.e. the TaskSource still needs to be queued).
+    kAllowedNotSaturated,
+    // TakeTask() must be called, and the TaskSource has reached its maximum
+    // concurrency (i.e. the TaskSource no longer needs to be queued).
+    kAllowedSaturated,
   };
 
   // A Transaction can perform multiple operations atomically on a
@@ -130,25 +104,6 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
     ~Transaction();
 
     operator bool() const { return !!task_source_; }
-
-    // Returns the next task to run from this TaskSource. This should be called
-    // only with a valid |intent|. Cannot be called on an empty TaskSource.
-    //
-    // Because this method cannot be called on an empty TaskSource, the returned
-    // Optional<Task> is never nullptr. An Optional is used in preparation for
-    // the merge between ThreadPool and TaskQueueManager (in Blink).
-    // https://crbug.com/783309
-    Optional<Task> TakeTask(RunIntent* intent) WARN_UNUSED_RESULT;
-
-    // Returns a task that clears this TaskSource to make it empty. This should
-    // be called only with a valid |intent|, but may be called for each valid
-    // outstanding RunIntent.
-    Optional<Task> Clear(RunIntent intent) WARN_UNUSED_RESULT;
-
-    // Must be called once the task was run. Cannot be called on an empty
-    // TaskSource. Returns true if the TaskSource should be queued after this
-    // operation.
-    bool DidProcessTask(RunIntent intent);
 
     // Returns a SequenceSortKey representing the priority of the TaskSource.
     // Cannot be called on an empty TaskSource.
@@ -188,11 +143,6 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
 
   virtual ExecutionEnvironment GetExecutionEnvironment() = 0;
 
-  // Informs this TaskSource that an additional Task could be run. Returns a
-  // RunIntent that evaluates to true if this operation is allowed (TakeTask()
-  // or Clear() can be called), or false otherwise.
-  virtual RunIntent WillRunTask() = 0;
-
   // Thread-safe but the returned value may immediately be obsolete. As such
   // this should only be used as a best-effort guess of how many more workers
   // are needed. This may be called on an empty task source.
@@ -201,6 +151,8 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
   // Support for IntrusiveHeap.
   void SetHeapHandle(const HeapHandle& handle);
   void ClearHeapHandle();
+  HeapHandle GetHeapHandle() const { return heap_handle_; }
+
   HeapHandle heap_handle() const { return heap_handle_; }
 
   // Returns the shutdown behavior of all Tasks in the TaskSource. Can be
@@ -220,34 +172,33 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
  protected:
   virtual ~TaskSource();
 
-  virtual Optional<Task> TakeTask() = 0;
+  virtual RunStatus WillRunTask() = 0;
 
-  // Informs this TaskSource that a task was processed. |was_run| indicates
-  // whether the task executed or not. Returns true if the TaskSource
-  // should be queued after this operation.
-  virtual bool DidProcessTask() = 0;
+  // Implementations of TakeTask(), DidProcessTask() and Clear() must ensure
+  // proper synchronization iff |transaction| is nullptr.
+  virtual Optional<Task> TakeTask(TaskSource::Transaction* transaction) = 0;
+  virtual bool DidProcessTask(TaskSource::Transaction* transaction) = 0;
+
+  // This may be called for each outstanding RegisteredTaskSource that's ready.
+  // The implementation needs to support this being called multiple times;
+  // unless it guarantees never to hand-out multiple RegisteredTaskSources that
+  // are concurrently ready.
+  virtual Optional<Task> Clear(TaskSource::Transaction* transaction) = 0;
 
   virtual SequenceSortKey GetSortKey() const = 0;
-
-  // This may be called for each outstanding RunIntent. If applicable, the
-  // implementation needs to support this being called multiple times.
-  virtual Optional<Task> Clear() = 0;
 
   // Sets TaskSource priority to |priority|.
   void UpdatePriority(TaskPriority priority);
 
-  // Constructs and returns a RunIntent, where |is_saturated| indicates that the
-  // TaskSource has reached its maximum concurrency.
-  RunIntent MakeRunIntent(Saturated is_saturated) const;
-
   // The TaskTraits of all Tasks in the TaskSource.
   TaskTraits traits_;
 
- private:
-  friend class RefCountedThreadSafe<TaskSource>;
-
   // Synchronizes access to all members.
   mutable CheckedLock lock_{UniversalPredecessor()};
+
+ private:
+  friend class RefCountedThreadSafe<TaskSource>;
+  friend class RegisteredTaskSource;
 
   // The TaskSource's position in its current PriorityQueue. Access is protected
   // by the PriorityQueue's lock.
@@ -264,8 +215,12 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
   DISALLOW_COPY_AND_ASSIGN(TaskSource);
 };
 
-// Wrapper around TaskSource to signify the intent to queue and run it. A
-// RegisteredTaskSource can only be created with TaskTracker.
+// Wrapper around TaskSource to signify the intent to queue and run it.
+// RegisteredTaskSource can only be created with TaskTracker and may only be
+// used by a single worker at a time. However, the same task source may be
+// registered several times, spawning multiple RegisteredTaskSources. A
+// RegisteredTaskSource resets to its initial state when WillRunTask() fails
+// or after DidProcessTask(), so it can be used again.
 class BASE_EXPORT RegisteredTaskSource {
  public:
   RegisteredTaskSource();
@@ -276,7 +231,6 @@ class BASE_EXPORT RegisteredTaskSource {
   RegisteredTaskSource& operator=(RegisteredTaskSource&& other);
 
   operator bool() const { return task_source_ != nullptr; }
-
   TaskSource* operator->() const { return task_source_.get(); }
   TaskSource* get() const { return task_source_.get(); }
 
@@ -284,71 +238,82 @@ class BASE_EXPORT RegisteredTaskSource {
       scoped_refptr<TaskSource> task_source,
       TaskTracker* task_tracker = nullptr);
 
+  // Can only be called if this RegisteredTaskSource is in its initial state.
+  // Returns the underlying task source. An Optional is used in preparation for
+  // the merge between ThreadPool and TaskQueueManager (in Blink).
+  // https://crbug.com/783309
   scoped_refptr<TaskSource> Unregister();
+
+  // Informs this TaskSource that the current worker would like to run a Task
+  // from it. Can only be called if in its initial state. Returns a RunStatus
+  // that indicates if the operation is allowed (TakeTask() can be called).
+  TaskSource::RunStatus WillRunTask();
+
+  // Returns the next task to run from this TaskSource. This should be called
+  // only after WillRunTask() returned RunStatus::kAllowed*. |transaction| is
+  // optional and should only be provided if this operation is already part of
+  // a transaction.
+  //
+  // Because this method cannot be called on an empty TaskSource, the returned
+  // Optional<Task> is never nullopt.
+  Optional<Task> TakeTask(TaskSource::Transaction* transaction = nullptr)
+      WARN_UNUSED_RESULT;
+
+  // Must be called once the task was run. This resets this RegisteredTaskSource
+  // to its initial state so that WillRunTask() may be called again.
+  // |transaction| is optional and should only be provided if this operation is
+  // already part of a transaction. Returns true if the TaskSource should be
+  // queued after this operation.
+  bool DidProcessTask(TaskSource::Transaction* transaction = nullptr);
+
+  // Returns a task that clears this TaskSource to make it empty. |transaction|
+  // is optional and should only be provided if this operation is already part
+  // of a transaction.
+  Optional<Task> Clear(TaskSource::Transaction* transaction = nullptr)
+      WARN_UNUSED_RESULT;
 
  private:
   friend class TaskTracker;
   RegisteredTaskSource(scoped_refptr<TaskSource> task_source,
                        TaskTracker* task_tracker);
 
+#if DCHECK_IS_ON()
+  // Indicates the step of a task execution chain.
+  enum class State {
+    kInitial,       // WillRunTask() may be called.
+    kReady,         // After WillRunTask() returned a valid RunStatus.
+    kTaskAcquired,  // After TakeTask().
+  };
+
+  State run_step_ = State::kInitial;
+#endif  // DCHECK_IS_ON()
+
   scoped_refptr<TaskSource> task_source_;
-  TaskTracker* task_tracker_;
+  TaskTracker* task_tracker_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(RegisteredTaskSource);
 };
 
-// Base implementation for TransactionWith[Owned/Registered]TaskSource (with
-// Transaction as the decorator) and RunIntentWithRegisteredTaskSource (with
-// RunIntent as the decorator).
-template <class Decorator, class T>
-class BASE_EXPORT DecoratorWithTaskSource : public Decorator {
+// A pair of Transaction and RegisteredTaskSource. Useful to carry a
+// RegisteredTaskSource with an associated Transaction.
+// TODO(crbug.com/839091): Rename to RegisteredTaskSourceAndTransaction.
+struct BASE_EXPORT TransactionWithRegisteredTaskSource {
  public:
-  DecoratorWithTaskSource() = default;
-  DecoratorWithTaskSource(std::nullptr_t) : DecoratorWithTaskSource() {}
-  DecoratorWithTaskSource(T task_source_in, Decorator decorator)
-      : Decorator(std::move(decorator)),
-        task_source_(std::move(task_source_in)) {
-    DCHECK_EQ(task_source_.get(), this->task_source());
-  }
-  DecoratorWithTaskSource(DecoratorWithTaskSource&& other) = default;
-  ~DecoratorWithTaskSource() = default;
+  TransactionWithRegisteredTaskSource(RegisteredTaskSource task_source_in,
+                                      TaskSource::Transaction transaction_in);
 
-  DecoratorWithTaskSource& operator=(DecoratorWithTaskSource&&) = default;
+  TransactionWithRegisteredTaskSource(
+      TransactionWithRegisteredTaskSource&& other) = default;
+  ~TransactionWithRegisteredTaskSource() = default;
 
-  T take_task_source() { return std::move(task_source_); }
+  static TransactionWithRegisteredTaskSource FromTaskSource(
+      RegisteredTaskSource task_source_in);
 
- protected:
-  T task_source_;
+  RegisteredTaskSource task_source;
+  TaskSource::Transaction transaction;
 
-  DISALLOW_COPY_AND_ASSIGN(DecoratorWithTaskSource);
+  DISALLOW_COPY_AND_ASSIGN(TransactionWithRegisteredTaskSource);
 };
-
-// A RunIntent with an additional RegisteredTaskSource member.
-using RunIntentWithRegisteredTaskSource =
-    DecoratorWithTaskSource<TaskSource::RunIntent, RegisteredTaskSource>;
-
-template <class T>
-struct BASE_EXPORT BasicTransactionWithTaskSource
-    : public DecoratorWithTaskSource<TaskSource::Transaction, T> {
-  using DecoratorWithTaskSource<TaskSource::Transaction,
-                                T>::DecoratorWithTaskSource;
-
-  static BasicTransactionWithTaskSource FromTaskSource(T task_source) {
-    auto transaction = task_source->BeginTransaction();
-    return BasicTransactionWithTaskSource(std::move(task_source),
-                                          std::move(transaction));
-  }
-};
-
-// A Transaction with an additional scoped_refptr<TaskSource> member. Useful to
-// carry ownership of a TaskSource with an associated Transaction.
-using TransactionWithOwnedTaskSource =
-    BasicTransactionWithTaskSource<scoped_refptr<TaskSource>>;
-
-// A Transaction with an additional RegisteredTaskSource member. Useful to carry
-// a RegisteredTaskSource with an associated Transaction.
-using TransactionWithRegisteredTaskSource =
-    BasicTransactionWithTaskSource<RegisteredTaskSource>;
 
 }  // namespace internal
 }  // namespace base

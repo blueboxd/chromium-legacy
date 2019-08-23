@@ -138,6 +138,10 @@
       status: "experimental",
     },
     {
+      name: "AutoLazyLoadOnReloads",
+      depends_on: ["LazyFrameLoading"],
+    },
+    {
       name: "AutomaticLazyFrameLoading",
       depends_on: ["LazyFrameLoading"],
       status: "experimental",
@@ -1469,6 +1473,10 @@
     {
       name: "Serial",
       status: {"Android": "", "default": "experimental"},
+    },
+    {
+      name: "ServiceWorkerFilterFrozen",
+      status: "experimental",
     },
     {
       name: "SetRootScroller",

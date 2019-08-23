@@ -37,10 +37,6 @@ class BrowserTabStripModelDelegate : public TabStripModelDelegate {
   bool RunUnloadListenerBeforeClosing(content::WebContents* contents) override;
   bool ShouldRunUnloadListenerBeforeClosing(
       content::WebContents* contents) override;
-  bool CanBookmarkAllTabs() const override;
-  void BookmarkAllTabs() override;
-  RestoreTabType GetRestoreTabType() override;
-  void RestoreTab() override;
 
   void CloseFrame();
 

@@ -178,7 +178,7 @@ void LocalCardMigrationBubbleControllerImpl::ShowBubbleImplementation() {
                                                       is_reshow_);
   DCHECK(local_card_migration_bubble_);
   UpdateLocalCardMigrationIcon();
-  timer_.reset(new base::ElapsedTimer());
+  timer_ = std::make_unique<base::ElapsedTimer>();
 
   AutofillMetrics::LogLocalCardMigrationBubbleOfferMetric(
       AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_SHOWN, is_reshow_);

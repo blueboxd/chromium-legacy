@@ -294,8 +294,8 @@ void ArcTermsOfServiceScreenHandler::DoShow() {
   MaybeLoadPlayStoreToS(true);
   StartNetworkAndTimeZoneObserving();
 
-  pref_handler_.reset(new arc::ArcOptInPreferenceHandler(
-      this, profile->GetPrefs()));
+  pref_handler_ = std::make_unique<arc::ArcOptInPreferenceHandler>(
+      this, profile->GetPrefs());
   pref_handler_->Start();
 }
 

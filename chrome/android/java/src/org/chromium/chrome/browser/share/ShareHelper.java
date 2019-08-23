@@ -105,9 +105,18 @@ public class ShareHelper {
 
     private ShareHelper() {}
 
-    private static void fireIntent(Activity activity, Intent intent) {
+    /**
+     * Fire the intent to share content with the target app.
+     *
+     * @param activity The current activity.
+     * @param intent The intent to fire.
+     * @param allowIdentification Allow the target app to identify Chrome as the source.
+     */
+    private static void fireIntent(Activity activity, Intent intent, boolean allowIdentification) {
         if (sFakeIntentReceiverForTesting != null) {
             sFakeIntentReceiverForTesting.fireIntent(ContextUtils.getApplicationContext(), intent);
+        } else if (allowIdentification) {
+            activity.startActivityForResult(intent, 0);
         } else {
             activity.startActivity(intent);
         }
@@ -224,7 +233,7 @@ public class ShareHelper {
             if (sFakeIntentReceiverForTesting != null) {
                 sFakeIntentReceiverForTesting.setIntentToSendBack(intent);
             }
-            fireIntent(activity, chooserIntent);
+            fireIntent(activity, chooserIntent, false);
         }
 
         @Override
@@ -311,9 +320,11 @@ public class ShareHelper {
      * @param jpegImageData The image data to be shared in jpeg format.
      * @param name When this is not null, it will share the image directly with the
      *             {@link ComponentName}
+     * @param shareWithGoogleLens When this is true activate a special intent
+     *                            to Google Lens and ignore the value set in 'name'.
      */
-    public static void shareImage(
-            final Activity activity, final byte[] jpegImageData, final ComponentName name) {
+    public static void shareImage(final Activity activity, final byte[] jpegImageData,
+            final ComponentName name, final boolean shareWithGoogleLens) {
         if (jpegImageData.length == 0) {
             Log.w(TAG, "Share failed -- Received image contains no data.");
             return;
@@ -352,24 +363,29 @@ public class ShareHelper {
 
                 if (ApplicationStatus.getStateForApplication()
                         != ApplicationState.HAS_DESTROYED_ACTIVITIES) {
-                    Intent shareIntent = getShareImageIntent(imageUri);
-                    if (name == null) {
-                        if (TargetChosenReceiver.isSupported()) {
-                            TargetChosenReceiver.sendChooserIntent(
-                                    true, activity, shareIntent, null, null);
-                        } else {
-                            Intent chooserIntent = Intent.createChooser(shareIntent,
-                                    activity.getString(R.string.share_link_chooser_title));
-                            fireIntent(activity, chooserIntent);
-                        }
+                    Intent shareIntent;
+                    if (shareWithGoogleLens) {
+                        shareIntent = LensUtils.getShareWithGoogleLensIntent(imageUri);
+                        fireIntent(activity, shareIntent, true);
                     } else {
-                        shareIntent.setComponent(name);
-                        fireIntent(activity, shareIntent);
+                        shareIntent = getShareImageIntent(imageUri);
+                        if (name == null) {
+                            if (TargetChosenReceiver.isSupported()) {
+                                TargetChosenReceiver.sendChooserIntent(
+                                        true, activity, shareIntent, null, null);
+                            } else {
+                                Intent chooserIntent = Intent.createChooser(shareIntent,
+                                        activity.getString(R.string.share_link_chooser_title));
+                                fireIntent(activity, chooserIntent, false);
+                            }
+                        } else {
+                            shareIntent.setComponent(name);
+                            fireIntent(activity, shareIntent, false);
+                        }
                     }
                 }
             }
-        }
-                .executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
     private static class ExternallyVisibleUriCallback implements Callback<String> {
@@ -503,7 +519,7 @@ public class ShareHelper {
         intent.addFlags(Intent.FLAG_ACTIVITY_FORWARD_RESULT | Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP);
         intent.setComponent(component);
         if (intent.getComponent() != null) {
-            fireIntent(params.getActivity(), intent);
+            fireIntent(params.getActivity(), intent, false);
         } else {
             assert TargetChosenReceiver.isSupported();
             TargetChosenReceiver.sendChooserIntent(params.saveLastUsed(), params.getActivity(),

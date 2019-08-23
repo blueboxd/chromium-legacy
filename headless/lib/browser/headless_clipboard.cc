@@ -123,7 +123,7 @@ void HeadlessClipboard::WriteObjects(ui::ClipboardBuffer buffer,
   Clear(buffer);
   default_store_buffer_ = buffer;
   for (const auto& kv : objects)
-    DispatchObject(static_cast<ObjectType>(kv.first), kv.second);
+    DispatchObject(kv.first, kv.second);
   default_store_buffer_ = ui::ClipboardBuffer::kCopyPaste;
 }
 

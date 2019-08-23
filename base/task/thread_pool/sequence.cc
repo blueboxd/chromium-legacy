@@ -56,9 +56,9 @@ void Sequence::Transaction::PushTask(Task task) {
     sequence()->task_runner()->AddRef();
 }
 
-TaskSource::RunIntent Sequence::WillRunTask() {
+TaskSource::RunStatus Sequence::WillRunTask() {
   // There should never be a second call to WillRunTask() before DidProcessTask
-  // since the RunIntent is always marked a saturated.
+  // since the RunStatus is always marked a saturated.
   DCHECK(!has_worker_);
 
   // It's ok to access |has_worker_| outside of a Transaction since
@@ -66,14 +66,16 @@ TaskSource::RunIntent Sequence::WillRunTask() {
   // TakeTask() and DidProcessTask() and only called if |!queue_.empty()|, which
   // means it won't race with WillPushTask()/PushTask().
   has_worker_ = true;
-  return MakeRunIntent(Saturated::kYes);
+  return RunStatus::kAllowedSaturated;
 }
 
 size_t Sequence::GetRemainingConcurrency() const {
   return 1;
 }
 
-Optional<Task> Sequence::TakeTask() {
+Optional<Task> Sequence::TakeTask(TaskSource::Transaction* transaction) {
+  CheckedAutoLockMaybe auto_lock(transaction ? nullptr : &lock_);
+
   DCHECK(has_worker_);
   DCHECK(!queue_.empty());
   DCHECK(queue_.front().task);
@@ -83,7 +85,8 @@ Optional<Task> Sequence::TakeTask() {
   return std::move(next_task);
 }
 
-bool Sequence::DidProcessTask() {
+bool Sequence::DidProcessTask(TaskSource::Transaction* transaction) {
+  CheckedAutoLockMaybe auto_lock(transaction ? nullptr : &lock_);
   // There should never be a call to DidProcessTask without an associated
   // WillRunTask().
   DCHECK(has_worker_);
@@ -103,7 +106,8 @@ SequenceSortKey Sequence::GetSortKey() const {
   return SequenceSortKey(traits_.priority(), queue_.front().queue_time);
 }
 
-Optional<Task> Sequence::Clear() {
+Optional<Task> Sequence::Clear(TaskSource::Transaction* transaction) {
+  CheckedAutoLockMaybe auto_lock(transaction ? nullptr : &lock_);
   has_worker_ = false;
   return base::make_optional<Task>(
       FROM_HERE,

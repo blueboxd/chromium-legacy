@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/safe_browsing/download_protection/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/telemetry/telemetry_service.h"
 #include "chrome/common/chrome_switches.h"
@@ -270,6 +271,32 @@ VerdictCacheManager* ServicesDelegateDesktop::GetVerdictCacheManager(
   DCHECK(profile);
   auto it = cache_manager_map_.find(profile);
   DCHECK(it != cache_manager_map_.end());
+  return it->second.get();
+}
+
+void ServicesDelegateDesktop::CreateBinaryUploadService(Profile* profile) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(profile);
+  auto it = binary_upload_service_map_.find(profile);
+  DCHECK(it == binary_upload_service_map_.end());
+  auto service = std::make_unique<BinaryUploadService>(
+      safe_browsing_service_->GetURLLoaderFactory(), profile);
+  binary_upload_service_map_[profile] = std::move(service);
+}
+
+void ServicesDelegateDesktop::RemoveBinaryUploadService(Profile* profile) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(profile);
+  auto it = binary_upload_service_map_.find(profile);
+  if (it != binary_upload_service_map_.end())
+    binary_upload_service_map_.erase(it);
+}
+
+BinaryUploadService* ServicesDelegateDesktop::GetBinaryUploadService(
+    Profile* profile) const {
+  DCHECK(profile);
+  auto it = binary_upload_service_map_.find(profile);
+  DCHECK(it != binary_upload_service_map_.end());
   return it->second.get();
 }
 

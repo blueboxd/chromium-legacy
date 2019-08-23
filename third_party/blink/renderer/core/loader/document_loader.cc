@@ -530,11 +530,9 @@ void DocumentLoader::SetHistoryItemStateForCommit(
   }
 }
 
-void DocumentLoader::BodyCodeCacheReceived(
-    base::span<const uint8_t> code_cache) {
+void DocumentLoader::BodyCodeCacheReceived(mojo_base::BigBuffer data) {
   if (cached_metadata_handler_) {
-    cached_metadata_handler_->SetSerializedCachedMetadata(code_cache.data(),
-                                                          code_cache.size());
+    cached_metadata_handler_->SetSerializedCachedMetadata(std::move(data));
   }
 }
 

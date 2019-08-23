@@ -45,8 +45,6 @@ int GetFourCCFormatFromBufferFormat(gfx::BufferFormat format) {
       return DRM_FORMAT_XBGR2101010;
     case gfx::BufferFormat::RGBA_F16:
       return DRM_FORMAT_INVALID;
-    case gfx::BufferFormat::UYVY_422:
-      return DRM_FORMAT_UYVY;
     case gfx::BufferFormat::YVU_420:
       return DRM_FORMAT_YVU420;
     case gfx::BufferFormat::YUV_420_BIPLANAR:
@@ -77,8 +75,6 @@ gfx::BufferFormat GetBufferFormatFromFourCCFormat(int format) {
       return gfx::BufferFormat::RGBX_1010102;
     case DRM_FORMAT_RGB565:
       return gfx::BufferFormat::BGR_565;
-    case DRM_FORMAT_UYVY:
-      return gfx::BufferFormat::UYVY_422;
     case DRM_FORMAT_NV12:
       return gfx::BufferFormat::YUV_420_BIPLANAR;
     case DRM_FORMAT_YVU420:

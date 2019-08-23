@@ -412,7 +412,6 @@ test.customizeMenu.testMenu_CancelUserSelectionsKeyboard = function() {
   color.click();
 
   // Click cancel and check that all changes have been reverted.
-  // $(test.customizeMenu.IDS.MENU_CANCEL).click();
   const keyDown = new Event('keydown');
   keyDown.keyCode = 27;
   $(test.customizeMenu.IDS.CUSTOMIZATION_MENU).dispatchEvent(keyDown);
@@ -501,6 +500,39 @@ test.customizeMenu.testShortcuts_CanSelectOptions = function() {
   // Toggle the hide shortcuts option again. Toggle should be disabled.
   hiddenToggle.click();
   assertShortcutOptionsSelected(false, true, false);
+};
+
+/**
+ * Tests that the shortcut options can be selected with a keyboard.
+ */
+test.customizeMenu.testShortcuts_CanSelectOptionsKeyboard = function() {
+  init();  // Custom links should be enabled and the shortcuts not hidden.
+
+  // Open the Shortcuts submenu.
+  $(test.customizeMenu.IDS.EDIT_BG).click();
+  $(test.customizeMenu.IDS.SHORTCUTS_BUTTON).click();
+
+  const enter = new Event('keyup');
+  enter.keyCode = 13;
+  const space = new Event('keyup');
+  space.keyCode = 32;
+
+  assertShortcutOptionsSelected(
+      /*clSelected=*/ true, /*mvSelected=*/ false, /*isHidden=*/ false);
+
+  // Select the custom links option. The option should remain selected.
+  $(test.customizeMenu.IDS.SHORTCUTS_OPTION_CUSTOM_LINKS).dispatchEvent(enter);
+  assertShortcutOptionsSelected(true, false, false);
+
+  // Select the most visited option. The custom links option should be
+  // deselected.
+  $(test.customizeMenu.IDS.SHORTCUTS_OPTION_MOST_VISITED).dispatchEvent(space);
+  assertShortcutOptionsSelected(false, true, false);
+
+  // Toggle the hide shortcuts option. Toggle should be enabled.
+  const hiddenToggle = $(test.customizeMenu.IDS.SHORTCUTS_HIDE_TOGGLE);
+  hiddenToggle.dispatchEvent(enter);
+  assertShortcutOptionsSelected(false, true, true);
 };
 
 /**

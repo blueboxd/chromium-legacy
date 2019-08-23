@@ -403,6 +403,10 @@ class QuicTestPacketMaker {
   quic::QuicStreamId GetFirstBidirectionalStreamId() const;
   quic::QuicStreamId GetHeadersStreamId() const;
 
+  std::string GenerateHttp3SettingsData();
+  std::string GenerateHttp3PriorityData(spdy::SpdyPriority priority,
+                                        quic::QuicStreamId stream_id);
+
   quic::ParsedQuicVersion version_;
   quic::QuicConnectionId connection_id_;
   quic::MockClock* clock_;  // Owned by QuicStreamFactory.

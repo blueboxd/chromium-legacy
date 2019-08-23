@@ -165,7 +165,7 @@ TEST_F(RenderViewTest, HandleIPCsInSwappedOutState) {
       main_frame->GetRoutingID(), 123, true, FrameReplicationState()));
 
   // We no longer have a frame widget.
-  EXPECT_FALSE(GetWebWidget()->IsWebFrameWidget());
+  EXPECT_FALSE(GetWebWidget());
 
   int routing_id = view->GetRoutingID();
   // Now simulate some TextInputClientMac IPCs. These will be handled by

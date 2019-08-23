@@ -13,6 +13,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "device/gamepad/abstract_haptic_gamepad.h"
+#include "device/gamepad/gamepad_standard_mappings.h"
 #include "device/gamepad/public/cpp/gamepad.h"
 
 namespace device {
@@ -90,6 +91,7 @@ class GamepadDeviceMac final : public AbstractHapticGamepad {
 
   int location_id_;
   IOHIDDeviceRef device_ref_;
+  GamepadBusType bus_type_;
 
   IOHIDElementRef button_elements_[Gamepad::kButtonsLengthCap];
   IOHIDElementRef axis_elements_[Gamepad::kAxesLengthCap];

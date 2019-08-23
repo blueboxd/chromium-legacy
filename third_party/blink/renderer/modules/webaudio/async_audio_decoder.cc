@@ -47,8 +47,6 @@ void AsyncAudioDecoder::DecodeAsync(DOMArrayBuffer* audio_data,
                                     BaseAudioContext* context) {
   DCHECK(IsMainThread());
   DCHECK(audio_data);
-  if (!audio_data)
-    return;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       context->GetExecutionContext()->GetTaskRunner(

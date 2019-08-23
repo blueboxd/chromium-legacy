@@ -11,6 +11,8 @@
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/util/assistant_util.h"
 #include "ash/assistant/util/deep_link_util.h"
+#include "ash/public/cpp/assistant/proactive_suggestions.h"
+#include "ash/public/cpp/assistant/proactive_suggestions_client.h"
 #include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -71,6 +73,10 @@ AssistantSuggestionsController::AssistantSuggestionsController(
 }
 
 AssistantSuggestionsController::~AssistantSuggestionsController() {
+  auto* client = ProactiveSuggestionsClient::Get();
+  if (client)
+    client->set_delegate(nullptr);
+
   assistant_controller_->RemoveObserver(this);
   VoiceInteractionController::Get()->RemoveLocalObserver(this);
 }
@@ -93,6 +99,14 @@ void AssistantSuggestionsController::OnAssistantControllerDestroying() {
   assistant_controller_->ui_controller()->RemoveModelObserver(this);
 }
 
+void AssistantSuggestionsController::OnAssistantReady() {
+  // The proactive suggestions client initializes late so we need to wait for
+  // the ready signal before binding as its delegate.
+  auto* client = ProactiveSuggestionsClient::Get();
+  if (client)
+    client->set_delegate(this);
+}
+
 void AssistantSuggestionsController::OnUiVisibilityChanged(
     AssistantVisibility new_visibility,
     AssistantVisibility old_visibility,
@@ -107,6 +121,17 @@ void AssistantSuggestionsController::OnUiVisibilityChanged(
 void AssistantSuggestionsController::OnVoiceInteractionContextEnabled(
     bool enabled) {
   UpdateConversationStarters();
+}
+
+void AssistantSuggestionsController::OnProactiveSuggestionsClientDestroying() {
+  auto* client = ProactiveSuggestionsClient::Get();
+  if (client)
+    client->set_delegate(nullptr);
+}
+
+void AssistantSuggestionsController::OnProactiveSuggestionsChanged(
+    std::unique_ptr<ProactiveSuggestions> proactive_suggestions) {
+  model_.SetProactiveSuggestions(std::move(proactive_suggestions));
 }
 
 // TODO(dmblack): The conversation starter cache should receive its contents

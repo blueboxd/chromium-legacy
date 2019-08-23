@@ -52,8 +52,8 @@ class SigninPrepareUserListTest : public testing::Test,
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());
-    controller_.reset(new MultiProfileUserController(
-        this, TestingBrowserProcess::GetGlobal()->local_state()));
+    controller_ = std::make_unique<MultiProfileUserController>(
+        this, TestingBrowserProcess::GetGlobal()->local_state());
     fake_user_manager_->set_multi_profile_user_controller(controller_.get());
 
     for (size_t i = 0; i < base::size(kUsersPublic); ++i)

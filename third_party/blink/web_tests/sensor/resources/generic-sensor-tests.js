@@ -1,17 +1,52 @@
 'use strict';
 
-// Run a set of tests for a given |sensorType|. |readingData| is
-// set for providing the mock values for sensor. |verifyReading|
-// is called so that the value read in JavaScript are the values expected.
-// |verifyRemappedReading| is called for verifying the reading is mapped
-// to the screen coordinates for a spatial sensor. |featurePolicies| represents
-// the |sensorType|’s associated sensor feature name.
-
+// Run a set of tests for a given |sensorType|.
+// |readingData| is an object with 3 keys, all of which are arrays of arrays:
+// 1. "readings". Each value corresponds to one raw reading that will be
+//    processed by a sensor.
+// 2. "expectedReadings". Each value corresponds to the processed value a
+//    sensor will make available to users (i.e. a capped or rounded value).
+//    Its length must match |readings|'.
+// 3. "expectedRemappedReadings" (optional). Similar to |expectedReadings|, but
+//    used only by spatial sensors, whose reference frame can change the values
+//    returned by a sensor.
+//    Its length should match |readings|'.
+// |verificationFunction| is called to verify that a given reading matches a
+// value in |expectedReadings|.
+// |featurePolicies| represents |sensorType|’s associated sensor feature name.
 function runGenericSensorTests(sensorType,
                                readingData,
-                               verifyReading,
-                               verifyRemappedReading,
+                               verificationFunction,
                                featurePolicies) {
+  function validateReadingFormat(data) {
+    return Array.isArray(data) && data.every(element => Array.isArray(element));
+  }
+
+  const { readings, expectedReadings, expectedRemappedReadings } = readingData;
+  if (!validateReadingFormat(readings)) {
+    throw new TypeError('readingData.readings must be an array of arrays.');
+  }
+  if (!validateReadingFormat(expectedReadings)) {
+    throw new TypeError('readingData.expectedReadings must be an array of ' +
+                        'arrays.');
+  }
+  if (readings.length != expectedReadings.length) {
+    throw new TypeError('readingData.readings and ' +
+                        'readingData.expectedReadings must have the same ' +
+                        'length.');
+  }
+  if (expectedRemappedReadings &&
+      !validateReadingFormat(expectedRemappedReadings)) {
+    throw new TypeError('readingData.expectedRemappedReadings must be an ' +
+                        'array of arrays.');
+  }
+  if (expectedRemappedReadings &&
+      readings.length != expectedRemappedReadings.length) {
+    throw new TypeError('readingData.readings and ' +
+      'readingData.expectedRemappedReadings must have the same ' +
+      'length.');
+  }
+
   // Wraps callback and calls rejectFunc if callback throws an error.
   class CallbackWrapper {
     constructor(callback, rejectFunc) {
@@ -234,13 +269,15 @@ function runGenericSensorTests(sensorType,
     assert_false(sensorObject.hasReading);
 
     let mockSensor = await sensorProvider.getCreatedSensor(sensorType.name);
-    await mockSensor.setSensorReading(readingData);
+    await mockSensor.setSensorReading(readings);
     await new Promise((resolve, reject) => {
       let wrapper = new CallbackWrapper(() => {
-        assert_true(verifyReading(sensorObject));
+        const expected = new RingBuffer(expectedReadings).next().value;
+        assert_true(verificationFunction(expected, sensorObject))
         assert_true(sensorObject.hasReading);
         sensorObject.stop();
-        assert_true(verifyReading(sensorObject, true /*should be null*/));
+        assert_true(verificationFunction(expected, sensorObject,
+                                         /*isNull=*/true))
         assert_false(sensorObject.hasReading);
         resolve(mockSensor);
       }, reject);
@@ -264,10 +301,11 @@ function runGenericSensorTests(sensorType,
     sensorObject.start();
 
     let mockSensor = await sensorProvider.getCreatedSensor(sensorType.name);
-    await mockSensor.setSensorReading(readingData);
+    await mockSensor.setSensorReading(readings);
     await new Promise((resolve, reject) => {
       let wrapper = new CallbackWrapper(() => {
-        assert_true(verifyReading(sensorObject));
+        const expected = new RingBuffer(expectedReadings).next().value;
+        assert_true(verificationFunction(expected, sensorObject));
         resolve(mockSensor);
       }, reject);
 
@@ -296,11 +334,11 @@ function runGenericSensorTests(sensorType,
     iframe.allow = "focus-without-user-activation";
 
     let mockSensor = await sensorProvider.getCreatedSensor(sensorType.name);
-    await mockSensor.setSensorReading(readingData);
-
+    await mockSensor.setSensorReading(readings);
     await new Promise((resolve, reject) => {
       let wrapper = new CallbackWrapper(() => {
-        assert_true(verifyReading(sensorObject));
+        const expected = new RingBuffer(expectedReadings).next().value;
+        assert_true(verificationFunction(expected, sensorObject));
         resolve(mockSensor);
       }, reject);
 
@@ -328,21 +366,26 @@ function runGenericSensorTests(sensorType,
     sensor2.start();
 
     let mockSensor = await sensorProvider.getCreatedSensor(sensorType.name);
-    await mockSensor.setSensorReading(readingData);
+    await mockSensor.setSensorReading(readings);
     await new Promise((resolve, reject) => {
       let wrapper = new CallbackWrapper(() => {
+        const expected = new RingBuffer(expectedReadings).next().value;
+
         // Reading values are correct for both sensors.
-        assert_true(verifyReading(sensor1));
-        assert_true(verifyReading(sensor2));
+        assert_true(verificationFunction(expected, sensor1));
+        assert_true(verificationFunction(expected, sensor2));
 
         // After first sensor stops its reading values are null,
         // reading values for the second sensor sensor remain.
         sensor1.stop();
-        assert_true(verifyReading(sensor1, true /*should be null*/));
-        assert_true(verifyReading(sensor2));
+
+        assert_true(verificationFunction(expected, sensor1,
+                                         /*isNull=*/true));
+        assert_true(verificationFunction(expected, sensor2));
 
         sensor2.stop();
-        assert_true(verifyReading(sensor2, true /*should be null*/));
+        assert_true(verificationFunction(expected, sensor2,
+                                         /*isNull=*/true));
 
         resolve(mockSensor);
       }, reject);
@@ -361,7 +404,8 @@ function runGenericSensorTests(sensorType,
     let slowSensor;  // To be initialized later.
 
     let mockSensor = await sensorProvider.getCreatedSensor(sensorType.name);
-    await mockSensor.setSensorReading(readingData);
+    await mockSensor.setSensorReading(readings);
+
     await new Promise((resolve, reject) => {
       let fastSensorNotifiedCounter = 0;
       let slowSensorNotifiedCounter = 0;
@@ -471,11 +515,14 @@ function runGenericSensorTests(sensorType,
     sensorObject.start();
 
     let mockSensor = await sensorProvider.getCreatedSensor(sensorType.name);
-    await mockSensor.setSensorReading(readingData);
+    await mockSensor.setSensorReading(readings);
     await new Promise((resolve, reject) => {
+      const expectedBuffer = new RingBuffer(expectedReadings);
+
       let wrapper1 = new CallbackWrapper(() => {
         assert_true(sensorObject.hasReading);
-        assert_true(verifyReading(sensorObject));
+        const expected = expectedBuffer.next().value;
+        assert_true(verificationFunction(expected, sensorObject));
         timestamp = sensorObject.timestamp;
         sensorObject.stop();
 
@@ -486,7 +533,12 @@ function runGenericSensorTests(sensorType,
 
       let wrapper2 = new CallbackWrapper(() => {
         assert_true(sensorObject.hasReading);
-        assert_true(verifyReading(sensorObject));
+        // |readingData| may have a single reading/expectation value, and this
+        // is the second reading we are getting. For that case, make sure we
+        // also wrap around as if we had the same RingBuffer used in
+        // sensor-helpers.js.
+        const expected = expectedBuffer.next().value;
+        assert_true(verificationFunction(expected, sensorObject));
         // Make sure that 'timestamp' is already initialized.
         assert_greater_than(timestamp, 0);
         // Check that the reading is updated.
@@ -502,7 +554,7 @@ function runGenericSensorTests(sensorType,
   }, `${sensorType.name}: Test that fresh reading is fetched on start().`);
 
   sensor_test(async sensorProvider => {
-    if (!verifyRemappedReading) {
+    if (!expectedRemappedReadings) {
       // The sensorType does not represent a spatial sensor.
       return;
     }
@@ -514,18 +566,24 @@ function runGenericSensorTests(sensorType,
     sensor2.start();
 
     let mockSensor = await sensorProvider.getCreatedSensor(sensorType.name);
-    await mockSensor.setSensorReading(readingData);
+    await mockSensor.setSensorReading(readings);
     await new Promise((resolve, reject) => {
       let wrapper = new CallbackWrapper(() => {
-        assert_true(verifyReading(sensor1));
-        assert_true(verifyRemappedReading(sensor2));
+        const expected = new RingBuffer(expectedReadings).next().value;
+        const expectedRemapped =
+            new RingBuffer(expectedRemappedReadings).next().value;
+
+        assert_true(verificationFunction(expected, sensor1));
+        assert_true(verificationFunction(expectedRemapped, sensor2));
 
         sensor1.stop();
-        assert_true(verifyReading(sensor1, true /*should be null*/));
-        assert_true(verifyRemappedReading(sensor2));
+        assert_true(verificationFunction(expected, sensor1,
+                                         /*isNull=*/true));
+        assert_true(verificationFunction(expectedRemapped, sensor2));
 
         sensor2.stop();
-        assert_true(verifyRemappedReading(sensor2, true /*should be null*/));
+        assert_true(verificationFunction(expectedRemapped, sensor2,
+                                         /*isNull=*/true));
 
         resolve(mockSensor);
       }, reject);

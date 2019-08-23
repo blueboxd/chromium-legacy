@@ -91,6 +91,9 @@ struct ArcAppIcon::ReadResult {
 ////////////////////////////////////////////////////////////////////////////////
 // ArcAppIcon::Source
 
+// Initializes the ImageSkia with placeholder bitmaps, decoded from
+// compiled-into-the-binary resources such as IDR_APP_DEFAULT_ICON, and
+// schedules the asynchronous loading of the app's actual bitmaps.
 class ArcAppIcon::Source : public gfx::ImageSkiaSource {
  public:
   Source(const base::WeakPtr<ArcAppIcon>& host, int resource_size_in_dip);
@@ -256,9 +259,17 @@ ArcAppIcon::ArcAppIcon(content::BrowserContext* context,
                                          resource_size_in_dip);
   gfx::Size resource_size(resource_size_in_dip, resource_size_in_dip);
   image_skia_ = gfx::ImageSkia(std::move(source), resource_size);
+
+  const std::vector<ui::ScaleFactor>& scale_factors =
+      ui::GetSupportedScaleFactors();
+  incomplete_scale_factors_.insert(scale_factors.begin(), scale_factors.end());
 }
 
 ArcAppIcon::~ArcAppIcon() {
+}
+
+bool ArcAppIcon::EverySupportedScaleFactorIsLoaded() const {
+  return incomplete_scale_factors_.empty();
 }
 
 void ArcAppIcon::LoadForScaleFactor(ui::ScaleFactor scale_factor) {
@@ -381,6 +392,8 @@ void ArcAppIcon::Update(ui::ScaleFactor scale_factor, const SkBitmap& bitmap) {
   image_skia_.RemoveRepresentation(image_rep.scale());
   image_skia_.AddRepresentation(image_rep);
   image_skia_.RemoveUnsupportedRepresentationsForScale(image_rep.scale());
+
+  incomplete_scale_factors_.erase(scale_factor);
 
   observer_->OnIconUpdated(this);
 }

@@ -1155,4 +1155,27 @@ TEST_P(PaintLayerScrollableAreaTest, RtlScrollOriginSnapping) {
   EXPECT_EQ(scrollable_area->MaximumScrollOffsetInt(), IntSize(0, 100));
 }
 
+TEST_P(PaintLayerScrollableAreaTest, ShowCustomResizerInTextarea) {
+  GetPage().GetSettings().SetTextAreasAreResizable(true);
+  SetBodyInnerHTML(R"HTML(
+    <!doctype HTML>
+    <style>
+      textarea {
+        width: 200px;
+        height: 100px;
+      }
+      ::-webkit-resizer {
+        background-color: red;
+      }
+    </style>
+    <textarea id="target"></textarea>
+  )HTML");
+
+  const auto* paint_layer =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"))->Layer();
+  ASSERT_TRUE(paint_layer);
+
+  EXPECT_NE(paint_layer->GetScrollableArea()->Resizer(), nullptr);
+}
+
 }  // namespace blink

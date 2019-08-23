@@ -75,6 +75,14 @@ if (is_chromeos) {
       "../chromeos/network:cr_onc_types",
     ]
   }
+
+  js_library("cr_policy_network_indicator_mojo") {
+    deps = [
+      ":cr_policy_indicator_behavior",
+      ":cr_policy_network_behavior_mojo",
+      ":cr_tooltip_icon",
+    ]
+  }
 }
 
 js_library("cr_tooltip_icon") {

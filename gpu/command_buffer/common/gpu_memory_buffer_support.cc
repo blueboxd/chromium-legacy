@@ -44,8 +44,6 @@ unsigned InternalFormatForGpuMemoryBufferFormat(gfx::BufferFormat format) {
       return GL_RGB_YCRCB_420_CHROMIUM;
     case gfx::BufferFormat::YUV_420_BIPLANAR:
       return GL_RGB_YCBCR_420V_CHROMIUM;
-    case gfx::BufferFormat::UYVY_422:
-      return GL_RGB_YCBCR_422_CHROMIUM;
     case gfx::BufferFormat::P010:
       return GL_RGB_YCBCR_P010_CHROMIUM;
     default:
@@ -81,8 +79,6 @@ bool IsImageSizeValidForGpuMemoryBufferFormat(const gfx::Size& size,
     case gfx::BufferFormat::P010:
       // U and V planes are subsampled by a factor of 2.
       return size.width() % 2 == 0 && size.height() % 2 == 0;
-    case gfx::BufferFormat::UYVY_422:
-      return size.width() % 2 == 0;
   }
 
   NOTREACHED();

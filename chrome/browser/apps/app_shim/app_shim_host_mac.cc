@@ -63,7 +63,7 @@ void AppShimHost::Close() {
 }
 
 apps::AppShimHandler* AppShimHost::GetAppShimHandler() const {
-  return apps::AppShimHandler::GetForAppMode(app_id_);
+  return apps::AppShimHandler::Get();
 }
 
 void AppShimHost::LaunchShimInternal(bool recreate_shims) {

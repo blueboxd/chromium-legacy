@@ -64,7 +64,7 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
   bool HasIntrinsicSizingInfo() const override;
 
   bool CanThrottleRendering() const override;
-  void RenderThrottlingStatusChanged() override;
+  void VisibilityForThrottlingChanged() override;
 
   // Compute the interest rect of this frame in its unscrolled space. This may
   // be used by the OOPIF's compositor to limit the amount of rastered tiles,

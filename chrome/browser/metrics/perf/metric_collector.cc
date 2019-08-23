@@ -129,18 +129,6 @@ void MetricCollector::ScheduleSuspendDoneCollection(
                               GetWeakPtr(), sleep_duration, collection_delay));
 }
 
-void MetricCollector::OnJankStarted() {
-  // Fill out a SampledProfile protobuf that will contain the collected data.
-  auto sampled_profile = std::make_unique<SampledProfile>();
-  sampled_profile->set_trigger_event(SampledProfile::JANKY_TASK);
-
-  CollectIfNecessary(std::move(sampled_profile));
-}
-
-void MetricCollector::OnJankStopped() {
-  StopCollection();
-}
-
 void MetricCollector::ScheduleSessionRestoreCollection(int num_tabs_restored) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Collect a profile only 1/|sampling_factor| of the time, to avoid

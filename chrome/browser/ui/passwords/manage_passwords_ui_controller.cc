@@ -66,7 +66,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyFormVector(
     const std::vector<std::unique_ptr<autofill::PasswordForm>>& forms) {
   std::vector<std::unique_ptr<autofill::PasswordForm>> result(forms.size());
   for (size_t i = 0; i < forms.size(); ++i)
-    result[i].reset(new autofill::PasswordForm(*forms[i]));
+    result[i] = std::make_unique<autofill::PasswordForm>(*forms[i]);
   return result;
 }
 

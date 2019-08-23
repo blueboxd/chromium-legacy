@@ -175,11 +175,11 @@ void AppShimHostManagerBrowserTest::RunAndExitGracefully() {
 
 void AppShimHostManagerBrowserTest::SetUpOnMainThread() {
   // Can't do this in the constructor, it needs a BrowserProcess.
-  apps::AppShimHandler::RegisterHandler(kTestAppMode, this);
+  apps::AppShimHandler::Set(this);
 }
 
 void AppShimHostManagerBrowserTest::TearDownOnMainThread() {
-  apps::AppShimHandler::RemoveHandler(kTestAppMode);
+  apps::AppShimHandler::Set(nullptr);
 }
 
 void AppShimHostManagerBrowserTest::OnShimProcessConnected(

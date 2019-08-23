@@ -13,12 +13,18 @@
 if (!window.testRunner)
     debug('This test cannot be run without the TestRunner');
 
-const kDefaultReading = [3.1415];
+const kReadings = {
+    readings: [
+        [3.1415]
+    ],
+    expectedReadings: [
+        [3.1415]
+    ]
+};
 
 runGenericSensorTests(
     AmbientLightSensor,
-    kDefaultReading,
-    verifyAlsSensorReading.bind(null, kDefaultReading),
-    null,
+    kReadings,
+    verifyAlsSensorReading,
     ['ambient-light-sensor']);
 </script>

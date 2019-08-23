@@ -205,7 +205,7 @@ void MockPooledTaskRunnerDelegate::PostTaskWithSequenceNow(
   const bool sequence_should_be_queued = transaction.WillPushTask();
   RegisteredTaskSource task_source;
   if (sequence_should_be_queued) {
-    task_source = task_tracker_->WillQueueTaskSource(sequence);
+    task_source = task_tracker_->RegisterTaskSource(std::move(sequence));
     // We shouldn't push |task| if we're not allowed to queue |task_source|.
     if (!task_source)
       return;
@@ -225,7 +225,7 @@ bool MockPooledTaskRunnerDelegate::EnqueueJobTaskSource(
   DCHECK(task_source);
 
   auto registered_task_source =
-      task_tracker_->WillQueueTaskSource(std::move(task_source));
+      task_tracker_->RegisterTaskSource(std::move(task_source));
   if (!registered_task_source)
     return false;
   auto transaction = registered_task_source->BeginTransaction();
@@ -248,8 +248,7 @@ void MockPooledTaskRunnerDelegate::UpdatePriority(
     TaskPriority priority) {
   auto transaction = task_source->BeginTransaction();
   transaction.UpdatePriority(priority);
-  thread_group_->UpdateSortKey(
-      {std::move(task_source), std::move(transaction)});
+  thread_group_->UpdateSortKey(std::move(transaction));
 }
 
 void MockPooledTaskRunnerDelegate::SetThreadGroup(ThreadGroup* thread_group) {
@@ -297,11 +296,11 @@ RegisteredTaskSource QueueAndRunTaskSource(
     TaskTracker* task_tracker,
     scoped_refptr<TaskSource> task_source) {
   auto registered_task_source =
-      task_tracker->WillQueueTaskSource(std::move(task_source));
+      task_tracker->RegisterTaskSource(std::move(task_source));
   EXPECT_TRUE(registered_task_source);
-  auto run_intent = registered_task_source->WillRunTask();
-  return task_tracker->RunAndPopNextTask(
-      {std::move(registered_task_source), std::move(run_intent)});
+  EXPECT_NE(registered_task_source.WillRunTask(),
+            TaskSource::RunStatus::kDisallowed);
+  return task_tracker->RunAndPopNextTask(std::move(registered_task_source));
 }
 
 void ShutdownTaskTracker(TaskTracker* task_tracker) {

@@ -23,6 +23,8 @@ class SimpleURLLoader;
 
 namespace safe_browsing {
 
+class MultipartUploadRequestFactory;
+
 // This class encapsulates the upload of a file with metadata using the
 // multipart protocol. This class is neither movable nor copyable.
 class MultipartUploadRequest {
@@ -49,6 +51,12 @@ class MultipartUploadRequest {
   // Start the upload. This must be called on the UI thread. When complete, this
   // will call |callback_| on the UI thread.
   virtual void Start();
+
+  // Makes the passed |factory| the factory used to instantiate a
+  // MultipartUploadRequest. Useful for tests.
+  static void RegisterFactoryForTests(MultipartUploadRequestFactory* factory) {
+    factory_ = factory;
+  }
 
   static std::unique_ptr<MultipartUploadRequest> Create(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -80,6 +88,8 @@ class MultipartUploadRequest {
   // Called to send a single request. Is overridden in tests.
   virtual void SendRequest();
 
+  static MultipartUploadRequestFactory* factory_;
+
   GURL base_url_;
   std::string metadata_;
   std::string data_;
@@ -94,6 +104,18 @@ class MultipartUploadRequest {
   net::NetworkTrafficAnnotationTag traffic_annotation_;
 
   base::WeakPtrFactory<MultipartUploadRequest> weak_factory_{this};
+};
+
+class MultipartUploadRequestFactory {
+ public:
+  virtual ~MultipartUploadRequestFactory() = default;
+  virtual std::unique_ptr<MultipartUploadRequest> Create(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      const GURL& base_url,
+      const std::string& metadata,
+      const std::string& data,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation,
+      MultipartUploadRequest::Callback callback) = 0;
 };
 
 }  // namespace safe_browsing

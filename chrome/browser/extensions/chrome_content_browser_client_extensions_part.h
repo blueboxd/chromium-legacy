@@ -68,10 +68,15 @@ class ChromeContentBrowserClientExtensionsPart
       content::SiteInstance* site_instance,
       const GURL& current_url,
       const GURL& new_url);
-  static bool AllowServiceWorker(const GURL& scope,
-                                 const GURL& first_party_url,
-                                 const GURL& script_url,
-                                 content::ResourceContext* context);
+  // TODO(crbug.com/824858): Remove the OnIO method.
+  static bool AllowServiceWorkerOnIO(const GURL& scope,
+                                     const GURL& first_party_url,
+                                     const GURL& script_url,
+                                     content::ResourceContext* context);
+  static bool AllowServiceWorkerOnUI(const GURL& scope,
+                                     const GURL& first_party_url,
+                                     const GURL& script_url,
+                                     content::BrowserContext* context);
   static void OverrideNavigationParams(
       content::SiteInstance* site_instance,
       ui::PageTransition* transition,

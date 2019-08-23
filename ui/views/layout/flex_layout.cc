@@ -247,7 +247,7 @@ FlexLayout::PropertyHandler::PropertyHandler(FlexLayout* layout)
 
 void FlexLayout::PropertyHandler::AfterPropertyChange(const void* key,
                                                       int64_t old_value) {
-  layout_->InvalidateLayout();
+  layout_->InvalidateHost(true);
 }
 
 // FlexLayout
@@ -259,7 +259,7 @@ FlexLayout::~FlexLayout() = default;
 FlexLayout& FlexLayout::SetOrientation(LayoutOrientation orientation) {
   if (orientation != orientation_) {
     orientation_ = orientation;
-    InvalidateLayout();
+    InvalidateHost(true);
   }
   return *this;
 }
@@ -268,7 +268,7 @@ FlexLayout& FlexLayout::SetIncludeHostInsetsInLayout(
     bool include_host_insets_in_layout) {
   if (include_host_insets_in_layout != include_host_insets_in_layout_) {
     include_host_insets_in_layout_ = include_host_insets_in_layout;
-    InvalidateLayout();
+    InvalidateHost(true);
   }
   return *this;
 }
@@ -276,7 +276,7 @@ FlexLayout& FlexLayout::SetIncludeHostInsetsInLayout(
 FlexLayout& FlexLayout::SetCollapseMargins(bool collapse_margins) {
   if (collapse_margins != collapse_margins_) {
     collapse_margins_ = collapse_margins;
-    InvalidateLayout();
+    InvalidateHost(true);
   }
   return *this;
 }
@@ -287,7 +287,7 @@ FlexLayout& FlexLayout::SetMainAxisAlignment(
       << "Main axis stretch/justify is not yet supported.";
   if (main_axis_alignment_ != main_axis_alignment) {
     main_axis_alignment_ = main_axis_alignment;
-    InvalidateLayout();
+    InvalidateHost(true);
   }
   return *this;
 }
@@ -296,7 +296,7 @@ FlexLayout& FlexLayout::SetCrossAxisAlignment(
     LayoutAlignment cross_axis_alignment) {
   if (cross_axis_alignment_ != cross_axis_alignment) {
     cross_axis_alignment_ = cross_axis_alignment;
-    InvalidateLayout();
+    InvalidateHost(true);
   }
   return *this;
 }
@@ -304,7 +304,7 @@ FlexLayout& FlexLayout::SetCrossAxisAlignment(
 FlexLayout& FlexLayout::SetInteriorMargin(const gfx::Insets& interior_margin) {
   if (interior_margin_ != interior_margin) {
     interior_margin_ = interior_margin;
-    InvalidateLayout();
+    InvalidateHost(true);
   }
   return *this;
 }
@@ -313,7 +313,7 @@ FlexLayout& FlexLayout::SetIgnoreDefaultMainAxisMargins(
     bool ignore_default_main_axis_margins) {
   if (ignore_default_main_axis_margins_ != ignore_default_main_axis_margins) {
     ignore_default_main_axis_margins_ = ignore_default_main_axis_margins;
-    InvalidateLayout();
+    InvalidateHost(true);
   }
   return *this;
 }
@@ -321,7 +321,7 @@ FlexLayout& FlexLayout::SetIgnoreDefaultMainAxisMargins(
 FlexLayout& FlexLayout::SetMinimumCrossAxisSize(int size) {
   if (minimum_cross_axis_size_ != size) {
     minimum_cross_axis_size_ = size;
-    InvalidateLayout();
+    InvalidateHost(true);
   }
   return *this;
 }

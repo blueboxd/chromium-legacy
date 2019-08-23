@@ -146,7 +146,7 @@ Polymer({
    * @private
    */
   getNetworkDisplayName_: function(networkState) {
-    return OncMojo.getNetworkDisplayName(networkState);
+    return OncMojo.getNetworkStateDisplayName(networkState);
   },
 
   /**

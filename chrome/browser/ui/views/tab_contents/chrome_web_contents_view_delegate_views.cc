@@ -37,7 +37,7 @@ content::WebDragDestDelegate*
     ChromeWebContentsViewDelegateViews::GetDragDestDelegate() {
   // We install a chrome specific handler to intercept bookmark drags for the
   // bookmark manager/extension API.
-  bookmark_handler_.reset(new WebDragBookmarkHandlerAura);
+  bookmark_handler_ = std::make_unique<WebDragBookmarkHandlerAura>();
   return bookmark_handler_.get();
 }
 

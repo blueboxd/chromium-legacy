@@ -68,6 +68,12 @@ size_t MaxHostsForOptimizationGuideServiceHintsFetch() {
       "max_hosts_for_optimization_guide_service_hints_fetch", 30);
 }
 
+size_t MaxHostsForRecordingSuccessfullyCovered() {
+  return GetFieldTrialParamByFeatureAsInt(
+      features::kOptimizationHintsFetching,
+      "max_hosts_for_recording_successfully_covered", 200);
+}
+
 base::TimeDelta StoredFetchedHintsFreshnessDuration() {
   return base::TimeDelta::FromDays(GetFieldTrialParamByFeatureAsInt(
       features::kOptimizationHintsFetching,

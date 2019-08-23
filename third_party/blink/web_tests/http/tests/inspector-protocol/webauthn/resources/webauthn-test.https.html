@@ -2,6 +2,14 @@
 <html lang="en">
 <head>
   <script>
+function base64urlToBase64(base64url) {
+  let base64 = base64url.replace(/-/g, "+").replace(/_/g, "/");
+  // Add padding to make the length of the base64 string divisible by 4.
+  if (base64.length % 4 != 0)
+    base64 += "=".repeat(4 - base64.length % 4);
+  return base64;
+}
+
 function base64ToArrayBuffer(base64) {
   return Uint8Array.from(atob(base64), c => c.charCodeAt(0)).buffer;
 }

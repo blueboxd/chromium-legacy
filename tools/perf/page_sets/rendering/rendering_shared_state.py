@@ -7,6 +7,10 @@ from page_sets.rendering import story_tags
 from telemetry.page import shared_page_state
 
 
+class NoSwiftShaderAssertionFailure(AssertionError):
+  pass
+
+
 class RenderingSharedState(shared_page_state.SharedPageState):
   def CanRunOnBrowser(self, browser_info, page):
     if page.TAGS and story_tags.REQUIRED_WEBGL in page.TAGS:
@@ -49,6 +53,7 @@ class RenderingSharedState(shared_page_state.SharedPageState):
 
   def WillRunStory(self, page):
     super(RenderingSharedState, self).WillRunStory(page)
+    self._EnsureNotSwiftShader()
     if page.TAGS and story_tags.KEY_IDLE_POWER in page.TAGS:
       self._EnsureScreenOn()
 
@@ -64,6 +69,16 @@ class RenderingSharedState(shared_page_state.SharedPageState):
 
   def _EnsureScreenOn(self):
     self.platform.android_action_runner.TurnScreenOn()
+
+  def _EnsureNotSwiftShader(self):
+    system_info = self.browser.GetSystemInfo()
+    if system_info:
+      for device in system_info.gpu.devices:
+        if device.device_string == u'Google SwiftShader':
+          raise NoSwiftShaderAssertionFailure(
+                'SwiftShader should not be used for rendering benchmark, since '
+                'the metrics produced from that do not reflect the real '
+                'performance for a lot of metrics.')
 
 
 class DesktopRenderingSharedState(RenderingSharedState):

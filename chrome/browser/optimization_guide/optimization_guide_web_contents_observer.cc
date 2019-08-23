@@ -9,6 +9,8 @@
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/optimization_guide/optimization_guide_navigation_data.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/optimization_guide/hints_fetcher.h"
+#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -53,6 +55,23 @@ void FlushMetricsForNavigation(
   builder.Record(ukm::UkmRecorder::Get());
 }
 
+// Records if the host for the current navigation was successfully
+// covered by a HintsFetch. HintsFetching must be enabled and only HTTPS
+// navigations are logged.
+void MaybeRecordHintsFetcherCoverage(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->GetURL().SchemeIs(url::kHttpsScheme))
+    return;
+  if (!optimization_guide::features::IsHintsFetchingEnabled())
+    return;
+
+  optimization_guide::HintsFetcher::RecordHintsFetcherCoverage(
+      Profile::FromBrowserContext(
+          navigation_handle->GetWebContents()->GetBrowserContext())
+          ->GetPrefs(),
+      navigation_handle->GetURL().GetOrigin().host());
+}
+
 }  // namespace
 
 OptimizationGuideWebContentsObserver::OptimizationGuideWebContentsObserver(
@@ -91,9 +110,12 @@ OptimizationGuideNavigationData* OptimizationGuideWebContentsObserver::
 void OptimizationGuideWebContentsObserver::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
   if (!navigation_handle->IsInMainFrame())
     return;
+
+  // Record the HintsFetcher coverage for the navigation, regardless if the
+  // keyed service is active or not.
+  MaybeRecordHintsFetcherCoverage(navigation_handle);
 
   if (!optimization_guide_keyed_service_)
     return;
@@ -108,6 +130,10 @@ void OptimizationGuideWebContentsObserver::DidRedirectNavigation(
 
   if (!navigation_handle->IsInMainFrame())
     return;
+
+  // Record the HintsFetcher coverage for the navigation, regardless if the
+  // keyed service is active or not.
+  MaybeRecordHintsFetcherCoverage(navigation_handle);
 
   if (!optimization_guide_keyed_service_)
     return;

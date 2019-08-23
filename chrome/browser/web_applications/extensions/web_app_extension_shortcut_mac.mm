@@ -75,8 +75,6 @@ void RevealAppShimInFinderForApp(Profile* profile,
 
 void RebuildAppAndLaunch(std::unique_ptr<web_app::ShortcutInfo> shortcut_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (shortcut_info->extension_id == app_mode::kAppListModeId)
-    return;
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   Profile* profile =

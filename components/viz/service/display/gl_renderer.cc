@@ -782,6 +782,12 @@ gfx::Rect GLRenderer::GetBackdropBoundingBoxForRenderPassQuad(
   *unclipped_rect = backdrop_rect;
   backdrop_rect.Intersect(MoveFromDrawToWindowSpace(
       current_frame()->current_render_pass->output_rect));
+  if (ShouldApplyBackdropFilters(params->backdrop_filters)) {
+    float max_pixel_movement = params->backdrop_filters->MaximumPixelMovement();
+    gfx::Rect scissor_rect(current_window_space_viewport_);
+    scissor_rect.Inset(-max_pixel_movement, -max_pixel_movement);
+    backdrop_rect.Intersect(scissor_rect);
+  }
 
   // The frame buffer flip is already included in the captured backdrop image,
   // and it is included in |contents_device_transform| (through

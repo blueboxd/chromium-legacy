@@ -49,6 +49,10 @@ class ASH_EXPORT LockScreenMediaControlsView
   // shown and the reason why.
   static const char kMediaControlsShownHistogramName[];
 
+  // The name of the histogram that records when a user interacts with the
+  // media controls.
+  static const char kMediaControlsUserActionHistogramName[];
+
   using MediaControlsEnabled = base::RepeatingCallback<bool()>;
 
   // The reason why the media controls were hidden. This is recorded in

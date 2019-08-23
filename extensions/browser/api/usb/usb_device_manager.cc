@@ -33,6 +33,7 @@ namespace {
 // regarding this device.
 bool WillDispatchDeviceEvent(const device::mojom::UsbDeviceInfo& device_info,
                              content::BrowserContext* browser_context,
+                             Feature::Context target_context,
                              const Extension* extension,
                              Event* event,
                              const base::DictionaryValue* listener_filter) {

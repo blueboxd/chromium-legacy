@@ -32,8 +32,8 @@ class WebUISourcesTest : public testing::Test {
 
  private:
   void SetUp() override {
-    profile_.reset(new TestingProfile());
-    theme_source_.reset(new ThemeSource(profile_.get()));
+    profile_ = std::make_unique<TestingProfile>();
+    theme_source_ = std::make_unique<ThemeSource>(profile_.get());
     callback_ = base::Bind(&WebUISourcesTest::SendResponse,
                            base::Unretained(this));
   }

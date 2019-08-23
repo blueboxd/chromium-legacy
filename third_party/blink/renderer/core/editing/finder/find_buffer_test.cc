@@ -438,7 +438,7 @@ TEST_F(FindBufferTest, WhiteSpaceCollapsingPre) {
             buffer.FindMatches("a\n b", kCaseInsensitive)->CountForTesting());
   EXPECT_EQ(0u,
             buffer.FindMatches("a \nb", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(0u,
+  EXPECT_EQ(1u,
             buffer.FindMatches("a \n b", kCaseInsensitive)->CountForTesting());
 }
 
@@ -459,7 +459,7 @@ TEST_F(FindBufferTest, WhiteSpaceCollapsingPreLine) {
             buffer.FindMatches("a\n b", kCaseInsensitive)->CountForTesting());
   EXPECT_EQ(0u,
             buffer.FindMatches("a \nb", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(0u,
+  EXPECT_EQ(1u,
             buffer.FindMatches("a\nb", kCaseInsensitive)->CountForTesting());
 }
 

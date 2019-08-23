@@ -36,7 +36,7 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowMacTest, MenuCommandsAfterDestroy) {
       base::scoped_policy::RETAIN);
   base::scoped_nsobject<NSMenuItem> bookmark_menu_item(
       [[[[NSApp mainMenu] itemWithTag:IDC_BOOKMARKS_MENU] submenu]
-          itemWithTag:IDC_BOOKMARK_PAGE],
+          itemWithTag:IDC_BOOKMARK_THIS_TAB],
       base::scoped_policy::RETAIN);
 
   // The mainMenu item doesn't have an action associated while the browser

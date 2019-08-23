@@ -63,17 +63,8 @@ AudioScheduledSourceHandler::UpdateSchedulingInfo(size_t quantum_frame_size,
   double start_frame_offset = 0;
 
   DCHECK(output_bus);
-  if (!output_bus) {
-    return std::make_tuple(quantum_frame_offset, non_silent_frames_to_process,
-                           start_frame_offset);
-  }
-
   DCHECK_EQ(quantum_frame_size,
             static_cast<size_t>(audio_utilities::kRenderQuantumFrames));
-  if (quantum_frame_size != audio_utilities::kRenderQuantumFrames) {
-    return std::make_tuple(quantum_frame_offset, non_silent_frames_to_process,
-                           start_frame_offset);
-  }
 
   double sample_rate = Context()->sampleRate();
 

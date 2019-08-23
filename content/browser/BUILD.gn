@@ -66,6 +66,7 @@ jumbo_source_set("browser") {
     "//components/rappor",
     "//components/services/filesystem:lib",
     "//components/services/leveldb:lib",
+    "//components/services/quarantine:quarantine",
     "//components/tracing",
     "//components/tracing:startup_tracing",
     "//components/tracing/common:interfaces",

@@ -1121,7 +1121,7 @@ class V1App : public TestBrowserWindow {
         kCrxAppPrefix + app_name, true /* trusted_source */, gfx::Rect(),
         profile, true);
     params.window = this;
-    browser_.reset(new Browser(params));
+    browser_ = std::make_unique<Browser>(params);
     chrome::AddTabAt(browser_.get(), GURL(), 0, true);
   }
 

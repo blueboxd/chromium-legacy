@@ -12,7 +12,9 @@
 #include "base/json/json_writer.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/message_port_provider.h"
 #include "content/public/browser/navigation_entry.h"
@@ -40,6 +42,13 @@ namespace {
 // value much lower than logging::LOG_VERBOSE here.
 const logging::LogSeverity kLogSeverityNone =
     std::numeric_limits<logging::LogSeverity>::min();
+
+// Used for attaching popup-related metadata to a WebContents.
+constexpr char kPopupCreationInfo[] = "popup-creation-info";
+class PopupFrameCreationInfoUserData : public base::SupportsUserData::Data {
+ public:
+  fuchsia::web::PopupFrameCreationInfo info;
+};
 
 // Layout manager that allows only one child window and stretches it to fill the
 // parent.
@@ -286,9 +295,6 @@ void FrameImpl::ExecuteJavaScriptInternal(std::vector<std::string> origins,
   }
 }
 
-FrameImpl::PendingPopup::PendingPopup() = default;
-FrameImpl::PendingPopup::~PendingPopup() = default;
-
 bool FrameImpl::ShouldCreateWebContents(
     content::WebContents* web_contents,
     content::RenderFrameHost* opener,
@@ -331,7 +337,6 @@ void FrameImpl::AddNewContents(
     bool user_gesture,
     bool* was_blocked) {
   DCHECK_EQ(source, web_contents_.get());
-  DCHECK(!last_popup_url_.is_empty());
 
   // TODO(crbug.com/995395): Add window disposition to the FIDL interface.
   switch (disposition) {
@@ -339,13 +344,11 @@ void FrameImpl::AddNewContents(
     case WindowOpenDisposition::NEW_BACKGROUND_TAB:
     case WindowOpenDisposition::NEW_POPUP:
     case WindowOpenDisposition::NEW_WINDOW: {
-      pending_popups_.emplace_back();
-      PendingPopup& popup = pending_popups_.back();
-      popup.creation_info.set_initial_url(last_popup_url_.spec());
-      popup.creation_info.set_initiated_by_user(user_gesture);
-      popup.web_contents = std::move(new_contents);
-      last_popup_url_ = {};
-
+      PopupFrameCreationInfoUserData* popup_creation_info =
+          reinterpret_cast<PopupFrameCreationInfoUserData*>(
+              new_contents->GetUserData(kPopupCreationInfo));
+      popup_creation_info->info.set_initiated_by_user(user_gesture);
+      pending_popups_.emplace_back(std::move(new_contents));
       MaybeSendPopup();
       return;
     }
@@ -370,7 +373,9 @@ void FrameImpl::WebContentsCreated(content::WebContents* source_contents,
                                    const std::string& frame_name,
                                    const GURL& target_url,
                                    content::WebContents* new_contents) {
-  last_popup_url_ = target_url;
+  auto creation_info = std::make_unique<PopupFrameCreationInfoUserData>();
+  creation_info->info.set_initial_url(target_url.spec());
+  new_contents->SetUserData(kPopupCreationInfo, std::move(creation_info));
 }
 
 void FrameImpl::MaybeSendPopup() {
@@ -380,14 +385,24 @@ void FrameImpl::MaybeSendPopup() {
   if (popup_ack_outstanding_ || pending_popups_.empty())
     return;
 
-  PendingPopup& popup = pending_popups_.front();
+  std::unique_ptr<content::WebContents> popup =
+      std::move(pending_popups_.front());
+  pending_popups_.pop_front();
+
+  fuchsia::web::PopupFrameCreationInfo creation_info =
+      std::move(reinterpret_cast<PopupFrameCreationInfoUserData*>(
+                    popup->GetUserData(kPopupCreationInfo))
+                    ->info);
+
+  // The PopupFrameCreationInfo won't be needed anymore, so clear it out.
+  popup->SetUserData(kPopupCreationInfo, nullptr);
+
   popup_listener_->OnPopupFrameCreated(
-      context_->CreateFrameForPopupWebContents(std::move(popup.web_contents)),
-      std::move(popup.creation_info), [this] {
+      context_->CreateFrameForPopupWebContents(std::move(popup)),
+      std::move(creation_info), [this] {
         popup_ack_outstanding_ = false;
         MaybeSendPopup();
       });
-  pending_popups_.pop_front();
   popup_ack_outstanding_ = true;
 }
 

@@ -101,6 +101,7 @@ void ShowNativeFileSystemRestrictedDirectoryDialogOnUIThread(
     int frame_id,
     const url::Origin& origin,
     const base::FilePath& path,
+    bool is_directory,
     base::OnceCallback<
         void(ChromeNativeFileSystemPermissionContext::SensitiveDirectoryResult)>
         callback) {
@@ -124,7 +125,7 @@ void ShowNativeFileSystemRestrictedDirectoryDialogOnUIThread(
   }
 
   ShowNativeFileSystemRestrictedDirectoryDialog(
-      origin, path, std::move(callback), web_contents);
+      origin, path, is_directory, std::move(callback), web_contents);
 }
 
 // Sentinel used to indicate that no PathService key is specified for a path in
@@ -513,6 +514,7 @@ void ChromeNativeFileSystemPermissionContext::ConfirmDirectoryReadAccess(
 void ChromeNativeFileSystemPermissionContext::ConfirmSensitiveDirectoryAccess(
     const url::Origin& origin,
     const std::vector<base::FilePath>& paths,
+    bool is_directory,
     int process_id,
     int frame_id,
     base::OnceCallback<void(SensitiveDirectoryResult)> callback) {
@@ -530,7 +532,7 @@ void ChromeNativeFileSystemPermissionContext::ConfirmSensitiveDirectoryAccess(
       base::BindOnce(&ShouldBlockAccessToPath, paths[0]),
       base::BindOnce(&ChromeNativeFileSystemPermissionContext::
                          DidConfirmSensitiveDirectoryAccess,
-                     this, origin, paths, process_id, frame_id,
+                     this, origin, paths, is_directory, process_id, frame_id,
                      std::move(callback)));
 }
 
@@ -675,6 +677,7 @@ void ChromeNativeFileSystemPermissionContext::
     DidConfirmSensitiveDirectoryAccess(
         const url::Origin& origin,
         const std::vector<base::FilePath>& paths,
+        bool is_directory,
         int process_id,
         int frame_id,
         base::OnceCallback<void(SensitiveDirectoryResult)> callback,
@@ -691,6 +694,6 @@ void ChromeNativeFileSystemPermissionContext::
   base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&ShowNativeFileSystemRestrictedDirectoryDialogOnUIThread,
-                     process_id, frame_id, origin, paths[0],
+                     process_id, frame_id, origin, paths[0], is_directory,
                      std::move(result_callback)));
 }

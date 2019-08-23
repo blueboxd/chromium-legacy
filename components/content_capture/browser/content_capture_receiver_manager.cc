@@ -63,7 +63,7 @@ void ContentCaptureReceiverManager::BindContentCaptureReceiver(
 
 ContentCaptureReceiver*
 ContentCaptureReceiverManager::ContentCaptureReceiverForFrame(
-    content::RenderFrameHost* render_frame_host) {
+    content::RenderFrameHost* render_frame_host) const {
   auto mapping = frame_map_.find(render_frame_host);
   return mapping == frame_map_.end() ? nullptr : mapping->second.get();
 }

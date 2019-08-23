@@ -26,21 +26,10 @@ using ShimTerminatedCallback = base::OnceClosure;
 // shim processes.
 class AppShimHandler {
  public:
-  // Register a handler for an |app_mode_id|.
-  static void RegisterHandler(const std::string& app_mode_id,
-                              AppShimHandler* handler);
+  static AppShimHandler* Get();
 
-  // Remove a handler for an |app_mode_id|.
-  static void RemoveHandler(const std::string& app_mode_id);
-
-  // Returns the handler registered for the given |app_mode_id|. If there is
-  // none registered, it returns the default handler or NULL if there is no
-  // default handler.
-  static AppShimHandler* GetForAppMode(const std::string& app_mode_id);
-
-  // Sets the default handler to return when there is no app-specific handler.
-  // Setting this to NULL removes the default handler.
-  static void SetDefaultHandler(AppShimHandler* handler);
+  // Set or un-set the default handler.
+  static void Set(AppShimHandler* handler);
 
   // Terminate Chrome if a browser window has never been opened, there are no
   // shell windows, and the app list is not visible.

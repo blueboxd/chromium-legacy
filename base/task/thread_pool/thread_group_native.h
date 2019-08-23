@@ -48,8 +48,7 @@ class BASE_EXPORT ThreadGroupNative : public ThreadGroup {
   class ScopedWorkersExecutor;
 
   // ThreadGroup:
-  void UpdateSortKey(
-      TransactionWithOwnedTaskSource transaction_with_task_source) override;
+  void UpdateSortKey(TaskSource::Transaction transaction) override;
   void PushTaskSourceAndWakeUpWorkers(
       TransactionWithRegisteredTaskSource transaction_with_task_source)
       override;
@@ -62,7 +61,7 @@ class BASE_EXPORT ThreadGroupNative : public ThreadGroup {
 
   // Returns the top TaskSource off the |priority_queue_|. Returns nullptr
   // if the |priority_queue_| is empty.
-  RunIntentWithRegisteredTaskSource GetWork();
+  RegisteredTaskSource GetWork();
 
   // Indicates whether the thread group has been started yet.
   bool started_ GUARDED_BY(lock_) = false;

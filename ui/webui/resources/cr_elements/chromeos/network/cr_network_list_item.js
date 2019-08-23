@@ -114,7 +114,7 @@ Polymer({
       }
       return name;
     }
-    return OncMojo.getNetworkDisplayName(
+    return OncMojo.getNetworkStateDisplayName(
         /** @type {!OncMojo.NetworkStateProperties} */ (this.item));
   },
 

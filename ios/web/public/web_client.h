@@ -152,10 +152,11 @@ class WebClient {
       bool overridable,
       const base::Callback<void(bool)>& callback);
 
-  // Returns the information to display when a navigation error occurs.
-  // |error| and |error_html| are always valid pointers. Embedder may set
-  // |error_html| to an HTML page containing the details of the error and maybe
-  // links to more info.
+  // Calls the given |callback| with the contents of an error page to display
+  // when a navigation error occurs. |error| is always a valid pointer. The
+  // string passed to |callback| will be nil if no error page should be
+  // displayed. Otherwise, this string will contain the details of the error
+  // and maybe links to more info.
   virtual void PrepareErrorPage(WebState* web_state,
                                 const GURL& url,
                                 NSError* error,

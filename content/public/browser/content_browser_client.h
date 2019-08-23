@@ -507,6 +507,9 @@ class CONTENT_EXPORT ContentBrowserClient {
       const service_manager::Identity& identity,
       base::CommandLine* command_line) {}
 
+  // Returns a client GUID used for virus scanning.
+  virtual std::string GetApplicationClientGUIDForQuarantineCheck();
+
   // Returns the locale used by the application.
   // This is called on the UI and IO threads.
   virtual std::string GetApplicationLocale();

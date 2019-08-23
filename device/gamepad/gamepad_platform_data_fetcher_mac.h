@@ -13,11 +13,18 @@
 
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
-#include "device/gamepad/gamepad_device_mac.h"
 #include "device/gamepad/public/cpp/gamepad.h"
+#include "device/gamepad/public/mojom/gamepad.mojom-forward.h"
+
+namespace base {
+class SequencedTaskRunner;
+}  // namespace base
 
 namespace device {
+
+class GamepadDeviceMac;
 
 class GamepadPlatformDataFetcherMac : public GamepadDataFetcher {
  public:
@@ -27,8 +34,8 @@ class GamepadPlatformDataFetcherMac : public GamepadDataFetcher {
   GamepadPlatformDataFetcherMac();
   ~GamepadPlatformDataFetcherMac() override;
 
+  // GamepadDataFetcher public implementation.
   GamepadSource source() override;
-
   void GetGamepadData(bool devices_changed_hint) override;
   void PauseHint(bool paused) override;
   void PlayEffect(int source_id,
@@ -42,10 +49,6 @@ class GamepadPlatformDataFetcherMac : public GamepadDataFetcher {
       scoped_refptr<base::SequencedTaskRunner>) override;
 
  private:
-  bool enabled_;
-  bool paused_;
-  base::ScopedCFTypeRef<IOHIDManagerRef> hid_manager_ref_;
-
   static GamepadPlatformDataFetcherMac* InstanceFromContext(void* context);
   static void DeviceAddCallback(void* context,
                                 IOReturn result,
@@ -60,6 +63,7 @@ class GamepadPlatformDataFetcherMac : public GamepadDataFetcher {
                                    void* sender,
                                    IOHIDValueRef ref);
 
+  // GamepadDataFetcher private implementation.
   void OnAddedToProvider() override;
 
   // Returns the index of the first empty slot, or Gamepads::kItemsLengthCap if
@@ -91,6 +95,10 @@ class GamepadPlatformDataFetcherMac : public GamepadDataFetcher {
 
   // Unregister from connection events and value change notifications.
   void UnregisterFromNotifications();
+
+  bool enabled_ = false;
+  bool paused_ = false;
+  base::ScopedCFTypeRef<IOHIDManagerRef> hid_manager_ref_;
 
   std::unique_ptr<GamepadDeviceMac> devices_[Gamepads::kItemsLengthCap];
 

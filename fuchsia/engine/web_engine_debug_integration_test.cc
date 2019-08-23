@@ -5,8 +5,10 @@
 #include <fuchsia/web/cpp/fidl.h>
 #include <lib/fidl/cpp/binding.h>
 #include <lib/fidl/cpp/binding_set.h>
+#include <lib/sys/cpp/component_context.h>
 
 #include "base/files/file_enumerator.h"
+#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/service_directory_client.h"
 #include "base/macros.h"
@@ -34,9 +36,9 @@ class WebEngineDebugIntegrationTest : public testing::Test {
   ~WebEngineDebugIntegrationTest() override = default;
 
   void SetUp() override {
-    web_context_provider_ =
-        base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
-            ->ConnectToService<fuchsia::web::ContextProvider>();
+    web_context_provider_ = base::fuchsia::ComponentContextForCurrentProcess()
+                                ->svc()
+                                ->Connect<fuchsia::web::ContextProvider>();
     web_context_provider_.set_error_handler(
         [](zx_status_t status) { ADD_FAILURE(); });
 

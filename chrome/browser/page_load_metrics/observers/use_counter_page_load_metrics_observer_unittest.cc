@@ -18,6 +18,7 @@ namespace {
 
 const char kTestUrl[] = "https://www.google.com";
 using WebFeature = blink::mojom::WebFeature;
+using CSSSampleId = blink::mojom::CSSSampleId;
 
 }  // namespace
 
@@ -172,23 +173,24 @@ TEST_F(UseCounterPageLoadMetricsObserverTest, RecordCSSProperties) {
   // CSSPropertyID::kFont (5), CSSPropertyID::kZoom (19)
   page_load_metrics::mojom::PageLoadFeatures page_load_features_0;
   page_load_metrics::mojom::PageLoadFeatures page_load_features_1;
-  page_load_features_0.css_properties = {5, 19};
-  page_load_features_1.css_properties = {19};
+  page_load_features_0.css_properties = {CSSSampleId::kFont,
+                                         CSSSampleId::kZoom};
+  page_load_features_1.css_properties = {CSSSampleId::kZoom};
   CssHistogramBasicTest(page_load_features_0, page_load_features_1);
 }
 
 TEST_F(UseCounterPageLoadMetricsObserverTest, RecordAnimatedCSSProperties) {
-  // CSSPropertyID::kFont (5), CSSPropertyID::kZoom (19)
   page_load_metrics::mojom::PageLoadFeatures page_load_features_0;
   page_load_metrics::mojom::PageLoadFeatures page_load_features_1;
-  page_load_features_0.css_properties = {5, 19};
-  page_load_features_1.css_properties = {19};
+  page_load_features_0.css_properties = {CSSSampleId::kFont,
+                                         CSSSampleId::kZoom};
+  page_load_features_1.css_properties = {CSSSampleId::kZoom};
   AnimatedCssHistogramBasicTest(page_load_features_0, page_load_features_1);
 }
 
 TEST_F(UseCounterPageLoadMetricsObserverTest, RecordCSSPropertiesInRange) {
   page_load_metrics::mojom::PageLoadFeatures page_load_features;
-  page_load_features.css_properties = {
-      2, static_cast<int>(blink::mojom::CSSSampleId::kMaxValue)};
+  page_load_features.css_properties = {CSSSampleId::kColor,
+                                       CSSSampleId::kMaxValue};
   CssHistogramBasicTest(page_load_features);
 }

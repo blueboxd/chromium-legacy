@@ -6710,10 +6710,19 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, PostViaOpenUrlMsg) {
 // https://crbug.com/860807.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, UncacheablePost) {
   GURL main_url(embedded_test_server()->GetURL(
-      "/form_that_posts_to_echoall_nocache.html"));
+      "initial-page.example.com", "/form_that_posts_to_echoall_nocache.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
   WebContents* web_contents = shell()->web_contents();
   EXPECT_EQ(0, web_contents->GetController().GetLastCommittedEntryIndex());
+
+  // Tweak the test page, so that it POSTs directly to the right cross-site URL
+  // (without going through the /cross-site-307/host.com handler, because it
+  // seems that such redirects do not preserve the Origin header).
+  GURL target_url(
+      embedded_test_server()->GetURL("another-site.com", "/echoall/nocache"));
+  ASSERT_TRUE(ExecJs(
+      web_contents,
+      JsReplace("document.getElementById('form').action = $1", target_url)));
 
   // Submit the form.
   TestNavigationObserver form_post_observer(web_contents, 1);
@@ -6722,7 +6731,6 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, UncacheablePost) {
   form_post_observer.Wait();
 
   // Verify that we arrived at the expected location.
-  GURL target_url(embedded_test_server()->GetURL("/echoall/nocache"));
   EXPECT_EQ(target_url, web_contents->GetLastCommittedURL());
   EXPECT_EQ(1, web_contents->GetController().GetLastCommittedEntryIndex());
 
@@ -6746,12 +6754,16 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, UncacheablePost) {
   EXPECT_EQ("text=value\n", body);
 
   // Extract the response nonce.
-  std::string old_response_nonce;
-  std::string response_nonce_extraction_script = R"(
-      domAutomationController.send(
-          document.getElementById('response-nonce').innerText); )";
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      web_contents, response_nonce_extraction_script, &old_response_nonce));
+  std::string old_response_nonce =
+      EvalJs(web_contents,
+             "document.getElementById('response-nonce').innerText")
+          .ExtractString();
+
+  // Verify that the Origin header correctly reflects the initial initiator.
+  EXPECT_THAT(EvalJs(web_contents,
+                     "document.getElementById('request-headers').innerText")
+                  .ExtractString(),
+              ::testing::HasSubstr("Origin: http://initial-page.example.com"));
 
   // Go back.
   {
@@ -6808,10 +6820,16 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, UncacheablePost) {
 
   // Extract the new response nonce and verify that it did change (e.g. that the
   // reload did load fresh content).
-  std::string new_response_nonce;
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      web_contents, response_nonce_extraction_script, &new_response_nonce));
-  EXPECT_NE(new_response_nonce, old_response_nonce);
+  EXPECT_NE(old_response_nonce,
+            EvalJs(web_contents,
+                   "document.getElementById('response-nonce').innerText"));
+
+  // Verify that the Origin header correctly reflects the initial initiator.
+  // This is a regression test for https://crbug.com/915538.
+  EXPECT_THAT(EvalJs(web_contents,
+                     "document.getElementById('request-headers').innerText")
+                  .ExtractString(),
+              ::testing::HasSubstr("Origin: http://initial-page.example.com"));
 }
 
 // This test verifies that it is possible to reload a POST request that

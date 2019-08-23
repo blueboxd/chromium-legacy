@@ -81,13 +81,9 @@ PageInsetSizes GetPageInsetsForTwoUpView(
 }
 
 pp::Rect GetRectForSingleView(const pp::Size& rect_size,
-                              const pp::Size& document_size,
-                              const PageInsetSizes& page_insets) {
+                              const pp::Size& document_size) {
   pp::Rect page_rect({0, document_size.height()}, rect_size);
   CenterRectHorizontally(document_size.width(), &page_rect);
-  page_rect.Inset(page_insets.left, page_insets.top, page_insets.right,
-                  page_insets.bottom);
-
   return page_rect;
 }
 
@@ -147,25 +143,17 @@ pp::Rect GetBottomFillRect(const pp::Rect& page_rect,
 }
 
 pp::Rect GetLeftRectForTwoUpView(const pp::Size& rect_size,
-                                 const pp::Point& position,
-                                 const PageInsetSizes& page_insets) {
+                                 const pp::Point& position) {
   DCHECK_LE(rect_size.width(), position.x());
 
-  pp::Rect left_rect(position.x() - rect_size.width(), position.y(),
-                     rect_size.width(), rect_size.height());
-  left_rect.Inset(page_insets.left, page_insets.top, page_insets.right,
-                  page_insets.bottom);
-  return left_rect;
+  return pp::Rect(position.x() - rect_size.width(), position.y(),
+                  rect_size.width(), rect_size.height());
 }
 
 pp::Rect GetRightRectForTwoUpView(const pp::Size& rect_size,
-                                  const pp::Point& position,
-                                  const PageInsetSizes& page_insets) {
-  pp::Rect right_rect(position.x(), position.y(), rect_size.width(),
-                      rect_size.height());
-  right_rect.Inset(page_insets.left, page_insets.top, page_insets.right,
-                   page_insets.bottom);
-  return right_rect;
+                                  const pp::Point& position) {
+  return pp::Rect(position.x(), position.y(), rect_size.width(),
+                  rect_size.height());
 }
 
 }  // namespace draw_utils

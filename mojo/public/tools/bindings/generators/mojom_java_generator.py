@@ -521,26 +521,26 @@ class Generator(generator.Generator):
     fileutil.EnsureDirectoryExists(self.output_dir)
 
     for struct in self.module.structs:
-      self.Write(self._GenerateStructSource(struct),
-                 '%s.java' % GetNameForElement(struct))
+      self.WriteWithComment(self._GenerateStructSource(struct),
+                            '%s.java' % GetNameForElement(struct))
 
     for union in self.module.unions:
-      self.Write(self._GenerateUnionSource(union),
-                 '%s.java' % GetNameForElement(union))
+      self.WriteWithComment(self._GenerateUnionSource(union),
+                            '%s.java' % GetNameForElement(union))
 
     for enum in self.module.enums:
-      self.Write(self._GenerateEnumSource(enum),
-                 '%s.java' % GetNameForElement(enum))
+      self.WriteWithComment(self._GenerateEnumSource(enum),
+                            '%s.java' % GetNameForElement(enum))
 
     for interface in self.module.interfaces:
-      self.Write(self._GenerateInterfaceSource(interface),
-                 '%s.java' % GetNameForElement(interface))
-      self.Write(self._GenerateInterfaceInternalSource(interface),
-                 '%s_Internal.java' % GetNameForElement(interface))
+      self.WriteWithComment(self._GenerateInterfaceSource(interface),
+                            '%s.java' % GetNameForElement(interface))
+      self.WriteWithComment(self._GenerateInterfaceInternalSource(interface),
+                            '%s_Internal.java' % GetNameForElement(interface))
 
     if self.module.constants:
-      self.Write(self._GenerateConstantsSource(self.module),
-                 '%s.java' % GetConstantsMainEntityName(self.module))
+      self.WriteWithComment(self._GenerateConstantsSource(self.module),
+                            '%s.java' % GetConstantsMainEntityName(self.module))
 
   def GenerateFiles(self, unparsed_args):
     # TODO(rockot): Support variant output for Java.

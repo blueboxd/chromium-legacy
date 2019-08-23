@@ -166,7 +166,7 @@ IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, DISABLED_AddBookmark) {
   chrome::ExecuteCommand(browser(), IDC_SHOW_BOOKMARK_BAR);
 
   // Create a bookmark with title "foo".
-  chrome::ExecuteCommand(browser(), IDC_BOOKMARK_PAGE);
+  chrome::ExecuteCommand(browser(), IDC_BOOKMARK_THIS_TAB);
   EXPECT_EQ("Bookmark added! dialog Bookmark name about:blank Edit text",
             speech_monitor_.GetNextUtterance());
   EXPECT_EQ("about:blank", speech_monitor_.GetNextUtterance());

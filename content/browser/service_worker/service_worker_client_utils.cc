@@ -127,6 +127,10 @@ blink::mojom::ServiceWorkerClientInfoPtr GetWindowClientInfoOnUI(
   if (!render_frame_host)
     return nullptr;
 
+  // Treat items in backforward cache as not existing.
+  if (render_frame_host->is_in_back_forward_cache())
+    return nullptr;
+
   // TODO(mlamouri,michaeln): it is possible to end up collecting information
   // for a frame that is actually being navigated and isn't exactly what we are
   // expecting.
@@ -139,6 +143,9 @@ blink::mojom::ServiceWorkerClientInfoPtr GetWindowClientInfoOnUI(
           : network::mojom::RequestContextFrameType::kTopLevel,
       client_uuid, blink::mojom::ServiceWorkerClientType::kWindow, page_hidden,
       render_frame_host->IsFocused(),
+      render_frame_host->IsFrozen()
+          ? blink::mojom::ServiceWorkerClientLifecycleState::kFrozen
+          : blink::mojom::ServiceWorkerClientLifecycleState::kActive,
       render_frame_host->frame_tree_node()->last_focus_time(), create_time);
 }
 
@@ -343,11 +350,15 @@ void AddNonWindowClient(const ServiceWorkerProviderHost* host,
   if (!host->is_execution_ready())
     return;
 
+  // TODO(dtapuska): Need to get frozen state for dedicated workers from
+  // DedicatedWorkerHost. crbug.com/968417
   auto client_info = blink::mojom::ServiceWorkerClientInfo::New(
       host->url(), network::mojom::RequestContextFrameType::kNone,
       host->client_uuid(), host_client_type,
       /*page_hidden=*/true,
-      /*is_focused=*/false, base::TimeTicks(), host->create_time());
+      /*is_focused=*/false,
+      blink::mojom::ServiceWorkerClientLifecycleState::kActive,
+      base::TimeTicks(), host->create_time());
   out_clients->push_back(std::move(client_info));
 }
 
@@ -356,6 +367,7 @@ void OnGetWindowClientsOnUI(
     const std::vector<std::tuple<int, int, base::TimeTicks, std::string>>&
         clients_info,
     const GURL& script_url,
+    blink::mojom::ServiceWorkerClientLifecycleStateQuery lifecycle_state,
     ClientsCallback callback,
     std::unique_ptr<ServiceWorkerClientPtrs> out_clients) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -376,6 +388,19 @@ void OnGetWindowClientsOnUI(
     // different URL than expected. In such case, we should make sure to not
     // expose cross-origin WindowClient.
     if (info->url.GetOrigin() != script_url.GetOrigin())
+      continue;
+
+    // Skip frozen clients if asked to be excluded.
+    if (lifecycle_state !=
+            blink::mojom::ServiceWorkerClientLifecycleStateQuery::kAll &&
+        ((lifecycle_state ==
+              blink::mojom::ServiceWorkerClientLifecycleStateQuery::kActive &&
+          info->lifecycle_state !=
+              blink::mojom::ServiceWorkerClientLifecycleState::kActive) ||
+         (lifecycle_state ==
+              blink::mojom::ServiceWorkerClientLifecycleStateQuery::kFrozen &&
+          info->lifecycle_state !=
+              blink::mojom::ServiceWorkerClientLifecycleState::kFrozen)))
       continue;
 
     out_clients->push_back(std::move(info));
@@ -481,10 +506,12 @@ void GetWindowClients(const base::WeakPtr<ServiceWorkerVersion>& controller,
     return;
   }
 
+  blink::mojom::ServiceWorkerClientLifecycleStateQuery lifecycle_state =
+      options->lifecycle_state;
   RunOrPostTaskOnThread(
       FROM_HERE, BrowserThread::UI,
       base::BindOnce(&OnGetWindowClientsOnUI, clients_info,
-                     controller->script_url(),
+                     controller->script_url(), lifecycle_state,
                      base::BindOnce(&DidGetWindowClients, controller,
                                     std::move(options), std::move(callback)),
                      std::move(clients)));
@@ -619,11 +646,15 @@ void GetClient(const ServiceWorkerProviderHost* provider_host,
     return;
   }
 
+  // TODO(dtapuska): Need to get frozen state for dedicated workers from
+  // DedicatedWorkerHost. crbug.com/968417
   auto client_info = blink::mojom::ServiceWorkerClientInfo::New(
       provider_host->url(), network::mojom::RequestContextFrameType::kNone,
       provider_host->client_uuid(), provider_host->client_type(),
       /*page_hidden=*/true,
-      /*is_focused=*/false, base::TimeTicks(), provider_host->create_time());
+      /*is_focused=*/false,
+      blink::mojom::ServiceWorkerClientLifecycleState::kActive,
+      base::TimeTicks(), provider_host->create_time());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), std::move(client_info)));
 }

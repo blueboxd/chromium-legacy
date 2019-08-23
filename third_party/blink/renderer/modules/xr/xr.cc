@@ -76,6 +76,26 @@ XRSession::SessionMode stringToSessionMode(const String& mode_string) {
   return XRSession::kModeInline;
 }
 
+// Converts the given string to an XRSessionFeature. If the string is
+// unrecognized, returns INVALID. Based on the spec:
+// https://immersive-web.github.io/webxr/#feature-name
+base::Optional<device::mojom::XRSessionFeature> StringToXRSessionFeature(
+    const String& feature_string) {
+  if (feature_string == "viewer") {
+    return device::mojom::XRSessionFeature::REF_SPACE_VIEWER;
+  } else if (feature_string == "local") {
+    return device::mojom::XRSessionFeature::REF_SPACE_LOCAL;
+  } else if (feature_string == "local-floor") {
+    return device::mojom::XRSessionFeature::REF_SPACE_LOCAL_FLOOR;
+  } else if (feature_string == "bounded-floor") {
+    return device::mojom::XRSessionFeature::REF_SPACE_BOUNDED_FLOOR;
+  } else if (feature_string == "unbounded") {
+    return device::mojom::XRSessionFeature::REF_SPACE_UNBOUNDED;
+  }
+
+  return base::nullopt;
+}
+
 // Map device::mojom::blink::RequestSessionError to a DOMException.
 blink::DOMException* MapToDOMException(
     device::mojom::blink::RequestSessionError error) {
@@ -100,24 +120,18 @@ blink::DOMException* MapToDOMException(
   return nullptr;
 }
 
-// Converts the given string to an XRSessionFeature. If the string is
-// unrecognized, returns nullopt. Based on the spec:
-// https://immersive-web.github.io/webxr/#feature-name
-base::Optional<XRSessionFeature> StringToXRSessionFeature(
-    WTF::StringView feature_string) {
-  if (feature_string == "viewer") {
-    return XRSessionFeature::kViewer;
-  } else if (feature_string == "local") {
-    return XRSessionFeature::kLocal;
-  } else if (feature_string == "local-floor") {
-    return XRSessionFeature::kLocalFloor;
-  } else if (feature_string == "bounded-floor") {
-    return XRSessionFeature::kBoundedFloor;
-  } else if (feature_string == "unbounded") {
-    return XRSessionFeature::kUnbounded;
+bool IsFeatureValidForMode(device::mojom::XRSessionFeature feature,
+                           XRSession::SessionMode mode) {
+  switch (feature) {
+    case device::mojom::XRSessionFeature::REF_SPACE_VIEWER:
+    case device::mojom::XRSessionFeature::REF_SPACE_LOCAL:
+    case device::mojom::XRSessionFeature::REF_SPACE_LOCAL_FLOOR:
+      return true;
+    case device::mojom::XRSessionFeature::REF_SPACE_BOUNDED_FLOOR:
+    case device::mojom::XRSessionFeature::REF_SPACE_UNBOUNDED:
+      return mode == XRSession::kModeImmersiveVR ||
+             mode == XRSession::kModeImmersiveAR;
   }
-
-  return base::nullopt;
 }
 
 }  // namespace
@@ -371,19 +385,26 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
   ScriptPromise promise = resolver->Promise();
 
   // Parse required feature strings
-  bool has_invalid_required_feature = false;
+  bool has_invalid_required_features = false;
   XRSessionFeatureSet required_features;
   if (session_init && session_init->hasRequiredFeatures()) {
     for (const auto& feature : session_init->requiredFeatures()) {
       // Add all features so that we can track the presence of an unknown
       // required feature later, to reject it at the appropriate time.
       auto feature_enum = StringToXRSessionFeature(feature);
-      if (!feature_enum.has_value()) {
+
+      if (!feature_enum) {
         GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
             mojom::ConsoleMessageSource::kJavaScript,
             mojom::ConsoleMessageLevel::kError,
             "Unrecognized required feature requested: " + feature));
-        has_invalid_required_feature = true;
+        has_invalid_required_features = true;
+      } else if (!IsFeatureValidForMode(feature_enum.value(), session_mode)) {
+        GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+            mojom::ConsoleMessageSource::kJavaScript,
+            mojom::ConsoleMessageLevel::kError,
+            "Feature: " + feature + " is not supported for mode: " + mode));
+        has_invalid_required_features = true;
       } else {
         required_features.insert(feature_enum.value());
       }
@@ -395,18 +416,36 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
   if (session_init && session_init->hasOptionalFeatures()) {
     for (const auto& feature : session_init->optionalFeatures()) {
       auto feature_enum = StringToXRSessionFeature(feature);
-
       // Unrecognized optional features can be silently ignored, as they won't
       // be supported.
-      if (!feature_enum.has_value()) {
+      if (!feature_enum) {
         GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
             mojom::ConsoleMessageSource::kJavaScript,
             mojom::ConsoleMessageLevel::kWarning,
             "Unrecognized optional feature requested: " + feature));
+      } else if (!IsFeatureValidForMode(feature_enum.value(), session_mode)) {
+        GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+            mojom::ConsoleMessageSource::kJavaScript,
+            mojom::ConsoleMessageLevel::kWarning,
+            "Feature: " + feature + " is not supported for mode: " + mode));
       } else {
         optional_features.insert(feature_enum.value());
       }
     }
+  }
+
+  // Certain session modes imply default features.
+  // Add those default features as optional features now.
+  switch (session_mode) {
+    case XRSession::kModeImmersiveVR:
+    case XRSession::kModeImmersiveAR:
+      optional_features.insert(
+          device::mojom::XRSessionFeature::REF_SPACE_LOCAL);
+      FALLTHROUGH;
+    case XRSession::kModeInline:
+      optional_features.insert(
+          device::mojom::XRSessionFeature::REF_SPACE_VIEWER);
+      break;
   }
 
   PendingRequestSessionQuery* query =
@@ -472,7 +511,7 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
   if (!service_) {
     // If we don't have a service by the time we reach this call, there is no XR
     // hardware. Create a sensorless session.
-    if (query->mode() == XRSession::kModeInline) {
+    if (CanCreateSensorlessInlineSession(query)) {
       XRSession* session = CreateSensorlessInlineSession();
       query->Resolve(session);
       return promise;
@@ -487,7 +526,7 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
   }
 
   // Reject session if any of the required features were invalid.
-  if (has_invalid_required_feature) {
+  if (has_invalid_required_features) {
     query->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotSupportedError, kSessionNotSupported));
     return promise;
@@ -495,6 +534,9 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
 
   device::mojom::blink::XRSessionOptionsPtr session_options =
       convertModeToMojo(query->mode());
+
+  CopyToVector(query->RequiredFeatures(), session_options->required_features);
+  CopyToVector(query->OptionalFeatures(), session_options->optional_features);
 
   outstanding_request_queries_.insert(query);
   service_->RequestSession(
@@ -543,7 +585,7 @@ void XR::OnRequestSessionReturned(
   if (!session_ptr) {
     // |service_| does not support the requested mode. Attempt to create a
     // sensorless session.
-    if (query->mode() == XRSession::kModeInline) {
+    if (CanCreateSensorlessInlineSession(query)) {
       XRSession* session = CreateSensorlessInlineSession();
 
       query->Resolve(session);
@@ -573,25 +615,9 @@ void XR::OnRequestSessionReturned(
   if (environment_integration)
     blend_mode = XRSession::kBlendModeAlphaBlend;
 
-  // TODO(crbug.com/991605): enabled_features should be coming back on something
-  // in the session request result.  Which includes populating any granted
-  // implied optional features.
-  XRSessionFeatureSet enabled_features = query->RequiredFeatures();
-  for (const auto& feature : query->OptionalFeatures()) {
+  XRSessionFeatureSet enabled_features;
+  for (const auto& feature : session_ptr->enabled_features) {
     enabled_features.insert(feature);
-  }
-
-  // Add any implied optional features per the spec.
-  switch (query->mode()) {
-    case XRSession::kModeImmersiveVR:
-    case XRSession::kModeImmersiveAR:
-      enabled_features.insert(XRSessionFeature::kLocal);
-      FALLTHROUGH;
-    case XRSession::kModeInline:
-      enabled_features.insert(XRSessionFeature::kViewer);
-      break;
-    default:
-      break;
   }
 
   XRSession* session = CreateSession(
@@ -685,13 +711,31 @@ XRSession* XR::CreateSession(
   return session;
 }
 
+bool XR::CanCreateSensorlessInlineSession(
+    const PendingRequestSessionQuery* query) const {
+  // Sensorless can only support an inline mode
+  if (query->mode() != XRSession::kModeInline)
+    return false;
+
+  // Sensorless can only be supported if the only required feature is the
+  // viewer reference space.
+  for (const auto& feature : query->RequiredFeatures()) {
+    if (feature != device::mojom::XRSessionFeature::REF_SPACE_VIEWER) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 XRSession* XR::CreateSensorlessInlineSession() {
   // TODO(https://crbug.com/944936): The blend mode could be "additive".
   XRSession::EnvironmentBlendMode blend_mode = XRSession::kBlendModeOpaque;
-  return CreateSession(
-      XRSession::kModeInline, blend_mode, nullptr /* client request */,
-      nullptr /* display_info */, false /* uses_input_eventing */,
-      {XRSessionFeature::kViewer}, true /* sensorless_session */);
+  return CreateSession(XRSession::kModeInline, blend_mode,
+                       nullptr /* client request */, nullptr /* display_info */,
+                       false /* uses_input_eventing */,
+                       {device::mojom::XRSessionFeature::REF_SPACE_VIEWER},
+                       true /* sensorless_session */);
 }
 
 void XR::Dispose() {

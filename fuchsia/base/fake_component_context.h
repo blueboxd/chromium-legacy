@@ -18,7 +18,7 @@ namespace cr_fuchsia {
 // Used to test interactions with an Agent in unit-tests for a component.
 // |create_component_state_callback| can be used with a test-specific
 // ComponentStateBase to serve fake services to the component.
-// |service_directory| specifies the directory into which the ComponentContext
+// |outgoing_directory| specifies the directory into which the ComponentContext
 // should be published, alongside any other services the test wishes to provide
 // to the component's default service namespace. |component_url| specifies the
 // component identity that should be reported to the Agent
@@ -27,7 +27,7 @@ class FakeComponentContext
  public:
   explicit FakeComponentContext(
       AgentImpl::CreateComponentStateCallback create_component_state_callback,
-      base::fuchsia::ServiceDirectory* service_directory,
+      sys::OutgoingDirectory* outgoing_directory,
       base::StringPiece component_url);
   ~FakeComponentContext() override;
 

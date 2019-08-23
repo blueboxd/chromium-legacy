@@ -147,8 +147,6 @@ void ScriptProcessorHandler::Process(uint32_t frames_to_process) {
   }
 
   DCHECK(buffers_are_good);
-  if (!buffers_are_good)
-    return;
 
   // We assume that bufferSize() is evenly divisible by framesToProcess - should
   // always be true, but we should still check.

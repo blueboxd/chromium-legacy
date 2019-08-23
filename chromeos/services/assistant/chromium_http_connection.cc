@@ -21,8 +21,8 @@ using assistant_client::HttpConnection;
 using network::SharedURLLoaderFactory;
 using network::SharedURLLoaderFactoryInfo;
 
-// A macro which ensures we are running on the main thread.
-#define ENSURE_MAIN_THREAD(method, ...)                                  \
+// A macro which ensures we are running in |task_runner_|'s sequence.
+#define ENSURE_IN_SEQUENCE(method, ...)                                  \
   if (!task_runner_->RunsTasksInCurrentSequence()) {                     \
     task_runner_->PostTask(FROM_HERE,                                    \
                            base::BindOnce(method, this, ##__VA_ARGS__)); \
@@ -55,7 +55,7 @@ ChromiumHttpConnection::ChromiumHttpConnection(
     std::unique_ptr<SharedURLLoaderFactoryInfo> url_loader_factory_info,
     Delegate* delegate)
     : delegate_(delegate),
-      task_runner_(base::CreateSequencedTaskRunner({})),
+      task_runner_(base::CreateSequencedTaskRunner({base::ThreadPool()})),
       url_loader_factory_info_(std::move(url_loader_factory_info)) {
   DCHECK(delegate_);
   DCHECK(url_loader_factory_info_);
@@ -71,7 +71,7 @@ ChromiumHttpConnection::~ChromiumHttpConnection() {
 }
 
 void ChromiumHttpConnection::SetRequest(const std::string& url, Method method) {
-  ENSURE_MAIN_THREAD(&ChromiumHttpConnection::SetRequest, url, method);
+  ENSURE_IN_SEQUENCE(&ChromiumHttpConnection::SetRequest, url, method);
   DCHECK_EQ(state_, State::NEW);
   url_ = GURL(url);
   method_ = method;
@@ -79,7 +79,7 @@ void ChromiumHttpConnection::SetRequest(const std::string& url, Method method) {
 
 void ChromiumHttpConnection::AddHeader(const std::string& name,
                                        const std::string& value) {
-  ENSURE_MAIN_THREAD(&ChromiumHttpConnection::AddHeader, name, value);
+  ENSURE_IN_SEQUENCE(&ChromiumHttpConnection::AddHeader, name, value);
   DCHECK_EQ(state_, State::NEW);
 
   if (!network::IsRequestHeaderSafe(name, value)) {
@@ -104,7 +104,7 @@ void ChromiumHttpConnection::AddHeader(const std::string& name,
 
 void ChromiumHttpConnection::SetUploadContent(const std::string& content,
                                               const std::string& content_type) {
-  ENSURE_MAIN_THREAD(&ChromiumHttpConnection::SetUploadContent, content,
+  ENSURE_IN_SEQUENCE(&ChromiumHttpConnection::SetUploadContent, content,
                      content_type);
   DCHECK_EQ(state_, State::NEW);
   upload_content_ = content;
@@ -114,7 +114,7 @@ void ChromiumHttpConnection::SetUploadContent(const std::string& content,
 
 void ChromiumHttpConnection::SetChunkedUploadContentType(
     const std::string& content_type) {
-  ENSURE_MAIN_THREAD(&ChromiumHttpConnection::SetChunkedUploadContentType,
+  ENSURE_IN_SEQUENCE(&ChromiumHttpConnection::SetChunkedUploadContentType,
                      content_type);
   DCHECK_EQ(state_, State::NEW);
   upload_content_ = "";
@@ -123,12 +123,12 @@ void ChromiumHttpConnection::SetChunkedUploadContentType(
 }
 
 void ChromiumHttpConnection::EnableHeaderResponse() {
-  ENSURE_MAIN_THREAD(&ChromiumHttpConnection::EnableHeaderResponse)
+  ENSURE_IN_SEQUENCE(&ChromiumHttpConnection::EnableHeaderResponse)
   enable_header_response_ = true;
 }
 
 void ChromiumHttpConnection::EnablePartialResults() {
-  ENSURE_MAIN_THREAD(&ChromiumHttpConnection::EnablePartialResults);
+  ENSURE_IN_SEQUENCE(&ChromiumHttpConnection::EnablePartialResults);
   DCHECK_EQ(state_, State::NEW);
   handle_partial_response_ = true;
 }
@@ -136,7 +136,7 @@ void ChromiumHttpConnection::EnablePartialResults() {
 void ChromiumHttpConnection::Start() {
   VLOG(2) << "Requested to start connection";
 
-  ENSURE_MAIN_THREAD(&ChromiumHttpConnection::Start);
+  ENSURE_IN_SEQUENCE(&ChromiumHttpConnection::Start);
   DCHECK_EQ(state_, State::NEW);
   state_ = State::STARTED;
 
@@ -194,12 +194,12 @@ void ChromiumHttpConnection::Start() {
 }
 
 void ChromiumHttpConnection::Pause() {
-  ENSURE_MAIN_THREAD(&ChromiumHttpConnection::Pause);
+  ENSURE_IN_SEQUENCE(&ChromiumHttpConnection::Pause);
   is_paused_ = true;
 }
 
 void ChromiumHttpConnection::Resume() {
-  ENSURE_MAIN_THREAD(&ChromiumHttpConnection::Resume);
+  ENSURE_IN_SEQUENCE(&ChromiumHttpConnection::Resume);
   is_paused_ = false;
 
   if (!partial_response_cache_.empty()) {
@@ -214,7 +214,7 @@ void ChromiumHttpConnection::Resume() {
 void ChromiumHttpConnection::Close() {
   VLOG(2) << "Requesting to close connection object";
 
-  ENSURE_MAIN_THREAD(&ChromiumHttpConnection::Close);
+  ENSURE_IN_SEQUENCE(&ChromiumHttpConnection::Close);
   if (state_ == State::DESTROYED)
     return;
 
@@ -229,7 +229,7 @@ void ChromiumHttpConnection::Close() {
 
 void ChromiumHttpConnection::UploadData(const std::string& data,
                                         bool is_last_chunk) {
-  ENSURE_MAIN_THREAD(&ChromiumHttpConnection::UploadData, data, is_last_chunk);
+  ENSURE_IN_SEQUENCE(&ChromiumHttpConnection::UploadData, data, is_last_chunk);
   if (state_ != State::STARTED)
     return;
 

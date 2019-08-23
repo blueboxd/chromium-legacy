@@ -262,7 +262,7 @@ class MockChrome {
 
   // Read and validate the version sent by the cleaner in a blocking way.
   template <typename ValueType>
-  void ReadValue(ValueType* value) {
+  bool ReadValue(ValueType* value) {
     uint32_t read_size = sizeof(*value);
 
     DWORD bytes_read = 0;
@@ -270,17 +270,19 @@ class MockChrome {
                               &bytes_read, nullptr);
     if (!success) {
       PLOG(ERROR) << "Could not read value.";
-      FAIL();
+      return false;
     }
 
     if (bytes_read != read_size) {
       LOG(ERROR) << "Read the wrong number of bytes: " << bytes_read
                  << ". Should have been: " << read_size;
-      FAIL();
+      return false;
     }
+
+    return true;
   }
 
-  void ReadRequest(uint32_t request_length,
+  bool ReadRequest(uint32_t request_length,
                    chrome_cleaner::ChromePromptRequest* request) {
     DCHECK(request_read_handle_.IsValid());
 
@@ -294,76 +296,89 @@ class MockChrome {
 
     if (!success) {
       PLOG(ERROR) << "Could not read request.";
-      FAIL();
+      return false;
     }
 
     if (bytes_read != request_length) {
       LOG(ERROR) << "Read the wrong number of bytes: " << bytes_read
                  << ". Should have been: " << request_length;
-      FAIL();
+      return false;
     }
 
     if (!request->ParseFromString(request_content)) {
       LOG(ERROR) << "Could not parse request.";
-      FAIL();
+      return false;
     }
+
+    return true;
   }
 
   // Blocking write of anything by value on the pipe.
   template <typename T>
-  void WriteByValue(T value) {
+  bool WriteByValue(T value) {
     DWORD bytes_written = 0;
     bool success = ::WriteFile(response_write_handle_.Get(), &value,
                                sizeof(value), &bytes_written, nullptr);
 
     if (!success) {
       PLOG(ERROR) << "Could not write to pipe.";
-      FAIL();
+      return false;
     }
 
     if (bytes_written != sizeof(value)) {
       LOG(ERROR) << "Wrote the wrong number of bytes";
-      FAIL();
+      return false;
     }
+
+    return true;
   }
 
   // Blocking write of anything by pointer on the pipe.
   // Does not own the memory.
   // Set |should_succeed|=false when testing a failed operation.
   template <typename T>
-  void WriteByPointer(const T* ptr, uint32_t size, bool should_succeed = true) {
+  bool WriteByPointer(const T* ptr, uint32_t size, bool should_succeed = true) {
     DWORD bytes_written = 0;
     bool success = ::WriteFile(response_write_handle_.Get(), ptr, size,
                                &bytes_written, nullptr);
 
     if (should_succeed && !success) {
       PLOG(ERROR) << "Could not write to pipe.";
-      FAIL();
+      return false;
     }
 
     // We should not validate |bytes_written| if we know the call will fail.
     if (should_succeed) {
       if (bytes_written != size) {
         LOG(ERROR) << "Wrote the wrong number of bytes";
-        FAIL();
+        return false;
       }
     }
+
+    return true;
   }
 
-  void SendMessage(google::protobuf::MessageLite& message) {
+  bool SendMessage(google::protobuf::MessageLite& message) {
     std::string message_content;
     if (!message.SerializeToString(&message_content)) {
       LOG(ERROR) << "Could not serialize message for sending";
-      FAIL();
+      return false;
     }
 
     uint32_t message_size = message_content.size();
-    WriteByValue(message_size);
-    WriteByPointer(message_content.data(), message_content.size());
+    if (!WriteByValue(message_size)) {
+      return false;
+    }
+
+    if (!WriteByPointer(message_content.data(), message_content.size())) {
+      return false;
+    }
+
+    return true;
   }
 
   // Send a response to the cleaner with the expected values.
-  void SendResponse(PromptAcceptance prompt_acceptance) {
+  bool SendResponse(PromptAcceptance prompt_acceptance) {
     DCHECK(response_write_handle_.IsValid());
 
     chrome_cleaner::PromptUserResponse response;
@@ -388,7 +403,7 @@ class MockChrome {
         break;
     }
 
-    SendMessage(response);
+    return SendMessage(response);
   }
 
  private:
@@ -450,7 +465,7 @@ class ChildProcess {
   }
 
   // Execute all steps of the prompt according to passed in test config.
-  void Run() {
+  bool Run() {
     DCHECK_NE(expected_disconnect_point_, ChromeDisconnectPoint::kUnspecified);
     DCHECK_NE(expected_prompt_acceptance_, PromptAcceptance::UNSPECIFIED);
 
@@ -460,24 +475,30 @@ class ChildProcess {
     // Read the incoming version number, this is NOT echoed back.
     constexpr uint8_t kExpectedVersion = 1;
     uint8_t version = 0;
-    mock_chrome_->ReadValue(&version);
+    if (!mock_chrome_->ReadValue(&version)) {
+      return false;
+    }
 
     if (version != kExpectedVersion) {
       LOG(ERROR) << "Wrong version received: " << version;
-      FAIL();
+      return false;
     }
 
     CloseConnectionIfDisconectionPointReached(
         ChromeDisconnectPoint::kAfterVersion);
 
     uint32_t request_length = 0;
-    mock_chrome_->ReadValue(&request_length);
+    if (!mock_chrome_->ReadValue(&request_length)) {
+      return false;
+    }
 
     CloseConnectionIfDisconectionPointReached(
         ChromeDisconnectPoint::kAfterRequestLength);
 
     chrome_cleaner::ChromePromptRequest request;
-    mock_chrome_->ReadRequest(request_length, &request);
+    if (!mock_chrome_->ReadRequest(request_length, &request)) {
+      return false;
+    }
 
     CloseConnectionIfDisconectionPointReached(
         ChromeDisconnectPoint::kWhileProcessingChildRequest);
@@ -487,7 +508,7 @@ class ChildProcess {
     if (request.prompt_user().files_to_delete_size() !=
         expected_files_to_delete_size) {
       LOG(ERROR) << "Wrong number of files to delete received.";
-      FAIL();
+      return false;
     }
     if (expected_files_to_delete_size == 1) {
       std::string file_path_utf8;
@@ -495,7 +516,7 @@ class ChildProcess {
                         kBadFilePath.value().size(), &file_path_utf8);
       if (request.prompt_user().files_to_delete(0) != file_path_utf8) {
         LOG(ERROR) << "Wrong value for file to delete";
-        FAIL();
+        return false;
       }
     }
 
@@ -504,38 +525,47 @@ class ChildProcess {
     if (request.prompt_user().registry_keys_size() !=
         expecteed_registry_keys_size) {
       LOG(ERROR) << "Wrong number of registry keys to delete";
-      FAIL();
+      return false;
     }
     if (expecteed_registry_keys_size == 1) {
       if (request.prompt_user().registry_keys(0) !=
           base::UTF16ToUTF8(kBadRegistryKey)) {
         LOG(ERROR) << "Wrong value for registry key";
-        FAIL();
+        return false;
       }
     }
 
     if (request.prompt_user().extension_ids_size() != 0) {
       LOG(ERROR) << "Cleaning of UwsE not supported. None should be present in "
                     "message";
-      FAIL();
+      return false;
     }
 
     // Send back a success message.
-    mock_chrome_->SendResponse(expected_prompt_acceptance_);
+    if (!mock_chrome_->SendResponse(expected_prompt_acceptance_)) {
+      return false;
+    }
 
     // Receive the close connection message.
     uint32_t close_message_length = 0;
-    mock_chrome_->ReadValue(&close_message_length);
+    if (!mock_chrome_->ReadValue(&close_message_length)) {
+      return false;
+    }
 
     CloseConnectionIfDisconectionPointReached(
         ChromeDisconnectPoint::kAfterCloseMessageLength);
 
     chrome_cleaner::ChromePromptRequest close_message;
-    mock_chrome_->ReadRequest(close_message_length, &close_message);
+    if (!mock_chrome_->ReadRequest(close_message_length, &close_message)) {
+      return false;
+    }
+
     if (!close_message.has_close_connection()) {
       LOG(ERROR) << "Wrong close connection message type";
-      FAIL();
+      return false;
     }
+
+    return true;
   }
 
  private:
@@ -555,7 +585,9 @@ MULTIPROCESS_TEST_MAIN(ProtoChromePromptIPCClientMain) {
   base::test::ScopedTaskEnvironment scoped_task_environment;
 
   ChildProcess child_process;
-  child_process.Run();
+  if (!child_process.Run()) {
+    return kFailureExitCode;
+  }
 
   return ::testing::Test::HasFailure() ? kFailureExitCode : kSuccessExitCode;
 }
@@ -698,9 +730,7 @@ class ParentProcess {
 };
 
 // This contains calls to the chrome_cleaner_ipc implementation.
-// TODO(crbug.com/996370): Find out why this is failing on CI builders and
-// re-enable.
-TEST_P(ProtoChromePromptIPCTest, DISABLED_Communication) {
+TEST_P(ProtoChromePromptIPCTest, Communication) {
   ParentProcess parent_process;
   TestConfig& test_config = parent_process.GetTestConfig();
   std::tie(test_config.uws_expected, test_config.with_registry_keys,
@@ -775,7 +805,7 @@ class ProtoChromePromptSameProcessTest : public ::testing::Test {
   void InitCommunication() {
     chrome_prompt_ipc_->Initialize(error_handler_.get());
     uint8_t version = 0;
-    mock_chrome_->ReadValue(&version);
+    EXPECT_TRUE(mock_chrome_->ReadValue(&version));
   }
 
   // A call to this function indicates that the connection was closed
@@ -796,10 +826,10 @@ class ProtoChromePromptSameProcessTest : public ::testing::Test {
 
   void ExpectMessage() {
     uint32_t request_length = 0;
-    mock_chrome_->ReadValue(&request_length);
+    EXPECT_TRUE(mock_chrome_->ReadValue(&request_length));
 
     chrome_cleaner::ChromePromptRequest request;
-    mock_chrome_->ReadRequest(request_length, &request);
+    EXPECT_TRUE(mock_chrome_->ReadRequest(request_length, &request));
   }
 
   void ValidateAcceptance(PromptAcceptance expected_prompt_acceptance,
@@ -886,7 +916,8 @@ TEST_F(ProtoChromePromptSameProcessTest, ValidNonASCIIPath) {
   ExpectMessage();
 
   // Send back the response.
-  mock_chrome_->SendResponse(PromptAcceptance::ACCEPTED_WITH_LOGS);
+  EXPECT_TRUE(mock_chrome_->SendResponse(PromptAcceptance::ACCEPTED_WITH_LOGS));
+
   // Expect the close connection message.
   ExpectMessage();
 
@@ -909,7 +940,7 @@ TEST_F(ProtoChromePromptSameProcessTest, ReponseSizeOverMax) {
 
   // Size over max.
   uint32_t invalid_size = ProtoChromePromptIPC::kMaxMessageLength + 1;
-  mock_chrome_->WriteByValue(invalid_size);
+  EXPECT_TRUE(mock_chrome_->WriteByValue(invalid_size));
 
   // Notice the absence of ExpectMessage() here. The cleaner will never get to
   // sending a close connection message.
@@ -934,7 +965,7 @@ TEST_F(ProtoChromePromptSameProcessTest, ReponseSizeZero) {
 
   // Size of zero.
   uint32_t invalid_size = 0;
-  mock_chrome_->WriteByValue(invalid_size);
+  EXPECT_TRUE(mock_chrome_->WriteByValue(invalid_size));
 
   // Notice the absence of ExpectMessage() here. The cleaner will never get to
   // sending a close connection message.
@@ -966,11 +997,12 @@ TEST_F(ProtoChromePromptSameProcessTest, ReponseSizeSentTooSmall) {
 
   // Size too small.
   uint32_t invalid_size = response_content.size() - 1;
-  mock_chrome_->WriteByValue(invalid_size);
+  EXPECT_TRUE(mock_chrome_->WriteByValue(invalid_size));
 
   // Send the correct data.
-  mock_chrome_->WriteByPointer(response_content.data(), response_content.size(),
-                               /*should_succeed=*/false);
+  EXPECT_TRUE(mock_chrome_->WriteByPointer(response_content.data(),
+                                           response_content.size(),
+                                           /*should_succeed=*/false));
 
   // Notice the absence of ExpectMessage() here. The cleaner will never get to
   // sending a close connection message.
@@ -1002,11 +1034,11 @@ TEST_F(ProtoChromePromptSameProcessTest, ReponseSizeSentTooBig) {
 
   // Size too big.
   uint32_t invalid_size = response_content.size() + 1;
-  mock_chrome_->WriteByValue(invalid_size);
+  EXPECT_TRUE(mock_chrome_->WriteByValue(invalid_size));
 
   // Send the correct data.
-  mock_chrome_->WriteByPointer(response_content.data(),
-                               response_content.size());
+  EXPECT_TRUE(mock_chrome_->WriteByPointer(response_content.data(),
+                                           response_content.size()));
 
   // Notice the absence of ExpectMessage() here. The cleaner will never get to
   // sending a close connection message.

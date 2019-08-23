@@ -39,7 +39,7 @@ class BASE_EXPORT PriorityQueue {
   // Returns a reference to the highest priority TaskSource in this
   // PriorityQueue. Cannot be called on an empty PriorityQueue. The returned
   // task source may be modified as long as its sort key isn't affected.
-  TaskSource* PeekTaskSource() const;
+  RegisteredTaskSource& PeekTaskSource() const;
 
   // Removes and returns the highest priority TaskSource in this PriorityQueue.
   // Cannot be called on an empty PriorityQueue.
@@ -51,11 +51,10 @@ class BASE_EXPORT PriorityQueue {
   // empty.
   RegisteredTaskSource RemoveTaskSource(scoped_refptr<TaskSource> task_source);
 
-  // Updates the sort key of the TaskSource in |transaction_with_task_source| to
+  // Updates the sort key of the TaskSource in |transaction| to
   // match its current traits. No-ops if the TaskSource is not in the
   // PriorityQueue or the PriorityQueue is empty.
-  void UpdateSortKey(
-      TransactionWithOwnedTaskSource transaction_with_task_source);
+  void UpdateSortKey(TaskSource::Transaction transaction);
 
   // Returns true if the PriorityQueue is empty.
   bool IsEmpty() const;

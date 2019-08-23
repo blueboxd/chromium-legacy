@@ -37,6 +37,22 @@ DawnBindingType AsDawnEnum<DawnBindingType>(const WTF::String& webgpu_enum) {
 }
 
 template <>
+DawnTextureComponentType AsDawnEnum<DawnTextureComponentType>(
+    const WTF::String& webgpu_enum) {
+  if (webgpu_enum == "float") {
+    return DAWN_TEXTURE_COMPONENT_TYPE_FLOAT;
+  }
+  if (webgpu_enum == "uint") {
+    return DAWN_TEXTURE_COMPONENT_TYPE_UINT;
+  }
+  if (webgpu_enum == "sint") {
+    return DAWN_TEXTURE_COMPONENT_TYPE_SINT;
+  }
+  NOTREACHED();
+  return DAWN_TEXTURE_COMPONENT_TYPE_FORCE32;
+}
+
+template <>
 DawnCompareFunction AsDawnEnum<DawnCompareFunction>(
     const WTF::String& webgpu_enum) {
   if (webgpu_enum == "never") {

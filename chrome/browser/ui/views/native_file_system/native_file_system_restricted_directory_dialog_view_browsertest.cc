@@ -22,6 +22,7 @@ class NativeFileSystemRestrictedDirectoryDialogViewTest
   void ShowUi(const std::string& name) override {
     widget_ = NativeFileSystemRestrictedDirectoryDialogView::ShowDialog(
         kTestOrigin, base::FilePath(FILE_PATH_LITERAL("/foo/bar")),
+        /*is_directory=*/true,
         base::BindLambdaForTesting([&](SensitiveDirectoryResult result) {
           callback_called_ = true;
           callback_result_ = result;

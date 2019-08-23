@@ -15,7 +15,6 @@ import org.chromium.content_public.browser.WebContents;
 public class WebVrTestFramework extends WebXrVrTestFramework {
     public WebVrTestFramework(ChromeActivityTestRule rule) {
         super(rule);
-        mShouldExpectConsentDialog = false;
     }
 
     /**
@@ -52,5 +51,16 @@ public class WebVrTestFramework extends WebXrVrTestFramework {
     @Override
     public void endSession(WebContents webContents) {
         runJavaScriptOrFail("vrDisplay.exitPresent()", POLL_TIMEOUT_SHORT_MS, webContents);
+    }
+
+    /**
+     * Checks whether a WebVR session would trigger the consent dialog.
+     *
+     * @param webContents The WebContents to check in.
+     * @return False, as WebVR doesn't use the consent dialog.
+     */
+    @Override
+    public boolean shouldExpectConsentDialog(WebContents webContents) {
+        return false;
     }
 }

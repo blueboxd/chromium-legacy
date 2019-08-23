@@ -49,6 +49,7 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
   void OverrideContentSecurityPolicyScriptSrc(const std::string& data) override;
   void OverrideContentSecurityPolicyObjectSrc(const std::string& data) override;
   void OverrideContentSecurityPolicyChildSrc(const std::string& data) override;
+  void OverrideContentSecurityPolicyWorkerSrc(const std::string& data) override;
   void DisableDenyXFrameOptions() override;
   void EnableReplaceI18nInJS() override;
   std::string GetSource() override;
@@ -120,6 +121,8 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
   std::string object_src_;
   bool frame_src_set_ = false;
   std::string frame_src_;
+  bool worker_src_set_ = false;
+  std::string worker_src_;
   bool deny_xframe_options_ = true;
   bool add_load_time_data_defaults_ = true;
   bool replace_existing_source_ = true;

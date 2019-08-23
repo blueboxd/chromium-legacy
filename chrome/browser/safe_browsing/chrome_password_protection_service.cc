@@ -605,7 +605,7 @@ bool ChromePasswordProtectionService::IsPingingEnabled(
   if (trigger_type == LoginReputationClientRequest::PASSWORD_REUSE_EVENT) {
     if (password_type.account_type() ==
         ReusedPasswordAccountType::SAVED_PASSWORD)
-      return true;
+      return IsExtendedReporting();
 
     PasswordProtectionTrigger trigger_level =
         GetPasswordProtectionWarningTriggerPref(password_type);
@@ -812,9 +812,10 @@ void ChromePasswordProtectionService::
     sync_pb::GaiaPasswordReuse gaia_password_reuse_event;
     *gaia_password_reuse_event.mutable_reuse_lookup() = reuse_lookup;
 
+    WebUIInfoSingleton::GetInstance()->AddToSecurityEvents(
+        gaia_password_reuse_event);
     SecurityEventRecorderFactory::GetForProfile(profile_)
         ->RecordGaiaPasswordReuse(gaia_password_reuse_event);
-    // TODO(bdea): Add other gaia events to PGEvents.
   } else {
     syncer::UserEventService* user_event_service =
         browser_sync::UserEventServiceFactory::GetForProfile(profile_);

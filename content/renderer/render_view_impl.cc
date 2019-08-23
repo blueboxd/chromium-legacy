@@ -485,6 +485,7 @@ void RenderViewImpl::Initialize(
   WebFrame* opener_frame =
       RenderFrameImpl::ResolveOpener(params->opener_frame_route_id);
 
+  // The newly created webview_ is owned by this instance.
   webview_ = WebView::Create(this, params->hidden,
                              /*compositing_enabled=*/true,
                              opener_frame ? opener_frame->View() : nullptr);
@@ -1022,12 +1023,15 @@ RenderViewImpl* RenderViewImpl::Create(
 
 void RenderViewImpl::Destroy() {
   GetWidget()->PrepareForClose();
-  GetWidget()->Close(std::move(render_widget_));
 
+  webview_->Close();
   // The webview_ is already destroyed by the time we get here, remove any
   // references to it.
   g_view_map.Get().erase(webview_);
   webview_ = nullptr;
+
+  GetWidget()->Close(std::move(render_widget_));
+
   g_routing_id_view_map.Get().erase(GetRoutingID());
 
   delete this;
@@ -1520,6 +1524,7 @@ void RenderViewImpl::AttachWebFrameWidget(blink::WebFrameWidget* frame_widget) {
   // The previous WebFrameWidget must already be detached by CloseForFrame().
   DCHECK(!frame_widget_);
   frame_widget_ = frame_widget;
+  GetWidget()->SetWebWidgetInternal(frame_widget);
 
   // Initialization for the WebFrameWidget that should only occur for the main
   // frame, and that uses types not allowed in blink. This should maybe be
@@ -1535,6 +1540,9 @@ void RenderViewImpl::DetachWebFrameWidget() {
   DCHECK(frame_widget_);
   frame_widget_->Close();
   frame_widget_ = nullptr;
+
+  // This just clears the webwidget_internal_ member from RenderWidget.
+  GetWidget()->SetWebWidgetInternal(nullptr);
 }
 
 void RenderViewImpl::SetZoomLevel(double zoom_level) {

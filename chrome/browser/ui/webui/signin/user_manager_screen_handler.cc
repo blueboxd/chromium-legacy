@@ -349,10 +349,10 @@ void UserManagerScreenHandler::HandleAuthenticatedLaunchUser(
     // still have a hash of the old one.  The new way of checking a password
     // change makes use of a token so we do that... if it's available.
     if (!oauth_client_) {
-      oauth_client_.reset(new gaia::GaiaOAuthClient(
+      oauth_client_ = std::make_unique<gaia::GaiaOAuthClient>(
           content::BrowserContext::GetDefaultStoragePartition(
               web_ui()->GetWebContents()->GetBrowserContext())
-              ->GetURLLoaderFactoryForBrowserProcess()));
+              ->GetURLLoaderFactoryForBrowserProcess());
     }
 
     const std::string token = entry->GetPasswordChangeDetectionToken();

@@ -166,6 +166,13 @@
         '|content/browser/renderer_host/delegated' \
         '|content/common/gpu/client/' \
     },
+    'auralinux_accessibility': {
+      'filepath':
+        'ui/accessibility/platform/.*auralinux.*' \
+        '|ui/views/accessibility/.*auralinux.*' \
+        '|chrome/browser/ui/views/accessibility/.*auralinux.*' \
+        '|content/browser/accessibility/.*auralinux.*' \
+    },
     'autoclick': {
       'filepath': 'ash/autoclick/',
     },
@@ -1977,6 +1984,7 @@
     'aura_compositor': ['danakj+watch@chromium.org',
                         'jbauman+watch@chromium.org',
                         'kalyan.kondapally@intel.com'],
+    'auralinux_accessibility': ['mrobinson@igalia.com'],
     'autoclick': ['katie+watch@chromium.org'],
     'autofill': ['anthonyvd+autofillwatch@chromium.org',
                  'ftirelo+autofillwatch@chromium.org',

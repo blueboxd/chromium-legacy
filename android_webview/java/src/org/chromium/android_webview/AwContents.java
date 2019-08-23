@@ -2466,19 +2466,19 @@ public class AwContents implements SmartClipProvider {
      * new {@code listener} receives messages immediately if the message's origin also matches the
      * new {@code allowedOriginRules}. {@code jsObjectName} will take effect since next navigation.
      *
-     * @param listener        The {@link WebMessageListener} to be called when received
-     *                        onPostMessage().
      * @param jsObjectName    The name for the injected JavaScript object.
      * @param allowedOrigins  A list of matching rules for the allowed origins.
      *                        The JavaScript object will be injected when the frame's origin matches
      *                        any one of the allowed origins. If a wildcard "*" is provided, it will
      *                        inject JavaScript object to all frames.
+     * @param listener        The {@link WebMessageListener} to be called when received
+     *                        onPostMessage().
      * @throws IllegalArgumentException if one of the allowedOriginRules is invalid or one of
      *                                  listener, jsObjectName and allowedOriginRules is {@code
      *                                  null}.
      */
-    public void setWebMessageListener(@NonNull WebMessageListener listener,
-            @NonNull String jsObjectName, @NonNull String[] allowedOriginRules) {
+    public void setWebMessageListener(@NonNull String jsObjectName,
+            @NonNull String[] allowedOriginRules, @NonNull WebMessageListener listener) {
         if (listener == null) {
             throw new IllegalArgumentException("listener shouldn't be null");
         }
@@ -2508,7 +2508,7 @@ public class AwContents implements SmartClipProvider {
      *  Removes the {@link WebMessageListener} sets by {@link setWebMessageListener}. It then won't
      * inject JavaScript object for navigation since next navigation.
      */
-    public void removeWebMessageListener() {
+    public void unsetWebMessageListener() {
         mWebMessageListener = null;
         nativeSetJsApiService(
                 mNativeAwContents, /* needToInjectJsObject */ false, "", new String[0]);
@@ -2519,8 +2519,8 @@ public class AwContents implements SmartClipProvider {
      * WebMessageListener}.
      */
     @CalledByNative
-    public void onPostMessage(String message, String sourceOrigin, boolean isMainFrame,
-            JsReplyProxy replyProxy, int[] ports) {
+    public void onPostMessage(String message, String sourceOrigin, boolean isMainFrame, int[] ports,
+            JsReplyProxy replyProxy) {
         if (mWebMessageListener == null) return;
         MessagePort[] messagePorts = new MessagePort[ports.length];
         for (int i = 0; i < ports.length; ++i) {

@@ -67,12 +67,12 @@ void TestRequestPeer::OnTransferSizeUpdated(int transfer_size_diff) {
     dispatcher_->SetDefersLoading(context_->request_id, true);
 }
 
-void TestRequestPeer::OnReceivedCachedMetadata(const char* data, int len) {
+void TestRequestPeer::OnReceivedCachedMetadata(mojo_base::BigBuffer data) {
   EXPECT_TRUE(context_->received_response);
   EXPECT_FALSE(context_->complete);
   if (context_->cancelled)
     return;
-  context_->cached_metadata = std::vector<char>(data, data + len);
+  context_->cached_metadata = std::move(data);
 }
 
 void TestRequestPeer::OnCompletedRequest(

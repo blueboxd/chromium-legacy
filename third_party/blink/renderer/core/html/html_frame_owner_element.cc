@@ -132,6 +132,11 @@ bool ShouldLazilyLoadFrame(const Document& document,
     return false;
   }
 
+  // Skip automatic lazyload when reloading a page.
+  if (!RuntimeEnabledFeatures::AutoLazyLoadOnReloadsEnabled() &&
+      document.Loader() && IsReloadLoadType(document.Loader()->LoadType())) {
+    return false;
+  }
   return true;
 }
 

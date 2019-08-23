@@ -107,10 +107,10 @@ TEST_F(L10nUtilTest, FindMostRelevantLocale) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   dict->SetString("value", "de");
   available_locales.Append(std::move(dict));
-  dict.reset(new base::DictionaryValue);
+  dict = std::make_unique<base::DictionaryValue>();
   dict->SetString("value", "fr");
   available_locales.Append(std::move(dict));
-  dict.reset(new base::DictionaryValue);
+  dict = std::make_unique<base::DictionaryValue>();
   dict->SetString("value", "en-GB");
   available_locales.Append(std::move(dict));
 

@@ -48,6 +48,15 @@ TEST_F(FrameNodeImplTest, SafeDowncast) {
   EXPECT_EQ(static_cast<Node*>(node), base->ToNode());
 }
 
+using FrameNodeImplDeathTest = FrameNodeImplTest;
+
+TEST_F(FrameNodeImplDeathTest, SafeDowncast) {
+  auto process = CreateNode<ProcessNodeImpl>();
+  auto page = CreateNode<PageNodeImpl>();
+  auto frame = CreateNode<FrameNodeImpl>(process.get(), page.get());
+  ASSERT_DEATH(PageNodeImpl::FromNodeBase(frame.get()), "Check failed: .*");
+}
+
 TEST_F(FrameNodeImplTest, AddFrameHierarchyBasic) {
   auto process = CreateNode<ProcessNodeImpl>();
   auto page = CreateNode<PageNodeImpl>();

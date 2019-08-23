@@ -157,7 +157,7 @@ class DevToolsBackgroundServicesContextTest
   }
 
   void LogTestBackgroundServiceEvent(const std::string& log_message) {
-    context_->LogBackgroundServiceEventOnIO(
+    context_->LogBackgroundServiceEventOnCoreThread(
         service_worker_registration_id_, origin_,
         DevToolsBackgroundService::kBackgroundFetch, kEventName, kInstanceId,
         {{"key", log_message}});
@@ -346,12 +346,11 @@ TEST_F(DevToolsBackgroundServicesContextTest, RecordingExpiration) {
 
   // Logging should not happen.
   EXPECT_CALL(*this, OnEventReceived(_)).Times(0);
-  LogTestBackgroundServiceEvent("f1");
-
-  // Observers should be informed that recording stopped.
+  // Observers should be informed when recording stops.
   EXPECT_CALL(*this,
               OnRecordingStateChanged(
                   false, devtools::proto::BackgroundService::BACKGROUND_FETCH));
+  LogTestBackgroundServiceEvent("f1");
 
   task_environment_.RunUntilIdle();
 

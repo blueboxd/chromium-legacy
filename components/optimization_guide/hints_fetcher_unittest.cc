@@ -11,6 +11,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
@@ -19,6 +21,7 @@
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -74,6 +77,18 @@ class HintsFetcherTest : public testing::Test {
         network::mojom::ConnectionType::CONNECTION_4G);
   }
 
+  void SeedCoveredHosts(const std::vector<std::string>& hosts,
+                        base::Time host_invalid_time) {
+    DictionaryPrefUpdate hosts_fetched(
+        pref_service(), prefs::kHintsFetcherHostsSuccessfullyFetched);
+
+    for (const std::string& host : hosts) {
+      hosts_fetched->SetDoubleKey(
+          HashHostForDictionary(host),
+          host_invalid_time.ToDeltaSinceWindowsEpoch().InSecondsF());
+    }
+  }
+
   PrefService* pref_service() { return pref_service_.get(); }
 
   const base::Clock* GetMockClock() const {
@@ -106,6 +121,10 @@ class HintsFetcherTest : public testing::Test {
       EXPECT_TRUE(net::GetValueForKeyInQuery(pending_request.request.url, "key",
                                              &key_value));
     }
+  }
+
+  void SimulateNavigation(const std::string& host) {
+    HintsFetcher::RecordHintsFetcherCoverage(pref_service(), host);
   }
 
  private:
@@ -238,6 +257,142 @@ TEST_F(HintsFetcherTest, HintsFetchClearHostsSuccessfullyFetched) {
   for (const std::string& host : hosts) {
     EXPECT_FALSE(hosts_fetched->FindDoubleKey(HashHostForDictionary(host)));
   }
+}
+
+TEST_F(HintsFetcherTest, HintsFetcherHostsCovered) {
+  base::HistogramTester histogram_tester;
+  std::vector<std::string> hosts{"host1.com", "host2.com"};
+  base::Time host_invalid_time =
+      base::Time::Now() + base::TimeDelta().FromHours(1);
+
+  SeedCoveredHosts(hosts, host_invalid_time);
+
+  SimulateNavigation(hosts[0]);
+  SimulateNavigation(hosts[1]);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintsFetcher.WasHostCoveredByFetch", true, 2);
+}
+
+TEST_F(HintsFetcherTest, HintsFetcherCoveredHostExpired) {
+  base::HistogramTester histogram_tester;
+  std::string response_content;
+  std::vector<std::string> hosts{"host1.com", "host2.com"};
+  base::Time host_invalid_time =
+      GetMockClock()->Now() - base::TimeDelta().FromHours(1);
+
+  SeedCoveredHosts(hosts, host_invalid_time);
+
+  // Fetch hints for new hosts.
+  std::vector<std::string> hosts_valid{"host3.com", "hosts4.com"};
+  EXPECT_TRUE(FetchHints(hosts_valid));
+  VerifyHasPendingFetchRequests();
+  EXPECT_TRUE(SimulateResponse(response_content, net::HTTP_OK));
+  EXPECT_TRUE(hints_fetched());
+
+  // The first pair of hosts should be recorded as failed to be
+  // covered by a recent hints fetcher as they have expired.
+  SimulateNavigation(hosts[0]);
+  SimulateNavigation(hosts[1]);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.WasHostCoveredByFetch", false, 2);
+
+  // The first pair of hosts should be removed from the dictionary
+  // pref as they have expired.
+  DictionaryPrefUpdate hosts_fetched(
+      pref_service(), prefs::kHintsFetcherHostsSuccessfullyFetched);
+  EXPECT_EQ(2u, hosts_fetched->size());
+
+  // Navigations to the valid hosts should be recorded as successfully
+  // covered.
+  SimulateNavigation(hosts_valid[0]);
+  SimulateNavigation(hosts_valid[1]);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintsFetcher.WasHostCoveredByFetch", true, 2);
+}
+
+TEST_F(HintsFetcherTest, HintsFetcherHostNotCovered) {
+  base::HistogramTester histogram_tester;
+  std::vector<std::string> hosts{"host1.com", "host2.com"};
+  base::Time host_invalid_time =
+      base::Time::Now() + base::TimeDelta().FromHours(1);
+
+  SeedCoveredHosts(hosts, host_invalid_time);
+  DictionaryPrefUpdate hosts_fetched(
+      pref_service(), prefs::kHintsFetcherHostsSuccessfullyFetched);
+  EXPECT_EQ(2u, hosts_fetched->size());
+
+  SimulateNavigation(hosts[0]);
+  SimulateNavigation(hosts[1]);
+  SimulateNavigation("newhost.com");
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintsFetcher.WasHostCoveredByFetch", true, 2);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintsFetcher.WasHostCoveredByFetch", false, 1);
+}
+
+TEST_F(HintsFetcherTest, HintsFetcherRemoveExpiredOnSuccessfullyFetched) {
+  base::HistogramTester histogram_tester;
+  std::string response_content;
+  std::vector<std::string> hosts_expired{"host1.com", "host2.com"};
+  base::Time host_invalid_time =
+      GetMockClock()->Now() - base::TimeDelta().FromHours(1);
+
+  SeedCoveredHosts(hosts_expired, host_invalid_time);
+
+  std::vector<std::string> hosts_valid{"host3.com", "host4.com"};
+
+  EXPECT_TRUE(FetchHints(hosts_valid));
+  VerifyHasPendingFetchRequests();
+  EXPECT_TRUE(SimulateResponse(response_content, net::HTTP_OK));
+  EXPECT_TRUE(hints_fetched());
+
+  // The two expired hosts should be removed from the dictionary pref as they
+  // have expired.
+  DictionaryPrefUpdate hosts_fetched(
+      pref_service(), prefs::kHintsFetcherHostsSuccessfullyFetched);
+  EXPECT_EQ(2u, hosts_fetched->size());
+
+  SimulateNavigation(hosts_expired[0]);
+  SimulateNavigation(hosts_expired[1]);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintsFetcher.WasHostCoveredByFetch", false, 2);
+
+  SimulateNavigation(hosts_valid[0]);
+  SimulateNavigation(hosts_valid[1]);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintsFetcher.WasHostCoveredByFetch", true, 2);
+}
+
+TEST_F(HintsFetcherTest, HintsFetcherSuccessfullyFetchedHostsFull) {
+  base::HistogramTester histogram_tester;
+  std::string response_content;
+  std::vector<std::string> hosts;
+  size_t max_hosts =
+      optimization_guide::features::MaxHostsForRecordingSuccessfullyCovered();
+  for (size_t i = 0; i < max_hosts - 1; i++) {
+    hosts.push_back("host" + base::NumberToString(i) + ".com");
+  }
+  base::Time host_expiry_time =
+      GetMockClock()->Now() + base::TimeDelta().FromHours(1);
+
+  SeedCoveredHosts(hosts, host_expiry_time);
+
+  std::vector<std::string> extra_hosts{"extra1.com", "extra2.com"};
+
+  EXPECT_TRUE(FetchHints(extra_hosts));
+  VerifyHasPendingFetchRequests();
+  EXPECT_TRUE(SimulateResponse(response_content, net::HTTP_OK));
+  EXPECT_TRUE(hints_fetched());
+
+  // Navigations to both the extra hosts should be recorded.
+  DictionaryPrefUpdate hosts_fetched(
+      pref_service(), prefs::kHintsFetcherHostsSuccessfullyFetched);
+  EXPECT_EQ(200u, hosts_fetched->size());
+
+  SimulateNavigation(extra_hosts[0]);
+  SimulateNavigation(extra_hosts[1]);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.WasHostCoveredByFetch", true, 2);
 }
 
 }  // namespace optimization_guide

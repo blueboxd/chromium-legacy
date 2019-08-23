@@ -859,7 +859,7 @@ TEST_F(HttpCacheTest, SimpleGETWithDiskFailures) {
   base::HistogramTester histograms;
   const std::string histogram_name = "HttpCache.ParallelWritingPattern";
 
-  cache.disk_cache()->set_soft_failures(true);
+  cache.disk_cache()->set_soft_failures_mask(MockDiskEntry::FAIL_ALL);
 
   // Read from the network, and fail to write to the cache.
   RunTransactionTest(cache.http_cache(), kSimpleGET_Transaction);
@@ -897,7 +897,7 @@ TEST_F(HttpCacheTest, SimpleGETWithDiskFailures2) {
   rv = c->callback.WaitForResult();
 
   // Start failing request now.
-  cache.disk_cache()->set_soft_failures(true);
+  cache.disk_cache()->set_soft_failures_mask(MockDiskEntry::FAIL_ALL);
 
   // We have to open the entry again to propagate the failure flag.
   disk_cache::Entry* en;
@@ -930,7 +930,7 @@ TEST_F(HttpCacheTest, SimpleGETWithDiskFailures3) {
   EXPECT_EQ(0, cache.disk_cache()->open_count());
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 
-  cache.disk_cache()->set_soft_failures(true);
+  cache.disk_cache()->set_soft_failures_mask(MockDiskEntry::FAIL_ALL);
 
   MockHttpRequest request(kSimpleGET_Transaction);
 
@@ -943,7 +943,7 @@ TEST_F(HttpCacheTest, SimpleGETWithDiskFailures3) {
   EXPECT_THAT(c->callback.GetResult(rv), IsOk());
 
   // Now verify that the entry was removed from the cache.
-  cache.disk_cache()->set_soft_failures(false);
+  cache.disk_cache()->set_soft_failures_mask(0);
 
   EXPECT_EQ(2, cache.network_layer()->transaction_count());
   EXPECT_EQ(1, cache.disk_cache()->open_count());
@@ -1535,6 +1535,26 @@ TEST_F(HttpCacheTest, SimpleGET_RestrictedPrefetchReuseIsLimited) {
   EXPECT_FALSE(response_info.restricted_prefetch);
   EXPECT_TRUE(response_info.was_cached);
   EXPECT_FALSE(response_info.network_accessed);
+}
+
+TEST_F(HttpCacheTest, SimpleGET_UnusedSincePrefetchWriteError) {
+  MockHttpCache cache;
+  HttpResponseInfo response_info;
+
+  // Do a prefetch.
+  MockTransaction prefetch_transaction(kSimpleGET_Transaction);
+  prefetch_transaction.load_flags |= LOAD_PREFETCH;
+  RunTransactionTestWithResponseInfoAndGetTiming(
+      cache.http_cache(), prefetch_transaction, &response_info,
+      BoundTestNetLog().bound(), nullptr);
+  EXPECT_TRUE(response_info.unused_since_prefetch);
+  EXPECT_FALSE(response_info.was_cached);
+
+  // Try to use it while injecting a failure on write.
+  cache.disk_cache()->set_soft_failures_mask(MockDiskEntry::FAIL_WRITE);
+  RunTransactionTestWithResponseInfoAndGetTiming(
+      cache.http_cache(), kSimpleGET_Transaction, &response_info,
+      BoundTestNetLog().bound(), nullptr);
 }
 
 static void PreserveRequestHeaders_Handler(const HttpRequestInfo* request,
@@ -3439,7 +3459,7 @@ TEST_F(HttpCacheTest, SimpleGET_ParallelWritingCacheWriteFailed) {
   EXPECT_EQ(1, cache.GetCountDoneHeadersQueue(kSimpleGET_Transaction.url));
 
   // Initiate Read from two writers and let the first get a cache write failure.
-  cache.disk_cache()->set_soft_failures(true);
+  cache.disk_cache()->set_soft_failures_mask(MockDiskEntry::FAIL_ALL);
   // We have to open the entry again to propagate the failure flag.
   disk_cache::Entry* en;
   cache.OpenBackendEntry(kSimpleGET_Transaction.url, &en);
@@ -4105,7 +4125,7 @@ TEST_F(HttpCacheTest, SimpleGET_ParallelWritersFailWrite) {
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 
   // Fail the request.
-  cache.disk_cache()->set_soft_failures(true);
+  cache.disk_cache()->set_soft_failures_mask(MockDiskEntry::FAIL_ALL);
   // We have to open the entry again to propagate the failure flag.
   disk_cache::Entry* en;
   cache.OpenBackendEntry(kSimpleGET_Transaction.url, &en);
@@ -7140,7 +7160,7 @@ TEST_F(HttpCacheTest, RangeGET_CacheReadError) {
   EXPECT_EQ(0, cache.disk_cache()->open_count());
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 
-  cache.disk_cache()->set_soft_failures_one_instance(true);
+  cache.disk_cache()->set_soft_failures_one_instance(MockDiskEntry::FAIL_ALL);
 
   // Try to read from the cache (40-49), which will fail quickly enough to
   // restart, due to the failure injected above.  This should still be a range
@@ -11096,6 +11116,37 @@ TEST_F(HttpCacheTest, StaleContentNotUsedWhenUnusable) {
 
   EXPECT_EQ(2, cache.network_layer()->transaction_count());
   EXPECT_FALSE(response_info.async_revalidation_requested);
+}
+
+TEST_F(HttpCacheTest, StaleContentWriteError) {
+  MockHttpCache cache;
+  base::SimpleTestClock clock;
+  cache.http_cache()->SetClockForTesting(&clock);
+  cache.network_layer()->SetClock(&clock);
+  clock.Advance(base::TimeDelta::FromSeconds(10));
+
+  ScopedMockTransaction stale_while_revalidate_transaction(
+      kSimpleGET_Transaction);
+  stale_while_revalidate_transaction.load_flags |=
+      LOAD_SUPPORT_ASYNC_REVALIDATION;
+  stale_while_revalidate_transaction.response_headers =
+      "Last-Modified: Sat, 18 Apr 2007 01:10:43 GMT\n"
+      "Age: 10801\n"
+      "Cache-Control: max-age=0,stale-while-revalidate=86400\n";
+
+  // Write to the cache.
+  RunTransactionTest(cache.http_cache(), stale_while_revalidate_transaction);
+
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+
+  // Send the request again but inject a write fault. Should still work
+  // (and not dereference any null pointers).
+  cache.disk_cache()->set_soft_failures_mask(MockDiskEntry::FAIL_WRITE);
+  HttpResponseInfo response_info;
+  RunTransactionTestWithResponseInfo(
+      cache.http_cache(), stale_while_revalidate_transaction, &response_info);
+
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
 }
 
 // Tests that we allow multiple simultaneous, non-overlapping transactions to

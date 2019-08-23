@@ -60,9 +60,7 @@ class UserDataDowngradeBrowserTestBase : public InProcessBrowserTest {
     base::WriteFile(last_version_file_path_, last_version.c_str(),
                     last_version.size());
 
-    moved_user_data_dir_ =
-        base::FilePath(user_data_dir_.value() + FILE_PATH_LITERAL(" (1)"))
-            .AddExtension(kDowngradeDeleteSuffix);
+    moved_user_data_dir_ = user_data_dir_.AddExtension(kDowngradeDeleteSuffix);
 
     return true;
   }

@@ -443,8 +443,6 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindLongString) {
     base::ScopedAllowBlockingForTesting allow_blocking;
     base::ReadFileToString(path, &query);
   }
-  if (query[query.length() - 1] == '\n')
-    query.pop_back();
   EXPECT_EQ(1, FindInPage16(web_contents, base::UTF8ToUTF16(query),
                             kFwd, kIgnoreCase, NULL));
 }
@@ -491,6 +489,25 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, SingleOccurrence) {
                                       ASCIIToUTF16("2010 Pro Bowl"), kBack,
                                       kIgnoreCase, NULL, &second_rect));
   ASSERT_EQ(first_rect, second_rect);
+}
+
+// Find the whole text file page and find count should be 1.
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindWholeFileContent) {
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  base::FilePath path = ui_test_utils::GetTestFilePath(
+      base::FilePath().AppendASCII("find_in_page"),
+      base::FilePath().AppendASCII("find_test.txt"));
+  ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(path));
+
+  std::string query;
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    base::ReadFileToString(path, &query);
+  }
+  EXPECT_EQ(1, FindInPage16(web_contents, base::UTF8ToUTF16(query), false,
+                            false, NULL));
 }
 
 // This test loads a single-frame page and makes sure the ordinal returned makes

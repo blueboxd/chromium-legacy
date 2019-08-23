@@ -182,6 +182,8 @@ base::FilePath CreateTemporaryFileWithSuggestedName(
 
   // Make filename unique.
   temp_path2 = base::GetUniquePath(temp_path2);
+  if (temp_path2.empty())
+    return base::FilePath();  // Failed to make a unique path.
 
   base::File::Error replace_file_error = base::File::FILE_OK;
   if (!ReplaceFile(temp_path1, temp_path2, &replace_file_error))

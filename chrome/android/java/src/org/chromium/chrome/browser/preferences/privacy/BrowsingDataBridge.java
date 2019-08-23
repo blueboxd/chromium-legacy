@@ -120,6 +120,20 @@ public final class BrowsingDataBridge {
     }
 
     /**
+     * This method tests clearing of specified types of browsing data for incognito profile.
+     * @param dataTypes An array of browsing data types to delete, represented as values from
+     *                  the shared enum {@link BrowsingDataType}.
+     * @param timePeriod The time period for which to delete the data.
+     */
+    public void clearBrowsingDataIncognitoForTesting(
+            OnClearBrowsingDataListener listener, int[] dataTypes, @TimePeriod int timePeriod) {
+        assert mClearBrowsingDataListener == null;
+        mClearBrowsingDataListener = listener;
+        nativeClearBrowsingData(getProfile().getOffTheRecordProfile(), dataTypes, timePeriod,
+                new String[0], new int[0], new String[0], new int[0]);
+    }
+
+    /**
      * This fetches sites (registerable domains) that we consider important. This combines many
      * pieces of information, including site engagement and permissions. The callback is called
      * with the list of important registerable domains.

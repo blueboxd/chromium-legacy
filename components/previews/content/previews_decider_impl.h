@@ -123,7 +123,7 @@ class PreviewsDeciderImpl : public PreviewsDecider,
   void SetIgnoreLongTermBlackListForServerPreviews(
       bool ignore_long_term_blacklist_for_server_previews);
 
-  bool LoadPageHints(const GURL& url) override;
+  bool LoadPageHints(content::NavigationHandle* navigation_handle) override;
 
   bool GetResourceLoadingHints(
       const GURL& url,

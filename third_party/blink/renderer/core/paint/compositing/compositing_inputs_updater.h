@@ -61,7 +61,6 @@ class CompositingInputsUpdater {
     bool needs_reparent_scroll_for_absolute = false;
     bool needs_reparent_scroll_for_fixed = false;
 
-    bool is_under_video = false;
     bool is_under_position_sticky = false;
   };
 

@@ -47,7 +47,7 @@ Polymer({
   /** @private {boolean} */
   penMode_: false,
 
-  /** @type {Viewport} */
+  /** @type {?Viewport} */
   viewport: null,
 
   /** @type {?AnnotationTool} */
@@ -247,7 +247,7 @@ Polymer({
     const viewport = this.viewport;
     const pos = viewport.position;
     const size = viewport.size;
-    const zoom = viewport.zoom;
+    const zoom = viewport.getZoom();
     const documentWidth = viewport.getDocumentDimensions().width * zoom;
     // Adjust for page shadows.
     const y = pos.y - Viewport.PAGE_SHADOW.top * zoom;

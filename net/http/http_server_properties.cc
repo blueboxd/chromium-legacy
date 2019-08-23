@@ -232,16 +232,11 @@ void HttpServerProperties::SetHTTP11Required(
   MaybeQueueWriteProperties();
 }
 
-// static
-void HttpServerProperties::ForceHTTP11(SSLConfig* ssl_config) {
-  ssl_config->alpn_protos.clear();
-  ssl_config->alpn_protos.push_back(kProtoHTTP11);
-}
-
 void HttpServerProperties::MaybeForceHTTP11(const HostPortPair& server,
                                             SSLConfig* ssl_config) {
   if (RequiresHTTP11(server)) {
-    ForceHTTP11(ssl_config);
+    ssl_config->alpn_protos.clear();
+    ssl_config->alpn_protos.push_back(kProtoHTTP11);
   }
 }
 

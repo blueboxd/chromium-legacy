@@ -4,6 +4,7 @@
 
 #include "chrome/browser/performance_manager/public/frame_priority/frame_priority.h"
 
+#include <cstring>
 #include <utility>
 
 namespace performance_manager {
@@ -69,6 +70,15 @@ Vote::Vote(const Vote& rhs) = default;
 Vote& Vote::operator=(const Vote& rhs) = default;
 
 Vote::~Vote() = default;
+
+bool Vote::operator==(const Vote& vote) const {
+  return frame_node_ == vote.frame_node_ && priority_ == vote.priority_ &&
+         ::strcmp(reason_, vote.reason_) == 0;
+}
+
+bool Vote::operator!=(const Vote& vote) const {
+  return !(*this == vote);
+}
 
 bool Vote::IsValid() const {
   return frame_node_ && reason_;

@@ -108,7 +108,7 @@ BookmarkContextMenuController::BookmarkContextMenuController(
       model_(BookmarkModelFactory::GetForBrowserContext(profile)) {
   DCHECK(profile_);
   DCHECK(model_->loaded());
-  menu_model_.reset(new ui::SimpleMenuModel(this));
+  menu_model_ = std::make_unique<ui::SimpleMenuModel>(this);
   model_->AddObserver(this);
 
   BuildMenu();

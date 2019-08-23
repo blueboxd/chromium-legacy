@@ -101,8 +101,8 @@ class SigninCreateProfileHandlerTest : public BrowserWithTestWindowTest {
     BrowserWithTestWindowTest::SetUp();
     profile_manager()->DeleteAllTestingProfiles();
 
-    handler_.reset(new TestSigninCreateProfileHandler(web_ui(),
-                                                      profile_manager()));
+    handler_ = std::make_unique<TestSigninCreateProfileHandler>(
+        web_ui(), profile_manager());
   }
 
   void TearDown() override {

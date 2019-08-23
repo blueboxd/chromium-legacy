@@ -9,11 +9,13 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "chrome/browser/vr/service/xr_consent_prompt_level.h"
 #include "chrome/browser/vr/vr_export.h"
 
 namespace vr {
 
-typedef base::OnceCallback<void(bool)> OnUserConsentCallback;
+typedef base::OnceCallback<void(XrConsentPromptLevel, bool)>
+    OnUserConsentCallback;
 
 // Used for displaying a user consent dialog. Breaks the cyclic dependency
 // between device/vr and the Android UI code in browser.
@@ -27,6 +29,7 @@ class VR_EXPORT GvrConsentHelper {
 
   virtual void PromptUserAndGetConsent(int render_process_id,
                                        int render_frame_id,
+                                       XrConsentPromptLevel consent_level,
                                        OnUserConsentCallback) = 0;
 
  protected:

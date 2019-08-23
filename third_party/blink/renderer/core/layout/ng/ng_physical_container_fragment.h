@@ -84,7 +84,7 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
 
   ~NGPhysicalContainerFragment();
 
-  NGBreakToken* BreakToken() const { return break_token_.get(); }
+  const NGBreakToken* BreakToken() const { return break_token_.get(); }
 
   // Returns the children of |this|.
   //
@@ -153,7 +153,7 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
 
   static bool DependsOnPercentageBlockSize(const NGContainerFragmentBuilder&);
 
-  scoped_refptr<NGBreakToken> break_token_;
+  scoped_refptr<const NGBreakToken> break_token_;
   const std::unique_ptr<Vector<NGPhysicalOutOfFlowPositionedNode>>
       oof_positioned_descendants_;
 

@@ -3221,7 +3221,7 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       </message>
       <message desc="The text label for ChromeVox language switching checkbox."
         name="IDS_CHROMEVOX_OPTIONS_LANG_SWITCHING_CHECKBOX_LABEL">
-        Automatically switch ChromeVox voice based on language.
+        Automatically switch ChromeVox voice based on language
       </message>
       <message desc="Spoken to describe all rich text attributes of a node." name="IDS_CHROMEVOX_RICH_TEXT_ATTRIBUTES">
         Text formatting.
@@ -3656,10 +3656,10 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
         Dodger Blue
       </message>
       <message desc="An options page section header for options about ChromeVox rich text behavior. This section lets users set preferences on how rich text attributes should be indicated." name="IDS_CHROMEVOX_OPTIONS_RICH_TEXT_HEADER">
-        Rich Text Attributes
+        Formatting
       </message>
       <message desc="The text label for ChromeVox automatic rich text indication checkbox." name="IDS_CHROMEVOX_OPTIONS_RICH_TEXT_CHECKBOX_LABEL">
-        Announce rich text attributes
+        Announce text styling
       </message>
       <message desc="Labels the misspell list box." name="IDS_CHROMEVOX_OPTIONS_MISSPELL_DESCRIPTION">
         Indicate misspell:

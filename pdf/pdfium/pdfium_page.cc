@@ -617,19 +617,21 @@ void PDFiumPage::CalculateImages() {
 
 bool PDFiumPage::GetUnderlyingTextRangeForRect(const pp::FloatRect& rect,
                                                int* start_index,
-                                               uint32_t* char_len) {
+                                               int* char_len) {
   if (!available_)
     return false;
 
   FPDF_TEXTPAGE text_page = GetTextPage();
-  const uint32_t char_count = FPDFText_CountChars(text_page);
+  int char_count = FPDFText_CountChars(text_page);
+  if (char_count <= 0)
+    return false;
 
   int start_char_index = -1;
-  uint32_t cur_char_count = 0;
+  int cur_char_count = 0;
 
   // Iterate over page text to find such continuous characters whose mid-points
   // lie inside the rectangle.
-  for (uint32_t i = 0; i < char_count; ++i) {
+  for (int i = 0; i < char_count; ++i) {
     double char_left;
     double char_right;
     double char_bottom;

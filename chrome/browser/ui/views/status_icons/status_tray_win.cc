@@ -139,7 +139,7 @@ StatusTrayWin::~StatusTrayWin() {
 void StatusTrayWin::UpdateIconVisibilityInBackground(
     StatusIconWin* status_icon) {
   if (!state_changer_proxy_.get())
-    state_changer_proxy_.reset(new StatusTrayStateChangerProxyImpl);
+    state_changer_proxy_ = std::make_unique<StatusTrayStateChangerProxyImpl>();
 
   state_changer_proxy_->EnqueueChange(status_icon->icon_id(),
                                       status_icon->window());

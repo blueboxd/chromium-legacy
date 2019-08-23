@@ -84,9 +84,10 @@ void DataReductionProxySettings::InitDataReductionProxySettings(
   for (auto& observer : observers_)
     observer.OnSettingsInitialized();
 
-  if (proxy_config_client_) {
-    data_reduction_proxy_service_->SetCustomProxyConfigClient(
-        std::move(proxy_config_client_));
+  while (!proxy_config_clients_.empty()) {
+    data_reduction_proxy_service_->AddCustomProxyConfigClient(
+        std::move(proxy_config_clients_.back()));
+    proxy_config_clients_.pop_back();
   }
 }
 
@@ -325,15 +326,15 @@ void DataReductionProxySettings::RemoveDataReductionProxySettingsObserver(
   observers_.RemoveObserver(observer);
 }
 
-void DataReductionProxySettings::SetCustomProxyConfigClient(
-    network::mojom::CustomProxyConfigClientPtrInfo proxy_config_client) {
+void DataReductionProxySettings::AddCustomProxyConfigClient(
+    mojo::Remote<network::mojom::CustomProxyConfigClient> proxy_config_client) {
   if (data_reduction_proxy_service_) {
-    data_reduction_proxy_service_->SetCustomProxyConfigClient(
+    data_reduction_proxy_service_->AddCustomProxyConfigClient(
         std::move(proxy_config_client));
     return;
   }
 
-  proxy_config_client_ = std::move(proxy_config_client);
+  proxy_config_clients_.push_back(std::move(proxy_config_client));
 }
 
 // Metrics methods

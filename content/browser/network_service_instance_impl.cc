@@ -55,6 +55,12 @@ network::NetworkConnectionTracker* g_network_connection_tracker;
 bool g_network_service_is_responding = false;
 base::Time g_last_network_service_crash;
 
+std::deque<std::pair<std::string, base::Time>>& GetDebugEvents() {
+  static base::NoDestructor<std::deque<std::pair<std::string, base::Time>>>
+      debug_events;
+  return *debug_events;
+}
+
 std::unique_ptr<network::NetworkService>& GetLocalNetworkService() {
   static base::NoDestructor<
       base::SequenceLocalStorageSlot<std::unique_ptr<network::NetworkService>>>
@@ -123,6 +129,7 @@ void OnNetworkServiceCrash() {
   DCHECK(g_network_service_ptr->encountered_error());
   g_last_network_service_crash = base::Time::Now();
   GetCrashHandlersList().Notify();
+  AddNetworkServiceDebugEvent("ONSC");
 }
 
 // Parses the desired granularity of NetLog capturing specified by the command
@@ -199,6 +206,7 @@ network::mojom::NetworkService* GetNetworkService() {
         }
       }
 
+      AddNetworkServiceDebugEvent("START");
       network::mojom::NetworkServiceClientPtr client_ptr;
       auto client_request = mojo::MakeRequest(&client_ptr);
       // Call SetClient before creating NetworkServiceClient, as the latter
@@ -208,6 +216,7 @@ network::mojom::NetworkService* GetNetworkService() {
       g_network_service_is_responding = false;
       g_network_service_ptr->QueryVersion(base::BindRepeating(
           [](base::Time start_time, uint32_t) {
+            AddNetworkServiceDebugEvent("RESP");
             g_network_service_is_responding = true;
             base::TimeDelta delta = base::Time::Now() - start_time;
             UMA_HISTOGRAM_MEDIUM_TIMES("NetworkService.TimeToFirstResponse",
@@ -401,6 +410,26 @@ void PingNetworkService(base::OnceClosure closure) {
           std::move(closure).Run();
       },
       base::Passed(std::move(closure))));
+}
+
+void AddNetworkServiceDebugEvent(const std::string& event) {
+  auto& events = GetDebugEvents();
+  events.push_front({event, base::Time::Now()});
+  // Keep at most 20 most recent events.
+  if (events.size() > 20)
+    events.pop_back();
+}
+
+std::string GetNetworkServiceDebugEventsString() {
+  auto& events = GetDebugEvents();
+  if (events.empty())
+    return std::string();
+  std::stringstream stream;
+  base::Time now = base::Time::Now();
+  for (const auto& info : events) {
+    stream << info.first << ":" << (now - info.second).InSecondsF() << ",";
+  }
+  return stream.str();
 }
 
 }  // namespace content

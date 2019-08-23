@@ -21399,6 +21399,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="TabContextMenu_BookmarkAllTabs">
+  <obsolete>Deprecated due to removal.</obsolete>
   <owner>wittman@chromium.org</owner>
   <description>
     User selected Bookmark All Tabs from the tab context menu.
@@ -21406,6 +21407,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="TabContextMenu_CloseOtherTabs">
+  <obsolete>Deprecated due to removal.</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
@@ -21451,6 +21453,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="TabContextMenu_NewTab">
+  <obsolete>Deprecated due to removal.</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
@@ -21479,6 +21482,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="TabContextMenu_RestoreTab">
+  <obsolete>Deprecated due to removal.</obsolete>
   <owner>mpearson@chromium.org</owner>
   <owner>chrisha@chromium.org</owner>
   <description>

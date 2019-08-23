@@ -345,14 +345,20 @@ void AssistantInteractionController::OnCommittedQueryChanged(
   assistant::util::RecordAssistantQuerySource(assistant_query.source());
 }
 
+// TODO(dmblack): Set pending query from |metadata| and remove calls to set
+// pending query that occur outside of this method.
 void AssistantInteractionController::OnInteractionStarted(
-    bool is_voice_interaction) {
+    AssistantInteractionMetadataPtr metadata) {
   // Stop the interaction if the opt-in window is active.
   auto* assistant_setup = AssistantSetup::GetInstance();
   if (assistant_setup && assistant_setup->BounceOptInWindowIfActive()) {
     StopActiveInteraction(true);
     return;
   }
+
+  const bool is_voice_interaction =
+      chromeos::assistant::mojom::AssistantInteractionType::kVoice ==
+      metadata->type;
 
   if (is_voice_interaction) {
     // If the Assistant UI is not visible yet, and |is_voice_interaction| is

@@ -47,9 +47,6 @@ extern const char kAppShimBootstrapNameFragment[];
 // The shim will read this to determine which version of the framework to load.
 extern const char kRunningChromeVersionSymlinkName[];
 
-// Special app mode id used for the App Launcher.
-extern const char kAppListModeId[];
-
 // The process ID of the Chrome process that launched the app shim.
 // The presence of this switch instructs the app shim to send LaunchApp with
 // launch_now = false. This associates the shim without launching the app.

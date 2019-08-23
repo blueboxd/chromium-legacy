@@ -159,6 +159,7 @@ class URLRequestQuicPerfTest : public ::testing::Test {
     CertVerifyResult verify_result;
     verify_result.verified_cert = ImportCertFromFile(
         GetTestCertsDirectory(), "quic-chain.pem");
+    verify_result.is_issued_by_known_root = true;
     cert_verifier_.AddResultForCert(verify_result.verified_cert.get(),
                                     verify_result, OK);
   }

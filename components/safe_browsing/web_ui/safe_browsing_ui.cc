@@ -131,6 +131,21 @@ void WebUIInfoSingleton::ClearPGEvents() {
   std::vector<sync_pb::UserEventSpecifics>().swap(pg_event_log_);
 }
 
+void WebUIInfoSingleton::AddToSecurityEvents(
+    const sync_pb::GaiaPasswordReuse& event) {
+  if (!HasListener())
+    return;
+
+  for (auto* webui_listener : webui_instances_)
+    webui_listener->NotifySecurityEventJsListener(event);
+
+  security_event_log_.push_back(event);
+}
+
+void WebUIInfoSingleton::ClearSecurityEvents() {
+  std::vector<sync_pb::GaiaPasswordReuse>().swap(security_event_log_);
+}
+
 int WebUIInfoSingleton::AddToPGPings(
     const LoginReputationClientRequest& request) {
   if (!HasListener())
@@ -624,6 +639,57 @@ std::string SerializeCSBRR(const ClientSafeBrowsingReportRequest& report) {
   return report_request_serialized;
 }
 
+base::Value SerializeReuseLookup(
+    const PasswordReuseLookup password_reuse_lookup) {
+  std::string lookup_result;
+  switch (password_reuse_lookup.lookup_result()) {
+    case PasswordReuseLookup::UNSPECIFIED:
+      lookup_result = "UNSPECIFIED";
+      break;
+    case PasswordReuseLookup::WHITELIST_HIT:
+      lookup_result = "WHITELIST_HIT";
+      break;
+    case PasswordReuseLookup::CACHE_HIT:
+      lookup_result = "CACHE_HIT";
+      break;
+    case PasswordReuseLookup::REQUEST_SUCCESS:
+      lookup_result = "REQUEST_SUCCESS";
+      break;
+    case PasswordReuseLookup::REQUEST_FAILURE:
+      lookup_result = "REQUEST_FAILURE";
+      break;
+    case PasswordReuseLookup::URL_UNSUPPORTED:
+      lookup_result = "URL_UNSUPPORTED";
+      break;
+    case PasswordReuseLookup::ENTERPRISE_WHITELIST_HIT:
+      lookup_result = "ENTERPRISE_WHITELIST_HIT";
+      break;
+    case PasswordReuseLookup::TURNED_OFF_BY_POLICY:
+      lookup_result = "TURNED_OFF_BY_POLICY";
+      break;
+  }
+  return base::Value(lookup_result);
+}
+
+base::Value SerializeVerdict(const PasswordReuseLookup password_reuse_lookup) {
+  std::string verdict;
+  switch (password_reuse_lookup.verdict()) {
+    case PasswordReuseLookup::VERDICT_UNSPECIFIED:
+      verdict = "VERDICT_UNSPECIFIED";
+      break;
+    case PasswordReuseLookup::SAFE:
+      verdict = "SAFE";
+      break;
+    case PasswordReuseLookup::LOW_REPUTATION:
+      verdict = "LOW_REPUTATION";
+      break;
+    case PasswordReuseLookup::PHISHING:
+      verdict = "PHISHING";
+      break;
+  }
+  return base::Value(verdict);
+}
+
 base::DictionaryValue SerializePGEvent(
     const sync_pb::UserEventSpecifics& event) {
   base::DictionaryValue result;
@@ -684,52 +750,10 @@ base::DictionaryValue SerializePGEvent(
   }
 
   if (reuse.has_reuse_lookup()) {
-    std::string lookup_result;
-    switch (reuse.reuse_lookup().lookup_result()) {
-      case PasswordReuseLookup::UNSPECIFIED:
-        lookup_result = "UNSPECIFIED";
-        break;
-      case PasswordReuseLookup::WHITELIST_HIT:
-        lookup_result = "WHITELIST_HIT";
-        break;
-      case PasswordReuseLookup::CACHE_HIT:
-        lookup_result = "CACHE_HIT";
-        break;
-      case PasswordReuseLookup::REQUEST_SUCCESS:
-        lookup_result = "REQUEST_SUCCESS";
-        break;
-      case PasswordReuseLookup::REQUEST_FAILURE:
-        lookup_result = "REQUEST_FAILURE";
-        break;
-      case PasswordReuseLookup::URL_UNSUPPORTED:
-        lookup_result = "URL_UNSUPPORTED";
-        break;
-      case PasswordReuseLookup::ENTERPRISE_WHITELIST_HIT:
-        lookup_result = "ENTERPRISE_WHITELIST_HIT";
-        break;
-      case PasswordReuseLookup::TURNED_OFF_BY_POLICY:
-        lookup_result = "TURNED_OFF_BY_POLICY";
-        break;
-    }
     event_dict.SetPath({"reuse_lookup", "lookup_result"},
-                       base::Value(lookup_result));
-
-    std::string verdict;
-    switch (reuse.reuse_lookup().verdict()) {
-      case PasswordReuseLookup::VERDICT_UNSPECIFIED:
-        verdict = "VERDICT_UNSPECIFIED";
-        break;
-      case PasswordReuseLookup::SAFE:
-        verdict = "SAFE";
-        break;
-      case PasswordReuseLookup::LOW_REPUTATION:
-        verdict = "LOW_REPUTATION";
-        break;
-      case PasswordReuseLookup::PHISHING:
-        verdict = "PHISHING";
-        break;
-    }
-    event_dict.SetPath({"reuse_lookup", "verdict"}, base::Value(verdict));
+                       SerializeReuseLookup(reuse.reuse_lookup()));
+    event_dict.SetPath({"reuse_lookup", "verdict"},
+                       SerializeVerdict(reuse.reuse_lookup()));
     event_dict.SetPath({"reuse_lookup", "verdict_token"},
                        base::Value(reuse.reuse_lookup().verdict_token()));
   }
@@ -755,6 +779,28 @@ base::DictionaryValue SerializePGEvent(
     }
     event_dict.SetPath({"dialog_interaction", "interaction_result"},
                        base::Value(interaction_result));
+  }
+
+  std::string event_serialized;
+  JSONStringValueSerializer serializer(&event_serialized);
+  serializer.set_pretty_print(true);
+  serializer.Serialize(event_dict);
+  result.SetString("message", event_serialized);
+  return result;
+}
+
+base::DictionaryValue SerializeSecurityEvent(
+    const sync_pb::GaiaPasswordReuse& event) {
+  base::DictionaryValue result;
+
+  base::DictionaryValue event_dict;
+  if (event.has_reuse_lookup()) {
+    event_dict.SetPath({"reuse_lookup", "lookup_result"},
+                       SerializeReuseLookup(event.reuse_lookup()));
+    event_dict.SetPath({"reuse_lookup", "verdict"},
+                       SerializeVerdict(event.reuse_lookup()));
+    event_dict.SetPath({"reuse_lookup", "verdict_token"},
+                       base::Value(event.reuse_lookup().verdict_token()));
   }
 
   std::string event_serialized;
@@ -1234,6 +1280,21 @@ void SafeBrowsingUIHandler::GetPGEvents(const base::ListValue* args) {
   ResolveJavascriptCallback(base::Value(callback_id), events_sent);
 }
 
+void SafeBrowsingUIHandler::GetSecurityEvents(const base::ListValue* args) {
+  const std::vector<sync_pb::GaiaPasswordReuse>& events =
+      WebUIInfoSingleton::GetInstance()->security_event_log();
+
+  base::ListValue events_sent;
+
+  for (const sync_pb::GaiaPasswordReuse& event : events)
+    events_sent.GetList().push_back(SerializeSecurityEvent(event));
+
+  AllowJavascript();
+  std::string callback_id;
+  args->GetString(0, &callback_id);
+  ResolveJavascriptCallback(base::Value(callback_id), events_sent);
+}
+
 void SafeBrowsingUIHandler::GetPGPings(const base::ListValue* args) {
   const std::vector<LoginReputationClientRequest> requests =
       WebUIInfoSingleton::GetInstance()->pg_pings();
@@ -1352,6 +1413,12 @@ void SafeBrowsingUIHandler::NotifyPGEventJsListener(
   FireWebUIListener("sent-pg-event", SerializePGEvent(event));
 }
 
+void SafeBrowsingUIHandler::NotifySecurityEventJsListener(
+    const sync_pb::GaiaPasswordReuse& event) {
+  AllowJavascript();
+  FireWebUIListener("sent-security-event", SerializeSecurityEvent(event));
+}
+
 void SafeBrowsingUIHandler::NotifyPGPingJsListener(
     int token,
     const LoginReputationClientRequest& request) {
@@ -1417,6 +1484,10 @@ void SafeBrowsingUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getPGEvents", base::BindRepeating(&SafeBrowsingUIHandler::GetPGEvents,
                                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getSecurityEvents",
+      base::BindRepeating(&SafeBrowsingUIHandler::GetSecurityEvents,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getPGPings", base::BindRepeating(&SafeBrowsingUIHandler::GetPGPings,
                                         base::Unretained(this)));

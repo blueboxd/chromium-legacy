@@ -5,11 +5,11 @@
 #include <fuchsia/modular/cpp/fidl.h>
 #include <fuchsia/modular/cpp/fidl_test_base.h>
 #include <fuchsia/sys/cpp/fidl.h>
+#include <lib/sys/cpp/component_context.h>
 
 #include "base/bind.h"
+#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/scoped_service_binding.h"
-#include "base/fuchsia/service_directory.h"
-#include "base/fuchsia/service_directory_client.h"
 #include "base/fuchsia/service_provider_impl.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
@@ -37,8 +37,10 @@ class WebRunnerSmokeTest : public testing::Test {
     ASSERT_TRUE(test_server_.Start());
 
     fidl::InterfaceHandle<fuchsia::io::Directory> directory;
-    service_directory_ = std::make_unique<base::fuchsia::ServiceDirectory>(
-        directory.NewRequest());
+    outgoing_directory_.GetOrCreateDirectory("svc")->Serve(
+        fuchsia::io::OPEN_RIGHT_READABLE | fuchsia::io::OPEN_RIGHT_WRITABLE,
+        directory.NewRequest().TakeChannel());
+
     service_provider_ = std::make_unique<base::fuchsia::ServiceProviderImpl>(
         std::move(directory));
   }
@@ -89,7 +91,7 @@ class WebRunnerSmokeTest : public testing::Test {
       base::test::TaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
       base::test::TaskEnvironment::MainThreadType::IO};
 
-  std::unique_ptr<base::fuchsia::ServiceDirectory> service_directory_;
+  sys::OutgoingDirectory outgoing_directory_;
   std::unique_ptr<base::fuchsia::ServiceProviderImpl> service_provider_;
 
   net::EmbeddedTestServer test_server_;
@@ -104,8 +106,9 @@ TEST_F(WebRunnerSmokeTest, RequestHtmlAndImage) {
   fuchsia::sys::LaunchInfo launch_info = LaunchInfoWithServices();
   launch_info.url = test_server_.GetURL("/test.html").spec();
 
-  auto launcher = base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
-                      ->ConnectToServiceSync<fuchsia::sys::Launcher>();
+  auto launcher = base::fuchsia::ComponentContextForCurrentProcess()
+                      ->svc()
+                      ->Connect<fuchsia::sys::Launcher>();
 
   fuchsia::sys::ComponentControllerSyncPtr controller;
   launcher->CreateComponent(std::move(launch_info), controller.NewRequest());
@@ -124,8 +127,9 @@ TEST_F(WebRunnerSmokeTest, LifecycleTerminate) {
   launch_info.url = test_server_.GetURL("/test.html").spec();
   launch_info.directory_request = directory.NewRequest().TakeChannel();
 
-  auto launcher = base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
-                      ->ConnectToServiceSync<fuchsia::sys::Launcher>();
+  auto launcher = base::fuchsia::ComponentContextForCurrentProcess()
+                      ->svc()
+                      ->Connect<fuchsia::sys::Launcher>();
 
   fuchsia::sys::ComponentControllerPtr controller;
   launcher->CreateComponent(std::move(launch_info), controller.NewRequest());
@@ -154,8 +158,9 @@ TEST_F(WebRunnerSmokeTest, ComponentExitOnFrameClose) {
   fuchsia::sys::LaunchInfo launch_info = LaunchInfoWithServices();
   launch_info.url = test_server_.GetURL("/window_close.html").spec();
 
-  auto launcher = base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
-                      ->ConnectToService<fuchsia::sys::Launcher>();
+  auto launcher = base::fuchsia::ComponentContextForCurrentProcess()
+                      ->svc()
+                      ->Connect<fuchsia::sys::Launcher>();
 
   fuchsia::sys::ComponentControllerPtr controller;
   launcher->CreateComponent(std::move(launch_info), controller.NewRequest());
@@ -196,12 +201,13 @@ TEST_F(WebRunnerSmokeTest, RemoveSelfFromStoryOnFrameClose) {
   MockModuleContext module_context;
   EXPECT_CALL(module_context, RemoveSelfFromStory);
   base::fuchsia::ScopedServiceBinding<fuchsia::modular::ModuleContext> binding(
-      service_directory_.get(), &module_context);
+      &outgoing_directory_, &module_context);
   launch_info.additional_services->names.emplace_back(
       fuchsia::modular::ModuleContext::Name_);
 
-  auto launcher = base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
-                      ->ConnectToService<fuchsia::sys::Launcher>();
+  auto launcher = base::fuchsia::ComponentContextForCurrentProcess()
+                      ->svc()
+                      ->Connect<fuchsia::sys::Launcher>();
 
   fuchsia::sys::ComponentControllerPtr controller;
   launcher->CreateComponent(std::move(launch_info), controller.NewRequest());

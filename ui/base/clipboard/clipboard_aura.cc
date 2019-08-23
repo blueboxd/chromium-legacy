@@ -543,7 +543,7 @@ void ClipboardAura::WriteObjects(ClipboardBuffer buffer,
   DCHECK(CalledOnValidThread());
   DCHECK(IsSupportedClipboardBuffer(buffer));
   for (const auto& object : objects)
-    DispatchObject(static_cast<ObjectType>(object.first), object.second);
+    DispatchObject(object.first, object.second);
   ClipboardDataBuilder::CommitToClipboard(clipboard_internal_.get());
 }
 

@@ -92,10 +92,12 @@ void FlagsUIHandler::HandleRequestExperimentalFeatures(
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   version_info::Channel channel = chrome::GetChannel();
-  results.SetBoolean(flags_ui::kShowBetaChannelPromotion,
-                     channel == version_info::Channel::STABLE);
-  results.SetBoolean(flags_ui::kShowDevChannelPromotion,
-                     channel == version_info::Channel::BETA);
+  results.SetBoolean(
+      flags_ui::kShowBetaChannelPromotion,
+      channel == version_info::Channel::STABLE && !enterprise_features_only_);
+  results.SetBoolean(
+      flags_ui::kShowDevChannelPromotion,
+      channel == version_info::Channel::BETA && !enterprise_features_only_);
 #else
   results.SetBoolean(flags_ui::kShowBetaChannelPromotion, false);
   results.SetBoolean(flags_ui::kShowDevChannelPromotion, false);

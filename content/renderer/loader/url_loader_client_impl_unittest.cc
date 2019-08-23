@@ -150,18 +150,19 @@ TEST_F(URLLoaderClientImplTest, OnReceiveRedirect) {
 
 TEST_F(URLLoaderClientImplTest, OnReceiveCachedMetadata) {
   network::ResourceResponseHead response_head;
-  std::vector<uint8_t> metadata;
-  metadata.push_back('a');
+  std::vector<uint8_t> data;
+  data.push_back('a');
+  mojo_base::BigBuffer metadata(data);
 
   url_loader_client_->OnReceiveResponse(response_head);
-  url_loader_client_->OnReceiveCachedMetadata(metadata);
+  url_loader_client_->OnReceiveCachedMetadata(std::move(metadata));
 
   EXPECT_FALSE(request_peer_context_.received_response);
-  EXPECT_TRUE(request_peer_context_.cached_metadata.empty());
+  EXPECT_EQ(0u, request_peer_context_.cached_metadata.size());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(request_peer_context_.received_response);
   ASSERT_EQ(1u, request_peer_context_.cached_metadata.size());
-  EXPECT_EQ('a', request_peer_context_.cached_metadata[0]);
+  EXPECT_EQ('a', request_peer_context_.cached_metadata.data()[0]);
 }
 
 TEST_F(URLLoaderClientImplTest, OnTransferSizeUpdated) {

@@ -128,6 +128,19 @@ base::debug::CrashKeyString* GetRequestedOriginCrashKey() {
   return requested_origin_key;
 }
 
+void LogCanAccessDataForOriginCrashKeys(
+    const std::string& expected_process_lock,
+    const std::string& killed_process_origin_lock,
+    const std::string& requested_origin) {
+  base::debug::SetCrashKeyString(bad_message::GetRequestedSiteURLKey(),
+                                 expected_process_lock);
+  base::debug::SetCrashKeyString(bad_message::GetKilledProcessOriginLockKey(),
+                                 killed_process_origin_lock);
+
+  auto* requested_origin_key = GetRequestedOriginCrashKey();
+  base::debug::SetCrashKeyString(requested_origin_key, requested_origin);
+}
+
 }  // namespace
 
 // The SecurityState class is used to maintain per-child process security state
@@ -1262,10 +1275,43 @@ bool ChildProcessSecurityPolicyImpl::ChildProcessHasPermissionsForFile(
 bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(
     int child_id,
     const url::Origin& origin) {
-  bool success = CanAccessDataForOrigin(child_id, origin.GetURL());
+  GURL url_to_check;
+  if (origin.opaque()) {
+    auto precursor_tuple = origin.GetTupleOrPrecursorTupleIfOpaque();
+    if (precursor_tuple.IsInvalid()) {
+      // We don't have precursor information so we only allow access if
+      // the process lock isn't set yet.
+      base::AutoLock lock(lock_);
+      SecurityState* security_state = GetSecurityState(child_id);
+
+      if (security_state && security_state->origin_lock().is_empty())
+        return true;
+
+      std::string killed_process_origin_lock;
+      if (!security_state) {
+        killed_process_origin_lock = "(child id not found)";
+      } else {
+        killed_process_origin_lock = security_state->origin_lock().spec();
+      }
+      LogCanAccessDataForOriginCrashKeys("(empty)" /* expected_process_lock */,
+                                         killed_process_origin_lock,
+                                         origin.GetDebugString());
+
+      return false;
+    } else {
+      url_to_check = precursor_tuple.GetURL();
+    }
+  } else {
+    url_to_check = origin.GetURL();
+  }
+  bool success = CanAccessDataForOrigin(child_id, url_to_check);
   if (success)
     return true;
 
+  // Note: LogCanAccessDataForOriginCrashKeys() is called in the
+  // CanAccessDataForOrigin() call above. The code below overrides the origin
+  // crash key set in that call with data from |origin| because it provides
+  // more accurate information than the origin derived from |url_to_check|.
   auto* requested_origin_key = GetRequestedOriginCrashKey();
   base::debug::SetCrashKeyString(requested_origin_key, origin.GetDebugString());
   return false;
@@ -1298,9 +1344,6 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(int child_id,
   if (!can_access) {
     // Returning false here will result in a renderer kill.  Set some crash
     // keys that will help understand the circumstances of that kill.
-    base::debug::SetCrashKeyString(bad_message::GetRequestedSiteURLKey(),
-                                   expected_process_lock.spec());
-
     std::string killed_process_origin_lock;
     if (!security_state) {
       killed_process_origin_lock = "(child id not found)";
@@ -1309,12 +1352,9 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(int child_id,
     } else {
       killed_process_origin_lock = security_state->origin_lock().spec();
     }
-    base::debug::SetCrashKeyString(bad_message::GetKilledProcessOriginLockKey(),
-                                   killed_process_origin_lock);
-
-    auto* requested_origin_key = GetRequestedOriginCrashKey();
-    base::debug::SetCrashKeyString(requested_origin_key,
-                                   url.GetOrigin().spec());
+    LogCanAccessDataForOriginCrashKeys(expected_process_lock.spec(),
+                                       killed_process_origin_lock,
+                                       url.GetOrigin().spec());
   }
   return can_access;
 }

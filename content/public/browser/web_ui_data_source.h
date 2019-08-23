@@ -117,6 +117,8 @@ class WebUIDataSource {
       const std::string& data) = 0;
   virtual void OverrideContentSecurityPolicyChildSrc(
       const std::string& data) = 0;
+  virtual void OverrideContentSecurityPolicyWorkerSrc(
+      const std::string& data) = 0;
   virtual void DisableDenyXFrameOptions() = 0;
 
   // Replace i18n template strings in JS files. Needed for Web UIs that are

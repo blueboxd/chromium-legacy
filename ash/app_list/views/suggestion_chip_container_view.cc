@@ -89,9 +89,6 @@ SearchResultSuggestionChipView* SuggestionChipContainerView::GetResultViewAt(
 }
 
 int SuggestionChipContainerView::DoUpdate() {
-  if (IgnoreUpdateAndLayout())
-    return num_results();
-
   // Filter out priority suggestion chips with a non-default value
   // for |display_index|.
   auto filter_requested_index_chips = [](const SearchResult& r) -> bool {
@@ -166,9 +163,6 @@ const char* SuggestionChipContainerView::GetClassName() const {
 }
 
 void SuggestionChipContainerView::Layout() {
-  if (IgnoreUpdateAndLayout())
-    return;
-
   // Only show the chips that fit in this view's contents bounds.
   int total_width = 0;
   const int max_width = GetContentsBounds().width();
@@ -226,12 +220,6 @@ void SuggestionChipContainerView::OnTabletModeChanged(bool started) {
   // Enable/Disable chips' background blur based on tablet mode.
   for (auto* chip : suggestion_chip_views_)
     chip->SetBackgroundBlurEnabled(started);
-}
-
-bool SuggestionChipContainerView::IgnoreUpdateAndLayout() const {
-  // Ignore update and layout when this view is not shown.
-  const ash::AppListState state = contents_view_->GetActiveState();
-  return state != ash::AppListState::kStateApps;
 }
 
 }  // namespace app_list

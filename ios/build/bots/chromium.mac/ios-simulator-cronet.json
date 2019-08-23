@@ -2,7 +2,7 @@
   "comments": [
     "Cronet tests 64-bit iOS 9.3, 10.3, 11.4 and 12 and 13 simulators."
   ],
-  "xcode build version": "11M382q",
+  "xcode build version": "11m382q",
   "gn_args": [
     "additional_target_cpus=[\"x86\"]",
     "disable_brotli_filter=false",

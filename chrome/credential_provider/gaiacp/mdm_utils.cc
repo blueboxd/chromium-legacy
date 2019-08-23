@@ -5,9 +5,12 @@
 #include "chrome/credential_provider/gaiacp/mdm_utils.h"
 
 #include <windows.h>
+#include <winternl.h>
+#include <lm.h>  // Needed for PNTSTATUS
 
 #define _NTDEF_  // Prevent redefition errors, must come after <winternl.h>
 #include <MDMRegistration.h>  // For RegisterDeviceWithManagement()
+#include <ntsecapi.h>         // For LsaQueryInformationPolicy()
 
 #include <atlconv.h>
 
@@ -193,6 +196,39 @@ HRESULT ExtractRegistrationData(const base::Value& registration_data,
   return S_OK;
 }
 
+// Gets localalized name for builtin administrator account. Extracting
+// localized name for builtin administrator account requires DomainSid
+// to be passed onto the CreateWellKnownSid function unlike any other
+// WellKnownSid as per microsoft documentation. Thats why we need to first
+// extract the DomainSid (even for local accounts) and pass it as a
+// parameter to the CreateWellKnownSid function call.
+HRESULT GetLocalizedNameBuiltinAdministratorAccount(
+    base::string16* builtin_localized_admin_name) {
+  LSA_HANDLE PolicyHandle;
+  static LSA_OBJECT_ATTRIBUTES oa = {sizeof(oa)};
+  NTSTATUS status =
+      LsaOpenPolicy(0, &oa, POLICY_VIEW_LOCAL_INFORMATION, &PolicyHandle);
+  if (status >= 0) {
+    PPOLICY_ACCOUNT_DOMAIN_INFO ppadi;
+    status = LsaQueryInformationPolicy(
+        PolicyHandle, PolicyAccountDomainInformation, (void**)&ppadi);
+    if (status >= 0) {
+      BYTE well_known_sid[SECURITY_MAX_SID_SIZE];
+      DWORD size_local_users_group_sid = base::size(well_known_sid);
+      if (CreateWellKnownSid(::WinAccountAdministratorSid, ppadi->DomainSid,
+                             well_known_sid, &size_local_users_group_sid)) {
+        return LookupLocalizedNameBySid(well_known_sid,
+                                        builtin_localized_admin_name);
+      } else {
+        status = GetLastError();
+      }
+      LsaFreeMemory(ppadi);
+    }
+    LsaClose(PolicyHandle);
+  }
+  return status >= 0 ? S_OK : E_FAIL;
+}
+
 HRESULT RegisterWithGoogleDeviceManagement(const base::string16& mdm_url,
                                            const base::Value& properties) {
   // Make sure all the needed data is present in the dictionary.
@@ -232,6 +268,21 @@ HRESULT RegisterWithGoogleDeviceManagement(const base::string16& mdm_url,
     return E_FAIL;
   }
 
+  // Need localized local user group name for Administrators group
+  // for supporting account elevation scenarios.
+  base::string16 local_administrators_group_name = L"";
+  hr = LookupLocalizedNameForWellKnownSid(WinBuiltinAdministratorsSid,
+                                          &local_administrators_group_name);
+  if (FAILED(hr)) {
+    LOGFN(INFO) << "Failed to fetch name for administrators group";
+  }
+
+  base::string16 builtin_administrator_name = L"";
+  hr = GetLocalizedNameBuiltinAdministratorAccount(&builtin_administrator_name);
+  if (FAILED(hr)) {
+    LOGFN(INFO) << "Failed to fetch name for builtin administrator account";
+  }
+
   // Build the json data needed by the server.
   base::Value registration_data(base::Value::Type::DICTIONARY);
   registration_data.SetStringKey("id_token", id_token);
@@ -240,6 +291,11 @@ HRESULT RegisterWithGoogleDeviceManagement(const base::string16& mdm_url,
   registration_data.SetStringKey("username", username);
   registration_data.SetStringKey("domain", domain);
   registration_data.SetStringKey("serial_number", serial_number);
+  registration_data.SetStringKey("admin_local_user_group_name",
+                                 local_administrators_group_name);
+  registration_data.SetStringKey("builtin_administrator_name",
+                                 builtin_administrator_name);
+
   std::string registration_data_str;
   if (!base::JSONWriter::Write(registration_data, &registration_data_str)) {
     LOGFN(ERROR) << "JSONWriter::Write(registration_data)";

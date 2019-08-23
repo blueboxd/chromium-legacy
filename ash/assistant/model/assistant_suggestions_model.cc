@@ -5,6 +5,7 @@
 #include "ash/assistant/model/assistant_suggestions_model.h"
 
 #include "ash/assistant/model/assistant_suggestions_model_observer.h"
+#include "ash/public/cpp/assistant/proactive_suggestions.h"
 
 namespace ash {
 
@@ -51,12 +52,33 @@ AssistantSuggestionsModel::GetConversationStarters() const {
   return conversation_starters;
 }
 
+void AssistantSuggestionsModel::SetProactiveSuggestions(
+    std::unique_ptr<ProactiveSuggestions> proactive_suggestions) {
+  if (ProactiveSuggestions::AreEqual(proactive_suggestions.get(),
+                                     proactive_suggestions_.get())) {
+    return;
+  }
+
+  proactive_suggestions_ = std::move(proactive_suggestions);
+  NotifyProactiveSuggestionsChanged();
+}
+
+const ProactiveSuggestions* AssistantSuggestionsModel::GetProactiveSuggestions()
+    const {
+  return proactive_suggestions_.get();
+}
+
 void AssistantSuggestionsModel::NotifyConversationStartersChanged() {
   const std::map<int, const AssistantSuggestion*> conversation_starters =
       GetConversationStarters();
 
   for (AssistantSuggestionsModelObserver& observer : observers_)
     observer.OnConversationStartersChanged(conversation_starters);
+}
+
+void AssistantSuggestionsModel::NotifyProactiveSuggestionsChanged() {
+  for (AssistantSuggestionsModelObserver& observer : observers_)
+    observer.OnProactiveSuggestionsChanged(proactive_suggestions_.get());
 }
 
 }  // namespace ash

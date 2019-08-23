@@ -202,13 +202,13 @@ CachedMetadataHandler* ScriptResource::CreateCachedMetadataHandler(
       Encoding(), std::move(send_callback));
 }
 
-void ScriptResource::SetSerializedCachedMetadata(const uint8_t* data,
-                                                 size_t size) {
-  Resource::SetSerializedCachedMetadata(data, size);
+void ScriptResource::SetSerializedCachedMetadata(mojo_base::BigBuffer data) {
+  // Resource ignores the cached metadata.
+  Resource::SetSerializedCachedMetadata(mojo_base::BigBuffer());
   ScriptCachedMetadataHandler* cache_handler =
       static_cast<ScriptCachedMetadataHandler*>(Resource::CacheHandler());
   if (cache_handler) {
-    cache_handler->SetSerializedCachedMetadata(data, size);
+    cache_handler->SetSerializedCachedMetadata(std::move(data));
   }
 }
 

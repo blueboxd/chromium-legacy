@@ -2284,6 +2284,21 @@ AutotestPrivateGetArcAppWindowStateFunction::Run() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateSwapWindowsInSplitViewFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateSwapWindowsInSplitViewFunction::
+    AutotestPrivateSwapWindowsInSplitViewFunction() = default;
+AutotestPrivateSwapWindowsInSplitViewFunction::
+    ~AutotestPrivateSwapWindowsInSplitViewFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateSwapWindowsInSplitViewFunction::Run() {
+  ash::SplitViewTestApi().SwapWindows();
+  return RespondNow(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // AutotestPrivateAPI
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -171,10 +171,8 @@ bool WebViewFrameWidget::ScrollFocusedEditableElementIntoView() {
   return web_view_->ScrollFocusedEditableElementIntoView();
 }
 
-void WebViewFrameWidget::SetAnimationHost(cc::AnimationHost*) {
-  // The WebViewImpl already has its AnimationHost, the WebWidgetClient thus
-  // does not initialize and set another one here.
-  NOTREACHED();
+void WebViewFrameWidget::SetAnimationHost(cc::AnimationHost* host) {
+  web_view_->SetAnimationHost(host);
 }
 
 void WebViewFrameWidget::SetRootGraphicsLayer(GraphicsLayer* layer) {

@@ -31,7 +31,8 @@ struct InternalFormatType {
 
 // Convert a gfx::BufferFormat to a (internal format, type) combination from the
 // EGL_ANGLE_iosurface_client_buffer extension spec.
-InternalFormatType BufferFormatToInternalFormatType(gfx::BufferFormat format) {
+InternalFormatType BufferFormatToInternalFormatType(gfx::BufferFormat format,
+                                                    bool emulate_rgb) {
   switch (format) {
     case gfx::BufferFormat::R_8:
       return {GL_RED, GL_UNSIGNED_BYTE};
@@ -40,13 +41,16 @@ InternalFormatType BufferFormatToInternalFormatType(gfx::BufferFormat format) {
     case gfx::BufferFormat::RG_88:
       return {GL_RG, GL_UNSIGNED_BYTE};
     case gfx::BufferFormat::BGRX_8888:
-      return {GL_RGB, GL_UNSIGNED_BYTE};
+      if (emulate_rgb) {
+        return {GL_BGRA_EXT, GL_UNSIGNED_BYTE};
+      } else {
+        return {GL_RGB, GL_UNSIGNED_BYTE};
+      }
     case gfx::BufferFormat::BGRA_8888:
     case gfx::BufferFormat::RGBA_8888:
       return {GL_BGRA_EXT, GL_UNSIGNED_BYTE};
     case gfx::BufferFormat::RGBA_F16:
       return {GL_RGBA, GL_HALF_FLOAT};
-    case gfx::BufferFormat::UYVY_422:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
     case gfx::BufferFormat::BGRX_1010102:
       NOTIMPLEMENTED();
@@ -68,8 +72,10 @@ InternalFormatType BufferFormatToInternalFormatType(gfx::BufferFormat format) {
 }  // anonymous namespace
 
 GLImageIOSurfaceEGL::GLImageIOSurfaceEGL(const gfx::Size& size,
-                                         unsigned internalformat)
+                                         unsigned internalformat,
+                                         bool emulate_rgb)
     : GLImageIOSurface(size, internalformat),
+      emulate_rgb_(emulate_rgb),
       display_(GLSurfaceEGL::GetHardwareDisplay()),
       pbuffer_(EGL_NO_SURFACE),
       dummy_config_(nullptr),
@@ -117,7 +123,8 @@ bool GLImageIOSurfaceEGL::BindTexImageImpl(unsigned internalformat) {
   // in the constructor if we're going to be used to bind plane 0 to a texture,
   // or to transform YUV to RGB.
   if (pbuffer_ == EGL_NO_SURFACE) {
-    InternalFormatType formatType = BufferFormatToInternalFormatType(format_);
+    InternalFormatType formatType =
+        BufferFormatToInternalFormatType(format_, emulate_rgb_);
 
     // clang-format off
     const EGLint attribs[] = {

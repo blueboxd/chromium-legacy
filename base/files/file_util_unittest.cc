@@ -31,6 +31,7 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/scoped_environment_variable_override.h"
@@ -3874,44 +3875,52 @@ TEST_F(FileUtilTest, NonExistentContentUriTest) {
 #endif
 
 #if !defined(OS_NACL_NONSFI)
-TEST_F(FileUtilTest, GetUniquePathNumber) {
-  static constexpr FilePath::StringPieceType kSomeFile(FPL("SomeFile.txt"));
-  static constexpr FilePath::StringPieceType kSomeFileOne(
-      FPL("SomeFile (1).txt"));
-  static constexpr FilePath::StringPieceType kSomeSuffix(FPL(".SUFFIX"));
+TEST_F(FileUtilTest, GetUniquePathNumberNoFile) {
+  // This file does not exist.
+  const FilePath some_file = temp_dir_.GetPath().Append(FPL("SomeFile.txt"));
 
-  const FilePath& temp_dir = temp_dir_.GetPath();
+  // The path is unique as-is.
+  EXPECT_EQ(GetUniquePathNumber(some_file), 0);
+}
 
-  // The dir is empty to start with.
-  EXPECT_EQ(GetUniquePathNumber(temp_dir.Append(kSomeFile)), 0);
-  EXPECT_EQ(GetUniquePathNumber(temp_dir.Append(kSomeFile), kSomeSuffix), 0);
+TEST_F(FileUtilTest, GetUniquePathNumberFileExists) {
+  // Create a file with the desired path.
+  const FilePath some_file = temp_dir_.GetPath().Append(FPL("SomeFile.txt"));
+  ASSERT_TRUE(File(some_file, File::FLAG_CREATE | File::FLAG_WRITE).IsValid());
 
-  // Manufacture a collision with the suffixed file.
-  FilePath::StringType path = kSomeFile.as_string();
-  kSomeSuffix.AppendToString(&path);
-  ASSERT_EQ(WriteFile(temp_dir.Append(path), "hi", 2), 2);
-  // No collision unsuffixed.
-  EXPECT_EQ(GetUniquePathNumber(temp_dir.Append(kSomeFile)), 0);
-  // But there is with the suffix.
-  EXPECT_EQ(GetUniquePathNumber(temp_dir.Append(kSomeFile), kSomeSuffix), 1);
-  ASSERT_TRUE(DeleteFile(temp_dir.Append(path), false));
+  // The file exists, so the number 1 is needed to make it unique.
+  EXPECT_EQ(GetUniquePathNumber(some_file), 1);
+}
 
-  // Manufacture a collision with the unsuffixed file.
-  ASSERT_EQ(WriteFile(temp_dir.Append(kSomeFile), "hi", 2), 2);
-  // Both collide.
-  EXPECT_EQ(GetUniquePathNumber(temp_dir.Append(kSomeFile)), 1);
-  EXPECT_EQ(GetUniquePathNumber(temp_dir.Append(kSomeFile), kSomeSuffix), 1);
+TEST_F(FileUtilTest, GetUniquePathNumberFilesExist) {
+  // Create a file with the desired path and with it suffixed with " (1)"
+  const FilePath some_file = temp_dir_.GetPath().Append(FPL("SomeFile.txt"));
+  ASSERT_TRUE(File(some_file, File::FLAG_CREATE | File::FLAG_WRITE).IsValid());
+  const FilePath some_file_one =
+      temp_dir_.GetPath().Append(FPL("SomeFile (1).txt"));
+  ASSERT_TRUE(
+      File(some_file_one, File::FLAG_CREATE | File::FLAG_WRITE).IsValid());
 
-  // Now with the unsuffixed collision, manufacture a suffixed collision with
-  // the number '1'.
-  path = kSomeFileOne.as_string();
-  kSomeSuffix.AppendToString(&path);
-  ASSERT_EQ(WriteFile(temp_dir.Append(path), "hi", 2), 2);
-  EXPECT_EQ(GetUniquePathNumber(temp_dir.Append(kSomeFile), kSomeSuffix), 2);
+  // This time the number 2 is needed to make it unique.
+  EXPECT_EQ(GetUniquePathNumber(some_file), 2);
+}
 
-  // Clean up.
-  ASSERT_TRUE(DeleteFile(temp_dir.Append(path), false));
-  ASSERT_TRUE(DeleteFile(temp_dir.Append(kSomeFile), false));
+TEST_F(FileUtilTest, GetUniquePathNumberTooManyFiles) {
+  // Create a file with the desired path.
+  const FilePath some_file = temp_dir_.GetPath().Append(FPL("SomeFile.txt"));
+  ASSERT_TRUE(File(some_file, File::FLAG_CREATE | File::FLAG_WRITE).IsValid());
+
+  // Now create 100 collisions.
+  for (int i = 1; i <= kMaxUniqueFiles; ++i) {
+    ASSERT_EQ(GetUniquePathNumber(some_file), i);
+    ASSERT_TRUE(File(temp_dir_.GetPath().AppendASCII(
+                         StringPrintf("SomeFile (%d).txt", i)),
+                     File::FLAG_CREATE | File::FLAG_WRITE)
+                    .IsValid());
+  }
+
+  // Verify that the limit has been reached.
+  EXPECT_EQ(GetUniquePathNumber(some_file), -1);
 }
 #endif  // !defined(OS_NACL_NONSFI)
 

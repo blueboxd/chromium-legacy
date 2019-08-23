@@ -68,7 +68,7 @@ class BASE_EXPORT WorkerThread : public RefCountedThreadSafe<WorkerThread>,
     virtual void OnMainEntry(const WorkerThread* worker) = 0;
 
     // Called by |worker|'s thread to get a TaskSource from which to run a Task.
-    virtual RunIntentWithRegisteredTaskSource GetWork(WorkerThread* worker) = 0;
+    virtual RegisteredTaskSource GetWork(WorkerThread* worker) = 0;
 
     // Called by the WorkerThread after it ran a Task. If the Task's
     // TaskSource should be reenqueued, it is passed to |task_source|.

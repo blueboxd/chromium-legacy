@@ -118,7 +118,7 @@ class ThreadPostingAndRunningTask : public SimpleThread {
       post_and_queue_succeeded =
           tracker_->WillPostTask(&task_, sequence_->shutdown_behavior());
       sequence_->BeginTransaction().PushTask(std::move(task_));
-      task_source_ = tracker_->WillQueueTaskSource(std::move(sequence_));
+      task_source_ = tracker_->RegisterTaskSource(std::move(sequence_));
 
       post_and_queue_succeeded &= !!task_source_;
 
@@ -127,12 +127,11 @@ class ThreadPostingAndRunningTask : public SimpleThread {
     if (post_and_queue_succeeded &&
         (action_ == Action::RUN || action_ == Action::WILL_POST_AND_RUN)) {
       EXPECT_TRUE(task_source_);
-      auto run_intent = task_source_->WillRunTask();
+      task_source_.WillRunTask();
 
       // Expect RunAndPopNextTask to return nullptr since |sequence| is empty
       // after popping a task from it.
-      EXPECT_FALSE(tracker_->RunAndPopNextTask(
-          {std::move(task_source_), std::move(run_intent)}));
+      EXPECT_FALSE(tracker_->RunAndPopNextTask(std::move(task_source_)));
     }
   }
 
@@ -178,12 +177,11 @@ class ThreadPoolTaskTrackerTest
     if (!tracker_.WillPostTask(&task, traits.shutdown_behavior()))
       return nullptr;
     auto sequence = test::CreateSequenceWithTask(std::move(task), traits);
-    return tracker_.WillQueueTaskSource(std::move(sequence));
+    return tracker_.RegisterTaskSource(std::move(sequence));
   }
   RegisteredTaskSource RunAndPopNextTask(RegisteredTaskSource task_source) {
-    auto run_intent = task_source->WillRunTask();
-    return tracker_.RunAndPopNextTask(
-        {std::move(task_source), std::move(run_intent)});
+    task_source.WillRunTask();
+    return tracker_.RunAndPopNextTask(std::move(task_source));
   }
 
   // Calls tracker_->CompleteShutdown() on a new thread and expects it to block.
@@ -371,7 +369,7 @@ TEST_P(ThreadPoolTaskTrackerTest, WillPostBeforeShutdownQueueDuringShutdown) {
     EXPECT_EQ(1U, NumTasksExecuted());
     VERIFY_ASYNC_SHUTDOWN_IN_PROGRESS();
   } else {
-    EXPECT_FALSE(tracker_.WillQueueTaskSource(std::move(sequence)));
+    EXPECT_FALSE(tracker_.RegisterTaskSource(std::move(sequence)));
   }
 
   // Unblock shutdown by running the remaining BLOCK_SHUTDOWN task.

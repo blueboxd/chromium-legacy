@@ -12,12 +12,14 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "device/vr/buildflags/buildflags.h"
 #include "device/vr/vr_device.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/transform_util.h"
 
 namespace vr {
 
+namespace {
 bool IsValidStandingTransform(const gfx::Transform& transform) {
   if (!transform.IsInvertible() || transform.HasPerspective())
     return false;
@@ -152,6 +154,63 @@ device::mojom::VRDisplayInfoPtr ValidateVRDisplayInfo(
   return ret;
 }
 
+// TODO(crbug.com/995377): Report these from the device runtime instead.
+constexpr device::mojom::XRSessionFeature kOrientationDeviceFeatures[] = {
+    device::mojom::XRSessionFeature::REF_SPACE_VIEWER,
+    device::mojom::XRSessionFeature::REF_SPACE_LOCAL,
+    device::mojom::XRSessionFeature::REF_SPACE_LOCAL_FLOOR,
+};
+
+constexpr device::mojom::XRSessionFeature kGVRDeviceFeatures[] = {
+    device::mojom::XRSessionFeature::REF_SPACE_VIEWER,
+    device::mojom::XRSessionFeature::REF_SPACE_LOCAL,
+    device::mojom::XRSessionFeature::REF_SPACE_LOCAL_FLOOR,
+};
+
+#if BUILDFLAG(ENABLE_OPENVR)
+constexpr device::mojom::XRSessionFeature kOpenVRFeatures[] = {
+    device::mojom::XRSessionFeature::REF_SPACE_VIEWER,
+    device::mojom::XRSessionFeature::REF_SPACE_LOCAL,
+    device::mojom::XRSessionFeature::REF_SPACE_LOCAL_FLOOR,
+    device::mojom::XRSessionFeature::REF_SPACE_BOUNDED_FLOOR,
+};
+#endif
+
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
+constexpr device::mojom::XRSessionFeature kWindowsMixedRealityFeatures[] = {
+    device::mojom::XRSessionFeature::REF_SPACE_VIEWER,
+    device::mojom::XRSessionFeature::REF_SPACE_LOCAL,
+    device::mojom::XRSessionFeature::REF_SPACE_LOCAL_FLOOR,
+    device::mojom::XRSessionFeature::REF_SPACE_BOUNDED_FLOOR,
+};
+#endif
+
+#if BUILDFLAG(ENABLE_OPENXR)
+constexpr device::mojom::XRSessionFeature kOpenXRFeatures[] = {
+    device::mojom::XRSessionFeature::REF_SPACE_VIEWER,
+    device::mojom::XRSessionFeature::REF_SPACE_LOCAL,
+    device::mojom::XRSessionFeature::REF_SPACE_LOCAL_FLOOR,
+    device::mojom::XRSessionFeature::REF_SPACE_BOUNDED_FLOOR,
+};
+#endif
+
+#if BUILDFLAG(ENABLE_OCULUS_VR)
+constexpr device::mojom::XRSessionFeature kOculusFeatures[] = {
+    device::mojom::XRSessionFeature::REF_SPACE_VIEWER,
+    device::mojom::XRSessionFeature::REF_SPACE_LOCAL,
+    device::mojom::XRSessionFeature::REF_SPACE_LOCAL_FLOOR,
+    device::mojom::XRSessionFeature::REF_SPACE_BOUNDED_FLOOR,
+};
+#endif
+
+bool ContainsFeature(
+    base::span<const device::mojom::XRSessionFeature> feature_list,
+    device::mojom::XRSessionFeature feature) {
+  return std::find(feature_list.begin(), feature_list.end(), feature) !=
+         feature_list.end();
+}
+}  // anonymous namespace
+
 BrowserXRRuntime::BrowserXRRuntime(device::mojom::XRDeviceId id,
                                    device::mojom::XRRuntimePtr runtime,
                                    device::mojom::VRDisplayInfoPtr display_info)
@@ -177,6 +236,108 @@ void BrowserXRRuntime::ExitVrFromPresentingService() {
   if (service) {
     service->ExitPresent();
   }
+}
+
+bool BrowserXRRuntime::SupportsFeature(
+    device::mojom::XRSessionFeature feature) const {
+  switch (id_) {
+    // TODO(crbug.com/995370): Add ARCore feature support.
+    case device::mojom::XRDeviceId::ARCORE_DEVICE_ID:
+    case device::mojom::XRDeviceId::WEB_TEST_DEVICE_ID:
+    case device::mojom::XRDeviceId::FAKE_DEVICE_ID:
+      return true;
+    case device::mojom::XRDeviceId::ORIENTATION_DEVICE_ID:
+      return ContainsFeature(kOrientationDeviceFeatures, feature);
+    case device::mojom::XRDeviceId::GVR_DEVICE_ID:
+      return ContainsFeature(kGVRDeviceFeatures, feature);
+
+#if BUILDFLAG(ENABLE_OPENVR)
+    case device::mojom::XRDeviceId::OPENVR_DEVICE_ID:
+      return ContainsFeature(kOpenVRFeatures, feature);
+#endif
+
+#if BUILDFLAG(ENABLE_OCULUS_VR)
+    case device::mojom::XRDeviceId::OCULUS_DEVICE_ID:
+      return ContainsFeature(kOculusFeatures, feature);
+#endif
+
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
+    case device::mojom::XRDeviceId::WINDOWS_MIXED_REALITY_ID:
+      return ContainsFeature(kWindowsMixedRealityFeatures, feature);
+#endif
+
+#if BUILDFLAG(ENABLE_OPENXR)
+    case device::mojom::XRDeviceId::OPENXR_DEVICE_ID:
+      return ContainsFeature(kOpenXRFeatures, feature);
+#endif
+  }
+
+  NOTREACHED();
+}
+
+bool BrowserXRRuntime::SupportsAllFeatures(
+    const std::vector<device::mojom::XRSessionFeature>& features) const {
+  for (const auto& feature : features) {
+    if (!SupportsFeature(feature))
+      return false;
+  }
+
+  return true;
+}
+
+bool BrowserXRRuntime::SupportsCustomIPD() const {
+  switch (id_) {
+    case device::mojom::XRDeviceId::ARCORE_DEVICE_ID:
+    case device::mojom::XRDeviceId::WEB_TEST_DEVICE_ID:
+    case device::mojom::XRDeviceId::FAKE_DEVICE_ID:
+    case device::mojom::XRDeviceId::ORIENTATION_DEVICE_ID:
+    case device::mojom::XRDeviceId::GVR_DEVICE_ID:
+      return false;
+#if BUILDFLAG(ENABLE_OPENVR)
+    case device::mojom::XRDeviceId::OPENVR_DEVICE_ID:
+      return true;
+#endif
+#if BUILDFLAG(ENABLE_OCULUS_VR)
+    case device::mojom::XRDeviceId::OCULUS_DEVICE_ID:
+      return true;
+#endif
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
+    case device::mojom::XRDeviceId::WINDOWS_MIXED_REALITY_ID:
+      return true;
+#endif
+#if BUILDFLAG(ENABLE_OPENXR)
+    case device::mojom::XRDeviceId::OPENXR_DEVICE_ID:
+      return true;
+#endif
+  }
+
+  NOTREACHED();
+}
+
+bool BrowserXRRuntime::SupportsNonEmulatedHeight() const {
+  switch (id_) {
+    case device::mojom::XRDeviceId::ARCORE_DEVICE_ID:
+    case device::mojom::XRDeviceId::WEB_TEST_DEVICE_ID:
+    case device::mojom::XRDeviceId::FAKE_DEVICE_ID:
+    case device::mojom::XRDeviceId::ORIENTATION_DEVICE_ID:
+      return false;
+    case device::mojom::XRDeviceId::GVR_DEVICE_ID:
+#if BUILDFLAG(ENABLE_OPENVR)
+    case device::mojom::XRDeviceId::OPENVR_DEVICE_ID:
+#endif
+#if BUILDFLAG(ENABLE_OCULUS_VR)
+    case device::mojom::XRDeviceId::OCULUS_DEVICE_ID:
+#endif
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
+    case device::mojom::XRDeviceId::WINDOWS_MIXED_REALITY_ID:
+#endif
+#if BUILDFLAG(ENABLE_OPENXR)
+    case device::mojom::XRDeviceId::OPENXR_DEVICE_ID:
+#endif
+      return true;
+  }
+
+  NOTREACHED();
 }
 
 void BrowserXRRuntime::OnDisplayInfoChanged(

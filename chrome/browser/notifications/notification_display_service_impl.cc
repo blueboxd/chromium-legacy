@@ -17,6 +17,7 @@
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
 #include "chrome/browser/notifications/persistent_notification_handler.h"
+#include "chrome/browser/permissions/permission_request_notification_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/browser_thread.h"
@@ -131,6 +132,12 @@ NotificationDisplayServiceImpl::NotificationDisplayServiceImpl(Profile* profile)
     AddNotificationHandler(
         NotificationHandler::Type::EXTENSION,
         std::make_unique<extensions::ExtensionNotificationHandler>());
+#endif
+
+#if defined(OS_ANDROID)
+    AddNotificationHandler(
+        NotificationHandler::Type::PERMISSION_REQUEST,
+        std::make_unique<PermissionRequestNotificationHandler>());
 #endif
   }
 

@@ -14,6 +14,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentMethodData;
 import org.chromium.ui.modelutil.PropertyModel;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +48,14 @@ public class AssistantPaymentRequestModel extends PropertyModel {
     public static final WritableObjectPropertyKey<AutofillContact> CONTACT_DETAILS =
             new WritableObjectPropertyKey<>();
 
+    /** The login section title. */
+    public static final WritableObjectPropertyKey<String> LOGIN_SECTION_TITLE =
+            new WritableObjectPropertyKey<>();
+
+    /** The chosen login option. */
+    public static final WritableObjectPropertyKey<AssistantPaymentRequestLoginChoice>
+            SELECTED_LOGIN = new WritableObjectPropertyKey<>();
+
     /** The status of the third party terms & conditions. */
     public static final WritableIntPropertyKey TERMS_STATUS = new WritableIntPropertyKey();
 
@@ -60,6 +69,8 @@ public class AssistantPaymentRequestModel extends PropertyModel {
     public static final WritableObjectPropertyKey<String> ACCEPT_TERMS_AND_CONDITIONS_TEXT =
             new WritableObjectPropertyKey<>();
     public static final WritableBooleanPropertyKey SHOW_TERMS_AS_CHECKBOX =
+            new WritableBooleanPropertyKey();
+    public static final WritableBooleanPropertyKey REQUEST_LOGIN_CHOICE =
             new WritableBooleanPropertyKey();
 
     public static final WritableObjectPropertyKey<List<PersonalDataManager.AutofillProfile>>
@@ -75,6 +86,10 @@ public class AssistantPaymentRequestModel extends PropertyModel {
     public static final WritableObjectPropertyKey<Map<String, PaymentMethodData>>
             SUPPORTED_PAYMENT_METHODS = new WritableObjectPropertyKey<>();
 
+    /** The available login choices. */
+    public static final WritableObjectPropertyKey<List<AssistantPaymentRequestLoginChoice>>
+            AVAILABLE_LOGINS = new WritableObjectPropertyKey<>();
+
     /** The currently expanded section (may be null). */
     public static final WritableObjectPropertyKey<AssistantVerticalExpander> EXPANDED_SECTION =
             new WritableObjectPropertyKey<>();
@@ -87,10 +102,11 @@ public class AssistantPaymentRequestModel extends PropertyModel {
 
     public AssistantPaymentRequestModel() {
         super(DELEGATE, WEB_CONTENTS, VISIBLE, SHIPPING_ADDRESS, PAYMENT_METHOD, CONTACT_DETAILS,
-                TERMS_STATUS, REQUEST_NAME, REQUEST_EMAIL, REQUEST_PHONE, REQUEST_SHIPPING_ADDRESS,
-                REQUEST_PAYMENT, ACCEPT_TERMS_AND_CONDITIONS_TEXT, SHOW_TERMS_AS_CHECKBOX,
-                AVAILABLE_PROFILES, AVAILABLE_AUTOFILL_PAYMENT_METHODS,
-                SUPPORTED_BASIC_CARD_NETWORKS, SUPPORTED_PAYMENT_METHODS, EXPANDED_SECTION,
+                LOGIN_SECTION_TITLE, TERMS_STATUS, REQUEST_NAME, REQUEST_EMAIL, REQUEST_PHONE,
+                REQUEST_SHIPPING_ADDRESS, REQUEST_PAYMENT, ACCEPT_TERMS_AND_CONDITIONS_TEXT,
+                SHOW_TERMS_AS_CHECKBOX, REQUEST_LOGIN_CHOICE, AVAILABLE_PROFILES,
+                AVAILABLE_AUTOFILL_PAYMENT_METHODS, SUPPORTED_BASIC_CARD_NETWORKS,
+                SUPPORTED_PAYMENT_METHODS, AVAILABLE_LOGINS, EXPANDED_SECTION,
                 REQUIRE_BILLING_POSTAL_CODE, BILLING_POSTAL_CODE_MISSING_TEXT);
 
         /**
@@ -104,6 +120,7 @@ public class AssistantPaymentRequestModel extends PropertyModel {
         set(REQUEST_PHONE, false);
         set(REQUEST_PAYMENT, false);
         set(REQUEST_SHIPPING_ADDRESS, false);
+        set(REQUEST_LOGIN_CHOICE, false);
         set(REQUIRE_BILLING_POSTAL_CODE, false);
     }
 
@@ -153,6 +170,16 @@ public class AssistantPaymentRequestModel extends PropertyModel {
     }
 
     @CalledByNative
+    private void setLoginSectionTitle(String loginSectionTitle) {
+        set(LOGIN_SECTION_TITLE, loginSectionTitle);
+    }
+
+    @CalledByNative
+    private void setRequestLoginChoice(boolean requestLoginChoice) {
+        set(REQUEST_LOGIN_CHOICE, requestLoginChoice);
+    }
+
+    @CalledByNative
     private void setSupportedBasicCardNetworks(String[] supportedBasicCardNetworks) {
         set(SUPPORTED_BASIC_CARD_NETWORKS, Arrays.asList(supportedBasicCardNetworks));
     }
@@ -175,5 +202,24 @@ public class AssistantPaymentRequestModel extends PropertyModel {
     @CalledByNative
     private void setDelegate(AssistantPaymentRequestDelegate delegate) {
         set(DELEGATE, delegate);
+    }
+
+    /** Creates an empty list of login options. */
+    @CalledByNative
+    private static List<AssistantPaymentRequestLoginChoice> createLoginChoiceList() {
+        return new ArrayList<>();
+    }
+
+    /** Appends a login choice to {@code logins}. */
+    @CalledByNative
+    private void addLoginChoice(List<AssistantPaymentRequestLoginChoice> loginChoices,
+            String identifier, String label, int priority) {
+        loginChoices.add(new AssistantPaymentRequestLoginChoice(identifier, label, priority));
+    }
+
+    /** Sets the list of available login choices. */
+    @CalledByNative
+    private void setLoginChoices(List<AssistantPaymentRequestLoginChoice> loginChoices) {
+        set(AVAILABLE_LOGINS, loginChoices);
     }
 }

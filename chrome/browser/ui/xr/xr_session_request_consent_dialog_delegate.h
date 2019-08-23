@@ -6,11 +6,12 @@
 #define CHROME_BROWSER_UI_XR_XR_SESSION_REQUEST_CONSENT_DIALOG_DELEGATE_H_
 
 #include <map>
-#include <string>
 
 #include "base/callback.h"
 #include "base/optional.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
+#include "chrome/browser/vr/service/xr_consent_prompt_level.h"
+#include "url/gurl.h"
 
 namespace content {
 class WebContents;
@@ -27,7 +28,8 @@ class XrSessionRequestConsentDialogDelegate
  public:
   XrSessionRequestConsentDialogDelegate(
       content::WebContents* web_contents,
-      base::OnceCallback<void(bool)> response_callback);
+      XrConsentPromptLevel consent_level,
+      base::OnceCallback<void(XrConsentPromptLevel, bool)> response_callback);
   ~XrSessionRequestConsentDialogDelegate() override;
 
   // TabModalConfirmDialogDelegate:
@@ -50,9 +52,10 @@ class XrSessionRequestConsentDialogDelegate
 
   void OnUserActionTaken(bool allow);
 
-  base::OnceCallback<void(bool)> response_callback_;
+  base::OnceCallback<void(XrConsentPromptLevel, bool)> response_callback_;
 
-  std::string url_;
+  XrConsentPromptLevel consent_level_;
+  GURL url_;
 
   // Metrics related
   ConsentFlowMetricsHelper* metrics_helper_;  // Not owned.

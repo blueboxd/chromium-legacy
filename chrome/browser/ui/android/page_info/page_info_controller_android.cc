@@ -61,11 +61,11 @@ PageInfoControllerAndroid::PageInfoControllerAndroid(
       SecurityStateTabHelper::FromWebContents(web_contents);
   DCHECK(helper);
 
-  presenter_.reset(new PageInfo(
+  presenter_ = std::make_unique<PageInfo>(
       this, Profile::FromBrowserContext(web_contents->GetBrowserContext()),
       TabSpecificContentSettings::FromWebContents(web_contents), web_contents,
       nav_entry->GetURL(), helper->GetSecurityLevel(),
-      *helper->GetVisibleSecurityState()));
+      *helper->GetVisibleSecurityState());
 }
 
 PageInfoControllerAndroid::~PageInfoControllerAndroid() {}

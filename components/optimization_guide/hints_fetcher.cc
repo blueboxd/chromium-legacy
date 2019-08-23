@@ -66,6 +66,25 @@ void HintsFetcher::SetTimeClockForTesting(const base::Clock* time_clock) {
   time_clock_ = time_clock;
 }
 
+// static
+void HintsFetcher::RecordHintsFetcherCoverage(PrefService* pref_service,
+                                              const std::string& host) {
+  DictionaryPrefUpdate hosts_fetched(
+      pref_service, prefs::kHintsFetcherHostsSuccessfullyFetched);
+  base::Optional<double> value =
+      hosts_fetched->FindDoubleKey(HashHostForDictionary(host));
+  if (!value) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "OptimizationGuide.HintsFetcher.WasHostCoveredByFetch", false);
+    return;
+  }
+
+  base::Time host_valid_time = base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromSecondsD(*value));
+  UMA_HISTOGRAM_BOOLEAN("OptimizationGuide.HintsFetcher.WasHostCoveredByFetch",
+                        host_valid_time > base::Time::Now());
+}
+
 bool HintsFetcher::FetchOptimizationGuideServiceHints(
     const std::vector<std::string>& hosts,
     HintsFetchedCallback hints_fetched_callback) {
@@ -183,10 +202,43 @@ void HintsFetcher::HandleResponse(const std::string& get_hints_response_data,
 }
 
 void HintsFetcher::UpdateHostsSuccessfullyFetched() {
-  if (hosts_fetched_.size() == 0)
-    return;
   DictionaryPrefUpdate hosts_fetched_list(
       pref_service_, prefs::kHintsFetcherHostsSuccessfullyFetched);
+
+  // Remove any expired hosts.
+  std::vector<std::string> entries_to_remove;
+  for (const auto& it : hosts_fetched_list->DictItems()) {
+    if (base::Time::FromDeltaSinceWindowsEpoch(base::TimeDelta::FromSecondsD(
+            it.second.GetDouble())) < time_clock_->Now()) {
+      entries_to_remove.emplace_back(it.first);
+    }
+  }
+  for (const auto& host : entries_to_remove) {
+    hosts_fetched_list->Remove(host, nullptr);
+  }
+
+  if (hosts_fetched_.empty())
+    return;
+
+  // Ensure there is enough space in the dictionary pref for the
+  // most recent set of hosts to be stored.
+  if (hosts_fetched_list->size() + hosts_fetched_.size() >
+      features::MaxHostsForRecordingSuccessfullyCovered()) {
+    entries_to_remove.clear();
+    size_t num_entries_to_remove =
+        hosts_fetched_list->size() + hosts_fetched_.size() -
+        features::MaxHostsForRecordingSuccessfullyCovered();
+    for (const auto& it : hosts_fetched_list->DictItems()) {
+      if (entries_to_remove.size() >= num_entries_to_remove)
+        break;
+      entries_to_remove.emplace_back(it.first);
+    }
+    for (const auto& host : entries_to_remove) {
+      hosts_fetched_list->Remove(host, nullptr);
+    }
+  }
+
+  // Add the covered hosts in |hosts_fetched_| to the dictionary pref.
   base::Time host_invalid_time =
       time_clock_->Now() + kHintsFetcherHostFetchedValidDuration;
   for (const std::string& host : hosts_fetched_) {
@@ -194,6 +246,8 @@ void HintsFetcher::UpdateHostsSuccessfullyFetched() {
         HashHostForDictionary(host),
         host_invalid_time.ToDeltaSinceWindowsEpoch().InSecondsF());
   }
+  DCHECK_LE(hosts_fetched_list->size(),
+            features::MaxHostsForRecordingSuccessfullyCovered());
   hosts_fetched_.clear();
 }
 

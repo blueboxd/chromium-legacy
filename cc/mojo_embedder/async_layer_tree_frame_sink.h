@@ -125,7 +125,6 @@ class CC_MOJO_EMBEDDER_EXPORT AsyncLayerTreeFrameSink
   void DidAllocateSharedBitmap(base::ReadOnlySharedMemoryRegion region,
                                const viz::SharedBitmapId& id) override;
   void DidDeleteSharedBitmap(const viz::SharedBitmapId& id) override;
-  void ForceAllocateNewId() override;
 
   const viz::HitTestRegionList& get_last_hit_test_data_for_testing() const {
     return last_hit_test_data_;
@@ -167,7 +166,6 @@ class CC_MOJO_EMBEDDER_EXPORT AsyncLayerTreeFrameSink
   mojo::Binding<viz::mojom::CompositorFrameSinkClient> client_binding_;
 
   THREAD_CHECKER(thread_checker_);
-  const bool enable_surface_synchronization_;
   const bool wants_animate_only_begin_frames_;
 
   viz::HitTestRegionList last_hit_test_data_;

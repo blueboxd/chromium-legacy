@@ -52,9 +52,6 @@ class MetricProvider {
   // Called when a session restore has finished.
   void OnSessionRestoreDone(int num_tabs_restored);
 
-  void OnJankStarted();
-  void OnJankStopped();
-
  private:
   // Callback invoked by the collector on every successful profile capture. It
   // may be invoked on any sequence.

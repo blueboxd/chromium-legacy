@@ -77,7 +77,7 @@
 #define IDC_HOSTED_APP_MENU_APP_INFO    34063
 
 // Page-related commands
-#define IDC_BOOKMARK_PAGE               35000
+#define IDC_BOOKMARK_THIS_TAB           35000
 #define IDC_BOOKMARK_ALL_TABS           35001
 #define IDC_VIEW_SOURCE                 35002
 #define IDC_PRINT                       35003

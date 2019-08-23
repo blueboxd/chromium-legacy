@@ -14,6 +14,49 @@
 
 namespace ash {
 
+namespace {
+
+// Handles vertical 3-finger scroll gesture by entering overview on scrolling
+// up, and exiting it on scrolling down.
+// Returns true if the gesture was handled.
+bool Handle3FingerVerticalScroll(float scroll_y) {
+  auto* overview_controller = Shell::Get()->overview_controller();
+  const bool in_overview = overview_controller->InOverviewSession();
+  if (in_overview) {
+    if (scroll_y < WmGestureHandler::kVerticalThresholdDp)
+      return false;
+
+    base::RecordAction(base::UserMetricsAction("Touchpad_Gesture_Overview"));
+    if (overview_controller->AcceptSelection())
+      return true;
+    overview_controller->EndOverview();
+  } else {
+    if (scroll_y > -WmGestureHandler::kVerticalThresholdDp)
+      return false;
+
+    base::RecordAction(base::UserMetricsAction("Touchpad_Gesture_Overview"));
+    overview_controller->StartOverview();
+  }
+
+  return true;
+}
+
+// Handles horizontal 3-finger scroll by switching desks if possible.
+// Returns true if the gesture was handled.
+bool Handle3FingerHorizontalScroll(float scroll_x) {
+  if (std::fabs(scroll_x) < WmGestureHandler::kHorizontalThresholdDp)
+    return false;
+
+  // This does not invert if the user changes their touchpad settings
+  // currently. The scroll works Australian way (scroll left to go to the
+  // desk on the right and vice versa).
+  DesksController::Get()->ActivateAdjacentDesk(
+      /*going_left=*/scroll_x > 0, DesksSwitchSource::kDeskSwitchTouchpad);
+  return true;
+}
+
+}  // namespace
+
 WmGestureHandler::WmGestureHandler() = default;
 
 WmGestureHandler::~WmGestureHandler() = default;
@@ -70,56 +113,22 @@ bool WmGestureHandler::EndScroll() {
   if (finger_count == 0)
     return false;
 
-  // Horizontal 4-finger scroll switches desks if possible.
-  if (finger_count == 4) {
+  if (finger_count == 3) {
     if (std::fabs(scroll_x) < std::fabs(scroll_y))
-      return false;
+      return Handle3FingerVerticalScroll(scroll_y);
 
-    if (std::fabs(scroll_x) < kHorizontalThresholdDp)
-      return false;
-
-    // This does not invert if the user changes their touchpad settings
-    // currently. The scroll works Australian way (scroll left to go to the
-    // desk on the right and vice versa).
-    DesksController::Get()->ActivateAdjacentDesk(
-        /*going_left=*/scroll_x > 0, DesksSwitchSource::kDeskSwitchTouchpad);
-    return true;
+    return Handle3FingerHorizontalScroll(scroll_x);
   }
 
-  DCHECK_EQ(3, finger_count);
-  // Horizontal 3-finger scroll moves selection when already in overview mode.
-  if (MoveOverviewSelection(finger_count, scroll_x, scroll_y))
-    return true;
-
-  if (std::fabs(scroll_x) >= std::fabs(scroll_y))
-    return false;
-
-  auto* overview_controller = Shell::Get()->overview_controller();
-  const bool in_overview = overview_controller->InOverviewSession();
-  // Use vertical 3-finger scroll gesture up to enter overview, down to exit.
-  if (in_overview) {
-    if (scroll_y < 0 || scroll_y < kVerticalThresholdDp)
-      return false;
-
-    base::RecordAction(base::UserMetricsAction("Touchpad_Gesture_Overview"));
-    if (overview_controller->AcceptSelection())
-      return true;
-    overview_controller->EndOverview();
-  } else {
-    if (scroll_y > 0 || scroll_y > -kVerticalThresholdDp)
-      return false;
-
-    base::RecordAction(base::UserMetricsAction("Touchpad_Gesture_Overview"));
-    overview_controller->StartOverview();
-  }
-
-  return true;
+  DCHECK_EQ(4, finger_count);
+  // Horizontal 4-finger scroll moves selection when already in overview mode.
+  return MoveOverviewSelection(finger_count, scroll_x, scroll_y);
 }
 
 bool WmGestureHandler::MoveOverviewSelection(int finger_count,
                                              float scroll_x,
                                              float scroll_y) {
-  if (finger_count != 3)
+  if (finger_count != 4)
     return false;
 
   auto* overview_controller = Shell::Get()->overview_controller();

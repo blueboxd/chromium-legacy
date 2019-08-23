@@ -219,9 +219,13 @@ bool IsSecureFrame(FrameTreeNode* frame) {
 // This should match blink::ResourceRequest::needsHTTPOrigin.
 bool NeedsHTTPOrigin(net::HttpRequestHeaders* headers,
                      const std::string& method) {
-  // Don't add an Origin header if it is already present.
-  if (headers->HasHeader(net::HttpRequestHeaders::kOrigin))
-    return false;
+  // Blink version of this function checks if the Origin header might have
+  // already been added to |headers|.  This check is not replicated below
+  // because:
+  // 1. We want to overwrite the old (renderer-provided) header value
+  //    with a new, trustworthy (browser-provided) value.
+  // 2. The rest of the function matches the Blink version, so there should
+  //    be no discrepancies in the Origin value used.
 
   // Don't send an Origin header for GET or HEAD to avoid privacy issues.
   // For example, if an intranet page has a hyperlink to an external web
@@ -248,6 +252,7 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
                                  const std::string user_agent_override,
                                  bool has_user_gesture,
                                  base::Optional<url::Origin> initiator_origin,
+                                 network::mojom::ReferrerPolicy referrer_policy,
                                  FrameTreeNode* frame_tree_node) {
   if (!url.SchemeIsHTTPOrHTTPS())
     return;
@@ -321,23 +326,13 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
   }
 
   // Next, set the HTTP Origin if needed.
-  if (!NeedsHTTPOrigin(headers, method))
-    return;
-
-  // Create a unique origin.
-  url::Origin origin;
-  if (frame_tree_node->IsMainFrame()) {
-    // For main frame, the origin is the url currently loading.
-    origin = url::Origin::Create(url);
-  } else if ((frame_tree_node->active_sandbox_flags() &
-              blink::WebSandboxFlags::kOrigin) ==
-             blink::WebSandboxFlags::kNone) {
-    // The origin should be the origin of the root, except for sandboxed
-    // frames which have a unique origin.
-    origin = frame_tree_node->frame_tree()->root()->current_origin();
+  if (NeedsHTTPOrigin(headers, method)) {
+    url::Origin origin_header_value = initiator_origin.value_or(url::Origin());
+    origin_header_value = Referrer::SanitizeOriginForRequest(
+        url, origin_header_value, referrer_policy);
+    headers->SetHeader(net::HttpRequestHeaders::kOrigin,
+                       origin_header_value.Serialize());
   }
-
-  headers->SetHeader(net::HttpRequestHeaders::kOrigin, origin.Serialize());
 }
 
 // Should match the definition of
@@ -544,15 +539,13 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
     navigation_params->skip_service_worker = true;
   }
 
-  std::unique_ptr<RenderFrameHostImpl> rfh_restored_from_back_forward_cache;
+  bool is_served_from_back_forward_cache = false;
   if (entry) {
     NavigationControllerImpl* controller =
         static_cast<NavigationControllerImpl*>(
             frame_tree_node->navigator()->GetController());
-    // This will be nullptr if there is no matching document in the
-    // BackForwardCache.
-    rfh_restored_from_back_forward_cache =
-        controller->back_forward_cache().RestoreDocument(entry->GetUniqueID());
+    is_served_from_back_forward_cache =
+        controller->back_forward_cache().GetDocument(entry->GetUniqueID());
   }
 
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
@@ -560,7 +553,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
       std::move(commit_params), browser_initiated,
       false /* from_begin_navigation */, false /* is_for_commit */, frame_entry,
       entry, std::move(navigation_ui_data), nullptr, nullptr,
-      std::move(rfh_restored_from_back_forward_cache)));
+      is_served_from_back_forward_cache));
 
   if (frame_entry) {
     navigation_request->blob_url_loader_factory_ =
@@ -649,7 +642,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
       nullptr, entry,
       nullptr,  // navigation_ui_data
       std::move(navigation_client), std::move(navigation_initiator),
-      nullptr  // rfh_restored_from_back_forward_cache
+      false  // is_served_from_back_forward_cache
       ));
   navigation_request->blob_url_loader_factory_ =
       std::move(blob_url_loader_factory);
@@ -721,7 +714,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
       nullptr /* navigation_ui_data */,
       mojom::NavigationClientAssociatedPtrInfo(),
       blink::mojom::NavigationInitiatorPtr(),
-      nullptr /* rfh_restores_from_bfcache */));
+      false /* is_served_from_back_forward_cache */));
 
   // Update the state of the NavigationRequest to match the fact that the
   // navigation just committed.
@@ -745,7 +738,7 @@ NavigationRequest::NavigationRequest(
     std::unique_ptr<NavigationUIData> navigation_ui_data,
     mojom::NavigationClientAssociatedPtrInfo navigation_client,
     blink::mojom::NavigationInitiatorPtr navigation_initiator,
-    std::unique_ptr<RenderFrameHostImpl> rfh_restored_from_back_forward_cache)
+    bool is_served_from_back_forward_cache)
     : frame_tree_node_(frame_tree_node),
       common_params_(std::move(common_params)),
       begin_params_(std::move(begin_params)),
@@ -765,10 +758,7 @@ NavigationRequest::NavigationRequest(
       devtools_navigation_token_(base::UnguessableToken::Create()),
       request_navigation_client_(nullptr),
       commit_navigation_client_(nullptr),
-      rfh_restored_from_back_forward_cache_(
-          std::move(rfh_restored_from_back_forward_cache)),
-      is_served_from_back_forward_cache_(
-          rfh_restored_from_back_forward_cache_ != nullptr) {
+      is_served_from_back_forward_cache_(is_served_from_back_forward_cache) {
   DCHECK(browser_initiated || common_params_->initiator_origin.has_value());
   DCHECK(!IsRendererDebugURL(common_params_->url));
   DCHECK(common_params_->method == "POST" || !common_params_->post_data);
@@ -863,7 +853,7 @@ NavigationRequest::NavigationRequest(
         frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
         common_params_->method, user_agent_override,
         common_params_->has_user_gesture, common_params_->initiator_origin,
-        frame_tree_node);
+        common_params_->referrer->policy, frame_tree_node);
 
     if (begin_params_->is_form_submission) {
       if (browser_initiated && !commit_params_->post_content_type.empty()) {
@@ -1017,6 +1007,10 @@ void NavigationRequest::BeginNavigation() {
   }
 
   if (!NeedsUrlLoader()) {
+    // The types of pages that don't need a URL Loader should never get served
+    // from the BackForwardCache.
+    DCHECK(!is_served_from_back_forward_cache());
+
     // There is no need to make a network request for this navigation, so commit
     // it immediately.
     TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
@@ -1024,7 +1018,8 @@ void NavigationRequest::BeginNavigation() {
     state_ = RESPONSE_STARTED;
 
     // Select an appropriate RenderFrameHost.
-    render_frame_host_ = GetFrameHostForNavigation();
+    render_frame_host_ =
+        frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
     NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
         render_frame_host_, common_params_->url);
 
@@ -1484,8 +1479,29 @@ void NavigationRequest::OnResponseStarted(
   }
 
   // Select an appropriate renderer to commit the navigation.
-  if (response_should_be_rendered_) {
-    render_frame_host_ = GetFrameHostForNavigation();
+  if (is_served_from_back_forward_cache_) {
+    NavigationControllerImpl* controller =
+        static_cast<NavigationControllerImpl*>(
+            frame_tree_node_->navigator()->GetController());
+    // TODO(https://crbug.com/995316): The render_frame_host_ referenced here
+    // can be evicted while waiting on the NavigationThrottle execution. If the
+    // RenderFrameHost is evicted, it must restart this session history
+    // navigation.
+    render_frame_host_ =
+        controller->back_forward_cache().GetDocument(nav_entry_id_);
+
+    // If render_frame_host_ is nullptr, that means the document was evicted
+    // from the cache since this navigation started. For now, we handle this
+    // by cancelling the navigation.
+    // TODO(https://crbug.com/995316): Reissue the navigation instead of
+    // cancelling it.
+    if (render_frame_host_ == nullptr) {
+      frame_tree_node_->ResetNavigationRequest(false, true);
+      return;
+    }
+  } else if (response_should_be_rendered_) {
+    render_frame_host_ =
+        frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
     NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
         render_frame_host_, common_params_->url);
   } else {
@@ -1698,12 +1714,14 @@ void NavigationRequest::OnRequestFailedInternal(
     // account for clearing the expected process if it clears the speculative
     // RenderFrameHost. See https://crbug.com/793127.
     ResetExpectedProcess();
-    render_frame_host = GetFrameHostForNavigation();
+    render_frame_host =
+        frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
   } else {
     if (ShouldKeepErrorPageInCurrentProcess(status.error_code)) {
       render_frame_host = frame_tree_node_->current_frame_host();
     } else {
-      render_frame_host = GetFrameHostForNavigation();
+      render_frame_host =
+          frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
     }
   }
 
@@ -2164,13 +2182,33 @@ void NavigationRequest::CommitNavigation() {
   DCHECK(!common_params_->url.SchemeIs(url::kJavaScriptScheme));
   DCHECK(!IsRendererDebugURL(common_params_->url));
 
-  frame_tree_node_->TransferNavigationRequestOwnership(render_frame_host_);
-
   if (is_served_from_back_forward_cache()) {
-    frame_tree_node()->render_manager()->RestoreFromBackForwardCache(
-        std::move(rfh_restored_from_back_forward_cache_));
+    NavigationControllerImpl* controller =
+        static_cast<NavigationControllerImpl*>(
+            frame_tree_node_->navigator()->GetController());
 
-    // Commit the restored frame.
+    std::unique_ptr<RenderFrameHostImpl> restored_rfh =
+        controller->back_forward_cache().RestoreDocument(nav_entry_id_);
+
+    // restored_rfh will be nullptr if the document was evicted from the
+    // BackForwardCache during the execution of this navigation.
+    if (!restored_rfh) {
+      // TODO(https://crbug.com/995316): Handle this case by reissuing the
+      // navigation instead of cancelling it.
+      frame_tree_node_->ResetNavigationRequest(false, true);
+      return;
+    }
+
+    // Transfer ownership of this NavigationRequest to the restored
+    // RenderFrameHost.
+    frame_tree_node_->TransferNavigationRequestOwnership(render_frame_host());
+
+    // Move the restored RenderFrameHost into RenderFrameHostManager, in
+    // preparation for committing.
+    frame_tree_node_->render_manager()->RestoreFromBackForwardCache(
+        std::move(restored_rfh));
+
+    // Commit the restored RenderFrameHost.
     // Note that this will delete the NavigationRequest.
     render_frame_host()->DidCommitBackForwardCacheNavigation(
         this, MakeDidCommitProvisionalLoadParamsForBFCache());
@@ -2182,6 +2220,8 @@ void NavigationRequest::CommitNavigation() {
              frame_tree_node_->render_manager()->current_frame_host() ||
          render_frame_host_ ==
              frame_tree_node_->render_manager()->speculative_frame_host());
+
+  frame_tree_node_->TransferNavigationRequestOwnership(render_frame_host_);
 
   if (IsPerNavigationMojoInterfaceEnabled() && request_navigation_client_ &&
       request_navigation_client_.is_bound()) {
@@ -2214,6 +2254,7 @@ void NavigationRequest::CommitNavigation() {
         std::move(subresource_loader_params_->prefetched_signed_exchanges);
   }
 
+  AddNetworkServiceDebugEvent("COM");
   render_frame_host_->CommitNavigation(
       this, std::move(common_params), std::move(commit_params),
       response_head_.get(), std::move(response_body_),
@@ -2271,6 +2312,16 @@ void NavigationRequest::SetExpectedProcess(
 void NavigationRequest::RenderProcessHostDestroyed(RenderProcessHost* host) {
   DCHECK_EQ(host->GetID(), expected_render_process_host_id_);
   ResetExpectedProcess();
+}
+
+void NavigationRequest::RenderProcessReady(RenderProcessHost* host) {
+  AddNetworkServiceDebugEvent("RPR");
+}
+
+void NavigationRequest::RenderProcessExited(
+    RenderProcessHost* host,
+    const ChildProcessTerminationInfo& info) {
+  AddNetworkServiceDebugEvent("RPE");
 }
 
 void NavigationRequest::UpdateSiteURL(
@@ -2901,6 +2952,7 @@ void NavigationRequest::DidCommitNavigation(
     bool did_replace_entry,
     const GURL& previous_url,
     NavigationType navigation_type) {
+  AddNetworkServiceDebugEvent("DCN");
   common_params_->url = params.url;
   did_replace_entry_ = did_replace_entry;
   should_update_history_ = params.should_update_history;
@@ -3019,6 +3071,9 @@ void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
                                "ReadyToCommitNavigation");
 
+  AddNetworkServiceDebugEvent(
+      std::string("RTCN") +
+      (render_frame_host_->GetProcess()->IsReady() ? "1" : "0"));
   handle_state_ = READY_TO_COMMIT;
   ready_to_commit_time_ = base::TimeTicks::Now();
   RestartCommitTimeout();
@@ -3073,6 +3128,7 @@ void NavigationRequest::RunCompleteCallback(
 }
 
 void NavigationRequest::RenderProcessBlockedStateChanged(bool blocked) {
+  AddNetworkServiceDebugEvent(std::string("B") + (blocked ? "1" : "0"));
   if (blocked)
     StopCommitTimeout();
   else
@@ -3108,6 +3164,7 @@ void NavigationRequest::RestartCommitTimeout() {
 
 void NavigationRequest::OnCommitTimeout() {
   DCHECK_EQ(READY_TO_COMMIT, handle_state_);
+  AddNetworkServiceDebugEvent("T");
 #if defined(OS_ANDROID)
   // Rate limit the number of stack dumps so we don't overwhelm our crash
   // reports.
@@ -3134,6 +3191,12 @@ void NavigationRequest::OnCommitTimeout() {
     base::debug::ScopedCrashKeyString scoped_memory(
         memory_key,
         base::NumberToString(base::SysInfo::AmountOfPhysicalMemoryMB()));
+
+    static base::debug::CrashKeyString* debug_string_key =
+        base::debug::AllocateCrashKeyString("ns_debug_events",
+                                            base::debug::CrashKeySize::Size256);
+    base::debug::ScopedCrashKeyString scoped_debug_string(
+        debug_string_key, GetNetworkServiceDebugEventsString());
     base::debug::DumpWithoutCrashing();
 
     if (IsOutOfProcessNetworkService())
@@ -3239,15 +3302,6 @@ NavigationRequest::MakeDidCommitProvisionalLoadParamsForBFCache() {
   params->request_id = request_id().request_id;
 
   return params;
-}
-
-RenderFrameHostImpl* NavigationRequest::GetFrameHostForNavigation() {
-  if (is_served_from_back_forward_cache()) {
-    DCHECK(rfh_restored_from_back_forward_cache_);
-    return rfh_restored_from_back_forward_cache_.get();
-  }
-
-  return frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
 }
 
 bool NavigationRequest::IsExternalProtocol() {

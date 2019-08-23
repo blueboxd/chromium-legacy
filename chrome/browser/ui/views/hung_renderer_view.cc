@@ -452,7 +452,7 @@ void HungRendererDialogView::Init() {
   info_label->SetMultiLine(true);
   info_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
-  hung_pages_table_model_.reset(new HungPagesTableModel(this));
+  hung_pages_table_model_ = std::make_unique<HungPagesTableModel>(this);
   std::vector<ui::TableColumn> columns;
   columns.push_back(ui::TableColumn());
   auto hung_pages_table = std::make_unique<views::TableView>(

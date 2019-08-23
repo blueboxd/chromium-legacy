@@ -305,21 +305,23 @@ CachedMetadataHandler* RawResource::CreateCachedMetadataHandler(
   return Resource::CreateCachedMetadataHandler(std::move(send_callback));
 }
 
-void RawResource::SetSerializedCachedMetadata(const uint8_t* data,
-                                              size_t size) {
-  Resource::SetSerializedCachedMetadata(data, size);
+void RawResource::SetSerializedCachedMetadata(mojo_base::BigBuffer data) {
+  // Resource ignores the cached metadata.
+  Resource::SetSerializedCachedMetadata(mojo_base::BigBuffer());
+
+  // Notify clients before potentially transferring ownership of the buffer.
+  ResourceClientWalker<RawResourceClient> w(Clients());
+  while (RawResourceClient* c = w.Next()) {
+    c->SetSerializedCachedMetadata(this, data.data(), data.size());
+  }
 
   if (GetType() == ResourceType::kRaw) {
     ScriptCachedMetadataHandler* cache_handler =
         static_cast<ScriptCachedMetadataHandler*>(Resource::CacheHandler());
     if (cache_handler) {
-      cache_handler->SetSerializedCachedMetadata(data, size);
+      cache_handler->SetSerializedCachedMetadata(std::move(data));
     }
   }
-
-  ResourceClientWalker<RawResourceClient> w(Clients());
-  while (RawResourceClient* c = w.Next())
-    c->SetSerializedCachedMetadata(this, data, size);
 }
 
 void RawResource::DidSendData(uint64_t bytes_sent,

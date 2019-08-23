@@ -45,7 +45,7 @@ class TestLayoutManager : public LayoutManagerBase {
  public:
   void SetLayout(const ProposedLayout& layout) {
     layout_ = layout;
-    InvalidateLayout();
+    InvalidateHost(true);
   }
 
   const ProposedLayout& layout() const { return layout_; }

@@ -33,6 +33,10 @@ size_t MaxHintsFetcherTopHostBlacklistSize();
 // remote Optimzation Guide Service.
 size_t MaxHostsForOptimizationGuideServiceHintsFetch();
 
+// The maximum number of hosts allowed to be stored as covered by the hints
+// fetcher.
+size_t MaxHostsForRecordingSuccessfullyCovered();
+
 // The amount of time a fetched hint will be considered fresh enough
 // to be used and remain in the HintCacheStore.
 base::TimeDelta StoredFetchedHintsFreshnessDuration();

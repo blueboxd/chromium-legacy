@@ -41,7 +41,7 @@ JobTaskSource::JobTaskSource(
 JobTaskSource::~JobTaskSource() {
 #if DCHECK_IS_ON()
   auto worker_count = worker_count_.load(std::memory_order_relaxed);
-  // Make sure there's no outstanding run intent left.
+  // Make sure there's no outstanding active run operation left.
   DCHECK(worker_count == 0U || worker_count == kInvalidWorkerCount)
       << worker_count;
 #endif
@@ -51,7 +51,7 @@ ExecutionEnvironment JobTaskSource::GetExecutionEnvironment() {
   return {SequenceToken::Create(), nullptr};
 }
 
-TaskSource::RunIntent JobTaskSource::WillRunTask() {
+TaskSource::RunStatus JobTaskSource::WillRunTask() {
   // When this call is caused by an increase of max concurrency followed by an
   // associated NotifyConcurrencyIncrease(), the priority queue lock guarantees
   // an happens-after relation with NotifyConcurrencyIncrease(). The memory
@@ -78,15 +78,14 @@ TaskSource::RunIntent JobTaskSource::WillRunTask() {
   //   B) |max_concurrency| was lowered below or to |worker_count_|.
   //   C) |worker_count_| was invalidated.
   if (worker_count_before_add >= max_concurrency) {
-    // The caller receives an invalid RunIntent and should skip this
-    // TaskSource.
-    return RunIntent();
+    // The caller is prevented from running a task from this TaskSource.
+    return RunStatus::kDisallowed;
   }
 
   DCHECK_LT(worker_count_before_add, max_concurrency);
-  return MakeRunIntent(max_concurrency == worker_count_before_add + 1
-                           ? Saturated::kYes
-                           : Saturated::kNo);
+  return max_concurrency == worker_count_before_add + 1
+             ? RunStatus::kAllowedSaturated
+             : RunStatus::kAllowedNotSaturated;
 }
 
 size_t JobTaskSource::GetRemainingConcurrency() const {
@@ -108,13 +107,15 @@ size_t JobTaskSource::GetMaxConcurrency() const {
   return max_concurrency_callback_.Run();
 }
 
-Optional<Task> JobTaskSource::TakeTask() {
+Optional<Task> JobTaskSource::TakeTask(TaskSource::Transaction* transaction) {
+  // JobTaskSource members are not lock-protected so no need to acquire a lock
+  // if |transaction| is nullptr.
   DCHECK_GT(worker_count_.load(std::memory_order_relaxed), 0U);
   DCHECK(worker_task_);
   return base::make_optional<Task>(from_here_, worker_task_, TimeDelta());
 }
 
-bool JobTaskSource::DidProcessTask() {
+bool JobTaskSource::DidProcessTask(TaskSource::Transaction* transaction) {
   size_t worker_count_before_sub =
       worker_count_.load(std::memory_order_relaxed);
 
@@ -154,16 +155,16 @@ SequenceSortKey JobTaskSource::GetSortKey() const {
   return SequenceSortKey(traits_.priority(), queue_time_);
 }
 
-Optional<Task> JobTaskSource::Clear() {
+Optional<Task> JobTaskSource::Clear(TaskSource::Transaction* transaction) {
   // Invalidate |worker_count_| so that further calls to WillRunTask() never
   // succeed. std::memory_order_relaxed is sufficient because this task source
   // never needs to be re-enqueued after Clear().
   size_t worker_count_before_store =
       worker_count_.exchange(kInvalidWorkerCount, std::memory_order_relaxed);
   DCHECK_GT(worker_count_before_store, 0U);
-  // Nothing is cleared since outstanding RunIntents might still racily run
-  // tasks. For simplicity, the destructor will take care of it once all
-  // references are released.
+  // Nothing is cleared since other workers might still racily run tasks. For
+  // simplicity, the destructor will take care of it once all references are
+  // released.
   return base::make_optional<Task>(from_here_, DoNothing(), TimeDelta());
 }
 

@@ -82,6 +82,11 @@ void VirtualAuthenticator::ClearRegistrations() {
   state_->registrations.clear();
 }
 
+bool VirtualAuthenticator::RemoveRegistration(
+    const std::vector<uint8_t>& key_handle) {
+  return state_->registrations.erase(key_handle) != 0;
+}
+
 void VirtualAuthenticator::SetUserPresence(bool is_user_present) {
   is_user_present_ = is_user_present;
   state_->simulate_press_callback = base::BindRepeating(

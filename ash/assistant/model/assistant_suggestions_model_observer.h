@@ -14,6 +14,8 @@
 
 namespace ash {
 
+class ProactiveSuggestions;
+
 // A checked observer which receives notification of changes to the Assistant
 // suggestions model.
 class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantSuggestionsModelObserver
@@ -24,6 +26,10 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantSuggestionsModelObserver
   // Invoked when the cache of conversation starters has changed.
   virtual void OnConversationStartersChanged(
       const std::map<int, const AssistantSuggestion*>& conversation_starters) {}
+
+  // Invoked when the cache of proactive suggestions has changed.
+  virtual void OnProactiveSuggestionsChanged(
+      const ProactiveSuggestions* proactive_suggestions) {}
 
  protected:
   ~AssistantSuggestionsModelObserver() override = default;

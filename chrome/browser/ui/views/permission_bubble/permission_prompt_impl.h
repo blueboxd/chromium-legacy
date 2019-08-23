@@ -19,6 +19,7 @@ class PermissionPromptImpl : public PermissionPrompt {
   // PermissionPrompt:
   void UpdateAnchorPosition() override;
   gfx::NativeWindow GetNativeWindow() override;
+  bool ShouldDestroyOnTabSwitching() override;
 
   void Closing();
   void Accept();

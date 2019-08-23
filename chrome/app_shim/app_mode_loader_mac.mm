@@ -170,8 +170,7 @@ int LoadFrameworkAndStart(int argc, char** argv) {
       switches::kUserDataDir,
       plist_user_data_dir.DirName().DirName().DirName());
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          app_mode::kLaunchedByChromeProcessId) ||
-      app_mode_id == app_mode::kAppListModeId) {
+          app_mode::kLaunchedByChromeProcessId)) {
     // Pass --app-shim-error to have Chrome rebuild this shim.
     // If Chrome has rebuilt this shim once already, then rebuilding doesn't fix
     // the problem, so don't try again.

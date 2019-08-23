@@ -804,9 +804,11 @@ public class VrBrowserNavigationTest {
         NativeUiUtils.performActionAndWaitForVisibilityStatus(
                 UserFriendlyElementName.SUGGESTION_BOX, true /* visible */,
                 () -> { NativeUiUtils.inputString("chrome://"); });
-        // Blindly clicking in the center of the suggestion box should end up clicking the middle
-        // suggestion, which for "chrome://" should be a valid chrome:// URL.
-        NativeUiUtils.clickElement(UserFriendlyElementName.SUGGESTION_BOX, new PointF());
+        // Click near the bottom of the suggestion box to get the last suggestion, which for
+        // "chrome://" should be a valid chrome:// URL. The suggestion that triggers a search can
+        // be in either the middle or top spot depending on whether the
+        // OmniboxGroupSuggestionsBySearchVsUrl feature is enabled or not.
+        NativeUiUtils.clickElement(UserFriendlyElementName.SUGGESTION_BOX, new PointF(0.0f, -0.4f));
         ChromeTabUtils.waitForTabPageLoaded(
                 mTestRule.getActivity().getActivityTab(), (String) null);
         // We can't just wait for navigation to finish and then check because waitForTabPageLoaded

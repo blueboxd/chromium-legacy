@@ -12,7 +12,6 @@
 #include "chrome/browser/sessions/session_restore.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/login/login_state/login_state.h"
-#include "content/browser/scheduler/responsiveness/jank_monitor.h"
 
 namespace metrics {
 
@@ -23,8 +22,7 @@ class SampledProfile;
 // It detects certain system triggers, such as device resuming from suspend
 // mode, or user logging in, which it forwards to the registered collectors.
 class ProfileProvider : public chromeos::PowerManagerClient::Observer,
-                        public chromeos::LoginState::Observer,
-                        public content::responsiveness::JankMonitor::Observer {
+                        public chromeos::LoginState::Observer {
  public:
   ProfileProvider();
   ~ProfileProvider() override;
@@ -49,20 +47,6 @@ class ProfileProvider : public chromeos::PowerManagerClient::Observer,
   // Called when a session restore has finished.
   void OnSessionRestoreDone(int num_tabs_restored);
 
-  // Called when a jank is observed by the JankMonitor. Note that these 2
-  // methods don't run on the UI thread.
-  void OnJankStarted() override;
-  void OnJankStopped() override;
-
-  // For testing.
-  scoped_refptr<content::responsiveness::JankMonitor> jank_monitor() const {
-    return jank_monitor_;
-  }
-  // For testing.
-  base::TimeDelta jankiness_collection_min_interval() const {
-    return jankiness_collection_min_interval_;
-  }
-
   // Vector of registered metric collectors.
   std::vector<std::unique_ptr<MetricProvider>> collectors_;
 
@@ -74,13 +58,6 @@ class ProfileProvider : public chromeos::PowerManagerClient::Observer,
   // obsolete callbacks.
   SessionRestore::CallbackSubscription
       on_session_restored_callback_subscription_;
-
-  scoped_refptr<content::responsiveness::JankMonitor> jank_monitor_;
-
-  // Timestamp of the most recent jank observed.
-  base::TimeTicks last_jank_start_time_;
-
-  const base::TimeDelta jankiness_collection_min_interval_;
 
   // To pass around the "this" pointer across threads safely.
   base::WeakPtrFactory<ProfileProvider> weak_factory_{this};

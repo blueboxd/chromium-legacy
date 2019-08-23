@@ -77,7 +77,7 @@ class MobileDataNotificationsTest : public testing::Test {
     chromeos::NetworkHandler::Initialize();
     SetupNetworkShillState();
     base::RunLoop().RunUntilIdle();
-    network_connect_delegate_.reset(new NetworkConnectTestDelegate);
+    network_connect_delegate_ = std::make_unique<NetworkConnectTestDelegate>();
     chromeos::NetworkConnect::Initialize(network_connect_delegate_.get());
     mobile_data_notifications_ = std::make_unique<MobileDataNotifications>();
   }

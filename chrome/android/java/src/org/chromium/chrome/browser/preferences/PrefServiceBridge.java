@@ -257,6 +257,10 @@ public class PrefServiceBridge {
         return nativeGetPasswordManagerAutoSigninEnabled();
     }
 
+    public boolean isPasswordLeakDetectionEnabled() {
+        return nativeGetPasswordLeakDetectionEnabled();
+    }
+
     /**
      * @return Whether password storage is configured by policy
      */
@@ -266,6 +270,13 @@ public class PrefServiceBridge {
 
     public boolean isPasswordManagerAutoSigninManaged() {
         return nativeGetPasswordManagerAutoSigninManaged();
+    }
+
+    /**
+     * @return Whether leak detection is enabled/disabled by policy
+     */
+    public boolean isPasswordLeakDetectionManaged() {
+        return nativeGetPasswordLeakDetectionManaged();
     }
 
     /**
@@ -630,6 +641,10 @@ public class PrefServiceBridge {
 
     public void setPasswordManagerAutoSigninEnabled(boolean enabled) {
         nativeSetPasswordManagerAutoSigninEnabled(enabled);
+    }
+
+    public void setPasswordLeakDetectionEnabled(boolean enabled) {
+        nativeSetPasswordLeakDetectionEnabled(enabled);
     }
 
     public void setNotificationsVibrateEnabled(boolean enabled) {
@@ -1082,8 +1097,10 @@ public class PrefServiceBridge {
     private native boolean nativeGetBlockThirdPartyCookiesManaged();
     private native boolean nativeGetRememberPasswordsEnabled();
     private native boolean nativeGetPasswordManagerAutoSigninEnabled();
+    private native boolean nativeGetPasswordLeakDetectionEnabled();
     private native boolean nativeGetRememberPasswordsManaged();
     private native boolean nativeGetPasswordManagerAutoSigninManaged();
+    private native boolean nativeGetPasswordLeakDetectionManaged();
     private native boolean nativeGetAllowLocationUserModifiable();
     private native boolean nativeGetLocationAllowedByPolicy();
     private native boolean nativeGetAllowLocationManagedByCustodian();
@@ -1129,6 +1146,7 @@ public class PrefServiceBridge {
     private native void nativeSetDoNotTrackEnabled(boolean enabled);
     private native void nativeSetRememberPasswordsEnabled(boolean allow);
     private native void nativeSetPasswordManagerAutoSigninEnabled(boolean enabled);
+    private native void nativeSetPasswordLeakDetectionEnabled(boolean enabled);
     private native boolean nativeGetAllowLocationEnabled();
     private native boolean nativeGetNotificationsEnabled();
     private native boolean nativeGetNotificationsVibrateEnabled();

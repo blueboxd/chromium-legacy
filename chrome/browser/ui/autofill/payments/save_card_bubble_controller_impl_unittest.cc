@@ -168,7 +168,7 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
         SaveCardBubbleController* controller,
         bool user_gesture) override {
       if (!save_card_bubble_view_)
-        save_card_bubble_view_.reset(new TestSaveCardBubbleView());
+        save_card_bubble_view_ = std::make_unique<TestSaveCardBubbleView>();
       return save_card_bubble_view_.get();
     }
 

@@ -83,8 +83,8 @@ public class WebappSplashDelegate implements SplashDelegate {
         splashScreen.setBackgroundColor(backgroundColor);
 
         if (mWebappInfo.isForWebApk()) {
-            initializeWebApkInfoSplashLayout(
-                    splashScreen, backgroundColor, ((WebApkInfo) mWebappInfo).splashIcon());
+            initializeWebApkInfoSplashLayout(splashScreen, backgroundColor,
+                    ((WebApkInfo) mWebappInfo).splashIcon().bitmap());
             return splashScreen;
         }
 
@@ -114,7 +114,7 @@ public class WebappSplashDelegate implements SplashDelegate {
         // TODO(crbug.com/977173): assign selectedIconAdaptive to correct value
         boolean selectedIconAdaptive = false;
         if (selectedIcon == null) {
-            selectedIcon = mWebappInfo.icon();
+            selectedIcon = mWebappInfo.icon().bitmap();
             selectedIconGenerated = mWebappInfo.isIconGenerated();
             selectedIconAdaptive = mWebappInfo.isIconAdaptive();
         }

@@ -32,10 +32,6 @@ class TestTabStripModelDelegate : public TabStripModelDelegate {
   bool ShouldRunUnloadListenerBeforeClosing(
       content::WebContents* contents) override;
   bool RunUnloadListenerBeforeClosing(content::WebContents* contents) override;
-  RestoreTabType GetRestoreTabType() override;
-  void RestoreTab() override;
-  bool CanBookmarkAllTabs() const override;
-  void BookmarkAllTabs() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestTabStripModelDelegate);

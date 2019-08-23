@@ -80,7 +80,7 @@ void ProfileReportGenerator::GetSigninUserInfo() {
     return;
   auto* signed_in_user_info = report_->mutable_chrome_signed_in_user();
   signed_in_user_info->set_email(account_info.email);
-  signed_in_user_info->set_obfudscated_gaiaid(account_info.gaia);
+  signed_in_user_info->set_obfudscated_gaia_id(account_info.gaia);
 }
 
 void ProfileReportGenerator::GetExtensionInfo() {

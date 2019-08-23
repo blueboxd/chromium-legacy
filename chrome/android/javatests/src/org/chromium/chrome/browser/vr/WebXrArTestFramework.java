@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.vr;
 
+import org.junit.Assert;
+
 import org.chromium.chrome.browser.vr.util.PermissionUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.content_public.browser.WebContents;
@@ -35,8 +37,10 @@ public class WebXrArTestFramework extends WebXrTestFramework {
 
         // We expect a session consent prompt (in this case the AR-specific one), but should not
         // get prompted for page camera permission.
-        PermissionUtils.waitForConsentPrompt(getRule().getActivity());
-        PermissionUtils.acceptConsentPrompt(getRule().getActivity());
+        if (shouldExpectConsentDialog()) {
+            PermissionUtils.waitForConsentPrompt(getRule().getActivity());
+            PermissionUtils.acceptConsentPrompt(getRule().getActivity());
+        }
 
         pollJavaScriptBooleanOrFail("sessionInfos[sessionTypes.AR].currentSession != null",
                 POLL_TIMEOUT_LONG_MS, webContents);
@@ -49,6 +53,9 @@ public class WebXrArTestFramework extends WebXrTestFramework {
      * @param webContents The Webcontents to start the AR session in.
      */
     public void enterSessionWithUserGestureAndDeclineConsentOrFail(WebContents webContents) {
+        if (!shouldExpectConsentDialog()) {
+            Assert.fail("Attempted to decline the consent dialog when it would not appear.");
+        }
         runJavaScriptOrFail(
                 "sessionTypeToRequest = sessionTypes.AR", POLL_TIMEOUT_LONG_MS, webContents);
 
@@ -74,5 +81,17 @@ public class WebXrArTestFramework extends WebXrTestFramework {
     public void endSession(WebContents webContents) {
         runJavaScriptOrFail("sessionInfos[sessionTypes.AR].currentSession.end()",
                 POLL_TIMEOUT_SHORT_MS, webContents);
+    }
+
+    /**
+     * Checks whether an immersive AR session would trigger the consent dialog.
+     *
+     * @param webContents The WebContents to check in.
+     * @return True if an immersive AR session request would trigger the consent dialog, otherwise
+     *     false.
+     */
+    @Override
+    public boolean shouldExpectConsentDialog(WebContents webContents) {
+        return shouldExpectConsentDialog("sessionTypes.AR", webContents);
     }
 }

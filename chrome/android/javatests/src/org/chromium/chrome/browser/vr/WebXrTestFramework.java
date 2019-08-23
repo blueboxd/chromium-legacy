@@ -103,7 +103,7 @@ public abstract class WebXrTestFramework extends XrTestFramework {
     /**
      * Ends whatever type of session a subclass enters with enterSessionWithUserGesture.
      *
-     * @param webContents The WebContents to end the session in
+     * @param webContents The WebContents to end the session in.
      */
     public abstract void endSession(WebContents webContents);
 
@@ -112,5 +112,40 @@ public abstract class WebXrTestFramework extends XrTestFramework {
      */
     public void endSession() {
         endSession(getCurrentWebContents());
+    }
+
+    /**
+     * Helper function to run shouldExpectConsentDialog with the correct session type for the
+     * framework.
+     *
+     * @param webContents The WebContents to check the consent dialog in.
+     * @return True if the a request for the session type would trigger the consent dialog to be
+     *     shown, otherwise false.
+     */
+    public abstract boolean shouldExpectConsentDialog(WebContents webContents);
+
+    /**
+     * Helper function to run shouldExpectConsentDialog with the current tab's WebContents.
+     * @return True if the a request for the session type would trigger the consent dialog to be
+     *     shown, otherwise false.
+     */
+    public boolean shouldExpectConsentDialog() {
+        return shouldExpectConsentDialog(getCurrentWebContents());
+    }
+
+    /**
+     * Checks whether a session request of the given type is expected to trigger the consent
+     * dialog.
+     *
+     * @param sessionType The session type to pass to JavaScript defined in webxr_boilerplate.js,
+     *     e.g. sessionTypes.AR
+     * @param webCointents The WebContents to check in.
+     * @return True if the given session type is expected to trigger the consent dialog, otherwise
+     *     false.
+     */
+    protected boolean shouldExpectConsentDialog(String sessionType, WebContents webContents) {
+        return runJavaScriptOrFail("sessionTypeWouldTriggerConsent(" + sessionType + ")",
+                POLL_TIMEOUT_SHORT_MS, webContents)
+                .equals("true");
     }
 }

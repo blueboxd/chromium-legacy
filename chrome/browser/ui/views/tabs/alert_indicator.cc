@@ -224,7 +224,7 @@ void AlertIndicator::TransitionToAlertState(TabAlertState next_state) {
       showing_alert_state_ = next_state;  // Fading-in to next indicator.
     fade_animation_ = CreateTabAlertIndicatorFadeAnimation(next_state);
     if (!fade_animation_delegate_)
-      fade_animation_delegate_.reset(new FadeAnimationDelegate(this));
+      fade_animation_delegate_ = std::make_unique<FadeAnimationDelegate>(this);
     fade_animation_->set_delegate(fade_animation_delegate_.get());
     fade_animation_->Start();
   }

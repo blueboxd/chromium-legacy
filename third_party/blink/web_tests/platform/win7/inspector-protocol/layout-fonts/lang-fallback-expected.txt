@@ -4,7 +4,7 @@
 
 ՀՁ
 #hy-am:
-"Sylfaen" : 2
+"Tahoma" : 2
 
 সম
 #bn:
@@ -28,7 +28,7 @@
 
 ᎡᎢ
 #chr:
-"Plantagenet Cherokee" : 2
+"Arial" : 2
 
 ⲁⲂ
 #copt:
@@ -48,7 +48,7 @@
 
 𐐀𐐁
 #en:
-"Segoe UI Symbol" : 2
+"Arial" : 2
 
 अआ
 #hi:
@@ -72,23 +72,23 @@
 
 我
 #zh-CN:
-"Microsoft YaHei" : 1
+"SimSun" : 1
 
 我
 #zh-HK:
-"Microsoft JhengHei" : 1
+"PMingLiU" : 1
 
 我
 #zh-Hans:
-"Microsoft YaHei" : 1
+"SimSun" : 1
 
 我
 #zh-Hant:
-"Microsoft JhengHei" : 1
+"PMingLiU" : 1
 
 我
 #ja:
-"Meiryo UI" : 1
+"Meiryo" : 1
 
 ᄀᄁ
 #ko:
@@ -172,7 +172,7 @@
 
 𐌁𐌂
 #script_old_italic:
-"Segoe UI Symbol" : 2
+"Arial" : 2
 
 𐎡𐎢
 #peo:
@@ -228,7 +228,7 @@
 
 กข
 #th:
-"Leelawadee" : 2
+"Tahoma" : 2
 
 ༁༂
 #bo:

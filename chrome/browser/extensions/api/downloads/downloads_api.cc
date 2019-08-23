@@ -929,13 +929,14 @@ const char ExtensionDownloadsEventRouterData::kKey[] =
 bool OnDeterminingFilenameWillDispatchCallback(
     bool* any_determiners,
     ExtensionDownloadsEventRouterData* data,
-    content::BrowserContext* context,
+    content::BrowserContext* browser_context,
+    Feature::Context target_context,
     const Extension* extension,
     Event* event,
     const base::DictionaryValue* listener_filter) {
   *any_determiners = true;
   base::Time installed =
-      ExtensionPrefs::Get(context)->GetInstallTime(extension->id());
+      ExtensionPrefs::Get(browser_context)->GetInstallTime(extension->id());
   data->AddPendingDeterminer(extension->id(), installed);
   return true;
 }

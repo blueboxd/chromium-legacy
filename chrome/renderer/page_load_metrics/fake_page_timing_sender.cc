@@ -73,7 +73,8 @@ void FakePageTimingSender::PageTimingValidator::UpdateExpectPageLoadFeatures(
 }
 
 void FakePageTimingSender::PageTimingValidator::
-    UpdateExpectPageLoadCssProperties(int css_property_id) {
+    UpdateExpectPageLoadCssProperties(
+        blink::mojom::CSSSampleId css_property_id) {
   expected_css_properties_.insert(css_property_id);
 }
 
@@ -96,7 +97,7 @@ void FakePageTimingSender::PageTimingValidator::VerifyExpectedFeatures() const {
 void FakePageTimingSender::PageTimingValidator::VerifyExpectedCssProperties()
     const {
   ASSERT_EQ(actual_css_properties_.size(), expected_css_properties_.size());
-  std::vector<int> diff;
+  std::vector<blink::mojom::CSSSampleId> diff;
   std::set_difference(actual_css_properties_.begin(),
                       actual_css_properties_.end(),
                       expected_css_properties_.begin(),

@@ -604,6 +604,8 @@ RemoteCallFilesApp.prototype.expandVolumeInDirectoryTree = function(
 /**
  * Navigates to specified directory on the specified volume by using directory
  * tree.
+ * DEPRECATED: Use background.js:navigateWithDirectoryTree instead
+ * crbug.com/996626.
  */
 RemoteCallFilesApp.prototype.navigateWithDirectoryTree =
     async function(windowId, path, rootLabel, volumeType = 'downloads') {

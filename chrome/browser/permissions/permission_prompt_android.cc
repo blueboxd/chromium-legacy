@@ -20,8 +20,18 @@
 PermissionPromptAndroid::PermissionPromptAndroid(
     content::WebContents* web_contents,
     Delegate* delegate)
-    : web_contents_(web_contents), delegate_(delegate) {
+    : web_contents_(web_contents),
+      delegate_(delegate),
+      permission_request_notification_(nullptr),
+      weak_factory_(this) {
   DCHECK(web_contents);
+
+  if (PermissionRequestNotificationAndroid::ShouldShowAsNotification(
+          GetContentSettingType(0u /* position */))) {
+    permission_request_notification_ =
+        PermissionRequestNotificationAndroid::Create(web_contents_, delegate_);
+    return;
+  }
 
   PermissionDialogDelegate::Create(web_contents_, this);
 }
@@ -35,6 +45,12 @@ void PermissionPromptAndroid::UpdateAnchorPosition() {
 gfx::NativeWindow PermissionPromptAndroid::GetNativeWindow() {
   NOTREACHED() << "GetNativeWindow is not implemented";
   return nullptr;
+}
+
+bool PermissionPromptAndroid::ShouldDestroyOnTabSwitching() {
+  if (permission_request_notification_)
+    return true;
+  return false;
 }
 
 void PermissionPromptAndroid::Closing() {

@@ -245,12 +245,12 @@
 #   types are assumed. The array must not be empty.
 #
 # Enterprise defaults for user policy:
-#   For managed users (i.e. users receiving user policy from the
+#   For managed users on Chrome OS (i.e. users receiving user policy from the
 #   cloud), if the optional key 'default_for_enterprise_users' is set, its value
 #   is applied as mandatory policy unless a different setting is received from
-#   any other source. This default value handling is automatically enforced by
-#   the policy stack when filling the PolicyMap (specifically, by the generated
-#   function ApplyEnterpriseUsersDefaults).
+#   the cloud. This default value handling is automatically enforced by the
+#   policy stack when filling the PolicyMap (specifically, by the generated
+#   function SetEnterpriseUsersDefaults).
 #
 # Enterprise defaults for device policy:
 #   The optional key 'default_for_managed_devices_doc_only' can be used to
@@ -629,6 +629,8 @@
         'StickyKeysEnabled',
         'KeyboardDefaultToFunctionKeys',
         'ScreenMagnifierType',
+        'DictationEnabled',
+        'SelectToSpeakEnabled',
         'DeviceLoginScreenDefaultLargeCursorEnabled',
         'DeviceLoginScreenDefaultSpokenFeedbackEnabled',
         'DeviceLoginScreenDefaultHighContrastEnabled',
@@ -9846,6 +9848,31 @@
           If this policy is left unset, the select to speak is disabled initially but can be enabled by the user anytime.'''
     },
     {
+      'name': 'DictationEnabled',
+      'owners': ['amraboelkher@chromium.org', 'emaxx@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:78-'],
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 592,
+      'caption': '''Enable the dictation accessibility feature''',
+      'tags': [],
+      'desc': '''Enable the dictation accessibility feature.
+
+          If this policy is set to enabled, the dictation will always be enabled.
+
+          If this policy is set to disabled, the dictation will always be disabled.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, the dictation is disabled initially but can be enabled by the user anytime.'''
+    },
+    {
       'name': 'KeyboardDefaultToFunctionKeys',
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'main',
@@ -18170,6 +18197,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562],
-  'highest_id_currently_used': 591,
+  'highest_id_currently_used': 592,
   'highest_atomic_group_id_currently_used': 37
 }

@@ -360,10 +360,9 @@ public class WebApkUpdateManagerUnitTest {
 
         final String kPackageName = "org.random.webapk";
         return WebApkInfo.create("", manifestData.scopeUrl,
-                new WebApkInfo.Icon(manifestData.primaryIcon),
-                new WebApkInfo.Icon(manifestData.badgeIcon), null, manifestData.name,
-                manifestData.shortName, manifestData.displayMode, manifestData.orientation, -1,
-                manifestData.themeColor, manifestData.backgroundColor,
+                new WebappIcon(manifestData.primaryIcon), new WebappIcon(manifestData.badgeIcon),
+                null, manifestData.name, manifestData.shortName, manifestData.displayMode,
+                manifestData.orientation, -1, manifestData.themeColor, manifestData.backgroundColor,
                 manifestData.defaultBackgroundColor, false /* isPrimaryIconMaskable */,
                 kPackageName, -1, WEB_MANIFEST_URL, manifestData.startUrl,
                 WebApkInfo.WebApkDistributor.BROWSER, manifestData.iconUrlToMurmur2HashMap,

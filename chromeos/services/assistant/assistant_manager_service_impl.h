@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_SERVICES_ASSISTANT_ASSISTANT_MANAGER_SERVICE_IMPL_H_
 #define CHROMEOS_SERVICES_ASSISTANT_ASSISTANT_MANAGER_SERVICE_IMPL_H_
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -153,7 +154,6 @@ class AssistantManagerServiceImpl
   void OnSpeechLevelUpdated(float speech_level) override;
 
   // assistant_client::ConversationStateListener overrides:
-  void OnConversationTurnStarted(bool is_mic_open) override;
   void OnConversationTurnFinished(
       assistant_client::ConversationStateListener::Resolution resolution)
       override;
@@ -168,6 +168,8 @@ class AssistantManagerServiceImpl
       const std::string& modify_setting_args_proto) override;
   bool IsSettingSupported(const std::string& setting_id) override;
   bool SupportsModifySettings() override;
+  void OnConversationTurnStartedInternal(
+      const assistant_client::ConversationTurnMetadata& metadata) override;
   void OnNotificationRemoved(const std::string& grouping_key) override;
   void OnCommunicationError(int error_code) override;
   // Last search source will be cleared after it is retrieved.
@@ -226,7 +228,8 @@ class AssistantManagerServiceImpl
 
   void HandleLaunchMediaIntentResponse(bool app_opened);
 
-  void OnConversationTurnStartedOnMainThread(bool is_mic_open);
+  void OnConversationTurnStartedOnMainThread(
+      const assistant_client::ConversationTurnMetadata& metadata);
   void OnConversationTurnFinishedOnMainThread(
       assistant_client::ConversationStateListener::Resolution resolution);
   void OnShowHtmlOnMainThread(const std::string& html,
@@ -319,6 +322,10 @@ class AssistantManagerServiceImpl
   base::TimeTicks started_time_;
 
   base::Thread background_thread_;
+
+  int next_interaction_id_ = 1;
+  std::map<std::string, mojom::AssistantInteractionMetadataPtr>
+      pending_interactions_;
 
   bool receive_modify_settings_proto_response_ = false;
   bool receive_inline_response_ = false;

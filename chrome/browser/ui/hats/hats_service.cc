@@ -33,7 +33,7 @@ constexpr char kHatsSurveyEnSiteID[] = "en_site_id";
 
 constexpr double kHatsSurveyProbabilityDefault = 0;
 
-constexpr char kHatsSurveyEnSiteIDDefault[] = "z4cctguzopq5x2ftal6vdgjrui";
+constexpr char kHatsSurveyEnSiteIDDefault[] = "ty52vxwjrabfvhusawtrmkmx6m";
 
 constexpr char kHatsSurveyTriggerSatisfaction[] = "satisfaction";
 

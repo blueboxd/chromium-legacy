@@ -306,9 +306,8 @@ void WorkerThread::RunWorker() {
     UpdateThreadPriority(GetDesiredThreadPriority());
 
     // Get the task source containing the next task to execute.
-    RunIntentWithRegisteredTaskSource run_intent_with_task_source =
-        delegate_->GetWork(this);
-    if (!run_intent_with_task_source) {
+    RegisteredTaskSource task_source = delegate_->GetWork(this);
+    if (!task_source) {
       // Exit immediately if GetWork() resulted in detaching this worker.
       if (ShouldExit())
         break;
@@ -319,8 +318,7 @@ void WorkerThread::RunWorker() {
       continue;
     }
 
-    RegisteredTaskSource task_source = task_tracker_->RunAndPopNextTask(
-        std::move(run_intent_with_task_source));
+    task_source = task_tracker_->RunAndPopNextTask(std::move(task_source));
 
     delegate_->DidProcessTask(std::move(task_source));
 

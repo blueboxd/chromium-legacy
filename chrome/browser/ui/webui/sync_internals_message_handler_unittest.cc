@@ -120,11 +120,11 @@ class SyncInternalsMessageHandlerTest : public ChromeRenderViewHostTestHarness {
         browser_sync::UserEventServiceFactory::GetInstance()
             ->SetTestingFactoryAndUse(
                 profile(), base::BindRepeating(&BuildFakeUserEventService)));
-    handler_.reset(new TestableSyncInternalsMessageHandler(
+    handler_ = std::make_unique<TestableSyncInternalsMessageHandler>(
         &web_ui_,
         base::BindRepeating(
             &SyncInternalsMessageHandlerTest::ConstructAboutInformation,
-            base::Unretained(this))));
+            base::Unretained(this)));
   }
 
   void TearDown() override {

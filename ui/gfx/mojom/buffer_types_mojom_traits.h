@@ -47,8 +47,6 @@ struct EnumTraits<gfx::mojom::BufferFormat, gfx::BufferFormat> {
         return gfx::mojom::BufferFormat::YVU_420;
       case gfx::BufferFormat::YUV_420_BIPLANAR:
         return gfx::mojom::BufferFormat::YUV_420_BIPLANAR;
-      case gfx::BufferFormat::UYVY_422:
-        return gfx::mojom::BufferFormat::UYVY_422;
       case gfx::BufferFormat::P010:
         return gfx::mojom::BufferFormat::P010;
     }
@@ -101,12 +99,12 @@ struct EnumTraits<gfx::mojom::BufferFormat, gfx::BufferFormat> {
       case gfx::mojom::BufferFormat::YUV_420_BIPLANAR:
         *out = gfx::BufferFormat::YUV_420_BIPLANAR;
         return true;
-      case gfx::mojom::BufferFormat::UYVY_422:
-        *out = gfx::BufferFormat::UYVY_422;
-        return true;
       case gfx::mojom::BufferFormat::P010:
         *out = gfx::BufferFormat::P010;
         return true;
+      // TODO(crbug.com/988538): remove
+      case gfx::mojom::BufferFormat::UYVY_422:
+        return false;
     }
     NOTREACHED();
     return false;

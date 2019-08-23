@@ -36,10 +36,10 @@ class MetricsReportingHandlerTest : public testing::Test {
  public:
   MetricsReportingHandlerTest() {
     // Local state must be set up before |handler_|.
-    local_state_.reset(new ScopedTestingLocalState(
-        TestingBrowserProcess::GetGlobal()));
+    local_state_ = std::make_unique<ScopedTestingLocalState>(
+        TestingBrowserProcess::GetGlobal());
 
-    handler_.reset(new TestingMetricsReportingHandler);
+    handler_ = std::make_unique<TestingMetricsReportingHandler>();
     handler_->set_web_ui(&test_web_ui_);
 
     EXPECT_CALL(provider_, IsInitializationComplete(testing::_)).WillRepeatedly(

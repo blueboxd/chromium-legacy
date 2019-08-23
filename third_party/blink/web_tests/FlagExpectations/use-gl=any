@@ -9,3 +9,4 @@ crbug.com/993384 css3/blending/background-blend-mode-tiled-gradient.html [ Skip 
 crbug.com/993384 css3/blending/effect-background-blend-mode-tiled.html [ Skip ]
 crbug.com/993384 css3/blending/effect-background-blend-mode.html [ Skip ]
 crbug.com/993384 css3/masking/mask-repeat-space-border.html [ Skip ]
+crbug.com/993384 images/color-profile-background-image-space.html [ Skip ]

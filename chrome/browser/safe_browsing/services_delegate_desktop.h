@@ -80,6 +80,10 @@ class ServicesDelegateDesktop : public ServicesDelegate {
   void RemoveVerdictCacheManager(Profile* profile) override;
   VerdictCacheManager* GetVerdictCacheManager(Profile* profile) const override;
 
+  void CreateBinaryUploadService(Profile* profile) override;
+  void RemoveBinaryUploadService(Profile* profile) override;
+  BinaryUploadService* GetBinaryUploadService(Profile* profile) const override;
+
   std::string GetSafetyNetId() const override;
 
   std::unique_ptr<ClientSideDetectionService> csd_service_;
@@ -106,6 +110,11 @@ class ServicesDelegateDesktop : public ServicesDelegate {
   // Tracks existing Profiles, and their corresponding VerdictCacheManager
   // instances. Accessed on UI thread.
   std::map<Profile*, std::unique_ptr<VerdictCacheManager>> cache_manager_map_;
+
+  // Tracks existing Profiles, and their corresponding BinaryUploadService
+  // instances. Accessed on UI thread.
+  std::map<Profile*, std::unique_ptr<BinaryUploadService>>
+      binary_upload_service_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ServicesDelegateDesktop);
 };

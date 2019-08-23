@@ -131,7 +131,7 @@ class DataPipeSink {
 class FakeSerialPort {
   constructor() {
     this.inputSignals_ = { dcd: false, cts: false, ri: false, dsr: false };
-    this.outputSignals_ = { dtr: false, rts: false };
+    this.outputSignals_ = { dtr: false, rts: false, brk: false };
   }
 
   bind(request) {
@@ -218,6 +218,9 @@ class FakeSerialPort {
     }
     if (signals.hasRts) {
       this.outputSignals_.rts = signals.rts;
+    }
+    if (signals.hasBrk) {
+      this.outputSignals_.brk = signals.brk;
     }
     return { success: true };
   }

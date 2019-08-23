@@ -155,27 +155,27 @@ void QuicConnectivityProbingManager::StartProbing(
   SendConnectivityProbingPacket(initial_timeout_);
 }
 
-void QuicConnectivityProbingManager::OnConnectivityProbingReceived(
+void QuicConnectivityProbingManager::OnPacketReceived(
     const quic::QuicSocketAddress& self_address,
-    const quic::QuicSocketAddress& peer_address) {
+    const quic::QuicSocketAddress& peer_address,
+    bool is_connectivity_probe) {
+  DVLOG(1) << " *** " << __func__ << "() new packet received";
+  DVLOG(1) << " is_connectivity_probe: " << is_connectivity_probe;
+  DVLOG(1) << " peer_address: " << peer_address.ToString();
+  DVLOG(1) << " self_address: " << self_address.ToString();
   if (!socket_) {
-    DVLOG(1) << "Probing response is ignored as probing was cancelled "
-             << "or succeeded.";
+    DVLOG(1) << "Packet is ignored: probing is not live.";
     return;
   }
 
   IPEndPoint local_address;
   socket_->GetLocalAddress(&local_address);
 
-  DVLOG(1) << "Current probing is live at self ip:port "
-           << local_address.ToString() << ", to peer ip:port "
-           << peer_address_.ToString();
-
   if (local_address != ToIPEndPoint(self_address) ||
       peer_address_ != peer_address) {
-    DVLOG(1) << "Received probing response from peer ip:port "
-             << peer_address.ToString() << ", to self ip:port "
-             << self_address.ToString() << ". Ignored.";
+    DVLOG(1) << "Packet is ignored: probing is live at different path:";
+    DVLOG(1) << " peer_address: " << local_address.ToString();
+    DVLOG(1) << " self_address: " << self_address.ToString();
     return;
   }
 

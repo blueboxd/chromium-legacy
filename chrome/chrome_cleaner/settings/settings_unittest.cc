@@ -9,8 +9,10 @@
 
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "chrome/chrome_cleaner/constants/chrome_cleaner_switches.h"
 #include "chrome/chrome_cleaner/settings/engine_settings.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome_cleaner {
@@ -207,23 +209,40 @@ TEST_F(SettingsTest, NoLocationsToScanSpecified) {
   EXPECT_TRUE(settings->scan_switches_correct());
 }
 
-TEST_F(SettingsTest, NoProgramFilesScanningOnReporter) {
+TEST_F(SettingsTest, DefaultReporterScanLocations) {
+  // Locations to disable by default in the reporter.
+  const std::vector<UwS::TraceLocation> kReporterDisabledLocations{
+      UwS::FOUND_IN_PROGRAMFILES, UwS::FOUND_IN_CLSID};
+
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+
+  // Cleaner should include the disabled locations.
   Settings* cleaner_settings =
       ReinitializeSettings(command_line, TargetBinary::kCleaner);
   std::vector<UwS::TraceLocation> cleaner_locations =
       cleaner_settings->locations_to_scan();
-  EXPECT_NE(std::find(cleaner_locations.begin(), cleaner_locations.end(),
-                      UwS::FOUND_IN_PROGRAMFILES),
-            cleaner_locations.end());
+  EXPECT_THAT(cleaner_settings->locations_to_scan(),
+              testing::IsSupersetOf(kReporterDisabledLocations));
 
+  // Reporter should not include the disabled locations.
   Settings* reporter_settings =
       ReinitializeSettings(command_line, TargetBinary::kReporter);
-  std::vector<UwS::TraceLocation> reporter_locations =
-      reporter_settings->locations_to_scan();
-  EXPECT_EQ(std::find(reporter_locations.begin(), reporter_locations.end(),
-                      UwS::FOUND_IN_PROGRAMFILES),
-            reporter_locations.end());
+  for (const auto& location : kReporterDisabledLocations) {
+    EXPECT_THAT(reporter_settings->locations_to_scan(),
+                testing::Not(testing::Contains(location)));
+  }
+
+  // Switch should be able to override the disabled locations.
+  std::vector<std::string> switch_values;
+  for (const auto& location : kReporterDisabledLocations) {
+    switch_values.push_back(base::NumberToString(location));
+  }
+  command_line.AppendSwitchASCII(kScanLocationsSwitch,
+                                 base::JoinString(switch_values, ","));
+  reporter_settings =
+      ReinitializeSettings(command_line, TargetBinary::kReporter);
+  EXPECT_THAT(reporter_settings->locations_to_scan(),
+              testing::UnorderedElementsAreArray(kReporterDisabledLocations));
 }
 
 TEST_F(SettingsTest, LimitsToSpecifiedLocations) {

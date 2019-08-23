@@ -169,6 +169,9 @@ extern const char kBypassAppBannerEngagementChecksDescription[];
 extern const char kCaptionSettingsName[];
 extern const char kCaptionSettingsDescription[];
 
+extern const char kContextMenuSearchWithGoogleLensName[];
+extern const char kContextMenuSearchWithGoogleLensDescription[];
+
 extern const char kClickToOpenPDFName[];
 extern const char kClickToOpenPDFDescription[];
 
@@ -1517,6 +1520,9 @@ extern const char kProcessSharingWithStrictSiteInstancesDescription[];
 extern const char kProgressBarThrottleName[];
 extern const char kProgressBarThrottleDescription[];
 
+extern const char kQuietNotificationPromptsName[];
+extern const char kQuietNotificationPromptsDescription[];
+
 extern const char kReaderModeHeuristicsName[];
 extern const char kReaderModeHeuristicsDescription[];
 extern const char kReaderModeHeuristicsMarkup[];
@@ -2119,6 +2125,9 @@ extern const char kVirtualKeyboardDescription[];
 
 extern const char kWakeOnPacketsName[];
 extern const char kWakeOnPacketsDescription[];
+
+extern const char kZeroStateFilesName[];
+extern const char kZeroStateFilesDescription[];
 
 // Prefer keeping this section sorted to adding new declarations down here.
 

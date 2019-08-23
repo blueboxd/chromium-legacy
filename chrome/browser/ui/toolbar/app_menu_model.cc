@@ -391,12 +391,12 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
       }
       LogMenuAction(MENU_ACTION_IMPORT_SETTINGS);
       break;
-    case IDC_BOOKMARK_PAGE:
+    case IDC_BOOKMARK_THIS_TAB:
       if (!uma_action_recorded_) {
         UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.BookmarkPage",
                                    delta);
       }
-      LogMenuAction(MENU_ACTION_BOOKMARK_PAGE);
+      LogMenuAction(MENU_ACTION_BOOKMARK_THIS_TAB);
       break;
     case IDC_BOOKMARK_ALL_TABS:
       if (!uma_action_recorded_) {
@@ -686,10 +686,10 @@ bool AppMenuModel::IsCommandIdVisible(int command_id) const {
              AppMenuIconController::IconType::UPGRADE_NOTIFICATION;
     }
 #if !defined(OS_LINUX) || defined(USE_AURA)
-    case IDC_BOOKMARK_PAGE:
-      return !chrome::ShouldRemoveBookmarkThisPageUI(browser_->profile());
+    case IDC_BOOKMARK_THIS_TAB:
+      return !chrome::ShouldRemoveBookmarkThisTabUI(browser_->profile());
     case IDC_BOOKMARK_ALL_TABS:
-      return !chrome::ShouldRemoveBookmarkOpenPagesUI(browser_->profile());
+      return !chrome::ShouldRemoveBookmarkAllTabsUI(browser_->profile());
 #endif
     default:
       return true;
@@ -762,7 +762,8 @@ void AppMenuModel::Build() {
   }
   AddItemWithStringId(IDC_SHOW_DOWNLOADS, IDS_SHOW_DOWNLOADS);
   if (!browser_->profile()->IsGuestSession()) {
-    bookmark_sub_menu_model_.reset(new BookmarkSubMenuModel(this, browser_));
+    bookmark_sub_menu_model_ =
+        std::make_unique<BookmarkSubMenuModel>(this, browser_);
     AddSubMenuWithStringId(IDC_BOOKMARKS_MENU, IDS_BOOKMARKS_MENU,
                            bookmark_sub_menu_model_.get());
   }
@@ -810,7 +811,7 @@ void AppMenuModel::Build() {
   }
 #endif
 
-  tools_menu_model_.reset(new ToolsMenuModel(this, browser_));
+  tools_menu_model_ = std::make_unique<ToolsMenuModel>(this, browser_);
   AddSubMenuWithStringId(
       IDC_MORE_TOOLS_MENU, IDS_MORE_TOOLS_MENU, tools_menu_model_.get());
   AddSeparator(ui::LOWER_SEPARATOR);
@@ -822,7 +823,7 @@ void AppMenuModel::Build() {
 // 'About' item has been moved to this submenu, it's reinstated here for
 // Chromium builds.
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  help_menu_model_.reset(new HelpMenuModel(this, browser_));
+  help_menu_model_ = std::make_unique<HelpMenuModel>(this, browser_);
   AddSubMenuWithStringId(IDC_HELP_MENU, IDS_HELP_MENU,
                          help_menu_model_.get());
 #else
@@ -881,7 +882,8 @@ void AppMenuModel::CreateCutCopyPasteMenu() {
   // WARNING: Mac does not use the ButtonMenuItemModel, but instead defines the
   // layout for this menu item in AppMenu.xib. It does, however, use the
   // command_id value from AddButtonItem() to identify this special item.
-  edit_menu_item_model_.reset(new ui::ButtonMenuItemModel(IDS_EDIT, this));
+  edit_menu_item_model_ =
+      std::make_unique<ui::ButtonMenuItemModel>(IDS_EDIT, this);
   edit_menu_item_model_->AddGroupItemWithStringId(IDC_CUT, IDS_CUT);
   edit_menu_item_model_->AddGroupItemWithStringId(IDC_COPY, IDS_COPY);
   edit_menu_item_model_->AddGroupItemWithStringId(IDC_PASTE, IDS_PASTE);

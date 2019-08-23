@@ -34,6 +34,7 @@ per-file settings*strings*=file://chrome/browser/resources/settings/OWNERS
 per-file supervised_user_error_page_strings.grdp=file://chrome/browser/supervised_user/supervised_user_error_page/OWNERS
 
 per-file vr_strings.grdp=file://chrome/browser/vr/OWNERS
+per-file xr_consent_ui_strings.grdp=file://chrome/browser/vr/OWNERS
 per-file xr_support_ui_strings.grdp=file://chrome/browser/vr/OWNERS
 
 # Non-GRD rules.

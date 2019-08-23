@@ -73,6 +73,7 @@ void FidoDevice::OnDeviceInfoReceived(
   if (!get_info_response ||
       !base::Contains(get_info_response->versions, ProtocolVersion::kCtap2)) {
     supported_protocol_ = ProtocolVersion::kU2f;
+    needs_explicit_wink_ = true;
     FIDO_LOG(DEBUG) << "The device only supports the U2F protocol.";
   } else {
     supported_protocol_ = ProtocolVersion::kCtap2;

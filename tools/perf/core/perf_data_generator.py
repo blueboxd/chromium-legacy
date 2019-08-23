@@ -582,11 +582,12 @@ BUILDERS = {
     'target_bits': 64,
     'dimension': {
       'pool': 'chrome.tests.perf',
-      # TODO(crbug.com/966238): Add more specific windows version.
-      'os': 'Windows-10',
-      # TODO(crbug.com/971204): Explicitly set the gpu to None to make
-      # chromium_swarming recipe_module ignore this dimension.
-      'gpu': None,
+      # Explicitly set GPU driver version and Windows OS version such
+      # that we can be informed if this
+      # version ever changes or becomes inconsistent. It is important
+      # that bots are homogeneous. See crbug.com/988045 for history.
+      'os': 'Windows-10-16299.309',
+      'gpu': '8086:5912-23.20.16.4877',
       'synthetic_product_name': 'OptiPlex 7050 (Dell Inc.)'
     },
   },
@@ -1202,13 +1203,13 @@ def generate_performance_test(tester_config, test):
     # TODO(crbug.com/865538): once we have plenty of windows hardwares,
     # to shards perf benchmarks on Win builders, reduce this hard timeout limit
     # to ~2 hrs.
-    'hard_timeout': 10 * 60 * 60, # 10 hours timeout for full suite
+    'hard_timeout': 12 * 60 * 60, # 12 hours timeout for full suite
     'ignore_task_failure': False,
-    # 4 hour timeout. Note that this is effectively the timeout for a
+    # 6 hour timeout. Note that this is effectively the timeout for a
     # benchmarking subprocess to run since we intentionally do not stream
     # subprocess output to the task stdout.
     # TODO(crbug.com/865538): Reduce this once we can reduce hard_timeout.
-    'io_timeout': 4 * 60 * 60,
+    'io_timeout': 6 * 60 * 60,
     'dimension_sets': [
       tester_config['dimension']
     ],

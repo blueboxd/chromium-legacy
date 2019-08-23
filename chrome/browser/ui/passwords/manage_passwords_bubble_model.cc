@@ -282,8 +282,8 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
         delegate_->GetCredentialSource(), display_disposition);
   }
   metrics_util::LogUIDisplayDisposition(display_disposition);
-  interaction_keeper_.reset(new InteractionKeeper(std::move(interaction_stats),
-                                                  display_disposition));
+  interaction_keeper_ = std::make_unique<InteractionKeeper>(
+      std::move(interaction_stats), display_disposition);
 
   delegate_->OnBubbleShown();
 }

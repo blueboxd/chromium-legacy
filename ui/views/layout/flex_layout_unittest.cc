@@ -2153,6 +2153,57 @@ class NestedFlexLayoutTest : public FlexLayoutTest {
   View::Views children_;
 };
 
+TEST_F(NestedFlexLayoutTest, SetVisible_UpdatesLayout) {
+  AddChildren(1);
+  AddGrandchild(1, gfx::Size(5, 5));
+  AddGrandchild(1, gfx::Size(5, 5));
+
+  layout_->SetOrientation(LayoutOrientation::kHorizontal);
+  layout(1)->SetOrientation(LayoutOrientation::kHorizontal);
+  EXPECT_EQ(gfx::Size(10, 5), host_->GetPreferredSize());
+  grandchild(1, 1)->SetVisible(false);
+  EXPECT_EQ(gfx::Size(5, 5), host_->GetPreferredSize());
+  host_->Layout();
+  EXPECT_EQ(gfx::Rect(0, 0, 5, 5), child(1)->bounds());
+  EXPECT_EQ(gfx::Rect(0, 0, 5, 5), grandchild(1, 2)->bounds());
+}
+
+TEST_F(NestedFlexLayoutTest, AddChild_UpdatesLayout) {
+  AddChildren(1);
+  AddGrandchild(1, gfx::Size(5, 5));
+
+  layout_->SetOrientation(LayoutOrientation::kHorizontal);
+  layout(1)->SetOrientation(LayoutOrientation::kHorizontal);
+  EXPECT_EQ(gfx::Size(5, 5), host_->GetPreferredSize());
+  AddGrandchild(1, gfx::Size(5, 5));
+  EXPECT_EQ(gfx::Size(10, 5), host_->GetPreferredSize());
+  host_->Layout();
+  EXPECT_EQ(gfx::Rect(0, 0, 10, 5), child(1)->bounds());
+  EXPECT_EQ(gfx::Rect(0, 0, 5, 5), grandchild(1, 1)->bounds());
+  EXPECT_EQ(gfx::Rect(5, 0, 5, 5), grandchild(1, 2)->bounds());
+}
+
+TEST_F(NestedFlexLayoutTest, RemoveChild_UpdatesLayout) {
+  AddChildren(1);
+  AddGrandchild(1, gfx::Size(5, 5));
+  AddGrandchild(1, gfx::Size(5, 5));
+
+  layout_->SetOrientation(LayoutOrientation::kHorizontal);
+  layout(1)->SetOrientation(LayoutOrientation::kHorizontal);
+  EXPECT_EQ(gfx::Size(10, 5), host_->GetPreferredSize());
+
+  // Remove one grandchild view, avoiding a memory leak since the view is no
+  // longer owned.
+  View* const to_remove = grandchild(1, 2);
+  child(1)->RemoveChildView(to_remove);
+  delete to_remove;
+
+  EXPECT_EQ(gfx::Size(5, 5), host_->GetPreferredSize());
+  host_->Layout();
+  EXPECT_EQ(gfx::Rect(0, 0, 5, 5), child(1)->bounds());
+  EXPECT_EQ(gfx::Rect(0, 0, 5, 5), grandchild(1, 1)->bounds());
+}
+
 TEST_F(NestedFlexLayoutTest, Layout_OppositeOrientation) {
   AddChildren(2);
   AddGrandchild(1, gfx::Size(5, 5));

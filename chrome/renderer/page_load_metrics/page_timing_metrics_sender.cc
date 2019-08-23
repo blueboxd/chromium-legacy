@@ -72,7 +72,7 @@ void PageTimingMetricsSender::DidObserveLoadingBehavior(
 
 void PageTimingMetricsSender::DidObserveNewFeatureUsage(
     blink::mojom::WebFeature feature) {
-  int32_t feature_id = static_cast<int32_t>(feature);
+  size_t feature_id = static_cast<size_t>(feature);
   if (features_sent_.test(feature_id)) {
     return;
   }
@@ -81,14 +81,16 @@ void PageTimingMetricsSender::DidObserveNewFeatureUsage(
   EnsureSendTimer();
 }
 
-void PageTimingMetricsSender::DidObserveNewCssPropertyUsage(int css_property,
-                                                            bool is_animated) {
-  if (is_animated && !animated_css_properties_sent_.test(css_property)) {
-    animated_css_properties_sent_.set(css_property);
+void PageTimingMetricsSender::DidObserveNewCssPropertyUsage(
+    blink::mojom::CSSSampleId css_property,
+    bool is_animated) {
+  size_t css_property_id = static_cast<size_t>(css_property);
+  if (is_animated && !animated_css_properties_sent_.test(css_property_id)) {
+    animated_css_properties_sent_.set(css_property_id);
     new_features_->animated_css_properties.push_back(css_property);
     EnsureSendTimer();
-  } else if (!is_animated && !css_properties_sent_.test(css_property)) {
-    css_properties_sent_.set(css_property);
+  } else if (!is_animated && !css_properties_sent_.test(css_property_id)) {
+    css_properties_sent_.set(css_property_id);
     new_features_->css_properties.push_back(css_property);
     EnsureSendTimer();
   }

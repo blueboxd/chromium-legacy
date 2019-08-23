@@ -132,7 +132,7 @@ TEST_F(ProfileReportGeneratorTest, SignedInProfile) {
   EXPECT_TRUE(report->has_chrome_signed_in_user());
   EXPECT_EQ(expected_info.email, report->chrome_signed_in_user().email());
   EXPECT_EQ(expected_info.gaia,
-            report->chrome_signed_in_user().obfudscated_gaiaid());
+            report->chrome_signed_in_user().obfudscated_gaia_id());
 }
 
 TEST_F(ProfileReportGeneratorTest, PluginIsDisabled) {

@@ -116,7 +116,8 @@ base::string16 ChooserBubbleUiViewDelegate::GetWindowTitle() const {
 }
 
 views::View* ChooserBubbleUiViewDelegate::GetInitiallyFocusedView() {
-  return GetDialogClientView()->cancel_button();
+  const views::DialogClientView* dcv = GetDialogClientView();
+  return dcv ? dcv->cancel_button() : nullptr;
 }
 
 base::string16 ChooserBubbleUiViewDelegate::GetDialogButtonLabel(

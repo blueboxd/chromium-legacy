@@ -368,7 +368,7 @@ void BackgroundFetchEventDispatcher::LogBackgroundFetchCompletionForDevTools(
     metadata["Failure Reason"] = stream.str();
   }
 
-  devtools_context_->LogBackgroundServiceEventOnIO(
+  devtools_context_->LogBackgroundServiceEventOnCoreThread(
       registration_id.service_worker_registration_id(),
       registration_id.origin(), DevToolsBackgroundService::kBackgroundFetch,
       /* event_name= */ "Background Fetch completed",

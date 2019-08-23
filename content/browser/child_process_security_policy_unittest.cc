@@ -1225,42 +1225,50 @@ TEST_F(ChildProcessSecurityPolicyTest, RemoveRace_CanAccessDataForOrigin) {
   EXPECT_FALSE(io_after_remove_complete);
 }
 
-TEST_F(ChildProcessSecurityPolicyTest, CanAccessDataForOrigin) {
+TEST_F(ChildProcessSecurityPolicyTest, CanAccessDataForOrigin_URL) {
   ChildProcessSecurityPolicyImpl* p =
       ChildProcessSecurityPolicyImpl::GetInstance();
 
   GURL file_url("file:///etc/passwd");
-  GURL http_url("http://foo.com/index.html");
-  GURL http2_url("http://bar.com/index.html");
+  GURL foo_http_url("http://foo.com/index.html");
+  GURL foo_blob_url("blob:http://foo.com/43d75119-d7af-4471-a293-07c6b3d7e61a");
+  GURL foo_filesystem_url("filesystem:http://foo.com/temporary/test.html");
+  GURL bar_http_url("http://bar.com/index.html");
 
   // Test invalid ID case.
   EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, file_url));
-  EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, http_url));
-  EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, http2_url));
+  EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, foo_http_url));
+  EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, foo_blob_url));
+  EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, foo_filesystem_url));
+  EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, bar_http_url));
 
   TestBrowserContext browser_context;
   p->Add(kRendererID, &browser_context);
 
   // Verify unlocked origin permissions.
   EXPECT_TRUE(p->CanAccessDataForOrigin(kRendererID, file_url));
-  EXPECT_TRUE(p->CanAccessDataForOrigin(kRendererID, http_url));
-  EXPECT_TRUE(p->CanAccessDataForOrigin(kRendererID, http2_url));
+  EXPECT_TRUE(p->CanAccessDataForOrigin(kRendererID, foo_http_url));
+  EXPECT_TRUE(p->CanAccessDataForOrigin(kRendererID, foo_blob_url));
+  EXPECT_TRUE(p->CanAccessDataForOrigin(kRendererID, foo_filesystem_url));
+  EXPECT_TRUE(p->CanAccessDataForOrigin(kRendererID, bar_http_url));
 
   // Isolate |http_url| so we can't get a default SiteInstance.
-  p->AddIsolatedOrigins({url::Origin::Create(http_url)},
+  p->AddIsolatedOrigins({url::Origin::Create(foo_http_url)},
                         IsolatedOriginSource::TEST, &browser_context);
 
   // Lock process to |http_url| origin.
   scoped_refptr<SiteInstanceImpl> foo_instance =
-      SiteInstanceImpl::CreateForURL(&browser_context, http_url);
+      SiteInstanceImpl::CreateForURL(&browser_context, foo_http_url);
   EXPECT_FALSE(foo_instance->IsDefaultSiteInstance());
   p->LockToOrigin(foo_instance->GetIsolationContext(), kRendererID,
                   foo_instance->GetSiteURL());
 
   // Verify that file access is no longer allowed.
   EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, file_url));
-  EXPECT_TRUE(p->CanAccessDataForOrigin(kRendererID, http_url));
-  EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, http2_url));
+  EXPECT_TRUE(p->CanAccessDataForOrigin(kRendererID, foo_http_url));
+  EXPECT_TRUE(p->CanAccessDataForOrigin(kRendererID, foo_blob_url));
+  EXPECT_TRUE(p->CanAccessDataForOrigin(kRendererID, foo_filesystem_url));
+  EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, bar_http_url));
 
   p->Remove(kRendererID);
 
@@ -1271,10 +1279,107 @@ TEST_F(ChildProcessSecurityPolicyTest, CanAccessDataForOrigin) {
                          run_loop.QuitClosure());
   run_loop.Run();
 
-  // Verify invalid ID is rejected now that Remove() has complted.
+  // Verify invalid ID is rejected now that Remove() has completed.
   EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, file_url));
-  EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, http_url));
-  EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, http2_url));
+  EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, foo_http_url));
+  EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, foo_blob_url));
+  EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, foo_filesystem_url));
+  EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, bar_http_url));
+}
+
+TEST_F(ChildProcessSecurityPolicyTest, CanAccessDataForOrigin_Origin) {
+  ChildProcessSecurityPolicyImpl* p =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+
+  const std::vector<const char*> foo_urls = {
+      "http://foo.com/index.html",
+      "blob:http://foo.com/43d75119-d7af-4471-a293-07c6b3d7e61a",
+      "filesystem:http://foo.com/temporary/test.html",
+      // Port differences considered equal.
+      "http://foo.com:1234/index.html",
+      "blob:http://foo.com:1234/43d75119-d7af-4471-a293-07c6b3d7e61a",
+      "filesystem:http://foo.com:1234/temporary/test.html"};
+
+  const std::vector<const char*> non_foo_urls = {
+      "file:///etc/passwd",
+      "http://bar.com/index.html",
+      "blob:http://bar.com/43d75119-d7af-4471-a293-07c6b3d7e61a",
+      "filesystem:http://bar.com/temporary/test.html",
+      "data:text/html,Hello!"
+      // foo.com with a different scheme not considered equal.
+      "https://foo.com/index.html",
+      "blob:https://foo.com/43d75119-d7af-4471-a293-07c6b3d7e61a",
+      "filesystem:https://foo.com/temporary/test.html"};
+
+  std::vector<url::Origin> foo_origins;
+  std::vector<url::Origin> non_foo_origins;
+  std::vector<url::Origin> all_origins;
+  for (auto* url : foo_urls) {
+    auto origin = url::Origin::Create(GURL(url));
+    foo_origins.push_back(origin);
+    all_origins.push_back(origin);
+  }
+  auto foo_origin = url::Origin::Create(GURL("http://foo.com"));
+  auto opaque_with_foo_precursor = foo_origin.DeriveNewOpaqueOrigin();
+  foo_origins.push_back(opaque_with_foo_precursor);
+  all_origins.push_back(opaque_with_foo_precursor);
+
+  for (auto* url : non_foo_urls) {
+    auto origin = url::Origin::Create(GURL(url));
+    non_foo_origins.push_back(origin);
+    all_origins.push_back(origin);
+  }
+  url::Origin opaque_origin_without_precursor;
+  non_foo_origins.push_back(opaque_origin_without_precursor);
+  all_origins.push_back(opaque_origin_without_precursor);
+
+  auto opaque_with_bar_precursor =
+      url::Origin::Create(GURL("http://bar.com")).DeriveNewOpaqueOrigin();
+  non_foo_origins.push_back(opaque_with_bar_precursor);
+  all_origins.push_back(opaque_with_bar_precursor);
+
+  // Test invalid ID case.
+  for (const auto& origin : all_origins)
+    EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, origin)) << origin;
+
+  TestBrowserContext browser_context;
+  p->Add(kRendererID, &browser_context);
+
+  // Verify unlocked process permissions.
+  for (const auto& origin : all_origins)
+    EXPECT_TRUE(p->CanAccessDataForOrigin(kRendererID, origin)) << origin;
+
+  // Isolate |foo_origin| so we can't get a default SiteInstance.
+  p->AddIsolatedOrigins({foo_origin}, IsolatedOriginSource::TEST,
+                        &browser_context);
+
+  // Lock process to |foo_origin| origin.
+  scoped_refptr<SiteInstanceImpl> foo_instance =
+      SiteInstanceImpl::CreateForURL(&browser_context, foo_origin.GetURL());
+  EXPECT_FALSE(foo_instance->IsDefaultSiteInstance());
+  p->LockToOrigin(foo_instance->GetIsolationContext(), kRendererID,
+                  foo_instance->GetSiteURL());
+
+  // Verify that access is no longer allowed for origins that are not associated
+  // with foo.com.
+  for (const auto& origin : foo_origins)
+    EXPECT_TRUE(p->CanAccessDataForOrigin(kRendererID, origin)) << origin;
+
+  for (const auto& origin : non_foo_origins)
+    EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, origin)) << origin;
+
+  p->Remove(kRendererID);
+
+  // Post a task to the IO loop that then posts a task to the UI loop.
+  // This should cause the |run_loop| to return after the removal has completed.
+  base::RunLoop run_loop;
+  base::PostTaskAndReply(FROM_HERE, {BrowserThread::IO}, base::DoNothing(),
+                         run_loop.QuitClosure());
+  run_loop.Run();
+
+  // Verify invalid ID is rejected now that Remove() has completed.
+  for (const auto& origin : all_origins)
+    EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, origin)) << origin;
 }
 
 // Test the granting of origin permissions, and their interactions with

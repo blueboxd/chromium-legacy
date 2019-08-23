@@ -16,6 +16,7 @@
 #include "chrome/browser/page_load_metrics/page_load_metrics_test_waiter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -34,7 +35,9 @@
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_base.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -64,7 +67,9 @@ class DataSaverSiteBreakdownMetricsObserverBrowserTestBase
     scoped_feature_list_.InitWithFeaturesAndParameters(
         {{features::kLazyImageLoading,
           {{"automatic-lazy-load-images-enabled", "true"},
-           {"enable-lazy-load-images-metadata-fetch", "true"}}}},
+           {"enable-lazy-load-images-metadata-fetch", "true"}}},
+         {features::kLazyFrameLoading,
+          {{"automatic-lazy-load-frames-enabled", "true"}}}},
         {});
     InProcessBrowserTest::SetUp();
   }
@@ -119,6 +124,7 @@ class DataSaverSiteBreakdownMetricsObserverBrowserTest
  protected:
   void SetUpOnMainThread() override {
     DataSaverSiteBreakdownMetricsObserverBrowserTestBase::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
 
     PrefService* prefs = browser()->profile()->GetPrefs();
     prefs->SetBoolean(data_reduction_proxy::prefs::kDataUsageReportingEnabled,
@@ -342,5 +348,117 @@ IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTestBase,
 
     EXPECT_EQ(0U, GetDataUsage(test_url.HostNoBrackets()));
     EXPECT_EQ(0U, GetDataUsage(test_url.HostNoBrackets()));
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
+                       LazyLoadImageDisabledInReload) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  WaitForDBToInitialize();
+  GURL test_url(
+      embedded_test_server()->GetURL("/lazyload/img-with-dimension.html"));
+
+  {
+    uint64_t data_savings_before_navigation =
+        GetDataSavings(test_url.HostNoBrackets());
+
+    auto waiter =
+        std::make_unique<page_load_metrics::PageLoadMetricsTestWaiter>(
+            browser()->tab_strip_model()->GetActiveWebContents());
+
+    ui_test_utils::NavigateToURL(browser(), test_url);
+
+    waiter->AddMinimumCompleteResourcesExpectation(3);
+    waiter->Wait();
+    EXPECT_EQ(10000U, GetDataSavings(test_url.HostNoBrackets()) -
+                          data_savings_before_navigation);
+  }
+
+  // Reload will not have any savings.
+  {
+    uint64_t data_savings_before_navigation =
+        GetDataSavings(test_url.HostNoBrackets());
+
+    auto* web_contents = browser()->tab_strip_model()->GetActiveWebContents();
+    auto waiter =
+        std::make_unique<page_load_metrics::PageLoadMetricsTestWaiter>(
+            web_contents);
+    chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
+
+    waiter->AddMinimumCompleteResourcesExpectation(3);
+    waiter->Wait();
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(0U, GetDataSavings(test_url.HostNoBrackets()) -
+                      data_savings_before_navigation);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
+                       LazyLoadFrameDisabledInReload) {
+  net::EmbeddedTestServer cross_origin_server;
+  cross_origin_server.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
+  ASSERT_TRUE(cross_origin_server.Start());
+  embedded_test_server()->RegisterRequestHandler(base::Bind(
+      [](uint16_t cross_origin_port,
+         const net::test_server::HttpRequest& request)
+          -> std::unique_ptr<net::test_server::HttpResponse> {
+        auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+        if (request.relative_url == "/mainpage.html") {
+          response->set_content(base::StringPrintf(
+              R"HTML(
+              <body>
+                <div style="height:11000px;"></div>
+                Below the viewport croos-origin iframe <br>
+                <iframe src="http://bar.com:%d/simple.html"
+                width="100" height="100"
+                onload="console.log('below-viewport iframe loaded')"></iframe>
+              </body>)HTML",
+              cross_origin_port));
+        }
+        return response;
+      },
+      cross_origin_server.port()));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  WaitForDBToInitialize();
+  GURL test_url(embedded_test_server()->GetURL("foo.com", "/mainpage.html"));
+  auto* web_contents = browser()->tab_strip_model()->GetActiveWebContents();
+  content::ConsoleObserverDelegate console_observer(
+      web_contents, "below-viewport iframe loaded");
+  web_contents->SetDelegate(&console_observer);
+
+  {
+    uint64_t data_savings_before_navigation =
+        GetDataSavings(test_url.HostNoBrackets());
+
+    auto waiter =
+        std::make_unique<page_load_metrics::PageLoadMetricsTestWaiter>(
+            web_contents);
+
+    ui_test_utils::NavigateToURL(browser(), test_url);
+
+    waiter->AddMinimumCompleteResourcesExpectation(2);
+    waiter->Wait();
+    EXPECT_EQ(50000U, GetDataSavings(test_url.HostNoBrackets()) -
+                          data_savings_before_navigation);
+    EXPECT_EQ(std::string(), console_observer.message());
+  }
+
+  // Reload will not have any savings.
+  {
+    uint64_t data_savings_before_navigation =
+        GetDataSavings(test_url.HostNoBrackets());
+
+    auto waiter =
+        std::make_unique<page_load_metrics::PageLoadMetricsTestWaiter>(
+            web_contents);
+    chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
+
+    waiter->AddMinimumCompleteResourcesExpectation(2);
+    waiter->Wait();
+    base::RunLoop().RunUntilIdle();
+    console_observer.Wait();
+    EXPECT_EQ(0U, GetDataSavings(test_url.HostNoBrackets()) -
+                      data_savings_before_navigation);
+    EXPECT_EQ("below-viewport iframe loaded", console_observer.message());
   }
 }

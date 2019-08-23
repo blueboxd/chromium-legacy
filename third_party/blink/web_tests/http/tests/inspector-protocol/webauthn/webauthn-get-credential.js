@@ -22,9 +22,8 @@
   })`));
   testRunner.log(result.status);
 
-  // Convert the credential ID from base64url to base64.
-  let credentialId = result.credential.id.replace(/-/g, "+").replace(/_/g, "/");
-  credentialId += "=".repeat(4 - credentialId.length % 4);
+  let credentialId =
+      await session.evaluate(`base64urlToBase64("${result.credential.id}")`);
 
   // Get the registered credential.
   let credential =

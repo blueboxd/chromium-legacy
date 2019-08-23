@@ -23,7 +23,7 @@ namespace gfx {
 class Point;
 }
 
-// Class to enable quick tab switching via horizontal 3 finger swipes.
+// Class to enable quick tab switching via horizontal 4 finger swipes.
 class TabScrubber : public ui::EventHandler,
                     public BrowserListObserver,
                     public TabStripObserver {

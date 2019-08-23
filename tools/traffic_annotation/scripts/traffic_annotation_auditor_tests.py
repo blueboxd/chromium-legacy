@@ -117,7 +117,7 @@ class TrafficAnnotationTestsChecker():
     except OSError:
       pass
 
-    _, stderr_text, return_code = self.tools.RunAuditor(
+    stdout_text, stderr_text, return_code = self.tools.RunAuditor(
         args + ["--annotations-file=%s" % self.annotations_filename])
 
     annotations = None
@@ -136,7 +136,12 @@ class TrafficAnnotationTestsChecker():
     if annotations:
       print("Test PASSED.")
     else:
-      print("Test FAILED.\n%s" % stderr_text)
+      print("Test FAILED.")
+
+    if stdout_text:
+      print(stdout_text)
+    if stderr_text:
+      print(stderr_text)
 
     return annotations
 

@@ -58,6 +58,10 @@ class ServicesDelegateAndroid : public ServicesDelegate {
   void RemoveVerdictCacheManager(Profile* profile) override;
   VerdictCacheManager* GetVerdictCacheManager(Profile* profile) const override;
 
+  void CreateBinaryUploadService(Profile* profile) override;
+  void RemoveBinaryUploadService(Profile* profile) override;
+  BinaryUploadService* GetBinaryUploadService(Profile* profile) const override;
+
   std::string GetSafetyNetId() const override;
 
   // Reports the current extended reporting level. Note that this is an

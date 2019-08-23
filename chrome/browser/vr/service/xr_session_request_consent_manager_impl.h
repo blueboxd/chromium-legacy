@@ -21,7 +21,9 @@ class XRSessionRequestConsentManagerImpl
   // XRSessionRequestConsentManager:
   TabModalConfirmDialog* ShowDialogAndGetConsent(
       content::WebContents* web_contents,
-      base::OnceCallback<void(bool)> response_callback) override;
+      XrConsentPromptLevel consent_level,
+      base::OnceCallback<void(XrConsentPromptLevel, bool)> response_callback)
+      override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(XRSessionRequestConsentManagerImpl);

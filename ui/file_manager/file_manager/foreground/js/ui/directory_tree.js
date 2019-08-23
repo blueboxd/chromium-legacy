@@ -834,21 +834,20 @@ class EntryListItem extends DirectoryItem {
     }
 
     const icon = queryRequiredElement('.icon', this);
+    icon.classList.add('item-icon');
+    icon.setAttribute('root-type-icon', rootType);
+
     if (window.IN_TEST && this.entry && this.entry.volumeInfo) {
       this.setAttribute(
           'volume-type-for-testing', this.entry.volumeInfo.volumeType);
-      // TODO(crbug.com/880130) Remove volume-type-icon from here once
-      // MyFilesVolume flag is removed.
-      icon.setAttribute('volume-type-icon', rootType);
     }
-    icon.classList.add('item-icon');
-    icon.setAttribute('root-type-icon', rootType);
 
     // MyFiles shows expanded by default.
     if (rootType === VolumeManagerCommon.RootType.MY_FILES) {
       this.mayHaveChildren_ = true;
       this.expanded = true;
     }
+
     // Populate children of this volume.
     this.updateSubDirectories(false /* recursive */);
   }

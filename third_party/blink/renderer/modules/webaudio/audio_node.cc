@@ -379,8 +379,6 @@ void AudioHandler::CheckNumberOfChannelsForInput(AudioNodeInput* input) {
   deferred_task_handler_->AssertGraphOwner();
 
   DCHECK(inputs_.Contains(input));
-  if (!inputs_.Contains(input))
-    return;
 
   input->UpdateInternalBus();
 }

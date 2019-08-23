@@ -481,6 +481,56 @@ async function expandTreeItem(appId, treeItem) {
 }
 
 /**
+ * Focus the directory tree and navigates using mouse clicks.
+ *
+ * @param {!string} appId
+ * @param {!string} breadcrumbsPath Path based on the entry labels like:
+ *     /My files/Downloads/photos to item that should navigate to.
+ * @param {string=} shortcutToPath For shortcuts it navigates to a different
+ *   breadcrumbs path, like /My Drive/ShortcutName.
+ *   @return {string} the final selector used to click on the desired tree item.
+ */
+async function navigateWithDirectoryTree(
+    appId, breadcrumbsPath, shortcutToPath) {
+  const hasChildren = ' > .tree-row[has-children=true]';
+
+  // Focus the directory tree.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil(
+          'focus', appId, ['#directory-tree']),
+      'focus failed: #directory-tree');
+
+  const paths = breadcrumbsPath.split('/').filter(path => path);
+  const leaf = paths.pop();
+
+  // Expand all parents of the leaf entry.
+  let query = '#directory-tree';
+  for (const parentLabel of paths) {
+    query += ` [entry-label="${parentLabel}"]`;
+    // Wait for parent element to be displayed.
+    await remoteCall.waitForElement(appId, query);
+
+    // Only expand if element isn't expanded yet.
+    const elements = await remoteCall.callRemoteTestUtil(
+        'queryAllElements', appId, [query + '[expanded]']);
+    if (!elements.length) {
+      await remoteCall.waitForElement(appId, query + hasChildren);
+      await expandTreeItem(appId, query);
+    }
+  }
+
+  // Navigate to the final entry.
+  query += ` [entry-label="${leaf}"]`;
+  await remoteCall.waitAndClickElement(appId, query);
+
+  // Wait to navigation to final entry to finish.
+  await remoteCall.waitUntilCurrentDirectoryIsChanged(
+      appId, (shortcutToPath || breadcrumbsPath));
+
+  return query;
+}
+
+/**
  * Mounts crostini volume by clicking on the fake crostini root.
  * @param {string} appId Files app windowId.
  * @param {!Array<TestEntryInfo>>} initialEntries List of initial entries to

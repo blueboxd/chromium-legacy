@@ -176,9 +176,9 @@ void ExtensionLauncherContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
   Profile* profile = controller()->profile();
   const std::string app_id = item().id.app_id;
 
-  extension_items_.reset(new extensions::ContextMenuMatcher(
+  extension_items_ = std::make_unique<extensions::ContextMenuMatcher>(
       profile, this, menu_model,
-      base::BindRepeating(MenuItemHasLauncherContext)));
+      base::BindRepeating(MenuItemHasLauncherContext));
   // V1 apps can be started from the menu - but V2 apps and system web apps
   // should not.
   bool is_system_web_app = web_app::WebAppProvider::Get(profile)

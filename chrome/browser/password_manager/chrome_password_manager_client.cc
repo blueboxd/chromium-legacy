@@ -104,6 +104,7 @@
 #include "chrome/browser/autofill/manual_filling_controller.h"
 #include "chrome/browser/password_manager/account_chooser_dialog_android.h"
 #include "chrome/browser/password_manager/auto_signin_first_run_dialog_android.h"
+#include "chrome/browser/password_manager/credential_leak_controller_android.h"
 #include "chrome/browser/password_manager/generated_password_saved_infobar_delegate_android.h"
 #include "chrome/browser/password_manager/password_accessory_controller.h"
 #include "chrome/browser/password_manager/password_accessory_controller_impl.h"
@@ -508,7 +509,8 @@ void ChromePasswordManagerClient::NotifyUserCredentialsWereLeaked(
     password_manager::CredentialLeakType leak_type,
     const GURL& origin) {
 #if defined(OS_ANDROID)
-  // TODO(crbug.com/986317): Implement Android part of the feature.
+  (new CredentialLeakControllerAndroid())
+      ->ShowDialog(web_contents()->GetTopLevelNativeWindow());
 #else   // !defined(OS_ANDROID)
   PasswordsClientUIDelegate* manage_passwords_ui_controller =
       PasswordsClientUIDelegateFromWebContents(web_contents());

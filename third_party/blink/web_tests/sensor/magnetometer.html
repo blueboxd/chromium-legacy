@@ -13,13 +13,21 @@
 if (!window.testRunner)
     debug('This test cannot be run without the TestRunner');
 
-const kDefaultReading = [-19.2, 12.1, -44.3];
-const kMappedReading = [-12.1, -19.2, -44.3];
+const kReadings = {
+    readings: [
+        [-19.2, 12.1, -44.3]
+    ],
+    expectedReadings: [
+        [-19.2, 12.1, -44.3]
+    ],
+    expectedRemappedReadings: [
+        [-12.1, -19.2, -44.3]
+    ]
+}
 
 runGenericSensorTests(
     Magnetometer,
-    kDefaultReading,
-    verifyXyzSensorReading.bind(null, kDefaultReading),
-    verifyXyzSensorReading.bind(null, kMappedReading),
+    kReadings,
+    verifyXyzSensorReading,
     ['magnetometer']);
 </script>

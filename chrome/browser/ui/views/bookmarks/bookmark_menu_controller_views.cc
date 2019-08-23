@@ -41,7 +41,8 @@ BookmarkMenuController::BookmarkMenuController(Browser* browser,
   int run_type = 0;
   if (for_drop)
     run_type |= views::MenuRunner::FOR_DROP;
-  menu_runner_.reset(new views::MenuRunner(menu_delegate_->menu(), run_type));
+  menu_runner_ =
+      std::make_unique<views::MenuRunner>(menu_delegate_->menu(), run_type);
 }
 
 void BookmarkMenuController::RunMenuAt(BookmarkBarView* bookmark_bar) {

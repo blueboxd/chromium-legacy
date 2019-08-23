@@ -60,7 +60,7 @@ void BookmarksBrowserTest::SetupExtensionAPITest() {
   node->SetString("name", "Managed Bookmark");
   node->SetString("url", "http://www.chromium.org");
   list.Append(std::move(node));
-  node.reset(new base::DictionaryValue());
+  node = std::make_unique<base::DictionaryValue>();
   node->SetString("name", "Managed Folder");
   node->Set("children", std::make_unique<base::ListValue>());
   list.Append(std::move(node));

@@ -42,7 +42,7 @@ BEGIN
     "P",            IDC_BASIC_PRINT,            VIRTKEY, CONTROL, SHIFT
 #endif  // ENABLE_PRINTING_FOR_RC
     "D",            IDC_BOOKMARK_ALL_TABS,      VIRTKEY, CONTROL, SHIFT
-    "D",            IDC_BOOKMARK_PAGE,          VIRTKEY, CONTROL
+    "D",            IDC_BOOKMARK_THIS_TAB,      VIRTKEY, CONTROL
     VK_DELETE,      IDC_CLEAR_BROWSING_DATA,    VIRTKEY, CONTROL, SHIFT
     "W",            IDC_CLOSE_TAB,              VIRTKEY, CONTROL
     VK_F4,          IDC_CLOSE_TAB,              VIRTKEY, CONTROL

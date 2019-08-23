@@ -22,10 +22,11 @@ void WebXrVrBrowserTestBase::EnterSessionWithUserGesture(
     content::WebContents* web_contents) {
 #if defined(OS_WIN)
   XRSessionRequestConsentManager::SetInstanceForTesting(&consent_manager_);
-  ON_CALL(consent_manager_, ShowDialogAndGetConsent(_, _))
+  ON_CALL(consent_manager_, ShowDialogAndGetConsent(_, _, _))
       .WillByDefault(Invoke(
-          [](content::WebContents*, base::OnceCallback<void(bool)> callback) {
-            std::move(callback).Run(true);
+          [](content::WebContents*, XrConsentPromptLevel consent_level,
+             base::OnceCallback<void(XrConsentPromptLevel, bool)> callback) {
+            std::move(callback).Run(consent_level, true);
             return nullptr;
           }));
 #endif

@@ -93,6 +93,11 @@ class WebUIDataSourceImpl::InternalDataSource : public URLDataSource {
       return parent_->frame_src_;
     return URLDataSource::GetContentSecurityPolicyChildSrc();
   }
+  std::string GetContentSecurityPolicyWorkerSrc() override {
+    if (parent_->worker_src_set_)
+      return parent_->worker_src_;
+    return URLDataSource::GetContentSecurityPolicyWorkerSrc();
+  }
   bool ShouldDenyXFrameOptions() override {
     return parent_->deny_xframe_options_;
   }
@@ -202,6 +207,12 @@ void WebUIDataSourceImpl::OverrideContentSecurityPolicyChildSrc(
     const std::string& data) {
   frame_src_set_ = true;
   frame_src_ = data;
+}
+
+void WebUIDataSourceImpl::OverrideContentSecurityPolicyWorkerSrc(
+    const std::string& data) {
+  worker_src_set_ = true;
+  worker_src_ = data;
 }
 
 void WebUIDataSourceImpl::DisableDenyXFrameOptions() {

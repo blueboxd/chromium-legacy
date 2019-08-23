@@ -28,6 +28,8 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
       const MinMaxSizeInput&) const override;
 
  private:
+  void LayoutRow(scoped_refptr<const NGBlockBreakToken> next_column_token);
+
   LogicalSize CalculateColumnSize(const LogicalSize& content_box_size);
   LayoutUnit CalculateBalancedColumnBlockSize(const LogicalSize& column_size,
                                               int column_count);
@@ -52,6 +54,11 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
 
   const NGBoxStrut border_padding_;
   const NGBoxStrut border_scrollbar_padding_;
+  LogicalSize content_box_size_;
+  int used_column_count_;
+  LayoutUnit column_inline_size_;
+  LayoutUnit column_inline_progression_;
+  LayoutUnit intrinsic_block_size_;
 };
 
 }  // namespace blink

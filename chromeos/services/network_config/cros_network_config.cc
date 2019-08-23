@@ -160,8 +160,9 @@ mojom::OncSource GetMojoOncSource(const NetworkState* network) {
   return mojom::OncSource::kNone;
 }
 
-mojom::NetworkStatePropertiesPtr NetworkStateToMojo(const NetworkState* network,
-                                                    bool technology_enabled) {
+mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
+    NetworkStateHandler* network_state_handler,
+    const NetworkState* network) {
   mojom::NetworkType type = ShillTypeToMojo(network->type());
   if (type == mojom::NetworkType::kAll) {
     NET_LOG(ERROR) << "Unexpected network type: " << network->type()
@@ -172,7 +173,19 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(const NetworkState* network,
   auto result = mojom::NetworkStateProperties::New();
   result->type = type;
   result->connectable = network->connectable();
+  if (type == mojom::NetworkType::kCellular) {
+    // Ensure that a cellular network that has a locked sim state or is scanning
+    // is not connectable.
+    const DeviceState* device =
+        network_state_handler->GetDeviceState(network->device_path());
+    DCHECK(device) << "Device path not found: " << network->device_path();
+    if (device->IsSimLocked() || device->scanning())
+      result->connectable = false;
+  }
   result->connect_requested = network->connect_requested();
+  bool technology_enabled = network->Matches(NetworkTypePattern::VPN()) ||
+                            network_state_handler->IsTechnologyEnabled(
+                                NetworkTypePattern::Primitive(network->type()));
   result->connection_state = GetConnectionState(network, technology_enabled);
   if (!network->GetError().empty())
     result->error_state = network->GetError();
@@ -1014,24 +1027,6 @@ mojom::ManagedOpenVPNPropertiesPtr GetManagedOpenVPNProperties(
   return openvpn;
 }
 
-mojom::ManagedThirdPartyVPNPropertiesPtr GetManagedThirdPartyVPNProperties(
-    const base::Value* dict,
-    const char* key) {
-  const base::Value* third_party_dict = dict->FindKey(key);
-  if (!third_party_dict)
-    return nullptr;
-  if (!third_party_dict->is_dict()) {
-    NET_LOG(ERROR) << "Expected dictionary, found: " << *third_party_dict;
-    return nullptr;
-  }
-  auto third_party = mojom::ManagedThirdPartyVPNProperties::New();
-  third_party->extension_id =
-      GetManagedString(third_party_dict, ::onc::third_party_vpn::kExtensionID);
-  third_party->provider_name =
-      GetString(third_party_dict, ::onc::third_party_vpn::kProviderName);
-  return third_party;
-}
-
 mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
     const NetworkState* network_state,
     const base::DictionaryValue* properties) {
@@ -1204,8 +1199,17 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
       vpn->l2tp = GetManagedL2TPProperties(vpn_dict, ::onc::vpn::kL2TP);
       vpn->open_vpn =
           GetManagedOpenVPNProperties(vpn_dict, ::onc::vpn::kOpenVPN);
-      vpn->third_party_vpn = GetManagedThirdPartyVPNProperties(
-          vpn_dict, ::onc::vpn::kThirdPartyVpn);
+
+      const base::Value* third_party_dict =
+          vpn_dict->FindKey(::onc::vpn::kThirdPartyVpn);
+      if (third_party_dict) {
+        vpn->provider_id = GetManagedString(
+            third_party_dict, ::onc::third_party_vpn::kExtensionID);
+        base::Optional<std::string> provider_name =
+            GetString(third_party_dict, ::onc::third_party_vpn::kProviderName);
+        if (provider_name)
+          vpn->provider_name = *provider_name;
+      }
       mojom::ManagedStringPtr managed_type =
           GetManagedString(vpn_dict, ::onc::vpn::kType);
       CHECK(managed_type);
@@ -1322,7 +1326,7 @@ void CrosNetworkConfig::GetNetworkState(const std::string& guid,
     std::move(callback).Run(nullptr);
     return;
   }
-  std::move(callback).Run(GetMojoNetworkState(network));
+  std::move(callback).Run(NetworkStateToMojo(network_state_handler_, network));
 }
 
 void CrosNetworkConfig::GetNetworkStateList(
@@ -1361,7 +1365,7 @@ void CrosNetworkConfig::GetNetworkStateList(
       continue;
     }
     mojom::NetworkStatePropertiesPtr mojo_network =
-        GetMojoNetworkState(network);
+        NetworkStateToMojo(network_state_handler_, network);
     if (mojo_network)
       result.emplace_back(std::move(mojo_network));
   }
@@ -1723,7 +1727,7 @@ void CrosNetworkConfig::ActiveNetworksChanged(
   std::vector<mojom::NetworkStatePropertiesPtr> result;
   for (const NetworkState* network : active_networks) {
     mojom::NetworkStatePropertiesPtr mojo_network =
-        GetMojoNetworkState(network);
+        NetworkStateToMojo(network_state_handler_, network);
     if (mojo_network)
       result.emplace_back(std::move(mojo_network));
   }
@@ -1739,7 +1743,8 @@ void CrosNetworkConfig::ActiveNetworksChanged(
 void CrosNetworkConfig::NetworkPropertiesUpdated(const NetworkState* network) {
   if (network->type() == shill::kTypeEthernetEap)
     return;
-  mojom::NetworkStatePropertiesPtr mojo_network = GetMojoNetworkState(network);
+  mojom::NetworkStatePropertiesPtr mojo_network =
+      NetworkStateToMojo(network_state_handler_, network);
   if (!mojo_network)
     return;
   observers_.ForAllPtrs(
@@ -1756,14 +1761,6 @@ void CrosNetworkConfig::OnShuttingDown() {
   if (network_state_handler_->HasObserver(this))
     network_state_handler_->RemoveObserver(this, FROM_HERE);
   network_state_handler_ = nullptr;
-}
-
-mojom::NetworkStatePropertiesPtr CrosNetworkConfig::GetMojoNetworkState(
-    const NetworkState* network) {
-  bool technology_enabled = network->Matches(NetworkTypePattern::VPN()) ||
-                            network_state_handler_->IsTechnologyEnabled(
-                                NetworkTypePattern::Primitive(network->type()));
-  return NetworkStateToMojo(network, technology_enabled);
 }
 
 }  // namespace network_config

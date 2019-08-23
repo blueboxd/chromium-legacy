@@ -15,6 +15,8 @@ include_rules = [
   "+components/services/filesystem",
   "+components/services/font/ppapi_fontconfig_matching.h",
   "+components/services/leveldb",
+  "+components/services/quarantine/test_support.h",
+  "+components/services/quarantine/quarantine.h",
   "+components/session_manager/core",
   "+components/leveldb_proto/public",
   "+components/link_header_util",

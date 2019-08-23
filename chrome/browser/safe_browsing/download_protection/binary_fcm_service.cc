@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/gcm_driver/gcm_profile_service.h"
+#include "components/gcm_driver/instance_id/instance_id.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
 #include "components/gcm_driver/instance_id/instance_id_profile_service.h"
 #include "components/safe_browsing/proto/webprotect.pb.h"
@@ -57,22 +58,30 @@ std::unique_ptr<BinaryFCMService> BinaryFCMService::Create(Profile* profile) {
 BinaryFCMService::BinaryFCMService(
     gcm::GCMDriver* gcm_driver,
     instance_id::InstanceIDDriver* instance_id_driver)
-    : gcm_driver_(gcm_driver), instance_id_(kInvalidId) {
+    : gcm_driver_(gcm_driver),
+      instance_id_driver_(instance_id_driver),
+      weakptr_factory_(this) {
   gcm_driver->AddAppHandler(kBinaryFCMServiceAppId, this);
-  instance_id_driver->GetInstanceID(kBinaryFCMServiceAppId)
-      ->GetToken(kBinaryFCMServiceSenderId, instance_id::kGCMScope,
-                 /*options=*/{},
-                 /*flags=*/{},
-                 base::BindOnce(&BinaryFCMService::OnGetInstanceID,
-                                weakptr_factory_.GetWeakPtr()));
 }
 
+BinaryFCMService::BinaryFCMService()
+    : gcm_driver_(nullptr),
+      instance_id_driver_(nullptr),
+      weakptr_factory_(this) {}
+
 BinaryFCMService::~BinaryFCMService() {
-  gcm_driver_->RemoveAppHandler(kBinaryFCMServiceAppId);
+  if (gcm_driver_ != nullptr)
+    gcm_driver_->RemoveAppHandler(kBinaryFCMServiceAppId);
 }
 
 void BinaryFCMService::GetInstanceID(GetInstanceIDCallback callback) {
-  std::move(callback).Run(instance_id_);
+  instance_id_driver_->GetInstanceID(kBinaryFCMServiceAppId)
+      ->GetToken(
+          kBinaryFCMServiceSenderId, instance_id::kGCMScope,
+          /*options=*/{},
+          /*flags=*/{},
+          base::BindOnce(&BinaryFCMService::OnGetInstanceID,
+                         weakptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void BinaryFCMService::SetCallbackForToken(
@@ -85,15 +94,15 @@ void BinaryFCMService::ClearCallbackForToken(const std::string& token) {
   message_token_map_.erase(token);
 }
 
-void BinaryFCMService::OnGetInstanceID(const std::string& instance_id,
+void BinaryFCMService::OnGetInstanceID(GetInstanceIDCallback callback,
+                                       const std::string& instance_id,
                                        instance_id::InstanceID::Result result) {
-  if (result == instance_id::InstanceID::Result::SUCCESS) {
-    instance_id_ = instance_id;
-  }
+  std::move(callback).Run(
+      result == instance_id::InstanceID::SUCCESS ? instance_id : kInvalidId);
 }
 
 void BinaryFCMService::ShutdownHandler() {
-  NOTIMPLEMENTED();
+  gcm_driver_ = nullptr;
 }
 
 void BinaryFCMService::OnStoreReset() {

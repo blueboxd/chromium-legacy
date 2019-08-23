@@ -603,6 +603,31 @@ TEST_F(LayerImplScrollTest, ScrollUserUnscrollableLayer) {
   EXPECT_VECTOR_EQ(gfx::Vector2dF(30.5f, 5), layer()->CurrentScrollOffset());
 }
 
+// |LayerImpl::all_touch_action_regions_| is a cache of all regions on
+// |LayerImpl::touch_action_region_| and must be invalidated on changes.
+TEST_F(LayerImplScrollTest, TouchActionRegionCacheInvalidation) {
+  host_impl().CreatePendingTree();
+  std::unique_ptr<LayerImpl> pending_layer =
+      LayerImpl::Create(host_impl().pending_tree(), 2);
+
+  TouchActionRegion region;
+  region.Union(kTouchActionNone, gfx::Rect(0, 0, 50, 50));
+  pending_layer->SetTouchActionRegion(region);
+
+  // The values for GetAllTouchActionRegions should be correct on both layers.
+  // Note that querying GetAllTouchActionRegions will update the cached value
+  // in |LayerImpl::all_touch_action_regions_|.
+  EXPECT_EQ(pending_layer->GetAllTouchActionRegions(), region.GetAllRegions());
+  EXPECT_EQ(layer()->GetAllTouchActionRegions(), Region());
+
+  pending_layer->PushPropertiesTo(layer());
+
+  // After pushing properties, the value for GetAllTouchActionRegions should
+  // not be stale.
+  EXPECT_EQ(pending_layer->GetAllTouchActionRegions(), region.GetAllRegions());
+  EXPECT_EQ(layer()->GetAllTouchActionRegions(), region.GetAllRegions());
+}
+
 TEST_F(CommitToPendingTreeLayerImplScrollTest,
        PushPropertiesToMirrorsCurrentScrollOffset) {
   gfx::ScrollOffset scroll_offset(10, 5);

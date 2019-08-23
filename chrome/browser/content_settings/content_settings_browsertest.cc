@@ -70,7 +70,7 @@ CannedBrowsingDataCookieHelper* GetSiteSettingsCookieContainer(
     Browser* browser) {
   TabSpecificContentSettings* settings =
       TabSpecificContentSettings::FromWebContents(
-          browser->tab_strip_model()->GetWebContentsAt(0));
+          browser->tab_strip_model()->GetActiveWebContents());
   return settings->allowed_local_shared_objects().cookies();
 }
 
@@ -78,7 +78,7 @@ CannedBrowsingDataCookieHelper* GetSiteSettingsBlockedCookieContainer(
     Browser* browser) {
   TabSpecificContentSettings* settings =
       TabSpecificContentSettings::FromWebContents(
-          browser->tab_strip_model()->GetWebContentsAt(0));
+          browser->tab_strip_model()->GetActiveWebContents());
   return settings->blocked_local_shared_objects().cookies();
 }
 
@@ -93,6 +93,25 @@ net::CookieList ExtractCookies(CannedBrowsingDataCookieHelper* container) {
   CHECK(got_result);
   return result;
 }
+
+class CookieChangeObserver : public content::WebContentsObserver {
+ public:
+  explicit CookieChangeObserver(content::WebContents* web_contents)
+      : content::WebContentsObserver(web_contents) {}
+  ~CookieChangeObserver() override {}
+
+  void Wait() { run_loop_.Run(); }
+
+  void OnCookieChange(const GURL& url,
+                      const GURL& first_party_url,
+                      const net::CanonicalCookie& cookie,
+                      bool blocked_by_policy) override {
+    run_loop_.Quit();
+  }
+
+ private:
+  base::RunLoop run_loop_;
+};
 
 class MockWebContentsLoadFailObserver : public content::WebContentsObserver {
  public:
@@ -877,13 +896,16 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsWorkerModulesBrowserTest, CookieStore) {
       browser()->tab_strip_model()->GetActiveWebContents(), kClientScript);
   EXPECT_EQ(true, result2);
 
-  // Set a cookie, see that it's reported.
-  content::EvalJsResult result3 =
-      content::EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
-                      "requestCookieSet('first')");
-  EXPECT_EQ("set executed for first", result3);
-
   {
+    CookieChangeObserver observer(
+        browser()->tab_strip_model()->GetActiveWebContents());
+    // Set a cookie, see that it's reported.
+    content::EvalJsResult result3 =
+        content::EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
+                        "requestCookieSet('first')");
+    EXPECT_EQ("set executed for first", result3);
+    observer.Wait();
+
     CannedBrowsingDataCookieHelper* accepted =
         GetSiteSettingsCookieContainer(browser());
     CannedBrowsingDataCookieHelper* blocked =
@@ -894,16 +916,19 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsWorkerModulesBrowserTest, CookieStore) {
     EXPECT_THAT(accepted_cookies, net::MatchesCookieLine("first=value"));
   }
 
-  // Now set with cookies blocked.
-  content_settings::CookieSettings* settings =
-      CookieSettingsFactory::GetForProfile(browser()->profile()).get();
-  settings->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
-  content::EvalJsResult result4 =
-      content::EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
-                      "requestCookieSet('second')");
-  EXPECT_EQ("set executed for second", result4);
-
   {
+    CookieChangeObserver observer(
+        browser()->tab_strip_model()->GetActiveWebContents());
+    // Now set with cookies blocked.
+    content_settings::CookieSettings* settings =
+        CookieSettingsFactory::GetForProfile(browser()->profile()).get();
+    settings->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
+    content::EvalJsResult result4 =
+        content::EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
+                        "requestCookieSet('second')");
+    EXPECT_EQ("set executed for second", result4);
+    observer.Wait();
+
     CannedBrowsingDataCookieHelper* accepted =
         GetSiteSettingsCookieContainer(browser());
     CannedBrowsingDataCookieHelper* blocked =

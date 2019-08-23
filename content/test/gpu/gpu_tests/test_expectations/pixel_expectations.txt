@@ -57,7 +57,7 @@ crbug.com/805739 [ android android-webview-instrumentation ] Pixel_OffscreenCanv
 crbug.com/805739 [ android-webview-instrumentation ] Pixel_OffscreenCanvasWebGLDefault [ Skip ]
 crbug.com/805739 [ android-webview-instrumentation ] Pixel_OffscreenCanvasWebGLDefaultWorker [ Skip ]
 crbug.com/805739 [ android-webview-instrumentation ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ Skip ]
-crbug.com/805739 [ android-webview-instrumentation ] Pixel_OffscreenCanvasWebglResizeOnWorker [ Skip ]
+crbug.com/805739 [ android android-webview-instrumentation ] Pixel_OffscreenCanvasWebglResizeOnWorker [ Skip ]
 crbug.com/805739 [ android android-webview-instrumentation ] Pixel_CanvasLowLatencyWebGL [ Skip ]
 crbug.com/992599 [ android android-webview-instrumentation ] Pixel_OffscreenCanvasTransferToImageBitmapWorker [ Skip ]
 crbug.com/992599 [ android android-webview-instrumentation ] Pixel_OffscreenCanvasTransferToImageBitmap [ Skip ]
@@ -81,6 +81,8 @@ crbug.com/624256 [ mac ] Pixel_SolidColorBackground [ Failure ]
 crbug.com/624256 [ android ] Pixel_SolidColorBackground [ Failure ]
 
 crbug.com/690277 [ mac nvidia-0xfe9 ] Pixel_CSSFilterEffects [ Failure ]
+
+crbug.com/996824 [ mac nvidia-0xfe9 ] Pixel_OffscreenCanvasWebglResizeOnWorker [ Failure ]
 
 # Became flaky on 10.13.6. When it flakes, it flakes 3 times, so
 # mark failing, unfortunately.

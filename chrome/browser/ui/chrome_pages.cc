@@ -217,7 +217,7 @@ void ShowHelpImpl(Browser* browser, Profile* profile, HelpSource source) {
   }
   std::unique_ptr<ScopedTabbedBrowserDisplayer> displayer;
   if (!browser) {
-    displayer.reset(new ScopedTabbedBrowserDisplayer(profile));
+    displayer = std::make_unique<ScopedTabbedBrowserDisplayer>(profile);
     browser = displayer->browser();
   }
   ShowSingletonTab(browser, url);

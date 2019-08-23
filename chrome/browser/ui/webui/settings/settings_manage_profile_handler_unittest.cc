@@ -40,7 +40,7 @@ class ManageProfileHandlerTest : public testing::Test {
     ASSERT_TRUE(profile_manager_.SetUp());
     profile_ = profile_manager_.CreateTestingProfile("Profile 1");
 
-    handler_.reset(new TestManageProfileHandler(profile_));
+    handler_ = std::make_unique<TestManageProfileHandler>(profile_);
     handler_->set_web_ui(&web_ui_);
     handler()->AllowJavascript();
     web_ui()->ClearTrackedCalls();

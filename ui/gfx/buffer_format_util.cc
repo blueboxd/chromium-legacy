@@ -12,14 +12,14 @@ namespace gfx {
 namespace {
 
 const BufferFormat kBufferFormats[] = {
-    BufferFormat::R_8,          BufferFormat::R_16,
-    BufferFormat::RG_88,        BufferFormat::BGR_565,
-    BufferFormat::RGBA_4444,    BufferFormat::RGBX_8888,
-    BufferFormat::RGBA_8888,    BufferFormat::BGRX_8888,
-    BufferFormat::BGRX_1010102, BufferFormat::RGBX_1010102,
-    BufferFormat::BGRA_8888,    BufferFormat::RGBA_F16,
-    BufferFormat::UYVY_422,     BufferFormat::YUV_420_BIPLANAR,
-    BufferFormat::YVU_420,      BufferFormat::P010};
+    BufferFormat::R_8,              BufferFormat::R_16,
+    BufferFormat::RG_88,            BufferFormat::BGR_565,
+    BufferFormat::RGBA_4444,        BufferFormat::RGBX_8888,
+    BufferFormat::RGBA_8888,        BufferFormat::BGRX_8888,
+    BufferFormat::BGRX_1010102,     BufferFormat::RGBX_1010102,
+    BufferFormat::BGRA_8888,        BufferFormat::RGBA_F16,
+    BufferFormat::YUV_420_BIPLANAR, BufferFormat::YVU_420,
+    BufferFormat::P010};
 
 static_assert(base::size(kBufferFormats) ==
                   (static_cast<int>(BufferFormat::LAST) + 1),
@@ -46,7 +46,6 @@ size_t NumberOfPlanesForLinearBufferFormat(BufferFormat format) {
     case BufferFormat::RGBX_1010102:
     case BufferFormat::BGRA_8888:
     case BufferFormat::RGBA_F16:
-    case BufferFormat::UYVY_422:
       return 1;
     case BufferFormat::YUV_420_BIPLANAR:
     case BufferFormat::P010:
@@ -72,7 +71,6 @@ size_t SubsamplingFactorForBufferFormat(BufferFormat format, size_t plane) {
     case BufferFormat::RGBX_1010102:
     case BufferFormat::BGRA_8888:
     case BufferFormat::RGBA_F16:
-    case BufferFormat::UYVY_422:
       return 1;
     case BufferFormat::YVU_420: {
       static size_t factor[] = {1, 2, 2};
@@ -113,7 +111,6 @@ bool RowSizeForBufferFormatChecked(size_t width,
     case BufferFormat::RG_88:
     case BufferFormat::BGR_565:
     case BufferFormat::RGBA_4444:
-    case BufferFormat::UYVY_422:
       checked_size *= 2;
       checked_size += 3;
       if (!checked_size.IsValid())
@@ -200,7 +197,6 @@ size_t BufferOffsetForBufferFormat(const Size& size,
     case BufferFormat::RGBX_1010102:
     case BufferFormat::BGRA_8888:
     case BufferFormat::RGBA_F16:
-    case BufferFormat::UYVY_422:
       return 0;
     case BufferFormat::YVU_420: {
       static size_t offset_in_2x2_sub_sampling_sizes[] = {0, 4, 5};
@@ -255,8 +251,6 @@ const char* BufferFormatToString(BufferFormat format) {
       return "YVU_420";
     case BufferFormat::YUV_420_BIPLANAR:
       return "YUV_420_BIPLANAR";
-    case BufferFormat::UYVY_422:
-      return "UYVY_422";
     case BufferFormat::P010:
       return "P010";
   }

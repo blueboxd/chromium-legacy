@@ -112,7 +112,8 @@ void BrowserFrame::InitBrowserFrame() {
   }
 
 #if defined(OS_LINUX)
-  browser_command_handler_.reset(new BrowserCommandHandlerLinux(browser_view_));
+  browser_command_handler_ =
+      std::make_unique<BrowserCommandHandlerLinux>(browser_view_);
 #endif
 }
 
@@ -255,11 +256,11 @@ void BrowserFrame::ShowContextMenuForViewImpl(views::View* source,
   views::View::ConvertPointFromScreen(non_client_view(), &point_in_view_coords);
   int hit_test = non_client_view()->NonClientHitTest(point_in_view_coords);
   if (hit_test == HTCAPTION || hit_test == HTNOWHERE) {
-    menu_runner_.reset(new views::MenuRunner(
+    menu_runner_ = std::make_unique<views::MenuRunner>(
         GetSystemMenuModel(),
         views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU,
         base::BindRepeating(&BrowserFrame::OnMenuClosed,
-                            base::Unretained(this))));
+                            base::Unretained(this)));
     menu_runner_->RunMenuAt(source->GetWidget(), nullptr,
                             gfx::Rect(p, gfx::Size(0, 0)),
                             views::MenuAnchorPosition::kTopLeft, source_type);

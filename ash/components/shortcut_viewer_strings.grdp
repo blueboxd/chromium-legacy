@@ -219,8 +219,8 @@
   <message name="IDS_KSV_DESCRIPTION_WINDOW_CYCLE_SNAP_RIGHT" desc="Description of the command in keyboard shortcut viewer.">
     Dock a window on the right
   </message>
-  <message name="IDS_KSV_DESCRIPTION_IDC_BOOKMARK_PAGE" desc="Description of the command in keyboard shortcut viewer.">
-    Save your current webpage as a bookmark
+  <message name="IDS_KSV_DESCRIPTION_IDC_BOOKMARK_THIS_TAB" desc="Description of the command in keyboard shortcut viewer.">
+    Save your current tab as a bookmark
   </message>
   <message name="IDS_KSV_DESCRIPTION_IDC_BOOKMARK_ALL_TABS" desc="Description of the command in keyboard shortcut viewer.">
     Save all open pages in your current window as bookmarks in a new folder

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/policy/bluetooth_policy_handler.h"
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"

@@ -1,6 +1,5 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_listener_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
@@ -53,7 +52,7 @@
 
     <!-- SIM missing UI -->
     <div class="property-box two-line"
-        hidden$="[[!showSimMissing_(deviceStateProperties_)]]">
+        hidden$="[[!showSimMissing_(deviceState)]]">
       <div class="start layout horizontal center">
         <iron-icon icon="cr:sim-card-alert"></iron-icon>
         <div class="error">[[i18n('networkSimCardMissing')]]</div>
@@ -62,7 +61,7 @@
 
     <!-- SIM locked -->
     <div class="property-box two-line"
-        hidden$="[[!showSimLocked_(deviceStateProperties_)]]">
+        hidden$="[[!showSimLocked_(deviceState)]]">
       <div class="start layout horizontal center">
         <iron-icon icon="cr:sim-lock"></iron-icon>
         <div class="error">[[i18n('networkSimCardLocked')]]</div>
@@ -75,12 +74,12 @@
 
     <!-- SIM unlocked -->
     <div class="property-box two-line"
-        hidden$="[[!showSimUnlocked_(deviceStateProperties_)]]">
+        hidden$="[[!showSimUnlocked_(deviceState)]]">
       <div id="simLockToggleLabel" class="start">
         [[i18n('networkSimLockEnable')]]
       </div>
       <cr-button id="changePinButton" on-click="onChangePinTap_"
-          hidden$="[[!deviceStateProperties_.simLockStatus.lockEnabled]]">
+          hidden$="[[!deviceState.simLockStatus.lockEnabled]]">
         [[i18n('networkSimChangePin')]]
       </cr-button>
       <cr-toggle id="simLockButton"
@@ -100,7 +99,7 @@
             disabled="[[inProgress_]]">
         </network-password-input>
         <div class="dialog-error">
-          [[getErrorMsg_(error_, deviceStateProperties_)]]
+          [[getErrorMsg_(error_, deviceState)]]
         </div>
       </div>
       <div slot="button-container">
@@ -132,7 +131,7 @@
             on-enter="sendChangePin_" disabled="[[inProgress_]]">
         </network-password-input>
         <div class="dialog-error">
-          [[getErrorMsg_(error_, deviceStateProperties_)]]
+          [[getErrorMsg_(error_, deviceState)]]
         </div>
       </div>
       <div slot="button-container">
@@ -156,7 +155,7 @@
             disabled="[[inProgress_]]">
         </network-password-input>
         <div class="dialog-error">
-          [[getErrorMsg_(error_, deviceStateProperties_)]]
+          [[getErrorMsg_(error_, deviceState)]]
         </div>
       </div>
       <div slot="button-container">
@@ -194,7 +193,7 @@
           [[i18n('networkSimLockedWarning')]]
         </div>
         <div class="dialog-error">
-          [[getErrorMsg_(error_, deviceStateProperties_)]]
+          [[getErrorMsg_(error_, deviceState)]]
         </div>
       </div>
       <div slot="button-container">

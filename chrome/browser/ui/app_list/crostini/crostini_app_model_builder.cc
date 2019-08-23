@@ -62,8 +62,10 @@ CrostiniAppModelBuilder::~CrostiniAppModelBuilder() {
 void CrostiniAppModelBuilder::BuildModel() {
   crostini::CrostiniRegistryService* registry_service =
       crostini::CrostiniRegistryServiceFactory::GetForProfile(profile());
-  for (const std::string& app_id : registry_service->GetRegisteredAppIds()) {
-    InsertCrostiniAppItem(registry_service, app_id);
+  for (const auto& pair : registry_service->GetRegisteredApps()) {
+    const std::string& app_id = pair.first;
+    const auto& registration = pair.second;
+    InsertCrostiniAppItem(app_id, registration);
   }
 
   registry_service->AddObserver(this);
@@ -84,16 +86,14 @@ void CrostiniAppModelBuilder::BuildModel() {
 }
 
 void CrostiniAppModelBuilder::InsertCrostiniAppItem(
-    const crostini::CrostiniRegistryService* registry_service,
-    const std::string& app_id) {
+    const std::string& app_id,
+    const crostini::CrostiniRegistryService::Registration& registration) {
   if (app_id == crostini::kCrostiniTerminalId &&
       !crostini::IsCrostiniEnabled(profile())) {
     // If Crostini isn't enabled, don't show the Terminal item until it
     // becomes enabled.
     return;
   }
-  crostini::CrostiniRegistryService::Registration registration =
-      *registry_service->GetRegistration(app_id);
   if (registration.NoDisplay())
     return;
 
@@ -111,9 +111,12 @@ void CrostiniAppModelBuilder::OnRegistryUpdated(
   for (const std::string& app_id : removed_apps)
     RemoveApp(app_id, unsynced_change);
   for (const std::string& app_id : updated_apps) {
-    crostini::CrostiniRegistryService::Registration registration =
-        *registry_service->GetRegistration(app_id);
-    if (registration.NoDisplay()) {
+    auto registration = registry_service->GetRegistration(app_id);
+    if (!registration.has_value() || registration->NoDisplay()) {
+      if (!registration.has_value()) {
+        LOG(ERROR)
+            << "App was listed as updated by the registry, but was removed";
+      }
       RemoveApp(app_id, unsynced_change);
       continue;
     }
@@ -121,16 +124,22 @@ void CrostiniAppModelBuilder::OnRegistryUpdated(
     CrostiniAppItem* app_item =
         static_cast<CrostiniAppItem*>(GetAppItem(app_id));
     if (!app_item) {
-      InsertCrostiniAppItem(registry_service, app_id);
+      InsertCrostiniAppItem(app_id, *registration);
       continue;
     }
-    app_item->SetName(registration.Name());
+    app_item->SetName(registration->Name());
   }
   for (const std::string& app_id : inserted_apps) {
     // If the app has been installed before and has not been cleaned up
     // correctly, it needs to be removed.
     RemoveApp(app_id, unsynced_change);
-    InsertCrostiniAppItem(registry_service, app_id);
+    const auto& registration = registry_service->GetRegistration(app_id);
+    if (registration.has_value()) {
+      InsertCrostiniAppItem(app_id, *registration);
+    } else {
+      LOG(ERROR) << "CrostiniRegistryService reported app inserted that has no "
+                    "registration";
+    }
   }
 }
 
@@ -155,7 +164,13 @@ void CrostiniAppModelBuilder::OnCrostiniEnabledChanged() {
     RemoveApp(crostini::kCrostiniTerminalId, unsynced_change);
     crostini::CrostiniRegistryService* registry_service =
         crostini::CrostiniRegistryServiceFactory::GetForProfile(profile());
-    InsertCrostiniAppItem(registry_service, crostini::kCrostiniTerminalId);
+    const auto& registration =
+        registry_service->GetRegistration(crostini::kCrostiniTerminalId);
+    if (registration.has_value()) {
+      InsertCrostiniAppItem(crostini::kCrostiniTerminalId, *registration);
+    } else {
+      LOG(ERROR) << "kCrostiniTerminalId has no registration";
+    }
   } else {
     RemoveApp(crostini::kCrostiniTerminalId, unsynced_change);
   }

@@ -7,7 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/values.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/content_verifier.h"
 #include "extensions/browser/content_verifier/test_utils.h"

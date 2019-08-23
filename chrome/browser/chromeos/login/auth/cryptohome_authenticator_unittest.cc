@@ -44,7 +44,7 @@
 #include "chromeos/login/login_state/login_state.h"
 #include "components/ownership/mock_owner_key_util.h"
 #include "components/user_manager/scoped_user_manager.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/nss_key_util.h"
 #include "crypto/nss_util_internal.h"

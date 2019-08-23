@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "content/browser/browser_url_handler_impl.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

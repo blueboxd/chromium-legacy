@@ -631,6 +631,11 @@
         'ScreenMagnifierType',
         'DictationEnabled',
         'SelectToSpeakEnabled',
+        'KeyboardFocusHighlightEnabled',
+        'CursorHighlightEnabled',
+        'CaretHighlightEnabled',
+        'MonoAudioEnabled',
+        'AutoclickEnabled',
         'DeviceLoginScreenDefaultLargeCursorEnabled',
         'DeviceLoginScreenDefaultSpokenFeedbackEnabled',
         'DeviceLoginScreenDefaultHighContrastEnabled',
@@ -9873,6 +9878,141 @@
           If this policy is left unset, the dictation is disabled initially but can be enabled by the user anytime.'''
     },
     {
+      'name': 'KeyboardFocusHighlightEnabled',
+      'owners': ['amraboelkher@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:78-'],
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 593,
+      'caption': '''Enable the keyboard focus highlighting accessibility feature''',
+      'tags': [],
+      'desc': '''Enable the keyboard focus highlighting accessibility feature.
+
+          This feature is responsible for highlighting the object that has the focus by the keyboard.
+
+          If this policy is set to enabled, the keyboard focus highlighting will always be enabled.
+
+          If this policy is set to disabled, the keyboard focus highlighting will always be disabled.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, the keyboard focus highlighting is disabled initially but can be enabled by the user anytime.'''
+    },
+    {
+      'name': 'CursorHighlightEnabled',
+      'owners': ['amraboelkher@chromium.org', 'emaxx@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:78-'],
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 594,
+      'caption': '''Enable the cursor highlight accessibility feature''',
+      'tags': [],
+      'desc': '''Enable the cursor highlight accessibility feature.
+
+          This feature is responsible for highlighting the area that surrounds the mouse cursor while moving it.
+
+          If this policy is set to enabled, the cursor highlight will always be enabled.
+
+          If this policy is set to disabled, the cursor highlight will always be disabled.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, the cursor highlight is disabled initially but can be enabled by the user anytime.'''
+    },
+    {
+      'name': 'CaretHighlightEnabled',
+      'owners': ['amraboelkher@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:78-'],
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 595,
+      'caption': '''Enable the caret highlight accessibility feature''',
+      'tags': [],
+      'desc': '''Enable the caret highlight accessibility feature.
+
+          This feature is responsible for highlighting the area that surrounds the caret while editing.
+
+          If this policy is set to enabled, the caret highlight will always be enabled.
+
+          If this policy is set to disabled, the caret highlight will always be disabled.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, the caret highlight is disabled initially but can be enabled by the user anytime.'''
+    },
+    {
+      'name': 'MonoAudioEnabled',
+      'owners': ['amraboelkher@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:78-'],
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 596,
+      'caption': '''Enable the mono audio accessibility feature''',
+      'tags': [],
+      'desc': '''Enable the mono audio accessibility feature.
+
+          This feature is responsible for outputing stereo audio which includes different left and right channels, so different ears get different sounds.
+
+          If this policy is set to enabled, the mono audio will always be enabled.
+
+          If this policy is set to disabled, the mono audio will always be disabled.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, the mono audio is disabled initially but can be enabled by the user anytime.'''
+    },
+    {
+      'name': 'AutoclickEnabled',
+      'owners': ['amraboelkher@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:78-'],
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 597,
+      'caption': '''Enable the autoclick accessibility feature''',
+      'tags': [],
+      'desc': '''Enable the autoclick accessibility feature.
+
+          This feature is responsible to click without physically pressing your mouse or touchpad, hover over the object you'd like to click.
+
+          If this policy is set to enabled, the autoclick will always be enabled.
+
+          If this policy is set to disabled, the autoclick will always be disabled.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, the autoclick is disabled initially but can be enabled by the user anytime.'''
+    },
+    {
       'name': 'KeyboardDefaultToFunctionKeys',
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'main',
@@ -18197,6 +18337,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562],
-  'highest_id_currently_used': 592,
+  'highest_id_currently_used': 597,
   'highest_atomic_group_id_currently_used': 37
 }

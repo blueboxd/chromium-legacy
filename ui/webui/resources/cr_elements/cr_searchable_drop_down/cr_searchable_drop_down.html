@@ -74,8 +74,14 @@
         width: 100%;
       }
 
-      .list-item:focus {
-        background-color: var(--google-grey-200);
+      .list-item:focus,
+      .list-item:hover {
+        background-color: rgba(0, 0, 0, .04);
+        outline: none;
+      }
+
+      .list-item:active {
+        background-color: rgba(0, 0, 0, .12);
         outline: none;
       }
     </style>

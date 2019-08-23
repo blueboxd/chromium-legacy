@@ -46,15 +46,14 @@ public class BackgroundTaskSchedulerJobServiceTest {
         public void reschedule(Context context) {}
     }
 
-    private static final long CLOCK_TIME = 1415926535000L;
+    private static final long CLOCK_TIME_MS = 1415926535000L;
     private static final long TIME_50_MIN_TO_MS = TimeUnit.MINUTES.toMillis(50);
     private static final long TIME_100_MIN_TO_MS = TimeUnit.MINUTES.toMillis(100);
     private static final long TIME_200_MIN_TO_MS = TimeUnit.MINUTES.toMillis(200);
     private static final long END_TIME_WITH_DEADLINE_MS =
             TIME_200_MIN_TO_MS + BackgroundTaskSchedulerJobService.DEADLINE_DELTA_MS;
-    private static final long DEADLINE_TIME_MS = CLOCK_TIME + TIME_200_MIN_TO_MS;
 
-    private BackgroundTaskSchedulerJobService.Clock mClock = () -> CLOCK_TIME;
+    private BackgroundTaskSchedulerJobService.Clock mClock = () -> CLOCK_TIME_MS;
 
     @Before
     public void setUp() {
@@ -85,9 +84,12 @@ public class BackgroundTaskSchedulerJobServiceTest {
         JobInfo jobInfo = BackgroundTaskSchedulerJobService.createJobInfoFromTaskInfo(
                 InstrumentationRegistry.getTargetContext(), oneOffTask);
         Assert.assertEquals(END_TIME_WITH_DEADLINE_MS, jobInfo.getMaxExecutionDelayMillis());
-        Assert.assertEquals(DEADLINE_TIME_MS,
+        Assert.assertEquals(CLOCK_TIME_MS,
+                jobInfo.getExtras().getLong(BackgroundTaskSchedulerGcmNetworkManager
+                                                    .BACKGROUND_TASK_SCHEDULE_TIME_KEY));
+        Assert.assertEquals(TIME_200_MIN_TO_MS,
                 jobInfo.getExtras().getLong(
-                        BackgroundTaskSchedulerJobService.BACKGROUND_TASK_DEADLINE_KEY));
+                        BackgroundTaskSchedulerGcmNetworkManager.BACKGROUND_TASK_END_TIME_KEY));
     }
 
     @Test
@@ -120,9 +122,12 @@ public class BackgroundTaskSchedulerJobServiceTest {
         Assert.assertEquals(
                 oneOffTask.getOneOffInfo().getWindowStartTimeMs(), jobInfo.getMinLatencyMillis());
         Assert.assertEquals(END_TIME_WITH_DEADLINE_MS, jobInfo.getMaxExecutionDelayMillis());
-        Assert.assertEquals(DEADLINE_TIME_MS,
+        Assert.assertEquals(CLOCK_TIME_MS,
+                jobInfo.getExtras().getLong(BackgroundTaskSchedulerGcmNetworkManager
+                                                    .BACKGROUND_TASK_SCHEDULE_TIME_KEY));
+        Assert.assertEquals(TIME_200_MIN_TO_MS,
                 jobInfo.getExtras().getLong(
-                        BackgroundTaskSchedulerJobService.BACKGROUND_TASK_DEADLINE_KEY));
+                        BackgroundTaskSchedulerGcmNetworkManager.BACKGROUND_TASK_END_TIME_KEY));
     }
 
     @Test

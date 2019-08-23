@@ -12,7 +12,7 @@
 #include "ash/public/cpp/session/user_info.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/hammerd/fake_hammerd_client.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"

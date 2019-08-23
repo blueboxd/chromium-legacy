@@ -12,7 +12,7 @@
 #include "components/os_crypt/encryption_key_creation_util_ios.h"
 #else
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/os_crypt/encryption_key_creation_util_mac.h"
 #include "components/os_crypt/os_crypt_pref_names_mac.h"

@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -225,8 +226,18 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   std::unique_ptr<PasswordForm> GetPasswordFormFromWebForm(
       const blink::WebFormElement& web_form);
 
+  // Creates a |PasswordForm| from |web_form|, that contains only the
+  // |form_data|, the origin and the gaia flags.
+  std::unique_ptr<PasswordForm> GetSimplifiedPasswordFormFromWebForm(
+      const blink::WebFormElement& web_form);
+
   // Creates a |PasswordForm| of fields that are not enclosed in any <form> tag.
   std::unique_ptr<PasswordForm> GetPasswordFormFromUnownedInputElements();
+
+  // Creates a |PasswordForm| containing only the |form_data|, origin and gaia
+  // flags, for fields that are not enclosed in any <form> tag.
+  std::unique_ptr<PasswordForm>
+  GetSimplifiedPasswordFormFromUnownedInputElements();
 
   bool logging_state_active() const { return logging_state_active_; }
 

@@ -25,6 +25,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/supports_user_data.h"
 #include "base/time/time.h"
@@ -1045,6 +1046,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
     return network_isolation_key_;
   }
 
+  std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+  CreateCrossOriginPrefetchLoaderFactoryBundle();
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -1408,18 +1412,26 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // |origin| is the origin that the RenderFrame is either committing (in the
   // case of navigation) or has last committed (when handling network process
   // crashes).
+  //
+  // |network_isolation_key| is the NetworkIsolationKey for the URLLoaderFactory
+  // to be initialized with. A nullopt key means the created URLLoaderFactory
+  // should not be initialized with a NetworkIsolationKey, and will be trusted
+  // so it can consume requests with a TrustedParams::network_isolation_key.
   bool CreateNetworkServiceDefaultFactoryAndObserve(
       const base::Optional<url::Origin>& origin,
-      const net::NetworkIsolationKey& network_isolation_key,
+      base::Optional<net::NetworkIsolationKey> network_isolation_key,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>
           default_factory_receiver);
 
   // |origin| is the origin that the RenderFrame is either committing (in the
   // case of navigation) or has last committed (when handling network process
   // crashes).
+  //
+  // For |network_isolation_key|, see the comment for |network_isolation_key|
+  // above CreateNetworkServiceDefaultFactoryAndObserve().
   bool CreateNetworkServiceDefaultFactoryInternal(
       const base::Optional<url::Origin>& origin,
-      const net::NetworkIsolationKey& network_isolation_key,
+      base::Optional<net::NetworkIsolationKey> network_isolation_key,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>
           default_factory_receiver);
 
@@ -2111,7 +2123,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       file_system_manager_;
 
   // Hosts blink::mojom::PushMessaging for the RenderFrame.
-  std::unique_ptr<PushMessagingManager, BrowserThread::DeleteOnIOThread>
+  std::unique_ptr<PushMessagingManager, base::OnTaskRunnerDeleter>
       push_messaging_manager_;
 
 #if !defined(OS_ANDROID)

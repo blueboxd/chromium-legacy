@@ -34,6 +34,7 @@ namespace content {
 
 class BrowserContext;
 class PrefetchedSignedExchangeCache;
+class RenderFrameHostImpl;
 class URLLoaderFactoryGetter;
 
 class CONTENT_EXPORT PrefetchURLLoaderService final
@@ -49,6 +50,7 @@ class CONTENT_EXPORT PrefetchURLLoaderService final
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
       int frame_tree_node_id,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo> factory_info,
+      base::WeakPtr<RenderFrameHostImpl> render_frame_host,
       scoped_refptr<PrefetchedSignedExchangeCache>
           prefetched_signed_exchange_cache);
 
@@ -101,6 +103,11 @@ class CONTENT_EXPORT PrefetchURLLoaderService final
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
   void Clone(network::mojom::URLLoaderFactoryRequest request) override;
+
+  // This ensures that the BindContext's |cross_origin_factory| member exists
+  // by setting it to a special URLLoaderFactory created by the current
+  // context's RenderFrameHost.
+  void EnsureCrossOriginFactory();
 
   // blink::mojom::RendererPreferenceWatcher.
   void NotifyUpdate(blink::mojom::RendererPreferencesPtr new_prefs) override;

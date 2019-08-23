@@ -12,7 +12,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "storage/browser/fileapi/file_system_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

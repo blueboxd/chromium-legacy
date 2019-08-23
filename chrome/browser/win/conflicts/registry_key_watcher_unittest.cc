@@ -5,7 +5,7 @@
 #include "chrome/browser/win/conflicts/registry_key_watcher.h"
 
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_reg_util_win.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

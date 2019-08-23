@@ -13,6 +13,7 @@
 namespace app_list {
 
 const char kArcScheme[] = "arc://";
+const char kAppScheme[] = "app://play/";
 const char kExtensionSchemeWithDelimiter[] = "chrome-extension://";
 
 constexpr float kTotalHoursBucketSizeMultiplier = 1.25;

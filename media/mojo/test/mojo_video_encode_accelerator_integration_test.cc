@@ -9,7 +9,7 @@
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/run_loop.h"
 #include "base/test/gtest_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "gpu/config/gpu_preferences.h"
 #include "media/base/limits.h"
 #include "media/mojo/clients/mojo_video_encode_accelerator.h"

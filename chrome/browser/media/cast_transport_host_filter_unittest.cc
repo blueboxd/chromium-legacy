@@ -8,7 +8,7 @@
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/media/cast_transport_host_filter.h"
 #include "chrome/common/cast_messages.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "media/cast/logging/logging_defines.h"
 #include "net/base/ip_address.h"
 #include "testing/gtest/include/gtest/gtest.h"

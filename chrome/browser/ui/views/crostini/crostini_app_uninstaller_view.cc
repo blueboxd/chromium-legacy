@@ -92,8 +92,11 @@ CrostiniAppUninstallerView::CrostiniAppUninstallerView(
       crostini::CrostiniRegistryServiceFactory::GetForProfile(profile);
   DCHECK(registry);
   auto app_registration = registry->GetRegistration(app_id);
-  DCHECK(app_registration);
-  const base::string16 app_name = base::UTF8ToUTF16(app_registration->Name());
+  const base::string16 app_name =
+      app_registration.has_value() ? base::UTF8ToUTF16(app_registration->Name())
+                                   : base::string16();
+  if (!app_registration.has_value())
+    LOG(ERROR) << "Showing uninstall dialogue for unknown crostini app";
 
   const base::string16 message = l10n_util::GetStringFUTF16(
       IDS_CROSTINI_APPLICATION_UNINSTALL_CONFIRM_BODY, app_name);

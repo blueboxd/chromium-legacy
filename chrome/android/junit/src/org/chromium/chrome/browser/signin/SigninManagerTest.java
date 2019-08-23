@@ -219,7 +219,7 @@ public class SigninManagerTest {
         doNothing().when(mNativeMock).fetchAndApplyCloudPolicy(anyLong(), any(), any());
 
         doReturn(true).when(mSigninManager).isSigninSupported();
-        doNothing().when(mNativeMock).setPrimaryAccount(anyLong(), any());
+        doReturn(true).when(mNativeMock).setPrimaryAccount(anyLong(), any());
         doNothing().when(mSigninManager).logInSignedInUser();
 
         mSigninManager.onFirstRunCheckDone(); // Allow sign-in.

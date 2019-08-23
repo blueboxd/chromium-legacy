@@ -16,7 +16,7 @@
 #import "ios/chrome/test/fakes/fake_ar_quick_look_tab_helper_delegate.h"
 #import "ios/web/public/test/fakes/fake_download_task.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/web_task_environment.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_fetcher_response_writer.h"
 #include "testing/gtest/include/gtest/gtest.h"

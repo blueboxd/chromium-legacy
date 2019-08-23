@@ -116,17 +116,6 @@ void AssistantPaymentRequestDelegate::OnTermsAndConditionsLinkClicked(
   ui_controller_->OnTermsAndConditionsLinkClicked(link);
 }
 
-void AssistantPaymentRequestDelegate::OnLoginChoiceChanged(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jcaller,
-    const base::android::JavaParamRef<jstring>& jidentifier) {
-  std::string identifier;
-  if (jidentifier) {
-    base::android::ConvertJavaStringToUTF8(env, jidentifier, &identifier);
-  }
-  ui_controller_->OnLoginChoiceChanged(identifier);
-}
-
 base::android::ScopedJavaGlobalRef<jobject>
 AssistantPaymentRequestDelegate::GetJavaObject() {
   return java_assistant_payment_request_delegate_;

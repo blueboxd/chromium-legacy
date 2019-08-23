@@ -10,7 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/crx_file/id_util.h"
 #include "extensions/common/extension_paths.h"
 #include "extensions/common/extension_resource.h"

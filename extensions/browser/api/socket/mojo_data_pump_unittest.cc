@@ -5,12 +5,12 @@
 #include "extensions/browser/api/socket/mojo_data_pump.h"
 
 #include <memory>
-#include <utility>
 #include <string>
+#include <utility>
 
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/test_completion_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"

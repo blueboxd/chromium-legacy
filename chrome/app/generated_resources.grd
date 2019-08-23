@@ -8369,20 +8369,17 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_TITLE_MD" desc="The title of the auto-signin toast in Material Design mode.">
         Signing in as
       </message>
-      <message name="IDS_CREDENTIAL_LEAK_CURRENT_SITE_TITLE" desc="The title of the dialog for credentials leaked only on current site.">
-        Change your password
+      <message name="IDS_CREDENTIAL_LEAK_TITLE" desc="The title of the credential leak dialog.">
+        Data breach reported
       </message>
-      <message name="IDS_CREDENTIAL_LEAK_MULTIPLE_SITES_TITLE" desc="The title of the dialog for credentials leaked on multiple sites.">
-        Check your passwords
+      <message name="IDS_CREDENTIAL_LEAK_CHECK_PASSWORDS_MESSAGE" desc="The text that is used in credential leak detection dialog when saved credentials were used on multiple sites.">
+        A data breach on a site or app you use exposed your password. Chrome recommends checking your saved passwords now.
       </message>
-      <message name="IDS_CREDENTIAL_LEAK_CURRENT_SITE_MESSAGE" desc="The text that is used in credential leak detection dialog when credentials were leaked only on current site.">
-        Chrome found this password on a public list of unsafe passwords that were part of a data breach. To keep your account safe, change your password on <ph name ="ORIGIN">$1<ex>example.com</ex></ph> now.
+      <message name="IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_MESSAGE" desc="The text that is used in credential leak detection dialog when credentials were leaked on current site only.">
+        A data breach on a site or app you use exposed your password. Chrome recommends changing your password on <ph name ="ORIGIN">$1<ex>example.com</ex></ph> now.
       </message>
-      <message name="IDS_CREDENTIAL_LEAK_SAVED_MULTIPLE_SITES_MESSAGE" desc="The text that is used in credential leak detection dialog when credentials were saved in chrome and leaked on multiple sites.">
-        Chrome found this password on a public list of unsafe passwords that were part of a data breach. To keep your account safe, check your saved passwords now.
-      </message>
-      <message name="IDS_CREDENTIAL_LEAK_NOT_SAVED_MULTIPLE_SITES_MESSAGE" desc="The text that is used in credential leak detection dialog when credentials were not saved in chrome and leaked on multiple sites.">
-        Chrome found this password on a public list of unsafe passwords that were part of a data breach. To keep your account safe, check your saved passwords and change your password on <ph name ="ORIGIN">$1<ex>example.com</ex></ph>.
+      <message name="IDS_CREDENTIAL_LEAK_CHANGE_AND_CHECK_PASSWORDS_MESSAGE" desc="The text that is used in credential leak detection dialog when credentials were not saved in chrome, but used on multiple sites.">
+        A data breach on a site or app you use exposed your password. Chrome recommends checking your saved passwords and changing your password on <ph name ="ORIGIN">$1<ex>example.com</ex></ph>.
       </message>
       <message name="IDS_AUTO_SIGNIN_FIRST_RUN_TITLE_MANY_DEVICES" desc="The title of the dialog during the autosign-in first run experience for the Chrome syncing users.">
         Sign in easily across devices
@@ -8405,12 +8402,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </if>
       <if expr="use_titlecase">
         <message name="IDS_LEAK_CHECK_CREDENTIALS" desc="The text of the OK button in the dialog for credentials leaked on multiple sites.">
-          Check Your Passwords
+          Check Passwords
         </message>
       </if>
       <if expr="not use_titlecase">
         <message name="IDS_LEAK_CHECK_CREDENTIALS" desc="The text of the OK button in the dialog for credentials leaked on multiple sites.">
-          Check your passwords
+          Check passwords
         </message>
       </if>
 

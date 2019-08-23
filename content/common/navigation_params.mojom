@@ -9,8 +9,9 @@ import "content/public/common/was_activated_option.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "mojo/public/mojom/base/values.mojom";
-import "services/network/public/mojom/url_response_head.mojom";
+import "services/network/public/mojom/ip_address_space.mojom";
 import "services/network/public/mojom/url_loader.mojom";
+import "services/network/public/mojom/url_response_head.mojom";
 import "third_party/blink/public/mojom/fetch/fetch_api_request.mojom";
 import "third_party/blink/public/mojom/referrer.mojom";
 import "url/mojom/origin.mojom";
@@ -338,4 +339,9 @@ struct CommitNavigationParams {
 
   // Whether this navigation was browser initiated.
   bool is_browser_initiated = false;
+
+  // The IP address space into which this document is committing.
+  // https://wicg.github.io/cors-rfc1918/#address-space
+  network.mojom.IPAddressSpace ip_address_space =
+      network.mojom.IPAddressSpace.kUnknown;
 };

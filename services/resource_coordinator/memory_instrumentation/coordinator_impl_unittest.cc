@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/trace_event_analyzer.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"

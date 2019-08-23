@@ -6,7 +6,7 @@
 #include <stdint.h>
 
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/appcache_response.h"

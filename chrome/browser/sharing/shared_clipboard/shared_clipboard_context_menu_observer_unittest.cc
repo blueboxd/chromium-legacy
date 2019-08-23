@@ -24,7 +24,7 @@
 #include "chrome/browser/sharing/vapid_key_manager.h"
 #include "components/sync_device_info/device_info.h"
 #include "content/public/common/context_menu_params.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

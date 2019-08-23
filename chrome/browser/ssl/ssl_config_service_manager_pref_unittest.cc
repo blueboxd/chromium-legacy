@@ -8,7 +8,7 @@
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/values.h"
 #include "chrome/browser/ssl/ssl_config_service_manager.h"
 #include "chrome/common/chrome_switches.h"

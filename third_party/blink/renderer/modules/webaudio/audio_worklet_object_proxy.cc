@@ -56,8 +56,8 @@ void AudioWorkletObjectProxy::WillDestroyWorkerGlobalScope() {
 
 CrossThreadWeakPersistent<AudioWorkletMessagingProxy>
 AudioWorkletObjectProxy::GetAudioWorkletMessagingProxyWeakPtr() {
-  return static_cast<AudioWorkletMessagingProxy*>(
-      MessagingProxyWeakPtr().Get());
+  return WrapCrossThreadWeakPersistent(
+      static_cast<AudioWorkletMessagingProxy*>(MessagingProxyWeakPtr().Get()));
 }
 
 }  // namespace blink

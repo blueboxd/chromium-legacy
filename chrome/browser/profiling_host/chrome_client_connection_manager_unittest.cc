@@ -6,8 +6,8 @@
 
 #include "chrome/test/base/testing_profile.h"
 #include "components/services/heap_profiling/public/cpp/settings.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_render_process_host.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace heap_profiling {

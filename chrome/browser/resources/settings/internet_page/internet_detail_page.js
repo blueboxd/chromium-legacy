@@ -42,12 +42,16 @@ Polymer({
       type: Object,
     },
 
-    /**
-     * @private {!OncMojo.ManagedProperties|undefined}
-     */
+    /** @private {!OncMojo.ManagedProperties|undefined} */
     managedProperties_: {
       type: Object,
       observer: 'managedPropertiesChanged_',
+    },
+
+    /** @private {?OncMojo.DeviceStateProperties} */
+    deviceState_: {
+      type: Object,
+      value: null,
     },
 
     /**
@@ -335,6 +339,7 @@ Polymer({
 
   /** CrosNetworkConfigObserver impl */
   onDeviceStateListChanged: function() {
+    this.getDeviceState_();
     if (this.guid) {
       this.getNetworkDetails_();
     }
@@ -382,6 +387,19 @@ Polymer({
       this.shouldShowConfigureWhenNetworkLoaded_ = false;
       this.showTetherDialog_();
     }
+  },
+
+  /** @private */
+  getDeviceState_: function() {
+    if (!this.managedProperties_) {
+      return;
+    }
+    this.networkConfig_.getDeviceStateList().then(response => {
+      const devices = response.result;
+      this.deviceState_ =
+          devices.find(device => device.type == this.managedProperties_.type) ||
+          null;
+    });
   },
 
   /** @private */
@@ -530,6 +548,9 @@ Polymer({
       this.networkProperties_ = properties;
       this.networkPropertiesReceived_ = true;
       this.outOfRange_ = false;
+      if (!this.deviceState_) {
+        this.getDeviceState_();
+      }
     });
   },
 

@@ -4,7 +4,7 @@
 
 #include "base/files/file_path.h"
 #include "base/path_service.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "net/base/url_util.h"
 #include "net/third_party/quiche/src/quic/core/quic_connection_id.h"

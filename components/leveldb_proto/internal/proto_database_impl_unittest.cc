@@ -9,7 +9,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "components/leveldb_proto/internal/leveldb_proto_feature_list.h"
 #include "components/leveldb_proto/internal/shared_proto_database_provider.h"

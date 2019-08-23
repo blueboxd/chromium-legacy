@@ -13,7 +13,7 @@
 #include "base/files/platform_file.h"
 #include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/types/gamma_ramp_rgb_entry.h"
 #include "ui/gfx/gpu_fence.h"

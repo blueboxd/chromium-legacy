@@ -5,7 +5,7 @@
 #include "chrome/browser/notifications/scheduler/internal/notification_store.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/notifications/scheduler/internal/proto_conversion.h"
 #include "chrome/browser/notifications/scheduler/test/test_utils.h"
 #include "components/leveldb_proto/public/proto_database.h"

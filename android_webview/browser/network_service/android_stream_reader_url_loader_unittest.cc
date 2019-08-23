@@ -6,7 +6,7 @@
 
 #include "android_webview/browser/input_stream.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "content/public/common/resource_type.h"
 #include "mojo/core/embedder/embedder.h"
 #include "net/http/http_request_headers.h"

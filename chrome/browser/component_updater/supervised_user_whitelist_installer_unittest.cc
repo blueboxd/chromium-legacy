@@ -36,7 +36,7 @@
 #include "components/update_client/crx_update_item.h"
 #include "components/update_client/update_client.h"
 #include "components/update_client/utils.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "content/public/test/test_utils.h"
 #include "services/data_decoder/public/cpp/testing_json_parser.h"

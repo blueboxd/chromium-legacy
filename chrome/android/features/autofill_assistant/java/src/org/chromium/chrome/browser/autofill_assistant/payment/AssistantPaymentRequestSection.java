@@ -13,11 +13,8 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.chrome.autofill_assistant.R;
-import org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTesting;
-import org.chromium.chrome.browser.autofill_assistant.AssistantTextUtils;
 import org.chromium.chrome.browser.payments.ui.SectionInformation;
 import org.chromium.chrome.browser.widget.prefeditor.EditableOption;
 
@@ -31,14 +28,13 @@ import java.util.List;
  * such as |AutofillContact|, |AutofillPaymentMethod|, etc.
  */
 public abstract class AssistantPaymentRequestSection<T extends EditableOption> {
-    private final @Nullable View mTitleAddButton;
-    protected final AssistantVerticalExpander mSectionExpander;
-    protected final AssistantChoiceList mItemsView;
+    private final View mTitleAddButton;
+    private final AssistantVerticalExpander mSectionExpander;
+    private final AssistantChoiceList mItemsView;
     private final View mSummaryView;
     private final int mFullViewResId;
     private final int mTitleToContentPadding;
     private final List<Item> mItems;
-    private final boolean mCanEditItems;
 
     protected final Context mContext;
     protected T mSelectedOption;
@@ -64,27 +60,26 @@ public abstract class AssistantPaymentRequestSection<T extends EditableOption> {
      * @param summaryViewResId The resource ID of the summary view to inflate.
      * @param fullViewResId The resource ID of the full view to inflate.
      * @param titleToContentPadding The amount of padding between title and content views.
-     * @param titleAddButton The string to display in the title add button. Can be null if no add
-     *         button should be created.
-     * @param listAddButton The string to display in the add button at the bottom of the list. Can
-     *         be null if no add button should be created.
-     * @param canEditItems Whether items can be edited (i.e., show an edit button) or not.
+     * @param title The title string to display.
+     * @param titleAddButton The string to display in the title add button.
+     * @param listAddButton The string to display in the add button at the bottom of the list.
      */
     public AssistantPaymentRequestSection(Context context, ViewGroup parent, int summaryViewResId,
-            int fullViewResId, int titleToContentPadding, @Nullable String titleAddButton,
-            @Nullable String listAddButton, boolean canEditItems) {
+            int fullViewResId, int titleToContentPadding, String title, String titleAddButton,
+            String listAddButton) {
         mContext = context;
         mFullViewResId = fullViewResId;
         mItems = new ArrayList<>();
         mTitleToContentPadding = titleToContentPadding;
-        mCanEditItems = canEditItems;
 
         LayoutInflater inflater = LayoutInflater.from(context);
         mSectionExpander = new AssistantVerticalExpander(context, null);
         View sectionTitle =
                 inflater.inflate(R.layout.autofill_assistant_payment_request_section_title, null);
         mSummaryView = inflater.inflate(summaryViewResId, null);
-        mItemsView = createChoiceList(listAddButton);
+        mItemsView = (AssistantChoiceList) inflater.inflate(
+                R.layout.autofill_assistant_payment_request_choice_list, null);
+        mItemsView.setAddButtonLabel(listAddButton);
 
         mSectionExpander.setTitleView(sectionTitle,
                 new LinearLayout.LayoutParams(
@@ -105,17 +100,17 @@ public abstract class AssistantPaymentRequestSection<T extends EditableOption> {
         setHorizontalMargins(mSummaryView, horizontalMargin, 0);
         setHorizontalMargins(mItemsView, 0, 0);
 
-        if (titleAddButton == null) {
-            mSectionExpander.findViewById(R.id.section_title_add_button).setVisibility(View.GONE);
-            mTitleAddButton = null;
-        } else {
-            mTitleAddButton = mSectionExpander.findViewById(R.id.section_title_add_button);
-            TextView titleAddButtonLabelView =
-                    mSectionExpander.findViewById(R.id.section_title_add_button_label);
-            titleAddButtonLabelView.setText(titleAddButton);
-            mTitleAddButton.setOnClickListener(unusedView -> createOrEditItem(null));
-        }
+        TextView titleView = mSectionExpander.findViewById(R.id.section_title);
+        titleView.setText(title);
 
+        TextView titleAddButtonLabelView =
+                mSectionExpander.findViewById(R.id.section_title_add_button_label);
+        titleAddButtonLabelView.setText(titleAddButton);
+
+        mTitleAddButton = mSectionExpander.findViewById(R.id.section_title_add_button);
+        mTitleAddButton.setOnClickListener(unusedView -> createOrEditItem(null));
+
+        mItemsView.setOnAddButtonClickedListener(() -> createOrEditItem(null));
         parent.addView(mSectionExpander,
                 new ViewGroup.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -132,11 +127,6 @@ public abstract class AssistantPaymentRequestSection<T extends EditableOption> {
 
     void setListener(Callback<T> listener) {
         mListener = listener;
-    }
-
-    void setTitle(String title) {
-        TextView titleView = mSectionExpander.findViewById(R.id.section_title);
-        AssistantTextUtils.applyVisualAppearanceTags(titleView, title, null);
     }
 
     /**
@@ -237,27 +227,6 @@ public abstract class AssistantPaymentRequestSection<T extends EditableOption> {
         updatePaddings();
     }
 
-    private AssistantChoiceList createChoiceList(@Nullable String addButtonText) {
-        AssistantChoiceList list = new AssistantChoiceList(mContext, null, addButtonText, 0,
-                mContext.getResources().getDimensionPixelSize(
-                        R.dimen.autofill_assistant_payment_request_column_spacing));
-        int verticalPadding = mContext.getResources().getDimensionPixelSize(
-                R.dimen.autofill_assistant_payment_request_choice_top_bottom_padding);
-        list.setPadding(mContext.getResources().getDimensionPixelSize(
-                                R.dimen.autofill_assistant_bottombar_horizontal_spacing),
-                verticalPadding,
-                mContext.getResources().getDimensionPixelSize(
-                        R.dimen.autofill_assistant_payment_request_choice_list_padding_end),
-                verticalPadding);
-        list.setBackgroundColor(ApiCompatibilityUtils.getColor(
-                mContext.getResources(), R.color.payments_section_edit_background));
-        list.setTag(AssistantTagsForTesting.PAYMENT_REQUEST_CHOICE_LIST);
-        if (addButtonText != null) {
-            list.setOnAddButtonClickedListener(() -> createOrEditItem(null));
-        }
-        return list;
-    }
-
     private void updatePaddings() {
         View titleView = mSectionExpander.getTitleView();
         if (isEmpty()) {
@@ -304,7 +273,7 @@ public abstract class AssistantPaymentRequestSection<T extends EditableOption> {
      */
     private void addItem(Item item) {
         mItems.add(item);
-        mItemsView.addItem(item.mFullView, /*hasEditButton=*/mCanEditItems, selected -> {
+        mItemsView.addItem(item.mFullView, /*hasEditButton=*/true, selected -> {
             if (mIgnoreItemSelectedNotifications || !selected) {
                 return;
             }
@@ -369,9 +338,7 @@ public abstract class AssistantPaymentRequestSection<T extends EditableOption> {
     }
 
     private void updateVisibility() {
-        if (mTitleAddButton != null) {
-            mTitleAddButton.setVisibility(isEmpty() ? View.VISIBLE : View.GONE);
-        }
+        mTitleAddButton.setVisibility(isEmpty() ? View.VISIBLE : View.GONE);
         mSectionExpander.setFixed(isEmpty());
         mSectionExpander.setCollapsedVisible(!isEmpty());
         mSectionExpander.setExpandedVisible(!isEmpty());

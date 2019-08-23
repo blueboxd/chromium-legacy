@@ -42,7 +42,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/system_connector.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "services/data_decoder/public/cpp/safe_json_parser.h"
 #include "services/data_decoder/public/cpp/testing_json_parser.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"

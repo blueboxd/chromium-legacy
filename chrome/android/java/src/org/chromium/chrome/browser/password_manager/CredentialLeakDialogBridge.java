@@ -30,10 +30,8 @@ public class CredentialLeakDialogBridge {
     @CalledByNative
     public void showDialog(String credentialLeakTitle, String credentialLeakDetails,
             String positiveButton, String negativeButton) {
-        // TODO(crbug.com/986317): Update drawable once added.
         mCredentialLeakDialog.showDialog(credentialLeakTitle, credentialLeakDetails,
-                R.drawable.data_reduction_illustration, positiveButton, negativeButton,
-                this::onClick);
+                R.drawable.password_check_warning, positiveButton, negativeButton, this::onClick);
     }
 
     @CalledByNative

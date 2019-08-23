@@ -110,7 +110,7 @@ class MODULES_EXPORT UserMediaClient
 
   // |user_media_processor_| is a unique_ptr in order to avoid compilation
   // problems in builds that do not include WebRTC.
-  std::unique_ptr<ApplyConstraintsProcessor> apply_constraints_processor_;
+  Member<ApplyConstraintsProcessor> apply_constraints_processor_;
 
   blink::mojom::blink::MediaDevicesDispatcherHostPtr media_devices_dispatcher_;
 

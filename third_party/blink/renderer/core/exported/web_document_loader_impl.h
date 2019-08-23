@@ -68,6 +68,7 @@ class CORE_EXPORT WebDocumentLoaderImpl final : public DocumentLoader,
   bool HasUnreachableURL() const override;
   WebURL UnreachableURL() const override;
   int ErrorCode() const override;
+  network::mojom::IPAddressSpace GetIPAddressSpace() const override;
   void RedirectChain(WebVector<WebURL>&) const override;
   bool IsClientRedirect() const override;
   bool ReplacesCurrentHistoryItem() const override;

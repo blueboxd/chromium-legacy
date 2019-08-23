@@ -16,7 +16,7 @@
 #include "chrome/browser/predictors/predictor_database.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/request_priority.h"
 #include "sql/statement.h"

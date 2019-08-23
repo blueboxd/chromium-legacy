@@ -254,7 +254,6 @@ source_set("app_internal") {
     "//ios/public/provider/chrome/browser/distribution",
     "//ios/public/provider/chrome/browser/mailto",
     "//ios/public/provider/chrome/browser/signin",
-    "//ios/public/provider/chrome/browser/user",
     "//ios/public/provider/chrome/browser/user_feedback",
     "//ios/testing/perf:startup",
     "//ios/third_party/material_roboto_font_loader_ios",

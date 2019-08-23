@@ -7,7 +7,7 @@
 
 #include "base/strings/strcat.h"
 #include "base/test/gtest_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "net/reporting/reporting_policy.h"

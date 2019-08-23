@@ -1,0 +1,62 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef WEBLAYER_PUBLIC_WEB_MAIN_H_
+#define WEBLAYER_PUBLIC_WEB_MAIN_H_
+
+#include <string>
+
+#include "base/callback_forward.h"
+#include "base/files/file.h"
+#include "build/build_config.h"
+
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
+namespace weblayer {
+
+class WebMainDelegate {
+ public:
+  virtual void PreMainMessageLoopRun() = 0;
+  virtual void SetMainMessageLoopQuitClosure(
+      base::OnceClosure quit_closure) = 0;
+};
+
+struct WebMainParams {
+  WebMainParams();
+  WebMainParams(const WebMainParams& other);
+  ~WebMainParams();
+
+  WebMainDelegate* delegate;
+
+  // If set, logging will redirect to this file.
+  base::FilePath log_filename;
+
+  // The name of the file that has the PAK data.
+  std::string pak_name;
+
+  std::string brand;
+
+  // e.g. 1.2.3.4
+  std::string full_version;
+
+  // e.g. 1
+  std::string major_version;
+};
+
+int WebMain(WebMainParams params,
+#if defined(OS_WIN)
+#if !defined(WIN_CONSOLE_APP)
+            HINSTANCE instance
+#endif
+#else
+            int argc,
+            const char** argv
+#endif
+);
+
+}  // namespace weblayer
+
+#endif  // WEBLAYER_PUBLIC_WEB_MAIN_H_

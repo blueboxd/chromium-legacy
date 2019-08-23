@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/cronet/native/generated/cronet.idl_impl_interface.h"
 #include "components/cronet/native/include/cronet_c.h"
 #include "components/cronet/native/test/test_util.h"

@@ -756,7 +756,7 @@ void NewPasswordFormManager::Fill() {
     return;
 #endif
 
-  SendFillInformationToRenderer(client_, driver_.get(), IsBlacklisted(),
+  SendFillInformationToRenderer(client_, driver_.get(),
                                 *observed_password_form.get(), best_matches_,
                                 form_fetcher_->GetFederatedMatches(),
                                 preferred_match_, metrics_recorder_.get());

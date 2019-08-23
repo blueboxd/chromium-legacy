@@ -7,7 +7,7 @@
 #include "android_webview/browser/memory_metrics_logger.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 
 namespace android_webview {

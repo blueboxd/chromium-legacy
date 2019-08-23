@@ -92,6 +92,14 @@ const base::Feature kProactivelyThrottleLowPriorityRequests{
 const base::Feature kCrossOriginEmbedderPolicy{
     "CrossOriginEmbedderPolicy", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When kBlockNonSecureExternalRequests is enabled, requests initiated from a
+// pubic network may only target a private network if the initiating context
+// is secure.
+//
+// https://wicg.github.io/cors-rfc1918/#integration-fetch
+const base::Feature kBlockNonSecureExternalRequests{
+    "BlockNonSecureExternalRequests", base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool ShouldEnableOutOfBlinkCors() {
   return base::FeatureList::IsEnabled(features::kOutOfBlinkCors);
 }

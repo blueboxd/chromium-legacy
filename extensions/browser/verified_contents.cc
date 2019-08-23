@@ -11,13 +11,13 @@
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/crx_file/id_util.h"
 #include "crypto/signature_verifier.h"
+#include "extensions/browser/content_verifier/scoped_uma_recorder.h"
 #include "extensions/common/extension.h"
 
 namespace {
@@ -59,40 +59,10 @@ const base::Value* FindDictionaryWithValue(const base::Value& list,
   return nullptr;
 }
 
-// Helper to record UMA for results of initializing verified_contents.json file.
-// TODO(lazyboy): Merge this with ScopedUMARecorder in computed_hashes.cc.
-class ScopedUMARecorder {
- public:
-  ScopedUMARecorder() = default;
-
-  ~ScopedUMARecorder() {
-    if (recorded_)
-      return;
-    RecordImpl(false);
-  }
-
-  void RecordSuccess() {
-    recorded_ = true;
-    RecordImpl(true);
-  }
-
- private:
-  void RecordImpl(bool success) {
-    if (success) {
-      UMA_HISTOGRAM_TIMES(
-          "Extensions.ContentVerification.VerifiedContentsInitTime",
-          timer_.Elapsed());
-    }
-    UMA_HISTOGRAM_BOOLEAN(
-        "Extensions.ContentVerification.VerifiedContentsInitResult", success);
-  }
-
- private:
-  base::ElapsedTimer timer_;
-  bool recorded_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedUMARecorder);
-};
+const char kUMAVerifiedContentsInitResult[] =
+    "Extensions.ContentVerification.VerifiedContentsInitResult";
+const char kUMAVerifiedContentsInitTime[] =
+    "Extensions.ContentVerification.VerifiedContentsInitTime";
 
 #if defined(OS_WIN)
 // Returns true if |path| ends with (.| )+.
@@ -144,7 +114,9 @@ VerifiedContents::~VerifiedContents() {
 std::unique_ptr<VerifiedContents> VerifiedContents::Create(
     base::span<const uint8_t> public_key,
     const base::FilePath& path) {
-  ScopedUMARecorder uma_recorder;
+  ScopedUMARecorder<kUMAVerifiedContentsInitTime,
+                    kUMAVerifiedContentsInitResult>
+      uma_recorder;
   // Note: VerifiedContents constructor is private.
   auto verified_contents = base::WrapUnique(new VerifiedContents(public_key));
   std::string payload;

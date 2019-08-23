@@ -9,7 +9,7 @@
 
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/web_task_environment.h"
 #include "testing/platform_test.h"
 
 namespace web {

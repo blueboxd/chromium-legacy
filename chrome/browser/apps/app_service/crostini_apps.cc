@@ -78,12 +78,11 @@ void CrostiniApps::ReInitializeForTesting(
 void CrostiniApps::Connect(apps::mojom::SubscriberPtr subscriber,
                            apps::mojom::ConnectOptionsPtr opts) {
   std::vector<apps::mojom::AppPtr> apps;
-  for (const std::string& app_id : registry_->GetRegisteredAppIds()) {
-    base::Optional<crostini::CrostiniRegistryService::Registration>
-        registration = registry_->GetRegistration(app_id);
-    if (registration.has_value()) {
-      apps.push_back(Convert(app_id, *registration, true));
-    }
+  for (const auto& pair : registry_->GetRegisteredApps()) {
+    const std::string& app_id = pair.first;
+    const crostini::CrostiniRegistryService::Registration& registration =
+        pair.second;
+    apps.push_back(Convert(app_id, registration, true));
   }
   subscriber->OnApps(std::move(apps));
   subscribers_.AddPtr(std::move(subscriber));

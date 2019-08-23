@@ -504,6 +504,7 @@ void LocalFrameClientImpl::BeginNavigation(
     base::TimeTicks input_start_time,
     const String& href_translate,
     WebContentSecurityPolicyList initiator_csp,
+    network::mojom::IPAddressSpace initiator_address_space,
     mojom::blink::NavigationInitiatorPtr navigation_initiator) {
   if (!web_frame_->Client())
     return;
@@ -525,6 +526,7 @@ void LocalFrameClientImpl::BeginNavigation(
   navigation_info->blob_url_token = blob_url_token.PassInterface().PassHandle();
   navigation_info->input_start = input_start_time;
   navigation_info->initiator_csp = std::move(initiator_csp);
+  navigation_info->initiator_address_space = initiator_address_space;
   navigation_info->navigation_initiator_handle =
       navigation_initiator.PassInterface().PassHandle();
 

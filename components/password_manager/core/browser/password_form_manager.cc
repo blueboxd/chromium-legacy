@@ -556,8 +556,8 @@ void PasswordFormManager::ProcessFrameInternal(
     return;
   if (!driver)
     return;
-  SendFillInformationToRenderer(client_, driver.get(), IsBlacklisted(),
-                                observed_form_, best_matches_,
+  SendFillInformationToRenderer(client_, driver.get(), observed_form_,
+                                best_matches_,
                                 form_fetcher_->GetFederatedMatches(),
                                 preferred_match_, GetMetricsRecorder());
 }

@@ -13,7 +13,7 @@
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/values.h"
 #include "net/cert/ct_serialization.h"
 #include "net/cert/signed_certificate_timestamp_and_status.h"

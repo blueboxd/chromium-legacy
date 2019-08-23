@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "remoting/protocol/fake_connection_to_host.h"
 #include "remoting/signaling/fake_signal_strategy.h"
 #include "remoting/test/connection_setup_info.h"

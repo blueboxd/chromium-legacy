@@ -35,7 +35,7 @@
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_util.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "sql/database.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"

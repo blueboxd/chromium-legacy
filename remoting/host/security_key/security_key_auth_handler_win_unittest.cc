@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"

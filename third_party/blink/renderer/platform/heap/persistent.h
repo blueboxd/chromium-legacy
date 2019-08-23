@@ -19,10 +19,8 @@
 
 namespace blink {
 
-enum CrossThreadnessPersistentConfiguration {
-  kSingleThreadPersistentConfiguration,
-  kCrossThreadPersistentConfiguration
-};
+template <typename T>
+class CrossThreadWeakPersistent;
 
 // Wrapping type to force callers to go through macros that expand or drop
 // base::Location. This is needed to avoid adding the strings when not needed.
@@ -56,160 +54,31 @@ class PersistentBase {
   USING_FAST_MALLOC(PersistentBase);
 
  public:
-  PersistentBase() : raw_(nullptr) {
-    SaveCreationThreadHeap();
-    Initialize();
-  }
-  PersistentBase(const PersistentLocation& location) : PersistentBase() {
-    UpdateLocation(location);
-  }
-
-  PersistentBase(std::nullptr_t) : raw_(nullptr) {
-    SaveCreationThreadHeap();
-    Initialize();
-  }
-  PersistentBase(const PersistentLocation& location, std::nullptr_t)
-      : PersistentBase(nullptr) {
-    UpdateLocation(location);
-  }
-
-  PersistentBase(T* raw) : raw_(raw) {
-    SaveCreationThreadHeap();
-    Initialize();
-    CheckPointer();
-  }
-  PersistentBase(const PersistentLocation& location, T* raw)
-      : PersistentBase(raw) {
-    UpdateLocation(location);
-  }
-
-  PersistentBase(T& raw) : raw_(&raw) {
-    SaveCreationThreadHeap();
-    Initialize();
-    CheckPointer();
-  }
-  PersistentBase(const PersistentLocation& location, T& raw)
-      : PersistentBase(raw) {
-    UpdateLocation(location);
-  }
-
-  PersistentBase(const PersistentBase& other) : raw_(other) {
-    SaveCreationThreadHeap();
-    Initialize();
-    CheckPointer();
-  }
-  PersistentBase(const PersistentLocation& location, PersistentBase& other)
-      : PersistentBase(other) {
-    UpdateLocation(location);
-  }
-
-  template <typename U>
-  PersistentBase(const PersistentBase<U,
-                                      weaknessConfiguration,
-                                      crossThreadnessConfiguration>& other)
-      : raw_(other) {
-    SaveCreationThreadHeap();
-    Initialize();
-    CheckPointer();
-  }
-  template <typename U>
-  PersistentBase(const PersistentLocation& location,
-                 const PersistentBase<U,
-                                      weaknessConfiguration,
-                                      crossThreadnessConfiguration>& other)
-      : PersistentBase(other) {
-    UpdateLocation(location);
-  }
-
-  template <typename U>
-  PersistentBase(const Member<U>& other) : raw_(other) {
-    SaveCreationThreadHeap();
-    Initialize();
-    CheckPointer();
-  }
-  template <typename U>
-  PersistentBase(const PersistentLocation& location, const Member<U>& other)
-      : PersistentBase(other) {
-    UpdateLocation(location);
-  }
-
-  PersistentBase(WTF::HashTableDeletedValueType)
-      : raw_(reinterpret_cast<T*>(-1)) {
-    SaveCreationThreadHeap();
-    Initialize();
-    CheckPointer();
-  }
-  PersistentBase(const PersistentLocation& location,
-                 WTF::HashTableDeletedValueType)
-      : PersistentBase(WTF::kHashTableDeletedValue) {
-    UpdateLocation(location);
-  }
-
-  ~PersistentBase() {
-    Uninitialize();
-    raw_ = nullptr;
-  }
-
   bool IsHashTableDeletedValue() const {
     return raw_ == reinterpret_cast<T*>(-1);
   }
 
   T* Release() {
     T* result = raw_;
-    Assign(nullptr);
+    AssignSafe(nullptr);
     return result;
   }
 
-  void Clear() { Assign(nullptr); }
-  T& operator*() const {
-    CheckPointer();
-    return *raw_;
-  }
-  explicit operator bool() const { return raw_; }
-  // TODO(https://crbug.com/653394): Consider returning a thread-safe best
-  // guess of validity.
-  bool MaybeValid() const { return true; }
-  operator T*() const {
-    CheckPointer();
-    return raw_;
-  }
-  T* operator->() const { return *this; }
+  void Clear() { AssignSafe(nullptr); }
 
   T* Get() const {
     CheckPointer();
     return raw_;
   }
 
-  template <typename U>
-  PersistentBase& operator=(U* other) {
-    Assign(other);
-    return *this;
-  }
+  // TODO(https://crbug.com/653394): Consider returning a thread-safe best
+  // guess of validity.
+  bool MaybeValid() const { return true; }
 
-  PersistentBase& operator=(std::nullptr_t) {
-    Assign(nullptr);
-    return *this;
-  }
-
-  PersistentBase& operator=(const PersistentBase& other) {
-    Assign(other);
-    return *this;
-  }
-
-  template <typename U>
-  PersistentBase& operator=(
-      const PersistentBase<U,
-                           weaknessConfiguration,
-                           crossThreadnessConfiguration>& other) {
-    Assign(other);
-    return *this;
-  }
-
-  template <typename U>
-  PersistentBase& operator=(const Member<U>& other) {
-    Assign(other);
-    return *this;
-  }
+  explicit operator bool() const { return Get(); }
+  T& operator*() const { return *Get(); }
+  operator T*() const { return Get(); }
+  T* operator->() const { return Get(); }
 
   // Register the persistent node as a 'static reference',
   // belonging to the current thread and a persistent that must
@@ -235,9 +104,7 @@ class PersistentBase {
     static_assert(
         crossThreadnessConfiguration == kCrossThreadPersistentConfiguration,
         "This Persistent does not require the cross-thread lock.");
-#if DCHECK_IS_ON()
-    ProcessHeap::CrossThreadPersistentMutex().AssertAcquired();
-#endif
+    PersistentMutexTraits<crossThreadnessConfiguration>::AssertAcquired();
     raw_ = nullptr;
     persistent_node_.ClearWithLockHeld();
   }
@@ -249,25 +116,183 @@ class PersistentBase {
   }
 
  protected:
+  ~PersistentBase() {
+    UninitializeSafe();
+    // Not resetting raw_ as it is not observable.
+  }
+
+  PersistentBase() : raw_(nullptr) {
+    SaveCreationThreadHeap();
+    // No initialization needed for empty handle.
+  }
+  PersistentBase(const PersistentLocation& location) : PersistentBase() {
+    UpdateLocation(location);
+  }
+
+  PersistentBase(std::nullptr_t) : raw_(nullptr) {
+    SaveCreationThreadHeap();
+    // No initialization needed for empty handle.
+  }
+  PersistentBase(const PersistentLocation& location, std::nullptr_t)
+      : PersistentBase(nullptr) {
+    UpdateLocation(location);
+  }
+
+  PersistentBase(T* raw) : raw_(raw) {
+    SaveCreationThreadHeap();
+    InitializeSafe();
+    CheckPointer();
+  }
+  PersistentBase(const PersistentLocation& location, T* raw)
+      : PersistentBase(raw) {
+    UpdateLocation(location);
+  }
+
+  PersistentBase(T& raw) : raw_(&raw) {
+    SaveCreationThreadHeap();
+    InitializeSafe();
+    CheckPointer();
+  }
+  PersistentBase(const PersistentLocation& location, T& raw)
+      : PersistentBase(raw) {
+    UpdateLocation(location);
+  }
+
+  PersistentBase(const PersistentBase& other) : raw_(other) {
+    SaveCreationThreadHeap();
+    InitializeSafe();
+    CheckPointer();
+  }
+  PersistentBase(const PersistentLocation& location, PersistentBase& other)
+      : PersistentBase(other) {
+    UpdateLocation(location);
+  }
+
+  template <typename U>
+  PersistentBase(const PersistentBase<U,
+                                      weaknessConfiguration,
+                                      crossThreadnessConfiguration>& other)
+      : raw_(other) {
+    SaveCreationThreadHeap();
+    InitializeSafe();
+    CheckPointer();
+  }
+  template <typename U>
+  PersistentBase(const PersistentLocation& location,
+                 const PersistentBase<U,
+                                      weaknessConfiguration,
+                                      crossThreadnessConfiguration>& other)
+      : PersistentBase(other) {
+    UpdateLocation(location);
+  }
+
+  template <typename U>
+  PersistentBase(const Member<U>& other) : raw_(other) {
+    SaveCreationThreadHeap();
+    InitializeSafe();
+    CheckPointer();
+  }
+  template <typename U>
+  PersistentBase(const PersistentLocation& location, const Member<U>& other)
+      : PersistentBase(other) {
+    UpdateLocation(location);
+  }
+
+  PersistentBase(WTF::HashTableDeletedValueType)
+      : raw_(reinterpret_cast<T*>(-1)) {
+    SaveCreationThreadHeap();
+    // No initialization needed for empty handle.
+  }
+  PersistentBase(const PersistentLocation& location,
+                 WTF::HashTableDeletedValueType)
+      : PersistentBase(WTF::kHashTableDeletedValue) {
+    UpdateLocation(location);
+  }
+
+  template <typename U>
+  PersistentBase& operator=(U* other) {
+    AssignSafe(other);
+    return *this;
+  }
+
+  PersistentBase& operator=(std::nullptr_t) {
+    AssignSafe(nullptr);
+    return *this;
+  }
+
+  template <typename U>
+  PersistentBase& operator=(const Member<U>& other) {
+    AssignSafe(other);
+    return *this;
+  }
+
+  // Using unsafe operations and assuming that caller acquires the lock for
+  // kCrossThreadPersistentConfiguration configuration.
+  PersistentBase& operator=(const PersistentBase& other) {
+    PersistentMutexTraits<crossThreadnessConfiguration>::AssertAcquired();
+    AssignUnsafe(other);
+    return *this;
+  }
+
+  // Using unsafe operations and assuming that caller acquires the lock for
+  // kCrossThreadPersistentConfiguration configuration.
+  template <typename U>
+  PersistentBase& operator=(
+      const PersistentBase<U,
+                           weaknessConfiguration,
+                           crossThreadnessConfiguration>& other) {
+    PersistentMutexTraits<crossThreadnessConfiguration>::AssertAcquired();
+    AssignUnsafe(other);
+    return *this;
+  }
+
+  // Using unsafe operations and assuming that caller acquires the lock for
+  // kCrossThreadPersistentConfiguration configuration.
+  template <typename U>
+  PersistentBase& operator=(
+      PersistentBase<U, weaknessConfiguration, crossThreadnessConfiguration>&&
+          other) {
+    PersistentMutexTraits<crossThreadnessConfiguration>::AssertAcquired();
+    if (persistent_node_.IsInitialized()) {
+      // Drop persistent node if present as it's always possible to reuse the
+      // node (if present) from |other|.
+      persistent_node_.Uninitialize();
+    }
+    raw_ = other.raw_;
+    other.raw_ = nullptr;
+    // Efficiently move by just rewiring the node pointer.
+    persistent_node_ = std::move(other.persistent_node_);
+    DCHECK(!other.persistent_node_.Get());
+    if (persistent_node_.IsInitialized()) {
+      // If |raw_| points to a non-null or deleted value, just reuse the node.
+      TraceCallback trace_callback =
+          TraceMethodDelegate<PersistentBase,
+                              &PersistentBase::TracePersistent>::Trampoline;
+      persistent_node_.Get()->Reinitialize(this, trace_callback);
+    }
+    CheckPointer();
+    return *this;
+  }
+
   NO_SANITIZE_ADDRESS
   bool IsNotNull() const { return raw_; }
 
- private:
   NO_SANITIZE_ADDRESS
-  void Assign(T* ptr) {
-    if (crossThreadnessConfiguration == kCrossThreadPersistentConfiguration) {
-      MutexLocker persistent_lock(ProcessHeap::CrossThreadPersistentMutex());
-      raw_ = ptr;
-    } else {
-      raw_ = ptr;
-    }
+  void AssignSafe(T* ptr) {
+    typename PersistentMutexTraits<crossThreadnessConfiguration>::Locker lock;
+    AssignUnsafe(ptr);
+  }
+
+  NO_SANITIZE_ADDRESS
+  void AssignUnsafe(T* ptr) {
+    raw_ = ptr;
     CheckPointer();
     if (raw_ && !IsHashTableDeletedValue()) {
       if (!persistent_node_.IsInitialized())
-        Initialize();
+        InitializeUnsafe();
       return;
     }
-    Uninitialize();
+    UninitializeUnsafe();
   }
 
   void TracePersistent(Visitor* visitor) {
@@ -287,7 +312,20 @@ class PersistentBase {
   }
 
   NO_SANITIZE_ADDRESS
-  void Initialize() {
+  void InitializeSafe() {
+    DCHECK(!persistent_node_.IsInitialized());
+    if (!raw_ || IsHashTableDeletedValue())
+      return;
+
+    TraceCallback trace_callback =
+        TraceMethodDelegate<PersistentBase,
+                            &PersistentBase::TracePersistent>::Trampoline;
+    typename PersistentMutexTraits<crossThreadnessConfiguration>::Locker lock;
+    persistent_node_.Initialize(this, trace_callback);
+  }
+
+  NO_SANITIZE_ADDRESS
+  void InitializeUnsafe() {
     DCHECK(!persistent_node_.IsInitialized());
     if (!raw_ || IsHashTableDeletedValue())
       return;
@@ -298,7 +336,17 @@ class PersistentBase {
     persistent_node_.Initialize(this, trace_callback);
   }
 
-  void Uninitialize() { persistent_node_.Uninitialize(); }
+  void UninitializeSafe() {
+    if (persistent_node_.IsInitialized()) {
+      typename PersistentMutexTraits<crossThreadnessConfiguration>::Locker lock;
+      persistent_node_.Uninitialize();
+    }
+  }
+
+  void UninitializeUnsafe() {
+    if (persistent_node_.IsInitialized())
+      persistent_node_.Uninitialize();
+  }
 
   void CheckPointer() const {
 #if DCHECK_IS_ON()
@@ -347,9 +395,7 @@ class PersistentBase {
       PersistentBase<std::remove_const_t<T>,
                      kWeakPersistentConfiguration,
                      kCrossThreadPersistentConfiguration>* persistent) {
-#if DCHECK_IS_ON()
-    ProcessHeap::CrossThreadPersistentMutex().AssertAcquired();
-#endif
+    PersistentMutexTraits<crossThreadnessConfiguration>::AssertAcquired();
     persistent->ClearWithLockHeld();
   }
 
@@ -525,8 +571,18 @@ class WeakPersistent
   bool IsClearedUnsafe() const { return this->IsNotNull(); }
 };
 
-// Unlike Persistent, we can destruct a CrossThreadPersistent in a thread
-// different from the construction thread.
+// CrossThreadPersistent allows for holding onto an object strongly on a
+// different thread.
+//
+// Thread-safe operations:
+// - Construction
+// - Destruction
+// - Copy and move construction and assignment
+// - Clearing
+// - Deref if treated as immutable reference or if externally synchronized (e.g.
+//   mutex, task). The current implementation of Get() uses a raw load (on
+//   purpose) which prohibits mutation while accessing the reference on a
+//   different thread.
 template <typename T>
 class CrossThreadPersistent
     : public PersistentBase<T,
@@ -543,23 +599,26 @@ class CrossThreadPersistent
   CrossThreadPersistent(std::nullptr_t) : Parent(nullptr) {}
   CrossThreadPersistent(const PersistentLocation& location, std::nullptr_t)
       : Parent(location, nullptr) {}
-  CrossThreadPersistent(T* raw) : Parent(raw) {}
+  explicit CrossThreadPersistent(T* raw) : Parent(raw) {}
   CrossThreadPersistent(const PersistentLocation& location, T* raw)
       : Parent(location, raw) {}
-  CrossThreadPersistent(T& raw) : Parent(raw) {}
+  explicit CrossThreadPersistent(T& raw) : Parent(raw) {}
   CrossThreadPersistent(const PersistentLocation& location, T& raw)
       : Parent(location, raw) {}
-  CrossThreadPersistent(const CrossThreadPersistent& other) : Parent(other) {}
+  CrossThreadPersistent(const CrossThreadPersistent& other) { *this = other; }
   CrossThreadPersistent(const PersistentLocation& location,
-                        const CrossThreadPersistent& other)
-      : Parent(location, other) {}
+                        const CrossThreadPersistent& other) {
+    *this = other;
+  }
   template <typename U>
-  CrossThreadPersistent(const CrossThreadPersistent<U>& other)
-      : Parent(other) {}
+  CrossThreadPersistent(const CrossThreadPersistent<U>& other) {
+    *this = other;
+  }
   template <typename U>
   CrossThreadPersistent(const PersistentLocation& location,
-                        const CrossThreadPersistent<U>& other)
-      : Parent(location, other) {}
+                        const CrossThreadPersistent<U>& other) {
+    *this = other;
+  }
   template <typename U>
   CrossThreadPersistent(const Member<U>& other) : Parent(other) {}
   template <typename U>
@@ -570,6 +629,10 @@ class CrossThreadPersistent
   CrossThreadPersistent(const PersistentLocation& location,
                         WTF::HashTableDeletedValueType x)
       : Parent(location, x) {}
+  template <typename U>
+  CrossThreadPersistent(const CrossThreadWeakPersistent<U>& other) {
+    *this = other;
+  }
 
   // Instead of using release(), assign then clear() instead.
   // Using release() with per thread heap enabled can cause the object to be
@@ -588,24 +651,34 @@ class CrossThreadPersistent
   }
 
   CrossThreadPersistent& operator=(const CrossThreadPersistent& other) {
+    MutexLocker locker(ProcessHeap::CrossThreadPersistentMutex());
     Parent::operator=(other);
     return *this;
   }
 
   template <typename U>
   CrossThreadPersistent& operator=(const CrossThreadPersistent<U>& other) {
+    MutexLocker locker(ProcessHeap::CrossThreadPersistentMutex());
     Parent::operator=(other);
     return *this;
   }
 
   template <typename U>
-  CrossThreadPersistent& operator=(const Member<U>& other) {
-    Parent::operator=(other);
-    return *this;
-  }
+  CrossThreadPersistent& operator=(const CrossThreadWeakPersistent<U>&);
 };
 
-// Combines the behavior of CrossThreadPersistent and WeakPersistent.
+// CrossThreadWeakPersistent combines behavior of CrossThreadPersistent and
+// WeakPersistent, i.e., it allows holding onto an object weakly on a different
+// thread.
+//
+// Thread-safe operations:
+// - Construction
+// - Destruction
+// - Copy and move construction and assignment
+// - Clearing
+//
+// Note that this does not include dereferencing and using the raw pointer as
+// there is no guarantee that the object will be alive at the time it is used.
 template <typename T>
 class CrossThreadWeakPersistent
     : public PersistentBase<T,
@@ -617,29 +690,25 @@ class CrossThreadWeakPersistent
 
  public:
   CrossThreadWeakPersistent() : Parent() {}
-  CrossThreadWeakPersistent(std::nullptr_t) : Parent(nullptr) {}
-  CrossThreadWeakPersistent(T* raw) : Parent(raw) {}
-  CrossThreadWeakPersistent(T& raw) : Parent(raw) {}
-  CrossThreadWeakPersistent(const CrossThreadWeakPersistent& other)
-      : Parent(other) {}
-  template <typename U>
-  CrossThreadWeakPersistent(const CrossThreadWeakPersistent<U>& other)
-      : Parent(other) {}
-  template <typename U>
-  CrossThreadWeakPersistent(const Member<U>& other) : Parent(other) {}
-
-  template <typename U>
-  CrossThreadWeakPersistent& operator=(U* other) {
-    Parent::operator=(other);
-    return *this;
+  explicit CrossThreadWeakPersistent(T* raw) : Parent(raw) {}
+  explicit CrossThreadWeakPersistent(T& raw) : Parent(raw) {}
+  CrossThreadWeakPersistent(const CrossThreadWeakPersistent& other) {
+    *this = other;
   }
-
-  CrossThreadWeakPersistent& operator=(std::nullptr_t) {
-    Parent::operator=(nullptr);
-    return *this;
+  template <typename U>
+  CrossThreadWeakPersistent(const CrossThreadWeakPersistent<U>& other) {
+    *this = other;
+  }
+  CrossThreadWeakPersistent(CrossThreadWeakPersistent&& other) {
+    *this = std::move(other);
+  }
+  template <typename U>
+  CrossThreadWeakPersistent(CrossThreadWeakPersistent<U>&& other) {
+    *this = std::move(other);
   }
 
   CrossThreadWeakPersistent& operator=(const CrossThreadWeakPersistent& other) {
+    MutexLocker locker(ProcessHeap::CrossThreadPersistentMutex());
     Parent::operator=(other);
     return *this;
   }
@@ -647,16 +716,39 @@ class CrossThreadWeakPersistent
   template <typename U>
   CrossThreadWeakPersistent& operator=(
       const CrossThreadWeakPersistent<U>& other) {
+    MutexLocker locker(ProcessHeap::CrossThreadPersistentMutex());
     Parent::operator=(other);
     return *this;
   }
 
+  CrossThreadWeakPersistent& operator=(CrossThreadWeakPersistent&& other) {
+    MutexLocker locker(ProcessHeap::CrossThreadPersistentMutex());
+    Parent::operator=(std::move(other));
+    return *this;
+  }
+
   template <typename U>
-  CrossThreadWeakPersistent& operator=(const Member<U>& other) {
+  CrossThreadWeakPersistent& operator=(CrossThreadWeakPersistent<U>&& other) {
+    MutexLocker locker(ProcessHeap::CrossThreadPersistentMutex());
+    Parent::operator=(std::move(other));
+    return *this;
+  }
+
+  template <typename U>
+  CrossThreadWeakPersistent& operator=(U* other) {
     Parent::operator=(other);
     return *this;
   }
 };
+
+template <typename T>
+template <typename U>
+CrossThreadPersistent<T>& CrossThreadPersistent<T>::operator=(
+    const CrossThreadWeakPersistent<U>& other) {
+  MutexLocker locker(ProcessHeap::CrossThreadPersistentMutex());
+  this->AssignUnsafe(other.Get());
+  return *this;
+}
 
 template <typename T>
 Persistent<T> WrapPersistentInternal(const PersistentLocation& location,
@@ -831,7 +923,7 @@ template <typename T>
 struct BindUnwrapTraits<blink::CrossThreadWeakPersistent<T>> {
   static blink::CrossThreadPersistent<T> Unwrap(
       const blink::CrossThreadWeakPersistent<T>& wrapped) {
-    return blink::CrossThreadPersistent<T>(wrapped.Get());
+    return blink::CrossThreadPersistent<T>(wrapped);
   }
 };
 }

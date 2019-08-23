@@ -5,7 +5,7 @@
 #include "chrome/browser/media/router/providers/dial/dial_activity_manager.h"
 
 #include "base/bind.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/media/router/providers/dial/dial_internal_message_util.h"
 #include "chrome/browser/media/router/test/test_helper.h"
 #include "net/http/http_status_code.h"

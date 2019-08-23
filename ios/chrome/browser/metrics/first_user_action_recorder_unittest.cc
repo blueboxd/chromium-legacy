@@ -12,7 +12,7 @@
 #include "base/time/time.h"
 #include "ios/chrome/browser/metrics/first_user_action_recorder.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/web_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

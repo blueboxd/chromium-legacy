@@ -87,13 +87,13 @@ class BackgroundSyncBaseBrowserTest : public ContentBrowserTest {
       base::OnceCallback<void(bool)> callback,
       blink::ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerRegistration> registration);
-  void RegistrationPendingOnIOThread(
+  void RegistrationPendingOnCoreThread(
       const scoped_refptr<BackgroundSyncContextImpl> sync_context,
       const scoped_refptr<ServiceWorkerContextWrapper> sw_context,
       const std::string& tag,
       const GURL& url,
       base::OnceCallback<void(bool)> callback);
-  void SetMaxSyncAttemptsOnIOThread(
+  void SetMaxSyncAttemptsOnCoreThread(
       const scoped_refptr<BackgroundSyncContextImpl>& sync_context,
       int max_sync_attempts);
   StoragePartitionImpl* GetStorage();

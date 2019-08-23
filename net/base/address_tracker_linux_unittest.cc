@@ -14,7 +14,7 @@
 #include "base/bind_helpers.h"
 #include "base/synchronization/spin_wait.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/simple_thread.h"
 #include "net/base/ip_address.h"
 #include "testing/gtest/include/gtest/gtest.h"

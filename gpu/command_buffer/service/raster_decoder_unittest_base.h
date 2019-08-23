@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/client/client_test_helper.h"
 #include "gpu/command_buffer/common/raster_cmd_format.h"

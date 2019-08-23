@@ -12,7 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/ref_counted.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "net/ssl/ssl_private_key.h"
 #include "net/ssl/ssl_private_key_test_util.h"
 #include "net/test/cert_test_util.h"

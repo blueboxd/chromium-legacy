@@ -23,7 +23,7 @@
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/media_observer.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "media/audio/audio_output_controller.h"
 #include "media/audio/audio_system_impl.h"
 #include "media/audio/fake_audio_input_stream.h"

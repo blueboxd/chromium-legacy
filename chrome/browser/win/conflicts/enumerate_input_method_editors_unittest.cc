@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_reg_util_win.h"
 #include "chrome/browser/win/conflicts/module_info_util.h"
 #include "testing/gtest/include/gtest/gtest.h"

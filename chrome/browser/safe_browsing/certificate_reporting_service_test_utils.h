@@ -12,8 +12,8 @@
 #include "base/sequence_checker.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 

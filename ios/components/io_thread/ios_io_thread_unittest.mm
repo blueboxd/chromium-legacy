@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #import "ios/web/public/test/fakes/test_web_client.h"

@@ -9,7 +9,10 @@
 
 #import "ios/public/provider/chrome/browser/voice/logo_animation_controller.h"
 
-class WebStateList;
+namespace web {
+class WebState;
+}
+
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
 @protocol OmniboxFocuser;
@@ -37,7 +40,7 @@ class WebStateList;
 @property(nonatomic, strong, readonly) UIViewController* viewController;
 
 // The web state list to pass to ContentSuggestionsCoordinator.
-@property(nonatomic, assign) WebStateList* webStateList;
+@property(nonatomic, assign) web::WebState* webState;
 // The toolbar delegate to pass to ContentSuggestionsCoordinator.
 @property(nonatomic, weak) id<NewTabPageControllerDelegate> toolbarDelegate;
 // The dispatcher to pass to ContentSuggestionsCoordinator.

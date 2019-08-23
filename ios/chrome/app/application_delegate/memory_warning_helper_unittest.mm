@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #import "ios/chrome/browser/metrics/previous_session_info.h"
 #include "testing/platform_test.h"

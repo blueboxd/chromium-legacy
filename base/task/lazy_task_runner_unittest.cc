@@ -8,7 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/sequence_checker_impl.h"
 #include "base/task/scoped_set_task_priority_for_current_thread.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_checker_impl.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"

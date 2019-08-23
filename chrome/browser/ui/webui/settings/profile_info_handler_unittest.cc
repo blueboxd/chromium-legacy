@@ -14,7 +14,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_web_ui.h"
 #include "net/base/data_url.h"
 #include "testing/gtest/include/gtest/gtest.h"

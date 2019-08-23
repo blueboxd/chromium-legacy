@@ -3733,6 +3733,8 @@ jumbo_split_static_library("browser") {
       "browser_switcher/browser_switcher_policy_migrator.h",
       "browser_switcher/browser_switcher_service_win.cc",
       "browser_switcher/browser_switcher_service_win.h",
+      "downgrade/downgrade_manager.cc",
+      "downgrade/downgrade_manager.h",
       "downgrade/user_data_downgrade.cc",
       "downgrade/user_data_downgrade.h",
       "notifications/win/notification_image_retainer.cc",

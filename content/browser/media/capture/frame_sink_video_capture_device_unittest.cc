@@ -13,7 +13,7 @@
 #include "base/memory/shared_memory_mapping.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "media/base/video_frame.h"
 #include "media/capture/video/video_frame_receiver.h"

@@ -600,7 +600,7 @@ grit("resources") {
 }
 
 grit("image_resources") {
-  output_dir = "$root_gen_dir/third_party/blink/public/resources"
+  output_dir = resources_out_dir
   source = "blink_image_resources.grd"
   outputs = [
     "grit/blink_image_resources.h",

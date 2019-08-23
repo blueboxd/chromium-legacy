@@ -13,7 +13,7 @@
 #include "base/bind.h"
 #include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"

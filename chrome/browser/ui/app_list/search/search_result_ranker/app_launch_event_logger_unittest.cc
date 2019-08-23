@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/containers/flat_map.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_registry_simple.h"

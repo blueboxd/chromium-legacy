@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/power_monitor/power_monitor.h"
+
 #include "base/macros.h"
 #include "base/test/power_monitor_test_base.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {

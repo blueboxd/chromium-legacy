@@ -5,7 +5,7 @@
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 
 #include "base/bind.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

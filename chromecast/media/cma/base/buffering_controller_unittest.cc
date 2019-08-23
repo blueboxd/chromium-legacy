@@ -10,7 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "chromecast/media/cma/base/buffering_state.h"
 #include "testing/gmock/include/gmock/gmock.h"

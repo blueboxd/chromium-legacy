@@ -10,7 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "remoting/host/host_mock_objects.h"
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/protocol_mock_objects.h"

@@ -13,7 +13,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/offline_items_collection/core/offline_content_provider.h"
 #include "content/public/browser/content_index_provider.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_storage_partition.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -3,12 +3,13 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_mediator.h"
+
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/ui/settings/personal_data_manager_finished_profile_tasks_waiter.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/web_task_environment.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 

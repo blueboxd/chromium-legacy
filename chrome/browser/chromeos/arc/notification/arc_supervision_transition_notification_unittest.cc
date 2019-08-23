@@ -18,7 +18,7 @@
 #include "components/arc/session/arc_supervision_transition.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace arc {

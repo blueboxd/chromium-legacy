@@ -34,6 +34,7 @@
 #include <memory>
 
 #include "base/time/time.h"
+#include "services/network/public/mojom/ip_address_space.mojom-shared.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/platform/web_archive_info.h"
 #include "third_party/blink/public/platform/web_common.h"
@@ -96,6 +97,9 @@ class BLINK_EXPORT WebDocumentLoader {
 
   // The error code for loading an error page.
   virtual int ErrorCode() const = 0;
+
+  // The IPAddressSpace associated with this loader.
+  virtual network::mojom::IPAddressSpace GetIPAddressSpace() const = 0;
 
   // Returns all redirects that occurred (both client and server) before
   // at last committing the current page.  This will contain one entry

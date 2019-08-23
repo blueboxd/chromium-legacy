@@ -8,7 +8,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "components/viz/common/gpu/context_provider.h"

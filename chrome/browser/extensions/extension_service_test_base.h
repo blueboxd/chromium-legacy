@@ -16,7 +16,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/sandboxed_unpacker.h"

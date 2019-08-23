@@ -8,7 +8,7 @@
 
 #include "base/test/gmock_callback_support.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/enterprise_reporting/prefs.h"
 #include "chrome/browser/enterprise_reporting/request_timer.h"
 #include "chrome/browser/policy/fake_browser_dm_token_storage.h"

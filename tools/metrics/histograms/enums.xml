@@ -10920,6 +10920,7 @@ Called by update_net_error_codes.py.-->
   <int value="30" label="RESULT_CODE_ACTION_DISALLOWED_BY_POLICY"/>
   <int value="31" label="RESULT_CODE_INVALID_SANDBOX_STATE"/>
   <int value="32" label="RESULT_CODE_CLOUD_POLICY_ENROLLMENT_FAILED"/>
+  <int value="33" label="RESULT_CODE_DOWNGRADE_AND_RELAUNCH"/>
   <int value="131" label="SIGQUIT"/>
   <int value="132" label="SIGILL"/>
   <int value="133" label="SIGTRAP"/>
@@ -17835,6 +17836,11 @@ Called by update_net_error_codes.py.-->
   <int value="590" label="DomainsToCheckComplianceOfDownloadedContent"/>
   <int value="591" label="DomainsToNotCheckComplianceOfUploadedContent"/>
   <int value="592" label="DictationEnabled"/>
+  <int value="593" label="KeyboardFocusHighlightEnabled"/>
+  <int value="594" label="CursorHighlightEnabled"/>
+  <int value="595" label="CaretHighlightEnabled"/>
+  <int value="596" label="MonoAudioEnabled"/>
+  <int value="597" label="AutoclickEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -60394,6 +60400,16 @@ Full version information for the fingerprint enum values:
   <int value="1" label="Dev"/>
   <int value="2" label="Beta"/>
   <int value="3" label="Stable"/>
+</enum>
+
+<enum name="UserDataDowngradeType">
+  <int value="0" label="None">No downgrade detected</int>
+  <int value="1" label="Administrative Wipe">
+    Administrative downgrade detected
+  </int>
+  <int value="2" label="Unsupported Downgrade">
+    Unsupported downgrade detected
+  </int>
 </enum>
 
 <enum name="UserDemographicsStatus">

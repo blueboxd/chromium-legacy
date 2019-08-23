@@ -12,7 +12,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/chromeos/wilco_dtc_supportd/mojo_utils.h"
 #include "chrome/browser/chromeos/wilco_dtc_supportd/testing_wilco_dtc_supportd_bridge_wrapper.h"
 #include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_messaging.h"

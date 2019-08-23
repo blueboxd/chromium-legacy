@@ -7,8 +7,8 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/chromeos/arc/arc_migration_constants.h"
 #include "chrome/browser/chromeos/login/screens/encryption_migration_mode.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"

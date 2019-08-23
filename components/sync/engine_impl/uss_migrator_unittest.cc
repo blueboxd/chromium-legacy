@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "components/sync/base/cancelation_signal.h"
 #include "components/sync/base/hash_util.h"

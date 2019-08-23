@@ -9,7 +9,7 @@
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/values.h"
 #include "components/mirroring/service/message_dispatcher.h"
 #include "components/mirroring/service/value_util.h"

@@ -36,20 +36,17 @@ void CredentialLeakDialogViewAndroid::Show(ui::WindowAndroid* window_android) {
   java_object_.Reset(Java_CredentialLeakDialogBridge_create(
       env, window_android->GetJavaObject(), reinterpret_cast<intptr_t>(this)));
 
-  base::string16 leak_warning_title =
-      l10n_util::GetStringUTF16(IDS_CREDENTIAL_LEAK_CURRENT_SITE_TITLE);
-  base::string16 leak_warning_details =
-      l10n_util::GetStringUTF16(IDS_CREDENTIAL_LEAK_CURRENT_SITE_MESSAGE);
-  base::string16 positive_button =
-      l10n_util::GetStringUTF16(IDS_LEAK_CHECK_CREDENTIALS);
-  base::string16 negative_button = l10n_util::GetStringUTF16(IDS_CLOSE);
-
   Java_CredentialLeakDialogBridge_showDialog(
       env, java_object_,
-      base::android::ConvertUTF16ToJavaString(env, leak_warning_title),
-      base::android::ConvertUTF16ToJavaString(env, leak_warning_details),
-      base::android::ConvertUTF16ToJavaString(env, positive_button),
-      base::android::ConvertUTF16ToJavaString(env, negative_button));
+      base::android::ConvertUTF16ToJavaString(env, controller_->GetTitle()),
+      base::android::ConvertUTF16ToJavaString(env,
+                                              controller_->GetDescription()),
+      base::android::ConvertUTF16ToJavaString(
+          env, controller_->GetAcceptButtonLabel()),
+      controller_->ShouldShowCancelButton()
+          ? base::android::ConvertUTF16ToJavaString(
+                env, controller_->GetCancelButtonLabel())
+          : nullptr);
 }
 
 void CredentialLeakDialogViewAndroid::Accepted(

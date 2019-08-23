@@ -46,9 +46,12 @@ export class StdSwitchElement extends HTMLElement {
   attributeChangedCallback(attrName, oldValue, newValue) {
     if (attrName === STATE_ATTR) {
       this[_track].value = newValue !== null;
-      // TODO(tkent): We should not add aria-checked attribute.
-      // https://github.com/WICG/aom/issues/127
-      this.setAttribute('aria-checked', newValue !== null ? 'true' : 'false');
+      if (this[_internals].ariaChecked !== undefined) {
+        this[_internals].ariaChecked = newValue !== null ? 'true' : 'false';
+      } else {
+        // TODO(tkent): Remove this when we ship AOM.
+        this.setAttribute('aria-checked', newValue !== null ? 'true' : 'false');
+      }
       if (!this.#inUserAction) {
         for (const element of this[_containerElement].querySelectorAll('*')) {
           style.unmarkTransition(element);
@@ -64,10 +67,13 @@ export class StdSwitchElement extends HTMLElement {
       this.setAttribute('tabindex', '0');
     }
 
-    // TODO(tkent): We should not add role attribute.
-    // https://github.com/WICG/aom/issues/127
-    if (!this.hasAttribute('role')) {
-      this.setAttribute('role', 'switch');
+    if (this[_internals].role !== undefined) {
+      this[_internals].role = 'switch';
+    } else {
+      // TODO(tkent): Remove this when we ship AOM.
+      if (!this.hasAttribute('role')) {
+        this.setAttribute('role', 'switch');
+      }
     }
   }
 

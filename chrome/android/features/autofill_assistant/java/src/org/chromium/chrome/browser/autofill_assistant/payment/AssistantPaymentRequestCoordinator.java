@@ -52,9 +52,6 @@ public class AssistantPaymentRequestCoordinator {
                 new LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
-        AssistantPaymentRequestLoginSection loginSection =
-                new AssistantPaymentRequestLoginSection(mActivity, paymentRequestExpanderAccordion);
-        createSeparator(paymentRequestExpanderAccordion);
         AssistantPaymentRequestContactDetailsSection contactDetailsSection =
                 new AssistantPaymentRequestContactDetailsSection(
                         mActivity, paymentRequestExpanderAccordion);
@@ -75,7 +72,6 @@ public class AssistantPaymentRequestCoordinator {
 
         paymentRequestExpanderAccordion.setTag(
                 AssistantTagsForTesting.PAYMENT_REQUEST_ACCORDION_TAG);
-        loginSection.getView().setTag(AssistantTagsForTesting.PAYMENT_REQUEST_LOGIN_SECTION_TAG);
         contactDetailsSection.getView().setTag(
                 AssistantTagsForTesting.PAYMENT_REQUEST_CONTACT_DETAILS_SECTION_TAG);
         paymentMethodSection.getView().setTag(
@@ -85,9 +81,9 @@ public class AssistantPaymentRequestCoordinator {
 
         // Bind view and mediator through the model.
         mViewHolder = new AssistantPaymentRequestBinder.ViewHolder(mPaymentRequestUI,
-                paymentRequestExpanderAccordion, sectionToSectionPadding, loginSection,
-                contactDetailsSection, paymentMethodSection, shippingAddressSection, termsSection,
-                termsAsCheckboxSection, DIVIDER_TAG, activity);
+                paymentRequestExpanderAccordion, sectionToSectionPadding, contactDetailsSection,
+                paymentMethodSection, shippingAddressSection, termsSection, termsAsCheckboxSection,
+                DIVIDER_TAG, activity);
         AssistantPaymentRequestBinder binder = new AssistantPaymentRequestBinder();
         PropertyModelChangeProcessor.create(model, mViewHolder, binder);
 

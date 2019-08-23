@@ -17,7 +17,7 @@
 #include "components/services/leveldb/public/cpp/util.h"
 #include "components/services/leveldb/public/mojom/leveldb.mojom.h"
 #include "content/browser/dom_storage/test/storage_area_test_util.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/test/barrier_builder.h"
 #include "content/test/fake_leveldb_database.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"

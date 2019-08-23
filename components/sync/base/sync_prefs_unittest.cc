@@ -8,7 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "components/prefs/pref_notifier_impl.h"
 #include "components/prefs/pref_value_store.h"

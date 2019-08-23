@@ -12,7 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #import "ios/net/cookies/cookie_store_ios_test_util.h"
 #include "net/cookies/canonical_cookie_test_helpers.h"
 #include "net/cookies/cookie_store_change_unittest.h"

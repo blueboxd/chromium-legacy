@@ -230,7 +230,7 @@ void TextFragmentAnchor::DidFindMatch(const EphemeralRangeInFlatTree& range) {
     return;
   }
 
-  metrics_->DidFindMatch();
+  metrics_->DidFindMatch(PlainText(range));
 
   if (first_match_needs_scroll_) {
     first_match_needs_scroll_ = false;

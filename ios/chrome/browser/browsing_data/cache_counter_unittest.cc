@@ -20,7 +20,7 @@
 #include "components/browsing_data/core/pref_names.h"
 #include "components/prefs/testing_pref_service.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/web_task_environment.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
 #include "net/disk_cache/disk_cache.h"

@@ -356,6 +356,8 @@ jumbo_static_library("rest_of_sync") {
     "syncable/mutable_entry.h",
     "syncable/nigori_handler.cc",
     "syncable/nigori_handler.h",
+    "syncable/nigori_handler_proxy.cc",
+    "syncable/nigori_handler_proxy.h",
     "syncable/nigori_util.cc",
     "syncable/nigori_util.h",
     "syncable/on_disk_directory_backing_store.cc",

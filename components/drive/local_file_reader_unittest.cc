@@ -15,7 +15,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/rand_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "components/drive/chromeos/drive_test_util.h"
 #include "google_apis/drive/test_util.h"

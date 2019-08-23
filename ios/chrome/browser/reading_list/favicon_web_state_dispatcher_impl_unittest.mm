@@ -8,7 +8,7 @@
 #import "base/test/ios/wait_util.h"
 #include "components/favicon/ios/web_favicon_driver.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/web_task_environment.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"

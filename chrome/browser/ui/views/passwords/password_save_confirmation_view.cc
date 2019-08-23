@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/passwords/password_save_confirmation_view.h"
 
+#include <memory>
+
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/grit/generated_resources.h"
@@ -17,7 +19,10 @@ PasswordSaveConfirmationView::PasswordSaveConfirmationView(
     content::WebContents* web_contents,
     views::View* anchor_view,
     DisplayReason reason)
-    : PasswordBubbleViewBase(web_contents, anchor_view, reason) {
+    : PasswordBubbleViewBase(web_contents,
+                             anchor_view,
+                             reason,
+                             /*auto_dismissable=*/false) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   auto label = std::make_unique<views::StyledLabel>(

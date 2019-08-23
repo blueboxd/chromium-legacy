@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "media/audio/audio_system_test_util.h"
 #include "media/audio/test_audio_thread.h"
 #include "mojo/public/cpp/bindings/receiver.h"

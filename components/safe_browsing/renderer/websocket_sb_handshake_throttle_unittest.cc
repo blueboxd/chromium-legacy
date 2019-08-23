@@ -8,7 +8,7 @@
 
 #include "base/callback.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "content/public/common/resource_type.h"
 #include "ipc/ipc_message.h"

@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/views/tabs/tab_animation_state.h"
 #include "testing/gtest/include/gtest/gtest.h"

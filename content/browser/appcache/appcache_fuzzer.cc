@@ -13,7 +13,7 @@
 #include "content/browser/appcache/appcache_fuzzer.pb.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/public/browser/browser_task_traits.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_content_client.h"
 #include "mojo/core/embedder/embedder.h"

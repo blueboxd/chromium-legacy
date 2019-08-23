@@ -23,7 +23,7 @@
 #include "base/strings/string_util.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/version.h"
 #include "components/metrics/clean_exit_beacon.h"
 #include "components/metrics/client_info.h"

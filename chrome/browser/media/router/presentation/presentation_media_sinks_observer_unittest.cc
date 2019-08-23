@@ -12,7 +12,7 @@
 #include "chrome/common/media_router/media_source.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/presentation_screen_availability_listener.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::_;

@@ -45,14 +45,6 @@ class CallbackInterface(UserDefinedType, WithExtendedAttributes,
         WithDebugInfo.__init__(self, ir.debug_info)
 
     @property
-    def inherited_callback_interface(self):
-        """
-        Returns an CallbackInterface which this interface is inherited from.
-        @return CallbackInterface?
-        """
-        raise exceptions.NotImplementedError()
-
-    @property
     def operation_groups(self):
         """
         Returns a list of OperationGroup. Each OperationGroup may have an

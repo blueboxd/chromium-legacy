@@ -13,7 +13,7 @@
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "services/shape_detection/barcode_detection_impl_mac_vision.h"

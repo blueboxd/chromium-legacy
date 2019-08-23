@@ -8,7 +8,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "media/learning/mojo/public/cpp/mojo_learning_task_controller.h"
 #include "mojo/public/cpp/bindings/binding.h"

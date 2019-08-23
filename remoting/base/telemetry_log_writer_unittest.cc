@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "net/http/http_status_code.h"
 #include "remoting/base/chromoting_event.h"
 #include "remoting/base/fake_oauth_token_getter.h"

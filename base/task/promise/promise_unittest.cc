@@ -13,7 +13,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/do_nothing_promise.h"
 #include "base/test/gtest_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"

@@ -3468,6 +3468,9 @@
   <message name="IDS_CROSTINI_PACKAGE_INSTALL_NOTIFICATION_DISPLAY_SOURCE" desc="Source of the Notification for Linux package installation.">
     Linux installer
   </message>
+  <message name="IDS_CROSTINI_PACKAGE_INSTALL_NOTIFICATION_QUEUED_TITLE" desc="Title of the Notification when an Linux application is queued waiting for other operations to finish.">
+    Install pending
+  </message>
   <message name="IDS_CROSTINI_PACKAGE_INSTALL_NOTIFICATION_IN_PROGRESS_TITLE" desc="Title of the Notification for an in-progress Linux package installation.">
     Installation in progress
   </message>

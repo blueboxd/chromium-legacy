@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/updater/safe_manifest_parser.h"
 #include "services/data_decoder/public/cpp/test_data_decoder_service.h"
 #include "testing/gtest/include/gtest/gtest.h"

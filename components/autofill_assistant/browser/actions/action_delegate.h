@@ -36,10 +36,8 @@ namespace autofill_assistant {
 class ClientMemory;
 class ClientStatus;
 struct ClientSettings;
-struct PaymentInformation;
 struct PaymentRequestOptions;
 class UserAction;
-class WebsiteLoginFetcher;
 
 // Action delegate called when processing actions.
 class ActionDelegate {
@@ -111,8 +109,7 @@ class ActionDelegate {
   // Asks the user to provide the data used by UseAddressAction and
   // UseCreditCardAction.
   virtual void GetPaymentInformation(
-      std::unique_ptr<PaymentRequestOptions> options,
-      std::unique_ptr<PaymentInformation> information) = 0;
+      std::unique_ptr<PaymentRequestOptions> options) = 0;
 
   using GetFullCardCallback =
       base::OnceCallback<void(std::unique_ptr<autofill::CreditCard> card,
@@ -256,9 +253,6 @@ class ActionDelegate {
 
   // Get current personal data manager.
   virtual autofill::PersonalDataManager* GetPersonalDataManager() = 0;
-
-  // Get current login fetcher.
-  virtual WebsiteLoginFetcher* GetWebsiteLoginFetcher() = 0;
 
   // Get associated web contents.
   virtual content::WebContents* GetWebContents() = 0;

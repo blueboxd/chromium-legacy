@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "chromeos/dbus/machine_learning/machine_learning_client.h"
 #include "chromeos/services/machine_learning/public/cpp/fake_service_connection.h"

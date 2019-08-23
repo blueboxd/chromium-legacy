@@ -204,8 +204,7 @@ void ScriptExecutor::ClickOrTapElement(
 }
 
 void ScriptExecutor::GetPaymentInformation(
-    std::unique_ptr<PaymentRequestOptions> options,
-    std::unique_ptr<PaymentInformation> information) {
+    std::unique_ptr<PaymentRequestOptions> options) {
   options->confirm_callback = base::BindOnce(
       &ScriptExecutor::OnGetPaymentInformation, weak_ptr_factory_.GetWeakPtr(),
       std::move(options->confirm_callback));
@@ -216,8 +215,7 @@ void ScriptExecutor::GetPaymentInformation(
   options->terms_link_callback = base::BindOnce(
       &ScriptExecutor::OnTermsAndConditionsLinkClicked,
       weak_ptr_factory_.GetWeakPtr(), std::move(options->terms_link_callback));
-  delegate_->SetPaymentRequestOptions(std::move(options),
-                                      std::move(information));
+  delegate_->SetPaymentRequestOptions(std::move(options));
   delegate_->EnterState(AutofillAssistantState::PROMPT);
 }
 
@@ -488,10 +486,6 @@ ClientMemory* ScriptExecutor::GetClientMemory() {
 
 autofill::PersonalDataManager* ScriptExecutor::GetPersonalDataManager() {
   return delegate_->GetPersonalDataManager();
-}
-
-WebsiteLoginFetcher* ScriptExecutor::GetWebsiteLoginFetcher() {
-  return delegate_->GetWebsiteLoginFetcher();
 }
 
 content::WebContents* ScriptExecutor::GetWebContents() {

@@ -5,7 +5,7 @@
 #include "chrome/browser/performance_monitor/metric_evaluator_helper_win.h"
 
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/win/scoped_com_initializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

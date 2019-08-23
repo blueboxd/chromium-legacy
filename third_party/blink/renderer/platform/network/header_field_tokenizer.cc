@@ -58,8 +58,7 @@ HeaderFieldTokenizer::HeaderFieldTokenizer(const String& header_field)
   SkipOptionalWhitespace();
 }
 
-HeaderFieldTokenizer::HeaderFieldTokenizer(HeaderFieldTokenizer&&) noexcept =
-    default;
+HeaderFieldTokenizer::HeaderFieldTokenizer(HeaderFieldTokenizer&&) = default;
 
 bool HeaderFieldTokenizer::Consume(char c) {
   // TODO(cvazac) change this to use LChar

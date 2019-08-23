@@ -13,7 +13,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/session/arc_session_runner.h"

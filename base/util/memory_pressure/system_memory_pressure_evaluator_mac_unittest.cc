@@ -9,7 +9,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/util/memory_pressure/multi_source_memory_pressure_monitor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -8,7 +8,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chromeos/geolocation/geoposition.h"
 #include "chromeos/timezone/timezone_provider.h"
 #include "chromeos/timezone/timezone_resolver.h"

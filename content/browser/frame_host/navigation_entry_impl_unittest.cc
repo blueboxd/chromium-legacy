@@ -15,8 +15,8 @@
 #include "build/build_config.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/public/browser/ssl_status.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;

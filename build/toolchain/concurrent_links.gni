@@ -21,15 +21,10 @@ declare_args() {
 
 if (concurrent_links == -1) {
   if (use_thin_lto) {
-    _args = [ "--reserve_mem_gb=10" ]
-    # On Chrome OS and Linux, ThinLTO peaks at a bit above 45GB for Chrome.
-    # Android links weigh in much smaller, at around 8-10GB of working memory
-    # (measured by /usr/bin/time -v).
-    if (is_android) {
-      _args += [ "--mem_per_link_gb=10" ]
-    } else {
-      _args += [ "--mem_per_link_gb=45" ]
-    }
+    _args = [
+      "--mem_per_link_gb=10",
+      "--reserve_mem_gb=10",
+    ]
   } else if (use_sanitizer_coverage || use_fuzzing_engine) {
     # Sanitizer coverage instrumentation increases linker memory consumption
     # significantly.

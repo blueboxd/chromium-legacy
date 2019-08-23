@@ -11,7 +11,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/history/core/test/history_service_test_util.h"
 #include "components/ntp_tiles/pref_names.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"

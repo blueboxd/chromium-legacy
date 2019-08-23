@@ -17,7 +17,7 @@
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/sync_socket.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/base/audio_bus.h"

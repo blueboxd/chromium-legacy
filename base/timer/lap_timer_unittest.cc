@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/timer/lap_timer.h"
-#include "base/test/scoped_task_environment.h"
+
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"

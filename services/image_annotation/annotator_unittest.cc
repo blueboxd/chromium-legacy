@@ -13,7 +13,7 @@
 #include "base/optional.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/base/net_errors.h"

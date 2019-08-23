@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/storage_partition_impl.h"
@@ -18,8 +18,8 @@
 #include "content/public/browser/background_sync_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #if defined(OS_ANDROID)

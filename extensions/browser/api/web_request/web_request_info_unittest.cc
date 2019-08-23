@@ -6,7 +6,7 @@
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/api/web_request/web_request_api_constants.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
 #include "services/network/public/cpp/resource_request_body.h"

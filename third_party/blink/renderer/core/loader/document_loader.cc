@@ -169,6 +169,7 @@ DocumentLoader::DocumentLoader(
   error_code_ = params_->error_code;
   previews_state_ = params_->previews_state;
   appcache_host_id_ = params_->appcache_host_id;
+  ip_address_space_ = params_->ip_address_space;
 
   WebNavigationTimings& timings = params_->navigation_timings;
   if (!timings.input_start.is_null())
@@ -1513,6 +1514,7 @@ void DocumentLoader::InstallNewDocument(
           .WithOwnerDocument(owner_document)
           .WithInitiatorOrigin(initiator_origin)
           .WithOriginToCommit(origin_to_commit_)
+          .WithIPAddressSpace(ip_address_space_)
           .WithSrcdocDocument(loading_srcdoc_)
           .WithNewRegistrationContext()
           .WithFeaturePolicyHeader(feature_policy.ToString())

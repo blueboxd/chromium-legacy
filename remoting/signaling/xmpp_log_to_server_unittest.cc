@@ -5,7 +5,7 @@
 #include "remoting/signaling/xmpp_log_to_server.h"
 
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "remoting/signaling/mock_signal_strategy.h"
 #include "remoting/signaling/server_log_entry_unittest.h"
 #include "remoting/signaling/signaling_address.h"

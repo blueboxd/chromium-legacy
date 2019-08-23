@@ -5052,6 +5052,7 @@ test("unit_tests") {
       "../browser/ui/app_list/search/search_result_ranker/app_list_launch_metrics_provider_unittest.cc",
       "../browser/ui/app_list/search/search_result_ranker/app_search_result_ranker_unittest.cc",
       "../browser/ui/app_list/search/search_result_ranker/frecency_store_unittest.cc",
+      "../browser/ui/app_list/search/search_result_ranker/ml_app_rank_provider_unittest.cc",
       "../browser/ui/app_list/search/search_result_ranker/ranking_item_util_unittest.cc",
       "../browser/ui/app_list/search/search_result_ranker/recurrence_predictor_unittest.cc",
       "../browser/ui/app_list/search/search_result_ranker/recurrence_ranker_unittest.cc",
@@ -5077,6 +5078,7 @@ test("unit_tests") {
       # when UX provides them.
       "//ash/app_list:test_support",
       "//ash/resources/vector_icons",
+      "//chromeos/services/machine_learning/public/cpp:test_support",
       "//components/arc:arc_test_support",
     ]
   }

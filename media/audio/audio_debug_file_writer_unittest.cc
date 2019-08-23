@@ -11,7 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/sys_byteorder.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "media/audio/audio_debug_file_writer.h"
 #include "media/base/audio_bus.h"

@@ -23,36 +23,42 @@
 
 namespace content {
 
-struct PrefetchBrowserTestParam {
-  explicit PrefetchBrowserTestParam(bool signed_exchange_enabled)
-      : signed_exchange_enabled(signed_exchange_enabled) {}
-  const bool signed_exchange_enabled;
-};
-
 class PrefetchBrowserTest
     : public PrefetchBrowserTestBase,
-      public testing::WithParamInterface<PrefetchBrowserTestParam> {
+      public testing::WithParamInterface<std::tuple<bool, bool>> {
  public:
-  PrefetchBrowserTest() {
-    cross_origin_server_ = std::make_unique<net::EmbeddedTestServer>(
-        net::EmbeddedTestServer::TYPE_HTTPS);
-  }
+  PrefetchBrowserTest()
+      : cross_origin_server_(std::make_unique<net::EmbeddedTestServer>(
+            net::EmbeddedTestServer::TYPE_HTTPS)),
+        signed_exchange_enabled_(std::get<0>(GetParam())),
+        split_cache_enabled_(std::get<1>(GetParam())) {}
   ~PrefetchBrowserTest() = default;
 
   void SetUp() override {
     std::vector<base::Feature> enable_features;
     std::vector<base::Feature> disabled_features;
-    if (GetParam().signed_exchange_enabled) {
+    if (signed_exchange_enabled_) {
       enable_features.push_back(features::kSignedHTTPExchange);
     } else {
       disabled_features.push_back(features::kSignedHTTPExchange);
     }
+
+    if (split_cache_enabled_) {
+      enable_features.push_back(
+          net::features::kSplitCacheByNetworkIsolationKey);
+    } else {
+      disabled_features.push_back(
+          net::features::kSplitCacheByNetworkIsolationKey);
+    }
+
     feature_list_.InitWithFeatures(enable_features, disabled_features);
     PrefetchBrowserTestBase::SetUp();
   }
 
  protected:
   std::unique_ptr<net::EmbeddedTestServer> cross_origin_server_;
+  const bool signed_exchange_enabled_;
+  const bool split_cache_enabled_;
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -90,28 +96,6 @@ class PrefetchBrowserTestRedirectMode
   base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchBrowserTestRedirectMode);
-};
-
-class PrefetchBrowserTestSplitCache : public PrefetchBrowserTestBase {
- public:
-  PrefetchBrowserTestSplitCache()
-      : cross_origin_server_(std::make_unique<net::EmbeddedTestServer>(
-            net::EmbeddedTestServer::TYPE_HTTPS)) {}
-  ~PrefetchBrowserTestSplitCache() override = default;
-
-  void SetUp() override {
-    feature_list_.InitAndEnableFeature(
-        net::features::kSplitCacheByNetworkIsolationKey);
-    PrefetchBrowserTestBase::SetUp();
-  }
-
- protected:
-  std::unique_ptr<net::EmbeddedTestServer> cross_origin_server_;
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(PrefetchBrowserTestSplitCache);
 };
 
 IN_PROC_BROWSER_TEST_P(PrefetchBrowserTestRedirectMode, RedirectNotFollowed) {
@@ -155,10 +139,8 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTestRedirectMode, RedirectNotFollowed) {
   EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
 }
 
-// TODO(domfarolino): Re-enable this when the implementation for cross-origin
-// main resource prefetches lands. See crbug.com/939317.
-IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestSplitCache,
-                       DISABLED_CrossOriginDocumentReusedAsNavigation) {
+IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest,
+                       CrossOriginDocumentReusedAsNavigation) {
   const char* prefetch_path = "/prefetch.html";
   const char* target_path = "/target.html";
   RegisterResponse(
@@ -200,8 +182,13 @@ IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestSplitCache,
   NavigateToURLAndWaitTitle(cross_origin_target_url, "Prefetch Target");
 }
 
-IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestSplitCache,
+IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest,
                        CrossOriginDocumentNotReusedAsNestedFrameNavigation) {
+  // This test is relevant only with SplitCache.
+  // TODO(crbug.com/910708): Remove this early-return when SplitCache is enabled
+  // by default.
+  if (!split_cache_enabled_)
+    return;
   const char* prefetch_path = "/prefetch.html";
   const char* host_path = "/host.html";
   const char* iframe_path = "/iframe.html";
@@ -254,8 +241,12 @@ IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestSplitCache,
   EXPECT_TRUE(cross_origin_server_->ShutdownAndWaitUntilComplete());
 }
 
-IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestSplitCache,
-                       CrossOriginSubresourceNotReused) {
+IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, CrossOriginSubresourceNotReused) {
+  // This test is relevant only with SplitCache.
+  // TODO(crbug.com/910708): Remove this early-return when SplitCache is enabled
+  // by default.
+  if (!split_cache_enabled_)
+    return;
   const char* prefetch_path = "/prefetch.html";
   const char* host_path = "/host.html";
   const char* subresource_path = "/subresource.js";
@@ -306,7 +297,7 @@ IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestSplitCache,
   EXPECT_TRUE(cross_origin_server_->ShutdownAndWaitUntilComplete());
 }
 
-IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestSplitCache,
+IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest,
                        CrossOriginSubresourceReusedByCurrentFrame) {
   const char* prefetch_path = "/prefetch.html";
   const char* use_prefetch_path = "/use-prefetch.html";
@@ -361,8 +352,13 @@ IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestSplitCache,
 // reused cross-origin subresource prefetches for top-level navigations, we
 // can't actually do this, because the subresource is only reusable from the
 // frame that fetched it.
-IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestSplitCache,
+IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest,
                        CrossOriginSubresourceNotReusedAsNavigation) {
+  // This test is relevant only with SplitCache.
+  // TODO(crbug.com/910708): Remove this early-return when SplitCache is enabled
+  // by default.
+  if (!split_cache_enabled_)
+    return;
   const char* prefetch_path = "/prefetch.html";
   const char* subresource_path = "/subresource.js";
   RegisterResponse(subresource_path, ResponseEntry("console.log('I loaded');"));
@@ -440,47 +436,6 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, Simple) {
   // Subsequent navigation to the target URL wouldn't hit the network for
   // the target URL. The target content should still be read correctly.
   NavigateToURLAndWaitTitle(target_url, "Prefetch Target");
-}
-
-IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, CrossOrigin) {
-  const char* prefetch_path = "/prefetch.html";
-  const char* target_path = "/target.html";
-  RegisterResponse(
-      target_path,
-      ResponseEntry("<head><title>Prefetch Target</title></head>"));
-
-  base::RunLoop prefetch_waiter;
-  auto request_counter = RequestCounter::CreateAndMonitor(
-      cross_origin_server_.get(), target_path, &prefetch_waiter);
-  RegisterRequestHandler(cross_origin_server_.get());
-  ASSERT_TRUE(cross_origin_server_->Start());
-
-  const GURL cross_origin_target_url =
-      cross_origin_server_->GetURL(target_path);
-  RegisterResponse(prefetch_path,
-                   ResponseEntry(base::StringPrintf(
-                       "<body><link rel='prefetch' href='%s'></body>",
-                       cross_origin_target_url.spec().c_str())));
-  RegisterRequestHandler(embedded_test_server());
-  ASSERT_TRUE(embedded_test_server()->Start());
-  EXPECT_EQ(0, request_counter->GetRequestCount());
-  EXPECT_EQ(0, GetPrefetchURLLoaderCallCount());
-
-  // Loading a page that prefetches the target URL would increment the
-  // |request_counter|.
-  EXPECT_TRUE(
-      NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path)));
-  prefetch_waiter.Run();
-  EXPECT_EQ(1, request_counter->GetRequestCount());
-  EXPECT_EQ(1, GetPrefetchURLLoaderCallCount());
-
-  // Shutdown the servers.
-  EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
-  EXPECT_TRUE(cross_origin_server_->ShutdownAndWaitUntilComplete());
-
-  // Subsequent navigation to the target URL wouldn't hit the network for
-  // the target URL. The target content should still be read correctly.
-  NavigateToURLAndWaitTitle(cross_origin_target_url, "Prefetch Target");
 }
 
 IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, DoublePrefetch) {
@@ -619,6 +574,10 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, WithPreload) {
 }
 
 IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, CrossOriginWithPreload) {
+  // TODO(domfarolino): Remove this early-return when preloads-on-prefetch
+  // requests are working when SplitCache is enabled. See crbug.com/939317.
+  if (split_cache_enabled_)
+    return;
   const char* target_path = "/target.html";
   const char* preload_path = "/preload.js";
   RegisterResponse(
@@ -723,7 +682,7 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, SignedExchangeWithPreload) {
   EXPECT_EQ(1, target_request_counter->GetRequestCount());
 
   // Test after this point requires SignedHTTPExchange support
-  if (!GetParam().signed_exchange_enabled)
+  if (!signed_exchange_enabled_)
     return;
 
   // If the header in the .sxg file is correctly extracted, we should
@@ -742,6 +701,10 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, SignedExchangeWithPreload) {
 
 IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest,
                        CrossOriginSignedExchangeWithPreload) {
+  // TODO(domfarolino): Remove this early-return when preloads-on-prefetch
+  // requests are working when SplitCache is enabled. See crbug.com/939317.
+  if (split_cache_enabled_)
+    return;
   const char* prefetch_path = "/prefetch.html";
   const char* target_sxg_path = "/target.sxg";
   const char* target_path = "/target.html";
@@ -796,7 +759,7 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest,
   EXPECT_EQ(1, target_request_counter->GetRequestCount());
 
   // Test after this point requires SignedHTTPExchange support
-  if (!GetParam().signed_exchange_enabled)
+  if (!signed_exchange_enabled_)
     return;
   // If the header in the .sxg file is correctly extracted, we should
   // be able to also see the preload.
@@ -818,8 +781,7 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest,
 
 INSTANTIATE_TEST_SUITE_P(PrefetchBrowserTest,
                          PrefetchBrowserTest,
-                         testing::Values(PrefetchBrowserTestParam(false),
-                                         PrefetchBrowserTestParam(true)));
+                         testing::Combine(testing::Bool(), testing::Bool()));
 
 INSTANTIATE_TEST_SUITE_P(PrefetchBrowserTestRedirectMode,
                          PrefetchBrowserTestRedirectMode,

@@ -8,7 +8,7 @@
 
 #include "base/run_loop.h"
 #import "base/test/ios/wait_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #import "ios/chrome/browser/ui/commands/popup_menu_commands.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_long_press_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button.h"

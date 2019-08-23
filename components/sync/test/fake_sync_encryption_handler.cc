@@ -139,10 +139,6 @@ KeystoreKeysHandler* FakeSyncEncryptionHandler::GetKeystoreKeysHandler() {
   return this;
 }
 
-syncable::NigoriHandler* FakeSyncEncryptionHandler::GetNigoriHandler() {
-  return this;
-}
-
 Cryptographer* FakeSyncEncryptionHandler::GetMutableCryptographer() {
   return &cryptographer_;
 }

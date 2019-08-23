@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chromeos/services/assistant/fake_client.h"
 #include "chromeos/services/assistant/platform/power_manager_provider_impl.h"
 #include "mojo/public/cpp/bindings/binding.h"

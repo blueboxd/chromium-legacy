@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/url_loading/image_search_param_generator.h"
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "testing/platform_test.h"

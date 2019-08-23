@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/timer/mock_timer.h"
 #include "base/values.h"
 #include "components/history/core/browser/browsing_history_driver.h"

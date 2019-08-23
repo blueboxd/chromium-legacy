@@ -11,7 +11,7 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/model/mock_model_type_change_processor.h"
 #include "components/sync/model/model_error.h"

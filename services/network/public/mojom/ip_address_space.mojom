@@ -11,4 +11,7 @@ enum IPAddressSpace {
   kLocal,    // loopback, link local
   kPrivate,  // Reserved by RFC1918
   kPublic,   // Everything else
+
+  kUnknown,  // For security checks, "unknown" will be treated as "public", as
+             // that's the lowest-privilege value.
 };

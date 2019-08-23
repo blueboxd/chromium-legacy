@@ -9,7 +9,7 @@
 #include "base/process/launch.h"
 #include "base/run_loop.h"
 #include "base/test/launcher/unit_test_launcher.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"

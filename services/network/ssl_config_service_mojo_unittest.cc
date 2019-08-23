@@ -7,7 +7,7 @@
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "crypto/sha2.h"
 #include "mojo/public/cpp/bindings/interface_request.h"

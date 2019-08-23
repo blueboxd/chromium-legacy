@@ -57,7 +57,7 @@ TrimOnMemoryPressureParams TrimOnMemoryPressureParams::GetParams() {
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_LINUX)
-namespace linux {
+namespace os_linux {
 
 #if BUILDFLAG(USE_TCMALLOC)
 // This flag will allow the browser process to adjust the tcmalloc tunables to
@@ -75,7 +75,7 @@ extern const base::FeatureParam<int> kDynamicTuningScaleInvisibleTimeSec = {
     &kDynamicTcmallocTuning, "DynamicTcmallocScaleInvisibleTimeSec", -1};
 #endif  // BUILDFLAG(USE_TCMALLOC)
 
-}  // namespace linux
+}  // namespace os_linux
 #endif  // defined(OS_LINUX)
 
 }  // namespace features

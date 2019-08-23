@@ -7,7 +7,7 @@
 #include <string>
 #include <utility>
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "crypto/ec_private_key.h"
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/ctap_get_assertion_request.h"

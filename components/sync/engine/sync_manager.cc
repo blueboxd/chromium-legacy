@@ -18,6 +18,7 @@ SyncManager::InitArgs::InitArgs()
       change_delegate(nullptr),
       user_share(nullptr),
       encryption_handler(nullptr),
+      nigori_handler(nullptr),
       cancelation_signal(nullptr) {}
 
 SyncManager::InitArgs::~InitArgs() {}

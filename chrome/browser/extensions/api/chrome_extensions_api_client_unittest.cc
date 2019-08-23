@@ -6,7 +6,7 @@
 
 #include "base/macros.h"
 #include "chrome/common/webui_url_constants.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "testing/gtest/include/gtest/gtest.h"

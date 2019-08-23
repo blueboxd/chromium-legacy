@@ -13,7 +13,7 @@
 #include "base/containers/flat_set.h"
 #include "base/fuchsia/default_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/viz/test/test_context_support.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "media/base/test_data_util.h"

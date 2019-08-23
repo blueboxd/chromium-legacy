@@ -21,7 +21,7 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/portal_detector/mock_network_portal_detector.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;

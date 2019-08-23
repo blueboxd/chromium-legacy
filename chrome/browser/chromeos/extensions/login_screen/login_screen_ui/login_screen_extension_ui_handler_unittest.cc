@@ -17,7 +17,7 @@
 #include "chromeos/tpm/stub_install_attributes.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/version_info/version_info.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"

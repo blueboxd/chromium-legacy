@@ -1048,6 +1048,88 @@ TEST(FormParserTest, ReadonlyFields) {
   });
 }
 
+TEST(FormParserTest, ServerPredictionsForClearTextPasswordFields) {
+  CheckTestData({
+      {
+          "Server prediction for account change password and username field.",
+          {
+              {
+                  .role_filling = ElementRole::USERNAME,
+                  .form_control_type = "text",
+                  .prediction = {.type = autofill::USERNAME_AND_EMAIL_ADDRESS},
+              },
+              {
+                  .role_filling = ElementRole::NEW_PASSWORD,
+                  .form_control_type = "text",
+                  .prediction = {.type = autofill::NEW_PASSWORD},
+              },
+          },
+      },
+      {
+          "Server prediction for account change password field only.",
+          {
+              {.role_filling = ElementRole::USERNAME,
+               .form_control_type = "text"},
+              {
+                  .role_filling = ElementRole::NEW_PASSWORD,
+                  .form_control_type = "text",
+                  .prediction = {.type = autofill::NEW_PASSWORD},
+              },
+          },
+      },
+      {
+          "Server prediction for account password and username field.",
+          {
+              {
+                  .form_control_type = "text",
+                  .prediction = {.type = autofill::USERNAME_AND_EMAIL_ADDRESS},
+              },
+              {
+                  .form_control_type = "text",
+                  .prediction = {.type = autofill::PASSWORD},
+              },
+          },
+      },
+      {
+          "Server prediction for account password field only.",
+          {
+              {.form_control_type = "text"},
+              {
+                  .form_control_type = "text",
+                  .prediction = {.type = autofill::PASSWORD},
+              },
+          },
+      },
+      {
+          "Server prediction for account creation password and username field.",
+          {
+              {
+                  .role_filling = ElementRole::USERNAME,
+                  .form_control_type = "text",
+                  .prediction = {.type = autofill::USERNAME_AND_EMAIL_ADDRESS},
+              },
+              {
+                  .role_filling = ElementRole::NEW_PASSWORD,
+                  .form_control_type = "text",
+                  .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD},
+              },
+          },
+      },
+      {
+          "Server prediction for account creation password field only.",
+          {
+              {.role_filling = ElementRole::USERNAME,
+               .form_control_type = "text"},
+              {
+                  .role_filling = ElementRole::NEW_PASSWORD,
+                  .form_control_type = "text",
+                  .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD},
+              },
+          },
+      },
+  });
+}
+
 TEST(FormParserTest, ServerHints) {
   CheckTestData({
       {

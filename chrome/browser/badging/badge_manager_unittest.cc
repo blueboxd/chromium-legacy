@@ -12,7 +12,7 @@
 #include "chrome/browser/badging/badge_manager_delegate.h"
 #include "chrome/browser/badging/badge_manager_factory.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_id.h"

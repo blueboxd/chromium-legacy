@@ -305,6 +305,11 @@ void SetIndividualRuntimeFeatures(
   if (network::features::ShouldEnableOutOfBlinkCors())
     WebRuntimeFeatures::EnableOutOfBlinkCors(true);
 
+  if (base::FeatureList::IsEnabled(
+          network::features::kBlockNonSecureExternalRequests)) {
+    WebRuntimeFeatures::EnableFeatureFromString("AddressSpace", true);
+  }
+
   WebRuntimeFeatures::EnableMediaCastOverlayButton(
       base::FeatureList::IsEnabled(media::kMediaCastOverlayButton));
 
@@ -563,6 +568,12 @@ void SetIndividualRuntimeFeatures(
   if (base::FeatureList::IsEnabled(
           net::features::kCookiesWithoutSameSiteMustBeSecure)) {
     WebRuntimeFeatures::EnableCookiesWithoutSameSiteMustBeSecure(true);
+  }
+
+  if (base::FeatureList::IsEnabled(
+          blink::features::kIgnoreCrossOriginWindowWhenNamedAccessOnWindow)) {
+    WebRuntimeFeatures::EnableFeatureFromString(
+        "IgnoreCrossOriginWindowWhenNamedAccessOnWindow", true);
   }
 }
 

@@ -1,0 +1,148 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+#ifndef WEBLAYER_SHELL_BROWSER_WEB_SHELL_H_
+#define WEBLAYER_SHELL_BROWSER_WEB_SHELL_H_
+
+#include <stdint.h>
+
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "base/callback_forward.h"
+#include "base/memory/ref_counted.h"
+#include "build/build_config.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/native_widget_types.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/scoped_java_ref.h"
+#elif defined(USE_AURA)
+namespace views {
+class Widget;
+class ViewsDelegate;
+}  // namespace views
+namespace wm {
+class WMState;
+}
+#endif  // defined(USE_AURA)
+
+class GURL;
+
+namespace weblayer {
+class WebBrowserController;
+class WebProfile;
+
+// This represents one window of the Web Shell, i.e. all the UI including
+// buttons and url bar, as well as the web content area.
+class WebShell {
+ public:
+  ~WebShell();
+
+  void LoadURL(const GURL& url);
+  void GoBackOrForward(int offset);
+  void Reload();
+  void ReloadBypassingCache();
+  void Stop();
+  void Close();
+
+  // Do one time initialization at application startup.
+  static void Initialize();
+
+  static WebShell* CreateNewWindow(weblayer::WebProfile* web_profile,
+                                   const GURL& url,
+                                   const gfx::Size& initial_size);
+
+  // Closes all windows, pumps teardown tasks, then returns. The main message
+  // loop will be signalled to quit, before the call returns.
+  static void CloseAllWindows();
+
+  // Stores the supplied |quit_closure|, to be run when the last WebShell
+  // instance is destroyed.
+  static void SetMainMessageLoopQuitClosure(base::OnceClosure quit_closure);
+
+  gfx::NativeWindow window() { return window_; }
+
+  static gfx::Size GetShellDefaultSize();
+
+ private:
+  enum UIControl { BACK_BUTTON, FORWARD_BUTTON, STOP_BUTTON };
+
+  explicit WebShell(
+      std::unique_ptr<WebBrowserController> web_browser_controller);
+
+  // Helper to create a new WebShell.
+  static WebShell* CreateWebShell(
+      std::unique_ptr<WebBrowserController> web_browser_controller,
+      const gfx::Size& initial_size);
+
+  // Helper for one time initialization of application
+  static void PlatformInitialize(const gfx::Size& default_window_size);
+
+  // Helper for one time deinitialization of platform specific state.
+  static void PlatformExit();
+
+  // Adjust the size when Blink sends 0 for width and/or height.
+  // This happens when Blink requests a default-sized window.
+  static gfx::Size AdjustWindowSize(const gfx::Size& initial_size);
+
+  // All the methods that begin with Platform need to be implemented by the
+  // platform specific WebShell implementation.
+  // Called from the destructor to let each platform do any necessary cleanup.
+  void PlatformCleanUp();
+
+  // Creates the main window GUI.
+  void PlatformCreateWindow(int width, int height);
+
+  // Links the WebContents into the newly created window.
+  void PlatformSetContents();
+
+  // Resize the content area and GUI.
+  void PlatformResizeSubViews();
+
+  // Enable/disable a button.
+  void PlatformEnableUIControl(UIControl control, bool is_enabled);
+
+  // Updates the url in the url bar.
+  void PlatformSetAddressBarURL(const GURL& url);
+
+  // Sets whether the spinner is spinning.
+  void PlatformSetIsLoading(bool loading);
+
+  // Set the title of shell window
+  void PlatformSetTitle(const base::string16& title);
+
+#if defined(OS_ANDROID)
+  void PlatformToggleFullscreenModeForTab(WebContents* web_contents,
+                                          bool enter_fullscreen);
+
+  bool PlatformIsFullscreenForTabOrPending(
+      const WebContents* web_contents) const;
+#endif
+
+  std::unique_ptr<WebBrowserController> web_browser_controller_;
+
+  gfx::NativeWindow window_;
+
+  gfx::Size content_size_;
+
+#if defined(OS_ANDROID)
+  base::android::ScopedJavaGlobalRef<jobject> java_object_;
+#elif defined(USE_AURA)
+  static wm::WMState* wm_state_;
+#if defined(TOOLKIT_VIEWS)
+  static views::ViewsDelegate* views_delegate_;
+
+  views::Widget* window_widget_;
+#endif  // defined(TOOLKIT_VIEWS)
+#endif  // defined(USE_AURA)
+
+  // A container of all the open windows. We use a vector so we can keep track
+  // of ordering.
+  static std::vector<WebShell*> windows_;
+};
+
+}  // namespace weblayer
+
+#endif  // WEBLAYER_SHELL_BROWSER_WEB_SHELL_H_

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_MOCK_PASSWORD_STORE_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_MOCK_PASSWORD_STORE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -22,6 +23,8 @@ class MockPasswordStore : public PasswordStore {
   MOCK_METHOD1(RemoveLogin, void(const autofill::PasswordForm&));
   MOCK_METHOD2(GetLogins,
                void(const PasswordStore::FormDigest&, PasswordStoreConsumer*));
+  MOCK_METHOD2(GetLoginsByPassword,
+               void(const base::string16&, PasswordStoreConsumer*));
   MOCK_METHOD1(AddLogin, void(const autofill::PasswordForm&));
   MOCK_METHOD1(UpdateLogin, void(const autofill::PasswordForm&));
   MOCK_METHOD2(UpdateLoginWithPrimaryKey,
@@ -54,6 +57,9 @@ class MockPasswordStore : public PasswordStore {
       const PasswordStore::FormDigest& form) override {
     return std::vector<std::unique_ptr<autofill::PasswordForm>>();
   }
+  MOCK_METHOD1(FillMatchingLoginsByPassword,
+               std::vector<std::unique_ptr<autofill::PasswordForm>>(
+                   const base::string16&));
   MOCK_METHOD1(FillAutofillableLogins,
                bool(std::vector<std::unique_ptr<autofill::PasswordForm>>*));
   MOCK_METHOD1(FillBlacklistLogins,

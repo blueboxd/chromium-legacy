@@ -21,7 +21,7 @@
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_shared_memory_util.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"

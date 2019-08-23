@@ -7,7 +7,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/sequenced_task_runner.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/mock_user_cloud_policy_store.h"
 #include "components/policy/core/common/external_data_fetcher.h"

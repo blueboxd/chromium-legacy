@@ -16,7 +16,6 @@
 #include "components/autofill_assistant/browser/access_token_fetcher.h"
 #include "components/autofill_assistant/browser/client.h"
 #include "components/autofill_assistant/browser/controller.h"
-#include "components/autofill_assistant/browser/website_login_fetcher.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace autofill_assistant {
@@ -87,7 +86,6 @@ class ClientAndroid : public Client,
   std::string GetAccountEmailAddress() override;
   AccessTokenFetcher* GetAccessTokenFetcher() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
-  WebsiteLoginFetcher* GetWebsiteLoginFetcher() override;
   std::string GetServerUrl() override;
   std::string GetLocale() override;
   std::string GetCountryCode() override;
@@ -119,7 +117,6 @@ class ClientAndroid : public Client,
 
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
   std::unique_ptr<Controller> controller_;
-  std::unique_ptr<WebsiteLoginFetcher> website_login_fetcher_;
 
   // True if Start() was called. This turns on the tracking of dropouts.
   bool started_ = false;

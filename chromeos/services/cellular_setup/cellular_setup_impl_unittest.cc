@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chromeos/dbus/shill/shill_clients.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/services/cellular_setup/cellular_setup_base.h"

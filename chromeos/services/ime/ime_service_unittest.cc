@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 
 #include "chromeos/services/ime/ime_service.h"
+
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"

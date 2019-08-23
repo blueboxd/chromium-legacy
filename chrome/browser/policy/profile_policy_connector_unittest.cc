@@ -6,7 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/test/base/testing_browser_process.h"

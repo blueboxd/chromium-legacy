@@ -24,6 +24,8 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 
+import java.util.concurrent.TimeUnit;
+
 /** Unit tests for {@link BackgroundTaskJobService}. */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -49,8 +51,8 @@ public class BackgroundTaskJobServiceTest {
 
     @Test
     @Feature({"BackgroundTaskScheduler"})
-    public void testTaskStartsAnytimeWithoutDeadline() {
-        JobParameters jobParameters = buildJobParameters(TaskIds.TEST, null);
+    public void testOneOffTaskStartsAnytimeWithoutDeadline() {
+        JobParameters jobParameters = buildOneOffJobParameters(TaskIds.TEST, null, null);
 
         BackgroundTaskJobService jobService = new BackgroundTaskJobService();
         assertFalse(jobService.onStartJob(jobParameters));
@@ -61,22 +63,9 @@ public class BackgroundTaskJobServiceTest {
 
     @Test
     @Feature({"BackgroundTaskScheduler"})
-    public void testTaskDoesNotStartExactlyAtDeadline() {
-        JobParameters jobParameters = buildJobParameters(TaskIds.TEST, sClock.currentTimeMillis());
-
-        BackgroundTaskJobService jobService = new BackgroundTaskJobService();
-        jobService.setClockForTesting(sClock);
-        assertFalse(jobService.onStartJob(jobParameters));
-
-        verify(mBackgroundTaskSchedulerUma, times(0)).reportTaskStarted(eq(TaskIds.TEST));
-        assertEquals(0, TestBackgroundTask.getRescheduleCalls());
-    }
-
-    @Test
-    @Feature({"BackgroundTaskScheduler"})
-    public void testTaskDoesNotStartAfterDeadline() {
+    public void testOneOffTaskDoesNotStartExactlyAtDeadline() {
         JobParameters jobParameters =
-                buildJobParameters(TaskIds.TEST, sZeroClock.currentTimeMillis());
+                buildOneOffJobParameters(TaskIds.TEST, sClock.currentTimeMillis(), new Long(0));
 
         BackgroundTaskJobService jobService = new BackgroundTaskJobService();
         jobService.setClockForTesting(sClock);
@@ -88,8 +77,23 @@ public class BackgroundTaskJobServiceTest {
 
     @Test
     @Feature({"BackgroundTaskScheduler"})
-    public void testTaskStartsBeforeDeadline() {
-        JobParameters jobParameters = buildJobParameters(TaskIds.TEST, sClock.currentTimeMillis());
+    public void testOneOffTaskDoesNotStartAfterDeadline() {
+        JobParameters jobParameters =
+                buildOneOffJobParameters(TaskIds.TEST, sZeroClock.currentTimeMillis(), new Long(0));
+
+        BackgroundTaskJobService jobService = new BackgroundTaskJobService();
+        jobService.setClockForTesting(sClock);
+        assertFalse(jobService.onStartJob(jobParameters));
+
+        verify(mBackgroundTaskSchedulerUma, times(0)).reportTaskStarted(eq(TaskIds.TEST));
+        assertEquals(0, TestBackgroundTask.getRescheduleCalls());
+    }
+
+    @Test
+    @Feature({"BackgroundTaskScheduler"})
+    public void testOneOffTaskStartsBeforeDeadline() {
+        JobParameters jobParameters = buildOneOffJobParameters(
+                TaskIds.TEST, sClock.currentTimeMillis(), sClock.currentTimeMillis());
 
         BackgroundTaskJobService jobService = new BackgroundTaskJobService();
         jobService.setClockForTesting(sZeroClock);
@@ -101,11 +105,11 @@ public class BackgroundTaskJobServiceTest {
 
     @Test
     @Feature({"BackgroundTaskScheduler"})
-    public void testCancelTaskIfTaskIdNotFound() {
+    public void testCancelOneOffTaskIfTaskIdNotFound() {
         BackgroundTaskSchedulerFactory.setSchedulerForTesting(mBackgroundTaskSchedulerImpl);
 
-        JobParameters jobParameters = buildJobParameters(
-                TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID, sClock.currentTimeMillis());
+        JobParameters jobParameters =
+                buildOneOffJobParameters(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID, null, null);
 
         BackgroundTaskJobService jobService = new BackgroundTaskJobService();
         jobService.setClockForTesting(sZeroClock);
@@ -117,11 +121,95 @@ public class BackgroundTaskJobServiceTest {
         assertEquals(0, TestBackgroundTask.getRescheduleCalls());
     }
 
-    private static JobParameters buildJobParameters(int taskId, Long deadlineTime) {
+    @Test
+    @Feature({"BackgroundTaskScheduler"})
+    public void testPeriodicTaskStartsAnytimeWithoutDeadline() {
+        JobParameters jobParameters = buildPeriodicJobParameters(TaskIds.TEST, null, null, null);
+
+        BackgroundTaskJobService jobService = new BackgroundTaskJobService();
+        assertFalse(jobService.onStartJob(jobParameters));
+
+        verify(mBackgroundTaskSchedulerUma, times(1)).reportTaskStarted(eq(TaskIds.TEST));
+        assertEquals(0, TestBackgroundTask.getRescheduleCalls());
+    }
+
+    @Test
+    @Feature({"BackgroundTaskScheduler"})
+    public void testPeriodicTaskStartsWithinDeadlineTimeFrame() {
+        JobParameters jobParameters = buildPeriodicJobParameters(TaskIds.TEST,
+                sClock.currentTimeMillis() - TimeUnit.MINUTES.toMillis(13),
+                TimeUnit.MINUTES.toMillis(15), null);
+
+        BackgroundTaskJobService jobService = new BackgroundTaskJobService();
+        jobService.setClockForTesting(sClock);
+        assertFalse(jobService.onStartJob(jobParameters));
+
+        verify(mBackgroundTaskSchedulerUma, times(1)).reportTaskStarted(eq(TaskIds.TEST));
+        assertEquals(0, TestBackgroundTask.getRescheduleCalls());
+    }
+
+    @Test
+    @Feature({"BackgroundTaskScheduler"})
+    public void testPeriodicTaskDoesNotStartExactlyAtDeadline() {
+        JobParameters jobParameters = buildPeriodicJobParameters(
+                TaskIds.TEST, sClock.currentTimeMillis(), TimeUnit.MINUTES.toMillis(15), null);
+
+        BackgroundTaskJobService jobService = new BackgroundTaskJobService();
+        jobService.setClockForTesting(sClock);
+        assertFalse(jobService.onStartJob(jobParameters));
+
+        verify(mBackgroundTaskSchedulerUma, times(0)).reportTaskStarted(eq(TaskIds.TEST));
+        assertEquals(0, TestBackgroundTask.getRescheduleCalls());
+    }
+
+    @Test
+    @Feature({"BackgroundTaskScheduler"})
+    public void testPeriodicTaskDoesNotStartAfterDeadline() {
+        JobParameters jobParameters = buildPeriodicJobParameters(TaskIds.TEST,
+                sClock.currentTimeMillis() - TimeUnit.MINUTES.toMillis(3),
+                TimeUnit.MINUTES.toMillis(15), null);
+
+        BackgroundTaskJobService jobService = new BackgroundTaskJobService();
+        jobService.setClockForTesting(sClock);
+        assertFalse(jobService.onStartJob(jobParameters));
+
+        verify(mBackgroundTaskSchedulerUma, times(0)).reportTaskStarted(eq(TaskIds.TEST));
+        assertEquals(0, TestBackgroundTask.getRescheduleCalls());
+    }
+
+    private static JobParameters buildOneOffJobParameters(
+            int taskId, Long schedulingTimeMs, Long windowEndTimeForDeadlineMs) {
         PersistableBundle extras = new PersistableBundle();
-        if (deadlineTime != null) {
+        if (windowEndTimeForDeadlineMs != null) {
+            extras.putLong(BackgroundTaskSchedulerJobService.BACKGROUND_TASK_SCHEDULE_TIME_KEY,
+                    schedulingTimeMs);
+            extras.putLong(BackgroundTaskSchedulerJobService.BACKGROUND_TASK_END_TIME_KEY,
+                    windowEndTimeForDeadlineMs);
+        }
+        PersistableBundle taskExtras = new PersistableBundle();
+        extras.putPersistableBundle(
+                BackgroundTaskSchedulerJobService.BACKGROUND_TASK_EXTRAS_KEY, taskExtras);
+
+        return new JobParameters(null /* callback */, taskId, extras, null /* transientExtras */,
+                null /* clipData */, 0 /* clipGrantFlags */, false /* overrideDeadlineExpired */,
+                null /* triggeredContentUris */, null /* triggeredContentAuthorities */,
+                null /* network */);
+    }
+
+    private static JobParameters buildPeriodicJobParameters(
+            int taskId, Long schedulingTimeMs, Long intervalForDeadlineMs, Long flexForDeadlineMs) {
+        PersistableBundle extras = new PersistableBundle();
+        if (schedulingTimeMs != null) {
+            extras.putLong(BackgroundTaskSchedulerJobService.BACKGROUND_TASK_SCHEDULE_TIME_KEY,
+                    schedulingTimeMs);
             extras.putLong(
-                    BackgroundTaskSchedulerJobService.BACKGROUND_TASK_DEADLINE_KEY, deadlineTime);
+                    BackgroundTaskSchedulerGcmNetworkManager.BACKGROUND_TASK_INTERVAL_TIME_KEY,
+                    intervalForDeadlineMs);
+            if (flexForDeadlineMs != null) {
+                extras.putLong(
+                        BackgroundTaskSchedulerGcmNetworkManager.BACKGROUND_TASK_FLEX_TIME_KEY,
+                        flexForDeadlineMs);
+            }
         }
         PersistableBundle taskExtras = new PersistableBundle();
         extras.putPersistableBundle(

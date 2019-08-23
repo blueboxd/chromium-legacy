@@ -27,13 +27,9 @@
 #include "ios/chrome/browser/url_loading/test_url_loading_service.h"
 #include "ios/chrome/browser/url_loading/url_loading_params.h"
 #include "ios/chrome/browser/url_loading/url_loading_service_factory.h"
-#include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
-#include "ios/chrome/browser/web_state_list/web_state_list.h"
-#import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
-#import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/public/provider/chrome/browser/ui/logo_vendor.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/web_task_environment.h"
 #import "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
@@ -44,10 +40,6 @@
 
 @protocol NTPHomeMediatorDispatcher <BrowserCommands, SnackbarCommands>
 @end
-
-namespace {
-static const int kNumberOfWebStates = 3;
-}
 
 class NTPHomeMediatorTest : public PlatformTest {
  public:
@@ -72,9 +64,6 @@ class NTPHomeMediatorTest : public PlatformTest {
         std::make_unique<ToolbarTestNavigationManager>();
     navigation_manager_ = navigation_manager.get();
     test_web_state_ = std::make_unique<web::TestWebState>();
-    test_web_state_->SetNavigationManager(std::move(navigation_manager));
-    web_state_ = test_web_state_.get();
-    SetUpWebStateList();
     logo_vendor_ = OCMProtocolMock(@protocol(LogoVendor));
     dispatcher_ = OCMProtocolMock(@protocol(NTPHomeMediatorDispatcher));
     suggestions_view_controller_ =
@@ -88,13 +77,13 @@ class NTPHomeMediatorTest : public PlatformTest {
     identity_manager_ =
         IdentityManagerFactory::GetForBrowserState(chrome_browser_state_.get());
     mediator_ = [[NTPHomeMediator alloc]
-        initWithWebStateList:web_state_list_.get()
-          templateURLService:ios::TemplateURLServiceFactory::GetForBrowserState(
-                                 chrome_browser_state_.get())
-           urlLoadingService:url_loader_
-                 authService:auth_service_
-             identityManager:identity_manager_
-                  logoVendor:logo_vendor_];
+          initWithWebState:test_web_state_.get()
+        templateURLService:ios::TemplateURLServiceFactory::GetForBrowserState(
+                               chrome_browser_state_.get())
+         urlLoadingService:url_loader_
+               authService:auth_service_
+           identityManager:identity_manager_
+                logoVendor:logo_vendor_];
     mediator_.suggestionsService =
         IOSChromeContentSuggestionsServiceFactory::GetForBrowserState(
             chrome_browser_state_.get());
@@ -104,27 +93,10 @@ class NTPHomeMediatorTest : public PlatformTest {
     mediator_.consumer = consumer_;
   }
 
-  // Explicitly disconnect the mediator so there won't be any WebStateList
-  // observers when web_state_list_ gets dealloc.
+  // Explicitly disconnect the mediator.
   ~NTPHomeMediatorTest() override { [mediator_ shutdown]; }
 
  protected:
-  void SetUpWebStateList() {
-    web_state_list_ = std::make_unique<WebStateList>(&web_state_list_delegate_);
-    web_state_list_->InsertWebState(0, std::move(test_web_state_),
-                                    WebStateList::INSERT_FORCE_INDEX,
-                                    WebStateOpener());
-    web_state_list_->ActivateWebStateAt(0);
-    for (int i = 1; i < kNumberOfWebStates; i++) {
-      auto web_state = std::make_unique<web::TestWebState>();
-      GURL url("http://test/" + std::to_string(i));
-      web_state->SetCurrentURL(url);
-      web_state_list_->InsertWebState(i, std::move(web_state),
-                                      WebStateList::INSERT_FORCE_INDEX,
-                                      WebStateOpener());
-    }
-  }
-
   web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   id consumer_;
@@ -132,10 +104,7 @@ class NTPHomeMediatorTest : public PlatformTest {
   id dispatcher_;
   id suggestions_view_controller_;
   NTPHomeMediator* mediator_;
-  web::TestWebState* web_state_;
   ToolbarTestNavigationManager* navigation_manager_;
-  std::unique_ptr<WebStateList> web_state_list_;
-  FakeWebStateListDelegate web_state_list_delegate_;
   TestUrlLoadingService* url_loader_;
   AuthenticationServiceFake* auth_service_;
   signin::IdentityManager* identity_manager_;

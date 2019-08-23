@@ -34,6 +34,12 @@ Polymer({
     /** @private {!OncMojo.ManagedProperties|undefined} */
     managedProperties_: Object,
 
+    /** @private {?OncMojo.DeviceStateProperties} */
+    deviceState_: {
+      type: Object,
+      value: null,
+    },
+
     /**
      * Interface for networkingPrivate calls, passed from internet_page.
      * @type {NetworkingPrivate}
@@ -110,6 +116,7 @@ Polymer({
     this.managedProperties_ = OncMojo.getDefaultManagedProperties(
         OncMojo.getNetworkTypeFromString(type), this.guid, name);
     this.getNetworkDetails_();
+    this.getDeviceState_();
   },
 
   /** @override */
@@ -173,6 +180,14 @@ Polymer({
     }
   },
 
+  /** CrosNetworkConfigObserver impl */
+  onDeviceStateListChanged: function() {
+    this.getDeviceState_();
+    if (this.guid) {
+      this.getNetworkDetails_();
+    }
+  },
+
   /**
    * Calls networkingPrivate.getProperties for this.guid.
    * @private
@@ -217,6 +232,16 @@ Polymer({
       this.managedProperties_ = response.result;
       this.networkProperties_ = properties;
       this.networkPropertiesReceived_ = true;
+    });
+  },
+
+  /** @private */
+  getDeviceState_: function() {
+    this.networkConfig_.getDeviceStateList().then(response => {
+      const devices = response.result;
+      this.deviceState_ =
+          devices.find(device => device.type == this.managedProperties_.type) ||
+          null;
     });
   },
 

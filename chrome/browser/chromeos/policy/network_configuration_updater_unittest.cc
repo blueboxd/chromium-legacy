@@ -41,7 +41,7 @@
 #include "components/policy/policy_constants.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_type.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util_nss.h"

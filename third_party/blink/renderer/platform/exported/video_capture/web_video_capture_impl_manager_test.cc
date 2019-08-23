@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/capture/mojom/video_capture.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"

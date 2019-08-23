@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"

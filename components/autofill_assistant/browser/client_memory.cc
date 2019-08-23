@@ -13,21 +13,20 @@ namespace autofill_assistant {
 ClientMemory::ClientMemory() = default;
 ClientMemory::~ClientMemory() = default;
 
-const autofill::CreditCard* ClientMemory::selected_card() const {
+const autofill::CreditCard* ClientMemory::selected_card() {
   if (selected_card_.has_value())
     return selected_card_->get();
   return nullptr;
 }
 
-bool ClientMemory::has_selected_card() const {
+bool ClientMemory::has_selected_card() {
   return selected_card_.has_value();
 }
 
 const autofill::AutofillProfile* ClientMemory::selected_address(
-    const std::string& name) const {
-  auto it = selected_addresses_.find(name);
-  if (it != selected_addresses_.end())
-    return it->second.get();
+    const std::string& name) {
+  if (selected_addresses_.find(name) != selected_addresses_.end())
+    return selected_addresses_[name].get();
 
   return nullptr;
 }
@@ -43,23 +42,8 @@ void ClientMemory::set_selected_address(
   selected_addresses_[name] = std::move(address);
 }
 
-bool ClientMemory::has_selected_address(const std::string& name) const {
+bool ClientMemory::has_selected_address(const std::string& name) {
   return selected_addresses_.find(name) != selected_addresses_.end();
-}
-
-void ClientMemory::set_selected_login(const WebsiteLoginFetcher::Login& login) {
-  selected_login_ = login;
-}
-
-bool ClientMemory::has_selected_login() const {
-  return selected_login_.has_value();
-}
-
-const WebsiteLoginFetcher::Login* ClientMemory::selected_login() const {
-  if (selected_login_.has_value()) {
-    return &(*selected_login_);
-  }
-  return nullptr;
 }
 
 std::string ClientMemory::GetAllAddressKeyNames() const {

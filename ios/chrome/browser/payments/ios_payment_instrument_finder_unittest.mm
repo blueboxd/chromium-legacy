@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ios/chrome/browser/payments/ios_payment_instrument.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"

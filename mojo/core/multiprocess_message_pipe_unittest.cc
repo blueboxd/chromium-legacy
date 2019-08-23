@@ -21,7 +21,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "mojo/core/handle_signals_state.h"
 #include "mojo/core/test/mojo_test_base.h"

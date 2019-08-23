@@ -26,7 +26,7 @@
 #include "components/arc/mojom/app.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/session_manager/core/session_manager.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

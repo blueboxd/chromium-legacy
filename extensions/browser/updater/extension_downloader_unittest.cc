@@ -5,7 +5,7 @@
 #include "extensions/browser/updater/extension_downloader.h"
 
 #include "base/sequenced_task_runner.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extensions_test.h"
 #include "extensions/browser/updater/extension_downloader_test_helper.h"

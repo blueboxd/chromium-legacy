@@ -56,6 +56,8 @@ class Cryptographer {
   Cryptographer(const Cryptographer& other);
   ~Cryptographer();
 
+  void CopyFrom(const Cryptographer& other);
+
   // |restored_bootstrap_token| can be provided via this method to bootstrap
   // Cryptographer instance into the ready state (is_ready will be true).
   // It must be a string that was previously built by the

@@ -11,7 +11,7 @@
 #include "base/time/time.h"
 #import "ios/chrome/test/block_cleanup_test.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/web_task_environment.h"
 
 typedef base::TimeDelta (^TimedActionBlock)(int index);
 

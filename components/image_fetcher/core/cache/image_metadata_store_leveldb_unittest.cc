@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
+#include "base/test/task_environment.h"
 #include "components/image_fetcher/core/cache/image_store_types.h"
 #include "components/image_fetcher/core/cache/proto/cached_image_metadata.pb.h"
 #include "components/leveldb_proto/testing/fake_db.h"

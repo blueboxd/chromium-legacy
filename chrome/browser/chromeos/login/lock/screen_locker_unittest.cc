@@ -39,7 +39,7 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/browser/system_connector.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "media/audio/test_audio_thread.h"

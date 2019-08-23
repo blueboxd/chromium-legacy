@@ -82,7 +82,7 @@ def ProcessOptions(options):
   Args:
     options: An options object with values parsed from the command line.
   """
-  if not hasattr(options, 'output_formats'):
+  if not getattr(options, 'output_formats', None):
     return
 
   options.output_dir = os.path.expanduser(options.output_dir)

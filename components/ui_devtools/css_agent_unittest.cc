@@ -6,7 +6,7 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/ui_devtools/agent_util.h"
 #include "components/ui_devtools/dom_agent.h"
 #include "components/ui_devtools/ui_devtools_unittest_utils.h"

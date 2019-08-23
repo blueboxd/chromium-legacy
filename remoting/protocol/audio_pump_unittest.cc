@@ -13,7 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "remoting/codec/audio_encoder.h"
 #include "remoting/proto/audio.pb.h"
 #include "remoting/protocol/audio_source.h"

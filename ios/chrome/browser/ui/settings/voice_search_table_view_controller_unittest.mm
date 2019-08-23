@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/mac/foundation_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_registry_simple.h"

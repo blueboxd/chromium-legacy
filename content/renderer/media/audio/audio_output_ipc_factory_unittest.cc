@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "media/audio/audio_output_ipc.h"
 #include "mojo/public/cpp/bindings/binding.h"

@@ -13,7 +13,7 @@
 #include "components/drive/drive.pb.h"
 #include "components/drive/file_change.h"
 #include "components/drive/file_errors.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class TestingPrefServiceSimple;

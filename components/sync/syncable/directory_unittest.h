@@ -10,7 +10,7 @@
 #include <memory>
 #include <string>
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/sync/base/fake_encryptor.h"
 #include "components/sync/base/test_unrecoverable_error_handler.h"
 #include "components/sync/syncable/in_memory_directory_backing_store.h"

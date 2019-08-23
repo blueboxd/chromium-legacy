@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 
 #include "ui/ozone/platform/drm/gpu/drm_thread.h"
+
 #include "base/bind_helpers.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
 #include "ui/ozone/platform/drm/gpu/mock_drm_device.h"

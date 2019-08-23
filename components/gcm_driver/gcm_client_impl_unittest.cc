@@ -19,7 +19,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/clock.h"
 #include "base/timer/timer.h"
 #include "components/gcm_driver/features.h"

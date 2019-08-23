@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "media/learning/impl/learning_task_controller_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -127,14 +127,8 @@ DocumentInit::InsecureNavigationsToUpgrade() const {
   return &parent_frame->GetSecurityContext()->InsecureNavigationsToUpgrade();
 }
 
-bool DocumentInit::IsHostedInReservedIPRange() const {
-  if (DocumentLoader* loader = MasterDocumentLoader()) {
-    if (!loader->GetResponse().RemoteIPAddress().IsEmpty()) {
-      return network_utils::IsReservedIPAddress(
-          loader->GetResponse().RemoteIPAddress());
-    }
-  }
-  return false;
+network::mojom::IPAddressSpace DocumentInit::GetIPAddressSpace() const {
+  return ip_address_space_;
 }
 
 Settings* DocumentInit::GetSettings() const {
@@ -206,6 +200,12 @@ DocumentInit& DocumentInit::WithInitiatorOrigin(
 DocumentInit& DocumentInit::WithOriginToCommit(
     scoped_refptr<SecurityOrigin> origin_to_commit) {
   origin_to_commit_ = std::move(origin_to_commit);
+  return *this;
+}
+
+DocumentInit& DocumentInit::WithIPAddressSpace(
+    network::mojom::IPAddressSpace ip_address_space) {
+  ip_address_space_ = ip_address_space;
   return *this;
 }
 

@@ -85,9 +85,7 @@ public class BackgroundTaskJobService extends JobService {
             return false;
         }
 
-        Long deadlineTime =
-                BackgroundTaskSchedulerJobService.getDeadlineTimeFromJobParameters(params);
-        if (deadlineTime != null && mClock.currentTimeMillis() >= deadlineTime) {
+        if (BackgroundTaskSchedulerJobService.didTaskExpire(params, mClock.currentTimeMillis())) {
             BackgroundTaskSchedulerUma.getInstance().reportTaskExpired(params.getJobId());
             return false;
         }

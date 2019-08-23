@@ -1411,6 +1411,17 @@ HRESULT CGaiaCredentialBase::GetSerialization(
         // OnUserAuthenticated() can be called, followed by
         // provider_->OnUserAuthenticated().
         hr = CreateAndRunLogonStub();
+        if (FAILED(hr)) {
+          base::string16 error_message(
+              GetStringResource(IDS_FAILED_CREATE_LOGON_STUB_BASE));
+          ::SHStrDupW(OLE2CW(error_message.c_str()), status_text);
+
+          *status_icon = CPSI_NONE;
+          *cpgsr = CPGSR_NO_CREDENTIAL_FINISHED;
+          submit_button_enabled = UpdateSubmitButtonInteractiveState();
+
+          hr = S_OK;
+        }
       }
     }
   } else {

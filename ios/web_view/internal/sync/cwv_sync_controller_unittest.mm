@@ -18,7 +18,7 @@
 #include "components/sync/driver/sync_service_observer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/web_task_environment.h"
 #include "ios/web_view/internal/app/application_context.h"
 #include "ios/web_view/internal/signin/ios_web_view_signin_client.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"

@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "remoting/host/security_key/fake_security_key_ipc_client.h"
 #include "remoting/host/security_key/fake_security_key_message_reader.h"
 #include "remoting/host/security_key/fake_security_key_message_writer.h"

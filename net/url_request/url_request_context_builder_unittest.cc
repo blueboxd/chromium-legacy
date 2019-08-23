@@ -16,7 +16,7 @@
 #include "net/log/net_log_with_source.h"
 #include "net/ssl/ssl_info.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"

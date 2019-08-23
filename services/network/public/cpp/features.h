@@ -39,6 +39,8 @@ COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kProactivelyThrottleLowPriorityRequests;
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kCrossOriginEmbedderPolicy;
+COMPONENT_EXPORT(NETWORK_CPP)
+extern const base::Feature kBlockNonSecureExternalRequests;
 
 COMPONENT_EXPORT(NETWORK_CPP) bool ShouldEnableOutOfBlinkCors();
 

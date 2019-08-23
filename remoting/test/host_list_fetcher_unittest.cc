@@ -9,7 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "remoting/test/host_info.h"
 #include "testing/gtest/include/gtest/gtest.h"

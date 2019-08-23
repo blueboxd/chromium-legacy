@@ -13,7 +13,7 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "ipc/ipc_channel.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"

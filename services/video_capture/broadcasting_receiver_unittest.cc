@@ -6,7 +6,7 @@
 
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/video_capture/public/cpp/mock_receiver.h"

@@ -33,7 +33,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/common/extension_builder.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"

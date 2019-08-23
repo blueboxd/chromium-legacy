@@ -30,7 +30,7 @@
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/url_formatter/url_formatter.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;

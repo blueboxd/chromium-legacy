@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "remoting/base/auto_thread.h"
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
@@ -10,7 +11,7 @@
 #include "base/run_loop.h"
 #include "base/scoped_native_library.h"
 #include "base/single_thread_task_runner.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

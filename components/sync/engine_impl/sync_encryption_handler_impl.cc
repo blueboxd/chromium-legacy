@@ -794,11 +794,6 @@ KeystoreKeysHandler* SyncEncryptionHandlerImpl::GetKeystoreKeysHandler() {
   return this;
 }
 
-syncable::NigoriHandler* SyncEncryptionHandlerImpl::GetNigoriHandler() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return this;
-}
-
 // Note: this is called from within a syncable transaction, so we need to post
 // tasks if we want to do any work that creates a new sync_api transaction.
 bool SyncEncryptionHandlerImpl::ApplyNigoriUpdate(

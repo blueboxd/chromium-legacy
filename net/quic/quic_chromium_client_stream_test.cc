@@ -16,7 +16,7 @@
 #include "net/base/test_completion_callback.h"
 #include "net/quic/quic_chromium_client_session.h"
 #include "net/test/gtest_util.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "net/third_party/quiche/src/quic/core/http/quic_spdy_client_session_base.h"
 #include "net/third_party/quiche/src/quic/core/http/quic_spdy_client_stream.h"
 #include "net/third_party/quiche/src/quic/core/http/spdy_utils.h"

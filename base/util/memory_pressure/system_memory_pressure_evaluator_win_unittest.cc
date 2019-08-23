@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/util/memory_pressure/multi_source_memory_pressure_monitor.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"

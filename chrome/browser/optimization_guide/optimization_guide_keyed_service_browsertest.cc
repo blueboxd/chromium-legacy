@@ -6,6 +6,7 @@
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/data_saver/data_saver_top_host_provider.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
@@ -592,14 +593,9 @@ class OptimizationGuideKeyedServiceHintsFetcherTest
 };
 
 // TODO(crbug/969558): Figure out why hints fetcher not fetching on ChromeOS.
-#if defined(OS_CHROMEOS)
-#define DISABLE_ON_CHROMEOS(x) DISABLED_##x
-#else
-#define DISABLE_ON_CHROMEOS(x) x
-#endif
-
+// TODO(crbug/997106): Flaky on Win, Mac and Linux.
 IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceHintsFetcherTest,
-                       DISABLE_ON_CHROMEOS(ClearFetchedHints)) {
+                       DISABLED_ClearFetchedHints) {
   PushHintsComponentAndWaitForCompletion();
 
   RegisterWithKeyedService();

@@ -10,7 +10,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "storage/browser/quota/quota_disk_info_helper.h"
 #include "storage/browser/quota/quota_features.h"
 #include "storage/browser/quota/quota_settings.h"

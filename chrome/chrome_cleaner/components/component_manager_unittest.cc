@@ -5,7 +5,7 @@
 #include "chrome/chrome_cleaner/components/component_manager.h"
 
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/chrome_cleaner/components/component_api.h"
 #include "chrome/chrome_cleaner/test/test_component.h"

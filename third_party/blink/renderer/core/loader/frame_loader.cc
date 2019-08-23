@@ -759,6 +759,10 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
                                     request.ClientRedirectReason());
   }
 
+  const network::mojom::IPAddressSpace initiator_address_space =
+      origin_document ? origin_document->AddressSpace()
+                      : network::mojom::IPAddressSpace::kUnknown;
+
   Client()->BeginNavigation(
       resource_request, request.GetFrameType(), origin_document,
       nullptr /* document_loader */, navigation_type,
@@ -768,7 +772,7 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
       request.ShouldCheckMainWorldContentSecurityPolicy(),
       request.GetBlobURLToken(), request.GetInputStartTime(),
       request.HrefTranslate().GetString(), std::move(initiator_csp),
-      std::move(navigation_initiator));
+      initiator_address_space, std::move(navigation_initiator));
 }
 
 static void FillStaticResponseIfNeeded(WebNavigationParams* params,

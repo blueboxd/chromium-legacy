@@ -890,5 +890,31 @@ TEST_F(NGLayoutResultCachingTest, ChangeTableCellBlockSizeConstrainedness) {
   EXPECT_EQ(result.get(), nullptr);
 }
 
+TEST_F(NGLayoutResultCachingTest, OptimisticFloatPlacementNoRelayout) {
+  ScopedLayoutNGFragmentCachingForTest layout_ng_fragment_caching(true);
+
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .root { display: flow-root; width: 300px; }
+      .float { float: left; width: 10px; height: 10px; }
+    </style>
+    <div class="root">
+      <div id="empty">
+        <div class="float"></div>
+      </div>
+    </div>
+  )HTML");
+
+  auto* empty = To<LayoutBlockFlow>(GetLayoutObjectByElementId("empty"));
+
+  NGConstraintSpace space =
+      empty->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+
+  // We shouldn't have a "forced" BFC block-offset, as the "empty"
+  // self-collapsing block should have its "expected" BFC block-offset at the
+  // correct place.
+  EXPECT_EQ(space.ForcedBfcBlockOffset(), base::nullopt);
+}
+
 }  // namespace
 }  // namespace blink

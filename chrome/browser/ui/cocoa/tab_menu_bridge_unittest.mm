@@ -9,7 +9,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/ui/cocoa/tab_menu_bridge.h"
 #include "chrome/browser/ui/tab_ui_helper.h"

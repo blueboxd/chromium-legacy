@@ -105,7 +105,6 @@ void ShowInitialPasswordAccountSuggestions(
 LikelyFormFilling SendFillInformationToRenderer(
     PasswordManagerClient* client,
     PasswordManagerDriver* driver,
-    bool is_blacklisted,
     const PasswordForm& observed_form,
     const std::map<base::string16, const PasswordForm*>& best_matches,
     const std::vector<const PasswordForm*>& federated_matches,

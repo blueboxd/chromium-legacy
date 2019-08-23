@@ -300,6 +300,7 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
                        base::TimeTicks,
                        const String&,
                        WebContentSecurityPolicyList,
+                       network::mojom::IPAddressSpace,
                        mojom::blink::NavigationInitiatorPtr) override;
 
   void DispatchWillSendSubmitEvent(HTMLFormElement*) override;

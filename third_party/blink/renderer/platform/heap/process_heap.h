@@ -32,6 +32,9 @@ class PLATFORM_EXPORT ProcessHeap {
   // - Iteration and processing of weak cross-thread Persistents. The lock
   //   needs to span both operations as iteration of weak persistents only
   //   registers memory regions that are then processed afterwards.
+  // - Marking phase in garbage collection: The whole phase requires locking
+  //   as CrossThreadWeakPersistents may be converted to CrossThreadPersistent
+  //   which must observe GC as an atomic operation.
   static Mutex& CrossThreadPersistentMutex();
 
   static void IncreaseTotalAllocatedObjectSize(size_t delta) {

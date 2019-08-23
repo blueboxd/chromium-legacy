@@ -12,7 +12,7 @@
 #include "base/hash/hash.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_predictor_test_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/frecency_store.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/histogram_util.h"

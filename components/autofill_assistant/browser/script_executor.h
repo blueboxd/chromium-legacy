@@ -119,8 +119,7 @@ class ScriptExecutor : public ActionDelegate,
       ClickAction::ClickType click_type,
       base::OnceCallback<void(const ClientStatus&)> callback) override;
   void GetPaymentInformation(
-      std::unique_ptr<PaymentRequestOptions> options,
-      std::unique_ptr<PaymentInformation> information) override;
+      std::unique_ptr<PaymentRequestOptions> options) override;
   void GetFullCard(GetFullCardCallback callback) override;
   void Prompt(std::unique_ptr<std::vector<UserAction>> user_actions) override;
   void CancelPrompt() override;
@@ -188,7 +187,6 @@ class ScriptExecutor : public ActionDelegate,
   void Restart() override;
   ClientMemory* GetClientMemory() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
-  WebsiteLoginFetcher* GetWebsiteLoginFetcher() override;
   content::WebContents* GetWebContents() override;
   void SetDetails(std::unique_ptr<Details> details) override;
   void ClearInfoBox() override;

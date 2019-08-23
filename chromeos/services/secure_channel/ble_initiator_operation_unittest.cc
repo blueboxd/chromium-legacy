@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "chromeos/services/secure_channel/ble_initiator_failure_type.h"
 #include "chromeos/services/secure_channel/device_id_pair.h"

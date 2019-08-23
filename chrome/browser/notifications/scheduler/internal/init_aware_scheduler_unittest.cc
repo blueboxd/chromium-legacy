@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/notifications/scheduler/public/notification_params.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -13,7 +13,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "remoting/host/process_stats_agent.h"
 #include "remoting/proto/process_stats.pb.h"

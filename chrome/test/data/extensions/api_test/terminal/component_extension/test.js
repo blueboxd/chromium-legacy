@@ -14,7 +14,7 @@ var startCharacter = '#';
 var croshName = 'crosh';
 var invalidName = 'some name';
 
-var invalidNameError = 'Invalid process name.';
+var invalidNameError = 'Invalid process name: some name';
 
 var testLineNum = 10;
 var testProcessTotal = 2;

@@ -157,6 +157,8 @@ SkColor NativeThemeAura::GetSystemColor(ColorId color_id,
         return system_colors_[SystemThemeColor::kGrayText];
       case kColorId_ButtonEnabledColor:
         return system_colors_[SystemThemeColor::kButtonText];
+      case kColorId_MenuBackgroundColor:
+        return system_colors_[SystemThemeColor::kHighlight];
       case kColorId_WindowBackground:
         return system_colors_[SystemThemeColor::kWindow];
       default:
@@ -723,27 +725,40 @@ void NativeThemeAura::PaintSliderTrack(cc::PaintCanvas* canvas,
   // Paint the entire slider track.
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
-  switch (state) {
-    case kHovered:
-      flags.setColor(kSliderTrackHoveredColor);
-      break;
-    case kDisabled:
-      flags.setColor(kSliderTrackDisabledColor);
-      break;
-    case kPressed:
-      flags.setColor(kSliderTrackActiveColor);
-      break;
-    default:
-      flags.setColor(kSliderTrackColor);
-      break;
+  if (UsesHighContrastColors()) {
+    ColorId color_id = (state == kDisabled)
+                           ? NativeTheme::kColorId_ButtonDisabledColor
+                           : NativeTheme::kColorId_ButtonEnabledColor;
+    flags.setColor(GetSystemColor(color_id, color_scheme));
+  } else {
+    switch (state) {
+      case kHovered:
+        flags.setColor(kSliderTrackHoveredColor);
+        break;
+      case kDisabled:
+        flags.setColor(kSliderTrackDisabledColor);
+        break;
+      case kPressed:
+        flags.setColor(kSliderTrackActiveColor);
+        break;
+      default:
+        flags.setColor(kSliderTrackColor);
+        break;
+    }
   }
+
   SkRect track_rect = AlignSliderTrack(rect, slider, false);
   canvas->drawRoundRect(track_rect, kSliderTrackRadius, kSliderTrackRadius,
                         flags);
 
   // Paint the value slider track.
   if (state != kDisabled) {
-    flags.setColor(kSliderTrackValueColor);
+    if (UsesHighContrastColors()) {
+      flags.setColor(GetSystemColor(NativeTheme::kColorId_MenuBackgroundColor,
+                                    color_scheme));
+    } else {
+      flags.setColor(kSliderTrackValueColor);
+    }
     SkRect value_rect = AlignSliderTrack(rect, slider, true);
     canvas->drawRoundRect(value_rect, kSliderTrackRadius, kSliderTrackRadius,
                           flags);
@@ -773,13 +788,25 @@ void NativeThemeAura::PaintSliderThumb(cc::PaintCanvas* canvas,
 
   // Paint the background (is not visible behind the rounded corners).
   thumb_rect.inset(border_width / 2, border_width / 2);
-  flags.setColor(kSliderThumbBackgroundColor);
+  if (UsesHighContrastColors()) {
+    flags.setColor(
+        GetSystemColor(NativeTheme::kColorId_WindowBackground, color_scheme));
+  } else {
+    flags.setColor(kSliderThumbBackgroundColor);
+  }
   flags.setStyle(cc::PaintFlags::kFill_Style);
   canvas->drawRoundRect(thumb_rect, radius, radius, flags);
 
   // Paint the border.
-  flags.setColor(state == kDisabled ? kSliderThumbBorderDisabledColor
-                                    : kSliderThumbBorderColor);
+  if (UsesHighContrastColors()) {
+    ColorId color_id = (state == kDisabled)
+                           ? NativeTheme::kColorId_ButtonDisabledColor
+                           : NativeTheme::kColorId_MenuBackgroundColor;
+    flags.setColor(GetSystemColor(color_id, color_scheme));
+  } else {
+    flags.setColor(state == kDisabled ? kSliderThumbBorderDisabledColor
+                                      : kSliderThumbBorderColor);
+  }
   flags.setStyle(cc::PaintFlags::kStroke_Style);
   flags.setStrokeWidth(border_width);
   canvas->drawRoundRect(thumb_rect, radius, radius, flags);

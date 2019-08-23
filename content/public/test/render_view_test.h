@@ -12,7 +12,7 @@
 
 #include "base/command_line.h"
 #include "base/strings/string16.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_io_thread.h"
 #include "build/build_config.h"
 #include "content/public/browser/native_web_keyboard_event.h"

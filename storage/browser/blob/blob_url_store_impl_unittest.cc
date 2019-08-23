@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"

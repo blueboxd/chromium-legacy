@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "content/browser/web_package/bundled_exchanges_reader.h"
 #include "content/browser/web_package/mock_bundled_exchanges_reader_factory.h"
 #include "mojo/public/cpp/bindings/remote.h"

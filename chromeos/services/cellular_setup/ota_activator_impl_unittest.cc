@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "chromeos/network/fake_network_activation_handler.h"
 #include "chromeos/network/fake_network_connection_handler.h"

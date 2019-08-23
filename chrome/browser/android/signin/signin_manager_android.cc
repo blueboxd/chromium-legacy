@@ -162,7 +162,7 @@ void SigninManagerAndroid::Shutdown() {
                              java_signin_manager_);
 }
 
-void SigninManagerAndroid::SetPrimaryAccount(
+jboolean SigninManagerAndroid::SetPrimaryAccount(
     JNIEnv* env,
     const JavaParamRef<jstring>& username) {
   DVLOG(1) << "SigninManagerAndroid::SetPrimaryAccount";
@@ -173,8 +173,7 @@ void SigninManagerAndroid::SetPrimaryAccount(
               base::android::ConvertJavaStringToUTF8(env, username));
   DCHECK(account.has_value());
   auto* account_mutator = identity_manager_->GetPrimaryAccountMutator();
-  bool result = account_mutator->SetPrimaryAccount(account->account_id);
-  CHECK(result);
+  return account_mutator->SetPrimaryAccount(account->account_id);
 }
 
 void SigninManagerAndroid::SignOut(JNIEnv* env,

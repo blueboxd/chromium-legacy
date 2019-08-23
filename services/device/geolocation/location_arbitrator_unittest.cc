@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "services/device/geolocation/fake_location_provider.h"
 #include "services/device/geolocation/fake_position_cache.h"
 #include "services/device/public/cpp/geolocation/geoposition.h"

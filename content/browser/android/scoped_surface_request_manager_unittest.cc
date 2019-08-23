@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/run_loop.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "gpu/ipc/common/android/mock_texture_owner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/android/scoped_java_surface.h"

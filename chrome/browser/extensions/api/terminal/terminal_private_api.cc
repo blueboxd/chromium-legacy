@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/terminal/terminal_private_api.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -14,9 +15,13 @@
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/chromeos/crostini/crostini_simple_types.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/terminal_private.h"
 #include "chromeos/process_proxy/process_proxy_registry.h"
@@ -49,33 +54,29 @@ const char kStubbedCroshCommand[] = "cat";
 const char kVmShellName[] = "vmshell";
 const char kVmShellCommand[] = "/usr/bin/vsh";
 
-std::string GetCroshPath() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kCroshCommand))
-    return command_line->GetSwitchValueASCII(switches::kCroshCommand);
+const char kSwitchOwnerId[] = "owner_id";
+const char kSwitchVmName[] = "vm_name";
+const char kSwitchTargetContainer[] = "target_container";
 
-  if (base::SysInfo::IsRunningOnChromeOS())
-    return std::string(kCroshCommand);
-
-  return std::string(kStubbedCroshCommand);
+// Returns the value of the specified |switch_name| if present.  If not present,
+// sets that switch to and returns |default_value|.
+std::string GetSwitch(base::CommandLine* command_line,
+                      const std::string& switch_name,
+                      const std::string& default_value) {
+  if (command_line->HasSwitch(switch_name)) {
+    return command_line->GetSwitchValueASCII(switch_name);
+  }
+  command_line->AppendSwitchASCII(switch_name, default_value);
+  return default_value;
 }
 
-// Get the program to run based on the openTerminalProcess JS request.
-std::string GetProcessCommandForName(const std::string& name) {
-  if (name == kCroshName)
-    return GetCroshPath();
-  else if (name == kVmShellName)
-    return kVmShellCommand;
-  else
-    return std::string();
-}
-
-// Whether the program accepts arbitrary command line arguments.
-bool CommandSupportsArguments(const std::string& name) {
-  if (name == kVmShellName)
-    return true;
-
-  return false;
+void OnCrostiniRestarted(base::OnceClosure callback,
+                         crostini::CrostiniResult result) {
+  if (result != crostini::CrostiniResult::SUCCESS) {
+    LOG(ERROR) << "Error restarting crostini for terminal: "
+               << static_cast<int>(result);
+  }
+  std::move(callback).Run();
 }
 
 void NotifyProcessOutput(content::BrowserContext* browser_context,
@@ -134,27 +135,62 @@ TerminalPrivateOpenTerminalProcessFunction::Run() {
       OpenTerminalProcess::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  const std::string command = GetProcessCommandForName(params->process_name);
-  if (command.empty())
-    return RespondNow(Error("Invalid process name."));
+  // Passing --crosh-command overrides any JS process name.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kCroshCommand)) {
+    OpenProcess({command_line->GetSwitchValueASCII(switches::kCroshCommand)});
 
-  const std::string user_id_hash =
-      ExtensionsBrowserClient::Get()->GetUserIdHashFromContext(
-          browser_context());
+  } else if (params->process_name == kCroshName) {
+    // command=crosh: use '/usr/bin/crosh' on a device, 'cat' otherwise.
+    if (base::SysInfo::IsRunningOnChromeOS()) {
+      OpenProcess({kCroshCommand});
+    } else {
+      OpenProcess({kStubbedCroshCommand});
+    }
 
-  std::vector<std::string> arguments;
-  arguments.push_back(command);
-  if (params->args) {
-    for (const std::string& arg : *params->args)
-      arguments.push_back(arg);
+  } else if (params->process_name == kVmShellName) {
+    // command=vmshell: ensure --owner_id, --vm_name, --target_container are set
+    // and the specified vm/container is running.
+    std::vector<std::string> args = {kVmShellCommand};
+    if (params->args)
+      args.insert(args.end(), params->args->begin(), params->args->end());
+    base::CommandLine vmshell_cmd(args);
+    std::string owner_id =
+        GetSwitch(&vmshell_cmd, kSwitchOwnerId, UserIdHash());
+    std::string vm_name = GetSwitch(&vmshell_cmd, kSwitchVmName,
+                                    crostini::kCrostiniDefaultVmName);
+    std::string container_name =
+        GetSwitch(&vmshell_cmd, kSwitchTargetContainer,
+                  crostini::kCrostiniDefaultContainerName);
+
+    auto open_process =
+        base::BindOnce(&TerminalPrivateOpenTerminalProcessFunction::OpenProcess,
+                       this, vmshell_cmd.argv());
+    crostini::CrostiniManager::GetForProfile(
+        Profile::FromBrowserContext(browser_context()))
+        ->RestartCrostini(
+            vm_name, container_name,
+            base::BindOnce(&OnCrostiniRestarted, std::move(open_process)));
+
+  } else {
+    // command=[unrecognized].
+    return RespondNow(Error("Invalid process name: " + params->process_name));
   }
+  return RespondLater();
+}
 
-  if (arguments.size() > 1 && !CommandSupportsArguments(params->process_name))
-    return RespondNow(Error("Specified command does not support arguments."));
+std::string TerminalPrivateOpenTerminalProcessFunction::UserIdHash() {
+  return extensions::ExtensionsBrowserClient::Get()->GetUserIdHashFromContext(
+      browser_context());
+}
+
+void TerminalPrivateOpenTerminalProcessFunction::OpenProcess(
+    const std::vector<std::string> arguments) {
+  DCHECK(!arguments.empty());
 
   content::WebContents* caller_contents = GetSenderWebContents();
   if (!caller_contents)
-    return RespondNow(Error("No web contents."));
+    return Respond(Error("No web contents."));
 
   // Passed to terminalPrivate.ackOutput, which is called from the API's custom
   // bindings after terminalPrivate.onProcessOutput is dispatched. It is used to
@@ -168,7 +204,7 @@ TerminalPrivateOpenTerminalProcessFunction::Run() {
   //     needed to fix crbug.com/210295.
   int tab_id = GetTabOrWindowSessionId(browser_context(), caller_contents);
   if (tab_id < 0)
-    return RespondNow(Error("Not called from a tab or app window"));
+    return Respond(Error("Not called from a tab or app window"));
 
   // Registry lives on its own task runner.
   chromeos::ProcessProxyRegistry::GetTaskRunner()->PostTask(
@@ -179,8 +215,7 @@ TerminalPrivateOpenTerminalProcessFunction::Run() {
           base::Bind(
               &TerminalPrivateOpenTerminalProcessFunction::RespondOnUIThread,
               this),
-          arguments, user_id_hash));
-  return RespondLater();
+          arguments, UserIdHash()));
 }
 
 void TerminalPrivateOpenTerminalProcessFunction::OpenOnRegistryTaskRunner(

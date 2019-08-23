@@ -12,7 +12,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/test/multiprocess_test.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
 #include "chrome/chrome_cleaner/os/disk_util.h"
 #include "chrome/chrome_cleaner/parsers/broker/sandbox_setup_hooks.h"

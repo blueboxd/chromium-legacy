@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "skia/public/mojom/test/traits_test_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -372,5 +372,11 @@ const base::Feature kBlinkCompositorUseDisplayThreadPriority {
 #endif
 };
 
+// Ignores cross origin windows in the named property interceptor of Window.
+// https://crbug.com/538562
+const base::Feature kIgnoreCrossOriginWindowWhenNamedAccessOnWindow{
+    "IgnoreCrossOriginWindowWhenNamedAccessOnWindow",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace blink

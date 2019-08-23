@@ -12,7 +12,7 @@
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "fuchsia/base/agent_impl.h"

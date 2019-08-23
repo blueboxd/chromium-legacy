@@ -11,7 +11,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/overview/overview_delegate.h"
 #include "base/containers/unique_ptr_adapters.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/transform.h"

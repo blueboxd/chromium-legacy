@@ -10,7 +10,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "chrome/chrome_cleaner/http/mock_http_agent_factory.h"
 #include "chrome/chrome_cleaner/logging/test_utils.h"

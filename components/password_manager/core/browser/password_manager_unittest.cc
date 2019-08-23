@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/password_manager.h"
 
+#include <limits>
 #include <memory>
 #include <string>
 #include <utility>
@@ -18,7 +19,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/form_data.h"
@@ -182,6 +183,8 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
 
 class MockPasswordManagerDriver : public StubPasswordManagerDriver {
  public:
+  MOCK_METHOD1(FormEligibleForGenerationFound,
+               void(const autofill::PasswordFormGenerationData&));
   MOCK_METHOD1(FillPasswordForm, void(const autofill::PasswordFormFillData&));
   MOCK_METHOD1(AutofillDataReceived,
                void(const autofill::FormsPredictionsMap&));
@@ -3916,7 +3919,6 @@ TEST_F(PasswordManagerTest, FillSingleUsername) {
   manager()->ProcessAutofillPredictions(&driver_, {&form_structure});
   EXPECT_EQ(form_id, fill_data.form_renderer_id);
   EXPECT_EQ(saved_match.username_value, fill_data.username_field.value);
-  EXPECT_EQ(saved_match.password_value, fill_data.password_field.value);
   EXPECT_EQ(field_id, fill_data.username_field.unique_renderer_id);
   EXPECT_EQ(saved_match.password_value, fill_data.password_field.value);
   EXPECT_EQ(std::numeric_limits<uint32_t>::max(),
@@ -3926,4 +3928,45 @@ TEST_F(PasswordManagerTest, FillSingleUsername) {
 #endif  // !defined(OS_IOS)
 }
 
+// Checks that a password form with a clear-text account creation field results
+// in marking the password field as eligible for password generation.
+TEST_F(PasswordManagerTest,
+       MarkServerPredictedClearTextPasswordFieldEligibleForGeneration) {
+  NewPasswordFormManager::set_wait_for_server_predictions_for_filling(true);
+  EXPECT_CALL(client_, IsSavingAndFillingEnabled(_))
+      .WillRepeatedly(Return(true));
+  PasswordForm saved_match(MakeSavedForm());
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeConsumer(saved_match)));
+
+  // Create FormdData for a form with 1 text field.
+  FormData form_data;
+  const uint32_t form_id = 1001;
+  form_data.unique_renderer_id = form_id;
+  form_data.url = GURL("example.com");
+
+  FormFieldData username_field;
+  username_field.form_control_type = "text";
+  const uint32_t username_field_id = 10;
+  username_field.unique_renderer_id = username_field_id;
+  form_data.fields.push_back(username_field);
+
+  FormFieldData password_field;
+  password_field.form_control_type = "text";
+  const uint32_t password_field_id = 11;
+  password_field.unique_renderer_id = password_field_id;
+  form_data.fields.push_back(password_field);
+
+  // Set ACCOUNT_CREATION_PASSWORD predictions for the field.
+  FormStructure form_structure(form_data);
+  form_structure.field(1)->set_server_type(autofill::ACCOUNT_CREATION_PASSWORD);
+
+  autofill::PasswordFormGenerationData form_generation_data;
+  EXPECT_CALL(driver_, FormEligibleForGenerationFound(_))
+      .WillOnce(SaveArg<0>(&form_generation_data));
+  manager()->ProcessAutofillPredictions(&driver_, {&form_structure});
+#if !defined(OS_IOS)
+  EXPECT_EQ(password_field_id, form_generation_data.new_password_renderer_id);
+#endif
+}
 }  // namespace password_manager

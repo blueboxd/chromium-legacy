@@ -15,7 +15,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_service_manager_listener.h"
 #include "content/public/browser/system_connector.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "services/data_decoder/public/cpp/safe_json_parser.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"

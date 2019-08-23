@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "content/browser/web_package/bundled_exchanges_source.h"
 #include "content/browser/web_package/mock_bundled_exchanges_reader_factory.h"
 #include "mojo/public/c/system/data_pipe.h"

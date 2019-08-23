@@ -14,7 +14,7 @@
 #include "base/path_service.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_path_override.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/common/chrome_features.h"

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
+
 #include <limits>
 
 #include "base/at_exit.h"
@@ -11,7 +12,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_buffer.h"

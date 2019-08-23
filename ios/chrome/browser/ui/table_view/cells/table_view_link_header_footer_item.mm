@@ -41,7 +41,10 @@ const CGFloat kVerticalPadding = 8;
   [super configureHeaderFooterView:headerFooter withStyler:styler];
 
   headerFooter.linkURL = self.linkURL;
-  headerFooter.accessibilityTraits |= UIAccessibilityTraitLink;
+  if (self.linkURL.is_valid())
+    headerFooter.accessibilityTraits |= UIAccessibilityTraitLink;
+  else
+    headerFooter.accessibilityTraits &= ~UIAccessibilityTraitLink;
   [headerFooter setText:self.text];
 }
 

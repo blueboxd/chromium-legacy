@@ -33,7 +33,6 @@ class WebController;
 class ClientMemory;
 struct ClientSettings;
 class TriggerContext;
-class WebsiteLoginFetcher;
 
 class ScriptExecutorDelegate {
  public:
@@ -52,7 +51,6 @@ class ScriptExecutorDelegate {
   virtual ClientMemory* GetClientMemory() = 0;
   virtual const TriggerContext* GetTriggerContext() = 0;
   virtual autofill::PersonalDataManager* GetPersonalDataManager() = 0;
-  virtual WebsiteLoginFetcher* GetWebsiteLoginFetcher() = 0;
   virtual content::WebContents* GetWebContents() = 0;
   virtual void EnterState(AutofillAssistantState state) = 0;
 
@@ -67,8 +65,7 @@ class ScriptExecutorDelegate {
   virtual void SetInfoBox(const InfoBox& info_box) = 0;
   virtual void ClearInfoBox() = 0;
   virtual void SetPaymentRequestOptions(
-      std::unique_ptr<PaymentRequestOptions> options,
-      std::unique_ptr<PaymentInformation> information) = 0;
+      std::unique_ptr<PaymentRequestOptions> options) = 0;
   virtual void SetProgress(int progress) = 0;
   virtual void SetProgressVisible(bool visible) = 0;
   virtual void SetUserActions(

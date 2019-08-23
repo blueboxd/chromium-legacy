@@ -3,10 +3,11 @@
 // found in the LICENSE file.
 
 #include "components/gcm_driver/gcm_channel_status_request.h"
+
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/sync/protocol/experiment_status.pb.h"
 #include "components/sync/protocol/experiments_specifics.pb.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"

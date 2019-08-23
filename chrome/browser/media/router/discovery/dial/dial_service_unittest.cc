@@ -12,7 +12,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "chrome/browser/media/router/discovery/dial/dial_device_data.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"

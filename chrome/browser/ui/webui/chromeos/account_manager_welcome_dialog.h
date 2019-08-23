@@ -29,6 +29,7 @@ class AccountManagerWelcomeDialog : public SystemWebDialogDelegate {
   void GetDialogSize(gfx::Size* size) const override;
   std::string GetDialogArgs() const override;
   bool ShouldShowDialogTitle() const override;
+  bool ShouldShowCloseButton() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AccountManagerWelcomeDialog);

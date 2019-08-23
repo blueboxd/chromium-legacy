@@ -24,7 +24,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/extension_registry.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "storage/browser/fileapi/isolated_context.h"

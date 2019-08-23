@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/net/udp_packet_pipe.h"
 #include "media/cast/test/utility/net_utility.h"

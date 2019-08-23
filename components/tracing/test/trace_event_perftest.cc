@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/pending_task.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"

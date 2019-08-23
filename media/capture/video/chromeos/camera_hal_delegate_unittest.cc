@@ -12,7 +12,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "media/capture/video/chromeos/mock_camera_module.h"
 #include "media/capture/video/chromeos/mock_vendor_tag_ops.h"
 #include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"

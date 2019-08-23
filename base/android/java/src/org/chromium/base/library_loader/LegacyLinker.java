@@ -37,7 +37,6 @@ class LegacyLinker extends Linker {
         ensureInitializedLocked();
         assert mState == State.INITIALIZED; // Only one successful call.
 
-        boolean loadNoRelro = !isFixedAddressPermitted;
         boolean provideRelro = mInBrowserProcess;
         long loadAddress = isFixedAddressPermitted ? mBaseLoadAddress : 0;
 

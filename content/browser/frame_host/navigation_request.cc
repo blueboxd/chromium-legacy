@@ -506,6 +506,51 @@ int64_t CreateUniqueHandleID() {
   return ++unique_id_counter;
 }
 
+// Given an net::IPAddress and a set of headers, this function calculates the
+// IPAddressSpace which should be associated with the document this navigation
+// eventually commits into.
+//
+// https://wicg.github.io/cors-rfc1918/#address-space
+//
+// TODO(mkwst): This implementation treats requests that don't use a URL loader
+// (`about:blank`), as well as requests whose IP address is invalid
+// (`about:srcdoc`, `blob:`, etc.) as `kUnknown`. This is incorrect (as we'll
+// eventually want to make sure we inherit from the navigation's initiator in
+// some cases), but safe, as `kUnknown` is treated the same as `kPublic`.
+network::mojom::IPAddressSpace CalculateIPAddressSpace(
+    const net::IPAddress& ip,
+    net::HttpResponseHeaders* headers) {
+  // First, check whether the response forces itself into a public address space
+  // as per https://wicg.github.io/cors-rfc1918/#csp.
+  bool must_treat_as_public_address = false;
+  std::string csp_value;
+  if (headers &&
+      headers->GetNormalizedHeader("content-security-policy", &csp_value)) {
+    // A content-security-policy is a semicolon-separated list of directives.
+    for (const auto& directive :
+         base::SplitStringPiece(csp_value, ";", base::TRIM_WHITESPACE,
+                                base::SPLIT_WANT_NONEMPTY)) {
+      if (base::EqualsCaseInsensitiveASCII("treat-as-public-address",
+                                           directive)) {
+        must_treat_as_public_address = true;
+      }
+    }
+  }
+
+  if (must_treat_as_public_address)
+    return network::mojom::IPAddressSpace::kPublic;
+
+  // Otherwise, calculate the address space via the provided IP address.
+  if (!ip.IsValid()) {
+    return network::mojom::IPAddressSpace::kUnknown;
+  } else if (ip.IsLoopback()) {
+    return network::mojom::IPAddressSpace::kLocal;
+  } else if (!ip.IsPubliclyRoutable()) {
+    return network::mojom::IPAddressSpace::kPrivate;
+  }
+  return network::mojom::IPAddressSpace::kPublic;
+}
+
 }  // namespace
 
 // static
@@ -631,8 +676,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
 #if defined(OS_ANDROID)
           std::string(),  // data_url_as_string
 #endif
-          false  // is_browser_initiated
-      );
+          false,  // is_browser_initiated
+          network::mojom::IPAddressSpace::kUnknown);
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
       frame_tree_node, std::move(common_params), std::move(begin_params),
       std::move(commit_params),
@@ -702,8 +747,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
 #if defined(OS_ANDROID)
           std::string(), /* data_url_as_string */
 #endif
-          false /* is_browser_initiated */
-      );
+          false,  // is_browser_initiated
+          network::mojom::IPAddressSpace::kUnknown);
   mojom::BeginNavigationParamsPtr begin_params =
       mojom::BeginNavigationParams::New();
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
@@ -3077,6 +3122,11 @@ void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
   handle_state_ = READY_TO_COMMIT;
   ready_to_commit_time_ = base::TimeTicks::Now();
   RestartCommitTimeout();
+
+  // https://wicg.github.io/cors-rfc1918/#address-space
+  commit_params_->ip_address_space = CalculateIPAddressSpace(
+      navigation_handle()->GetSocketAddress().address(),
+      response_head_ ? response_head_->head.headers.get() : nullptr);
 
   if (appcache_handle_)
     appcache_handle_->SetProcessId(render_frame_host_->GetProcess()->GetID());

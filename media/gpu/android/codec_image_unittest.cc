@@ -8,7 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/ipc/common/android/mock_abstract_texture.h"

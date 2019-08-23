@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "jingle/notifier/base/fake_base_task.h"
 #include "jingle/notifier/listener/fake_push_client.h"

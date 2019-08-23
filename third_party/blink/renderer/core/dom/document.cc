@@ -6909,22 +6909,7 @@ void Document::InitSecurityContext(
     cookie_url_ = initializer.OwnerDocument()->CookieURL();
   }
 
-  // Set the address space before setting up CSP, as the latter may override
-  // the former via the 'treat-as-public-address' directive (see
-  // https://wicg.github.io/cors-rfc1918/#csp).
-  if (initializer.IsHostedInReservedIPRange()) {
-    SetAddressSpace(GetSecurityOrigin()->IsLocalhost()
-                        ? network::mojom::IPAddressSpace::kLocal
-                        : network::mojom::IPAddressSpace::kPrivate);
-  } else if (GetSecurityOrigin()->IsLocal()) {
-    // "Local" security origins (like 'file://...') are treated as having
-    // a local address space.
-    //
-    // TODO(mkwst): It's not entirely clear that this is a good idea.
-    SetAddressSpace(network::mojom::IPAddressSpace::kLocal);
-  } else {
-    SetAddressSpace(network::mojom::IPAddressSpace::kPublic);
-  }
+  SetAddressSpace(initializer.GetIPAddressSpace());
 
   if (GetSecurityOrigin()->IsOpaque() &&
       SecurityOrigin::Create(url_)->IsPotentiallyTrustworthy())

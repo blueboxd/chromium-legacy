@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/test/gmock_callback_support.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_util.h"

@@ -19,7 +19,7 @@
 #include "net/nqe/network_id.h"
 #include "net/nqe/network_quality_estimator_test_util.h"
 #include "net/nqe/network_quality_store.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {

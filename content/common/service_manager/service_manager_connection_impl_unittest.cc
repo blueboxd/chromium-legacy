@@ -7,7 +7,7 @@
 #include "base/bind_helpers.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/service_manager/public/cpp/constants.h"

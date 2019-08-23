@@ -24,7 +24,7 @@
 #include "content/common/url_schemes.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/origin_util.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_content_client.h"

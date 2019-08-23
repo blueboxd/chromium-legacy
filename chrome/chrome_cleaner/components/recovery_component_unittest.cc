@@ -11,7 +11,7 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "chrome/chrome_cleaner/http/mock_http_agent_factory.h"
 #include "chrome/chrome_cleaner/test/test_pup_data.h"

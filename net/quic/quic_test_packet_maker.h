@@ -407,6 +407,8 @@ class QuicTestPacketMaker {
   std::string GenerateHttp3PriorityData(spdy::SpdyPriority priority,
                                         quic::QuicStreamId stream_id);
 
+  void MaybeAddHttp3SettingsFrames(quic::QuicFrames* frames);
+
   quic::ParsedQuicVersion version_;
   quic::QuicConnectionId connection_id_;
   quic::MockClock* clock_;  // Owned by QuicStreamFactory.

@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/test_data_util.h"
 #include "media/capture/video/file_video_capture_device.h"

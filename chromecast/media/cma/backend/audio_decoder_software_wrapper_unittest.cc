@@ -4,7 +4,7 @@
 
 #include "chromecast/media/cma/backend/audio_decoder_software_wrapper.h"
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chromecast/public/media/cast_decoder_buffer.h"
 #include "chromecast/public/media/decoder_config.h"
 #include "chromecast/public/media/media_pipeline_backend.h"

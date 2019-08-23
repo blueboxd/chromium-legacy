@@ -11,7 +11,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/incognito_view_controller.h"
 #import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
-#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/web/public/navigation/navigation_context.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
@@ -45,7 +44,7 @@
     return;
 
   DCHECK(self.browserState);
-  DCHECK(self.webStateList);
+  DCHECK(self.webState);
   DCHECK(self.dispatcher);
   DCHECK(self.toolbarDelegate);
 
@@ -61,7 +60,7 @@
         [[ContentSuggestionsCoordinator alloc] initWithBaseViewController:nil];
     self.contentSuggestionsCoordinator.dispatcher = self.dispatcher;
     self.contentSuggestionsCoordinator.browserState = self.browserState;
-    self.contentSuggestionsCoordinator.webStateList = self.webStateList;
+    self.contentSuggestionsCoordinator.webState = self.webState;
     self.contentSuggestionsCoordinator.toolbarDelegate = self.toolbarDelegate;
     [self.contentSuggestionsCoordinator start];
     base::RecordAction(base::UserMetricsAction("MobileNTPShowMostVisited"));

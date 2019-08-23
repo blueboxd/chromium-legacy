@@ -23,7 +23,7 @@
 #include "chrome/browser/chromeos/file_system_provider/notification_manager_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/request_value.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {

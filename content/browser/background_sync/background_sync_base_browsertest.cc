@@ -13,6 +13,7 @@
 #include "content/browser/background_sync/background_sync_manager.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/service_worker_context.h"
 #include "content/public/test/background_sync_test_util.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -51,10 +52,10 @@ bool BackgroundSyncBaseBrowserTest::RegistrationPending(
       base::Unretained(this), run_loop.QuitClosure(),
       base::ThreadTaskRunnerHandle::Get(), &is_pending);
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  RunOrPostTaskOnThread(
+      FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
       base::BindOnce(
-          &BackgroundSyncBaseBrowserTest::RegistrationPendingOnIOThread,
+          &BackgroundSyncBaseBrowserTest::RegistrationPendingOnCoreThread,
           base::Unretained(this), base::WrapRefCounted(sync_context),
           base::WrapRefCounted(service_worker_context), tag,
           https_server_->GetURL(kDefaultTestURL), std::move(callback)));
@@ -106,7 +107,7 @@ void BackgroundSyncBaseBrowserTest::RegistrationPendingDidGetSWRegistration(
                      base::Unretained(this), tag, std::move(callback)));
 }
 
-void BackgroundSyncBaseBrowserTest::RegistrationPendingOnIOThread(
+void BackgroundSyncBaseBrowserTest::RegistrationPendingOnCoreThread(
     const scoped_refptr<BackgroundSyncContextImpl> sync_context,
     const scoped_refptr<ServiceWorkerContextWrapper> sw_context,
     const std::string& tag,
@@ -119,7 +120,7 @@ void BackgroundSyncBaseBrowserTest::RegistrationPendingOnIOThread(
                           std::move(callback)));
 }
 
-void BackgroundSyncBaseBrowserTest::SetMaxSyncAttemptsOnIOThread(
+void BackgroundSyncBaseBrowserTest::SetMaxSyncAttemptsOnCoreThread(
     const scoped_refptr<BackgroundSyncContextImpl>& sync_context,
     int max_sync_attempts) {
   BackgroundSyncManager* background_sync_manager =
@@ -177,20 +178,23 @@ bool BackgroundSyncBaseBrowserTest::RunScript(const std::string& script,
 }
 
 void BackgroundSyncBaseBrowserTest::SetMaxSyncAttempts(int max_sync_attempts) {
-  base::RunLoop run_loop;
-
   StoragePartitionImpl* storage = GetStorage();
-  BackgroundSyncContextImpl* sync_context = storage->GetBackgroundSyncContext();
+  scoped_refptr<BackgroundSyncContextImpl> sync_context =
+      storage->GetBackgroundSyncContext();
 
-  base::PostTaskAndReply(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(
-          &BackgroundSyncBaseBrowserTest::SetMaxSyncAttemptsOnIOThread,
-          base::Unretained(this), base::WrapRefCounted(sync_context),
-          max_sync_attempts),
-      run_loop.QuitClosure());
-
-  run_loop.Run();
+  // TODO(crbug.com/824858): Remove the else after the feature is enabled.
+  if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
+    SetMaxSyncAttemptsOnCoreThread(std::move(sync_context), max_sync_attempts);
+  } else {
+    base::RunLoop run_loop;
+    base::PostTaskAndReply(
+        FROM_HERE, {ServiceWorkerContext::GetCoreThreadId()},
+        base::BindOnce(
+            &BackgroundSyncBaseBrowserTest::SetMaxSyncAttemptsOnCoreThread,
+            base::Unretained(this), std::move(sync_context), max_sync_attempts),
+        run_loop.QuitClosure());
+    run_loop.Run();
+  }
 }
 
 void BackgroundSyncBaseBrowserTest::ClearStoragePartitionData() {

@@ -20,8 +20,8 @@
 #include "components/offline_pages/core/background/test_request_queue_store.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/stub_offline_page_model.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/navigation_simulator.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

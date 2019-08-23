@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/prefs/testing_pref_service.h"
 #include "net/base/network_change_notifier.h"
 #include "net/nqe/cached_network_quality.h"

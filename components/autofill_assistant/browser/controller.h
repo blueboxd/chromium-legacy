@@ -96,7 +96,6 @@ class Controller : public ScriptExecutorDelegate,
   ClientMemory* GetClientMemory() override;
   const TriggerContext* GetTriggerContext() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
-  WebsiteLoginFetcher* GetWebsiteLoginFetcher() override;
   content::WebContents* GetWebContents() override;
   void SetTouchableElementArea(const ElementAreaProto& area) override;
   void SetStatusMessage(const std::string& message) override;
@@ -127,8 +126,7 @@ class Controller : public ScriptExecutorDelegate,
 
   void EnterState(AutofillAssistantState state) override;
   void SetPaymentRequestOptions(
-      std::unique_ptr<PaymentRequestOptions> options,
-      std::unique_ptr<PaymentInformation> information) override;
+      std::unique_ptr<PaymentRequestOptions> options) override;
   void OnScriptError(const std::string& error_message,
                      Metrics::DropOutReason reason);
 
@@ -157,7 +155,6 @@ class Controller : public ScriptExecutorDelegate,
   void SetCreditCard(std::unique_ptr<autofill::CreditCard> card) override;
   void SetTermsAndConditions(
       TermsAndConditionsState terms_and_conditions) override;
-  void SetLoginOption(std::string identifier) override;
   void OnTermsAndConditionsLinkClicked(int link) override;
   void GetTouchableArea(std::vector<RectF>* area) const override;
   void GetRestrictedArea(std::vector<RectF>* area) const override;

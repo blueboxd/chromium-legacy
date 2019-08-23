@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/ui/ash/test_wallpaper_controller.h"
 #include "chrome/test/base/scoped_testing_local_state.h"

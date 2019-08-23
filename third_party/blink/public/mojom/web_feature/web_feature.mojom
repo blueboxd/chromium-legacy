@@ -2204,8 +2204,8 @@ enum WebFeature {
   kBuiltInModuleVirtualScroller = 2825,
   kAdClickNavigation = 2826,
   kRTCStatsRelativePacketArrivalDelay = 2827,
-
   // The above items are available in M74 branch.
+
   kCSSSelectorHostContextInSnapshotProfile = 2829,
   kCSSSelectorHostContextInLiveProfile = 2830,
   kImportMap = 2831,
@@ -2248,6 +2248,8 @@ enum WebFeature {
   kV8RTCQuicTransport_ReadyToSendDatagram_Method = 2868,
   kV8RTCQuicTransport_SendDatagram_Method = 2869,
   kV8RTCQuicTransport_ReceiveDatagrams_Method = 2870,
+  // The above items are available in M75 branch.
+
   kCSSValueContainStyle = 2871,
   kWebShareSuccessfulContainingFiles = 2872,
   kWebShareSuccessfulWithoutFiles = 2873,
@@ -2295,6 +2297,8 @@ enum WebFeature {
   kV8RTCRtpSender_SetStreams_Method = 2915,
   kCookieNoSameSite = 2916,
   kCookieInsecureAndSameSiteNone = 2917,
+  // The above items are available in M76 branch.
+
   kUnsizedMediaPolicy = 2918,
   kScrollByPrecisionTouchPad = 2919,
   kPinchZoom = 2920,
@@ -2352,6 +2356,8 @@ enum WebFeature {
   kDownloadInAdFrame = 2974,
   kDownloadInSandbox = 2975,
   kDownloadWithoutUserGesture = 2976,
+  // The above items are available in M77 branch.
+
   kAutoplayDynamicDelegation = 2977,
   kToggleEventHandlerDuringParsing = 2978,
   kFragmentDoubleHash = 2979,

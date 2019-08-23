@@ -4,8 +4,8 @@
 
 #include "base/win/registry.h"
 
-#include <stdint.h>
 #include <windows.h>
+#include <stdint.h>
 
 #include <cstring>
 #include <vector>
@@ -14,7 +14,7 @@
 #include "base/compiler_specific.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/win/windows_version.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

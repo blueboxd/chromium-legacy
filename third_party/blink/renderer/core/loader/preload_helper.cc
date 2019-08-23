@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/loader/preload_helper.h"
 
+#include "net/base/features.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_prescient_networking.h"
@@ -482,9 +483,17 @@ Resource* PreloadHelper::PrefetchIfNeeded(const LinkLoadParameters& params,
     UseCounter::Count(document, WebFeature::kLinkRelPrefetch);
 
     ResourceRequest resource_request(params.href);
-
     if (base::FeatureList::IsEnabled(features::kPrefetchRedirectError)) {
       resource_request.SetRedirectMode(network::mojom::RedirectMode::kError);
+    }
+
+    // TODO(domfarolino): When SplitCache is enabled by default and we can
+    // remove this feature check, also remove the exceptions in
+    // net/base/features.h DEPS as well as audit_non_blink_usage.py.
+    if (base::FeatureList::IsEnabled(
+            net::features::kSplitCacheByNetworkIsolationKey) &&
+        EqualIgnoringASCIICase(params.as, "document")) {
+      resource_request.SetPrefetchMaybeForTopLevelNavigation(true);
     }
 
     resource_request.SetReferrerPolicy(params.referrer_policy);

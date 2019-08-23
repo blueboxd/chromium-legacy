@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PASSWORDS_PASSWORD_BUBBLE_VIEW_BASE_H_
 #define CHROME_BROWSER_UI_VIEWS_PASSWORDS_PASSWORD_BUBBLE_VIEW_BASE_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
@@ -58,9 +60,12 @@ class PasswordBubbleViewBase : public LocationBarBubbleDelegateView {
   const ManagePasswordsBubbleModel* model() const { return &model_; }
 
  protected:
+  // The |easilty_dismissable| flag indicates if the bubble should close upon
+  // a click in the content area of the browser.
   PasswordBubbleViewBase(content::WebContents* web_contents,
                          views::View* anchor_view,
-                         DisplayReason reason);
+                         DisplayReason reason,
+                         bool easily_dismissable);
 
   ~PasswordBubbleViewBase() override;
 

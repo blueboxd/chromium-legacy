@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/rand_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/sync/base/unique_position.h"
 #include "components/sync/engine_impl/test_entry_factory.h"
 #include "components/sync/protocol/sync.pb.h"

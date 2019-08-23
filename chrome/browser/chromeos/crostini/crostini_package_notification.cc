@@ -106,6 +106,8 @@ CrostiniPackageNotification::GetNotificationSettingsForTypeAndAppName(
       DCHECK(app_name.empty());
       result.source = l10n_util::GetStringUTF16(
           IDS_CROSTINI_PACKAGE_INSTALL_NOTIFICATION_DISPLAY_SOURCE);
+      result.queued_title = l10n_util::GetStringUTF16(
+          IDS_CROSTINI_PACKAGE_INSTALL_NOTIFICATION_QUEUED_TITLE);
       result.progress_title = l10n_util::GetStringUTF16(
           IDS_CROSTINI_PACKAGE_INSTALL_NOTIFICATION_IN_PROGRESS_TITLE);
       result.progress_body.clear();
@@ -229,10 +231,6 @@ void CrostiniPackageNotification::UpdateProgress(PackageOperationStatus status,
       break;
 
     case PackageOperationStatus::QUEUED:
-      // We don't have queued strings for some NotificationTypes; we shouldn't
-      // be asked to move to QUEUED status for those,
-      DCHECK(!notification_settings_.queued_title.empty());
-      DCHECK(!notification_settings_.queued_body.empty());
       title = notification_settings_.queued_title;
       body = notification_settings_.queued_body;
       break;

@@ -8,7 +8,7 @@
 
 #include "base/containers/circular_deque.h"
 #include "base/guid.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/notifications/scheduler/internal/impression_types.h"
 #include "chrome/browser/notifications/scheduler/test/fake_clock.h"
 #include "chrome/browser/notifications/scheduler/test/test_utils.h"

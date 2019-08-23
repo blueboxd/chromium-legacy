@@ -16,7 +16,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/constants.h"

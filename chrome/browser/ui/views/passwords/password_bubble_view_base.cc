@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "ui/views/controls/button/button.h"
 
 // static
@@ -121,13 +122,23 @@ bool PasswordBubbleViewBase::ShouldShowWindowTitle() const {
 PasswordBubbleViewBase::PasswordBubbleViewBase(
     content::WebContents* web_contents,
     views::View* anchor_view,
-    DisplayReason reason)
+    DisplayReason reason,
+    bool easily_dismissable)
     : LocationBarBubbleDelegateView(anchor_view, web_contents),
       model_(PasswordsModelDelegateFromWebContents(web_contents),
              reason == AUTOMATIC ? ManagePasswordsBubbleModel::AUTOMATIC
-                                 : ManagePasswordsBubbleModel::USER_ACTION),
-      mouse_handler_(
-          std::make_unique<WebContentMouseHandler>(this, web_contents)) {}
+                                 : ManagePasswordsBubbleModel::USER_ACTION) {
+  // The |mouse_handler| closes the bubble if a keyboard or mouse interactions
+  // happens outside of the bubble. By this the bubble becomes
+  // 'easily-dissmisable' and this behavior can be enforced by the
+  // corresponding flag.
+  if (!base::FeatureList::IsEnabled(
+          password_manager::features::kStickyBubble) ||
+      easily_dismissable) {
+    mouse_handler_ =
+        std::make_unique<WebContentMouseHandler>(this, web_contents);
+  }
+}
 
 PasswordBubbleViewBase::~PasswordBubbleViewBase() {
   if (g_manage_passwords_bubble_ == this)

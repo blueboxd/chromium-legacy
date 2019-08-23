@@ -11,7 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "remoting/base/oauth_token_getter.h"
 #include "remoting/proto/ftl/v1/ftl_messages.pb.h"
 #include "remoting/signaling/messaging_client.h"

@@ -7,7 +7,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "content/browser/screenlock_monitor/screenlock_monitor_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

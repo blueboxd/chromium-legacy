@@ -11,7 +11,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "device/bluetooth/test/bluetooth_test.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"

@@ -18,7 +18,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/background_sync_parameters.h"
 #include "content/public/browser/background_sync_registration.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/background_sync/background_sync.mojom.h"
 #include "url/gurl.h"

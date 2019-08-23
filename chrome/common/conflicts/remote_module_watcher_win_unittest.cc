@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/memory/scoped_refptr.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/common/conflicts/module_event_sink_win.mojom.h"
 #include "content/public/common/service_names.mojom.h"

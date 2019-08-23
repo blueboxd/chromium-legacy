@@ -8,7 +8,7 @@
 
 #include "base/callback.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/fake_data_type_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"

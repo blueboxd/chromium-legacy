@@ -10,7 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chromeos/dbus/attestation/attestation.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

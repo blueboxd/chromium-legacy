@@ -15,7 +15,7 @@
 #include "components/storage_monitor/image_capture_device_manager.h"
 #include "components/storage_monitor/test_storage_monitor.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

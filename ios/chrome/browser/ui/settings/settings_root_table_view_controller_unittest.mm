@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/settings_root_table_view_controller.h"
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #include "ios/chrome/grit/ios_strings.h"

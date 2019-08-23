@@ -10,7 +10,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "gpu/ipc/common/android/mock_abstract_texture.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

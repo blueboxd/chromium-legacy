@@ -37,34 +37,34 @@ const struct {
          /*is_saved=*/false,
          /*is_reused=*/false,
          /*is_syncing=*/false),
-     IDS_OK, IDS_CLOSE, IDS_CREDENTIAL_LEAK_CURRENT_SITE_MESSAGE,
-     IDS_CREDENTIAL_LEAK_CURRENT_SITE_TITLE, false, false},
+     IDS_OK, IDS_CLOSE, IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_MESSAGE,
+     IDS_CREDENTIAL_LEAK_TITLE, false, false},
     {password_manager::CreateLeakTypeFromBools(
          /*is_saved=*/false,
          /*is_reused=*/false,
          /*is_syncing=*/true),
-     IDS_OK, IDS_CLOSE, IDS_CREDENTIAL_LEAK_CURRENT_SITE_MESSAGE,
-     IDS_CREDENTIAL_LEAK_CURRENT_SITE_TITLE, false, false},
+     IDS_OK, IDS_CLOSE, IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_MESSAGE,
+     IDS_CREDENTIAL_LEAK_TITLE, false, false},
     {password_manager::CreateLeakTypeFromBools(
          /*is_saved=*/false,
          /*is_reused=*/true,
          /*is_syncing=*/true),
      IDS_LEAK_CHECK_CREDENTIALS, IDS_CLOSE,
-     IDS_CREDENTIAL_LEAK_NOT_SAVED_MULTIPLE_SITES_MESSAGE,
-     IDS_CREDENTIAL_LEAK_MULTIPLE_SITES_TITLE, true, true},
+     IDS_CREDENTIAL_LEAK_CHANGE_AND_CHECK_PASSWORDS_MESSAGE,
+     IDS_CREDENTIAL_LEAK_TITLE, true, true},
     {password_manager::CreateLeakTypeFromBools(
          /*is_saved=*/true,
          /*is_reused=*/false,
          /*is_syncing=*/true),
-     IDS_OK, IDS_CLOSE, IDS_CREDENTIAL_LEAK_CURRENT_SITE_MESSAGE,
-     IDS_CREDENTIAL_LEAK_CURRENT_SITE_TITLE, false, false},
+     IDS_OK, IDS_CLOSE, IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_MESSAGE,
+     IDS_CREDENTIAL_LEAK_TITLE, false, false},
     {password_manager::CreateLeakTypeFromBools(
          /*is_saved=*/true,
          /*is_reused=*/true,
          /*is_syncing=*/true),
      IDS_LEAK_CHECK_CREDENTIALS, IDS_CLOSE,
-     IDS_CREDENTIAL_LEAK_SAVED_MULTIPLE_SITES_MESSAGE,
-     IDS_CREDENTIAL_LEAK_MULTIPLE_SITES_TITLE, true, true}};
+     IDS_CREDENTIAL_LEAK_CHECK_PASSWORDS_MESSAGE, IDS_CREDENTIAL_LEAK_TITLE,
+     true, true}};
 }  // namespace
 
 TEST(CredentialLeakDialogUtilsTest, GetAcceptButtonLabel) {
@@ -91,7 +91,7 @@ TEST(CredentialLeakDialogUtilsTest, GetDescription) {
     SCOPED_TRACE(testing::Message() << i);
     auto expected_message =
         kLeakTypesTestCases[i].leak_message_id ==
-                IDS_CREDENTIAL_LEAK_SAVED_MULTIPLE_SITES_MESSAGE
+                IDS_CREDENTIAL_LEAK_CHECK_PASSWORDS_MESSAGE
             ? l10n_util::GetStringUTF16(kLeakTypesTestCases[i].leak_message_id)
             : l10n_util::GetStringFUTF16(
                   kLeakTypesTestCases[i].leak_message_id,

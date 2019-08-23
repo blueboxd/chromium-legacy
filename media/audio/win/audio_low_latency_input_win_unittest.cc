@@ -4,10 +4,10 @@
 
 #include "media/audio/win/audio_low_latency_input_win.h"
 
+#include <windows.h>
 #include <mmsystem.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <windows.h>
 
 #include <memory>
 
@@ -19,7 +19,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/win/scoped_com_initializer.h"
 #include "media/audio/audio_device_description.h"

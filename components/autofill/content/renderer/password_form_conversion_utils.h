@@ -82,6 +82,12 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromWebForm(
     const FormsPredictionsMap* form_predictions,
     UsernameDetectorCache* username_detector_cache);
 
+// Creates a |PasswordForm| from DOM which only contains the |form_data| as well
+// as origin, action and gaia flags.
+std::unique_ptr<PasswordForm> CreateSimplifiedPasswordFormFromWebForm(
+    const blink::WebFormElement& form,
+    const FieldDataManager* field_data_manager);
+
 // Same as CreatePasswordFormFromWebForm() but for input elements that are not
 // enclosed in <form> element.
 std::unique_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
@@ -89,6 +95,13 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
     const FieldDataManager* field_data_manager,
     const FormsPredictionsMap* form_predictions,
     UsernameDetectorCache* username_detector_cache);
+
+// Same as CreateSimlePasswordFormFromWebForm() but for input elements that are
+// not enclosed in <form> element.
+std::unique_ptr<PasswordForm>
+CreateSimplifiedPasswordFormFromUnownedInputElements(
+    const blink::WebLocalFrame& frame,
+    const FieldDataManager* field_data_manager);
 
 // The "Realm" for the sign-on. This is scheme, host, port.
 std::string GetSignOnRealm(const GURL& origin);

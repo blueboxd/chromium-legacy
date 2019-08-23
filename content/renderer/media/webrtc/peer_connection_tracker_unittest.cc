@@ -4,7 +4,7 @@
 
 #include "content/renderer/media/webrtc/peer_connection_tracker.h"
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "content/common/media/peer_connection_tracker.mojom.h"
 #include "content/common/media/peer_connection_tracker_messages.h"
 #include "content/public/test/mock_render_thread.h"

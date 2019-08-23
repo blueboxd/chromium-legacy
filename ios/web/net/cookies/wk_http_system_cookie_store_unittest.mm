@@ -13,7 +13,7 @@
 #include "ios/net/cookies/system_cookie_store_unittest_template.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/web_task_environment.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

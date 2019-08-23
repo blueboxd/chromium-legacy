@@ -50,7 +50,6 @@ public class BackgroundTaskSchedulerGcmNetworkManagerTest {
     private static final long END_TIME_WITH_DEADLINE_S =
             (TIME_200_MIN_TO_MS + BackgroundTaskSchedulerGcmNetworkManager.DEADLINE_DELTA_MS)
             / 1000;
-    private static final long DEADLINE_TIME_MS = CLOCK_TIME_MS + TIME_200_MIN_TO_MS;
 
     private BackgroundTaskSchedulerGcmNetworkManager.Clock mClock = () -> CLOCK_TIME_MS;
 
@@ -92,9 +91,12 @@ public class BackgroundTaskSchedulerGcmNetworkManagerTest {
         assertEquals(Integer.toString(TaskIds.TEST), task.getTag());
         assertEquals(END_TIME_WITH_DEADLINE_S, oneOffTask.getWindowEnd());
         assertEquals(0, oneOffTask.getWindowStart());
-        assertEquals(DEADLINE_TIME_MS,
+        assertEquals(CLOCK_TIME_MS,
+                task.getExtras().getLong(BackgroundTaskSchedulerGcmNetworkManager
+                                                 .BACKGROUND_TASK_SCHEDULE_TIME_KEY));
+        assertEquals(TIME_200_MIN_TO_MS,
                 task.getExtras().getLong(
-                        BackgroundTaskSchedulerGcmNetworkManager.BACKGROUND_TASK_DEADLINE_KEY));
+                        BackgroundTaskSchedulerGcmNetworkManager.BACKGROUND_TASK_END_TIME_KEY));
     }
 
     @Test
@@ -128,9 +130,12 @@ public class BackgroundTaskSchedulerGcmNetworkManagerTest {
         assertEquals(Integer.toString(TaskIds.TEST), task.getTag());
         assertEquals(END_TIME_WITH_DEADLINE_S, oneOffTask.getWindowEnd());
         assertEquals(TIME_100_MIN_TO_S, oneOffTask.getWindowStart());
-        assertEquals(DEADLINE_TIME_MS,
+        assertEquals(CLOCK_TIME_MS,
+                task.getExtras().getLong(BackgroundTaskSchedulerGcmNetworkManager
+                                                 .BACKGROUND_TASK_SCHEDULE_TIME_KEY));
+        assertEquals(TIME_200_MIN_TO_MS,
                 task.getExtras().getLong(
-                        BackgroundTaskSchedulerGcmNetworkManager.BACKGROUND_TASK_DEADLINE_KEY));
+                        BackgroundTaskSchedulerGcmNetworkManager.BACKGROUND_TASK_END_TIME_KEY));
     }
 
     @Test

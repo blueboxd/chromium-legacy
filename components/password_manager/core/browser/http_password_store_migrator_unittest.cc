@@ -3,10 +3,11 @@
 // found in the LICENSE file.
 
 #include "components/password_manager/core/browser/http_password_store_migrator.h"
+
 #include <memory>
 
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "testing/gmock/include/gmock/gmock.h"

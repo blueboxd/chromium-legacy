@@ -160,7 +160,7 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   // the last focused password element.
   blink::WebInputElement last_focused_password_element_;
 
-  // Contains correspondence between generaiton enabled element and data for
+  // Contains correspondence between generation enabled element and data for
   // generation.
   std::map<uint32_t, PasswordFormGenerationData> generation_enabled_fields_;
 

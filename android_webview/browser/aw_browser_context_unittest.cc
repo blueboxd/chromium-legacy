@@ -6,7 +6,7 @@
 #include "android_webview/browser/aw_browser_process.h"
 #include "android_webview/browser/aw_feature_list_creator.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_content_client_initializer.h"
 #include "mojo/core/embedder/embedder.h"
 #include "testing/gtest/include/gtest/gtest.h"

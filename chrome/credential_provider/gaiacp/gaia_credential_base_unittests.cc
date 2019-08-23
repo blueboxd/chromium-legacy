@@ -100,7 +100,22 @@ TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_NoInternet) {
 
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
-  ASSERT_EQ(S_OK, StartLogonProcess(/*succeeds=*/false));
+  ASSERT_EQ(S_OK, StartLogonProcess(/*succeeds=*/false, IDS_NO_NETWORK_BASE));
+}
+
+TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_GlsLoadingFailed) {
+  // Create provider and start logon.
+  CComPtr<ICredentialProviderCredential> cred;
+
+  ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
+
+  CComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+  // Fail loading the gls logon UI.
+  test->FailLoadingGaiaLogonStub();
+
+  ASSERT_EQ(S_OK, StartLogonProcess(
+                      /*succeeds=*/false, IDS_FAILED_CREATE_LOGON_STUB_BASE));
 }
 
 TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_Start) {

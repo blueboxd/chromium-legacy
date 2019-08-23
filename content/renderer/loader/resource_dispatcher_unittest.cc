@@ -18,7 +18,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "content/common/appcache_interfaces.h"
 #include "content/public/common/content_features.h"
 #include "content/public/renderer/request_peer.h"

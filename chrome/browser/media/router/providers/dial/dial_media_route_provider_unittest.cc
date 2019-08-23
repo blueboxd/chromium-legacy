@@ -14,7 +14,7 @@
 #include "chrome/browser/media/router/discovery/dial/dial_media_sink_service_impl.h"
 #include "chrome/browser/media/router/route_message_util.h"
 #include "chrome/browser/media/router/test/test_helper.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "net/http/http_status_code.h"
 #include "services/data_decoder/data_decoder_service.h"
 #include "services/data_decoder/public/cpp/testing_json_parser.h"

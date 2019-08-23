@@ -59,7 +59,7 @@ struct TrimOnMemoryPressureParams {
 #endif
 
 #if defined(OS_LINUX)
-namespace linux {
+namespace os_linux {
 
 #if BUILDFLAG(USE_TCMALLOC)
 // If enabled then tcmalloc will be tuned dynamically based on system memory
@@ -74,7 +74,7 @@ extern const base::FeatureParam<int> kDynamicTuningTimeSec;
 extern const base::FeatureParam<int> kDynamicTuningScaleInvisibleTimeSec;
 #endif
 
-}  // namespace linux
+}  // namespace os_linux
 #endif  // defined(OS_LINUX)
 
 }  // namespace features

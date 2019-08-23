@@ -16,7 +16,7 @@
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_io_thread.h"
 #include "services/device/hid/hid_service.h"
 #include "services/device/public/mojom/hid.mojom.h"

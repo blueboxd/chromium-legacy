@@ -11,7 +11,7 @@
 #include "base/task/thread_pool/thread_pool.h"
 #include "chrome/common/media_router/issue.h"
 #include "chrome/grit/generated_resources.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"

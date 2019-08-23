@@ -10,7 +10,7 @@
 #include "base/run_loop.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/ipc/common/android/mock_texture_owner.h"

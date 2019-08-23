@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/device/device_service_test_base.h"
 #include "services/device/public/cpp/geolocation/geoposition.h"

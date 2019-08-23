@@ -14,7 +14,7 @@
 #include "base/sys_byteorder.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "net/base/ip_address.h"

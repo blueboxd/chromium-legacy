@@ -14,7 +14,7 @@
 #include "base/time/time.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler.h"
 #include "components/variations/variations_associated_data.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace safe_browsing {

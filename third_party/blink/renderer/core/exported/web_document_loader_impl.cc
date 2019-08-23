@@ -97,6 +97,11 @@ int WebDocumentLoaderImpl::ErrorCode() const {
   return DocumentLoader::ErrorCode();
 }
 
+network::mojom::IPAddressSpace WebDocumentLoaderImpl::GetIPAddressSpace()
+    const {
+  return DocumentLoader::GetIPAddressSpace();
+}
+
 void WebDocumentLoaderImpl::RedirectChain(WebVector<WebURL>& result) const {
   result.Assign(redirect_chain_);
 }

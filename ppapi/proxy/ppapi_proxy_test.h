@@ -16,7 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_runner.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread.h"
 #include "ppapi/c/pp_instance.h"

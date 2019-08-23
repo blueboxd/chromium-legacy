@@ -11,7 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/sharing/fake_local_device_info_provider.h"
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
@@ -30,7 +30,7 @@
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/fake_device_info_tracker.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

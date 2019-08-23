@@ -13,7 +13,7 @@
 #include "base/test/mock_callback.h"
 #include "chrome/browser/media/router/mojo/media_router_mojo_metrics.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/event_page_tracker.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"

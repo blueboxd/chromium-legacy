@@ -353,15 +353,8 @@ QuicTestPacketMaker::MakeRstAndRequestHeadersPacket(
   }
 
   if (quic::VersionUsesQpack(version_.transport_version)) {
-    // A stream frame containing stream type will be written on the control
-    // stream first.
-    std::string type(1, 0x00);
-    std::string settings_data = GenerateHttp3SettingsData();
-
-    if (stream_offsets_[2] == 0) {
-      frames.push_back(GenerateNextStreamFrame(2, false, type));
-      frames.push_back(GenerateNextStreamFrame(2, false, settings_data));
-    }
+    // Send SETTINGS frame(s) if they have not already been sent.
+    MaybeAddHttp3SettingsFrames(&frames);
 
     std::string priority_data = GenerateHttp3PriorityData(priority, stream_id);
 
@@ -764,20 +757,12 @@ QuicTestPacketMaker::MakeRequestHeadersAndMultipleDataFramesPacket(
     const std::vector<std::string>& data_writes) {
   InitializeHeader(packet_number, should_include_version);
   if (quic::VersionUsesQpack(version_.transport_version)) {
-    // A stream frame containing stream type will be written on the control
-    // stream first.
-    std::string type(1, 0x00);
-
-    std::string settings_data = GenerateHttp3SettingsData();
-
     quic::QuicFrames frames;
-    if (stream_offsets_[2] == 0) {
-      frames.push_back(GenerateNextStreamFrame(2, false, type));
-      frames.push_back(GenerateNextStreamFrame(2, false, settings_data));
-    }
+
+    // Send SETTINGS frame(s) if they have not already been sent.
+    MaybeAddHttp3SettingsFrames(&frames);
 
     std::string priority_data = GenerateHttp3PriorityData(priority, stream_id);
-
     frames.push_back(GenerateNextStreamFrame(2, false, priority_data));
 
     // STREAM frames for HEADERS.
@@ -833,20 +818,12 @@ QuicTestPacketMaker::MakeRequestHeadersPacket(
   InitializeHeader(packet_number, should_include_version);
 
   if (quic::VersionUsesQpack(version_.transport_version)) {
-    // A stream frame containing stream type will be written on the control
-    // stream first.
-    std::string type(1, 0x00);
-
-    std::string settings_data = GenerateHttp3SettingsData();
-
     quic::QuicFrames frames;
-    if (stream_offsets_[2] == 0) {
-      frames.push_back(GenerateNextStreamFrame(2, false, type));
-      frames.push_back(GenerateNextStreamFrame(2, false, settings_data));
-    }
+
+    // Send SETTINGS frame(s) if they have not already been sent.
+    MaybeAddHttp3SettingsFrames(&frames);
 
     std::string priority_data = GenerateHttp3PriorityData(priority, stream_id);
-
     frames.push_back(GenerateNextStreamFrame(2, false, priority_data));
 
     std::vector<std::string> data = QpackEncodeHeaders(
@@ -881,20 +858,12 @@ QuicTestPacketMaker::MakeRequestHeadersAndRstPacket(
     size_t* spdy_headers_frame_length,
     quic::QuicRstStreamErrorCode error_code) {
   if (quic::VersionUsesQpack(version_.transport_version)) {
-    // A stream frame containing stream type will be written on the control
-    // stream first.
-    std::string type(1, 0x00);
-
-    std::string settings_data = GenerateHttp3SettingsData();
-
     quic::QuicFrames frames;
-    if (stream_offsets_[2] == 0) {
-      frames.push_back(GenerateNextStreamFrame(2, false, type));
-      frames.push_back(GenerateNextStreamFrame(2, false, settings_data));
-    }
+
+    // Send SETTINGS frame(s) if they have not already been sent.
+    MaybeAddHttp3SettingsFrames(&frames);
 
     std::string priority_data = GenerateHttp3PriorityData(priority, stream_id);
-
     frames.push_back(GenerateNextStreamFrame(2, false, priority_data));
 
     std::vector<std::string> data = QpackEncodeHeaders(
@@ -1157,6 +1126,7 @@ QuicTestPacketMaker::MakeMultipleFramesPacket(
   if (save_packet_frames_) {
     saved_frames_[header.packet_number] = frames_copy;
   } else {
+    saved_stream_data_.clear();
     DeleteFrames(&frames_copy);
   }
   return encrypted.Clone();
@@ -1198,26 +1168,9 @@ QuicTestPacketMaker::MakeSettingsPacket(uint64_t packet_number,
                                    quic::QuicStringPiece(spdy_frame.data(),
                                                          spdy_frame.size())));
   }
+
   quic::QuicFrames frames;
-  // A stream frame containing stream type will be written on the control stream
-  // first.
-  std::string type(1, 0x00);
-  std::string settings_data = GenerateHttp3SettingsData();
-
-  std::vector<std::string> data;
-  if (coalesce_http_frames_) {
-    data = {type + settings_data};
-  } else {
-    data = {type, settings_data};
-  }
-
-  quic::QuicStreamId stream_id =
-      quic::QuicUtils::GetFirstUnidirectionalStreamId(
-          version_.transport_version, perspective_);
-
-  for (const auto& frame : GenerateNextStreamFrames(stream_id, false, data))
-    frames.push_back(frame);
-
+  MaybeAddHttp3SettingsFrames(&frames);
   InitializeHeader(packet_number, /*should_include_version*/ true);
   return MakeMultipleFramesPacket(header_, frames, nullptr);
 }
@@ -1237,27 +1190,8 @@ QuicTestPacketMaker::MakeInitialSettingsPacket(uint64_t packet_number) {
                                                          spdy_frame.size())));
   }
   quic::QuicFrames frames;
-  // A stream frame containing stream type will be written on the control stream
-  // first.
-  std::string type(1, 0x00);
-  std::string settings_data = GenerateHttp3SettingsData();
 
-  std::vector<std::string> data;
-  if (coalesce_http_frames_) {
-    data = {type + settings_data};
-  } else {
-    data = {type, settings_data};
-  }
-
-  quic::QuicStreamId stream_id =
-      quic::QuicUtils::GetFirstUnidirectionalStreamId(
-          version_.transport_version, perspective_);
-
-  for (const auto& frame : GenerateNextStreamFrames(stream_id, false, data))
-    frames.push_back(frame);
-
-  frames.push_back(GenerateNextStreamFrame(10, false, "\x02"));
-  frames.push_back(GenerateNextStreamFrame(6, false, "\x03"));
+  MaybeAddHttp3SettingsFrames(&frames);
 
   InitializeHeader(packet_number, /*should_include_version*/ true);
   return MakeMultipleFramesPacket(header_, frames, nullptr);
@@ -1420,10 +1354,10 @@ quic::QuicFrame QuicTestPacketMaker::GenerateNextStreamFrame(
     quic::QuicStreamId stream_id,
     bool fin,
     quic::QuicStringPiece data) {
-  if (save_packet_frames_) {
-    saved_stream_data_.push_back(std::make_unique<std::string>(data));
-    data = *saved_stream_data_.back();
-  }
+  // Save the stream data so that callers can use temporary objects for data.
+  saved_stream_data_.push_back(std::make_unique<std::string>(data));
+  data = *saved_stream_data_.back();
+
   quic::QuicStreamFrame frame(stream_id, fin, stream_offsets_[stream_id], data);
   stream_offsets_[stream_id] += data.length();
   DVLOG(1) << "Adding frame: " << frame;
@@ -1569,6 +1503,43 @@ std::string QuicTestPacketMaker::GenerateHttp3PriorityData(
   quic::QuicByteCount frame_length =
       http_encoder_.SerializePriorityFrame(frame, &buffer);
   return std::string(buffer.get(), frame_length);
+}
+
+void QuicTestPacketMaker::MaybeAddHttp3SettingsFrames(
+    quic::QuicFrames* frames) {
+  DCHECK(quic::VersionUsesQpack(version_.transport_version));
+
+  quic::QuicStreamId stream_id =
+      quic::QuicUtils::GetFirstUnidirectionalStreamId(
+          version_.transport_version, perspective_);
+
+  if (stream_offsets_[stream_id] != 0)
+    return;
+
+  // A stream frame containing stream type will be written on the control
+  // stream first.
+  std::string type(1, 0x00);
+  std::string settings_data = GenerateHttp3SettingsData();
+
+  // The type and the SETTINGS frame may be sent in multiple QUIC STREAM
+  // frames.
+  std::vector<std::string> data;
+  if (coalesce_http_frames_) {
+    data = {type + settings_data};
+  } else {
+    data = {type, settings_data};
+  }
+
+  for (const auto& frame : GenerateNextStreamFrames(stream_id, false, data))
+    frames->push_back(frame);
+
+  if (coalesce_http_frames_) {
+    frames->push_back(GenerateNextStreamFrame(stream_id + 4, false, "\x03"));
+    frames->push_back(GenerateNextStreamFrame(stream_id + 8, false, "\x02"));
+  } else {
+    frames->push_back(GenerateNextStreamFrame(stream_id + 8, false, "\x02"));
+    frames->push_back(GenerateNextStreamFrame(stream_id + 4, false, "\x03"));
+  }
 }
 
 }  // namespace test

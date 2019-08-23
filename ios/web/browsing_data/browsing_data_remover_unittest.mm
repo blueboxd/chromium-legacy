@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #import "base/test/ios/wait_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #include "testing/platform_test.h"
 

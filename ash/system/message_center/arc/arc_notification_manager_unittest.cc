@@ -12,7 +12,7 @@
 #include "ash/system/message_center/arc/arc_notification_manager.h"
 #include "ash/system/message_center/arc/arc_notification_manager_delegate.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/arc/session/connection_holder.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_notifications_instance.h"

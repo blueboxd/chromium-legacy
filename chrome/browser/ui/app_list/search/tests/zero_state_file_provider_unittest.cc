@@ -9,11 +9,11 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/zero_state_file_result.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -32,14 +32,13 @@ MATCHER_P(Title, title, "") {
 class ZeroStateFileProviderTest : public testing::Test {
  protected:
   void SetUp() override {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     profile_ = std::make_unique<TestingProfile>();
     provider_ = std::make_unique<ZeroStateFileProvider>(profile_.get());
     Wait();
   }
 
   base::FilePath Path(const std::string& filename) {
-    return temp_dir_.GetPath().AppendASCII(filename);
+    return profile_->GetPath().AppendASCII(filename);
   }
 
   void WriteFile(const std::string& filename) {
@@ -58,7 +57,6 @@ class ZeroStateFileProviderTest : public testing::Test {
   void Wait() { thread_bundle_.RunUntilIdle(); }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  base::ScopedTempDir temp_dir_;
 
   std::unique_ptr<Profile> profile_;
   std::unique_ptr<ZeroStateFileProvider> provider_;

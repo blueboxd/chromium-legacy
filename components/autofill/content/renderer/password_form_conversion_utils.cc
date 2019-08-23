@@ -39,6 +39,7 @@
 #include "third_party/re2/src/re2/re2.h"
 #include "url/gurl.h"
 
+using blink::WebElement;
 using blink::WebFormControlElement;
 using blink::WebFormElement;
 using blink::WebInputElement;
@@ -386,7 +387,7 @@ const FormFieldData* FindUsernameInPredictions(
 // representation of that form. |username_detector_cache| is optional, and can
 // be used to spare recomputation if called multiple times for the same form.
 std::vector<uint32_t> GetUsernamePredictions(
-    const std::vector<blink::WebFormControlElement>& control_elements,
+    const std::vector<WebFormControlElement>& control_elements,
     const FormData& form_data,
     UsernameDetectorCache* username_detector_cache) {
   std::vector<uint32_t> username_predictions;
@@ -404,16 +405,14 @@ std::vector<uint32_t> GetUsernamePredictions(
 // If an element of |form| has an entry in |nonscript_modified_values|, the
 // associated string is used instead of the element's value to create
 // the PasswordForm.
-bool GetPasswordForm(
-    const GURL& form_origin,
-    const std::vector<blink::WebFormControlElement>& control_elements,
-    PasswordForm* password_form,
-    const FormsPredictionsMap* form_predictions,
-    UsernameDetectorCache* username_detector_cache) {
+bool GetPasswordForm(const GURL& form_origin,
+                     const std::vector<WebFormControlElement>& control_elements,
+                     PasswordForm* password_form,
+                     const FormsPredictionsMap* form_predictions,
+                     UsernameDetectorCache* username_detector_cache) {
   DCHECK(!control_elements.empty());
 
   const FormData& form_data = password_form->form_data;
-
   PasswordContents password_contents = GetPasswordContents(form_data.fields);
   switch (password_contents) {
     case PasswordContents::kEnabled:
@@ -429,7 +428,6 @@ bool GetPasswordForm(
     case PasswordContents::kNone:
       return false;
   }
-
   // Evaluate the context of the fields.
   password_form->form_data.username_predictions = GetUsernamePredictions(
       control_elements, form_data, username_detector_cache);
@@ -817,10 +815,10 @@ bool IsGaiaReauthenticationForm(const blink::WebFormElement& form) {
   bool has_rart_field = false;
   bool has_continue_field = false;
 
-  blink::WebVector<blink::WebFormControlElement> web_control_elements;
+  blink::WebVector<WebFormControlElement> web_control_elements;
   form.GetFormControlElements(web_control_elements);
 
-  for (const blink::WebFormControlElement& element : web_control_elements) {
+  for (const WebFormControlElement& element : web_control_elements) {
     // We're only interested in the presence
     // of <input type="hidden" /> elements.
     static base::NoDestructor<WebString> kHidden("hidden");
@@ -854,6 +852,31 @@ bool IsGaiaWithSkipSavePasswordForm(const blink::WebFormElement& form) {
   return should_skip_password == "1";
 }
 
+std::unique_ptr<PasswordForm> CreateSimplifiedPasswordFormFromWebForm(
+    const WebFormElement& web_form,
+    const FieldDataManager* field_data_manager) {
+  if (web_form.IsNull())
+    return nullptr;
+
+  auto password_form = std::make_unique<PasswordForm>();
+  password_form->origin =
+      form_util::GetCanonicalOriginForDocument(web_form.GetDocument());
+  password_form->signon_realm = GetSignOnRealm(password_form->origin);
+
+  password_form->form_data.is_gaia_with_skip_save_password_form =
+      IsGaiaWithSkipSavePasswordForm(web_form) ||
+      IsGaiaReauthenticationForm(web_form);
+
+  if (!WebFormElementToFormData(web_form, WebFormControlElement(),
+                                field_data_manager, form_util::EXTRACT_VALUE,
+                                &password_form->form_data,
+                                nullptr /* FormFieldData */)) {
+    return nullptr;
+  }
+
+  return password_form;
+}
+
 std::unique_ptr<PasswordForm> CreatePasswordFormFromWebForm(
     const WebFormElement& web_form,
     const FieldDataManager* field_data_manager,
@@ -870,12 +893,12 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromWebForm(
       IsGaiaWithSkipSavePasswordForm(web_form) ||
       IsGaiaReauthenticationForm(web_form);
 
-  blink::WebVector<blink::WebFormControlElement> control_elements;
+  blink::WebVector<WebFormControlElement> control_elements;
   web_form.GetFormControlElements(control_elements);
   if (control_elements.empty())
     return nullptr;
 
-  if (!WebFormElementToFormData(web_form, blink::WebFormControlElement(),
+  if (!WebFormElementToFormData(web_form, WebFormControlElement(),
                                 field_data_manager, form_util::EXTRACT_VALUE,
                                 &password_form->form_data,
                                 nullptr /* FormFieldData */)) {
@@ -891,13 +914,38 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromWebForm(
   return password_form;
 }
 
+std::unique_ptr<PasswordForm>
+CreateSimplifiedPasswordFormFromUnownedInputElements(
+    const WebLocalFrame& frame,
+    const FieldDataManager* field_data_manager) {
+  std::vector<WebElement> fieldsets;
+  std::vector<WebFormControlElement> control_elements =
+      form_util::GetUnownedFormFieldElements(frame.GetDocument().All(),
+                                             &fieldsets);
+  if (control_elements.empty())
+    return nullptr;
+
+  auto password_form = std::make_unique<PasswordForm>();
+  if (!UnownedPasswordFormElementsAndFieldSetsToFormData(
+          fieldsets, control_elements, nullptr, frame.GetDocument(),
+          field_data_manager, form_util::EXTRACT_VALUE,
+          &password_form->form_data, nullptr /* FormFieldData */)) {
+    return nullptr;
+  }
+
+  password_form->origin =
+      form_util::GetCanonicalOriginForDocument(frame.GetDocument());
+  password_form->signon_realm = GetSignOnRealm(password_form->origin);
+  return password_form;
+}
+
 std::unique_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
     const WebLocalFrame& frame,
     const FieldDataManager* field_data_manager,
     const FormsPredictionsMap* form_predictions,
     UsernameDetectorCache* username_detector_cache) {
-  std::vector<blink::WebElement> fieldsets;
-  std::vector<blink::WebFormControlElement> control_elements =
+  std::vector<WebElement> fieldsets;
+  std::vector<WebFormControlElement> control_elements =
       form_util::GetUnownedFormFieldElements(frame.GetDocument().All(),
                                              &fieldsets);
   if (control_elements.empty())

@@ -104,17 +104,18 @@ UserMediaClient::UserMediaClient(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : frame_(frame),
       user_media_processor_(user_media_processor),
-      // WrapWeakPersistent is safe because UserMediaClient owns
-      // ApplyConstraintsProcessor.
-      apply_constraints_processor_(new ApplyConstraintsProcessor(
-          WTF::BindRepeating(
-              [](UserMediaClient* client)
-                  -> const mojom::blink::MediaDevicesDispatcherHostPtr& {
-                DCHECK(client);
-                return client->GetMediaDevicesDispatcher();
-              },
-              WrapWeakPersistent(this)),
-          std::move(task_runner))) {
+      apply_constraints_processor_(
+          MakeGarbageCollected<ApplyConstraintsProcessor>(
+              WTF::BindRepeating(
+                  [](UserMediaClient* client)
+                      -> const mojom::blink::MediaDevicesDispatcherHostPtr& {
+                    // |client| is guaranteed to be not null because |client|
+                    // owns this ApplyConstraintsProcessor.
+                    DCHECK(client);
+                    return client->GetMediaDevicesDispatcher();
+                  },
+                  WrapWeakPersistent(this)),
+              std::move(task_runner))) {
   if (frame_) {
     // WrapWeakPersistent is safe because the |frame_| owns UserMediaClient.
     frame_->SetIsCapturingMediaCallback(WTF::BindRepeating(
@@ -128,13 +129,13 @@ UserMediaClient::UserMediaClient(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : UserMediaClient(
           frame,
-          // WrapWeakPersistent is safe because UserMediaClient owns
-          // UserMediaProcessor.
           MakeGarbageCollected<UserMediaProcessor>(
               frame,
               WTF::BindRepeating(
                   [](UserMediaClient* client)
                       -> const mojom::blink::MediaDevicesDispatcherHostPtr& {
+                    // |client| is guaranteed to be not null because |client|
+                    // owns this UserMediaProcessor.
                     DCHECK(client);
                     return client->GetMediaDevicesDispatcher();
                   },
@@ -308,6 +309,7 @@ void UserMediaClient::ContextDestroyed() {
 void UserMediaClient::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(user_media_processor_);
+  visitor->Trace(apply_constraints_processor_);
 }
 
 void UserMediaClient::SetMediaDevicesDispatcherForTesting(

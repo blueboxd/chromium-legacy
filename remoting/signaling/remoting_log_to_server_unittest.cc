@@ -5,7 +5,7 @@
 #include "remoting/signaling/remoting_log_to_server.h"
 
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "remoting/base/fake_oauth_token_getter.h"
 #include "remoting/proto/remoting/v1/telemetry_service.grpc.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"

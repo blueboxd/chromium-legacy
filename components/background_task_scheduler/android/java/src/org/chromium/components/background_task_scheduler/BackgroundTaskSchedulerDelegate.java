@@ -17,7 +17,13 @@ interface BackgroundTaskSchedulerDelegate {
     @VisibleForTesting
     String BACKGROUND_TASK_EXTRAS_KEY = "_background_task_extras";
     @VisibleForTesting
-    String BACKGROUND_TASK_DEADLINE_KEY = "_background_task_deadline";
+    String BACKGROUND_TASK_SCHEDULE_TIME_KEY = "_background_task_schedule_time";
+    @VisibleForTesting
+    String BACKGROUND_TASK_END_TIME_KEY = "_background_task_end_time";
+    @VisibleForTesting
+    String BACKGROUND_TASK_INTERVAL_TIME_KEY = "_background_task_interval_time";
+    @VisibleForTesting
+    String BACKGROUND_TASK_FLEX_TIME_KEY = "_background_task_flex_time";
 
     /**
      * Schedules a background task. See {@link TaskInfo} for information on what types of tasks that

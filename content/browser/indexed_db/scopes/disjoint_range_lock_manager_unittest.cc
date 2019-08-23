@@ -10,7 +10,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "content/browser/indexed_db/scopes/scope_lock.h"
 #include "content/browser/indexed_db/scopes/scope_lock_range.h"

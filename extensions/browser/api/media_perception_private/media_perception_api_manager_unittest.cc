@@ -12,8 +12,8 @@
 #include "chromeos/dbus/media_analytics/fake_media_analytics_client.h"
 #include "chromeos/dbus/media_analytics/media_analytics_client.h"
 #include "chromeos/dbus/upstart/fake_upstart_client.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media_perception = extensions::api::media_perception_private;

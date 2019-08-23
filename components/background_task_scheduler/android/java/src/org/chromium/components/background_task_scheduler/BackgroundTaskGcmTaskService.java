@@ -105,9 +105,8 @@ public class BackgroundTaskGcmTaskService extends GcmTaskService {
             return GcmNetworkManager.RESULT_FAILURE;
         }
 
-        Long deadlineTime =
-                BackgroundTaskSchedulerGcmNetworkManager.getDeadlineTimeFromTaskParams(params);
-        if (deadlineTime != null && mClock.currentTimeMillis() >= deadlineTime) {
+        if (BackgroundTaskSchedulerGcmNetworkManager.didTaskExpire(
+                    params, mClock.currentTimeMillis())) {
             BackgroundTaskSchedulerUma.getInstance().reportTaskExpired(taskParams.getTaskId());
             return GcmNetworkManager.RESULT_FAILURE;
         }

@@ -2092,6 +2092,12 @@ crbug.com/753671 external/wpt/css/css-content/quotes-025.html [ Failure ]
 crbug.com/753671 external/wpt/css/css-content/quotes-033.html [ Failure ]
 crbug.com/989123 external/wpt/css/css-typed-om/the-stylepropertymap/computed/get-auto-min-size.html [ Failure ]
 
+crbug.com/995106 external/wpt/css/css-lists/inline-block-list.html [ Failure ]
+crbug.com/995106 external/wpt/css/css-lists/inline-block-list-marker.html [ Failure ]
+crbug.com/995106 external/wpt/css/css-lists/inline-list.html [ Failure ]
+crbug.com/995106 external/wpt/css/css-lists/inline-list-marker.html [ Failure ]
+crbug.com/995106 external/wpt/css/css-lists/inline-list-with-table-child.html [ Failure ]
+
 # ====== Style team owned tests to here ======
 
 # ====== OOPIF-mode failures from here ======
@@ -3286,22 +3292,7 @@ crbug.com/626703 [ Win ] external/wpt/css/css-lists/li-value-reversed-004.html [
 crbug.com/626703 [ Linux ] external/wpt/css/css-lists/li-value-reversed-003.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-lists/li-value-reversed-003.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-lists/li-value-reversed-003.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-lists/inline-list-with-table-child.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-lists/inline-list-with-table-child.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-lists/inline-list-with-table-child.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-lists/inline-list-marker.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-lists/inline-list-marker.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-lists/inline-list-marker.html [ Failure ]
 crbug.com/626703 [ Mac10.10 ] virtual/cascade/external/wpt/css/css-paint-api/parse-input-arguments-018.https.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-lists/inline-block-list-marker.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-lists/inline-block-list-marker.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-lists/inline-block-list-marker.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-lists/inline-list.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-lists/inline-list.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-lists/inline-list.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-lists/inline-block-list.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-lists/inline-block-list.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-lists/inline-block-list.html [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-http/img-tag/keep-origin-redirect/same-origin-insecure.http.html [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/referrer-policy/unset-referrer-policy/http-rp/same-origin/http-http/img-tag/swap-origin-redirect/insecure-protocol.http.html [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/referrer-policy/unsafe-url/attr-referrer/cross-origin/http-http/img-tag/no-redirect/generic.http.html [ Timeout ]
@@ -6534,8 +6525,8 @@ crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/pixelated-canv
 crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/pixelated-resize.html [ Pass Failure ]
 crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/pixelated.html [ Pass Failure ]
 
-crbug.com/995669 [ Win ] http/tests/media/video-throttled-load-metadata.html [ Pass Failure ]
-crbug.com/995669 [ Win ] virtual/audio-service/http/tests/media/video-throttled-load-metadata.html [ Pass Failure ]
+crbug.com/995669 [ Win ] http/tests/media/video-throttled-load-metadata.html [ Pass Failure Crash ]
+crbug.com/995669 [ Win ] virtual/audio-service/http/tests/media/video-throttled-load-metadata.html [ Pass Failure Crash ]
 
 # Pending enabling scroll to text feature
 crbug.com/919204 external/wpt/scroll-to-text-fragment/scroll-to-text-fragment.html [ Skip ]

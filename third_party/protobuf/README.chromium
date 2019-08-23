@@ -97,3 +97,8 @@ Description of the patches:
 
   __declspec(dllexport) must come after __atrribute__(()) on clang-cl
   (https://github.com/protocolbuffers/protobuf/pull/6524)
+
+- 0030-fix-use_unaligned-not-defined-warning.patch
+
+  Fixes "GOOGLE_PROTOBUF_USE_UNALIGNED is not defined" compilation warning
+

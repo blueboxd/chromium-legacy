@@ -12,7 +12,7 @@
 
 #include "base/guid.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/notifications/proto/icon.pb.h"
 #include "chrome/browser/notifications/scheduler/internal/icon_entry.h"
 #include "components/leveldb_proto/testing/fake_db.h"

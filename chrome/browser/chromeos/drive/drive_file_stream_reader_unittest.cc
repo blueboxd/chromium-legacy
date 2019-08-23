@@ -22,7 +22,7 @@
 #include "components/drive/local_file_reader.h"
 #include "components/drive/service/fake_drive_service.h"
 #include "components/drive/service/test_util.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"

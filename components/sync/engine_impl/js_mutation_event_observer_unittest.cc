@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/values.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/js/js_event_details.h"

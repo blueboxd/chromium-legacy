@@ -11,7 +11,7 @@
 #include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "chromeos/dbus/shill/shill_clients.h"

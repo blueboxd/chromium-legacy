@@ -13,7 +13,7 @@
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "media/base/key_systems.h"
 #include "media/base/media_switches.h"

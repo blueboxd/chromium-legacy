@@ -22,7 +22,7 @@
 #include "base/message_loop/message_pump_type.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "rlz/lib/financial_ping.h"

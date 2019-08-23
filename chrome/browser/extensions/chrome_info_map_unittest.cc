@@ -5,7 +5,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"

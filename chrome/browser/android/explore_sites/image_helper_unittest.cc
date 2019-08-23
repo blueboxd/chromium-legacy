@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "services/data_decoder/public/cpp/test_data_decoder_service.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"

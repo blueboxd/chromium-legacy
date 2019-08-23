@@ -9,7 +9,7 @@
 #include "base/callback.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/cbor/values.h"
 #include "components/cbor/writer.h"
 #include "content/public/common/resource_type.h"

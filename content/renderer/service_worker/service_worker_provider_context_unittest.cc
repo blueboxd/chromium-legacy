@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/resource_type.h"

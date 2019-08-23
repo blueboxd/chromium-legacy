@@ -16,7 +16,7 @@
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/sync/base/fake_encryptor.h"
 #include "components/sync/base/model_type_test_util.h"
 #include "components/sync/base/passphrase_enums.h"

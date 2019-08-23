@@ -12,7 +12,7 @@
 #include "base/strings/pattern.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_path_override.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chromeos/constants/chromeos_paths.h"
 #include "components/quirks/quirks_manager.h"
 #include "net/url_request/url_request_context_getter.h"

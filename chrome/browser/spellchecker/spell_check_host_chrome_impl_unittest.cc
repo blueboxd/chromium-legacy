@@ -11,7 +11,7 @@
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/spellcheck/common/spellcheck_result.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if !BUILDFLAG(USE_RENDERER_SPELLCHECKER)

@@ -12,7 +12,7 @@
 #include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/service_directory_client.h"
 #include "base/macros.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "fuchsia/base/fit_adapter.h"
 #include "fuchsia/base/frame_test_util.h"
 #include "fuchsia/base/result_receiver.h"

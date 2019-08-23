@@ -25,7 +25,7 @@
 #import "chrome/common/mac/app_mode_common.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/version_info/version_info.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"

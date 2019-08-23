@@ -6,7 +6,7 @@
 
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/test/fake_mojo_message_dispatch_context.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/test_support/test_utils.h"

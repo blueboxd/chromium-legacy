@@ -15,7 +15,7 @@
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "crypto/nss_util.h"
 #include "crypto/scoped_test_nss_db.h"
 #include "net/cert/pem_tokenizer.h"

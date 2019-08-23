@@ -19,8 +19,8 @@
 #include "chrome/browser/performance_manager/performance_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_render_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -182,7 +182,7 @@ TEST_F(DynamicTcmallocPolicyTest, PeriodicPressureCheck) {
   // Advance through two intervals to confirm that we see our periodic checks.
   EXPECT_CALL(*policy(), CheckAndUpdateTunables()).Times(2);
   FastForwardBy(base::TimeDelta::FromSeconds(
-      2 * features::linux::kDynamicTuningTimeSec.Get() + 1));
+      2 * features::os_linux::kDynamicTuningTimeSec.Get() + 1));
 }
 
 // This test will validate that for a mocked value of memory available we see a
@@ -213,7 +213,7 @@ TEST_F(DynamicTcmallocPolicyTest, DynamicallyAdjustThreadCacheSize) {
 
   // Advancing beyond our interval will cause a periodic pressure check.
   FastForwardBy(base::TimeDelta::FromSeconds(
-      features::linux::kDynamicTuningTimeSec.Get() + 1));
+      features::os_linux::kDynamicTuningTimeSec.Get() + 1));
 }
 
 // This test validates that process nodes with no frame nodes are skipped.
@@ -237,7 +237,7 @@ TEST_F(DynamicTcmallocPolicyTest, SkipProcessNodesWithNoFrameNodes) {
 
   // Advancing beyond our interval will cause a periodic pressure check.
   FastForwardBy(base::TimeDelta::FromSeconds(
-      features::linux::kDynamicTuningTimeSec.Get() + 1));
+      features::os_linux::kDynamicTuningTimeSec.Get() + 1));
 }
 
 // This test will validate that the minimum size is enforced and we won't
@@ -270,7 +270,7 @@ TEST_F(DynamicTcmallocPolicyTest,
 
   // Advancing beyond our interval will cause a periodic pressure check.
   FastForwardBy(base::TimeDelta::FromSeconds(
-      features::linux::kDynamicTuningTimeSec.Get() + 1));
+      features::os_linux::kDynamicTuningTimeSec.Get() + 1));
 }
 
 // This test will validate that we apply the invisible scale factor only when
@@ -278,15 +278,15 @@ TEST_F(DynamicTcmallocPolicyTest,
 TEST_F(DynamicTcmallocPolicyTest, OnlyApplyInvisibleScaleFactorAfterCutoff) {
   // Switch our experimental state so we can test certain behavior.
   ScopedExperimentalStateToggle experimental_state_(
-      features::linux::kDynamicTcmallocTuning.name,
+      features::os_linux::kDynamicTcmallocTuning.name,
       base::FeatureList::OVERRIDE_ENABLE_FEATURE,
       {{"DynamicTcmallocScaleInvisibleTimeSec", "240"},
        {"DynamicTcmallocTuneTimeSec", "120"}});
 
   const int dynamic_tuning_time_sec =
-      features::linux::kDynamicTuningTimeSec.Get();
+      features::os_linux::kDynamicTuningTimeSec.Get();
   const int scaling_invisible_time_sec =
-      features::linux::kDynamicTuningScaleInvisibleTimeSec.Get();
+      features::os_linux::kDynamicTuningScaleInvisibleTimeSec.Get();
 
   // Validate we're using the params we expect.
   ASSERT_EQ(dynamic_tuning_time_sec, 120);

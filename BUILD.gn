@@ -195,6 +195,11 @@ group("gn_all") {
     ]
   }
 
+  # TODO: add Android.
+  if (is_win || (is_linux && !is_chromeos)) {
+    deps += [ "//weblayer/shell:weblayer_shell" ]
+  }
+
   if (!is_ios && !is_android) {
     deps += [
       "//components/cronet:cronet_tests",

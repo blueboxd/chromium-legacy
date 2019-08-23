@@ -190,19 +190,22 @@ class HeadlessProtocolBrowserTest
   std::string script_name_;
 };
 
+// TODO(crbug.com/867447): The whole test suite is extremely flaky on Win dbg.
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define HEADLESS_PROTOCOL_TEST(TEST_NAME, SCRIPT_NAME)                        \
+  IN_PROC_BROWSER_TEST_F(HeadlessProtocolBrowserTest, DISABLED_##TEST_NAME) { \
+    test_folder_ = "/protocol/";                                              \
+    script_name_ = SCRIPT_NAME;                                               \
+    RunTest();                                                                \
+  }
+#else
 #define HEADLESS_PROTOCOL_TEST(TEST_NAME, SCRIPT_NAME)             \
   IN_PROC_BROWSER_TEST_F(HeadlessProtocolBrowserTest, TEST_NAME) { \
     test_folder_ = "/protocol/";                                   \
     script_name_ = SCRIPT_NAME;                                    \
     RunTest();                                                     \
   }
-
-#define LAYOUT_PROTOCOL_TEST(TEST_NAME, SCRIPT_NAME)               \
-  IN_PROC_BROWSER_TEST_F(HeadlessProtocolBrowserTest, TEST_NAME) { \
-    test_folder_ = "/";                                            \
-    script_name_ = SCRIPT_NAME;                                    \
-    RunTest();                                                     \
-  }
+#endif
 
 // Headless-specific tests
 HEADLESS_PROTOCOL_TEST(VirtualTimeBasics, "emulation/virtual-time-basics.js")

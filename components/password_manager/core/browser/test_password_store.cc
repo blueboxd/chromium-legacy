@@ -133,6 +133,20 @@ TestPasswordStore::FillMatchingLogins(const FormDigest& form) {
   return matched_forms;
 }
 
+std::vector<std::unique_ptr<autofill::PasswordForm>>
+TestPasswordStore::FillMatchingLoginsByPassword(
+    const base::string16& plain_text_password) {
+  std::vector<std::unique_ptr<autofill::PasswordForm>> matched_forms;
+  for (const auto& elements : stored_passwords_) {
+    for (const auto& password_form : elements.second) {
+      if (password_form.password_value == plain_text_password)
+        matched_forms.push_back(
+            std::make_unique<autofill::PasswordForm>(password_form));
+    }
+  }
+  return matched_forms;
+}
+
 bool TestPasswordStore::FillAutofillableLogins(
     std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) {
   for (const auto& forms_for_realm : stored_passwords_) {

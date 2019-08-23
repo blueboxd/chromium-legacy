@@ -24,7 +24,7 @@
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/signin/public/base/list_accounts_test_utils.h"
 #include "components/sync_preferences/pref_service_syncable.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "ui/views/test/widget_test.h"
 
 CocoaProfileTest::CocoaProfileTest()

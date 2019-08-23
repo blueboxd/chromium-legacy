@@ -18,7 +18,7 @@
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/test/fake_policy_instance.h"
 #include "components/policy/core/common/remote_commands/remote_commands_queue.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "crypto/rsa_private_key.h"
 #include "net/cert/scoped_nss_types.h"
 #include "net/cert/x509_util.h"

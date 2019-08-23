@@ -4,11 +4,11 @@
 
 #include "chrome/browser/resource_coordinator/usage_clock.h"
 
-#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/test/task_environment.h"
+#include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
 
 namespace resource_coordinator {
 

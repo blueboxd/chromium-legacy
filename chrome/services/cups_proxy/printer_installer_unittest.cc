@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/memory/weak_ptr.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/services/cups_proxy/fake_cups_proxy_service_delegate.h"
 #include "chrome/services/cups_proxy/printer_installer.h"
 #include "printing/backend/cups_ipp_util.h"

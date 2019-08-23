@@ -196,13 +196,6 @@ const WHITE_BACKGROUND_COLORS = ['rgba(255,255,255,1)', 'rgba(0,0,0,0)'];
 const DARK_MODE_BACKGROUND_COLOR = 'rgba(50,54,57,1)';
 
 /**
- * Enum for keycodes.
- * @enum {number}
- * @const
- */
-const KEYCODE = {ENTER: 13, SPACE: 32};
-
-/**
  * The period of time (ms) before the Most Visited notification is hidden.
  * @type {number}
  */
@@ -893,14 +886,14 @@ function setFakeboxVisibility(show) {
 }
 
 /**
- * @param {!Element} element The element to register the handler for.
- * @param {number} keycode The keycode of the key to register.
- * @param {!Function} handler The key handler to register.
+ * @param {!Element} element
+ * @param {!Array<string>} keys
+ * @param {!function(Event)} handler
  */
-function registerKeyHandler(element, keycode, handler) {
-  element.addEventListener('keydown', function(event) {
-    if (event.keyCode == keycode) {
-      handler(event);
+function registerKeyHandler(element, keys, handler) {
+  element.addEventListener('keydown', e => {
+    if (keys.includes(e.key)) {
+      handler(e);
     }
   });
 }
@@ -1025,14 +1018,12 @@ function init() {
 
   const undoLink = $(IDS.UNDO_LINK);
   undoLink.addEventListener('click', onUndo);
-  registerKeyHandler(undoLink, KEYCODE.ENTER, onUndo);
-  registerKeyHandler(undoLink, KEYCODE.SPACE, onUndo);
+  registerKeyHandler(undoLink, ['Enter', ' '], onUndo);
   undoLink.textContent = configData.translatedStrings.undoThumbnailRemove;
 
   const restoreAllLink = $(IDS.RESTORE_ALL_LINK);
   restoreAllLink.addEventListener('click', onRestoreAll);
-  registerKeyHandler(restoreAllLink, KEYCODE.ENTER, onRestoreAll);
-  registerKeyHandler(restoreAllLink, KEYCODE.SPACE, onRestoreAll);
+  registerKeyHandler(restoreAllLink, ['Enter', ' '], onRestoreAll);
 
   $(IDS.ATTRIBUTION_TEXT).textContent =
       configData.translatedStrings.attributionIntro;

@@ -15,7 +15,7 @@
 #include "base/sanitizer_buildflags.h"
 #include "base/strings/string_piece.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 
 #include "testing/gmock/include/gmock/gmock.h"
@@ -32,8 +32,8 @@
 #endif
 
 #if defined(OS_WIN)
-#include <excpt.h>
 #include <windows.h>
+#include <excpt.h>
 #endif  // OS_WIN
 
 #if defined(OS_FUCHSIA)

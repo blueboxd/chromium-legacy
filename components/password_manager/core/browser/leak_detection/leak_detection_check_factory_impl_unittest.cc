@@ -5,7 +5,7 @@
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check_factory_impl.h"
 
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check.h"
 #include "components/password_manager/core/browser/leak_detection/mock_leak_detection_delegate.h"
 #include "components/password_manager/core/common/password_manager_features.h"

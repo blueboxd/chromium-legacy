@@ -14,7 +14,7 @@
 #include "base/callback.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/platform_thread.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/storage_option.h"

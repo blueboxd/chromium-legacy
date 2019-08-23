@@ -9,7 +9,7 @@
 #include "base/base64.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/variations/entropy_provider.h"
 #include "components/variations/proto/client_variations.pb.h"
 #include "components/variations/variations_associated_data.h"

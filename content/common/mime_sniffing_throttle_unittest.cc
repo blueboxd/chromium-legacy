@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "content/common/mime_sniffing_url_loader.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "services/network/test/test_url_loader_client.h"

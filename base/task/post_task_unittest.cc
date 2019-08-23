@@ -9,7 +9,7 @@
 #include "base/task/task_executor.h"
 #include "base/task/test_task_traits_extension.h"
 #include "base/test/gtest_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"

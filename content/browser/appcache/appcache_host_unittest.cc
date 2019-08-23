@@ -13,7 +13,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_backend_impl.h"
 #include "content/browser/appcache/appcache_group.h"

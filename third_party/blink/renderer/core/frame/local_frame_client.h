@@ -35,6 +35,7 @@
 
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom-blink.h"
@@ -177,6 +178,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
       base::TimeTicks input_start_time,
       const String& href_translate,
       WebContentSecurityPolicyList,
+      network::mojom::IPAddressSpace,
       mojom::blink::NavigationInitiatorPtr) = 0;
 
   virtual void DispatchWillSendSubmitEvent(HTMLFormElement*) = 0;

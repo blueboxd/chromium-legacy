@@ -10,7 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/test/scoped_path_override.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "remoting/host/file_transfer/fake_file_chooser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

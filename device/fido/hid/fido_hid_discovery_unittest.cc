@@ -7,7 +7,7 @@
 #include <string>
 #include <utility>
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "device/fido/fido_authenticator.h"
 #include "device/fido/hid/fake_hid_impl_for_testing.h"
 #include "device/fido/hid/fido_hid_device.h"

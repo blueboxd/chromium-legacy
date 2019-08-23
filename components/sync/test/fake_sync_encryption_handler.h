@@ -41,7 +41,6 @@ class FakeSyncEncryptionHandler : public KeystoreKeysHandler,
   bool IsEncryptEverythingEnabled() const override;
   base::Time GetKeystoreMigrationTime() const override;
   KeystoreKeysHandler* GetKeystoreKeysHandler() override;
-  syncable::NigoriHandler* GetNigoriHandler() override;
 
   // NigoriHandler implemenation.
   bool ApplyNigoriUpdate(const sync_pb::NigoriSpecifics& nigori,

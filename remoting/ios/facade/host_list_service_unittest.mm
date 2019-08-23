@@ -16,7 +16,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "net/http/http_status_code.h"
 #include "remoting/base/grpc_support/grpc_async_executor.h"

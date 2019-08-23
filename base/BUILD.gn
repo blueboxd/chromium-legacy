@@ -2732,7 +2732,7 @@ test("base_unittests") {
     "test/scoped_feature_list_unittest.cc",
     "test/scoped_mock_clock_override_unittest.cc",
     "test/scoped_mock_time_message_loop_task_runner_unittest.cc",
-    "test/scoped_task_environment_unittest.cc",
+    "test/task_environment_unittest.cc",
     "test/test_mock_time_task_runner_unittest.cc",
     "test/test_pending_task_unittest.cc",
     "test/test_reg_util_win_unittest.cc",
@@ -3043,6 +3043,7 @@ test("base_unittests") {
       sources += [ "profiler/win32_stack_frame_unwinder_unittest.cc" ]
       data_deps += [ ":base_profiler_test_support_library" ]
     }
+    sources += [ "files/os_validation_win_unittest.cc" ]
   }
 
   if (use_allocator_shim) {

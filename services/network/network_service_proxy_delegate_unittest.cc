@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"

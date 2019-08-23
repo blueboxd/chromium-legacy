@@ -9,5 +9,6 @@ FAIL ICE can connect in a recvonly usecase promise_test: Unhandled rejection wit
 FAIL iceConnectionState changes at the right time, with bundle policy balanced promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'sender' of undefined"
 FAIL iceConnectionState changes at the right time, with bundle policy max-bundle promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'sender' of undefined"
 FAIL iceConnectionState changes at the right time, with bundle policy max-compat promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'sender' of undefined"
+PASS Responder ICE connection state behaves as expected
 Harness: the test ran to completion.
 

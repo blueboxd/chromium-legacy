@@ -4126,6 +4126,169 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DictationEnabled) {
   EXPECT_FALSE(accessibility_manager->IsDictationEnabled());
 }
 
+IN_PROC_BROWSER_TEST_F(PolicyTest, KeyboardFocusHighlightEnabled) {
+  // Verifies that the keyboard focus highlight objects accessibility feature
+  // can be controlled through policy.
+  chromeos::AccessibilityManager* const accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+
+  // Verify that the keyboard focus highlight objects is initially disabled.
+  EXPECT_FALSE(accessibility_manager->IsFocusHighlightEnabled());
+
+  // Manually enable the keyboard focus highlight objects.
+  accessibility_manager->SetFocusHighlightEnabled(true);
+  EXPECT_TRUE(accessibility_manager->IsFocusHighlightEnabled());
+
+  // Verify that policy overrides the manual setting.
+  PolicyMap policies;
+  policies.Set(key::kKeyboardFocusHighlightEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(false), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_FALSE(accessibility_manager->IsFocusHighlightEnabled());
+
+  // Verify that the keyboard focus highlight objects cannot be enabled manually
+  // anymore.
+  accessibility_manager->SetFocusHighlightEnabled(true);
+  EXPECT_FALSE(accessibility_manager->IsFocusHighlightEnabled());
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, CursorHighlightEnabled) {
+  // Verifies that the cursor highlight accessibility feature accessibility
+  // feature can be controlled through policy.
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+
+  // Verify that the cursor highlight is initially disabled.
+  EXPECT_FALSE(accessibility_manager->IsCursorHighlightEnabled());
+
+  // Manually enable the cursor highlight.
+  accessibility_manager->SetCursorHighlightEnabled(true);
+  EXPECT_TRUE(accessibility_manager->IsCursorHighlightEnabled());
+
+  // Verify that policy overrides the manual setting.
+  PolicyMap policies;
+  policies.Set(key::kCursorHighlightEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(false), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_FALSE(accessibility_manager->IsCursorHighlightEnabled());
+
+  // Verify that the cursor highlight cannot be enabled manually anymore.
+  accessibility_manager->SetCursorHighlightEnabled(true);
+  EXPECT_FALSE(accessibility_manager->IsCursorHighlightEnabled());
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, CaretHighlightEnabled) {
+  // Verifies that the caret highlight accessibility feature can be controlled
+  // through policy.
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+
+  // Verify that the caret highlight is initially disabled.
+  EXPECT_FALSE(accessibility_manager->IsCaretHighlightEnabled());
+
+  // Manually enable the caret highlight.
+  accessibility_manager->SetCaretHighlightEnabled(true);
+  EXPECT_TRUE(accessibility_manager->IsCaretHighlightEnabled());
+
+  // Verify that policy overrides the manual setting.
+  PolicyMap policies;
+  policies.Set(key::kCaretHighlightEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(false), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_FALSE(accessibility_manager->IsCaretHighlightEnabled());
+
+  // Verify that the caret highlight cannot be enabled manually anymore.
+  accessibility_manager->SetCaretHighlightEnabled(true);
+  EXPECT_FALSE(accessibility_manager->IsCaretHighlightEnabled());
+
+  policies.Set(key::kCaretHighlightEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(true), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(accessibility_manager->IsCaretHighlightEnabled());
+
+  // Verify that the caret highlight cannot be disabled manually anymore.
+  accessibility_manager->SetCaretHighlightEnabled(false);
+  EXPECT_TRUE(accessibility_manager->IsCaretHighlightEnabled());
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, MonoAudioEnabled) {
+  // Verifies that the mono audio accessibility feature can be controlled
+  // through policy.
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+
+  accessibility_manager->EnableMonoAudio(false);
+  // Verify that the mono audio is initially disabled.
+  EXPECT_FALSE(accessibility_manager->IsMonoAudioEnabled());
+
+  // Manually enable the mono audio.
+  accessibility_manager->EnableMonoAudio(true);
+  EXPECT_TRUE(accessibility_manager->IsMonoAudioEnabled());
+
+  // Verify that policy overrides the manual setting.
+  PolicyMap policies;
+  policies.Set(key::kMonoAudioEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(false), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_FALSE(accessibility_manager->IsMonoAudioEnabled());
+
+  // Verify that the mono audio cannot be enabled manually anymore.
+  accessibility_manager->EnableMonoAudio(true);
+  EXPECT_FALSE(accessibility_manager->IsMonoAudioEnabled());
+
+  policies.Set(key::kMonoAudioEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(true), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(accessibility_manager->IsMonoAudioEnabled());
+
+  // Verify that the mono audio cannot be disabled manually anymore.
+  accessibility_manager->EnableMonoAudio(false);
+  EXPECT_TRUE(accessibility_manager->IsMonoAudioEnabled());
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, AutoclickEnabled) {
+  // Verifies that the autoclick accessibility feature can be controlled through
+  // policy.
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+
+  accessibility_manager->EnableAutoclick(false);
+  // Verify that the autoclick is initially disabled.
+  EXPECT_FALSE(accessibility_manager->IsAutoclickEnabled());
+
+  // Manually enable the autoclick.
+  accessibility_manager->EnableAutoclick(true);
+  EXPECT_TRUE(accessibility_manager->IsAutoclickEnabled());
+
+  // Verify that policy overrides the manual setting.
+  PolicyMap policies;
+  policies.Set(key::kAutoclickEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(false), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_FALSE(accessibility_manager->IsAutoclickEnabled());
+
+  // Verify that the autoclick cannot be enabled manually anymore.
+  accessibility_manager->EnableAutoclick(true);
+  EXPECT_FALSE(accessibility_manager->IsAutoclickEnabled());
+
+  policies.Set(key::kAutoclickEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(true), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(accessibility_manager->IsAutoclickEnabled());
+
+  // Verify that the autoclick cannot be disabled manually anymore.
+  accessibility_manager->EnableAutoclick(false);
+  EXPECT_TRUE(accessibility_manager->IsAutoclickEnabled());
+}
+
 IN_PROC_BROWSER_TEST_F(PolicyTest, AssistantContextEnabled) {
   PrefService* prefs = browser()->profile()->GetPrefs();
   EXPECT_FALSE(

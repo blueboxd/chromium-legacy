@@ -11,7 +11,7 @@
 #include "components/services/patch/public/mojom/file_patcher.mojom.h"
 #include "components/services/unzip/content/unzip_service.h"
 #include "components/services/unzip/public/mojom/unzipper.mojom.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -27,7 +27,7 @@
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/context_menu_params.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/event_router_factory.h"
 #include "extensions/browser/extension_registry.h"

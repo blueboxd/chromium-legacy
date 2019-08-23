@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/services/media_gallery_util/public/mojom/media_parser.mojom.h"
 #include "media/base/test_data_util.h"
 #include "media/media_buildflags.h"

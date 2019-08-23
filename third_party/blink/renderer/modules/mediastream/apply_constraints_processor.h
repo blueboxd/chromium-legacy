@@ -27,7 +27,8 @@ class MediaStreamVideoTrack;
 // requests. Only one applyConstraints() request can be processed at a time.
 // ApplyConstraintsProcessor must be created, called and destroyed on the main
 // render thread. There should be only one ApplyConstraintsProcessor per frame.
-class MODULES_EXPORT ApplyConstraintsProcessor {
+class MODULES_EXPORT ApplyConstraintsProcessor
+    : public GarbageCollectedFinalized<ApplyConstraintsProcessor> {
  public:
   using MediaDevicesDispatcherCallback = base::RepeatingCallback<
       const blink::mojom::blink::MediaDevicesDispatcherHostPtr&()>;
@@ -42,6 +43,8 @@ class MODULES_EXPORT ApplyConstraintsProcessor {
   // processed.
   void ProcessRequest(const blink::WebApplyConstraintsRequest& request,
                       base::OnceClosure callback);
+
+  void Trace(Visitor*) {}
 
  private:
   // Helpers for video device-capture requests.

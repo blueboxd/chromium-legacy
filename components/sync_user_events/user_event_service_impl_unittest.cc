@@ -7,7 +7,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/test_sync_service.h"
 #include "components/sync/model/mock_model_type_change_processor.h"

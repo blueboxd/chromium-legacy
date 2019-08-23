@@ -4,8 +4,8 @@
 
 #include "chrome/renderer/media/cast_ipc_dispatcher.h"
 
-#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/common/cast_messages.h"
 #include "ipc/ipc_message_macros.h"

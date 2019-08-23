@@ -21,7 +21,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/printing/browser/printer_capabilities.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "printing/backend/print_backend.h"
 #include "printing/backend/printing_restrictions.h"
 #include "printing/backend/test_print_backend.h"

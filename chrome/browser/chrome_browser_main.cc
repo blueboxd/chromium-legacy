@@ -251,7 +251,6 @@
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #include "chrome/browser/component_updater/third_party_module_list_component_installer_win.h"
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
-#include "chrome/browser/downgrade/user_data_downgrade.h"
 #include "chrome/browser/first_run/upgrade_util_win.h"
 #include "chrome/browser/ui/network_profile_bubble.h"
 #include "chrome/browser/ui/views/try_chrome_dialog_win/try_chrome_dialog.h"
@@ -1425,6 +1424,14 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       return chrome::RESULT_CODE_PROFILE_IN_USE;
   }
 
+#if defined(OS_WIN)
+  // Begin relaunch processing immediately if User Data migration is required
+  // to handle a version downgrade.
+  if (downgrade_manager_.IsMigrationRequired(user_data_dir_))
+    return chrome::RESULT_CODE_DOWNGRADE_AND_RELAUNCH;
+  downgrade_manager_.UpdateLastVersion(user_data_dir_);
+#endif
+
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
   // Initialize the machine level user cloud policy controller after the
   // browser process singleton is acquired to remove race conditions where
@@ -1803,7 +1810,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
 #if defined(OS_WIN)
   // Clean up old user data directory and disk cache directory.
-  downgrade::DeleteMovedUserDataSoon();
+  downgrade_manager_.DeleteMovedUserDataSoon(user_data_dir_);
 #endif
 
 #if defined(OS_ANDROID)
@@ -1892,24 +1899,35 @@ void ChromeBrowserMainParts::PostDestroyThreads() {
   // not finish.
   NOTREACHED();
 #else
-  int restart_flags = restart_last_session_
-                          ? browser_shutdown::RESTART_LAST_SESSION
-                          : browser_shutdown::NO_FLAGS;
+  browser_shutdown::RestartMode restart_mode =
+      browser_shutdown::RestartMode::kNoRestart;
+
+  if (restart_last_session_) {
+    restart_mode = browser_shutdown::RestartMode::kRestartLastSession;
 
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
-  if (restart_flags) {
-    restart_flags |= BackgroundModeManager::should_restart_in_background()
-                         ? browser_shutdown::RESTART_IN_BACKGROUND
-                         : browser_shutdown::NO_FLAGS;
-  }
+    if (BackgroundModeManager::should_restart_in_background())
+      restart_mode = browser_shutdown::RestartMode::kRestartInBackground;
 #endif  // BUILDFLAG(ENABLE_BACKGROUND_MODE)
+  }
 
   browser_process_->PostDestroyThreads();
   // browser_shutdown takes care of deleting browser_process, so we need to
   // release it.
   ignore_result(browser_process_.release());
 
-  browser_shutdown::ShutdownPostThreadsStop(restart_flags);
+#if defined(OS_WIN)
+  if (result_code_ == chrome::RESULT_CODE_DOWNGRADE_AND_RELAUNCH) {
+    // Process a pending User Data downgrade before restarting.
+    downgrade_manager_.ProcessDowngrade(user_data_dir_);
+    // It's impossible for there to also be a user-driven relaunch since the
+    // browser never fully starts in this case.
+    DCHECK(!restart_last_session_);
+    restart_mode = browser_shutdown::RestartMode::kRestartThisSession;
+  }
+#endif  // !defined(OS_WIN)
+
+  browser_shutdown::ShutdownPostThreadsStop(restart_mode);
 
 #if !defined(OS_CHROMEOS)
   master_prefs_.reset();

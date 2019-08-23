@@ -28,7 +28,7 @@
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "media/base/video_frame_metadata.h"
 #include "media/base/video_util.h"
 #include "media/capture/video/video_capture_buffer_pool_impl.h"

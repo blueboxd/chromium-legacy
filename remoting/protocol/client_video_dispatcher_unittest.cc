@@ -10,7 +10,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "remoting/base/buffered_socket_writer.h"
 #include "remoting/base/constants.h"

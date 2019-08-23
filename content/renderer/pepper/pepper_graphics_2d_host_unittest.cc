@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "base/stl_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "content/renderer/pepper/gfx_conversion.h"
 #include "content/renderer/pepper/mock_renderer_ppapi_host.h"
 #include "content/renderer/pepper/ppb_image_data_impl.h"

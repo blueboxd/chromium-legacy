@@ -9,7 +9,7 @@
 #include "base/bind_helpers.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chromeos/services/cellular_setup/cellular_setup_impl.h"
 #include "chromeos/services/cellular_setup/public/cpp/fake_activation_delegate.h"
 #include "chromeos/services/cellular_setup/public/cpp/fake_carrier_portal_handler.h"

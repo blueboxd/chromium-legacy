@@ -5,7 +5,7 @@
 #include "remoting/host/remoting_register_support_host_request.h"
 
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "remoting/base/fake_oauth_token_getter.h"
 #include "remoting/base/rsa_key_pair.h"

@@ -12,7 +12,7 @@
 
 #include "base/bind.h"
 #include "base/optional.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/cbor/reader.h"
 #include "components/cbor/values.h"

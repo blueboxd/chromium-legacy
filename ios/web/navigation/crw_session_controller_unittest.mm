@@ -19,7 +19,7 @@
 #import "ios/web/navigation/navigation_manager_impl.h"
 #include "ios/web/public/navigation/referrer.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/web_task_environment.h"
 #import "ios/web/test/fakes/crw_fake_session_controller_delegate.h"
 #include "ios/web/test/fakes/fake_navigation_manager_delegate.h"
 #import "net/base/mac/url_conversions.h"

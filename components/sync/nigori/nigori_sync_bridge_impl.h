@@ -54,7 +54,6 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   bool IsEncryptEverythingEnabled() const override;
   base::Time GetKeystoreMigrationTime() const override;
   KeystoreKeysHandler* GetKeystoreKeysHandler() override;
-  syncable::NigoriHandler* GetNigoriHandler() override;
 
   // KeystoreKeysHandler implementation.
   bool NeedKeystoreKey() const override;

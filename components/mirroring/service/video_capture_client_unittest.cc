@@ -8,7 +8,7 @@
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/mirroring/service/fake_video_capture_host.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_metadata.h"

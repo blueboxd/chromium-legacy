@@ -74,7 +74,6 @@
 
 #include "base/debug/close_handle_hook_win.h"
 #include "base/win/atl.h"
-#include "chrome/browser/downgrade/user_data_downgrade.h"
 #include "chrome/child/v8_crashpad_support_win.h"
 #include "chrome/chrome_elf/chrome_elf_main.h"
 #include "chrome/common/child_process_logging.h"
@@ -875,16 +874,8 @@ void ChromeMainDelegate::PreSandboxStartup() {
 #endif
 
   // Initialize the user data dir for any process type that needs it.
-  if (chrome::ProcessNeedsProfileDir(process_type)) {
+  if (chrome::ProcessNeedsProfileDir(process_type))
     InitializeUserDataDir(base::CommandLine::ForCurrentProcess());
-#if defined(OS_WIN) && !defined(CHROME_MULTIPLE_DLL_CHILD)
-    // TODO(grt): Enable this codepath for all desktop platforms.
-    downgrade::MoveUserDataForFirstRunAfterDowngrade();
-    base::FilePath user_data_dir;
-    if (base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
-      downgrade::UpdateLastVersion(user_data_dir);
-#endif
-  }
 
   // Register component_updater PathProvider after DIR_USER_DATA overidden by
   // command line flags. Maybe move the chrome PathProvider down here also?

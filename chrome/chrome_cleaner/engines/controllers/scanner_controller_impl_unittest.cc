@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequenced_task_runner.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/chrome_cleaner/engines/broker/engine_client_mock.h"
 #include "chrome/chrome_cleaner/logging/logging_service_api.h"

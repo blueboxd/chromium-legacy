@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/sync/syncable/entry.h"
 #include "components/sync/syncable/mutable_entry.h"
 #include "components/sync/syncable/syncable_base_transaction.h"

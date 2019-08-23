@@ -15,7 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/unguessable_token.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "dbus/mock_bus.h"

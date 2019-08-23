@@ -12,7 +12,7 @@
 #include "base/bind.h"
 #include "base/containers/queue.h"
 #include "base/memory/ptr_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "net/base/io_buffer.h"
 #include "remoting/base/compound_buffer.h"

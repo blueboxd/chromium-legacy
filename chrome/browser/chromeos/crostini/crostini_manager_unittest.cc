@@ -22,7 +22,7 @@
 #include "chromeos/disks/mock_disk_mount_manager.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/scoped_user_manager.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "services/device/public/cpp/test/fake_usb_device_manager.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "testing/gmock/include/gmock/gmock.h"

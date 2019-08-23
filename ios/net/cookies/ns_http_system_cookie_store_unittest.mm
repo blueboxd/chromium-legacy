@@ -8,7 +8,7 @@
 
 #include <memory>
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "ios/net/cookies/system_cookie_store_unittest_template.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

@@ -37,6 +37,15 @@ Cryptographer::Cryptographer(const Cryptographer& other)
 
 Cryptographer::~Cryptographer() {}
 
+void Cryptographer::CopyFrom(const Cryptographer& other) {
+  key_bag_.CopyFrom(other.key_bag_);
+  default_nigori_name_ = other.default_nigori_name_;
+  if (other.pending_keys_) {
+    pending_keys_ =
+        std::make_unique<sync_pb::EncryptedData>(*other.pending_keys_);
+  }
+}
+
 void Cryptographer::Bootstrap(const Encryptor& encryptor,
                               const std::string& restored_bootstrap_token) {
   if (is_initialized()) {

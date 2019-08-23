@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/fake_audio_render_callback.h"
 #include "media/base/media_util.h"

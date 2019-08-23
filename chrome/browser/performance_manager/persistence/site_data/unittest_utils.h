@@ -12,7 +12,7 @@
 #include "chrome/browser/performance_manager/performance_manager.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_impl.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_store.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

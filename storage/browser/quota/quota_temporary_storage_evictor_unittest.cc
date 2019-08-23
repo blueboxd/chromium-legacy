@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/quota_temporary_storage_evictor.h"
 #include "storage/browser/test/mock_storage_client.h"

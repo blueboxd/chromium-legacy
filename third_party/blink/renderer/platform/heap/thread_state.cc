@@ -341,8 +341,7 @@ void ThreadState::VisitPersistents(Visitor* visitor) {
     ThreadHeapStatsCollector::Scope inner_stats_scope(
         Heap().stats_collector(),
         ThreadHeapStatsCollector::kVisitCrossThreadPersistents);
-    // See ProcessHeap::CrossThreadPersistentMutex().
-    MutexLocker persistent_lock(ProcessHeap::CrossThreadPersistentMutex());
+    ProcessHeap::CrossThreadPersistentMutex().AssertAcquired();
     ProcessHeap::GetCrossThreadPersistentRegion().TracePersistentNodes(visitor);
   }
   {
@@ -865,6 +864,10 @@ void ThreadState::AtomicPauseMarkPrologue(BlinkGC::StackState stack_state,
   DCHECK(InAtomicMarkingPause());
   Heap().MakeConsistentForGC();
   Heap().ClearArenaAges();
+  // AtomicPauseMarkPrologue is the common entry point for marking. The
+  // requirement is to lock from roots marking to weakness processing which is
+  // why the lock is taken at the end of the prologue.
+  static_cast<MutexBase&>(ProcessHeap::CrossThreadPersistentMutex()).lock();
 }
 
 void ThreadState::AtomicPauseEpilogue() {
@@ -1257,7 +1260,10 @@ void ThreadState::IncrementalMarkingStart(BlinkGC::GCReason reason) {
     previous_incremental_marking_time_left_ = base::TimeDelta::Max();
     MarkPhasePrologue(BlinkGC::kNoHeapPointersOnStack,
                       BlinkGC::kIncrementalMarking, reason);
-    MarkPhaseVisitRoots();
+    {
+      MutexLocker persistent_lock(ProcessHeap::CrossThreadPersistentMutex());
+      MarkPhaseVisitRoots();
+    }
     EnableIncrementalMarkingBarrier();
     ScheduleIncrementalMarkingStep();
     DCHECK(IsMarkingInProgress());
@@ -1423,6 +1429,7 @@ void ThreadState::AtomicPauseMarkEpilogue(BlinkGC::MarkingType marking_type) {
   MarkPhaseEpilogue(marking_type);
   LeaveAtomicPause();
   LeaveGCForbiddenScope();
+  static_cast<MutexBase&>(ProcessHeap::CrossThreadPersistentMutex()).unlock();
 }
 
 namespace {
@@ -1734,8 +1741,7 @@ void ThreadState::MarkPhaseVisitNotFullyConstructedObjects() {
 void ThreadState::MarkPhaseEpilogue(BlinkGC::MarkingType marking_type) {
   MarkingVisitor* visitor = current_gc_data_.visitor.get();
   {
-    // See ProcessHeap::CrossThreadPersistentMutex().
-    MutexLocker persistent_lock(ProcessHeap::CrossThreadPersistentMutex());
+    ProcessHeap::CrossThreadPersistentMutex().AssertAcquired();
     VisitWeakPersistents(visitor);
     Heap().WeakProcessing(visitor);
   }

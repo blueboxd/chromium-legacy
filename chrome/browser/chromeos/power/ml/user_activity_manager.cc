@@ -87,17 +87,14 @@ void LogMetricsToUMA(const UserActivityEvent& event) {
 
 }  // namespace
 
-// TODO(alanlxl): Fix the variable names and comments related to screen dim
-// imminent signals, because after powerd refactor (https://crrev.com/c/1601992)
-// ScreenDimImminent signals are deprecated.
 struct UserActivityManager::PreviousIdleEventData {
-  // Gap between two ScreenDimImminent signals.
-  base::TimeDelta dim_imminent_signal_interval;
-  // Features recorded for the ScreenDimImminent signal at the beginning of
-  // |dim_imminent_signal_interval|.
+  // Gap between two smart dim decision requests.
+  base::TimeDelta smart_dim_request_interval;
+  // Features recorded for the smart dim decision request at the beginning of
+  // |smart_dim_request_interval|.
   UserActivityEvent::Features features;
-  // Model prediction recorded for the ScreenDimImminent signal at the beginning
-  // of |dim_imminent_signal_interval|.
+  // Model prediction recorded for the smart dim decision request signal at the
+  // beginning of |smart_dim_request_interval|.
   UserActivityEvent::ModelPrediction model_prediction;
 };
 
@@ -528,7 +525,7 @@ void UserActivityManager::MaybeLogEvent(
     if (previous_event->has_log_duration_sec()) {
       previous_event->set_log_duration_sec(
           previous_event->log_duration_sec() +
-          previous_idle_event_data_->dim_imminent_signal_interval.InSeconds());
+          previous_idle_event_data_->smart_dim_request_interval.InSeconds());
     }
 
     *previous_activity_event.mutable_features() =
@@ -583,7 +580,7 @@ void UserActivityManager::PopulatePreviousEventData(
   LogPowerMLPreviousEventLoggingResult(result);
 
   previous_idle_event_data_ = std::make_unique<PreviousIdleEventData>();
-  previous_idle_event_data_->dim_imminent_signal_interval =
+  previous_idle_event_data_->smart_dim_request_interval =
       now - idle_event_start_since_boot_.value();
 
   previous_idle_event_data_->features = features_;

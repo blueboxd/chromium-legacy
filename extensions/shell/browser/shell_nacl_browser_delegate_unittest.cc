@@ -6,8 +6,8 @@
 
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {

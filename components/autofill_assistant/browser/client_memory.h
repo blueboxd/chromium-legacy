@@ -11,55 +11,45 @@
 #include "base/optional.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
-#include "components/autofill_assistant/browser/website_login_fetcher.h"
 
 namespace autofill_assistant {
 // Data shared between scripts and actions.
 class ClientMemory {
  public:
   ClientMemory();
-  ~ClientMemory();
+  virtual ~ClientMemory();
 
   // Selected credit card, if any. It will be a nullptr if didn't select
   // anything or if selected 'Fill manually'.
-  const autofill::CreditCard* selected_card() const;
+  virtual const autofill::CreditCard* selected_card();
 
   // Return true if card has been selected, otherwise return false.
   // Note that selected_card() might return nullptr when has_selected_card() is
   // true because fill manually was chosen.
-  bool has_selected_card() const;
+  virtual bool has_selected_card();
 
   // Selected address for |name|. It will be a nullptr if didn't select anything
   // or if selected 'Fill manually'.
-  const autofill::AutofillProfile* selected_address(
-      const std::string& name) const;
+  virtual const autofill::AutofillProfile* selected_address(
+      const std::string& name);
 
   // Return true if address has been selected, otherwise return false.
   // Note that selected_address() might return nullptr when
   // has_selected_address() is true because fill manually was chosen.
-  bool has_selected_address(const std::string& name) const;
+  virtual bool has_selected_address(const std::string& name);
 
   // Set the selected card.
-  void set_selected_card(std::unique_ptr<autofill::CreditCard> card);
+  virtual void set_selected_card(std::unique_ptr<autofill::CreditCard> card);
 
   // Set the selected address for |name|.
-  void set_selected_address(const std::string& name,
-                            std::unique_ptr<autofill::AutofillProfile> address);
+  virtual void set_selected_address(
+      const std::string& name,
+      std::unique_ptr<autofill::AutofillProfile> address);
 
-  // Set the selected login.
-  void set_selected_login(const WebsiteLoginFetcher::Login& login);
-
-  // Return true if a login has been selected, otherwise false.
-  bool has_selected_login() const;
-
-  // The selected login or nullptr if no login was selected.
-  const WebsiteLoginFetcher::Login* selected_login() const;
-
-  std::string GetAllAddressKeyNames() const;
+  virtual std::string GetAllAddressKeyNames() const;
 
  private:
   base::Optional<std::unique_ptr<autofill::CreditCard>> selected_card_;
-  base::Optional<WebsiteLoginFetcher::Login> selected_login_;
 
   // The address key requested by the autofill action.
   std::map<std::string, std::unique_ptr<autofill::AutofillProfile>>

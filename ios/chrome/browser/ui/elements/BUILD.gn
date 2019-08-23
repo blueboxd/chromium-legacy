@@ -71,6 +71,7 @@ source_set("elements_internal") {
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/material_components",
     "//ios/chrome/browser/ui/util",
+    "//ios/chrome/common/colors",
     "//ios/chrome/common/ui_util",
     "//ios/third_party/material_components_ios",
   ]

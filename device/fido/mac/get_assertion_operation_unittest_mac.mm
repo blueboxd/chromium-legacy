@@ -11,7 +11,7 @@
 
 #include "base/strings/string_number_conversions.h"
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_test_data.h"
 #include "device/fido/mac/make_credential_operation.h"

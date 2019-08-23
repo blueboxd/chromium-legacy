@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/libgtkui/select_file_dialog_impl_gtk.h"
+
 #include "base/run_loop.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
@@ -10,7 +11,7 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::RunLoop;

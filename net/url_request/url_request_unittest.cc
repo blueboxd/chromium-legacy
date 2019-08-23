@@ -10,9 +10,9 @@
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
+#include <windows.h>
 #include <objbase.h>
 #include <shlobj.h>
-#include <windows.h>
 #include <wrl/client.h>
 #endif
 
@@ -113,7 +113,7 @@
 #include "net/test/gtest_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"

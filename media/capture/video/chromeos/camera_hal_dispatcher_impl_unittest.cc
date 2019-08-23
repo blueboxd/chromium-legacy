@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "media/capture/video/chromeos/mojom/camera_common.mojom.h"
 #include "media/capture/video/chromeos/mojom/cros_camera_service.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"

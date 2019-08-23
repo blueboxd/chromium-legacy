@@ -101,11 +101,17 @@ void ZeroStateFileProvider::SetSearchResults(FilePathResults results) {
 
 void ZeroStateFileProvider::OnFilesOpened(
     const std::vector<FileOpenEvent>& file_opens) {
-  // TODO(crbug.com/959679): Filter out DriveFS files.
   if (!files_ranker_)
     return;
-  for (const auto& file_open : file_opens)
-    files_ranker_->Record(file_open.path.value());
+
+  // The DriveQuickAccessProvider handles Drive files, so recording them here
+  // would be redundant. Filter them out by checking the file resides within the
+  // user's cryptohome.
+  const auto& profile_path = profile_->GetPath();
+  for (const auto& file_open : file_opens) {
+    if (profile_path.AppendRelativePath(file_open.path, nullptr))
+      files_ranker_->Record(file_open.path.value());
+  }
 }
 
 }  // namespace app_list

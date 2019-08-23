@@ -11,7 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/renderer/media/webrtc_logging_agent_impl.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "testing/gtest/include/gtest/gtest.h"

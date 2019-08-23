@@ -59,7 +59,7 @@ specific_include_rules = {
   r"|team_drive_change_list_loader_unittest\.cc"
   r"|team_drive_list_loader_unittest\.cc"
   r")": [
-    "+content/public/test/test_browser_thread_bundle.h",
+    "+content/public/test/browser_task_environment.h",
   ],
 
   # The following test dependencies should be removed to fully componentize this

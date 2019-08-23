@@ -11,6 +11,10 @@ namespace ios {
 class ChromeBrowserState;
 }
 
+namespace web {
+class WebState;
+}
+
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
 @class ContentSuggestionsHeaderViewController;
@@ -18,7 +22,6 @@ class ChromeBrowserState;
 @protocol OmniboxFocuser;
 @protocol FakeboxFocuser;
 @protocol SnackbarCommands;
-class WebStateList;
 
 // Coordinator to manage the Suggestions UI via a
 // ContentSuggestionsViewController.
@@ -27,7 +30,7 @@ class WebStateList;
 // BrowserState used to create the ContentSuggestionFactory.
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
 // URLLoader used to open pages.
-@property(nonatomic, assign) WebStateList* webStateList;
+@property(nonatomic, assign) web::WebState* webState;
 @property(nonatomic, weak) id<NewTabPageControllerDelegate> toolbarDelegate;
 @property(nonatomic, weak) id<ApplicationCommands,
                               BrowserCommands,

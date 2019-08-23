@@ -26,7 +26,7 @@
 #include "components/arc/timer/arc_timer_bridge.h"
 #include "components/arc/timer/arc_timer_mojom_traits.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/system/handle.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"

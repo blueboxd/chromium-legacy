@@ -21,7 +21,7 @@
 #include "chrome/browser/safe_browsing/download_protection/download_feedback.h"
 #include "components/download/public/common/mock_download_item.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"

@@ -31,7 +31,7 @@
 #include "base/fuchsia/service_directory.h"
 #include "base/path_service.h"
 #include "base/test/multiprocess_test.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "fuchsia/engine/common.h"
 #include "fuchsia/engine/fake_context.h"

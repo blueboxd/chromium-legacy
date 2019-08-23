@@ -11,7 +11,7 @@
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/tick_clock.h"
 #include "base/values.h"
 #include "google_apis/gaia/gaia_oauth_client.h"

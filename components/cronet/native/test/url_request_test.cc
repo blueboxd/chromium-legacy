@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/cronet/native/test/test_request_finished_info_listener.h"
 #include "components/cronet/native/test/test_upload_data_provider.h"
 #include "components/cronet/native/test/test_url_request_callback.h"

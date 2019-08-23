@@ -75,14 +75,6 @@ public class AssistantPaymentRequestNativeDelegate implements AssistantPaymentRe
         }
     }
 
-    @Override
-    public void onLoginChoiceChanged(AssistantPaymentRequestLoginChoice loginChoice) {
-        if (mNativeAssistantPaymentRequestDelegate != 0) {
-            nativeOnLoginChoiceChanged(mNativeAssistantPaymentRequestDelegate,
-                    loginChoice != null ? loginChoice.getIdentifier() : null);
-        }
-    }
-
     @CalledByNative
     private void clearNativePtr() {
         mNativeAssistantPaymentRequestDelegate = 0;
@@ -98,6 +90,4 @@ public class AssistantPaymentRequestNativeDelegate implements AssistantPaymentRe
             long nativeAssistantPaymentRequestDelegate, int state);
     private native void nativeOnTermsAndConditionsLinkClicked(
             long nativeAssistantPaymentRequestDelegate, int link);
-    private native void nativeOnLoginChoiceChanged(
-            long nativeAssistantPaymentRequestDelegate, String choice);
 }

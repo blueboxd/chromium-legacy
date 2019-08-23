@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/startup/credential_provider_signin_info_fetcher_win.h"
+
 #include "chrome/browser/ui/startup/credential_provider_signin_dialog_win_test_data.h"
 
 #include <string>
@@ -13,7 +14,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"

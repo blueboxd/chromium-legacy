@@ -15,7 +15,7 @@
 #include "net/ftp/ftp_response_info.h"
 #include "net/ftp/ftp_transaction.h"
 #include "net/ftp/ftp_transaction_factory.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"

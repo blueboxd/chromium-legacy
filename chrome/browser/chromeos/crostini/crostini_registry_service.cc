@@ -597,14 +597,18 @@ bool CrostiniRegistryService::IsCrostiniShelfAppId(
              ->FindKey(shelf_app_id) != nullptr;
 }
 
-std::vector<std::string> CrostiniRegistryService::GetRegisteredAppIds() const {
+std::map<std::string, CrostiniRegistryService::Registration>
+CrostiniRegistryService::GetRegisteredApps() const {
   const base::DictionaryValue* apps =
       prefs_->GetDictionary(prefs::kCrostiniRegistry);
-  std::vector<std::string> result;
-  for (const auto& item : apps->DictItems())
-    result.push_back(item.first);
-  if (!apps->FindKey(kCrostiniTerminalId))
-    result.push_back(kCrostiniTerminalId);
+  std::map<std::string, CrostiniRegistryService::Registration> result;
+  for (const auto& item : apps->DictItems()) {
+    result.emplace(item.first, Registration(&item.second,
+                                            item.first == kCrostiniTerminalId));
+  }
+  if (!apps->FindKey(kCrostiniTerminalId)) {
+    result.emplace(kCrostiniTerminalId, Registration(nullptr, true));
+  }
   return result;
 }
 

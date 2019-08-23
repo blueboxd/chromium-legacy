@@ -3,10 +3,11 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/ntp/ntp_tile_saver.h"
+
 #include "base/run_loop.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #import "components/ntp_tiles/ntp_tile.h"
 #import "ios/chrome/browser/ui/favicon/favicon_attributes_provider.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"

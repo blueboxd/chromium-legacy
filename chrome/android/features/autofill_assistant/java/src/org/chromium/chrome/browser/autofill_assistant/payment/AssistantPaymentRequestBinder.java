@@ -93,7 +93,6 @@ class AssistantPaymentRequestBinder
         private final View mRootView;
         private final AssistantVerticalExpanderAccordion mPaymentRequestExpanderAccordion;
         private final int mSectionToSectionPadding;
-        private final AssistantPaymentRequestLoginSection mLoginSection;
         private final AssistantPaymentRequestContactDetailsSection mContactDetailsSection;
         private final AssistantPaymentRequestPaymentMethodSection mPaymentMethodSection;
         private final AssistantPaymentRequestShippingAddressSection mShippingAddressSection;
@@ -104,7 +103,7 @@ class AssistantPaymentRequestBinder
         private PersonalDataManager.PersonalDataManagerObserver mPersonalDataManagerObserver;
 
         public ViewHolder(View rootView, AssistantVerticalExpanderAccordion accordion,
-                int sectionPadding, AssistantPaymentRequestLoginSection loginSection,
+                int sectionPadding,
                 AssistantPaymentRequestContactDetailsSection contactDetailsSection,
                 AssistantPaymentRequestPaymentMethodSection paymentMethodSection,
                 AssistantPaymentRequestShippingAddressSection shippingAddressSection,
@@ -114,7 +113,6 @@ class AssistantPaymentRequestBinder
             mRootView = rootView;
             mPaymentRequestExpanderAccordion = accordion;
             mSectionToSectionPadding = sectionPadding;
-            mLoginSection = loginSection;
             mContactDetailsSection = contactDetailsSection;
             mPaymentMethodSection = paymentMethodSection;
             mShippingAddressSection = shippingAddressSection;
@@ -154,7 +152,6 @@ class AssistantPaymentRequestBinder
         boolean handled = updateEditors(model, propertyKey, view);
         handled = updateRootVisibility(model, propertyKey, view) || handled;
         handled = updateSectionVisibility(model, propertyKey, view) || handled;
-        handled = updateSectionTitles(model, propertyKey, view) || handled;
         handled = updateSectionContents(model, propertyKey, view) || handled;
         handled = updateSectionSelectedItem(model, propertyKey, view) || handled;
         /* Update section paddings *after* updating section visibility. */
@@ -183,8 +180,6 @@ class AssistantPaymentRequestBinder
                     delegate != null ? delegate::onPaymentMethodChanged : null);
             view.mShippingAddressSection.setListener(
                     delegate != null ? delegate::onShippingAddressChanged : null);
-            view.mLoginSection.setListener(
-                    delegate != null ? delegate::onLoginChoiceChanged : null);
         } else if (propertyKey == AssistantPaymentRequestModel.SUPPORTED_BASIC_CARD_NETWORKS) {
             updateAvailablePaymentMethods(model);
         } else if (propertyKey == AssistantPaymentRequestModel.SUPPORTED_PAYMENT_METHODS) {
@@ -198,16 +193,6 @@ class AssistantPaymentRequestBinder
         return model.get(AssistantPaymentRequestModel.REQUEST_NAME)
                 || model.get(AssistantPaymentRequestModel.REQUEST_PHONE)
                 || model.get(AssistantPaymentRequestModel.REQUEST_EMAIL);
-    }
-
-    private boolean updateSectionTitles(
-            AssistantPaymentRequestModel model, PropertyKey propertyKey, ViewHolder view) {
-        if (propertyKey == AssistantPaymentRequestModel.LOGIN_SECTION_TITLE) {
-            view.mLoginSection.setTitle(
-                    model.get(AssistantPaymentRequestModel.LOGIN_SECTION_TITLE));
-            return true;
-        }
-        return false;
     }
 
     /**
@@ -248,12 +233,6 @@ class AssistantPaymentRequestBinder
             view.mPaymentMethodSection.setBillingPostalCodeMissingText(
                     model.get(AssistantPaymentRequestModel.BILLING_POSTAL_CODE_MISSING_TEXT));
             return true;
-        } else if (propertyKey == AssistantPaymentRequestModel.AVAILABLE_LOGINS) {
-            if (model.get(AssistantPaymentRequestModel.REQUEST_LOGIN_CHOICE)) {
-                view.mLoginSection.onLoginsChanged(
-                        model.get(AssistantPaymentRequestModel.AVAILABLE_LOGINS));
-            }
-            return true;
         }
 
         return false;
@@ -293,10 +272,6 @@ class AssistantPaymentRequestBinder
                 view.mTermsAsCheckboxSection.getView().setVisibility(View.GONE);
             }
             return true;
-        } else if (propertyKey == AssistantPaymentRequestModel.REQUEST_LOGIN_CHOICE) {
-            view.mLoginSection.setVisible(
-                    model.get(AssistantPaymentRequestModel.REQUEST_LOGIN_CHOICE));
-            return true;
         }
         return false;
     }
@@ -318,10 +293,11 @@ class AssistantPaymentRequestBinder
                 updateAvailablePaymentMethods(model);
                 WebContents webContents = model.get(AssistantPaymentRequestModel.WEB_CONTENTS);
                 if (webContents != null) {
-                    String origin = UrlFormatter.formatUrlForSecurityDisplayOmitScheme(
-                            webContents.getLastCommittedUrl());
-                    view.mTermsSection.setOrigin(origin);
-                    view.mTermsAsCheckboxSection.setOrigin(origin);
+                    view.mTermsSection.setOrigin(UrlFormatter.formatUrlForSecurityDisplayOmitScheme(
+                            webContents.getLastCommittedUrl()));
+                    view.mTermsAsCheckboxSection.setOrigin(
+                            UrlFormatter.formatUrlForSecurityDisplayOmitScheme(
+                                    webContents.getLastCommittedUrl()));
                 }
                 view.startListenToPersonalDataManager(() -> {
                     AssistantPaymentRequestBinder.this.updateAvailableProfiles(model, view);
@@ -358,10 +334,6 @@ class AssistantPaymentRequestBinder
             view.mTermsSection.setTermsStatus(termsStatus);
             view.mTermsAsCheckboxSection.setTermsStatus(termsStatus);
             return true;
-        } else if (propertyKey == AssistantPaymentRequestModel.SELECTED_LOGIN) {
-            view.mLoginSection.addOrUpdateItem(
-                    model.get(AssistantPaymentRequestModel.SELECTED_LOGIN), true);
-            return true;
         }
         return false;
     }
@@ -388,22 +360,13 @@ class AssistantPaymentRequestBinder
                 && (propertyKey != AssistantPaymentRequestModel.REQUEST_EMAIL)
                 && (propertyKey != AssistantPaymentRequestModel.REQUEST_PHONE)
                 && (propertyKey != AssistantPaymentRequestModel.REQUEST_PAYMENT)
-                && (propertyKey != AssistantPaymentRequestModel.REQUEST_LOGIN_CHOICE)
                 && (propertyKey != AssistantPaymentRequestModel.EXPANDED_SECTION)) {
             return false;
         }
 
         // Update section paddings such that the first and last section are flush to the top/bottom,
         // and all other sections have the same amount of padding in-between them.
-        if (model.get(AssistantPaymentRequestModel.REQUEST_LOGIN_CHOICE)) {
-            view.mLoginSection.setPaddings(0, view.mSectionToSectionPadding);
-            view.mContactDetailsSection.setPaddings(
-                    view.mSectionToSectionPadding, view.mSectionToSectionPadding);
-            view.mPaymentMethodSection.setPaddings(
-                    view.mSectionToSectionPadding, view.mSectionToSectionPadding);
-            view.mShippingAddressSection.setPaddings(
-                    view.mSectionToSectionPadding, view.mSectionToSectionPadding);
-        } else if (shouldShowContactDetails(model)) {
+        if (shouldShowContactDetails(model)) {
             view.mContactDetailsSection.setPaddings(0, view.mSectionToSectionPadding);
             view.mPaymentMethodSection.setPaddings(
                     view.mSectionToSectionPadding, view.mSectionToSectionPadding);

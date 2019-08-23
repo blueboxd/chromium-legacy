@@ -11,6 +11,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.provider.Browser;
 
+import androidx.browser.customtabs.CustomTabsIntent;
+
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
@@ -20,6 +22,7 @@ import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.download.DownloadActivity;
 import org.chromium.chrome.browser.download.DownloadInfo;
@@ -39,8 +42,6 @@ import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.widget.Toast;
-
-import androidx.browser.customtabs.CustomTabsIntent;
 
 /**
  * Serves as an interface between Download Home UI and offline page related items that are to be
@@ -150,8 +151,7 @@ public class OfflinePageDownloadBridge {
                 context, customTabIntent.intent);
         intent.setPackage(context.getPackageName());
         intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_UI_TYPE,
-                CustomTabIntentDataProvider.CustomTabsUiType.OFFLINE_PAGE);
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_UI_TYPE, CustomTabsUiType.OFFLINE_PAGE);
 
         IntentHandler.addTrustedIntentExtras(intent);
         if (!(context instanceof Activity)) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

@@ -392,53 +392,49 @@ const scoped_refptr<const SecurityOrigin>& Resource::GetOrigin() const {
   return LastResourceRequest().RequestorOrigin();
 }
 
-// TODO(tkent): This should return base::TimeDelta.
-static double CurrentAge(const ResourceResponse& response,
-                         base::Time response_timestamp) {
+static base::TimeDelta CurrentAge(const ResourceResponse& response,
+                                  base::Time response_timestamp) {
   // RFC2616 13.2.3
   // No compensation for latency as that is not terribly important in practice
   base::Optional<base::Time> date_value = response.Date();
-  double apparent_age =
-      date_value
-          ? std::max(0., (response_timestamp - date_value.value()).InSecondsF())
-          : 0;
+  base::TimeDelta apparent_age;
+  if (date_value && response_timestamp >= date_value.value())
+    apparent_age = response_timestamp - date_value.value();
   base::Optional<base::TimeDelta> age_value = response.Age();
-  double corrected_received_age =
-      age_value ? std::max(apparent_age, age_value.value().InSecondsF())
-                : apparent_age;
-  double resident_time = (Now() - response_timestamp).InSecondsF();
+  base::TimeDelta corrected_received_age =
+      age_value ? std::max(apparent_age, age_value.value()) : apparent_age;
+  base::TimeDelta resident_time = Now() - response_timestamp;
   return corrected_received_age + resident_time;
 }
 
-// TODO(tkent): This should return base::TimeDelta.
-static double FreshnessLifetime(const ResourceResponse& response,
-                                base::Time response_timestamp) {
+static base::TimeDelta FreshnessLifetime(const ResourceResponse& response,
+                                         base::Time response_timestamp) {
 #if !defined(OS_ANDROID)
   // On desktop, local files should be reloaded in case they change.
   if (response.CurrentRequestUrl().IsLocalFile())
-    return 0;
+    return base::TimeDelta();
 #endif
 
   // Cache other non-http / non-filesystem resources liberally.
   if (!response.CurrentRequestUrl().ProtocolIsInHTTPFamily() &&
       !response.CurrentRequestUrl().ProtocolIs("filesystem"))
-    return std::numeric_limits<double>::max();
+    return base::TimeDelta::Max();
 
   // RFC2616 13.2.4
   base::Optional<base::TimeDelta> max_age_value = response.CacheControlMaxAge();
   if (max_age_value)
-    return max_age_value.value().InSecondsF();
+    return max_age_value.value();
   base::Optional<base::Time> expires = response.Expires();
   base::Optional<base::Time> date = response.Date();
   base::Time creation_time = date ? date.value() : response_timestamp;
   if (expires)
-    return (expires.value() - creation_time).InSecondsF();
+    return expires.value() - creation_time;
   base::Optional<base::Time> last_modified = response.LastModified();
   if (last_modified)
-    return (creation_time - last_modified.value()).InSecondsF() * 0.1;
+    return (creation_time - last_modified.value()) * 0.1;
   // If no cache headers are present, the specification leaves the decision to
   // the UA. Other browsers seem to opt for 0.
-  return 0;
+  return base::TimeDelta();
 }
 
 static bool CanUseResponse(const ResourceResponse& response,
@@ -465,9 +461,9 @@ static bool CanUseResponse(const ResourceResponse& response,
       return false;
   }
 
-  double max_life = FreshnessLifetime(response, response_timestamp);
+  base::TimeDelta max_life = FreshnessLifetime(response, response_timestamp);
   if (allow_stale)
-    max_life += response.CacheControlStaleWhileRevalidate().InSecondsF();
+    max_life += response.CacheControlStaleWhileRevalidate();
 
   return CurrentAge(response, response_timestamp) <= max_life;
 }

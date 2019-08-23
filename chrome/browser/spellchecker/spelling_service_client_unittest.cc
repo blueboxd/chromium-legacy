@@ -23,7 +23,7 @@
 #include "components/spellcheck/browser/pref_names.h"
 #include "components/spellcheck/common/spellcheck_features.h"
 #include "components/spellcheck/common/spellcheck_result.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/resource_response.h"

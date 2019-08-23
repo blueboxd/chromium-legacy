@@ -561,13 +561,6 @@ KeystoreKeysHandler* NigoriSyncBridgeImpl::GetKeystoreKeysHandler() {
   return this;
 }
 
-syncable::NigoriHandler* NigoriSyncBridgeImpl::GetNigoriHandler() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Note: GetNigoriHandler() is a workaround for coexistence with Directory
-  // implementation, returning nullptr here is expected behavior.
-  return nullptr;
-}
-
 bool NigoriSyncBridgeImpl::NeedKeystoreKey() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // We explicitly ask the server for keystore keys iff it's first-time sync,

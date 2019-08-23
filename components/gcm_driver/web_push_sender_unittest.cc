@@ -6,7 +6,7 @@
 
 #include "base/base64.h"
 #include "components/gcm_driver/common/gcm_message.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "crypto/ec_private_key.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/public/cpp/data_element.h"

@@ -11,7 +11,7 @@
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/test/test_browser_context.h"
 #include "components/prefs/testing_pref_service.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace arc {

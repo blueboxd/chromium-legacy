@@ -19,7 +19,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "media/audio/audio_system_impl.h"
 #include "media/audio/audio_thread_impl.h"
 #include "media/audio/mock_audio_manager.h"

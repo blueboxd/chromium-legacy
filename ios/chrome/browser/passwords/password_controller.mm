@@ -211,8 +211,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
     _passwordManager.reset(new PasswordManager(_passwordManagerClient.get()));
     _passwordManagerDriver.reset(new IOSChromePasswordManagerDriver(self));
 
-    if (features::IsAutomaticPasswordGenerationEnabled() &&
-        !_passwordManagerClient->IsIncognito()) {
+    if (!_passwordManagerClient->IsIncognito()) {
       _passwordGenerationHelper.reset(new PasswordGenerationFrameHelper(
           _passwordManagerClient.get(), _passwordManagerDriver.get()));
     }
@@ -715,8 +714,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 - (BOOL)canGeneratePasswordForForm:(NSString*)formName
                    fieldIdentifier:(NSString*)fieldIdentifier
                          fieldType:(NSString*)fieldType {
-  if (!features::IsAutomaticPasswordGenerationEnabled() ||
-      _passwordManagerClient->IsIncognito() ||
+  if (_passwordManagerClient->IsIncognito() ||
       !_passwordManagerDriver->GetPasswordGenerationHelper()
            ->IsGenerationEnabled(
                /*log_debug_data*/ true))

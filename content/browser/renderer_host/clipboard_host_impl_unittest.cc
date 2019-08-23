@@ -12,7 +12,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/test/bind_test_util.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "testing/gtest/include/gtest/gtest.h"

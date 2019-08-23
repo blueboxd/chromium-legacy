@@ -17,7 +17,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/prefs/testing_pref_service.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -126,7 +126,7 @@ class AccountManagerTest : public testing::Test {
     EXPECT_TRUE(account_manager->IsInitialized());
   }
 
-  // Check base/test/scoped_task_environment.h. This must be the first member /
+  // Check base/test/task_environment.h. This must be the first member /
   // declared before any member that cares about tasks.
   base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir tmp_dir_;

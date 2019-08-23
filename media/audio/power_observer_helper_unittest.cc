@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "media/audio/power_observer_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"

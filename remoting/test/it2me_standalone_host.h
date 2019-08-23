@@ -10,7 +10,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/timer/timer.h"
 #include "remoting/host/host_mock_objects.h"
 #include "remoting/host/it2me_desktop_environment.h"

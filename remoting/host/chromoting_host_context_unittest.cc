@@ -5,7 +5,7 @@
 #include "remoting/host/chromoting_host_context.h"
 
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

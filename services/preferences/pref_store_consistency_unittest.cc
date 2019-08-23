@@ -9,7 +9,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/values.h"
 #include "components/prefs/in_memory_pref_store.h"
 #include "components/prefs/pref_notifier_impl.h"

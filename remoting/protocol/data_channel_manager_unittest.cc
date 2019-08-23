@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "remoting/base/compound_buffer.h"
 #include "remoting/proto/test_data_channel_manager.pb.h"
 #include "remoting/protocol/fake_message_pipe.h"

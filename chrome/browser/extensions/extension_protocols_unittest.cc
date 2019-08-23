@@ -27,7 +27,7 @@
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/previews_state.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/web_contents_tester.h"

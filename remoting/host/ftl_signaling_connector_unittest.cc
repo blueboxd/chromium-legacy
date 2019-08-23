@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "remoting/signaling/fake_signal_strategy.h"
 #include "remoting/signaling/signaling_address.h"
 #include "testing/gmock/include/gmock/gmock.h"

@@ -9,7 +9,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "net/base/network_change_notifier.h"
 #include "services/device/geolocation/position_cache_test_util.h"
 #include "services/device/public/cpp/geolocation/geoposition.h"

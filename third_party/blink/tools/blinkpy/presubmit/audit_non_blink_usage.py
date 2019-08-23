@@ -494,6 +494,13 @@ _CONFIG = [
         ],
     },
     {
+        'paths': ['third_party/blink/renderer/core/loader/preload_helper.cc'],
+        'allowed': [
+            # Used by PrefetchIfNeeded to check the SplitCache feature.
+            'net::features::kSplitCacheByNetworkIsolationKey',
+        ],
+    },
+    {
         'paths': ['third_party/blink/renderer/core/loader/alternate_signed_exchange_resource_info.cc'],
         'allowed': [
             # Used by SignedExchangeRequestMatcher in //third_party/blink/common.

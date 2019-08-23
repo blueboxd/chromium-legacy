@@ -17,6 +17,10 @@
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/common/main_function_params.h"
 
+#if defined(OS_WIN)
+#include "chrome/browser/downgrade/downgrade_manager.h"
+#endif
+
 class BrowserProcessImpl;
 class ChromeBrowserMainExtraParts;
 class StartupData;
@@ -191,6 +195,10 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // Android's first run is done in Java instead of native. Chrome OS does not
   // use master preferences.
   std::unique_ptr<first_run::MasterPrefs> master_prefs_;
+#endif
+
+#if defined(OS_WIN)
+  downgrade::DowngradeManager downgrade_manager_;
 #endif
 
   Profile* profile_;

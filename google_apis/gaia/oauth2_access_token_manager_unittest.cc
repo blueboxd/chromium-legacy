@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 #include "google_apis/gaia/oauth2_access_token_manager.h"
+
 #include "base/memory/ref_counted.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"

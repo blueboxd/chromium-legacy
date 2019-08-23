@@ -10,7 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/data_type_manager.h"

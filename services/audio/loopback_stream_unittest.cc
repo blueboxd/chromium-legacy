@@ -12,7 +12,7 @@
 #include "base/bind.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/unguessable_token.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_timestamp_helper.h"

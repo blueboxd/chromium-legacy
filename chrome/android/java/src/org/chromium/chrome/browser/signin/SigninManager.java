@@ -464,8 +464,12 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         // This method should be called at most once per sign-in flow.
         assert mSignInState != null;
 
-        SigninManagerJni.get().setPrimaryAccount(
-                mNativeSigninManagerAndroid, mSignInState.mAccount.name);
+        if (!SigninManagerJni.get().setPrimaryAccount(
+                    mNativeSigninManagerAndroid, mSignInState.mAccount.name)) {
+            Log.w(TAG, "Failed to set the PrimaryAccount in IdentityManager, aborting signin");
+            abortSignIn();
+            return;
+        }
 
         // Cache the signed-in account name. This must be done after the native call, otherwise
         // sync tries to start without being signed in natively and crashes.
@@ -744,7 +748,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
 
         boolean isForceSigninEnabled(long nativeSigninManagerAndroid);
 
-        void setPrimaryAccount(long nativeSigninManagerAndroid, String username);
+        boolean setPrimaryAccount(long nativeSigninManagerAndroid, String username);
 
         void signOut(long nativeSigninManagerAndroid, @SignoutReason int reason);
 

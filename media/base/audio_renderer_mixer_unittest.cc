@@ -16,7 +16,7 @@
 #include "base/bind_helpers.h"
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/platform_thread.h"
 #include "media/base/audio_renderer_mixer_input.h"
 #include "media/base/audio_renderer_mixer_pool.h"

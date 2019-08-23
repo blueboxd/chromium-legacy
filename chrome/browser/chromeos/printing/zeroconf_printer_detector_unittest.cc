@@ -16,7 +16,7 @@
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "chrome/browser/local_discovery/service_discovery_device_lister.h"
 #include "testing/gtest/include/gtest/gtest.h"

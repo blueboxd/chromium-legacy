@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/synchronization/lock.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/unguessable_token.h"
 #include "chromeos/components/nearby/library/cancelable.h"
 #include "chromeos/components/nearby/library/runnable.h"

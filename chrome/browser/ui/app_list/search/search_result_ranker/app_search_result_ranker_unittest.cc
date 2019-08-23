@@ -8,7 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_predictor.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_predictor.pb.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_predictor_test_util.h"

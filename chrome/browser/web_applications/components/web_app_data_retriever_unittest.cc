@@ -22,7 +22,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/site_instance.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/web_contents_tester.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"

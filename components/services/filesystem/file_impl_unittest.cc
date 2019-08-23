@@ -9,7 +9,7 @@
 
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/services/filesystem/directory_test_helper.h"
 #include "components/services/filesystem/public/mojom/directory.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"

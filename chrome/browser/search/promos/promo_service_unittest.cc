@@ -9,10 +9,10 @@
 
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/search/promos/promo_data.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "services/data_decoder/public/cpp/testing_json_parser.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"

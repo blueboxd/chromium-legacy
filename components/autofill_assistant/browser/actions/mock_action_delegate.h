@@ -108,9 +108,8 @@ class MockActionDelegate : public ActionDelegate {
                void(const Selector& selector,
                     base::OnceCallback<void(const ClientStatus&)> callback));
 
-  MOCK_METHOD2(GetPaymentInformation,
-               void(std::unique_ptr<PaymentRequestOptions> options,
-                    std::unique_ptr<PaymentInformation> information));
+  MOCK_METHOD1(GetPaymentInformation,
+               void(std::unique_ptr<PaymentRequestOptions> options));
 
   MOCK_METHOD1(OnGetFullCard,
                void(base::OnceCallback<void(const autofill::CreditCard& card,
@@ -188,7 +187,6 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD0(Restart, void());
   MOCK_METHOD0(GetClientMemory, ClientMemory*());
   MOCK_METHOD0(GetPersonalDataManager, autofill::PersonalDataManager*());
-  MOCK_METHOD0(GetWebsiteLoginFetcher, WebsiteLoginFetcher*());
   MOCK_METHOD0(GetWebContents, content::WebContents*());
   MOCK_METHOD1(SetDetails, void(std::unique_ptr<Details> details));
   MOCK_METHOD1(SetInfoBox, void(const InfoBox& info_box));

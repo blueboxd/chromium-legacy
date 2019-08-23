@@ -106,6 +106,9 @@
       <message name="IDS_NO_NETWORK" desc="">
         Make sure you have a network connection and try again.
       </message>
+      <message name="IDS_FAILED_CREATE_LOGON_STUB" desc="">
+        Unable to load Google sign in screen. Please contact your administrator.
+      </message>
       <message name="IDS_PASSWORD_UPDATE_NEEDED" desc="">
         Your account password has changed. Please enter your current Windows password in order to sync your Windows account with your work account.
       </message>

@@ -25,6 +25,7 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/process/process.h"
+#include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
@@ -260,6 +261,15 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // ChildProcessLauncher::Client implementation.
   void OnProcessLaunched() override;
   void OnProcessLaunchFailed(int error_code) override;
+
+  // Similar to the CreateURLLoaderFactory RenderProcessHost override, but this
+  // creates a trusted URLLoaderFactory with no default NetworkIsolationKey.
+  void CreateTrustedURLLoaderFactory(
+      const base::Optional<url::Origin>& origin,
+      network::mojom::CrossOriginEmbedderPolicy embedder_policy,
+      const WebPreferences* preferences,
+      network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
+      network::mojom::URLLoaderFactoryRequest request);
 
   // Call this function when it is evident that the child process is actively
   // performing some operation, for example if we just received an IPC message.
@@ -691,6 +701,19 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void CreateURLLoaderFactoryForRendererProcess(
       network::mojom::URLLoaderFactoryRequest request);
 
+  // Creates a URLLoaderFactory whose NetworkIsolationKey is set if
+  // |network_isoation_key| has a value, and whose trust is given by
+  // |is_trusted|. Only called by CreateURLLoaderFactory and
+  // CreateTrustedURLLoaderFactory.
+  void CreateURLLoaderFactoryInternal(
+      const base::Optional<url::Origin>& origin,
+      network::mojom::CrossOriginEmbedderPolicy embedder_policy,
+      const WebPreferences* preferences,
+      base::Optional<net::NetworkIsolationKey> network_isolation_key,
+      network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
+      network::mojom::URLLoaderFactoryRequest request,
+      bool is_trusted);
+
   // Handles incoming requests to bind a process-scoped receiver from the
   // renderer process. This is posted to the main thread by IOThreadHostImpl
   // if the request isn't handled on the IO thread.
@@ -865,7 +888,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   std::unique_ptr<FileSystemManagerImpl, BrowserThread::DeleteOnIOThread>
       file_system_manager_impl_;
   std::unique_ptr<viz::GpuClient, BrowserThread::DeleteOnIOThread> gpu_client_;
-  std::unique_ptr<PushMessagingManager, BrowserThread::DeleteOnIOThread>
+  std::unique_ptr<PushMessagingManager, base::OnTaskRunnerDeleter>
       push_messaging_manager_;
 
   std::unique_ptr<EmbeddedFrameSinkProviderImpl> embedded_frame_sink_provider_;

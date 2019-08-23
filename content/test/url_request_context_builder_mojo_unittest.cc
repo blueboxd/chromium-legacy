@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "content/test/test_mojo_proxy_resolver_factory.h"
 #include "net/base/host_port_pair.h"
 #include "net/proxy_resolution/proxy_config.h"

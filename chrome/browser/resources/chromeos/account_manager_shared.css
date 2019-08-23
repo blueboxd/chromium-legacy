@@ -3,8 +3,7 @@
  * found in the LICENSE file. */
 
 body {
-  height: calc(100% - 60px);
-  margin-bottom: 32px;
+  height: calc(100% - 50px);
   margin-inline-end: 32px;
   margin-inline-start: 32px;
   margin-top: 20px;
@@ -36,7 +35,7 @@ a {
 
 #google-logo {
   height: 32px;
-  margin-top: 40px;
+  margin-top: 10px;
   width: 32px;
 }
 

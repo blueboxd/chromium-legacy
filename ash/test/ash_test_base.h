@@ -19,7 +19,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/template_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "base/traits_bag.h"
 #include "components/user_manager/user_type.h"

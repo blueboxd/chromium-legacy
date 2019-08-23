@@ -6,8 +6,8 @@
 
 #include "base/rand_util.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
 #include "testing/gtest/include/gtest/gtest.h"

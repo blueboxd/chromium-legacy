@@ -19,7 +19,7 @@
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/test_extension_service.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/mock_extension_system.h"
 #include "extensions/common/extension.h"

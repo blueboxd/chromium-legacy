@@ -15,8 +15,8 @@
 #include "components/payments/core/autofill_payment_instrument.h"
 #include "components/payments/core/mock_payment_request_delegate.h"
 #include "content/public/browser/stored_payment_app.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 

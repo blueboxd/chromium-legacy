@@ -39,8 +39,8 @@ class CrostiniAppModelBuilder
                         ui::ScaleFactor scale_factor) override;
 
   void InsertCrostiniAppItem(
-      const crostini::CrostiniRegistryService* registry_service,
-      const std::string& app_id);
+      const std::string& app_id,
+      const crostini::CrostiniRegistryService::Registration& registration);
 
   void OnCrostiniEnabledChanged();
 

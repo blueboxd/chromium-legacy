@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/leak_detection/encryption_utils.h"
 
+#include <climits>
+
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"

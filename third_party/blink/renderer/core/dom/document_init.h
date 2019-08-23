@@ -30,6 +30,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_INIT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_INIT_H_
 
+#include "services/network/public/mojom/ip_address_space.mojom-shared.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
@@ -76,7 +77,6 @@ class CORE_EXPORT DocumentInit final {
   bool IsSrcdocDocument() const;
   bool ShouldSetURL() const;
   WebSandboxFlags GetSandboxFlags() const;
-  bool IsHostedInReservedIPRange() const;
   WebInsecureRequestPolicy GetInsecureRequestPolicy() const;
   const SecurityContext::InsecureNavigationsSet* InsecureNavigationsToUpgrade()
       const;
@@ -112,6 +112,10 @@ class CORE_EXPORT DocumentInit final {
   const scoped_refptr<SecurityOrigin>& OriginToCommit() const {
     return origin_to_commit_;
   }
+
+  DocumentInit& WithIPAddressSpace(
+      network::mojom::IPAddressSpace ip_address_space);
+  network::mojom::IPAddressSpace GetIPAddressSpace() const;
 
   DocumentInit& WithSrcdocDocument(bool is_srcdoc_document);
 
@@ -188,6 +192,9 @@ class CORE_EXPORT DocumentInit final {
 
   // Loader's CSP
   Member<ContentSecurityPolicy> content_security_policy_;
+
+  network::mojom::IPAddressSpace ip_address_space_ =
+      network::mojom::IPAddressSpace::kUnknown;
 };
 
 }  // namespace blink

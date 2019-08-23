@@ -13,7 +13,7 @@
 #include "base/optional.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/test/async_file_test_helper.h"
 #include "storage/browser/test/test_file_system_context.h"

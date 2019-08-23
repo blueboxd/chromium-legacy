@@ -150,7 +150,6 @@ js_library("network_proxy_exclusions") {
 js_library("network_siminfo") {
   deps = [
     "//ui/webui/resources/cr_components/chromeos/network:mojo_interface_provider",
-    "//ui/webui/resources/cr_elements/chromeos/network:cr_network_listener_behavior",
     "//ui/webui/resources/cr_elements/chromeos/network:cr_onc_types",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:i18n_behavior",

@@ -19,7 +19,7 @@
 #include "base/test/scoped_path_override.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/services/util_win/util_win_impl.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

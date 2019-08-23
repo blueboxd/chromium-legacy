@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/invalidation/impl/push_client_channel.h"
 #include "components/invalidation/impl/state_writer.h"
 #include "google/cacheinvalidation/include/types.h"

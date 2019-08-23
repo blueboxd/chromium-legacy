@@ -59,6 +59,7 @@ GURL GeneratePNGDataUrl(const SkBitmap& sk_bitmap) {
 
 void OnAppIconsLoaded(Profile* profile,
                       const std::vector<std::string>& app_ids,
+                      const std::vector<std::string>& app_names,
                       ui::ScaleFactor scale_factor,
                       std::vector<FullTaskDescriptor>* result_list,
                       base::OnceClosure completion_closure,
@@ -68,13 +69,11 @@ void OnAppIconsLoaded(Profile* profile,
 
   float scale = ui::GetScaleForScaleFactor(scale_factor);
 
-  crostini::CrostiniRegistryService* registry_service =
-      crostini::CrostiniRegistryServiceFactory::GetForProfile(profile);
   for (size_t i = 0; i < app_ids.size(); ++i) {
     result_list->push_back(FullTaskDescriptor(
         TaskDescriptor(app_ids[i], TASK_TYPE_CROSTINI_APP,
                        kCrostiniAppActionID),
-        registry_service->GetRegistration(app_ids[i])->Name(),
+        app_names[i],
         extensions::api::file_manager_private::Verb::VERB_OPEN_WITH,
         GeneratePNGDataUrl(icons[i].GetRepresentation(scale).GetBitmap()),
         false /* is_default */, false /* is_generic */,
@@ -108,15 +107,15 @@ void FindCrostiniTasks(Profile* profile,
   }
 
   std::vector<std::string> result_app_ids;
+  std::vector<std::string> result_app_names;
 
   crostini::CrostiniRegistryService* registry_service =
       crostini::CrostiniRegistryServiceFactory::GetForProfile(profile);
   crostini::CrostiniMimeTypesService* mime_types_service =
       crostini::CrostiniMimeTypesServiceFactory::GetForProfile(profile);
-  for (const std::string& app_id : registry_service->GetRegisteredAppIds()) {
-    crostini::CrostiniRegistryService::Registration registration =
-        *registry_service->GetRegistration(app_id);
-
+  for (const auto& pair : registry_service->GetRegisteredApps()) {
+    const std::string& app_id = pair.first;
+    const auto& registration = pair.second;
     const std::set<std::string>& supported_mime_types =
         registration.MimeTypes();
     bool had_unsupported_mime_type = false;
@@ -142,6 +141,7 @@ void FindCrostiniTasks(Profile* profile,
     if (had_unsupported_mime_type)
       continue;
     result_app_ids.push_back(app_id);
+    result_app_names.push_back(registration.Name());
   }
 
   if (result_app_ids.empty()) {
@@ -153,8 +153,9 @@ void FindCrostiniTasks(Profile* profile,
 
   crostini::LoadIcons(
       profile, result_app_ids, kIconSizeInDip, scale_factor, kIconLoadTimeout,
-      base::BindOnce(OnAppIconsLoaded, profile, result_app_ids, scale_factor,
-                     result_list, std::move(completion_closure)));
+      base::BindOnce(OnAppIconsLoaded, profile, result_app_ids,
+                     result_app_names, scale_factor, result_list,
+                     std::move(completion_closure)));
 }
 
 void ExecuteCrostiniTask(

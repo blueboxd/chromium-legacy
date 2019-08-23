@@ -25,15 +25,16 @@ class BackgroundSyncProxy::Core {
   Core(const base::WeakPtr<BackgroundSyncProxy>& io_parent,
        scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
       : io_parent_(io_parent),
-        service_worker_context_(std::move(service_worker_context)) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+        service_worker_context_(std::move(service_worker_context)),
+        weak_ptr_factory_(this) {
+    DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
     DCHECK(service_worker_context_);
   }
 
   ~Core() { DCHECK_CURRENTLY_ON(BrowserThread::UI); }
 
-  base::WeakPtr<Core> GetWeakPtrOnIO() {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  base::WeakPtr<Core> GetWeakPtrOnCoreThread() {
+    DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
     return weak_ptr_factory_.GetWeakPtr();
   }
 
@@ -85,32 +86,33 @@ class BackgroundSyncProxy::Core {
 };
 
 BackgroundSyncProxy::BackgroundSyncProxy(
-    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
+    : weak_ptr_factory_(this) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(service_worker_context);
   ui_core_ = std::unique_ptr<Core, BrowserThread::DeleteOnUIThread>(new Core(
       weak_ptr_factory_.GetWeakPtr(), std::move(service_worker_context)));
-  ui_core_weak_ptr_ = ui_core_->GetWeakPtrOnIO();
+  ui_core_weak_ptr_ = ui_core_->GetWeakPtrOnCoreThread();
 }
 
 BackgroundSyncProxy::~BackgroundSyncProxy() = default;
 
 void BackgroundSyncProxy::ScheduleBrowserWakeUp(
     blink::mojom::BackgroundSyncType sync_type) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   // Schedule Chrome wakeup.
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&Core::ScheduleBrowserWakeUp, ui_core_weak_ptr_,
-                                sync_type));
+  RunOrPostTaskOnThread(FROM_HERE, BrowserThread::UI,
+                        base::BindOnce(&Core::ScheduleBrowserWakeUp,
+                                       ui_core_weak_ptr_, sync_type));
 }
 
 void BackgroundSyncProxy::SendSuspendedPeriodicSyncOrigins(
     std::set<url::Origin> suspended_origins) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  RunOrPostTaskOnThread(
+      FROM_HERE, BrowserThread::UI,
       base::BindOnce(&Core::SendSuspendedPeriodicSyncOrigins, ui_core_weak_ptr_,
                      std::move(suspended_origins)));
 }

@@ -17,7 +17,7 @@
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "net/base/net_errors.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "services/network/public/mojom/proxy_lookup_client.mojom.h"

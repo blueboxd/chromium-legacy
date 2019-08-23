@@ -5,8 +5,12 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_DRIVE_QUICK_ACCESS_PROVIDER_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_DRIVE_QUICK_ACCESS_PROVIDER_H_
 
+#include <vector>
+
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 
 class Profile;
@@ -24,7 +28,13 @@ class DriveQuickAccessProvider : public SearchProvider {
   void Start(const base::string16& query) override;
 
  private:
+  void OnGetQuickAccessItems(drive::FileError error,
+                             std::vector<drive::QuickAccessItem> drive_results);
+
   Profile* const profile_;
+  drive::DriveIntegrationService* const drive_service_;
+
+  base::WeakPtrFactory<DriveQuickAccessProvider> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveQuickAccessProvider);
 };

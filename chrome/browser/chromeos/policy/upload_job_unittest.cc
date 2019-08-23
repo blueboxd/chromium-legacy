@@ -20,7 +20,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/policy/upload_job_impl.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/fake_oauth2_access_token_manager.h"
 #include "google_apis/gaia/google_service_auth_error.h"

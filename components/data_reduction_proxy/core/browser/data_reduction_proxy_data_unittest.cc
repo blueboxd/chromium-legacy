@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/stl_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "net/base/request_priority.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"

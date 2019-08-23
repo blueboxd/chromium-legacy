@@ -464,11 +464,9 @@ void AddCrostiniAppListForProfile(Profile* const profile,
                                   em::CrostiniStatus* const crostini_status) {
   crostini::CrostiniRegistryService* registry_service =
       crostini::CrostiniRegistryServiceFactory::GetForProfile(profile);
-  const std::vector<std::string> registered_app_ids =
-      registry_service->GetRegisteredAppIds();
-  for (auto registered_app_id : registered_app_ids) {
-    crostini::CrostiniRegistryService::Registration registration =
-        *registry_service->GetRegistration(registered_app_id);
+  for (const auto& pair : registry_service->GetRegisteredApps()) {
+    const std::string& registered_app_id = pair.first;
+    const auto& registration = pair.second;
     em::CrostiniApp* const app = crostini_status->add_installed_apps();
     if (!AddCrostiniAppInfo(registration, app)) {
       LOG(ERROR) << "Could not retrieve all required information for "

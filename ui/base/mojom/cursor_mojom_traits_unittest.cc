@@ -29,6 +29,7 @@ TEST_F(CursorStructTraitsTest, TestBuiltIn) {
   for (int i = 0; i < static_cast<int>(ui::CursorType::kCustom); ++i) {
     ui::CursorType type = static_cast<ui::CursorType>(i);
     ui::Cursor input(type);
+    input.set_device_scale_factor(1);
 
     ui::Cursor output;
     ASSERT_TRUE(EchoCursor(input, &output));

@@ -190,6 +190,14 @@ std::vector<std::unique_ptr<PasswordForm>> PasswordStoreX::FillMatchingLogins(
   return PasswordStoreDefault::FillMatchingLogins(form);
 }
 
+std::vector<std::unique_ptr<PasswordForm>>
+PasswordStoreX::FillMatchingLoginsByPassword(
+    const base::string16& plain_text_password) {
+  CheckMigration();
+  return PasswordStoreDefault::FillMatchingLoginsByPassword(
+      plain_text_password);
+}
+
 bool PasswordStoreX::FillAutofillableLogins(
     std::vector<std::unique_ptr<PasswordForm>>* forms) {
   CheckMigration();

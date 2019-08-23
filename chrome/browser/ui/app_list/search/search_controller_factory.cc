@@ -64,6 +64,7 @@ constexpr size_t kMaxAppShortcutResults = 4;
 constexpr size_t kMaxSettingsShortcutResults = 6;
 
 constexpr float kBoostOfSettingsShortcut = 10.0f;
+// Keep in sync with value in search_result_ranker.cc.
 constexpr float kBoostOfApps = 8.0f;
 constexpr float kBoostOfZeroStateFileResults = 1.0f;
 

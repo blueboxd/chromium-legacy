@@ -15,7 +15,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/null_task_runner.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/services/device_sync/device_sync_impl.h"

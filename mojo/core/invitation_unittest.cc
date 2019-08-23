@@ -17,7 +17,7 @@
 #include "base/run_loop.h"
 #include "base/synchronization/lock.h"
 #include "base/test/multiprocess_test.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "mojo/core/test/mojo_test_base.h"

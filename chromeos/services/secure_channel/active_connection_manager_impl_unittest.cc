@@ -10,7 +10,7 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/test/gtest_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/unguessable_token.h"
 #include "chromeos/services/secure_channel/connection_details.h"
 #include "chromeos/services/secure_channel/fake_active_connection_manager.h"

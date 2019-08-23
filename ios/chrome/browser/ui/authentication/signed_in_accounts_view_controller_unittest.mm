@@ -13,7 +13,7 @@
 #import "ios/chrome/browser/signin/authentication_service_fake.h"
 #include "ios/chrome/test/block_cleanup_test.h"
 #include "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/web_task_environment.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 

@@ -1600,6 +1600,13 @@ std::unique_ptr<PasswordForm> PasswordAutofillAgent::GetPasswordFormFromWebForm(
 }
 
 std::unique_ptr<PasswordForm>
+PasswordAutofillAgent::GetSimplifiedPasswordFormFromWebForm(
+    const WebFormElement& web_form) {
+  return CreateSimplifiedPasswordFormFromWebForm(web_form,
+                                                 &field_data_manager_);
+}
+
+std::unique_ptr<PasswordForm>
 PasswordAutofillAgent::GetPasswordFormFromUnownedInputElements() {
   // The element's frame might have been detached in the meantime (see
   // http://crbug.com/585363, comments 5 and 6), in which case |frame| will
@@ -1614,6 +1621,18 @@ PasswordAutofillAgent::GetPasswordFormFromUnownedInputElements() {
   return CreatePasswordFormFromUnownedInputElements(
       *web_frame, &field_data_manager_, &form_predictions_,
       &username_detector_cache_);
+}
+
+std::unique_ptr<PasswordForm>
+PasswordAutofillAgent::GetSimplifiedPasswordFormFromUnownedInputElements() {
+  content::RenderFrame* frame = render_frame();
+  if (!frame)
+    return nullptr;
+  WebLocalFrame* web_frame = frame->GetWebFrame();
+  if (!web_frame)
+    return nullptr;
+  return CreateSimplifiedPasswordFormFromUnownedInputElements(
+      *web_frame, &field_data_manager_);
 }
 
 // mojom::PasswordAutofillAgent:

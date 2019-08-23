@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/browser/net/quota_policy_cookie_store.h"
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -13,7 +14,7 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "base/time/time.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "net/cookies/cookie_util.h"
 #include "net/log/net_log_with_source.h"
 #include "net/ssl/ssl_client_cert_type.h"

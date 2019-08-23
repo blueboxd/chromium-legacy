@@ -360,6 +360,19 @@ bool HasSingleUsernameVote(const FormStructure& form) {
   return false;
 }
 
+// Returns true if at least one of the fields in |form| has a prediction to be a
+// new-password related field.
+// corresponds to a field for creating or changing a password.
+bool HasNewPasswordVote(const FormStructure& form) {
+  for (const auto& field : form) {
+    if (field->server_type() == autofill::ACCOUNT_CREATION_PASSWORD ||
+        field->server_type() == autofill::NEW_PASSWORD) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 // static
@@ -1347,7 +1360,9 @@ void PasswordManager::ProcessAutofillPredictions(
       if (form->has_password_field())
         continue;
 
-      if (!HasSingleUsernameVote(*form))
+      // Do not skip the form if it either contains a field for the Username
+      // first flow or a clear-text password field.
+      if (!(HasSingleUsernameVote(*form) || HasNewPasswordVote(*form)))
         continue;
 
       if (FindMatchedManagerByRendererId(form->unique_renderer_id(),

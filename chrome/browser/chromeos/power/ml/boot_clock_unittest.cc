@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/power/ml/boot_clock.h"
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"

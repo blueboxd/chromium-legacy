@@ -15,8 +15,8 @@
 #include "content/browser/background_fetch/background_fetch_test_browser_context.h"
 #include "content/browser/background_fetch/background_fetch_test_service_worker.h"
 #include "content/browser/devtools/devtools_background_services_context_impl.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
 

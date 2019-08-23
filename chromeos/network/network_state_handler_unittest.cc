@@ -18,7 +18,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/values.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/shill/shill_clients.h"

@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/timer/timer.h"
 #include "remoting/protocol/protocol_mock_objects.h"

@@ -38,7 +38,7 @@
 #include "components/unified_consent/feature.h"
 #include "components/unified_consent/scoped_unified_consent.h"
 #include "components/unified_consent/url_keyed_data_collection_consent_helper.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"

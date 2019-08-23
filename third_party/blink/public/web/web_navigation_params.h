@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "services/network/public/mojom/ip_address_space.mojom-shared.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
@@ -144,6 +145,10 @@ struct BLINK_EXPORT WebNavigationInfo {
   // The value of hrefTranslate attribute of a link, if this navigation was
   // inititated by clicking a link.
   WebString href_translate;
+
+  // The navigation initiator's address space.
+  network::mojom::IPAddressSpace initiator_address_space =
+      network::mojom::IPAddressSpace::kUnknown;
 };
 
 // This structure holds all information provided by the embedder that is
@@ -218,6 +223,11 @@ struct BLINK_EXPORT WebNavigationParams {
   // history item will contain this URL instead of request's URL.
   // This URL can be retrieved through WebDocumentLoader::UnreachableURL.
   WebURL unreachable_url;
+
+  // The IP address space from which this document was loaded.
+  // https://wicg.github.io/cors-rfc1918/#address-space
+  network::mojom::IPAddressSpace ip_address_space =
+      network::mojom::IPAddressSpace::kUnknown;
 
   // The net error code for failed navigation. Must be non-zero when
   // |unreachable_url| is non-null.

@@ -9,7 +9,7 @@
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class PermissionUtilTest : public testing::Test {

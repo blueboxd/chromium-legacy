@@ -24,7 +24,7 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_prompt_actions_win.h"

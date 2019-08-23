@@ -70,7 +70,8 @@ class PaintWorkletGlobalScopeTest : public PageTestBase {
                                     base::WaitableEvent* waitable_event) {
     ASSERT_TRUE(thread->IsCurrentThread());
     CrossThreadPersistent<PaintWorkletGlobalScope> global_scope =
-        To<PaintWorkletGlobalScope>(thread->GlobalScope());
+        WrapCrossThreadPersistent(
+            To<PaintWorkletGlobalScope>(thread->GlobalScope()));
     ScriptState* script_state =
         global_scope->ScriptController()->GetScriptState();
     ASSERT_TRUE(script_state);

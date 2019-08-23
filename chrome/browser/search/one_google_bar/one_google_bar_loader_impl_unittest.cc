@@ -15,7 +15,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_data.h"
 #include "components/signin/core/browser/signin_header_helper.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"

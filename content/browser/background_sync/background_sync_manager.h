@@ -26,6 +26,7 @@
 #include "content/browser/cache_storage/cache_storage_scheduler.h"
 #include "content/browser/devtools/devtools_background_services_context_impl.h"
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/background_sync_controller.h"
@@ -53,8 +54,9 @@ class ServiceWorkerContextWrapper;
 // registrations across all registered service workers for a profile.
 // Registrations are stored along with their associated Service Worker
 // registration in ServiceWorkerStorage. If the ServiceWorker is unregistered,
-// the sync registrations are removed. This class must be run on the IO
-// thread. The asynchronous methods are executed sequentially.
+// the sync registrations are removed. This class must be run on the service
+// worker core thread (ServiceWorkerContext::GetCoreThreadId()). The
+// asynchronous methods are executed sequentially.
 class CONTENT_EXPORT BackgroundSyncManager
     : public ServiceWorkerContextCoreObserver {
  public:
@@ -123,7 +125,7 @@ class CONTENT_EXPORT BackgroundSyncManager
   }
 
   void set_clock(base::Clock* clock) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
     clock_ = clock;
   }
 

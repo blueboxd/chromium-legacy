@@ -6,7 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "content/common/tab_switch_time_recorder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/presentation_feedback.h"

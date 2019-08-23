@@ -15,7 +15,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/payments/test_legal_message_line.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/web_task_environment.h"
 #import "ios/web_view/internal/autofill/cwv_credit_card_internal.h"
 #include "ios/web_view/test/test_with_locale_and_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"

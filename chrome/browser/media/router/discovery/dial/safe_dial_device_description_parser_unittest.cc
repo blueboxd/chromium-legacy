@@ -11,7 +11,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/media/router/data_decoder_util.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "services/data_decoder/data_decoder_service.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"

@@ -11,7 +11,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "services/data_decoder/public/cpp/test_data_decoder_service.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"

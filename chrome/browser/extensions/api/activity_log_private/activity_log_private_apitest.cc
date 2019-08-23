@@ -57,8 +57,8 @@ class ActivityLogApiTest : public ExtensionApiTest {
   base::CommandLine saved_cmdline_;
 };
 
-#if defined(OS_WIN)
-// TODO(pmarch): fix flakiness on win debug - http://crbug.com/299393
+#if defined(OS_WIN) || defined(OS_MACOSX)
+// TODO(crbug.com/299393): Flaky on Mac and Windows.
 #define MAYBE_TriggerEvent DISABLED_TriggerEvent
 #else
 #define MAYBE_TriggerEvent TriggerEvent

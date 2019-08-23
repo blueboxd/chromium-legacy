@@ -27,7 +27,7 @@
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "crypto/scoped_test_nss_chromeos_user.h"
 #include "crypto/scoped_test_system_nss_key_slot.h"
 #include "testing/gtest/include/gtest/gtest.h"

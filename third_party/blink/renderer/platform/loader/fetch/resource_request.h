@@ -430,6 +430,15 @@ class PLATFORM_EXPORT ResourceRequest final {
     is_signed_exchange_prefetch_cache_enabled_ = enabled;
   }
 
+  bool PrefetchMaybeForTopLeveNavigation() const {
+    return prefetch_maybe_for_top_level_navigation_;
+  }
+  void SetPrefetchMaybeForTopLevelNavigation(
+      bool prefetch_maybe_for_top_level_navigation) {
+    prefetch_maybe_for_top_level_navigation_ =
+        prefetch_maybe_for_top_level_navigation;
+  }
+
  private:
   using SharableExtraData =
       base::RefCountedData<std::unique_ptr<WebURLRequest::ExtraData>>;
@@ -515,6 +524,12 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool is_from_origin_dirty_style_sheet_ = false;
 
   bool is_signed_exchange_prefetch_cache_enabled_ = false;
+
+  // Currently this is only used when a prefetch request has `as=document`
+  // specified. If true, and the request is cross-origin, the browser will cache
+  // the request under the cross-origin's partition. Furthermore, its reuse from
+  // the prefetch cache will be restricted to top-level-navigations.
+  bool prefetch_maybe_for_top_level_navigation_ = false;
 };
 
 }  // namespace blink

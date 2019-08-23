@@ -5,7 +5,7 @@
 #include "chrome/browser/metrics/upgrade_metrics_provider.h"
 
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

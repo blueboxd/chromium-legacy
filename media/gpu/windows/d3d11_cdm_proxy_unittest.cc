@@ -13,7 +13,7 @@
 #include "base/power_monitor/power_monitor_source.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "media/base/callback_registry.h"
 #include "media/base/win/d3d11_mocks.h"
 #include "media/cdm/cdm_proxy_context.h"

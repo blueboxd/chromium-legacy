@@ -32,7 +32,7 @@
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/test/history_service_test_util.h"
 #include "components/history/core/test/test_history_database.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "services/data_decoder/public/cpp/test_data_decoder_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

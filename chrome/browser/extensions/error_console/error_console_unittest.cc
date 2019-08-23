@@ -17,7 +17,7 @@
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/extension_error.h"
 #include "extensions/browser/extension_error_test_util.h"
 #include "extensions/browser/extension_registry.h"

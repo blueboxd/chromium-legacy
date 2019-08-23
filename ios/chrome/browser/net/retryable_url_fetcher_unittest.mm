@@ -6,7 +6,7 @@
 
 #include "base/message_loop/message_loop.h"
 #import "base/strings/sys_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "ios/web/public/test/test_web_thread.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"

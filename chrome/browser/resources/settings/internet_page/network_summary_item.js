@@ -24,7 +24,10 @@ Polymer({
      * a device becomes unavailable.
      * @type {!OncMojo.DeviceStateProperties|undefined}
      */
-    deviceState: Object,
+    deviceState: {
+      type: Object,
+      notify: true,
+    },
 
     /**
      * If both Cellular and Tether technologies exist, we combine the

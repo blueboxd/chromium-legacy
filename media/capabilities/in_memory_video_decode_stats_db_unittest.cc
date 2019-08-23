@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/gtest_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "media/capabilities/in_memory_video_decode_stats_db_impl.h"
 #include "media/capabilities/video_decode_stats_db_impl.h"
 #include "media/capabilities/video_decode_stats_db_provider.h"

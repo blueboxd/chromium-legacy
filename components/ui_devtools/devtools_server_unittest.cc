@@ -5,7 +5,7 @@
 #include "components/ui_devtools/devtools_server.h"
 
 #include "base/command_line.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "components/ui_devtools/switches.h"
 #include "net/base/address_list.h"

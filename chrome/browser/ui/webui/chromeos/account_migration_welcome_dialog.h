@@ -28,6 +28,7 @@ class AccountMigrationWelcomeDialog : public SystemWebDialogDelegate {
   void GetDialogSize(gfx::Size* size) const override;
   std::string GetDialogArgs() const override;
   bool ShouldShowDialogTitle() const override;
+  bool ShouldShowCloseButton() const override;
   const std::string& Id() override;
 
   std::string GetUserEmail() const;

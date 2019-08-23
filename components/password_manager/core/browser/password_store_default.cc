@@ -168,6 +168,16 @@ PasswordStoreDefault::FillMatchingLogins(const FormDigest& form) {
   return matched_forms;
 }
 
+std::vector<std::unique_ptr<PasswordForm>>
+PasswordStoreDefault::FillMatchingLoginsByPassword(
+    const base::string16& plain_text_password) {
+  std::vector<std::unique_ptr<PasswordForm>> matched_forms;
+  if (login_db_ &&
+      !login_db_->GetLoginsByPassword(plain_text_password, &matched_forms))
+    return std::vector<std::unique_ptr<PasswordForm>>();
+  return matched_forms;
+}
+
 bool PasswordStoreDefault::FillAutofillableLogins(
     std::vector<std::unique_ptr<PasswordForm>>* forms) {
   DCHECK(background_task_runner()->RunsTasksInCurrentSequence());

@@ -141,6 +141,7 @@ class SearchResultRanker : file_manager::file_tasks::FileTasksObserver,
 
   // Logs launch events and stores feature data for aggregated model.
   std::unique_ptr<app_list::AppLaunchEventLogger> app_launch_event_logger_;
+  bool using_aggregated_app_inference_ = false;
 
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
       history_service_observer_;

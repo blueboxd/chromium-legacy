@@ -13,7 +13,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
 #include "testing/gtest/include/gtest/gtest.h"

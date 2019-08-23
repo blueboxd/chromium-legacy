@@ -24,7 +24,7 @@
 #import "ios/web/public/test/fakes/fake_web_frame.h"
 #import "ios/web/public/test/fakes/fake_web_frames_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/web_task_environment.h"
 #include "ios/web/public/web_client.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_suggestion_internal.h"
 #include "ios/web_view/internal/web_view_browser_state.h"

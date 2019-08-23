@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 #include "media/capture/video/linux/video_capture_device_factory_linux.h"
+
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "media/capture/video/linux/fake_v4l2_impl.h"
 #include "media/capture/video/mock_video_capture_device_client.h"
 #include "testing/gmock/include/gmock/gmock.h"

@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_pump_default.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "jingle/glue/mock_task.h"
 #include "jingle/glue/network_service_config_test_util.h"
 #include "jingle/glue/task_pump.h"

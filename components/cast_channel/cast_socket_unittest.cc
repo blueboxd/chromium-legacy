@@ -32,7 +32,7 @@
 #include "components/cast_channel/cast_transport.h"
 #include "components/cast_channel/logger.h"
 #include "components/cast_channel/proto/cast_channel.pb.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "crypto/rsa_private_key.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"

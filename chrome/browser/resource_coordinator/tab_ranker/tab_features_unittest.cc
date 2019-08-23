@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/metrics/metrics_hashes.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/resource_coordinator/tab_ranker/tab_features_test_helper.h"
 #include "components/assist_ranker/proto/ranker_example.pb.h"
 #include "components/ukm/test_ukm_recorder.h"

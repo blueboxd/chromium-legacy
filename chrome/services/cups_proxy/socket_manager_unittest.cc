@@ -8,7 +8,7 @@
 
 #include "base/files/file_util.h"
 #include "base/path_service.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/common/chrome_paths.h"

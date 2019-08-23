@@ -17,7 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/scoped_path_override.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_reg_util_win.h"
 #include "chrome/chrome_cleaner/engines/broker/engine_client.h"
 #include "chrome/chrome_cleaner/engines/broker/sandbox_setup.h"

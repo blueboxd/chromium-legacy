@@ -102,6 +102,18 @@ public class TaskInfo {
             return mExpiresAfterWindowEndTime;
         }
 
+        /**
+         * Checks if a one-off task expired.
+         * @param scheduleTimeMs the time at which the task was scheduled.
+         * @param endTimeMs the time at which the task was set to expire.
+         * @param currentTimeMs the current time to check for expiration.
+         * @return true if the task expired and false otherwise.
+         */
+        static boolean getExpirationStatus(
+                long scheduleTimeMs, long endTimeMs, long currentTimeMs) {
+            return currentTimeMs >= scheduleTimeMs + endTimeMs;
+        }
+
         @Override
         public void accept(TimingInfoVisitor visitor) {
             visitor.visit(this);
@@ -213,6 +225,33 @@ public class TaskInfo {
          */
         public boolean expiresAfterWindowEndTime() {
             return mExpiresAfterWindowEndTime;
+        }
+
+        /**
+         * Checks if a periodic task expired.
+         * @param scheduleTimeMs the time at which the task was scheduled.
+         * @param intervalTimeMs the interval at which the periodic task was scheduled.
+         * @param flexTimeMs the flex time of the task, either set by the caller or the default one.
+         * @param currentTimeMs the current time to check for expiration.
+         * @return true if the task expired and false otherwise.
+         */
+        static boolean getExpirationStatus(
+                long scheduleTimeMs, long intervalTimeMs, long flexTimeMs, long currentTimeMs) {
+            // Whether the task is executed during the wanted time window is determined here. The
+            // position of the current time in relation to the time window is calculated here.
+            // This position is compared with the time window margins.
+            // For example, if a task is scheduled at 6am with an interval of 5h and a flex of
+            // 5min, the valid starting times in that day are: 10:55am to 11am, 3:55pm to 4pm and
+            // 8:55pm to 9pm. For 7pm as the current time, the time in the interval window is 3h.
+            // This is not inside a valid starting time, so the task is considered expired.
+            // Similarly, for 8:58pm as the current time, the time in the interval window is 4h
+            // and 58min, which fits in a valid interval window.
+            // In the case of a flex value equal or bigger than the interval value, the task
+            // never expires.
+            long timeSinceScheduledMs = currentTimeMs - scheduleTimeMs;
+            long deltaTimeComparedToWindowMs = timeSinceScheduledMs % intervalTimeMs;
+            return deltaTimeComparedToWindowMs < intervalTimeMs - flexTimeMs
+                    && flexTimeMs < intervalTimeMs;
         }
 
         @Override

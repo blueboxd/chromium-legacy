@@ -8,8 +8,8 @@
 
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"

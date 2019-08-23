@@ -8,7 +8,7 @@
 #include "ash/assistant/model/assistant_notification_model_observer.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"

@@ -18,7 +18,7 @@
 #include "base/system/sys_info.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/data_reduction_proxy/content/browser/data_reduction_proxy_page_load_timing.h"

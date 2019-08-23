@@ -123,6 +123,7 @@ source_set("prerequisites") {
     "//v8",
   ]
   deps = [
+    "//third_party/blink/public:scaled_resources",
     "//third_party/blink/renderer/bindings/core/v8:bindings_core_v8_generated",
 
     # FIXME: don't depend on bindings_modules http://crbug.com/358074

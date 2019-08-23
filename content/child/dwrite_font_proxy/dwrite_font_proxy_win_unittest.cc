@@ -11,7 +11,7 @@
 #include <memory>
 
 #include "base/memory/ref_counted.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "content/test/dwrite_font_fake_sender_win.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

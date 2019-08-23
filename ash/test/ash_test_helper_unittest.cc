@@ -4,7 +4,7 @@
 
 #include "ash/test/ash_test_helper.h"
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/views/widget/widget.h"

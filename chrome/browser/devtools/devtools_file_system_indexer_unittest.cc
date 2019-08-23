@@ -11,7 +11,7 @@
 #include "base/run_loop.h"
 #include "chrome/browser/devtools/devtools_file_system_indexer.h"
 #include "chrome/common/chrome_paths.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class DevToolsFileSystemIndexerTest : public testing::Test {

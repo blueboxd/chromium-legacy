@@ -5,7 +5,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "extensions/browser/preload_check_group.h"
 #include "extensions/browser/preload_check_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"

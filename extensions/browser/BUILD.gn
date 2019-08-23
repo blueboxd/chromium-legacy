@@ -86,6 +86,7 @@ jumbo_source_set("browser_sources") {
     "content_verifier/content_hash.cc",
     "content_verifier/content_hash.h",
     "content_verifier/content_verifier_key.h",
+    "content_verifier/scoped_uma_recorder.h",
     "content_verifier_delegate.h",
     "content_verifier_io_data.cc",
     "content_verifier_io_data.h",

@@ -1462,7 +1462,7 @@ bool NGBlockLayoutAlgorithm::FinishInflow(
       // to position. Currently, we risk relaying out the sub-tree for no
       // reason, because we're not able to make this distinction.
       if (layout_result->AdjoiningObjectTypes() &&
-          !child_space.ForcedBfcBlockOffset())
+          *child_bfc_block_offset != child_space.ExpectedBfcBlockOffset())
         self_collapsing_child_needs_relayout = true;
     }
   } else if (!child_had_clearance && !is_self_collapsing) {

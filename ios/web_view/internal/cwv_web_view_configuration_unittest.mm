@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/web_task_environment.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #include "ios/web_view/test/test_with_locale_and_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -7,7 +7,7 @@
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/testfidl/cpp/fidl.h"
 #include "base/logging.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "fuchsia/base/fit_adapter.h"
 #include "fuchsia/base/result_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"

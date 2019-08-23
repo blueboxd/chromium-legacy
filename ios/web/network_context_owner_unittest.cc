@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/web_task_environment.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"

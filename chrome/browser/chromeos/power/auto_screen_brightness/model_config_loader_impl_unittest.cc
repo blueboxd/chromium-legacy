@@ -14,11 +14,11 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chromeos/constants/chromeos_features.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {

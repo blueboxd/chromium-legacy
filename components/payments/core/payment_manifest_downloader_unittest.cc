@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/payments/core/error_logger.h"
 #include "net/http/http_response_headers.h"

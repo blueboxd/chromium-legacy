@@ -14,7 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/test/scoped_path_override.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "remoting/host/file_transfer/fake_file_chooser.h"
 #include "remoting/host/file_transfer/local_file_operations.h"
 #include "remoting/host/file_transfer/session_file_operations_handler.h"

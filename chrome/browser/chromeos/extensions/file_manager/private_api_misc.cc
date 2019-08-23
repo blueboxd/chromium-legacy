@@ -895,12 +895,15 @@ FileManagerPrivateInternalInstallLinuxPackageFunction::Run() {
       file_manager::util::GetFileSystemContextForRenderFrameHost(
           profile, render_frame_host());
 
-  crostini::CrostiniPackageService::GetForProfile(profile)->InstallLinuxPackage(
-      crostini::kCrostiniDefaultVmName, crostini::kCrostiniDefaultContainerName,
-      file_system_context->CrackURL(GURL(params->url)),
-      base::BindOnce(&FileManagerPrivateInternalInstallLinuxPackageFunction::
-                         OnInstallLinuxPackage,
-                     this));
+  crostini::CrostiniPackageService::GetForProfile(profile)
+      ->QueueInstallLinuxPackage(
+          crostini::kCrostiniDefaultVmName,
+          crostini::kCrostiniDefaultContainerName,
+          file_system_context->CrackURL(GURL(params->url)),
+          base::BindOnce(
+              &FileManagerPrivateInternalInstallLinuxPackageFunction::
+                  OnInstallLinuxPackage,
+              this));
   return RespondLater();
 }
 

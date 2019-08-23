@@ -11,7 +11,7 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chromeos/services/secure_channel/ble_initiator_connection_attempt.h"
 #include "chromeos/services/secure_channel/ble_listener_connection_attempt.h"
 #include "chromeos/services/secure_channel/fake_authenticated_channel.h"

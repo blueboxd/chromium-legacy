@@ -6,7 +6,7 @@
 #include <utility>
 
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "media/mojo/services/deferred_destroy_strong_binding_set.h"
 #include "mojo/public/interfaces/bindings/tests/ping_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"

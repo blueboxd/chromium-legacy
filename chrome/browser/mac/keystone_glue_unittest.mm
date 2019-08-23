@@ -5,7 +5,7 @@
 #import <Foundation/Foundation.h>
 #import <objc/objc-class.h>
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #import "chrome/browser/mac/keystone_glue.h"
 #import "chrome/browser/mac/keystone_registration.h"
 #include "testing/gtest/include/gtest/gtest.h"

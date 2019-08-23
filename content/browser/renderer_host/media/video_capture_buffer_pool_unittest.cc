@@ -17,7 +17,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/media/video_capture_controller.h"
 #include "media/base/video_frame.h"

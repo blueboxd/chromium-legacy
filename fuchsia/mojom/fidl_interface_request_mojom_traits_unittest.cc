@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/fuchsia/testfidl/cpp/fidl.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "fuchsia/mojom/example.mojom.h"
 #include "fuchsia/mojom/test_interface_request_mojom_traits.h"
 #include "mojo/public/cpp/test_support/test_utils.h"

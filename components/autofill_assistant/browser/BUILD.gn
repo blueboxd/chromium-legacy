@@ -151,10 +151,6 @@ jumbo_static_library("browser") {
     "viewport_mode.h",
     "web_controller.cc",
     "web_controller.h",
-    "website_login_fetcher.cc",
-    "website_login_fetcher.h",
-    "website_login_fetcher_impl.cc",
-    "website_login_fetcher_impl.h",
   ]
 
   deps = [
@@ -164,7 +160,6 @@ jumbo_static_library("browser") {
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
     "//components/autofill_assistant/browser/devtools",
-    "//components/password_manager/core/browser:browser",
     "//components/signin/public/identity_manager",
     "//components/strings:components_strings_grit",
     "//components/version_info",

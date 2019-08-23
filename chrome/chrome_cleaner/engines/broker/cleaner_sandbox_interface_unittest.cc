@@ -22,7 +22,7 @@
 #include "base/process/process.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string16.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/chrome_cleaner/engines/common/registry_util.h"

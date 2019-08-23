@@ -42,7 +42,6 @@ enum class LikelyFormFilling {
 LikelyFormFilling SendFillInformationToRenderer(
     PasswordManagerClient* client,
     PasswordManagerDriver* driver,
-    bool is_blacklisted,
     const autofill::PasswordForm& observed_form,
     const std::map<base::string16, const autofill::PasswordForm*>& best_matches,
     const std::vector<const autofill::PasswordForm*>& federated_matches,

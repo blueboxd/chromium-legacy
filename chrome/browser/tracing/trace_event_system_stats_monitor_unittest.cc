@@ -5,7 +5,7 @@
 #include "chrome/browser/tracing/trace_event_system_stats_monitor.h"
 
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/performance_monitor/system_monitor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

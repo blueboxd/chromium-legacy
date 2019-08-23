@@ -184,6 +184,12 @@ class PasswordStore : protected PasswordStoreSync,
   virtual void GetLogins(const FormDigest& form,
                          PasswordStoreConsumer* consumer);
 
+  // Searches for credentials with the specified |plain_text_password|, and
+  // notifies |consumer| on completion. The request will be cancelled if the
+  // consumer is destroyed.
+  virtual void GetLoginsByPassword(const base::string16& plain_text_password,
+                                   PasswordStoreConsumer* consumer);
+
   // Gets the complete list of PasswordForms that are not blacklist entries--and
   // are thus auto-fillable. |consumer| will be notified on completion.
   // The request will be cancelled if the consumer is destroyed.
@@ -411,6 +417,11 @@ class PasswordStore : protected PasswordStoreSync,
   virtual std::vector<std::unique_ptr<autofill::PasswordForm>>
   FillMatchingLogins(const FormDigest& form) = 0;
 
+  // Finds and returns all not-blacklisted PasswordForms with the specified
+  // |plain_text_password| stored in the credential database.
+  virtual std::vector<std::unique_ptr<autofill::PasswordForm>>
+  FillMatchingLoginsByPassword(const base::string16& plain_text_password) = 0;
+
   // Synchronous implementation for manipulating with statistics.
   virtual void AddSiteStatsImpl(const InteractionsStats& stats) = 0;
   virtual void RemoveSiteStatsImpl(const GURL& origin_domain) = 0;
@@ -552,6 +563,11 @@ class PasswordStore : protected PasswordStoreSync,
   // Note: subclasses should implement FillMatchingLogins() instead.
   std::vector<std::unique_ptr<autofill::PasswordForm>> GetLoginsImpl(
       const FormDigest& form);
+
+  // Finds all credentials with the specified |plain_text_password|.
+  // Note: subclasses should implement FillMatchingLoginsByPassword() instead.
+  std::vector<std::unique_ptr<autofill::PasswordForm>> GetLoginsByPasswordImpl(
+      const base::string16& plain_text_password);
 
   // Finds all non-blacklist PasswordForms and returns the result.
   std::vector<std::unique_ptr<autofill::PasswordForm>>

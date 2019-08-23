@@ -14,7 +14,7 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/cdm_info.h"
 #include "content/public/common/webplugininfo.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/video_codecs.h"
 #include "testing/gtest/include/gtest/gtest.h"

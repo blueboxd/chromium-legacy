@@ -481,10 +481,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillNoLocalSaveOnUnmaskSuccess)},
-    {"password-generation-suggestion",
-     flag_descriptions::kPasswordGenerationName,
-     flag_descriptions::kPasswordGenerationDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(features::kPasswordGeneration)},
     {"new-omnibox-popup-layout", flag_descriptions::kNewOmniboxPopupLayoutName,
      flag_descriptions::kNewOmniboxPopupLayoutDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kNewOmniboxPopupLayout)},

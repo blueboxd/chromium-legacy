@@ -23,7 +23,7 @@
 #include "components/sync/model/model_type_store.h"
 #include "components/sync/model/model_type_store_test_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {

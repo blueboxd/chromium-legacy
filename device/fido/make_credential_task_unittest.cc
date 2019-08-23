@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "device/base/features.h"
 #include "device/fido/authenticator_make_credential_response.h"
 #include "device/fido/ctap_make_credential_request.h"

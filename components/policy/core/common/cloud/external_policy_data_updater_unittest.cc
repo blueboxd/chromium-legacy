@@ -14,7 +14,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_pending_task.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"

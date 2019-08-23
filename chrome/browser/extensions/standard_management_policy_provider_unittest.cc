@@ -11,7 +11,7 @@
 #include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"

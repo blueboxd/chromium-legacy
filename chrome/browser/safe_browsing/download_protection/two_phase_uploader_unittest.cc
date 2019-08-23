@@ -17,7 +17,7 @@
 #include "base/task/task_traits.h"
 #include "chrome/browser/safe_browsing/local_two_phase_testserver.h"
 #include "content/public/browser/network_service_instance.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/net_errors.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"

@@ -19,6 +19,10 @@ namespace ntp_snippets {
 class ContentSuggestionsService;
 }
 
+namespace web {
+class WebState;
+}
+
 @protocol ApplicationCommands;
 class AuthenticationService;
 @protocol BrowserCommands;
@@ -33,7 +37,6 @@ class AuthenticationService;
 class TemplateURLService;
 @protocol SnackbarCommands;
 class UrlLoadingService;
-class WebStateList;
 
 // Mediator for the NTP Home panel, handling the interactions with the
 // suggestions.
@@ -43,12 +46,12 @@ class WebStateList;
                ContentSuggestionsHeaderViewControllerDelegate>
 
 - (nullable instancetype)
-    initWithWebStateList:(nonnull WebStateList*)webStateList
-      templateURLService:(nonnull TemplateURLService*)templateURLService
-       urlLoadingService:(nonnull UrlLoadingService*)urlLoadingService
-             authService:(nonnull AuthenticationService*)authService
-         identityManager:(nonnull signin::IdentityManager*)identityManager
-              logoVendor:(nonnull id<LogoVendor>)logoVendor
+      initWithWebState:(nonnull web::WebState*)webState
+    templateURLService:(nonnull TemplateURLService*)templateURLService
+     urlLoadingService:(nonnull UrlLoadingService*)urlLoadingService
+           authService:(nonnull AuthenticationService*)authService
+       identityManager:(nonnull signin::IdentityManager*)identityManager
+            logoVendor:(nonnull id<LogoVendor>)logoVendor
     NS_DESIGNATED_INITIALIZER;
 
 - (nullable instancetype)init NS_UNAVAILABLE;

@@ -18,7 +18,7 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/resource_type.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
 #include "content/test/fake_network_url_loader_factory.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"

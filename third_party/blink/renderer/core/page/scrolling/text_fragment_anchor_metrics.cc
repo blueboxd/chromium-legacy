@@ -10,6 +10,12 @@
 
 namespace blink {
 
+namespace {
+
+const size_t kMaxTraceEventStringLength = 1000;
+
+}  // namespace
+
 TextFragmentAnchorMetrics::TextFragmentAnchorMetrics(Document* document)
     : document_(document) {}
 
@@ -19,12 +25,12 @@ void TextFragmentAnchorMetrics::DidCreateAnchor(int selector_count) {
   selector_count_ = selector_count;
 }
 
-void TextFragmentAnchorMetrics::DidFindMatch() {
-  match_count_++;
+void TextFragmentAnchorMetrics::DidFindMatch(const String text) {
+  matches_.push_back(text);
 }
 
 void TextFragmentAnchorMetrics::ResetMatchCount() {
-  match_count_ = 0;
+  matches_.clear();
 }
 
 void TextFragmentAnchorMetrics::DidFindAmbiguousMatch() {
@@ -49,9 +55,9 @@ void TextFragmentAnchorMetrics::ReportMetrics() {
   DCHECK(!metrics_reported_);
 #endif
   DCHECK(selector_count_);
-  DCHECK(match_count_ <= selector_count_);
+  DCHECK(matches_.size() <= selector_count_);
 
-  if (match_count_ > 0) {
+  if (matches_.size() > 0) {
     UseCounter::Count(document_, WebFeature::kTextFragmentAnchorMatchFound);
   }
 
@@ -61,11 +67,18 @@ void TextFragmentAnchorMetrics::ReportMetrics() {
                        selector_count_);
 
   const int match_rate_percent =
-      static_cast<int>(100 * ((match_count_ + 0.0) / selector_count_));
+      static_cast<int>(100 * ((matches_.size() + 0.0) / selector_count_));
   UMA_HISTOGRAM_PERCENTAGE("TextFragmentAnchor.MatchRate", match_rate_percent);
   TRACE_EVENT_INSTANT1("blink", "TextFragmentAnchorMetrics::ReportMetrics",
                        TRACE_EVENT_SCOPE_THREAD, "match_rate",
                        match_rate_percent);
+
+  for (const String& match : matches_) {
+    TRACE_EVENT_INSTANT2("blink", "TextFragmentAnchorMetrics::ReportMetrics",
+                         TRACE_EVENT_SCOPE_THREAD, "match_found",
+                         match.Utf8().substr(0, kMaxTraceEventStringLength),
+                         "match_length", match.length());
+  }
 
   UMA_HISTOGRAM_BOOLEAN("TextFragmentAnchor.AmbiguousMatch", ambiguous_match_);
   TRACE_EVENT_INSTANT1("blink", "TextFragmentAnchorMetrics::ReportMetrics",

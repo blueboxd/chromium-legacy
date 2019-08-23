@@ -111,6 +111,7 @@ void EmptyLocalFrameClient::BeginNavigation(
     base::TimeTicks,
     const String&,
     WebContentSecurityPolicyList,
+    network::mojom::IPAddressSpace,
     mojom::blink::NavigationInitiatorPtr) {}
 
 void EmptyLocalFrameClient::DispatchWillSendSubmitEvent(HTMLFormElement*) {}

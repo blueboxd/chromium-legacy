@@ -27,7 +27,7 @@ import java.util.List;
 class BackgroundTaskSchedulerJobService implements BackgroundTaskSchedulerDelegate {
     private static final String TAG = "BkgrdTaskSchedulerJS";
 
-    /** Delta time to use expiration checks. Used to make checks after the end time. */
+    /** Delta time for expiration checks. Used to make checks after the end time. */
     static final long DEADLINE_DELTA_MS = 1000;
 
     /** Clock to use so we can mock time in tests. */
@@ -40,12 +40,50 @@ class BackgroundTaskSchedulerJobService implements BackgroundTaskSchedulerDelega
         sClock = clock;
     }
 
-    static Long getDeadlineTimeFromJobParameters(JobParameters jobParameters) {
+    /**
+     * Checks if a task expired, based on the current time of the service.
+     *
+     * @param jobParameters parameters sent to the service, which contain the scheduling information
+     * regarding expiration.
+     * @param currentTimeMs the current time of the service.
+     * @return true if the task expired and false otherwise.
+     */
+    static boolean didTaskExpire(JobParameters jobParameters, long currentTimeMs) {
         PersistableBundle extras = jobParameters.getExtras();
-        if (extras == null || !extras.containsKey(BACKGROUND_TASK_DEADLINE_KEY)) {
-            return null;
+        if (extras == null || !extras.containsKey(BACKGROUND_TASK_SCHEDULE_TIME_KEY)) {
+            return false;
         }
-        return extras.getLong(BACKGROUND_TASK_DEADLINE_KEY);
+
+        long scheduleTimeMs = extras.getLong(BACKGROUND_TASK_SCHEDULE_TIME_KEY);
+        if (extras.containsKey(BACKGROUND_TASK_END_TIME_KEY)) {
+            long endTimeMs = extras.getLong(BACKGROUND_TASK_END_TIME_KEY);
+            return TaskInfo.OneOffInfo.getExpirationStatus(
+                    scheduleTimeMs, endTimeMs, currentTimeMs);
+        } else {
+            long intervalTimeMs = extras.getLong(BACKGROUND_TASK_INTERVAL_TIME_KEY);
+            // Based on the JobInfo documentation, attempting to declare a smaller period than
+            // this when scheduling a job will result in a job that is still periodic, but will
+            // run with this effective period.
+            if (intervalTimeMs < JobInfo.getMinPeriodMillis()) {
+                intervalTimeMs = JobInfo.getMinPeriodMillis();
+            }
+
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+                // Before Android N, there was no control over when the job will execute within
+                // the given interval. This makes it impossible to check for an expiration time.
+                return false;
+            }
+
+            // Since Android N, there was a minimum of 5 min set for the flex value. This
+            // value is considerably lower from the previous one, since the minimum value
+            // allowed for the interval time is of 15 min:
+            // https://android.googlesource.com/platform/frameworks/base/+/refs/heads/oreo-release/core/java/android/app/job/JobInfo.java.
+            long flexTimeMs = extras.getLong(BACKGROUND_TASK_FLEX_TIME_KEY, /*defaultValue=*/
+                    JobInfo.getMinFlexMillis());
+
+            return TaskInfo.PeriodicInfo.getExpirationStatus(
+                    scheduleTimeMs, intervalTimeMs, flexTimeMs, currentTimeMs);
+        }
     }
 
     /**
@@ -110,8 +148,11 @@ class BackgroundTaskSchedulerJobService implements BackgroundTaskSchedulerDelega
         @Override
         public void visit(TaskInfo.OneOffInfo oneOffInfo) {
             if (oneOffInfo.expiresAfterWindowEndTime()) {
-                mJobExtras.putLong(BACKGROUND_TASK_DEADLINE_KEY,
-                        sClock.currentTimeMillis() + oneOffInfo.getWindowEndTimeMs());
+                mJobExtras.putLong(
+                        BackgroundTaskSchedulerDelegate.BACKGROUND_TASK_SCHEDULE_TIME_KEY,
+                        sClock.currentTimeMillis());
+                mJobExtras.putLong(BackgroundTaskSchedulerDelegate.BACKGROUND_TASK_END_TIME_KEY,
+                        oneOffInfo.getWindowEndTimeMs());
             }
             mBuilder.setExtras(mJobExtras);
 
@@ -127,6 +168,13 @@ class BackgroundTaskSchedulerJobService implements BackgroundTaskSchedulerDelega
 
         @Override
         public void visit(TaskInfo.PeriodicInfo periodicInfo) {
+            if (periodicInfo.expiresAfterWindowEndTime()) {
+                mJobExtras.putLong(BACKGROUND_TASK_SCHEDULE_TIME_KEY, sClock.currentTimeMillis());
+                mJobExtras.putLong(BACKGROUND_TASK_INTERVAL_TIME_KEY, periodicInfo.getIntervalMs());
+                if (periodicInfo.hasFlex()) {
+                    mJobExtras.putLong(BACKGROUND_TASK_FLEX_TIME_KEY, periodicInfo.getFlexMs());
+                }
+            }
             mBuilder.setExtras(mJobExtras);
 
             if (periodicInfo.hasFlex() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {

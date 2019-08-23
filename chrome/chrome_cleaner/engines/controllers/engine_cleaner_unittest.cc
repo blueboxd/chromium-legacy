@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/chrome_cleaner/engines/broker/engine_client_mock.h"
 #include "chrome/chrome_cleaner/engines/common/engine_result_codes.h"

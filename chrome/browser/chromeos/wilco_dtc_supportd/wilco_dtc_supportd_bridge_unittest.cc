@@ -11,7 +11,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_bridge.h"
 #include "chrome/services/wilco_dtc_supportd/public/mojom/wilco_dtc_supportd.mojom.h"
 #include "chrome/test/base/testing_browser_process.h"

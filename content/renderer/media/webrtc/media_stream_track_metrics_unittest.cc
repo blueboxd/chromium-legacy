@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "content/renderer/media/webrtc/media_stream_track_metrics.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"

@@ -42,17 +42,40 @@ class BackgroundTaskSchedulerGcmNetworkManager implements BackgroundTaskSchedule
         sClock = clock;
     }
 
-    static Long getDeadlineTimeFromTaskParams(@NonNull TaskParams taskParams) {
+    /**
+     * Checks if a task expired, based on the current time of the service.
+     *
+     * @param taskParams parameters sent to the service, which contain the scheduling information
+     * regarding expiration.
+     * @param currentTimeMs the current time of the service.
+     * @return true if the task expired and false otherwise.
+     */
+    static boolean didTaskExpire(TaskParams taskParams, long currentTimeMs) {
         Bundle extras = taskParams.getExtras();
-        if (extras == null || !extras.containsKey(BACKGROUND_TASK_DEADLINE_KEY)) {
-            return null;
+        if (extras == null || !extras.containsKey(BACKGROUND_TASK_SCHEDULE_TIME_KEY)) {
+            return false;
         }
-        return extras.getLong(BACKGROUND_TASK_DEADLINE_KEY);
-    }
 
-    private static long getDeadlineTime(TaskInfo taskInfo) {
-        long windowEndTimeMs = taskInfo.getOneOffInfo().getWindowEndTimeMs();
-        return sClock.currentTimeMillis() + windowEndTimeMs;
+        long scheduleTimeMs = extras.getLong(BACKGROUND_TASK_SCHEDULE_TIME_KEY);
+        if (extras.containsKey(BACKGROUND_TASK_END_TIME_KEY)) {
+            long endTimeMs =
+                    extras.getLong(BackgroundTaskSchedulerDelegate.BACKGROUND_TASK_END_TIME_KEY);
+            return TaskInfo.OneOffInfo.getExpirationStatus(
+                    scheduleTimeMs, endTimeMs, currentTimeMs);
+        } else {
+            long intervalTimeMs = extras.getLong(BACKGROUND_TASK_INTERVAL_TIME_KEY);
+
+            // If flex is never set, it is given a default value of 10% of the period time, as
+            // per the GcmNetworkManager behaviour. This default value is set in
+            // https://developers.google.com/android/reference/com/google/android/gms/gcm/PeriodicTask.
+            double defaultFlexAsFractionOfInterval = 0.1f;
+
+            long flexTimeMs = extras.getLong(BACKGROUND_TASK_FLEX_TIME_KEY,
+                    /*defaultValue=*/(long) (defaultFlexAsFractionOfInterval * intervalTimeMs));
+
+            return TaskInfo.PeriodicInfo.getExpirationStatus(
+                    scheduleTimeMs, intervalTimeMs, flexTimeMs, currentTimeMs);
+        }
     }
 
     /**
@@ -117,8 +140,8 @@ class BackgroundTaskSchedulerGcmNetworkManager implements BackgroundTaskSchedule
         @Override
         public void visit(TaskInfo.OneOffInfo oneOffInfo) {
             if (oneOffInfo.expiresAfterWindowEndTime()) {
-                mTaskExtras.putLong(BACKGROUND_TASK_DEADLINE_KEY,
-                        sClock.currentTimeMillis() + oneOffInfo.getWindowEndTimeMs());
+                mTaskExtras.putLong(BACKGROUND_TASK_SCHEDULE_TIME_KEY, sClock.currentTimeMillis());
+                mTaskExtras.putLong(BACKGROUND_TASK_END_TIME_KEY, oneOffInfo.getWindowEndTimeMs());
             }
 
             OneoffTask.Builder builder = new OneoffTask.Builder();
@@ -137,6 +160,15 @@ class BackgroundTaskSchedulerGcmNetworkManager implements BackgroundTaskSchedule
 
         @Override
         public void visit(TaskInfo.PeriodicInfo periodicInfo) {
+            if (periodicInfo.expiresAfterWindowEndTime()) {
+                mTaskExtras.putLong(BACKGROUND_TASK_SCHEDULE_TIME_KEY, sClock.currentTimeMillis());
+                mTaskExtras.putLong(
+                        BACKGROUND_TASK_INTERVAL_TIME_KEY, periodicInfo.getIntervalMs());
+                if (periodicInfo.hasFlex()) {
+                    mTaskExtras.putLong(BACKGROUND_TASK_FLEX_TIME_KEY, periodicInfo.getFlexMs());
+                }
+            }
+
             PeriodicTask.Builder builder = new PeriodicTask.Builder();
             builder.setPeriod(TimeUnit.MILLISECONDS.toSeconds(periodicInfo.getIntervalMs()));
             if (periodicInfo.hasFlex()) {

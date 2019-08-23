@@ -16,7 +16,7 @@
 #include "content/public/browser/url_loader_request_interceptor.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_status.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"

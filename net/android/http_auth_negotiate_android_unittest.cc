@@ -5,7 +5,7 @@
 #include "net/android/http_auth_negotiate_android.h"
 
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "net/android/dummy_spnego_authenticator.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"

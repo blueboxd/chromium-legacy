@@ -6,7 +6,7 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/timer/timer.h"
 #include "media/base/media_switches.h"
 #include "mojo/public/cpp/bindings/remote.h"

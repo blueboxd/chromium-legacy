@@ -8,7 +8,7 @@
 #include "base/containers/flat_set.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"

@@ -6,7 +6,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "media/capture/video/mock_device.h"
 #include "services/video_capture/public/cpp/mock_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"

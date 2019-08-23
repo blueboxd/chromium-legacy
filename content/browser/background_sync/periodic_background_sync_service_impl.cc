@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "content/browser/background_sync/background_sync_context_impl.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
@@ -17,7 +18,7 @@ PeriodicBackgroundSyncServiceImpl::PeriodicBackgroundSyncServiceImpl(
     mojo::InterfaceRequest<blink::mojom::PeriodicBackgroundSyncService> request)
     : background_sync_context_(background_sync_context),
       binding_(this, std::move(request)) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(background_sync_context_);
 
   registration_helper_ = std::make_unique<BackgroundSyncRegistrationHelper>(
@@ -30,7 +31,7 @@ PeriodicBackgroundSyncServiceImpl::PeriodicBackgroundSyncServiceImpl(
 }
 
 PeriodicBackgroundSyncServiceImpl::~PeriodicBackgroundSyncServiceImpl() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 }
 
 void PeriodicBackgroundSyncServiceImpl::OnConnectionError() {
@@ -42,7 +43,7 @@ void PeriodicBackgroundSyncServiceImpl::Register(
     blink::mojom::SyncRegistrationOptionsPtr options,
     int64_t sw_registration_id,
     RegisterCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(options);
 
   if (options->min_interval < 0) {
@@ -58,7 +59,7 @@ void PeriodicBackgroundSyncServiceImpl::Unregister(
     int64_t sw_registration_id,
     const std::string& tag,
     UnregisterCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   BackgroundSyncManager* background_sync_manager =
       background_sync_context_->background_sync_manager();
@@ -72,7 +73,7 @@ void PeriodicBackgroundSyncServiceImpl::Unregister(
 void PeriodicBackgroundSyncServiceImpl::GetRegistrations(
     int64_t sw_registration_id,
     GetRegistrationsCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   BackgroundSyncManager* background_sync_manager =
       background_sync_context_->background_sync_manager();
@@ -91,7 +92,7 @@ void PeriodicBackgroundSyncServiceImpl::GetRegistrations(
 void PeriodicBackgroundSyncServiceImpl::OnUnregisterResult(
     UnregisterCallback callback,
     BackgroundSyncStatus status) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   std::move(callback).Run(
       static_cast<blink::mojom::BackgroundSyncError>(status));

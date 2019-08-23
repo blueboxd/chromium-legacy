@@ -202,7 +202,10 @@ std::unique_ptr<views::EditableCombobox> CreatePasswordEditableCombobox(
 PasswordPendingView::PasswordPendingView(content::WebContents* web_contents,
                                          views::View* anchor_view,
                                          DisplayReason reason)
-    : PasswordBubbleViewBase(web_contents, anchor_view, reason),
+    : PasswordBubbleViewBase(web_contents,
+                             anchor_view,
+                             reason,
+                             /*auto_dismissable=*/false),
       is_update_bubble_(model()->state() ==
                         password_manager::ui::PENDING_PASSWORD_UPDATE_STATE),
       sign_in_promo_(nullptr),

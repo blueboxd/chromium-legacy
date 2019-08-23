@@ -10,7 +10,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "services/data_decoder/public/cpp/safe_json_parser.h"

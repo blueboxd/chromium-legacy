@@ -8,7 +8,7 @@
 #include "base/command_line.h"
 #include "base/memory/platform_shared_memory_region.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "media/base/media_switches.h"
 #include "mojo/public/cpp/system/platform_handle.h"

@@ -119,7 +119,7 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
         return self._is_mixin
 
     @property
-    def inherited_interface(self):
+    def inherited(self):
         """Returns the inherited interface or None."""
         return self._inherited.target_object if self._inherited else None
 

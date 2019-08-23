@@ -9,7 +9,7 @@
 #include "chrome/browser/media/router/providers/cast/mock_activity_record.h"
 #include "chrome/browser/media/router/test/media_router_mojo_test.h"
 #include "chrome/common/media_router/media_route.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -10,7 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "net/base/elements_upload_data_stream.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/base/upload_bytes_element_reader.h"

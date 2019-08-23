@@ -23,7 +23,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "extensions/renderer/extension_throttle_entry.h"
 #include "extensions/renderer/extension_throttle_test_support.h"

@@ -6,7 +6,7 @@
 
 #include "base/guid.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "remoting/base/fake_oauth_token_getter.h"
 #include "remoting/proto/ftl/v1/ftl_messages.pb.h"

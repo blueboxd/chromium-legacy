@@ -19,7 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/service/image_decode_accelerator_worker.h"
 #include "media/gpu/vaapi/vaapi_image_decode_accelerator_worker.h"

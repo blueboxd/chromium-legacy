@@ -109,6 +109,9 @@ struct ProcessedField {
   // True if field->form_control_type == "password".
   bool is_password = false;
 
+  // True if field is predicted to be a password.
+  bool is_predicted_as_password = false;
+
   // True if the server predicts that this field is not a password field.
   bool server_hints_not_password = false;
 
@@ -280,6 +283,7 @@ void ParseUsingPredictions(std::vector<ProcessedField>* processed_fields,
   bool sign_in_username_first = true;
   // First username is stored in |result->username|.
   const FormFieldData* second_username = nullptr;
+
   for (const PasswordFieldPrediction& prediction : predictions) {
     ProcessedField* processed_field = nullptr;
 
@@ -339,18 +343,16 @@ void ParseUsingPredictions(std::vector<ProcessedField>* processed_fields,
         if (!result->new_password) {
           processed_field = FindField(processed_fields, prediction);
           if (processed_field) {
-            if (!processed_field->is_password)
-              continue;
             result->new_password = processed_field->field;
+            processed_field->is_predicted_as_password = true;
           }
         }
         break;
       case CredentialFieldType::kConfirmationPassword:
         processed_field = FindField(processed_fields, prediction);
         if (processed_field) {
-          if (!processed_field->is_password)
-            continue;
           result->confirmation_password = processed_field->field;
+          processed_field->is_predicted_as_password = true;
         }
         break;
       case CredentialFieldType::kNone:
@@ -639,7 +641,7 @@ const FormFieldData* FindUsernameFieldBaseHeuristics(
   // Do reverse search to find the closest candidates preceding the password.
   for (auto it = std::make_reverse_iterator(first_relevant_password);
        it != processed_fields.rend(); ++it) {
-    if (it->is_password)
+    if (it->is_password || it->is_predicted_as_password)
       continue;
     if (!MatchesInteractability(*it, best_interactability))
       continue;
@@ -664,7 +666,8 @@ const FormFieldData* FindUsernameFieldBaseHeuristics(
 // A helper to return a |field|'s unique_renderer_id or
 // kNotSetFormControlRendererId if |field| is null.
 uint32_t ExtractUniqueId(const FormFieldData* field) {
-  return field ? field->unique_renderer_id : FormFieldData::kNotSetFormControlRendererId;
+  return field ? field->unique_renderer_id
+               : FormFieldData::kNotSetFormControlRendererId;
 }
 
 // Tries to find the username and password fields in |processed_fields| based
@@ -726,7 +729,7 @@ void ParseUsingBaseHeuristics(
         ExtractUniqueId(found_fields->confirmation_password)};
     for (auto it = processed_fields.begin(); it != processed_fields.end();
          ++it) {
-      if (it->is_password &&
+      if ((it->is_password || it->is_predicted_as_password) &&
           base::Contains(password_ids, it->field->unique_renderer_id)) {
         first_relevant_password = it;
         break;
@@ -837,6 +840,7 @@ std::vector<ProcessedField> ProcessFields(
       continue;
 
     const bool is_password = field.form_control_type == "password";
+
     if (!field.value.empty()) {
       std::set<base::StringPiece16>& seen_values =
           is_password ? seen_password_values : seen_username_values;

@@ -8,7 +8,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/exo/data_source_delegate.h"
 #include "components/exo/test/exo_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -240,13 +240,20 @@ void PasswordStore::GetLogins(const FormDigest& form,
         form, base::BindOnce(
                   &PasswordStore::ScheduleGetFilteredLoginsWithAffiliations,
                   this, consumer->GetWeakPtr(), form, cutoff));
-  }
-
-  else {
+  } else {
     PostLoginsTaskAndReplyToConsumerWithProcessedResult(
         consumer, base::BindOnce(&PasswordStore::GetLoginsImpl, this, form),
         base::BindOnce(FilterLogins, cutoff));
   }
+}
+
+void PasswordStore::GetLoginsByPassword(
+    const base::string16& plain_text_password,
+    PasswordStoreConsumer* consumer) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
+  PostLoginsTaskAndReplyToConsumerWithResult(
+      consumer, base::BindOnce(&PasswordStore::GetLoginsByPasswordImpl, this,
+                               plain_text_password));
 }
 
 void PasswordStore::GetAutofillableLogins(PasswordStoreConsumer* consumer) {
@@ -812,6 +819,13 @@ PasswordStore::GetLoginsImpl(const FormDigest& form) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   SCOPED_UMA_HISTOGRAM_TIMER("PasswordManager.StorePerformance.GetLogins");
   return FillMatchingLogins(form);
+}
+
+std::vector<std::unique_ptr<PasswordForm>>
+PasswordStore::GetLoginsByPasswordImpl(
+    const base::string16& plain_text_password) {
+  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
+  return FillMatchingLoginsByPassword(plain_text_password);
 }
 
 std::vector<std::unique_ptr<PasswordForm>>

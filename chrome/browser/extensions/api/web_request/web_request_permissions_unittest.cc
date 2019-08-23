@@ -11,7 +11,7 @@
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/common/url_constants.h"
 #include "chromeos/login/login_state/scoped_test_public_session_login_state.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/api/web_request/permission_helper.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "extensions/browser/api/web_request/web_request_permissions.h"

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/passwords/password_auto_sign_in_view.h"
 
+#include <memory>
+
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -26,7 +28,10 @@ PasswordAutoSignInView::PasswordAutoSignInView(
     content::WebContents* web_contents,
     views::View* anchor_view,
     DisplayReason reason)
-    : PasswordBubbleViewBase(web_contents, anchor_view, reason) {
+    : PasswordBubbleViewBase(web_contents,
+                             anchor_view,
+                             reason,
+                             /*easily_dismissable=*/false) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
   const autofill::PasswordForm& form = model()->pending_password();
 

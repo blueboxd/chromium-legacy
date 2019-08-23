@@ -109,7 +109,6 @@ source_set("metrics") {
     "//ios/chrome/browser/web_state_list",
     "//ios/chrome/common",
     "//ios/public/provider/chrome/browser",
-    "//ios/public/provider/chrome/browser/user",
     "//ios/web/public/deprecated",
     "//url",
   ]

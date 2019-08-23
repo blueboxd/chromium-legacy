@@ -7,13 +7,13 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/gcm_driver/fake_gcm_profile_service.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
 #include "components/offline_pages/core/offline_page_feature.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_ANDROID)

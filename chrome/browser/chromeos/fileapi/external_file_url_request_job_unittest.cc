@@ -35,7 +35,7 @@
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "google_apis/drive/test_util.h"
 #include "net/base/request_priority.h"

@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/process/process.h"
 #include "base/test/multiprocess_test.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_factory.h"

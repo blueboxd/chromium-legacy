@@ -4,7 +4,7 @@
 
 #include "components/policy/core/common/cloud/user_info_fetcher.h"
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/values.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/http/http_status_code.h"

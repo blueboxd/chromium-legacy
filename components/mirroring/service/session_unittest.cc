@@ -9,7 +9,7 @@
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/mirroring/service/fake_network_service.h"

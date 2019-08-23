@@ -216,8 +216,9 @@ void ProfileOAuth2TokenServiceDelegateChromeOS::LoadCredentials(
     // initialization, but for Signin Profile and Lock Screen Profile this is a
     // no-op: they do not and must not have a working Account Manager available
     // to them. Note: They do have access to an Account Manager instance, but
-    // that instance is never set up (|AccountManager::Initialize|). Also, see
-    // http://crbug.com/891818
+    // that instance is never set up (|AccountManager::Initialize|). Also, see:
+    // - http://crbug.com/891818
+    // - https://crbug.com/996615 and |GetURLLoaderFactory|.
     set_load_credentials_state(
         signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS);
     FireRefreshTokensLoaded();
@@ -285,6 +286,22 @@ void ProfileOAuth2TokenServiceDelegateChromeOS::UpdateCredentials(
 
 scoped_refptr<network::SharedURLLoaderFactory>
 ProfileOAuth2TokenServiceDelegateChromeOS::GetURLLoaderFactory() const {
+  if (!is_regular_profile_) {
+    // Signin and Lock Screen profiles (non-|is_regular_profile_|s) have weird
+    // expectations around token loading. They do not have an account associated
+    // with them but expect calls like |LoadCredentials| and
+    // |GetURLLoaderFactory| to successfully complete.
+    // We *can* return a |nullptr| here because the return value of
+    // |GetURLLoaderFactory| is never used by Signin and Lock Screen profiles.
+    // They get a hard-coded |GoogleServiceAuthError::USER_NOT_SIGNED_UP| error
+    // returned to them by access token fetchers.
+    // We *must* return a |nullptr| here because otherwise |AccountManager|
+    // DCHECKs as it has not been initialized for non-|is_regular_profile_| and
+    // crashes for this weird case (Non-regular profiles expecting to act on
+    // accounts).
+    // See https://crbug.com/996615 for details.
+    return nullptr;
+  }
   return account_manager_->GetUrlLoaderFactory();
 }
 

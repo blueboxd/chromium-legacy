@@ -9,7 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #import "ios/chrome/browser/ui/open_in/open_in_controller.h"
 #import "ios/chrome/browser/ui/open_in/open_in_controller_testing.h"
 #import "ios/web/public/test/fakes/test_web_state.h"

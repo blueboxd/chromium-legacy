@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/frame/web_contents_close_handler.h"
 
 #include "base/macros.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/ui/views/frame/web_contents_close_handler_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

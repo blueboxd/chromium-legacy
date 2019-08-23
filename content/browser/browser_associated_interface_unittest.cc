@@ -19,7 +19,7 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/test/test_browser_associated_interfaces.mojom.h"
 #include "ipc/ipc_channel_factory.h"
 #include "ipc/ipc_channel_mojo.h"

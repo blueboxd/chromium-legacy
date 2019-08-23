@@ -14,7 +14,7 @@
 #import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/test/fakes/fake_overscroll_actions_controller_delegate.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/web_task_environment.h"
 #import "ios/web/public/ui/crw_web_view_proxy.h"
 #import "ios/web/public/ui/crw_web_view_scroll_view_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"

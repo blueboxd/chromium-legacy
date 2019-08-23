@@ -1529,6 +1529,10 @@ RenderProcessHostImpl::RenderProcessHostImpl(
               storage_partition_impl_->GetIndexedDBContext()->TaskRunner())),
       channel_connected_(false),
       sent_render_process_ready_(false),
+      push_messaging_manager_(
+          nullptr,
+          base::OnTaskRunnerDeleter(base::CreateSequencedTaskRunner(
+              {ServiceWorkerContext::GetCoreThreadId()}))),
       renderer_host_binding_(this),
       instance_weak_factory_(base::in_place, this),
       frame_sink_provider_(id_),
@@ -1551,11 +1555,16 @@ RenderProcessHostImpl::RenderProcessHostImpl(
                                   storage_partition_impl_->GetPath()));
   }
 
-  // This instance of PushMessagingManager is only used from clients bound to
-  // service workers (i.e. PushProvider), since frame-bound clients will rely on
-  // DocumentInterfaceBroker instead. Therefore, pass an invalid frame ID here.
+  // This instance of PushMessagingManager is only used from clients
+  // bound to service workers (i.e. PushProvider), since frame-bound
+  // clients will rely on DocumentInterfaceBroker instead. Therefore,
+  // pass an invalid frame ID here.
+  //
+  // Constructing the manager must occur after RegisterHost(), since
+  // PushMessagingManager::Core looks up |this| using the process id.
   push_messaging_manager_.reset(new PushMessagingManager(
-      GetID(), /* render_frame_id= */ ChildProcessHost::kInvalidUniqueID,
+      GetID(),
+      /* render_frame_id= */ ChildProcessHost::kInvalidUniqueID,
       storage_partition_impl_->GetServiceWorkerContext()));
 
   AddObserver(indexed_db_factory_.get());
@@ -2085,9 +2094,16 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   registry->AddInterface(
       base::BindRepeating(&device::GamepadHapticsManager::Create));
 
-  registry->AddInterface(
-      base::BindRepeating(&PushMessagingManager::BindRequest,
-                          base::Unretained(push_messaging_manager_.get())));
+  if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
+    AddUIThreadInterface(
+        registry.get(),
+        base::BindRepeating(&PushMessagingManager::BindRequest,
+                            base::Unretained(push_messaging_manager_.get())));
+  } else {
+    registry->AddInterface(
+        base::BindRepeating(&PushMessagingManager::BindRequest,
+                            base::Unretained(push_messaging_manager_.get())));
+  }
 
   file_system_manager_impl_.reset(new FileSystemManagerImpl(
       GetID(), storage_partition_impl_->GetFileSystemContext(),
@@ -2435,6 +2451,30 @@ void RenderProcessHostImpl::CreateURLLoaderFactory(
     const net::NetworkIsolationKey& network_isolation_key,
     network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
     network::mojom::URLLoaderFactoryRequest request) {
+  CreateURLLoaderFactoryInternal(
+      origin, embedder_policy, preferences, network_isolation_key,
+      std::move(header_client), std::move(request), false /* is_trusted */);
+}
+
+void RenderProcessHostImpl::CreateTrustedURLLoaderFactory(
+    const base::Optional<url::Origin>& origin,
+    network::mojom::CrossOriginEmbedderPolicy embedder_policy,
+    const WebPreferences* preferences,
+    network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
+    network::mojom::URLLoaderFactoryRequest request) {
+  CreateURLLoaderFactoryInternal(origin, embedder_policy, preferences,
+                                 base::nullopt, std::move(header_client),
+                                 std::move(request), true /* is_trusted */);
+}
+
+void RenderProcessHostImpl::CreateURLLoaderFactoryInternal(
+    const base::Optional<url::Origin>& origin,
+    network::mojom::CrossOriginEmbedderPolicy embedder_policy,
+    const WebPreferences* preferences,
+    base::Optional<net::NetworkIsolationKey> network_isolation_key,
+    network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
+    network::mojom::URLLoaderFactoryRequest request,
+    bool is_trusted) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // "chrome-guest://..." is never used as a |request_initiator|.  Therefore
@@ -2461,7 +2501,13 @@ void RenderProcessHostImpl::CreateURLLoaderFactory(
     params->disable_web_security =
         base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisableWebSecurity);
-    params->network_isolation_key = network_isolation_key;
+    // If |network_isolation_key| does not have a value, we do not initialize
+    // the URLLoaderFactory with a NetworkIsolationKey.
+    if (network_isolation_key)
+      params->network_isolation_key = network_isolation_key.value();
+
+    params->is_trusted = is_trusted;
+
     params->header_client = std::move(header_client);
     params->cross_origin_embedder_policy = embedder_policy;
 

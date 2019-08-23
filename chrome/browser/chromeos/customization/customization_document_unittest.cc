@@ -27,7 +27,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
 #include "components/sync_preferences/pref_service_syncable.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/external_install_info.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"

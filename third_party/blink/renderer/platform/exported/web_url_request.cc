@@ -33,6 +33,7 @@
 #include <memory>
 
 #include "base/time/time.h"
+#include "net/base/features.h"
 #include "net/base/load_flags.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/web_http_body.h"
@@ -461,8 +462,22 @@ int WebURLRequest::GetLoadFlagsForWebUrlRequest() const {
     if (resource_request_->GetExtraData()->is_for_no_state_prefetch())
       load_flags |= net::LOAD_PREFETCH;
   }
-  if (resource_request_->AllowsStaleResponse())
+  if (resource_request_->AllowsStaleResponse()) {
     load_flags |= net::LOAD_SUPPORT_ASYNC_REVALIDATION;
+  }
+  if (resource_request_->PrefetchMaybeForTopLeveNavigation()) {
+    DCHECK_EQ(resource_request_->GetRequestContext(),
+              blink::mojom::RequestContextType::PREFETCH);
+    // TODO(domfarolino): When SplitCache is enabled by default and we stop
+    // referencing the feature, also remove the net/base/features.h DEPS
+    // exception.
+    DCHECK(base::FeatureList::IsEnabled(
+        net::features::kSplitCacheByNetworkIsolationKey));
+    if (!resource_request_->RequestorOrigin()->IsSameSchemeHostPort(
+            SecurityOrigin::Create(resource_request_->Url()).get())) {
+      load_flags |= net::LOAD_RESTRICTED_PREFETCH;
+    }
+  }
 
   return load_flags;
 }

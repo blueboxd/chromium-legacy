@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_EXO_WAYLAND_FUZZER_SERVER_ENVIRONMENT_H_
 #define COMPONENTS_EXO_WAYLAND_FUZZER_SERVER_ENVIRONMENT_H_
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "components/exo/wayland/clients/test/wayland_client_test_helper.h"
 #include "ui/aura/env.h"

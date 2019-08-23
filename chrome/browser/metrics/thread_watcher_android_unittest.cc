@@ -3,12 +3,13 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/metrics/thread_watcher_android.h"
+
 #include "base/android/application_status_listener.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/metrics/thread_watcher.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

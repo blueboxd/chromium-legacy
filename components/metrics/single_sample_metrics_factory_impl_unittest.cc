@@ -9,7 +9,7 @@
 #include "base/run_loop.h"
 #include "base/test/gtest_util.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "components/metrics/single_sample_metrics.h"
 #include "testing/gtest/include/gtest/gtest.h"

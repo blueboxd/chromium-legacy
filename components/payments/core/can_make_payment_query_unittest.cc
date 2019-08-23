@@ -4,7 +4,7 @@
 
 #include "components/payments/core/can_make_payment_query.h"
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

@@ -21,7 +21,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.DefaultBrowserInfo;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegateImpl;
-import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.CustomTabsUiType;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;

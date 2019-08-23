@@ -28,7 +28,11 @@ class ServiceWorkerContextWrapper;
 
 // One instance of this exists per StoragePartition, and services multiple child
 // processes/origins. Most logic is delegated to the owned BackgroundSyncManager
-// instance, which is only accessed on the IO thread.
+// instance, which is only accessed on the service worker core thread
+// (ServiceWorkerContext::GetCoreThreadId()).
+//
+// TODO(crbug.com/824858): Update this comment when service worker core thread
+// becomes the UI thread, and simplify/remove the delegating.
 class CONTENT_EXPORT BackgroundSyncContextImpl
     : public BackgroundSyncContext,
       public base::RefCountedDeleteOnSequence<BackgroundSyncContextImpl> {
@@ -68,13 +72,13 @@ class CONTENT_EXPORT BackgroundSyncContextImpl
           receiver);
 
   // Called by *BackgroundSyncServiceImpl objects so that they can
-  // be deleted. Call on the IO thread.
+  // be deleted. Call on the service worker core thread.
   void OneShotSyncServiceHadConnectionError(
       OneShotBackgroundSyncServiceImpl* service);
   void PeriodicSyncServiceHadConnectionError(
       PeriodicBackgroundSyncServiceImpl* service);
 
-  // Call on the IO thread.
+  // Call on the service worker core thread.
   BackgroundSyncManager* background_sync_manager() const;
 
   // BackgroundSyncContext implementation.
@@ -102,35 +106,36 @@ class CONTENT_EXPORT BackgroundSyncContextImpl
   friend class BackgroundSyncLauncherTest;
   friend class BackgroundSyncManagerTest;
 
-  void FireBackgroundSyncEventsOnIOThread(
+  void FireBackgroundSyncEventsOnCoreThread(
       blink::mojom::BackgroundSyncType sync_type,
       base::OnceClosure done_closure);
-  void DidFireBackgroundSyncEventsOnIOThread(base::OnceClosure done_closure);
+  void DidFireBackgroundSyncEventsOnCoreThread(base::OnceClosure done_closure);
   virtual void CreateBackgroundSyncManager(
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
       scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context);
 
-  void CreateOneShotSyncServiceOnIOThread(
+  void CreateOneShotSyncServiceOnCoreThread(
       mojo::PendingReceiver<blink::mojom::OneShotBackgroundSyncService>
           receiver);
-  void CreatePeriodicSyncServiceOnIOThread(
+  void CreatePeriodicSyncServiceOnCoreThread(
       mojo::PendingReceiver<blink::mojom::PeriodicBackgroundSyncService>
           receiver);
 
-  void ShutdownOnIO();
+  void ShutdownOnCoreThread();
 
-  base::TimeDelta GetSoonestWakeupDeltaOnIOThread(
+  base::TimeDelta GetSoonestWakeupDeltaOnCoreThread(
       blink::mojom::BackgroundSyncType sync_type,
       base::Time last_browser_wakeup_for_periodic_sync);
   void DidGetSoonestWakeupDelta(
       base::OnceCallback<void(base::TimeDelta)> callback,
       base::TimeDelta soonest_wakeup_delta);
 
-  void RevivePeriodicBackgroundSyncRegistrationsOnIOThread(url::Origin origin);
+  void RevivePeriodicBackgroundSyncRegistrationsOnCoreThread(
+      url::Origin origin);
 
   // The services are owned by this. They're either deleted
-  // during ShutdownOnIO or when the channel is closed via
-  // *ServiceHadConnectionError. Only accessed on the IO thread.
+  // during ShutdownOnCoreThread() or when the channel is closed via
+  // *ServiceHadConnectionError. Only accessed on the core thread.
   std::set<std::unique_ptr<OneShotBackgroundSyncServiceImpl>,
            base::UniquePtrComparator>
       one_shot_sync_services_;
@@ -138,7 +143,7 @@ class CONTENT_EXPORT BackgroundSyncContextImpl
            base::UniquePtrComparator>
       periodic_sync_services_;
 
-  // Only accessed on the IO thread.
+  // Only accessed on the core thread.
   std::unique_ptr<BackgroundSyncManager> background_sync_manager_;
 
   std::map<blink::mojom::BackgroundSyncType, base::TimeDelta>

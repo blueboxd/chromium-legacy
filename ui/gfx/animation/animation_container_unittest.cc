@@ -8,7 +8,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/animation/animation_container_observer.h"
 #include "ui/gfx/animation/linear_animation.h"

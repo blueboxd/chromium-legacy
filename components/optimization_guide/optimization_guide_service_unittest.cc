@@ -12,7 +12,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/version.h"
 #include "components/optimization_guide/hints_component_info.h"
 #include "testing/gtest/include/gtest/gtest.h"

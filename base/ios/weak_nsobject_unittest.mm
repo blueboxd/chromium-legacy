@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/ios/weak_nsobject.h"
+
 #include "base/bind.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"

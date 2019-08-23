@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "cc/trees/swap_promise.h"
 #include "content/common/render_frame_metadata.mojom.h"
 #include "content/common/widget_messages.h"

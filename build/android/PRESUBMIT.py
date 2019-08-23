@@ -37,6 +37,8 @@ def CommonChecks(input_api, output_api):
           J('..', '..', 'third_party', 'catapult', 'devil'),
           J('..', '..', 'third_party', 'catapult', 'tracing'),
           J('..', '..', 'third_party', 'depot_tools'),
+          J('..', '..', 'third_party', 'colorama', 'src'),
+          J('..', '..', 'third_party', 'pymock'),
       ]))
   output.extend(input_api.canned_checks.RunPylint(
       input_api,

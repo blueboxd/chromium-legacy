@@ -20,7 +20,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/network_error_logging/network_error_logging_service.h"
 #include "net/reporting/reporting_test_util.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {

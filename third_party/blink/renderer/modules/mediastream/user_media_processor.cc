@@ -264,7 +264,7 @@ UserMediaRequestInfo::UserMediaRequestInfo(
 
 // Class for storing state of the the processing of getUserMedia requests.
 class UserMediaProcessor::RequestInfo
-    : public base::SupportsWeakPtr<RequestInfo> {
+    : public GarbageCollectedFinalized<UserMediaProcessor::RequestInfo> {
  public:
   using ResourcesReady =
       base::OnceCallback<void(RequestInfo* request_info,
@@ -365,6 +365,8 @@ class UserMediaProcessor::RequestInfo
     return request_->is_processing_user_gesture;
   }
 
+  void Trace(Visitor* visitor) {}
+
  private:
   void OnTrackStarted(blink::WebPlatformMediaStreamSource* source,
                       MediaStreamRequestResult result,
@@ -440,7 +442,7 @@ UserMediaProcessor::RequestInfo::CreateAndStartVideoTrack(
       video_capture_settings_.noise_reduction(), is_video_content_capture_,
       video_capture_settings_.min_frame_rate(),
       WTF::BindRepeating(&UserMediaProcessor::RequestInfo::OnTrackStarted,
-                         AsWeakPtr()),
+                         WrapWeakPersistent(this)),
       true);
 }
 
@@ -513,7 +515,7 @@ void UserMediaProcessor::ProcessRequest(
   DCHECK(!request_completed_cb_);
   DCHECK(!current_request_info_);
   request_completed_cb_ = std::move(callback);
-  current_request_info_ = std::make_unique<RequestInfo>(std::move(request));
+  current_request_info_ = MakeGarbageCollected<RequestInfo>(std::move(request));
   // TODO(guidou): Set up audio and video in parallel.
   if (current_request_info_->web_request().Audio()) {
     SetupAudioInput();
@@ -1040,6 +1042,7 @@ void UserMediaProcessor::OnDeviceChanged(const MediaStreamDevice& old_device,
 
 void UserMediaProcessor::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
+  visitor->Trace(current_request_info_);
 }
 
 blink::WebMediaStreamSource UserMediaProcessor::InitializeVideoSourceObject(
@@ -1552,7 +1555,7 @@ bool UserMediaProcessor::DeleteWebRequest(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (current_request_info_ &&
       current_request_info_->web_request() == web_request) {
-    current_request_info_.reset();
+    current_request_info_ = nullptr;
     std::move(request_completed_cb_).Run();
     return true;
   }
@@ -1579,7 +1582,7 @@ void UserMediaProcessor::StopAllProcessing() {
             blink::MEDIA_STREAM_REQUEST_PENDING_MEDIA_TRACKS);
         break;
     }
-    current_request_info_.reset();
+    current_request_info_ = nullptr;
   }
   request_completed_cb_.Reset();
 

@@ -124,6 +124,11 @@ class GlsRunnerTestBase : public ::testing::Test {
   // on |testing_credential_| to succeed and start a GLS process or not.
   // If false, we will check that an appropriate error has been returned.
   HRESULT StartLogonProcess(bool succeeds);
+  // The below method provides additional control of expecting a specific
+  // error message whenever the logon process is expected to fail.
+  // The |expected_error_message| is the id of the error message defined
+  // under gaia_resources.grd file.
+  HRESULT StartLogonProcess(bool succeeds, int expected_error_message);
 
   // Waits for the GLS process that was started in StartLogonProcess to
   // complete and returns.

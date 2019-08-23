@@ -52,6 +52,7 @@ import org.chromium.chrome.browser.KeyboardShortcuts;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantFacade;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
 import org.chromium.chrome.browser.browserservices.SessionDataHolder;
@@ -702,8 +703,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         Intent intent = LaunchIntentDispatcher.createCustomTabActivityIntent(
                 context, customTabIntent.intent);
         intent.setPackage(context.getPackageName());
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_UI_TYPE,
-                CustomTabIntentDataProvider.CustomTabsUiType.INFO_PAGE);
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_UI_TYPE, CustomTabsUiType.INFO_PAGE);
         intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
         if (!(context instanceof Activity)) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         IntentHandler.addTrustedIntentExtras(intent);

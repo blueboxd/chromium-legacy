@@ -753,9 +753,9 @@ class CrostiniDataSource : public IconCachedDataSource,
     RevokeInvalidated();
     crostini::CrostiniRegistryService* registry_service =
         crostini::CrostiniRegistryServiceFactory::GetForProfile(profile());
-    for (const std::string& app_id : registry_service->GetRegisteredAppIds()) {
-      crostini::CrostiniRegistryService::Registration registration =
-          *registry_service->GetRegistration(app_id);
+    for (const auto& pair : registry_service->GetRegisteredApps()) {
+      const std::string& app_id = pair.first;
+      const auto& registration = pair.second;
       if (registration.NoDisplay())
         continue;
       apps->emplace_back(std::make_unique<AppSearchProvider::App>(

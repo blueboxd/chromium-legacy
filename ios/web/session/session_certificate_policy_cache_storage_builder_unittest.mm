@@ -5,7 +5,7 @@
 #import "ios/web/session/session_certificate_policy_cache_storage_builder.h"
 
 #import "ios/web/public/session/crw_session_certificate_policy_cache_storage.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/web_task_environment.h"
 #import "ios/web/session/session_certificate_policy_cache_impl.h"
 #include "net/cert/x509_certificate.h"
 #include "net/test/cert_test_util.h"

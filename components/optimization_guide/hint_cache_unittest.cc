@@ -13,7 +13,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/optimization_guide/hint_cache_store.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/proto_database_provider_test_base.h"

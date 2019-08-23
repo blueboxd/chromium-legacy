@@ -29,7 +29,7 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
 #include "components/component_updater/mock_component_updater_service.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace component_updater {

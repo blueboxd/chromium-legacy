@@ -1561,6 +1561,7 @@ const AtomicString& Element::computedRole() {
   if (!document.IsActive())
     return g_null_atom;
   document.UpdateStyleAndLayoutForNode(this);
+  UpdateDistributionForFlatTreeTraversal();
   AXContext ax_context(document);
   return ax_context.GetAXObjectCache().ComputedRoleForNode(this);
 }
@@ -1570,6 +1571,7 @@ String Element::computedName() {
   if (!document.IsActive())
     return String();
   document.UpdateStyleAndLayoutForNode(this);
+  UpdateDistributionForFlatTreeTraversal();
   AXContext ax_context(document);
   return ax_context.GetAXObjectCache().ComputedNameForNode(this);
 }

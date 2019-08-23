@@ -46,10 +46,6 @@ FakeScriptExecutorDelegate::GetPersonalDataManager() {
   return nullptr;
 }
 
-WebsiteLoginFetcher* FakeScriptExecutorDelegate::GetWebsiteLoginFetcher() {
-  return nullptr;
-}
-
 content::WebContents* FakeScriptExecutorDelegate::GetWebContents() {
   return nullptr;
 }
@@ -99,10 +95,8 @@ void FakeScriptExecutorDelegate::SetUserActions(
 }
 
 void FakeScriptExecutorDelegate::SetPaymentRequestOptions(
-    std::unique_ptr<PaymentRequestOptions> options,
-    std::unique_ptr<PaymentInformation> information) {
+    std::unique_ptr<PaymentRequestOptions> options) {
   payment_request_options_ = std::move(options);
-  payment_request_info_ = std::move(information);
 }
 
 void FakeScriptExecutorDelegate::SetViewportMode(ViewportMode mode) {

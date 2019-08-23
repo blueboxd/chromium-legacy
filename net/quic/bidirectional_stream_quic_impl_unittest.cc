@@ -38,7 +38,7 @@
 #include "net/quic/test_task_runner.h"
 #include "net/socket/socket_test_util.h"
 #include "net/test/gtest_util.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
 #include "net/third_party/quiche/src/quic/core/crypto/null_decrypter.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_decrypter.h"
@@ -841,7 +841,7 @@ class BidirectionalStreamQuicImplTest
 // TODO(nharper): Make these tests work with TLS.
 quic::ParsedQuicVersionVector AllSupportedVersionsWithQuicCrypto() {
   quic::ParsedQuicVersionVector versions;
-  for (const auto& version : quic::AllVersionsExcept99()) {
+  for (const auto& version : quic::AllSupportedVersions()) {
     if (version.handshake_protocol == quic::PROTOCOL_QUIC_CRYPTO) {
       versions.push_back(version);
     }

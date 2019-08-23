@@ -37,9 +37,6 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import jp.tomorrowkey.android.gifplayer.BaseGifImage;
 
 /**
@@ -92,20 +89,6 @@ class AutofillAssistantUiTestUtil {
                 description.appendText("isTextMaxLines");
             }
         };
-    }
-
-    /** Returns all views with a matching tag. */
-    public static List<View> findViewsWithTag(View view, Object tag) {
-        List<View> viewsWithTag = new ArrayList<>();
-        if (view instanceof ViewGroup) {
-            for (int i = 0; i < ((ViewGroup) view).getChildCount(); i++) {
-                viewsWithTag.addAll(findViewsWithTag(((ViewGroup) view).getChildAt(i), tag));
-            }
-        }
-        if (view.getTag() != null && view.getTag().equals(tag)) {
-            viewsWithTag.add(view);
-        }
-        return viewsWithTag;
     }
 
     /**

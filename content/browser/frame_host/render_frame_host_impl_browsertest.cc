@@ -52,6 +52,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -2815,6 +2816,184 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, WebUiReloadAfterCrash) {
   EXPECT_EQ(main_frame_url, main_document->GetLastCommittedURL());
   EXPECT_EQ("Graphics Feature Status",
             EvalJs(main_document, "document.querySelector('h3').textContent"));
+}
+
+namespace {
+
+// Collects the committed IPAddressSpaces, and makes them available for
+// evaluation. Nothing about the request is modified; this is a read-only
+// interceptor.
+class IPAddressSpaceCollector : public DidCommitNavigationInterceptor {
+ public:
+  using CommitData = std::pair<GURL, network::mojom::IPAddressSpace>;
+  using CommitDataVector = std::vector<CommitData>;
+
+  explicit IPAddressSpaceCollector(WebContents* web_contents)
+      : DidCommitNavigationInterceptor(web_contents) {}
+  ~IPAddressSpaceCollector() override = default;
+
+  network::mojom::IPAddressSpace IPAddressSpaceForUrl(const GURL& url) const {
+    for (auto item : commits_) {
+      if (item.first == url)
+        return item.second;
+    }
+    return network::mojom::IPAddressSpace::kUnknown;
+  }
+
+  network::mojom::IPAddressSpace last_ip_address_space() const {
+    return commits_.back().second;
+  }
+
+ protected:
+  bool WillProcessDidCommitNavigation(
+      RenderFrameHost* render_frame_host,
+      NavigationRequest* navigation_request,
+      ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
+      mojom::DidCommitProvisionalLoadInterfaceParamsPtr* interface_params)
+      override {
+    commits_.push_back(
+        CommitData(params->url.spec().c_str(),
+                   navigation_request
+                       ? navigation_request->commit_params().ip_address_space
+                       : network::mojom::IPAddressSpace::kUnknown));
+    return true;
+  }
+
+ private:
+  CommitDataVector commits_;
+
+  DISALLOW_COPY_AND_ASSIGN(IPAddressSpaceCollector);
+};
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       ComputeMainFrameIPAddressSpace) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      network::features::kBlockNonSecureExternalRequests);
+
+  // TODO(mkwst): `about:`, `file:`, `data:`, `blob:`, and `filesystem:` URLs
+  // are all treated as `kUnknown` today. This is ~incorrect, but safe, as their
+  // web-facing behavior will be equivalent to "public".
+  struct {
+    GURL url;
+    network::mojom::IPAddressSpace expected_internal;
+    std::string expected_web_facing;
+  } test_cases[] = {
+      {GURL("about:blank"), network::mojom::IPAddressSpace::kUnknown, "public"},
+      {GURL("data:text/html,foo"), network::mojom::IPAddressSpace::kUnknown,
+       "public"},
+      {GetTestUrl("", "empty.html"), network::mojom::IPAddressSpace::kUnknown,
+       "public"},
+      {embedded_test_server()->GetURL("/empty.html"),
+       network::mojom::IPAddressSpace::kLocal, "local"},
+      {embedded_test_server()->GetURL("/empty-treat-as-public-address.html"),
+       network::mojom::IPAddressSpace::kPublic, "public"},
+  };
+
+  for (auto test : test_cases) {
+    SCOPED_TRACE(test.url);
+    IPAddressSpaceCollector collector(shell()->web_contents());
+    EXPECT_TRUE(NavigateToURL(shell(), test.url));
+    RenderFrameHostImpl* rfhi = static_cast<RenderFrameHostImpl*>(
+        shell()->web_contents()->GetMainFrame());
+    EXPECT_EQ(test.expected_internal, collector.last_ip_address_space());
+    EXPECT_EQ(test.expected_web_facing, EvalJs(rfhi, "document.addressSpace"));
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       ComputeIFrameLoopbackIPAddressSpace) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      network::features::kBlockNonSecureExternalRequests);
+
+  {
+    IPAddressSpaceCollector collector(shell()->web_contents());
+    base::string16 expected_title(base::UTF8ToUTF16("LOADED"));
+    TitleWatcher title_watcher(shell()->web_contents(), expected_title);
+    EXPECT_TRUE(
+        NavigateToURL(shell(), embedded_test_server()->GetURL(
+                                   "/do-not-treat-as-public-address.html")));
+    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+
+    std::vector<RenderFrameHost*> frames =
+        shell()->web_contents()->GetAllFrames();
+    for (auto* frame : frames) {
+      SCOPED_TRACE(::testing::Message()
+                   << "URL: " << frame->GetLastCommittedURL());
+      auto* rfhi = static_cast<RenderFrameHostImpl*>(frame);
+
+      if (frame->GetLastCommittedURL().IsAboutBlank()) {
+        // TODO(986744): `about:blank` is not navigated via
+        // `RenderFrameHostImpl::CommitNavigation`, but handled in the renderer
+        // via `RenderFrameImpl::CommitSyncNavigation`. This means that we don't
+        // calculate the value correctly on the browser-side, but do correctly
+        // inherit from the initiator on the Blink-side.
+        EXPECT_EQ(network::mojom::IPAddressSpace::kUnknown,
+                  collector.IPAddressSpaceForUrl(frame->GetLastCommittedURL()));
+        EXPECT_EQ("local", EvalJs(rfhi, "document.addressSpace"));
+      } else if (frame->GetLastCommittedURL().SchemeIsFileSystem() ||
+                 frame->GetLastCommittedURL().SchemeIsBlob() ||
+                 frame->GetLastCommittedURL().IsAboutSrcdoc() ||
+                 frame->GetLastCommittedURL().SchemeIs(url::kDataScheme)) {
+        // TODO(986744): `data:`, `blob:`, `filesystem:`, and `about:srcdoc`
+        // should all inherit the IPAddressSpace from the document
+        // that initiated a navigation. Right now, we treat them as `kPublic`.
+        EXPECT_EQ(network::mojom::IPAddressSpace::kUnknown,
+                  collector.IPAddressSpaceForUrl(frame->GetLastCommittedURL()));
+        EXPECT_EQ("public", EvalJs(rfhi, "document.addressSpace"));
+      } else {
+        // TODO(mkwst): Once the above two TODOs are resolved, this branch will
+        // be the correct expectation for all the frames in this test.
+        EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
+                  collector.IPAddressSpaceForUrl(frame->GetLastCommittedURL()));
+        EXPECT_EQ("local", EvalJs(rfhi, "document.addressSpace"));
+      }
+    }
+  }
+
+  // Loading from loopback that asserts publicness: `data:`, `blob:`,
+  // `filesystem:`, `about:blank`, and `about:srcdoc` all inherit the assertion.
+  {
+    IPAddressSpaceCollector collector(shell()->web_contents());
+    base::string16 expected_title(base::UTF8ToUTF16("LOADED"));
+    TitleWatcher title_watcher(shell()->web_contents(), expected_title);
+    EXPECT_TRUE(NavigateToURL(shell(), embedded_test_server()->GetURL(
+                                           "/treat-as-public-address.html")));
+    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+
+    std::vector<RenderFrameHost*> frames =
+        shell()->web_contents()->GetAllFrames();
+    for (auto* frame : frames) {
+      auto* rfhi = static_cast<RenderFrameHostImpl*>(frame);
+      if (frame->GetLastCommittedURL().IsAboutBlank()) {
+        // TODO(986744): `about:blank` is not navigated via `NavigationRequest`,
+        // but handled in the renderer via
+        // `RenderFrameImpl::CommitSyncNavigation`. This means that we don't
+        // calculate the value correctly on the browser-side, but do correctly
+        // inherit from the initiator on the Blink-side.
+        EXPECT_EQ(network::mojom::IPAddressSpace::kUnknown,
+                  collector.IPAddressSpaceForUrl(frame->GetLastCommittedURL()));
+        EXPECT_EQ("public", EvalJs(rfhi, "document.addressSpace"));
+      } else if (frame->GetLastCommittedURL().SchemeIsFileSystem() ||
+                 frame->GetLastCommittedURL().SchemeIsBlob() ||
+                 frame->GetLastCommittedURL().IsAboutSrcdoc() ||
+                 frame->GetLastCommittedURL().SchemeIs(url::kDataScheme)) {
+        // TODO(986744): `data:`, `blob:`, `filesystem:`, and `about:srcdoc`
+        // should all inherit the IPAddressSpace from the document
+        // that initiated a navigation. Right now, we treat them as `kUnknown`.
+        EXPECT_EQ(network::mojom::IPAddressSpace::kUnknown,
+                  collector.IPAddressSpaceForUrl(frame->GetLastCommittedURL()));
+        EXPECT_EQ("public", EvalJs(rfhi, "document.addressSpace"));
+      } else {
+        EXPECT_EQ(network::mojom::IPAddressSpace::kPublic,
+                  collector.IPAddressSpaceForUrl(frame->GetLastCommittedURL()));
+        EXPECT_EQ("public", EvalJs(rfhi, "document.addressSpace"));
+      }
+    }
+  }
 }
 
 }  // namespace content

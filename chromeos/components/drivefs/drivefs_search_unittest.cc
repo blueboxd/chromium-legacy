@@ -6,8 +6,8 @@
 
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
+#include "base/test/task_environment.h"
 #include "chromeos/components/drivefs/mojom/drivefs.mojom-test-utils.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/test/test_network_connection_tracker.h"

@@ -6,7 +6,7 @@
 #define SERVICES_DEVICE_DEVICE_SERVICE_TEST_BASE_H_
 
 #include "base/macros.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"

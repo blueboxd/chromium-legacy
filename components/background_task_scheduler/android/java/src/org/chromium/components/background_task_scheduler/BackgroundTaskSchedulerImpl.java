@@ -59,6 +59,7 @@ class BackgroundTaskSchedulerImpl implements BackgroundTaskScheduler {
         }
     }
 
+    // TODO(crbug.com/996178): Update the documentation for the expiration feature.
     private class ExpirationMetricsVisitor implements TaskInfo.TimingInfoVisitor {
         private final int mTaskId;
 

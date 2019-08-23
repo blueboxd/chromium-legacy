@@ -5,7 +5,7 @@
 #include "third_party/webrtc_overrides/task_queue_factory.h"
 
 #include "base/task/task_traits.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/webrtc/api/task_queue/task_queue_test.h"
 

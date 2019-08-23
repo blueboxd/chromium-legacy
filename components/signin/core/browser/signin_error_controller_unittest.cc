@@ -11,7 +11,7 @@
 
 #include "base/scoped_observer.h"
 #include "base/stl_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "testing/gmock/include/gmock/gmock.h"

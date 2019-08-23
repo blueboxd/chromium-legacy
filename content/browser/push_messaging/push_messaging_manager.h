@@ -52,7 +52,7 @@ class PushMessagingManager : public blink::mojom::PushMessaging {
     return weak_factory_.GetWeakPtr();
   }
 
-  // blink::mojom::PushMessaging impl, run on IO thread.
+  // blink::mojom::PushMessaging impl, run on service worker core thread.
   void Subscribe(int64_t service_worker_registration_id,
                  blink::mojom::PushSubscriptionOptionsPtr options,
                  bool user_gesture,
@@ -68,7 +68,6 @@ class PushMessagingManager : public blink::mojom::PushMessaging {
 
   friend class BrowserThread;
   friend class base::DeleteHelper<PushMessagingManager>;
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
 
   ~PushMessagingManager() override;
 
@@ -83,14 +82,14 @@ class PushMessagingManager : public blink::mojom::PushMessaging {
       blink::ServiceWorkerStatusCode service_worker_status);
 
   // Called via PostTask from UI thread.
-  void PersistRegistrationOnIO(RegisterData data,
+  void PersistRegistrationOnSW(RegisterData data,
                                const std::string& push_subscription_id,
                                const GURL& endpoint,
                                const std::vector<uint8_t>& p256dh,
                                const std::vector<uint8_t>& auth,
                                blink::mojom::PushRegistrationStatus status);
 
-  void DidPersistRegistrationOnIO(
+  void DidPersistRegistrationOnSW(
       RegisterData data,
       const GURL& endpoint,
       const std::vector<uint8_t>& p256dh,
@@ -98,10 +97,10 @@ class PushMessagingManager : public blink::mojom::PushMessaging {
       blink::mojom::PushRegistrationStatus push_registration_status,
       blink::ServiceWorkerStatusCode service_worker_status);
 
-  // Called both from IO thread, and via PostTask from UI thread.
+  // Called both from "SW core" thread, and via PostTask from UI thread.
   void SendSubscriptionError(RegisterData data,
                              blink::mojom::PushRegistrationStatus status);
-  // Called both from IO thread, and via PostTask from UI thread.
+  // Called both from "SW core" thread, and via PostTask from UI thread.
   void SendSubscriptionSuccess(RegisterData data,
                                blink::mojom::PushRegistrationStatus status,
                                const GURL& endpoint,
@@ -115,7 +114,7 @@ class PushMessagingManager : public blink::mojom::PushMessaging {
       const std::vector<std::string>& sender_id,
       blink::ServiceWorkerStatusCode service_worker_status);
 
-  // Called both from IO thread, and via PostTask from UI thread.
+  // Called both from "SW core" thread, and via PostTask from UI thread.
   void DidUnregister(
       UnsubscribeCallback callback,
       blink::mojom::PushUnregistrationStatus unregistration_status);
@@ -131,8 +130,8 @@ class PushMessagingManager : public blink::mojom::PushMessaging {
   // Inner core of this message filter which lives on the UI thread.
   std::unique_ptr<Core, BrowserThread::DeleteOnUIThread> ui_core_;
 
-  // Can be used on the IO thread as the |this| parameter when binding a
-  // callback that will be called on the UI thread (an IO -> UI -> UI chain).
+  // Can be used on the SW core thread as the |this| parameter when binding a
+  // callback that will be called on the UI thread (an SW -> UI -> UI chain).
   base::WeakPtr<Core> ui_core_weak_ptr_;
 
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;

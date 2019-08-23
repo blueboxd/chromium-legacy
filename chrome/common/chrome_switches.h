@@ -250,6 +250,7 @@ extern const char kPrefetchArgumentBrowserBackground[];
 extern const char kPrefetchArgumentWatcher[];
 extern const char kShowIcons[];
 extern const char kUninstall[];
+extern const char kUserDataMigrated[];
 extern const char kWatcherProcess[];
 #endif  // defined(OS_WIN)
 

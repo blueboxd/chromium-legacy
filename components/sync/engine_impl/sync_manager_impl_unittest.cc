@@ -18,7 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "components/sync/base/cancelation_signal.h"
@@ -979,6 +979,7 @@ class SyncManagerTest : public testing::Test,
     args.engine_components_factory.reset(GetFactory());
     args.user_share = &user_share_;
     args.encryption_handler = encryption_handler_.get();
+    args.nigori_handler = encryption_handler_.get();
     args.unrecoverable_error_handler =
         MakeWeakHandle(mock_unrecoverable_error_handler_.GetWeakPtr());
     args.cancelation_signal = &cancelation_signal_;

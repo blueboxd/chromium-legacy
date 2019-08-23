@@ -20,10 +20,13 @@ namespace content {
 
 class ServiceWorkerContextWrapper;
 
-// This class is used to take messages from BackgroundSyncManager on the IO
-// thread and pass them on BackgroundSyncController on the UI thread through
-// its Core class which lives on the UI thread.
-// This is owned by the BackgroundSyncManager.
+// This class is used to take messages from BackgroundSyncManager on the
+// service worker core thread and pass them on BackgroundSyncController on the
+// UI thread through its Core class which lives on the UI thread. This is owned
+// by the BackgroundSyncManager.
+//
+// TODO(crbug.com/824858): This class should be unnecessary after the service
+// worker core thread moves to the UI thread.
 class CONTENT_EXPORT BackgroundSyncProxy {
  public:
   explicit BackgroundSyncProxy(
@@ -35,7 +38,8 @@ class CONTENT_EXPORT BackgroundSyncProxy {
       std::set<url::Origin> suspended_origins);
 
  private:
-  // Constructed on the IO thread, lives and dies on the UI thread.
+  // Constructed on the service worker core thread, lives and dies on the UI
+  // thread.
   class Core;
 
   std::unique_ptr<Core, BrowserThread::DeleteOnUIThread> ui_core_;

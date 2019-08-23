@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/chrome_cleaner/constants/uws_id.h"
 #include "chrome/chrome_cleaner/http/http_agent_factory.h"
 #include "chrome/chrome_cleaner/http/mock_http_agent_factory.h"

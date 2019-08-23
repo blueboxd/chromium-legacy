@@ -32,5 +32,19 @@ test(t => {
   assert_false(switchElement.hasAttribute('role'), 'role');
   assert_false(switchElement.hasAttribute('aria-checked'), 'aria-checked');
 }, 'Should have no a11y attributes');
+
+test(t => {
+  assert_own_property(window, 'accessibilityController');
+
+  let switchElement = document.createElement('std-switch');
+  switchElement.id = 'switch3';
+  switchElement.setAttribute('role', 'checkbox');
+  switchElement.setAttribute('aria-checked', 'true');
+  document.body.appendChild(switchElement);
+
+  let axSwitch = accessibilityController.accessibleElementById('switch3');
+  assert_equals(axSwitch.role, 'AXRole: AXCheckBox');
+  assert_equals(axSwitch.checked, 'true');
+}, 'Adding role=/aria-checked= should override the default');
 </script>
 </body>

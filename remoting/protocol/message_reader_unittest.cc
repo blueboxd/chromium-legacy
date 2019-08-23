@@ -9,7 +9,7 @@
 #include "base/callback.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "net/base/net_errors.h"
 #include "net/socket/socket.h"
 #include "remoting/protocol/fake_stream_socket.h"

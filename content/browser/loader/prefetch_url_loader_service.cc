@@ -8,6 +8,7 @@
 #include "base/feature_list.h"
 #include "base/time/default_tick_clock.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/loader/prefetch_url_loader.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
@@ -16,6 +17,8 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "net/base/features.h"
+#include "net/base/load_flags.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -28,16 +31,21 @@ namespace content {
 struct PrefetchURLLoaderService::BindContext {
   BindContext(int frame_tree_node_id,
               scoped_refptr<network::SharedURLLoaderFactory> factory,
+              base::WeakPtr<RenderFrameHostImpl> render_frame_host,
               scoped_refptr<PrefetchedSignedExchangeCache>
                   prefetched_signed_exchange_cache)
       : frame_tree_node_id(frame_tree_node_id),
         factory(factory),
+        render_frame_host(std::move(render_frame_host)),
+        cross_origin_factory(nullptr),
         prefetched_signed_exchange_cache(
             std::move(prefetched_signed_exchange_cache)) {}
 
   explicit BindContext(const std::unique_ptr<BindContext>& other)
       : frame_tree_node_id(other->frame_tree_node_id),
         factory(other->factory),
+        render_frame_host(other->render_frame_host),
+        cross_origin_factory(other->cross_origin_factory),
         prefetched_signed_exchange_cache(
             other->prefetched_signed_exchange_cache) {}
 
@@ -45,6 +53,10 @@ struct PrefetchURLLoaderService::BindContext {
 
   const int frame_tree_node_id;
   scoped_refptr<network::SharedURLLoaderFactory> factory;
+  base::WeakPtr<RenderFrameHostImpl> render_frame_host;
+
+  // This member is lazily initialized by EnsureCrossOriginFactory().
+  scoped_refptr<network::SharedURLLoaderFactory> cross_origin_factory;
   scoped_refptr<PrefetchedSignedExchangeCache> prefetched_signed_exchange_cache;
 };
 
@@ -67,6 +79,7 @@ void PrefetchURLLoaderService::GetFactory(
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
     int frame_tree_node_id,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo> factories,
+    base::WeakPtr<RenderFrameHostImpl> render_frame_host,
     scoped_refptr<PrefetchedSignedExchangeCache>
         prefetched_signed_exchange_cache) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -75,7 +88,7 @@ void PrefetchURLLoaderService::GetFactory(
   loader_factory_receivers_.Add(
       this, std::move(receiver),
       std::make_unique<BindContext>(
-          frame_tree_node_id, factory_bundle,
+          frame_tree_node_id, factory_bundle, std::move(render_frame_host),
           std::move(prefetched_signed_exchange_cache)));
 }
 
@@ -133,11 +146,48 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const auto& current_context = *loader_factory_receivers_.current_context();
+
+  if (!current_context.render_frame_host) {
+    client->OnComplete(network::URLLoaderCompletionStatus(net::ERR_ABORTED));
+    return;
+  }
+
   int frame_tree_node_id = current_context.frame_tree_node_id;
+  scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory_to_use =
+      current_context.factory;
+
+  if (resource_request.load_flags & net::LOAD_RESTRICTED_PREFETCH) {
+    // The renderer has marked this prefetch as restricted. We must give
+    // PrefetchURLLoader the cross-origin prefetch loader factory, which will be
+    // used if the request meets necessary security requirements.
+    // PrefetchURLLoader will then populate |resource_request|'s
+    // NetworkIsolationKey appropriately.
+    EnsureCrossOriginFactory();
+    DCHECK(current_context.cross_origin_factory);
+    network_loader_factory_to_use = current_context.cross_origin_factory;
+  }
+
   CreateLoaderAndStart(
       std::move(request), routing_id, request_id, options, resource_request,
-      std::move(client), traffic_annotation, current_context.factory,
+      std::move(client), traffic_annotation,
+      std::move(network_loader_factory_to_use),
       base::BindRepeating([](int id) { return id; }, frame_tree_node_id));
+}
+
+void PrefetchURLLoaderService::EnsureCrossOriginFactory() {
+  DCHECK(base::FeatureList::IsEnabled(
+      net::features::kSplitCacheByNetworkIsolationKey));
+  auto& current_context = *loader_factory_receivers_.current_context();
+  // If the factory has already been created, don't re-create it.
+  if (current_context.cross_origin_factory)
+    return;
+
+  DCHECK(current_context.render_frame_host);
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo> factories =
+      current_context.render_frame_host
+          ->CreateCrossOriginPrefetchLoaderFactoryBundle();
+  current_context.cross_origin_factory =
+      network::SharedURLLoaderFactory::Create(std::move(factories));
 }
 
 void PrefetchURLLoaderService::Clone(

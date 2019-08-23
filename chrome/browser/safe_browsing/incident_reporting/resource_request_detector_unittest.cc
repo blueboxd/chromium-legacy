@@ -16,7 +16,7 @@
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "crypto/sha2.h"
 #include "ipc/ipc_message.h"
 #include "net/base/request_priority.h"

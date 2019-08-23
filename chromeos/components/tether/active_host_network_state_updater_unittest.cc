@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chromeos/components/tether/fake_active_host.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"

@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chromeos/dbus/oobe_config/oobe_config.pb.h"
 #include "dbus/message.h"
 #include "dbus/mock_bus.h"

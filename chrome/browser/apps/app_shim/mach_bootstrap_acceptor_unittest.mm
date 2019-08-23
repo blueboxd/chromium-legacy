@@ -6,7 +6,7 @@
 
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/app_shim/app_shim_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

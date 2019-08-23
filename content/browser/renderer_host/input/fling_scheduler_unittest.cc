@@ -4,9 +4,9 @@
 
 #include "content/browser/renderer_host/input/fling_scheduler.h"
 
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/mock_render_widget_host_delegate.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_render_widget_host.h"

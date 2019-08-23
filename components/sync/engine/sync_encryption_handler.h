@@ -19,12 +19,6 @@ class Cryptographer;
 class KeystoreKeysHandler;
 enum class PassphraseType;
 
-namespace syncable {
-
-class NigoriHandler;
-
-}  // namespace syncable
-
 // Reasons due to which Cryptographer might require a passphrase.
 enum PassphraseRequiredReason {
   REASON_PASSPHRASE_NOT_REQUIRED = 0,  // Initial value.
@@ -183,11 +177,6 @@ class SyncEncryptionHandler {
   // Returns KeystoreKeysHandler, allowing to pass new keystore keys and to
   // check whether keystore keys need to be requested from the server.
   virtual KeystoreKeysHandler* GetKeystoreKeysHandler() = 0;
-
-  // Returns NigoriHandler, allowing directory-specific interaction with
-  // Nigori. Returns nullptr iff USS implementation of Nigori is enabled.
-  // TODO(crbug.com/970213): remove this method.
-  virtual syncable::NigoriHandler* GetNigoriHandler() = 0;
 
   // The set of types that are always encrypted.
   static ModelTypeSet SensitiveTypes();

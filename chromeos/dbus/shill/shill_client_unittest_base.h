@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/shill/shill_client_helper.h"
 #include "chromeos/dbus/shill/shill_property_changed_observer.h"

@@ -19,7 +19,7 @@
 #include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"

@@ -1,0 +1,144 @@
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/features.gni")
+import("//build/config/sanitizers/sanitizers.gni")
+import("//build/config/ui.gni")
+import("//build/config/win/console_app.gni")
+import("//build/config/win/manifest.gni")
+import("//gpu/vulkan/features.gni")
+import("//media/media_options.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
+import("//tools/grit/grit_rule.gni")
+import("//tools/grit/repack.gni")
+import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
+if (is_android) {
+  import("//build/config/android/config.gni")
+} else if (is_mac) {
+  import("//build/config/mac/rules.gni")
+  import("//build/mac/tweak_info_plist.gni")
+  import("//content/public/app/mac_helpers.gni")
+  import("//third_party/icu/config.gni")
+  import("//ui/gl/features.gni")
+  import("//v8/gni/v8.gni")
+}
+
+source_set("android_descriptors") {
+  sources = [
+    "browser/android_descriptors.h",
+  ]
+  public_deps = [
+    "//content/public/common:content_descriptors",
+  ]
+}
+
+jumbo_static_library("weblayer_lib") {
+  sources = [
+    "app/web_content_main_delegate.cc",
+    "app/web_content_main_delegate.h",
+    "app/web_main.cc",
+    "browser/web_browser_controller_impl.cc",
+    "browser/web_browser_controller_impl.h",
+    "browser/web_browser_main_parts.cc",
+    "browser/web_browser_main_parts.h",
+    "browser/web_content_browser_client.cc",
+    "browser/web_content_browser_client.h",
+    "browser/web_navigation_controller_impl.cc",
+    "browser/web_navigation_controller_impl.h",
+    "browser/web_profile_impl.cc",
+    "browser/web_profile_impl.h",
+    "common/web_content_client.cc",
+    "common/web_content_client.h",
+    "public/web_browser_controller.h",
+    "public/web_main.h",
+    "public/web_navigation_controller.h",
+    "public/web_profile.h",
+  ]
+
+  configs += [
+    "//build/config:precompiled_headers",
+
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    "//build/config/compiler:no_size_t_to_int_warning",
+  ]
+
+  public_deps = [
+    ":android_descriptors",
+  ]
+  deps = [
+    "//base",
+    "//base:base_static",
+    "//base/third_party/dynamic_annotations",
+    "//cc",
+    "//content:resources",
+    "//content/app/resources",
+    "//content/app/strings",
+    "//content/public/app:both",
+    "//content/public/common",
+    "//content/public/common:service_names",
+    "//content/public/child:child",
+    "//net",
+    "//net:net_resources",
+    "//sandbox",
+    "//skia",
+    "//third_party/icu",
+    "//ui/base",
+    "//ui/base/clipboard",
+    "//ui/base/ime/init",
+    "//ui/display",
+    "//ui/events:events_base",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/gfx/ipc",
+    "//ui/gfx/ipc/geometry",
+    "//ui/gfx/ipc/skia",
+    "//ui/gl",
+    "//ui/platform_window",
+    "//url",
+    "//v8",
+  ]
+
+  if (enable_vulkan) {
+    deps += [ "//gpu/vulkan/init" ]
+  }
+  if (mojo_media_host == "browser") {
+    deps += [
+      "//media/mojo/mojom:constants",
+      "//media/mojo/services",
+    ]
+  }
+
+  if (is_win) {
+    deps += [ "//content:sandbox_helper_win" ]
+  }
+
+  if (is_linux) {
+    deps += [
+      "//build/config/freetype",
+      "//third_party/fontconfig",
+    ]
+  }
+
+  if (is_android) {
+    deps += [
+      "//components/embedder_support/android:view",
+      "//ui/android",
+    ]
+  }
+
+  if (toolkit_views) {
+    deps += [ "//ui/views" ]
+  }
+
+  if (use_aura) {
+    deps += [
+      "//ui/aura",
+      "//ui/events",
+      "//ui/strings",
+      "//ui/wm",
+    ]
+  }
+}
+# TODO(jam): move weblayer_shell_resources_grit and copy_shell_resources here in
+# a way that's shareable?

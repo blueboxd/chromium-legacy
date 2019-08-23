@@ -8,7 +8,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/services/pdf_compositor/pdf_compositor_impl.h"
 #include "components/services/pdf_compositor/public/cpp/pdf_service_mojo_types.h"

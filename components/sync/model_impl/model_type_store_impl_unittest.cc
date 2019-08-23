@@ -12,7 +12,7 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/sync/model/model_error.h"
 #include "components/sync/model/model_type_store_test_util.h"
 #include "components/sync/protocol/entity_metadata.pb.h"

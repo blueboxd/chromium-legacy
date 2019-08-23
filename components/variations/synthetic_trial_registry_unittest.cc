@@ -8,7 +8,7 @@
 
 #include "base/metrics/field_trial.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/variations/active_field_trials.h"
 #include "components/variations/hashing.h"
 #include "components/variations/synthetic_trials_active_group_id_provider.h"

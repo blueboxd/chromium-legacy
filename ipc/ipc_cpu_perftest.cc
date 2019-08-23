@@ -10,7 +10,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/perf_log.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/timer/timer.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_perftest_messages.h"

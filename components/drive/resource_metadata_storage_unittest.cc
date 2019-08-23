@@ -19,7 +19,7 @@
 #include "components/drive/chromeos/drive_test_util.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/file_system_core_util.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"

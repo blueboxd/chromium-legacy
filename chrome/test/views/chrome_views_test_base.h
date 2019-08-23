@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/traits_bag.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "ui/views/test/views_test_base.h"
 
 // A base class for Chrome views unit tests. Changes the dependencies when they

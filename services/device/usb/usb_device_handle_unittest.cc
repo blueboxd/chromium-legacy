@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_io_thread.h"
 #include "services/device/test/usb_test_gadget.h"
 #include "services/device/usb/usb_device.h"

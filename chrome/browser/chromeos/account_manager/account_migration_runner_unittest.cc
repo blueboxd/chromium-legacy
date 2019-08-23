@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -94,7 +94,7 @@ class AccountMigrationRunnerTest : public testing::Test {
     return migration_result;
   }
 
-  // Check base/test/scoped_task_environment.h. This must be the first member /
+  // Check base/test/task_environment.h. This must be the first member /
   // declared before any member that cares about tasks.
   base::test::TaskEnvironment task_environment_;
 

@@ -202,7 +202,7 @@ bool RecordShutdownInfoPrefs() {
   return restart_last_session;
 }
 
-void ShutdownPostThreadsStop(int shutdown_flags) {
+void ShutdownPostThreadsStop(RestartMode restart_mode) {
   delete g_browser_process;
   g_browser_process = nullptr;
 
@@ -222,36 +222,44 @@ void ShutdownPostThreadsStop(int shutdown_flags) {
   }
 #endif
 
-  if (shutdown_flags & RESTART_LAST_SESSION) {
+  if (restart_mode != RestartMode::kNoRestart) {
 #if defined(OS_CHROMEOS)
     NOTIMPLEMENTED();
 #else
-    // Make sure to relaunch the browser with the original command line plus
-    // the Restore Last Session flag. Note that Chrome can be launched (ie.
-    // through ShellExecute on Windows) with a switch argument terminator at
-    // the end (double dash, as described in b/1366444) plus a URL,
-    // which prevents us from appending to the command line directly (issue
-    // 46182). We therefore use GetSwitches to copy the command line (it stops
-    // at the switch argument terminator).
-    base::CommandLine old_cl(*base::CommandLine::ForCurrentProcess());
-    auto new_cl = std::make_unique<base::CommandLine>(old_cl.GetProgram());
+    const base::CommandLine& old_cl(*base::CommandLine::ForCurrentProcess());
+    base::CommandLine new_cl(old_cl.GetProgram());
     base::CommandLine::SwitchMap switches = old_cl.GetSwitches();
-    // Remove the switches that shouldn't persist across restart.
-    about_flags::RemoveFlagsSwitches(&switches);
-    switches::RemoveSwitchesForAutostart(&switches);
-    // Append the old switches to the new command line.
-    for (const auto& it : switches) {
-      const auto& switch_name = it.first;
-      const auto& switch_value = it.second;
-      if (switch_value.empty())
-        new_cl->AppendSwitch(switch_name);
-      else
-        new_cl->AppendSwitchNative(switch_name, switch_value);
-    }
-    if (shutdown_flags & RESTART_IN_BACKGROUND)
-      new_cl->AppendSwitch(switches::kNoStartupWindow);
 
-    upgrade_util::RelaunchChromeBrowser(*new_cl);
+    // Remove switches that shouldn't persist across any restart.
+    about_flags::RemoveFlagsSwitches(&switches);
+
+    switch (restart_mode) {
+      case RestartMode::kNoRestart:
+        NOTREACHED();
+        break;
+
+      case RestartMode::kRestartInBackground:
+        new_cl.AppendSwitch(switches::kNoStartupWindow);
+        FALLTHROUGH;
+
+      case RestartMode::kRestartLastSession:
+        // Relaunch the browser without any command line URLs or certain one-off
+        // switches.
+        switches::RemoveSwitchesForAutostart(&switches);
+        break;
+
+      case RestartMode::kRestartThisSession:
+        // Copy URLs and other arguments to the new command line.
+        for (const auto& arg : old_cl.GetArgs())
+          new_cl.AppendArgNative(arg);
+        break;
+    }
+
+    // Append the old switches to the new command line.
+    for (const auto& it : switches)
+      new_cl.AppendSwitchNative(it.first, it.second);
+
+    upgrade_util::RelaunchChromeBrowser(new_cl);
 #endif  // defined(OS_CHROMEOS)
   }
 

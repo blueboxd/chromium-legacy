@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/dom_distiller/core/article_entry.h"
 #include "components/dom_distiller/core/proto/distilled_article.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"

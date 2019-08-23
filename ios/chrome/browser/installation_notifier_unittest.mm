@@ -3,13 +3,14 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/installation_notifier.h"
+
 #include "base/message_loop/message_loop_current.h"
 
 #include <stdint.h>
 #import <UIKit/UIKit.h>
 
 #include "base/ios/block_types.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/web_task_environment.h"
 #include "net/base/backoff_entry.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"

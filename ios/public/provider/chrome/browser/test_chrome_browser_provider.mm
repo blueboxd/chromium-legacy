@@ -15,7 +15,6 @@
 #include "ios/public/provider/chrome/browser/signin/test_signin_resources_provider.h"
 #import "ios/public/provider/chrome/browser/spotlight/test_spotlight_provider.h"
 #import "ios/public/provider/chrome/browser/ui/fullscreen_provider.h"
-#import "ios/public/provider/chrome/browser/user/test_special_user_provider.h"
 #import "ios/public/provider/chrome/browser/user_feedback/test_user_feedback_provider.h"
 #import "ios/public/provider/chrome/browser/voice/test_voice_search_provider.h"
 #import "ios/public/provider/chrome/browser/voice/voice_search_language.h"
@@ -35,7 +34,6 @@ TestChromeBrowserProvider::TestChromeBrowserProvider()
           std::make_unique<TestSigninResourcesProvider>()),
       voice_search_provider_(std::make_unique<TestVoiceSearchProvider>()),
       user_feedback_provider_(std::make_unique<TestUserFeedbackProvider>()),
-      special_user_provider_(std::make_unique<TestSpecialUserProvider>()),
       spotlight_provider_(std::make_unique<TestSpotlightProvider>()),
       mailto_handler_provider_(std::make_unique<TestMailtoHandlerProvider>()),
       fullscreen_provider_(std::make_unique<FullscreenProvider>()) {}
@@ -87,10 +85,6 @@ OmahaServiceProvider* TestChromeBrowserProvider::GetOmahaServiceProvider()
 UserFeedbackProvider* TestChromeBrowserProvider::GetUserFeedbackProvider()
     const {
   return user_feedback_provider_.get();
-}
-
-SpecialUserProvider* TestChromeBrowserProvider::GetSpecialUserProvider() const {
-  return special_user_provider_.get();
 }
 
 SpotlightProvider* TestChromeBrowserProvider::GetSpotlightProvider() const {

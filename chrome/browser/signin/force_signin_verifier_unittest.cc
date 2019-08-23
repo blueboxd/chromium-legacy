@@ -6,7 +6,7 @@
 
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "content/public/browser/network_service_instance.h"

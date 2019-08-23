@@ -34,6 +34,7 @@ extern const base::Feature kPasswordManagerOnboardingAndroid;
 extern const base::Feature kRecoverPasswordsForSyncUsers;
 extern const base::Feature kTouchToFillAndroid;
 extern const base::Feature kUsernameFirstFlow;
+extern const base::Feature kStickyBubble;
 
 // Field trial and corresponding parameters.
 // To manually override this, start Chrome with the following parameters:

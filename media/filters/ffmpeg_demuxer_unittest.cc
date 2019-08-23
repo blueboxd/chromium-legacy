@@ -17,7 +17,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -1025,7 +1025,8 @@ TEST_F(FFmpegDemuxerTest, Seek) {
   base::RunLoop().Run();
 }
 
-TEST_F(FFmpegDemuxerTest, CancelledSeek) {
+// TODO(crbug.com/996040): Flaky.
+TEST_F(FFmpegDemuxerTest, DISABLED_CancelledSeek) {
   CreateDemuxer("bear-320x240.webm");
   InitializeDemuxer();
 

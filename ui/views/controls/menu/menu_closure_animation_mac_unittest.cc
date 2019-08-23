@@ -5,7 +5,7 @@
 #include "ui/views/controls/menu/menu_closure_animation_mac.h"
 
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/test/menu_test_utils.h"
 

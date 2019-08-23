@@ -13,7 +13,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_mock_clock_override.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/mutator_host.h"

@@ -4,32 +4,44 @@
 
 /**
  * Records metrics for mount events.
- * @constructor
- * @struct
  */
-function MountMetrics() {
-  chrome.fileManagerPrivate.onMountCompleted.addListener(
-      this.onMountCompleted_.bind(this));
-}
+class MountMetrics {
+  constructor() {
+    chrome.fileManagerPrivate.onMountCompleted.addListener(
+        this.onMountCompleted_.bind(this));
+  }
 
-/**
- * Event handler called when some volume was mounted or unmounted.
- * @param {chrome.fileManagerPrivate.MountCompletedEvent} event Received event.
- * @private
- */
-MountMetrics.prototype.onMountCompleted_ = function(event) {
-  if (event.eventType === 'mount') {
-    if (event.status === 'success' && event.volumeMetadata) {
-      if (event.volumeMetadata.volumeType === 'provided') {
-        const providerUmaValue =
-            this.getFileSystemProviderForUma(event.volumeMetadata.providerId);
-        metrics.recordEnum(
-            'FileSystemProviderMounted', providerUmaValue,
-            Object.keys(MountMetrics.FileSystemProvidersForUMA).length + 1);
+  /**
+   * Event handler called when some volume was mounted or unmounted.
+   * @param {chrome.fileManagerPrivate.MountCompletedEvent} event Received
+   *     event.
+   * @private
+   */
+  onMountCompleted_(event) {
+    if (event.eventType === 'mount') {
+      if (event.status === 'success' && event.volumeMetadata) {
+        if (event.volumeMetadata.volumeType === 'provided') {
+          const providerUmaValue =
+              this.getFileSystemProviderForUma(event.volumeMetadata.providerId);
+          metrics.recordEnum(
+              'FileSystemProviderMounted', providerUmaValue,
+              Object.keys(MountMetrics.FileSystemProvidersForUMA).length + 1);
+        }
       }
     }
   }
-};
+
+  /**
+   * Returns the UMA index for a provided file system type. Returns
+   * MountMetrics.FileSystemProvidersForUMA.UNKNOWN for unknown providers.
+   * @param {string|undefined} providerId The FSP provider ID.
+   * @return {MountMetrics.FileSystemProvidersForUMA}
+   */
+  getFileSystemProviderForUma(providerId) {
+    return MountMetrics.FileSystemProviders[providerId] ||
+        MountMetrics.FileSystemProvidersForUMA.UNKNOWN;
+  }
+}
 
 
 /**
@@ -111,14 +123,3 @@ MountMetrics.FileSystemProviders = {
   '@smb': MountMetrics.FileSystemProvidersForUMA.NATIVE_NETWORK_SMB,
 };
 Object.freeze(MountMetrics.FileSystemProviders);
-
-/**
- * Returns the UMA index for a provided file system type. Returns
- * MountMetrics.FileSystemProvidersForUMA.UNKNOWN for unknown providers.
- * @param {string|undefined} providerId The FSP provider ID.
- * @return {MountMetrics.FileSystemProvidersForUMA}
- */
-MountMetrics.prototype.getFileSystemProviderForUma = function(providerId) {
-  return MountMetrics.FileSystemProviders[providerId] ||
-      MountMetrics.FileSystemProvidersForUMA.UNKNOWN;
-};

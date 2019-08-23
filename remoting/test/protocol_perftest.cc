@@ -17,7 +17,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "base/task_runner_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "net/base/network_change_notifier.h"

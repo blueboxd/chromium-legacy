@@ -5,7 +5,7 @@
 #include "remoting/host/host_status_logger.h"
 
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "remoting/host/host_status_monitor.h"
 #include "remoting/signaling/mock_signal_strategy.h"
 #include "remoting/signaling/xmpp_log_to_server.h"

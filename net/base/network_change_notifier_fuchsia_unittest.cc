@@ -12,7 +12,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/sequence_bound.h"
 #include "base/threading/thread.h"
 #include "net/base/ip_address.h"

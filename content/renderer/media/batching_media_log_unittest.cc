@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 
 #include "content/renderer/media/batching_media_log.h"
+
 #include "base/macros.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "content/common/view_messages.h"
 #include "content/public/test/mock_render_thread.h"

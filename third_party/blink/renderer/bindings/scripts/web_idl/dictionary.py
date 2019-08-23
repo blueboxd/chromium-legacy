@@ -69,7 +69,7 @@ class Dictionary(UserDefinedType, WithExtendedAttributes,
         ])
 
     @property
-    def inherited_dictionary(self):
+    def inherited(self):
         """Returns the inherited dictionary or None."""
         return self._inherited.target_object if self._inherited else None
 
@@ -88,16 +88,14 @@ class Dictionary(UserDefinedType, WithExtendedAttributes,
         """
         Returns all dictionary members including inherited members, sorted in
         order from least to most derived dictionaries and lexicographical order
-        within a dictionary.
+        within each dictionary.
         """
 
         def collect_inherited_members(dictionary):
             if dictionary is None:
                 return []
-            return (collect_inherited_members(dictionary.inherited_dictionary)
-                    + sorted(
-                        dictionary.own_members,
-                        key=lambda member: member.identifier))
+            return (collect_inherited_members(dictionary.inherited) + sorted(
+                dictionary.own_members, key=lambda member: member.identifier))
 
         return tuple(collect_inherited_members(self))
 

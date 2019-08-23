@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "content/common/navigation_params.mojom.h"
 #include "net/cert/x509_util.h"
 #include "net/ssl/ssl_connection_status_flags.h"

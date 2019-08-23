@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "device/gamepad/gamepad_consumer.h"
 #include "device/gamepad/gamepad_test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"

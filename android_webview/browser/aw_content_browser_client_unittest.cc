@@ -5,7 +5,7 @@
 #include "android_webview/browser/aw_content_browser_client.h"
 
 #include "android_webview/browser/aw_feature_list_creator.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "mojo/core/embedder/embedder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

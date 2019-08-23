@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/omnibox/omnibox_view_ios.h"
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"

@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ipc/ipc.mojom.h"
 #include "ipc/ipc_test_base.h"

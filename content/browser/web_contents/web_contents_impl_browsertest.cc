@@ -3424,8 +3424,15 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, FrozenAndUnfrozenIPC) {
   EXPECT_TRUE(delete_rfh_c.deleted());
 }
 
+// http://crbug.com/990854
+#if defined(OS_ANDROID)
+#define MAYBE_PopupWindowBrowserNavResumeLoad \
+  DISABLED_PopupWindowBrowserNavResumeLoad
+#else
+#define MAYBE_PopupWindowBrowserNavResumeLoad PopupWindowBrowserNavResumeLoad
+#endif
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
-                       PopupWindowBrowserNavResumeLoad) {
+                       MAYBE_PopupWindowBrowserNavResumeLoad) {
   // This test verifies a pop up that requires navigation from browser side
   // works with a delegate that delays navigations of pop ups.
   // Create a file: scheme pop up from a file: scheme page, which requires

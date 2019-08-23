@@ -14,7 +14,7 @@
 #import "ios/web/public/deprecated/crw_test_js_injection_receiver.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/web_task_environment.h"
 #import "ios/web_view/internal/translate/cwv_translation_language_internal.h"
 #import "ios/web_view/internal/translate/fake_web_view_translate_client.h"
 #include "ios/web_view/internal/web_view_browser_state.h"

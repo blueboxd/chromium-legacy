@@ -8,7 +8,7 @@
 
 #include "base/files/file_util.h"
 #include "base/path_service.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "mojo/core/embedder/embedder.h"
 #include "ui/base/material_design/material_design_controller.h"

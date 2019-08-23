@@ -28,7 +28,7 @@
 #include "net/log/net_log_source_type.h"
 #include "net/log/net_log_util.h"
 #include "net/log/net_log_values.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_test_util.h"

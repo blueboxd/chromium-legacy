@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/services/leveldb/leveldb_service_impl.h"
 #include "components/services/leveldb/public/cpp/remote_iterator.h"
 #include "components/services/leveldb/public/cpp/util.h"

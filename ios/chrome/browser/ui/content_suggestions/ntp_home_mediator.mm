@@ -46,8 +46,6 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
-#import "ios/chrome/browser/web_state_list/web_state_list.h"
-#import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/common/favicon/favicon_attributes.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -73,12 +71,8 @@ const char kNTPHelpURL[] =
 
 @interface NTPHomeMediator () <CRWWebStateObserver,
                                IdentityManagerObserverBridgeDelegate,
-                               SearchEngineObserving,
-                               WebStateListObserving> {
+                               SearchEngineObserving> {
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
-  // Observes the WebStateList so that this mediator can update the UI when the
-  // active WebState changes.
-  std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
   // Listen for default search engine changes.
   std::unique_ptr<SearchEngineObserverBridge> _searchEngineObserver;
   // Observes changes in identity and updates the Identity Disc.
@@ -89,8 +83,6 @@ const char kNTPHelpURL[] =
 }
 
 @property(nonatomic, strong) AlertCoordinator* alertCoordinator;
-// The WebStateList that is being observed by this mediator.
-@property(nonatomic, assign, readonly) WebStateList* webStateList;
 // TemplateURL used to get the search engine.
 @property(nonatomic, assign) TemplateURLService* templateURLService;
 // Authentication Service to get the current user's avatar.
@@ -106,17 +98,15 @@ const char kNTPHelpURL[] =
 
 @implementation NTPHomeMediator
 
-- (instancetype)initWithWebStateList:(WebStateList*)webStateList
-                  templateURLService:(TemplateURLService*)templateURLService
-                   urlLoadingService:(UrlLoadingService*)urlLoadingService
-                         authService:(AuthenticationService*)authService
-                     identityManager:(signin::IdentityManager*)identityManager
-                          logoVendor:(id<LogoVendor>)logoVendor {
+- (instancetype)initWithWebState:(web::WebState*)webState
+              templateURLService:(TemplateURLService*)templateURLService
+               urlLoadingService:(UrlLoadingService*)urlLoadingService
+                     authService:(AuthenticationService*)authService
+                 identityManager:(signin::IdentityManager*)identityManager
+                      logoVendor:(id<LogoVendor>)logoVendor {
   self = [super init];
   if (self) {
-    _webStateList = webStateList;
-    _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
-    _webStateList->AddObserver(_webStateListObserver.get());
+    _webState = webState;
     _templateURLService = templateURLService;
     _urlLoadingService = urlLoadingService;
     _authService = authService;
@@ -142,8 +132,6 @@ const char kNTPHelpURL[] =
   DCHECK(!_webStateObserver);
   DCHECK(self.suggestionsService);
 
-  self.webState = self.webStateList->GetActiveWebState();
-
   _webStateObserver = std::make_unique<web::WebStateObserverBridge>(self);
   if (self.webState) {
     self.webState->AddObserver(_webStateObserver.get());
@@ -167,7 +155,6 @@ const char kNTPHelpURL[] =
 }
 
 - (void)shutdown {
-  _webStateList->RemoveObserver(_webStateListObserver.get());
   [[NSNotificationCenter defaultCenter] removeObserver:self.consumer];
   _searchEngineObserver.reset();
   DCHECK(_webStateObserver);
@@ -483,22 +470,6 @@ const char kNTPHelpURL[] =
     return YES;
   }
   return NO;
-}
-
-#pragma mark - WebStateListObserving
-
-// If the actual webState associated with this mediator were passed in, this
-// would not be necessary.  However, since the active webstate can change when
-// the new tab page is created (and animated in), listen for changes here and
-// always display what's active.
-- (void)webStateList:(WebStateList*)webStateList
-    didChangeActiveWebState:(web::WebState*)newWebState
-                oldWebState:(web::WebState*)oldWebState
-                    atIndex:(int)atIndex
-                     reason:(int)reason {
-  if (newWebState) {
-    self.webState = newWebState;
-  }
 }
 
 #pragma mark - SearchEngineObserving

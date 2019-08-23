@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/default_tick_clock.h"
 #include "media/cast/constants.h"
 #include "media/cast/net/cast_transport.h"

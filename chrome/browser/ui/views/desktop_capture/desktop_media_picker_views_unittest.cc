@@ -20,7 +20,7 @@
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_picker_views_test_api.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_source_view.h"
 #include "components/web_modal/test_web_contents_modal_dialog_host.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_base_switches.h"

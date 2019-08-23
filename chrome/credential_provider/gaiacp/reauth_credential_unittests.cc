@@ -195,9 +195,11 @@ TEST_F(GcpReauthCredentialGlsRunnerTest, NoGaiaIdAvailable) {
   CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION cpcs;
   wchar_t* status_text;
   CREDENTIAL_PROVIDER_STATUS_ICON status_icon;
-  ASSERT_EQ(E_UNEXPECTED,
+  ASSERT_EQ(S_OK,
             cred->GetSerialization(&cpgsr, &cpcs, &status_text, &status_icon));
-  ASSERT_EQ(CPGSR_NO_CREDENTIAL_NOT_FINISHED, cpgsr);
+  ASSERT_EQ(CPGSR_NO_CREDENTIAL_FINISHED, cpgsr);
+  EXPECT_STREQ(status_text,
+               GetStringResource(IDS_FAILED_CREATE_LOGON_STUB_BASE).c_str());
 }
 
 TEST_F(GcpReauthCredentialGlsRunnerTest, NoGaiaIdAvailableForADUser) {

@@ -151,12 +151,28 @@ double SMILTimeContainer::Elapsed() const {
   if (IsPaused())
     return presentation_time_;
 
-  return presentation_time_ + (GetDocument()
-                                   .Timeline()
-                                   .CurrentTimeInternal()
-                                   .value_or(base::TimeDelta())
-                                   .InSecondsF() -
-                               reference_time_);
+  double elapsed = presentation_time_ + (GetDocument()
+                                             .Timeline()
+                                             .CurrentTimeInternal()
+                                             .value_or(base::TimeDelta())
+                                             .InSecondsF() -
+                                         reference_time_);
+  DCHECK_GE(elapsed, 0.0);
+  return elapsed;
+}
+
+void SMILTimeContainer::ResetDocumentTime() {
+  DCHECK(IsStarted());
+  // TODO(edvardt): We actually want to check if
+  // the document is active and we don't have any special
+  // conditions and such, but they require more fixing,
+  // probably in SVGSVGElement. I suspect there's a large
+  // bug buried here somewhere. This is enough to "paper over"
+  // it, but it's not really a solution.
+  //
+  // Bug: 996196
+
+  SynchronizeToDocumentTimeline();
 }
 
 void SMILTimeContainer::SynchronizeToDocumentTimeline() {
@@ -255,17 +271,6 @@ void SMILTimeContainer::SetElapsed(double elapsed) {
 #endif
 
   UpdateAnimationsAndScheduleFrameIfNeeded(elapsed, true);
-}
-
-void SMILTimeContainer::ResetReferenceTime() {
-  DCHECK(IsStarted());
-  if (!GetDocument().IsActive())
-    return;
-
-  if (!HandleAnimationPolicy(kRestartOnceTimerIfNotPaused))
-    return;
-
-  SynchronizeToDocumentTimeline();
 }
 
 void SMILTimeContainer::ScheduleAnimationFrame(double delay_time) {

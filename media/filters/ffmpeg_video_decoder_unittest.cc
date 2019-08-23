@@ -17,7 +17,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/gmock_callback_support.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/limits.h"
 #include "media/base/media_log.h"

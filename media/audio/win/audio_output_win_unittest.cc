@@ -14,7 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/sync_socket.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "base/win/scoped_com_initializer.h"
 #include "media/audio/audio_device_info_accessor_for_tests.h"

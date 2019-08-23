@@ -3,12 +3,13 @@
 // found in the LICENSE file.
 
 #include "content/common/throttling_url_loader.h"
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"

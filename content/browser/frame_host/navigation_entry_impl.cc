@@ -737,7 +737,7 @@ NavigationEntryImpl::ConstructCommitNavigationParams(
 #if defined(OS_ANDROID)
           std::string(),
 #endif
-          false);
+          false, network::mojom::IPAddressSpace::kUnknown);
 #if defined(OS_ANDROID)
   if (NavigationControllerImpl::ValidateDataURLAsString(GetDataURLAsString())) {
     commit_params->data_url_as_string = GetDataURLAsString()->data();

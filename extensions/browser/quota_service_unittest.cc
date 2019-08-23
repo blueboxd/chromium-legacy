@@ -8,7 +8,7 @@
 #include "base/process/process.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/quota_service.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "chrome/browser/performance_monitor/system_monitor.h"
 #include "testing/gmock/include/gmock/gmock.h"

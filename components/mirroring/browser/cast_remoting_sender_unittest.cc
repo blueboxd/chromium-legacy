@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/time/default_tick_clock.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "media/cast/constants.h"
 #include "media/cast/net/cast_transport.h"
 #include "media/cast/test/utility/default_config.h"

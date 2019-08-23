@@ -6,7 +6,7 @@
 #define CHROME_TEST_BASE_CHROME_ASH_TEST_BASE_H_
 
 #include "ash/test/ash_test_base.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 
 // AshTestBase used in Chrome.
 // TODO(crbug.com/890677): Chrome should not have tests subclassing

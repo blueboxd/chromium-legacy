@@ -15,7 +15,7 @@
 #include "base/timer/timer.h"
 #include "net/socket/socket_test_util.h"
 #include "net/ssl/ssl_info.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "net/websockets/websocket_event_interface.h"
 #include "net/websockets/websocket_test_util.h"
 

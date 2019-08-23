@@ -9,7 +9,7 @@
 #include "base/big_endian.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chromecast/media/audio/mock_audio_input_callback.h"
 #include "chromecast/net/mock_stream_socket.h"
 #include "net/base/io_buffer.h"

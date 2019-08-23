@@ -133,6 +133,8 @@ class SVGSVGElement final : public SVGGraphicsElement,
 
   void SvgAttributeChanged(const QualifiedName&) override;
 
+  void DidMoveToNewDocument(Document& old_document) override;
+
   bool SelfHasRelativeLengths() const override;
 
   bool ShouldSynthesizeViewBox() const;

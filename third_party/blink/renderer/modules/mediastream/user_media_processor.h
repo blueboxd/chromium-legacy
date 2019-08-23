@@ -290,7 +290,7 @@ class MODULES_EXPORT UserMediaProcessor
   // UserMedia requests are processed sequentially. |current_request_info_|
   // contains the request currently being processed, if any, and
   // |pending_request_infos_| is a list of queued requests.
-  std::unique_ptr<RequestInfo> current_request_info_;
+  Member<RequestInfo> current_request_info_;
   MediaDevicesDispatcherCallback media_devices_dispatcher_cb_;
   base::OnceClosure request_completed_cb_;
 

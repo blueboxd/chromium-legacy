@@ -12,7 +12,7 @@
 #include "chrome/browser/extensions/api/messaging/native_messaging_test_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/version_info/version_info.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/event_router_factory.h"
 #include "extensions/browser/extension_prefs.h"

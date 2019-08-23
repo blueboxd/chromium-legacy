@@ -6,7 +6,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"

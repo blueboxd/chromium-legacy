@@ -205,7 +205,6 @@ public class StartSurfaceLayout extends Layout implements StartSurface.OverviewM
             LayoutTab originalTab = createLayoutTab(mTabModelSelector.getCurrentTabId(),
                     mTabModelSelector.isIncognitoSelected(), NO_CLOSE_BUTTON, NO_TITLE);
             originalTab.setScale(0);
-            originalTab.setDecorationAlpha(0);
             layoutTabs.add(originalTab);
         }
         mLayoutTabs = layoutTabs.toArray(new LayoutTab[0]);

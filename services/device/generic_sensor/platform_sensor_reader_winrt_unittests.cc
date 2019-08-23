@@ -7,7 +7,7 @@
 #include <objbase.h>
 
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/win/core_winrt_util.h"
 #include "base/win/scoped_com_initializer.h"
 #include "services/device/generic_sensor/generic_sensor_consts.h"

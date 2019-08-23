@@ -11,7 +11,7 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #import "base/test/ios/wait_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/reading_list/core/offline_url_utils.h"
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/dom_distiller/distiller_viewer.h"

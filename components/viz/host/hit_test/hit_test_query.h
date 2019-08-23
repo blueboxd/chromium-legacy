@@ -145,8 +145,6 @@ class VIZ_HOST_EXPORT HitTestQuery {
                                        size_t region_index,
                                        gfx::Transform* transform) const;
 
-  void ReceivedBadMessageFromGpuProcess() const;
-
   void RecordSlowPathHitTestReasons(uint32_t) const;
 
   // Returns true if |id| is present in |hit_test_data|. If |id| is present

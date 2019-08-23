@@ -8,7 +8,7 @@
 #include "base/no_destructor.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/services/font/font_service_app.h"
 #include "components/services/font/public/cpp/font_loader.h"
 #include "components/services/font/public/mojom/font_service.mojom.h"

@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "gpu/command_buffer/service/abstract_texture.h"
 #include "gpu/ipc/common/android/image_reader_gl_owner.h"
 #include "gpu/ipc/common/android/mock_abstract_texture.h"

@@ -1145,6 +1145,9 @@ TEST_F(ResourceFetcherTest, MAYBE_SetIsExternalRequest) {
             case network::mojom::IPAddressSpace::kLocal:
               expected = test.is_external_expectation_local;
               break;
+            case network::mojom::IPAddressSpace::kUnknown:
+              NOTREACHED();
+              break;
           }
           EXPECT_EQ(expected,
                     new_resource->GetResourceRequest().IsExternalRequest());

@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 #include "components/cast_channel/cast_socket_service.h"
+
 #include "base/memory/ptr_util.h"
 #include "base/test/mock_callback.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/cast_channel/cast_test_util.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

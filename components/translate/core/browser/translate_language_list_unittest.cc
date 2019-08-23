@@ -11,7 +11,7 @@
 #include "base/stl_util.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_command_line.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_url_util.h"

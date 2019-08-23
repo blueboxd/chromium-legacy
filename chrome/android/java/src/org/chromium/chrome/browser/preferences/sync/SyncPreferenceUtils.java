@@ -23,6 +23,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.sync.GoogleServiceAuthError;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
@@ -209,8 +210,7 @@ public class SyncPreferenceUtils {
         Intent intent = LaunchIntentDispatcher.createCustomTabActivityIntent(
                 activity, customTabIntent.intent);
         intent.setPackage(activity.getPackageName());
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_UI_TYPE,
-                CustomTabIntentDataProvider.CustomTabsUiType.DEFAULT);
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_UI_TYPE, CustomTabsUiType.DEFAULT);
         intent.putExtra(Browser.EXTRA_APPLICATION_ID, activity.getPackageName());
         IntentHandler.addTrustedIntentExtras(intent);
 

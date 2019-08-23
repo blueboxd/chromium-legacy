@@ -6,7 +6,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "media/capture/video/video_capture_device_info.h"
 #include "services/video_capture/public/cpp/mock_producer.h"
 #include "services/video_capture/public/cpp/mock_receiver.h"

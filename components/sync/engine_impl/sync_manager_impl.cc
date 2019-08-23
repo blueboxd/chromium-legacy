@@ -333,12 +333,9 @@ void SyncManagerImpl::Init(InitArgs* args) {
 
   DCHECK(backing_store);
 
-  // Note: NigoriHandler passed to Directory is nullptr iff USS implementation
-  // of Nigori is enabled.
   share_->directory = std::make_unique<syncable::Directory>(
       std::move(backing_store), args->unrecoverable_error_handler,
-      report_unrecoverable_error_function_,
-      sync_encryption_handler_->GetNigoriHandler());
+      report_unrecoverable_error_function_, args->nigori_handler);
 
   DVLOG(1) << "AccountId: " << args->authenticated_account_id;
   if (!OpenDirectory(args)) {

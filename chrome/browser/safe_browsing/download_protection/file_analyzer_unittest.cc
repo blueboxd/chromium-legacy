@@ -15,7 +15,7 @@
 #include "chrome/common/safe_browsing/file_type_policies_test_util.h"
 #include "chrome/common/safe_browsing/mock_binary_feature_extractor.h"
 #include "components/safe_browsing/features.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

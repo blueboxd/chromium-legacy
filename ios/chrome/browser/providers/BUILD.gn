@@ -24,7 +24,6 @@ source_set("providers") {
     "//ios/public/provider/chrome/browser/signin",
     "//ios/public/provider/chrome/browser/spotlight",
     "//ios/public/provider/chrome/browser/ui",
-    "//ios/public/provider/chrome/browser/user",
     "//ios/public/provider/chrome/browser/user_feedback",
     "//ios/public/provider/chrome/browser/voice",
   ]

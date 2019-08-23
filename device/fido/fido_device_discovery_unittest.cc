@@ -8,7 +8,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "device/fido/fido_authenticator.h"
 #include "device/fido/fido_device_authenticator.h"
 #include "device/fido/fido_test_data.h"

@@ -272,6 +272,10 @@ class CORE_EXPORT DocumentLoader
 
   int ErrorCode() const { return error_code_; }
 
+  network::mojom::IPAddressSpace GetIPAddressSpace() const {
+    return ip_address_space_;
+  }
+
   PrefetchedSignedExchangeManager* GetPrefetchedSignedExchangeManager() const;
 
   // UseCounter
@@ -418,6 +422,8 @@ class CORE_EXPORT DocumentLoader
   int error_code_;
   std::unique_ptr<WebNavigationBodyLoader> body_loader_;
   base::UnguessableToken appcache_host_id_;
+  network::mojom::IPAddressSpace ip_address_space_ =
+      network::mojom::IPAddressSpace::kUnknown;
 
   // Params are saved in constructor and are cleared after StartLoading().
   // TODO(dgozman): remove once StartLoading is merged with constructor.

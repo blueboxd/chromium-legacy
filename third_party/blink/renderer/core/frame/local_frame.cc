@@ -1704,6 +1704,10 @@ void LocalFrame::UnpauseContext() {
 }
 
 void LocalFrame::SetLifecycleState(mojom::FrameLifecycleState state) {
+  // Don't allow lifecycle state changes for detached frames.
+  if (!IsAttached())
+    return;
+
   // If we have asked to be frozen we will only do this once the
   // load event has fired.
   if ((state == mojom::FrameLifecycleState::kFrozen ||

@@ -3183,6 +3183,66 @@
     ]
   },
 
+  "KeyboardFocusHighlightEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "KeyboardFocusHighlightEnabled": true },
+    "pref_mappings": [
+      { "pref": "settings.a11y.focus_highlight",
+        "indicator_tests": [
+          { "policy": { "KeyboardFocusHighlightEnabled": true } }
+        ]
+      }
+    ]
+  },
+
+  "CursorHighlightEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "CursorHighlightEnabled": true },
+    "pref_mappings": [
+      { "pref": "settings.a11y.cursor_highlight",
+        "indicator_tests": [
+          { "policy": { "CursorHighlightEnabled": true } }
+        ]
+      }
+    ]
+  },
+
+  "CaretHighlightEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "CaretHighlightEnabled": true },
+    "pref_mappings": [
+      { "pref": "settings.a11y.caret_highlight",
+        "indicator_tests": [
+          { "policy": { "CaretHighlightEnabled": true } }
+        ]
+      }
+    ]
+  },
+
+  "MonoAudioEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "MonoAudioEnabled": true },
+    "pref_mappings": [
+      { "pref": "settings.a11y.mono_audio",
+        "indicator_tests": [
+          { "policy": { "MonoAudioEnabled": true } }
+        ]
+      }
+    ]
+  },
+
+  "AutoclickEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "AutoclickEnabled": true },
+    "pref_mappings": [
+      { "pref": "settings.a11y.autoclick",
+        "indicator_tests": [
+          { "policy": { "AutoclickEnabled": true } }
+        ]
+      }
+    ]
+  },
+
   "HighContrastEnabled": {
     "os": ["chromeos"],
     "test_policy": { "HighContrastEnabled": true },

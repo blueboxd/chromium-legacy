@@ -1941,7 +1941,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"dynamic-tcmalloc-tuning", flag_descriptions::kDynamicTcmallocName,
      flag_descriptions::kDynamicTcmallocDescription, kOsCrOS | kOsLinux,
      FEATURE_VALUE_TYPE(
-         performance_manager::features::linux::kDynamicTcmallocTuning)},
+         performance_manager::features::os_linux::kDynamicTcmallocTuning)},
 #endif  // BUILDFLAG(USE_TCMALLOC)
 #endif  // OS_CHROMEOS || OS_LINUX
 #if defined(OS_ANDROID)

@@ -11,13 +11,10 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
-#include "components/autofill/core/common/password_form.h"
 #include "components/autofill_assistant/browser/actions/action.h"
 #include "components/autofill_assistant/browser/payment_request.h"
-#include "components/autofill_assistant/browser/website_login_fetcher.h"
 
 namespace autofill_assistant {
 
@@ -34,18 +31,6 @@ class GetPaymentInformationAction
   void OnPersonalDataChanged() override;
 
  private:
-  struct LoginDetails {
-    LoginDetails(bool hide_if_no_other_choice, const std::string& payload);
-    LoginDetails(bool hide_if_no_other_choice,
-                 const std::string& payload,
-                 const WebsiteLoginFetcher::Login& login);
-    ~LoginDetails();
-    bool hide_if_no_other_choice;
-    std::string payload;
-    // Only for Chrome PWM login details.
-    base::Optional<WebsiteLoginFetcher::Login> login;
-  };
-
   void InternalProcessAction(ProcessActionCallback callback) override;
 
   void OnGetPaymentInformation(
@@ -54,13 +39,8 @@ class GetPaymentInformationAction
   void OnAdditionalActionTriggered(int index);
   void OnTermsAndConditionsLinkClicked(int link);
 
-  void OnGetLogins(const LoginDetailsProto::LoginOptionProto& login_option,
-                   std::unique_ptr<PaymentRequestOptions> payment_options,
-                   std::vector<WebsiteLoginFetcher::Login> logins);
-  void ShowToUser(std::unique_ptr<PaymentRequestOptions> payment_options);
-
   // Creates a new instance of |PaymentRequestOptions| from |proto_|.
-  std::unique_ptr<PaymentRequestOptions> CreateOptionsFromProto();
+  std::unique_ptr<PaymentRequestOptions> CreateOptionsFromProto() const;
 
   bool IsInitialAutofillDataComplete(
       autofill::PersonalDataManager* personal_data_manager,
@@ -73,15 +53,11 @@ class GetPaymentInformationAction
       const autofill::CreditCard& credit_card,
       const PaymentRequestOptions& payment_options);
 
-  bool shown_to_user_ = false;
+  bool presented_to_user_ = false;
   bool initially_prefilled = false;
   bool personal_data_changed_ = false;
   bool action_successful_ = false;
   ProcessActionCallback callback_;
-
-  // Maps login choice identifiers to the corresponding login details.
-  std::map<std::string, std::unique_ptr<LoginDetails>> login_details_map_;
-
   base::WeakPtrFactory<GetPaymentInformationAction> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GetPaymentInformationAction);

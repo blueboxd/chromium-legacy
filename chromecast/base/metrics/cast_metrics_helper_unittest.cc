@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/json/json_reader.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "testing/gmock/include/gmock/gmock.h"

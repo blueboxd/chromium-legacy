@@ -9,7 +9,7 @@
 
 #include "base/run_loop.h"
 #include "base/values.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/api/declarative/rules_registry_service.h"
 #include "extensions/browser/api/declarative/test_rules_registry.h"
 #include "extensions/browser/api_test_utils.h"

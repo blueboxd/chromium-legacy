@@ -35,6 +35,7 @@
 #include "components/sync/nigori/nigori_model_type_processor.h"
 #include "components/sync/nigori/nigori_sync_bridge_impl.h"
 #include "components/sync/syncable/directory.h"
+#include "components/sync/syncable/nigori_handler_proxy.h"
 #include "components/sync/syncable/user_share.h"
 
 // Helper macros to log with the syncer thread name; useful when there
@@ -334,6 +335,7 @@ void SyncEngineBackend::DoInitialize(SyncEngine::InitParams params) {
   DCHECK(params.registrar);
   registrar_ = std::move(params.registrar);
 
+  syncable::NigoriHandler* nigori_handler = nullptr;
   if (base::FeatureList::IsEnabled(switches::kSyncUSSNigori)) {
     auto nigori_processor = std::make_unique<NigoriModelTypeProcessor>();
     nigori_controller_ = std::make_unique<ModelTypeController>(
@@ -342,11 +344,18 @@ void SyncEngineBackend::DoInitialize(SyncEngine::InitParams params) {
     sync_encryption_handler_ = std::make_unique<NigoriSyncBridgeImpl>(
         std::move(nigori_processor), &encryptor_,
         params.restored_key_for_bootstrapping);
+    nigori_handler_proxy_ =
+        std::make_unique<syncable::NigoriHandlerProxy>(&user_share_);
+    sync_encryption_handler_->AddObserver(nigori_handler_proxy_.get());
+    nigori_handler = nigori_handler_proxy_.get();
   } else {
-    sync_encryption_handler_ = std::make_unique<SyncEncryptionHandlerImpl>(
-        &user_share_, &encryptor_, params.restored_key_for_bootstrapping,
-        params.restored_keystore_key_for_bootstrapping,
-        base::BindRepeating(&Nigori::GenerateScryptSalt));
+    auto sync_encryption_handler_impl =
+        std::make_unique<SyncEncryptionHandlerImpl>(
+            &user_share_, &encryptor_, params.restored_key_for_bootstrapping,
+            params.restored_keystore_key_for_bootstrapping,
+            base::BindRepeating(&Nigori::GenerateScryptSalt));
+    nigori_handler = sync_encryption_handler_impl.get();
+    sync_encryption_handler_ = std::move(sync_encryption_handler_impl);
   }
 
   sync_manager_ = params.sync_manager_factory->CreateSyncManager(name_);
@@ -372,6 +381,7 @@ void SyncEngineBackend::DoInitialize(SyncEngine::InitParams params) {
   args.engine_components_factory = std::move(params.engine_components_factory);
   args.user_share = &user_share_;
   args.encryption_handler = sync_encryption_handler_.get();
+  args.nigori_handler = nigori_handler;
   args.unrecoverable_error_handler = params.unrecoverable_error_handler;
   args.report_unrecoverable_error_function =
       params.report_unrecoverable_error_function;
@@ -497,6 +507,9 @@ void SyncEngineBackend::ShutdownOnUIThread() {
 void SyncEngineBackend::DoShutdown(ShutdownReason reason) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  if (nigori_handler_proxy_) {
+    sync_encryption_handler_->RemoveObserver(nigori_handler_proxy_.get());
+  }
   DoDestroySyncManager();
 
   registrar_ = nullptr;

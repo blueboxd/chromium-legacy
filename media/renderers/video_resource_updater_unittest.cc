@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/memory/read_only_shared_memory_region.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/viz/client/client_resource_provider.h"
 #include "components/viz/client/shared_bitmap_reporter.h"
 #include "components/viz/test/fake_output_surface.h"

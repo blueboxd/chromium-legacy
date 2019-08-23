@@ -11,7 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/values.h"
 #include "chrome/browser/resource_coordinator/intervention_policy_database.pb.h"
 #include "chrome/browser/resource_coordinator/utils.h"

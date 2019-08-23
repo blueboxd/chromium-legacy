@@ -14,7 +14,7 @@
 #include "base/threading/thread.h"
 #include "content/public/browser/video_capture_device_launcher.h"
 #include "content/public/browser/video_capture_service.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/video_capture/public/cpp/mock_push_subscription.h"

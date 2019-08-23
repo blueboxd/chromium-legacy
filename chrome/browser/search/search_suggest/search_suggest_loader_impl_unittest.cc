@@ -14,7 +14,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/search/search_suggest/search_suggest_data.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"

@@ -16,7 +16,7 @@
 #include "base/task/post_task.h"
 #include "base/version.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/content_hash_fetcher.h"
 #include "extensions/browser/content_verifier/test_utils.h"
 #include "extensions/browser/extension_file_task_runner.h"

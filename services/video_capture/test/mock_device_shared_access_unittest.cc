@@ -6,7 +6,7 @@
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "media/capture/mojom/image_capture_types.h"
 #include "media/capture/video/mock_device.h"
 #include "media/capture/video/mock_device_factory.h"

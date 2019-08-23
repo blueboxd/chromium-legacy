@@ -6,7 +6,7 @@
 
 #include <memory>
 #include "base/location.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 

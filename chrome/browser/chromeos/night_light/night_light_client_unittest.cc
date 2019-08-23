@@ -6,7 +6,7 @@
 
 #include "ash/public/cpp/night_light_controller.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/clock.h"
 #include "base/time/tick_clock.h"
 #include "base/timer/timer.h"

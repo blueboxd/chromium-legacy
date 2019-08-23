@@ -10,7 +10,7 @@
 
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/search/search_suggest/search_suggest_data.h"
 #include "chrome/browser/search/search_suggest/search_suggest_loader.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"

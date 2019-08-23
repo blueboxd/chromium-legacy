@@ -35,6 +35,12 @@ namespace syncer {
 class ModelTypeController;
 class SyncEngineImpl;
 
+namespace syncable {
+
+class NigoriHandlerProxy;
+
+}  // namespace syncable
+
 class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
                           public base::trace_event::MemoryDumpProvider,
                           public SyncManager::Observer,
@@ -217,6 +223,8 @@ class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
   // depending on whether USS implementation of Nigori is enabled or not.
   // Should outlive |sync_manager_|.
   std::unique_ptr<SyncEncryptionHandler> sync_encryption_handler_;
+
+  std::unique_ptr<syncable::NigoriHandlerProxy> nigori_handler_proxy_;
 
   // The top-level syncapi entry point.  Lives on the sync thread.
   std::unique_ptr<SyncManager> sync_manager_;

@@ -404,6 +404,11 @@ HRESULT GlsRunnerTestBase::ApplyProviderFilter(
 }
 
 HRESULT GlsRunnerTestBase::StartLogonProcess(bool succeeds) {
+  return StartLogonProcess(succeeds, 0);
+}
+
+HRESULT GlsRunnerTestBase::StartLogonProcess(bool succeeds,
+                                             int expected_error_message) {
   DCHECK(testing_cred_);
   DCHECK(!logon_process_started_successfully_);
   BOOL auto_login;
@@ -413,8 +418,8 @@ HRESULT GlsRunnerTestBase::StartLogonProcess(bool succeeds) {
   // the process, but when it returns it has not completed.
   CREDENTIAL_PROVIDER_GET_SERIALIZATION_RESPONSE cpgsr;
   CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION cpcs;
-  wchar_t* status_text;
   CREDENTIAL_PROVIDER_STATUS_ICON status_icon;
+  wchar_t* status_text;
   EXPECT_EQ(S_OK, testing_cred_->GetSerialization(&cpgsr, &cpcs, &status_text,
                                                   &status_icon));
   EXPECT_EQ(CPSI_NONE, status_icon);
@@ -426,6 +431,12 @@ HRESULT GlsRunnerTestBase::StartLogonProcess(bool succeeds) {
     EXPECT_NE(nullptr, status_text);
     EXPECT_EQ(CPGSR_NO_CREDENTIAL_FINISHED, cpgsr);
   }
+
+  if (expected_error_message != 0) {
+    EXPECT_STREQ(status_text,
+                 GetStringResource(expected_error_message).c_str());
+  }
+
   return S_OK;
 }
 

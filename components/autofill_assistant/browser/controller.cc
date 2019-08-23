@@ -144,10 +144,6 @@ autofill::PersonalDataManager* Controller::GetPersonalDataManager() {
   return client_->GetPersonalDataManager();
 }
 
-WebsiteLoginFetcher* Controller::GetWebsiteLoginFetcher() {
-  return client_->GetWebsiteLoginFetcher();
-}
-
 content::WebContents* Controller::GetWebContents() {
   return web_contents();
 }
@@ -485,7 +481,7 @@ void Controller::EnterStoppedState() {
   ClearInfoBox();
   SetDetails(nullptr);
   SetUserActions(nullptr);
-  SetPaymentRequestOptions(nullptr, nullptr);
+  SetPaymentRequestOptions(nullptr);
   EnterState(AutofillAssistantState::STOPPED);
 }
 
@@ -932,7 +928,7 @@ void Controller::OnPaymentRequestContinueButtonClicked() {
   // when the user clicks "Cancel" during that action.
   payment_request_info->succeed = true;
 
-  SetPaymentRequestOptions(nullptr, nullptr);
+  SetPaymentRequestOptions(nullptr);
   std::move(callback).Run(std::move(payment_request_info));
 }
 
@@ -942,7 +938,7 @@ void Controller::OnPaymentRequestAdditionalActionTriggered(int index) {
 
   auto callback =
       std::move(payment_request_options_->additional_actions_callback);
-  SetPaymentRequestOptions(nullptr, nullptr);
+  SetPaymentRequestOptions(nullptr);
   std::move(callback).Run(index);
 }
 
@@ -951,7 +947,7 @@ void Controller::OnTermsAndConditionsLinkClicked(int link) {
     return;
 
   auto callback = std::move(payment_request_options_->terms_link_callback);
-  SetPaymentRequestOptions(nullptr, nullptr);
+  SetPaymentRequestOptions(nullptr);
   std::move(callback).Run(link);
 }
 
@@ -1017,17 +1013,6 @@ void Controller::SetTermsAndConditions(
   }
 }
 
-void Controller::SetLoginOption(std::string identifier) {
-  if (!payment_request_info_ || !payment_request_options_)
-    return;
-
-  payment_request_info_->login_choice_identifier.assign(identifier);
-  UpdatePaymentRequestActions();
-  for (ControllerObserver& observer : observers_) {
-    observer.OnPaymentRequestInformationChanged(payment_request_info_.get());
-  }
-}
-
 void Controller::UpdatePaymentRequestActions() {
   // TODO(crbug.com/806868): This method uses #SetUserActions(), which means
   // that updating the PR action buttons will also clear the suggestions. We
@@ -1062,12 +1047,9 @@ void Controller::UpdatePaymentRequestActions() {
       payment_request_info_->terms_and_conditions != NOT_SELECTED ||
       payment_request_options_->accept_terms_and_conditions_text.empty();
 
-  bool login_ok = !payment_request_options_->request_login_choice ||
-                  !payment_request_info_->login_choice_identifier.empty();
-
   bool confirm_button_enabled = contact_info_ok && shipping_address_ok &&
                                 payment_method_ok && billing_address_ok &&
-                                terms_ok && login_ok;
+                                terms_ok;
 
   UserAction confirm(payment_request_options_->confirm_action);
   confirm.SetEnabled(confirm_button_enabled);
@@ -1361,8 +1343,7 @@ void Controller::OnTouchableAreaChanged(
 }
 
 void Controller::SetPaymentRequestOptions(
-    std::unique_ptr<PaymentRequestOptions> options,
-    std::unique_ptr<PaymentInformation> information) {
+    std::unique_ptr<PaymentRequestOptions> options) {
   DCHECK(!options ||
          (options->confirm_callback && options->additional_actions_callback &&
           options->terms_link_callback));
@@ -1370,8 +1351,15 @@ void Controller::SetPaymentRequestOptions(
   if (payment_request_options_ == nullptr && options == nullptr)
     return;
 
+  if (options) {
+    payment_request_info_ = std::make_unique<PaymentInformation>();
+
+    // TODO(crbug.com/806868): set initial state according to proto.
+    payment_request_info_->terms_and_conditions =
+        options->initial_terms_and_conditions;
+  }
+
   payment_request_options_ = std::move(options);
-  payment_request_info_ = std::move(information);
   UpdatePaymentRequestActions();
   for (ControllerObserver& observer : observers_) {
     observer.OnPaymentRequestOptionsChanged(payment_request_options_.get());

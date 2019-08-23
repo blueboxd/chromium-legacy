@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/null_task_runner.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_api.pb.h"
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"

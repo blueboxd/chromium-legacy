@@ -10,7 +10,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chromeos/components/sync_wifi/synced_network_updater.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/metadata_batch.h"

@@ -136,7 +136,7 @@ class AssistantBottomBarCoordinator
                 mPaymentRequestCoordinator.getView()
                         .findViewWithTag(
                                 AssistantTagsForTesting.PAYMENT_REQUEST_PAYMENT_METHOD_SECTION_TAG)
-                        .findViewWithTag(AssistantTagsForTesting.PAYMENT_REQUEST_CHOICE_LIST),
+                        .findViewById(R.id.section_choice_list),
                 /* exclude= */ true);
 
         // Add child views to bottom bar container. We put all child views in the scrollable

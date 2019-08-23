@@ -3,13 +3,14 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/media/router/discovery/dial/dial_media_sink_service_impl.h"
+
 #include "base/bind.h"
 #include "base/test/mock_callback.h"
 #include "base/timer/mock_timer.h"
 #include "chrome/browser/media/router/discovery/dial/dial_device_data.h"
 #include "chrome/browser/media/router/discovery/dial/dial_registry.h"
 #include "chrome/browser/media/router/test/test_helper.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "services/data_decoder/data_decoder_service.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"

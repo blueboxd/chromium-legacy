@@ -7,7 +7,7 @@
 #include "base/run_loop.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/tracing/child/background_tracing_agent_provider_impl.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "testing/gtest/include/gtest/gtest.h"

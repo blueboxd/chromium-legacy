@@ -15,6 +15,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/values.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_event_logger.pb.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/ml_app_rank_provider.h"
 #include "extensions/browser/extension_registry.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
@@ -34,7 +35,10 @@ class AppListAppClickData;
 
 namespace app_list {
 
-// This class logs metrics associated with clicking on apps in ChromeOS.
+// This class logs metrics associated with clicking on apps in ChromeOS. It also
+// uses the feature data to create app rankings. These rankings are calculated
+// using inference with the aggregated ML model.
+//
 // Logging is restricted to Arc apps with sync enabled, Chrome apps from the
 // app store, PWAs and bookmark apps. This class uses UKM for logging,
 // however, the metrics are not keyed by navigational urls. Instead, for Chrome
@@ -58,6 +62,14 @@ class AppLaunchEventLogger {
   // logs the resulting metrics in UKM. This method calls EnforceLoggingPolicy()
   // to ensure the logging policy is complied with.
   void OnGridClicked(const std::string& id);
+  // Runs the inference to rank the apps. Call RetrieveRankings() to get the
+  // results. The inference is performed asynchronously and no guarantees are
+  // given given as to when results will be available.
+  void CreateRankings();
+  // Returns a map of app ids to ranking score. This will be an empty map unless
+  // CreateRankings() has been called. It will be incomplete until all of
+  // CreateRankings' asynchronous calls have completed.
+  std::map<std::string, float> RetrieveRankings();
 
   static const char kPackageName[];
   static const char kShouldSync[];
@@ -141,6 +153,9 @@ class AppLaunchEventLogger {
   // minutes.
   const std::unique_ptr<chromeos::power::ml::RecentEventsCounter>
       all_clicks_last_24_hours_;
+
+  // Empty until/unless CreateRankings is called.
+  std::unique_ptr<MlAppRankProvider> ml_app_rank_provider_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   base::WeakPtrFactory<AppLaunchEventLogger> weak_factory_;

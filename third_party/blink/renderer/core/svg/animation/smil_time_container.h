@@ -69,14 +69,13 @@ class SMILTimeContainer : public GarbageCollectedFinalized<SMILTimeContainer> {
   void ServiceAnimations();
   bool HasAnimations() const;
 
+  void ResetDocumentTime();
   void SetDocumentOrderIndexesDirty() { document_order_indexes_dirty_ = true; }
 
   // Advance the animation timeline a single frame.
   void AdvanceFrameForTesting();
 
   void Trace(blink::Visitor*);
-
-  void ResetReferenceTime();
 
  private:
   enum FrameSchedulingState {

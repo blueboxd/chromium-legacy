@@ -9,7 +9,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/drive/file_system_core_util.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

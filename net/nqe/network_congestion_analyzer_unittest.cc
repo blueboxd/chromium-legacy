@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "net/nqe/network_congestion_analyzer.h"
+
 #include <map>
 #include <unordered_map>
 
@@ -13,7 +14,7 @@
 #include "net/nqe/network_quality.h"
 #include "net/nqe/network_quality_estimator_test_util.h"
 #include "net/nqe/observation_buffer.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
